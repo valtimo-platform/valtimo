@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "binnenhof-renovatie-process",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

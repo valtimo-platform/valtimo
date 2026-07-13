@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <!-- ==================== Phase Configs ==================== -->
+    <changeSet id="002-01-seed-phase-configs" author="pdca" context="seed">
+        <insert tableName="phase_config">
+            <column name="id" value="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"/>
+            <column name="case_definition_key" value="inwonersplan"/>
+            <column name="phases" value='["Analyse","Uitvoering","Plaatsing"]'/>
+            <column name="evaluation_types" value='["INTAKE","PROGRESS","EVALUATION","CRISIS"]'/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <insert tableName="phase_config">
+            <column name="id" value="bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
+            <column name="case_definition_key" value="binnenhof-renovatie"/>
+            <column name="phases" value='["Analyse","Uitvoering","Check","Act"]'/>
+            <column name="evaluation_types" value='["INTAKE","PROGRESS","INSPECTION","EVALUATION"]'/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Plan: Erika de Goede ==================== -->
+    <changeSet id="002-02-seed-plan-erika" author="pdca" context="seed">
+        <insert tableName="plan">
+            <column name="id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="subject_type" value="PERSON"/>
+            <column name="subject_id" value="445775187"/>
+            <column name="title" value="Ontwikkelplan Werk - Erika de Goede"/>
+            <column name="main_goal" value="Ik wil duurzaam aan het werk zodat ik financieel onafhankelijk ben"/>
+            <column name="start_situation" value="Gescheiden, 2 kinderen, ontslagen na faillissement werkgever. MBO-4 administratief medewerker, 6 jaar ervaring."/>
+            <column name="desired_situation" value="Stabiel werk in passende functie, financieel zelfstandig, kinderopvang geregeld."/>
+            <column name="status" value="ACTIVE"/>
+            <column name="start_date" valueDate="2026-01-15"/>
+            <column name="target_end_date" valueDate="2026-12-31"/>
+            <column name="case_definition_key" value="inwonersplan"/>
+            <column name="created_at" valueDate="2026-01-15T09:00:00"/>
+            <column name="updated_at" valueDate="2026-06-20T14:30:00"/>
+            <column name="created_by" value="s.jansen"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Goals: Erika ==================== -->
+    <changeSet id="002-03-seed-goals-erika" author="pdca" context="seed">
+        <!-- Goal 1: Analyse - Financiele situatie -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222201"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="title" value="Financiele situatie in kaart brengen"/>
+            <column name="description" value="Volledig overzicht van inkomsten, schulden, toeslagen en lopende financiele verplichtingen. Benodigde voorzieningen identificeren."/>
+            <column name="goal_type" value="ASSESSMENT"/>
+            <column name="status" value="ACHIEVED"/>
+            <column name="phase" value="Analyse"/>
+            <column name="start_date" valueDate="2026-01-15"/>
+            <column name="target_end_date" valueDate="2026-02-15"/>
+            <column name="progress_score" value="100"/>
+            <column name="progress_explanation" value="Volledig afgerond. Schuldsanering niet nodig, wel aanvraag bijzondere bijstand ingediend."/>
+            <column name="sort_order" value="1"/>
+            <column name="created_at" valueDate="2026-01-15T09:00:00"/>
+            <column name="updated_at" valueDate="2026-02-12T16:00:00"/>
+        </insert>
+
+        <!-- Goal 2: Analyse - Competenties -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222202"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="title" value="Competenties en werkervaring beoordelen"/>
+            <column name="description" value="Beroepsprofielanalyse uitvoeren, overdraagbare vaardigheden in kaart brengen, eventuele scholingsbehoefte vaststellen."/>
+            <column name="goal_type" value="ASSESSMENT"/>
+            <column name="status" value="ACHIEVED"/>
+            <column name="phase" value="Analyse"/>
+            <column name="start_date" valueDate="2026-01-20"/>
+            <column name="target_end_date" valueDate="2026-02-28"/>
+            <column name="progress_score" value="100"/>
+            <column name="progress_explanation" value="Competentietest afgerond. Sterke administratieve en organisatorische vaardigheden. Digitale vaardigheden up-to-date."/>
+            <column name="sort_order" value="2"/>
+            <column name="created_at" valueDate="2026-01-20T10:00:00"/>
+            <column name="updated_at" valueDate="2026-02-25T11:30:00"/>
+        </insert>
+
+        <!-- Goal 3: Uitvoering - Werkfit worden -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222203"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="title" value="Werkfit worden"/>
+            <column name="description" value="Zelfvertrouwen opbouwen, sollicitatievaardigheden versterken, netwerk uitbreiden. Eventuele belemmeringen wegnemen."/>
+            <column name="goal_type" value="DEVELOPMENT"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="phase" value="Uitvoering"/>
+            <column name="start_date" valueDate="2026-03-01"/>
+            <column name="target_end_date" valueDate="2026-06-30"/>
+            <column name="progress_score" value="60"/>
+            <column name="progress_explanation" value="Sollicitatietraining afgerond. Werkt aan LinkedIn-profiel en cv. Netwerkevenement bezocht."/>
+            <column name="sort_order" value="3"/>
+            <column name="created_at" valueDate="2026-03-01T09:00:00"/>
+            <column name="updated_at" valueDate="2026-06-15T14:00:00"/>
+        </insert>
+
+        <!-- Goal 4: Uitvoering - Kinderopvang -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222204"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="title" value="Kinderopvang regelen"/>
+            <column name="description" value="Stabiele kinderopvang voor beide kinderen organiseren zodat werkhervatting mogelijk is. Kinderopvangtoeslag aanvragen."/>
+            <column name="goal_type" value="PRACTICAL"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="phase" value="Uitvoering"/>
+            <column name="start_date" valueDate="2026-03-15"/>
+            <column name="target_end_date" valueDate="2026-05-31"/>
+            <column name="progress_score" value="75"/>
+            <column name="progress_explanation" value="BSO-plek gevonden voor oudste kind. Wachtlijst kinderdagverblijf voor jongste, verwachte plaatsing augustus 2026."/>
+            <column name="sort_order" value="4"/>
+            <column name="created_at" valueDate="2026-03-15T10:00:00"/>
+            <column name="updated_at" valueDate="2026-06-10T09:30:00"/>
+        </insert>
+
+        <!-- Goal 5: Uitvoering - Sectorverkenning -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222205"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="title" value="Sectorverkenning afronden"/>
+            <column name="description" value="Kansrijke sectoren verkennen: administratie, zorg-administratie, overheid. Minimaal 2 snuffelstages of meeloopdagen."/>
+            <column name="goal_type" value="EXPLORATION"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="phase" value="Uitvoering"/>
+            <column name="start_date" valueDate="2026-04-01"/>
+            <column name="target_end_date" valueDate="2026-07-31"/>
+            <column name="progress_score" value="40"/>
+            <column name="progress_explanation" value="Meeloopdag bij gemeente afgerond, positief ervaren. Snuffelstage zorgadministratie ingepland voor juli."/>
+            <column name="sort_order" value="5"/>
+            <column name="created_at" valueDate="2026-04-01T09:00:00"/>
+            <column name="updated_at" valueDate="2026-06-18T11:00:00"/>
+        </insert>
+
+        <!-- Goal 6: Plaatsing - Passend werk vinden -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222206"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="title" value="Passend werk vinden"/>
+            <column name="description" value="Actief solliciteren op passende vacatures. Minimaal 2 sollicitaties per week. Gebruik maken van netwerk en jobcoach."/>
+            <column name="goal_type" value="PLACEMENT"/>
+            <column name="status" value="PLANNED"/>
+            <column name="phase" value="Plaatsing"/>
+            <column name="start_date" valueDate="2026-08-01"/>
+            <column name="target_end_date" valueDate="2026-10-31"/>
+            <column name="sort_order" value="6"/>
+            <column name="created_at" valueDate="2026-01-15T09:00:00"/>
+            <column name="updated_at" valueDate="2026-01-15T09:00:00"/>
+        </insert>
+
+        <!-- Goal 7: Plaatsing - Duurzame plaatsing borgen -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222207"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="title" value="Duurzame plaatsing borgen"/>
+            <column name="description" value="Nazorg na werkstart: begeleiding op de werkplek, evaluatiegesprekken met werkgever, monitoring financiele stabiliteit."/>
+            <column name="goal_type" value="SUSTAINMENT"/>
+            <column name="status" value="PLANNED"/>
+            <column name="phase" value="Plaatsing"/>
+            <column name="start_date" valueDate="2026-11-01"/>
+            <column name="target_end_date" valueDate="2026-12-31"/>
+            <column name="sort_order" value="7"/>
+            <column name="created_at" valueDate="2026-01-15T09:00:00"/>
+            <column name="updated_at" valueDate="2026-01-15T09:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Actions: Erika ==================== -->
+    <changeSet id="002-04-seed-actions-erika" author="pdca" context="seed">
+        <!-- Action for Goal 1: Budgetoverzicht -->
+        <insert tableName="action">
+            <column name="id" value="44444444-4444-4444-4444-444444444401"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222201"/>
+            <column name="title" value="Budgetoverzicht opstellen met schuldhulpverlener"/>
+            <column name="description" value="Afspraak inplannen met schuldhulpverlener om volledig financieel overzicht te maken inclusief toeslagen en lopende verplichtingen."/>
+            <column name="status" value="COMPLETED"/>
+            <column name="assignee_type" value="PROFESSIONAL"/>
+            <column name="assignee_name" value="Sophie Jansen"/>
+            <column name="priority" value="HIGH"/>
+            <column name="start_date" valueDate="2026-01-20"/>
+            <column name="due_date" valueDate="2026-02-01"/>
+            <column name="completed_date" valueDate="2026-01-29"/>
+            <column name="result" value="Overzicht compleet. Geen problematische schulden. Bijzondere bijstand aangevraagd voor reiskosten."/>
+            <column name="created_at" valueDate="2026-01-20T09:00:00"/>
+            <column name="updated_at" valueDate="2026-01-29T15:00:00"/>
+        </insert>
+
+        <!-- Action for Goal 3: Sollicitatietraining -->
+        <insert tableName="action">
+            <column name="id" value="44444444-4444-4444-4444-444444444402"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222203"/>
+            <column name="title" value="Sollicitatietraining volgen"/>
+            <column name="description" value="Deelname aan groepstraining sollicitatievaardigheden: cv schrijven, motivatiebrief, oefengesprekken."/>
+            <column name="status" value="COMPLETED"/>
+            <column name="assignee_type" value="CLIENT"/>
+            <column name="assignee_name" value="Erika de Goede"/>
+            <column name="priority" value="HIGH"/>
+            <column name="start_date" valueDate="2026-03-10"/>
+            <column name="due_date" valueDate="2026-04-07"/>
+            <column name="completed_date" valueDate="2026-04-04"/>
+            <column name="result" value="Training succesvol afgerond. Erika presenteerde zich goed in oefengesprekken."/>
+            <column name="created_at" valueDate="2026-03-10T09:00:00"/>
+            <column name="updated_at" valueDate="2026-04-04T16:00:00"/>
+        </insert>
+
+        <!-- Action for Goal 3: LinkedIn profiel -->
+        <insert tableName="action">
+            <column name="id" value="44444444-4444-4444-4444-444444444403"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222203"/>
+            <column name="title" value="LinkedIn-profiel aanmaken en cv bijwerken"/>
+            <column name="description" value="Professioneel LinkedIn-profiel opzetten en cv actualiseren met hulp van jobcoach."/>
+            <column name="status" value="IN_PROGRESS"/>
+            <column name="assignee_type" value="CLIENT"/>
+            <column name="assignee_name" value="Erika de Goede"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="start_date" valueDate="2026-05-01"/>
+            <column name="due_date" valueDate="2026-06-30"/>
+            <column name="created_at" valueDate="2026-05-01T09:00:00"/>
+            <column name="updated_at" valueDate="2026-06-15T10:00:00"/>
+        </insert>
+
+        <!-- Action for Goal 4: Kinderopvangtoeslag -->
+        <insert tableName="action">
+            <column name="id" value="44444444-4444-4444-4444-444444444404"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222204"/>
+            <column name="title" value="Kinderopvangtoeslag aanvragen bij Belastingdienst"/>
+            <column name="description" value="Toeslag aanvragen zodra opvangcontract getekend is. Benodigde documenten verzamelen."/>
+            <column name="status" value="IN_PROGRESS"/>
+            <column name="assignee_type" value="CLIENT"/>
+            <column name="assignee_name" value="Erika de Goede"/>
+            <column name="priority" value="HIGH"/>
+            <column name="start_date" valueDate="2026-05-15"/>
+            <column name="due_date" valueDate="2026-06-15"/>
+            <column name="created_at" valueDate="2026-05-15T09:00:00"/>
+            <column name="updated_at" valueDate="2026-06-01T14:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Instruments: Erika ==================== -->
+    <changeSet id="002-05-seed-instruments-erika" author="pdca" context="seed">
+        <!-- Instrument for Goal 2: Competentietest -->
+        <insert tableName="instrument">
+            <column name="id" value="55555555-5555-5555-5555-555555555501"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222202"/>
+            <column name="external_product_id" value="UWV-COMP-2024"/>
+            <column name="title" value="Competentietest en beroepsprofielanalyse"/>
+            <column name="provider_name" value="UWV Werkbedrijf"/>
+            <column name="category" value="ASSESSMENT"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="start_date" valueDate="2026-01-25"/>
+            <column name="end_date" valueDate="2026-02-20"/>
+            <column name="result" value="Sterke administratieve en organisatorische competenties. Affiniteit met zorgdomein. Aanbeveling: brede orientatie op administratieve functies."/>
+            <column name="created_at" valueDate="2026-01-25T09:00:00"/>
+            <column name="updated_at" valueDate="2026-02-20T16:00:00"/>
+        </insert>
+
+        <!-- Instrument for Goal 3: Sollicitatietraining -->
+        <insert tableName="instrument">
+            <column name="id" value="55555555-5555-5555-5555-555555555502"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222203"/>
+            <column name="external_product_id" value="RE-INT-SOL-01"/>
+            <column name="title" value="Groepstraining Solliciteren"/>
+            <column name="provider_name" value="Werkcentrum Gemeente"/>
+            <column name="category" value="TRAINING"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="start_date" valueDate="2026-03-10"/>
+            <column name="end_date" valueDate="2026-04-04"/>
+            <column name="result" value="Succesvol afgerond. 4-weekse training met cv-workshop, oefengesprekken en netwerkvaardigheden."/>
+            <column name="created_at" valueDate="2026-03-10T09:00:00"/>
+            <column name="updated_at" valueDate="2026-04-04T16:00:00"/>
+        </insert>
+
+        <!-- Instrument for Goal 5: Werkervaringsplaats -->
+        <insert tableName="instrument">
+            <column name="id" value="55555555-5555-5555-5555-555555555503"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222205"/>
+            <column name="external_product_id" value="RE-INT-WEP-03"/>
+            <column name="title" value="Werkervaringsplaats Zorgadministratie"/>
+            <column name="provider_name" value="Zorggroep Regio"/>
+            <column name="category" value="WORK_EXPERIENCE"/>
+            <column name="status" value="PLANNED"/>
+            <column name="start_date" valueDate="2026-07-15"/>
+            <column name="end_date" valueDate="2026-08-15"/>
+            <column name="created_at" valueDate="2026-06-01T09:00:00"/>
+            <column name="updated_at" valueDate="2026-06-01T09:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Involved Parties: Erika ==================== -->
+    <changeSet id="002-06-seed-involved-parties-erika" author="pdca" context="seed">
+        <insert tableName="involved_party">
+            <column name="id" value="66666666-6666-6666-6666-666666666601"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="name" value="Sophie Jansen"/>
+            <column name="role" value="CASEWORKER"/>
+            <column name="email" value="s.jansen@gemeente-example.nl"/>
+            <column name="phone" value="06-12345678"/>
+            <column name="organization" value="Gemeente"/>
+            <column name="is_primary" valueBoolean="true"/>
+            <column name="created_at" valueDate="2026-01-15T09:00:00"/>
+        </insert>
+
+        <insert tableName="involved_party">
+            <column name="id" value="66666666-6666-6666-6666-666666666602"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="name" value="Mark de Vries"/>
+            <column name="role" value="JOBCOACH"/>
+            <column name="email" value="m.devries@werkcentrum-example.nl"/>
+            <column name="phone" value="06-98765432"/>
+            <column name="organization" value="Werkcentrum"/>
+            <column name="is_primary" valueBoolean="false"/>
+            <column name="created_at" valueDate="2026-02-01T10:00:00"/>
+        </insert>
+
+        <insert tableName="involved_party">
+            <column name="id" value="66666666-6666-6666-6666-666666666603"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="name" value="Erika de Goede"/>
+            <column name="role" value="CLIENT"/>
+            <column name="email" value="erika.degoede@example.nl"/>
+            <column name="phone" value="06-11223344"/>
+            <column name="is_primary" valueBoolean="false"/>
+            <column name="created_at" valueDate="2026-01-15T09:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Evaluations: Erika ==================== -->
+    <changeSet id="002-07-seed-evaluations-erika" author="pdca" context="seed">
+        <!-- Intake evaluation -->
+        <insert tableName="evaluation">
+            <column name="id" value="77777777-7777-7777-7777-777777777701"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="eval_type" value="INTAKE"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="scheduled_date" valueDate="2026-01-15"/>
+            <column name="actual_date" valueDate="2026-01-15"/>
+            <column name="summary" value="Intakegesprek met Erika. Motivatie is hoog, financiele situatie stabiel genoeg om direct te starten. Twee kinderen (4 en 8 jaar) waarvoor opvang nodig. MBO-4 diploma en 6 jaar werkervaring als administratief medewerker."/>
+            <column name="participants" value='["Sophie Jansen","Erika de Goede"]'/>
+            <column name="goal_progress" value='{"analyseFase":"Plan opgesteld voor financiele analyse en competentiebeoordeling"}'/>
+            <column name="action_points" value='["Financieel overzicht opstellen","Competentietest inplannen","Kinderopvang inventariseren"]'/>
+            <column name="created_at" valueDate="2026-01-15T11:00:00"/>
+            <column name="updated_at" valueDate="2026-01-15T12:00:00"/>
+        </insert>
+
+        <!-- Progress evaluation -->
+        <insert tableName="evaluation">
+            <column name="id" value="77777777-7777-7777-7777-777777777702"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="eval_type" value="PROGRESS"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="scheduled_date" valueDate="2026-04-15"/>
+            <column name="actual_date" valueDate="2026-04-17"/>
+            <column name="summary" value="Voortgangsgesprek. Analysefase succesvol afgerond. Sollicitatietraining gaat goed. Kinderopvang is aandachtspunt - wachtlijst kinderdagverblijf. Erika is gemotiveerd en maakt goede vorderingen."/>
+            <column name="participants" value='["Sophie Jansen","Mark de Vries","Erika de Goede"]'/>
+            <column name="goal_progress" value='{"goal1":"Afgerond - financieel overzicht compleet","goal2":"Afgerond - competentietest positief","goal3":"In uitvoering - training loopt","goal4":"Aandacht nodig - wachtlijst opvang","goal5":"Nog niet gestart"}'/>
+            <column name="action_points" value='["Alternatieve kinderopvang onderzoeken","LinkedIn-profiel aanmaken","Snuffelstage bij gemeente regelen"]'/>
+            <column name="created_at" valueDate="2026-04-17T10:00:00"/>
+            <column name="updated_at" valueDate="2026-04-17T11:30:00"/>
+        </insert>
+
+        <!-- Upcoming evaluation -->
+        <insert tableName="evaluation">
+            <column name="id" value="77777777-7777-7777-7777-777777777703"/>
+            <column name="plan_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="eval_type" value="PROGRESS"/>
+            <column name="status" value="PLANNED"/>
+            <column name="scheduled_date" valueDate="2026-07-15"/>
+            <column name="created_at" valueDate="2026-04-17T11:30:00"/>
+            <column name="updated_at" valueDate="2026-04-17T11:30:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Plan: Binnenhof Brandveiligheid ==================== -->
+    <changeSet id="002-08-seed-plan-binnenhof" author="pdca" context="seed">
+        <insert tableName="plan">
+            <column name="id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="subject_type" value="OBJECT"/>
+            <column name="subject_id" value="binnenhof-001"/>
+            <column name="title" value="Brandveiligheid Binnenhof 2026"/>
+            <column name="main_goal" value="Het Binnenhof voldoet volledig aan de actuele brandveiligheidsnormen conform Bouwbesluit 2012 en NEN-normen"/>
+            <column name="start_situation" value="Brandveiligheidsrapport 2025 toonde 12 tekortkomingen aan. Drie daarvan zijn classificatie hoog-risico: verouderde detectie in kelderverdieping, onvoldoende compartimentering vleugel-C, en ontbrekende noodverlichting trappenhuis-oost."/>
+            <column name="desired_situation" value="Alle 12 tekortkomingen verholpen, goedkeurende herkeuring brandweer, actueel ontruimingsplan operationeel, personeel getraind."/>
+            <column name="status" value="ACTIVE"/>
+            <column name="start_date" valueDate="2026-02-01"/>
+            <column name="target_end_date" valueDate="2026-09-30"/>
+            <column name="case_definition_key" value="binnenhof-renovatie"/>
+            <column name="created_at" valueDate="2026-02-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-06-25T16:00:00"/>
+            <column name="created_by" value="p.bakker"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Goals: Binnenhof ==================== -->
+    <changeSet id="002-09-seed-goals-binnenhof" author="pdca" context="seed">
+        <!-- Goal 1: Analyse - Risico-inventarisatie -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222301"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="title" value="Risico-inventarisatie en prioritering"/>
+            <column name="description" value="Alle 12 tekortkomingen classificeren op risico, kosten en afhankelijkheden. Uitvoeringsplan met prioritering opstellen."/>
+            <column name="goal_type" value="ANALYSIS"/>
+            <column name="status" value="ACHIEVED"/>
+            <column name="phase" value="Analyse"/>
+            <column name="start_date" valueDate="2026-02-01"/>
+            <column name="target_end_date" valueDate="2026-03-01"/>
+            <column name="progress_score" value="100"/>
+            <column name="progress_explanation" value="Risicomatrix opgesteld, geprioriteerd op veiligheidsrisico. 3 hoog, 5 midden, 4 laag."/>
+            <column name="sort_order" value="1"/>
+            <column name="created_at" valueDate="2026-02-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-02-28T17:00:00"/>
+        </insert>
+
+        <!-- Goal 2: Uitvoering - Hoog-risico tekortkomingen -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222302"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="title" value="Hoog-risico tekortkomingen verhelpen"/>
+            <column name="description" value="Detectiesysteem kelderverdieping vervangen, compartimentering vleugel-C herstellen, noodverlichting trappenhuis-oost installeren."/>
+            <column name="goal_type" value="REMEDIATION"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="phase" value="Uitvoering"/>
+            <column name="start_date" valueDate="2026-03-15"/>
+            <column name="target_end_date" valueDate="2026-06-30"/>
+            <column name="progress_score" value="70"/>
+            <column name="progress_explanation" value="Detectiesysteem kelder vervangen. Compartimentering vleugel-C in uitvoering (85%). Noodverlichting trappenhuis besteld, installatie juli."/>
+            <column name="sort_order" value="2"/>
+            <column name="created_at" valueDate="2026-03-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-06-20T14:00:00"/>
+        </insert>
+
+        <!-- Goal 3: Uitvoering - Midden/laag-risico -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222303"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="title" value="Overige tekortkomingen verhelpen"/>
+            <column name="description" value="5 midden-risico en 4 laag-risico tekortkomingen planmatig aanpakken na afronding hoog-risico items."/>
+            <column name="goal_type" value="REMEDIATION"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="phase" value="Uitvoering"/>
+            <column name="start_date" valueDate="2026-05-01"/>
+            <column name="target_end_date" valueDate="2026-08-15"/>
+            <column name="progress_score" value="30"/>
+            <column name="progress_explanation" value="3 van 9 overige tekortkomingen verholpen (blusmiddelen bijgeplaatst, vluchtrouteborden vernieuwd, brandwerende deuren kantoorvleugel)."/>
+            <column name="sort_order" value="3"/>
+            <column name="created_at" valueDate="2026-05-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-06-22T10:00:00"/>
+        </insert>
+
+        <!-- Goal 4: Check - Herkeuring -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222304"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="title" value="Herkeuring en certificering"/>
+            <column name="description" value="Brandweer-herkeuring aanvragen na voltooiing alle maatregelen. Doel: goedkeurend rapport en bijgewerkt gebruiksvergunning."/>
+            <column name="goal_type" value="VERIFICATION"/>
+            <column name="status" value="PLANNED"/>
+            <column name="phase" value="Check"/>
+            <column name="start_date" valueDate="2026-08-15"/>
+            <column name="target_end_date" valueDate="2026-09-15"/>
+            <column name="sort_order" value="4"/>
+            <column name="created_at" valueDate="2026-02-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-02-01T08:00:00"/>
+        </insert>
+
+        <!-- Goal 5: Act - Borging -->
+        <insert tableName="goal">
+            <column name="id" value="22222222-2222-2222-2222-222222222305"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="title" value="Structurele borging en onderhoudsplan"/>
+            <column name="description" value="Ontruimingsplan actualiseren, BHV-trainingen plannen, periodiek onderhoudsschema brandveiligheidsinstallaties vastleggen."/>
+            <column name="goal_type" value="SUSTAINMENT"/>
+            <column name="status" value="PLANNED"/>
+            <column name="phase" value="Act"/>
+            <column name="start_date" valueDate="2026-09-01"/>
+            <column name="target_end_date" valueDate="2026-09-30"/>
+            <column name="sort_order" value="5"/>
+            <column name="created_at" valueDate="2026-02-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-02-01T08:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Actions: Binnenhof ==================== -->
+    <changeSet id="002-10-seed-actions-binnenhof" author="pdca" context="seed">
+        <!-- Action for Goal 2: Detectiesysteem -->
+        <insert tableName="action">
+            <column name="id" value="44444444-4444-4444-4444-444444444501"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222302"/>
+            <column name="title" value="Branddetectiesysteem kelderverdieping vervangen"/>
+            <column name="description" value="Verouderd ionisatiesysteem vervangen door optisch adresseerbaar detectiesysteem conform NEN 2535."/>
+            <column name="status" value="COMPLETED"/>
+            <column name="assignee_type" value="CONTRACTOR"/>
+            <column name="assignee_name" value="Siemens Brandbeveiliging"/>
+            <column name="priority" value="CRITICAL"/>
+            <column name="start_date" valueDate="2026-03-20"/>
+            <column name="due_date" valueDate="2026-04-30"/>
+            <column name="completed_date" valueDate="2026-04-25"/>
+            <column name="result" value="Nieuw optisch systeem operationeel. 24 detectoren geinstalleerd, doormelding naar brandweerkazerne getest en functioneel."/>
+            <column name="created_at" valueDate="2026-03-15T08:00:00"/>
+            <column name="updated_at" valueDate="2026-04-25T16:00:00"/>
+        </insert>
+
+        <!-- Action for Goal 2: Compartimentering -->
+        <insert tableName="action">
+            <column name="id" value="44444444-4444-4444-4444-444444444502"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222302"/>
+            <column name="title" value="Compartimentering vleugel-C herstellen"/>
+            <column name="description" value="Brandwerende scheidingen herstellen en ontbrekende brandkleppen in ventilatiekanalen plaatsen. EI-60 classificatie vereist."/>
+            <column name="status" value="IN_PROGRESS"/>
+            <column name="assignee_type" value="CONTRACTOR"/>
+            <column name="assignee_name" value="Bouwbedrijf Van den Berg"/>
+            <column name="priority" value="CRITICAL"/>
+            <column name="start_date" valueDate="2026-05-01"/>
+            <column name="due_date" valueDate="2026-07-15"/>
+            <column name="created_at" valueDate="2026-04-15T08:00:00"/>
+            <column name="updated_at" valueDate="2026-06-20T14:00:00"/>
+        </insert>
+
+        <!-- Action for Goal 2: Noodverlichting -->
+        <insert tableName="action">
+            <column name="id" value="44444444-4444-4444-4444-444444444503"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222302"/>
+            <column name="title" value="Noodverlichting trappenhuis-oost installeren"/>
+            <column name="description" value="LED-noodverlichtingsarmaturen plaatsen conform NEN-EN 1838. Inclusief centrale accuvoorziening en maandelijkse automatische test."/>
+            <column name="status" value="PLANNED"/>
+            <column name="assignee_type" value="CONTRACTOR"/>
+            <column name="assignee_name" value="Elektro Jansen BV"/>
+            <column name="priority" value="HIGH"/>
+            <column name="start_date" valueDate="2026-07-01"/>
+            <column name="due_date" valueDate="2026-07-20"/>
+            <column name="created_at" valueDate="2026-06-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-06-01T08:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Instruments: Binnenhof ==================== -->
+    <changeSet id="002-11-seed-instruments-binnenhof" author="pdca" context="seed">
+        <insert tableName="instrument">
+            <column name="id" value="55555555-5555-5555-5555-555555555601"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222301"/>
+            <column name="external_product_id" value="BV-INSPECT-2025-R"/>
+            <column name="title" value="Brandveiligheidsrapport 2025"/>
+            <column name="provider_name" value="Brandweer Haaglanden"/>
+            <column name="category" value="INSPECTION_REPORT"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="start_date" valueDate="2025-11-01"/>
+            <column name="end_date" valueDate="2025-12-15"/>
+            <column name="result" value="12 tekortkomingen geconstateerd, 3 hoog-risico. Termijn voor herstel: 9 maanden."/>
+            <column name="created_at" valueDate="2026-02-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-02-01T08:00:00"/>
+        </insert>
+
+        <insert tableName="instrument">
+            <column name="id" value="55555555-5555-5555-5555-555555555602"/>
+            <column name="goal_id" value="22222222-2222-2222-2222-222222222302"/>
+            <column name="external_product_id" value="SIEM-DET-ADV-2026"/>
+            <column name="title" value="Adviesrapport detectiesystemen"/>
+            <column name="provider_name" value="Siemens Brandbeveiliging"/>
+            <column name="category" value="ADVISORY"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="start_date" valueDate="2026-03-01"/>
+            <column name="end_date" valueDate="2026-03-15"/>
+            <column name="result" value="Advies: optisch adresseerbaar systeem met doormelding. Offerte goedgekeurd."/>
+            <column name="created_at" valueDate="2026-03-01T08:00:00"/>
+            <column name="updated_at" valueDate="2026-03-15T16:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Involved Parties: Binnenhof ==================== -->
+    <changeSet id="002-12-seed-involved-parties-binnenhof" author="pdca" context="seed">
+        <insert tableName="involved_party">
+            <column name="id" value="66666666-6666-6666-6666-666666666701"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="name" value="Pieter Bakker"/>
+            <column name="role" value="PROJECT_MANAGER"/>
+            <column name="email" value="p.bakker@rijksvastgoedbedrijf-example.nl"/>
+            <column name="phone" value="06-55667788"/>
+            <column name="organization" value="Rijksvastgoedbedrijf"/>
+            <column name="is_primary" valueBoolean="true"/>
+            <column name="created_at" valueDate="2026-02-01T08:00:00"/>
+        </insert>
+
+        <insert tableName="involved_party">
+            <column name="id" value="66666666-6666-6666-6666-666666666702"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="name" value="Annemieke van Dijk"/>
+            <column name="role" value="FIRE_SAFETY_ADVISOR"/>
+            <column name="email" value="a.vandijk@brandweer-example.nl"/>
+            <column name="phone" value="06-99887766"/>
+            <column name="organization" value="Brandweer Haaglanden"/>
+            <column name="is_primary" valueBoolean="false"/>
+            <column name="created_at" valueDate="2026-02-01T08:00:00"/>
+        </insert>
+
+        <insert tableName="involved_party">
+            <column name="id" value="66666666-6666-6666-6666-666666666703"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="name" value="Henk Vermeer"/>
+            <column name="role" value="FACILITY_MANAGER"/>
+            <column name="email" value="h.vermeer@tweedekamer-example.nl"/>
+            <column name="phone" value="06-44556677"/>
+            <column name="organization" value="Tweede Kamer der Staten-Generaal"/>
+            <column name="is_primary" valueBoolean="false"/>
+            <column name="created_at" valueDate="2026-02-15T10:00:00"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== Evaluations: Binnenhof ==================== -->
+    <changeSet id="002-13-seed-evaluations-binnenhof" author="pdca" context="seed">
+        <insert tableName="evaluation">
+            <column name="id" value="77777777-7777-7777-7777-777777777801"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="eval_type" value="INTAKE"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="scheduled_date" valueDate="2026-02-01"/>
+            <column name="actual_date" valueDate="2026-02-01"/>
+            <column name="summary" value="Kick-off vergadering projectteam brandveiligheid Binnenhof. Brandveiligheidsrapport 2025 besproken. Prioritering vastgesteld: eerst 3 hoog-risico items, dan overige. Budget goedgekeurd door Rijksvastgoedbedrijf."/>
+            <column name="participants" value='["Pieter Bakker","Annemieke van Dijk","Henk Vermeer"]'/>
+            <column name="goal_progress" value='{"analyse":"Start risico-inventarisatie"}'/>
+            <column name="action_points" value='["Risicomatrix opstellen","Offertes aanvragen voor detectiesysteem kelder","Aannemer selecteren voor compartimentering"]'/>
+            <column name="created_at" valueDate="2026-02-01T10:00:00"/>
+            <column name="updated_at" valueDate="2026-02-01T12:00:00"/>
+        </insert>
+
+        <insert tableName="evaluation">
+            <column name="id" value="77777777-7777-7777-7777-777777777802"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="eval_type" value="PROGRESS"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="scheduled_date" valueDate="2026-05-01"/>
+            <column name="actual_date" valueDate="2026-05-02"/>
+            <column name="summary" value="Voortgangsoverleg Q2. Detectiesysteem kelder bijna gereed. Compartimentering vleugel-C gestart maar vertraagd door asbestvondst in plafondplaten - aanvullend saneringsplan nodig. Noodverlichting bestelling in voorbereiding."/>
+            <column name="participants" value='["Pieter Bakker","Annemieke van Dijk","Henk Vermeer","Bouwbedrijf Van den Berg"]'/>
+            <column name="goal_progress" value='{"goal1":"Afgerond","goal2":"In uitvoering - detectie 95%, compartimentering 40% (vertraging asbest), noodverlichting nog niet gestart","goal3":"3 van 9 overige items afgerond"}'/>
+            <column name="action_points" value='["Asbestsaneringsplan laten opstellen","Planning compartimentering herzien","Noodverlichting bestellen","Tussentijdse inspectie brandweer aanvragen voor detectiesysteem"]'/>
+            <column name="created_at" valueDate="2026-05-02T10:00:00"/>
+            <column name="updated_at" valueDate="2026-05-02T14:00:00"/>
+        </insert>
+
+        <insert tableName="evaluation">
+            <column name="id" value="77777777-7777-7777-7777-777777777803"/>
+            <column name="plan_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="eval_type" value="INSPECTION"/>
+            <column name="status" value="PLANNED"/>
+            <column name="scheduled_date" valueDate="2026-08-01"/>
+            <column name="created_at" valueDate="2026-05-02T14:00:00"/>
+            <column name="updated_at" valueDate="2026-05-02T14:00:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doelen bewerken</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'IBM Plex Sans',sans-serif;color:#161616;background:#fff;font-size:14px;line-height:1.5;padding:24px}
+  h2{font-size:20px;font-weight:600;margin-bottom:8px}
+  .subtitle{color:#525252;font-size:13px;margin-bottom:20px}
+  .form-group{margin-bottom:14px}
+  label{display:block;font-size:12px;font-weight:500;color:#525252;margin-bottom:4px;letter-spacing:.32px}
+  input[type=text],textarea,select{
+    width:100%;padding:10px 14px;border:1px solid #8d8d8d;border-radius:0;background:#fff;
+    font-family:inherit;font-size:14px;color:#161616;outline:none;
+  }
+  input:focus,textarea:focus,select:focus{border-color:#0f62fe;box-shadow:inset 0 0 0 1px #0f62fe}
+  textarea{min-height:60px;resize:vertical}
+  .btn{padding:8px 20px;font-family:inherit;font-size:14px;font-weight:500;border:none;cursor:pointer}
+  .btn-primary{background:#0f62fe;color:#fff}.btn-primary:hover{background:#0353e9}
+  .btn-secondary{background:#e0e0e0;color:#161616}.btn-secondary:hover{background:#c6c6c6}
+  .btn-danger{background:#da1e28;color:#fff;padding:4px 12px;font-size:12px}.btn-danger:hover{background:#b81922}
+  .btn-sm{padding:6px 14px;font-size:13px}
+  .actions{display:flex;gap:12px;margin-top:24px;justify-content:flex-end}
+  .add-section{background:#f4f4f4;padding:16px;margin-bottom:20px;border-top:2px solid #0f62fe}
+  .add-section h3{font-size:15px;font-weight:600;margin-bottom:12px}
+  .add-row{display:grid;grid-template-columns:160px 1fr;gap:12px;margin-bottom:8px}
+  .goals-list{margin-top:16px}
+  .goal-card{background:#fff;border:1px solid #e0e0e0;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start}
+  .goal-info{flex:1}
+  .goal-title{font-weight:500;margin-bottom:2px}
+  .goal-meta{font-size:12px;color:#525252}
+  .phase-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;margin-right:6px}
+  .phase-Analyse{background:#d0e2ff;color:#0043ce}
+  .phase-Uitvoering{background:#defbe6;color:#0e6027}
+  .phase-Plaatsing{background:#e8daff;color:#6929c4}
+  .phase-Check{background:#fff8e1;color:#8a6d00}
+  .phase-Act{background:#ffe0e0;color:#b81922}
+  .status-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+  .status-PLANNED{background:#e0e0e0;color:#161616}
+  .status-ACTIVE{background:#d0e2ff;color:#0043ce}
+  .status-ACHIEVED{background:#defbe6;color:#0e6027}
+  .status-NOT_ACHIEVED{background:#fff1f1;color:#b81922}
+  .status-CANCELLED{background:#e0e0e0;color:#525252}
+  .loading{text-align:center;padding:40px;color:#525252}
+  .empty{text-align:center;padding:24px;color:#a8a8a8;font-style:italic}
+  .msg{padding:12px;margin-bottom:12px;display:none}
+  .msg-success{background:#defbe6;border-left:3px solid #24a148}
+  .msg-error{background:#fff1f1;border-left:3px solid #da1e28}
+</style>
+</head>
+<body>
+<div class="msg msg-success" id="successMsg"></div>
+<div class="msg msg-error" id="errorMsg"></div>
+<h2>Doelen bewerken</h2>
+<p class="subtitle" id="planTitle">Laden...</p>
+
+<div class="add-section">
+  <h3>Doel toevoegen</h3>
+  <div class="add-row">
+    <div class="form-group"><label>Fase</label><select id="newPhase"></select></div>
+    <div class="form-group"><label>Titel</label><input type="text" id="newTitle" placeholder="Doel omschrijving"></div>
+  </div>
+  <div class="form-group"><label>Toelichting</label><textarea id="newDesc" placeholder="Optionele toelichting"></textarea></div>
+  <button class="btn btn-primary btn-sm" onclick="addGoal()">Toevoegen</button>
+</div>
+
+<h3 style="margin-bottom:12px">Huidige doelen</h3>
+<div id="goalsList" class="goals-list"><div class="loading">Laden...</div></div>
+
+<div class="actions">
+  <button class="btn btn-primary" onclick="submitForm()">Opslaan en doorgaan</button>
+</div>
+
+<script>
+var API='http://localhost:8090';
+var planId=null;
+var caseDefKey=null;
+var phases=[];
+var goals=[];
+
+window.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='init'){init()}
+});
+window.parent.postMessage({type:'ready'},'*');
+
+function init(){
+  fetch(API+'/api/v1/plans/11111111-1111-1111-1111-111111111111').then(function(r){return r.json()}).then(function(plan){
+    planId=plan.id;
+    caseDefKey=plan.caseDefinitionKey;
+    document.getElementById('planTitle').textContent=plan.title;
+    return fetch(API+'/api/v1/admin/phase-configs/'+caseDefKey);
+  }).then(function(r){return r.json()}).then(function(cfg){
+    phases=JSON.parse(cfg.phases);
+    var sel=document.getElementById('newPhase');
+    sel.innerHTML='';
+    phases.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o)});
+    return loadGoals();
+  }).catch(function(err){showError('Fout bij laden: '+err.message)});
+}
+
+function loadGoals(){
+  return fetch(API+'/api/v1/plans/'+planId+'/goals').then(function(r){return r.json()}).then(function(data){
+    goals=data;
+    renderGoals();
+  });
+}
+
+function renderGoals(){
+  var el=document.getElementById('goalsList');
+  if(goals.length===0){el.innerHTML='<div class="empty">Nog geen doelen toegevoegd</div>';return}
+  var grouped={};
+  phases.forEach(function(p){grouped[p]=[]});
+  goals.forEach(function(g){if(!grouped[g.phase])grouped[g.phase]=[];grouped[g.phase].push(g)});
+  var html='';
+  phases.forEach(function(p){
+    if(!grouped[p]||grouped[p].length===0)return;
+    html+='<div style="margin-bottom:16px"><div style="font-size:13px;font-weight:600;color:#525252;margin-bottom:6px"><span class="phase-badge phase-'+p+'">'+esc(p)+'</span> ('+grouped[p].length+' doelen)</div>';
+    grouped[p].forEach(function(g){
+      html+='<div class="goal-card"><div class="goal-info"><div class="goal-title">'+esc(g.title)+'</div>';
+      html+='<div class="goal-meta"><span class="status-badge status-'+g.status+'">'+esc(g.status)+'</span>';
+      if(g.description)html+=' &middot; '+esc(g.description.substring(0,80))+(g.description.length>80?'...':'');
+      html+='</div></div>';
+      html+='<button class="btn-danger" onclick="deleteGoal(\''+g.id+'\')">Verwijder</button>';
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+
+function addGoal(){
+  var phase=document.getElementById('newPhase').value;
+  var title=document.getElementById('newTitle').value.trim();
+  if(!title){alert('Voer een titel in');return}
+  var body={title:title,description:document.getElementById('newDesc').value.trim()||null,phase:phase,status:'PLANNED'};
+  fetch(API+'/api/v1/plans/'+planId+'/goals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+  .then(function(r){if(!r.ok)throw new Error('Fout');return r.json()})
+  .then(function(){
+    document.getElementById('newTitle').value='';
+    document.getElementById('newDesc').value='';
+    showSuccess('Doel toegevoegd');
+    return loadGoals();
+  }).catch(function(err){showError('Fout: '+err.message)});
+}
+
+function deleteGoal(id){
+  if(!confirm('Doel verwijderen?'))return;
+  fetch(API+'/api/v1/goals/'+id,{method:'DELETE'}).then(function(){
+    showSuccess('Doel verwijderd');
+    return loadGoals();
+  }).catch(function(err){showError('Fout: '+err.message)});
+}
+
+function submitForm(){
+  window.parent.postMessage({type:'submitTask',data:{updated:true,goalCount:goals.length}},'*');
+}
+
+function showSuccess(msg){var el=document.getElementById('successMsg');el.textContent=msg;el.style.display='block';setTimeout(function(){el.style.display='none'},3000)}
+function showError(msg){var el=document.getElementById('errorMsg');el.textContent=msg;el.style.display='block';setTimeout(function(){el.style.display='none'},5000)}
+function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+setTimeout(init,100);
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+[
+    {
+        "key": "createdOn",
+        "path": "case:createdOn",
+        "displayType": {
+            "type": "date",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "defaultSort": "DESC",
+        "order": 0
+    },
+    {
+        "key": "planTitle",
+        "path": "doc:planTitle",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "order": 1
+    },
+    {
+        "key": "objectName",
+        "path": "doc:objectName",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "order": 2
+    },
+    {
+        "key": "planStatus",
+        "path": "doc:planStatus",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "order": 3
+    }
+]

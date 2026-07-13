@@ -1,0 +1,28 @@
+{
+    "$id": "inwonersplan.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Inwonersplan",
+    "type": "object",
+    "properties": {
+        "planId": {
+            "type": "string",
+            "description": "UUID van het plan in de PDCA app"
+        },
+        "subjectBsn": {
+            "type": "string",
+            "description": "BSN van de inwoner"
+        },
+        "subjectName": {
+            "type": "string",
+            "description": "Naam van de inwoner"
+        },
+        "planStatus": {
+            "type": "string",
+            "description": "Status van het plan (gesynchroniseerd vanuit PDCA app)"
+        },
+        "planTitle": {
+            "type": "string",
+            "description": "Titel van het plan"
+        }
+    }
+}

@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kotlin
+*.class
+
+# Spring Boot
+*.log
+hs_err_pid*
+
+# Node (frontend bundles dev)
+frontend/node_modules/
+frontend/dist/
+
+# Docker volumes
+pdca-database-data/

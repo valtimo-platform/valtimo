@@ -1,0 +1,28 @@
+{
+    "$id": "binnenhof-renovatie.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Binnenhof Renovatie",
+    "type": "object",
+    "properties": {
+        "planId": {
+            "type": "string",
+            "description": "UUID van het plan in de PDCA app"
+        },
+        "objectId": {
+            "type": "string",
+            "description": "ID van het object"
+        },
+        "objectName": {
+            "type": "string",
+            "description": "Naam van het object"
+        },
+        "planStatus": {
+            "type": "string",
+            "description": "Status van het plan (gesynchroniseerd vanuit PDCA app)"
+        },
+        "planTitle": {
+            "type": "string",
+            "description": "Titel van het plan"
+        }
+    }
+}

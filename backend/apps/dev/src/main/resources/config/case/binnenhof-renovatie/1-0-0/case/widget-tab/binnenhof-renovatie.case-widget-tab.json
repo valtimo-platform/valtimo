@@ -1,0 +1,47 @@
+[
+    {
+        "key": "summary",
+        "widgets": [
+            {
+                "key": "plan-gegevens",
+                "type": "fields",
+                "title": "Plan gegevens",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "planTitle",
+                                "title": "Plan titel",
+                                "value": "doc:planTitle"
+                            },
+                            {
+                                "key": "objectName",
+                                "title": "Object",
+                                "value": "doc:objectName"
+                            },
+                            {
+                                "key": "objectId",
+                                "title": "Object ID",
+                                "value": "doc:objectId"
+                            }
+                        ],
+                        [
+                            {
+                                "key": "planStatus",
+                                "title": "Status",
+                                "value": "doc:planStatus"
+                            },
+                            {
+                                "key": "planId",
+                                "title": "Plan ID (PDCA app)",
+                                "value": "doc:planId"
+                            }
+                        ]
+                    ]
+                }
+            }
+        ]
+    }
+]

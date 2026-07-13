@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <!-- ==================== phase_config ==================== -->
+    <changeSet id="001-01-create-phase-config" author="pdca">
+        <createTable tableName="phase_config">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="case_definition_key" type="VARCHAR(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="phases" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="evaluation_types" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== plan ==================== -->
+    <changeSet id="001-02-create-plan" author="pdca">
+        <createTable tableName="plan">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="subject_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="main_goal" type="TEXT"/>
+            <column name="start_situation" type="TEXT"/>
+            <column name="desired_situation" type="TEXT"/>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE"/>
+            <column name="target_end_date" type="DATE"/>
+            <column name="actual_end_date" type="DATE"/>
+            <column name="case_id" type="UUID"/>
+            <column name="case_definition_key" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== goal ==================== -->
+    <changeSet id="001-03-create-goal" author="pdca">
+        <createTable tableName="goal">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="plan_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_goal_plan"
+                             references="plan(id)"/>
+            </column>
+            <column name="title" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="goal_type" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phase" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE"/>
+            <column name="target_end_date" type="DATE"/>
+            <column name="progress_score" type="INTEGER"/>
+            <column name="progress_explanation" type="TEXT"/>
+            <column name="sort_order" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== action ==================== -->
+    <changeSet id="001-04-create-action" author="pdca">
+        <createTable tableName="action">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="goal_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_action_goal"
+                             references="goal(id)"/>
+            </column>
+            <column name="title" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assignee_type" type="VARCHAR(50)"/>
+            <column name="assignee_name" type="VARCHAR(255)"/>
+            <column name="priority" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE"/>
+            <column name="due_date" type="DATE"/>
+            <column name="completed_date" type="DATE"/>
+            <column name="result" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== instrument ==================== -->
+    <changeSet id="001-05-create-instrument" author="pdca">
+        <createTable tableName="instrument">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="goal_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_instrument_goal"
+                             references="goal(id)"/>
+            </column>
+            <column name="external_product_id" type="VARCHAR(255)"/>
+            <column name="title" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider_name" type="VARCHAR(255)"/>
+            <column name="category" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE"/>
+            <column name="end_date" type="DATE"/>
+            <column name="result" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== evaluation ==================== -->
+    <changeSet id="001-06-create-evaluation" author="pdca">
+        <createTable tableName="evaluation">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="plan_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_evaluation_plan"
+                             references="plan(id)"/>
+            </column>
+            <column name="eval_type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scheduled_date" type="DATE"/>
+            <column name="actual_date" type="DATE"/>
+            <column name="summary" type="TEXT"/>
+            <column name="participants" type="TEXT"/>
+            <column name="goal_progress" type="TEXT"/>
+            <column name="action_points" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== involved_party ==================== -->
+    <changeSet id="001-07-create-involved-party" author="pdca">
+        <createTable tableName="involved_party">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="plan_id" type="UUID">
+                <constraints nullable="false"
+                             foreignKeyName="fk_involved_party_plan"
+                             references="plan(id)"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="phone" type="VARCHAR(100)"/>
+            <column name="organization" type="VARCHAR(255)"/>
+            <column name="is_primary" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== indexes ==================== -->
+    <changeSet id="001-08-create-indexes" author="pdca">
+        <createIndex indexName="idx_plan_subject" tableName="plan">
+            <column name="subject_id"/>
+            <column name="subject_type"/>
+        </createIndex>
+
+        <createIndex indexName="idx_plan_case_id" tableName="plan">
+            <column name="case_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_plan_case_definition_key" tableName="plan">
+            <column name="case_definition_key"/>
+        </createIndex>
+
+        <createIndex indexName="idx_goal_plan_id" tableName="goal">
+            <column name="plan_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_action_goal_id" tableName="action">
+            <column name="goal_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_instrument_goal_id" tableName="instrument">
+            <column name="goal_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_evaluation_plan_id" tableName="evaluation">
+            <column name="plan_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_involved_party_plan_id" tableName="involved_party">
+            <column name="plan_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

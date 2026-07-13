@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planoverzicht</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #161616;
+    background: #f4f4f4;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 0;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    height: 200px; color: #525252; font-size: 14px;
+  }
+  .loading .spinner {
+    width: 32px; height: 32px; border: 3px solid #e0e0e0;
+    border-top-color: #0f62fe; border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin-right: 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-banner {
+    background: #fff1f1; border-left: 3px solid #da1e28;
+    padding: 16px; margin-bottom: 24px; color: #161616;
+  }
+
+  .plan-header {
+    margin-bottom: 24px;
+  }
+  .plan-header h1 {
+    font-size: 28px; font-weight: 600; margin-bottom: 4px; color: #161616;
+  }
+  .plan-header .plan-meta {
+    display: flex; gap: 16px; align-items: center; color: #525252; font-size: 13px;
+  }
+  .status-badge {
+    display: inline-flex; align-items: center; padding: 2px 10px;
+    border-radius: 24px; font-size: 12px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .status-DRAFT { background: #e0e0e0; color: #161616; }
+  .status-ACTIVE { background: #d0e2ff; color: #0043ce; }
+  .status-PAUSED { background: #fff8e1; color: #8a6d00; }
+  .status-COMPLETED { background: #defbe6; color: #0e6027; }
+  .status-CANCELLED { background: #e0e0e0; color: #525252; text-decoration: line-through; }
+
+  /* KPI Cards */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 32px;
+  }
+  @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 500px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+  .kpi-card {
+    background: #fff; border-top: 3px solid #0f62fe;
+    padding: 20px; position: relative;
+  }
+  .kpi-card.green { border-top-color: #24a148; }
+  .kpi-card.orange { border-top-color: #ff832b; }
+  .kpi-card.purple { border-top-color: #8a3ffc; }
+
+  .kpi-card .kpi-label {
+    font-size: 12px; font-weight: 500; color: #525252;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+  }
+  .kpi-card .kpi-value {
+    font-size: 36px; font-weight: 300; color: #161616; line-height: 1.1;
+  }
+  .kpi-card .kpi-sub {
+    font-size: 12px; color: #6f6f6f; margin-top: 4px;
+  }
+
+  /* Content grid */
+  .content-grid {
+    display: grid; grid-template-columns: 2fr 1fr;
+    gap: 24px; margin-bottom: 32px;
+  }
+  @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #fff; padding: 0;
+  }
+  .card-header {
+    padding: 16px 20px; border-bottom: 1px solid #e0e0e0;
+    font-size: 14px; font-weight: 600; color: #161616;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-body { padding: 20px; }
+
+  .info-block { margin-bottom: 20px; }
+  .info-block:last-child { margin-bottom: 0; }
+  .info-block .info-label {
+    font-size: 12px; font-weight: 500; color: #525252;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .info-block .info-value {
+    font-size: 14px; color: #161616; line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .info-block .info-value.empty {
+    color: #a8a8a8; font-style: italic;
+  }
+
+  /* Involved parties table */
+  .parties-table { width: 100%; border-collapse: collapse; }
+  .parties-table th {
+    text-align: left; font-size: 12px; font-weight: 600;
+    color: #525252; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 8px 12px; border-bottom: 2px solid #e0e0e0;
+  }
+  .parties-table td {
+    padding: 10px 12px; border-bottom: 1px solid #e0e0e0;
+    font-size: 13px; vertical-align: top;
+  }
+  .parties-table tr:last-child td { border-bottom: none; }
+  .parties-table .primary-badge {
+    display: inline-block; background: #d0e2ff; color: #0043ce;
+    font-size: 11px; padding: 1px 6px; border-radius: 2px;
+    margin-left: 6px; font-weight: 500;
+  }
+  .parties-table .party-contact {
+    color: #525252; font-size: 12px;
+  }
+
+  /* Evaluations */
+  .eval-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid #e0e0e0;
+  }
+  .eval-item:last-child { border-bottom: none; }
+  .eval-type-badge {
+    display: inline-flex; padding: 3px 10px; border-radius: 2px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; background: #e8daff; color: #6929c4;
+    white-space: nowrap;
+  }
+  .eval-info { flex: 1; }
+  .eval-info .eval-date { font-size: 12px; color: #525252; margin-bottom: 2px; }
+  .eval-info .eval-summary { font-size: 13px; color: #161616; }
+
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: #6f6f6f;
+  }
+  .empty-state .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.5; }
+  .empty-state p { font-size: 13px; }
+
+  /* Plan selector (when multiple plans) */
+  .plan-selector {
+    background: #fff; padding: 24px; margin-bottom: 24px;
+  }
+  .plan-selector h2 {
+    font-size: 18px; font-weight: 600; margin-bottom: 16px;
+  }
+  .plan-list { list-style: none; }
+  .plan-list li {
+    padding: 12px 16px; border: 1px solid #e0e0e0; margin-bottom: 8px;
+    cursor: pointer; display: flex; justify-content: space-between;
+    align-items: center; transition: background 0.15s;
+  }
+  .plan-list li:hover { background: #e8e8e8; }
+  .plan-list li .plan-item-title { font-weight: 500; }
+  .plan-list li .plan-item-meta { font-size: 12px; color: #525252; }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span>Plan laden...</span>
+  </div>
+</div>
+
+<script>
+(function() {
+  const API_BASE = 'http://localhost:8090';
+  let context = {};
+  let currentPlan = null;
+
+  // --- Iframe Bridge ---
+  window.addEventListener('message', function(event) {
+    const msg = event.data;
+    if (msg && msg.type === 'init') {
+      context = msg.context || {};
+      loadData();
+    }
+  });
+  window.parent.postMessage({ type: 'ready' }, '*');
+
+  function resizeIframe() {
+    requestAnimationFrame(function() {
+      const height = document.documentElement.scrollHeight;
+      window.parent.postMessage({ type: 'resize', height: height }, '*');
+    });
+  }
+
+  // --- Data Loading ---
+  async function loadData() {
+    try {
+      let plans = [];
+
+      // Try to find plans by caseId first
+      if (context.documentId) {
+        const resp = await fetch(API_BASE + '/api/v1/plans?caseId=' + context.documentId);
+        if (resp.ok) {
+          plans = await resp.json();
+        }
+      }
+
+      // Fallback: load all plans
+      if (plans.length === 0) {
+        const resp = await fetch(API_BASE + '/api/v1/plans?subjectId=all&subjectType=PERSON');
+        if (resp.ok) {
+          plans = await resp.json();
+        }
+        // If that fails too, try a broader approach
+        if (plans.length === 0) {
+          // Try fetching known BSN
+          const resp2 = await fetch(API_BASE + '/api/v1/plans?subjectId=445775187&subjectType=PERSON');
+          if (resp2.ok) plans = await resp2.json();
+        }
+      }
+
+      if (plans.length === 0) {
+        showEmpty();
+        return;
+      }
+
+      if (plans.length === 1) {
+        await showPlan(plans[0]);
+      } else {
+        showPlanSelector(plans);
+      }
+    } catch (err) {
+      showError('Kan geen verbinding maken met de PDCA service: ' + err.message);
+    }
+  }
+
+  function showError(message) {
+    document.getElementById('loading').style.display = 'none';
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="error-banner">' + escapeHtml(message) + '</div>';
+    resizeIframe();
+  }
+
+  function showEmpty() {
+    document.getElementById('loading').style.display = 'none';
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>Geen plannen gevonden voor deze zaak.</p></div>';
+    resizeIframe();
+  }
+
+  function showPlanSelector(plans) {
+    document.getElementById('loading').style.display = 'none';
+    const app = document.getElementById('app');
+    let html = '<div class="plan-selector"><h2>Beschikbare plannen</h2><ul class="plan-list">';
+    plans.forEach(function(plan) {
+      html += '<li onclick="window._selectPlan(\'' + plan.id + '\')">'
+        + '<div><span class="plan-item-title">' + escapeHtml(plan.title) + '</span></div>'
+        + '<div class="plan-item-meta"><span class="status-badge status-' + plan.status + '">' + plan.status + '</span></div>'
+        + '</li>';
+    });
+    html += '</ul></div>';
+    app.innerHTML = html;
+
+    window._plans = plans;
+    window._selectPlan = async function(id) {
+      const plan = window._plans.find(function(p) { return p.id === id; });
+      if (plan) {
+        app.innerHTML = '<div class="loading" id="loading"><div class="spinner"></div><span>Plan laden...</span></div>';
+        await showPlan(plan);
+      }
+    };
+    resizeIframe();
+  }
+
+  async function showPlan(plan) {
+    currentPlan = plan;
+    const planId = plan.id;
+
+    // Fetch related data in parallel
+    const [goalsResp, partiesResp, evalsResp, actionsResp] = await Promise.all([
+      fetch(API_BASE + '/api/v1/plans/' + planId + '/goals').catch(function() { return { ok: false }; }),
+      fetch(API_BASE + '/api/v1/plans/' + planId + '/parties').catch(function() { return { ok: false }; }),
+      fetch(API_BASE + '/api/v1/plans/' + planId + '/evaluations').catch(function() { return { ok: false }; }),
+      fetch(API_BASE + '/api/v1/plans/' + planId + '/actions').catch(function() { return { ok: false }; })
+    ]);
+
+    const goals = goalsResp.ok ? await goalsResp.json() : [];
+    const parties = partiesResp.ok ? await partiesResp.json() : [];
+    const evaluations = evalsResp.ok ? await evalsResp.json() : [];
+    const actions = actionsResp.ok ? await actionsResp.json() : [];
+
+    // Calculate KPIs
+    const totalGoals = goals.length;
+    const achievedGoals = goals.filter(function(g) { return g.status === 'ACHIEVED'; }).length;
+    const activeGoals = goals.filter(function(g) { return g.status === 'ACTIVE'; }).length;
+    const progressPct = totalGoals > 0 ? Math.round((achievedGoals / totalGoals) * 100) : 0;
+    const openActions = actions.filter(function(a) {
+      return a.status === 'PLANNED' || a.status === 'IN_PROGRESS' || a.status === 'PENDING_REVIEW';
+    }).length;
+    const completedEvals = evaluations.filter(function(e) { return e.status === 'COMPLETED'; }).length;
+
+    const app = document.getElementById('app');
+    app.innerHTML = renderPlan(plan, goals, parties, evaluations, {
+      progressPct: progressPct,
+      achievedGoals: achievedGoals,
+      totalGoals: totalGoals,
+      activeGoals: activeGoals,
+      openActions: openActions,
+      completedEvals: completedEvals,
+      totalEvals: evaluations.length
+    });
+
+    resizeIframe();
+  }
+
+  function renderPlan(plan, goals, parties, evaluations, kpi) {
+    return ''
+      // Header
+      + '<div class="plan-header">'
+      + '  <h1>' + escapeHtml(plan.title) + '</h1>'
+      + '  <div class="plan-meta">'
+      + '    <span class="status-badge status-' + plan.status + '">' + plan.status + '</span>'
+      + (plan.startDate ? '    <span>Start: ' + formatDate(plan.startDate) + '</span>' : '')
+      + (plan.targetEndDate ? '    <span>Streefdatum: ' + formatDate(plan.targetEndDate) + '</span>' : '')
+      + '    <span>' + subjectTypeLabel(plan.subjectType) + ': ' + escapeHtml(plan.subjectId) + '</span>'
+      + '  </div>'
+      + '</div>'
+
+      // KPI Cards
+      + '<div class="kpi-grid">'
+      + '  <div class="kpi-card green">'
+      + '    <div class="kpi-label">Voortgang</div>'
+      + '    <div class="kpi-value">' + kpi.progressPct + '%</div>'
+      + '    <div class="kpi-sub">' + kpi.achievedGoals + ' van ' + kpi.totalGoals + ' doelen behaald</div>'
+      + '  </div>'
+      + '  <div class="kpi-card">'
+      + '    <div class="kpi-label">Actieve doelen</div>'
+      + '    <div class="kpi-value">' + kpi.activeGoals + '</div>'
+      + '    <div class="kpi-sub">van ' + kpi.totalGoals + ' totaal</div>'
+      + '  </div>'
+      + '  <div class="kpi-card orange">'
+      + '    <div class="kpi-label">Open acties</div>'
+      + '    <div class="kpi-value">' + kpi.openActions + '</div>'
+      + '    <div class="kpi-sub">openstaand</div>'
+      + '  </div>'
+      + '  <div class="kpi-card purple">'
+      + '    <div class="kpi-label">Evaluaties</div>'
+      + '    <div class="kpi-value">' + kpi.completedEvals + '</div>'
+      + '    <div class="kpi-sub">' + kpi.completedEvals + ' van ' + kpi.totalEvals + ' afgerond</div>'
+      + '  </div>'
+      + '</div>'
+
+      // Content grid
+      + '<div class="content-grid">'
+      // Left: Plan details
+      + '  <div>'
+      + '    <div class="card" style="margin-bottom: 24px;">'
+      + '      <div class="card-header">Plangegevens</div>'
+      + '      <div class="card-body">'
+      + '        <div class="info-block">'
+      + '          <div class="info-label">Hoofddoel</div>'
+      + '          <div class="info-value' + (!plan.mainGoal ? ' empty' : '') + '">'
+      +              (plan.mainGoal ? escapeHtml(plan.mainGoal) : 'Geen hoofddoel ingesteld') + '</div>'
+      + '        </div>'
+      + '        <div class="info-block">'
+      + '          <div class="info-label">Startsituatie</div>'
+      + '          <div class="info-value' + (!plan.startSituation ? ' empty' : '') + '">'
+      +              (plan.startSituation ? escapeHtml(plan.startSituation) : 'Niet ingevuld') + '</div>'
+      + '        </div>'
+      + '        <div class="info-block">'
+      + '          <div class="info-label">Gewenste situatie</div>'
+      + '          <div class="info-value' + (!plan.desiredSituation ? ' empty' : '') + '">'
+      +              (plan.desiredSituation ? escapeHtml(plan.desiredSituation) : 'Niet ingevuld') + '</div>'
+      + '        </div>'
+      + '      </div>'
+      + '    </div>'
+
+      // Recent evaluations
+      + '    <div class="card">'
+      + '      <div class="card-header">Recente evaluaties</div>'
+      + '      <div class="card-body">'
+      +          renderEvaluations(evaluations)
+      + '      </div>'
+      + '    </div>'
+      + '  </div>'
+
+      // Right: Involved parties
+      + '  <div>'
+      + '    <div class="card">'
+      + '      <div class="card-header">Betrokken partijen</div>'
+      + '      <div class="card-body">'
+      +          renderParties(parties)
+      + '      </div>'
+      + '    </div>'
+      + '  </div>'
+
+      + '</div>';
+  }
+
+  function renderParties(parties) {
+    if (parties.length === 0) {
+      return '<div class="empty-state"><p>Geen betrokken partijen</p></div>';
+    }
+    let html = '<table class="parties-table"><thead><tr>'
+      + '<th>Naam</th><th>Rol</th><th>Contact</th>'
+      + '</tr></thead><tbody>';
+    parties.forEach(function(p) {
+      html += '<tr>'
+        + '<td>' + escapeHtml(p.name) + (p.isPrimary ? '<span class="primary-badge">Primair</span>' : '') + '</td>'
+        + '<td>' + escapeHtml(p.role) + '</td>'
+        + '<td class="party-contact">'
+        + (p.email ? escapeHtml(p.email) : '')
+        + (p.email && p.phone ? '<br>' : '')
+        + (p.phone ? escapeHtml(p.phone) : '')
+        + (p.organization ? '<br>' + escapeHtml(p.organization) : '')
+        + '</td>'
+        + '</tr>';
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function renderEvaluations(evaluations) {
+    if (evaluations.length === 0) {
+      return '<div class="empty-state"><p>Nog geen evaluaties</p></div>';
+    }
+    // Sort by date, most recent first
+    var sorted = evaluations.slice().sort(function(a, b) {
+      var da = a.actualDate || a.scheduledDate || '';
+      var db = b.actualDate || b.scheduledDate || '';
+      return db.localeCompare(da);
+    });
+    // Show max 5
+    var items = sorted.slice(0, 5);
+    var html = '';
+    items.forEach(function(ev) {
+      var date = ev.actualDate || ev.scheduledDate;
+      html += '<div class="eval-item">'
+        + '<span class="eval-type-badge">' + escapeHtml(ev.evalType) + '</span>'
+        + '<div class="eval-info">'
+        + '<div class="eval-date">' + (date ? formatDate(date) : 'Geen datum') + ' &middot; ' + statusLabel(ev.status) + '</div>'
+        + '<div class="eval-summary">' + (ev.summary ? escapeHtml(ev.summary) : '<em style="color:#a8a8a8">Geen samenvatting</em>') + '</div>'
+        + '</div>'
+        + '</div>';
+    });
+    return html;
+  }
+
+  // --- Helpers ---
+  function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    var parts = dateStr.split('-');
+    if (parts.length === 3) return parts[2] + '-' + parts[1] + '-' + parts[0];
+    return dateStr;
+  }
+
+  function subjectTypeLabel(type) {
+    var labels = { PERSON: 'Persoon', OBJECT: 'Object', FAMILY: 'Gezin' };
+    return labels[type] || type;
+  }
+
+  function statusLabel(status) {
+    var labels = {
+      DRAFT: 'Concept', ACTIVE: 'Actief', PAUSED: 'Gepauzeerd',
+      COMPLETED: 'Afgerond', CANCELLED: 'Geannuleerd',
+      PLANNED: 'Gepland', ACHIEVED: 'Behaald', NOT_ACHIEVED: 'Niet behaald',
+      IN_PROGRESS: 'In uitvoering', PENDING_REVIEW: 'In beoordeling',
+      REJECTED: 'Afgekeurd'
+    };
+    return labels[status] || status;
+  }
+})();
+</script>
+</body>
+</html>

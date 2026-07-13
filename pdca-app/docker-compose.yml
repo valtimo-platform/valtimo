@@ -1,0 +1,14 @@
+services:
+  pdca-database:
+    image: postgres:17.4-alpine
+    ports:
+      - "54322:5432"
+    environment:
+      POSTGRES_DB: pdca
+      POSTGRES_USER: pdca
+      POSTGRES_PASSWORD: pdca
+    volumes:
+      - pdca-database-data:/var/lib/postgresql/data
+
+volumes:
+  pdca-database-data:

@@ -1,0 +1,47 @@
+[
+    {
+        "key": "summary",
+        "widgets": [
+            {
+                "key": "plan-gegevens",
+                "type": "fields",
+                "title": "Plan gegevens",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "planTitle",
+                                "title": "Plan titel",
+                                "value": "doc:planTitle"
+                            },
+                            {
+                                "key": "subjectName",
+                                "title": "Inwoner",
+                                "value": "doc:subjectName"
+                            },
+                            {
+                                "key": "subjectBsn",
+                                "title": "BSN",
+                                "value": "doc:subjectBsn"
+                            }
+                        ],
+                        [
+                            {
+                                "key": "planStatus",
+                                "title": "Status",
+                                "value": "doc:planStatus"
+                            },
+                            {
+                                "key": "planId",
+                                "title": "Plan ID (PDCA app)",
+                                "value": "doc:planId"
+                            }
+                        ]
+                    ]
+                }
+            }
+        ]
+    }
+]

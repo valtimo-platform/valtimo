@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan aanmaken</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'IBM Plex Sans',sans-serif;color:#161616;background:#fff;font-size:14px;line-height:1.5;padding:24px}
+  h2{font-size:20px;font-weight:600;margin-bottom:20px}
+  .form-group{margin-bottom:16px}
+  label{display:block;font-size:12px;font-weight:500;color:#525252;margin-bottom:4px;letter-spacing:.32px}
+  input[type=text],input[type=date],textarea,select{
+    width:100%;padding:10px 14px;border:1px solid #8d8d8d;border-radius:0;background:#fff;
+    font-family:inherit;font-size:14px;color:#161616;outline:none;transition:border-color .15s;
+  }
+  input:focus,textarea:focus,select:focus{border-color:#0f62fe;box-shadow:inset 0 0 0 1px #0f62fe}
+  textarea{min-height:80px;resize:vertical}
+  .radio-group{display:flex;gap:16px;margin-top:4px}
+  .radio-group label{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:400;color:#161616;cursor:pointer}
+  .radio-group input[type=radio]{accent-color:#0f62fe;width:16px;height:16px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .subject-preview{background:#e8f0fe;border-left:3px solid #0f62fe;padding:12px;margin-top:8px;font-size:13px;display:none}
+  .subject-preview.show{display:block}
+  .subject-lookup{display:flex;gap:8px;align-items:flex-end}
+  .subject-lookup input{flex:1}
+  .btn{padding:10px 24px;font-family:inherit;font-size:14px;font-weight:500;border:none;cursor:pointer;transition:background .15s}
+  .btn-primary{background:#0f62fe;color:#fff}.btn-primary:hover{background:#0353e9}
+  .btn-secondary{background:#e0e0e0;color:#161616}.btn-secondary:hover{background:#c6c6c6}
+  .btn-sm{padding:6px 14px;font-size:13px}
+  .actions{display:flex;gap:12px;margin-top:24px;justify-content:flex-end}
+  .error{color:#da1e28;font-size:12px;margin-top:4px}
+  .success-msg{background:#defbe6;border-left:3px solid #24a148;padding:16px;margin-bottom:16px;display:none}
+</style>
+</head>
+<body>
+<div class="success-msg" id="successMsg">Plan succesvol aangemaakt!</div>
+<h2>Nieuw plan aanmaken</h2>
+
+<div class="form-group">
+  <label>Subjecttype</label>
+  <div class="radio-group">
+    <label><input type="radio" name="subjectType" value="PERSON" checked onchange="clearPreview()"> Persoon</label>
+    <label><input type="radio" name="subjectType" value="OBJECT" onchange="clearPreview()"> Object</label>
+  </div>
+</div>
+
+<div class="form-group">
+  <label id="subjectIdLabel">BSN of Object ID</label>
+  <div class="subject-lookup">
+    <input type="text" id="subjectId" placeholder="Bijv. 445775187">
+    <button class="btn btn-secondary btn-sm" onclick="lookupSubject()">Zoek</button>
+  </div>
+  <div class="subject-preview" id="subjectPreview"></div>
+  <div class="error" id="subjectError"></div>
+</div>
+
+<div class="form-group">
+  <label>Titel</label>
+  <input type="text" id="title" placeholder="Bijv. Ontwikkelplan Werk - Naam">
+</div>
+
+<div class="form-group">
+  <label>Hoofddoel</label>
+  <textarea id="mainGoal" placeholder="Wat wil de betrokkene bereiken?"></textarea>
+</div>
+
+<div class="form-group">
+  <label>Startsituatie</label>
+  <textarea id="startSituation" placeholder="Beschrijf de huidige situatie"></textarea>
+</div>
+
+<div class="form-group">
+  <label>Gewenste situatie</label>
+  <textarea id="desiredSituation" placeholder="Beschrijf het gewenste eindresultaat"></textarea>
+</div>
+
+<div class="row">
+  <div class="form-group">
+    <label>Startdatum</label>
+    <input type="date" id="startDate">
+  </div>
+  <div class="form-group">
+    <label>Beoogde einddatum</label>
+    <input type="date" id="targetEndDate">
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-primary" onclick="submitPlan()">Plan aanmaken</button>
+</div>
+
+<script>
+var API='http://localhost:8090';
+var context={};
+
+window.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='init'){context=e.data.context||{}}
+});
+window.parent.postMessage({type:'ready'},'*');
+
+function getSubjectType(){
+  return document.querySelector('input[name=subjectType]:checked').value;
+}
+
+function clearPreview(){
+  document.getElementById('subjectPreview').classList.remove('show');
+  document.getElementById('subjectError').textContent='';
+  document.getElementById('subjectIdLabel').textContent=getSubjectType()==='PERSON'?'BSN':'Object ID';
+}
+
+function lookupSubject(){
+  var id=document.getElementById('subjectId').value.trim();
+  if(!id){document.getElementById('subjectError').textContent='Voer een ID in';return}
+  var type=getSubjectType();
+  var url=type==='PERSON'?API+'/api/v1/mock/persons/'+id:API+'/api/v1/mock/objects/'+id;
+  fetch(url).then(function(r){
+    if(!r.ok)throw new Error('Niet gevonden');
+    return r.json();
+  }).then(function(data){
+    var preview=document.getElementById('subjectPreview');
+    if(type==='PERSON'){
+      preview.innerHTML='<strong>'+esc(data.naam)+'</strong><br>BSN: '+esc(data.bsn)+'<br>Geboortedatum: '+esc(data.geboortedatum)+'<br>Adres: '+esc(data.adres.straat+' '+data.adres.huisnummer+', '+data.adres.woonplaats);
+    }else{
+      preview.innerHTML='<strong>'+esc(data.naam)+'</strong><br>Type: '+esc(data.type)+'<br>Adres: '+esc(data.adres.straat+', '+data.adres.woonplaats)+'<br>Eigenaar: '+esc(data.eigenaar);
+    }
+    preview.classList.add('show');
+    document.getElementById('subjectError').textContent='';
+  }).catch(function(){
+    document.getElementById('subjectPreview').classList.remove('show');
+    document.getElementById('subjectError').textContent='Geen resultaat gevonden voor dit ID';
+  });
+}
+
+function submitPlan(){
+  var body={
+    subjectType:getSubjectType(),
+    subjectId:document.getElementById('subjectId').value.trim(),
+    title:document.getElementById('title').value.trim(),
+    mainGoal:document.getElementById('mainGoal').value.trim(),
+    startSituation:document.getElementById('startSituation').value.trim(),
+    desiredSituation:document.getElementById('desiredSituation').value.trim(),
+    startDate:document.getElementById('startDate').value||null,
+    targetEndDate:document.getElementById('targetEndDate').value||null,
+    status:'ACTIVE',
+    caseDefinitionKey:getSubjectType()==='PERSON'?'inwonersplan':'binnenhof-renovatie'
+  };
+  if(!body.subjectId||!body.title){alert('Vul minimaal Subject ID en Titel in');return}
+  fetch(API+'/api/v1/plans',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+  .then(function(r){return r.json()})
+  .then(function(plan){
+    document.getElementById('successMsg').style.display='block';
+    window.parent.postMessage({type:'submitTask',data:{
+      planId:plan.id,
+      planTitle:plan.title,
+      planStatus:plan.status,
+      subjectBsn:body.subjectType==='PERSON'?body.subjectId:undefined,
+      objectId:body.subjectType==='OBJECT'?body.subjectId:undefined,
+      subjectName:body.title
+    }},'*');
+  }).catch(function(err){alert('Fout bij aanmaken: '+err.message)});
+}
+
+function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+document.getElementById('startDate').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
