@@ -55,6 +55,11 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     // Non-management: the menu-configuration builder lists activated page bundles. The
                     // list is unfiltered; access to page data is enforced at render time (PBAC ∩ allowlist).
                     .requestMatchers(antMatcher(GET, "/api/v1/external-plugin/menu-pages")).authenticated()
+                    // Non-management: submit a plugin task-form. GZAC completes the task server-side as
+                    // the user — the standard COMPLETE permission is enforced in the submission service.
+                    .requestMatchers(
+                        antMatcher(POST, "/api/v1/process-link/*/external-plugin-task-form/submission")
+                    ).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

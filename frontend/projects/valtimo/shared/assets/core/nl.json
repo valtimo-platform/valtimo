@@ -2100,7 +2100,8 @@
     "dueDateRemovedNotificationContent": "Einddatum verwijderd voor taak '{{task}}'",
     "externalPluginTaskForm": {
       "unavailable": "Het pluginformulier van deze taak kon niet worden geladen. De plugin is mogelijk niet beschikbaar of biedt geen taakformulier meer aan.",
-      "tokenError": "Kon geen beveiligde verbinding met de plugin maken om het formulier van deze taak te laden."
+      "tokenError": "Kon geen beveiligde verbinding met de plugin maken om het formulier van deze taak te laden.",
+      "submitError": "De taak kon niet worden voltooid. Probeer het opnieuw of neem contact op met support."
     }
   },
   "assignTask": {
