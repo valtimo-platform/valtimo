@@ -20,6 +20,7 @@ export const PROCESS_MANAGEMENT_LIST_TEST_IDS = {
 } as const;
 
 export const PROCESS_MANAGEMENT_BUILDER_TEST_IDS = {
+  draftToggle: 'processManagementBuilderDraftToggle',
   startsCaseToggle: 'processManagementBuilderStartsCaseToggle',
   startableByUserToggle: 'processManagementBuilderStartableByUserToggle',
   deployButton: 'processManagementBuilderDeployButton',

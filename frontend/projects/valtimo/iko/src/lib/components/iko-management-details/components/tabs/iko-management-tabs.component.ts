@@ -31,6 +31,7 @@ import {toObservable} from '@angular/core/rxjs-interop';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {IkoManagementTabDetailsModalComponent} from '../tab-detail-modal/iko-management-tab-details-modal.component';
 import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
+import {IKO_TABS_TEST_IDS} from '../../../../constants/iko.test-ids';
 
 @Component({
   standalone: true,
@@ -48,6 +49,8 @@ import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementTabsComponent implements OnInit, OnDestroy {
+  public readonly testIds = IKO_TABS_TEST_IDS;
+
   public readonly $disableInput = signal<boolean>(true);
   public readonly $ikoTabDtos = signal<TabDto[]>([]);
   public readonly $usedKeys = computed(() =>

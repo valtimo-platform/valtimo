@@ -1229,9 +1229,11 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }): string {
     if (error.errorCode) {
       const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
-      const translated = this.translateService.instant(translationKey);
+      const translated = this.translateService.instant(translationKey, {
+        expression: error.expression ? `'${error.expression}'` : '',
+      });
       if (translated !== translationKey) {
-        return error.expression ? `${translated}: '${error.expression}'` : translated;
+        return translated;
       }
     }
     return error.reason;

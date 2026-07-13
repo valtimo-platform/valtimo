@@ -16,6 +16,7 @@
 
 package com.ritense.gzac
 
+import com.ritense.gzac.demo.BezwaarImageDemoDataService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock
 import org.operaton.bpm.spring.boot.starter.annotation.EnableProcessApplication
@@ -48,5 +49,10 @@ fun main(args: Array<String>) {
         """.trimIndent()
     }
 
-    applicationContext.getBean(DemoDataService::class.java).deployVerhuizingDocuments()
+    // Development-only demo data for the "Present images as thumbnails" (GH-289) feature.
+    // Runs after the context is fully initialised so the bezwaar case definition is deployed.
+    if (environment.activeProfiles.contains("dev")) {
+        applicationContext.getBean(BezwaarImageDemoDataService::class.java).deployBezwaarWithImages()
+        applicationContext.getBean(DemoDataService::class.java).deployBezwaarWithImages()
+    }
 }

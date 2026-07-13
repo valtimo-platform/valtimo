@@ -47,6 +47,7 @@ import {IkoManagementApiService} from '../../../../../services';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {PropertiesFormComponent} from '../../../../iko-management-properties/iko-management-properties.component';
 import {ModalMode} from '@valtimo/shared';
+import {IKO_SEARCH_ACTION_MODAL_TEST_IDS} from '../../../../../constants/iko.test-ids';
 
 @Component({
   selector: 'valtimo-iko-management-search-action-modal',
@@ -68,6 +69,8 @@ import {ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementSearchActionModalComponent {
+  public readonly testIds = IKO_SEARCH_ACTION_MODAL_TEST_IDS;
+
   private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {

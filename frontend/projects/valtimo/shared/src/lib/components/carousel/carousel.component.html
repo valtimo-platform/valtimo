@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    prev: canScrollPrev$ | async,
+    next: canScrollNext$ | async,
+    count: itemCount$ | async,
+    active: activeIndex$ | async,
+    dots: dots$ | async
+  } as vm"
+>
+  <div class="valtimo-carousel__viewport">
+    <ul
+      #track
+      class="valtimo-carousel__track"
+      [attr.aria-label]="ariaLabel"
+      (scroll)="onScroll()"
+    >
+      <ng-content></ng-content>
+    </ul>
+  </div>
+
+  <div *ngIf="vm.count > 1" class="valtimo-carousel__controls">
+    <cds-icon-button
+      class="valtimo-carousel__nav"
+      kind="ghost"
+      size="md"
+      align="top-left"
+      [description]="'carousel.previous' | translate"
+      [disabled]="!vm.prev"
+      (click)="scrollPrev()"
+    >
+      <svg cdsIcon="chevron--left" size="16"></svg>
+    </cds-icon-button>
+
+    <div class="valtimo-carousel__dots" role="tablist">
+      <button
+        *ngFor="let index of vm.dots"
+        type="button"
+        class="valtimo-carousel__dot"
+        [class.valtimo-carousel__dot--active]="index === vm.active"
+        [attr.aria-label]="('carousel.goToSlide' | translate) + ' ' + (index + 1)"
+        [attr.aria-current]="index === vm.active"
+        (click)="scrollToIndex(index)"
+      ></button>
+    </div>
+
+    <cds-icon-button
+      class="valtimo-carousel__nav"
+      kind="ghost"
+      size="md"
+      align="top-right"
+      [description]="'carousel.next' | translate"
+      [disabled]="!vm.next"
+      (click)="scrollNext()"
+    >
+      <svg cdsIcon="chevron--right" size="16"></svg>
+    </cds-icon-button>
+  </div>
+</ng-container>

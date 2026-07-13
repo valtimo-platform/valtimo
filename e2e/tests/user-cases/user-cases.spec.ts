@@ -192,8 +192,10 @@ test.describe('Feature 2 — Cases (User)', () => {
     test('starts the Change name sub-process, assigns and completes the task', async () => {
       test.slow();
 
-      // No tasks exist right after the case is created.
-      await expect(userCasesPage.noTasksMessage).toBeVisible({timeout: 15_000});
+      // The bezwaar case auto-starts its root process, which immediately creates the
+      // "Valideer gegevens aanvrager" user task — so the task list is populated (never
+      // empty) right after creation. Just assert the panel is loaded before continuing.
+      await expect(userCasesPage.taskListPanel).toBeVisible({timeout: 15_000});
 
       // Start the "Change name" sub-process via the header "Start" overflow.
       await userCasesPage.startSubProcess(USER_CASES_CONFIG.changeNameProcess);
@@ -211,11 +213,12 @@ test.describe('Feature 2 — Cases (User)', () => {
       await userCasesPage.assignTaskToSelf();
 
       // After assignment the task form is re-rendered; submit it to complete.
-      await expect(userCasesPage.formStartButton).toBeVisible({timeout: 15_000});
-      await userCasesPage.submitFormStart();
+      await expect(userCasesPage.taskFormStartButton).toBeVisible({timeout: 15_000});
+      await userCasesPage.submitTaskForm();
 
-      // Once completed, the task list returns to the empty state.
-      await expect(userCasesPage.noTasksMessage).toBeVisible({timeout: 15_000});
+      // Completing the "Change name" task removes its tile from the list. The case's
+      // initial "Valideer gegevens aanvrager" task stays, so the list is not empty.
+      await expect(taskTile).not.toBeVisible({timeout: 15_000});
     });
   });
 });

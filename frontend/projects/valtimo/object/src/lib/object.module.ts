@@ -40,7 +40,6 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {ReactiveFormsModule} from '@angular/forms';
-import {ConfigService} from '@valtimo/shared';
 import {ObjectMenuService} from './services';
 
 @NgModule({
@@ -70,13 +69,9 @@ import {ObjectMenuService} from './services';
 export class ObjectModule {
   constructor(
     private readonly menuService: MenuService,
-    private readonly configService: ConfigService,
     private readonly objectMenuService: ObjectMenuService
   ) {
-    const enabled = this.configService.config?.featureToggles?.enableObjectManagement;
-
-    if (!enabled) return;
-
+    // Register unconditionally - the service checks feature toggles at runtime
     this.menuService.registerAppendMenuItemsFunction(this.objectMenuService.appendObjectMenuItems);
   }
 }
