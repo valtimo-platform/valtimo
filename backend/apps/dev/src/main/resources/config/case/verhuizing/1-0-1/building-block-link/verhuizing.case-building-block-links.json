@@ -1,0 +1,18 @@
+[
+    {
+        "buildingBlockDefinitionKey": "verhuizing-inspectie",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {},
+        "inputMappings": [
+            {
+                "source": "doc:/aanvrager/naam",
+                "target": "doc:/aanvragerNaam"
+            },
+            {
+                "source": "doc:/nieuwAdres",
+                "target": "doc:/nieuwAdres"
+            }
+        ],
+        "outputMappings": []
+    }
+]

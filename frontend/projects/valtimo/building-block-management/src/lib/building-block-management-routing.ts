@@ -29,6 +29,7 @@ import {
 import {FormManagementEditComponent} from '@valtimo/form-management';
 import {FormFlowEditorComponent} from '@valtimo/form-flow-management';
 import {DecisionModelerComponent} from '@valtimo/decision';
+import {BuildingBlockManagementMigrationPlanEditorComponent} from './components/building-block-management-migration-plan-editor/building-block-management-migration-plan-editor.component';
 
 const routes: Routes = [
   {
@@ -97,6 +98,28 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {
       title: 'Edit decision table',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'buildingBlock',
+    },
+  },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.MIGRATION}/create`,
+    component: BuildingBlockManagementMigrationPlanEditorComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Create migration plan',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'buildingBlock',
+    },
+  },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.MIGRATION}/:migrationKey`,
+    component: BuildingBlockManagementMigrationPlanEditorComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Migration plan',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
       context: 'buildingBlock',

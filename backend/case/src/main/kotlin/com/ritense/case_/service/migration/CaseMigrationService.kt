@@ -36,14 +36,18 @@ import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.transaction.support.TransactionTemplate
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.UUID
@@ -74,6 +78,7 @@ class CaseMigrationService(
     private val componentExecutors: List<MigrationComponentExecutor>,
     private val componentDeployers: List<MigrationComponentDeployer>,
     private val transactionTemplate: TransactionTemplate,
+    private val applicationEventPublisher: ApplicationEventPublisher,
     private val leaseDuration: Duration,
 ) {
 
@@ -96,9 +101,13 @@ class CaseMigrationService(
         )
             .sortedBy { it.id.migrationKey }
             .map { plan ->
+                val target = resolveTarget(plan.id)
+                val source = resolveSource(target)
                 MigrationPlanManagementDto(
                     migrationKey = plan.id.migrationKey,
                     title = plan.title,
+                    source = formatBlueprintVersion(source),
+                    target = formatBlueprintVersion(target),
                     triggers = plan.migrationTriggers,
                     conditions = plan.conditions,
                     components = componentDeployers
@@ -182,7 +191,7 @@ class CaseMigrationService(
      * per-case rows. A case whose conditions cannot be evaluated is treated as not matching.
      */
     private fun countMatchingCases(migrationId: BlueprintMigrationId, plan: CaseDefinitionMigration): Int {
-        val source = resolveSource(resolveTarget(migrationId, plan), plan)
+        val source = resolveSource(resolveTarget(migrationId))
         val provider = candidateProvider(source.blueprintType()) ?: return 0
 
         var count = 0
@@ -217,8 +226,8 @@ class CaseMigrationService(
         plan: CaseDefinitionMigration,
         runToken: String,
     ) {
-        val target = resolveTarget(migrationId, plan)
-        val source = resolveSource(target, plan)
+        val target = resolveTarget(migrationId)
+        val source = resolveSource(target)
         val provider = candidateProvider(source.blueprintType()) ?: return
 
         val renewInterval = leaseDuration.dividedBy(2)
@@ -292,7 +301,7 @@ class CaseMigrationService(
             transactionTemplate.execute { conditionEvaluator.matches(caseId, plan.conditions) } ?: false
         } catch (e: Exception) {
             logger.warn(e) { "Could not evaluate conditions for case '$caseId' in plan '$migrationId'" }
-            recordFailure(migrationId, caseId, e.message, runToken)
+            recordFailure(migrationId, caseId, e, runToken)
             false
         }
     }
@@ -309,9 +318,20 @@ class CaseMigrationService(
                 }
                 // Re-home the case onto the target blueprint version first (independent of which
                 // components run), so component writes are validated against the target schema.
-                attachToTarget(caseId, target)
+                val fromVersionTag = attachToTarget(caseId, target)
                 componentExecutors.forEach { it.execute(migrationId, target, caseId) }
                 caseMigrationCaseRepository.save(CaseMigrationCase(caseRecordId, CaseMigrationCaseStatus.MIGRATED))
+                // Record the migration on the case's audit trail (in the same transaction, so it is
+                // present exactly when the case is recorded migrated — and rolled back if it is not).
+                applicationEventPublisher.publishEvent(
+                    CaseMigratedEvent(
+                        caseId = caseId,
+                        blueprintKey = target.getIdKey(),
+                        fromVersionTag = fromVersionTag,
+                        toVersionTag = target.blueprintVersionTag().toString(),
+                        migrationKey = migrationId.migrationKey,
+                    )
+                )
             }
         } catch (e: MigrationOwnershipLostException) {
             throw e // propagate: this node has been fenced, stop the run
@@ -323,20 +343,21 @@ class CaseMigrationService(
             // A genuine migration failure is recorded against the case; it stays on the old version
             // and the run continues.
             logger.warn(e) { "Migration failed for case '$caseId' in plan '$migrationId'; rolled back" }
-            recordFailure(migrationId, caseId, e.message, runToken)
+            recordFailure(migrationId, caseId, e, runToken)
         }
     }
 
     private fun recordFailure(
         migrationId: BlueprintMigrationId,
         caseId: UUID,
-        message: String?,
+        error: Throwable,
         runToken: String,
     ) {
+        val stackTrace = StringWriter().also { error.printStackTrace(PrintWriter(it)) }.toString()
         transactionTemplate.executeWithoutResult {
             assertOwnership(migrationId, runToken)
             caseMigrationCaseRepository.save(
-                CaseMigrationCase(CaseMigrationCaseId(migrationId, caseId.toString()), CaseMigrationCaseStatus.FAILED, message)
+                CaseMigrationCase(CaseMigrationCaseId(migrationId, caseId.toString()), CaseMigrationCaseStatus.FAILED, stackTrace)
             )
         }
     }
@@ -368,13 +389,18 @@ class CaseMigrationService(
      * [target] version: keep the document-definition name but point the `documentDefinitionId` at
      * the target blueprint (case definition or building block definition), then persist it. Runs for
      * every migrated case, independent of which plan components are configured.
+     *
+     * Returns the version tag the document was on *before* the re-home (the source version), so the
+     * caller can record an accurate from → to on the case's audit trail.
      */
-    private fun attachToTarget(caseId: UUID, target: BlueprintId) {
-        runWithoutAuthorization {
+    private fun attachToTarget(caseId: UUID, target: BlueprintId): String {
+        return runWithoutAuthorization {
             val document = documentRepository.findById(JsonSchemaDocumentId.existingId(caseId)).orElseThrow {
                 NoSuchElementException("No document found for case '$caseId' to migrate to the target blueprint")
             }
-            val name = document.definitionId().name()
+            val definitionId = document.definitionId() as JsonSchemaDocumentDefinitionId
+            val name = definitionId.name()
+            val fromVersionTag = definitionId.blueprintId().blueprintVersionTag().toString()
             val targetDefinitionId = when (target) {
                 is CaseDefinitionId -> JsonSchemaDocumentDefinitionId.forCase(name, target)
                 is BuildingBlockDefinitionId -> JsonSchemaDocumentDefinitionId.forBuildingBlock(name, target)
@@ -382,6 +408,7 @@ class CaseMigrationService(
             }
             document.setDefinitionId(targetDefinitionId)
             documentRepository.save(document)
+            fromVersionTag
         }
     }
 
@@ -391,29 +418,25 @@ class CaseMigrationService(
     }
 
     /**
-     * The blueprint version a plan migrates instances TO. Defaults each unset `target*` field to the
-     * plan's own id — i.e. the blueprint version the plan is deployed under.
+     * The blueprint version a plan migrates instances TO: always the plan's own id — i.e. the
+     * blueprint version the plan is deployed under (its folder).
      */
-    private fun resolveTarget(migrationId: BlueprintMigrationId, plan: CaseDefinitionMigration): BlueprintId {
-        val targetType = plan.targetBlueprintType ?: migrationId.blueprintType
-        val targetKey = plan.targetKey ?: migrationId.key
-        val targetVersion = plan.targetVersionTag ?: migrationId.versionTag
-        return BlueprintMigrationId.blueprintIdOf(targetType, targetKey, targetVersion)
+    private fun resolveTarget(migrationId: BlueprintMigrationId): BlueprintId {
+        return BlueprintMigrationId.blueprintIdOf(migrationId.blueprintType, migrationId.key, migrationId.versionTag)
     }
 
+    private fun formatBlueprintVersion(blueprintId: BlueprintId): String =
+        "${blueprintId.getIdKey()}:${blueprintId.blueprintVersionTag()}"
+
     /**
-     * The blueprint version a plan migrates instances FROM. Defaults each unset `source*` field to
-     * the resolved [target]'s type / key, and the version to the target blueprint's
-     * `basedOnVersionTag` (falling back to the target version itself when there is no recorded
-     * predecessor).
+     * The blueprint version a plan migrates instances FROM: the resolved [target]'s type / key, and
+     * the version from the target blueprint's `basedOnVersionTag` (falling back to the target
+     * version itself when there is no recorded predecessor).
      */
-    private fun resolveSource(target: BlueprintId, plan: CaseDefinitionMigration): BlueprintId {
-        val sourceType = plan.sourceBlueprintType ?: target.blueprintType()
-        val sourceKey = plan.sourceKey ?: target.getIdKey()
-        val sourceVersion = plan.sourceVersionTag
-            ?: candidateProvider(target.blueprintType())?.basedOnVersionTag(target)
+    private fun resolveSource(target: BlueprintId): BlueprintId {
+        val sourceVersion = candidateProvider(target.blueprintType())?.basedOnVersionTag(target)
             ?: target.blueprintVersionTag()
-        return BlueprintMigrationId.blueprintIdOf(sourceType, sourceKey, sourceVersion)
+        return BlueprintMigrationId.blueprintIdOf(target.blueprintType(), target.getIdKey(), sourceVersion)
     }
 
     private fun isLeaseLive(execution: CaseDefinitionMigrationExecution): Boolean {

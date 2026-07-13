@@ -1,0 +1,86 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Verhuizing aanvragen",
+            "content": "Vul onderstaande gegevens in om een verhuizing aan te vragen.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvrager.naam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "start-form-verhuizing-naam"
+            },
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "aanvrager.emailadres",
+            "type": "textfield",
+            "input": true,
+            "label": "E-mailadres",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-emailadres"
+            },
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "nieuwAdres",
+            "type": "textfield",
+            "input": true,
+            "label": "Nieuw adres",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-nieuw-adres"
+            },
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "spoed",
+            "type": "checkbox",
+            "input": true,
+            "label": "Spoedbehandeling",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-spoed"
+            }
+        },
+        {
+            "key": "aantalPersonen",
+            "type": "number",
+            "input": true,
+            "label": "Aantal personen",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-aantal-personen"
+            }
+        },
+        {
+            "key": "status",
+            "type": "hidden",
+            "input": true,
+            "label": "Status",
+            "tableView": false,
+            "defaultValue": "ingediend"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Verhuizing aanvragen",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

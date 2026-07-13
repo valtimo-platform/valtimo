@@ -27,6 +27,12 @@
         },
         "status": {
             "type": "string"
+        },
+        "spoed": {
+            "type": "boolean"
+        },
+        "aantalPersonen": {
+            "type": "integer"
         }
     }
 }

@@ -1,0 +1,99 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-plan-editor">
+  <cds-tabs type="contained">
+    <cds-tab
+      [heading]="'buildingBlockManagement.migration.editor.tabs.general' | translate"
+      [attr.data-test-id]="testIds.generalTab"
+    >
+      <valtimo-bb-migration-general-tab
+        [buildingBlockDefinitionKey]="$buildingBlockDefinitionKey()"
+        [buildingBlockDefinitionVersionTag]="$buildingBlockDefinitionVersionTag()"
+        [isEdit]="$isEdit()"
+        [plan]="$plan()"
+        [runAfterOptions]="$runAfterOptions()"
+        (generalChange)="onGeneralChange($event)"
+      ></valtimo-bb-migration-general-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'buildingBlockManagement.migration.editor.tabs.dataMigration' | translate"
+      [attr.data-test-id]="testIds.dataMigrationTab"
+    >
+      <valtimo-bb-migration-data-migration-tab
+        [sourceContext]="$buildingBlockContext()"
+        [targetContext]="$buildingBlockContext()"
+        [patches]="$plan().dataMigration"
+        (patchesChange)="onDataMigrationChange($event)"
+      ></valtimo-bb-migration-data-migration-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'buildingBlockManagement.migration.editor.tabs.processMigration' | translate"
+      [attr.data-test-id]="testIds.processMigrationTab"
+    >
+      <valtimo-bb-migration-process-migration-tab
+        [buildingBlockDefinitionKey]="$buildingBlockDefinitionKey()"
+        [buildingBlockDefinitionVersionTag]="$buildingBlockDefinitionVersionTag()"
+        [sourceContext]="$buildingBlockContext()"
+        [sourceProcessDefinitions]="$sourceProcessDefs()"
+        [targetProcessDefinitions]="$targetProcessDefs()"
+        [instructions]="$plan().processMigration"
+        (instructionsChange)="onProcessMigrationChange($event)"
+      ></valtimo-bb-migration-process-migration-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'buildingBlockManagement.migration.editor.tabs.jsonEditor' | translate"
+      [attr.data-test-id]="testIds.jsonEditorTab"
+    >
+      @if ($model(); as model) {
+        <valtimo-editor
+          [model]="model"
+          [fitPage]="true"
+          (validEvent)="onValid($event)"
+          (valueChangeEvent)="onValueChange($event)"
+        ></valtimo-editor>
+      }
+    </cds-tab>
+  </cds-tabs>
+</div>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <div *ngIf="{compactMode: compactMode$ | async} as obs" class="migration-plan-editor__actions">
+      <button
+        cdsButton="ghost"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        [attr.data-test-id]="testIds.cancelButton"
+        (click)="onCancel()"
+      >
+        {{ 'interface.cancel' | translate }}
+      </button>
+
+      <button
+        cdsButton="primary"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        [attr.data-test-id]="testIds.saveButton"
+        [disabled]="!$valid() || $saving()"
+        (click)="onSave()"
+      >
+        {{ 'interface.save' | translate }}
+      </button>
+    </div>
+  </ng-template>
+</ng-container>

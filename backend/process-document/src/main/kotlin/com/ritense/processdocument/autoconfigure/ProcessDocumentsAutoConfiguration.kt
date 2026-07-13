@@ -42,6 +42,8 @@ import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumen
 import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
 import com.ritense.processdocument.migration.CaseProcessDefinitionBlueprintResolver
 import com.ritense.processdocument.migration.ProcessActivityMapper
+import com.ritense.processdocument.migration.ProcessMigrationActivityValidator
+import com.ritense.processdocument.migration.ProcessMigrationComponentValidator
 import com.ritense.processdocument.migration.ProcessDefinitionBlueprintResolver
 import com.ritense.processdocument.migration.ProcessMigrationComponentExecutor
 import com.ritense.processdocument.migration.ProcessMigrationComponentSuggester
@@ -438,10 +440,17 @@ class ProcessDocumentsAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ProcessMigrationActivityValidator::class)
+    fun processMigrationActivityValidator(
+        runtimeService: RuntimeService,
+    ) = ProcessMigrationActivityValidator(runtimeService)
+
+    @Bean
     @ConditionalOnMissingBean(ProcessActivityMapper::class)
     fun processActivityMapper(
         repositoryService: RepositoryService,
-    ) = ProcessActivityMapper(repositoryService)
+        processMigrationActivityValidator: ProcessMigrationActivityValidator,
+    ) = ProcessActivityMapper(repositoryService, processMigrationActivityValidator)
 
     @Bean
     @ConditionalOnMissingBean(CaseProcessDefinitionBlueprintResolver::class)
@@ -460,6 +469,18 @@ class ProcessDocumentsAutoConfiguration {
             processActivityMapper,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationComponentValidator::class)
+    fun processMigrationComponentValidator(
+        processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
+        processMigrationActivityValidator: ProcessMigrationActivityValidator,
+        objectMapper: ObjectMapper,
+    ) = ProcessMigrationComponentValidator(
+        processDefinitionBlueprintResolvers,
+        processMigrationActivityValidator,
+        objectMapper,
+    )
 
     @Bean
     @ConditionalOnMissingBean(ProcessMigrationVariableResolver::class)

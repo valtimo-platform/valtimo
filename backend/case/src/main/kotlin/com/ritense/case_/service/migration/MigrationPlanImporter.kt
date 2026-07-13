@@ -28,7 +28,6 @@ import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.semver4j.Semver
 import org.springframework.transaction.annotation.Transactional
 
 /**
@@ -100,12 +99,6 @@ class MigrationPlanImporter(
                 title = dto.title,
                 migrationTriggers = dto.migrationTriggers,
                 conditions = dto.conditions,
-                sourceBlueprintType = dto.sourceBlueprintType,
-                sourceKey = dto.sourceKey?.takeIf { it.isNotBlank() },
-                sourceVersionTag = dto.sourceVersionTag?.takeIf { it.isNotBlank() }?.let { Semver.parse(it) },
-                targetBlueprintType = dto.targetBlueprintType,
-                targetKey = dto.targetKey?.takeIf { it.isNotBlank() },
-                targetVersionTag = dto.targetVersionTag?.takeIf { it.isNotBlank() }?.let { Semver.parse(it) },
             )
         )
 

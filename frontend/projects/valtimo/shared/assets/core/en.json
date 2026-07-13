@@ -15,7 +15,8 @@
     "BesluitAddedEvent": "Decision added > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "The assignee has been changed to {{assigneeName}}",
     "DocumentUnassignedEvent": "The assignee has been unassigned",
-    "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
+    "TaskDueDateSetEvent": "Task due date set > {{taskName}}",
+    "CaseMigratedEvent": "Case migrated from {{fromVersionTag}} to {{toVersionTag}}"
   },
   "case": {
     "allCases": "All cases",
@@ -775,6 +776,7 @@
   "caseManagement": {
     "migration": {
       "addPlan": "Add migration plan",
+      "addPlanDisabledHint": "This version has no predecessor to migrate from, so a migration plan cannot be created for it.",
       "startNow": "Start migration now",
       "errorCount": "{{count}} errors",
       "editor": {
@@ -784,6 +786,8 @@
           "general": "General",
           "dataMigration": "Data migration",
           "processMigration": "Process migration",
+          "addBuildingBlock": "Add building block",
+          "removeBuildingBlock": "Remove building block",
           "jsonEditor": "JSON editor"
         },
         "general": {
@@ -791,20 +795,8 @@
           "titlePlaceholder": "Migrate cases with status 'aanvraag-ontvangen'",
           "key": "Key",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
-          "source": "Source (optional)",
-          "sourceHint": "The blueprint version this plan migrates from. Leave empty to default to the target's type/key and the target's 'based on' version.",
-          "target": "Target (optional)",
-          "targetHint": "The blueprint version this plan migrates to. Leave empty to default to the version this plan is deployed under.",
-          "blueprintType": "Type",
-          "blueprintTypeDefault": "Default",
-          "blueprintType_CASE": "Case",
-          "blueprintType_BUILDING_BLOCK": "Building block",
-          "refKey": "Key",
-          "refKeyPlaceholder": "Select a blueprint",
-          "refVersionTag": "Version",
-          "refVersionTagPlaceholder": "1.0.0",
           "triggers": "Triggers",
-          "triggersHint": "Decide when this plan runs. A triggered plan waits until its conditions hold, re-checked periodically.",
+          "triggersHint": "Decide when this plan runs: manually from the UI button, at a scheduled moment, or after another plan finishes.",
           "triggeredByButton": "Run manually from the UI button",
           "scheduledAtDate": "Scheduled at",
           "runAfter": "Run after plan",
@@ -819,37 +811,66 @@
           "addCondition": "Add condition"
         },
         "dataMigration": {
-          "description": "Move or set case data during migration. Each patch either copies a value from a source location to a target location, or sets a fixed value on the target. Leave the target empty to remove a property.",
+          "description": "Reshape case data during migration. Every row writes one target field (on the right) from a source (on the left): copy an existing field's value ('Path'), set a fixed 'Value', or clear it ('Null'). The source reads a value out of the case document; the target is the field that value is written into. The target field is always required.",
           "empty": "No data patches configured yet.",
           "addPatch": "Add patch",
+          "mode": "Source",
+          "mode_path": "Path",
+          "mode_value": "Value",
+          "mode_null": "Null",
+          "nullHint": "The target is cleared.",
           "source": "Source field",
-          "sourcePlaceholder": "doc:/persoon/voornaam",
           "value": "Fixed value",
           "valuePlaceholder": "Henk",
           "target": "Target field",
-          "targetPlaceholder": "doc:/contact/voornaam",
           "targetType": "Target type",
-          "targetTypeAuto": "Automatic"
+          "targetTypeAuto": "Auto"
         },
         "processMigration": {
-          "description": "Migrate running process instances to the target process definition. Map the activities of the source process onto the target process. This is translated one-to-one into an Operaton migration plan.",
+          "description": "Migrate running process instances onto the process definitions of this case version. For each instruction pick the source process — the definition the running instances currently use, from the version being migrated away from — and the target process — the definition in this version they move onto — then map each source activity onto a target activity. This is translated one-to-one into an Operaton migration plan.",
           "empty": "No process migrations configured yet.",
           "addInstruction": "Add process migration",
           "sourceProcess": "Source process",
           "targetProcess": "Target process",
           "selectProcess": "Select a process",
           "activityMapping": "Activity mapping",
-          "activityMappingHint": "Map each source activity onto a target activity. Both the name and the technical id are shown so activities that share a name can be told apart. Choose 'Skip' to drop a token that has no counterpart in the target process.",
+          "activityMappingHint": "Map each activity of the source process onto an activity of the target process — this tells the engine where each in-flight token moves to. Both the name and the technical id are shown so activities that share a name can be told apart.",
+          "incompatibleMapping": "These activity types cannot be migrated onto each other. Pick a target activity of a compatible type.",
           "sourceActivity": "Source activity",
           "targetActivity": "Target activity",
-          "skip": "Skip (drop token)",
           "addMapping": "Add mapping",
-          "newProcessVariables": "New process variables",
-          "variableName": "Name",
-          "variableValue": "Value",
+          "setProcessVariables": "Set process variables",
+          "setProcessVariablesHint": "Set process variables on the migrated instance. Each patch copies a value from a source path or sets a fixed value. The target is the process variable to write to (e.g. pv:name or a nested pv:/config/enabled).",
+          "variableMode": "Source",
+          "variableSource": "Source path",
+          "variableValue": "Fixed value",
+          "variableValuePlaceholder": "Henk",
+          "variableTarget": "Target variable",
+          "variableTargetPlaceholder": "pv:aanvragerNaam",
+          "variableTargetType": "Target type",
           "addVariable": "Add variable",
           "skipCustomListeners": "Skip custom listeners",
           "skipIoMappings": "Skip input/output mappings"
+        },
+        "buildingBlock": {
+          "buildingBlockKey": "Building block",
+          "buildingBlockKeyPlaceholder": "Select a building block",
+          "buildingBlockVersionTag": "Version",
+          "buildingBlockVersionTagPlaceholder": "Select a version"
+        },
+        "addBuildingBlock": {
+          "description": "Create one or more building blocks on each migrated case. Each entry creates an (initially empty) building block document, fills it with the data migration below, and hijacks the case process(es) into the building block.",
+          "empty": "No building blocks to add configured yet.",
+          "addEntry": "Add building block",
+          "dataMigrationHint": "Fills the new building block document: each source reads from the case document, each target writes into the new building block document.",
+          "processMigrationHint": "The source process is a case process; the target process is a process of the new building block. The listed case process(es) are hijacked into the building block, and the business key is always set to the new building block document id."
+        },
+        "removeBuildingBlock": {
+          "description": "Remove one or more building blocks from each migrated case. All building blocks directly linked to the case with the given key are dissolved after their data and process(es) are transferred back to the case.",
+          "empty": "No building blocks to remove configured yet.",
+          "addEntry": "Add building block",
+          "dataMigrationHint": "Transfers data back to the case before the building block is deleted: each source reads from the building block document, each target writes into the case document.",
+          "processMigrationHint": "The source process is a building block process; the target process is a case process. The building block process(es) are handed back to the case, and the business key is always set back to the case document id."
         }
       },
       "deleteModal": {
@@ -861,10 +882,11 @@
         "content": "Are you sure you want to start this migration now? Matching cases will be migrated."
       },
       "duplicateSuffix": "copy",
+      "duplicateSuffix": "copy",
       "columns": {
         "plan": "Migration plan",
-        "triggers": "Triggers",
-        "components": "Migrates",
+        "source": "Source",
+        "target": "Target",
         "status": "Status",
         "progress": "Progress"
       },
@@ -886,27 +908,14 @@
         "startedOn": "Started on",
         "finishedOn": "Finished on"
       },
-      "triggers": {
-        "heading": "Triggers",
-        "manual": "Manual",
-        "scheduled": "Scheduled",
-        "runAfter": "Runs after"
-      },
-      "components": {
-        "heading": "Migrates",
-        "dataMigration": "Case data",
-        "processMigration": "Processes",
-        "none": "Nothing configured",
-        "customMigration": "Custom"
-      },
-      "conditions": {
-        "heading": "Conditions",
-        "none": "No conditions — applies to all cases"
-      },
       "errors": {
         "heading": "Cases with errors",
         "caseId": "Case",
-        "message": "Error"
+        "message": "Error",
+        "copyFullError": "Copy full stacktrace",
+        "copied": "Stacktrace copied to clipboard",
+        "showStacktrace": "Show full stacktrace",
+        "hideStacktrace": "Hide stacktrace"
       }
     },
     "version": "Version: ",
@@ -3382,7 +3391,128 @@
       "processes": "Processes",
       "forms": "Forms",
       "formFlows": "Form flows",
-      "decisions": "Decision tables"
+      "decisions": "Decision tables",
+      "migration": "Migration"
+    },
+    "migration": {
+      "addPlan": "Add migration plan",
+      "startNow": "Start migration now",
+      "errorCount": "{{count}} errors",
+      "duplicateSuffix": "copy",
+      "editor": {
+        "createTitle": "New migration plan",
+        "editTitle": "Edit migration plan",
+        "tabs": {
+          "general": "General",
+          "dataMigration": "Data migration",
+          "processMigration": "Process migration",
+          "jsonEditor": "JSON editor"
+        },
+        "general": {
+          "title": "Title",
+          "titlePlaceholder": "Migrate building blocks with status 'aanvraag-ontvangen'",
+          "key": "Key",
+          "keyPlaceholder": "migration-plan-aanvraag-indienen",
+          "triggers": "Triggers",
+          "triggersHint": "Decide when this plan runs: manually from the UI button, at a scheduled moment, or after another plan finishes.",
+          "triggeredByButton": "Run manually from the UI button",
+          "scheduledAtDate": "Scheduled at",
+          "runAfter": "Run after plan",
+          "runAfterPlaceholder": "Select a migration plan",
+          "runAfterEmpty": "No other migration plans in this version",
+          "conditions": "Conditions",
+          "conditionsHint": "The plan only migrates building blocks that match all conditions. Leave empty to apply to every building block.",
+          "conditionPath": "Field",
+          "conditionOperator": "Operator",
+          "conditionValue": "Value",
+          "noConditions": "No conditions — applies to all building blocks.",
+          "addCondition": "Add condition"
+        },
+        "dataMigration": {
+          "description": "Move or set building block data during migration. Each patch either copies a value from a source location to the target location, sets a fixed value on the target, or sets the target to null. The target field is required.",
+          "empty": "No data patches configured yet.",
+          "addPatch": "Add patch",
+          "mode": "Source",
+          "mode_path": "Path",
+          "mode_value": "Value",
+          "mode_null": "Null",
+          "nullHint": "The target is cleared.",
+          "source": "Source field",
+          "value": "Fixed value",
+          "valuePlaceholder": "Henk",
+          "target": "Target field",
+          "targetType": "Target type",
+          "targetTypeAuto": "Auto"
+        },
+        "processMigration": {
+          "description": "Migrate running process instances to the target process definition. Map the activities of the source process onto the target process. This is translated one-to-one into an Operaton migration plan.",
+          "empty": "No process migrations configured yet.",
+          "addInstruction": "Add process migration",
+          "sourceProcess": "Source process",
+          "targetProcess": "Target process",
+          "selectProcess": "Select a process",
+          "activityMapping": "Activity mapping",
+          "activityMappingHint": "Map each source activity onto a target activity. Both the name and the technical id are shown so activities that share a name can be told apart.",
+          "incompatibleMapping": "These activity types cannot be migrated onto each other. Pick a target activity of a compatible type.",
+          "sourceActivity": "Source activity",
+          "targetActivity": "Target activity",
+          "addMapping": "Add mapping",
+          "setProcessVariables": "Set process variables",
+          "setProcessVariablesHint": "Set process variables on the migrated instance. Each patch copies a value from a source path or sets a fixed value. The target is the process variable to write to (e.g. pv:name or a nested pv:/config/enabled).",
+          "variableMode": "Source",
+          "variableSource": "Source path",
+          "variableValue": "Fixed value",
+          "variableValuePlaceholder": "Henk",
+          "variableTarget": "Target variable",
+          "variableTargetPlaceholder": "pv:aanvragerNaam",
+          "variableTargetType": "Target type",
+          "addVariable": "Add variable",
+          "skipCustomListeners": "Skip custom listeners",
+          "skipIoMappings": "Skip input/output mappings"
+        }
+      },
+      "deleteModal": {
+        "title": "Delete migration plan",
+        "content": "Are you sure you want to delete this migration plan? This cannot be undone."
+      },
+      "startModal": {
+        "title": "Start migration",
+        "content": "Are you sure you want to start this migration now? Matching building blocks will be migrated."
+      },
+      "columns": {
+        "plan": "Migration plan",
+        "source": "Source",
+        "target": "Target",
+        "status": "Status",
+        "progress": "Progress"
+      },
+      "noResults": {
+        "title": "No migration plans",
+        "description": "No migration plans are deployed for this building block version."
+      },
+      "status": {
+        "NOT_STARTED": "Not started",
+        "RUNNING": "Running",
+        "COMPLETED": "Completed",
+        "COMPLETED_WITH_ERRORS": "Completed with errors"
+      },
+      "fields": {
+        "status": "Migration status",
+        "casesToMigrate": "Building blocks to migrate",
+        "casesMigrated": "Building blocks migrated",
+        "casesWithErrors": "Building blocks with errors",
+        "startedOn": "Started on",
+        "finishedOn": "Finished on"
+      },
+      "errors": {
+        "heading": "Building blocks with errors",
+        "caseId": "Building block",
+        "message": "Error",
+        "copyFullError": "Copy full stacktrace",
+        "copied": "Stacktrace copied to clipboard",
+        "showStacktrace": "Show full stacktrace",
+        "hideStacktrace": "Hide stacktrace"
+      }
     },
     "formDefinition": {
       "name": "Name"

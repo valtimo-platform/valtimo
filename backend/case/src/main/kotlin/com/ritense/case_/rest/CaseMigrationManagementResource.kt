@@ -23,8 +23,9 @@ import com.ritense.case_.service.migration.MigrationExecutionStatusDto
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationPlanManagementDto
-import com.ritense.case_.service.migration.MigrationPlanSuggestionService
+import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -36,7 +37,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @SkipComponentScan
@@ -48,7 +51,7 @@ class CaseMigrationManagementResource(
     private val caseMigrationService: CaseMigrationService,
     private val migrationPlanImporter: MigrationPlanImporter,
     private val migrationPlanExporter: MigrationPlanExporter,
-    private val migrationPlanSuggestionService: MigrationPlanSuggestionService,
+    private val migrationSuggestionService: MigrationSuggestionService,
 ) {
 
     /** A best-effort, pre-filled plan (source, target, dataMigration, processMigration) for a new plan. */
@@ -59,7 +62,71 @@ class CaseMigrationManagementResource(
         @PathVariable caseDefinitionVersionTag: String,
     ): ResponseEntity<JsonNode> {
         val target = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
-        return ResponseEntity.ok(migrationPlanSuggestionService.suggestPlan(target))
+        return ResponseEntity.ok(migrationSuggestionService.suggestPlan(target))
+    }
+
+    /** A best-effort activity mapping (`sourceActivityId -> targetActivityId`) for a process pair. */
+    @RunWithoutAuthorization
+    @GetMapping("/suggestion/activity-mapping")
+    fun suggestActivityMapping(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @RequestParam sourceProcessDefinitionId: String,
+        @RequestParam targetProcessDefinitionId: String,
+    ): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.ok(
+            migrationSuggestionService.suggestActivityMapping(
+                sourceProcessDefinitionId,
+                targetProcessDefinitionId,
+            )
+        )
+    }
+
+    /**
+     * Checks a proposed activity mapping against the engine's migration rules so the editor can flag
+     * incompatible pairs while the user works. Returns the incompatible pairs (keyed by source
+     * activity id with the engine's failure messages); an empty map means every pair is valid. This is
+     * an inspection endpoint (always `200`); the plan save itself rejects an invalid plan. The engine
+     * is the single source of truth for compatibility.
+     */
+    @RunWithoutAuthorization
+    @PostMapping("/suggestion/activity-mapping/validate")
+    fun validateActivityMapping(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @RequestParam sourceProcessDefinitionId: String,
+        @RequestParam targetProcessDefinitionId: String,
+        @RequestBody activityMapping: Map<String, String>,
+    ): ResponseEntity<Map<String, List<String>>> {
+        return ResponseEntity.ok(
+            migrationSuggestionService.findInvalidActivityMappings(
+                sourceProcessDefinitionId,
+                targetProcessDefinitionId,
+                activityMapping,
+            )
+        )
+    }
+
+    /**
+     * A best-effort `{ dataMigration, processMigration }` for one building-block entry of this case
+     * plan. `mode=add` moves data/process from the owner case into the building block; `mode=remove`
+     * moves them back from the building block to the owner case.
+     */
+    @RunWithoutAuthorization
+    @GetMapping("/suggestion/building-block")
+    fun suggestBuildingBlockEntry(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @RequestParam buildingBlockKey: String,
+        @RequestParam buildingBlockVersionTag: String,
+        @RequestParam(defaultValue = "add") mode: String,
+    ): ResponseEntity<JsonNode> {
+        val owner = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        val block = BuildingBlockDefinitionId(buildingBlockKey, buildingBlockVersionTag)
+        val suggestion =
+            if (mode == "remove") migrationSuggestionService.suggestBuildingBlockEntry(block, owner)
+            else migrationSuggestionService.suggestBuildingBlockEntry(owner, block)
+        return ResponseEntity.ok(suggestion)
     }
 
     /** All migration plans for the case definition version, with their configuration and status. */
@@ -94,6 +161,13 @@ class CaseMigrationManagementResource(
         @RequestBody plan: JsonNode,
     ): ResponseEntity<List<MigrationPlanManagementDto>> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        val problems = migrationSuggestionService.findPlanProblems(caseDefinitionId, plan)
+        if (problems.isNotEmpty()) {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Migration plan has incompatible activity mappings: ${problems.joinToString("; ")}",
+            )
+        }
         migrationPlanImporter.deploy(caseDefinitionId, plan)
         return ResponseEntity.ok(caseMigrationService.getPlans(caseDefinitionId))
     }

@@ -17,7 +17,6 @@
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -44,17 +43,11 @@ import {
 } from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
-import {BlueprintType, MigrationCondition, MigrationPlan, MigrationTriggers} from '../../../models';
+import {MigrationCondition, MigrationPlan, MigrationTriggers} from '../../../models';
 
 interface GeneralValue {
   title: string;
   key: string;
-  sourceBlueprintType: BlueprintType | null;
-  sourceKey: string | null;
-  sourceVersionTag: string | null;
-  targetBlueprintType: BlueprintType | null;
-  targetKey: string | null;
-  targetVersionTag: string | null;
   migrationTriggers: MigrationTriggers;
   conditions: MigrationCondition[];
 }
@@ -82,8 +75,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Input() public caseDefinitionKey: string | null = null;
   @Input() public caseDefinitionVersionTag: string | null = null;
   @Input() public runAfterOptions: SelectItem[] = [];
-  @Input() public caseDefinitionKeys: SelectItem[] = [];
-  @Input() public buildingBlockKeys: SelectItem[] = [];
 
   @Input() public set isEdit(value: boolean) {
     // The key identifies the plan; changing it while editing would create a new one.
@@ -108,17 +99,9 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   public readonly OPERATORS: string[] = ['==', '!=', '>', '>=', '<', '<='];
 
-  public readonly BLUEPRINT_TYPES: BlueprintType[] = ['CASE', 'BUILDING_BLOCK'];
-
   public readonly form = this.fb.group({
     title: this.fb.control(''),
     key: this.fb.control(''),
-    sourceBlueprintType: this.fb.control<BlueprintType | ''>(''),
-    sourceKey: this.fb.control(''),
-    sourceVersionTag: this.fb.control(''),
-    targetBlueprintType: this.fb.control<BlueprintType | ''>(''),
-    targetKey: this.fb.control(''),
-    targetVersionTag: this.fb.control(''),
     triggeredByButton: this.fb.control(false),
     scheduledAtDate: this.fb.control(''),
     runAfter: this.fb.control(''),
@@ -134,7 +117,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly cdr: ChangeDetectorRef,
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Add16, TrashCan16]);
@@ -142,30 +124,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
-
-    // Switching the blueprint type changes which keys are selectable, so clear a now-invalid key.
-    (['source', 'target'] as const).forEach(side => {
-      this._subscriptions.add(
-        this.form.get(`${side}BlueprintType`)!.valueChanges.subscribe(() => {
-          this.form.get(`${side}Key`)?.setValue('', {emitEvent: false});
-          this.cdr.markForCheck();
-        })
-      );
-    });
-  }
-
-  public sourceKeyItems(): SelectItem[] {
-    return this.keyItemsForType(this.form.get('sourceBlueprintType')?.value);
-  }
-
-  public targetKeyItems(): SelectItem[] {
-    return this.keyItemsForType(this.form.get('targetBlueprintType')?.value);
-  }
-
-  private keyItemsForType(type: BlueprintType | '' | null | undefined): SelectItem[] {
-    if (type === 'CASE') return this.caseDefinitionKeys;
-    if (type === 'BUILDING_BLOCK') return this.buildingBlockKeys;
-    return [...this.caseDefinitionKeys, ...this.buildingBlockKeys];
   }
 
   public ngOnDestroy(): void {
@@ -195,19 +153,7 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   }
 
   private serialize(): Partial<MigrationPlan> {
-    const {
-      title,
-      key,
-      sourceBlueprintType,
-      sourceKey,
-      sourceVersionTag,
-      targetBlueprintType,
-      targetKey,
-      targetVersionTag,
-      triggeredByButton,
-      scheduledAtDate,
-      runAfter,
-    } = this.form.getRawValue();
+    const {title, key, triggeredByButton, scheduledAtDate, runAfter} = this.form.getRawValue();
 
     const conditions: MigrationCondition[] = this.conditionsArray.controls
       .map(control => ({
@@ -220,12 +166,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     return {
       title: title ?? '',
       key: key ?? '',
-      sourceBlueprintType: sourceBlueprintType || null,
-      sourceKey: sourceKey || null,
-      sourceVersionTag: sourceVersionTag || null,
-      targetBlueprintType: targetBlueprintType || null,
-      targetKey: targetKey || null,
-      targetVersionTag: targetVersionTag || null,
       migrationTriggers: {
         triggeredByButton: !!triggeredByButton,
         scheduledAtDate: scheduledAtDate || null,
@@ -239,12 +179,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     const incoming: GeneralValue = {
       title: plan.title ?? '',
       key: plan.key ?? '',
-      sourceBlueprintType: plan.sourceBlueprintType ?? null,
-      sourceKey: plan.sourceKey ?? null,
-      sourceVersionTag: plan.sourceVersionTag ?? null,
-      targetBlueprintType: plan.targetBlueprintType ?? null,
-      targetKey: plan.targetKey ?? null,
-      targetVersionTag: plan.targetVersionTag ?? null,
       migrationTriggers: {
         triggeredByButton: plan.migrationTriggers?.triggeredByButton ?? false,
         scheduledAtDate: plan.migrationTriggers?.scheduledAtDate ?? null,
@@ -260,12 +194,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
       {
         title: incoming.title,
         key: incoming.key,
-        sourceBlueprintType: incoming.sourceBlueprintType ?? '',
-        sourceKey: incoming.sourceKey ?? '',
-        sourceVersionTag: incoming.sourceVersionTag ?? '',
-        targetBlueprintType: incoming.targetBlueprintType ?? '',
-        targetKey: incoming.targetKey ?? '',
-        targetVersionTag: incoming.targetVersionTag ?? '',
         triggeredByButton: incoming.migrationTriggers.triggeredByButton,
         scheduledAtDate: incoming.migrationTriggers.scheduledAtDate ?? '',
         runAfter: incoming.migrationTriggers.runAfter ?? '',

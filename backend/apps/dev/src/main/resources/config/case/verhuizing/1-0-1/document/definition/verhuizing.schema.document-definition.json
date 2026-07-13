@@ -31,7 +31,29 @@
         "status": {
             "type": "string"
         },
+        "spoed": {
+            "type": "boolean"
+        },
+        "aantalPersonen": {
+            "type": "integer"
+        },
+        "oppervlakte": {
+            "type": "number"
+        },
+        "verhuisdatum": {
+            "type": "string",
+            "format": "date"
+        },
+        "documenten": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "migratedFrom": {
+            "type": "string"
+        },
+        "inspectieStatus": {
             "type": "string"
         }
     }

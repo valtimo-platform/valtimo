@@ -19,22 +19,15 @@ package com.ritense.case_.service.migration
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.ritense.case_.domain.migration.MigrationCondition
 import com.ritense.case_.domain.migration.MigrationTriggers
-import com.ritense.valtimo.contract.blueprint.BlueprintType
 
 /**
  * The plan-level fields of a `*.migration.json` file. Component sections (`dataMigration`,
  * `processMigration`, ...) are intentionally ignored here — they are dispatched to their owning
  * [com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer] as raw JSON.
  *
- * The blueprint key and target version are implied by the folder the file lives in and are
- * therefore not fields.
- *
- * The optional `source*` fields declare which instances the plan migrates FROM. When omitted they
- * default to the resolved target's blueprint type / key and the target blueprint's
- * `basedOnVersionTag`.
- *
- * The optional `target*` fields declare which blueprint version the plan migrates TO. When omitted
- * they default to the blueprint version the plan is deployed under (its folder).
+ * The blueprint kind, key and version are implied by the folder the file lives in. A plan always
+ * migrates the instances of its own definition version FROM its predecessor (`basedOnVersionTag`)
+ * TO that version, so there are no source/target fields to override.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class MigrationPlanDeploymentDto(
@@ -42,10 +35,4 @@ data class MigrationPlanDeploymentDto(
     val title: String? = null,
     val migrationTriggers: MigrationTriggers = MigrationTriggers(),
     val conditions: List<MigrationCondition> = emptyList(),
-    val sourceBlueprintType: BlueprintType? = null,
-    val sourceKey: String? = null,
-    val sourceVersionTag: String? = null,
-    val targetBlueprintType: BlueprintType? = null,
-    val targetKey: String? = null,
-    val targetVersionTag: String? = null,
 )

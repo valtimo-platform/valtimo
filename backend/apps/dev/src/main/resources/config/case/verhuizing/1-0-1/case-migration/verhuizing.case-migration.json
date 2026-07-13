@@ -1,7 +1,6 @@
 {
-    "title": "Verhuizing migreren (1.0.0 → 1.0.1)",
+    "title": "Verhuizing migreren",
     "key": "verhuizing-gegevens",
-    "sourceVersionTag": "1.0.0",
     "migrationTriggers": {
         "triggeredByButton": true
     },
@@ -10,17 +9,81 @@
             "path": "doc:/status",
             "operator": "==",
             "value": "ingediend"
+        },
+        {
+            "path": "doc:/migratedFrom",
+            "operator": "!=",
+            "value": "1.0.0"
+        }
+    ],
+    "addBuildingBlock": [
+        {
+            "buildingBlockKey": "income-check",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/checkStatus",
+                    "source": "doc:/status"
+                },
+                {
+                    "target": "doc:/grandparentZaakOmschrijving",
+                    "source": "doc:/aanvrager/naam"
+                },
+                {
+                    "target": "doc:/eligibilityResult",
+                    "source": "doc:/nieuwAdres"
+                },
+                {
+                    "target": "doc:/householdSize",
+                    "source": "doc:/spoed"
+                },
+                {
+                    "target": "doc:/applicantName",
+                    "source": "doc:/oppervlakte"
+                },
+                {
+                    "target": "doc:/zaakEinddatumGeplandBB3",
+                    "source": "doc:/verhuisdatum"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing",
+                    "targetProcessDefinitionKey": "income-check-process",
+                    "mapActivities": {
+                        "beoordelen_verhuizing": "SetEinddatumGeplandTask",
+                        "controleren_inspectie": "SetEinddatumGeplandTask",
+                        "registreer_ontvangst": "StoreCheckStatusTask",
+                        "markeer_spoed": "StoreCheckStatusTask",
+                        "afronden": "ReadZaakEinddatumTask"
+                    },
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
         }
     ],
     "dataMigration": [
         {
-            "source": "doc:/aanvrager/emailadres",
-            "target": "doc:/aanvrager/email"
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
         },
         {
-            "value": "1.0.0",
             "target": "doc:/migratedFrom",
-            "targetType": "string"
+            "source": "doc:/spoed"
+        },
+        {
+            "target": "doc:/inspectieStatus",
+            "source": "doc:/status"
+        },
+        {
+            "target": "doc:/verhuisdatum",
+            "source": "doc:/status"
+        },
+        {
+            "target": "doc:/oppervlakte",
+            "source": "doc:/spoed"
         }
     ],
     "processMigration": [
@@ -28,19 +91,11 @@
             "sourceProcessDefinitionKey": "verhuizing",
             "targetProcessDefinitionKey": "verhuizing",
             "mapActivities": {
-                "beoordelen": "beoordelen_verhuizing"
+                "beoordelen": "beoordelen_verhuizing",
+                "akkoord_geven": "afronden",
+                "registreer_ontvangst": "registreer_ontvangst"
             },
-            "setProcessVariables": [
-                {
-                    "value": "1.0.0",
-                    "target": "pv:migratedFrom",
-                    "targetType": "string"
-                },
-                {
-                    "source": "doc:/aanvrager/naam",
-                    "target": "pv:aanvragerNaam"
-                }
-            ],
+            "setProcessVariables": [],
             "skipCustomListeners": false,
             "skipIoMappings": false
         }

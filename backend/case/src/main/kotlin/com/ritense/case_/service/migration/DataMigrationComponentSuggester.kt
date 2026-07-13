@@ -42,19 +42,29 @@ class DataMigrationComponentSuggester(
     override fun componentKey() = DataMigrationComponentDeployer.DATA_MIGRATION_COMPONENT_KEY
 
     override fun suggest(source: BlueprintId, target: BlueprintId): Any? {
-        val request = ValueResolverOptionRequest(prefixes = listOf(DOCUMENT_PREFIX), type = ValueResolverOptionType.FIELD)
+        val request =
+            ValueResolverOptionRequest(prefixes = listOf(DOCUMENT_PREFIX), type = ValueResolverOptionType.FIELD)
         val sourcePaths = fieldPaths(valueResolverService.getResolvableKeys(request, source))
         val targetPaths = fieldPaths(valueResolverService.getResolvableKeys(request, target))
         val sourcePathSet = sourcePaths.toSet()
         val targetPathSet = targetPaths.toSet()
 
+        val usedSources = sourcePaths.filterTo(mutableSetOf()) { it in targetPathSet }
+
         val additions = targetPaths
             .filter { targetPath -> targetPath !in sourcePathSet }
-            .map { targetPath -> DataMigrationPatch(source = mostSimilarPath(targetPath, sourcePaths), target = targetPath) }
+            .map { targetPath ->
+                val candidates = sourcePaths.filterNot { it in usedSources }.ifEmpty {
+                    usedSources.clear()
+                    sourcePaths
+                }
+                val source = mostSimilarPath(targetPath, candidates)?.also { usedSources.add(it) }
+                DataMigrationPatch(source = source, target = targetPath)
+            }
 
         val removals = sourcePaths
             .filter { sourcePath -> sourcePath !in targetPathSet }
-            .map { removedPath -> DataMigrationPatch( value = null, target = removedPath) }
+            .map { removedPath -> DataMigrationPatch(value = null, target = removedPath) }
 
         return (additions + removals).ifEmpty { null }
     }

@@ -46,9 +46,8 @@ interface MigrationExecutionStatus {
 interface MigrationPlanManagement {
   migrationKey: string;
   title: string | null;
-  triggers: MigrationTriggers;
-  conditions: MigrationCondition[];
-  components: string[];
+  source: string;
+  target: string;
   status: MigrationExecutionStatus;
 }
 
@@ -66,48 +65,93 @@ interface DataMigrationPatch {
 
 type DataMigrationTargetType = 'string' | 'integer' | 'long' | 'number' | 'double' | 'boolean';
 
+/**
+ * Which document schema a value-path selector resolves against: a case definition version or a
+ * building block definition version. A `dataMigration` patch's source and target can point at
+ * different documents (e.g. add building block: source = owner case, target = the building block).
+ */
+interface ValuePathContext {
+  caseDefinitionKey?: string | null;
+  caseDefinitionVersionTag?: string | null;
+  buildingBlockKey?: string | null;
+  buildingBlockVersionTag?: string | null;
+}
+
+/**
+ * A single `setProcessVariables` patch: writes to the process variable at `target` (a value-resolver
+ * path such as `pv:name` or a nested `pv:/config/enabled`), either copying from `source` or setting
+ * the literal `value`. Resolved per migrating instance. Mirrors the backend `ProcessVariablePatch`.
+ */
+interface ProcessVariablePatch {
+  /** Value-resolver path to copy from, e.g. `pv:/foo` or `doc:/emailadres` (mutually exclusive with `value`). */
+  source?: string | null;
+  /** Literal value to set on the target (mutually exclusive with `source`). */
+  value?: unknown;
+  /** Value-resolver path of the process variable to write to, e.g. `pv:name`. */
+  target: string;
+  /** Optional type coercion of the written value. */
+  targetType?: DataMigrationTargetType | null;
+}
+
 /** A single instruction of the `processMigration` block, translated 1:1 into an Operaton MigrationPlan. */
 interface ProcessMigrationInstruction {
   sourceProcessDefinitionKey: string;
   targetProcessDefinitionKey: string;
-  /** Source activity id -> target activity id (or `<SKIP_MIGRATION>`). */
+  /** Source activity id -> target activity id. */
   mapActivities: {[sourceActivityId: string]: string};
-  /** GZAC-layer process variables set on the migrated instance. */
-  newProcessVariables: {[name: string]: unknown};
+  /** GZAC-layer value-resolver patches applied to the migrated process instance. */
+  setProcessVariables: ProcessVariablePatch[];
   skipCustomListeners: boolean;
   skipIoMappings: boolean;
 }
 
-type BlueprintType = 'CASE' | 'BUILDING_BLOCK';
+/**
+ * A single `addBuildingBlock` entry: a building block to create on the instance being migrated (its
+ * owner — a case, or a parent building block). The new building block document is created empty and
+ * filled by `dataMigration` (each patch's `source` reads the owner document, its `target` writes
+ * into the new building block document); `processMigration` hijacks the owner's running process(es)
+ * into the building block. Mirrors the backend `AddBuildingBlockInstruction`.
+ */
+interface AddBuildingBlockInstruction {
+  buildingBlockKey: string;
+  buildingBlockVersionTag: string;
+  dataMigration: DataMigrationPatch[];
+  processMigration: ProcessMigrationInstruction[];
+}
 
-/** The full editable migration plan, matching the auto-deploy `*.migration.json` shape. */
+/**
+ * A single `removeBuildingBlock` entry: dissolve the building block(s) of `buildingBlockKey`
+ * directly linked to the instance being migrated. `processMigration` hands the building block's
+ * process(es) back to the owner and `dataMigration` copies data back (each patch's `source` reads
+ * the building block document, its `target` writes into the owner document) before the building
+ * block document is deleted. Mirrors the backend `RemoveBuildingBlockInstruction`.
+ */
+interface RemoveBuildingBlockInstruction {
+  buildingBlockKey: string;
+  dataMigration: DataMigrationPatch[];
+  processMigration: ProcessMigrationInstruction[];
+}
+
+/**
+ * The full editable migration plan, matching the auto-deploy `*.migration.json` shape. Source and
+ * target are NOT part of the plan format — a plan always migrates the instances of its own
+ * definition version FROM its predecessor (`basedOnVersionTag`) TO that version, both implied by
+ * the definition version the plan is deployed under.
+ */
 interface MigrationPlan {
   title?: string;
   key?: string;
-  /**
-   * Optional blueprint this plan migrates FROM. When omitted it defaults (at runtime) to the
-   * resolved target's blueprint type/key and the target blueprint's `basedOnVersionTag`.
-   */
-  sourceBlueprintType?: BlueprintType | null;
-  sourceKey?: string | null;
-  sourceVersionTag?: string | null;
-  /**
-   * Optional blueprint this plan migrates TO. When omitted it defaults (at runtime) to the
-   * blueprint version the plan is deployed under.
-   */
-  targetBlueprintType?: BlueprintType | null;
-  targetKey?: string | null;
-  targetVersionTag?: string | null;
   migrationTriggers?: MigrationTriggers;
   conditions?: MigrationCondition[];
   dataMigration?: DataMigrationPatch[];
   processMigration?: ProcessMigrationInstruction[];
+  addBuildingBlock?: AddBuildingBlockInstruction[];
+  removeBuildingBlock?: RemoveBuildingBlockInstruction[];
   [key: string]: unknown;
 }
 
 export {
   CaseMigrationStatus,
-  BlueprintType,
   MigrationTriggers,
   MigrationCondition,
   MigrationExecutionError,
@@ -115,6 +159,10 @@ export {
   MigrationPlanManagement,
   DataMigrationPatch,
   DataMigrationTargetType,
+  ValuePathContext,
+  ProcessVariablePatch,
   ProcessMigrationInstruction,
+  AddBuildingBlockInstruction,
+  RemoveBuildingBlockInstruction,
   MigrationPlan,
 };

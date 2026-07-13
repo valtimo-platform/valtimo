@@ -1,0 +1,248 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    plans: plans$ | async,
+    loading: loading$ | async
+  } as obs"
+>
+  <valtimo-carbon-list
+    [items]="obs.plans"
+    [fields]="fields$ | async"
+    [loading]="obs.loading"
+    [actionItems]="ACTION_ITEMS"
+    (rowClicked)="onRowClicked($event)"
+  >
+    <ng-container carbonToolbarContent>
+      <button cdsButton="primary" [attr.data-test-id]="testIds.addButton" (click)="onAddPlan()">
+        {{ 'buildingBlockManagement.migration.addPlan' | translate }}
+      </button>
+    </ng-container>
+
+    <valtimo-no-results
+      [title]="'buildingBlockManagement.migration.noResults.title' | translate"
+      [description]="'buildingBlockManagement.migration.noResults.description' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+</ng-container>
+
+<valtimo-confirmation-modal
+  [titleTranslationKey]="'buildingBlockManagement.migration.deleteModal.title'"
+  [contentTranslationKey]="'buildingBlockManagement.migration.deleteModal.content'"
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [showModalSubject$]="showDeleteModal$"
+  [outputOnConfirm]="$planToDelete()"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [titleTranslationKey]="'buildingBlockManagement.migration.startModal.title'"
+  [contentTranslationKey]="'buildingBlockManagement.migration.startModal.content'"
+  [confirmButtonTextTranslationKey]="'buildingBlockManagement.migration.startNow'"
+  [showModalSubject$]="showStartModal$"
+  [outputOnConfirm]="$planToStart()"
+  (confirmEvent)="onStartConfirm($event)"
+></valtimo-confirmation-modal>
+
+<cds-modal
+  valtimoCdsModal
+  *ngIf="{show: showDetailModal$ | async, plan: selectedPlan$ | async} as obs"
+  [open]="!!obs.show"
+  size="md"
+  (close)="onCloseDetail()"
+>
+  @if (obs.plan; as plan) {
+    <cds-modal-header (closeSelect)="onCloseDetail()" [cdsLayer]="1">
+      <h3 cdsModalHeaderHeading>{{ plan.name }}</h3>
+    </cds-modal-header>
+
+    <section cdsModalContent [cdsLayer]="1">
+      <!-- Monitoring -->
+      <dl class="migration-metrics">
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'buildingBlockManagement.migration.fields.status' | translate }}
+          </dt>
+          <dd class="migration-metric__value">
+            <cds-tag class="cds-tag--no-margin" [type]="statusTagType(plan.status.status)">
+              {{ 'buildingBlockManagement.migration.status.' + plan.status.status | translate }}
+            </cds-tag>
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'buildingBlockManagement.migration.fields.casesToMigrate' | translate }}
+          </dt>
+          <dd class="migration-metric__value migration-metric__value--number">
+            {{ plan.status.casesToMigrate }}
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'buildingBlockManagement.migration.fields.casesMigrated' | translate }}
+          </dt>
+          <dd class="migration-metric__value migration-metric__value--number">
+            {{ plan.status.casesMigrated }}
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'buildingBlockManagement.migration.fields.casesWithErrors' | translate }}
+          </dt>
+          <dd
+            class="migration-metric__value migration-metric__value--number"
+            [class.migration-metric__value--error]="plan.status.casesWithErrors > 0"
+          >
+            {{ plan.status.casesWithErrors }}
+          </dd>
+        </div>
+
+        @if (plan.status.startedOn) {
+          <div class="migration-metric">
+            <dt class="migration-metric__label">
+              {{ 'buildingBlockManagement.migration.fields.startedOn' | translate }}
+            </dt>
+            <dd class="migration-metric__value">{{ plan.status.startedOn | date: 'medium' }}</dd>
+          </div>
+        }
+
+        @if (plan.status.finishedOn) {
+          <div class="migration-metric">
+            <dt class="migration-metric__label">
+              {{ 'buildingBlockManagement.migration.fields.finishedOn' | translate }}
+            </dt>
+            <dd class="migration-metric__value">{{ plan.status.finishedOn | date: 'medium' }}</dd>
+          </div>
+        }
+      </dl>
+
+      <!-- Errors -->
+      @if (plan.status.errors.length) {
+        <div class="migration-detail__errors">
+          <h5 class="migration-detail__config-heading">
+            {{ 'buildingBlockManagement.migration.errors.heading' | translate }}
+          </h5>
+          @if (errorsView$ | async; as errorsView) {
+            <valtimo-carbon-list
+              [items]="errorsView.items"
+              [fields]="errorFields$ | async"
+              [pagination]="errorsView.pagination"
+              [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
+              (paginationClicked)="onErrorPageChange($event)"
+            ></valtimo-carbon-list>
+          }
+        </div>
+      }
+    </section>
+
+    <cds-modal-footer [cdsLayer]="1">
+      <button cdsButton="ghost" (click)="onCloseDetail()">
+        {{ 'interface.close' | translate }}
+      </button>
+
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.startButton"
+        (click)="onStartPlan(plan)"
+      >
+        {{ 'buildingBlockManagement.migration.startNow' | translate }}
+      </button>
+    </cds-modal-footer>
+  }
+</cds-modal>
+
+<ng-template #statusColumn let-data="data">
+  <cds-tag [type]="statusTagType(data.item.status.status)" class="cds-tag--no-margin">
+    {{ 'buildingBlockManagement.migration.status.' + data.item.status.status | translate }}
+  </cds-tag>
+</ng-template>
+
+<ng-template #progressColumn let-data="data">
+  <span class="migration-progress">
+    {{ data.item.status.casesMigrated }} / {{ data.item.status.casesToMigrate }}
+  </span>
+  @if (data.item.status.casesWithErrors > 0) {
+    <cds-tag type="red" class="cds-tag--no-margin">
+      {{
+        'buildingBlockManagement.migration.errorCount'
+          | translate: {count: data.item.status.casesWithErrors}
+      }}
+    </cds-tag>
+  }
+</ng-template>
+
+<ng-template #caseIdColumn let-data="data">
+  @if (caseDetailLink(data.item.caseId); as link) {
+    <a
+      class="migration-error__case-link"
+      [routerLink]="link"
+      [title]="data.item.caseId"
+      target="_blank"
+    >
+      {{ shortId(data.item.caseId) }}
+    </a>
+  } @else {
+    <span [title]="data.item.caseId">{{ shortId(data.item.caseId) }}</span>
+  }
+</ng-template>
+
+<ng-template #errorColumn let-data="data">
+  <div class="migration-error">
+    <div class="migration-error__cell">
+      <span class="migration-error__message" [title]="firstErrorLine(data.item.message)">
+        {{ firstErrorLine(data.item.message) }}
+      </span>
+
+      <div class="migration-error__actions">
+        <button
+          cdsButton="ghost"
+          [iconOnly]="true"
+          [title]="
+            (isErrorExpanded(data.item.caseId)
+              ? 'buildingBlockManagement.migration.errors.hideStacktrace'
+              : 'buildingBlockManagement.migration.errors.showStacktrace'
+            ) | translate
+          "
+          size="sm"
+          (click)="onToggleError($event, data.item.caseId)"
+        >
+          <svg
+            [cdsIcon]="isErrorExpanded(data.item.caseId) ? 'chevron--up' : 'chevron--down'"
+            size="16"
+          ></svg>
+        </button>
+
+        <button
+          cdsButton="ghost"
+          [iconOnly]="true"
+          [title]="'buildingBlockManagement.migration.errors.copyFullError' | translate"
+          size="sm"
+          (click)="onCopyError($event, data.item.message)"
+        >
+          <svg cdsIcon="copy" size="16"></svg>
+        </button>
+      </div>
+    </div>
+
+    @if (isErrorExpanded(data.item.caseId)) {
+      <pre class="migration-error__trace">{{ data.item.message }}</pre>
+    }
+  </div>
+</ng-template>

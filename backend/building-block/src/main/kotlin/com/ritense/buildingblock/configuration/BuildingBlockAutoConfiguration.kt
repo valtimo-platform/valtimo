@@ -30,20 +30,31 @@ import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProce
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.AddBuildingBlockConfigurationRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.JsonSchemaDocumentCaseDefinitionMapper
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.RemoveBuildingBlockConfigurationRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentDeployer
+import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentExecutor
 import com.ritense.buildingblock.service.migration.BuildingBlockMigrationCandidateProvider
 import com.ritense.buildingblock.service.migration.BuildingBlockProcessDefinitionBlueprintResolver
 import com.ritense.buildingblock.service.migration.BuildingBlockProcessMigrationComponentExecutor
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentDeployer
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentExecutor
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentSuggester
 import com.ritense.buildingblock.web.rest.BuildingBlockMigrationManagementResource
 import com.ritense.case_.service.migration.CaseMigrationService
+import com.ritense.case_.service.migration.DataMigrationComponentSuggester
+import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
-import com.ritense.case_.service.migration.MigrationPlanSuggestionService
+import com.ritense.case_.service.migration.MigrationSuggestionService
+import com.ritense.processdocument.migration.ProcessMigrationComponentSuggester
 import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
+import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
 import org.operaton.bpm.engine.RuntimeService
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
@@ -124,6 +135,7 @@ import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonByteArrayService
 import com.ritense.valtimo.service.OperatonProcessService
@@ -151,7 +163,9 @@ import org.springframework.jdbc.core.JdbcTemplate
         ProcessDefinitionBuildingBlockDefinitionRepository::class,
         BuildingBlockDefinitionArtworkRepository::class,
         BuildingBlockInstanceRepository::class,
-        CaseDefinitionBuildingBlockLinkRepository::class
+        CaseDefinitionBuildingBlockLinkRepository::class,
+        AddBuildingBlockConfigurationRepository::class,
+        RemoveBuildingBlockConfigurationRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain", "com.ritense.buildingblock.processlink.domain"])
@@ -917,6 +931,98 @@ class BuildingBlockAutoConfiguration {
     )
 
     @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentDeployer::class)
+    fun addBuildingBlockMigrationComponentDeployer(
+        objectMapper: ObjectMapper,
+        addBuildingBlockConfigurationRepository: AddBuildingBlockConfigurationRepository,
+    ) = AddBuildingBlockMigrationComponentDeployer(
+        objectMapper,
+        addBuildingBlockConfigurationRepository,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentDeployer::class)
+    fun removeBuildingBlockMigrationComponentDeployer(
+        objectMapper: ObjectMapper,
+        removeBuildingBlockConfigurationRepository: RemoveBuildingBlockConfigurationRepository,
+    ) = RemoveBuildingBlockMigrationComponentDeployer(
+        objectMapper,
+        removeBuildingBlockConfigurationRepository,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentExecutor::class)
+    fun addBuildingBlockMigrationComponentExecutor(
+        objectMapper: ObjectMapper,
+        addBuildingBlockConfigurationRepository: AddBuildingBlockConfigurationRepository,
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        runtimeService: RuntimeService,
+        operatonExecutionRepository: OperatonExecutionRepository,
+        processMigrationVariableResolver: ProcessMigrationVariableResolver,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
+        migrationDataPatchApplier: MigrationDataPatchApplier,
+        jdbcTemplate: JdbcTemplate,
+    ) = AddBuildingBlockMigrationComponentExecutor(
+        objectMapper,
+        addBuildingBlockConfigurationRepository,
+        buildingBlockInstanceService,
+        buildingBlockInstanceRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        runtimeService,
+        operatonExecutionRepository,
+        processMigrationVariableResolver,
+        processDocumentAssociationService,
+        migrationDataPatchApplier,
+        jdbcTemplate,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentExecutor::class)
+    fun removeBuildingBlockMigrationComponentExecutor(
+        removeBuildingBlockConfigurationRepository: RemoveBuildingBlockConfigurationRepository,
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        documentService: DocumentService,
+        runtimeService: RuntimeService,
+        processMigrationVariableResolver: ProcessMigrationVariableResolver,
+        migrationDataPatchApplier: MigrationDataPatchApplier,
+        jdbcTemplate: JdbcTemplate,
+    ) = RemoveBuildingBlockMigrationComponentExecutor(
+        removeBuildingBlockConfigurationRepository,
+        buildingBlockInstanceService,
+        buildingBlockInstanceRepository,
+        processDefinitionCaseDefinitionRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        documentService,
+        runtimeService,
+        processMigrationVariableResolver,
+        migrationDataPatchApplier,
+        jdbcTemplate,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentSuggester::class)
+    fun removeBuildingBlockMigrationComponentSuggester(
+        objectMapper: ObjectMapper,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        processLinkService: ProcessLinkService,
+        dataMigrationComponentSuggester: DataMigrationComponentSuggester,
+        processMigrationComponentSuggester: ProcessMigrationComponentSuggester,
+    ) = RemoveBuildingBlockMigrationComponentSuggester(
+        objectMapper,
+        caseDefinitionBuildingBlockLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        processLinkService,
+        dataMigrationComponentSuggester,
+        processMigrationComponentSuggester,
+    )
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockProcessDefinitionBlueprintResolver::class)
     fun buildingBlockProcessDefinitionBlueprintResolver(
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
@@ -930,11 +1036,11 @@ class BuildingBlockAutoConfiguration {
         caseMigrationService: CaseMigrationService,
         migrationPlanImporter: MigrationPlanImporter,
         migrationPlanExporter: MigrationPlanExporter,
-        migrationPlanSuggestionService: MigrationPlanSuggestionService,
+        migrationSuggestionService: MigrationSuggestionService,
     ) = BuildingBlockMigrationManagementResource(
         caseMigrationService,
         migrationPlanImporter,
         migrationPlanExporter,
-        migrationPlanSuggestionService,
+        migrationSuggestionService,
     )
 }

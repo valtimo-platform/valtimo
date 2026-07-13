@@ -23,7 +23,7 @@ import com.ritense.case_.service.migration.MigrationExecutionStatusDto
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationPlanManagementDto
-import com.ritense.case_.service.migration.MigrationPlanSuggestionService
+import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -36,7 +36,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 /**
  * Building block counterpart of the case migration management API. Delegates to the same
@@ -52,7 +54,7 @@ class BuildingBlockMigrationManagementResource(
     private val caseMigrationService: CaseMigrationService,
     private val migrationPlanImporter: MigrationPlanImporter,
     private val migrationPlanExporter: MigrationPlanExporter,
-    private val migrationPlanSuggestionService: MigrationPlanSuggestionService,
+    private val migrationSuggestionService: MigrationSuggestionService,
 ) {
 
     /** A best-effort, pre-filled plan (source, target, dataMigration, processMigration) for a new plan. */
@@ -62,7 +64,47 @@ class BuildingBlockMigrationManagementResource(
         @PathVariable key: String,
         @PathVariable versionTag: String,
     ): ResponseEntity<JsonNode> {
-        return ResponseEntity.ok(migrationPlanSuggestionService.suggestPlan(BuildingBlockDefinitionId(key, versionTag)))
+        return ResponseEntity.ok(migrationSuggestionService.suggestPlan(BuildingBlockDefinitionId(key, versionTag)))
+    }
+
+    /** A best-effort activity mapping (`sourceActivityId -> targetActivityId`) for a process pair. */
+    @RunWithoutAuthorization
+    @GetMapping("/suggestion/activity-mapping")
+    fun suggestActivityMapping(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @RequestParam sourceProcessDefinitionId: String,
+        @RequestParam targetProcessDefinitionId: String,
+    ): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.ok(
+            migrationSuggestionService.suggestActivityMapping(
+                sourceProcessDefinitionId,
+                targetProcessDefinitionId,
+            )
+        )
+    }
+
+    /**
+     * Checks a proposed activity mapping against the engine's migration rules so the editor can flag
+     * incompatible pairs; returns the incompatible pairs (empty when all valid). Inspection endpoint
+     * (always `200`); the plan save itself rejects an invalid plan.
+     */
+    @RunWithoutAuthorization
+    @PostMapping("/suggestion/activity-mapping/validate")
+    fun validateActivityMapping(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @RequestParam sourceProcessDefinitionId: String,
+        @RequestParam targetProcessDefinitionId: String,
+        @RequestBody activityMapping: Map<String, String>,
+    ): ResponseEntity<Map<String, List<String>>> {
+        return ResponseEntity.ok(
+            migrationSuggestionService.findInvalidActivityMappings(
+                sourceProcessDefinitionId,
+                targetProcessDefinitionId,
+                activityMapping,
+            )
+        )
     }
 
     @RunWithoutAuthorization
@@ -93,6 +135,13 @@ class BuildingBlockMigrationManagementResource(
         @RequestBody plan: JsonNode,
     ): ResponseEntity<List<MigrationPlanManagementDto>> {
         val blueprintId = BuildingBlockDefinitionId(key, versionTag)
+        val problems = migrationSuggestionService.findPlanProblems(blueprintId, plan)
+        if (problems.isNotEmpty()) {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Migration plan has incompatible activity mappings: ${problems.joinToString("; ")}",
+            )
+        }
         migrationPlanImporter.deploy(blueprintId, plan)
         return ResponseEntity.ok(caseMigrationService.getPlans(blueprintId))
     }

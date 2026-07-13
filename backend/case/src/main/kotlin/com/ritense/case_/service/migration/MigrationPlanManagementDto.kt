@@ -26,6 +26,10 @@ import com.ritense.case_.domain.migration.MigrationTriggers
 data class MigrationPlanManagementDto(
     val migrationKey: String,
     val title: String?,
+    /** Resolved blueprint version the plan migrates FROM, formatted as `<key>:<versionTag>`. */
+    val source: String,
+    /** Resolved blueprint version the plan migrates TO, formatted as `<key>:<versionTag>`. */
+    val target: String,
     val triggers: MigrationTriggers,
     val conditions: List<MigrationCondition>,
     val components: List<String>,

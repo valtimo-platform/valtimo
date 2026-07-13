@@ -1,40 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                   id="Definitions_verhuizing" targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn:process id="verhuizing" name="Verhuizing" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1">
-      <bpmn:outgoing>Flow_start_beoordelen</bpmn:outgoing>
+  <bpmn:process id="verhuizing" name="Verhuizing" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent_1" name="Verhuizing aangevraagd">
+      <bpmn:outgoing>Flow_start_ontvangst</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:serviceTask id="registreer_ontvangst" name="Registreer ontvangst" camunda:expression="${execution.setVariable('spoed', valueResolverDelegateService.resolveValue(execution, 'doc:/spoed'))}">
+      <bpmn:incoming>Flow_start_ontvangst</bpmn:incoming>
+      <bpmn:outgoing>Flow_ontvangst_gwspoed</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="gw_spoed" name="Spoed?" default="Flow_gwspoed_join">
+      <bpmn:incoming>Flow_ontvangst_gwspoed</bpmn:incoming>
+      <bpmn:outgoing>Flow_gwspoed_markeer</bpmn:outgoing>
+      <bpmn:outgoing>Flow_gwspoed_join</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="markeer_spoed" name="Markeer als spoed" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/status', 'spoed-behandeling')}">
+      <bpmn:incoming>Flow_gwspoed_markeer</bpmn:incoming>
+      <bpmn:outgoing>Flow_markeer_join</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="gw_spoed_join">
+      <bpmn:incoming>Flow_gwspoed_join</bpmn:incoming>
+      <bpmn:incoming>Flow_markeer_join</bpmn:incoming>
+      <bpmn:outgoing>Flow_join_beoordelen</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
     <bpmn:userTask id="beoordelen_verhuizing" name="Beoordelen verhuizing">
-      <bpmn:incoming>Flow_start_beoordelen</bpmn:incoming>
-      <bpmn:outgoing>Flow_beoordelen_end</bpmn:outgoing>
+      <bpmn:incoming>Flow_join_beoordelen</bpmn:incoming>
+      <bpmn:outgoing>Flow_beoordelen_controleren</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:endEvent id="Event_end">
-      <bpmn:incoming>Flow_beoordelen_end</bpmn:incoming>
+    <bpmn:userTask id="controleren_inspectie" name="Controleren inspectie">
+      <bpmn:incoming>Flow_beoordelen_controleren</bpmn:incoming>
+      <bpmn:outgoing>Flow_controleren_afronden</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="afronden" name="Verhuizing afronden" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/status', 'afgehandeld')}">
+      <bpmn:incoming>Flow_controleren_afronden</bpmn:incoming>
+      <bpmn:outgoing>Flow_afronden_end</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_end" name="Verhuizing afgehandeld">
+      <bpmn:incoming>Flow_afronden_end</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_start_beoordelen" sourceRef="StartEvent_1" targetRef="beoordelen_verhuizing"/>
-    <bpmn:sequenceFlow id="Flow_beoordelen_end" sourceRef="beoordelen_verhuizing" targetRef="Event_end"/>
+    <bpmn:sequenceFlow id="Flow_start_ontvangst" sourceRef="StartEvent_1" targetRef="registreer_ontvangst"/>
+    <bpmn:sequenceFlow id="Flow_ontvangst_gwspoed" sourceRef="registreer_ontvangst" targetRef="gw_spoed"/>
+    <bpmn:sequenceFlow id="Flow_gwspoed_markeer" name="Ja" sourceRef="gw_spoed" targetRef="markeer_spoed">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${spoed == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_gwspoed_join" name="Nee" sourceRef="gw_spoed" targetRef="gw_spoed_join"/>
+    <bpmn:sequenceFlow id="Flow_markeer_join" sourceRef="markeer_spoed" targetRef="gw_spoed_join"/>
+    <bpmn:sequenceFlow id="Flow_join_beoordelen" sourceRef="gw_spoed_join" targetRef="beoordelen_verhuizing"/>
+    <bpmn:sequenceFlow id="Flow_beoordelen_controleren" sourceRef="beoordelen_verhuizing" targetRef="controleren_inspectie"/>
+    <bpmn:sequenceFlow id="Flow_controleren_afronden" sourceRef="controleren_inspectie" targetRef="afronden"/>
+    <bpmn:sequenceFlow id="Flow_afronden_end" sourceRef="afronden" targetRef="Event_end"/>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="verhuizing">
       <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="172" y="102" width="36" height="36"/>
+        <dc:Bounds x="160" y="102" width="36" height="36"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="beoordelen_di" bpmnElement="beoordelen_verhuizing">
-        <dc:Bounds x="260" y="80" width="100" height="80"/>
+      <bpmndi:BPMNShape id="registreer_ontvangst_di" bpmnElement="registreer_ontvangst">
+        <dc:Bounds x="240" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="gw_spoed_di" bpmnElement="gw_spoed" isMarkerVisible="true">
+        <dc:Bounds x="395" y="95" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="markeer_spoed_di" bpmnElement="markeer_spoed">
+        <dc:Bounds x="370" y="210" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="gw_spoed_join_di" bpmnElement="gw_spoed_join" isMarkerVisible="true">
+        <dc:Bounds x="535" y="95" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="beoordelen_verhuizing_di" bpmnElement="beoordelen_verhuizing">
+        <dc:Bounds x="640" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="controleren_inspectie_di" bpmnElement="controleren_inspectie">
+        <dc:Bounds x="800" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="afronden_di" bpmnElement="afronden">
+        <dc:Bounds x="960" y="80" width="100" height="80"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
-        <dc:Bounds x="412" y="102" width="36" height="36"/>
+        <dc:Bounds x="1122" y="102" width="36" height="36"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_start_beoordelen_di" bpmnElement="Flow_start_beoordelen">
-        <di:waypoint x="208" y="120"/>
-        <di:waypoint x="260" y="120"/>
+      <bpmndi:BPMNEdge id="Flow_start_ontvangst_di" bpmnElement="Flow_start_ontvangst">
+        <di:waypoint x="196" y="120"/>
+        <di:waypoint x="240" y="120"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_beoordelen_end_di" bpmnElement="Flow_beoordelen_end">
-        <di:waypoint x="360" y="120"/>
-        <di:waypoint x="412" y="120"/>
+      <bpmndi:BPMNEdge id="Flow_ontvangst_gwspoed_di" bpmnElement="Flow_ontvangst_gwspoed">
+        <di:waypoint x="340" y="120"/>
+        <di:waypoint x="395" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_gwspoed_markeer_di" bpmnElement="Flow_gwspoed_markeer">
+        <di:waypoint x="420" y="145"/>
+        <di:waypoint x="420" y="210"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_gwspoed_join_di" bpmnElement="Flow_gwspoed_join">
+        <di:waypoint x="445" y="120"/>
+        <di:waypoint x="535" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_markeer_join_di" bpmnElement="Flow_markeer_join">
+        <di:waypoint x="470" y="250"/>
+        <di:waypoint x="560" y="250"/>
+        <di:waypoint x="560" y="145"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_join_beoordelen_di" bpmnElement="Flow_join_beoordelen">
+        <di:waypoint x="585" y="120"/>
+        <di:waypoint x="640" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_beoordelen_controleren_di" bpmnElement="Flow_beoordelen_controleren">
+        <di:waypoint x="740" y="120"/>
+        <di:waypoint x="800" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_controleren_afronden_di" bpmnElement="Flow_controleren_afronden">
+        <di:waypoint x="900" y="120"/>
+        <di:waypoint x="960" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_afronden_end_di" bpmnElement="Flow_afronden_end">
+        <di:waypoint x="1060" y="120"/>
+        <di:waypoint x="1122" y="120"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

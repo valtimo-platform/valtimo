@@ -78,12 +78,6 @@ class MigrationPlanExporter(
         val root = objectMapper.createObjectNode()
         root.put("title", migration.title)
         root.put("key", migration.id.migrationKey)
-        migration.sourceBlueprintType?.let { root.put("sourceBlueprintType", it.name) }
-        migration.sourceKey?.let { root.put("sourceKey", it) }
-        migration.sourceVersionTag?.let { root.put("sourceVersionTag", it.toString()) }
-        migration.targetBlueprintType?.let { root.put("targetBlueprintType", it.name) }
-        migration.targetKey?.let { root.put("targetKey", it) }
-        migration.targetVersionTag?.let { root.put("targetVersionTag", it.toString()) }
         root.set<ObjectNode>("migrationTriggers", objectMapper.valueToTree(migration.migrationTriggers))
         root.set<ObjectNode>("conditions", objectMapper.valueToTree(migration.conditions))
 

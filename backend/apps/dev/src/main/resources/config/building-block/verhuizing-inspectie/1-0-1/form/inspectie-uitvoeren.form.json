@@ -1,0 +1,93 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Inspectie uitvoeren",
+            "content": "Voer de inspectie uit en leg de bevindingen vast.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvragerNaam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "disabled": true,
+            "attributes": {
+                "data-testid": "inspectie-uitvoeren-aanvrager-naam"
+            },
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "nieuwAdres",
+            "type": "textfield",
+            "input": true,
+            "label": "Nieuw adres",
+            "tableView": true,
+            "disabled": true,
+            "attributes": {
+                "data-testid": "inspectie-uitvoeren-nieuw-adres"
+            },
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "inspecteur",
+            "type": "textfield",
+            "input": true,
+            "label": "Inspecteur",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "inspectie-uitvoeren-inspecteur"
+            },
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "akkoord",
+            "type": "checkbox",
+            "input": true,
+            "label": "Inspectie akkoord",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "inspectie-uitvoeren-akkoord"
+            }
+        },
+        {
+            "key": "inspectieStatus",
+            "type": "select",
+            "input": true,
+            "label": "Inspectiestatus",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "inspectie-uitvoeren-status"
+            },
+            "data": {
+                "values": [
+                    {
+                        "label": "Uitgevoerd",
+                        "value": "Uitgevoerd"
+                    },
+                    {
+                        "label": "Afgekeurd",
+                        "value": "Afgekeurd"
+                    }
+                ]
+            },
+            "dataSrc": "values"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Inspectie afronden",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

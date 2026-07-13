@@ -15,67 +15,96 @@
   -->
 
 <div class="migration-tab" [formGroup]="form">
-  <p class="migration-tab__description">
-    {{ 'caseManagement.migration.editor.dataMigration.description' | translate }}
-  </p>
+  @if (descriptionKey) {
+    <p class="migration-tab__description">{{ descriptionKey | translate }}</p>
+  }
 
-  <div class="migration-tab__items" formArrayName="patches">
+  <div class="migration-tab__patches" formArrayName="patches">
     @for (patch of patchesArray.controls; track $index) {
-      <div class="migration-tab__card" [formGroupName]="$index">
-        <div class="migration-tab__card-header">
-          <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
-
-          <button
-            cdsButton="danger--ghost"
-            size="sm"
-            [iconOnly]="true"
-            [title]="'interface.delete' | translate"
-            (click)="removePatch($index)"
+      <div class="migration-tab__patch" [formGroupName]="$index">
+        <!-- Source (left) -->
+        <div class="migration-tab__patch-side migration-tab__patch-side--from">
+          <cds-select
+            formControlName="mode"
+            [label]="'caseManagement.migration.editor.dataMigration.mode' | translate"
           >
-            <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
-          </button>
+            @for (mode of MODES; track mode) {
+              <option [value]="mode">
+                {{ 'caseManagement.migration.editor.dataMigration.mode_' + mode | translate }}
+              </option>
+            }
+          </cds-select>
+
+          @switch (patch.get('mode')?.value) {
+            @case ('path') {
+              <valtimo-value-path-selector
+                formControlName="source"
+                [caseDefinitionKey]="sourceContext?.caseDefinitionKey ?? null"
+                [caseDefinitionVersionTag]="sourceContext?.caseDefinitionVersionTag ?? null"
+                [buildingBlockDefinitionKey]="sourceContext?.buildingBlockKey ?? null"
+                [buildingBlockDefinitionVersionTag]="sourceContext?.buildingBlockVersionTag ?? null"
+                [label]="'caseManagement.migration.editor.dataMigration.source' | translate"
+                [prefixes]="SOURCE_PREFIXES"
+                [notation]="'slashes'"
+              ></valtimo-value-path-selector>
+            }
+            @case ('value') {
+              <cds-text-label>
+                {{ 'caseManagement.migration.editor.dataMigration.value' | translate }}
+                <input
+                  cdsText
+                  formControlName="value"
+                  [placeholder]="'caseManagement.migration.editor.dataMigration.valuePlaceholder' | translate"
+                />
+              </cds-text-label>
+            }
+            @default {
+              <span class="migration-tab__null-hint">
+                {{ 'caseManagement.migration.editor.dataMigration.nullHint' | translate }}
+              </span>
+            }
+          }
         </div>
 
-        <div class="migration-tab__grid">
-          <valtimo-value-path-selector
-            formControlName="source"
-            [caseDefinitionKey]="caseDefinitionKey"
-            [caseDefinitionVersionTag]="caseDefinitionVersionTag"
-            [label]="'caseManagement.migration.editor.dataMigration.source' | translate"
-            [prefixes]="SOURCE_PREFIXES"
-            [notation]="'slashes'"
-          ></valtimo-value-path-selector>
+        <span class="migration-tab__mapping-arrow" aria-hidden="true">→</span>
 
-          <cds-text-label>
-            {{ 'caseManagement.migration.editor.dataMigration.value' | translate }}
-            <input
-              cdsText
-              formControlName="value"
-              [placeholder]="'caseManagement.migration.editor.dataMigration.valuePlaceholder' | translate"
-            />
-          </cds-text-label>
-
+        <!-- Target (right) -->
+        <div class="migration-tab__patch-side migration-tab__patch-side--to">
           <valtimo-value-path-selector
             formControlName="target"
-            [caseDefinitionKey]="caseDefinitionKey"
-            [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+            [caseDefinitionKey]="targetContext?.caseDefinitionKey ?? null"
+            [caseDefinitionVersionTag]="targetContext?.caseDefinitionVersionTag ?? null"
+            [buildingBlockDefinitionKey]="targetContext?.buildingBlockKey ?? null"
+            [buildingBlockDefinitionVersionTag]="targetContext?.buildingBlockVersionTag ?? null"
             [label]="'caseManagement.migration.editor.dataMigration.target' | translate"
             [prefixes]="TARGET_PREFIXES"
             [notation]="'slashes'"
           ></valtimo-value-path-selector>
 
-          <cds-select
-            formControlName="targetType"
-            [label]="'caseManagement.migration.editor.dataMigration.targetType' | translate"
-          >
-            <option value="">
-              {{ 'caseManagement.migration.editor.dataMigration.targetTypeAuto' | translate }}
-            </option>
-            @for (type of TARGET_TYPES; track type) {
-              <option [value]="type">{{ type }}</option>
-            }
-          </cds-select>
+          @if (patch.get('mode')?.value !== 'null') {
+            <cds-select
+              formControlName="targetType"
+              [label]="'caseManagement.migration.editor.dataMigration.targetType' | translate"
+            >
+              <option value="">
+                {{ 'caseManagement.migration.editor.dataMigration.targetTypeAuto' | translate }}
+              </option>
+              @for (type of TARGET_TYPES; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </cds-select>
+          }
         </div>
+
+        <button
+          cdsButton="danger--ghost"
+          size="sm"
+          [iconOnly]="true"
+          [title]="'interface.delete' | translate"
+          (click)="removePatch($index)"
+        >
+          <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+        </button>
       </div>
     } @empty {
       <p class="migration-tab__empty">

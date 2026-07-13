@@ -15,29 +15,6 @@
   -->
 
 <div class="migration-plan-editor">
-  <div class="migration-plan-editor__header">
-    <h3 class="migration-plan-editor__title">
-      {{
-        ($isEdit() ? 'caseManagement.migration.editor.editTitle' : 'caseManagement.migration.editor.createTitle')
-          | translate
-      }}
-    </h3>
-
-    <div class="migration-plan-editor__actions">
-      <button cdsButton="ghost" [attr.data-test-id]="testIds.cancelButton" (click)="onCancel()">
-        {{ 'interface.cancel' | translate }}
-      </button>
-      <button
-        cdsButton="primary"
-        [attr.data-test-id]="testIds.saveButton"
-        [disabled]="!$valid() || $saving()"
-        (click)="onSave()"
-      >
-        {{ 'interface.save' | translate }}
-      </button>
-    </div>
-  </div>
-
   <cds-tabs type="contained">
     <cds-tab
       [heading]="'caseManagement.migration.editor.tabs.general' | translate"
@@ -49,8 +26,6 @@
         [isEdit]="$isEdit()"
         [plan]="$plan()"
         [runAfterOptions]="$runAfterOptions()"
-        [caseDefinitionKeys]="$caseKeyOptions()"
-        [buildingBlockKeys]="$buildingBlockKeyOptions()"
         (generalChange)="onGeneralChange($event)"
       ></valtimo-migration-general-tab>
     </cds-tab>
@@ -60,8 +35,8 @@
       [attr.data-test-id]="testIds.dataMigrationTab"
     >
       <valtimo-migration-data-migration-tab
-        [caseDefinitionKey]="$caseDefinitionKey()"
-        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
+        [sourceContext]="$caseContext()"
+        [targetContext]="$caseContext()"
         [patches]="$plan().dataMigration"
         (patchesChange)="onDataMigrationChange($event)"
       ></valtimo-migration-data-migration-tab>
@@ -72,9 +47,42 @@
       [attr.data-test-id]="testIds.processMigrationTab"
     >
       <valtimo-migration-process-migration-tab
+        [caseDefinitionKey]="$caseDefinitionKey()"
+        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
+        [sourceContext]="$caseContext()"
+        [sourceProcessDefinitions]="$sourceProcessDefs()"
+        [targetProcessDefinitions]="$targetProcessDefs()"
         [instructions]="$plan().processMigration"
         (instructionsChange)="onProcessMigrationChange($event)"
       ></valtimo-migration-process-migration-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'caseManagement.migration.editor.tabs.addBuildingBlock' | translate"
+      [attr.data-test-id]="testIds.addBuildingBlockTab"
+    >
+      <valtimo-migration-building-block-tab
+        [mode]="'add'"
+        [caseDefinitionKey]="$caseDefinitionKey()"
+        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
+        [caseProcessDefinitions]="$targetProcessDefs()"
+        [instructions]="$plan().addBuildingBlock"
+        (instructionsChange)="onAddBuildingBlockChange($event)"
+      ></valtimo-migration-building-block-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'caseManagement.migration.editor.tabs.removeBuildingBlock' | translate"
+      [attr.data-test-id]="testIds.removeBuildingBlockTab"
+    >
+      <valtimo-migration-building-block-tab
+        [mode]="'remove'"
+        [caseDefinitionKey]="$caseDefinitionKey()"
+        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
+        [caseProcessDefinitions]="$targetProcessDefs()"
+        [instructions]="$plan().removeBuildingBlock"
+        (instructionsChange)="onRemoveBuildingBlockChange($event)"
+      ></valtimo-migration-building-block-tab>
     </cds-tab>
 
     <cds-tab
@@ -92,3 +100,28 @@
     </cds-tab>
   </cds-tabs>
 </div>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <div *ngIf="{compactMode: compactMode$ | async} as obs" class="migration-plan-editor__actions">
+      <button
+        cdsButton="ghost"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        [attr.data-test-id]="testIds.cancelButton"
+        (click)="onCancel()"
+      >
+        {{ 'interface.cancel' | translate }}
+      </button>
+
+      <button
+        cdsButton="primary"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        [attr.data-test-id]="testIds.saveButton"
+        [disabled]="!$valid() || $saving()"
+        (click)="onSave()"
+      >
+        {{ 'interface.save' | translate }}
+      </button>
+    </div>
+  </ng-template>
+</ng-container>

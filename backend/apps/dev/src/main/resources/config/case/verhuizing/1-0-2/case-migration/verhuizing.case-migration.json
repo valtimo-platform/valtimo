@@ -1,0 +1,116 @@
+{
+    "title": "Verhuizing migreren",
+    "key": "verhuizing-inspectie-verwijderen",
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/migratedFrom",
+            "operator": "==",
+            "value": "1.0.0"
+        }
+    ],
+    "removeBuildingBlock": [
+        {
+            "buildingBlockKey": "verhuizing-inspectie",
+            "dataMigration": [
+                {
+                    "target": "doc:/aanvrager/naam",
+                    "source": "doc:/aanvragerNaam"
+                },
+                {
+                    "target": "doc:/aanvrager/email",
+                    "source": "doc:/aanvragerNaam"
+                },
+                {
+                    "target": "doc:/aanvrager/emailadres",
+                    "source": "doc:/aanvragerNaam"
+                },
+                {
+                    "target": "doc:/afgerond",
+                    "source": "doc:/akkoord"
+                },
+                {
+                    "target": "doc:/inspectieAkkoord",
+                    "source": "doc:/inspecteur"
+                },
+                {
+                    "target": "doc:/aantalPersonen",
+                    "source": "doc:/aantalKamers"
+                },
+                {
+                    "target": "doc:/migratedFrom",
+                    "source": "doc:/nieuwAdres"
+                },
+                {
+                    "target": "doc:/verhuisdatum",
+                    "source": "doc:/inspectiedatum"
+                },
+                {
+                    "target": "doc:/spoed",
+                    "source": "doc:/akkoord"
+                },
+                {
+                    "target": "doc:/oppervlakte",
+                    "source": "doc:/inspecteur"
+                },
+                {
+                    "target": "doc:/status",
+                    "source": "doc:/inspectieStatus"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing-inspectie-process",
+                    "targetProcessDefinitionKey": "verhuizing",
+                    "mapActivities": {
+                        "InspectieUitvoerenTask": "registreer_ontvangst",
+                        "VoorbereidenInspectieTask": "afronden",
+                        "ResolveAkkoordTask": "markeer_spoed",
+                        "RegistreerGoedkeuringTask": "registreer_ontvangst",
+                        "RegistreerAfkeuringTask": "registreer_ontvangst"
+                    },
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aantalKamers",
+            "source": "doc:/aantalPersonen"
+        },
+        {
+            "target": "doc:/afgerond",
+            "source": "doc:/spoed"
+        },
+        {
+            "target": "doc:/inspectieAkkoord",
+            "source": "doc:/inspectieStatus"
+        },
+        {
+            "target": "doc:/geschatteWaarde",
+            "source": "doc:/spoed"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {
+                "beoordelen_verhuizing": "beoordelen_verhuizing",
+                "controleren_inspectie": "markeer_spoed",
+                "registreer_ontvangst": "registreer_ontvangst",
+                "markeer_spoed": "markeer_spoed",
+                "afronden": "afronden"
+            },
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}
+}

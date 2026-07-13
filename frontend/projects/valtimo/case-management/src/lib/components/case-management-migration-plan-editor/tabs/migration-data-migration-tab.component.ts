@@ -24,13 +24,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {
-  AbstractControl,
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule,
@@ -43,7 +37,10 @@ import {Add16, TrashCan16} from '@carbon/icons';
 import {ValuePathSelectorComponent, ValuePathSelectorPrefix} from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
-import {DataMigrationPatch, DataMigrationTargetType} from '../../../models';
+import {DataMigrationPatch, DataMigrationTargetType, ValuePathContext} from '../../../models';
+
+/** How the left ("from") side of a patch is filled: copy a field, set a literal, or set null. */
+type PatchMode = 'path' | 'value' | 'null';
 
 @Component({
   standalone: true,
@@ -63,8 +60,13 @@ import {DataMigrationPatch, DataMigrationTargetType} from '../../../models';
   ],
 })
 export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
-  @Input() public caseDefinitionKey: string | null = null;
-  @Input() public caseDefinitionVersionTag: string | null = null;
+  // The document schemas the source (copy-from) and target (write-to) value-path selectors resolve
+  // against. They can differ: e.g. add building block copies FROM the owner case INTO the block.
+  @Input() public sourceContext: ValuePathContext | null = null;
+  @Input() public targetContext: ValuePathContext | null = null;
+  /** Intro text above the patches. Hosts that already explain the direction pass `null` to hide it. */
+  @Input() public descriptionKey: string | null =
+    'caseManagement.migration.editor.dataMigration.description';
 
   @Input() public set patches(value: DataMigrationPatch[] | null | undefined) {
     this.writePatches(value ?? []);
@@ -77,6 +79,8 @@ export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
   // Source can copy from document data or case metadata; the target must be a writable document path.
   public readonly SOURCE_PREFIXES = [ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE];
   public readonly TARGET_PREFIXES = [ValuePathSelectorPrefix.DOC];
+
+  public readonly MODES: PatchMode[] = ['path', 'value', 'null'];
 
   public readonly TARGET_TYPES: DataMigrationTargetType[] = [
     'string',
@@ -123,37 +127,34 @@ export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
 
   private createPatchGroup(patch?: DataMigrationPatch): FormGroup {
     const group = this.fb.group({
+      mode: this.fb.control<PatchMode>(this.modeOf(patch)),
       source: this.fb.control(patch?.source ?? ''),
       value: this.fb.control(patch?.value != null ? String(patch.value) : ''),
       target: this.fb.control(patch?.target ?? ''),
       targetType: this.fb.control(patch?.targetType ?? ''),
     });
 
-    const source = group.get('source')!;
-    const value = group.get('value')!;
-
-    // A patch either copies a source value OR sets a fixed value — never both. Disabling the
-    // counterpart makes them mutually exclusive.
-    if (source.value) value.disable({emitEvent: false});
-    if (value.value) source.disable({emitEvent: false});
-
+    // Clear the now-irrelevant input(s) when the mode switches, so the serialized patch stays clean.
     this._subscriptions.add(
-      source.valueChanges.subscribe(current => this.applyExclusivity(current, value))
-    );
-    this._subscriptions.add(
-      value.valueChanges.subscribe(current => this.applyExclusivity(current, source))
+      group.get('mode')!.valueChanges.subscribe(mode => {
+        if (mode !== 'path') group.get('source')!.setValue('', {emitEvent: false});
+        if (mode !== 'value') group.get('value')!.setValue('', {emitEvent: false});
+      })
     );
 
     return group;
   }
 
-  private applyExclusivity(triggerValue: unknown, other: AbstractControl): void {
-    if (triggerValue) {
-      if (other.value) other.setValue('', {emitEvent: false});
-      other.disable({emitEvent: false});
-    } else {
-      other.enable({emitEvent: false});
-    }
+  /**
+   * Derive the edit mode from a stored patch: a source copy, a literal value, or null. A patch with
+   * no source and no value (e.g. a target-only suggestion `{target: 'doc:/x'}`) clears the target, so
+   * it is 'null' — only a brand-new, empty patch defaults to 'path'.
+   */
+  private modeOf(patch?: DataMigrationPatch): PatchMode {
+    if (!patch) return 'path';
+    if (patch.source) return 'path';
+    if (patch.value !== undefined && patch.value !== null) return 'value';
+    return 'null';
   }
 
   private emit(): void {
@@ -164,17 +165,19 @@ export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
 
   private serialize(): DataMigrationPatch[] {
     return this.patchesArray.controls.map(control => {
-      // getRawValue so a disabled (mutually-excluded) source/value is still read consistently.
-      const {source, value, target, targetType} = (control as FormGroup).getRawValue();
+      const {mode, source, value, target, targetType} = (control as FormGroup).getRawValue();
       const patch: DataMigrationPatch = {target: target ?? ''};
 
-      if (source) {
-        patch.source = source;
+      if (mode === 'null') {
+        patch.value = null;
+      } else if (mode === 'path') {
+        if (source) patch.source = source;
       } else if (value !== '' && value != null) {
         patch.value = value;
       }
 
-      if (targetType) patch.targetType = targetType;
+      // targetType coerces a copied/set value; it is meaningless when clearing to null.
+      if (mode !== 'null' && targetType) patch.targetType = targetType;
 
       return patch;
     });

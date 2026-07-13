@@ -17,9 +17,9 @@
 package com.ritense.case_.domain.migration
 
 /**
- * A case (by UUID) whose migration failed and was rolled back, with the failure reason.
- * Surfaced so operators can see which cases errored and why (Theo's "overzicht van mislukte
- * dossiers").
+ * A case (by UUID) whose migration failed and was rolled back, with the failure reason: the full
+ * stacktrace of the exception that caused the rollback. Surfaced so operators can see which cases
+ * errored and why (Theo's "overzicht van mislukte dossiers").
  */
 data class MigrationExecutionError(
     val caseId: String,

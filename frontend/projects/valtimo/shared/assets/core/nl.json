@@ -15,7 +15,8 @@
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
-    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
+    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}",
+    "CaseMigratedEvent": "Zaak gemigreerd van {{fromVersionTag}} naar {{toVersionTag}}"
   },
   "case": {
     "allCases": "Alle dossiers",
@@ -782,6 +783,7 @@
   "caseManagement": {
     "migration": {
       "addPlan": "Migratieplan toevoegen",
+      "addPlanDisabledHint": "Deze versie heeft geen voorganger om vanaf te migreren, dus er kan geen migratieplan voor worden aangemaakt.",
       "startNow": "Migratie nu starten",
       "errorCount": "{{count}} fouten",
       "editor": {
@@ -791,6 +793,8 @@
           "general": "Algemeen",
           "dataMigration": "Datamigratie",
           "processMigration": "Procesmigratie",
+          "addBuildingBlock": "Bouwblok toevoegen",
+          "removeBuildingBlock": "Bouwblok verwijderen",
           "jsonEditor": "JSON-editor"
         },
         "general": {
@@ -798,20 +802,8 @@
           "titlePlaceholder": "Migreer dossiers met status 'aanvraag-ontvangen'",
           "key": "Sleutel",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
-          "source": "Bron (optioneel)",
-          "sourceHint": "De blueprint-versie waarvandaan dit plan migreert. Laat leeg om standaard het type/de sleutel van het doel en de 'gebaseerd op'-versie van het doel te gebruiken.",
-          "target": "Doel (optioneel)",
-          "targetHint": "De blueprint-versie waarnaartoe dit plan migreert. Laat leeg om standaard de versie te gebruiken waaronder dit plan is uitgerold.",
-          "blueprintType": "Type",
-          "blueprintTypeDefault": "Standaard",
-          "blueprintType_CASE": "Zaak",
-          "blueprintType_BUILDING_BLOCK": "Bouwblok",
-          "refKey": "Sleutel",
-          "refKeyPlaceholder": "Kies een blueprint",
-          "refVersionTag": "Versie",
-          "refVersionTagPlaceholder": "1.0.0",
           "triggers": "Triggers",
-          "triggersHint": "Bepaal wanneer dit plan draait. Een getriggerd plan wacht tot aan de condities is voldaan; dit wordt periodiek opnieuw gecontroleerd.",
+          "triggersHint": "Bepaal wanneer dit plan draait: handmatig via de UI-knop, op een ingepland moment, of nadat een ander plan is voltooid.",
           "triggeredByButton": "Handmatig starten via de UI-knop",
           "scheduledAtDate": "Ingepland op",
           "runAfter": "Draai na plan",
@@ -826,37 +818,66 @@
           "addCondition": "Conditie toevoegen"
         },
         "dataMigration": {
-          "description": "Verplaats of stel dossiergegevens in tijdens de migratie. Elke patch kopieert een waarde van een bronlocatie naar een doellocatie, of zet een vaste waarde op het doel. Laat het doel leeg om een eigenschap te verwijderen.",
+          "description": "Herstructureer dossiergegevens tijdens de migratie. Elke regel vult één doelveld (rechts) vanuit een bron (links): kopieer de waarde van een bestaand veld ('Pad'), zet een vaste 'Waarde', of maak het leeg ('Null'). De bron leest een waarde uit het zaakdocument; het doel is het veld waar die waarde naartoe wordt geschreven. Het doelveld is altijd verplicht.",
           "empty": "Nog geen datapatches geconfigureerd.",
           "addPatch": "Patch toevoegen",
+          "mode": "Bron",
+          "mode_path": "Pad",
+          "mode_value": "Waarde",
+          "mode_null": "Null",
+          "nullHint": "Het doel wordt leeggemaakt.",
           "source": "Bronveld",
-          "sourcePlaceholder": "doc:/persoon/voornaam",
           "value": "Vaste waarde",
           "valuePlaceholder": "Henk",
           "target": "Doelveld",
-          "targetPlaceholder": "doc:/contact/voornaam",
           "targetType": "Doeltype",
-          "targetTypeAuto": "Automatisch"
+          "targetTypeAuto": "Auto"
         },
         "processMigration": {
-          "description": "Migreer lopende procesinstanties naar de doel-procesdefinitie. Koppel de activiteiten van het bronproces aan die van het doelproces. Dit wordt één-op-één vertaald naar een Operaton-migratieplan.",
+          "description": "Migreer lopende procesinstanties naar de procesdefinities van deze zaakversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit. Dit wordt één-op-één vertaald naar een Operaton-migratieplan.",
           "empty": "Nog geen procesmigraties geconfigureerd.",
           "addInstruction": "Procesmigratie toevoegen",
           "sourceProcess": "Bronproces",
           "targetProcess": "Doelproces",
           "selectProcess": "Kies een proces",
           "activityMapping": "Activiteitkoppeling",
-          "activityMappingHint": "Koppel elke bronactiviteit aan een doelactiviteit. Zowel de naam als de technische id worden getoond, zodat activiteiten met dezelfde naam te onderscheiden zijn. Kies 'Overslaan' om een token te laten vervallen dat geen tegenhanger heeft in het doelproces.",
+          "activityMappingHint": "Koppel elke activiteit van het bronproces aan een activiteit van het doelproces — dit vertelt de engine waar elke lopende token naartoe gaat. Zowel de naam als de technische id worden getoond, zodat activiteiten met dezelfde naam te onderscheiden zijn.",
+          "incompatibleMapping": "Deze activiteitstypen kunnen niet naar elkaar gemigreerd worden. Kies een doelactiviteit van een compatibel type.",
           "sourceActivity": "Bronactiviteit",
           "targetActivity": "Doelactiviteit",
-          "skip": "Overslaan (token laten vervallen)",
           "addMapping": "Koppeling toevoegen",
-          "newProcessVariables": "Nieuwe procesvariabelen",
-          "variableName": "Naam",
-          "variableValue": "Waarde",
+          "setProcessVariables": "Procesvariabelen instellen",
+          "setProcessVariablesHint": "Stel procesvariabelen in op de gemigreerde instantie. Elke patch kopieert een waarde van een bronpad of zet een vaste waarde. Het doel is de procesvariabele waarnaar wordt geschreven (bijv. pv:naam of een geneste pv:/config/enabled).",
+          "variableMode": "Bron",
+          "variableSource": "Bronpad",
+          "variableValue": "Vaste waarde",
+          "variableValuePlaceholder": "Henk",
+          "variableTarget": "Doelvariabele",
+          "variableTargetPlaceholder": "pv:aanvragerNaam",
+          "variableTargetType": "Doeltype",
           "addVariable": "Variabele toevoegen",
           "skipCustomListeners": "Custom listeners overslaan",
           "skipIoMappings": "Input/output-mappings overslaan"
+        },
+        "buildingBlock": {
+          "buildingBlockKey": "Bouwblok",
+          "buildingBlockKeyPlaceholder": "Kies een bouwblok",
+          "buildingBlockVersionTag": "Versie",
+          "buildingBlockVersionTagPlaceholder": "Kies een versie"
+        },
+        "addBuildingBlock": {
+          "description": "Maak één of meer bouwblokken aan op elke gemigreerde zaak. Elke regel maakt een (in eerste instantie leeg) bouwblokdocument aan, vult dit met de onderstaande datamigratie en neemt het/de zaakproces(sen) over in het bouwblok.",
+          "empty": "Nog geen toe te voegen bouwblokken geconfigureerd.",
+          "addEntry": "Bouwblok toevoegen",
+          "dataMigrationHint": "Vult het nieuwe bouwblokdocument: elke bron leest uit het zaakdocument, elk doel schrijft naar het nieuwe bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een zaakproces; het doelproces is een proces van het nieuwe bouwblok. Het/de vermelde zaakproces(sen) worden overgenomen in het bouwblok en de business key wordt altijd op de document-id van het nieuwe bouwblok gezet."
+        },
+        "removeBuildingBlock": {
+          "description": "Verwijder één of meer bouwblokken van elke gemigreerde zaak. Alle direct aan de zaak gekoppelde bouwblokken met de opgegeven sleutel worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar de zaak.",
+          "empty": "Nog geen te verwijderen bouwblokken geconfigureerd.",
+          "addEntry": "Bouwblok toevoegen",
+          "dataMigrationHint": "Zet data terug naar de zaak voordat het bouwblok wordt verwijderd: elke bron leest uit het bouwblokdocument, elk doel schrijft naar het zaakdocument.",
+          "processMigrationHint": "Het bronproces is een bouwblokproces; het doelproces is een zaakproces. Het/de bouwblokproces(sen) worden teruggegeven aan de zaak en de business key wordt altijd teruggezet op de document-id van de zaak."
         }
       },
       "deleteModal": {
@@ -868,10 +889,11 @@
         "content": "Weet je zeker dat je deze migratie nu wilt starten? De overeenkomende dossiers worden gemigreerd."
       },
       "duplicateSuffix": "kopie",
+      "duplicateSuffix": "kopie",
       "columns": {
         "plan": "Migratieplan",
-        "triggers": "Triggers",
-        "components": "Migreert",
+        "source": "Bron",
+        "target": "Doel",
         "status": "Status",
         "progress": "Voortgang"
       },
@@ -893,27 +915,14 @@
         "startedOn": "Gestart op",
         "finishedOn": "Voltooid op"
       },
-      "triggers": {
-        "heading": "Triggers",
-        "manual": "Handmatig",
-        "scheduled": "Gepland",
-        "runAfter": "Draait na"
-      },
-      "components": {
-        "heading": "Migreert",
-        "dataMigration": "Dossiergegevens",
-        "processMigration": "Processen",
-        "none": "Niets geconfigureerd",
-        "customMigration": "Custom"
-      },
-      "conditions": {
-        "heading": "Voorwaarden",
-        "none": "Geen voorwaarden — geldt voor alle dossiers"
-      },
       "errors": {
         "heading": "Dossiers met fouten",
         "caseId": "Dossier",
-        "message": "Fout"
+        "message": "Fout",
+        "copyFullError": "Volledige stacktrace kopiëren",
+        "copied": "Stacktrace gekopieerd naar klembord",
+        "showStacktrace": "Volledige stacktrace tonen",
+        "hideStacktrace": "Stacktrace verbergen"
       }
     },
     "version": "Versie: ",
@@ -3415,7 +3424,128 @@
       "processes": "Processen",
       "forms": "Formulieren",
       "formFlows": "Form flows",
-      "decisions": "Beslistabellen"
+      "decisions": "Beslistabellen",
+      "migration": "Migratie"
+    },
+    "migration": {
+      "addPlan": "Migratieplan toevoegen",
+      "startNow": "Migratie nu starten",
+      "errorCount": "{{count}} fouten",
+      "duplicateSuffix": "kopie",
+      "editor": {
+        "createTitle": "Nieuw migratieplan",
+        "editTitle": "Migratieplan bewerken",
+        "tabs": {
+          "general": "Algemeen",
+          "dataMigration": "Datamigratie",
+          "processMigration": "Procesmigratie",
+          "jsonEditor": "JSON-editor"
+        },
+        "general": {
+          "title": "Titel",
+          "titlePlaceholder": "Migreer bouwblokken met status 'aanvraag-ontvangen'",
+          "key": "Sleutel",
+          "keyPlaceholder": "migration-plan-aanvraag-indienen",
+          "triggers": "Triggers",
+          "triggersHint": "Bepaal wanneer dit plan draait: handmatig via de UI-knop, op een ingepland moment, of nadat een ander plan is voltooid.",
+          "triggeredByButton": "Handmatig starten via de UI-knop",
+          "scheduledAtDate": "Ingepland op",
+          "runAfter": "Draai na plan",
+          "runAfterPlaceholder": "Kies een migratieplan",
+          "runAfterEmpty": "Geen andere migratieplannen in deze versie",
+          "conditions": "Condities",
+          "conditionsHint": "Het plan migreert alleen bouwblokken die aan alle condities voldoen. Laat leeg om op alle bouwblokken toe te passen.",
+          "conditionPath": "Veld",
+          "conditionOperator": "Operator",
+          "conditionValue": "Waarde",
+          "noConditions": "Geen condities — van toepassing op alle bouwblokken.",
+          "addCondition": "Conditie toevoegen"
+        },
+        "dataMigration": {
+          "description": "Verplaats of stel bouwblokgegevens in tijdens de migratie. Elke patch kopieert een waarde van een bronlocatie naar de doellocatie, zet een vaste waarde op het doel, of zet het doel op null. Het doelveld is verplicht.",
+          "empty": "Nog geen datapatches geconfigureerd.",
+          "addPatch": "Patch toevoegen",
+          "mode": "Bron",
+          "mode_path": "Pad",
+          "mode_value": "Waarde",
+          "mode_null": "Null",
+          "nullHint": "Het doel wordt leeggemaakt.",
+          "source": "Bronveld",
+          "value": "Vaste waarde",
+          "valuePlaceholder": "Henk",
+          "target": "Doelveld",
+          "targetType": "Doeltype",
+          "targetTypeAuto": "Auto"
+        },
+        "processMigration": {
+          "description": "Migreer lopende procesinstanties naar de doel-procesdefinitie. Koppel de activiteiten van het bronproces aan die van het doelproces. Dit wordt één-op-één vertaald naar een Operaton-migratieplan.",
+          "empty": "Nog geen procesmigraties geconfigureerd.",
+          "addInstruction": "Procesmigratie toevoegen",
+          "sourceProcess": "Bronproces",
+          "targetProcess": "Doelproces",
+          "selectProcess": "Kies een proces",
+          "activityMapping": "Activiteitkoppeling",
+          "activityMappingHint": "Koppel elke bronactiviteit aan een doelactiviteit. Zowel de naam als de technische id worden getoond, zodat activiteiten met dezelfde naam te onderscheiden zijn.",
+          "incompatibleMapping": "Deze activiteitstypen kunnen niet naar elkaar gemigreerd worden. Kies een doelactiviteit van een compatibel type.",
+          "sourceActivity": "Bronactiviteit",
+          "targetActivity": "Doelactiviteit",
+          "addMapping": "Koppeling toevoegen",
+          "setProcessVariables": "Procesvariabelen instellen",
+          "setProcessVariablesHint": "Stel procesvariabelen in op de gemigreerde instantie. Elke patch kopieert een waarde van een bronpad of zet een vaste waarde. Het doel is de procesvariabele waarnaar wordt geschreven (bijv. pv:naam of een geneste pv:/config/enabled).",
+          "variableMode": "Bron",
+          "variableSource": "Bronpad",
+          "variableValue": "Vaste waarde",
+          "variableValuePlaceholder": "Henk",
+          "variableTarget": "Doelvariabele",
+          "variableTargetPlaceholder": "pv:aanvragerNaam",
+          "variableTargetType": "Doeltype",
+          "addVariable": "Variabele toevoegen",
+          "skipCustomListeners": "Custom listeners overslaan",
+          "skipIoMappings": "Input/output-mappings overslaan"
+        }
+      },
+      "deleteModal": {
+        "title": "Migratieplan verwijderen",
+        "content": "Weet je zeker dat je dit migratieplan wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      },
+      "startModal": {
+        "title": "Migratie starten",
+        "content": "Weet je zeker dat je deze migratie nu wilt starten? De overeenkomende bouwblokken worden gemigreerd."
+      },
+      "columns": {
+        "plan": "Migratieplan",
+        "source": "Bron",
+        "target": "Doel",
+        "status": "Status",
+        "progress": "Voortgang"
+      },
+      "noResults": {
+        "title": "Geen migratieplannen",
+        "description": "Er zijn geen migratieplannen uitgerold voor deze versie van dit bouwblok."
+      },
+      "status": {
+        "NOT_STARTED": "Niet gestart",
+        "RUNNING": "Bezig",
+        "COMPLETED": "Voltooid",
+        "COMPLETED_WITH_ERRORS": "Voltooid met fouten"
+      },
+      "fields": {
+        "status": "Migratiestatus",
+        "casesToMigrate": "Te migreren bouwblokken",
+        "casesMigrated": "Gemigreerde bouwblokken",
+        "casesWithErrors": "Bouwblokken met fouten",
+        "startedOn": "Gestart op",
+        "finishedOn": "Voltooid op"
+      },
+      "errors": {
+        "heading": "Bouwblokken met fouten",
+        "caseId": "Bouwblok",
+        "message": "Fout",
+        "copyFullError": "Volledige stacktrace kopiëren",
+        "copied": "Stacktrace gekopieerd naar klembord",
+        "showStacktrace": "Volledige stacktrace tonen",
+        "hideStacktrace": "Stacktrace verbergen"
+      }
     },
     "formDefinition": {
       "name": "Naam"

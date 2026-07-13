@@ -21,11 +21,13 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {
@@ -37,9 +39,20 @@ import {
   SelectModule,
 } from 'carbon-components-angular';
 import {ProcessService} from '@valtimo/process';
-import {Subscription} from 'rxjs';
+import {ValuePathSelectorComponent, ValuePathSelectorPrefix} from '@valtimo/components';
+import {forkJoin, of, Subscription} from 'rxjs';
+import {catchError, debounceTime} from 'rxjs/operators';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
-import {ProcessMigrationInstruction} from '../../../models';
+import {CaseMigrationApiService} from '../../../services';
+import {
+  DataMigrationTargetType,
+  ProcessMigrationInstruction,
+  ProcessVariablePatch,
+  ValuePathContext,
+} from '../../../models';
+
+/** How the left ("from") side of a variable patch is filled: copy a field, set a literal, or null. */
+type PatchMode = 'path' | 'value' | 'null';
 
 interface FlowNodeOption {
   id: string;
@@ -67,9 +80,35 @@ interface InstructionActivities {
     IconModule,
     InputModule,
     SelectModule,
+    ValuePathSelectorComponent,
   ],
 })
-export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy {
+export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges, OnDestroy {
+  // Used to build the migration endpoint URL for the activity-mapping suggestion.
+  @Input() public caseDefinitionKey: string | null = null;
+  @Input() public caseDefinitionVersionTag: string | null = null;
+
+  /**
+   * Document context for the `setProcessVariables` source value-path selector — the SAME context the
+   * data-migration tab uses for its source, so both read from the same document. The target is a
+   * plain `pv:` path (a free-text input), so it needs no context.
+   */
+  @Input() public sourceContext: ValuePathContext | null = null;
+
+  /**
+   * When set, the source / target process pickers only offer these processes (linked to the relevant
+   * blueprint version) instead of every deployed process, and the maps' `key -> definitionId` drive
+   * the activity lookups so each side's activities come from the CORRECT version's definition (source
+   * = predecessor version, target = own version). `null` falls back to all deployed processes / the
+   * latest definition per key. Source and target are separate because a building-block migration maps
+   * between owner and building-block processes (add: source = case, target = block; remove: reverse).
+   */
+  @Input() public sourceProcessDefinitions: Record<string, string> | null = null;
+  @Input() public targetProcessDefinitions: Record<string, string> | null = null;
+  /** Intro text above the instructions. Hosts that already explain the direction pass `null` to hide it. */
+  @Input() public descriptionKey: string | null =
+    'caseManagement.migration.editor.processMigration.description';
+
   @Input() public set instructions(value: ProcessMigrationInstruction[] | null | undefined) {
     this.writeInstructions(value ?? []);
   }
@@ -78,8 +117,18 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
 
   protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
 
-  /** Sentinel target used to explicitly drop an activity token during migration. */
-  public readonly SKIP_MIGRATION = '<SKIP_MIGRATION>';
+  public readonly SOURCE_PREFIXES = [ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE];
+
+  public readonly MODES: PatchMode[] = ['path', 'value', 'null'];
+
+  public readonly TARGET_TYPES: DataMigrationTargetType[] = [
+    'string',
+    'integer',
+    'long',
+    'number',
+    'double',
+    'boolean',
+  ];
 
   public processDefinitionKeys: string[] = [];
 
@@ -89,6 +138,8 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
 
   private readonly _keyToLatestId = new Map<string, string>();
   private readonly _activities = new Map<FormGroup, InstructionActivities>();
+  // Per instruction: incompatible source activity id -> engine failure messages (as judged live).
+  private readonly _invalidMappings = new Map<FormGroup, Record<string, string[]>>();
   private _lastEmitted = '[]';
   private readonly _subscriptions = new Subscription();
 
@@ -100,7 +151,8 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
     private readonly fb: FormBuilder,
     private readonly cdr: ChangeDetectorRef,
     private readonly iconService: IconService,
-    private readonly processService: ProcessService
+    private readonly processService: ProcessService,
+    private readonly caseMigrationApiService: CaseMigrationApiService
   ) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
@@ -126,6 +178,14 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
   }
 
+  public ngOnChanges(changes: SimpleChanges): void {
+    // The scoping maps arrive asynchronously; when they do, re-resolve each instruction's activities
+    // so the flow-node lists come from the now-known (correct-version) process definition ids.
+    if (changes['sourceProcessDefinitions'] || changes['targetProcessDefinitions']) {
+      this.instructionsArray.controls.forEach(control => this.loadActivities(control as FormGroup));
+    }
+  }
+
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
@@ -134,12 +194,34 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
     return this._activities.get(group) ?? {sourceNodes: [], targetNodes: [], loading: false};
   }
 
+  /**
+   * The engine's failure messages for one mapping row (looked up by its source activity), or an empty
+   * array when the pair is a valid migration. Drives the inline "incompatible mapping" feedback so the
+   * user cannot silently map incompatible activity types; the plan save rejects them server-side too.
+   */
+  public mappingErrors(group: FormGroup, mapping: AbstractControl): string[] {
+    const source = mapping.get('source')?.value;
+    return (source && this._invalidMappings.get(group)?.[source]) || [];
+  }
+
+  /**
+   * Keys offered in this instruction's source (or target) process picker: the allowed (blueprint-
+   * linked) keys for that side — or all deployed keys when unscoped — plus this instruction's own
+   * stored key so a restored plan referencing a now-unlinked process still shows its selection.
+   */
+  public processKeyOptions(group: FormGroup, side: 'source' | 'target'): string[] {
+    const scoped = side === 'source' ? this.sourceProcessDefinitions : this.targetProcessDefinitions;
+    const base = scoped ? Object.keys(scoped) : this.processDefinitionKeys;
+    const stored = group.get(`${side}ProcessDefinitionKey`)?.value;
+    return stored ? Array.from(new Set([...base, stored])) : Array.from(new Set(base));
+  }
+
   public mapActivitiesArray(group: FormGroup): FormArray {
     return group.get('mapActivities') as FormArray;
   }
 
-  public newProcessVariablesArray(group: FormGroup): FormArray {
-    return group.get('newProcessVariables') as FormArray;
+  public setProcessVariablesArray(group: FormGroup): FormArray {
+    return group.get('setProcessVariables') as FormArray;
   }
 
   public addInstruction(): void {
@@ -149,6 +231,7 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
   public removeInstruction(index: number): void {
     const group = this.instructionsArray.at(index) as FormGroup;
     this._activities.delete(group);
+    this._invalidMappings.delete(group);
     this.instructionsArray.removeAt(index);
   }
 
@@ -161,11 +244,11 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
   }
 
   public addVariable(group: FormGroup): void {
-    this.newProcessVariablesArray(group).push(this.createVariableGroup());
+    this.setProcessVariablesArray(group).push(this.createVariableGroup());
   }
 
   public removeVariable(group: FormGroup, index: number): void {
-    this.newProcessVariablesArray(group).removeAt(index);
+    this.setProcessVariablesArray(group).removeAt(index);
   }
 
   private createInstructionGroup(instruction?: ProcessMigrationInstruction): FormGroup {
@@ -177,21 +260,38 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
           this.createMappingGroup(source, target)
         )
       ),
-      newProcessVariables: this.fb.array<FormGroup>(
-        Object.entries(instruction?.newProcessVariables ?? {}).map(([name, value]) =>
-          this.createVariableGroup(name, value)
-        )
+      setProcessVariables: this.fb.array<FormGroup>(
+        (instruction?.setProcessVariables ?? []).map(patch => this.createVariableGroup(patch))
       ),
       skipCustomListeners: this.fb.control(instruction?.skipCustomListeners ?? false),
       skipIoMappings: this.fb.control(instruction?.skipIoMappings ?? false),
     });
 
-    // Reload the selectable activities whenever the user picks a different source/target definition.
+    const sourceControl = group.get('sourceProcessDefinitionKey')!;
+    const targetControl = group.get('targetProcessDefinitionKey')!;
+
+    // When the user picks a different source/target process, reload the selectable activities AND
+    // re-suggest the activity mapping for the new pair.
     this._subscriptions.add(
-      group.get('sourceProcessDefinitionKey')!.valueChanges.subscribe(() => this.loadActivities(group))
+      sourceControl.valueChanges.subscribe(value => {
+        // Convenience: migrating a process to a new version of itself is the common case, so when
+        // the target is still empty, mirror the chosen source onto it (setValue fires the target
+        // subscription below, which handles the reload + suggestion).
+        if (value && !targetControl.value) targetControl.setValue(value);
+        else this.onProcessChanged(group);
+      })
     );
     this._subscriptions.add(
-      group.get('targetProcessDefinitionKey')!.valueChanges.subscribe(() => this.loadActivities(group))
+      targetControl.valueChanges.subscribe(() => this.onProcessChanged(group))
+    );
+
+    // Re-check compatibility (debounced) whenever the mapping rows change, so incompatible pairs are
+    // flagged as the user edits. Suggestion/restore apply rows with emitEvent:false and validate
+    // explicitly, so this only fires for user edits.
+    this._subscriptions.add(
+      this.mapActivitiesArray(group)
+        .valueChanges.pipe(debounceTime(300))
+        .subscribe(() => this.validateInstruction(group))
     );
 
     return group;
@@ -204,18 +304,104 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
     });
   }
 
-  private createVariableGroup(name = '', value: unknown = ''): FormGroup {
-    return this.fb.group({
-      name: this.fb.control(name),
-      value: this.fb.control(value != null ? String(value) : ''),
+  private createVariableGroup(patch?: ProcessVariablePatch): FormGroup {
+    const group = this.fb.group({
+      mode: this.fb.control<PatchMode>(this.modeOf(patch)),
+      source: this.fb.control(patch?.source ?? ''),
+      value: this.fb.control(patch?.value != null ? String(patch.value) : ''),
+      target: this.fb.control(patch?.target ?? ''),
+      targetType: this.fb.control(patch?.targetType ?? ''),
     });
+
+    // Clear the now-irrelevant input(s) when the mode switches, so the serialized patch stays clean.
+    this._subscriptions.add(
+      group.get('mode')!.valueChanges.subscribe(mode => {
+        if (mode !== 'path') group.get('source')!.setValue('', {emitEvent: false});
+        if (mode !== 'value') group.get('value')!.setValue('', {emitEvent: false});
+      })
+    );
+
+    return group;
+  }
+
+  /**
+   * Derive the edit mode from a stored patch: a source copy, a literal value, or null. A patch with
+   * no source and no value (e.g. a target-only suggestion) clears the target, so it is 'null' — only
+   * a brand-new, empty patch defaults to 'path'.
+   */
+  private modeOf(patch?: ProcessVariablePatch): PatchMode {
+    if (!patch) return 'path';
+    if (patch.source) return 'path';
+    if (patch.value !== undefined && patch.value !== null) return 'value';
+    return 'null';
+  }
+
+  /**
+   * The user changed the source/target process: reload the activity options AND fetch a suggested
+   * mapping, then apply BOTH in the same tick so each side's select has its (new) options ready when
+   * its value is (re)applied — otherwise the target select, whose options changed, would render empty.
+   */
+  private onProcessChanged(group: FormGroup): void {
+    const sourceId = this.definitionIdFor(group, 'source');
+    const targetId = this.definitionIdFor(group, 'target');
+
+    if (!sourceId || !targetId) {
+      this._activities.set(group, {sourceNodes: [], targetNodes: [], loading: false});
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this._activities.set(group, {sourceNodes: [], targetNodes: [], loading: true});
+    this.cdr.markForCheck();
+
+    const key = this.caseDefinitionKey;
+    const tag = this.caseDefinitionVersionTag;
+    // A failed suggestion (or missing case params) leaves the mappings untouched: null = "don't touch".
+    const mapping$ =
+      key && tag
+        ? this.caseMigrationApiService
+            .suggestActivityMapping({caseDefinitionKey: key, caseDefinitionVersionTag: tag}, sourceId, targetId)
+            .pipe(catchError(() => of<Record<string, string> | null>(null)))
+        : of<Record<string, string> | null>(null);
+
+    this._subscriptions.add(
+      forkJoin({
+        flowNodes: this.processService.getFlowNodes(sourceId, targetId).pipe(catchError(() => of(null))),
+        mapping: mapping$,
+      }).subscribe(({flowNodes, mapping}) => {
+        this._activities.set(group, {
+          sourceNodes: flowNodes ? this.toOptions(flowNodes.sourceFlowNodeMap) : [],
+          targetNodes: flowNodes ? this.toOptions(flowNodes.targetFlowNodeMap) : [],
+          loading: false,
+        });
+
+        if (mapping) {
+          const mappings = this.mapActivitiesArray(group);
+          mappings.clear({emitEvent: false});
+          Object.entries(mapping).forEach(([source, target]) =>
+            mappings.push(this.createMappingGroup(source, target), {emitEvent: false})
+          );
+          this.emit();
+        }
+
+        this.validateInstruction(group);
+        this.cdr.markForCheck();
+        // Options and rows are now set together, so a single re-sync reflects both selects.
+        this.reapplySelections();
+      })
+    );
+  }
+
+  /** The version-correct process definition id for the group's source (or target) process key. */
+  private definitionIdFor(group: FormGroup, side: 'source' | 'target'): string | undefined {
+    const key = group.get(`${side}ProcessDefinitionKey`)?.value;
+    const scoped = side === 'source' ? this.sourceProcessDefinitions : this.targetProcessDefinitions;
+    return scoped?.[key] ?? this._keyToLatestId.get(key);
   }
 
   private loadActivities(group: FormGroup): void {
-    const sourceKey = group.get('sourceProcessDefinitionKey')?.value;
-    const targetKey = group.get('targetProcessDefinitionKey')?.value;
-    const sourceId = this._keyToLatestId.get(sourceKey);
-    const targetId = this._keyToLatestId.get(targetKey);
+    const sourceId = this.definitionIdFor(group, 'source');
+    const targetId = this.definitionIdFor(group, 'target');
 
     if (!sourceId || !targetId) {
       this._activities.set(group, {sourceNodes: [], targetNodes: [], loading: false});
@@ -227,10 +413,15 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
 
     this.processService.getFlowNodes(sourceId, targetId).subscribe({
       next: flowNodes => {
-        const sourceNodes = this.toOptions(flowNodes.sourceFlowNodeMap);
-        const targetNodes = this.toOptions(flowNodes.targetFlowNodeMap);
-        this._activities.set(group, {sourceNodes, targetNodes, loading: false});
-        this.ensureMappingRows(group, sourceNodes);
+        // Each side's activities come straight from ITS process definition's flow nodes — no
+        // augmenting with stored values and no auto-populating rows, so the dropdowns only ever offer
+        // activities that actually belong to the selected process and only the configured mappings show.
+        this._activities.set(group, {
+          sourceNodes: this.toOptions(flowNodes.sourceFlowNodeMap),
+          targetNodes: this.toOptions(flowNodes.targetFlowNodeMap),
+          loading: false,
+        });
+        this.validateInstruction(group);
         this.cdr.markForCheck();
         // The activity <option>s only exist now, so re-sync the mapping selects with their values.
         this.reapplySelections();
@@ -240,15 +431,6 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
         this.cdr.markForCheck();
       },
     });
-  }
-
-  private ensureMappingRows(group: FormGroup, sourceNodes: FlowNodeOption[]): void {
-    const mappings = this.mapActivitiesArray(group);
-    const existing = new Set(mappings.controls.map(control => control.get('source')?.value));
-    // Pre-populate a row for every source activity that is not mapped yet.
-    sourceNodes
-      .filter(node => !existing.has(node.id))
-      .forEach(node => mappings.push(this.createMappingGroup(node.id), {emitEvent: false}));
   }
 
   /**
@@ -272,6 +454,49 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
       });
       this.cdr.markForCheck();
     });
+  }
+
+  /**
+   * Ask the engine whether this instruction's activity mapping is a valid migration and remember the
+   * incompatible pairs for the template. Needs the case params and both process ids to resolve the
+   * definitions; clears the flags when it cannot validate (e.g. no mapping yet).
+   */
+  private validateInstruction(group: FormGroup): void {
+    const key = this.caseDefinitionKey;
+    const tag = this.caseDefinitionVersionTag;
+    const sourceId = this.definitionIdFor(group, 'source');
+    const targetId = this.definitionIdFor(group, 'target');
+    const mapping = this.mappingObject(group);
+
+    if (!key || !tag || !sourceId || !targetId || Object.keys(mapping).length === 0) {
+      this._invalidMappings.delete(group);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.caseMigrationApiService
+      .validateActivityMapping(
+        {caseDefinitionKey: key, caseDefinitionVersionTag: tag},
+        sourceId,
+        targetId,
+        mapping
+      )
+      .pipe(catchError(() => of<Record<string, string[]>>({})))
+      .subscribe(invalid => {
+        this._invalidMappings.set(group, invalid);
+        this.cdr.markForCheck();
+      });
+  }
+
+  /** The `sourceActivityId -> targetActivityId` map for an instruction, skipping incomplete rows. */
+  private mappingObject(group: FormGroup): Record<string, string> {
+    const mapping: Record<string, string> = {};
+    this.mapActivitiesArray(group).controls.forEach(row => {
+      const source = row.get('source')?.value;
+      const target = row.get('target')?.value;
+      if (source && target) mapping[source] = target;
+    });
+    return mapping;
   }
 
   private toOptions(flowNodeMap: {[activityId: string]: string}): FlowNodeOption[] {
@@ -299,17 +524,24 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
         if (source && target) mapActivities[source] = target;
       });
 
-      const newProcessVariables: {[name: string]: unknown} = {};
-      this.newProcessVariablesArray(group).controls.forEach(row => {
-        const name = row.get('name')?.value;
-        if (name) newProcessVariables[name] = row.get('value')?.value ?? '';
-      });
+      const setProcessVariables: ProcessVariablePatch[] = this.setProcessVariablesArray(group)
+        .controls.map(row => {
+          const {mode, source, value, target, targetType} = (row as FormGroup).getRawValue();
+          const patch: ProcessVariablePatch = {target: target ?? ''};
+          if (mode === 'null') patch.value = null;
+          else if (mode === 'path') {
+            if (source) patch.source = source;
+          } else if (value !== '' && value != null) patch.value = value;
+          if (mode !== 'null' && targetType) patch.targetType = targetType;
+          return patch;
+        })
+        .filter(patch => !!patch.target);
 
       return {
         sourceProcessDefinitionKey: group.get('sourceProcessDefinitionKey')?.value ?? '',
         targetProcessDefinitionKey: group.get('targetProcessDefinitionKey')?.value ?? '',
         mapActivities,
-        newProcessVariables,
+        setProcessVariables,
         skipCustomListeners: !!group.get('skipCustomListeners')?.value,
         skipIoMappings: !!group.get('skipIoMappings')?.value,
       };
@@ -321,6 +553,7 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnDestroy 
     if (JSON.stringify(instructions) === this._lastEmitted) return;
 
     this._activities.clear();
+    this._invalidMappings.clear();
     this.instructionsArray.clear({emitEvent: false});
     instructions.forEach(instruction => {
       const group = this.createInstructionGroup(instruction);

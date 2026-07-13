@@ -77,10 +77,11 @@ import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.service.migration.DataMigrationComponentDeployer
 import com.ritense.case_.service.migration.DataMigrationComponentExecutor
 import com.ritense.case_.service.migration.DataMigrationComponentSuggester
+import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.case_.service.migration.MigrationConditionEvaluator
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
-import com.ritense.case_.service.migration.MigrationPlanSuggestionService
+import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.case_.service.migration.MigrationTriggerScheduler
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
@@ -97,6 +98,9 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingSuggester
+import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingValidator
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
@@ -585,12 +589,18 @@ class CaseAutoConfiguration {
     ) = MigrationPlanExporter(objectMapper, caseDefinitionMigrationRepository, migrationComponentDeployers)
 
     @Bean
+    @ConditionalOnMissingBean(MigrationDataPatchApplier::class)
+    fun migrationDataPatchApplier(
+        objectMapper: ObjectMapper,
+        valueResolverService: ValueResolverService,
+    ) = MigrationDataPatchApplier(objectMapper, valueResolverService)
+
+    @Bean
     @ConditionalOnMissingBean(DataMigrationComponentExecutor::class)
     fun dataMigrationComponentExecutor(
-        objectMapper: ObjectMapper,
         dataMigrationConfigurationRepository: DataMigrationConfigurationRepository,
-        valueResolverService: ValueResolverService,
-    ) = DataMigrationComponentExecutor(objectMapper, dataMigrationConfigurationRepository, valueResolverService)
+        migrationDataPatchApplier: MigrationDataPatchApplier,
+    ) = DataMigrationComponentExecutor(dataMigrationConfigurationRepository, migrationDataPatchApplier)
 
     @Bean
     @ConditionalOnMissingBean(DataMigrationComponentSuggester::class)
@@ -599,12 +609,22 @@ class CaseAutoConfiguration {
     ) = DataMigrationComponentSuggester(valueResolverService)
 
     @Bean
-    @ConditionalOnMissingBean(MigrationPlanSuggestionService::class)
-    fun migrationPlanSuggestionService(
+    @ConditionalOnMissingBean(MigrationSuggestionService::class)
+    fun migrationSuggestionService(
         objectMapper: ObjectMapper,
         migrationCandidateProviders: List<MigrationCandidateProvider>,
         migrationComponentSuggesters: List<MigrationComponentSuggester>,
-    ) = MigrationPlanSuggestionService(objectMapper, migrationCandidateProviders, migrationComponentSuggesters)
+        activityMappingSuggesters: List<ActivityMappingSuggester>,
+        activityMappingValidators: List<ActivityMappingValidator>,
+        migrationComponentValidators: List<MigrationComponentValidator>,
+    ) = MigrationSuggestionService(
+        objectMapper,
+        migrationCandidateProviders,
+        migrationComponentSuggesters,
+        activityMappingSuggesters,
+        activityMappingValidators,
+        migrationComponentValidators,
+    )
 
     @Bean
     @ConditionalOnMissingBean(MigrationConditionEvaluator::class)
@@ -632,6 +652,7 @@ class CaseAutoConfiguration {
         migrationComponentExecutors: List<MigrationComponentExecutor>,
         migrationComponentDeployers: List<MigrationComponentDeployer>,
         transactionTemplate: TransactionTemplate,
+        applicationEventPublisher: ApplicationEventPublisher,
         @Value("\${valtimo.case.migration.lease-duration:PT5M}") leaseDuration: Duration,
     ) = CaseMigrationService(
         caseDefinitionMigrationRepository,
@@ -643,6 +664,7 @@ class CaseAutoConfiguration {
         migrationComponentExecutors,
         migrationComponentDeployers,
         transactionTemplate,
+        applicationEventPublisher,
         leaseDuration,
     )
 
@@ -664,11 +686,11 @@ class CaseAutoConfiguration {
         caseMigrationService: CaseMigrationService,
         migrationPlanImporter: MigrationPlanImporter,
         migrationPlanExporter: MigrationPlanExporter,
-        migrationPlanSuggestionService: MigrationPlanSuggestionService,
+        migrationSuggestionService: MigrationSuggestionService,
     ) = CaseMigrationManagementResource(
         caseMigrationService,
         migrationPlanImporter,
         migrationPlanExporter,
-        migrationPlanSuggestionService,
+        migrationSuggestionService,
     )
 }

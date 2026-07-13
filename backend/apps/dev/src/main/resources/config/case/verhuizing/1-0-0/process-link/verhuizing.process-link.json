@@ -1,0 +1,20 @@
+[
+    {
+        "activityId": "StartEvent_1",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-verhuizing"
+    },
+    {
+        "activityId": "beoordelen",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "beoordelen-verhuizing"
+    },
+    {
+        "activityId": "akkoord_geven",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "akkoord-geven-verhuizing"
+    }
+]

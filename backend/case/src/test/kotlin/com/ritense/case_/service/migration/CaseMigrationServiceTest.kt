@@ -34,6 +34,7 @@ import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -43,6 +44,7 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -50,6 +52,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.domain.PageImpl
 import org.springframework.transaction.PlatformTransactionManager
@@ -72,6 +75,7 @@ class CaseMigrationServiceTest(
     @Mock private val conditionEvaluator: MigrationConditionEvaluator,
     @Mock private val executor: MigrationComponentExecutor,
     @Mock private val transactionManager: PlatformTransactionManager,
+    @Mock private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     private lateinit var service: CaseMigrationService
@@ -98,6 +102,7 @@ class CaseMigrationServiceTest(
             listOf(executor),
             emptyList(),
             transactionTemplate,
+            applicationEventPublisher,
             Duration.ofMinutes(5),
         )
 
@@ -143,6 +148,22 @@ class CaseMigrationServiceTest(
         assertThat(result.casesToMigrate).isEqualTo(2)
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
         assertThat(result.finishedOn).isNotNull()
+    }
+
+    @Test
+    fun `should publish a CaseMigratedEvent on the case audit trail for each migrated case`() {
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        service.startMigration(migrationId)
+
+        val captor = argumentCaptor<CaseMigratedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        val event = captor.firstValue
+        assertThat(event.documentId).isEqualTo(case1)
+        assertThat(event.blueprintKey).isEqualTo("bezwaar")
+        assertThat(event.toVersionTag).isEqualTo("1.0.1")
+        assertThat(event.migrationKey).isEqualTo("plan")
     }
 
     @Test

@@ -16,7 +16,6 @@
 
 package com.ritense.case_.service.migration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
@@ -29,18 +28,18 @@ import kotlin.jvm.optionals.getOrNull
 /**
  * Executes the `dataMigration` component for a single case using value resolvers only:
  * `resolveValues` reads the source paths and `handleValues` writes the target paths against the
- * case document. Reading/writing the document itself is delegated to the [ValueResolverService],
- * so this executor never touches the document store directly. Runs in the caller's transaction.
+ * case document. Reading/writing the document itself is delegated to the [ValueResolverService]
+ * (through [MigrationDataPatchApplier]), so this executor never touches the document store directly.
+ * Runs in the caller's transaction.
  *
  * The document is already re-homed to the target blueprint version by the migration engine before
  * this runs (so `handleValues` writes/validates against the target schema); this executor only
- * moves the values.
+ * moves the values — source and target are the same document (the case).
  */
 @Transactional
 class DataMigrationComponentExecutor(
-    private val objectMapper: ObjectMapper,
     private val dataMigrationConfigurationRepository: DataMigrationConfigurationRepository,
-    private val valueResolverService: ValueResolverService,
+    private val dataPatchApplier: MigrationDataPatchApplier,
 ) : MigrationComponentExecutor {
 
     override fun componentKey() = DataMigrationComponentDeployer.DATA_MIGRATION_COMPONENT_KEY
@@ -50,47 +49,6 @@ class DataMigrationComponentExecutor(
         if (patches.isNullOrEmpty()) {
             return
         }
-
-        val sourcePaths = patches.mapNotNull { it.source }.distinct()
-        val resolvedSources = if (sourcePaths.isEmpty()) {
-            emptyMap()
-        } else {
-            valueResolverService.resolveValues(caseId.toString(), sourcePaths)
-        }
-
-        // key = target value-resolver path (e.g. "doc:/contact/voornaam"), value = coerced value
-        val targetValues = LinkedHashMap<String, Any?>()
-        patches.forEach { patch ->
-            if (patch.source != null) {
-                // copy: only apply when the source actually resolved (unresolved paths are omitted)
-                if (resolvedSources.containsKey(patch.source)) {
-                    targetValues[patch.target] = coerce(resolvedSources[patch.source], patch.targetType)
-                }
-            } else {
-                // set: write the literal value
-                targetValues[patch.target] = coerce(patch.value, patch.targetType)
-            }
-        }
-
-        if (targetValues.isNotEmpty()) {
-            valueResolverService.handleValues(caseId, targetValues)
-        }
-    }
-
-    /**
-     * Coerces a value for its target. With an explicit [targetType] the value is converted to that
-     * type; without one the value is written as-is (keeping the type it was resolved/deserialized
-     * as).
-     */
-    private fun coerce(value: Any?, targetType: String?): Any? {
-        if (value == null) return null
-        return when (targetType?.lowercase()) {
-            null -> value
-            "string" -> objectMapper.convertValue(value, String::class.java)
-            "integer", "long" -> objectMapper.convertValue(value, Long::class.javaObjectType)
-            "number", "double" -> objectMapper.convertValue(value, Double::class.javaObjectType)
-            "boolean" -> objectMapper.convertValue(value, Boolean::class.javaObjectType)
-            else -> value
-        }
+        dataPatchApplier.apply(patches, caseId, caseId)
     }
 }

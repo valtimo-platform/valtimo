@@ -55,16 +55,6 @@
                 <constraints nullable="false"/>
             </column>
             <column name="estimated_cases_to_migrate" type="${intType}"/>
-            <!-- Optional source the plan migrates FROM. When left null they default to the target's
-                 blueprint type / key and the target's based_on_version_tag. -->
-            <column name="source_blueprint_type" type="VARCHAR(20)"/>
-            <column name="source_key" type="VARCHAR(128)"/>
-            <column name="source_version_tag" type="VARCHAR(100)"/>
-            <!-- Optional target the plan migrates TO. When left null they default to the plan's own
-                 blueprint type / key / version (the version the plan is deployed under). -->
-            <column name="target_blueprint_type" type="VARCHAR(20)"/>
-            <column name="target_key" type="VARCHAR(128)"/>
-            <column name="target_version_tag" type="VARCHAR(100)"/>
         </createTable>
         <addPrimaryKey tableName="blueprint_migration"
                        columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
@@ -174,10 +164,58 @@
             <column name="status" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="error_message" type="VARCHAR(2048)"/>
+            <column name="error_message" type="clob"/>
         </createTable>
         <addPrimaryKey tableName="blueprint_migration_case"
                        columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key, case_id"/>
+    </changeSet>
+
+    <!-- The 'addBuildingBlock' component, owned by the building-block module. Creates a building
+         block on the migrating instance (fills its document, hijacks a process). -->
+    <changeSet id="6" author="Ritense">
+        <createTable tableName="blueprint_migration_add_building_block">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instructions" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_add_building_block"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
+    </changeSet>
+
+    <!-- The 'removeBuildingBlock' component, owned by the building-block module. Dissolves a
+         building block of the migrating instance (hands its process/data back, deletes it). -->
+    <changeSet id="7" author="Ritense">
+        <createTable tableName="blueprint_migration_remove_building_block">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instructions" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_remove_building_block"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
     </changeSet>
 
 </databaseChangeLog>

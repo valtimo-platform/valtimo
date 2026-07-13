@@ -16,15 +16,14 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
+import {BaseApiService, CaseManagementParams, ConfigService} from '@valtimo/shared';
+import {Observable} from 'rxjs';
 import {
-  BaseApiService,
-  BuildingBlockDefinitionDto,
-  CaseManagementParams,
-  ConfigService,
-  Page,
-} from '@valtimo/shared';
-import {catchError, map, Observable, of} from 'rxjs';
-import {CaseListItem, MigrationExecutionStatus, MigrationPlanManagement} from '../models';
+  DataMigrationPatch,
+  MigrationExecutionStatus,
+  MigrationPlanManagement,
+  ProcessMigrationInstruction,
+} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class CaseMigrationApiService extends BaseApiService {
@@ -80,28 +79,56 @@ export class CaseMigrationApiService extends BaseApiService {
     return this.httpClient.post<MigrationPlanManagement[]>(this.getMigrationUrl(params), plan);
   }
 
-  /** A best-effort, pre-filled plan (source, target, dataMigration, processMigration) for a new plan. */
+  /** A best-effort, pre-filled plan (dataMigration, processMigration) for a new plan. */
   public getPlanSuggestion(params: CaseManagementParams): Observable<Record<string, unknown>> {
     return this.httpClient.get<Record<string, unknown>>(`${this.getMigrationUrl(params)}/suggestion`);
   }
 
+  /** A best-effort `sourceActivityId -> targetActivityId` mapping for a source/target process pair. */
+  public suggestActivityMapping(
+    params: CaseManagementParams,
+    sourceProcessDefinitionId: string,
+    targetProcessDefinitionId: string
+  ): Observable<Record<string, string>> {
+    return this.httpClient.get<Record<string, string>>(
+      `${this.getMigrationUrl(params)}/suggestion/activity-mapping`,
+      {params: {sourceProcessDefinitionId, targetProcessDefinitionId}}
+    );
+  }
+
+  /**
+   * The incompatible `sourceActivityId -> failure messages` pairs in a proposed activity mapping for
+   * a source/target process pair, as judged by the engine (empty when every pair is valid).
+   */
+  public validateActivityMapping(
+    params: CaseManagementParams,
+    sourceProcessDefinitionId: string,
+    targetProcessDefinitionId: string,
+    activityMapping: Record<string, string>
+  ): Observable<Record<string, string[]>> {
+    return this.httpClient.post<Record<string, string[]>>(
+      `${this.getMigrationUrl(params)}/suggestion/activity-mapping/validate`,
+      activityMapping,
+      {params: {sourceProcessDefinitionId, targetProcessDefinitionId}}
+    );
+  }
+
+  /** A best-effort `dataMigration` + `processMigration` suggestion for one building-block entry. */
+  public suggestBuildingBlockEntry(
+    params: CaseManagementParams,
+    buildingBlockKey: string,
+    buildingBlockVersionTag: string,
+    mode: 'add' | 'remove'
+  ): Observable<{dataMigration: DataMigrationPatch[]; processMigration: ProcessMigrationInstruction[]}> {
+    return this.httpClient.get<{
+      dataMigration: DataMigrationPatch[];
+      processMigration: ProcessMigrationInstruction[];
+    }>(`${this.getMigrationUrl(params)}/suggestion/building-block`, {
+      params: {buildingBlockKey, buildingBlockVersionTag, mode},
+    });
+  }
+
   public deletePlan(params: CaseManagementParams, migrationKey: string): Observable<void> {
     return this.httpClient.delete<void>(`${this.getMigrationUrl(params)}/${migrationKey}`);
-  }
-
-  /** Case-definition blueprints available as a migration source/target. */
-  public getCaseDefinitions(): Observable<CaseListItem[]> {
-    return this.httpClient
-      .get<Page<CaseListItem>>(this.getApiUrl('management/v1/case-definition'), {
-        params: {size: 1000},
-      })
-      .pipe(map(page => page.content));
-  }
-
-  /** Building-block blueprints available as a migration source/target (empty when disabled). */
-  public getBuildingBlockDefinitions(): Observable<BuildingBlockDefinitionDto[]> {
-    return this.httpClient
-      .get<BuildingBlockDefinitionDto[]>(this.getApiUrl('management/v1/building-block'))
-      .pipe(catchError(() => of([])));
   }
 }

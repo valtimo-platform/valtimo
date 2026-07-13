@@ -17,8 +17,7 @@
 <ng-container
   *ngIf="{
     plans: plans$ | async,
-    loading: loading$ | async,
-    selected: selectedPlan$ | async
+    loading: loading$ | async
   } as obs"
 >
   <valtimo-carbon-list
@@ -29,7 +28,17 @@
     (rowClicked)="onRowClicked($event)"
   >
     <ng-container carbonToolbarContent>
-      <button cdsButton="primary" [attr.data-test-id]="testIds.addButton" (click)="onAddPlan()">
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.addButton"
+        [disabled]="!(canAddPlan$ | async)"
+        [title]="
+          (canAddPlan$ | async)
+            ? null
+            : ('caseManagement.migration.addPlanDisabledHint' | translate)
+        "
+        (click)="onAddPlan()"
+      >
         {{ 'caseManagement.migration.addPlan' | translate }}
       </button>
     </ng-container>
@@ -39,162 +48,6 @@
       [description]="'caseManagement.migration.noResults.description' | translate"
     ></valtimo-no-results>
   </valtimo-carbon-list>
-
-  @if (obs.selected; as plan) {
-    <section class="migration-detail">
-      <div class="migration-detail__header">
-        <h4 class="migration-detail__title">{{ plan.name }}</h4>
-
-        <div class="migration-detail__header-actions">
-          <button
-            cdsButton="primary"
-            size="sm"
-            [attr.data-test-id]="testIds.startButton"
-            (click)="onStartPlan(plan)"
-          >
-            {{ 'caseManagement.migration.startNow' | translate }}
-          </button>
-
-          <button cdsButton="ghost" size="sm" (click)="onCloseDetail()">
-            {{ 'interface.close' | translate }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Monitoring -->
-      <div class="migration-detail__metrics">
-        <div class="migration-metric">
-          <span class="migration-metric__label">
-            {{ 'caseManagement.migration.fields.status' | translate }}
-          </span>
-          <cds-tag [type]="statusTagType(plan.status.status)">
-            {{ 'caseManagement.migration.status.' + plan.status.status | translate }}
-          </cds-tag>
-        </div>
-
-        <div class="migration-metric">
-          <span class="migration-metric__label">
-            {{ 'caseManagement.migration.fields.casesToMigrate' | translate }}
-          </span>
-          <span class="migration-metric__value">{{ plan.status.casesToMigrate }}</span>
-        </div>
-
-        <div class="migration-metric">
-          <span class="migration-metric__label">
-            {{ 'caseManagement.migration.fields.casesMigrated' | translate }}
-          </span>
-          <span class="migration-metric__value">{{ plan.status.casesMigrated }}</span>
-        </div>
-
-        <div class="migration-metric">
-          <span class="migration-metric__label">
-            {{ 'caseManagement.migration.fields.casesWithErrors' | translate }}
-          </span>
-          <span
-            class="migration-metric__value"
-            [class.migration-metric__value--error]="plan.status.casesWithErrors > 0"
-            >{{ plan.status.casesWithErrors }}</span
-          >
-        </div>
-
-        @if (plan.status.startedOn) {
-          <div class="migration-metric">
-            <span class="migration-metric__label">
-              {{ 'caseManagement.migration.fields.startedOn' | translate }}
-            </span>
-            <span class="migration-metric__value">{{ plan.status.startedOn | date: 'medium' }}</span>
-          </div>
-        }
-
-        @if (plan.status.finishedOn) {
-          <div class="migration-metric">
-            <span class="migration-metric__label">
-              {{ 'caseManagement.migration.fields.finishedOn' | translate }}
-            </span>
-            <span class="migration-metric__value">{{ plan.status.finishedOn | date: 'medium' }}</span>
-          </div>
-        }
-      </div>
-
-      <!-- Configuration -->
-      <div class="migration-detail__config">
-        <div class="migration-detail__config-block">
-          <h5>{{ 'caseManagement.migration.triggers.heading' | translate }}</h5>
-          <div class="migration-tags">
-            @if (plan.triggers.triggeredByButton) {
-              <cds-tag type="cyan">{{ 'caseManagement.migration.triggers.manual' | translate }}</cds-tag>
-            }
-            @if (plan.triggers.scheduledAtDate) {
-              <cds-tag type="teal">
-                {{ 'caseManagement.migration.triggers.scheduled' | translate }}:
-                {{ plan.triggers.scheduledAtDate | date: 'short' }}
-              </cds-tag>
-            }
-            @if (plan.triggers.runAfter) {
-              <cds-tag type="magenta">
-                {{ 'caseManagement.migration.triggers.runAfter' | translate }}: {{ plan.triggers.runAfter }}
-              </cds-tag>
-            }
-          </div>
-        </div>
-
-        <div class="migration-detail__config-block">
-          <h5>{{ 'caseManagement.migration.components.heading' | translate }}</h5>
-          <div class="migration-tags">
-            @for (component of plan.components; track component) {
-              <cds-tag [type]="component === 'processMigration' ? 'purple' : 'teal'">
-                {{ 'caseManagement.migration.components.' + component | translate }}
-              </cds-tag>
-            } @empty {
-              <span class="migration-detail__empty">
-                {{ 'caseManagement.migration.components.none' | translate }}
-              </span>
-            }
-          </div>
-        </div>
-
-        <div class="migration-detail__config-block">
-          <h5>{{ 'caseManagement.migration.conditions.heading' | translate }}</h5>
-          @if (plan.conditions.length) {
-            <ul class="migration-conditions">
-              @for (condition of plan.conditions; track $index) {
-                <li>
-                  <code>{{ condition.path }} {{ condition.operator }} {{ condition.value }}</code>
-                </li>
-              }
-            </ul>
-          } @else {
-            <span class="migration-detail__empty">
-              {{ 'caseManagement.migration.conditions.none' | translate }}
-            </span>
-          }
-        </div>
-      </div>
-
-      <!-- Errors -->
-      @if (plan.status.errors.length) {
-        <div class="migration-detail__errors">
-          <h5>{{ 'caseManagement.migration.errors.heading' | translate }}</h5>
-          <table class="migration-errors">
-            <thead>
-              <tr>
-                <th>{{ 'caseManagement.migration.errors.caseId' | translate }}</th>
-                <th>{{ 'caseManagement.migration.errors.message' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (error of plan.status.errors; track error.caseId) {
-                <tr>
-                  <td><code>{{ error.caseId }}</code></td>
-                  <td>{{ error.message }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </section>
-  }
 </ng-container>
 
 <valtimo-confirmation-modal
@@ -215,6 +68,116 @@
   (confirmEvent)="onStartConfirm($event)"
 ></valtimo-confirmation-modal>
 
+<cds-modal
+  valtimoCdsModal
+  *ngIf="{show: showDetailModal$ | async, plan: selectedPlan$ | async} as obs"
+  [open]="!!obs.show"
+  size="md"
+  (close)="onCloseDetail()"
+>
+  @if (obs.plan; as plan) {
+    <cds-modal-header (closeSelect)="onCloseDetail()" [cdsLayer]="1">
+      <h3 cdsModalHeaderHeading>{{ plan.name }}</h3>
+    </cds-modal-header>
+
+    <section cdsModalContent [cdsLayer]="1">
+      <!-- Monitoring -->
+      <dl class="migration-metrics">
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'caseManagement.migration.fields.status' | translate }}
+          </dt>
+          <dd class="migration-metric__value">
+            <cds-tag class="cds-tag--no-margin" [type]="statusTagType(plan.status.status)">
+              {{ 'caseManagement.migration.status.' + plan.status.status | translate }}
+            </cds-tag>
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'caseManagement.migration.fields.casesToMigrate' | translate }}
+          </dt>
+          <dd class="migration-metric__value migration-metric__value--number">
+            {{ plan.status.casesToMigrate }}
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'caseManagement.migration.fields.casesMigrated' | translate }}
+          </dt>
+          <dd class="migration-metric__value migration-metric__value--number">
+            {{ plan.status.casesMigrated }}
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'caseManagement.migration.fields.casesWithErrors' | translate }}
+          </dt>
+          <dd
+            class="migration-metric__value migration-metric__value--number"
+            [class.migration-metric__value--error]="plan.status.casesWithErrors > 0"
+          >
+            {{ plan.status.casesWithErrors }}
+          </dd>
+        </div>
+
+        @if (plan.status.startedOn) {
+          <div class="migration-metric">
+            <dt class="migration-metric__label">
+              {{ 'caseManagement.migration.fields.startedOn' | translate }}
+            </dt>
+            <dd class="migration-metric__value">{{ plan.status.startedOn | date: 'medium' }}</dd>
+          </div>
+        }
+
+        @if (plan.status.finishedOn) {
+          <div class="migration-metric">
+            <dt class="migration-metric__label">
+              {{ 'caseManagement.migration.fields.finishedOn' | translate }}
+            </dt>
+            <dd class="migration-metric__value">{{ plan.status.finishedOn | date: 'medium' }}</dd>
+          </div>
+        }
+      </dl>
+
+      <!-- Errors -->
+      @if (plan.status.errors.length) {
+        <div class="migration-detail__errors">
+          <h5 class="migration-detail__config-heading">
+            {{ 'caseManagement.migration.errors.heading' | translate }}
+          </h5>
+          @if (errorsView$ | async; as errorsView) {
+            <valtimo-carbon-list
+              [items]="errorsView.items"
+              [fields]="errorFields$ | async"
+              [pagination]="errorsView.pagination"
+              [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
+              (paginationClicked)="onErrorPageChange($event)"
+            ></valtimo-carbon-list>
+          }
+        </div>
+      }
+    </section>
+
+    <cds-modal-footer [cdsLayer]="1">
+      <button cdsButton="ghost" (click)="onCloseDetail()">
+        {{ 'interface.close' | translate }}
+      </button>
+
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.startButton"
+        (click)="onStartPlan(plan)"
+      >
+        {{ 'caseManagement.migration.startNow' | translate }}
+      </button>
+    </cds-modal-footer>
+  }
+</cds-modal>
+
 <ng-template #statusColumn let-data="data">
   <cds-tag [type]="statusTagType(data.item.status.status)" class="cds-tag--no-margin">
     {{ 'caseManagement.migration.status.' + data.item.status.status | translate }}
@@ -233,4 +196,63 @@
       }}
     </cds-tag>
   }
+</ng-template>
+
+<ng-template #caseIdColumn let-data="data">
+  @if (caseDetailLink(data.item.caseId); as link) {
+    <a
+      class="migration-error__case-link"
+      [routerLink]="link"
+      [title]="data.item.caseId"
+      target="_blank"
+    >
+      {{ shortId(data.item.caseId) }}
+    </a>
+  } @else {
+    <span [title]="data.item.caseId">{{ shortId(data.item.caseId) }}</span>
+  }
+</ng-template>
+
+<ng-template #errorColumn let-data="data">
+  <div class="migration-error">
+    <div class="migration-error__cell">
+      <span class="migration-error__message" [title]="firstErrorLine(data.item.message)">
+        {{ firstErrorLine(data.item.message) }}
+      </span>
+
+      <div class="migration-error__actions">
+        <button
+          cdsButton="ghost"
+          [iconOnly]="true"
+          [title]="
+            (isErrorExpanded(data.item.caseId)
+              ? 'caseManagement.migration.errors.hideStacktrace'
+              : 'caseManagement.migration.errors.showStacktrace'
+            ) | translate
+          "
+          size="sm"
+          (click)="onToggleError($event, data.item.caseId)"
+        >
+          <svg
+            [cdsIcon]="isErrorExpanded(data.item.caseId) ? 'chevron--up' : 'chevron--down'"
+            size="16"
+          ></svg>
+        </button>
+
+        <button
+          cdsButton="ghost"
+          [iconOnly]="true"
+          [title]="'caseManagement.migration.errors.copyFullError' | translate"
+          size="sm"
+          (click)="onCopyError($event, data.item.message)"
+        >
+          <svg cdsIcon="copy" size="16"></svg>
+        </button>
+      </div>
+    </div>
+
+    @if (isErrorExpanded(data.item.caseId)) {
+      <pre class="migration-error__trace">{{ data.item.message }}</pre>
+    }
+  </div>
 </ng-template>

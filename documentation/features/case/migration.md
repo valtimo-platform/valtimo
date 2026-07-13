@@ -51,21 +51,30 @@ Select **New migration plan** to open the plan editor. A plan is made up of a fe
 * **Which cases** — the conditions that decide which cases this plan applies to (for example,
   only cases with a certain status or a certain value in their data). Cases that don't match are
   left for other plans. Leave the conditions empty to apply to all cases.
-* **What data changes** — the data migration. You can **copy** a value from one field to another,
-  or **set** a fixed value in a field. Each change can optionally be given a type (text, number,
-  yes/no, and so on).
-* **How the process moves** — the process migration. You map the steps of the old process to the
-  steps of the new one, and optionally set process variables during the migration.
+* **What data changes** — the data migration (see [Source and target](#source-and-target)). Each
+  row writes one **target** field from a **source**: copy an existing field's value, set a fixed
+  value, or clear it. Each change can optionally be given a type (text, number, yes/no, and so on).
+* **How the process moves** — the process migration. For each running process you pick a **source
+  process** and a **target process** and map the steps of one onto the other (see
+  [Source and target](#source-and-target)). You can optionally set process variables during the
+  migration.
+* **Adding or removing building blocks** — optionally create or dissolve building blocks on each
+  migrated case (see [Adding and removing building blocks](#adding-and-removing-building-blocks)).
 * **When it runs** — the trigger (see below).
-* **Source and target** — by default a plan migrates cases from the previous version into the
-  version the plan belongs to. If needed, you can point the source or target somewhere else. The
-  source and target can even be **different kinds**: you can migrate from a **case to a building
-  block**, or from a **building block to a case**, as well as case-to-case and
-  building-block-to-building-block.
 
 You can build a plan through these guided sections. Everything is configured in the UI and saved
 with the case definition, so the same plan behaves identically in every environment (test,
 acceptance, production).
+
+## Source and target
+
+The words **source** and **target** appear throughout the editor. They always mean the same thing:
+the **source** is where something is read _from_, the **target** is where it is written _to_.
+
+At the level of the whole plan this is fixed and you don't choose it: a plan always migrates cases
+**from the previous version** (the source — the version the cases are currently on) **into the
+version the plan belongs to** (the target). That is why you create the plan under the version you
+want cases to end up on.
 
 ## When a plan runs (triggers)
 

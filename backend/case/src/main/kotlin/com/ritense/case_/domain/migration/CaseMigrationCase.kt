@@ -21,6 +21,7 @@ import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.Lob
 import jakarta.persistence.Table
 
 /**
@@ -40,6 +41,7 @@ data class CaseMigrationCase(
     @Column(name = "status", nullable = false)
     val status: CaseMigrationCaseStatus,
 
-    @Column(name = "error_message", length = 2048)
+    @Lob
+    @Column(name = "error_message")
     val errorMessage: String? = null,
 )

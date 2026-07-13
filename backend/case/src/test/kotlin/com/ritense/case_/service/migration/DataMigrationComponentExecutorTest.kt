@@ -52,7 +52,10 @@ class DataMigrationComponentExecutorTest(
 
     @BeforeEach
     fun setUp() {
-        executor = DataMigrationComponentExecutor(objectMapper, dataMigrationConfigurationRepository, valueResolverService)
+        executor = DataMigrationComponentExecutor(
+            dataMigrationConfigurationRepository,
+            MigrationDataPatchApplier(objectMapper, valueResolverService),
+        )
     }
 
     @Test

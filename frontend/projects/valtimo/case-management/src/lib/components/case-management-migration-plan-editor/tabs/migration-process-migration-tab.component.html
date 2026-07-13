@@ -15,9 +15,9 @@
   -->
 
 <div class="migration-tab" [formGroup]="form">
-  <p class="migration-tab__description">
-    {{ 'caseManagement.migration.editor.processMigration.description' | translate }}
-  </p>
+  @if (descriptionKey) {
+    <p class="migration-tab__description">{{ descriptionKey | translate }}</p>
+  }
 
   <div class="migration-tab__items" formArrayName="instructions">
     @for (instruction of instructionsArray.controls; track $index) {
@@ -44,7 +44,7 @@
             <option value="">
               {{ 'caseManagement.migration.editor.processMigration.selectProcess' | translate }}
             </option>
-            @for (key of processDefinitionKeys; track key) {
+            @for (key of processKeyOptions(instruction, 'source'); track key) {
               <option [value]="key">{{ key }}</option>
             }
           </cds-select>
@@ -56,7 +56,7 @@
             <option value="">
               {{ 'caseManagement.migration.editor.processMigration.selectProcess' | translate }}
             </option>
-            @for (key of processDefinitionKeys; track key) {
+            @for (key of processKeyOptions(instruction, 'target'); track key) {
               <option [value]="key">{{ key }}</option>
             }
           </cds-select>
@@ -99,15 +99,14 @@
               @if (activitiesFor(instruction).targetNodes.length) {
                 <cds-select
                   formControlName="target"
+                  [invalid]="mappingErrors(instruction, mapping).length > 0"
+                  [invalidText]="mappingErrors(instruction, mapping)[0]"
                   [label]="'caseManagement.migration.editor.processMigration.targetActivity' | translate"
                 >
                   <option value="">–</option>
                   @for (node of activitiesFor(instruction).targetNodes; track node.id) {
                     <option [value]="node.id">{{ node.label }}</option>
                   }
-                  <option [value]="SKIP_MIGRATION">
-                    {{ 'caseManagement.migration.editor.processMigration.skip' | translate }}
-                  </option>
                 </cds-select>
               } @else {
                 <cds-text-label>
@@ -126,6 +125,12 @@
                 <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
               </button>
             </div>
+            <!-- whitespace -->
+            @if (mappingErrors(instruction, mapping).length) {
+              <p class="migration-tab__mapping-error">
+                {{ 'caseManagement.migration.editor.processMigration.incompatibleMapping' | translate }}
+              </p>
+            }
           }
         </div>
 
@@ -134,25 +139,88 @@
           <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
         </button>
 
-        <!-- New process variables -->
+        <!-- Set process variables -->
         <h5 class="migration-tab__subheading">
-          {{ 'caseManagement.migration.editor.processMigration.newProcessVariables' | translate }}
+          {{ 'caseManagement.migration.editor.processMigration.setProcessVariables' | translate }}
         </h5>
+        <p class="migration-tab__hint">
+          {{ 'caseManagement.migration.editor.processMigration.setProcessVariablesHint' | translate }}
+        </p>
 
-        <div class="migration-tab__mapping" formArrayName="newProcessVariables">
-          @for (variable of newProcessVariablesArray(instruction).controls; track $index) {
-            <div class="migration-tab__mapping-row" [formGroupName]="$index">
-              <cds-text-label>
-                {{ 'caseManagement.migration.editor.processMigration.variableName' | translate }}
-                <input cdsText formControlName="name" />
-              </cds-text-label>
+        <div class="migration-tab__patches" formArrayName="setProcessVariables">
+          @for (variable of setProcessVariablesArray(instruction).controls; track $index) {
+            <div class="migration-tab__patch" [formGroupName]="$index">
+              <!-- Source (left) -->
+              <div class="migration-tab__patch-side migration-tab__patch-side--from">
+                <cds-select
+                  formControlName="mode"
+                  [label]="'caseManagement.migration.editor.processMigration.variableMode' | translate"
+                >
+                  @for (mode of MODES; track mode) {
+                    <option [value]="mode">
+                      {{ 'caseManagement.migration.editor.dataMigration.mode_' + mode | translate }}
+                    </option>
+                  }
+                </cds-select>
 
-              <span class="migration-tab__mapping-arrow">=</span>
+                @switch (variable.get('mode')?.value) {
+                  @case ('path') {
+                    <valtimo-value-path-selector
+                      formControlName="source"
+                      [caseDefinitionKey]="sourceContext?.caseDefinitionKey ?? null"
+                      [caseDefinitionVersionTag]="sourceContext?.caseDefinitionVersionTag ?? null"
+                      [buildingBlockDefinitionKey]="sourceContext?.buildingBlockKey ?? null"
+                      [buildingBlockDefinitionVersionTag]="sourceContext?.buildingBlockVersionTag ?? null"
+                      [label]="'caseManagement.migration.editor.processMigration.variableSource' | translate"
+                      [prefixes]="SOURCE_PREFIXES"
+                      [notation]="'slashes'"
+                    ></valtimo-value-path-selector>
+                  }
+                  @case ('value') {
+                    <cds-text-label>
+                      {{ 'caseManagement.migration.editor.processMigration.variableValue' | translate }}
+                      <input
+                        cdsText
+                        formControlName="value"
+                        [placeholder]="'caseManagement.migration.editor.processMigration.variableValuePlaceholder' | translate"
+                      />
+                    </cds-text-label>
+                  }
+                  @default {
+                    <span class="migration-tab__null-hint">
+                      {{ 'caseManagement.migration.editor.dataMigration.nullHint' | translate }}
+                    </span>
+                  }
+                }
+              </div>
 
-              <cds-text-label>
-                {{ 'caseManagement.migration.editor.processMigration.variableValue' | translate }}
-                <input cdsText formControlName="value" />
-              </cds-text-label>
+              <span class="migration-tab__mapping-arrow" aria-hidden="true">→</span>
+
+              <!-- Target (right) — a plain pv: path, no value selector -->
+              <div class="migration-tab__patch-side migration-tab__patch-side--to">
+                <cds-text-label>
+                  {{ 'caseManagement.migration.editor.processMigration.variableTarget' | translate }}
+                  <input
+                    cdsText
+                    formControlName="target"
+                    [placeholder]="'caseManagement.migration.editor.processMigration.variableTargetPlaceholder' | translate"
+                  />
+                </cds-text-label>
+
+                @if (variable.get('mode')?.value !== 'null') {
+                  <cds-select
+                    formControlName="targetType"
+                    [label]="'caseManagement.migration.editor.processMigration.variableTargetType' | translate"
+                  >
+                    <option value="">
+                      {{ 'caseManagement.migration.editor.dataMigration.targetTypeAuto' | translate }}
+                    </option>
+                    @for (type of TARGET_TYPES; track type) {
+                      <option [value]="type">{{ type }}</option>
+                    }
+                  </cds-select>
+                }
+              </div>
 
               <button
                 cdsButton="danger--ghost"

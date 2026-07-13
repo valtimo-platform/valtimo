@@ -49,10 +49,10 @@ class BuildingBlockInstance(
     val caseDocumentId: UUID? = null,
 
     @Column(name = "activity_id", nullable = true)
-    val activityId: String? = null,
+    var activityId: String? = null,
 
     @Column(name = "caller_process_definition_id", nullable = true)
-    val callerProcessDefinitionId: String? = null,
+    var callerProcessDefinitionId: String? = null,
 
     @Column(name = "process_instance_id", nullable = true)
     var processInstanceId: String? = null,

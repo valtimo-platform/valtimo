@@ -1,0 +1,127 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-tab" [formGroup]="form">
+  <!-- Plan -->
+  <div class="migration-tab__grid">
+    <cds-text-label>
+      {{ 'buildingBlockManagement.migration.editor.general.title' | translate }}
+      <input
+        cdsText
+        formControlName="title"
+        [placeholder]="'buildingBlockManagement.migration.editor.general.titlePlaceholder' | translate"
+      />
+    </cds-text-label>
+
+    <cds-text-label>
+      {{ 'buildingBlockManagement.migration.editor.general.key' | translate }}
+      <input
+        cdsText
+        formControlName="key"
+        [placeholder]="'buildingBlockManagement.migration.editor.general.keyPlaceholder' | translate"
+      />
+    </cds-text-label>
+  </div>
+
+  <!-- Triggers -->
+  <h5 class="migration-tab__subheading">
+    {{ 'buildingBlockManagement.migration.editor.general.triggers' | translate }}
+  </h5>
+  <p class="migration-tab__hint">
+    {{ 'buildingBlockManagement.migration.editor.general.triggersHint' | translate }}
+  </p>
+
+  <cds-checkbox formControlName="triggeredByButton">
+    {{ 'buildingBlockManagement.migration.editor.general.triggeredByButton' | translate }}
+  </cds-checkbox>
+
+  <div class="migration-tab__grid">
+    <cds-text-label>
+      {{ 'buildingBlockManagement.migration.editor.general.scheduledAtDate' | translate }}
+      <input cdsText formControlName="scheduledAtDate" type="datetime-local" />
+    </cds-text-label>
+
+    <v-select
+      formControlName="runAfter"
+      [items]="runAfterOptions"
+      [titleTranslationKey]="'buildingBlockManagement.migration.editor.general.runAfter'"
+      [placeholder]="'buildingBlockManagement.migration.editor.general.runAfterPlaceholder' | translate"
+      [notFoundText]="'buildingBlockManagement.migration.editor.general.runAfterEmpty' | translate"
+      [clearable]="true"
+    ></v-select>
+  </div>
+
+  <!-- Conditions -->
+  <h5 class="migration-tab__subheading">
+    {{ 'buildingBlockManagement.migration.editor.general.conditions' | translate }}
+  </h5>
+  <p class="migration-tab__hint">
+    {{ 'buildingBlockManagement.migration.editor.general.conditionsHint' | translate }}
+  </p>
+
+  <div class="migration-tab__mapping" formArrayName="conditions">
+    @for (condition of conditionsArray.controls; track $index) {
+      <div class="migration-tab__condition-row" [formGroupName]="$index">
+        <valtimo-value-path-selector
+          formControlName="path"
+          [buildingBlockDefinitionKey]="buildingBlockDefinitionKey"
+          [buildingBlockDefinitionVersionTag]="buildingBlockDefinitionVersionTag"
+          [label]="'buildingBlockManagement.migration.editor.general.conditionPath' | translate"
+          [prefixes]="CONDITION_PATH_PREFIXES"
+          [notation]="'slashes'"
+        ></valtimo-value-path-selector>
+
+        <cds-select
+          formControlName="operator"
+          [label]="'buildingBlockManagement.migration.editor.general.conditionOperator' | translate"
+        >
+          @for (operator of OPERATORS; track operator) {
+            <option [value]="operator">{{ operator }}</option>
+          }
+        </cds-select>
+
+        <cds-text-label>
+          {{ 'buildingBlockManagement.migration.editor.general.conditionValue' | translate }}
+          <input cdsText formControlName="value" />
+        </cds-text-label>
+
+        <button
+          cdsButton="danger--ghost"
+          size="sm"
+          [iconOnly]="true"
+          [title]="'interface.delete' | translate"
+          (click)="removeCondition($index)"
+        >
+          <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </div>
+    } @empty {
+      <p class="migration-tab__empty">
+        {{ 'buildingBlockManagement.migration.editor.general.noConditions' | translate }}
+      </p>
+    }
+  </div>
+
+  <button
+    cdsButton="tertiary"
+    size="sm"
+    [attr.data-test-id]="testIds.addConditionButton"
+    (click)="addCondition()"
+  >
+    {{ 'buildingBlockManagement.migration.editor.general.addCondition' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>

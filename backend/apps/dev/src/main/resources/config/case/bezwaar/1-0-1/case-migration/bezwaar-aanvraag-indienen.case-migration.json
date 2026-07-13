@@ -1,5 +1,5 @@
 {
-    "title": "Migrate bezwaar cases in behandeling (1.0.0 → 1.0.1)",
+    "title": "Migrate bezwaar cases in behandeling",
     "key": "bezwaar-aanvraag-indienen",
     "migrationTriggers": {
         "triggeredByButton": true
