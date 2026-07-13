@@ -70,7 +70,30 @@ fs.readdirSync(distDir).forEach(dir => {
       `//${destinationRegistry}:_authToken=${accessKeyIdOrNpmToken}\n`
     );
 
-    exec.execSync('npm publish' + accessModifier);
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    let alreadyPublished = false;
+
+    try {
+      const publishedVersion = exec
+        .execSync(`npm view ${pkg.name}@${pkg.version} version --quiet`, {
+          stdio: ['pipe', 'pipe', 'ignore'],
+        })
+        .toString()
+        .trim();
+
+      if (publishedVersion === pkg.version) {
+        alreadyPublished = true;
+      }
+    } catch (e) {
+      // If `npm view` fails, it likely means the package or version doesn't exist.
+      // Assume it is not published yet.
+    }
+
+    if (alreadyPublished) {
+      console.warn(`::warning ::Skipping ${pkg.name}@${pkg.version} as it is already published.`);
+    } else {
+      exec.execSync('npm publish' + accessModifier);
+    }
   }
   if (destinationRegistry === 's3') {
     let envCopy = {};
