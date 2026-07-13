@@ -97,6 +97,12 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
   // source map holds the predecessor version's linked processes and the target map holds this one's.
   public readonly $sourceProcessDefs = signal<Record<string, string>>({});
   public readonly $targetProcessDefs = signal<Record<string, string>>({});
+  // The plan's `key` identifies it and is required by the backend; a save without it fails, so
+  // Save stays disabled until the JSON is valid, not already saving, and a non-blank key is present.
+  public readonly $canSave = computed(() => {
+    const key = this.$plan().key;
+    return this.$valid() && !this.$saving() && typeof key === 'string' && key.trim().length > 0;
+  });
 
   private _params!: CaseManagementParams;
   private _migrationKey: string | null = null;

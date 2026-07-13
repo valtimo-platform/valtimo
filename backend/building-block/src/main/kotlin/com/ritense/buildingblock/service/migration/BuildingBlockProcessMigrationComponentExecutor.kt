@@ -145,6 +145,7 @@ class BuildingBlockProcessMigrationComponentExecutor(
         targetDefinitionId: String,
     ): MigrationPlan {
         val builder = runtimeService.createMigrationPlan(sourceDefinitionId, targetDefinitionId)
+            .mapEqualActivities()
         instruction.mapActivities.forEach { (source, target) -> builder.mapActivities(source, target) }
         return builder.build()
     }

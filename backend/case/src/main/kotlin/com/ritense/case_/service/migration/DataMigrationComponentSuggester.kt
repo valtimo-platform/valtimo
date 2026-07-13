@@ -27,13 +27,17 @@ import com.ritense.valueresolver.ValueResolverService
 
 /**
  * Best-effort `dataMigration` suggestion. The document JSON is copied verbatim from the source to
- * the target version by default, so fields present in both versions need no patch. Only the
- * differences are suggested:
+ * the target version by default, so fields present at the **same path** in both versions need no
+ * patch. Each remaining target is paired with the source whose **field name** (the segment after
+ * the last `/`) is most similar — the full path may be restructured (`doc:/path/to/value` →
+ * `doc:/path/to/new/value`), only the name is expected to survive a rename, so a source is only
+ * considered a match when its name is at least [SIMILARITY_THRESHOLD] similar. The pairing is
+ * one-to-one: every source is matched to at most one target. The leftovers are then suggested:
  *
- * - a field that is **new** in the target (not in the source) gets a copy patch from the most
- *   similarly-named source field, as a best-effort starting point the user can repoint;
- * - a field that **only exists in the source** (removed in the target) gets a patch that sets it to
- *   `null`, clearing the stale value carried over by the verbatim copy.
+ * - a target that **found no source** gets a copy patch with a `null` source, surfacing the field
+ *   so the user can point it at the right source;
+ * - a source that was **matched to no target** gets a patch that sets it to `null`, clearing the
+ *   stale value carried over by the verbatim copy.
  */
 class DataMigrationComponentSuggester(
     private val valueResolverService: ValueResolverService,
@@ -49,34 +53,75 @@ class DataMigrationComponentSuggester(
         val sourcePathSet = sourcePaths.toSet()
         val targetPathSet = targetPaths.toSet()
 
-        val usedSources = sourcePaths.filterTo(mutableSetOf()) { it in targetPathSet }
+        // Identical paths are copied verbatim by the migration engine, so they need no patch. They
+        // still consume their source, so it is not later cleared as an unmatched leftover.
+        val matchedSourceByTarget = matchByName(
+            targets = targetPaths.filterNot { it in sourcePathSet },
+            sources = sourcePaths.filterNot { it in targetPathSet },
+        )
+        val matchedSources = matchedSourceByTarget.values.toSet()
 
-        val additions = targetPaths
+        val copies = targetPaths
             .filter { targetPath -> targetPath !in sourcePathSet }
-            .map { targetPath ->
-                val candidates = sourcePaths.filterNot { it in usedSources }.ifEmpty {
-                    usedSources.clear()
-                    sourcePaths
-                }
-                val source = mostSimilarPath(targetPath, candidates)?.also { usedSources.add(it) }
-                DataMigrationPatch(source = source, target = targetPath)
-            }
+            .map { targetPath -> DataMigrationPatch(source = matchedSourceByTarget[targetPath], target = targetPath) }
 
         val removals = sourcePaths
-            .filter { sourcePath -> sourcePath !in targetPathSet }
+            .filter { sourcePath -> sourcePath !in targetPathSet && sourcePath !in matchedSources }
             .map { removedPath -> DataMigrationPatch(value = null, target = removedPath) }
 
-        return (additions + removals).ifEmpty { null }
+        return (copies + removals).ifEmpty { null }
+    }
+
+    /**
+     * Greedily pairs each target with the still-unmatched source whose field name is most similar,
+     * strongest match first, keeping only pairs that clear [SIMILARITY_THRESHOLD]. Returns the
+     * resulting `target -> source` map; a target with no qualifying source is simply absent.
+     */
+    private fun matchByName(targets: List<String>, sources: List<String>): Map<String, String> {
+        val candidates = targets
+            .flatMap { target ->
+                sources.map { source -> Triple(similarity(fieldName(source), fieldName(target)), source, target) }
+            }
+            .filter { (similarity, _, _) -> similarity >= SIMILARITY_THRESHOLD }
+            .sortedByDescending { (similarity, _, _) -> similarity }
+
+        val takenSources = mutableSetOf<String>()
+        val matched = LinkedHashMap<String, String>()
+        for ((_, source, target) in candidates) {
+            if (target in matched || source in takenSources) continue
+            matched[target] = source
+            takenSources.add(source)
+        }
+        return matched
     }
 
     private fun fieldPaths(options: List<ValueResolverOption>): List<String> =
         options.flatMap { option -> listOf(option.path) + fieldPaths(option.children ?: emptyList()) }
 
-    /** The candidate whose name is closest (smallest edit distance) to [target], or null if none. */
-    private fun mostSimilarPath(target: String, candidates: List<String>): String? =
-        candidates.minByOrNull { candidate -> LcsDistance.between(candidate.lowercase(), target.lowercase()) }
+    /**
+     * The path's field name: everything after the last delimiter, trying `/`, then `.`, then `:`
+     * in that order (e.g. `doc:/a/b/value` -> `value`, `pv:a.b.value` -> `value`, `pv:value` ->
+     * `value`). Falls back to the whole path when none of the delimiters are present.
+     */
+    private fun fieldName(path: String): String {
+        val delimiter = NAME_DELIMITERS.firstOrNull { it in path } ?: return path
+        return path.substringAfterLast(delimiter)
+    }
+
+    /** LCS-based name similarity in `[0, 1]`; `1` is identical, `0` shares no subsequence. */
+    private fun similarity(a: String, b: String): Double {
+        if (a.isEmpty() && b.isEmpty()) return 1.0
+        val distance = LcsDistance.between(a.lowercase(), b.lowercase())
+        return 1.0 - distance.toDouble() / (a.length + b.length)
+    }
 
     private companion object {
         const val DOCUMENT_PREFIX = "doc"
+
+        /** Field-name delimiters, tried in priority order to isolate the segment after the last one. */
+        val NAME_DELIMITERS = listOf('/', '.', ':')
+
+        /** Minimum field-name similarity for a source to be considered a rename of a target. */
+        const val SIMILARITY_THRESHOLD = 0.9
     }
 }

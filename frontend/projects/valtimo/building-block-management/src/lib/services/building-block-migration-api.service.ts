@@ -53,15 +53,6 @@ export class BuildingBlockMigrationApiService extends BaseApiService {
     );
   }
 
-  public getStatus(
-    params: BuildingBlockMigrationParams,
-    migrationKey: string
-  ): Observable<MigrationExecutionStatus> {
-    return this.httpClient.get<MigrationExecutionStatus>(
-      `${this.getMigrationUrl(params)}/${migrationKey}/status`
-    );
-  }
-
   public getPlanJson(
     params: BuildingBlockMigrationParams,
     migrationKey: string

@@ -54,15 +54,6 @@ export class CaseMigrationApiService extends BaseApiService {
     );
   }
 
-  public getStatus(
-    params: CaseManagementParams,
-    migrationKey: string
-  ): Observable<MigrationExecutionStatus> {
-    return this.httpClient.get<MigrationExecutionStatus>(
-      `${this.getMigrationUrl(params)}/${migrationKey}/status`
-    );
-  }
-
   public getPlanJson(
     params: CaseManagementParams,
     migrationKey: string
