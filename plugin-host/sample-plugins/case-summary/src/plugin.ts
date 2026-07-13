@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type {ActionInput, Document, EventInput, RequestInput} from "@valtimo/plugin-sdk";
-import {action, config, gzacApi, log, onEvent, request,} from "@valtimo/plugin-sdk";
+import type {ActionInput, Document, EventInput, RequestInput, SubmitInput} from "@valtimo/plugin-sdk";
+import {action, config, gzacApi, log, onEvent, request, submit,} from "@valtimo/plugin-sdk";
 
 // Plugin-served data for the case-tab iframe. Reached via the host's
 // `POST /plugins/case-summary/{version}/data` route, which the Angular parent-proxy calls when the
@@ -111,6 +111,85 @@ function countCases(input: RequestInput, as: "user" | "plugin") {
     },
   };
 }
+
+// ---------------------------------------------------------------------------------------------
+// Task-form scenarios. The plugin ships three `task-form` bundles demonstrating the three levels:
+//   - Level 0 (`approve`)  : pure frontend form, NO backend code here. The bundle sends value-
+//                            resolver-prefixed keys via `sdk.submitTask` and GZAC completes the task.
+//   - Level 1 (`review`)   : the `submit("review", …)` hook below validates/transforms the raw
+//                            submission; GZAC still completes the task with what the hook returns.
+//   - Level 2 (`custom`)   : the `request("/submit-task", …)` handler below drives completion itself
+//                            via `gzacApi.asUser` (the escape hatch, unchanged from before).
+// ---------------------------------------------------------------------------------------------
+
+// Level 1 — task-form submit hook. GZAC calls this synchronously during submission (because the
+// `review` task-form bundle declares `submitHandler: true`), BEFORE completing the task. It runs on
+// the same rails as an action (server-to-server, HMAC, service token). Return `{status:"completed",
+// variables, documentContent}` and GZAC completes the task with those values; return
+// `{status:"error", errorMessage, fieldErrors}` to reject the submission and show errors on the form.
+submit("review", (input: SubmitInput) => {
+  const submission = input.submission as {decision?: string; comment?: string};
+  const decision = (submission.decision ?? "").trim();
+  const comment = (submission.comment ?? "").trim();
+
+  // Custom validation the browser cannot bypass — a rejection must carry a reason.
+  if (decision === "reject" && comment.length === 0) {
+    return {
+      status: "error" as const,
+      errorCode: "COMMENT_REQUIRED",
+      errorMessage: "A comment is required when rejecting.",
+      fieldErrors: {comment: "Please explain why you are rejecting this case."},
+    };
+  }
+  if (decision !== "approve" && decision !== "reject") {
+    return {
+      status: "error" as const,
+      errorCode: "INVALID_DECISION",
+      fieldErrors: {decision: "Choose approve or reject."},
+    };
+  }
+
+  // Derived, server-authoritative variables + a document field — GZAC applies these the standard way.
+  log.info(`[case-summary] review submit hook: decision=${decision}`);
+  return {
+    status: "completed" as const,
+    variables: {
+      caseReviewDecision: decision,
+      caseReviewApproved: decision === "approve",
+      caseReviewedAt: new Date().toISOString(),
+    },
+    documentContent: {
+      "/reviewComment": comment,
+    },
+  };
+});
+
+// Level 2 — full custom escape hatch. The `custom` task-form bundle POSTs here via
+// `sdk.postPluginData("/submit-task", …)` and this handler completes the user task in GZAC itself,
+// **as the logged-in user** (`gzacApi.asUser`, PBAC ∩ allowlist). The task id comes from the
+// authoritative backend-supplied task context (never the request body); the complete endpoint must
+// be granted under `permissions.endpoints`. Prefer Level 0/1 — this remains for genuinely custom needs.
+request("/submit-task", (input: RequestInput) => {
+  const taskId = input.context?.taskId as string | undefined;
+  if (!taskId) {
+    return {status: 400, body: {error: "No taskId in task-form context"}};
+  }
+
+  const body = (input.body ?? {}) as {variables?: Record<string, unknown>};
+  const variables = body.variables ?? {};
+
+  const res = gzacApi.asUser.post(`/api/v1/task/${taskId}/complete`, {variables});
+  if (res.status < 200 || res.status >= 300) {
+    log.info(`[case-summary] task completion for ${taskId} failed (status ${res.status})`);
+    return {
+      status: res.status,
+      body: {error: `Task completion failed (status ${res.status})`},
+    };
+  }
+
+  log.info(`[case-summary] completed task ${taskId} as the user`);
+  return {status: 200, body: {completed: true}};
+});
 
 action("case-summary", (input: ActionInput) => {
   const titleField = (input.properties.titleField as string) || "/applicantName";

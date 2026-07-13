@@ -19,7 +19,6 @@ package com.ritense.externalplugin.service
 import com.ritense.case_.service.ExternalPluginCaseTabResolver
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 /**
@@ -29,7 +28,6 @@ import java.util.UUID
  */
 @Service
 @SkipComponentScan
-@Transactional(readOnly = true)
 class ExternalPluginCaseTabResolverImpl(
     private val bundleUrlResolver: ExternalPluginBundleUrlResolver,
 ) : ExternalPluginCaseTabResolver {

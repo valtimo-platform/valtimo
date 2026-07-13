@@ -25,12 +25,18 @@ import com.ritense.externalplugin.compatibility.PluginPackageInspector
 import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
 import com.ritense.externalplugin.processlink.ExternalPluginServiceTaskStartListener
 import com.ritense.externalplugin.processlink.ExternalPluginSupportedProcessLinkTypeHandler
+import com.ritense.externalplugin.processlink.ExternalPluginTaskFormProcessLinkActivityHandler
+import com.ritense.externalplugin.processlink.ExternalPluginTaskFormProcessLinkMapper
+import com.ritense.externalplugin.processlink.ExternalPluginTaskFormSubmissionService
+import com.ritense.externalplugin.processlink.ExternalPluginTaskFormSupportedProcessLinkTypeHandler
+import com.ritense.externalplugin.processlink.web.ExternalPluginTaskFormSubmissionResource
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
+import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
 import com.ritense.externalplugin.security.ExternalPluginCallbackHttpSecurityConfigurer
 import com.ritense.externalplugin.security.ExternalPluginEndpointAllowlistFilter
 import com.ritense.externalplugin.security.ExternalPluginHttpSecurityConfigurer
@@ -101,6 +107,7 @@ class ExternalPluginAutoConfiguration {
         definitionRepository: ExternalPluginDefinitionRepository,
         configurationRepository: ExternalPluginConfigurationRepository,
         processLinkRepository: ExternalPluginProcessLinkRepository,
+        taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
         operatonRepositoryService: OperatonRepositoryService,
         bpmnRepositoryService: RepositoryService,
         caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
@@ -108,6 +115,7 @@ class ExternalPluginAutoConfiguration {
         definitionRepository,
         configurationRepository,
         processLinkRepository,
+        taskFormProcessLinkRepository,
         operatonRepositoryService,
         bpmnRepositoryService,
         caseExternalPluginTabService,
@@ -354,6 +362,56 @@ class ExternalPluginAutoConfiguration {
     @Order(40)
     @ConditionalOnMissingBean(ExternalPluginSupportedProcessLinkTypeHandler::class)
     fun externalPluginSupportedProcessLinkTypeHandler() = ExternalPluginSupportedProcessLinkTypeHandler()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginTaskFormProcessLinkMapper::class)
+    fun externalPluginTaskFormProcessLinkMapper(objectMapper: ObjectMapper) =
+        ExternalPluginTaskFormProcessLinkMapper(objectMapper)
+
+    @Bean
+    @Order(41)
+    @ConditionalOnMissingBean(ExternalPluginTaskFormSupportedProcessLinkTypeHandler::class)
+    fun externalPluginTaskFormSupportedProcessLinkTypeHandler() = ExternalPluginTaskFormSupportedProcessLinkTypeHandler()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginTaskFormProcessLinkActivityHandler::class)
+    fun externalPluginTaskFormProcessLinkActivityHandler(
+        bundleUrlResolver: ExternalPluginBundleUrlResolver,
+    ) = ExternalPluginTaskFormProcessLinkActivityHandler(bundleUrlResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginTaskFormSubmissionService::class)
+    fun externalPluginTaskFormSubmissionService(
+        processLinkService: com.ritense.processlink.service.ProcessLinkService,
+        configurationService: ExternalPluginConfigurationService,
+        definitionService: ExternalPluginDefinitionService,
+        hostService: ExternalPluginHostService,
+        hostClient: ExternalPluginHostClient,
+        processDocumentService: com.ritense.processdocument.service.ProcessDocumentService,
+        documentService: com.ritense.document.service.impl.JsonSchemaDocumentService,
+        operatonTaskService: com.ritense.valtimo.service.OperatonTaskService,
+        authorizationService: com.ritense.authorization.AuthorizationService,
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+    ) = ExternalPluginTaskFormSubmissionService(
+        processLinkService,
+        configurationService,
+        definitionService,
+        hostService,
+        hostClient,
+        processDocumentService,
+        documentService,
+        operatonTaskService,
+        authorizationService,
+        valueResolverService,
+        objectMapper,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginTaskFormSubmissionResource::class)
+    fun externalPluginTaskFormSubmissionResource(
+        submissionService: ExternalPluginTaskFormSubmissionService,
+    ) = ExternalPluginTaskFormSubmissionResource(submissionService)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTaskStartListener::class)

@@ -18,10 +18,10 @@ package com.ritense.externalplugin.service
 
 import com.ritense.case_.service.CaseExternalPluginTabService
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
-import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
+import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -44,6 +44,7 @@ class ExternalPluginHostUsageResolver(
     private val definitionRepository: ExternalPluginDefinitionRepository,
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val processLinkRepository: ExternalPluginProcessLinkRepository,
+    private val taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
     private val operatonRepositoryService: OperatonRepositoryService,
     private val bpmnRepositoryService: RepositoryService,
     /**
@@ -89,8 +90,10 @@ class ExternalPluginHostUsageResolver(
     private fun buildUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {
         if (configurations.isEmpty()) return emptyList()
         val configById = configurations.associateBy { it.id }
-        val links = processLinkRepository
-            .findAllByExternalPluginConfigurationIdIn(configById.keys)
+        // Both external-plugin process-link surfaces reference a configuration: service-task actions
+        // and user-task forms. Each is its own discriminator (a subtype-typed JPA repository only
+        // returns rows of its own type), so we union both to guard deletion against either usage.
+        val links = collectUsageLinks(configById.keys)
         if (links.isEmpty()) return emptyList()
 
         val metaCache = mutableMapOf<String, ProcessDefinitionMeta>()
@@ -99,7 +102,7 @@ class ExternalPluginHostUsageResolver(
             val meta = metaCache.getOrPut(link.processDefinitionId) {
                 resolveProcessDefinitionMeta(link.processDefinitionId)
             }
-            val configuration = configById.getValue(link.externalPluginConfigurationId)
+            val configuration = configById.getValue(link.configurationId)
             PluginUsageDto(
                 configurationId = configuration.id,
                 configurationTitle = configuration.title,
@@ -110,10 +113,18 @@ class ExternalPluginHostUsageResolver(
                 processDefinitionKey = meta.processDefinitionKey,
                 processDefinitionName = meta.processDefinitionName,
                 activityId = link.activityId,
-                activityName = resolveActivityName(link, meta),
+                activityName = resolveActivityName(link.activityId, meta),
                 processLinkId = link.id,
             )
         }
+    }
+
+    private fun collectUsageLinks(configurationIds: Collection<UUID>): List<UsageLink> {
+        val actionLinks = processLinkRepository.findAllByExternalPluginConfigurationIdIn(configurationIds)
+            .map { UsageLink(it.id, it.processDefinitionId, it.activityId, it.externalPluginConfigurationId) }
+        val taskFormLinks = taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(configurationIds)
+            .map { UsageLink(it.id, it.processDefinitionId, it.activityId, it.externalPluginConfigurationId) }
+        return actionLinks + taskFormLinks
     }
 
     private fun collectConfigurationsForHost(hostId: UUID): List<ExternalPluginConfiguration> {
@@ -168,14 +179,25 @@ class ExternalPluginHostUsageResolver(
     }
 
     private fun resolveActivityName(
-        link: ExternalPluginProcessLink,
+        activityId: String,
         meta: ProcessDefinitionMeta,
     ): String? {
         val model = meta.bpmnModel ?: return null
         return runCatching {
-            model.getModelElementById<FlowElement>(link.activityId)?.name
+            model.getModelElementById<FlowElement>(activityId)?.name
         }.getOrNull()
     }
+
+    /**
+     * Configuration-referencing process link, unified across the external-plugin surfaces (service-task
+     * action + user-task form) so the delete guard treats both identically.
+     */
+    private data class UsageLink(
+        val id: UUID,
+        val processDefinitionId: String,
+        val activityId: String,
+        val configurationId: UUID,
+    )
 
     private data class ParentClassification(
         val type: PluginUsageParentType,

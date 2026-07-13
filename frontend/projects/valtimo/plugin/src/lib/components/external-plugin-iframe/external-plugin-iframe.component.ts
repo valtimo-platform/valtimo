@@ -66,6 +66,21 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     data: Record<string, unknown>;
   }>();
   @Output() public readyEvent = new EventEmitter<void>();
+  /**
+   * Emitted when a task-form bundle reports it has itself completed the user task (Level 2 — through
+   * the plugin, under the downscoped user token). The host reacts by closing the task and refreshing
+   * the list — it does not complete the task itself.
+   */
+  @Output() public taskCompletedEvent = new EventEmitter<void>();
+  /**
+   * Emitted when a task-form bundle hands its collected data up to be submitted (Level 0/1). The
+   * consumer submits it to GZAC and must reply with {@link sendSubmitResult} using the same
+   * `correlationId` so the iframe's `submitTask` promise resolves.
+   */
+  @Output() public submitTaskEvent = new EventEmitter<{
+    correlationId: string;
+    data: Record<string, unknown>;
+  }>();
 
   public readonly _$trustedUrl = signal<SafeResourceUrl | null>(null);
 
@@ -90,6 +105,19 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
 
   public triggerSave(): void {
     this._postToIframe('save', {});
+  }
+
+  /**
+   * Reply to a {@link submitTaskEvent}: tell the iframe whether GZAC accepted the submission. On a
+   * validation failure `errors`/`fieldErrors` let the plugin render messages without being torn down.
+   */
+  public sendSubmitResult(result: {
+    correlationId: string;
+    ok: boolean;
+    errors?: string[];
+    fieldErrors?: Record<string, string>;
+  }): void {
+    this._postToIframe('submitResult', result);
   }
 
   public sendPrefillConfiguration(prefill: {
@@ -139,6 +167,12 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
         break;
       case 'configurationChanged':
         this.configurationChangedEvent.emit(data.payload);
+        break;
+      case 'taskCompleted':
+        this.taskCompletedEvent.emit();
+        break;
+      case 'submitTask':
+        this.submitTaskEvent.emit(data.payload);
         break;
       case 'resize':
         this._handleResize(data.payload);

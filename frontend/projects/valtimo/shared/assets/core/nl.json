@@ -2097,7 +2097,12 @@
     "dueDateSetNotificationTitle": "Einddatum ingesteld",
     "dueDateSetNotificationContent": "Einddatum '{{date}}' ingesteld voor taak '{{task}}'",
     "dueDateRemovedNotificationTitle": "Einddatum verwijderd",
-    "dueDateRemovedNotificationContent": "Einddatum verwijderd voor taak '{{task}}'"
+    "dueDateRemovedNotificationContent": "Einddatum verwijderd voor taak '{{task}}'",
+    "externalPluginTaskForm": {
+      "unavailable": "Het pluginformulier van deze taak kon niet worden geladen. De plugin is mogelijk niet beschikbaar of biedt geen taakformulier meer aan.",
+      "tokenError": "Kon geen beveiligde verbinding met de plugin maken om het formulier van deze taak te laden.",
+      "submitError": "De taak kon niet worden voltooid. Probeer het opnieuw of neem contact op met support."
+    }
   },
   "assignTask": {
     "assignedTo": "Toegewezen aan",
@@ -2355,7 +2360,8 @@
     "edit": "Proceskoppeling wijzigen",
     "saveChanges": "Wijzigingen opslaan",
     "unlink": "Ontkoppelen",
-    "noPluginFunctions": "Deze plugin ondersteunt geen plugin-acties."
+    "noPluginFunctions": "Deze plugin ondersteunt geen plugin-acties.",
+    "pluginForm": "Pluginformulier"
   },
   "keycloak": {
     "expiryPromptTitle": "De sessie verloopt bijna",
@@ -2598,6 +2604,9 @@
     "buildingBlockActionTitle": "Bouwblokactie: {{buildingBlockName}}",
     "modalTitle": "Processtap: {{processStepName}}",
     "pluginConfiguration": "Plugin configuratie: {{pluginConfigTitle}}",
+    "externalPluginTaskForm": {
+      "description": "De geselecteerde plugin toont het formulier voor deze gebruikerstaak en voltooit de taak zelf, met de rechten van de huidige gebruiker. Er is hier niets meer te configureren — sla op om te koppelen."
+    },
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
     "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
     "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",

@@ -64,9 +64,7 @@ export class PluginStateService {
 
   get functionKey$(): Observable<string> {
     // Prioritize user-selected function, fall back to process link's saved action
-    return this._selectedPluginFunction$.pipe(
-      map(pluginFunction => pluginFunction?.key)
-    );
+    return this._selectedPluginFunction$.pipe(map(pluginFunction => pluginFunction?.key));
   }
 
   get pluginDefinitionKey$(): Observable<string> {
@@ -128,7 +126,10 @@ export class PluginStateService {
 
     if (processLink?.processLinkType === 'plugin') {
       this.loadPluginDefinitionForProcessLink(processLink);
-    } else if (processLink?.processLinkType === 'external_plugin') {
+    } else if (
+      processLink?.processLinkType === 'external_plugin' ||
+      processLink?.processLinkType === 'external_plugin_task_form'
+    ) {
       this.loadExternalPluginStateForProcessLink(processLink);
     }
   }
@@ -204,11 +205,16 @@ export class PluginStateService {
           pluginDefinition: {key: externalKey},
         } as PluginConfiguration);
 
-        // Set the selected function from the saved action key
-        if (processLink.actionKey) {
-          this._selectedPluginFunction$.next({
-            key: processLink.actionKey,
-          } as PluginFunction);
+        // Set the selected "function": a service-task action key, or — for a task-form link — the
+        // task-form bundle key (empty string for the plugin's sole, unkeyed bundle) so the wizard's
+        // selection matches the option listed in the action step.
+        const functionKey =
+          processLink.actionKey ??
+          (processLink.processLinkType === 'external_plugin_task_form'
+            ? (processLink.bundleKey ?? '')
+            : undefined);
+        if (functionKey !== undefined) {
+          this._selectedPluginFunction$.next({key: functionKey} as PluginFunction);
         }
       });
   }

@@ -30,6 +30,8 @@
     formioOptions: formioOptions$ | async,
     processLinkIsFormFlow: processLinkIsFormFlow$ | async,
     formFlowInstanceId: formFlowInstanceId$ | async,
+    processLinkIsExternalPluginTaskForm: processLinkIsExternalPluginTaskForm$ | async,
+    externalPluginTaskForm: externalPluginTaskForm$ | async,
     errorMessage: errorMessage$ | async,
     canAssignUserToTask: canAssignUserToTask$ | async,
     noFormNotification: noFormNotification$ | async,
@@ -64,6 +66,15 @@
       (formFlowComplete)="completeTask(obs.task)"
       (formFlowChange)="onFormFlowChangeEvent()"
     ></valtimo-form-flow>
+
+    <valtimo-task-external-plugin-form
+      *ngIf="obs.processLinkIsExternalPluginTaskForm && obs.externalPluginTaskForm"
+      [bundleUrl]="obs.externalPluginTaskForm.bundleUrl"
+      [configurationId]="obs.externalPluginTaskForm.configurationId"
+      [processLinkId]="obs.externalPluginTaskForm.processLinkId"
+      [context]="obs.externalPluginTaskForm.context"
+      (completedEvent)="completeTask(obs.task)"
+    ></valtimo-task-external-plugin-form>
 
     @if (obs.noFormNotification) {
       <cds-inline-notification [notificationObj]="obs.noFormNotification"></cds-inline-notification>

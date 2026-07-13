@@ -24,11 +24,15 @@
  * the GZAC management UI can always render a localised name/description for whichever language the
  * operator is using.
  *
- * Operates on the raw parsed JSON (untrusted input), not the typed `PluginManifest`. This module
- * intentionally has no imports so it can be consumed without pulling in the plugin-author runtime.
+ * Operates on the raw parsed JSON (untrusted input), not the typed `PluginManifest`. Its only import
+ * is the dependency-free {@link FRONTEND_BUNDLE_TYPES} list, so it still pulls in none of the
+ * plugin-author runtime and can be consumed by the pack tool and host upload route alike.
  *
  * @returns a list of human-readable error messages; an empty array means the manifest is valid.
  */
+
+import {FRONTEND_BUNDLE_TYPES} from "./models/types.js";
+
 export function validatePluginManifest(manifest: unknown): string[] {
   const errors: string[] = [];
 
@@ -71,6 +75,29 @@ export function validatePluginManifest(manifest: unknown): string[] {
     }
     if (typeof b.description !== "string" || b.description.trim() === "") {
       errors.push(`manifest.json translations.${locale} must contain a non-empty 'description'`);
+    }
+  }
+
+  const frontendBundles = m.frontendBundles;
+  if (frontendBundles !== undefined) {
+    if (!Array.isArray(frontendBundles)) {
+      errors.push("manifest.json 'frontendBundles' must be an array when present");
+    } else {
+      frontendBundles.forEach((bundle, index) => {
+        if (typeof bundle !== "object" || bundle === null || Array.isArray(bundle)) {
+          errors.push(`manifest.json frontendBundles[${index}] must be an object`);
+          return;
+        }
+        const fb = bundle as Record<string, unknown>;
+        if (typeof fb.type !== "string" || !(FRONTEND_BUNDLE_TYPES as readonly string[]).includes(fb.type)) {
+          errors.push(
+            `manifest.json frontendBundles[${index}].type must be one of: ${FRONTEND_BUNDLE_TYPES.join(", ")}`
+          );
+        }
+        if (typeof fb.path !== "string" || fb.path.trim() === "") {
+          errors.push(`manifest.json frontendBundles[${index}] must contain a non-empty 'path'`);
+        }
+      });
     }
   }
 

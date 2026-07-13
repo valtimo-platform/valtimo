@@ -29,9 +29,4 @@ interface ExternalPluginMenuPage {
   icon: string | null;
 }
 
-interface ExternalPluginUserTokenResponse {
-  userToken: string;
-  expiresAt: string;
-}
-
-export {ExternalPluginMenuPage, ExternalPluginUserTokenResponse};
+export {ExternalPluginMenuPage};

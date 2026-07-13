@@ -788,14 +788,13 @@ in one place (matching the external edit modal). `PluginUsageModalComponent` is 
 translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
 configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
-## 13. Iframe surfaces & user-scoped access ✅ (case tab) / 🟡 (POC)
+## 13. Iframe surfaces & user-scoped access ✅ (case tab, task form) / 🟡 (POC)
 
 A plugin's iframe surfaces need to call GZAC **on behalf of the logged-in user** (respect what the
-user can see/do), and the plugin **backend** may call GZAC either as the user or as the system. The
-first implemented surface is the **case-detail tab**; case widgets, menu pages and task forms remain
-⛔. The implementation diverges from the original design in one important way — the iframe holds
-**no token** and routes calls through the Angular parent (the **parent-proxy** model, §13.2) instead
-of being handed the token via `init`.
+user can see/do), and the plugin **backend** may call GZAC either as the user or as the system. Two
+iframe surfaces exist — the **case-detail tab** (§13.1) and the **task form** (§13.6); case widgets
+and menu pages remain ⛔. The iframe holds **no token** and routes calls through the Angular parent
+(the **parent-proxy** model, §13.2) rather than being handed the token via `init`.
 
 ### 13.1 Case-tab surface (`EXTERNAL_PLUGIN` tab type) ✅
 
@@ -833,7 +832,9 @@ of being handed the token via `init`.
 
 The original design proposed passing the user token into the iframe via `init` and letting the
 iframe fetch with it. **That was not implemented.** The iframe is rendered at an **opaque origin**
-(`sandbox="allow-scripts"`, *without* `allow-same-origin`) and never holds a credential:
+(`sandbox="allow-scripts allow-forms"`, *without* `allow-same-origin`; `allow-forms` lets a task-form
+submit through an idiomatic `<form>` — §13.6 — and does not affect origin isolation) and never holds a
+credential:
 
 - The bundle calls `sdk.callValtimo(method, path, body?)` or `sdk.getPluginData(path)`; the frontend
   SDK emits a correlation-id-keyed `proxyRequest` postMessage to the Angular parent and awaits a
@@ -911,6 +912,116 @@ Service tokens (action/event callbacks) are unchanged. ⚠️ The host `/data` r
 (capability/auth) is the priority hardening item before non-POC use, and matters far more for
 privilege-escalation than the front-end transport choice.
 
+### 13.6 Task-form surface (`external_plugin_task_form` process-link type) ✅
+
+A plugin renders the form for a **user task**, and **GZAC completes the task the same way it completes
+every other form** (form.io / URL process links): the form's data is submitted to a GZAC endpoint,
+GZAC resolves the values and completes the task server-side through `ProcessDocumentService`. The
+plugin is an *optional participant* in the submission, not the driver of completion.
+
+Three capability levels are supported (see the `case-summary` sample below):
+
+- **Level 0 — pure form, zero backend code.** The bundle collects input and calls `sdk.submitTask(data)`
+  with value-resolver-prefixed keys (`pv:approved` → process variable, `doc:/reviewComment` → case
+  document field; unprefixed keys default to process variables). GZAC resolves them and completes the
+  task. No `request()` handler, no `permissions.endpoints`, no user token.
+- **Level 1 — transform / validate hook.** The `task-form` bundle declares `submitHandler: true`. During
+  submission GZAC first calls the plugin's `handle_submit` export (server-to-server, HMAC, service
+  token — the same rails as actions) with `{ configurationId, taskId, processInstanceId, documentId,
+  submission }`. The hook returns `{ status:"completed", variables, documentContent }` (GZAC completes
+  the task with those values) or `{ status:"error", errorMessage, fieldErrors }` (GZAC does **not**
+  complete; the errors are surfaced on the form). Covers custom validation, derived variables,
+  enrichment, and rejecting bad input with per-field messages.
+- **Level 2 — full custom (escape hatch, retained).** The bundle drives completion itself via
+  `sdk.postPluginData("/submit-task")` → `handle_request` → `gzacApi.asUser.post('/api/v1/task/{id}/complete')`
+  (level 3, §13.5), then emits `taskCompleted`. Needs the task-complete grant. Not the default —
+  kept for genuinely custom needs.
+
+**Why this shape.** The earlier design made the *plugin* drive completion: every task-form plugin
+needed a hand-written `/submit-task` handler, a `POST /api/v1/task/*/complete` grant, and the
+downscoped-token machinery — and it went through the plain task-complete endpoint, bypassing the
+value-resolver / document-update pipeline, so it was strictly *less* capable than a form.io task. The
+new model makes GZAC the driver, so a plugin form gets the full pipeline (value resolvers, `doc:`
+document updates, submission storage, the `TaskCompleted` outbox event, PBAC) for free, with the hook
+as a principled place for custom backend logic and Level 2 as the escape hatch.
+
+Structure:
+
+- **Process-link type** `external_plugin_task_form` is a distinct `ProcessLink` subtype, kept separate
+  from the `external_plugin` service-task action type because the surfaces are unrelated (a form to
+  render vs. a backend action to invoke). Entity `ExternalPluginTaskFormProcessLink` maps
+  `external_plugin_task_form_{config_id,bundle_key,version}` on the shared `process_link` table (DDL in
+  the release changelog `13-32-0/20260706-add-external-plugin-task-form-process-link.xml`, not in
+  `initial-setup`). It ships the five `ProcessLinkMapper` DTOs and a `SupportedProcessLinkTypeHandler`
+  that declares **`USER_TASK_CREATE`** (the action type declares `SERVICE_TASK_START`).
+- **Render descriptor, no dedicated open controller.** A `ProcessLinkActivityHandler` (shaped like the
+  URL/UI-component handlers — a render descriptor, not an execution listener) answers the generic
+  `GET /api/v2/process-link/task/{taskId}` with an `external-plugin-task-form`
+  `ProcessLinkActivityResult` carrying `{ bundleUrl, configurationId, bundleKey, context }` (plus the
+  result's own `processLinkId`), where `context = { taskId, processInstanceId, documentId,
+  pluginConfigurationId }`. `taskId` is authoritative — supplied by the backend, never read from the
+  browser's request body.
+- **Submission — a vertical slice mirroring form.io.** `ExternalPluginTaskFormSubmissionResource`
+  exposes `POST /api/v1/process-link/{processLinkId}/external-plugin-task-form/submission
+  ?documentId=&taskInstanceId=` (`.authenticated()` in `ExternalPluginHttpSecurityConfigurer`).
+  `ExternalPluginTaskFormSubmissionService` loads the link, asserts the caller's COMPLETE permission,
+  optionally runs the Level 1 hook (via `ExternalPluginHostClient.invokeSubmit` → host
+  `POST /plugins/:id/:version/submit/:key` → `pluginManager.callSubmit` → Wasm `handle_submit`),
+  categorizes the effective submission by value-resolver prefix (`pv:` → process vars, everything else
+  with a `:` prefix → value-resolver values applied to the document, unprefixed → process vars), and
+  dispatches a `ModifyDocumentAndCompleteTaskRequest` through `ProcessDocumentService` — the identical
+  path `form`/`url` use. With no case document it falls back to `OperatonTaskService
+  .completeTaskWithFormData(taskId, processVars)`. A Level 1 hook rejection returns an
+  `ExternalPluginTaskFormSubmissionResult { errors, fieldErrors, documentId }` with HTTP 400 and never
+  completes the task.
+- **Bundle URL resolution.** `ExternalPluginBundleUrlResolver.resolve(configurationId, bundleType,
+  bundleKey)` resolves `${definition.baseUrl}/${definition.version}${bundle.path}` for the manifest's
+  `task-form` bundle; the case-tab (§13.1) and task-form surfaces share it.
+- **Delete guard.** `ExternalPluginHostUsageResolver` unions task-form links with action links, so a
+  configuration referenced by a task form blocks deletion of its plugin/host (§12).
+- **Admin UX** (`@valtimo/process-link`). There is no separate tile: an external plugin's task-form is
+  configured inside the **"Plugin"** flow. On a user task the plugin's `task-form` bundles are listed as
+  the selectable options in the "choose action" step (in place of service-task actions), the "configure"
+  step has nothing to fill in, and saving writes the `external_plugin_task_form` link. This works
+  because external plugin **actions are activity-type filtered**: `SelectPluginActionComponent` offers an
+  action only for the activity types its manifest declares (`SERVICE_TASK_START`, …), so a user task
+  surfaces the plugin's forms rather than its actions (and an action can never be linked to an activity
+  where it could not run). The process-link framework resolves the link type by Jackson **deduction**
+  (which fields are present, not `processLinkType`), so the create/update DTO always serialises
+  `bundleKey` (null for a plugin's sole, unkeyed bundle) to stay distinguishable from the action link,
+  which is identified by its `actionKey`. The BPMN properties-panel "Process link" preview shows the
+  bundle key with a purple **Plugin** tag; the stepper labels external actions/forms by their manifest
+  title rather than a translation-bundle lookup (external plugins have no embedded translation bundle).
+- **Iframe sandbox.** The plugin iframe is sandboxed `allow-scripts allow-forms` (still without
+  `allow-same-origin`, §13.2). `allow-forms` lets a task-form submit through an idiomatic `<form>`: the
+  bundle's submit handler forwards the data by postMessage, but without `allow-forms` the browser blocks
+  the submit before that handler runs. It grants nothing a script cannot already do (a script can POST
+  via `fetch`) and preserves the opaque origin.
+- **Runtime** (`@valtimo/task`). `TaskDetailContentComponent` maps the `external-plugin-task-form`
+  result to `TaskExternalPluginFormComponent` (passing `processLinkId`), which embeds
+  `<valtimo-external-plugin-iframe>`. For Level 0/1 the bundle calls `sdk.submitTask(data)`; the iframe
+  emits a `submitTask` postMessage, surfaced as `submitTaskEvent`, and the component POSTs the data to
+  the submission endpoint via `ExternalPluginTaskFormSubmissionService` (the Angular parent submits,
+  under the logged-in user's Keycloak session — **no downscoped token needed for submission**, and the
+  authoritative `taskInstanceId`/`documentId` come from the process-link result, not the iframe). On
+  success it emits `completedEvent` (parent closes the task + refreshes) and replies `submitResult{ok:true}`;
+  a validation failure replies `submitResult{ok:false, errors, fieldErrors}` so the form renders inline
+  errors without being torn down. The Level 2 `taskCompleted` → `taskCompletedEvent` path is retained.
+  The downscoped user token is now minted **best-effort** (only Level 2 and live in-form GZAC reads
+  need it), so a pure Level 0/1 form still renders and submits if the mint fails.
+- **SDK.** `task-form` is a `FrontendBundle.type` (checked by the shared manifest validator), and the
+  bundle may set `submitHandler: true` (Level 1). The backend SDK adds `submit(key, handler)` plus the
+  `handle_submit` Wasm export (wired automatically by the build tool alongside `handle_action`/
+  `_event`/`_request`) and the `SubmitInput`/`SubmitOutput` types. The frontend SDK adds
+  `sdk.submitTask(data): Promise<{ ok, errors?, fieldErrors? }>` (the `submitTask`/`submitResult`
+  postMessage pair); `postPluginData` + `taskCompleted` remain for Level 2.
+- **Sample** (`case-summary`). Ships three `task-form` bundles demonstrating the levels side by side:
+  `approve` (Level 0 — sends `pv:`/`doc:` prefixed fields, no backend code), `review` (Level 1 —
+  `submitHandler: true` + a `submit("review", …)` hook that rejects a rejection with no comment via
+  `fieldErrors` and otherwise derives variables + a document field), and `custom` (Level 2 — the
+  `/submit-task` `request()` handler completing via `gzacApi.asUser`, with `permissions.endpoints`
+  granting `{ "method": "POST", "pattern": "/api/v1/task/*/complete" }`, the only bundle that needs it).
+
 ## 14. Not yet implemented ⛔
 
 - Host capabilities + host functions (`http_request`, `kv`, structured `log`) with allowlist
@@ -919,8 +1030,8 @@ privilege-escalation than the front-end transport choice.
   plugin Wasm unauthenticated and a service-token-backed handler can return system-scoped data
   (§7, §13.5). This is the top hardening item.
 - HTMX `render_page` (only the RPC-style `handle_request` for JSON data is implemented).
-- Case **widgets**, **menu pages**, **task forms** (the remaining iframe surfaces — the case **tab**
-  is done, §13.1).
+- Case **widgets** and **menu pages** (the remaining iframe surfaces — the case **tab** (§13.1) and
+  the **task form** (§13.6) are done).
 - Host database for KV / API logs / retention.
 - URL-plugin mode.
 - DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
@@ -932,7 +1043,8 @@ privilege-escalation than the front-end transport choice.
    triggered (and can't reach the service token) unauthenticated; tighten the allowlist surface.
 2. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
    category.
-3. Remaining iframe surfaces: HTMX pages, case widgets, menu pages, task forms (case **tab** done).
+3. Remaining iframe surfaces: HTMX pages, case widgets, menu pages (case **tab** §13.1 and **task
+   form** §13.6 done).
 4. Host database (KV, API logs, retention) + admin log view.
 5. Cleanup: align async-vs-sync SDK docs.
 
@@ -941,14 +1053,21 @@ privilege-escalation than the front-end transport choice.
 - Host `tsc` build and `@valtimo/plugin-sdk` build: clean (including the optional-TLS
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist **for both the service and the
-  user principal** + service-token-filter + service-token-ttl + **user-token suites** + endpoint-
+  user principal** + service-token-filter + service-token-ttl + **user-token suites** +
+  **task-form-submission suite** + endpoint-
   description-coverage + host-client-HMAC + host-registration transport-guard + compatibility +
   event-queue mode/TTL tests). The endpoint-description-coverage suite
   (`EndpointDescriptionCoverageTest`, §3.8/§4) scans every controller on the test classpath and fails
-  unless each handler carries an `@EndpointDescription` with both `en` and `nl` text — so the new
-  user-token (`ExternalPluginUserTokenResource`) and case-tab (`CaseExternalPluginTabResource`)
-  endpoints declare descriptions like every other endpoint. The user-token suites assert: the minted
-  JWT's claims
+  unless each handler carries an `@EndpointDescription` with both `en` and `nl` text — so the
+  user-token (`ExternalPluginUserTokenResource`), case-tab (`CaseExternalPluginTabResource`) and
+  task-form-submission (`ExternalPluginTaskFormSubmissionResource`) endpoints declare descriptions like
+  every other endpoint (and the scan additionally required — and now carries — descriptions on
+  `ObjectManagementConsumerResource` and `PbacRegistryResource`, which the wider test classpath pulls
+  in). The task-form-submission suite (`processlink/ExternalPluginTaskFormSubmissionServiceTest`)
+  asserts a Level 1 hook rejection surfaces `fieldErrors` and **never** completes the task
+  (`ProcessDocumentService.dispatch` and `completeTaskWithFormData` un-called), and that a Level 0
+  submission with no hook categorizes prefixed/unprefixed values and completes via
+  `completeTaskWithFormData`. The user-token suites assert: the minted JWT's claims
   (`sub`/`roles`/`plugin_config_id`/`type`) and that the TTL defaults to and is capped at 15 min
   (`ExternalPluginUserTokenServiceTest`); the filter authenticates a valid token, rebuilds the user's
   authorities from the `roles` claim, strips the `Authorization` header, and — critically — leaves
@@ -993,9 +1112,13 @@ privilege-escalation than the front-end transport choice.
   throws `PluginConfigurationInUseException` with the `usages` payload when one does, and a
   not-found id is a no-op warning.
 - Backend `:backend:app:gzac:compileKotlin`: BUILD SUCCESSFUL.
-- Frontend `ng build` (production): clean.
-- Sample plugin `build:pack`: clean (Wasm + pack including `logo.svg`, `translations.en/nl`,
-  `permissions.endpoints`, and `eventSubscriptions`).
+- Frontend: `@valtimo/plugin` and `@valtimo/task` `ng build` clean (typechecks the task-form submission
+  service, the iframe component's `submitTask`/`submitResult` wiring, and the `TaskExternalPluginFormComponent`
+  templates); full production `ng build` clean.
+- Sample plugin `build:pack`: clean — the Wasm now exports `handle_submit` alongside
+  `handle_action`/`_event`/`_request`, and all frontend bundles build, including the **three task-form
+  bundles** (`approve` Level 0, `review` Level 1 with `submitHandler: true`, `custom` Level 2); the
+  pack also includes `logo.svg`, `translations.en/nl`, `permissions.endpoints`, and `eventSubscriptions`.
 - `backend/app/gzac/src/main/resources/application.yml`: the module requires no additions to it.
 - Events, end-to-end against the live `gzac-rabbitmq` broker (sample plugin):
   - host startup re-opens consumers from persisted configs ("Broker consumer started" log on
@@ -1042,3 +1165,10 @@ privilege-escalation than the front-end transport choice.
   the broker back, observe `"Broker consumer reconnected"`, and confirm events published after the
   reconnect are delivered to the plugin — is confirmed by code reading and a clean `tsc`, not by a
   live broker-drop test.
+- The **task-form submission round-trip** (§13.6) — `sdk.submitTask` → `submitTask` postMessage →
+  `ExternalPluginTaskFormSubmissionService` POST → `ProcessDocumentService` completion for Level 0, and
+  the Level 1 `handle_submit` HMAC hop (validation rejection surfacing `fieldErrors` on the form vs. a
+  successful transform completing the task) — is covered by unit tests, clean lib builds, and the
+  sample `build:pack`, but a live browser run of all three levels against a running task is not yet in
+  the verified record. Level 2 reuses the previously code-verified `handle_request`/`gzacApi.asUser`
+  path.

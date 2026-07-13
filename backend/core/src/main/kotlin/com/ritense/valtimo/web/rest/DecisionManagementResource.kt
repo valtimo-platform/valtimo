@@ -66,6 +66,10 @@ class DecisionManagementResource(
         })
     }
 
+    @EndpointDescription(
+        en = "List the decision definitions available for a case definition version",
+        nl = "Beslissingsdefinities voor een zaakdefinitieversie ophalen",
+    )
     @GetMapping(
         value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/decision-definition"],
         produces = [MediaType.APPLICATION_JSON_VALUE]

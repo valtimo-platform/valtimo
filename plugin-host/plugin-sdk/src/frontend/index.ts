@@ -22,3 +22,4 @@ export {
   ParentEventType,
   IframeEventType,
 } from "./plugin-frontend-sdk.js";
+export type { ProxyResult, SubmitResult } from "./plugin-frontend-sdk.js";
