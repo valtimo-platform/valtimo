@@ -25,6 +25,8 @@ import {
   map,
   merge,
   Observable,
+  of,
+  shareReplay,
   startWith,
   Subject,
   switchMap,
@@ -105,11 +107,14 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     this._silentRefresh$.pipe(
       switchMap(() => this._apiService.getReindexRuns(this.pagination.page - 1, this.pagination.size))
     )
-  );
+  ).pipe(shareReplay(1));
 
   public readonly tableItems$: Observable<any[]> = this.runs$.pipe(
     switchMap(page => {
       this.pagination = {...this.pagination, collectionSize: page.totalElements};
+      if (page.content.length === 0) {
+        return of([]);
+      }
       const statusKeys = page.content.map(run => `adminSettings.opensearch.reindex.statuses.${run.status}`);
       return this._translateService.get(statusKeys).pipe(
         map(translations => page.content.map(run => ({
