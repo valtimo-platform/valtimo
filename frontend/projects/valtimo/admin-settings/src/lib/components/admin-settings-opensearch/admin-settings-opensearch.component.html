@@ -33,6 +33,7 @@
     [pagination]="pagination"
     [expandedRowTemplate]="expandedRowTemplate"
     (paginationClicked)="onPageChange($event)"
+    (paginationSet)="onPageSizeChange($event)"
   >
     <ng-container header>
       {{ 'adminSettings.opensearch.reindex.title' | translate }}
@@ -79,18 +80,19 @@
           <span>{{ data.scope?.documentDefinitionName || '-' }}</span>
         </div>
 
-        <div class="opensearch-reindex__detail-item">
+        <div class="opensearch-reindex__detail-item opensearch-reindex__detail-item--with-tooltip">
           <span class="opensearch-reindex__label">
             {{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}:
           </span>
           <span>{{ data.scope?.pruneOrphans ? ('interface.yes' | translate) : ('interface.no' | translate) }}</span>
+          <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruneOrphans' | translate"></v-tooltip-icon>
         </div>
 
         <div class="opensearch-reindex__detail-item">
           <span class="opensearch-reindex__label">
-            {{ 'adminSettings.opensearch.reindex.modifiedBefore' | translate }}:
+            {{ 'adminSettings.opensearch.reindex.modifiedAfter' | translate }}:
           </span>
-          <span>{{ data.scope?.modifiedBefore ? (data.scope.modifiedBefore | date:'medium') : '-' }}</span>
+          <span>{{ data.scope?.modifiedAfter ? (data.scope.modifiedAfter | date:'medium') : '-' }}</span>
         </div>
       </div>
     </div>
@@ -108,23 +110,20 @@
       </div>
 
       <div class="opensearch-reindex__detail-grid">
-        @if (data.skippedCount > 0) {
-          <div class="opensearch-reindex__detail-item">
-            <span class="opensearch-reindex__label">
-              {{ 'adminSettings.opensearch.reindex.skipped' | translate }}:
-            </span>
-            <span>{{ data.skippedCount }}</span>
-          </div>
-        }
+        <div class="opensearch-reindex__detail-item">
+          <span class="opensearch-reindex__label">
+            {{ 'adminSettings.opensearch.reindex.skipped' | translate }}:
+          </span>
+          <span>{{ data.skippedCount || 0 }}</span>
+        </div>
 
-        @if (data.prunedCount > 0) {
-          <div class="opensearch-reindex__detail-item">
-            <span class="opensearch-reindex__label">
-              {{ 'adminSettings.opensearch.reindex.pruned' | translate }}:
-            </span>
-            <span>{{ data.prunedCount }}</span>
-          </div>
-        }
+        <div class="opensearch-reindex__detail-item opensearch-reindex__detail-item--with-tooltip">
+          <span class="opensearch-reindex__label">
+            {{ 'adminSettings.opensearch.reindex.pruned' | translate }}:
+          </span>
+          <span>{{ data.prunedCount || 0 }}</span>
+          <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruned' | translate"></v-tooltip-icon>
+        </div>
 
         <div class="opensearch-reindex__detail-item">
           <span class="opensearch-reindex__label">

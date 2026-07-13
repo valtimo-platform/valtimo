@@ -19,9 +19,12 @@
     <h3 cdsModalHeaderHeading>{{ 'adminSettings.opensearch.reindex.startModalTitle' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent [formGroup]="formGroup" class="start-reindex-form">
+  <section cdsModalContent [cdsLayer]="1" [formGroup]="formGroup" class="start-reindex-form">
     <cds-checkbox formControlName="pruneOrphans">
-      {{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}
+      <span class="label-with-tooltip">
+        {{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}
+        <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruneOrphans' | translate"></v-tooltip-icon>
+      </span>
     </cds-checkbox>
 
     <cds-dropdown
@@ -33,7 +36,7 @@
     </cds-dropdown>
 
     <cds-date-picker
-      [label]="'adminSettings.opensearch.reindex.modifiedBefore' | translate"
+      [label]="'adminSettings.opensearch.reindex.modifiedAfter' | translate"
       placeholder="DD-MM-YYYY"
       [dateFormat]="'d-m-Y'"
       (valueChange)="onDateSelected($event)"

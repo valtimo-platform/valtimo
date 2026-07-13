@@ -24,10 +24,11 @@ import {
   DatePickerInputModule,
   DatePickerModule,
   DropdownModule,
+  LayerModule,
   ListItem,
   ModalModule,
 } from 'carbon-components-angular';
-import {ValtimoCdsModalDirective} from '@valtimo/components';
+import {TooltipIconModule, ValtimoCdsModalDirective} from '@valtimo/components';
 import {StartReindexRequestDto} from '../../models';
 
 @Component({
@@ -46,6 +47,8 @@ import {StartReindexRequestDto} from '../../models';
     DatePickerInputModule,
     DatePickerModule,
     DropdownModule,
+    LayerModule,
+    TooltipIconModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -58,14 +61,14 @@ export class StartReindexModalComponent {
   public readonly formGroup: FormGroup = this._fb.group({
     pruneOrphans: [false],
     documentDefinitionName: [null],
-    modifiedBefore: [null],
+    modifiedAfter: [null],
   });
 
   constructor(private readonly _fb: FormBuilder) {}
 
   public onDateSelected(event: string[]): void {
     const dateValue = event?.[0] || null;
-    this.formGroup.patchValue({modifiedBefore: dateValue});
+    this.formGroup.patchValue({modifiedAfter: dateValue});
   }
 
   public onCancel(): void {
@@ -91,27 +94,33 @@ export class StartReindexModalComponent {
       request.documentDefinitionName = formValue.documentDefinitionName.content;
     }
 
-    if (formValue.modifiedBefore) {
-      request.modifiedBefore = this._formatDateToIso(formValue.modifiedBefore);
+    if (formValue.modifiedAfter) {
+      request.modifiedAfter = this._formatDateToIso(formValue.modifiedAfter);
     }
 
     return request;
   }
 
-  private _formatDateToIso(dateStr: string): string {
-    const parts = dateStr.split('-');
+  private _formatDateToIso(date: string | Date): string {
+    if (date instanceof Date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}T00:00:00`;
+    }
+    const parts = date.split('-');
     if (parts.length === 3) {
       const [day, month, year] = parts;
-      return `${year}-${month}-${day}T23:59:59`;
+      return `${year}-${month}-${day}T00:00:00`;
     }
-    return dateStr;
+    return date;
   }
 
   private _resetForm(): void {
     this.formGroup.reset({
       pruneOrphans: false,
       documentDefinitionName: null,
-      modifiedBefore: null,
+      modifiedAfter: null,
     });
   }
 }

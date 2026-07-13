@@ -3357,6 +3357,7 @@
         "detailTitle": "Run details",
         "parameters": "Parameters",
         "results": "Resultaten",
+        "counts": "Aantallen",
         "status": "Status",
         "processed": "Verwerkt",
         "skipped": "Overgeslagen",
@@ -3370,6 +3371,7 @@
         "documentDefinitionName": "Documentdefinitie",
         "documentDefinitionPlaceholder": "Alle documentdefinities",
         "modifiedBefore": "Gewijzigd voor",
+        "modifiedAfter": "Gewijzigd na",
         "columns": {
           "status": "Status",
           "startedOn": "Gestart",
@@ -3386,6 +3388,10 @@
           "COMPLETED": "Voltooid",
           "FAILED": "Mislukt",
           "STOPPED": "Gestopt"
+        },
+        "tooltips": {
+          "pruneOrphans": "Verwijder documenten uit OpenSearch die niet meer in de database bestaan",
+          "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd"
         }
       }
     }

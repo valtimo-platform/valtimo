@@ -59,6 +59,12 @@
     color: var(--cds-text-primary);
   }
 
+  &__detail-item--with-tooltip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   &__progress {
     padding: 8px 0;
     max-width: 500px;

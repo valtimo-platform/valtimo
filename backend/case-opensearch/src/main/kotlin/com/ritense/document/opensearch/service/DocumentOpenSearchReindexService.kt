@@ -39,6 +39,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -231,10 +232,10 @@ open class DocumentOpenSearchReindexService(
             boolQuery.filter(QueryBuilders.termQuery("definitionId.name", it))
         }
         scope.modifiedAfter?.let {
-            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").gt(it))
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").gt(it.format(OS_DATE_FORMAT)))
         }
         scope.modifiedBefore?.let {
-            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").lt(it))
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").lt(it.format(OS_DATE_FORMAT)))
         }
         scope.documentIds?.takeIf { it.isNotEmpty() }?.let { ids ->
             boolQuery.filter(QueryBuilders.idsQuery().addIds(*ids.map { it.toString() }.toTypedArray()))
@@ -274,6 +275,7 @@ open class DocumentOpenSearchReindexService(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+        private val OS_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS")
 
         const val LOCK_NAME = "document-opensearch-reindex"
 

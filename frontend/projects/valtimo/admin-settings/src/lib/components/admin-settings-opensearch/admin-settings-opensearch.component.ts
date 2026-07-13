@@ -16,7 +16,7 @@
 
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule, DatePipe} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BehaviorSubject,
   finalize,
@@ -38,7 +38,7 @@ import {
   ProgressBarModule,
   TagModule,
 } from 'carbon-components-angular';
-import {CarbonListModule, ColumnConfig, Pagination, ViewType} from '@valtimo/components';
+import {CarbonListModule, ColumnConfig, Pagination, TooltipIconModule, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {AdminSettingsManagementApiService} from '../../services';
 import {ReindexStatusDto, StartReindexRequestDto} from '../../models';
@@ -61,6 +61,7 @@ import {StartReindexModalComponent} from '../start-reindex-modal/start-reindex-m
     TagModule,
     CarbonListModule,
     StartReindexModalComponent,
+    TooltipIconModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -75,7 +76,7 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     {key: 'progress', label: 'adminSettings.opensearch.reindex.columns.progress', viewType: ViewType.TEXT},
   ];
 
-  public readonly pagination: Pagination = {
+  public pagination: Pagination = {
     collectionSize: 0,
     page: 1,
     size: 10,
@@ -97,16 +98,19 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
   );
 
   public readonly tableItems$: Observable<any[]> = this.runs$.pipe(
-    map(page => {
-      this.pagination.collectionSize = page.totalElements;
-      return page.content.map(run => ({
-        ...run,
-        progress: `${run.processedCount} / ${run.totalCount}`,
-        statusTag: {
-          content: run.status,
-          type: this._getStatusTagType(run.status),
-        },
-      }));
+    switchMap(page => {
+      this.pagination = {...this.pagination, collectionSize: page.totalElements};
+      const statusKeys = page.content.map(run => `adminSettings.opensearch.reindex.statuses.${run.status}`);
+      return this._translateService.get(statusKeys).pipe(
+        map(translations => page.content.map(run => ({
+          ...run,
+          progress: `${run.processedCount} / ${run.totalCount}`,
+          statusTag: {
+            content: translations[`adminSettings.opensearch.reindex.statuses.${run.status}`],
+            type: this._getStatusTagType(run.status),
+          },
+        })))
+      );
     })
   );
 
@@ -116,7 +120,8 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly _apiService: AdminSettingsManagementApiService,
-    private readonly _documentService: DocumentService
+    private readonly _documentService: DocumentService,
+    private readonly _translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -145,7 +150,12 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
   }
 
   public onPageChange(page: number): void {
-    this.pagination.page = page;
+    this.pagination = {...this.pagination, page};
+    this._refresh$.next();
+  }
+
+  public onPageSizeChange(size: number): void {
+    this.pagination = {...this.pagination, size, page: 1};
     this._refresh$.next();
   }
 

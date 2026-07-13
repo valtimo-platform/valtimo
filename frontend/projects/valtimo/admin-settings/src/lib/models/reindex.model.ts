@@ -44,7 +44,7 @@ interface ReindexStatusDto {
 interface StartReindexRequestDto {
   pruneOrphans?: boolean;
   documentDefinitionName?: string;
-  modifiedBefore?: string;
+  modifiedAfter?: string;
 }
 
 interface StartReindexResponseDto {

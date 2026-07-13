@@ -3324,6 +3324,7 @@
         "detailTitle": "Run Details",
         "parameters": "Parameters",
         "results": "Results",
+        "counts": "Counts",
         "status": "Status",
         "processed": "Processed",
         "skipped": "Skipped",
@@ -3337,6 +3338,7 @@
         "documentDefinitionName": "Document definition",
         "documentDefinitionPlaceholder": "All document definitions",
         "modifiedBefore": "Modified before",
+        "modifiedAfter": "Modified after",
         "columns": {
           "status": "Status",
           "startedOn": "Started",
@@ -3353,6 +3355,10 @@
           "COMPLETED": "Completed",
           "FAILED": "Failed",
           "STOPPED": "Stopped"
+        },
+        "tooltips": {
+          "pruneOrphans": "Remove entries from OpenSearch that no longer exist in the database",
+          "pruned": "Search entries removed because the original document was deleted"
         }
       }
     }

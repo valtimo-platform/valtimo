@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,6 +189,7 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
         this.content = content;
         this.documentDefinitionId = documentDefinition.id();
         this.createdOn = LocalDateTime.now();
+        this.modifiedOn = this.createdOn;
         this.createdBy = createdBy;
         this.sequence = sequence;
 
