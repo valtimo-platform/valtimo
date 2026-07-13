@@ -24,5 +24,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
     <include file="20260701-create-reconcile-state-table.xml" relativeToChangelogFile="true"/>
     <include file="20260701-create-pending-index-deletion-table.xml" relativeToChangelogFile="true"/>
     <include file="20260710-add-reindex-run-pruned-count.xml" relativeToChangelogFile="true"/>
+    <include file="20260713-add-reindex-run-total-count.xml" relativeToChangelogFile="true"/>
+    <include file="20260713-backfill-modified-on.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

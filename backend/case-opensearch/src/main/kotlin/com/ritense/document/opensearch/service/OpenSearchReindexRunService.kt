@@ -32,8 +32,10 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Thin transactional wrapper around [OpenSearchReindexRunRepository] for managing re-index run state.
@@ -49,6 +51,8 @@ open class OpenSearchReindexRunService(
     private val properties: OpenSearchProperties,
     private val entityManager: EntityManager,
 ) {
+
+    private val totalCountCache = ConcurrentHashMap<UUID, Pair<Long, Instant>>()
 
     /**
      * On startup, reconcile any [ReindexRunStatus.RUNNING] row whose heartbeat has gone stale (older than
@@ -116,22 +120,26 @@ open class OpenSearchReindexRunService(
         repository.save(run)
     }
 
-    open fun complete(runId: UUID) {
+    open fun complete(runId: UUID, totalCount: Long?) {
         val run = requireRun(runId)
+        run.totalCount = totalCount
         run.complete(LocalDateTime.now())
         repository.save(run)
+        totalCountCache.remove(runId)
     }
 
     open fun fail(runId: UUID, error: String?) {
         val run = requireRun(runId)
         run.fail(LocalDateTime.now(), error)
         repository.save(run)
+        totalCountCache.remove(runId)
     }
 
     open fun stop(runId: UUID) {
         val run = requireRun(runId)
         run.stop(LocalDateTime.now())
         repository.save(run)
+        totalCountCache.remove(runId)
     }
 
     open fun recordPruned(runId: UUID, pruned: Long) {
@@ -174,13 +182,32 @@ open class OpenSearchReindexRunService(
             "processedCount" to run.processedCount,
             "skippedCount" to run.skippedCount,
             "prunedCount" to run.prunedCount,
-            "totalCount" to countDocuments(scope),
+            "totalCount" to getTotalCount(run, scope),
             "startedOn" to run.startedOn,
             "heartbeatOn" to run.heartbeatOn,
             "finishedOn" to run.finishedOn,
             "elapsedSeconds" to elapsedSeconds,
             "error" to run.error,
         )
+    }
+
+    private fun getTotalCount(run: OpenSearchReindexRun, scope: ReindexRequest?): Long {
+        run.totalCount?.let { return it }
+
+        if (run.status == ReindexRunStatus.RUNNING) {
+            val cached = totalCountCache[run.id]
+            if (cached != null && Instant.now().isBefore(cached.second)) {
+                return cached.first
+            }
+        }
+
+        val count = countDocuments(scope)
+
+        if (run.status == ReindexRunStatus.RUNNING) {
+            totalCountCache[run.id] = count to Instant.now().plus(TOTAL_COUNT_CACHE_TTL)
+        }
+
+        return count
     }
 
     private fun serializeScope(request: ReindexRequest): String? =
@@ -225,5 +252,6 @@ open class OpenSearchReindexRunService(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+        private val TOTAL_COUNT_CACHE_TTL: Duration = Duration.ofMinutes(5)
     }
 }

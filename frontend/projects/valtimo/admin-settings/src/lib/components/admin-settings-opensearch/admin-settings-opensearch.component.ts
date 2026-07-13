@@ -16,12 +16,14 @@
 
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule, DatePipe} from '@angular/common';
+import {Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BehaviorSubject,
   finalize,
   interval,
   map,
+  merge,
   Observable,
   startWith,
   Subject,
@@ -33,11 +35,13 @@ import {
 import {
   ButtonModule,
   IconModule,
+  IconService,
   ListItem,
   LoadingModule,
   ProgressBarModule,
   TagModule,
 } from 'carbon-components-angular';
+import {Launch16} from '@carbon/icons';
 import {CarbonListModule, ColumnConfig, Pagination, TooltipIconModule, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {AdminSettingsManagementApiService} from '../../services';
@@ -67,7 +71,8 @@ import {StartReindexModalComponent} from '../start-reindex-modal/start-reindex-m
 })
 export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
-  private readonly _refresh$ = new BehaviorSubject<void>(undefined);
+  private readonly _manualRefresh$ = new BehaviorSubject<void>(undefined);
+  private readonly _silentRefresh$ = new Subject<void>();
 
   public readonly fields: ColumnConfig[] = [
     {key: 'statusTag', label: 'adminSettings.opensearch.reindex.columns.status', viewType: ViewType.TAGS},
@@ -88,13 +93,18 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
 
   public documentDefinitions$: Observable<ListItem[]>;
 
-  public readonly runs$: Observable<Page<ReindexStatusDto>> = this._refresh$.pipe(
-    switchMap(() => {
-      this.loading$.next(true);
-      return this._apiService.getReindexRuns(this.pagination.page - 1, this.pagination.size).pipe(
-        finalize(() => this.loading$.next(false))
-      );
-    })
+  public readonly runs$: Observable<Page<ReindexStatusDto>> = merge(
+    this._manualRefresh$.pipe(
+      switchMap(() => {
+        this.loading$.next(true);
+        return this._apiService.getReindexRuns(this.pagination.page - 1, this.pagination.size).pipe(
+          finalize(() => this.loading$.next(false))
+        );
+      })
+    ),
+    this._silentRefresh$.pipe(
+      switchMap(() => this._apiService.getReindexRuns(this.pagination.page - 1, this.pagination.size))
+    )
   );
 
   public readonly tableItems$: Observable<any[]> = this.runs$.pipe(
@@ -121,8 +131,12 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
   constructor(
     private readonly _apiService: AdminSettingsManagementApiService,
     private readonly _documentService: DocumentService,
-    private readonly _translateService: TranslateService
-  ) {}
+    private readonly _translateService: TranslateService,
+    private readonly _router: Router,
+    private readonly _iconService: IconService
+  ) {
+    this._iconService.register(Launch16);
+  }
 
   public ngOnInit(): void {
     this.documentDefinitions$ = this._documentService.queryDefinitionsForManagement().pipe(
@@ -146,17 +160,17 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
         }),
         takeUntil(this._destroy$)
       )
-      .subscribe(() => this._refresh$.next());
+      .subscribe(() => this._silentRefresh$.next());
   }
 
   public onPageChange(page: number): void {
     this.pagination = {...this.pagination, page};
-    this._refresh$.next();
+    this._manualRefresh$.next();
   }
 
   public onPageSizeChange(size: number): void {
     this.pagination = {...this.pagination, size, page: 1};
-    this._refresh$.next();
+    this._manualRefresh$.next();
   }
 
   public openModal(): void {
@@ -175,10 +189,10 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
         finalize(() => this.startingReindex$.next(false))
       )
       .subscribe({
-        next: () => this._refresh$.next(),
+        next: () => this._manualRefresh$.next(),
         error: err => {
           if (err.status === 409) {
-            this._refresh$.next();
+            this._manualRefresh$.next();
           }
         },
       });
@@ -197,6 +211,21 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       default:
         return 'gray';
     }
+  }
+
+  public navigateToLogs(run: ReindexStatusDto): void {
+    const afterTimestamp = new Date(new Date(run.startedOn).getTime() - 5000).toISOString();
+    const beforeTimestamp = run.finishedOn
+      ? new Date(new Date(run.finishedOn).getTime() + 5000).toISOString()
+      : new Date().toISOString();
+
+    this._router.navigate(['/logging'], {
+      queryParams: {
+        level: 'ERROR',
+        afterTimestamp,
+        beforeTimestamp,
+      },
+    });
   }
 
   public ngOnDestroy(): void {

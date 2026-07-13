@@ -68,18 +68,23 @@
   &__progress {
     padding: 8px 0;
     max-width: 500px;
+
+    ::ng-deep .cds--progress-bar__track {
+      background-color: var(--cds-border-subtle);
+    }
   }
 
-  &__error {
-    padding: 12px;
-    background-color: var(--cds-support-error);
-    color: var(--cds-text-on-color);
-    border-radius: 4px;
+  &__error-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--cds-link-primary);
     font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
 
-    &-title {
-      font-weight: 600;
-      margin-right: 8px;
+    &:hover {
+      text-decoration: underline;
     }
   }
 }

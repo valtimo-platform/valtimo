@@ -3334,6 +3334,7 @@
         "finished": "Finished",
         "inProgress": "Reindexing in progress...",
         "errorTitle": "Error",
+        "viewErrorLogs": "View error logs",
         "pruneOrphans": "Prune orphaned documents",
         "documentDefinitionName": "Document definition",
         "documentDefinitionPlaceholder": "All document definitions",

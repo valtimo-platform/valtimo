@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -155,16 +155,17 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
     }
 
     @Test
-    fun `changed_on advances on a status change while modifiedOn stays unset`() {
+    fun `changed_on advances on a status change while modifiedOn stays unchanged`() {
         val document = createDocument("changed-on-doc")
         val createdChangedOn = readChangedOn(document.id().id)
+        val initialModifiedOn = readModifiedOn(document.id().id)
         // DATETIME can be second-resolution on MySQL; sleep past a full second so the bump is observable.
         Thread.sleep(1100)
 
         runWithoutAuthorization { documentService.setInternalStatus(document.id(), "started") }
 
         assertThat(readChangedOn(document.id().id)).isAfter(createdChangedOn)
-        assertThat(readModifiedOn(document.id().id)).isEmpty
+        assertThat(readModifiedOn(document.id().id)).isEqualTo(initialModifiedOn)
     }
 
     private fun seedWatermark(watermark: LocalDateTime) {

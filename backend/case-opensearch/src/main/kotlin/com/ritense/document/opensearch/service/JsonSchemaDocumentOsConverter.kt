@@ -45,7 +45,9 @@ open class JsonSchemaDocumentOsConverter(
         val tree = objectMapper.valueToTree<JsonNode>(document)
         return objectMapper.treeToValue(tree, JsonSchemaDocumentOsDocument::class.java)
             .copy(
-                contentText = extractLeafValues(tree.get("content")),
+                // Extract content text directly from the document's content, not from the serialized tree
+                // (the tree may not include content if the getter isn't JavaBean-named).
+                contentText = extractLeafValues(document.content().asJson()),
                 // JPA optimistic-lock counter drives the OpenSearch external version; +1 keeps it ≥ 1.
                 indexVersion = (document.version() ?: 0).toLong() + 1,
             )

@@ -154,7 +154,7 @@ open class DocumentOpenSearchReindexService(
                 }
                 indexOps().refresh()
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
-                runService.complete(runId)
+                runService.complete(runId, processed + skipped)
             }
         } catch (e: Exception) {
             runService.fail(runId, e.message)

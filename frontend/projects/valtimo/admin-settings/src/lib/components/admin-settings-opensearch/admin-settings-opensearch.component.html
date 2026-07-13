@@ -27,11 +27,12 @@
 >
   <valtimo-carbon-list
     [header]="false"
-    [items]="obs.items"
+    [items]="obs.items || []"
     [fields]="fields"
     [loading]="obs.loading"
     [pagination]="pagination"
     [expandedRowTemplate]="expandedRowTemplate"
+    [expandedRowKey]="'runId'"
     (paginationClicked)="onPageChange($event)"
     (paginationSet)="onPageSizeChange($event)"
   >
@@ -151,13 +152,11 @@
         }
       </div>
 
-      @if (data.error) {
-        <div class="opensearch-reindex__error">
-          <span class="opensearch-reindex__error-title">
-            {{ 'adminSettings.opensearch.reindex.errorTitle' | translate }}:
-          </span>
-          <span>{{ data.error }}</span>
-        </div>
+      @if (data.status === 'FAILED') {
+        <a class="opensearch-reindex__error-link" (click)="navigateToLogs(data)">
+          {{ 'adminSettings.opensearch.reindex.viewErrorLogs' | translate }}
+          <svg cdsIcon="launch" size="16"></svg>
+        </a>
       }
     </div>
   </div>

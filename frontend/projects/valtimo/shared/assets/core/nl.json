@@ -3367,6 +3367,7 @@
         "finished": "Voltooid",
         "inProgress": "Herindexering bezig...",
         "errorTitle": "Fout",
+        "viewErrorLogs": "Bekijk foutlogs",
         "pruneOrphans": "Verwijder orphan documenten",
         "documentDefinitionName": "Documentdefinitie",
         "documentDefinitionPlaceholder": "Alle documentdefinities",

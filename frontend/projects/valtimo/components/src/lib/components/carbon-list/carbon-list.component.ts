@@ -206,6 +206,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() dragAndDrop = false;
   @Input() dragAndDropDisabled = false;
   @Input() expandedRowTemplate: TemplateRef<any>;
+  @Input() expandedRowKey: string;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -266,6 +267,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _lastExecutedSearch: string | null = null;
   private static readonly PAGINATION_SIZE = 'PaginationSize';
   private readonly _subscriptions = new Subscription();
+  private readonly _expandedRowKeys = new Set<string>();
 
   public get selectedItems(): CarbonListItem[] {
     const model = this._table.model;
@@ -535,10 +537,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this._tableItems$,
     this._filteredItems$,
   ]).pipe(
+    tap(() => this._captureExpandedRows()),
     map(([header, data, filteredData]) => {
       const model = new TableModel();
       model.header = header;
       model.data = filteredData ?? data;
+      this._restoreExpandedRows(model);
       return model;
     }),
     startWith(new TableModel())
@@ -1027,6 +1031,34 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.showAutocomplete = false;
         this.cdr.markForCheck();
       }, 150);
+    }
+  }
+
+  private _captureExpandedRows(): void {
+    if (!this.expandedRowKey || !this._table?.model) return;
+
+    const model = this._table.model;
+    const items = this._items;
+
+    for (let i = 0; i < items.length; i++) {
+      const key = _get(items[i], this.expandedRowKey);
+      if (key && model.isRowExpanded(i)) {
+        this._expandedRowKeys.add(key);
+      } else if (key) {
+        this._expandedRowKeys.delete(key);
+      }
+    }
+  }
+
+  private _restoreExpandedRows(model: TableModel): void {
+    if (!this.expandedRowKey || this._expandedRowKeys.size === 0) return;
+
+    const items = this._items;
+    for (let i = 0; i < items.length; i++) {
+      const key = _get(items[i], this.expandedRowKey);
+      if (key && this._expandedRowKeys.has(key)) {
+        model.expandRow(i, true);
+      }
     }
   }
 }

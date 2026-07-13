@@ -77,6 +77,9 @@ class OpenSearchReindexRun(
 
     @Column(name = "error")
     var error: String? = null,
+
+    @Column(name = "total_count")
+    var totalCount: Long? = null,
 ) {
 
     /** Records progress after a committed batch: the keyset cursor, counts and a fresh heartbeat. */
