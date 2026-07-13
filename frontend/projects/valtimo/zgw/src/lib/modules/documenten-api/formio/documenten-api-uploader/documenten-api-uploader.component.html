@@ -27,12 +27,18 @@
       class="bg-warning text-black mb-2 p-3 text-center"
     ></div>
   </div>
+  <div
+    *ngIf="limitReached"
+    [translate]="'case.documenten.maxFilesReached'"
+    [translateParams]="{maxFiles: maxFiles}"
+    class="bg-warning text-black mb-2 p-3 text-center"
+  ></div>
   <valtimo-dropzone
     (fileSelected)="fileSelected($event)"
     [acceptedFiles]="acceptedFiles"
     [showAcceptedFiles]="!hideAcceptedFiles"
     [camera]="camera"
-    [disabled]="disabled || obs.linked === false || obs.linked === 'loading'"
+    [disabled]="disabled || limitReached || obs.linked === false || obs.linked === 'loading'"
     [hideFilePreview]="true"
     [hideTitle]="hideTitle"
     [maxFileSize]="maxFileSize"

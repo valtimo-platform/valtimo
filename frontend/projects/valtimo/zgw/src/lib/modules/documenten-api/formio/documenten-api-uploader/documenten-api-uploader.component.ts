@@ -55,6 +55,7 @@ export class DocumentenApiUploaderComponent
   @Input() subtitle: string;
   @Input() maxFileSize: number;
   @Input() hideMaxFileSize: boolean;
+  @Input() maxFiles: number;
   @Input() acceptedFiles: string;
   @Input() hideAcceptedFiles: boolean;
   @Input() camera: boolean;
@@ -243,6 +244,10 @@ export class DocumentenApiUploaderComponent
 
   public get value(): Array<DocumentenApiFileReference> {
     return this._value;
+  }
+
+  public get limitReached(): boolean {
+    return !!this.maxFiles && this._value.length >= this.maxFiles;
   }
 
   @Input()
