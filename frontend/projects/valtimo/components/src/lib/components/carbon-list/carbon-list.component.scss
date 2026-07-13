@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,6 +134,19 @@ td:first-child {
 
   ::ng-deep cds-table {
     overflow: hidden;
+  }
+
+  ::ng-deep .cds--expandable-row:not(.cds--parent-row) td {
+    border-top: none;
+    border-bottom-width: 2px;
+  }
+
+  ::ng-deep tbody .cds--expandable-row.cds--parent-row td {
+    border-bottom-width: 2px;
+  }
+
+  ::ng-deep tbody tr:first-child td {
+    border-top: none !important;
   }
 }
 
