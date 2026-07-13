@@ -27,6 +27,7 @@ import {healthRoutes} from "./routes/health.js";
 import {hostManagementRoutes} from "./routes/host-management.js";
 import {hostConfigurationRoutes} from "./routes/host-configurations.js";
 import {pluginActionRoutes} from "./routes/plugin-actions.js";
+import {pluginSubmitRoutes} from "./routes/plugin-submit.js";
 import {pluginBundleRoutes} from "./routes/plugin-bundles.js";
 import {pluginDataRoutes} from "./routes/plugin-data.js";
 import {EventConsumerManager} from "./rabbitmq/event-consumer.js";
@@ -140,6 +141,11 @@ async function main(): Promise<void> {
     eventConsumerManager,
   });
   await fastify.register(pluginActionRoutes, {
+    pluginManager,
+    configRegistry,
+    config,
+  });
+  await fastify.register(pluginSubmitRoutes, {
     pluginManager,
     configRegistry,
     config,

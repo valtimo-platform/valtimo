@@ -158,6 +158,17 @@ interface ExternalPluginUserTokenResponse {
   expiresAt: string;
 }
 
+/**
+ * Result of an external-plugin task-form submission
+ * (`.../process-link/{id}/external-plugin-task-form/submission`). Mirrors the backend DTO: a
+ * submission failed when `errors` or `fieldErrors` is non-empty.
+ */
+interface ExternalPluginTaskFormSubmissionResult {
+  errors: string[];
+  fieldErrors: Record<string, string>;
+  documentId?: string;
+}
+
 interface ExternalPluginGrantedEndpointEntry {
   method: string;
   pattern: string;
@@ -337,6 +348,7 @@ export {
   ExternalPluginDefinition,
   ExternalPluginConfiguration,
   ExternalPluginUserTokenResponse,
+  ExternalPluginTaskFormSubmissionResult,
   ExternalPluginConfigurationDetail,
   ExternalPluginConfigurationCreateRequest,
   ExternalPluginConfigurationUpdateRequest,

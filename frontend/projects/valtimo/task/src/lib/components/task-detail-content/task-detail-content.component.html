@@ -71,6 +71,7 @@
       *ngIf="obs.processLinkIsExternalPluginTaskForm && obs.externalPluginTaskForm"
       [bundleUrl]="obs.externalPluginTaskForm.bundleUrl"
       [configurationId]="obs.externalPluginTaskForm.configurationId"
+      [processLinkId]="obs.externalPluginTaskForm.processLinkId"
       [context]="obs.externalPluginTaskForm.context"
       (completedEvent)="completeTask(obs.task)"
     ></valtimo-task-external-plugin-form>

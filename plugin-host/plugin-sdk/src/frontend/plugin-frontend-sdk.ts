@@ -41,6 +41,17 @@ interface ParentToIframeEvents {
    * **data only** — never the token. `error` is set when the parent could not perform the call.
    */
   proxyResponse: { correlationId: string; status: number; body?: unknown; error?: string };
+  /**
+   * Reply to a {@link IframeToParentEvents.submitTask}. The parent submitted the task-form data to
+   * GZAC (which completed the task server-side, the standard way). `ok` is true on success; on a
+   * validation failure `errors`/`fieldErrors` carry the messages to render on the form.
+   */
+  submitResult: {
+    correlationId: string;
+    ok: boolean;
+    errors?: string[];
+    fieldErrors?: Record<string, string>;
+  };
 }
 
 /** Events sent from the plugin iframe to the Angular parent. */
@@ -51,11 +62,18 @@ interface IframeToParentEvents {
   navigate: { route: string };
   notification: { type: "success" | "warning" | "error" | "info"; message: string };
   /**
-   * Signal that the plugin has completed the user task this **task-form** bundle was opened for —
-   * typically after the plugin's `handle_request` submit handler called GZAC's task-complete endpoint
-   * under the downscoped user token (`gzacApi.asUser`). The Angular parent reacts by closing the task
-   * and refreshing the list; it does **not** complete the task itself, so the plugin remains the sole
-   * owner of the submission logic.
+   * Hand the collected task-form data to the Angular parent, which submits it to GZAC's task-form
+   * submission endpoint (as the logged-in user) so GZAC completes the task the standard way — value
+   * resolvers, document updates and the `TaskCompleted` event all run server-side. This is the
+   * Level 0/1 path: the iframe holds no token and never names the task id. The parent replies with a
+   * {@link ParentToIframeEvents.submitResult}. Prefer {@link ValtimoPluginSDK.submitTask}.
+   */
+  submitTask: { correlationId: string; data: Record<string, unknown> };
+  /**
+   * Signal that the plugin has *itself* completed the user task (Level 2 — the escape hatch), e.g.
+   * after a `handle_request` handler called GZAC's task-complete endpoint under the downscoped user
+   * token (`gzacApi.asUser`). The Angular parent reacts by closing the task and refreshing the list;
+   * it does **not** complete the task itself. Level 0/1 forms use {@link submitTask} instead.
    */
   taskCompleted: Record<string, never>;
   /**
@@ -79,6 +97,17 @@ interface IframeToParentEvents {
 export interface ProxyResult {
   status: number;
   body: unknown;
+}
+
+/**
+ * Result of a {@link ValtimoPluginSDK.submitTask} call. `ok` is true when GZAC completed the task;
+ * otherwise `errors` (general messages) and `fieldErrors` (field → message) describe the validation
+ * failure so the form can render them.
+ */
+export interface SubmitResult {
+  ok: boolean;
+  errors?: string[];
+  fieldErrors?: Record<string, string>;
 }
 
 /** Context information passed to the plugin on init. */
@@ -110,6 +139,11 @@ class ValtimoPluginSDK {
   private readonly _pendingRequests = new Map<
     string,
     { resolve: (value: ProxyResult) => void; reject: (reason: unknown) => void }
+  >();
+  // Pending task-form submissions, resolved by the parent's `submitResult`.
+  private readonly _pendingSubmits = new Map<
+    string,
+    { resolve: (value: SubmitResult) => void; reject: (reason: unknown) => void }
   >();
   private _parentOrigin: string | null = null;
   // Bound once so addEventListener and removeEventListener share the same reference.
@@ -218,6 +252,24 @@ class ValtimoPluginSDK {
    */
   public postPluginData(path: string, body?: unknown): Promise<ProxyResult> {
     return this._proxyRequest("plugin", "POST", path, undefined, body);
+  }
+
+  /**
+   * Submit a task-form (Level 0/1). Hands `data` to the Angular parent, which POSTs it to GZAC's
+   * task-form submission endpoint under the logged-in user's session; GZAC completes the task the
+   * standard way (value resolvers, document updates, `TaskCompleted` event). On success the parent
+   * also closes the task and refreshes the list — the plugin does not emit `taskCompleted`.
+   *
+   * `data` is a flat map; keys may use value-resolver prefixes (`pv:approved`, `doc:/reviewComment`).
+   * Unprefixed keys become process variables. Resolves with `{ ok, errors?, fieldErrors? }` — inspect
+   * it to render validation errors from a Level 1 `submit` hook without the form being torn down.
+   */
+  public submitTask(data: Record<string, unknown>): Promise<SubmitResult> {
+    const correlationId = String(++this._correlationCounter);
+    return new Promise<SubmitResult>((resolve, reject) => {
+      this._pendingSubmits.set(correlationId, { resolve, reject });
+      this.emit("submitTask", { correlationId, data });
+    });
   }
 
   private _proxyRequest(
@@ -362,6 +414,19 @@ class ValtimoPluginSDK {
         } else {
           pending.resolve({ status: response.status, body: response.body });
         }
+      }
+      return;
+    } else if (eventType === "submitResult") {
+      // Resolve the matching pending submitTask; never dispatched to user handlers.
+      const response = payload as ParentToIframeEvents["submitResult"];
+      const pending = this._pendingSubmits.get(response.correlationId);
+      if (pending) {
+        this._pendingSubmits.delete(response.correlationId);
+        pending.resolve({
+          ok: response.ok,
+          errors: response.errors,
+          fieldErrors: response.fieldErrors,
+        });
       }
       return;
     }

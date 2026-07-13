@@ -17,52 +17,21 @@
 import React, {useEffect, useState} from "react";
 import {createRoot} from "react-dom/client";
 import {ValtimoPluginSDK} from "@valtimo/plugin-sdk/frontend";
+import {
+  buttonDisabledStyle,
+  buttonStyle,
+  Decision,
+  errorStyle,
+  labelStyle,
+  mutedStyle,
+  panelStyle,
+  panelTitleStyle,
+  radioLabelStyle,
+  rootStyle,
+  textareaStyle,
+} from "./task-form-shared";
 
 const sdk = new ValtimoPluginSDK();
-
-const panelStyle: React.CSSProperties = {
-  border: "1px solid #e0e0e0",
-  padding: "16px",
-  marginBottom: "16px",
-  background: "#ffffff",
-};
-
-const panelTitleStyle: React.CSSProperties = {
-  fontSize: "14px",
-  fontWeight: 600,
-  color: "#161616",
-  marginBottom: "4px",
-};
-
-const mutedStyle: React.CSSProperties = {color: "#6f6f6f", fontSize: "14px"};
-const errorStyle: React.CSSProperties = {color: "#da1e28", fontSize: "14px", marginTop: "8px"};
-const labelStyle: React.CSSProperties = {display: "block", marginBottom: "4px", fontSize: "12px", color: "#525252"};
-
-const textareaStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "8px 16px",
-  fontSize: "14px",
-  border: "1px solid #8d8d8d",
-  backgroundColor: "#f4f4f4",
-  outline: "none",
-  boxSizing: "border-box",
-  minHeight: "80px",
-  resize: "vertical",
-  fontFamily: "IBM Plex Sans, sans-serif",
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "10px 24px",
-  fontSize: "14px",
-  border: "none",
-  background: "#0f62fe",
-  color: "#ffffff",
-  cursor: "pointer",
-};
-
-const buttonDisabledStyle: React.CSSProperties = {...buttonStyle, background: "#8d8d8d", cursor: "not-allowed"};
-
-type Decision = "approve" | "reject";
 
 type SubmitState =
   | {state: "editing"}
@@ -71,11 +40,11 @@ type SubmitState =
   | {state: "error"; message: string};
 
 /**
- * A plugin-provided user-task form. The plugin owns the form UI *and* the submission: on submit it
- * hands the collected variables to its own backend (`/submit-task` via `sdk.postPluginData`), which
- * completes the task in GZAC under the downscoped user token (`gzacApi.asUser`). Once the backend
- * confirms completion, the bundle emits `taskCompleted` so the Angular parent closes the task and
- * refreshes the list — the whole task completion flows *through the plugin*.
+ * Level 2 — the escape hatch. The plugin drives the whole submission itself: on submit it POSTs to
+ * its own backend (`/submit-task` via `sdk.postPluginData`), which completes the task in GZAC under
+ * the downscoped user token (`gzacApi.asUser`). Only after the backend confirms does the bundle emit
+ * `taskCompleted` so the Angular parent closes the task. This needs the task-complete endpoint
+ * granted under `permissions.endpoints`. Prefer Level 0/1 — this remains for genuinely custom needs.
  */
 function TaskForm() {
   const [decision, setDecision] = useState<Decision>("approve");
@@ -83,7 +52,6 @@ function TaskForm() {
   const [submit, setSubmit] = useState<SubmitState>({state: "editing"});
 
   useEffect(() => {
-    // The Angular parent auto-resizes the iframe from this message.
     sdk.emit("resize", {height: document.documentElement.scrollHeight});
   }, [submit, comment, decision]);
 
@@ -96,7 +64,7 @@ function TaskForm() {
       });
       if (res.status >= 200 && res.status < 300) {
         setSubmit({state: "completed"});
-        // Signal the parent that the plugin has completed the task; it closes + refreshes the list.
+        // The plugin completed the task itself — tell the parent to close + refresh.
         sdk.emit("taskCompleted", {});
       } else if (res.status === 403) {
         setSubmit({state: "error", message: sdk.t("taskForm.forbidden")});
@@ -110,7 +78,7 @@ function TaskForm() {
 
   if (submit.state === "completed") {
     return (
-      <div style={{fontFamily: "IBM Plex Sans, sans-serif"}}>
+      <div style={rootStyle}>
         <div style={panelStyle}>
           <div style={panelTitleStyle}>{sdk.t("taskForm.completed.title")}</div>
           <div style={mutedStyle}>{sdk.t("taskForm.completed")}</div>
@@ -122,14 +90,14 @@ function TaskForm() {
   const submitting = submit.state === "submitting";
 
   return (
-    <form style={{fontFamily: "IBM Plex Sans, sans-serif"}} onSubmit={onSubmit}>
+    <form style={rootStyle} onSubmit={onSubmit}>
       <div style={panelStyle}>
-        <div style={panelTitleStyle}>{sdk.t("taskForm.title")}</div>
-        <div style={{...mutedStyle, marginBottom: "16px"}}>{sdk.t("taskForm.intro")}</div>
+        <div style={panelTitleStyle}>{sdk.t("taskForm.custom.title")}</div>
+        <div style={{...mutedStyle, marginBottom: "16px"}}>{sdk.t("taskForm.custom.intro")}</div>
 
         <div style={{marginBottom: "16px"}}>
           <span style={labelStyle}>{sdk.t("taskForm.decision.label")}</span>
-          <label style={{display: "block", fontSize: "14px", color: "#393939", marginBottom: "4px"}}>
+          <label style={radioLabelStyle}>
             <input
               type="radio"
               name="decision"
@@ -139,7 +107,7 @@ function TaskForm() {
             />{" "}
             {sdk.t("taskForm.decision.approve")}
           </label>
-          <label style={{display: "block", fontSize: "14px", color: "#393939"}}>
+          <label style={radioLabelStyle}>
             <input
               type="radio"
               name="decision"
@@ -166,7 +134,7 @@ function TaskForm() {
         </div>
 
         <button type="submit" style={submitting ? buttonDisabledStyle : buttonStyle} disabled={submitting}>
-          {submitting ? sdk.t("taskForm.submitting") : sdk.t("taskForm.submit")}
+          {submitting ? sdk.t("taskForm.submitting") : sdk.t("taskForm.custom.submit")}
         </button>
 
         {submit.state === "error" && <div style={errorStyle}>{submit.message}</div>}
@@ -175,8 +143,6 @@ function TaskForm() {
   );
 }
 
-// Wait for the SDK to fetch the manifest + receive init (context) before mounting, so `sdk.t(key)`
-// and `sdk.getContext()` are populated.
 sdk.ready().then(() => {
   sdk.emit("ready", {});
   const root = createRoot(document.getElementById("root")!);

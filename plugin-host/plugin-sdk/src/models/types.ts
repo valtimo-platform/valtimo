@@ -84,6 +84,42 @@ export interface RequestOutput {
 
 export type RequestHandler = (input: RequestInput) => RequestOutput | Promise<RequestOutput>;
 
+/**
+ * Input to a plugin's `handle_submit` task-form hook (Level 1). GZAC invokes this synchronously
+ * during a task-form submission, before completing the task. `submission` is the raw data the form
+ * collected (typically value-resolver-prefixed keys); `configuration` carries the plugin
+ * configuration's properties (like {@link ActionInput.configuration}). The `taskId`/`documentId`/
+ * `processInstanceId` are the authoritative, backend-supplied context — never trust a task id from
+ * the submission body.
+ */
+export interface SubmitInput {
+  submitKey: string;
+  configurationId: string;
+  configuration: Record<string, unknown>;
+  taskId?: string;
+  processInstanceId?: string;
+  documentId?: string;
+  submission: Record<string, unknown>;
+}
+
+/**
+ * Result of a `handle_submit` hook. Mirrors {@link ActionOutput} but for task-form submission:
+ * - `completed` → GZAC completes the task using `variables` (process variables) and, optionally,
+ *   `documentContent` (a map of JSON-pointer path → value applied to the case document).
+ * - `error` → GZAC does **not** complete the task; `errorMessage` and `fieldErrors` (field → message)
+ *   are surfaced back to the form.
+ */
+export interface SubmitOutput {
+  status: "completed" | "error";
+  variables?: Record<string, unknown>;
+  documentContent?: Record<string, unknown>;
+  errorCode?: string;
+  errorMessage?: string;
+  fieldErrors?: Record<string, string>;
+}
+
+export type SubmitHandler = (input: SubmitInput) => SubmitOutput | Promise<SubmitOutput>;
+
 export interface ManifestAction {
   key: string;
   title: string;
@@ -128,6 +164,11 @@ export interface FrontendBundle {
   menuIcon?: string;
   menuPosition?: string;
   renderMode?: "bundle" | "htmx";
+  /**
+   * For `task-form` bundles only: when true, GZAC invokes the plugin's `submit(key, …)` hook during
+   * submission (Level 1) before completing the task. The hook key equals this bundle's `key`.
+   */
+  submitHandler?: boolean;
 }
 
 /**

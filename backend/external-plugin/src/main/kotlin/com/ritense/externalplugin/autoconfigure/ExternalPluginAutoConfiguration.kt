@@ -27,7 +27,9 @@ import com.ritense.externalplugin.processlink.ExternalPluginServiceTaskStartList
 import com.ritense.externalplugin.processlink.ExternalPluginSupportedProcessLinkTypeHandler
 import com.ritense.externalplugin.processlink.ExternalPluginTaskFormProcessLinkActivityHandler
 import com.ritense.externalplugin.processlink.ExternalPluginTaskFormProcessLinkMapper
+import com.ritense.externalplugin.processlink.ExternalPluginTaskFormSubmissionService
 import com.ritense.externalplugin.processlink.ExternalPluginTaskFormSupportedProcessLinkTypeHandler
+import com.ritense.externalplugin.processlink.web.ExternalPluginTaskFormSubmissionResource
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
@@ -376,6 +378,40 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginTaskFormProcessLinkActivityHandler(
         bundleUrlResolver: ExternalPluginBundleUrlResolver,
     ) = ExternalPluginTaskFormProcessLinkActivityHandler(bundleUrlResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginTaskFormSubmissionService::class)
+    fun externalPluginTaskFormSubmissionService(
+        processLinkService: com.ritense.processlink.service.ProcessLinkService,
+        configurationService: ExternalPluginConfigurationService,
+        definitionService: ExternalPluginDefinitionService,
+        hostService: ExternalPluginHostService,
+        hostClient: ExternalPluginHostClient,
+        processDocumentService: com.ritense.processdocument.service.ProcessDocumentService,
+        documentService: com.ritense.document.service.impl.JsonSchemaDocumentService,
+        operatonTaskService: com.ritense.valtimo.service.OperatonTaskService,
+        authorizationService: com.ritense.authorization.AuthorizationService,
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+    ) = ExternalPluginTaskFormSubmissionService(
+        processLinkService,
+        configurationService,
+        definitionService,
+        hostService,
+        hostClient,
+        processDocumentService,
+        documentService,
+        operatonTaskService,
+        authorizationService,
+        valueResolverService,
+        objectMapper,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginTaskFormSubmissionResource::class)
+    fun externalPluginTaskFormSubmissionResource(
+        submissionService: ExternalPluginTaskFormSubmissionService,
+    ) = ExternalPluginTaskFormSubmissionResource(submissionService)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTaskStartListener::class)
