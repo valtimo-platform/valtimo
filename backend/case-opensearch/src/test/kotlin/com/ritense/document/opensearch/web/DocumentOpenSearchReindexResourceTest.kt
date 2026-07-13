@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import java.util.UUID
 
 class DocumentOpenSearchReindexResourceTest {
@@ -88,5 +90,24 @@ class DocumentOpenSearchReindexResourceTest {
 
         assertThat(response.statusCode.value()).isEqualTo(200)
         assertThat(response.body?.get("runId")).isEqualTo(runId)
+    }
+
+    @Test
+    fun `listRuns returns paginated runs`() {
+        val runId1 = UUID.randomUUID()
+        val runId2 = UUID.randomUUID()
+        val runs: List<Map<String, Any?>> = listOf(
+            mapOf("runId" to runId1, "status" to "COMPLETED"),
+            mapOf("runId" to runId2, "status" to "RUNNING")
+        )
+        val page = PageImpl(runs, PageRequest.of(0, 20), 2)
+        whenever(reindexService.listRuns(PageRequest.of(0, 20))).thenReturn(page)
+
+        val response = resource.listRuns(0, 20)
+
+        assertThat(response.statusCode.value()).isEqualTo(200)
+        assertThat(response.body?.content).hasSize(2)
+        assertThat(response.body?.content?.get(0)?.get("runId")).isEqualTo(runId1)
+        assertThat(response.body?.totalElements).isEqualTo(2)
     }
 }

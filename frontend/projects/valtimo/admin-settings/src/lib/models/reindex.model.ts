@@ -16,12 +16,25 @@
 
 type ReindexStatus = 'RUNNING' | 'COMPLETED' | 'FAILED' | 'STOPPED';
 
+interface ReindexScope {
+  pruneOrphans?: boolean;
+  documentDefinitionName?: string;
+  modifiedBefore?: string;
+  modifiedAfter?: string;
+  pageSize?: number;
+  resumeRunId?: string;
+  documentIds?: string[];
+}
+
 interface ReindexStatusDto {
   runId: string;
   status: ReindexStatus;
+  running: boolean;
+  scope: ReindexScope | null;
   totalCount: number;
   processedCount: number;
   skippedCount: number;
+  prunedCount: number;
   startedOn: string;
   finishedOn: string | null;
   elapsedSeconds: number;
@@ -39,4 +52,10 @@ interface StartReindexResponseDto {
   runId: string;
 }
 
-export {ReindexStatus, ReindexStatusDto, StartReindexRequestDto, StartReindexResponseDto};
+export {
+  ReindexStatus,
+  ReindexScope,
+  ReindexStatusDto,
+  StartReindexRequestDto,
+  StartReindexResponseDto,
+};

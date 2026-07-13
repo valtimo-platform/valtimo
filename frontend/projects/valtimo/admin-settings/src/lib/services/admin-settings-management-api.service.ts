@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {catchError, Observable, of} from 'rxjs';
 import {
   AdminSettingsLogoDto,
@@ -23,6 +23,7 @@ import {
   BaseApiService,
   ConfigService,
   CreateAdminSettingsLogoDto,
+  Page,
 } from '@valtimo/shared';
 import {
   AccentColorsDto,
@@ -123,5 +124,19 @@ export class AdminSettingsManagementApiService extends BaseApiService {
     return this.httpClient
       .get<ReindexStatusDto>(this.getApiUrl('/management/v1/document-opensearch/reindex/status'))
       .pipe(catchError(() => of(null)));
+  }
+
+  public getReindexRuns(page: number, size: number): Observable<Page<ReindexStatusDto>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.httpClient.get<Page<ReindexStatusDto>>(
+      this.getApiUrl('/management/v1/document-opensearch/reindex/runs'),
+      {params}
+    );
+  }
+
+  public getReindexRun(runId: string): Observable<ReindexStatusDto> {
+    return this.httpClient.get<ReindexStatusDto>(
+      this.getApiUrl(`/management/v1/document-opensearch/reindex/${runId}`)
+    );
   }
 }

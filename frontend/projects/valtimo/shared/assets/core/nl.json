@@ -3350,21 +3350,37 @@
     "opensearch": {
       "title": "OpenSearch",
       "reindex": {
-        "title": "Documenten herindexeren",
+        "title": "Herindexering runs",
         "description": "Herindexeer alle documenten van de database naar OpenSearch. Deze operatie draait op de achtergrond.",
         "startButton": "Start herindexering",
+        "startModalTitle": "Start herindexering",
+        "detailTitle": "Run details",
+        "parameters": "Parameters",
+        "results": "Resultaten",
         "status": "Status",
         "processed": "Verwerkt",
         "skipped": "Overgeslagen",
+        "pruned": "Opgeschoond",
         "started": "Gestart",
         "elapsed": "Verstreken tijd",
         "finished": "Voltooid",
         "inProgress": "Herindexering bezig...",
         "errorTitle": "Fout",
-        "pruneOrphans": "Verwijder orphan documenten uit OpenSearch",
+        "pruneOrphans": "Verwijder orphan documenten",
         "documentDefinitionName": "Documentdefinitie",
         "documentDefinitionPlaceholder": "Alle documentdefinities",
         "modifiedBefore": "Gewijzigd voor",
+        "columns": {
+          "status": "Status",
+          "startedOn": "Gestart",
+          "finishedOn": "Voltooid",
+          "progress": "Voortgang",
+          "documentDefinition": "Documentdefinitie"
+        },
+        "noResults": {
+          "title": "Geen herindexering runs",
+          "description": "Er zijn nog geen herindexering runs gestart."
+        },
         "statuses": {
           "RUNNING": "Bezig",
           "COMPLETED": "Voltooid",

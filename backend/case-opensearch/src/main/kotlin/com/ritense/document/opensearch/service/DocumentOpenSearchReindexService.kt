@@ -28,7 +28,9 @@ import net.javacrumbs.shedlock.core.LockProvider
 import org.springframework.beans.factory.DisposableBean
 import org.opensearch.index.query.BoolQueryBuilder
 import org.opensearch.index.query.QueryBuilders
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.query.StringQuery
@@ -163,6 +165,8 @@ open class DocumentOpenSearchReindexService(
 
     /** Status of a specific run (by id) or the most recent run when [runId] is null. */
     fun status(runId: UUID? = null): Map<String, Any?> = runService.toStatusMap(runId)
+
+    fun listRuns(pageable: Pageable): Page<Map<String, Any?>> = runService.listRuns(pageable)
 
     /**
      * Scoped keyset fetch. Applies the optional [scope] filters, eagerly loads the lazy `internalStatus`

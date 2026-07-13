@@ -17,109 +17,149 @@
 <div
   class="opensearch-reindex"
   *ngIf="{
-    status: reindexStatus$ | async,
-    isRunning: isRunning$ | async,
+    items: tableItems$ | async,
+    loading: loading$ | async,
     starting: startingReindex$ | async,
-    documentDefinitions: documentDefinitions$ | async
+    documentDefinitions: documentDefinitions$ | async,
+    showModal: showModal$ | async,
+    hasRunning: hasRunningRun$ | async
   } as obs"
 >
-  <div class="opensearch-reindex__header">
-    <h4 class="opensearch-reindex__title">
+  <valtimo-carbon-list
+    [header]="false"
+    [items]="obs.items"
+    [fields]="fields"
+    [loading]="obs.loading"
+    [pagination]="pagination"
+    [expandedRowTemplate]="expandedRowTemplate"
+    (paginationClicked)="onPageChange($event)"
+  >
+    <ng-container header>
       {{ 'adminSettings.opensearch.reindex.title' | translate }}
-    </h4>
-    <p class="opensearch-reindex__description">
-      {{ 'adminSettings.opensearch.reindex.description' | translate }}
-    </p>
-  </div>
+    </ng-container>
 
-  <div class="opensearch-reindex__options" [formGroup]="formGroup">
-    <cds-checkbox formControlName="pruneOrphans">
-      {{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}
-    </cds-checkbox>
+    <div carbonToolbarContent>
+      <button
+        cdsButton="primary"
+        [disabled]="obs.hasRunning || obs.starting"
+        (click)="openModal()"
+      >
+        @if (obs.starting) {
+          <cds-loading size="sm"></cds-loading>
+        }
+        {{ 'adminSettings.opensearch.reindex.startButton' | translate }}
 
-    <cds-dropdown
-      [label]="'adminSettings.opensearch.reindex.documentDefinitionName' | translate"
-      [placeholder]="'adminSettings.opensearch.reindex.documentDefinitionPlaceholder' | translate"
-      formControlName="documentDefinitionName"
-    >
-      <cds-dropdown-list [items]="obs.documentDefinitions"></cds-dropdown-list>
-    </cds-dropdown>
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
 
-    <cds-date-picker
-      [label]="'adminSettings.opensearch.reindex.modifiedBefore' | translate"
-      placeholder="DD-MM-YYYY"
-      [dateFormat]="'d-m-Y'"
-      (valueChange)="onDateSelected($event)"
-    ></cds-date-picker>
-  </div>
+    <valtimo-no-results
+      title="{{ 'adminSettings.opensearch.reindex.noResults.title' | translate }}"
+      description="{{ 'adminSettings.opensearch.reindex.noResults.description' | translate }}"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
 
-  @if (obs.status?.status) {
-    <div class="opensearch-reindex__status">
+  <valtimo-start-reindex-modal
+    [open]="obs.showModal"
+    [documentDefinitions]="obs.documentDefinitions"
+    (closeEvent)="onModalClose($event)"
+  ></valtimo-start-reindex-modal>
+</div>
+
+<ng-template #expandedRowTemplate let-data="data">
+  <div class="opensearch-reindex__expanded">
+    <div class="opensearch-reindex__detail-section">
+      <h6>{{ 'adminSettings.opensearch.reindex.parameters' | translate }}</h6>
+
+      <div class="opensearch-reindex__detail-grid">
+        <div class="opensearch-reindex__detail-item">
+          <span class="opensearch-reindex__label">
+            {{ 'adminSettings.opensearch.reindex.documentDefinitionName' | translate }}:
+          </span>
+          <span>{{ data.scope?.documentDefinitionName || '-' }}</span>
+        </div>
+
+        <div class="opensearch-reindex__detail-item">
+          <span class="opensearch-reindex__label">
+            {{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}:
+          </span>
+          <span>{{ data.scope?.pruneOrphans ? ('interface.yes' | translate) : ('interface.no' | translate) }}</span>
+        </div>
+
+        <div class="opensearch-reindex__detail-item">
+          <span class="opensearch-reindex__label">
+            {{ 'adminSettings.opensearch.reindex.modifiedBefore' | translate }}:
+          </span>
+          <span>{{ data.scope?.modifiedBefore ? (data.scope.modifiedBefore | date:'medium') : '-' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="opensearch-reindex__detail-section">
+      <h6>{{ 'adminSettings.opensearch.reindex.results' | translate }}</h6>
+
       <div class="opensearch-reindex__progress">
         <cds-progress-bar
-          [value]="obs.status.totalCount > 0 ? (obs.status.processedCount / obs.status.totalCount) * 100 : 0"
-          [label]="obs.status.processedCount + ' / ' + obs.status.totalCount"
-          [helperText]="'adminSettings.opensearch.reindex.statuses.' + obs.status.status | translate"
-          [status]="obs.status.status === 'RUNNING' ? 'active' : (obs.status.status === 'COMPLETED' ? 'finished' : 'error')"
+          [value]="data.totalCount > 0 ? (data.processedCount / data.totalCount) * 100 : 0"
+          [label]="data.processedCount + ' / ' + data.totalCount"
+          [helperText]="'adminSettings.opensearch.reindex.statuses.' + data.status | translate"
+          [status]="data.status === 'RUNNING' ? 'active' : (data.status === 'COMPLETED' ? 'finished' : 'error')"
         ></cds-progress-bar>
       </div>
 
-      <div class="opensearch-reindex__stats">
-        @if (obs.status.skippedCount > 0) {
-          <div class="opensearch-reindex__stat">
+      <div class="opensearch-reindex__detail-grid">
+        @if (data.skippedCount > 0) {
+          <div class="opensearch-reindex__detail-item">
             <span class="opensearch-reindex__label">
               {{ 'adminSettings.opensearch.reindex.skipped' | translate }}:
             </span>
-            <span>{{ obs.status.skippedCount }}</span>
+            <span>{{ data.skippedCount }}</span>
           </div>
         }
-        @if (obs.status.startedOn) {
-          <div class="opensearch-reindex__stat">
+
+        @if (data.prunedCount > 0) {
+          <div class="opensearch-reindex__detail-item">
             <span class="opensearch-reindex__label">
-              {{ 'adminSettings.opensearch.reindex.started' | translate }}:
+              {{ 'adminSettings.opensearch.reindex.pruned' | translate }}:
             </span>
-            <span>{{ obs.status.startedOn | date:'medium' }}</span>
+            <span>{{ data.prunedCount }}</span>
           </div>
         }
-        @if (obs.status.status === 'RUNNING' && obs.status.elapsedSeconds > 0) {
-          <div class="opensearch-reindex__stat">
-            <span class="opensearch-reindex__label">
-              {{ 'adminSettings.opensearch.reindex.elapsed' | translate }}:
-            </span>
-            <span>{{ obs.status.elapsedSeconds }}s</span>
-          </div>
-        }
-        @if (obs.status.status !== 'RUNNING' && obs.status.finishedOn) {
-          <div class="opensearch-reindex__stat">
+
+        <div class="opensearch-reindex__detail-item">
+          <span class="opensearch-reindex__label">
+            {{ 'adminSettings.opensearch.reindex.started' | translate }}:
+          </span>
+          <span>{{ data.startedOn | date:'medium' }}</span>
+        </div>
+
+        @if (data.finishedOn) {
+          <div class="opensearch-reindex__detail-item">
             <span class="opensearch-reindex__label">
               {{ 'adminSettings.opensearch.reindex.finished' | translate }}:
             </span>
-            <span>{{ obs.status.finishedOn | date:'medium' }}</span>
+            <span>{{ data.finishedOn | date:'medium' }}</span>
+          </div>
+        }
+
+        @if (data.status === 'RUNNING' && data.elapsedSeconds > 0) {
+          <div class="opensearch-reindex__detail-item">
+            <span class="opensearch-reindex__label">
+              {{ 'adminSettings.opensearch.reindex.elapsed' | translate }}:
+            </span>
+            <span>{{ data.elapsedSeconds }}s</span>
           </div>
         }
       </div>
 
-      @if (obs.status.error) {
+      @if (data.error) {
         <div class="opensearch-reindex__error">
           <span class="opensearch-reindex__error-title">
             {{ 'adminSettings.opensearch.reindex.errorTitle' | translate }}:
           </span>
-          <span>{{ obs.status.error }}</span>
+          <span>{{ data.error }}</span>
         </div>
       }
     </div>
-  }
-
-  <div class="opensearch-reindex__actions">
-    <button
-      cdsButton="primary"
-      [disabled]="obs.isRunning || obs.starting"
-      (click)="startReindex()"
-    >
-      @if (obs.starting) {
-        <cds-loading size="sm"></cds-loading>
-      }
-      {{ 'adminSettings.opensearch.reindex.startButton' | translate }}
-    </button>
   </div>
-</div>
+</ng-template>

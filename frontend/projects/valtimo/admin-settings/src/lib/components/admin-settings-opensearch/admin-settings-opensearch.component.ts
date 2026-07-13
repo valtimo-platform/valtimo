@@ -16,7 +16,6 @@
 
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule, DatePipe} from '@angular/common';
-import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   BehaviorSubject,
@@ -24,8 +23,6 @@ import {
   interval,
   map,
   Observable,
-  of,
-  shareReplay,
   startWith,
   Subject,
   switchMap,
@@ -35,18 +32,18 @@ import {
 } from 'rxjs';
 import {
   ButtonModule,
-  CheckboxModule,
-  DatePickerInputModule,
-  DatePickerModule,
-  DropdownModule,
+  IconModule,
   ListItem,
   LoadingModule,
   ProgressBarModule,
   TagModule,
 } from 'carbon-components-angular';
+import {CarbonListModule, ColumnConfig, Pagination, ViewType} from '@valtimo/components';
+import {Page} from '@valtimo/shared';
 import {AdminSettingsManagementApiService} from '../../services';
 import {ReindexStatusDto, StartReindexRequestDto} from '../../models';
 import {DocumentService} from '@valtimo/document';
+import {StartReindexModalComponent} from '../start-reindex-modal/start-reindex-modal.component';
 
 @Component({
   standalone: true,
@@ -57,15 +54,13 @@ import {DocumentService} from '@valtimo/document';
     CommonModule,
     DatePipe,
     TranslateModule,
-    ReactiveFormsModule,
     ButtonModule,
-    CheckboxModule,
-    DatePickerInputModule,
-    DatePickerModule,
-    DropdownModule,
+    IconModule,
     LoadingModule,
     ProgressBarModule,
     TagModule,
+    CarbonListModule,
+    StartReindexModalComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -73,40 +68,55 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
   private readonly _refresh$ = new BehaviorSubject<void>(undefined);
 
-  public readonly startingReindex$ = new BehaviorSubject<boolean>(false);
+  public readonly fields: ColumnConfig[] = [
+    {key: 'statusTag', label: 'adminSettings.opensearch.reindex.columns.status', viewType: ViewType.TAGS},
+    {key: 'startedOn', label: 'adminSettings.opensearch.reindex.columns.startedOn', viewType: ViewType.DATE},
+    {key: 'finishedOn', label: 'adminSettings.opensearch.reindex.columns.finishedOn', viewType: ViewType.DATE},
+    {key: 'progress', label: 'adminSettings.opensearch.reindex.columns.progress', viewType: ViewType.TEXT},
+  ];
 
-  public readonly formGroup: FormGroup = this._fb.group({
-    pruneOrphans: [false],
-    documentDefinitionName: [null],
-    modifiedBefore: [null],
-  });
+  public readonly pagination: Pagination = {
+    collectionSize: 0,
+    page: 1,
+    size: 10,
+  };
+
+  public readonly showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly startingReindex$ = new BehaviorSubject<boolean>(false);
+  public readonly loading$ = new BehaviorSubject<boolean>(false);
 
   public documentDefinitions$: Observable<ListItem[]>;
 
-  public readonly reindexStatus$: Observable<ReindexStatusDto | null> = this._refresh$.pipe(
-    switchMap(() => this._apiService.getReindexStatus()),
-    switchMap(status => {
-      if (status?.status === 'RUNNING') {
-        return interval(2000).pipe(
-          startWith(0),
-          switchMap(() => this._apiService.getReindexStatus()),
-          takeWhile(s => s?.status === 'RUNNING', true),
-          takeUntil(this._destroy$)
-        );
-      }
-      return of(status);
-    }),
-    shareReplay(1)
+  public readonly runs$: Observable<Page<ReindexStatusDto>> = this._refresh$.pipe(
+    switchMap(() => {
+      this.loading$.next(true);
+      return this._apiService.getReindexRuns(this.pagination.page - 1, this.pagination.size).pipe(
+        finalize(() => this.loading$.next(false))
+      );
+    })
   );
 
-  public readonly isRunning$: Observable<boolean> = this.reindexStatus$.pipe(
-    map(status => status?.status === 'RUNNING')
+  public readonly tableItems$: Observable<any[]> = this.runs$.pipe(
+    map(page => {
+      this.pagination.collectionSize = page.totalElements;
+      return page.content.map(run => ({
+        ...run,
+        progress: `${run.processedCount} / ${run.totalCount}`,
+        statusTag: {
+          content: run.status,
+          type: this._getStatusTagType(run.status),
+        },
+      }));
+    })
+  );
+
+  public readonly hasRunningRun$: Observable<boolean> = this.runs$.pipe(
+    map(page => page.content.some(run => run.status === 'RUNNING'))
   );
 
   constructor(
     private readonly _apiService: AdminSettingsManagementApiService,
-    private readonly _documentService: DocumentService,
-    private readonly _fb: FormBuilder
+    private readonly _documentService: DocumentService
   ) {}
 
   public ngOnInit(): void {
@@ -119,11 +129,35 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       ),
       startWith([])
     );
+
+    this.hasRunningRun$
+      .pipe(
+        switchMap(hasRunning => {
+          if (!hasRunning) return [];
+          return interval(3000).pipe(
+            takeWhile(() => true),
+            takeUntil(this._destroy$)
+          );
+        }),
+        takeUntil(this._destroy$)
+      )
+      .subscribe(() => this._refresh$.next());
   }
 
-  public startReindex(): void {
+  public onPageChange(page: number): void {
+    this.pagination.page = page;
+    this._refresh$.next();
+  }
+
+  public openModal(): void {
+    this.showModal$.next(true);
+  }
+
+  public onModalClose(request: StartReindexRequestDto | null): void {
+    this.showModal$.next(false);
+    if (!request) return;
+
     this.startingReindex$.next(true);
-    const request = this._buildReindexRequest();
     this._apiService
       .startReindex(request)
       .pipe(
@@ -140,40 +174,7 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       });
   }
 
-  public onDateSelected(event: string[]): void {
-    const dateValue = event?.[0] || null;
-    this.formGroup.patchValue({modifiedBefore: dateValue});
-  }
-
-  private _buildReindexRequest(): StartReindexRequestDto {
-    const formValue = this.formGroup.value;
-    const request: StartReindexRequestDto = {};
-
-    if (formValue.pruneOrphans) {
-      request.pruneOrphans = true;
-    }
-
-    if (formValue.documentDefinitionName?.content) {
-      request.documentDefinitionName = formValue.documentDefinitionName.content;
-    }
-
-    if (formValue.modifiedBefore) {
-      request.modifiedBefore = this._formatDateToIso(formValue.modifiedBefore);
-    }
-
-    return request;
-  }
-
-  private _formatDateToIso(dateStr: string): string {
-    const parts = dateStr.split('-');
-    if (parts.length === 3) {
-      const [day, month, year] = parts;
-      return `${year}-${month}-${day}T23:59:59`;
-    }
-    return dateStr;
-  }
-
-  public getStatusTagType(status: string): string {
+  private _getStatusTagType(status: string): string {
     switch (status) {
       case 'RUNNING':
         return 'blue';

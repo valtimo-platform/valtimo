@@ -18,6 +18,8 @@ package com.ritense.document.opensearch.repository
 
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
 import com.ritense.document.opensearch.domain.ReindexRunStatus
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import java.time.LocalDateTime
 import java.util.UUID
@@ -27,4 +29,5 @@ interface OpenSearchReindexRunRepository : JpaRepository<OpenSearchReindexRun, U
     fun findFirstByStatusOrderByStartedOnDesc(status: ReindexRunStatus): OpenSearchReindexRun?
     fun findAllByStatusAndHeartbeatOnBefore(status: ReindexRunStatus, heartbeatOn: LocalDateTime): List<OpenSearchReindexRun>
     fun existsByStatusAndHeartbeatOnAfter(status: ReindexRunStatus, heartbeatOn: LocalDateTime): Boolean
+    fun findAllByOrderByStartedOnDesc(pageable: Pageable): Page<OpenSearchReindexRun>
 }

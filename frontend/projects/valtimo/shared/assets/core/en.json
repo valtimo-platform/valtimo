@@ -3317,21 +3317,37 @@
     "opensearch": {
       "title": "OpenSearch",
       "reindex": {
-        "title": "Reindex Documents",
+        "title": "Reindex Runs",
         "description": "Reindex all documents from the database to OpenSearch. This operation runs in the background.",
         "startButton": "Start Reindex",
+        "startModalTitle": "Start Reindex",
+        "detailTitle": "Run Details",
+        "parameters": "Parameters",
+        "results": "Results",
         "status": "Status",
         "processed": "Processed",
         "skipped": "Skipped",
+        "pruned": "Pruned",
         "started": "Started",
         "elapsed": "Elapsed time",
         "finished": "Finished",
         "inProgress": "Reindexing in progress...",
         "errorTitle": "Error",
-        "pruneOrphans": "Prune orphaned documents from OpenSearch",
+        "pruneOrphans": "Prune orphaned documents",
         "documentDefinitionName": "Document definition",
         "documentDefinitionPlaceholder": "All document definitions",
         "modifiedBefore": "Modified before",
+        "columns": {
+          "status": "Status",
+          "startedOn": "Started",
+          "finishedOn": "Finished",
+          "progress": "Progress",
+          "documentDefinition": "Document definition"
+        },
+        "noResults": {
+          "title": "No reindex runs",
+          "description": "No reindex runs have been started yet."
+        },
         "statuses": {
           "RUNNING": "Running",
           "COMPLETED": "Completed",

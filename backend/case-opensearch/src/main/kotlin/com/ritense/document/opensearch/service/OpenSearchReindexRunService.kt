@@ -27,6 +27,9 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.Predicate
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.LocalDateTime
@@ -147,6 +150,12 @@ open class OpenSearchReindexRunService(
         else repository.findFirstByOrderByStartedOnDesc())
             ?: return mapOf("running" to false, "runId" to null)
         return toMap(run)
+    }
+
+    @Transactional(readOnly = true)
+    open fun listRuns(pageable: Pageable): Page<Map<String, Any?>> {
+        val page = repository.findAllByOrderByStartedOnDesc(pageable)
+        return PageImpl(page.content.map { toMap(it) }, pageable, page.totalElements)
     }
 
     private fun requireRun(runId: UUID): OpenSearchReindexRun =

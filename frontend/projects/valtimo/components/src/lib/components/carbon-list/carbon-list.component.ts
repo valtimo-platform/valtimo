@@ -1,19 +1,17 @@
 /*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- *  * Copyright 2015-2026 Ritense BV, the Netherlands.
- *  *
- *  * Licensed under EUPL, Version 1.2 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" basis,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 import {
   AfterViewInit,
@@ -207,6 +205,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() movingRowsEnabled: boolean;
   @Input() dragAndDrop = false;
   @Input() dragAndDropDisabled = false;
+  @Input() expandedRowTemplate: TemplateRef<any>;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -469,51 +468,60 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   ]).pipe(
     filter(([fields, items, viewInitialized]) => !!fields && !!items && viewInitialized),
     map(([fields, items]) =>
-      items.map((item: CarbonListItem, index: number) => [
-        ...this.getDragAndDropItemsItems(item, index, items.length),
-        ...fields.map((field: ColumnConfig) => {
-          switch (field.viewType) {
-            case ViewType.TEMPLATE:
-              return new TableItem({
-                data: {item, index, length: items.length, ...field.templateData},
-                item,
-                template: field.template,
-              });
-            case ViewType.BOOLEAN:
-              let data = this.resolveObject(field, item);
-              data = !BOOLEAN_CONVERTER_VALUES.includes(data)
-                ? data
-                : `${'viewTypeConverter.' + data}`;
-              return new TableItem({
-                data,
-                template: this.booleanTemplate,
-                item,
-              });
-            case ViewType.TAGS: {
-              return new TableItem({
-                data: {
-                  tags: this.resolveTagObject(item, field.key),
-                  tagAmount: field?.tagAmount || 1,
-                },
-                item,
-                template: this.tagTemplate,
-              });
+      items.map((item: CarbonListItem, index: number) => {
+        const row = [
+          ...this.getDragAndDropItemsItems(item, index, items.length),
+          ...fields.map((field: ColumnConfig) => {
+            switch (field.viewType) {
+              case ViewType.TEMPLATE:
+                return new TableItem({
+                  data: {item, index, length: items.length, ...field.templateData},
+                  item,
+                  template: field.template,
+                });
+              case ViewType.BOOLEAN:
+                let data = this.resolveObject(field, item);
+                data = !BOOLEAN_CONVERTER_VALUES.includes(data)
+                  ? data
+                  : `${'viewTypeConverter.' + data}`;
+                return new TableItem({
+                  data,
+                  template: this.booleanTemplate,
+                  item,
+                });
+              case ViewType.TAGS: {
+                return new TableItem({
+                  data: {
+                    tags: this.resolveTagObject(item, field.key),
+                    tagAmount: field?.tagAmount || 1,
+                  },
+                  item,
+                  template: this.tagTemplate,
+                });
+              }
+              default:
+                const resolvedObject: string = this.resolveObject(field, item);
+                return new TableItem({
+                  title: resolvedObject ?? '-',
+                  data:
+                    (field.tooltipCharLimit
+                      ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
+                      : resolvedObject) ?? '-',
+                  template: this.defaultTemplate,
+                  item,
+                });
             }
-            default:
-              const resolvedObject: string = this.resolveObject(field, item);
-              return new TableItem({
-                title: resolvedObject ?? '-',
-                data:
-                  (field.tooltipCharLimit
-                    ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
-                    : resolvedObject) ?? '-',
-                template: this.defaultTemplate,
-                item,
-              });
-          }
-        }),
-        ...this.getExtraItems(item, index, items.length),
-      ])
+          }),
+          ...this.getExtraItems(item, index, items.length),
+        ];
+
+        if (this.expandedRowTemplate && row.length > 0) {
+          row[0].expandedData = item;
+          row[0].expandedTemplate = this.expandedRowTemplate;
+        }
+
+        return row;
+      })
     ),
     tap((data: TableItem[][]) => {
       this._completeDataSource = data;

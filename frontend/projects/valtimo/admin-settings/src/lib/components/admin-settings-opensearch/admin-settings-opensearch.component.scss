@@ -20,69 +20,48 @@
   flex-direction: column;
   gap: 24px;
 
-  &__header {
+  &__expanded {
+    padding: 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 24px;
   }
 
-  &__title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--cds-text-primary);
-    margin: 0;
-  }
-
-  &__description {
-    font-size: 14px;
-    color: var(--cds-text-secondary);
-    margin: 0;
-  }
-
-  &__options {
+  &__detail-section {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    max-width: 400px;
+
+    h6 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--cds-text-secondary);
+    }
   }
 
-  &__status {
-    display: flex;
-    flex-direction: column;
+  &__detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 16px;
-    padding: 16px;
-    background-color: var(--cds-layer-01);
-    border-radius: 4px;
   }
 
-  &__status-row {
+  &__detail-item {
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: 14px;
+    color: var(--cds-text-primary);
   }
 
   &__label {
-    font-size: 14px;
     font-weight: 600;
     color: var(--cds-text-primary);
   }
 
   &__progress {
     padding: 8px 0;
-  }
-
-  &__stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-  }
-
-  &__stat {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--cds-text-primary);
+    max-width: 500px;
   }
 
   &__error {
@@ -95,15 +74,6 @@
     &-title {
       font-weight: 600;
       margin-right: 8px;
-    }
-  }
-
-  &__actions {
-    display: flex;
-    gap: 12px;
-
-    button {
-      min-width: 140px;
     }
   }
 }
