@@ -14,7 +14,7 @@
     color: #161616; background: #f4f4f4; font-size: 14px; line-height: 1.5; padding: 0;
   }
 
-  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .container { max-width: 100%; margin: 0; padding: 0; }
 
   .loading {
     display: flex; align-items: center; justify-content: center;
@@ -304,6 +304,7 @@
 <script>
 (function() {
   var API_BASE = 'http://localhost:8090';
+  var CDK = null;
   var context = {};
   var currentPlan = null;
   var evaluations = [];
@@ -312,39 +313,29 @@
 
   // --- Iframe Bridge ---
   window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'init') {
-      context = event.data.context || {};
+    if (event.data && event.data.source === 'valtimo-host' && event.data.event === 'init') {
+      context = event.data.payload && event.data.payload.context || {}; CDK = context.caseDefinitionKey || null;
       loadData();
     }
   });
-  window.parent.postMessage({ type: 'ready' }, '*');
+  window.parent.postMessage({source:'valtimo-plugin',event:'ready'}, '*');
+  var _initDone = false;
+  setTimeout(function() { if (!_initDone) { _initDone = true; loadData(); } }, 500);
 
   function resizeIframe() {
     requestAnimationFrame(function() {
-      window.parent.postMessage({ type: 'resize', height: document.documentElement.scrollHeight }, '*');
+      window.parent.postMessage({source:'valtimo-plugin',event:'resize',payload:{height:document.documentElement.scrollHeight}}, '*');
     });
   }
 
   // --- Data Loading ---
   async function loadData() {
     try {
-      var plans = [];
-
-      // Try to find plans by caseId first
-      if (context.documentId) {
-        var resp = await fetch(API_BASE + '/api/v1/plans?caseId=' + context.documentId);
-        if (resp.ok) plans = await resp.json();
-      }
-
-      // Fallback: load all plans
-      if (plans.length === 0) {
-        var resp2 = await fetch(API_BASE + '/api/v1/plans?subjectId=all&subjectType=PERSON');
-        if (resp2.ok) plans = await resp2.json();
-      }
-      if (plans.length === 0) {
-        var resp3 = await fetch(API_BASE + '/api/v1/plans?subjectId=445775187&subjectType=PERSON');
-        if (resp3.ok) plans = await resp3.json();
-      }
+      var resp = await fetch(API_BASE + '/api/v1/plans');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var plans = await resp.json();
+      if (CDK) plans = plans.filter(function(p) { return p.caseDefinitionKey === CDK; });
+      plans = plans.filter(function(p) { return p.status === 'ACTIVE' || p.status === 'DRAFT'; });
 
       if (plans.length === 0) {
         showEmpty();
@@ -452,9 +443,12 @@
 
   function renderTimelineItem(ev, index, total) {
     var date = ev.actualDate || ev.scheduledDate;
-    var goalScores = ev.goalScores || [];
-    var actionPoints = ev.actionPoints || [];
-    var participants = ev.participants || [];
+    var rawScores = ev.goalProgress || ev.goalScores || '[]';
+    var goalScores = typeof rawScores === 'string' ? tryParseJson(rawScores, []) : rawScores;
+    var rawAp = ev.actionPoints || '[]';
+    var actionPoints = typeof rawAp === 'string' ? tryParseJson(rawAp, []) : rawAp;
+    var rawPart = ev.participants || '';
+    var participants = typeof rawPart === 'string' ? (rawPart ? rawPart.split(',').map(function(s){return s.trim()}) : []) : rawPart;
     var evalId = ev.id || ('eval-' + index);
 
     var html = '<div class="timeline-item">';
@@ -486,7 +480,7 @@
     if (participants.length > 0) {
       html += '  <div class="eval-participants">';
       html += '    <span class="eval-participants-icon">&#128100;</span> ';
-      html += '    ' + escapeHtml(participants.map(function(p) { return p.name || p; }).join(', '));
+      html += '    ' + escapeHtml(participants.join(', '));
       html += '  </div>';
     }
     html += '</div>'; // eval-card-title
@@ -607,6 +601,10 @@
   };
 
   // --- Helpers ---
+  function tryParseJson(str, fallback) {
+    try { return JSON.parse(str); } catch(e) { return fallback; }
+  }
+
   function escapeHtml(str) {
     if (!str) return '';
     var d = document.createElement('div');

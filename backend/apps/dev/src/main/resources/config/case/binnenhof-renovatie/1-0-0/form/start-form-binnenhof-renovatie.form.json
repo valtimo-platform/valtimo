@@ -1,0 +1,33 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Object ID",
+            "key": "objectId",
+            "type": "textfield",
+            "input": true,
+            "placeholder": "binnenhof-001",
+            "validate": {
+                "required": true
+            }
+        },
+        {
+            "label": "Plan titel",
+            "key": "planTitle",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Brandveiligheid Binnenhof 2026",
+            "validate": {
+                "required": true
+            }
+        },
+        {
+            "label": "Zaak starten",
+            "key": "submit",
+            "type": "button",
+            "action": "submit",
+            "theme": "primary",
+            "input": true
+        }
+    ]
+}

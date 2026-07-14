@@ -41,6 +41,9 @@ data class Action(
     @Column(name = "due_date")
     var dueDate: LocalDate? = null,
 
+    @Column(name = "evaluation_source_id")
+    var evaluationSourceId: UUID? = null,
+
     @Column(name = "completed_date")
     var completedDate: LocalDate? = null,
 

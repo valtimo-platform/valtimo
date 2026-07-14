@@ -74,6 +74,12 @@ class PlanResource(
         return ResponseEntity.ok(PlanResponse(plan))
     }
 
+    @GetMapping
+    fun findAll(): ResponseEntity<List<PlanResponse>> {
+        val plans = planService.findAll()
+        return ResponseEntity.ok(plans.map { PlanResponse(it) })
+    }
+
     @GetMapping(params = ["subjectId", "subjectType"])
     fun findBySubject(
         @RequestParam(name = "subjectId") subjectId: String,

@@ -14,7 +14,7 @@
     color: #161616; background: #f4f4f4; font-size: 14px; line-height: 1.5; padding: 0;
   }
 
-  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .container { max-width: 100%; margin: 0; padding: 0; }
 
   .loading {
     display: flex; align-items: center; justify-content: center;
@@ -255,8 +255,8 @@
         <select id="goalPhase"></select>
       </div>
       <div class="form-group">
-        <label>Type</label>
-        <input type="text" id="goalType" placeholder="bijv. Gedragsdoel, Kennisdoel">
+        <label>Doeltype</label>
+        <select id="goalType"><option value="">-- Kies type --</option></select>
       </div>
       <div class="form-group">
         <label>Startdatum</label>
@@ -298,8 +298,8 @@
         <label>Type verantwoordelijke</label>
         <select id="actionAssigneeType">
           <option value="">-- Selecteer --</option>
-          <option value="PROFESSIONAL">Professional</option>
-          <option value="SUBJECT">Cli&euml;nt</option>
+          <option value="PROFESSIONAL">Behandelaar</option>
+          <option value="SUBJECT">Inwoner / Eigenaar</option>
           <option value="PROVIDER">Aanbieder</option>
         </select>
       </div>
@@ -330,6 +330,7 @@
 <script>
 (function() {
   const API_BASE = 'http://localhost:8090';
+  var CDK = null;
   let context = {};
   let currentPlan = null;
   let goals = [];
@@ -338,33 +339,32 @@
   let phases = [];
   let activePhaseFilter = null;
   let actionModalGoalId = null;
+  let expandedGoals = new Set();
 
   // --- Iframe Bridge ---
   window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'init') {
-      context = event.data.context || {};
+    if (event.data && event.data.source === 'valtimo-host' && event.data.event === 'init') {
+      context = event.data.payload && event.data.payload.context || {}; CDK = context.caseDefinitionKey || null;
       loadData();
     }
   });
-  window.parent.postMessage({ type: 'ready' }, '*');
+  window.parent.postMessage({source:'valtimo-plugin',event:'ready'}, '*');
+  var _initDone = false;
+  setTimeout(function() { if (!_initDone) { _initDone = true; loadData(); } }, 500);
 
   function resizeIframe() {
     requestAnimationFrame(function() {
-      window.parent.postMessage({ type: 'resize', height: document.documentElement.scrollHeight }, '*');
+      window.parent.postMessage({source:'valtimo-plugin',event:'resize',payload:{height:document.documentElement.scrollHeight}}, '*');
     });
   }
 
   async function loadData() {
     try {
-      let plans = [];
-      if (context.documentId) {
-        const resp = await fetch(API_BASE + '/api/v1/plans?caseId=' + context.documentId);
-        if (resp.ok) plans = await resp.json();
-      }
-      if (plans.length === 0) {
-        const resp = await fetch(API_BASE + '/api/v1/plans?subjectId=445775187&subjectType=PERSON');
-        if (resp.ok) plans = await resp.json();
-      }
+      const resp = await fetch(API_BASE + '/api/v1/plans');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      let plans = await resp.json();
+      if (CDK) plans = plans.filter(function(p) { return p.caseDefinitionKey === CDK; });
+      plans = plans.filter(function(p) { return p.status === 'ACTIVE' || p.status === 'DRAFT'; });
       if (plans.length === 0) {
         showEmpty(); return;
       }
@@ -383,6 +383,21 @@
       if (phases.length === 0) {
         phases = ['Fase 1', 'Fase 2', 'Fase 3'];
       }
+
+      // Load stamtabel for goal types
+      try {
+        const gtResp = await fetch(API_BASE + '/api/v1/mock/stamtabel/doeltypen');
+        if (gtResp.ok) {
+          const types = await gtResp.json();
+          var sel = document.getElementById('goalType');
+          sel.innerHTML = '<option value="">-- Kies type --</option>';
+          types.forEach(function(t) {
+            var opt = document.createElement('option');
+            opt.value = t.code; opt.textContent = t.label;
+            sel.appendChild(opt);
+          });
+        }
+      } catch(e) { /* ignore */ }
 
       await loadGoals();
     } catch (err) {
@@ -504,6 +519,14 @@
       phaseSelect.appendChild(opt);
     });
 
+    // Restore expanded goals
+    expandedGoals.forEach(function(goalId) {
+      var body = document.getElementById('body-' + goalId);
+      var expand = document.getElementById('expand-' + goalId);
+      if (body) { body.classList.add('open'); }
+      if (expand) { expand.classList.add('open'); }
+    });
+
     resizeIframe();
   }
 
@@ -526,7 +549,7 @@
     html += '</div>';
     html += '<div style="display:flex;align-items:center;gap:8px;">';
     if (goal.goalType) {
-      html += '<span style="font-size:11px;color:#525252;">' + escapeHtml(goal.goalType) + '</span>';
+      html += '<span style="font-size:11px;color:#525252;">' + escapeHtml(goalTypeLabel(goal.goalType)) + '</span>';
     }
     html += '<span class="status-badge status-' + goal.status + '">' + statusLabel(goal.status) + '</span>';
     html += '</div>';
@@ -633,9 +656,11 @@
     if (body.classList.contains('open')) {
       body.classList.remove('open');
       expand.classList.remove('open');
+      expandedGoals.delete(goalId);
     } else {
       body.classList.add('open');
       expand.classList.add('open');
+      expandedGoals.add(goalId);
     }
     resizeIframe();
   };
@@ -724,11 +749,13 @@
     if (dd) body.dueDate = dd;
 
     try {
-      await fetch(API_BASE + '/api/v1/goals/' + actionModalGoalId + '/actions', {
+      var targetGoalId = actionModalGoalId;
+      await fetch(API_BASE + '/api/v1/goals/' + targetGoalId + '/actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
+      expandedGoals.add(targetGoalId);
       closeActionModal();
       await loadGoals();
     } catch(e) { alert('Fout bij opslaan: ' + e.message); }
@@ -771,6 +798,15 @@
   function truncate(str, len) {
     return str.length > len ? str.substring(0, len) + '...' : str;
   }
+  function goalTypeLabel(t) {
+    var labels = {
+      INVENTARISATIE:'Inventarisatie', ONTWIKKELING:'Ontwikkeling', PRAKTISCH:'Praktisch',
+      VERKENNING:'Verkenning', PLAATSING:'Plaatsing', BORGING:'Borging',
+      ANALYSE:'Analyse', HERSTEL:'Herstel', CONTROLE:'Controle'
+    };
+    return labels[t] || t;
+  }
+
   function statusLabel(s) {
     var labels = {
       PLANNED:'Gepland', ACTIVE:'Actief', ACHIEVED:'Behaald',

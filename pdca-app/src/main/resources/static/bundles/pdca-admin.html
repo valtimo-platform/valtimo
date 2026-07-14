@@ -14,7 +14,7 @@
     color: #161616; background: #f4f4f4; font-size: 14px; line-height: 1.5; padding: 0;
   }
 
-  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .container { max-width: 100%; margin: 0; padding: 0; }
 
   .loading {
     display: flex; align-items: center; justify-content: center;
@@ -217,16 +217,19 @@
   var EVAL_TYPES = ['INTAKE', 'PROGRESS', 'EVALUATION', 'INSPECTION', 'CRISIS'];
 
   // --- Iframe Bridge ---
+  var initialized = false;
   window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'init') {
-      loadConfigs();
+    if (event.data && event.data.source === 'valtimo-host' && event.data.event === 'init') {
+      if (!initialized) { initialized = true; loadConfigs(); }
     }
   });
-  window.parent.postMessage({ type: 'ready' }, '*');
+  window.parent.postMessage({source:'valtimo-plugin',event:'ready'}, '*');
+  // Fallback: if init doesn't arrive within 500ms, load anyway (standalone or timing issue)
+  setTimeout(function() { if (!initialized) { initialized = true; loadConfigs(); } }, 500);
 
   function resizeIframe() {
     requestAnimationFrame(function() {
-      window.parent.postMessage({ type: 'resize', height: document.documentElement.scrollHeight }, '*');
+      window.parent.postMessage({source:'valtimo-plugin',event:'resize',payload:{height:document.documentElement.scrollHeight}}, '*');
     });
   }
 
@@ -351,7 +354,7 @@
     html += '<td><div class="badge-container">';
     if (evalTypes.length > 0) {
       evalTypes.forEach(function(et) {
-        html += '<span class="badge badge-eval">' + escapeHtml(et) + '</span>';
+        html += '<span class="badge badge-eval">' + escapeHtml(evalTypeLabel(et)) + '</span>';
       });
     } else {
       html += '<span style="color:#6f6f6f;font-size:12px;">Geen evaluatietypen</span>';

@@ -7,5 +7,6 @@
 
     <include file="config/liquibase/001-initial-schema.xml"/>
     <include file="config/liquibase/002-seed-data.xml"/>
+    <include file="config/liquibase/003-add-evaluation-source.xml"/>
 
 </databaseChangeLog>

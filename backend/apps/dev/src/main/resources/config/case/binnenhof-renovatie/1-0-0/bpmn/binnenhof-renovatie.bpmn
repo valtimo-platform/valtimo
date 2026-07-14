@@ -7,7 +7,7 @@
                   id="Definitions_1"
                   targetNamespace="http://bpmn.io/schema/bpmn"
                   operaton:versionTag="CD:binnenhof-renovatie:1.0.0">
-  <bpmn:process id="binnenhof-renovatie-process" name="Binnenhof Renovatie" isExecutable="true" operaton:versionTag="CD:binnenhof-renovatie:1.0.0">
+  <bpmn:process id="binnenhof-renovatie" name="Binnenhof Renovatie" isExecutable="true" operaton:versionTag="CD:binnenhof-renovatie:1.0.0">
     <bpmn:startEvent id="start" name="Start">
       <bpmn:outgoing>flow1</bpmn:outgoing>
     </bpmn:startEvent>
@@ -22,7 +22,7 @@
     <bpmn:sequenceFlow id="flow2" sourceRef="plan-beheer" targetRef="end" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="binnenhof-renovatie-process">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="binnenhof-renovatie">
       <bpmndi:BPMNShape id="start_di" bpmnElement="start">
         <dc:Bounds x="179" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>

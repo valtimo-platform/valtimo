@@ -44,3 +44,18 @@ kotlin {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.register<Exec>("dockerUp") {
+    group = "docker"
+    description = "Start the PDCA database via docker compose"
+    commandLine("/usr/local/bin/docker", "compose", "up", "-d")
+    workingDir = projectDir
+    environment("PATH", "/usr/local/bin:/usr/bin:/bin")
+}
+
+tasks.register("bootRunWithDocker") {
+    group = "application"
+    description = "Start docker compose, then run the PDCA app"
+    dependsOn("dockerUp")
+    finalizedBy("bootRun")
+}

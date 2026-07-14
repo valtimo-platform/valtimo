@@ -7,7 +7,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'IBM Plex Sans',sans-serif;color:#161616;background:#fff;font-size:14px;line-height:1.5;padding:24px}
+  body{font-family:'IBM Plex Sans',sans-serif;color:#161616;background:#fff;font-size:14px;line-height:1.5}
   h2{font-size:20px;font-weight:600;margin-bottom:8px}
   h3{font-size:16px;font-weight:600;margin:20px 0 12px}
   .subtitle{color:#525252;font-size:13px;margin-bottom:20px}
@@ -73,7 +73,7 @@
 
 <div class="section-divider"></div>
 <h3>Voortgang per doel</h3>
-<div class="score-legend"><span>1 = Niet gehaald</span><span>3 = Deels gehaald</span><span>5 = Volledig gehaald</span></div>
+<div class="score-legend"><span>0 = Niet gestart</span><span>50 = Deels gehaald</span><span>100 = Volledig gehaald</span></div>
 <div id="goalProgressList"><div class="loading">Doelen laden...</div></div>
 
 <div class="section-divider"></div>
@@ -92,9 +92,9 @@ var planId=null;
 var goals=[];
 
 window.addEventListener('message',function(e){
-  if(e.data&&e.data.type==='init'){init()}
+  if(e.data&&e.data.source==='valtimo-host'&&e.data.event==='init'){init()}
 });
-window.parent.postMessage({type:'ready'},'*');
+window.parent.postMessage({source:'valtimo-plugin',event:'ready'},'*');
 
 function init(){
   fetch(API+'/api/v1/plans/11111111-1111-1111-1111-111111111111').then(function(r){return r.json()}).then(function(plan){
@@ -114,12 +114,9 @@ function renderGoalProgress(){
   goals.forEach(function(g,i){
     html+='<div class="goal-progress">';
     html+='<div class="goal-name">'+esc(g.title)+'</div>';
-    html+='<div class="score-group">';
-    for(var s=1;s<=5;s++){
-      var scoreId='score_'+i+'_'+s;
-      var checked=g.progressScore===s?' selected':'';
-      html+='<span class="score-label'+checked+'" onclick="selectScore('+i+','+s+',this)">'+s+'</span>';
-    }
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+    html+='<input type="range" id="score_'+i+'" min="0" max="100" value="'+(g.progressScore||0)+'" oninput="updateScoreDisplay('+i+')" style="flex:1">';
+    html+='<span id="scoreVal_'+i+'" style="min-width:40px;font-weight:600;text-align:right">'+(g.progressScore||0)+'%</span>';
     html+='</div>';
     html+='<div class="goal-explanation"><input type="text" id="explanation_'+i+'" placeholder="Toelichting" value="'+(g.progressExplanation?esc(g.progressExplanation):'')+'"></div>';
     html+='</div>';
@@ -127,17 +124,16 @@ function renderGoalProgress(){
   el.innerHTML=html;
 }
 
-function selectScore(goalIdx,score,el){
-  var siblings=el.parentNode.querySelectorAll('.score-label');
-  siblings.forEach(function(s){s.classList.remove('selected')});
-  el.classList.add('selected');
-  goals[goalIdx]._selectedScore=score;
+function updateScoreDisplay(i){
+  var val=document.getElementById('score_'+i).value;
+  document.getElementById('scoreVal_'+i).textContent=val+'%';
 }
 
 function submitEval(){
   var goalProgress=[];
   goals.forEach(function(g,i){
-    var score=g._selectedScore||null;
+    var scoreEl=document.getElementById('score_'+i);
+    var score=scoreEl?parseInt(scoreEl.value):null;
     var explanation=document.getElementById('explanation_'+i).value.trim();
     if(score||explanation){
       goalProgress.push({goalId:g.id,score:score,explanation:explanation});
@@ -172,7 +168,7 @@ function submitEval(){
     });
     document.getElementById('successMsg').style.display='block';
     setTimeout(function(){
-      window.parent.postMessage({type:'submitTask',data:{evaluationId:ev.id}},'*');
+      window.parent.postMessage({source:'valtimo-plugin',event:'submitTask',payload:{data:{evaluationId:ev.id}},'*');
     },1000);
   }).catch(function(err){alert('Fout bij opslaan: '+err.message)});
 }

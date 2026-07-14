@@ -18,7 +18,7 @@
     padding: 0;
   }
 
-  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .container { max-width: 100%; margin: 0; padding: 0; }
 
   .loading {
     display: flex; align-items: center; justify-content: center;
@@ -186,52 +186,38 @@
 <script>
 (function() {
   const API_BASE = 'http://localhost:8090';
+  var CDK = null;
   let context = {};
   let currentPlan = null;
 
   // --- Iframe Bridge ---
   window.addEventListener('message', function(event) {
     const msg = event.data;
-    if (msg && msg.type === 'init') {
-      context = msg.context || {};
+    if (msg && msg.source === 'valtimo-host' && msg.event === 'init') {
+      context = msg.payload && msg.payload.context || {}; CDK = context.caseDefinitionKey || null;
       loadData();
     }
   });
-  window.parent.postMessage({ type: 'ready' }, '*');
+  window.parent.postMessage({source:'valtimo-plugin',event:'ready'}, '*');
+  // Fallback: load after 500ms if init not received
+  var _initDone = false;
+  setTimeout(function() { if (!_initDone) { _initDone = true; loadPlanData(); } }, 500);
 
   function resizeIframe() {
     requestAnimationFrame(function() {
       const height = document.documentElement.scrollHeight;
-      window.parent.postMessage({ type: 'resize', height: height }, '*');
+      window.parent.postMessage({source:'valtimo-plugin',event:'resize',payload:{height:height}}, '*');
     });
   }
 
   // --- Data Loading ---
   async function loadData() {
     try {
-      let plans = [];
-
-      // Try to find plans by caseId first
-      if (context.documentId) {
-        const resp = await fetch(API_BASE + '/api/v1/plans?caseId=' + context.documentId);
-        if (resp.ok) {
-          plans = await resp.json();
-        }
-      }
-
-      // Fallback: load all plans
-      if (plans.length === 0) {
-        const resp = await fetch(API_BASE + '/api/v1/plans?subjectId=all&subjectType=PERSON');
-        if (resp.ok) {
-          plans = await resp.json();
-        }
-        // If that fails too, try a broader approach
-        if (plans.length === 0) {
-          // Try fetching known BSN
-          const resp2 = await fetch(API_BASE + '/api/v1/plans?subjectId=445775187&subjectType=PERSON');
-          if (resp2.ok) plans = await resp2.json();
-        }
-      }
+      const resp = await fetch(API_BASE + '/api/v1/plans');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      let plans = await resp.json();
+      if (CDK) plans = plans.filter(function(p) { return p.caseDefinitionKey === CDK; });
+      plans = plans.filter(function(p) { return p.status === 'ACTIVE' || p.status === 'DRAFT'; });
 
       if (plans.length === 0) {
         showEmpty();
@@ -421,7 +407,7 @@
     parties.forEach(function(p) {
       html += '<tr>'
         + '<td>' + escapeHtml(p.name) + (p.isPrimary ? '<span class="primary-badge">Primair</span>' : '') + '</td>'
-        + '<td>' + escapeHtml(p.role) + '</td>'
+        + '<td>' + escapeHtml(roleLabel(p.role)) + '</td>'
         + '<td class="party-contact">'
         + (p.email ? escapeHtml(p.email) : '')
         + (p.email && p.phone ? '<br>' : '')
@@ -450,7 +436,7 @@
     items.forEach(function(ev) {
       var date = ev.actualDate || ev.scheduledDate;
       html += '<div class="eval-item">'
-        + '<span class="eval-type-badge">' + escapeHtml(ev.evalType) + '</span>'
+        + '<span class="eval-type-badge">' + escapeHtml(evalTypeLabel(ev.evalType)) + '</span>'
         + '<div class="eval-info">'
         + '<div class="eval-date">' + (date ? formatDate(date) : 'Geen datum') + ' &middot; ' + statusLabel(ev.status) + '</div>'
         + '<div class="eval-summary">' + (ev.summary ? escapeHtml(ev.summary) : '<em style="color:#a8a8a8">Geen samenvatting</em>') + '</div>'
@@ -473,6 +459,21 @@
     var parts = dateStr.split('-');
     if (parts.length === 3) return parts[2] + '-' + parts[1] + '-' + parts[0];
     return dateStr;
+  }
+
+  function evalTypeLabel(t) {
+    var labels = {INTAKE:'Intake', PROGRESS:'Voortgang', EVALUATION:'Evaluatie', INSPECTION:'Inspectie', CRISIS:'Crisis'};
+    return labels[t] || t;
+  }
+
+  function roleLabel(r) {
+    var labels = {
+      REGIEBEHANDELAAR:'Regiebehandelaar', ARBEIDSCOACH:'Arbeidscoach', INWONER:'Inwoner/Eigenaar',
+      PROJECTLEIDER:'Projectleider', BRANDVEILIGHEIDSADVISEUR:'Brandveiligheidsadviseur',
+      GEBOUWBEHEERDER:'Gebouwbeheerder', COACH:'Coach', INSPECTEUR:'Inspecteur',
+      SCHULDHULPVERLENER:'Schuldhulpverlener', AANBIEDER:'Aanbieder'
+    };
+    return labels[r] || r;
   }
 
   function subjectTypeLabel(type) {

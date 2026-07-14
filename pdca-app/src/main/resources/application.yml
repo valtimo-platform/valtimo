@@ -10,6 +10,7 @@ spring:
     password: ${PDCA_DB_PASS:pdca}
     driver-class-name: org.postgresql.Driver
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: none
     properties:

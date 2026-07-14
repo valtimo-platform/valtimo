@@ -53,4 +53,41 @@ class MockRegisterController(
             ResponseEntity.notFound().build()
         }
     }
+
+    @GetMapping("/stamtabel/doeltypen")
+    fun getGoalTypes(): ResponseEntity<List<StamtabelEntry>> {
+        return ResponseEntity.ok(listOf(
+            StamtabelEntry("INVENTARISATIE", "Inventarisatie", "In kaart brengen van de huidige situatie"),
+            StamtabelEntry("ONTWIKKELING", "Ontwikkeling", "Vaardigheden of kennis ontwikkelen"),
+            StamtabelEntry("PRAKTISCH", "Praktisch", "Praktische zaken regelen"),
+            StamtabelEntry("VERKENNING", "Verkenning", "Opties en mogelijkheden onderzoeken"),
+            StamtabelEntry("PLAATSING", "Plaatsing", "Duurzame plaatsing realiseren"),
+            StamtabelEntry("BORGING", "Borging", "Resultaten structureel borgen"),
+            StamtabelEntry("ANALYSE", "Analyse", "Risico's en situatie analyseren"),
+            StamtabelEntry("HERSTEL", "Herstel", "Tekortkomingen of problemen verhelpen"),
+            StamtabelEntry("CONTROLE", "Controle", "Resultaten toetsen en valideren")
+        ))
+    }
+
+    @GetMapping("/stamtabel/rollen")
+    fun getRoles(): ResponseEntity<List<StamtabelEntry>> {
+        return ResponseEntity.ok(listOf(
+            StamtabelEntry("REGIEBEHANDELAAR", "Regiebehandelaar", "Hoofdverantwoordelijke voor het plan"),
+            StamtabelEntry("ARBEIDSCOACH", "Arbeidscoach", "Begeleiding richting werk"),
+            StamtabelEntry("SCHULDHULPVERLENER", "Schuldhulpverlener", "Ondersteuning bij schulden"),
+            StamtabelEntry("INWONER", "Inwoner / Eigenaar", "Subject van het plan"),
+            StamtabelEntry("PROJECTLEIDER", "Projectleider", "Leidt het project"),
+            StamtabelEntry("BRANDVEILIGHEIDSADVISEUR", "Brandveiligheidsadviseur", "Advies over brandveiligheid"),
+            StamtabelEntry("GEBOUWBEHEERDER", "Gebouwbeheerder", "Verantwoordelijk voor gebouwonderhoud"),
+            StamtabelEntry("INSPECTEUR", "Inspecteur", "Voert inspecties uit"),
+            StamtabelEntry("AANBIEDER", "Aanbieder", "Externe dienstverlener"),
+            StamtabelEntry("COACH", "Coach", "Begeleiding en coaching")
+        ))
+    }
 }
+
+data class StamtabelEntry(
+    val code: String,
+    val label: String,
+    val beschrijving: String
+)

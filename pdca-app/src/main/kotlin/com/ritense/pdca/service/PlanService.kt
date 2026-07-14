@@ -33,6 +33,10 @@ class PlanService(
     private val phaseConfigService: PhaseConfigService
 ) {
 
+    fun findAll(): List<Plan> {
+        return planRepository.findAll()
+    }
+
     fun getById(id: UUID): Plan {
         return planRepository.findById(id)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Plan not found with id: $id") }

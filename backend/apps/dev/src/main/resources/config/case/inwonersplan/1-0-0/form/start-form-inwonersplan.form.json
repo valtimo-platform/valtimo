@@ -1,0 +1,33 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "BSN Inwoner",
+            "key": "subjectBsn",
+            "type": "textfield",
+            "input": true,
+            "placeholder": "445775187",
+            "validate": {
+                "required": true
+            }
+        },
+        {
+            "label": "Plan titel",
+            "key": "planTitle",
+            "type": "textfield",
+            "input": true,
+            "defaultValue": "Ontwikkelplan Werk",
+            "validate": {
+                "required": true
+            }
+        },
+        {
+            "label": "Zaak starten",
+            "key": "submit",
+            "type": "button",
+            "action": "submit",
+            "theme": "primary",
+            "input": true
+        }
+    ]
+}

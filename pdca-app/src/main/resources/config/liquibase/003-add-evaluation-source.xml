@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="003-01-add-evaluation-source-id" author="pdca">
+        <addColumn tableName="action">
+            <column name="evaluation_source_id" type="UUID"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Update goal_type values from English to Dutch codes -->
+    <changeSet id="003-02-dutch-goal-types" author="pdca" context="seed">
+        <update tableName="goal">
+            <column name="goal_type" value="INVENTARISATIE"/>
+            <where>goal_type = 'ASSESSMENT'</where>
+        </update>
+        <update tableName="goal">
+            <column name="goal_type" value="ONTWIKKELING"/>
+            <where>goal_type = 'DEVELOPMENT'</where>
+        </update>
+        <update tableName="goal">
+            <column name="goal_type" value="PRAKTISCH"/>
+            <where>goal_type = 'PRACTICAL'</where>
+        </update>
+        <update tableName="goal">
+            <column name="goal_type" value="VERKENNING"/>
+            <where>goal_type = 'EXPLORATION'</where>
+        </update>
+        <update tableName="goal">
+            <column name="goal_type" value="PLAATSING"/>
+            <where>goal_type = 'PLACEMENT'</where>
+        </update>
+        <update tableName="goal">
+            <column name="goal_type" value="BORGING"/>
+            <where>goal_type = 'SUSTAINMENT'</where>
+        </update>
+        <update tableName="goal">
+            <column name="goal_type" value="ANALYSE"/>
+            <where>goal_type = 'ANALYSIS'</where>
+        </update>
+        <update tableName="goal">
+            <column name="goal_type" value="HERSTEL"/>
+            <where>goal_type = 'REMEDIATION'</where>
+        </update>
+        <update tableName="goal">
+            <column name="goal_type" value="CONTROLE"/>
+            <where>goal_type = 'VERIFICATION'</where>
+        </update>
+    </changeSet>
+
+    <!-- Update role values to Dutch -->
+    <changeSet id="003-03-dutch-roles" author="pdca" context="seed">
+        <update tableName="involved_party">
+            <column name="role" value="REGIEBEHANDELAAR"/>
+            <where>role = 'CASEWORKER'</where>
+        </update>
+        <update tableName="involved_party">
+            <column name="role" value="ARBEIDSCOACH"/>
+            <where>role = 'JOBCOACH'</where>
+        </update>
+        <update tableName="involved_party">
+            <column name="role" value="INWONER"/>
+            <where>role = 'SUBJECT'</where>
+        </update>
+        <update tableName="involved_party">
+            <column name="role" value="PROJECTLEIDER"/>
+            <where>role = 'PROJECT_MANAGER'</where>
+        </update>
+        <update tableName="involved_party">
+            <column name="role" value="BRANDVEILIGHEIDSADVISEUR"/>
+            <where>role = 'FIRE_SAFETY_ADVISOR'</where>
+        </update>
+        <update tableName="involved_party">
+            <column name="role" value="GEBOUWBEHEERDER"/>
+            <where>role = 'FACILITY_MANAGER'</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

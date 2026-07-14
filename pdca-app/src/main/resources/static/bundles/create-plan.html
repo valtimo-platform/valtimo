@@ -7,7 +7,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'IBM Plex Sans',sans-serif;color:#161616;background:#fff;font-size:14px;line-height:1.5;padding:24px}
+  body{font-family:'IBM Plex Sans',sans-serif;color:#161616;background:#fff;font-size:14px;line-height:1.5}
   h2{font-size:20px;font-weight:600;margin-bottom:20px}
   .form-group{margin-bottom:16px}
   label{display:block;font-size:12px;font-weight:500;color:#525252;margin-bottom:4px;letter-spacing:.32px}
@@ -96,9 +96,9 @@ var API='http://localhost:8090';
 var context={};
 
 window.addEventListener('message',function(e){
-  if(e.data&&e.data.type==='init'){context=e.data.context||{}}
+  if(e.data&&e.data.source==='valtimo-host'&&e.data.event==='init'){context=e.data.payload&&e.data.payload.context||{}}
 });
-window.parent.postMessage({type:'ready'},'*');
+window.parent.postMessage({source:'valtimo-plugin',event:'ready'},'*');
 
 function getSubjectType(){
   return document.querySelector('input[name=subjectType]:checked').value;
@@ -151,7 +151,7 @@ function submitPlan(){
   .then(function(r){return r.json()})
   .then(function(plan){
     document.getElementById('successMsg').style.display='block';
-    window.parent.postMessage({type:'submitTask',data:{
+    window.parent.postMessage({source:'valtimo-plugin',event:'submitTask',payload:{data:{
       planId:plan.id,
       planTitle:plan.title,
       planStatus:plan.status,

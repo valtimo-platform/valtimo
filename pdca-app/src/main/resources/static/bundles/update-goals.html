@@ -7,7 +7,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'IBM Plex Sans',sans-serif;color:#161616;background:#fff;font-size:14px;line-height:1.5;padding:24px}
+  body{font-family:'IBM Plex Sans',sans-serif;color:#161616;background:#fff;font-size:14px;line-height:1.5}
   h2{font-size:20px;font-weight:600;margin-bottom:8px}
   .subtitle{color:#525252;font-size:13px;margin-bottom:20px}
   .form-group{margin-bottom:14px}
@@ -82,9 +82,9 @@ var phases=[];
 var goals=[];
 
 window.addEventListener('message',function(e){
-  if(e.data&&e.data.type==='init'){init()}
+  if(e.data&&e.data.source==='valtimo-host'&&e.data.event==='init'){init()}
 });
-window.parent.postMessage({type:'ready'},'*');
+window.parent.postMessage({source:'valtimo-plugin',event:'ready'},'*');
 
 function init(){
   fetch(API+'/api/v1/plans/11111111-1111-1111-1111-111111111111').then(function(r){return r.json()}).then(function(plan){
@@ -155,7 +155,7 @@ function deleteGoal(id){
 }
 
 function submitForm(){
-  window.parent.postMessage({type:'submitTask',data:{updated:true,goalCount:goals.length}},'*');
+  window.parent.postMessage({source:'valtimo-plugin',event:'submitTask',payload:{data:{updated:true,goalCount:goals.length}},'*');
 }
 
 function showSuccess(msg){var el=document.getElementById('successMsg');el.textContent=msg;el.style.display='block';setTimeout(function(){el.style.display='none'},3000)}

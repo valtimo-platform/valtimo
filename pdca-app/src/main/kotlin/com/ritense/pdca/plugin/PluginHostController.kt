@@ -27,9 +27,19 @@ class PluginHostController(
             mapOf(
                 "pluginId" to "pdca",
                 "version" to "0.1.0",
-                "title" to mapOf("en" to "PDCA Plan Manager", "nl" to "PDCA Planbeheer"),
-                "description" to mapOf("nl" to "Generiek planbeheer met PDCA-cyclus"),
-                "configSchema" to mapOf(
+                "translations" to mapOf(
+                    "en" to mapOf(
+                        "name" to "PDCA Plan Manager",
+                        "description" to "Generic plan management with PDCA cycle",
+                        "pdca-admin.title" to "PDCA Management"
+                    ),
+                    "nl" to mapOf(
+                        "name" to "PDCA Planbeheer",
+                        "description" to "Generiek planbeheer met PDCA-cyclus",
+                        "pdca-admin.title" to "PDCA Beheer"
+                    )
+                ),
+                "configurationSchema" to mapOf(
                     "type" to "object",
                     "properties" to mapOf(
                         "planRegisterUrl" to mapOf("type" to "string", "title" to "Plan Register URL")
@@ -39,54 +49,54 @@ class PluginHostController(
                     mapOf(
                         "type" to "case-tab",
                         "key" to "plan-overview",
-                        "path" to "/bundles/plan-overview.js",
-                        "title" to mapOf("nl" to "Planoverzicht")
+                        "path" to "/bundles/plan-overview.html",
+                        "title" to "Planoverzicht"
                     ),
                     mapOf(
                         "type" to "case-tab",
                         "key" to "plan-goals",
-                        "path" to "/bundles/plan-goals.js",
-                        "title" to mapOf("nl" to "Doelen & Acties")
+                        "path" to "/bundles/plan-goals.html",
+                        "title" to "Doelen & Acties"
                     ),
                     mapOf(
                         "type" to "case-tab",
                         "key" to "plan-evaluations",
-                        "path" to "/bundles/plan-evaluations.js",
-                        "title" to mapOf("nl" to "Evaluaties")
+                        "path" to "/bundles/plan-evaluations.html",
+                        "title" to "Evaluaties"
                     ),
                     mapOf(
                         "type" to "page",
                         "key" to "pdca-admin",
-                        "path" to "/bundles/pdca-admin.js",
-                        "title" to mapOf("nl" to "PDCA Beheer")
+                        "path" to "/bundles/pdca-admin.html",
+                        "title" to "pdca-admin.title"
                     ),
                     mapOf(
                         "type" to "task-form",
                         "key" to "create-plan",
-                        "path" to "/bundles/create-plan.js"
+                        "path" to "/bundles/create-plan.html"
                     ),
                     mapOf(
                         "type" to "task-form",
                         "key" to "update-goals",
-                        "path" to "/bundles/update-goals.js"
+                        "path" to "/bundles/update-goals.html"
                     ),
                     mapOf(
                         "type" to "task-form",
                         "key" to "evaluate",
-                        "path" to "/bundles/evaluate.js"
+                        "path" to "/bundles/evaluate.html"
                     )
                 ),
                 "actions" to listOf(
-                    mapOf("key" to "create-plan", "title" to mapOf("nl" to "Plan aanmaken")),
-                    mapOf("key" to "sync-status", "title" to mapOf("nl" to "Status synchroniseren naar zaak"))
+                    mapOf("key" to "create-plan", "title" to "Plan aanmaken"),
+                    mapOf("key" to "sync-status", "title" to "Status synchroniseren naar zaak")
                 ),
                 "permissions" to mapOf(
                     "endpoints" to listOf(
-                        mapOf("method" to "GET", "path" to "/api/v1/case/*"),
-                        mapOf("method" to "POST", "path" to "/api/v1/case/*/document"),
-                        mapOf("method" to "GET", "path" to "/api/v1/document/*"),
-                        mapOf("method" to "POST", "path" to "/api/v1/process-link/*/task/*/complete"),
-                        mapOf("method" to "GET", "path" to "/api/management/v1/case-definition")
+                        mapOf("method" to "GET", "pattern" to "/api/v1/case/*"),
+                        mapOf("method" to "POST", "pattern" to "/api/v1/case/*/document"),
+                        mapOf("method" to "GET", "pattern" to "/api/v1/document/*"),
+                        mapOf("method" to "POST", "pattern" to "/api/v1/process-link/*/task/*/complete"),
+                        mapOf("method" to "GET", "pattern" to "/api/management/v1/case-definition")
                     )
                 )
             )
