@@ -9,7 +9,7 @@
     <changeSet id="002-01-seed-phase-configs" author="pdca" context="seed">
         <insert tableName="phase_config">
             <column name="id" value="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"/>
-            <column name="case_definition_key" value="inwonersplan"/>
+            <column name="case_definition_key" value="inwonerplan"/>
             <column name="phases" value='["Analyse","Uitvoering","Plaatsing"]'/>
             <column name="evaluation_types" value='["INTAKE","PROGRESS","EVALUATION","CRISIS"]'/>
             <column name="created_at" valueDate="2026-01-01T00:00:00"/>
@@ -39,7 +39,7 @@
             <column name="status" value="ACTIVE"/>
             <column name="start_date" valueDate="2026-01-15"/>
             <column name="target_end_date" valueDate="2026-12-31"/>
-            <column name="case_definition_key" value="inwonersplan"/>
+            <column name="case_definition_key" value="inwonerplan"/>
             <column name="created_at" valueDate="2026-01-15T09:00:00"/>
             <column name="updated_at" valueDate="2026-06-20T14:30:00"/>
             <column name="created_by" value="s.jansen"/>

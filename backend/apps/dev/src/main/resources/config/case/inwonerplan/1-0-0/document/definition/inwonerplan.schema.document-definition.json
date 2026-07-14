@@ -1,7 +1,7 @@
 {
-    "$id": "inwonersplan.schema",
+    "$id": "inwonerplan.schema",
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Inwonersplan",
+    "title": "Inwonerplan",
     "type": "object",
     "properties": {
         "planId": {

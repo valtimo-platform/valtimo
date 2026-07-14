@@ -29,7 +29,7 @@ class StartupInfoPrinter(private val env: Environment) {
             │  3. Save → GZAC will discover the plugin automatically           │
             │  4. Create a plugin configuration for the discovered plugin       │
             │  5. Add external plugin case tabs to your case definitions:       │
-            │     • inwonersplan → plan-overview, plan-goals, plan-evaluations  │
+            │     • inwonerplan → plan-overview, plan-goals, plan-evaluations  │
             │     • binnenhof-renovatie → same tabs                            │
             │                                                                  │
             │  Standalone API:                                                 │

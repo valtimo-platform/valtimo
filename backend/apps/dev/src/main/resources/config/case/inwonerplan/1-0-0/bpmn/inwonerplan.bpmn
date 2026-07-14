@@ -6,8 +6,8 @@
                   xmlns:operaton="http://operaton.org/schema/1.0/bpmn"
                   id="Definitions_1"
                   targetNamespace="http://bpmn.io/schema/bpmn"
-                  operaton:versionTag="CD:inwonersplan:1.0.0">
-  <bpmn:process id="inwonersplan" name="Inwonersplan" isExecutable="true" operaton:versionTag="CD:inwonersplan:1.0.0">
+                  operaton:versionTag="CD:inwonerplan:1.0.0">
+  <bpmn:process id="inwonerplan" name="Inwonerplan" isExecutable="true" operaton:versionTag="CD:inwonerplan:1.0.0">
     <bpmn:startEvent id="start" name="Start">
       <bpmn:outgoing>flow1</bpmn:outgoing>
     </bpmn:startEvent>
@@ -22,7 +22,7 @@
     <bpmn:sequenceFlow id="flow2" sourceRef="plan-beheer" targetRef="end" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="inwonersplan">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="inwonerplan">
       <bpmndi:BPMNShape id="start_di" bpmnElement="start">
         <dc:Bounds x="179" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>

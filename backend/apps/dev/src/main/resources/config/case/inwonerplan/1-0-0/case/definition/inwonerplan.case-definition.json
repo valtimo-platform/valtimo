@@ -1,6 +1,6 @@
 {
-    "key": "inwonersplan",
-    "name": "Inwonersplan",
+    "key": "inwonerplan",
+    "name": "Inwonerplan",
     "versionTag": "1.0.0",
     "final": false,
     "canHaveAssignee": true,

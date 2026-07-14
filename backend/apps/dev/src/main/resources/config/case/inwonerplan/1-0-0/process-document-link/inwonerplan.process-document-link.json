@@ -1,6 +1,6 @@
 [
     {
-        "processDefinitionKey": "inwonersplan",
+        "processDefinitionKey": "inwonerplan",
         "canInitializeDocument": true,
         "startableByUser": true
     }

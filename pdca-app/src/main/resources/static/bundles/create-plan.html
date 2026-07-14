@@ -144,7 +144,7 @@ function submitPlan(){
     startDate:document.getElementById('startDate').value||null,
     targetEndDate:document.getElementById('targetEndDate').value||null,
     status:'ACTIVE',
-    caseDefinitionKey:getSubjectType()==='PERSON'?'inwonersplan':'binnenhof-renovatie'
+    caseDefinitionKey:getSubjectType()==='PERSON'?'inwonerplan':'binnenhof-renovatie'
   };
   if(!body.subjectId||!body.title){alert('Vul minimaal Subject ID en Titel in');return}
   fetch(API+'/api/v1/plans',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})

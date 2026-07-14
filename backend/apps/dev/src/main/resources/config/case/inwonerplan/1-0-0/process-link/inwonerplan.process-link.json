@@ -3,6 +3,6 @@
         "activityId": "start",
         "activityType": "bpmn:StartEvent:start",
         "processLinkType": "form",
-        "formDefinitionName": "start-form-inwonersplan"
+        "formDefinitionName": "start-form-inwonerplan"
     }
 ]
