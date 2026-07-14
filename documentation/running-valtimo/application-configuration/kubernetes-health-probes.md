@@ -1,12 +1,11 @@
-# Back-end migration
+# Kubernetes health probes
 
-This page describes how to adopt the bootstrap-aware readiness introduced in this version. No code changes are required
-in a standard installation; the changes below are configuration and deployment settings. If you do nothing, behaviour is
-unchanged — the `bootstrap` health indicator is registered but nothing consults it.
+This page describes how to configure Kubernetes liveness, readiness, and startup probes for Valtimo.
 
 ## Enabling readiness based on startup completion
 
-Follow these steps so Kubernetes only routes traffic to a pod once it has finished starting up.
+By default the application reports itself as ready before startup has fully completed. Follow these steps so
+Kubernetes only routes traffic to a pod once it has finished starting up.
 
 1. **Enable the health probes**
 
