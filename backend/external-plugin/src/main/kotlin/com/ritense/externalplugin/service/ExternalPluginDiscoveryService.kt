@@ -56,6 +56,22 @@ class ExternalPluginDiscoveryService(
         }
     }
 
+    /**
+     * Polls a single host on demand, outside the periodic cycle. Used right after registering an
+     * app so its single plugin is discovered and available to configure immediately instead of on
+     * the next polling tick. Best-effort: any failure is swallowed (an unreachable host is simply
+     * marked as such by [pollHost]) so registration never fails because discovery could not reach
+     * the host yet.
+     */
+    fun discoverHost(hostId: UUID) {
+        val host = hostRepository.findById(hostId).orElse(null) ?: return
+        try {
+            pollHost(host)
+        } catch (e: Exception) {
+            logger.warn(e) { "External plugin discovery failed for host ${host.id} (${host.baseUrl})" }
+        }
+    }
+
     private fun pollHost(host: ExternalPluginHost) {
         val healthy = hostClient.health(host.baseUrl)
         host.lastHealthCheck = Instant.now()

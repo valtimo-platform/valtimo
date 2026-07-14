@@ -24,6 +24,7 @@ import {
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostEventQueueUpdateRequest,
+  ExternalPluginHostKind,
   ExternalPluginHostUsage,
   ExternalPluginService,
   getExternalPluginDisplayName,
@@ -170,6 +171,11 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
       viewType: ViewType.TEXT,
     },
     {
+      key: 'kindTag',
+      label: 'pluginManagement.labels.kind',
+      viewType: ViewType.TAGS,
+    },
+    {
       key: 'statusTag',
       label: 'pluginManagement.labels.status',
       viewType: ViewType.TAGS,
@@ -202,6 +208,7 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
   public readonly hostsLoading$ = new BehaviorSubject<boolean>(true);
   public readonly hostsRefreshing$ = new BehaviorSubject<boolean>(false);
   public readonly hostModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostModalKind$ = new BehaviorSubject<ExternalPluginHostKind>('PLUGIN_HOST');
   public readonly reloadModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
@@ -258,7 +265,9 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
   );
 
   public readonly hosts$: Observable<
-    Array<ExternalPluginHost & {statusTag: CarbonTag; lastHealthCheckFormatted: string}>
+    Array<
+      ExternalPluginHost & {kindTag: CarbonTag; statusTag: CarbonTag; lastHealthCheckFormatted: string}
+    >
   > = merge(
     this._tabVisible$.pipe(switchMap(visible => (visible ? timer(0, 5000) : EMPTY))),
     this._refreshHosts$
@@ -277,6 +286,7 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
         map(() =>
           hosts.map(host => ({
             ...host,
+            kindTag: this._getKindTag(host.kind),
             statusTag: this._getStatusTag(host.status),
             lastHealthCheckFormatted: this._formatLastHealthCheck(host.lastHealthCheck),
           }))
@@ -533,8 +543,11 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   // --- Plugin upload modal ---
   public readonly uploadModalOpen$ = new BehaviorSubject<boolean>(false);
+  // Only plugin hosts accept uploads — apps serve their own single plugin. Restricting the upload
+  // target list (and the "Upload plugin" button visibility via hasConnectedHosts$) to connected
+  // plugin hosts keeps the upload flow off apps entirely.
   public readonly connectedHosts$: Observable<Array<ExternalPluginHost>> = this.hosts$.pipe(
-    map(hosts => hosts.filter(h => h.status === 'CONNECTED'))
+    map(hosts => hosts.filter(h => h.status === 'CONNECTED' && h.kind === 'PLUGIN_HOST'))
   );
   public readonly hasConnectedHosts$: Observable<boolean> = this.connectedHosts$.pipe(
     map(hosts => hosts.length > 0)
@@ -555,7 +568,8 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   // --- Plugin hosts tab methods ---
 
-  public openHostModal(): void {
+  public openHostModal(kind: ExternalPluginHostKind = 'PLUGIN_HOST'): void {
+    this.hostModalKind$.next(kind);
     this.hostModalOpen$.next(true);
   }
 
@@ -703,6 +717,13 @@ export class PluginManagementComponent implements OnInit, AfterViewInit, OnDestr
     return {
       content: this._translateService.instant(`pluginManagement.hostStatus.${status}`),
       type: status === 'CONNECTED' ? 'green' : 'red',
+    };
+  }
+
+  private _getKindTag(kind: ExternalPluginHostKind): CarbonTag {
+    return {
+      content: this._translateService.instant(`pluginManagement.kind.${kind}`),
+      type: kind === 'APP' ? 'purple' : 'cool-gray',
     };
   }
 

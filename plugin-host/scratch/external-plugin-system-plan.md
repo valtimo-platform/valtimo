@@ -1033,7 +1033,6 @@ Structure:
 - Case **widgets** and **menu pages** (the remaining iframe surfaces — the case **tab** (§13.1) and
   the **task form** (§13.6) are done).
 - Host database for KV / API logs / retention.
-- URL-plugin mode.
 - DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
   queue and its contents).
 
@@ -1172,3 +1171,45 @@ Structure:
   sample `build:pack`, but a live browser run of all three levels against a running task is not yet in
   the verified record. Level 2 reuses the previously code-verified `handle_request`/`gzacApi.asUser`
   path.
+
+## 17. Apps — URL plugins ✅
+
+An **app** is a remote HTTP service, added by URL, that **is a plugin-host-plus-single-plugin**: it
+speaks the exact same GZAC↔host contract (discovery, HMAC-signed pushes/actions, public
+iframe/data routes) but serves one natively-implemented plugin and accepts no uploads. Terminology:
+an **integration** is the umbrella for a **plugin host** or an **app**.
+
+The whole feature is a thin discriminator over the existing machinery — no new tables, no new
+endpoints, no duplicated token/HMAC/discovery/iframe code:
+
+- **`external_plugin_host.kind`** (`ExternalPluginHostKind = PLUGIN_HOST | APP`, default
+  `PLUGIN_HOST`, `20260708-external-plugin-host-kind.xml`). Carried through `HostCreateRequest` /
+  `HostResponse` and `ExternalPluginHostService.register()`.
+- **Immediate discovery on registration** — `createHost()` calls the new
+  `ExternalPluginDiscoveryService.discoverHost(hostId)` for an APP so its single plugin is
+  discovered and configurable at once instead of on the next ≤60 s poll. Best-effort; the periodic
+  cycle reconciles regardless.
+- **Upload guard** — `ExternalPluginHostService.uploadPlugin()` rejects an APP host (an app serves
+  its own plugin); the UI hides upload for apps and restricts the upload host list to
+  `kind = PLUGIN_HOST`.
+- **Admin UX** — the "Plugin hosts" tab becomes **Integrations** with a **Type** tag column; an
+  **Add app** button opens the shared host modal in APP mode. Discovery, configuration, permissions,
+  process-link/case-tab/task-form binding, and deletion guards are all reused unchanged, because an
+  app's single plugin surfaces as an ordinary `external_plugin_definition`.
+
+Everything downstream of registration is identical to a plugin host, so an app gets service tokens,
+the endpoint allowlist, user tokens, iframe surfaces, and event delivery for free.
+
+**Reference app.** `plugin-host/sample-apps/demo-app/` is a standalone Node + Fastify service that
+implements the contract natively (no Extism) for one plugin — action (`greet`, `SERVICE_TASK_START`
++ service-token callback), config + action-config + case-tab iframe bundles (built with esbuild
+against `@valtimo/plugin-sdk/frontend`), a `handle_request` `/data` route (levels 2–4), and a
+RabbitMQ event consumer that notes back on `document.created`. HMAC verification reproduces
+`ExternalPluginHmacSigner` byte-for-byte. It doubles as living documentation of the app contract.
+
+**Verification.** `:backend:external-plugin:test` (incl. new `register`-persists-kind,
+APP-upload-rejected, and default-kind cases) and `:backend:app:gzac:compileKotlin` BUILD SUCCESSFUL.
+Demo app `npm run build` clean (server `tsc` + three iframe bundles); a live run confirmed `/health`,
+the public `/plugin-manifest`, a correctly-signed `GET /api/host/plugins` (→ 200 with the single
+plugin), and an unsigned / wrong-secret call (→ 401). Frontend `@valtimo/{plugin,plugin-management}`
+type-check clean; `en`/`nl` bundles updated (`addApp`, `tabs.integrations`, `labels.kind`, `kind.*`).

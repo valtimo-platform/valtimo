@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
+import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.exception.ExternalPluginHostInUseException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
@@ -65,6 +66,7 @@ class ExternalPluginHostService(
         eventBrokerExchange: String?,
         eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
         eventQueueTtlMs: Long? = null,
+        kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
     ): ExternalPluginHost {
         val normalizedBaseUrl = baseUrl.trimEnd('/')
         val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }
@@ -86,6 +88,7 @@ class ExternalPluginHostService(
             baseUrl = normalizedBaseUrl,
             secret = encryptionService.encrypt(secret),
             status = ExternalPluginHostStatus.UNREACHABLE,
+            kind = kind,
             gzacCallbackBaseUrl = gzacCallbackBaseUrl.trimEnd('/'),
             eventBrokerAmqpUrl = brokerAmqpUrl,
             eventBrokerExchange = eventBrokerExchange?.takeIf { it.isNotBlank() },
@@ -160,6 +163,11 @@ class ExternalPluginHostService(
 
     fun uploadPlugin(hostId: UUID, fileName: String, fileBytes: ByteArray): JsonNode {
         val host = get(hostId)
+        // An app *is* its single plugin — it serves its own manifest and accepts no uploads. The UI
+        // hides the upload affordance for apps; this is the server-side backstop.
+        require(host.kind != ExternalPluginHostKind.APP) {
+            "Host $hostId is an app and does not accept plugin uploads; it serves its own plugin."
+        }
         val adminToken = decryptedSecret(host)
         return hostClient.uploadPlugin(host.baseUrl, adminToken, fileName, fileBytes)
     }

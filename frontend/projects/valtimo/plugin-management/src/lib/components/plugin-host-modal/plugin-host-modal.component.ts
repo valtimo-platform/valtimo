@@ -23,6 +23,7 @@ import {SelectItem, SelectModule, ValtimoCdsModalDirective} from '@valtimo/compo
 import {
   ExternalPluginEventQueueMode,
   ExternalPluginHostCreateRequest,
+  ExternalPluginHostKind,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {Subscription} from 'rxjs';
@@ -47,9 +48,14 @@ import {Subscription} from 'rxjs';
 })
 export class PluginHostModalComponent implements OnChanges, OnInit, OnDestroy {
   @Input() public open = false;
+  @Input() public kind: ExternalPluginHostKind = 'PLUGIN_HOST';
 
   @Output() public closeEvent = new EventEmitter<void>();
   @Output() public submitEvent = new EventEmitter<ExternalPluginHostCreateRequest>();
+
+  public get isApp(): boolean {
+    return this.kind === 'APP';
+  }
 
   public readonly form = new FormGroup({
     name: new FormControl('', Validators.required),
@@ -116,6 +122,7 @@ export class PluginHostModalComponent implements OnChanges, OnInit, OnDestroy {
       name: value.name!,
       baseUrl: value.baseUrl!,
       secret: value.secret!,
+      kind: this.kind,
       gzacCallbackBaseUrl: value.gzacCallbackBaseUrl!,
       eventBrokerAmqpUrl: value.eventBrokerAmqpUrl?.trim() || null,
       eventBrokerExchange: value.eventBrokerExchange?.trim() || null,
