@@ -185,7 +185,7 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
 
   private _handleResize(payload: {height?: number}): void {
     if (payload.height && this.iframeRef?.nativeElement) {
-      this.iframeRef.nativeElement.style.height = `${payload.height}px`;
+      // this.iframeRef.nativeElement.style.height = `${payload.height}px`;
     }
   }
 

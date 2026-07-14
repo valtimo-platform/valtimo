@@ -15,11 +15,20 @@
  */
 
 .external-plugin-page {
-  display: flex;
-  flex-direction: column;
   width: 100%;
-  min-height: 100%;
   background-color: var(--cds-background);
+
+  ::ng-deep {
+    valtimo-external-plugin-iframe {
+      display: block;
+      height: 100%;
+    }
+
+    .external-plugin-iframe {
+      width: 100%;
+      height: 100%;
+    }
+  }
 
   &__status {
     display: flex;

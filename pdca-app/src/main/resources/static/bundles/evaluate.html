@@ -97,7 +97,11 @@ window.addEventListener('message',function(e){
 window.parent.postMessage({source:'valtimo-plugin',event:'ready'},'*');
 
 function init(){
-  fetch(API+'/api/v1/plans/11111111-1111-1111-1111-111111111111').then(function(r){return r.json()}).then(function(plan){
+  fetch(API+'/api/v1/plans').then(function(r){return r.json()}).then(function(plans){
+    var active=plans.filter(function(p){return p.status==='ACTIVE'||p.status==='DRAFT'});
+    if(active.length===0){document.getElementById('planTitle').textContent='Geen plan gevonden';return Promise.reject('no plan')}
+    return active[0];
+  }).then(function(plan){
     planId=plan.id;
     document.getElementById('planTitle').textContent=plan.title;
     return fetch(API+'/api/v1/plans/'+planId+'/goals');

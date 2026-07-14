@@ -26,6 +26,7 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {ExternalPluginIframeComponent} from '@valtimo/plugin';
+import {FitPageDirective} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, Subscription, switchMap, throwError} from 'rxjs';
 import {CaseExternalPluginTabApiService, CaseTabService} from '../../../../services';
@@ -37,7 +38,7 @@ type TabState = 'loading' | 'ready' | 'error';
   templateUrl: './external-plugin.component.html',
   styleUrls: ['./external-plugin.component.scss'],
   standalone: true,
-  imports: [CommonModule, LoadingModule, TranslateModule, ExternalPluginIframeComponent],
+  imports: [CommonModule, LoadingModule, TranslateModule, ExternalPluginIframeComponent, FitPageDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
@@ -111,20 +112,12 @@ export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
     this._scheduleReMint(content.configurationId, token.expiresAt);
   }
 
-  /**
-   * Derives the plugin host data route (`{base}/data`) from the bundle URL
-   * (`{base}/bundles/case-tab.html`). Returns null when the URL doesn't follow the bundle layout.
-   */
   private _derivePluginDataUrl(bundleUrl: string | null): string | null {
     if (!bundleUrl) return null;
     const idx = bundleUrl.indexOf('/bundles/');
     return idx >= 0 ? `${bundleUrl.substring(0, idx)}/data` : null;
   }
 
-  /**
-   * Re-mints the downscoped user token shortly before its (≤15-min) expiry and pushes the fresh
-   * token into the iframe component input. Purely a parent-side concern — the iframe holds no token.
-   */
   private _scheduleReMint(configurationId: string, expiresAt: string): void {
     this._clearReMint();
     const expiry = new Date(expiresAt).getTime();

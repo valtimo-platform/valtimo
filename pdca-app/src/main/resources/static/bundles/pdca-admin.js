@@ -1,0 +1,1 @@
+import{c as n,j as e}from"./chunks/styles-Cy4vRBn2.js";function r(){return e.jsxs("div",{style:{padding:24,fontFamily:"IBM Plex Sans, sans-serif"},children:[e.jsx("h2",{children:"pdca-admin (React migratie in uitvoering)"}),e.jsx("p",{children:"Dit scherm wordt binnenkort gemigreerd naar React + Carbon."})]})}n(document.getElementById("root")).render(e.jsx(r,{}));

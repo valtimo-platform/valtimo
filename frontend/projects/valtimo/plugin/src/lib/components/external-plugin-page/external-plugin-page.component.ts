@@ -21,6 +21,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {LoadingModule} from 'carbon-components-angular';
 import {map, Subscription, switchMap, tap, throwError} from 'rxjs';
 import {ExternalPluginIframeComponent} from '../external-plugin-iframe/external-plugin-iframe.component';
+import {FitPageDirective} from '@valtimo/components';
 import {ExternalPluginPageService} from '../../services';
 import {ExternalPluginMenuPage, ExternalPluginUserTokenResponse} from '../../models';
 
@@ -36,7 +37,7 @@ type PageState = 'loading' | 'ready' | 'error';
   templateUrl: './external-plugin-page.component.html',
   styleUrls: ['./external-plugin-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, LoadingModule, TranslateModule, ExternalPluginIframeComponent],
+  imports: [CommonModule, LoadingModule, TranslateModule, ExternalPluginIframeComponent, FitPageDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExternalPluginPageComponent implements OnInit, OnDestroy {
