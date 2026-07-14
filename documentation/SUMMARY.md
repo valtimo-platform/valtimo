@@ -265,6 +265,7 @@
   * [Temporary file storage](running-valtimo/application-configuration/temporary-file-storage.md)
   * [Document upload size limit](running-valtimo/application-configuration/document-upload-size.md)
   * [Feature toggles](running-valtimo/application-configuration/feature-toggles.md)
+  * [Kubernetes health probes](running-valtimo/application-configuration/kubernetes-health-probes.md)
 
 ## Customizing Valtimo
 

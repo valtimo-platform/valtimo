@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.contract.config;
 
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import java.util.List;
 import javax.sql.DataSource;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -38,18 +39,27 @@ import org.springframework.context.annotation.Bean;
 public class LiquibaseRunnerAutoConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean(BootstrapState.class)
+    public BootstrapState bootstrapState() {
+        return new BootstrapState();
+    }
+
+    @Bean
     @ConditionalOnMissingBean(LiquibaseRunner.class)
     public LiquibaseRunner liquibaseRunner(
         final List<LiquibaseMasterChangeLogLocation> liquibaseMasterChangeLogLocations,
         final LiquibaseProperties liquibaseProperties,
         final DataSource datasource,
-        final ValtimoProperties valtimoProperties
+        final ValtimoProperties valtimoProperties,
+        final BootstrapState bootstrapState
     ) {
         return new LiquibaseRunner(
             liquibaseMasterChangeLogLocations,
             liquibaseProperties,
             datasource,
-            valtimoProperties.getLiquibase().getStaleLockThresholdMinutes()
+            valtimoProperties.getLiquibase().getStaleLockThresholdMinutes(),
+            valtimoProperties.getBootstrap().isEnabled(),
+            bootstrapState
         );
     }
 }
