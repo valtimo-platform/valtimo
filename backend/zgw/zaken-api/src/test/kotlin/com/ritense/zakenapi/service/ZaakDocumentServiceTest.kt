@@ -51,6 +51,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -394,4 +395,145 @@ class ZaakDocumentServiceTest {
         assertEquals("InformatieObject is not related to this Zaak", exception.message)
         verify(documentenApiService, times(0)).modifyInformatieObject(any<String>(), any(), any<String>(), any())
     }
+
+    @Test
+    fun `should throw exception when downloading informatieObject that is not related to zaak`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val documentId = UUID.randomUUID().toString()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+        val informatieobjectUrl = URI("https://example.com/enkelvoudiginformatieobjecten/$documentId")
+
+        whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zakenApiPlugin)
+
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance(eq(PluginConfigurationId.existingId(pluginConfigurationId))))
+            .thenReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.createInformatieObjectUrl(documentId))
+            .thenReturn(informatieobjectUrl)
+
+        // Return null to indicate no relation exists between the document and the zaak
+        whenever(zakenApiPlugin.getZaakInformatieObject(caseDocumentId, zaakUrl, informatieobjectUrl))
+            .thenReturn(null)
+
+        val exception = assertThrows<IllegalArgumentException> {
+            service.downloadInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+        }
+
+        assertEquals("InformatieObject is not related to this Zaak", exception.message)
+        verify(documentenApiService, times(0)).downloadInformatieObject(any<String>(), any(), any<String>())
+    }
+
+    @Test
+    fun `should throw exception when getting informatieObject that is not related to zaak`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val documentId = UUID.randomUUID().toString()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+        val informatieobjectUrl = URI("https://example.com/enkelvoudiginformatieobjecten/$documentId")
+
+        whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zakenApiPlugin)
+
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance(eq(PluginConfigurationId.existingId(pluginConfigurationId))))
+            .thenReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.createInformatieObjectUrl(documentId))
+            .thenReturn(informatieobjectUrl)
+
+        // Return null to indicate no relation exists between the document and the zaak
+        whenever(zakenApiPlugin.getZaakInformatieObject(caseDocumentId, zaakUrl, informatieobjectUrl))
+            .thenReturn(null)
+
+        val exception = assertThrows<IllegalArgumentException> {
+            service.getInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+        }
+
+        assertEquals("InformatieObject is not related to this Zaak", exception.message)
+        verify(documentenApiService, times(0)).getInformatieObject(any<String>(), any(), any<String>())
+    }
+
+    @Test
+    fun `should download informatieObject when it is related to the zaak`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val documentId = UUID.randomUUID().toString()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+        val informatieobjectUrl = URI("https://example.com/enkelvoudiginformatieobjecten/$documentId")
+
+        whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zakenApiPlugin)
+
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance(eq(PluginConfigurationId.existingId(pluginConfigurationId))))
+            .thenReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.createInformatieObjectUrl(documentId))
+            .thenReturn(informatieobjectUrl)
+
+        // A relation exists, so the document legitimately belongs to the zaak
+        whenever(zakenApiPlugin.getZaakInformatieObject(caseDocumentId, zaakUrl, informatieobjectUrl))
+            .thenReturn(createZaakInformatieObject(zaakUrl, informatieobjectUrl))
+
+        val inputStream = ByteArrayInputStream(byteArrayOf(1, 2, 3))
+        whenever(documentenApiService.downloadInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId))
+            .thenReturn(inputStream)
+
+        val result = service.downloadInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+
+        assertEquals(inputStream, result)
+        verify(documentenApiService).downloadInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+    }
+
+    @Test
+    fun `should get informatieObject when it is related to the zaak`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val documentId = UUID.randomUUID().toString()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+        val informatieobjectUrl = URI("https://example.com/enkelvoudiginformatieobjecten/$documentId")
+
+        whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zakenApiPlugin)
+
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance(eq(PluginConfigurationId.existingId(pluginConfigurationId))))
+            .thenReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.createInformatieObjectUrl(documentId))
+            .thenReturn(informatieobjectUrl)
+
+        // A relation exists, so the document legitimately belongs to the zaak
+        whenever(zakenApiPlugin.getZaakInformatieObject(caseDocumentId, zaakUrl, informatieobjectUrl))
+            .thenReturn(createZaakInformatieObject(zaakUrl, informatieobjectUrl))
+
+        val documentInformatieObject = createDocumentInformatieObject(informatieobjectUrl)
+        whenever(documentenApiService.getInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId))
+            .thenReturn(documentInformatieObject)
+
+        val result = service.getInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+
+        assertEquals(documentInformatieObject, result)
+        verify(documentenApiService).getInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+    }
+
+    private fun createZaakInformatieObject(zaakUrl: URI, informatieobjectUrl: URI) = ZaakInformatieObject(
+        url = URI("$zaakUrl/zaakinformatieobjecten/${UUID.randomUUID()}"),
+        uuid = UUID.randomUUID(),
+        informatieobject = informatieobjectUrl,
+        zaak = zaakUrl,
+        aardRelatieWeergave = "...",
+        registratiedatum = LocalDateTime.now()
+    )
 }
