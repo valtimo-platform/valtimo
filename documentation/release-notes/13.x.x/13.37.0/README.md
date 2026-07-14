@@ -4,14 +4,28 @@
 **Release date xx-xx-2026**
 {% endhint %}
 
+## New Features
+
+* **Readiness reflects startup completion**
+
+  The application now reports itself as ready only after it has finished starting up — running its database migrations
+  and deploying all of its configuration (case definitions, plugins, forms, and so on). In Kubernetes this means a pod
+  only starts receiving traffic once it is fully initialised, which removes a startup race that could cause errors right
+  after a (re)start. See [Kubernetes health probes](../../../running-valtimo/application-configuration/kubernetes-health-probes.md) for how to enable it.
+
+* **Skip startup migrations and deployments per instance**
+
+  A new setting `valtimo.bootstrap.enabled` (on by default) lets an instance start against an already-prepared database
+  without running migrations or deployments again. This is useful when running multiple instances, so only one needs to
+  do the startup work.
+
 ## Enhancements
 
-* **Select whole object nodes in value path pickers**
+* **Maximum number of files on the Documenten API File Upload component**
 
-  Value path pickers (used for `doc:` document paths in, for example, forms, widgets, plugin actions and building block
-  mappings) now also list object nodes, not only their individual leaf properties. This makes it possible to resolve or
-  map an entire nested object at once — for example selecting `doc:/applicant` instead of picking
-  `doc:/applicant/name` and `doc:/applicant/address/city` separately.
+  The Documenten API File Upload Form.io component (`documenten-api-file`) now has an optional **Maximum number of
+  files** property, which sets how many files may be uploaded through the component. Leaving the property empty keeps
+  the previous behaviour of no limit.
 
 ## Bugfixes
 
