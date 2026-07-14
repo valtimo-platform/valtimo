@@ -133,6 +133,8 @@ td:first-child {
   }
 
   ::ng-deep cds-table {
-    overflow: hidden;
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 }
