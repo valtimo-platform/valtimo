@@ -41,7 +41,10 @@ class BuildingBlockFieldService(
     ): List<BuildingBlockFieldDto> {
         val documentDefinition = resolveDocumentDefinition(buildingBlockDefinitionId) ?: return emptyList()
 
-        return documentDefinition.schema.getSchema().walkFields(path = "", requiredInParent = false)
+        return documentDefinition.schema.getSchema()
+            .walkFields(path = "", requiredInParent = false)
+            .distinctBy { it.name }
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
     }
 
     private fun resolveDocumentDefinition(
@@ -53,16 +56,23 @@ class BuildingBlockFieldService(
     }
 
     private fun Schema.walkFields(path: String, requiredInParent: Boolean): List<BuildingBlockFieldDto> {
+        // The root schema itself (empty path) is not a selectable field, but every nested node -
+        // including object and array container nodes - is, so a whole subtree can be mapped in a
+        // single mapping (e.g. doc:/applicantAddress) in addition to its individual leaf properties.
+        val self = if (path.isEmpty()) {
+            emptyList()
+        } else {
+            listOf(BuildingBlockFieldDto(name = path, required = requiredInParent))
+        }
+
         return when (this) {
-            is ObjectSchema -> {
-                propertySchemas.flatMap { (key, sub) ->
+            is ObjectSchema ->
+                self + propertySchemas.flatMap { (key, sub) ->
                     sub.walkFields(path = "$path/$key", requiredInParent = key in requiredProperties)
                 }
-            }
 
             is ArraySchema ->
-                listOf(BuildingBlockFieldDto(name = path, required = requiredInParent)) +
-                        allItemSchema?.walkFields(path = path, requiredInParent = false).orEmpty()
+                self + allItemSchema?.walkFields(path = path, requiredInParent = false).orEmpty()
 
             is ReferenceSchema ->
                 referredSchema?.walkFields(path = path, requiredInParent = requiredInParent).orEmpty()
@@ -72,7 +82,7 @@ class BuildingBlockFieldService(
                     .distinctBy { it.name }
 
             is StringSchema, is NumberSchema, is BooleanSchema, is EnumSchema, is ConstSchema ->
-                listOf(BuildingBlockFieldDto(name = path, required = requiredInParent))
+                self
 
             else -> emptyList()
         }
