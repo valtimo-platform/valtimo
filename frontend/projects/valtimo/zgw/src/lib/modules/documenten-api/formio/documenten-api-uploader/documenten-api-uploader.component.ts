@@ -258,6 +258,10 @@ export class DocumentenApiUploaderComponent
   }
 
   public fileSelected(file: File): void {
+    if (this.limitReached) {
+      return;
+    }
+
     this.fileToBeUploaded$.next(file);
     this.showModal.set(true);
   }
