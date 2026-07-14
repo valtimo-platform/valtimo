@@ -99,6 +99,8 @@ export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
 
   public onIframeReady(): void {
     this.$iframeReady.set(true);
+    // Force fitPage recalculation after CSS :has() selectors have settled
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
   }
 
   private onLoaded(
@@ -110,6 +112,8 @@ export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
     this.$pluginDataUrl.set(this._derivePluginDataUrl(content.bundleUrl));
     this.$state.set('ready');
     this._scheduleReMint(content.configurationId, token.expiresAt);
+    // Trigger fitPage recalculation after the iframe element is rendered
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
   }
 
   private _derivePluginDataUrl(bundleUrl: string | null): string | null {
