@@ -35,6 +35,10 @@
 
   &:has(> .tab--no-min-height) {
     min-height: unset;
+    height: auto;
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   &:has(> .tab--no-background) {
@@ -47,6 +51,15 @@
   gap: 32px;
   overflow: auto;
   margin-bottom: 16px;
+
+  &:has(.tab--no-min-height) {
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    max-height: none !important;
+    height: auto !important;
+    gap: 0 !important;
+  }
 }
 
 .loading-container {

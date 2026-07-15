@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div class="external-plugin-page">
+<div class="external-plugin-page" fitPage [bottomMargin]="0" [disableOverflow]="true">
   <ng-container [ngSwitch]="$state()">
     <div *ngSwitchCase="'loading'" class="external-plugin-page__status">
       <cds-loading [isActive]="true" [overlay]="false" size="normal"></cds-loading>
