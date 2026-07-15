@@ -37,8 +37,8 @@ class SseResource(
         @PathVariable subscriptionId: UUID?
     ): Subscriber {
         subscriptionId?.let {
-            logger.info { "subscribe (re-use ${subscriptionId})" }
-        } ?: logger.info { "SSE Subscribe (new subscription)" }
+            logger.trace { "subscribe (re-use ${subscriptionId})" }
+        } ?: logger.trace { "SSE Subscribe (new subscription)" }
         return sseSubscriptionService.subscribe(subscriptionId)
     }
 
