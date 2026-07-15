@@ -50,6 +50,7 @@ import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationEventPublisher
@@ -76,6 +77,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 class PluginAutoConfiguration {
 
     @Bean
+    @ConditionalOnProperty(prefix = "valtimo.bootstrap", name = ["enabled"], havingValue = "true", matchIfMissing = true)
     fun pluginDeploymentListener(
         pluginDefinitionResolver: PluginDefinitionResolver,
         pluginCategoryResolver: PluginCategoryResolver,
@@ -219,6 +221,7 @@ class PluginAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(PluginAutoDeploymentEventListener::class)
+    @ConditionalOnProperty(prefix = "valtimo.bootstrap", name = ["enabled"], havingValue = "true", matchIfMissing = true)
     fun pluginAutoDeploymentEventListener(
         objectMapper: ObjectMapper,
         pluginService: PluginService,

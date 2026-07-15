@@ -15,6 +15,14 @@ management:
                 - ROLE_ACTUATOR
             probes:
                 enabled: true
+            group:
+                # readiness (and a dedicated startup group) only report UP once the bootstrap
+                # health indicator is UP, i.e. after migrations + autodeployments have finished.
+                # Point the Kubernetes readinessProbe/startupProbe at these groups.
+                readiness:
+                    include: readinessState,bootstrap
+                startup:
+                    include: readinessState,bootstrap
 
 spring:
     profiles:

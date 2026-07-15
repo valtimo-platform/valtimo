@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.operaton.command;
 
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import com.ritense.valtimo.contract.config.LiquibaseRunner;
 import java.sql.SQLException;
 import org.operaton.bpm.engine.SchemaOperationsCommand;
@@ -28,33 +29,52 @@ public class ValtimoSchemaOperationsCommand implements SchemaOperationsCommand {
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ValtimoSchemaOperationsCommand.class);
     private final LiquibaseRunner liquibaseRunner;
+    private final boolean bootstrapEnabled;
+    private final BootstrapState bootstrapState;
 
-    public ValtimoSchemaOperationsCommand(LiquibaseRunner liquibaseRunner) {
+    public ValtimoSchemaOperationsCommand(
+        LiquibaseRunner liquibaseRunner,
+        boolean bootstrapEnabled,
+        BootstrapState bootstrapState
+    ) {
         this.liquibaseRunner = liquibaseRunner;
+        this.bootstrapEnabled = bootstrapEnabled;
+        this.bootstrapState = bootstrapState;
     }
 
     @Override
     public Void execute(CommandContext commandContext) {
-        PersistenceSession persistenceSession = commandContext.getSession(PersistenceSession.class);
-        persistenceSession.dbSchemaUpdate();
-
-        // TODO: not this
-        if (persistenceSession instanceof DbSqlSession) {
-            try {
-                ((DbSqlSession) persistenceSession).getSqlSession().getConnection().commit();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
+        if (!bootstrapEnabled) {
+            logger.info("Bootstrap disabled (valtimo.bootstrap.enabled=false); skipping Operaton schema migration");
+            return null;
         }
-        persistenceSession.close();
 
         try {
+            PersistenceSession persistenceSession = commandContext.getSession(PersistenceSession.class);
+            persistenceSession.dbSchemaUpdate();
+
+            // TODO: not this
+            if (persistenceSession instanceof DbSqlSession) {
+                ((DbSqlSession) persistenceSession).getSqlSession().getConnection().commit();
+            }
+            persistenceSession.close();
+
             liquibaseRunner.run();
+        } catch (RuntimeException e) {
+            recordFailure(e);
+            throw e;
         } catch (Exception e) {
+            recordFailure(e);
             throw new RuntimeException("Error running liquibaseRunner", e);
         }
         logger.debug("Operaton schema updated");
         return null;
+    }
+
+    private void recordFailure(Throwable cause) {
+        if (bootstrapState != null) {
+            bootstrapState.markFailed("operaton-schema", cause);
+        }
     }
 
 }

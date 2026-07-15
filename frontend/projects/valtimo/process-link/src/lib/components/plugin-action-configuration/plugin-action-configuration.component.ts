@@ -107,16 +107,18 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   private readonly _prefillConfigurationSubject$ = new BehaviorSubject<
     ProcessLink['actionProperties'] | null
   >(null);
+  // Only prefill if the action key hasn't changed from what's saved in the process link
   private readonly _prefillConfiguration$ = combineLatest([
     this._stateService.selectedProcessLink$,
     this._pluginStateService.selectedPluginFunction$,
   ]).pipe(
     map(([processLink, selectedFunction]) => {
       if (!processLink) return undefined;
+      // Only prefill if the action hasn't been changed
       const savedActionKey = processLink.pluginActionDefinitionKey;
       const currentActionKey = selectedFunction?.key;
       if (currentActionKey && savedActionKey !== currentActionKey) {
-        return undefined;
+        return undefined; // Action changed, don't prefill old configuration
       }
       return processLink.actionProperties;
     })
@@ -287,6 +289,7 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           inferredReferenceType === 'FIXED'
             ? (selectedProcessLink.pluginConfigurationId ?? '')
             : undefined;
+        // Use the currently selected function key (user may have changed it)
         const actionKey =
           selectedFunction?.key ?? selectedProcessLink.pluginActionDefinitionKey ?? '';
         const updateProcessLinkRequest: PluginProcessLinkUpdateDto = {

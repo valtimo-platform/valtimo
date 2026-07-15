@@ -46,6 +46,7 @@
     },
     "draftProcessConfirmation": {
       "title": "Concept-proces starten",
+      "content": "Weet je zeker dat je dit concept-proces wilt starten?",
       "warningTitle": "Waarschuwing: Concept-proces",
       "warningDescription": "Deze procesdefinitie is nog in concept en werkt mogelijk niet zoals verwacht.",
       "confirm": "Toch starten",
@@ -148,6 +149,7 @@
         "regularUser": "Het uploaden van documenten is voor dit dossiertype niet beschikbaar. Neem contact op met een beheerder",
         "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de dossierbeheerpagina"
       },
+      "maxFilesReached": "Het maximale aantal bestanden ({{maxFiles}}) is bereikt. Er kunnen geen bestanden meer worden geüpload.",
       "navigateToCaseAdmin": "Configureer Zaak",
       "noZaakFoundTitle": "Geen Zaak gevonden",
       "noZaakFound": "Er konden geen bestanden worden opgehaald omdat er voor dit dossier geen Zaak is gevonden.",
@@ -1873,14 +1875,14 @@
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten",
     "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expressie moet ${...} of #{...} syntax gebruiken",
-      "UNCLOSED_PARENTHESIS": "Expressie heeft een niet-gesloten haakje '('",
-      "UNCLOSED_BRACE": "Expressie mist een sluitende accolade '}'",
-      "UNCLOSED_BRACKET": "Expressie heeft een niet-gesloten blokhaak '['",
-      "MISMATCHED_DELIMITER": "Expressie heeft niet-overeenkomende haakjes of accolades",
-      "INCOMPLETE_EXPRESSION": "Expressie is onvolledig",
-      "INVALID_SYNTAX": "Expressie heeft ongeldige syntax",
-      "BEAN_NOT_FOUND": "Gerefereerde bean bestaat niet"
+      "MISSING_EL_MARKERS": "Expressie {{expression}} moet ${...} of #{...} syntax gebruiken",
+      "UNCLOSED_PARENTHESIS": "Expressie {{expression}} heeft een niet-gesloten haakje '('",
+      "UNCLOSED_BRACE": "Expressie {{expression}} mist een sluitende accolade '}'",
+      "UNCLOSED_BRACKET": "Expressie {{expression}} heeft een niet-gesloten blokhaak '['",
+      "MISMATCHED_DELIMITER": "Expressie {{expression}} heeft niet-overeenkomende haakjes of accolades",
+      "INCOMPLETE_EXPRESSION": "Expressie {{expression}} is onvolledig",
+      "INVALID_SYNTAX": "Expressie {{expression}} heeft ongeldige syntax",
+      "BEAN_NOT_FOUND": "Geen bean gevonden met deze naam: {{expression}}. Als u een procesvariabele gebruikt, zorg dat deze tijdens runtime bestaat"
     },
     "warningConfirmation": {
       "title": "Proces bevat waarschuwingen",

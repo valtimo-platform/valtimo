@@ -124,6 +124,7 @@ export class PluginStateService {
   selectProcessLink(processLink: ProcessLink): void {
     this._selectedProcessLink$.next(processLink);
 
+    // When editing a plugin process link, populate the plugin definition
     if (processLink?.processLinkType === 'plugin') {
       this.loadPluginDefinitionForProcessLink(processLink);
     } else if (

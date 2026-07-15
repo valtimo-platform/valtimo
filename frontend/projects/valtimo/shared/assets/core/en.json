@@ -46,6 +46,7 @@
     },
     "draftProcessConfirmation": {
       "title": "Start draft process",
+      "content": "Are you sure you want to start this draft process?",
       "warningTitle": "Warning: Draft process",
       "warningDescription": "This process definition is still in draft and may not work as expected.",
       "confirm": "Start anyway",
@@ -145,6 +146,7 @@
         "regularUser": "The document upload is not available for this case. Please contact an administrator",
         "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
       },
+      "maxFilesReached": "The maximum number of files ({{maxFiles}}) has been reached. No more files can be uploaded.",
       "navigateToCaseAdmin": "Configure Zaak",
       "noZaakFoundTitle": "No Zaak found",
       "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
@@ -1845,14 +1847,14 @@
     "canInitializeDocument": "Starts case",
     "startableByUser": "Startable by user",
     "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expression must use ${...} or #{...} syntax",
-      "UNCLOSED_PARENTHESIS": "Expression has an unclosed parenthesis '('",
-      "UNCLOSED_BRACE": "Expression is missing a closing brace '}'",
-      "UNCLOSED_BRACKET": "Expression has an unclosed bracket '['",
-      "MISMATCHED_DELIMITER": "Expression has mismatched brackets or braces",
-      "INCOMPLETE_EXPRESSION": "Expression is incomplete",
-      "INVALID_SYNTAX": "Expression has invalid syntax",
-      "BEAN_NOT_FOUND": "Referenced bean does not exist"
+      "MISSING_EL_MARKERS": "Expression {{expression}} must use ${...} or #{...} syntax",
+      "UNCLOSED_PARENTHESIS": "Expression {{expression}} has an unclosed parenthesis '('",
+      "UNCLOSED_BRACE": "Expression {{expression}} is missing a closing brace '}'",
+      "UNCLOSED_BRACKET": "Expression {{expression}} has an unclosed bracket '['",
+      "MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
+      "INCOMPLETE_EXPRESSION": "Expression {{expression}} is incomplete",
+      "INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
+      "BEAN_NOT_FOUND": "No bean found with this name: {{expression}}. If using a process variable, ensure it exists at runtime"
     },
     "warningConfirmation": {
       "title": "Process has warnings",

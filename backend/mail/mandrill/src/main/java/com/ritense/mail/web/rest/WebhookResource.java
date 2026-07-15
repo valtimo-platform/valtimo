@@ -16,6 +16,7 @@
 
 package com.ritense.mail.web.rest;
 
+import jakarta.validation.Valid;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.mail.domain.webhook.MandrillWebhookRequest;

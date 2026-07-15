@@ -147,7 +147,9 @@ export const environment: ValtimoConfig = {
         roles: [ROLE_DEVELOPER, ROLE_ADMIN],
         title: 'Development',
         iconClass: 'icon mdi mdi-xml',
-        children: [{link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle'}],
+        children: [
+          {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle'},
+        ],
       },
     ],
   },
