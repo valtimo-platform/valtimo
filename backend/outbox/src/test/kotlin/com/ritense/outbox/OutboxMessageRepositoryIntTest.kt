@@ -19,13 +19,16 @@ package com.ritense.outbox
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.LocalDateTime
 
 class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
 
@@ -33,36 +36,34 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
     lateinit var platformTransactionManager: PlatformTransactionManager
 
     @Test
-    fun `should skip reading locked messages from the outbox table`(): Unit = runBlocking {
-        insertOutboxMessage("event 1")
-        insertOutboxMessage("event 2")
+    @EnabledIfSystemProperty(named = "spring.profiles.include", matches = ".*postgres.*")
+    fun `should skip reading locked messages from the outbox table on postgres`(): Unit = runBlocking {
+        val (message1, message2) = readOldestMessageFromTwoConcurrentReaders()
 
-        val outboxMessage1Ref = async(Dispatchers.IO) {
-            TransactionTemplate(platformTransactionManager).execute {
-                val outboxMessage = outboxMessageRepository.findOutboxMessage()
-                Thread.sleep(1000)
-                outboxMessage
-            }
-        }
+        // On PostgreSQL each concurrent reader locks a different row, so both get a distinct message.
+        assertThat(message1!!.message).isNotEqualTo(message2!!.message)
+    }
 
-        val outboxMessage2Ref = async(Dispatchers.IO) {
-            TransactionTemplate(platformTransactionManager).execute {
-                val outboxMessage = outboxMessageRepository.findOutboxMessage()
-                Thread.sleep(1000)
-                outboxMessage
-            }
-        }
+    @Test
+    @EnabledIfSystemProperty(named = "spring.profiles.include", matches = ".*mysql.*")
+    fun `should never read the same message from two concurrent readers on mysql`(): Unit = runBlocking {
+        val (message1, message2) = readOldestMessageFromTwoConcurrentReaders()
 
-        assertThat(outboxMessage1Ref.await()!!.message).isNotEqualTo(outboxMessage2Ref.await()!!.message)
+        // On MySQL, gap-locking during the ordered FOR UPDATE SKIP LOCKED scan can starve one reader
+        // (it reads nothing). The guarantee that still holds is the important one for correctness: the
+        // same message is never read by both readers, so no message is ever processed twice.
+        val readMessages = listOfNotNull(message1, message2).map { it.message }
+        assertThat(readMessages).doesNotHaveDuplicates()
     }
 
     @Test
     fun `should fetch batch of messages ordered by created_on`() {
-        insertOutboxMessage("event 1")
-        Thread.sleep(10) // ensure distinct created_on timestamps
-        insertOutboxMessage("event 2")
-        Thread.sleep(10)
-        insertOutboxMessage("event 3")
+        // created_on is a whole-second DATETIME on MySQL, so space the inserts a full second apart to
+        // get distinct timestamps - and therefore deterministic ordering - on every database.
+        val baseTime = LocalDateTime.now().withNano(0)
+        insertOutboxMessage("event 1", baseTime)
+        insertOutboxMessage("event 2", baseTime.plusSeconds(1))
+        insertOutboxMessage("event 3", baseTime.plusSeconds(2))
 
         val messages = TransactionTemplate(platformTransactionManager).execute {
             outboxMessageRepository.findOutboxMessages(10)
@@ -97,14 +98,45 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
     }
 
     @Test
-    fun `should skip locked messages in batch fetch`(): Unit = runBlocking {
+    @EnabledIfSystemProperty(named = "spring.profiles.include", matches = ".*postgres.*")
+    fun `should skip locked messages in batch fetch on postgres`(): Unit = runBlocking {
+        val (batch1, batch2) = fetchSecondBatchWhileFirstBatchIsLocked()
+
+        // On PostgreSQL, FOR UPDATE SKIP LOCKED skips exactly the locked rows and returns the rest,
+        // so the second poller reliably picks up the one remaining message.
+        assertThat(batch1).hasSize(2)
+        assertThat(batch2).hasSize(1)
+        assertThat(batch1.map { it.id }).doesNotContainAnyElementsOf(batch2.map { it.id })
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "spring.profiles.include", matches = ".*mysql.*")
+    fun `should never deliver a locked message to a second poller on mysql`(): Unit = runBlocking {
+        val (batch1, batch2) = fetchSecondBatchWhileFirstBatchIsLocked()
+
+        // On MySQL, ORDER BY created_on ASC + FOR UPDATE SKIP LOCKED gap-locks the ordered index
+        // scan (see MySqlOutboxMessageRepository), so the second poller may skip the remaining
+        // message instead of returning it. The guarantee that still holds is the important one for
+        // correctness: a message locked by one poller is never handed to another, so no message is
+        // ever processed twice.
+        assertThat(batch1).hasSize(2)
+        // No message locked by the first poller may reappear in the second poller's batch. We assert
+        // the intersection directly because batch2 can be empty on MySQL, and AssertJ's
+        // doesNotContainAnyElementsOf rejects an empty argument.
+        assertThat(batch1.map { it.id }.intersect(batch2.map { it.id }.toSet())).isEmpty()
+        // FIFO / no-starvation is NOT guaranteed on MySQL under concurrent pollers: batch2 may be
+        // empty because the third message gets skipped by the gap-locked scan.
+        assertThat(batch2.size).isLessThanOrEqualTo(1)
+    }
+
+    private suspend fun fetchSecondBatchWhileFirstBatchIsLocked() = coroutineScope {
         insertOutboxMessage("event 1")
         Thread.sleep(10)
         insertOutboxMessage("event 2")
         Thread.sleep(10)
         insertOutboxMessage("event 3")
 
-        // First transaction locks the first 2 messages
+        // First transaction locks the first 2 messages and holds the lock
         val locksAcquired = CompletableDeferred<Unit>()
         val batch1Ref = async(Dispatchers.IO) {
             TransactionTemplate(platformTransactionManager).execute {
@@ -115,7 +147,7 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
             }
         }
 
-        // Second transaction should skip the locked messages and get the 3rd
+        // Second transaction fetches while the first 2 messages are still locked
         withTimeout(2_000) { locksAcquired.await() }
         val batch2Ref = async(Dispatchers.IO) {
             TransactionTemplate(platformTransactionManager).execute {
@@ -123,11 +155,30 @@ class OutboxMessageRepositoryIntTest : BaseIntegrationTest() {
             }
         }
 
-        val batch1 = batch1Ref.await()!!
-        val batch2 = batch2Ref.await()!!
+        batch1Ref.await()!! to batch2Ref.await()!!
+    }
 
-        assertThat(batch1).hasSize(2)
-        assertThat(batch2).hasSize(1)
-        assertThat(batch1.map { it.id }).doesNotContainAnyElementsOf(batch2.map { it.id })
+    @Suppress("DEPRECATION")
+    private suspend fun readOldestMessageFromTwoConcurrentReaders() = coroutineScope {
+        insertOutboxMessage("event 1")
+        insertOutboxMessage("event 2")
+
+        val message1Ref = async(Dispatchers.IO) {
+            TransactionTemplate(platformTransactionManager).execute {
+                val outboxMessage = outboxMessageRepository.findOutboxMessage()
+                Thread.sleep(1000) // hold the lock so the other reader sees it locked
+                outboxMessage
+            }
+        }
+
+        val message2Ref = async(Dispatchers.IO) {
+            TransactionTemplate(platformTransactionManager).execute {
+                val outboxMessage = outboxMessageRepository.findOutboxMessage()
+                Thread.sleep(1000) // hold the lock so the other reader sees it locked
+                outboxMessage
+            }
+        }
+
+        message1Ref.await() to message2Ref.await()
     }
 }

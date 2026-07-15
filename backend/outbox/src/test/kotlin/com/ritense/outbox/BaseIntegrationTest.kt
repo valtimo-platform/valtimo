@@ -32,6 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import java.time.LocalDateTime
 
 @SpringBootTest(properties = ["${OnOutboxEnabledCondition.PROPERTY_NAME}=true"])
 @ExtendWith(SpringExtension::class)
@@ -72,6 +73,14 @@ class BaseIntegrationTest {
     fun insertOutboxMessage(event: Any) {
         val message = OutboxMessage(
             message = objectMapper.writeValueAsString(event)
+        )
+        outboxMessageRepository.save(message)
+    }
+
+    fun insertOutboxMessage(event: Any, createdOn: LocalDateTime) {
+        val message = OutboxMessage(
+            message = objectMapper.writeValueAsString(event),
+            createdOn = createdOn
         )
         outboxMessageRepository.save(message)
     }
