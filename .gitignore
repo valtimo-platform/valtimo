@@ -20,3 +20,6 @@
 
 # Riptide artifacts (cloud-synced)
 .humanlayer/tasks/
+
+# PDCA sensitive material
+pdca_material/
