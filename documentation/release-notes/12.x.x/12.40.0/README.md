@@ -1,21 +1,5 @@
 # 12.40.0
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
-## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
-
-## Bugfixes
-
-* New bugfix.
-
 ## Security
 
 * **Case documents can no longer be downloaded from the wrong case**
