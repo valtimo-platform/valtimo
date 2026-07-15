@@ -165,6 +165,22 @@ const MENU_ITEM_CATALOG: MenuItemCatalogEntry[] = [
     category: 'admin',
   },
   {
+    itemId: 'pluginHosts',
+    defaultTitleKey: 'Plugin hosts',
+    link: '/plugin-hosts',
+    roles: [ROLE_ADMIN],
+    placement: 'admin',
+    category: 'admin',
+  },
+  {
+    itemId: 'pluginApps',
+    defaultTitleKey: 'Apps',
+    link: '/plugin-apps',
+    roles: [ROLE_ADMIN],
+    placement: 'admin',
+    category: 'admin',
+  },
+  {
     itemId: 'dashboardManagement',
     defaultTitleKey: 'Dashboard',
     link: '/dashboard-management',

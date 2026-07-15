@@ -2179,6 +2179,8 @@
   },
   "pages": {
     "plugins": {"title": "Plugins", "noResults": "There are no plugins configured yet"},
+    "pluginHosts": {"title": "Plugin hosts"},
+    "pluginApps": {"title": "Apps"},
     "customercases": {
       "title": "Cases",
       "description": "On this page you can view the cases of a specific customer."
@@ -2210,6 +2212,8 @@
     },
     "noDefinitions": "No plugin definitions found.",
     "noHosts": "No plugin hosts configured.",
+    "noApps": "No apps configured.",
+    "uploadDisabledTooltip": "A connected plugin host is required before plugins can be uploaded.",
     "save": "Save configuration",
     "remove": "Delete configuration",
     "tabs": {
@@ -2234,7 +2238,8 @@
       "eventBrokerAmqpUrl": "Event broker URL (optional)",
       "eventBrokerExchange": "Event broker exchange (optional)",
       "eventQueueMode": "Event queue mode",
-      "eventQueueTtlMs": "Event queue inactivity TTL (ms)"
+      "eventQueueTtlMs": "Event queue inactivity TTL (ms)",
+      "host": "Host"
     },
     "eventQueueMode": {
       "live": "Live (events lost while host is down)",

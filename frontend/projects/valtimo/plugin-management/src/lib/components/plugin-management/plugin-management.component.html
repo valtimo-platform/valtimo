@@ -14,158 +14,75 @@
   ~ limitations under the License.
   -->
 
-<cds-tabs>
-  <cds-tab
-    [heading]="'pluginManagement.tabs.configurations' | translate"
-    [active]="(selectedTabIndex$ | async) === 0"
-    (selected)="onTabSelected(0)"
+<ng-container
+  *ngIf="{
+    pluginConfigurations: pluginConfigurations$ | async,
+    loading: loading$ | async,
+    hasConnectedHosts: hasConnectedHosts$ | async,
+    externalDefsRefreshing: externalDefsRefreshing$ | async,
+  } as obs"
+>
+  <valtimo-carbon-list
+    [actionItems]="actionItems"
+    [loading]="obs.loading"
+    [items]="obs.pluginConfigurations"
+    [fields]="fields$ | async"
+    [header]="false"
+    (rowClicked)="editConfiguration($event)"
   >
-    <ng-container
-      *ngIf="{
-        pluginConfigurations: pluginConfigurations$ | async,
-        loading: loading$ | async,
-        hasConnectedHosts: hasConnectedHosts$ | async,
-        externalDefsRefreshing: externalDefsRefreshing$ | async,
-      } as obs"
-    >
-      <valtimo-carbon-list
-        [actionItems]="actionItems"
-        [loading]="obs.loading"
-        [items]="obs.pluginConfigurations"
-        [fields]="fields$ | async"
-        [header]="false"
-        (rowClicked)="editConfiguration($event)"
+    <ng-container carbonToolbarContent>
+      <cds-loading
+        *ngIf="obs.externalDefsRefreshing"
+        size="sm"
+        [isActive]="true"
+        class="plugin-management__hosts-spinner"
+      ></cds-loading>
+
+      <button
+        cdsButton="ghost"
+        [disabled]="obs.loading || !obs.hasConnectedHosts"
+        [vTooltip]="!obs.hasConnectedHosts ? ('pluginManagement.uploadDisabledTooltip' | translate) : ''"
+        [tooltipDisabled]="obs.hasConnectedHosts"
+        (click)="openUploadModal()"
       >
-        <ng-container carbonToolbarContent>
-          <cds-loading
-            *ngIf="obs.externalDefsRefreshing"
-            size="sm"
-            [isActive]="true"
-            class="plugin-management__hosts-spinner"
-          ></cds-loading>
+        {{ 'pluginManagement.uploadPlugin' | translate }}
 
-          <button
-            *ngIf="obs.hasConnectedHosts"
-            cdsButton="tertiary"
-            [disabled]="obs.loading"
-            (click)="openUploadModal()"
-          >
-            {{ 'pluginManagement.uploadPlugin' | translate }}
+        <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+      </button>
 
-            <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
-          </button>
+      <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
+        {{ 'pluginManagement.add' | translate }}
 
-          <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
-            {{ 'pluginManagement.add' | translate }}
-
-            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-          </button>
-        </ng-container>
-
-        <valtimo-no-results
-          [action]="toolbarButtons"
-          [title]="'pages.plugins.noResults' | translate"
-        ></valtimo-no-results>
-      </valtimo-carbon-list>
-
-      <ng-template #toolbarButtons>
-        <button
-          *ngIf="obs.hasConnectedHosts"
-          cdsButton="tertiary"
-          [disabled]="obs.loading"
-          (click)="openUploadModal()"
-        >
-          {{ 'pluginManagement.uploadPlugin' | translate }}
-
-          <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
-        </button>
-
-        <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
-          {{ 'pluginManagement.add' | translate }}
-
-          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-        </button>
-      </ng-template>
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      </button>
     </ng-container>
-  </cds-tab>
 
-  <cds-tab
-    [heading]="'pluginManagement.tabs.integrations' | translate"
-    [active]="(selectedTabIndex$ | async) === 1"
-    (selected)="onTabSelected(1)"
-  >
-    <ng-container
-      *ngIf="{
-        hosts: hosts$ | async,
-        refreshing: hostsRefreshing$ | async,
-      } as hostObs"
+    <valtimo-no-results
+      [action]="toolbarButtons"
+      [title]="'pages.plugins.noResults' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <ng-template #toolbarButtons>
+    <button
+      cdsButton="ghost"
+      [disabled]="obs.loading || !obs.hasConnectedHosts"
+      [vTooltip]="!obs.hasConnectedHosts ? ('pluginManagement.uploadDisabledTooltip' | translate) : ''"
+      [tooltipDisabled]="obs.hasConnectedHosts"
+      (click)="openUploadModal()"
     >
-      <valtimo-carbon-list
-        [loading]="hostsLoading$ | async"
-        [items]="hostObs.hosts"
-        [fields]="hostFields"
-        [actionItems]="hostActionItems"
-        [header]="false"
-      >
-        <ng-container carbonToolbarContent>
-          <cds-loading
-            *ngIf="hostObs.refreshing"
-            size="sm"
-            [isActive]="true"
-            class="plugin-management__hosts-spinner"
-          ></cds-loading>
+      {{ 'pluginManagement.uploadPlugin' | translate }}
 
-          <button
-            cdsButton="tertiary"
-            [disabled]="hostsLoading$ | async"
-            (click)="openHostModal('APP')"
-          >
-            {{ 'pluginManagement.addApp' | translate }}
+      <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+    </button>
 
-            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-          </button>
+    <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
+      {{ 'pluginManagement.add' | translate }}
 
-          <button
-            cdsButton="primary"
-            [disabled]="hostsLoading$ | async"
-            (click)="openHostModal('PLUGIN_HOST')"
-          >
-            {{ 'pluginManagement.addHost' | translate }}
-
-            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-          </button>
-        </ng-container>
-
-        <valtimo-no-results
-          [action]="addHostButton"
-          [title]="'pluginManagement.noHosts' | translate"
-        ></valtimo-no-results>
-      </valtimo-carbon-list>
-
-      <ng-template #addHostButton>
-        <button
-          cdsButton="tertiary"
-          [disabled]="hostsLoading$ | async"
-          (click)="openHostModal('APP')"
-        >
-          {{ 'pluginManagement.addApp' | translate }}
-
-          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-        </button>
-
-        <button
-          cdsButton="primary"
-          [disabled]="hostsLoading$ | async"
-          (click)="openHostModal('PLUGIN_HOST')"
-        >
-          {{ 'pluginManagement.addHost' | translate }}
-
-          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-        </button>
-      </ng-template>
-    </ng-container>
-  </cds-tab>
-</cds-tabs>
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </ng-template>
+</ng-container>
 
 <valtimo-plugin-add-modal
   [open]="showAddModal$ | async"
@@ -188,47 +105,12 @@
   (deleteEvent)="onExternalConfigDeleted($event)"
 ></valtimo-plugin-external-edit-modal>
 
-<valtimo-plugin-host-modal
-  [kind]="hostModalKind$ | async"
-  [open]="hostModalOpen$ | async"
-  (closeEvent)="closeHostModal()"
-  (submitEvent)="submitHost($event)"
-></valtimo-plugin-host-modal>
-
-<valtimo-plugin-host-event-queue-modal
-  [host]="hostToEditEventQueue$ | async"
-  [open]="eventQueueModalOpen$ | async"
-  (closeEvent)="closeEventQueueModal()"
-  (submitEvent)="submitEventQueueUpdate($event)"
-></valtimo-plugin-host-event-queue-modal>
-
 <valtimo-plugin-upload-modal
   [hosts]="connectedHosts$ | async"
   [open]="uploadModalOpen$ | async"
   (closeEvent)="closeUploadModal()"
   (uploadedEvent)="onPluginUploaded()"
 ></valtimo-plugin-upload-modal>
-
-<valtimo-confirmation-modal
-  [showModalSubject$]="reloadModalOpen$"
-  [titleTranslationKey]="'pluginManagement.reloadModal.title'"
-  [contentTranslationKey]="'pluginManagement.reloadModal.description'"
-  [confirmButtonTextTranslationKey]="'pluginManagement.reloadModal.reload'"
-  [cancelButtonTextTranslationKey]="'pluginManagement.reloadModal.later'"
-  (confirmEvent)="confirmReload()"
-  (cancelEvent)="cancelReload()"
-></valtimo-confirmation-modal>
-
-<valtimo-confirmation-modal
-  [showModalSubject$]="deleteHostModalOpen$"
-  [titleTranslationKey]="'pluginManagement.deleteHostModal.title'"
-  [contentTranslationKey]="'pluginManagement.deleteHostModal.description'"
-  [confirmButtonTextTranslationKey]="'interface.delete'"
-  [confirmButtonType]="'danger'"
-  [cancelButtonTextTranslationKey]="'interface.cancel'"
-  (confirmEvent)="confirmDeleteHost()"
-  (cancelEvent)="cancelDeleteHost()"
-></valtimo-confirmation-modal>
 
 <valtimo-confirmation-modal
   [showModalSubject$]="deleteConfigurationModalOpen$"

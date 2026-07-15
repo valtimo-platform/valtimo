@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-.plugin-management__hosts-spinner {
+.plugin-apps-page__spinner {
   display: flex;
   align-items: center;
   margin-right: 8px;
-}
-
-.plugin-management__plugin-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.plugin-management__incompatible-tooltip {
-  display: inline-flex;
-  align-items: center;
-  cursor: help;
 }

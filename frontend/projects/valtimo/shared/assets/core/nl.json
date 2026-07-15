@@ -2206,6 +2206,8 @@
   },
   "pages": {
     "plugins": {"title": "Plugins", "noResults": "Er zijn geen plugins geconfigureerd"},
+    "pluginHosts": {"title": "Plugin-hosts"},
+    "pluginApps": {"title": "Apps"},
     "customercases": {
       "title": "Zaken",
       "description": "Op deze pagina kun je de zaken van een specifieke klant inzien."
@@ -2237,6 +2239,8 @@
     },
     "noDefinitions": "Geen plugin-definities gevonden.",
     "noHosts": "Geen plugin-hosts geconfigureerd.",
+    "noApps": "Geen apps geconfigureerd.",
+    "uploadDisabledTooltip": "Een verbonden plugin-host is vereist om plugins te kunnen uploaden.",
     "save": "Configuratie opslaan",
     "remove": "Configuratie verwijderen",
     "tabs": {
@@ -2261,7 +2265,8 @@
       "eventBrokerAmqpUrl": "Event broker-URL (optioneel)",
       "eventBrokerExchange": "Event broker exchange (optioneel)",
       "eventQueueMode": "Event queue-modus",
-      "eventQueueTtlMs": "Event queue inactiviteits-TTL (ms)"
+      "eventQueueTtlMs": "Event queue inactiviteits-TTL (ms)",
+      "host": "Host"
     },
     "eventQueueMode": {
       "live": "Live (events gaan verloren als de host uitstaat)",

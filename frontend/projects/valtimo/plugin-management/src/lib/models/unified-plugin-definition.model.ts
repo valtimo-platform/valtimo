@@ -42,6 +42,7 @@ interface UnifiedPluginConfigurationRow {
    */
   incompatible?: boolean;
   compatibilityMessage?: string;
+  hostName?: string;
 }
 
 export {PluginConfigurationSource, UnifiedPluginDefinition, UnifiedPluginConfigurationRow};
