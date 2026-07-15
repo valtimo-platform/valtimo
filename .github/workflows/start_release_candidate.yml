@@ -22,7 +22,6 @@ on:
         description: "Branch to cut the release candidate from"
         required: true
         type: string
-        default: v12-stable
 
 jobs:
   start:
@@ -43,6 +42,10 @@ jobs:
       - name: Checkout source branch
         uses: actions/checkout@v4
         with:
+          # Push with the valtimo-platform PAT — not GITHUB_TOKEN — so the new
+          # rc/<version> branch can be created despite the repository ruleset that
+          # restricts branch creation (GITHUB_TOKEN is not on the bypass list).
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
           ref: ${{ inputs.source_branch }}
           fetch-depth: 0
 
@@ -51,6 +54,16 @@ jobs:
           RC_BRANCH: rc/${{ inputs.version }}
         run: |
           set -euo pipefail
+          # Allow running straight from the rc branch itself (e.g. version
+          # 12.39.0-1 + source_branch rc/12.39.0-1): reuse it, don't recreate.
+          if [[ "${SOURCE_BRANCH}" == "${RC_BRANCH}" ]]; then
+            if ! git ls-remote --exit-code --heads origin "refs/heads/${RC_BRANCH}" >/dev/null 2>&1; then
+              echo "::error::Source branch '${RC_BRANCH}' does not exist on origin."
+              exit 1
+            fi
+            echo "Source branch is already ${RC_BRANCH}; skipping branch creation."
+            exit 0
+          fi
           if git ls-remote --exit-code --heads origin "refs/heads/${RC_BRANCH}" >/dev/null 2>&1; then
             echo "::error::Branch '${RC_BRANCH}' already exists. Delete it or pick another version."
             exit 1
