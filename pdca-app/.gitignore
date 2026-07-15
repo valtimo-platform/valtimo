@@ -27,5 +27,8 @@ hs_err_pid*
 frontend/node_modules/
 frontend/dist/
 
+# Vite build output (rebuild with: cd frontend && npx vite build)
+src/main/resources/static/bundles/react/
+
 # Docker volumes
 pdca-database-data/
