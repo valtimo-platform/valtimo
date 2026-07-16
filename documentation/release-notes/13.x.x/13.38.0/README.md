@@ -28,3 +28,9 @@
   While a list is loading, its placeholder now stays a consistent, compact size instead of briefly expanding to a large
   number of rows before the data appears. This makes lists shown in dialogs and smaller areas feel more stable and
   smoother as they load.
+
+* **Changing a widget tab's layout no longer hides the task panel**
+
+  When you change the layout algorithm of a widget tab, the option to show the task panel now keeps its previous value.
+  Previously, adjusting the layout turned the task panel off, so it unexpectedly disappeared from the case detail
+  screen.
