@@ -40,7 +40,10 @@ fun Schema.collectValueResolverOptions(prefix: String = ""): List<ValueResolverO
 private fun Schema.walkValueResolverOptions(prefix: String, path: String): List<ValueResolverOption> {
     return when (this) {
         is ObjectSchema ->
-            propertySchemas.flatMap { (key, sub) -> sub.walkValueResolverOptions(prefix, "$path/$key") }
+            // The root schema itself (empty path) is not a selectable option, but every nested object node is,
+            // so a whole subtree can be selected (e.g. doc:/applicant) in addition to its individual leaf properties.
+            objectSelfOption(prefix, path) +
+                propertySchemas.flatMap { (key, sub) -> sub.walkValueResolverOptions(prefix, "$path/$key") }
 
         is ArraySchema -> listOf(
             ValueResolverOption("$prefix$path", COLLECTION, allItemSchema?.collectValueResolverOptions().orEmpty())
@@ -58,3 +61,10 @@ private fun Schema.walkValueResolverOptions(prefix: String, path: String): List<
         else -> emptyList()
     }
 }
+
+/**
+ * An object container node is offered as a [FIELD] option so it shows up in the (field-typed) value path pickers,
+ * allowing a whole subtree to be resolved at once. The root object (empty [path]) is not selectable.
+ */
+private fun objectSelfOption(prefix: String, path: String): List<ValueResolverOption> =
+    if (path.isEmpty()) emptyList() else listOf(ValueResolverOption("$prefix$path", FIELD))

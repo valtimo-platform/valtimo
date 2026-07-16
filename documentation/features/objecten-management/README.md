@@ -24,6 +24,6 @@ within Valtimo.
 [access-control.md](access-control.md)
 {% endcontent-ref %}
 
-{% content-ref url="for-developers/" %}
-[for-developers](for-developers/)
+{% content-ref url="for-developers/README.md" %}
+[For developers](for-developers/README.md)
 {% endcontent-ref %}

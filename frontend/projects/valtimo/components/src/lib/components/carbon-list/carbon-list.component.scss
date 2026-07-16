@@ -133,7 +133,9 @@ td:first-child {
   }
 
   ::ng-deep cds-table {
-    overflow: hidden;
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   ::ng-deep .cds--expandable-row:not(.cds--parent-row) td {
