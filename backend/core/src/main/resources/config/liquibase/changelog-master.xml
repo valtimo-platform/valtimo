@@ -33,6 +33,6 @@
     <include file="/13-28-0/13-28-0-master.xml" relativeToChangelogFile="true"/>
     <include file="/13-29-0/13-29-0-master.xml" relativeToChangelogFile="true"/>
     <include file="/13-32-0/13-32-0-master.xml" relativeToChangelogFile="true"/>
-    <include file="/13-37-0/13-37-0-master.xml" relativeToChangelogFile="true"/>
+    <include file="/13-38-0/13-38-0-master.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

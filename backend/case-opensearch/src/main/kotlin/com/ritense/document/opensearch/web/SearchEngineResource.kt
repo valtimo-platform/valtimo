@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.autoconfigure.DocumentOpenSearchAutoConfiguration.Companion.SEARCH_ENGINE_TOGGLE_KEY
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.SearchEngineToggle
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -53,16 +55,21 @@ class SearchEngineResource(
         }
 
         val useOpenSearch = body.active.uppercase() == "OPENSEARCH"
+
+        if (useOpenSearch) {
+            try {
+                indexInitializer.ensureIndex()
+            } catch (e: Exception) {
+                logger.warn(e) { "Failed to initialize OpenSearch index — is OpenSearch running?" }
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(SearchEngineDto(available = true, active = toggle.get().name))
+            }
+        }
+
         featureToggleOverridesService.updateToggle(SEARCH_ENGINE_TOGGLE_KEY, useOpenSearch)
 
         val engine = if (useOpenSearch) SearchEngineToggle.Engine.OPENSEARCH else SearchEngineToggle.Engine.POSTGRES
         toggle.set(engine)
-
-        // Switching the engine on at runtime: make sure the index exists before live-sync/reads resume.
-        // Idempotent and failure-swallowing, so a missing cluster can't break the toggle call.
-        if (toggle.isOpenSearchActive()) {
-            indexInitializer.ensureIndex()
-        }
 
         return ResponseEntity.ok(
             SearchEngineDto(
@@ -80,4 +87,8 @@ class SearchEngineResource(
     data class UpdateSearchEngineDto(
         val active: String
     )
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 }

@@ -16,17 +16,18 @@
   -->
 
 <databaseChangeLog
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+    logicalFilePath="config/liquibase/changelog/20260701-add-changed-on-to-json-schema-document.xml">
 
-    <changeSet id="1" author="Ritense">
+    <changeSet id="add_changed_on_to_json_schema_document" author="Ritense">
         <addColumn tableName="json_schema_document">
             <column name="changed_on" type="DATETIME"/>
         </addColumn>
     </changeSet>
 
-    <changeSet id="2" author="Ritense">
+    <changeSet id="backfill_changed_on_json_schema_document" author="Ritense">
         <!-- Backfill so existing rows have a non-null marker before the NOT NULL constraint is added. -->
         <update tableName="json_schema_document">
             <column name="changed_on" valueComputed="COALESCE(modified_on, created_on)"/>

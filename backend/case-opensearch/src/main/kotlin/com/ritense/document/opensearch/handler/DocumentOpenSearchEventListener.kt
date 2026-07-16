@@ -33,8 +33,9 @@ import org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT
 import org.springframework.transaction.event.TransactionalEventListener
 import java.util.UUID
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 /**
@@ -55,9 +56,12 @@ class DocumentOpenSearchEventListener(
     private val toggle: SearchEngineToggle,
 ) : DisposableBean {
 
-    private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "opensearch-live-sync").apply { isDaemon = true }
-    }
+    private val executor: ExecutorService = ThreadPoolExecutor(
+        1, 1, 0L, TimeUnit.MILLISECONDS,
+        LinkedBlockingQueue(QUEUE_CAPACITY),
+        { runnable -> Thread(runnable, "opensearch-live-sync").apply { isDaemon = true } },
+        ThreadPoolExecutor.DiscardOldestPolicy()
+    )
 
     @TransactionalEventListener(phase = AFTER_COMMIT)
     fun onCreated(event: JsonSchemaDocumentCreatedEvent) = enqueueUpsert(event.documentId().id)
@@ -122,5 +126,6 @@ class DocumentOpenSearchEventListener(
     companion object {
         private val logger = KotlinLogging.logger {}
         private const val SHUTDOWN_TIMEOUT_SECONDS = 30L
+        private const val QUEUE_CAPACITY = 1000
     }
 }

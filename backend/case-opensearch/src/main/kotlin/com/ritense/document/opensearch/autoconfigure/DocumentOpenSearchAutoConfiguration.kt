@@ -337,7 +337,11 @@ class DocumentOpenSearchAutoConfiguration {
         logger.info { "Document search engine set to: ${engine.name}" }
 
         if (toggle.isOpenSearchActive()) {
-            indexInitializer.ensureIndex()
+            try {
+                indexInitializer.ensureIndex()
+            } catch (e: Exception) {
+                logger.warn(e) { "Failed to initialize OpenSearch index at startup — is OpenSearch running?" }
+            }
         }
     }
 

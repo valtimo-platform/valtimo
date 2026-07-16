@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,9 @@ class DelegatingDocumentSearchService(
     private fun isConnectionError(e: Exception): Boolean {
         val message = e.message?.lowercase() ?: ""
         return e is java.net.ConnectException ||
-            e is java.io.IOException ||
+            e is java.net.SocketTimeoutException ||
+            e is java.net.NoRouteToHostException ||
+            e is java.net.UnknownHostException ||
             message.contains("connection refused") ||
             message.contains("connect timed out") ||
             message.contains("no route to host") ||
