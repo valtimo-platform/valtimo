@@ -15,17 +15,6 @@
   -->
 
 <cds-inline-notification
-  *ngIf="readonlyMode && (_$capabilities().length > 0 || _$enrichedEndpoints().length > 0 || _$eventTypes().length > 0)"
-  [notificationObj]="{
-    type: 'info',
-    title: '',
-    message: 'pluginManagement.permissions.acceptedNote' | translate,
-    showClose: false,
-    lowContrast: true,
-  }"
-></cds-inline-notification>
-
-<cds-inline-notification
   class="plugin-external-permissions__trust-notice"
   [notificationObj]="{
     type: readonlyMode ? 'info' : 'warning',
