@@ -34,3 +34,9 @@
   When you change the layout algorithm of a widget tab, the option to show the task panel now keeps its previous value.
   Previously, adjusting the layout turned the task panel off, so it unexpectedly disappeared from the case detail
   screen.
+
+* **Fixed values can now be entered as building block input**
+
+  When configuring a building block input in manual mode, a value you type in
+  is now stored and used exactly as entered. Previously it was incorrectly turned into a document reference by
+  prepending `doc:/`, so the fixed value could not be used.
