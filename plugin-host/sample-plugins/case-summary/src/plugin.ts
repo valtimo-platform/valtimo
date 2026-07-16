@@ -15,7 +15,7 @@
  */
 
 import type {ActionInput, Document, EventInput, RequestInput, SubmitInput} from "@valtimo/plugin-sdk";
-import {action, config, gzacApi, log, onEvent, request, submit,} from "@valtimo/plugin-sdk";
+import {action, config, gzacApi, httpRequest, kv, log, onEvent, request, submit,} from "@valtimo/plugin-sdk";
 
 // Plugin-served data for the case-tab iframe. Reached via the host's
 // `POST /plugins/case-summary/{version}/data` route, which the Angular parent-proxy calls when the
@@ -23,12 +23,21 @@ import {action, config, gzacApi, log, onEvent, request, submit,} from "@valtimo/
 // origin — distinct from data the plugin reads back out of GZAC.
 request("/summary", (input: RequestInput) => {
   const currency = (input.configuration.currency as string) ?? "EUR";
+
+  // KV scenario: persistent per-configuration view counter
+  const countKey = "view-count";
+  const prev = kv.get<number>(countKey);
+  const viewCount = (prev.found ? prev.value! : 0) + 1;
+  kv.set(countKey, viewCount);
+  log.info("Plugin summary served", {documentId: input.context?.documentId, viewCount});
+
   return {
     status: 200,
     body: {
       message: "Hello from the case-summary plugin backend",
       currency,
       documentId: input.context?.documentId ?? null,
+      viewCount,
       items: [
         {label: "Status", value: "In progress"},
         {label: "Priority", value: "Normal"},
@@ -70,6 +79,43 @@ request("/reports", () => {
         {period: "2026-W26", created: 7, completed: 7},
       ],
     },
+  };
+});
+
+// http_request scenario: fetch from a trusted public test API (JSONPlaceholder) and combine with
+// KV-stored metadata. Demonstrates outbound HTTP, KV persistence, and structured logging — all
+// three results visible in the case tab.
+request("/external-data", (input: RequestInput) => {
+  const res = httpRequest.get<{id: number; title: string; completed: boolean}>(
+    "https://jsonplaceholder.typicode.com/todos/1"
+  );
+  log.info("Fetched external data", {status: res.status, title: res.body?.title});
+
+  const docKey = "view-count:" + (input.context?.documentId ?? "global");
+  const prev = kv.get<number>(docKey);
+  const viewCount = (prev.found ? prev.value! : 0) + 1;
+  kv.set(docKey, viewCount);
+
+  return {
+    status: 200,
+    body: {
+      todo: res.status === 200 ? res.body : null,
+      viewCount,
+      fetchStatus: res.status,
+    },
+  };
+});
+
+// KV stats: aggregate view counts across all tracked documents.
+request("/kv-stats", () => {
+  const allKeys = kv.list("view-count:");
+  const totalViews = allKeys.reduce((sum, key) => {
+    const val = kv.get<number>(key);
+    return sum + (val.found ? val.value! : 0);
+  }, 0);
+  return {
+    status: 200,
+    body: {trackedDocuments: allKeys.length, totalViews},
   };
 });
 
@@ -150,7 +196,7 @@ submit("review", (input: SubmitInput) => {
   }
 
   // Derived, server-authoritative variables + a document field — GZAC applies these the standard way.
-  log.info(`[case-summary] review submit hook: decision=${decision}`);
+  log.info("Review submit hook", {decision});
   return {
     status: "completed" as const,
     variables: {
@@ -180,14 +226,14 @@ request("/submit-task", (input: RequestInput) => {
 
   const res = gzacApi.asUser.post(`/api/v1/task/${taskId}/complete`, {variables});
   if (res.status < 200 || res.status >= 300) {
-    log.info(`[case-summary] task completion for ${taskId} failed (status ${res.status})`);
+    log.info("Task completion failed", {taskId, status: res.status});
     return {
       status: res.status,
       body: {error: `Task completion failed (status ${res.status})`},
     };
   }
 
-  log.info(`[case-summary] completed task ${taskId} as the user`);
+  log.info("Completed task as user", {taskId});
   return {status: 200, body: {completed: true}};
 });
 
@@ -231,7 +277,7 @@ action("case-summary", (input: ActionInput) => {
   );
   const summary = parts.join(" — ");
 
-  log.info(`[case-summary] ${summary}`);
+  log.info("Built case summary", {documentId: input.documentId, summary, currency});
 
   return {
     status: "completed" as const,
@@ -247,10 +293,12 @@ action("case-summary", (input: ActionInput) => {
 // document via the GZAC API, exercising the full event -> callback round trip. The POST endpoint is
 // declared under `permissions.endpoints`, so the configuration must be granted it.
 onEvent((event: EventInput) => {
-  log.info(
-    `[case-summary] event ${event.type} (resultType=${event.resultType ?? "?"}, ` +
-      `resultId=${event.resultId ?? "?"}, user=${event.userId ?? "?"})`
-  );
+  log.info("Processing event", {
+    type: event.type,
+    resultType: event.resultType,
+    resultId: event.resultId,
+    userId: event.userId,
+  });
 
   if (event.type === "com.ritense.valtimo.document.created" && event.resultId) {
     const content = `consumed by external plugin on ${new Date().toISOString()}`;
@@ -262,7 +310,7 @@ onEvent((event: EventInput) => {
         errorMessage: `Failed to add note to document ${event.resultId} (status ${res.status})`,
       };
     }
-    log.info(`[case-summary] added note to document ${event.resultId}`);
+    log.info("Added note to document", {documentId: event.resultId});
   }
 
   return {status: "completed" as const};

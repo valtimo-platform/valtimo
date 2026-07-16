@@ -34,7 +34,12 @@ export type {
   FrontendBundle,
   FrontendBundleType,
   GzacApiResponse,
+  HttpRequestResponse,
+  KvGetResult,
+  HostCapability,
   Document,
   DocumentContent,
   DocumentDefinitionId,
 } from "./types.js";
+
+export { HOST_CAPABILITIES } from "./types.js";

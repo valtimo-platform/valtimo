@@ -98,6 +98,43 @@ export async function runMigrations(pool: DbPool, logger: HostLogger): Promise<v
           ADD COLUMN IF NOT EXISTS event_subscriptions JSONB NOT NULL DEFAULT '[]';
       `,
     },
+    {
+      version: 3,
+      name: "add_granted_capabilities_to_plugin_configurations",
+      up: `
+        ALTER TABLE plugin_configurations
+          ADD COLUMN IF NOT EXISTS granted_capabilities JSONB NOT NULL DEFAULT '[]';
+      `,
+    },
+    {
+      version: 4,
+      name: "create_plugin_kv_and_logs",
+      up: `
+        CREATE TABLE IF NOT EXISTS plugin_kv (
+          configuration_id TEXT NOT NULL,
+          key TEXT NOT NULL,
+          value JSONB NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          PRIMARY KEY (configuration_id, key)
+        );
+        CREATE INDEX IF NOT EXISTS idx_plugin_kv_prefix ON plugin_kv (configuration_id, key text_pattern_ops);
+
+        CREATE TABLE IF NOT EXISTS plugin_logs (
+          id BIGSERIAL PRIMARY KEY,
+          configuration_id TEXT NOT NULL,
+          plugin_id TEXT NOT NULL,
+          plugin_version TEXT NOT NULL,
+          level VARCHAR(8) NOT NULL,
+          message TEXT NOT NULL,
+          data JSONB,
+          source VARCHAR(32) NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+        CREATE INDEX IF NOT EXISTS idx_plugin_logs_config ON plugin_logs (configuration_id, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_plugin_logs_level ON plugin_logs (configuration_id, level, created_at DESC);
+      `,
+    },
   ];
 
   for (const migration of migrations) {

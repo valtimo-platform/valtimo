@@ -20,7 +20,13 @@ import {mkdir, readdir, readFile, rm, writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {existsSync} from "node:fs";
 import type {HostLogger, PluginManifest} from "./models/index.js";
-import {createGzacApiHostFunction, GzacApiCallContext,} from "./host-functions/gzac-api.js";
+import {createGzacApiHostFunction, type GzacApiCallContext} from "./host-functions/gzac-api.js";
+import type {KvRepository} from "./db/kv-repository.js";
+import type {LogRepository} from "./db/log-repository.js";
+import {createKvHostFunction} from "./host-functions/kv.js";
+import {createLogHostFunction} from "./host-functions/log.js";
+import {createHttpRequestHostFunction} from "./host-functions/http-request.js";
+import type {ConfigRepository} from "./db/config-repository.js";
 
 interface LoadedPlugin {
   pluginId: string;
@@ -46,10 +52,25 @@ export class PluginManager {
   private plugins = new Map<string, LoadedPlugin>();
   private logger: HostLogger;
   private storageDir: string;
+  private configRepository: ConfigRepository;
+  private kvRepository: KvRepository;
+  private logRepository: LogRepository;
+  private allowHttp: boolean;
 
-  constructor(storageDir: string, logger: HostLogger) {
+  constructor(
+    storageDir: string,
+    logger: HostLogger,
+    configRepository: ConfigRepository,
+    kvRepository: KvRepository,
+    logRepository: LogRepository,
+    allowHttp: boolean = false
+  ) {
     this.storageDir = storageDir;
     this.logger = logger.child({ component: "PluginManager" });
+    this.configRepository = configRepository;
+    this.kvRepository = kvRepository;
+    this.logRepository = logRepository;
+    this.allowHttp = allowHttp;
   }
 
   private key(pluginId: string, version: string): string {
@@ -211,6 +232,9 @@ export class PluginManager {
       functions: {
         "extism:host/user": {
           gzac_api: createGzacApiHostFunction(this.logger),
+          kv: createKvHostFunction(this.logger, this.kvRepository),
+          log: createLogHostFunction(this.logger, this.logRepository),
+          http_request: createHttpRequestHostFunction(this.logger, this.logRepository, this.allowHttp),
         },
       },
     });
@@ -242,6 +266,11 @@ export class PluginManager {
    * never serialized into the Wasm input. Host functions (e.g. `gzac_api`) read them via
    * `callContext.hostContext()`.
    */
+  private async resolveCapabilities(configurationId: string): Promise<string[]> {
+    const config = await this.configRepository.get(configurationId);
+    return config?.grantedCapabilities ?? [];
+  }
+
   async callAction(
     pluginId: string,
     version: string,
@@ -269,7 +298,6 @@ export class PluginManager {
       throw new Error(`Plugin not found: ${pluginId}@${version}`);
     }
 
-    // Wasm input excludes serviceToken / gzacBaseUrl — they're host-only.
     const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
     const wasmInput = JSON.stringify({
       actionKey,
@@ -282,6 +310,7 @@ export class PluginManager {
       pluginVersion: version,
       serviceToken,
       gzacBaseUrl,
+      grantedCapabilities: await this.resolveCapabilities(input.configurationId),
     };
 
     this.logger.debug(
@@ -343,6 +372,7 @@ export class PluginManager {
       pluginVersion: version,
       serviceToken: input.serviceToken,
       gzacBaseUrl: input.gzacBaseUrl,
+      grantedCapabilities: await this.resolveCapabilities(input.configurationId),
     };
 
     const eventType = (input.event as { type?: string }).type;
@@ -412,6 +442,9 @@ export class PluginManager {
       serviceToken: serviceToken ?? "",
       gzacBaseUrl: gzacBaseUrl ?? "",
       userToken: userToken,
+      grantedCapabilities: input.configurationId
+        ? await this.resolveCapabilities(input.configurationId)
+        : [],
     };
 
     this.logger.debug(
@@ -485,6 +518,7 @@ export class PluginManager {
       pluginVersion: version,
       serviceToken,
       gzacBaseUrl,
+      grantedCapabilities: await this.resolveCapabilities(input.configurationId),
     };
 
     this.logger.debug({ pluginId, version, submitKey }, "Calling handle_submit");

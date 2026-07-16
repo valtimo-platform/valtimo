@@ -80,7 +80,12 @@
       "page.reports.intro": "A small report the plugin computes itself, served to this page.",
       "page.reports.table.period": "Period",
       "page.reports.table.created": "Created",
-      "page.reports.table.completed": "Completed"
+      "page.reports.table.completed": "Completed",
+      "caseTab.external.title": "External API data",
+      "caseTab.external.todoTitle": "Todo",
+      "caseTab.external.todoCompleted": "Completed",
+      "caseTab.external.error": "Could not load external data.",
+      "caseTab.viewCount": "Tab views"
     },
     "nl": {
       "name": "Zaaksamenvatting",
@@ -155,7 +160,12 @@
       "page.reports.intro": "Een klein rapport dat de plugin zelf berekent en aan deze pagina levert.",
       "page.reports.table.period": "Periode",
       "page.reports.table.created": "Aangemaakt",
-      "page.reports.table.completed": "Afgerond"
+      "page.reports.table.completed": "Afgerond",
+      "caseTab.external.title": "Externe API-gegevens",
+      "caseTab.external.todoTitle": "Todo",
+      "caseTab.external.todoCompleted": "Voltooid",
+      "caseTab.external.error": "Kon externe gegevens niet laden.",
+      "caseTab.viewCount": "Tabbladweergaven"
     }
   },
   "configurationSchema": {
@@ -171,6 +181,7 @@
     "additionalProperties": false
   },
   "permissions": {
+    "capabilities": ["gzac_api", "http_request", "kv", "log"],
     "endpoints": [
       { "method": "GET", "pattern": "/api/v1/document/*" },
       { "method": "POST", "pattern": "/api/v1/document/*/note" },

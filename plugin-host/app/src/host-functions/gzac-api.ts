@@ -32,6 +32,12 @@ export interface GzacApiCallContext {
    * tab forwarded it; absent for action/event invocations. Used when a request asks for `as:"user"`.
    */
   userToken?: string;
+  /**
+   * Host capabilities the admin granted at activation. Each host function checks this list before
+   * executing. When absent (pre-capability GZAC push), `gzac_api` is implicitly granted for
+   * backward compatibility.
+   */
+  grantedCapabilities?: string[];
 }
 
 interface GzacApiRequest {
@@ -70,6 +76,12 @@ export function createGzacApiHostFunction(
     if (!ctx) {
       return callContext.store(
         JSON.stringify(errorReply(500, "No active invocation context"))
+      );
+    }
+
+    if (!ctx.grantedCapabilities?.includes("gzac_api")) {
+      return callContext.store(
+        JSON.stringify(errorReply(403, "Capability 'gzac_api' not granted for this configuration"))
       );
     }
 
