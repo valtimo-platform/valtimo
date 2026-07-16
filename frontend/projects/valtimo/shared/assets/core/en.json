@@ -951,7 +951,7 @@
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",
-          "message": "This case cannot be updated because it is final."
+          "message": "This case definition cannot be changed because this version is final. Please create a new draft to make changes."
         },
         "linkUploadProcess": {
           "title": "Link upload process to case",

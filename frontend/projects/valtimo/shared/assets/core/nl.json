@@ -958,7 +958,7 @@
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
-          "message": "Het dossier kan niet worden bijgewerkt omdat deze definitief is."
+          "message": "Deze dossierdefinitie kan niet worden gewijzigd omdat deze versie definitief is. Maak een nieuwe conceptversie om wijzigingen aan te brengen."
         },
         "linkUploadProcess": {
           "title": "Uploadproces koppelen aan dossierdefinitie",
