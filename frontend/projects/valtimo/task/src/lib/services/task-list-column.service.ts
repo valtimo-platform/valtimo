@@ -95,6 +95,13 @@ export class TaskListColumnService {
     return this._availableFields$.asObservable();
   }
 
+  public getTagColumnKeys(): string[] {
+    return this._availableFields$
+      .getValue()
+      .filter((field: ColumnConfig) => field.viewType === ViewType.TAGS)
+      .map((field: ColumnConfig) => field.key);
+  }
+
   public readonly hiddenColumns$: Observable<ListField[]> = this.taskListService.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey => {
       if (!caseDefinitionKey || caseDefinitionKey === this.taskListService.ALL_CASES_ID) {
