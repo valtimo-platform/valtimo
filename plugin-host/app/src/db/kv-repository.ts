@@ -51,8 +51,9 @@ export class KvRepository {
     let query: string;
     let params: unknown[];
     if (prefix) {
-      query = "SELECT key FROM plugin_kv WHERE configuration_id = $1 AND key LIKE $2 ORDER BY key";
-      params = [configurationId, prefix + "%"];
+      const escaped = prefix.replace(/[%_\\]/g, "\\$&");
+      query = "SELECT key FROM plugin_kv WHERE configuration_id = $1 AND key LIKE $2 ESCAPE '\\' ORDER BY key";
+      params = [configurationId, escaped + "%"];
     } else {
       query = "SELECT key FROM plugin_kv WHERE configuration_id = $1 ORDER BY key";
       params = [configurationId];

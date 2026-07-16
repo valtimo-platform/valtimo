@@ -86,8 +86,8 @@ export class LogRepository {
     }
 
     const where = conditions.join(" AND ");
-    const offset = params.page * params.size;
-    const limit = Math.min(params.size, 100);
+    const limit = Math.max(1, Math.min(params.size || 25, 100));
+    const offset = Math.max(0, (params.page || 0)) * limit;
 
     const countResult = await this.pool.query(
       `SELECT COUNT(*) as total FROM plugin_logs WHERE ${where}`,
@@ -95,11 +95,12 @@ export class LogRepository {
     );
     const totalElements = parseInt(countResult.rows[0].total, 10);
 
+    values.push(limit, offset);
     const { rows } = await this.pool.query(
       `SELECT id, configuration_id, plugin_id, plugin_version, level, message, data, source, created_at
        FROM plugin_logs WHERE ${where}
        ORDER BY created_at DESC
-       LIMIT ${limit} OFFSET ${offset}`,
+       LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`,
       values
     );
 

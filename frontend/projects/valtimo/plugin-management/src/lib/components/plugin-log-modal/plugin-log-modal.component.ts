@@ -138,12 +138,6 @@ export class PluginLogModalComponent implements OnChanges {
     this._loadLogs();
   }
 
-  public onPaginationSet(size: number): void {
-    this.pageSize = size;
-    this.page = 1;
-    this._loadLogs();
-  }
-
   public onRowClicked(row: PluginLogEntry): void {
     this._$selectedRow.set(row);
     this._cdr.markForCheck();

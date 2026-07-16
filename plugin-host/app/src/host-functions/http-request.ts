@@ -161,7 +161,7 @@ export function createHttpRequestHostFunction(
           data: { method: req.method, url: req.url, status: res.status, durationMs },
           source: "http_request",
         })
-        .catch(() => {});
+        .catch((e) => log.warn({ error: (e as Error).message }, "Failed to persist http_request log"));
 
       return callContext.store(JSON.stringify(out));
     } catch (err) {
@@ -179,7 +179,7 @@ export function createHttpRequestHostFunction(
           data: { method: req.method, url: req.url, error: errMsg, durationMs },
           source: "http_request",
         })
-        .catch(() => {});
+        .catch((e) => log.warn({ error: (e as Error).message }, "Failed to persist http_request log"));
 
       return callContext.store(
         JSON.stringify(errorReply(502, `http_request failed: ${errMsg}`))

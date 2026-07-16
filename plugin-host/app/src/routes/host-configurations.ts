@@ -59,11 +59,10 @@ function normalizeEventBroker(input: unknown): EventBrokerConfig | undefined {
 }
 
 /**
- * Normalizes the `eventSubscriptions` field GZAC sends with a configuration. Treats anything that
- * isn't an array of strings as an empty list — defense in depth so the dispatcher's allowlist
- * check (§event-consumer) never blows up on a malformed push.
+ * Normalizes a string-array field from a GZAC push body (eventSubscriptions, grantedCapabilities).
+ * Treats anything that isn't an array of strings as an empty list.
  */
-function normalizeEventSubscriptions(input: unknown): string[] {
+function normalizeStringArray(input: unknown): string[] {
   if (!Array.isArray(input)) return [];
   return input.filter((x): x is string => typeof x === "string" && x.length > 0);
 }
@@ -137,8 +136,8 @@ export async function hostConfigurationRoutes(
     }
 
     const eventBroker = normalizeEventBroker(request.body.eventBroker);
-    const eventSubscriptions = normalizeEventSubscriptions(request.body.eventSubscriptions);
-    const grantedCapabilities = normalizeEventSubscriptions(request.body.grantedCapabilities);
+    const eventSubscriptions = normalizeStringArray(request.body.eventSubscriptions);
+    const grantedCapabilities = normalizeStringArray(request.body.grantedCapabilities);
 
     await configRegistry.set(configId, {
       configurationId: configId,
@@ -196,7 +195,7 @@ export async function hostConfigurationRoutes(
     // Same shape for the granted event-subscription list — only replace when supplied.
     const eventSubscriptions =
       "eventSubscriptions" in request.body
-        ? normalizeEventSubscriptions(request.body.eventSubscriptions)
+        ? normalizeStringArray(request.body.eventSubscriptions)
         : existing.eventSubscriptions;
 
     await configRegistry.set(configId, {

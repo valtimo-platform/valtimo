@@ -68,8 +68,7 @@ export interface PluginConfiguration {
   /**
    * Host capabilities the admin granted at activation (`gzac_api`, `http_request`, `kv`, `log`).
    * Each host function checks this list before executing. Empty means the plugin cannot call any
-   * host function. When absent (pre-capability GZAC), `gzac_api` is implicitly granted for
-   * backward compatibility.
+   * host function.
    */
   grantedCapabilities?: string[];
   /**

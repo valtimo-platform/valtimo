@@ -28,7 +28,7 @@
  * Usage: valtimo-plugin-build [--input src/plugin.ts] [--output plugin.wasm]
  */
 
-import {execFileSync, execSync} from "node:child_process";
+import {execFileSync} from "node:child_process";
 import {createWriteStream, existsSync, mkdirSync, writeFileSync, chmodSync} from "node:fs";
 import {dirname, resolve} from "node:path";
 import {fileURLToPath} from "node:url";

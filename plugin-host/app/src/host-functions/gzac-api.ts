@@ -34,8 +34,7 @@ export interface GzacApiCallContext {
   userToken?: string;
   /**
    * Host capabilities the admin granted at activation. Each host function checks this list before
-   * executing. When absent (pre-capability GZAC push), `gzac_api` is implicitly granted for
-   * backward compatibility.
+   * executing. A configuration must explicitly include the required capability.
    */
   grantedCapabilities?: string[];
 }
