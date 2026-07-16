@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="open" size="sm" (close)="onCancel()">
+<cds-modal valtimoCdsModal *ngIf="open" [open]="open" size="sm" (close)="onCancel()">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
     <h3 cdsModalHeaderHeading>{{ 'adminSettings.opensearch.reindex.startModalTitle' | translate }}</h3>
   </cds-modal-header>

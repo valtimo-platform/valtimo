@@ -145,11 +145,17 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.documentDefinitions$ = this._documentService.queryDefinitionsForManagement().pipe(
-      map(page =>
-        page.content.map(def => ({
-          content: def.id.name,
-          selected: false,
-        }))
+      switchMap(page =>
+        this._translateService.get('adminSettings.opensearch.reindex.allDocumentDefinitions').pipe(
+          map(allLabel => [
+            {content: allLabel, value: null, selected: false},
+            ...page.content.map(def => ({
+              content: def.id.name,
+              value: def.id.name,
+              selected: false,
+            })),
+          ])
+        )
       ),
       startWith([])
     );

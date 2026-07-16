@@ -90,8 +90,8 @@ export class StartReindexModalComponent {
       request.pruneOrphans = true;
     }
 
-    if (formValue.documentDefinitionName?.content) {
-      request.documentDefinitionName = formValue.documentDefinitionName.content;
+    if (formValue.documentDefinitionName?.value) {
+      request.documentDefinitionName = formValue.documentDefinitionName.value;
     }
 
     if (formValue.modifiedAfter) {

@@ -3373,6 +3373,7 @@
         "pruneOrphans": "Verwijder orphan documenten",
         "documentDefinitionName": "Documentdefinitie",
         "documentDefinitionPlaceholder": "Alle documentdefinities",
+        "allDocumentDefinitions": "Alle documentdefinities",
         "modifiedBefore": "Gewijzigd voor",
         "modifiedAfter": "Gewijzigd na",
         "columns": {

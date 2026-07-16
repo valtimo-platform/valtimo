@@ -264,8 +264,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public skeletonModel = Table.skeletonModel(5, 5);
   public paginationModel: PaginationModel;
   public searchFormControl = new FormControl('');
+  public showAutocomplete = false;
+  public filteredSuggestions: SearchField[] = [];
+  public selectedSuggestionIndex = -1;
+  public autocompleteLeft = 0;
 
   private _lastExecutedSearch: string | null = null;
+  private _searchInputElement: HTMLInputElement | null = null;
   private static readonly PAGINATION_SIZE = 'PaginationSize';
   private readonly _subscriptions = new Subscription();
   private readonly _expandedRowKeys = new Set<string>();
@@ -811,12 +816,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     return segments;
   }
-
-  public showAutocomplete = false;
-  public filteredSuggestions: SearchField[] = [];
-  public selectedSuggestionIndex = -1;
-  public autocompleteLeft = 0;
-  private _searchInputElement: HTMLInputElement | null = null;
 
   private getSearchInputElement(): HTMLInputElement | null {
     if (!this._searchInputElement) {

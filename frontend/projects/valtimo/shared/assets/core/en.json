@@ -3340,6 +3340,7 @@
         "pruneOrphans": "Prune orphaned documents",
         "documentDefinitionName": "Document definition",
         "documentDefinitionPlaceholder": "All document definitions",
+        "allDocumentDefinitions": "All document definitions",
         "modifiedBefore": "Modified before",
         "modifiedAfter": "Modified after",
         "columns": {
