@@ -44,10 +44,10 @@ import {
   Subject,
   timer,
 } from 'rxjs';
-import {catchError, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {catchError, distinctUntilChanged, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginConfigurationRow} from '../../models';
-import {cloneDeep} from 'lodash';
+import {cloneDeep, isEqual} from 'lodash';
 import {v4 as uuidv4} from 'uuid';
 
 @Component({
@@ -152,7 +152,8 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
           }),
           tap(() => {
             this.loading$.next(false);
-          })
+          }),
+          distinctUntilChanged((prev, curr) => isEqual(prev, curr))
         )
       )
     );
@@ -205,7 +206,8 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     tap(() => {
       this._externalDefsInitialLoad = false;
       this.externalDefsRefreshing$.next(false);
-    })
+    }),
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
   // --- Plugin upload ---
@@ -224,7 +226,8 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     ),
     tap(() => {
       this._hostsInitialLoad = false;
-    })
+    }),
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
   public readonly connectedHosts$: Observable<Array<ExternalPluginHost>> = this._allHosts$.pipe(
