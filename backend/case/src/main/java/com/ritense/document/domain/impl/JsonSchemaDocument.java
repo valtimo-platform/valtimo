@@ -54,6 +54,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.LocalDateTime;
@@ -68,9 +70,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.hibernate.annotations.CurrentTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.SourceType;
 import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,13 +110,6 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @Column(name = "modified_on", columnDefinition = "DATETIME")
     private LocalDateTime modifiedOn = null;
 
-    /**
-     * Database-clock change marker, regenerated on every insert and update ({@link SourceType#DB} emits
-     * the database's own {@code current_timestamp} in the generated SQL — a single clock, dual-DB safe).
-     * Unlike {@link #modifiedOn} (bumped only by content edits) this covers <em>every</em> mutation, so it
-     * is the watermark the OpenSearch reconciler scans on. Written by every save; never set by hand.
-     */
-    @CurrentTimestamp(source = SourceType.DB)
     @Column(name = "changed_on", columnDefinition = "DATETIME", nullable = false)
     private LocalDateTime changedOn;
 
@@ -405,6 +398,12 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @JsonIgnore
     public LocalDateTime changedOn() {
         return changedOn;
+    }
+
+    @PrePersist
+    @PreUpdate
+    void updateChangedOn() {
+        this.changedOn = LocalDateTime.now();
     }
 
     @Override
