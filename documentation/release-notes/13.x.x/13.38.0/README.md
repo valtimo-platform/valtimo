@@ -40,3 +40,9 @@
   When configuring a building block input in manual mode, a value you type in
   is now stored and used exactly as entered. Previously it was incorrectly turned into a document reference by
   prepending `doc:/`, so the fixed value could not be used.
+
+* **Task forms keep their background on small screens**
+
+  When you open a task form in a small or minimized browser window and scroll through a long form, the form now keeps
+  its background all the way down. Previously the background could fall away while scrolling, leaving part of the form
+  without a backdrop.
