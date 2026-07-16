@@ -46,3 +46,9 @@
   When you open a task form in a small or minimized browser window and scroll through a long form, the form now keeps
   its background all the way down. Previously the background could fall away while scrolling, leaving part of the form
   without a backdrop.
+
+* **The case version management page is now labelled correctly**
+
+  The page for creating and finalizing draft versions of a case definition is now titled *Versiebeheer* (Dutch) and
+  *Version management* (English), matching the rest of that screen. Previously it was labelled *Implementatie* /
+  *Deployment*, which did not reflect what the page actually does.

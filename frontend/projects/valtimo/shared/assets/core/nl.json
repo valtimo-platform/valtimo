@@ -1793,7 +1793,7 @@
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestarte processen krijgen de nieuwe candidate group)",
   "Case": "Dossier",
   "Cases": "Dossiers",
-  "Deployment": "Implementatie",
+  "Deployment": "Versiebeheer",
   "document definition": "Documentdefinitie",
   "Upload document definition": "Upload documentdefinitie",
   "Remove document definition": "Verwijder documentdefinitie",
