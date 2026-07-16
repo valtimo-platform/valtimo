@@ -506,6 +506,7 @@ internal class DocumentJsonValueResolverTest {
         Collections.sort(paths)
         Assertions.assertArrayEquals(
             paths.toTypedArray(), arrayOf(
+                "doc:/address",
                 "doc:/address/city",
                 "doc:/address/country",
                 "doc:/address/number",
@@ -522,13 +523,13 @@ internal class DocumentJsonValueResolverTest {
 
         val options = documentValueResolver.getResolvableKeyOptions(definitionName)
 
-        assertEquals(1, options.size)
-        assertEquals(ValueResolverOptionType.COLLECTION, options[0].type)
-        assertEquals("doc:/object1/object2/array1", options[0].path)
-        assertNotNull(options[0].children)
-        assertEquals(1, options[0].children?.size)
-        assertEquals(ValueResolverOptionType.FIELD, options[0].children?.get(0)?.type)
-        assertEquals("/object3/object4/text1", options[0].children?.get(0)?.path)
+        assertEquals(3, options.size)
+        assertEquals(ValueResolverOptionType.COLLECTION, options[2].type)
+        assertEquals("doc:/object1/object2/array1", options[2].path)
+        assertNotNull(options[2].children)
+        assertEquals(3, options[2].children?.size)
+        assertEquals(ValueResolverOptionType.FIELD, options[2].children?.get(2)?.type)
+        assertEquals("/object3/object4/text1", options[2].children?.get(2)?.path)
     }
 
     @Test
@@ -538,13 +539,13 @@ internal class DocumentJsonValueResolverTest {
 
         val options = documentValueResolver.getResolvableKeyOptions(definitionName)
 
-        assertEquals(1, options.size)
-        assertEquals(ValueResolverOptionType.COLLECTION, options[0].type)
-        assertEquals("doc:/object1/object2/array1", options[0].path)
-        assertNotNull(options[0].children)
-        assertEquals(1, options[0].children?.size)
-        assertEquals(ValueResolverOptionType.FIELD, options[0].children?.get(0)?.type)
-        assertEquals("/object3/object4/text1", options[0].children?.get(0)?.path)
+        assertEquals(3, options.size)
+        assertEquals(ValueResolverOptionType.COLLECTION, options[2].type)
+        assertEquals("doc:/object1/object2/array1", options[2].path)
+        assertNotNull(options[2].children)
+        assertEquals(3, options[2].children?.size)
+        assertEquals(ValueResolverOptionType.FIELD, options[2].children?.get(2)?.type)
+        assertEquals("/object3/object4/text1", options[2].children?.get(2)?.path)
     }
 
     @Test

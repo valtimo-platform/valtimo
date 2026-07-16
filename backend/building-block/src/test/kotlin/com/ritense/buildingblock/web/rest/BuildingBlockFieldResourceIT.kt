@@ -22,7 +22,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -52,10 +52,17 @@ class BuildingBlockFieldResourceIT @Autowired constructor(
               "${'$'}schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
-                "firstName": { "type": "string" },
-                "lastName": { "type": "string" }
+                "applicantName": { "type": "string" },
+                "applicantAddress": {
+                  "type": "object",
+                  "properties": {
+                    "city": { "type": "string" },
+                    "postalCode": { "type": "string" }
+                  },
+                  "required": ["city"]
+                }
               },
-              "required": ["firstName"]
+              "required": ["applicantAddress"]
             }
         """.trimIndent()
         val schema = JsonSchema.fromString(schemaJson)
@@ -64,19 +71,29 @@ class BuildingBlockFieldResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    fun `should return fields with required marker`() {
+    fun `should return object nodes and their nested leaves with required marker`() {
         mockMvc.perform(
             get("/api/management/v1/building-block/${buildingBlockId.key}/version/${buildingBlockId.versionTag}/fields")
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect {
-                status().isOk()
-                jsonPath("$").isArray
-                jsonPath("$", hasSize<Any>(2))
-                jsonPath("$[0].name", equalTo("firstName"))
-                jsonPath("$[0].required", equalTo(true))
-                jsonPath("$[1].name", equalTo("lastName"))
-                jsonPath("$[1].required", equalTo(false))
-            }
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").isArray)
+            .andExpect(jsonPath("$", hasSize<Any>(4)))
+            .andExpect(
+                jsonPath(
+                    "$[*].name",
+                    // object container nodes are selectable and the list is returned sorted alphabetically
+                    contains(
+                        "/applicantAddress",
+                        "/applicantAddress/city",
+                        "/applicantAddress/postalCode",
+                        "/applicantName"
+                    )
+                )
+            )
+            .andExpect(jsonPath("$[?(@.name == '/applicantName')].required", contains(false)))
+            .andExpect(jsonPath("$[?(@.name == '/applicantAddress')].required", contains(true)))
+            .andExpect(jsonPath("$[?(@.name == '/applicantAddress/city')].required", contains(true)))
+            .andExpect(jsonPath("$[?(@.name == '/applicantAddress/postalCode')].required", contains(false)))
     }
 }
