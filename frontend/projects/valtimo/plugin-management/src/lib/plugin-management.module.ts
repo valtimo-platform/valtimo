@@ -32,6 +32,7 @@ import {PluginExternalConfigureComponent} from './components/plugin-external-con
 import {PluginExternalPermissionsComponent} from './components/plugin-external-permissions/plugin-external-permissions.component';
 import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugin-upload-modal.component';
 import {PluginUsageModalComponent} from './components/plugin-usage-modal/plugin-usage-modal.component';
+import {PluginLogModalComponent} from './components/plugin-log-modal/plugin-log-modal.component';
 import {
   CarbonListModule,
   ConfirmationModalModule,
@@ -91,6 +92,7 @@ import {
     PluginExternalPermissionsComponent,
     PluginUploadModalComponent,
     PluginUsageModalComponent,
+    PluginLogModalComponent,
     ConfirmationModalModule,
     VTooltipModule,
   ],

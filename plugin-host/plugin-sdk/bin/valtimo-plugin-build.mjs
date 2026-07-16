@@ -28,10 +28,14 @@
  * Usage: valtimo-plugin-build [--input src/plugin.ts] [--output plugin.wasm]
  */
 
-import {execFileSync} from "node:child_process";
-import {existsSync, mkdirSync, writeFileSync} from "node:fs";
+import {execFileSync, execSync} from "node:child_process";
+import {createWriteStream, existsSync, mkdirSync, writeFileSync, chmodSync} from "node:fs";
 import {dirname, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
+import {pipeline} from "node:stream/promises";
+import {createGunzip} from "node:zlib";
+import {Readable} from "node:stream";
+import {arch, platform} from "node:os";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,6 +53,9 @@ const DEFAULT_INTERFACE = `declare module "main" {
 declare module "extism:host" {
   interface user {
     gzac_api(input: PTR): PTR;
+    kv(input: PTR): PTR;
+    log(input: PTR): PTR;
+    http_request(input: PTR): PTR;
   }
 }
 `;
@@ -106,21 +113,20 @@ try {
 // Step 2: Compile to .wasm via extism-js
 console.log(`[valtimo-plugin-build] Compiling to WebAssembly ...`);
 
-// Resolve extism-js binary: check PATH first, then known local locations
+const EXTISM_JS_VERSION = "v1.6.0";
+
 function findExtismJs() {
   try {
     execFileSync("extism-js", ["--version"], { stdio: "pipe" });
     return "extism-js";
   } catch {}
 
-  // Check local .bin directory (monorepo convention)
   const localBin = resolve(cwd, "node_modules", ".bin", "extism-js");
   if (existsSync(localBin)) return localBin;
 
-  // Check .bin directories in the monorepo
   const searchDirs = [
-    resolve(__dirname, "..", "..", ".bin", "extism-js"),       // plugin-host/.bin/
-    resolve(__dirname, "..", "..", "..", ".bin", "extism-js"),  // repo root .bin/
+    resolve(__dirname, "..", "..", ".bin", "extism-js"),
+    resolve(__dirname, "..", "..", "..", ".bin", "extism-js"),
   ];
   for (const bin of searchDirs) {
     if (existsSync(bin)) return bin;
@@ -129,12 +135,46 @@ function findExtismJs() {
   return null;
 }
 
-const extismJsBin = findExtismJs();
+async function installExtismJs() {
+  const os = platform();
+  const cpu = arch();
+
+  const osName = os === "darwin" ? "macos" : os === "win32" ? "windows" : "linux";
+  const archName = cpu === "arm64" || cpu === "aarch64" ? "aarch64" : "x86_64";
+  const fileName = `extism-js-${archName}-${osName}-${EXTISM_JS_VERSION}.gz`;
+  const url = `https://github.com/extism/js-pdk/releases/download/${EXTISM_JS_VERSION}/${fileName}`;
+
+  // Install into plugin-host/.bin/ (relative to this script at plugin-sdk/bin/)
+  const binDir = resolve(__dirname, "..", "..", ".bin");
+  mkdirSync(binDir, { recursive: true });
+  const dest = resolve(binDir, os === "win32" ? "extism-js.exe" : "extism-js");
+
+  console.log(`[valtimo-plugin-build] Installing extism-js ${EXTISM_JS_VERSION} (${osName}/${archName}) ...`);
+  console.log(`[valtimo-plugin-build] Downloading ${url}`);
+
+  const res = await fetch(url, { redirect: "follow" });
+  if (!res.ok) {
+    throw new Error(`Download failed: ${res.status} ${res.statusText}`);
+  }
+
+  const nodeStream = Readable.fromWeb(res.body);
+  await pipeline(nodeStream, createGunzip(), createWriteStream(dest));
+  chmodSync(dest, 0o755);
+
+  console.log(`[valtimo-plugin-build] Installed to ${dest}`);
+  return dest;
+}
+
+let extismJsBin = findExtismJs();
 if (!extismJsBin) {
-  console.error("[valtimo-plugin-build] extism-js CLI not found.");
-  console.error("Install it from: https://github.com/extism/js-pdk/releases");
-  console.error("Or place it in plugin-host/.bin/extism-js for local development.");
-  process.exit(1);
+  try {
+    extismJsBin = await installExtismJs();
+  } catch (err) {
+    console.error(`[valtimo-plugin-build] Auto-install of extism-js failed: ${err.message}`);
+    console.error("Install it manually from: https://github.com/extism/js-pdk/releases");
+    console.error("Or place it in plugin-host/.bin/extism-js for local development.");
+    process.exit(1);
+  }
 }
 
 try {

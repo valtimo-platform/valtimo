@@ -31,6 +31,7 @@ import {
   ExternalPluginHostDefaults,
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
+  PluginLogPage,
 } from '../models';
 
 @Injectable({
@@ -122,6 +123,21 @@ export class ExternalPluginService {
 
   public deleteConfiguration(configurationId: string): Observable<void> {
     return this._http.delete<void>(`${this._baseUrl}/configuration/${configurationId}`);
+  }
+
+  public getConfigurationLogs(
+    configurationId: string,
+    params: {page: number; size: number; level?: string; source?: string}
+  ): Observable<PluginLogPage> {
+    let httpParams = new HttpParams()
+      .set('page', params.page.toString())
+      .set('size', params.size.toString());
+    if (params.level) httpParams = httpParams.set('level', params.level);
+    if (params.source) httpParams = httpParams.set('source', params.source);
+    return this._http.get<PluginLogPage>(
+      `${this._baseUrl}/configuration/${configurationId}/logs`,
+      {params: httpParams}
+    );
   }
 
   /**

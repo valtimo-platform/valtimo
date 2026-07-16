@@ -80,6 +80,7 @@ class ExternalPluginHostClient(
         gzacBaseUrl: String,
         /** The CloudEvent types the admin granted. The host uses this list — not the manifest. */
         eventSubscriptions: List<String>,
+        grantedCapabilities: List<String> = emptyList(),
         eventBrokerUrl: String?,
         eventBrokerExchange: String,
         eventBrokerExchangeType: String,
@@ -99,6 +100,9 @@ class ExternalPluginHostClient(
             // Authoritative subscription list — replaces whatever the manifest declares.
             set<ObjectNode>("eventSubscriptions", objectMapper.createArrayNode().apply {
                 eventSubscriptions.forEach { add(it) }
+            })
+            set<ObjectNode>("grantedCapabilities", objectMapper.createArrayNode().apply {
+                grantedCapabilities.forEach { add(it) }
             })
             // The host learns this GZAC instance's broker from the push (it never configures one
             // itself). Omitted when no broker is configured — events are then disabled for the config.
@@ -215,6 +219,27 @@ class ExternalPluginHostClient(
             contentType = MediaType.MULTIPART_FORM_DATA
         }
         val request = RequestEntity(body, headers, HttpMethod.POST, uri)
+        return restTemplate.exchange(request, JsonNode::class.java).body
+            ?: objectMapper.createObjectNode()
+    }
+
+    fun getConfigurationLogs(
+        baseUrl: String,
+        adminToken: String,
+        configId: String,
+        page: Int,
+        size: Int,
+        level: String?,
+        source: String?,
+    ): JsonNode {
+        val params = mutableListOf("page=$page", "size=$size")
+        if (!level.isNullOrBlank()) params.add("level=$level")
+        if (!source.isNullOrBlank()) params.add("source=$source")
+        val path = "/api/host/configurations/$configId/logs"
+        val queryPath = "$path?${params.joinToString("&")}"
+        val uri = buildUri(baseUrl, queryPath)
+        val headers = hmacHeaders(adminToken, HttpMethod.GET.name(), path, EMPTY_BODY)
+        val request = RequestEntity<Void>(headers, HttpMethod.GET, uri)
         return restTemplate.exchange(request, JsonNode::class.java).body
             ?: objectMapper.createObjectNode()
     }

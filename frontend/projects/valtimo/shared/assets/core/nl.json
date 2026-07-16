@@ -2304,16 +2304,38 @@
       "save": "Configuratie opslaan"
     },
     "permissions": {
-      "description": "Deze plugin heeft toegang nodig tot de volgende API-endpoints en events. Bekijk ze zorgvuldig — na acceptatie kan de plugin deze endpoints namens jou aanroepen en deze events ontvangen.",
-      "descriptionReadonly": "Deze plugin heeft toegang gekregen tot de volgende API-endpoints en events.",
+      "description": "Door deze rechten te accepteren vertrouwt u deze plugin om binnen uw omgeving te handelen. Een toegekende capaciteit, endpoint of event geeft de plugin toegang tot platformgegevens en -diensten — ga alleen akkoord als u de bron van de plugin vertrouwt en heeft beoordeeld wat deze aanvraagt.",
+      "descriptionReadonly": "De volgende rechten zijn geaccepteerd bij het activeren van deze configuratie. Ze bepalen wat de plugin mag doen binnen uw omgeving.",
       "noEndpoints": "Deze plugin heeft geen rechten nodig.",
+      "capabilitiesHeading": "Hostcapaciteiten",
+      "capabilityHeading": "Capaciteit",
+      "capability": {
+        "gzac_api": "Geauthenticeerde API-aanroepen doen naar de GZAC-instantie (zaakgegevens, taken, documenten lezen en schrijven, enz.)",
+        "http_request": "Uitgaande HTTP-verzoeken doen naar externe diensten",
+        "kv": "Persistente sleutel-waardeparen opslaan en ophalen, beperkt tot deze configuratie",
+        "log": "Gestructureerde logboekregels schrijven die zichtbaar zijn voor beheerders"
+      },
       "endpointsHeading": "API-endpoints",
       "eventsHeading": "Events",
       "methodHeading": "Methode",
       "endpointHeading": "Endpoint",
       "descriptionHeading": "Omschrijving",
-      "accept": "Ik begrijp de gevolgen van het accepteren van deze rechten",
+      "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten",
       "acceptedNote": "Deze rechten zijn geaccepteerd bij het activeren van de configuratie en kunnen hier niet worden gewijzigd."
+    },
+    "logs": {
+      "menuItem": "Logs",
+      "title": "Pluginlogs",
+      "columns": {
+        "timestamp": "Tijdstip",
+        "level": "Niveau",
+        "source": "Bron",
+        "message": "Bericht"
+      },
+      "data": "Gegevens",
+      "filterAll": "Alle",
+      "empty": "Geen logboekregels gevonden.",
+      "close": "Sluiten"
     },
     "reloadModal": {
       "title": "Herladen vereist",

@@ -123,6 +123,13 @@
   (cancelEvent)="cancelDeleteConfiguration()"
 ></valtimo-confirmation-modal>
 
+<valtimo-plugin-log-modal
+  [open]="showLogModal"
+  [configurationId]="logConfigurationId"
+  [configurationTitle]="logConfigurationTitle"
+  (closeModal)="closeLogModal()"
+></valtimo-plugin-log-modal>
+
 <valtimo-plugin-usage-modal
   [descriptionTranslationKey]="usageModalDescriptionKey"
   [entityName]="usageModalEntityName"

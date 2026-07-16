@@ -2277,16 +2277,38 @@
       "save": "Save configuration"
     },
     "permissions": {
-      "description": "This plugin requires access to the following API endpoints and events. Review them carefully — once accepted, the plugin can call these endpoints on your behalf and receive these events.",
-      "descriptionReadonly": "This plugin was granted access to the following API endpoints and events.",
+      "description": "By accepting these permissions you trust this plugin to act within your environment. A granted capability, endpoint, or event gives the plugin access to platform data and services — only proceed if you trust the plugin's source and have reviewed what it requests.",
+      "descriptionReadonly": "The following permissions were accepted when this configuration was activated. They define what the plugin is allowed to do within your environment.",
       "noEndpoints": "This plugin does not require any permissions.",
+      "capabilitiesHeading": "Host capabilities",
+      "capabilityHeading": "Capability",
+      "capability": {
+        "gzac_api": "Make authenticated API calls to the GZAC instance (read and write case data, tasks, documents, etc.)",
+        "http_request": "Make outbound HTTP requests to external services",
+        "kv": "Store and retrieve persistent key–value data scoped to this configuration",
+        "log": "Write structured log entries visible to administrators"
+      },
       "endpointsHeading": "API endpoints",
       "eventsHeading": "Events",
       "methodHeading": "Method",
       "endpointHeading": "Endpoint",
       "descriptionHeading": "Description",
-      "accept": "I understand the implications of accepting these permissions",
+      "accept": "I trust this plugin and accept the requested permissions",
       "acceptedNote": "These permissions were accepted when the configuration was activated and cannot be changed here."
+    },
+    "logs": {
+      "menuItem": "Logs",
+      "title": "Plugin logs",
+      "columns": {
+        "timestamp": "Timestamp",
+        "level": "Level",
+        "source": "Source",
+        "message": "Message"
+      },
+      "data": "Data",
+      "filterAll": "All",
+      "empty": "No log entries found.",
+      "close": "Close"
     },
     "reloadModal": {
       "title": "Reload required",

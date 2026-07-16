@@ -75,11 +75,20 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
       disabledCallback: (row: UnifiedPluginConfigurationRow) => row.source === 'external',
     },
     {
+      callback: this.viewLogs.bind(this),
+      label: 'pluginManagement.logs.menuItem',
+      disabledCallback: (row: UnifiedPluginConfigurationRow) => row.source !== 'external',
+    },
+    {
       callback: this.deleteConfiguration.bind(this),
       label: 'interface.delete',
       type: 'danger',
     },
   ];
+
+  public showLogModal = false;
+  public logConfigurationId: string | null = null;
+  public logConfigurationTitle = '';
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showEditModal$ = new BehaviorSubject<boolean>(false);
@@ -289,6 +298,19 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     this.showEditModal$.next(true);
     this.saveNewConfiguration$.next(false);
     this._stateService.selectPluginConfiguration(configuration as unknown as PluginConfiguration);
+  }
+
+  public viewLogs(configuration: UnifiedPluginConfigurationRow): void {
+    if (configuration.source !== 'external' || !configuration.id) return;
+    this.logConfigurationId = configuration.id;
+    this.logConfigurationTitle = configuration.title ?? '';
+    this.showLogModal = true;
+  }
+
+  public closeLogModal(): void {
+    this.showLogModal = false;
+    this.logConfigurationId = null;
+    this.logConfigurationTitle = '';
   }
 
   public deleteConfiguration(configuration: UnifiedPluginConfigurationRow): void {

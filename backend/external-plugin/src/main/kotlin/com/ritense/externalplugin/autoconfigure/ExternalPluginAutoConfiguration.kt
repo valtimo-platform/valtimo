@@ -32,6 +32,7 @@ import com.ritense.externalplugin.processlink.ExternalPluginTaskFormSupportedPro
 import com.ritense.externalplugin.processlink.web.ExternalPluginTaskFormSubmissionResource
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
@@ -129,6 +130,7 @@ class ExternalPluginAutoConfiguration {
         configurationRepository: ExternalPluginConfigurationRepository,
         grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         grantedEventRepository: ExternalPluginGrantedEventRepository,
+        grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository,
         encryptionService: EncryptionService,
         hostClient: ExternalPluginHostClient,
         hostUsageResolver: ExternalPluginHostUsageResolver,
@@ -138,6 +140,7 @@ class ExternalPluginAutoConfiguration {
         configurationRepository,
         grantedEndpointRepository,
         grantedEventRepository,
+        grantedCapabilityRepository,
         encryptionService,
         hostClient,
         hostUsageResolver,
@@ -264,6 +267,7 @@ class ExternalPluginAutoConfiguration {
         hostRepository: ExternalPluginHostRepository,
         grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         grantedEventRepository: ExternalPluginGrantedEventRepository,
+        grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository,
         hostClient: ExternalPluginHostClient,
         propertyEncryptor: PluginPropertyEncryptor,
         encryptionService: EncryptionService,
@@ -278,6 +282,7 @@ class ExternalPluginAutoConfiguration {
         hostRepository,
         grantedEndpointRepository,
         grantedEventRepository,
+        grantedCapabilityRepository,
         hostClient,
         propertyEncryptor,
         encryptionService,
@@ -335,6 +340,7 @@ class ExternalPluginAutoConfiguration {
         hostService: ExternalPluginHostService,
         definitionService: ExternalPluginDefinitionService,
         configurationService: ExternalPluginConfigurationService,
+        hostClient: ExternalPluginHostClient,
         endpointDescriptionService: EndpointDescriptionService,
         discoveryService: ExternalPluginDiscoveryService,
         environment: org.springframework.core.env.Environment,
@@ -345,6 +351,7 @@ class ExternalPluginAutoConfiguration {
         hostService,
         definitionService,
         configurationService,
+        hostClient,
         endpointDescriptionService,
         discoveryService,
         environment,

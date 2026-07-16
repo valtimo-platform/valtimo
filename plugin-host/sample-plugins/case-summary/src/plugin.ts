@@ -24,8 +24,8 @@ import {action, config, gzacApi, httpRequest, kv, log, onEvent, request, submit,
 request("/summary", (input: RequestInput) => {
   const currency = (input.configuration.currency as string) ?? "EUR";
 
-  // KV scenario: persistent per-configuration view counter
-  const countKey = "view-count";
+  // KV scenario: persistent per-document view counter
+  const countKey = "view-count:" + (input.context?.documentId ?? "global");
   const prev = kv.get<number>(countKey);
   const viewCount = (prev.found ? prev.value! : 0) + 1;
   kv.set(countKey, viewCount);
@@ -92,9 +92,7 @@ request("/external-data", (input: RequestInput) => {
   log.info("Fetched external data", {status: res.status, title: res.body?.title});
 
   const docKey = "view-count:" + (input.context?.documentId ?? "global");
-  const prev = kv.get<number>(docKey);
-  const viewCount = (prev.found ? prev.value! : 0) + 1;
-  kv.set(docKey, viewCount);
+  const viewCount = kv.get<number>(docKey).value ?? 0;
 
   return {
     status: 200,
@@ -293,17 +291,12 @@ action("case-summary", (input: ActionInput) => {
 // document via the GZAC API, exercising the full event -> callback round trip. The POST endpoint is
 // declared under `permissions.endpoints`, so the configuration must be granted it.
 onEvent((event: EventInput) => {
-  log.info("Processing event", {
-    type: event.type,
-    resultType: event.resultType,
-    resultId: event.resultId,
-    userId: event.userId,
-  });
-
   if (event.type === "com.ritense.valtimo.document.created" && event.resultId) {
+    log.info("Document created event received", {resultId: event.resultId, userId: event.userId});
     const content = `consumed by external plugin on ${new Date().toISOString()}`;
     const res = gzacApi.post(`/api/v1/document/${event.resultId}/note`, {content});
     if (res.status < 200 || res.status >= 300) {
+      log.warn("Failed to add note", {documentId: event.resultId, status: res.status});
       return {
         status: "error" as const,
         errorCode: `NOTE_CREATE_${res.status}`,

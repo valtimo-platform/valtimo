@@ -87,6 +87,7 @@ export class PluginAddModalComponent implements OnDestroy {
     Array<ExternalPluginEndpoint>
   >([]);
   public readonly eventSubscriptions$ = new BehaviorSubject<Array<string>>([]);
+  public readonly capabilities$ = new BehaviorSubject<Array<string>>([]);
   public readonly permissionsValid$ = new BehaviorSubject<boolean>(false);
 
   public currentStepIndex = 0;
@@ -142,6 +143,7 @@ export class PluginAddModalComponent implements OnDestroy {
       this.configurationValid$.next(false);
       this.endpoints$.next([]);
       this.eventSubscriptions$.next([]);
+      this.capabilities$.next([]);
       this.permissionsValid$.next(false);
       this._buildProgressSteps();
     }, CARBON_CONSTANTS.modalAnimationMs);
@@ -203,12 +205,22 @@ export class PluginAddModalComponent implements OnDestroy {
     this._externalConfigureComponent?.setGrantedEvents(events);
   }
 
+  public onCapabilitiesResolved(caps: Array<string>): void {
+    this.capabilities$.next(caps);
+    this._recomputePermissionsValid();
+  }
+
+  public onGrantedCapabilitiesChange(caps: Array<string>): void {
+    this._externalConfigureComponent?.setGrantedCapabilities(caps);
+  }
+
   public onExternalSave(event: {
     definitionId: string;
     title: string;
     properties: Record<string, unknown>;
     grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
     grantedEvents: Array<ExternalPluginGrantedEventEntry>;
+    grantedCapabilities: Array<string>;
   }): void {
     this._stateService.disableInput();
 
@@ -219,6 +231,7 @@ export class PluginAddModalComponent implements OnDestroy {
         properties: event.properties,
         grantedEndpoints: event.grantedEndpoints,
         grantedEvents: event.grantedEvents,
+        grantedCapabilities: event.grantedCapabilities,
       })
       .subscribe({
         next: () => {
@@ -239,7 +252,9 @@ export class PluginAddModalComponent implements OnDestroy {
    * neither endpoints nor event subscriptions. The acknowledgement otherwise gates the step.
    */
   private _recomputePermissionsValid(): void {
-    const hasNothing = this.endpoints$.value.length === 0 && this.eventSubscriptions$.value.length === 0;
+    const hasNothing = this.endpoints$.value.length === 0
+      && this.eventSubscriptions$.value.length === 0
+      && this.capabilities$.value.length === 0;
     if (hasNothing) {
       this.permissionsValid$.next(true);
     }

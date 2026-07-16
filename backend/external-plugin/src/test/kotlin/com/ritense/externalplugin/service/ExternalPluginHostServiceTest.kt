@@ -60,6 +60,7 @@ class ExternalPluginHostServiceTest {
             mock<ExternalPluginConfigurationRepository>(),
             mock<ExternalPluginGrantedEndpointRepository>(),
             mock<ExternalPluginGrantedEventRepository>(),
+            mock(),
             encryptionService,
             mock<ExternalPluginHostClient>(),
             mock<ExternalPluginHostUsageResolver>(),

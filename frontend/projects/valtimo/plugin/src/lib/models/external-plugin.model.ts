@@ -100,6 +100,7 @@ interface ExternalPluginEndpoint {
 
 interface ExternalPluginPermissions {
   endpoints?: Array<ExternalPluginEndpoint>;
+  capabilities?: Array<string>;
 }
 
 interface ExternalPluginManifest {
@@ -220,6 +221,7 @@ interface ExternalPluginConfigurationCreateRequest {
   properties: Record<string, unknown>;
   grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
   grantedEvents: Array<ExternalPluginGrantedEventEntry>;
+  grantedCapabilities: Array<string>;
 }
 
 interface ExternalPluginConfigurationUpdateRequest {
@@ -326,6 +328,22 @@ function isExternalPluginDefinitionIncompatible(
   return definition?.compatible === false;
 }
 
+interface PluginLogEntry {
+  id: number;
+  level: string;
+  message: string;
+  data: Record<string, unknown> | null;
+  source: string;
+  createdAt: string;
+}
+
+interface PluginLogPage {
+  content: Array<PluginLogEntry>;
+  page: number;
+  size: number;
+  totalElements: number;
+}
+
 export {
   EXTERNAL_PLUGIN_KEY_PREFIX,
   ExternalPluginAction,
@@ -365,4 +383,6 @@ export {
   getExternalPluginDescription,
   getExternalPluginDisplayName,
   isExternalPluginDefinitionIncompatible,
+  PluginLogEntry,
+  PluginLogPage,
 };

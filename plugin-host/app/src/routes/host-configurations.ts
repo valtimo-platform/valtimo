@@ -106,6 +106,7 @@ export async function hostConfigurationRoutes(
       serviceToken: string;
       gzacBaseUrl: string;
       eventSubscriptions?: unknown;
+      grantedCapabilities?: unknown;
       eventBroker?: unknown;
     };
   }>("/api/host/configurations/:configId", { config: { rawBody: true } }, async (request, reply) => {
@@ -137,6 +138,7 @@ export async function hostConfigurationRoutes(
 
     const eventBroker = normalizeEventBroker(request.body.eventBroker);
     const eventSubscriptions = normalizeEventSubscriptions(request.body.eventSubscriptions);
+    const grantedCapabilities = normalizeEventSubscriptions(request.body.grantedCapabilities);
 
     await configRegistry.set(configId, {
       configurationId: configId,
@@ -146,6 +148,7 @@ export async function hostConfigurationRoutes(
       serviceToken,
       gzacBaseUrl,
       eventSubscriptions,
+      grantedCapabilities,
       eventBroker,
     });
     await eventConsumerManager.sync();

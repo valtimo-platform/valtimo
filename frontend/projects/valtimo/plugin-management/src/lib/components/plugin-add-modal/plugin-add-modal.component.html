@@ -49,6 +49,7 @@
         <valtimo-plugin-external-configure
           (endpointsResolved)="onEndpointsResolved($event)"
           (eventSubscriptionsResolved)="onEventSubscriptionsResolved($event)"
+          (capabilitiesResolved)="onCapabilitiesResolved($event)"
           (validEvent)="onValid($event)"
           (saveEvent)="onExternalSave($event)"
         ></valtimo-plugin-external-configure>
@@ -66,9 +67,11 @@
       <valtimo-plugin-external-permissions
         [endpoints]="endpoints$ | async"
         [eventSubscriptions]="eventSubscriptions$ | async"
+        [capabilities]="capabilities$ | async"
         (validEvent)="onPermissionsValid($event)"
         (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
         (grantedEventsChange)="onGrantedEventsChange($event)"
+        (grantedCapabilitiesChange)="onGrantedCapabilitiesChange($event)"
       ></valtimo-plugin-external-permissions>
     </div>
   </section>

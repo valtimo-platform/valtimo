@@ -1858,57 +1858,62 @@ plugin has one pre-existing TS error in the submit handler unrelated to capabili
   (JSONPlaceholder + KV + structured log), new `/kv-stats` handler, all existing `log.info()`
   calls updated to structured form with `data` parameter.
 
-### ⛔ Remaining — GZAC backend (Kotlin)
+### ✅ Done — GZAC backend (Kotlin)
 
-These files need to be created or modified in `backend/external-plugin/`:
+All compile clean (`compileKotlin` + `compileTestKotlin` + `test` pass).
 
-1. **Domain** — new `ExternalPluginGrantedCapability` entity (mirrors
-   `ExternalPluginGrantedEndpoint`): `id UUID`, `configurationId UUID`, `capability VARCHAR(64)`,
-   `grantedAt TIMESTAMPTZ`. Unique constraint `(configuration_id, capability)`.
-2. **Repository** — new `ExternalPluginGrantedCapabilityRepository` (Spring Data JPA).
-3. **Liquibase** — new changeset in `backend/core/.../liquibase/` for the
-   `external_plugin_granted_capability` table.
+1. **Domain** — `ExternalPluginGrantedCapability` entity.
+2. **Repository** — `ExternalPluginGrantedCapabilityRepository`.
+3. **Liquibase** — `20260716-external-plugin-granted-capability.xml` in `13-32-0/`.
 4. **Service** — `ExternalPluginConfigurationService.create()`: add `grantedCapabilities`
    parameter, `validateGrantedCapabilitiesCoverManifest()` gate, persist to new table.
    `update()` does **not** accept `grantedCapabilities` (immutable after activation).
-5. **Config push** — `ExternalPluginConfigurationService.pushToHost()`: include
-   `grantedCapabilities` in the push body. `ExternalPluginHostClient.pushConfiguration()`:
-   add field to the request body.
-6. **REST DTO** — `ConfigurationCreateRequest` gains `grantedCapabilities: List<String>`.
-7. **Log proxy endpoints** — two new management endpoints that proxy the host's log route:
-   `GET /api/management/v1/external-plugin/configuration/{configId}/logs`. ADMIN-gated.
-   `ExternalPluginHostClient.getConfigurationLogs(...)`.
+4. **Service** — `create()` accepts + validates + persists `grantedCapabilities`. `pushToHost()`
+   includes them. `delete()` cleans them up. `getGrantedCapabilities()` query.
+5. **Config push** — `pushToHost()` reads `grantedCapabilities` and passes to client.
+   `ExternalPluginHostClient.pushConfiguration()` includes `grantedCapabilities` in body.
+6. **REST DTO** — `ConfigurationCreateRequest` gains `grantedCapabilities`, new
+   `GrantedCapabilityResponse`, `ConfigurationDetailResponse` includes capabilities.
+7. **Management resource** — `createConfiguration` passes capabilities through,
+   `getConfiguration` returns them.
+8. **Host service** — `delete()` cleans up `grantedCapabilityRepository`.
+9. **Autoconfiguration** — wired `grantedCapabilityRepository` into both services.
+10. **Tests** — all 3 test files updated for new constructor param; all pass.
 
-### ⛔ Remaining — GZAC frontend (Angular)
+**Not yet done (backend):**
+- Log proxy endpoint (`GET /api/management/v1/external-plugin/configuration/{configId}/logs`)
+  that proxies the host's log route. Can be added later alongside the frontend log modal.
 
-1. **Permission UX** — `plugin-external-permissions` component: add a **Host capabilities**
-   section (structured list with capability name tags + localised descriptions). Render between
-   the intro text and the API endpoints section. Show when
-   `manifest.permissions.capabilities` is non-empty. In readonly mode, display as read-only
-   tags. The single acknowledgement checkbox covers all three sections.
-   - i18n keys: `pluginManagement.permissions.capabilitiesHeading`,
-     `pluginManagement.permissions.capability.gzac_api`,
-     `pluginManagement.permissions.capability.http_request`,
-     `pluginManagement.permissions.capability.kv`,
-     `pluginManagement.permissions.capability.log` (+ Dutch equivalents).
-   - Component input: the manifest's `permissions.capabilities` array.
-   - Wire `grantedCapabilities` into the `POST .../configuration` create payload.
+### ✅ Done — GZAC frontend (Angular)
 
-2. **Admin log modal** — new `PluginLogModalComponent`:
-   - `cds-modal size="lg"` opened from a new "Logs" overflow menu item on external plugin
-     configurations (`plugin-management.component.ts` `actionItems`, disabled for embedded).
-   - Contains a filter bar (level dropdown, source dropdown) + `valtimo-carbon-list` with
-     columns: timestamp, level (tag), source (tag), message (text with tooltip).
-   - Row click opens inline detail `<aside>` with full message + `data` JSON.
-   - Pagination via `valtimo-carbon-list` built-ins.
-   - `ExternalPluginService.getConfigurationLogs(configId, params)`.
-   - i18n under `pluginManagement.logs.*`.
+All build clean (`ng build @valtimo/plugin` + `ng build @valtimo/plugin-management`).
 
-3. **External plugin model** — `ExternalPluginDefinition` / manifest types in the frontend
-   models: add `capabilities?: string[]` to the permissions shape.
+1. **Permission UX** — `plugin-external-permissions` component: capabilities section added
+   (structured list with purple `cds-tag` per capability + localised descriptions). Renders
+   before endpoints. Checkbox condition includes capabilities. i18n added (en + nl) under
+   `pluginManagement.permissions.capability.*`.
+2. **Add modal** — `capabilities$` observable, `onCapabilitiesResolved`, `onGrantedCapabilitiesChange`,
+   `grantedCapabilities` in save payload.
+3. **Configure component** — `capabilitiesResolved` output, `setGrantedCapabilities`, `grantedCapabilities`
+   in both save emit paths.
+4. **Edit modal** — `_$capabilities` signal, wired through to readonly permissions component,
+   `_$hasPermissionsStep` includes capabilities.
+5. **Model** — `ExternalPluginPermissions.capabilities?: Array<string>`,
+   `ExternalPluginConfigurationCreateRequest.grantedCapabilities`.
 
-### ⛔ Remaining — sample plugin frontend
+### ✅ Done — all remaining items
 
-- `frontend/case-tab.tsx` — add "External API data" card (renders JSONPlaceholder todo from
-  `/external-data`) and "Tab views" badge (from `/summary`'s `viewCount`). Follow existing
-  card pattern (`sdk.getPluginData(...)` + loading/error states).
+All builds pass: backend `compileKotlin` + `test`, host `tsc`, SDK `tsc`, frontend `ng build`.
+
+6. **Tag colors** — permissions screen: capabilities = purple, HTTP methods = color-coded by
+   verb (GET=blue, POST=green, PUT=teal, DELETE=red), endpoint patterns = cool-gray,
+   events = teal.
+7. **GZAC log proxy endpoint** — `GET .../configuration/{configId}/logs` proxies to host via
+   HMAC. `ExternalPluginHostClient.getConfigurationLogs()`. Autoconfiguration wired.
+8. **Admin log modal** — `PluginLogModalComponent` (standalone): `cds-modal size="lg"` with
+   level/source filter dropdowns + `valtimo-carbon-list` (paginated) + row-click detail aside.
+   Overflow menu "Logs" item on external configs. i18n (en + nl).
+9. **Frontend service** — `ExternalPluginService.getConfigurationLogs()`.
+10. **Frontend model** — `PluginLogEntry`, `PluginLogPage`.
+11. **Sample plugin frontend** — case-tab: "External API data" card (JSONPlaceholder todo via
+   `http_request`), per-document KV view counter badge, tab view count from `/summary`.

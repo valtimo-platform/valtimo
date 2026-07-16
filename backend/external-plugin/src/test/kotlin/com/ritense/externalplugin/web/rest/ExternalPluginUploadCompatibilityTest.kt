@@ -68,6 +68,7 @@ class ExternalPluginUploadCompatibilityTest {
             hostService,
             mock<ExternalPluginDefinitionService>(),
             mock<ExternalPluginConfigurationService>(),
+            mock(),
             mock<EndpointDescriptionService>(),
             discoveryService,
             mock<Environment>(),

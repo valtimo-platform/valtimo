@@ -51,7 +51,14 @@ interface SummaryData {
   message: string;
   currency: string;
   documentId: string | null;
+  viewCount: number;
   items: Array<{ label: string; value: string }>;
+}
+
+interface ExternalData {
+  todo: { id: number; title: string; completed: boolean } | null;
+  viewCount: number;
+  fetchStatus: number;
 }
 
 interface BackendScopeResult {
@@ -120,6 +127,21 @@ function CaseTab() {
   const [scopeAsPlugin, setScopeAsPlugin] = useState<LoadState<BackendScopeResult>>({
     state: "loading",
   });
+  const [externalData, setExternalData] = useState<LoadState<ExternalData>>({ state: "loading" });
+
+  // External API data — fetched via http_request + kv capabilities.
+  useEffect(() => {
+    sdk
+      .getPluginData("/external-data")
+      .then((res) => {
+        if (res.status >= 200 && res.status < 300) {
+          setExternalData({ state: "ready", data: res.body as ExternalData });
+        } else {
+          setExternalData({ state: "error", message: sdk.t("caseTab.external.error") });
+        }
+      })
+      .catch((err) => setExternalData({ state: "error", message: String(err?.message ?? err) }));
+  }, []);
 
   // (4) tab -> plugin backend -> GZAC, with the downscoped user token (PBAC ∩ allowlist).
   useEffect(() => {
@@ -165,7 +187,7 @@ function CaseTab() {
       .catch((err) => setValtimoData({ state: "error", message: String(err?.message ?? err) }));
   }, [documentId]);
 
-  useResizeEmitter([pluginData, valtimoData, scopeAsUser, scopeAsPlugin]);
+  useResizeEmitter([pluginData, valtimoData, scopeAsUser, scopeAsPlugin, externalData]);
 
   return (
     <div style={{ fontFamily: "IBM Plex Sans, sans-serif", padding: "0" }}>
@@ -175,9 +197,16 @@ function CaseTab() {
         <div style={mutedStyle}>{sdk.t("caseTab.hello")}</div>
       </div>
 
-      {/* (2) Plugin-served data. */}
+      {/* (2) Plugin-served data + KV view counter. */}
       <div style={panelStyle}>
-        <div style={panelTitleStyle}>{sdk.t("caseTab.plugin.title")}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={panelTitleStyle}>{sdk.t("caseTab.plugin.title")}</div>
+          {pluginData.state === "ready" && (
+            <span style={{ fontSize: "12px", color: "#6f6f6f", background: "#e0e0e0", borderRadius: "12px", padding: "2px 10px" }}>
+              {sdk.t("caseTab.viewCount")}: {pluginData.data.viewCount}
+            </span>
+          )}
+        </div>
         {pluginData.state === "loading" && <div style={mutedStyle}>{sdk.t("caseTab.loading")}</div>}
         {pluginData.state === "error" && <div style={errorStyle}>{pluginData.message}</div>}
         {pluginData.state === "ready" && (
@@ -190,6 +219,32 @@ function CaseTab() {
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* External API data — http_request + kv capabilities. */}
+      <div style={panelStyle}>
+        <div style={panelTitleStyle}>{sdk.t("caseTab.external.title")}</div>
+        {externalData.state === "loading" && <div style={mutedStyle}>{sdk.t("caseTab.loading")}</div>}
+        {externalData.state === "error" && <div style={errorStyle}>{externalData.message}</div>}
+        {externalData.state === "ready" && externalData.data.todo && (
+          <div>
+            <div style={rowStyle}>
+              <span>{sdk.t("caseTab.external.todoTitle")}</span>
+              <span>{externalData.data.todo.title}</span>
+            </div>
+            <div style={rowStyle}>
+              <span>{sdk.t("caseTab.external.todoCompleted")}</span>
+              <span>{externalData.data.todo.completed ? "✓" : "✗"}</span>
+            </div>
+            <div style={rowStyle}>
+              <span>{sdk.t("caseTab.viewCount")}</span>
+              <span>{externalData.data.viewCount}</span>
+            </div>
+          </div>
+        )}
+        {externalData.state === "ready" && !externalData.data.todo && (
+          <div style={errorStyle}>{sdk.t("caseTab.external.error")}</div>
         )}
       </div>
 

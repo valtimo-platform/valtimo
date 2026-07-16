@@ -1,0 +1,118 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal *ngIf="open" [open]="open" size="lg" valtimoCdsModal>
+  <cds-modal-header (closeSelect)="onClose()">
+    {{ 'pluginManagement.logs.title' | translate }} — {{ configurationTitle }}
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    <div class="plugin-log-modal__filters" cdsLayer="1">
+      <cds-dropdown
+        class="plugin-log-modal__filter"
+        [label]="'pluginManagement.logs.columns.level' | translate"
+        [placeholder]="'pluginManagement.logs.filterAll' | translate"
+        [appendInline]="true"
+        (selected)="onLevelSelected($event)"
+      >
+        <cds-dropdown-list [items]="levelItems"></cds-dropdown-list>
+      </cds-dropdown>
+
+      <cds-dropdown
+        class="plugin-log-modal__filter"
+        [label]="'pluginManagement.logs.columns.source' | translate"
+        [placeholder]="'pluginManagement.logs.filterAll' | translate"
+        [appendInline]="true"
+        (selected)="onSourceSelected($event)"
+      >
+        <cds-dropdown-list [items]="sourceItems"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <div class="plugin-log-modal__layout">
+      <div class="plugin-log-modal__list" [class.plugin-log-modal__list--with-detail]="_$selectedRow()">
+        <valtimo-carbon-list
+          [items]="_$rows()"
+          [fields]="fields"
+          [loading]="_$loading()"
+          [pagination]="pagination"
+          [header]="false"
+          [hideToolbar]="true"
+          [cdsLayer]="1"
+          [paginatorConfig]="paginatorConfig"
+          paginationIdentifier="pluginLogs"
+          (paginationClicked)="onPaginationClicked($event)"
+          (rowClicked)="onRowClicked($event)"
+        >
+          <valtimo-no-results
+            [title]="'pluginManagement.logs.empty' | translate"
+          ></valtimo-no-results>
+        </valtimo-carbon-list>
+      </div>
+
+      @if (_$selectedRow(); as row) {
+        <aside class="plugin-log-modal__detail" cdsLayer="2">
+          <div class="plugin-log-modal__detail-header">
+            <cds-tag size="sm" [type]="levelTagType(row.level)">{{ row.level }}</cds-tag>
+            <cds-tag size="sm" [type]="sourceTagType(row.source)">{{ row.source }}</cds-tag>
+            <span class="plugin-log-modal__detail-timestamp">
+              {{ row.createdAt | date: 'dd-MM-yyyy HH:mm:ss' }}
+            </span>
+            <button
+              class="plugin-log-modal__close-btn"
+              cdsButton="ghost"
+              iconOnly="true"
+              size="sm"
+              (click)="closeDetail()"
+            >
+              <svg cdsIcon="close" size="16"></svg>
+            </button>
+          </div>
+
+          <h6 class="cds--type-label-01 plugin-log-modal__detail-label">
+            {{ 'pluginManagement.logs.columns.message' | translate }}
+          </h6>
+          <pre class="plugin-log-modal__detail-message">{{ row.message }}</pre>
+
+          @if (row.data) {
+            <h6 class="cds--type-label-01 plugin-log-modal__detail-label">
+              {{ 'pluginManagement.logs.data' | translate }}
+            </h6>
+            <pre class="plugin-log-modal__detail-json">{{ formatData(row.data) }}</pre>
+          }
+        </aside>
+      }
+    </div>
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="primary" (click)="onClose()">
+      {{ 'pluginManagement.logs.close' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>
+
+<ng-template #timestampTpl let-data="data">
+  {{ data.item.createdAt | date: 'dd-MM HH:mm:ss' }}
+</ng-template>
+
+<ng-template #levelTpl let-data="data">
+  <cds-tag size="sm" [type]="levelTagType(data.item.level)">{{ data.item.level }}</cds-tag>
+</ng-template>
+
+<ng-template #sourceTpl let-data="data">
+  <cds-tag size="sm" [type]="sourceTagType(data.item.source)">{{ data.item.source }}</cds-tag>
+</ng-template>
