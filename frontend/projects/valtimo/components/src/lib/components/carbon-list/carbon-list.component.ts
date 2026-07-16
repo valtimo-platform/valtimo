@@ -185,11 +185,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
       this._initialSearchValue = value;
       this.searchFormControl.setValue(value || '', {emitEvent: false});
       this._lastExecutedSearch = value;
-      this._searchActive = !!value;
+      this.searchActive = !!value;
     }
   }
   private _initialSearchValue: string | null = null;
-  public _searchActive = false;
+  public searchActive = false;
+  @Input() searchDebounceMs = 500;
   @Input() invalidSearchFields: string[] = [];
   @Input() searchFields: SearchField[] = [];
   @Input() enableSingleSelection = false;
@@ -327,7 +328,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._subscriptions.add(
       this.searchFormControl.valueChanges
-        .pipe(debounceTime(2000))
+        .pipe(debounceTime(this.searchDebounceMs))
         .subscribe((searchString: string | null) => {
           this.executeSearch(searchString);
         })

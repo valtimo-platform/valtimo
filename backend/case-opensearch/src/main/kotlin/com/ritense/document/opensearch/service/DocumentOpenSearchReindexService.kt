@@ -31,9 +31,8 @@ import org.opensearch.index.query.QueryBuilders
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
-import org.springframework.data.elasticsearch.core.query.StringQuery
+import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
@@ -202,15 +201,14 @@ open class DocumentOpenSearchReindexService(
     /**
      * Scans OpenSearch for documents matching [scope], checks each batch against PostgreSQL,
      * and deletes orphans (documents in OpenSearch but not in PostgreSQL).
+     * Uses scroll API to handle datasets larger than 10k documents.
      */
     private fun pruneOrphans(scope: ReindexRequest): Long {
         var pruned = 0L
-        var page = 0
         val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
 
-        while (!cancelRequested) {
-            val osIds = fetchOpenSearchIds(scope, page, PRUNE_BATCH_SIZE)
-            if (osIds.isEmpty()) break
+        scrollOpenSearchIds(scope, PRUNE_BATCH_SIZE) { osIds ->
+            if (cancelRequested) return@scrollOpenSearchIds false
 
             val existingIds = txTemplate.execute {
                 findExistingIds(osIds.map { UUID.fromString(it) })
@@ -220,12 +218,16 @@ open class DocumentOpenSearchReindexService(
             orphans.forEach { openSearchRepository.deleteById(it) }
             pruned += orphans.size
 
-            page++
+            true
         }
         return pruned
     }
 
-    private fun fetchOpenSearchIds(scope: ReindexRequest, page: Int, batchSize: Int): List<String> {
+    /**
+     * Scrolls through all OpenSearch documents matching [scope], invoking [handler] for each batch.
+     * Handler returns `true` to continue, `false` to stop early.
+     */
+    private fun scrollOpenSearchIds(scope: ReindexRequest, batchSize: Int, handler: (List<String>) -> Boolean) {
         val boolQuery = BoolQueryBuilder()
 
         scope.documentDefinitionName?.let {
@@ -241,12 +243,27 @@ open class DocumentOpenSearchReindexService(
             boolQuery.filter(QueryBuilders.idsQuery().addIds(*ids.map { it.toString() }.toTypedArray()))
         }
 
-        val pageable = PageRequest.of(page, batchSize, Sort.by(Sort.Direction.ASC, "_id"))
-        val query = StringQuery(boolQuery.toString(), pageable)
+        val query = NativeSearchQueryBuilder()
+            .withQuery(boolQuery)
+            .withPageable(PageRequest.of(0, batchSize))
+            .build()
 
-        return elasticsearchOperations.search(query, JsonSchemaDocumentOsDocument::class.java)
-            .searchHits
-            .map { it.id }
+        elasticsearchOperations.searchForStream(query, JsonSchemaDocumentOsDocument::class.java).use { stream ->
+            val iterator = stream.iterator()
+            val batch = mutableListOf<String>()
+
+            while (iterator.hasNext()) {
+                val id = iterator.next().id ?: continue
+                batch.add(id)
+                if (batch.size >= batchSize) {
+                    if (!handler(batch.toList())) return
+                    batch.clear()
+                }
+            }
+            if (batch.isNotEmpty()) {
+                handler(batch)
+            }
+        }
     }
 
     private fun findExistingIds(ids: List<UUID>): Set<UUID> {

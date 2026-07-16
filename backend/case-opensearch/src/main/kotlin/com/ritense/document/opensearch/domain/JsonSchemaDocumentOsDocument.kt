@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import java.time.LocalDateTime
  *
  * The [contentText] field holds space-separated leaf values from [content] and is indexed
  * as both [FieldType.Text] (for analyzed search) and [FieldType.Keyword] (for wildcard search
- * preserving partial-match behaviour equivalent to MongoDB's text index).
+ * preserving partial-match behaviour for wildcard queries).
  */
 @Document(indexName = "json_schema_document", createIndex = false)
 data class JsonSchemaDocumentOsDocument(

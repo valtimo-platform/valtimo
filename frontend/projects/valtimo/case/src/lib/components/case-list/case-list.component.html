@@ -99,6 +99,7 @@
     [initialSortState]="pagination.sort"
     [invalidSearchFields]="obs.invalidSearchFields || []"
     [isSearchable]="true"
+    [searchDebounceMs]="2000"
     [searchFields]="obs.searchFields || []"
     [items]="obs.documentItems"
     [pagination]="pagination"
