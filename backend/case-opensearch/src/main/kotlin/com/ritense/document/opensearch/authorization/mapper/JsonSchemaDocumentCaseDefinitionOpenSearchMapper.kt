@@ -36,8 +36,6 @@ import org.opensearch.index.query.QueryBuilders
 class JsonSchemaDocumentCaseDefinitionOpenSearchMapper : OpenSearchAuthorizationEntityMapper<JsonSchemaDocument, CaseDefinition> {
 
     override fun mapQuery(conditions: List<PermissionCondition>): QueryBuilder? {
-        if (conditions.isEmpty()) return null
-
         val conditionQueries = conditions.map { condition ->
             when (condition) {
                 is FieldPermissionCondition<*> -> {
