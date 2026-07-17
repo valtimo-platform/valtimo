@@ -20,6 +20,7 @@
       * [Authorization](fundamentals/getting-started/modules/core/authorization.md)
       * [Operaton](fundamentals/getting-started/modules/core/operaton-webapps.md)
       * [Case](fundamentals/getting-started/modules/core/case.md)
+      * [Case OpenSearch](fundamentals/getting-started/modules/core/case-opensearch.md)
       * [Contract](fundamentals/getting-started/modules/core/contract.md)
       * [Core](fundamentals/getting-started/modules/core/core.md)
       * [Dashboard](fundamentals/getting-started/modules/core/dashboard.md)
@@ -267,6 +268,7 @@
   * [Document upload size limit](running-valtimo/application-configuration/document-upload-size.md)
   * [Feature toggles](running-valtimo/application-configuration/feature-toggles.md)
   * [Kubernetes health probes](running-valtimo/application-configuration/kubernetes-health-probes.md)
+  * [OpenSearch](running-valtimo/application-configuration/opensearch.md)
 
 ## Customizing Valtimo
 

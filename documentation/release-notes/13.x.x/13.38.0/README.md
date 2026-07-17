@@ -6,15 +6,20 @@
 
 ## New Features
 
-* **New feature title**
+* **Global search**
 
-  New feature explanation.
+  A new global search feature allows users to search across all cases from a single search field. Users can find cases
+  by any text in their document content without knowing which specific field contains the information. Results are
+  filtered by the user's permissions.
+
+* **OpenSearch for document search**
+
+  Case list search and global document queries can now use OpenSearch as the search engine instead of PostgreSQL.
+  OpenSearch provides faster full-text search and scales better for large document volumes. The feature is opt-in
+  and PostgreSQL remains the source of truth. OpenSearch acts as a derived read model that syncs automatically.
+  See [OpenSearch search](../../../features/opensearch/README.md) for setup instructions.
 
 ## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
 
 ## Bugfixes
 
