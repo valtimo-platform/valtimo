@@ -124,7 +124,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
     }
 
     @Test
-    fun `search with globalSearchFilter includes contentText in query`() {
+    fun `search with globalSearchFilter and no search fields returns match none`() {
         val queryCaptor = argumentCaptor<StringQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
@@ -135,7 +135,8 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("contentText")
+        assertThat(capturedQuery.source).contains("must_not")
+        assertThat(capturedQuery.source).contains("match_all")
     }
 
     @Test

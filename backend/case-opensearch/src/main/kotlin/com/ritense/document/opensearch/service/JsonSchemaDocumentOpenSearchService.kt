@@ -106,8 +106,7 @@ class JsonSchemaDocumentOpenSearchService(
                 if (searchFields.isNotEmpty()) {
                     parts.add(buildGlobalSearchQuery(globalFilter.trim(), searchFields))
                 } else {
-                    val term = "*${globalFilter.trim()}*"
-                    parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
+                    parts.add(MATCH_NONE)
                 }
             } else {
                 val scopedQuery = buildGlobalSearchQueryForAllDefinitions(globalFilter.trim())
@@ -252,8 +251,7 @@ class JsonSchemaDocumentOpenSearchService(
                 if (searchFields.isNotEmpty()) {
                     parts.add(buildGlobalSearchQuery(globalFilter.trim(), searchFields))
                 } else {
-                    val term = "*${globalFilter.trim()}*"
-                    parts.add(QueryBuilders.wildcardQuery("contentText.keyword", term).caseInsensitive(true))
+                    parts.add(MATCH_NONE)
                 }
             } else {
                 val scopedQuery = buildGlobalSearchQueryForAllDefinitions(globalFilter.trim())
@@ -534,27 +532,26 @@ class JsonSchemaDocumentOpenSearchService(
     }
 
     private fun buildGlobalSearchQueryForAllDefinitions(query: String): QueryBuilder {
-        val matchNone = QueryBuilders.boolQuery().mustNot(QueryBuilders.matchAllQuery())
-
         val accessibleDefinitions = caseDefinitionService.getCaseDefinitions(active = true)
         if (accessibleDefinitions.isEmpty()) {
-            return matchNone
+            return MATCH_NONE
         }
 
-        val contentTextQuery = QueryBuilders.wildcardQuery("contentText.keyword", "*${query}*").caseInsensitive(true)
-
-        val definitionQueries = accessibleDefinitions.map { definition ->
+        val definitionQueries = accessibleDefinitions.mapNotNull { definition ->
             val searchFields = runWithoutAuthorization {
                 searchFieldService.getSearchFields(definition.id.key)
             }
-            val searchQuery = if (searchFields.isEmpty()) {
-                contentTextQuery
+            if (searchFields.isEmpty()) {
+                null
             } else {
-                buildGlobalSearchQuery(query, searchFields)
+                QueryBuilders.boolQuery()
+                    .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definition.id.key))
+                    .must(buildGlobalSearchQuery(query, searchFields))
             }
-            QueryBuilders.boolQuery()
-                .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definition.id.key))
-                .must(searchQuery)
+        }
+
+        if (definitionQueries.isEmpty()) {
+            return MATCH_NONE
         }
 
         return QueryBuilders.boolQuery().apply {
@@ -640,6 +637,7 @@ class JsonSchemaDocumentOpenSearchService(
         private const val CASE_PREFIX = "case:"
         private const val DEFINITION_NAME_FIELD = "definitionId.name"
         private const val BLUEPRINT_TYPE_FIELD = "definitionId.blueprintId.blueprintType"
+        private val MATCH_NONE: QueryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.matchAllQuery())
 
         private fun AdvancedSearchRequest.OtherFilter.rangeFromValue(): Any? =
             AdvancedSearchRequest.OtherFilter::class.java.getMethod("getRangeFrom").invoke(this)
