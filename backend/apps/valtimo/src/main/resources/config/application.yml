@@ -141,6 +141,8 @@ server:
 
 opensearch:
     uris: ${OPENSEARCH_URIS:http://localhost:9200}
+    username: ${OPENSEARCH_USERNAME:}
+    password: ${OPENSEARCH_PASSWORD:}
 
 mailing:
     onlyAllowWhitelistedRecipients: true

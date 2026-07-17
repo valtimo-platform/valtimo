@@ -176,7 +176,9 @@ mailing:
     sendRedirectedMailsTo:
 
 opensearch:
-    uris: http://localhost:9200
+    uris: https://localhost:9200
+    username: admin
+    password: 2cr8zkOoEXQJ3xUk!Aa1
 
 valtimo:
     opensearch:
