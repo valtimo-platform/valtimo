@@ -51,7 +51,7 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
     @Override
     public Predicate getJsonValueExistsExpression(CriteriaBuilder cb, Path column, String value) {
         Expression<?> searchColumn = column;
-        Expression<?> searchValue = cb.literal("%" + value.trim() + "%");
+        Expression<?> searchValue = cb.literal("%" + escapeLikePattern(value.trim()) + "%");
         if (column.getJavaType() == String.class || column.getJavaType() == Object.class) {
             searchColumn = cb.function(LOWER_CASE_FUNCTION, String.class, searchColumn);
             searchValue = cb.function(LOWER_CASE_FUNCTION, String.class, searchValue);
@@ -72,7 +72,7 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
         String value) {
         Expression<?> searchColumn = column;
         Expression<?> searchPath = cb.literal(path);
-        Expression<?> searchValue = cb.literal("%" + value.trim() + "%");
+        Expression<?> searchValue = cb.literal("%" + escapeLikePattern(value.trim()) + "%");
         if (column.getJavaType() == String.class || column.getJavaType() == Object.class) {
             searchColumn = cb.function(LOWER_CASE_FUNCTION, String.class, searchColumn.as(String.class));
             searchPath = cb.function(LOWER_CASE_FUNCTION, String.class, searchPath);
@@ -110,5 +110,11 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
     @Override
     public Expression<UUID> stringToUuid(CriteriaBuilder cb, Expression<String> expression) {
         return cb.function("UUID_TO_BIN", UUID.class, expression);
+    }
+
+    private String escapeLikePattern(String value) {
+        return value.replace("\\", "\\\\")
+                    .replace("%", "\\%")
+                    .replace("_", "\\_");
     }
 }
