@@ -80,6 +80,15 @@ class OpenSearchReindexRun(
 
     @Column(name = "total_count")
     var totalCount: Long? = null,
+
+    @Column(name = "prune_checked_count", nullable = false)
+    var pruneCheckedCount: Long = 0,
+
+    @Column(name = "prune_total_count")
+    var pruneTotalCount: Long? = null,
+
+    @Column(name = "pruning_phase", nullable = false)
+    var pruningPhase: Boolean = false,
 ) {
 
     /** Records progress after a committed batch: the keyset cursor, counts and a fresh heartbeat. */
@@ -90,10 +99,25 @@ class OpenSearchReindexRun(
         this.heartbeatOn = heartbeat
     }
 
+    fun startPruning(totalOsCount: Long, heartbeat: LocalDateTime) {
+        this.pruningPhase = true
+        this.pruneTotalCount = totalOsCount
+        this.pruneCheckedCount = 0
+        this.prunedCount = 0
+        this.heartbeatOn = heartbeat
+    }
+
+    fun recordPruneProgress(checked: Long, pruned: Long, heartbeat: LocalDateTime) {
+        this.pruneCheckedCount = checked
+        this.prunedCount = pruned
+        this.heartbeatOn = heartbeat
+    }
+
     fun complete(now: LocalDateTime) {
         this.status = ReindexRunStatus.COMPLETED
         this.finishedOn = now
         this.heartbeatOn = now
+        this.pruningPhase = false
     }
 
     fun fail(now: LocalDateTime, error: String?) {
@@ -101,12 +125,14 @@ class OpenSearchReindexRun(
         this.finishedOn = now
         this.heartbeatOn = now
         this.error = error
+        this.pruningPhase = false
     }
 
     fun stop(now: LocalDateTime) {
         this.status = ReindexRunStatus.STOPPED
         this.finishedOn = now
         this.heartbeatOn = now
+        this.pruningPhase = false
     }
 
     /** Re-arms a previously-finished (FAILED/STOPPED) run so it can be resumed from its cursor. */

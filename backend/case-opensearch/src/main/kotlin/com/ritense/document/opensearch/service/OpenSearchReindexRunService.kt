@@ -148,6 +148,18 @@ open class OpenSearchReindexRunService(
         repository.save(run)
     }
 
+    open fun startPruning(runId: UUID, totalOsCount: Long) {
+        val run = requireRun(runId)
+        run.startPruning(totalOsCount, LocalDateTime.now())
+        repository.save(run)
+    }
+
+    open fun recordPruneProgress(runId: UUID, checked: Long, pruned: Long) {
+        val run = requireRun(runId)
+        run.recordPruneProgress(checked, pruned, LocalDateTime.now())
+        repository.save(run)
+    }
+
     /**
      * Status of a specific run (by [runId]) or — when null — of the most recent run. Returns a
      * not-running placeholder when no matching run exists.
@@ -182,6 +194,9 @@ open class OpenSearchReindexRunService(
             "processedCount" to run.processedCount,
             "skippedCount" to run.skippedCount,
             "prunedCount" to run.prunedCount,
+            "pruneCheckedCount" to run.pruneCheckedCount,
+            "pruneTotalCount" to run.pruneTotalCount,
+            "pruningPhase" to run.pruningPhase,
             "totalCount" to getTotalCount(run, scope),
             "startedOn" to run.startedOn,
             "heartbeatOn" to run.heartbeatOn,

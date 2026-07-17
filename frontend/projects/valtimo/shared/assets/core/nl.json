@@ -3359,9 +3359,11 @@
         "detailTitle": "Run details",
         "parameters": "Parameters",
         "results": "Resultaten",
+        "reindexing": "Herindexering",
+        "pruning": "Opschonen",
         "counts": "Aantallen",
         "status": "Status",
-        "processed": "Verwerkt",
+        "processed": "Verwerkt: {{current}} / {{total}}",
         "skipped": "Overgeslagen",
         "pruned": "Opgeschoond",
         "started": "Gestart",
@@ -3391,8 +3393,10 @@
           "RUNNING": "Bezig",
           "COMPLETED": "Voltooid",
           "FAILED": "Mislukt",
-          "STOPPED": "Gestopt"
+          "STOPPED": "Gestopt",
+          "PRUNING": "Orphan documenten opschonen"
         },
+        "pruningProgress": "Verwijderd: {{removed}}",
         "tooltips": {
           "pruneOrphans": "Verwijder documenten uit OpenSearch die niet meer in de database bestaan",
           "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd"

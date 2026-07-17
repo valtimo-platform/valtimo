@@ -35,6 +35,9 @@ interface ReindexStatusDto {
   processedCount: number;
   skippedCount: number;
   prunedCount: number;
+  pruneCheckedCount: number;
+  pruneTotalCount: number | null;
+  pruningPhase: boolean;
   startedOn: string;
   finishedOn: string | null;
   elapsedSeconds: number;

@@ -27,5 +27,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
     <include file="20260710-add-reindex-run-pruned-count.xml" relativeToChangelogFile="true"/>
     <include file="20260713-add-reindex-run-total-count.xml" relativeToChangelogFile="true"/>
     <include file="20260713-backfill-modified-on.xml" relativeToChangelogFile="true"/>
+    <include file="20260717-add-prune-progress.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

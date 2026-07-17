@@ -147,8 +147,7 @@ open class DocumentOpenSearchReindexService(
                 runService.stop(runId)
             } else {
                 if (scope.pruneOrphans) {
-                    val pruned = pruneOrphans(scope)
-                    runService.recordPruned(runId, pruned)
+                    val pruned = pruneOrphans(runId, scope)
                     logger.info { "Pruned $pruned orphan document(s) from OpenSearch" }
                 }
                 indexOps().refresh()
@@ -203,9 +202,13 @@ open class DocumentOpenSearchReindexService(
      * and deletes orphans (documents in OpenSearch but not in PostgreSQL).
      * Uses scroll API to handle datasets larger than 10k documents.
      */
-    private fun pruneOrphans(scope: ReindexRequest): Long {
+    private fun pruneOrphans(runId: UUID, scope: ReindexRequest): Long {
         var pruned = 0L
+        var checked = 0L
         val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+
+        val totalOsCount = countOpenSearchDocs(scope)
+        runService.startPruning(runId, totalOsCount)
 
         scrollOpenSearchIds(scope, PRUNE_BATCH_SIZE) { osIds ->
             if (cancelRequested) return@scrollOpenSearchIds false
@@ -217,10 +220,35 @@ open class DocumentOpenSearchReindexService(
             val orphans = osIds.filter { UUID.fromString(it) !in existingIds }
             orphans.forEach { openSearchRepository.deleteById(it) }
             pruned += orphans.size
+            checked += osIds.size
 
+            runService.recordPruneProgress(runId, checked, pruned)
             true
         }
         return pruned
+    }
+
+    private fun countOpenSearchDocs(scope: ReindexRequest): Long {
+        val boolQuery = BoolQueryBuilder()
+
+        scope.documentDefinitionName?.let {
+            boolQuery.filter(QueryBuilders.termQuery("definitionId.name", it))
+        }
+        scope.modifiedAfter?.let {
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").gt(it.format(OS_DATE_FORMAT)))
+        }
+        scope.modifiedBefore?.let {
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").lt(it.format(OS_DATE_FORMAT)))
+        }
+        scope.documentIds?.takeIf { it.isNotEmpty() }?.let { ids ->
+            boolQuery.filter(QueryBuilders.idsQuery().addIds(*ids.map { it.toString() }.toTypedArray()))
+        }
+
+        val query = NativeSearchQueryBuilder()
+            .withQuery(boolQuery)
+            .build()
+
+        return elasticsearchOperations.count(query, JsonSchemaDocumentOsDocument::class.java)
     }
 
     /**

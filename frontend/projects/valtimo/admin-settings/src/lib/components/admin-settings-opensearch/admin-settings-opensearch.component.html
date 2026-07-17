@@ -102,13 +102,35 @@
       <h6>{{ 'adminSettings.opensearch.reindex.results' | translate }}</h6>
 
       <div class="opensearch-reindex__progress">
+        <span class="opensearch-reindex__progress-label">
+          {{ 'adminSettings.opensearch.reindex.reindexing' | translate }}
+        </span>
         <cds-progress-bar
           [value]="data.totalCount > 0 ? (data.processedCount / data.totalCount) * 100 : 0"
-          [label]="data.processedCount + ' / ' + data.totalCount"
-          [helperText]="'adminSettings.opensearch.reindex.statuses.' + data.status | translate"
-          [status]="data.status === 'RUNNING' ? 'active' : (data.status === 'COMPLETED' ? 'finished' : 'error')"
+          [status]="data.status === 'RUNNING' && !data.pruningPhase ? 'active' : (data.status === 'COMPLETED' ? 'finished' : (data.status === 'RUNNING' ? 'finished' : 'error'))"
         ></cds-progress-bar>
+        <div class="opensearch-reindex__progress-footer">
+          <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.processedCount, total: data.totalCount} }}</span>
+          <span>{{ 'adminSettings.opensearch.reindex.statuses.' + data.status | translate }}</span>
+        </div>
       </div>
+
+      @if (data.pruningPhase || data.pruneTotalCount) {
+        <div class="opensearch-reindex__progress">
+          <span class="opensearch-reindex__progress-label">
+            {{ 'adminSettings.opensearch.reindex.pruning' | translate }}
+            <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruned' | translate"></v-tooltip-icon>
+          </span>
+          <cds-progress-bar
+            [value]="data.pruneTotalCount > 0 ? (data.pruneCheckedCount / data.pruneTotalCount) * 100 : 0"
+            [status]="data.pruningPhase ? 'active' : (data.status === 'COMPLETED' ? 'finished' : 'error')"
+          ></cds-progress-bar>
+          <div class="opensearch-reindex__progress-footer">
+            <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.pruneCheckedCount, total: data.pruneTotalCount || 0} }}</span>
+            <span>{{ 'adminSettings.opensearch.reindex.pruningProgress' | translate:{removed: data.prunedCount || 0} }}</span>
+          </div>
+        </div>
+      }
 
       <div class="opensearch-reindex__detail-grid">
         <div class="opensearch-reindex__detail-item">
@@ -116,14 +138,6 @@
             {{ 'adminSettings.opensearch.reindex.skipped' | translate }}:
           </span>
           <span>{{ data.skippedCount || 0 }}</span>
-        </div>
-
-        <div class="opensearch-reindex__detail-item opensearch-reindex__detail-item--with-tooltip">
-          <span class="opensearch-reindex__label">
-            {{ 'adminSettings.opensearch.reindex.pruned' | translate }}:
-          </span>
-          <span>{{ data.prunedCount || 0 }}</span>
-          <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruned' | translate"></v-tooltip-icon>
         </div>
 
         <div class="opensearch-reindex__detail-item">
