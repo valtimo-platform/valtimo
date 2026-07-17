@@ -67,7 +67,7 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
                 cb.function(
                     "jsonpath",
                     String.class,
-                    cb.literal("$.** ? (@ like_regex \"" + value + "\")")
+                    cb.literal("$.** ? (@ like_regex \"" + value + "\" flag \"i\")")
                 )
             )
         );
