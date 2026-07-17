@@ -17,7 +17,7 @@
   Case list search and global document queries can now use OpenSearch as the search engine instead of PostgreSQL.
   OpenSearch provides faster full-text search and scales better for large document volumes. The feature is opt-in
   and PostgreSQL remains the source of truth. OpenSearch acts as a derived read model that syncs automatically.
-  See [OpenSearch search](../../../features/opensearch/README.md) for setup instructions.
+  See [OpenSearch search](../../../running-valtimo/application-configuration/opensearch.md) for setup instructions.
 
 ## Enhancements
 
