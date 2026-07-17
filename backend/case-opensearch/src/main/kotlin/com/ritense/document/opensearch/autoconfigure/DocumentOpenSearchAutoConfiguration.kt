@@ -136,7 +136,7 @@ class DocumentOpenSearchAutoConfiguration {
         DocumentOpenSearchSyncService(repository, documentRepository, converter, transactionManager)
 
     @Bean
-    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
     fun documentOpenSearchEventListener(
         syncService: DocumentOpenSearchSyncService,
         searchEngineToggle: SearchEngineToggle,
@@ -176,7 +176,7 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
     fun documentOpenSearchReconcileService(
         entityManager: EntityManager,
         converter: JsonSchemaDocumentOsConverter,
@@ -210,7 +210,7 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
     fun pendingIndexDeletionListener(
         pendingIndexDeletionRepository: PendingIndexDeletionRepository,
     ): PendingIndexDeletionListener =
@@ -347,12 +347,8 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-        prefix = "valtimo.opensearch",
-        name = ["health-check-enabled"],
-        havingValue = "true",
-        matchIfMissing = true
-    )
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["health-check-enabled"], havingValue = "true", matchIfMissing = true)
     fun openSearchHealthService(
         restHighLevelClient: org.opensearch.client.RestHighLevelClient,
         toggle: SearchEngineToggle,
@@ -361,12 +357,7 @@ class DocumentOpenSearchAutoConfiguration {
         OpenSearchHealthService(restHighLevelClient, toggle, openSearchProperties)
 
     @Bean
-    @ConditionalOnProperty(
-        prefix = "valtimo.opensearch",
-        name = ["health-check-enabled"],
-        havingValue = "true",
-        matchIfMissing = true
-    )
+    @ConditionalOnBean(OpenSearchHealthService::class)
     fun openSearchHealthScheduler(
         healthService: OpenSearchHealthService,
         openSearchProperties: OpenSearchProperties,
