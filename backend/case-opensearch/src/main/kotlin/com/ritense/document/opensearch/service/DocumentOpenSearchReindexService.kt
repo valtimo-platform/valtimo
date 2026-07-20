@@ -96,7 +96,7 @@ open class DocumentOpenSearchReindexService(
 
         executor.execute {
             try {
-                reindex(run.id, request)
+                reindex(run.id)
             } catch (e: Exception) {
                 logger.error(e) { "Re-index run ${run.id} terminated with error" }
             } finally {
@@ -107,15 +107,16 @@ open class DocumentOpenSearchReindexService(
     }
 
     /**
-     * Runs the chunked, resumable re-index loop for [runId] over the documents matching [scope].
+     * Runs the chunked, resumable re-index loop for [runId].
      * Each DB page is read in its own short read-only transaction (keeping snapshots short) and the
      * persistence context is cleared after every page. Returns the number of documents processed.
      */
-    open fun reindex(runId: UUID, scope: ReindexRequest): Long {
+    open fun reindex(runId: UUID): Long {
+        val scope = runService.scopeOf(runId)
         var lastId: UUID? = runService.cursorOf(runId)
         var processed: Long = runService.processedOf(runId)
         var skipped = 0L
-        val pageSize = scope.effectivePageSize()
+        val pageSize = runService.pageSizeOf(runId)
         val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
 
         try {

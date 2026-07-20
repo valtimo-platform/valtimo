@@ -178,6 +178,14 @@ open class OpenSearchReindexRunService(
         return PageImpl(page.content.map { toMap(it) }, pageable, page.totalElements)
     }
 
+    @Transactional(readOnly = true)
+    open fun scopeOf(runId: UUID): ReindexRequest =
+        deserializeScopeToRequest(requireRun(runId).scope)
+            ?: ReindexRequest()
+
+    @Transactional(readOnly = true)
+    open fun pageSizeOf(runId: UUID): Int = requireRun(runId).pageSize
+
     private fun requireRun(runId: UUID): OpenSearchReindexRun =
         repository.findById(runId).orElseThrow { IllegalArgumentException("No re-index run found for runId=$runId") }
 

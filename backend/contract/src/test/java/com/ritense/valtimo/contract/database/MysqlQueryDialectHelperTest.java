@@ -18,49 +18,45 @@ package com.ritense.valtimo.contract.database;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.lang.reflect.Method;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MysqlQueryDialectHelperTest {
 
     private MysqlQueryDialectHelper helper;
-    private Method escapeLikePatternMethod;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         helper = new MysqlQueryDialectHelper();
-        escapeLikePatternMethod = MysqlQueryDialectHelper.class.getDeclaredMethod("escapeLikePattern", String.class);
-        escapeLikePatternMethod.setAccessible(true);
     }
 
     @Test
-    void escapeLikePatternShouldEscapePercent() throws Exception {
-        String result = (String) escapeLikePatternMethod.invoke(helper, "100%");
+    void escapeLikePatternShouldEscapePercent() {
+        String result = helper.escapeLikePattern("100%");
         assertEquals("100\\%", result);
     }
 
     @Test
-    void escapeLikePatternShouldEscapeUnderscore() throws Exception {
-        String result = (String) escapeLikePatternMethod.invoke(helper, "test_value");
+    void escapeLikePatternShouldEscapeUnderscore() {
+        String result = helper.escapeLikePattern("test_value");
         assertEquals("test\\_value", result);
     }
 
     @Test
-    void escapeLikePatternShouldEscapeBackslash() throws Exception {
-        String result = (String) escapeLikePatternMethod.invoke(helper, "path\\to\\file");
+    void escapeLikePatternShouldEscapeBackslash() {
+        String result = helper.escapeLikePattern("path\\to\\file");
         assertEquals("path\\\\to\\\\file", result);
     }
 
     @Test
-    void escapeLikePatternShouldEscapeAllSpecialChars() throws Exception {
-        String result = (String) escapeLikePatternMethod.invoke(helper, "100%_test\\");
+    void escapeLikePatternShouldEscapeAllSpecialChars() {
+        String result = helper.escapeLikePattern("100%_test\\");
         assertEquals("100\\%\\_test\\\\", result);
     }
 
     @Test
-    void escapeLikePatternShouldHandleNormalInput() throws Exception {
-        String result = (String) escapeLikePatternMethod.invoke(helper, "normal search");
+    void escapeLikePatternShouldHandleNormalInput() {
+        String result = helper.escapeLikePattern("normal search");
         assertEquals("normal search", result);
     }
 }

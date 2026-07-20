@@ -89,13 +89,15 @@ class DocumentOpenSearchReindexServiceTest {
     @Test
     fun `reindex marks the run STOPPED when cancellation was requested`() {
         val runId = UUID.randomUUID()
+        whenever(runService.scopeOf(runId)).thenReturn(ReindexRequest())
+        whenever(runService.pageSizeOf(runId)).thenReturn(ReindexRequest.DEFAULT_PAGE_SIZE)
         whenever(runService.cursorOf(runId)).thenReturn(null)
         whenever(runService.processedOf(runId)).thenReturn(0L)
 
         // destroy() sets the cancellation flag (and shuts down the idle executor).
         service.destroy()
 
-        val processed = service.reindex(runId, ReindexRequest())
+        val processed = service.reindex(runId)
 
         assertThat(processed).isEqualTo(0L)
         verify(runService).stop(runId)

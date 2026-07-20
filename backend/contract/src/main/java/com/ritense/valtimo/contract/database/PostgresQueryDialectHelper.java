@@ -143,10 +143,4 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
     private String escapeJsonPathRegex(String value) {
         return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
-
-    private String escapeLikePattern(String value) {
-        return value.replace("\\", "\\\\")
-                    .replace("%", "\\%")
-                    .replace("_", "\\_");
-    }
 }

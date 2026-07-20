@@ -111,10 +111,4 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
     public Expression<UUID> stringToUuid(CriteriaBuilder cb, Expression<String> expression) {
         return cb.function("UUID_TO_BIN", UUID.class, expression);
     }
-
-    private String escapeLikePattern(String value) {
-        return value.replace("\\", "\\\\")
-                    .replace("%", "\\%")
-                    .replace("_", "\\_");
-    }
 }

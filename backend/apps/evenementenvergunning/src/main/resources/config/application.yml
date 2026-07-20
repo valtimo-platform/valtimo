@@ -138,7 +138,7 @@ server:
         min-response-size: 1024
 
 opensearch:
-    uris: ${OPENSEARCH_URIS:http://localhost:9200}
+    uris: ${OPENSEARCH_URIS:}
     username: ${OPENSEARCH_USERNAME:}
     password: ${OPENSEARCH_PASSWORD:}
 

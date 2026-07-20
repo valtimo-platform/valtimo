@@ -458,7 +458,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                             }
                         }
                     } else {
-                        var likePattern = "%" + term.value().toLowerCase() + "%";
+                        var likePattern = "%" + queryDialectHelper.escapeLikePattern(term.value()).toLowerCase() + "%";
                         List<Predicate> termPredicates = new ArrayList<>();
 
                         for (var f : docFields) {
@@ -975,6 +975,6 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         if (quoted || matchType != SearchFieldMatchType.LIKE) {
             return value;
         }
-        return "%" + value + "%";
+        return "%" + queryDialectHelper.escapeLikePattern(value) + "%";
     }
 }

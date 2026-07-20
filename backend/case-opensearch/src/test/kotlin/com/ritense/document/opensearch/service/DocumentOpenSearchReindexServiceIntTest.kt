@@ -190,7 +190,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         )
         clearIndex()
 
-        reindexService.reindex(seededRun.id, ReindexRequest())
+        reindexService.reindex(seededRun.id)
 
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(expectedIds.size.toLong())
@@ -352,7 +352,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
      */
     private fun reindex(request: ReindexRequest): Pair<UUID, Long> {
         val run = reindexRunService.startOrResume(request)
-        return run.id to reindexService.reindex(run.id, request)
+        return run.id to reindexService.reindex(run.id)
     }
 
     private fun createDocument(street: String): JsonSchemaDocument =
