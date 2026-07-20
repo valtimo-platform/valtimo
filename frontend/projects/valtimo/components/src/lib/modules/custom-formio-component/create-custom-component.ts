@@ -155,11 +155,7 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
         }
 
         // Bind customOptions
-        for (const key in this.component.customOptions) {
-          if (this.component.customOptions.hasOwnProperty(key)) {
-            this._customAngularElement[key] = this.component.customOptions[key];
-          }
-        }
+        this.bindCustomOptions();
         // Bind validate options
         for (const key in this.component.validate) {
           if (this.component.validate.hasOwnProperty(key)) {
@@ -228,9 +224,29 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
         return false;
       }
 
+      // Re-apply customOptions on every setValue. calculateValue expressions can mutate
+      // this.component.customOptions (e.g. "component.customOptions.filename = 'test'") for
+      // their side effect, and FormIO calls setValue() right after evaluating calculateValue.
+      // customOptions are otherwise only bound during attach(), which is only re-run on a
+      // redraw triggered by *another* component's data change — so without this, calculated
+      // customOptions never reach the Angular element in a single-component form.
+      this.bindCustomOptions();
+
       this._customAngularElement.value = value;
 
       return true;
+    }
+
+    // Push the (possibly calculateValue-mutated) customOptions to the Angular element.
+    private bindCustomOptions(): void {
+      if (!this._customAngularElement) {
+        return;
+      }
+      for (const key in this.component.customOptions) {
+        if (this.component.customOptions.hasOwnProperty(key)) {
+          this._customAngularElement[key] = this.component.customOptions[key];
+        }
+      }
     }
   };
 }
