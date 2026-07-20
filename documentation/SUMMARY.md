@@ -200,6 +200,7 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/)
+  * [13.38.0](release-notes/13.x.x/13.38.0/README.md)
   * [13.37.0](release-notes/13.x.x/13.37.0/README.md)
   * [13.36.1](release-notes/13.x.x/13.36.1/README.md)
   * [13.36.0](release-notes/13.x.x/13.36.0/README.md)
@@ -266,6 +267,7 @@
   * [Temporary file storage](running-valtimo/application-configuration/temporary-file-storage.md)
   * [Document upload size limit](running-valtimo/application-configuration/document-upload-size.md)
   * [Feature toggles](running-valtimo/application-configuration/feature-toggles.md)
+  * [Kubernetes health probes](running-valtimo/application-configuration/kubernetes-health-probes.md)
 
 ## Customizing Valtimo
 

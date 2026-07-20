@@ -150,6 +150,7 @@
         "regularUser": "Het uploaden van documenten is voor dit dossiertype niet beschikbaar. Neem contact op met een beheerder",
         "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de dossierbeheerpagina"
       },
+      "maxFilesReached": "Het maximale aantal bestanden ({{maxFiles}}) is bereikt. Er kunnen geen bestanden meer worden geüpload.",
       "navigateToCaseAdmin": "Configureer Zaak",
       "noZaakFoundTitle": "Geen Zaak gevonden",
       "noZaakFound": "Er konden geen bestanden worden opgehaald omdat er voor dit dossier geen Zaak is gevonden.",

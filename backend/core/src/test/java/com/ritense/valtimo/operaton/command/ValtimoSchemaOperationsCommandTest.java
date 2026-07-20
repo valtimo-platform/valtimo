@@ -19,9 +19,12 @@ package com.ritense.valtimo.operaton.command;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import com.ritense.valtimo.contract.config.LiquibaseRunner;
 import java.sql.SQLException;
 import liquibase.exception.DatabaseException;
@@ -40,7 +43,7 @@ class ValtimoSchemaOperationsCommandTest {
     void setUp() {
         liquibaseRunner = mock(LiquibaseRunner.class);
         commandContext = mock(CommandContext.class);
-        valtimoSchemaOperationsCommand = new ValtimoSchemaOperationsCommand(liquibaseRunner);
+        valtimoSchemaOperationsCommand = new ValtimoSchemaOperationsCommand(liquibaseRunner, true, new BootstrapState());
     }
 
     @Test
@@ -64,6 +67,17 @@ class ValtimoSchemaOperationsCommandTest {
         assertThrows(NullPointerException.class, () -> {
             valtimoSchemaOperationsCommand.execute(commandContext);
         });
+    }
+
+    @Test
+    void shouldSkipEverythingWhenBootstrapDisabled() throws DatabaseException, SQLException {
+        ValtimoSchemaOperationsCommand disabledCommand =
+            new ValtimoSchemaOperationsCommand(liquibaseRunner, false, new BootstrapState());
+
+        disabledCommand.execute(commandContext);
+
+        verifyNoInteractions(commandContext);
+        verify(liquibaseRunner, never()).run();
     }
 
 }

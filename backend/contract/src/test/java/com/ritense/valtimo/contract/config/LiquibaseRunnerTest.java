@@ -22,6 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
@@ -39,7 +40,9 @@ class LiquibaseRunnerTest {
         Collections.emptyList(),
         new LiquibaseProperties(),
         mock(DataSource.class),
-        THRESHOLD_MINUTES
+        THRESHOLD_MINUTES,
+        true,
+        new BootstrapState()
     );
 
     @Test
@@ -90,12 +93,32 @@ class LiquibaseRunnerTest {
             Collections.emptyList(),
             new LiquibaseProperties(),
             datasource,
-            THRESHOLD_MINUTES
+            THRESHOLD_MINUTES,
+            true,
+            new BootstrapState()
         );
 
         Thread hook = hookRunner.newShutdownHook();
         hook.start();
         hook.join();
+
+        verify(datasource, never()).getConnection();
+    }
+
+    @Test
+    void skipsMigrationWhenBootstrapDisabled() throws Exception {
+        DataSource datasource = mock(DataSource.class);
+
+        LiquibaseRunner disabledRunner = new LiquibaseRunner(
+            Collections.emptyList(),
+            new LiquibaseProperties(),
+            datasource,
+            THRESHOLD_MINUTES,
+            false,
+            new BootstrapState()
+        );
+
+        disabledRunner.run();
 
         verify(datasource, never()).getConnection();
     }
