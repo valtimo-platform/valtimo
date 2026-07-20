@@ -76,8 +76,6 @@
     <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.finished' | translate }}</span>
     <span class="opensearch-reindex__value">{{ data.finishedOn ? (data.finishedOn | date:'medium') : '-' }}</span>
 
-    <h6 class="opensearch-reindex__parameters-header">{{ 'adminSettings.opensearch.reindex.parameters' | translate }}</h6>
-
     <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.documentDefinitionName' | translate }}</span>
     <span class="opensearch-reindex__value">{{ data.scope?.documentDefinitionName || '-' }}</span>
 
