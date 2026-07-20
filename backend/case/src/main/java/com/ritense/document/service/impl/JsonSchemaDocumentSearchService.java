@@ -295,6 +295,11 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         }
 
         List<JsonSchemaDocument> documents = typedQuery.getResultList();
+
+        // Initialize the lazy caseTags collections within the transaction (batched via @BatchSize)
+        // so they are available when the documents are serialized outside of the session.
+        documents.forEach(JsonSchemaDocument::initializeCaseTags);
+
         outboxService.send(() ->
             new DocumentsListed(
                 objectMapper.valueToTree(documents)

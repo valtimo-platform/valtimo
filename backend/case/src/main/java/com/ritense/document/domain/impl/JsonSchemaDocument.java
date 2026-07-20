@@ -68,6 +68,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.hibernate.Hibernate;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
@@ -126,7 +128,8 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @JoinColumn(name = "internal_case_status_key", referencedColumnName = "internal_case_status_key")
     private InternalCaseStatus internalStatus;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
+    @BatchSize(size = 100)
     @JoinTable(
         name = "case_tag_link",
         joinColumns = @JoinColumn(name = "json_schema_document_id", referencedColumnName = "json_schema_document_id"),
@@ -367,6 +370,18 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
 
     public void removeCaseTag(CaseTag caseTag) {
         this.caseTags.remove(caseTag);
+    }
+
+    /**
+     * Forces the lazily-loaded {@code caseTags} collection to be initialized.
+     *
+     * <p>Since {@code caseTags} is fetched lazily, it must be initialized while the Hibernate session is still
+     * open (i.e. within the transactional read path) to avoid a {@link org.hibernate.LazyInitializationException}
+     * when the document is later serialized outside of a session (open-in-view is disabled). The {@code @BatchSize}
+     * on the collection ensures that initializing a page of documents is batched into few queries instead of N+1.</p>
+     */
+    public void initializeCaseTags() {
+        Hibernate.initialize(caseTags);
     }
 
     @Override

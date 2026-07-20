@@ -12,9 +12,10 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Faster case lists and searches**
 
-  New enhancement explanation.
+  Case lists and document searches now load only the page of cases being shown, instead of fetching all matching
+  cases at once.
 
 ## Bugfixes
 
