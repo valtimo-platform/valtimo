@@ -8,6 +8,9 @@
   "scripts": {
     "build": "tsc && tsc -p tsconfig.frontend.json",
     "installDeps": "npm install",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
     "prepublishOnly": "npm run build"
   },
   "exports": {
@@ -38,7 +41,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.4.0"
+    "@vitest/coverage-v8": "^3.2.0",
+    "happy-dom": "^15.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^3.2.0"
   },
   "peerDependencies": {
     "@extism/js-pdk": "^1.1.0"

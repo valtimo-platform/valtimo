@@ -13,5 +13,5 @@
     "lib": ["ES2020", "DOM"]
   },
   "include": ["src/frontend/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "src/frontend/**/*.test.ts"]
 }
