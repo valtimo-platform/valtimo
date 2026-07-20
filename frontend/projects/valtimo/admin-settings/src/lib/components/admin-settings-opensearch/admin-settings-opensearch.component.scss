@@ -75,9 +75,12 @@
   }
 
   // Progress bars align with "finished" and span the finished + progress columns.
+  // grid-row end must match the number of label/value rows (5) so the column
+  // spans them exactly — a larger value adds empty rows whose row-gap leaves
+  // dead space below the last label.
   &__results-column {
     grid-column: 3 / span 2;
-    grid-row: 1 / 8;
+    grid-row: 1 / 6;
     padding-inline: 1rem;
     display: flex;
     flex-direction: column;
