@@ -70,37 +70,27 @@
 
 <ng-template #expandedRowTemplate let-data="data">
   <div class="opensearch-reindex__expanded">
-    <div class="opensearch-reindex__detail-section">
-      <h6>{{ 'adminSettings.opensearch.reindex.parameters' | translate }}</h6>
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.started' | translate }}</span>
+    <span class="opensearch-reindex__value">{{ data.startedOn | date:'medium' }}</span>
 
-      <div class="opensearch-reindex__detail-grid">
-        <div class="opensearch-reindex__detail-item">
-          <span class="opensearch-reindex__label">
-            {{ 'adminSettings.opensearch.reindex.documentDefinitionName' | translate }}:
-          </span>
-          <span>{{ data.scope?.documentDefinitionName || '-' }}</span>
-        </div>
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.finished' | translate }}</span>
+    <span class="opensearch-reindex__value">{{ data.finishedOn ? (data.finishedOn | date:'medium') : '-' }}</span>
 
-        <div class="opensearch-reindex__detail-item opensearch-reindex__detail-item--with-tooltip">
-          <span class="opensearch-reindex__label">
-            {{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}:
-          </span>
-          <span>{{ data.scope?.pruneOrphans ? ('interface.yes' | translate) : ('interface.no' | translate) }}</span>
-          <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruneOrphans' | translate"></v-tooltip-icon>
-        </div>
+    <h6 class="opensearch-reindex__parameters-header">{{ 'adminSettings.opensearch.reindex.parameters' | translate }}</h6>
 
-        <div class="opensearch-reindex__detail-item">
-          <span class="opensearch-reindex__label">
-            {{ 'adminSettings.opensearch.reindex.modifiedAfter' | translate }}:
-          </span>
-          <span>{{ data.scope?.modifiedAfter ? (data.scope.modifiedAfter | date:'medium') : '-' }}</span>
-        </div>
-      </div>
-    </div>
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.documentDefinitionName' | translate }}</span>
+    <span class="opensearch-reindex__value">{{ data.scope?.documentDefinitionName || '-' }}</span>
 
-    <div class="opensearch-reindex__detail-section">
-      <h6>{{ 'adminSettings.opensearch.reindex.results' | translate }}</h6>
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}</span>
+    <span class="opensearch-reindex__value opensearch-reindex__value-with-tooltip">
+      {{ data.scope?.pruneOrphans ? ('interface.yes' | translate) : ('interface.no' | translate) }}
+      <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruneOrphans' | translate"></v-tooltip-icon>
+    </span>
 
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.modifiedAfter' | translate }}</span>
+    <span class="opensearch-reindex__value">{{ data.scope?.modifiedAfter ? (data.scope.modifiedAfter | date:'medium') : '-' }}</span>
+
+    <div class="opensearch-reindex__results-column">
       <div class="opensearch-reindex__progress">
         <span class="opensearch-reindex__progress-label">
           {{ 'adminSettings.opensearch.reindex.reindexing' | translate }}
@@ -111,7 +101,7 @@
         ></cds-progress-bar>
         <div class="opensearch-reindex__progress-footer">
           <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.processedCount, total: data.totalCount} }}</span>
-          <span>{{ 'adminSettings.opensearch.reindex.statuses.' + data.status | translate }}</span>
+          <span>{{ 'adminSettings.opensearch.reindex.skipped' | translate }}: {{ data.skippedCount || 0 }}</span>
         </div>
       </div>
 
@@ -131,40 +121,6 @@
           </div>
         </div>
       }
-
-      <div class="opensearch-reindex__detail-grid">
-        <div class="opensearch-reindex__detail-item">
-          <span class="opensearch-reindex__label">
-            {{ 'adminSettings.opensearch.reindex.skipped' | translate }}:
-          </span>
-          <span>{{ data.skippedCount || 0 }}</span>
-        </div>
-
-        <div class="opensearch-reindex__detail-item">
-          <span class="opensearch-reindex__label">
-            {{ 'adminSettings.opensearch.reindex.started' | translate }}:
-          </span>
-          <span>{{ data.startedOn | date:'medium' }}</span>
-        </div>
-
-        @if (data.finishedOn) {
-          <div class="opensearch-reindex__detail-item">
-            <span class="opensearch-reindex__label">
-              {{ 'adminSettings.opensearch.reindex.finished' | translate }}:
-            </span>
-            <span>{{ data.finishedOn | date:'medium' }}</span>
-          </div>
-        }
-
-        @if (data.status === 'RUNNING' && data.elapsedSeconds > 0) {
-          <div class="opensearch-reindex__detail-item">
-            <span class="opensearch-reindex__label">
-              {{ 'adminSettings.opensearch.reindex.elapsed' | translate }}:
-            </span>
-            <span>{{ data.elapsedSeconds }}s</span>
-          </div>
-        }
-      </div>
 
       @if (data.status === 'FAILED') {
         <a class="opensearch-reindex__error-link" (click)="navigateToLogs(data)">
