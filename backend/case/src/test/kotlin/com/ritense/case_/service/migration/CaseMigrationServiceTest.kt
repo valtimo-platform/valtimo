@@ -49,6 +49,7 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
@@ -191,7 +192,13 @@ class CaseMigrationServiceTest(
         val result = service.startMigration(migrationId)
 
         verify(caseRepository).save(CaseMigrationCase(caseRecordId(case1), CaseMigrationCaseStatus.MIGRATED))
-        verify(caseRepository).save(CaseMigrationCase(caseRecordId(case2), CaseMigrationCaseStatus.FAILED, "boom"))
+
+        // The failed case is recorded with the full stack trace (a @Lob column), so match on content.
+        val savedCases = argumentCaptor<CaseMigrationCase>()
+        verify(caseRepository, times(2)).save(savedCases.capture())
+        val failed = savedCases.allValues.single { it.status == CaseMigrationCaseStatus.FAILED }
+        assertThat(failed.id).isEqualTo(caseRecordId(case2))
+        assertThat(failed.errorMessage).contains("boom")
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED_WITH_ERRORS)
     }
 
