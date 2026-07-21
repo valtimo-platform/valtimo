@@ -22,6 +22,8 @@ export { submit } from "./submit.js";
 export { config } from "./config.js";
 export { log } from "./host-functions.js";
 export { gzacApi } from "./gzac-api.js";
+export { httpRequest } from "./http-request.js";
+export { kv } from "./kv.js";
 export { setManifest } from "./runtime.js";
 export {
   handleAction,
@@ -55,6 +57,9 @@ export type {
   Endpoint,
   FrontendBundle,
   GzacApiResponse,
+  HttpRequestResponse,
+  KvGetResult,
+  HostCapability,
   Document,
   DocumentContent,
   DocumentDefinitionId,

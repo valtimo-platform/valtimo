@@ -44,10 +44,10 @@ import {
   Subject,
   timer,
 } from 'rxjs';
-import {catchError, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {catchError, distinctUntilChanged, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginConfigurationRow} from '../../models';
-import {cloneDeep} from 'lodash';
+import {cloneDeep, isEqual} from 'lodash';
 import {v4 as uuidv4} from 'uuid';
 
 @Component({
@@ -75,11 +75,20 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
       disabledCallback: (row: UnifiedPluginConfigurationRow) => row.source === 'external',
     },
     {
+      callback: this.viewLogs.bind(this),
+      label: 'pluginManagement.logs.menuItem',
+      disabledCallback: (row: UnifiedPluginConfigurationRow) => row.source !== 'external',
+    },
+    {
       callback: this.deleteConfiguration.bind(this),
       label: 'interface.delete',
       type: 'danger',
     },
   ];
+
+  public showLogModal = false;
+  public logConfigurationId: string | null = null;
+  public logConfigurationTitle = '';
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showEditModal$ = new BehaviorSubject<boolean>(false);
@@ -143,7 +152,8 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
           }),
           tap(() => {
             this.loading$.next(false);
-          })
+          }),
+          distinctUntilChanged((prev, curr) => isEqual(prev, curr))
         )
       )
     );
@@ -196,7 +206,8 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     tap(() => {
       this._externalDefsInitialLoad = false;
       this.externalDefsRefreshing$.next(false);
-    })
+    }),
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
   // --- Plugin upload ---
@@ -215,7 +226,8 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     ),
     tap(() => {
       this._hostsInitialLoad = false;
-    })
+    }),
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
   public readonly connectedHosts$: Observable<Array<ExternalPluginHost>> = this._allHosts$.pipe(
@@ -289,6 +301,19 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     this.showEditModal$.next(true);
     this.saveNewConfiguration$.next(false);
     this._stateService.selectPluginConfiguration(configuration as unknown as PluginConfiguration);
+  }
+
+  public viewLogs(configuration: UnifiedPluginConfigurationRow): void {
+    if (configuration.source !== 'external' || !configuration.id) return;
+    this.logConfigurationId = configuration.id;
+    this.logConfigurationTitle = configuration.title ?? '';
+    this.showLogModal = true;
+  }
+
+  public closeLogModal(): void {
+    this.showLogModal = false;
+    this.logConfigurationId = null;
+    this.logConfigurationTitle = '';
   }
 
   public deleteConfiguration(configuration: UnifiedPluginConfigurationRow): void {

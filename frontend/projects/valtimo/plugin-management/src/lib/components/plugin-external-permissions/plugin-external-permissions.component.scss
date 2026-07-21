@@ -22,11 +22,6 @@
   display: block;
 }
 
-.plugin-external-permissions__description {
-  margin-block-end: var(--cds-spacing-05);
-  color: var(--cds-text-secondary);
-}
-
 .plugin-external-permissions__section {
   margin-block-end: var(--cds-spacing-06);
 }
@@ -52,5 +47,9 @@
 
   cds-inline-notification {
     margin-bottom: 16px;
+  }
+
+  .cds--inline-notification {
+    max-inline-size: unset !important;
   }
 }

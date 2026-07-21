@@ -31,7 +31,7 @@
  * @returns a list of human-readable error messages; an empty array means the manifest is valid.
  */
 
-import {FRONTEND_BUNDLE_TYPES} from "./models/types.js";
+import {FRONTEND_BUNDLE_TYPES, HOST_CAPABILITIES} from "./models/types.js";
 
 export function validatePluginManifest(manifest: unknown): string[] {
   const errors: string[] = [];
@@ -75,6 +75,41 @@ export function validatePluginManifest(manifest: unknown): string[] {
     }
     if (typeof b.description !== "string" || b.description.trim() === "") {
       errors.push(`manifest.json translations.${locale} must contain a non-empty 'description'`);
+    }
+  }
+
+  const permissions = m.permissions;
+  if (permissions !== undefined) {
+    if (typeof permissions !== "object" || permissions === null || Array.isArray(permissions)) {
+      errors.push("manifest.json 'permissions' must be an object when present");
+    } else {
+      const p = permissions as Record<string, unknown>;
+      const capabilities = p.capabilities;
+      if (capabilities !== undefined) {
+        if (!Array.isArray(capabilities)) {
+          errors.push("manifest.json 'permissions.capabilities' must be an array when present");
+        } else {
+          for (let i = 0; i < capabilities.length; i++) {
+            const cap = capabilities[i];
+            if (typeof cap !== "string" || !(HOST_CAPABILITIES as readonly string[]).includes(cap)) {
+              errors.push(
+                `manifest.json permissions.capabilities[${i}] must be one of: ${HOST_CAPABILITIES.join(", ")}`
+              );
+            }
+          }
+        }
+      }
+      const endpoints = p.endpoints;
+      if (endpoints !== undefined) {
+        if (!Array.isArray(endpoints)) {
+          errors.push("manifest.json 'permissions.endpoints' must be an array when present");
+        }
+        if (capabilities !== undefined && Array.isArray(capabilities) && !capabilities.includes("gzac_api")) {
+          errors.push(
+            "manifest.json declares 'permissions.endpoints' but does not include 'gzac_api' in 'permissions.capabilities' — endpoints require the gzac_api capability"
+          );
+        }
+      }
     }
   }
 

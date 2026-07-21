@@ -16,13 +16,21 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 
 ## 1. Components
 
+> **Host capabilities** are a per-plugin allowlist of host functions a plugin may call. Every
+> host function — including `gzac_api` — requires an explicit grant. A plugin declares the
+> capabilities it needs in `manifest.permissions.capabilities`; the admin accepts each one
+> individually during configuration. The host enforces the allowlist at call time — a plugin
+> that was not granted a capability gets an error response, never silent access.
+> Four capabilities ship: `gzac_api`, `http_request`, `kv`, and `log`.
+
 | Area | Path | Status |
 |------|------|--------|
 | Core-app backend module | `backend/external-plugin/` | ✅ |
 | Endpoint descriptions (`@EndpointDescription` on every controller method) + contract annotation | `backend/*/.../web/rest/*Resource.{kt,java}`, `com.ritense.valtimo.contract.endpoint.EndpointDescription` | ✅ |
 | Plugin host (Node + Fastify + Extism, multi-version) | `plugin-host/app/` | 🟡 |
+| Host capabilities (`gzac_api`, `http_request`, `kv`, `log`) — capability allowlist enforcement, new host functions, persistent storage (KV + logs), admin log view | `plugin-host/app/src/host-functions/{gzac-api,http-request,kv,log}.ts`, `plugin-host/app/src/db/{log-repository,kv-repository}.ts`, `plugin-host/app/src/routes/plugin-logs.ts` | ⛔ (`gzac_api` host function ✅, capability gate ⛔) |
 | Event consumer (RabbitMQ → `handle_event`) | `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
-| Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, requests (`handle_request`), `gzacApi` (+ `asUser`), frontend `t()` + parent-proxy data access (`callValtimo`/`getPluginData`) | `plugin-host/plugin-sdk/` | ✅ |
+| Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, requests (`handle_request`), `gzacApi` (+ `asUser`), `httpRequest`, `kv`, `log` (structured), frontend `t()` + parent-proxy data access (`callValtimo`/`getPluginData`) | `plugin-host/plugin-sdk/` | 🟡 (`gzacApi` ✅; SDK stubs for `http_request`/`kv`/structured `log` ⛔) |
 | Shared manifest validation (name/description-in-translations), one rule set for pack + host | `plugin-host/plugin-sdk/src/manifest-validation.ts` (subpath `@valtimo/plugin-sdk/manifest-validation`) | ✅ |
 | Sample plugin (action + event handler + logo + i18n) | `plugin-host/sample-plugins/case-summary/` | ✅ |
 | Frontend management UI + external models/service/iframe | `frontend/projects/valtimo/{plugin-management,plugin}/` | ✅ |
@@ -77,14 +85,18 @@ callbacks.
   `validateGrantedEndpointsCoverManifest()` **rejects the configuration unless every endpoint
   declared in the manifest is granted** — permissions are all-or-nothing.
 - `create()` likewise runs `validateGrantedEventsCoverManifest()` — the same all-or-nothing gate
-  applied to `manifest.eventSubscriptions`. Both `grantedEndpoints` and `grantedEvents` are
-  **required** parameters of `create()`; event grants are enforced at the service layer, not only
-  in the UX (§4).
+  applied to `manifest.eventSubscriptions`. `create()` also runs
+  `validateGrantedCapabilitiesCoverManifest()` — the same all-or-nothing gate applied to
+  `manifest.permissions.capabilities`. All three — `grantedEndpoints`, `grantedEvents`, and
+  `grantedCapabilities` — are **required** parameters of `create()`; all three are enforced at
+  the service layer, not only in the UX (§4).
 - Grants persist to `external_plugin_granted_endpoint` (`configuration_id`, `http_method`,
-  `endpoint_pattern`) and `external_plugin_granted_event` (`configuration_id`, `event_type`);
+  `endpoint_pattern`), `external_plugin_granted_event` (`configuration_id`, `event_type`), and
+  `external_plugin_granted_capability` (`configuration_id`, `capability`);
   `update()` with non-null `grantedEndpoints` replaces the endpoint grants, null leaves them
-  unchanged. `update()` has **no** `grantedEvents` parameter — event grants cannot change after
-  activation.
+  unchanged. `update()` has **no** `grantedEvents` or `grantedCapabilities` parameter — event
+  and capability grants cannot change after activation. Granted capabilities are pushed to the
+  host alongside the configuration (§18.3) so the host can enforce the allowlist at call time.
 
 **3.2 Token (`service/ExternalPluginServiceTokenService.kt`)** — HS256 JWT:
 `sub=external-plugin:{pluginId}:{configId}`, `type=external_plugin_service`, `plugin_config_id`,
@@ -116,7 +128,9 @@ service tokens — the allowlist is the sole gate).
 (`plugin-host/app/src/host-functions/gzac-api.ts`) attaches the per-config `serviceToken` as
 `Authorization: Bearer` to `${gzacBaseUrl}${path}`, forwarding method, JSON body, and headers. The
 token is passed via Extism `hostContext`, never serialised into the Wasm input — plugin code never
-sees it. This is the same mechanism for both action handlers and event handlers.
+sees it. This is the same mechanism for both action handlers and event handlers. `gzac_api` is a
+**capability** (§18) — the configuration must be granted `gzac_api` in its capability allowlist
+or the host function returns a capability-denied error without making the upstream call.
 
 **3.6 Token lifecycle** — operator-tunable TTL (`valtimo.external-plugin.service-token.ttl`,
 default 24h, §3.2), **no separate refresh loop**. Each healthy discovery poll re-pushes every
@@ -135,7 +149,10 @@ manifest. The same declaration is the source of truth for both the service-token
 section) and the iframe user-token path (§13, ✅) — one block, **two principals** through one
 `ExternalPluginEndpointAllowlistFilter` (`ExternalPluginServicePrincipal` and
 `ExternalPluginUserPrincipal`). SDK type `Endpoint`, Kotlin DTO `GrantedEndpointEntry`, frontend type
-`ExternalPluginEndpoint`.
+`ExternalPluginEndpoint`. The capability allowlist lives at `permissions.capabilities` in the
+manifest — a string array of capability names (`["gzac_api", "http_request", "kv", "log"]`).
+SDK type `string[]`, Kotlin `List<String>`, frontend `string[]`. See §18 for the full capability
+system.
 
 **3.9 Reverse direction — GZAC→host authentication (HMAC), every route ✅.** Calls that flow the
 *other* way (core app → host) are authenticated with an HMAC-SHA256 signature, not the service
@@ -202,25 +219,34 @@ fallback). A test (`EndpointDescriptionCoverageTest`, `backend/external-plugin`)
 **every** controller endpoint on the classpath — not only management ones — carries both
 translations, so the description requirement cannot drift as endpoints are added.
 
-The Permissions step shows two read-only sections under a single acknowledgement checkbox:
+The Permissions step shows three read-only sections under a single acknowledgement checkbox:
 
+- **Host capabilities** — every entry from `manifest.permissions.capabilities` (`gzac_api`,
+  `http_request`, `kv`, `log`). Each capability is shown with a localised name and description
+  explaining what it grants the plugin (e.g. "GZAC API — Make authenticated calls to the GZAC
+  REST API on behalf of the plugin or the logged-in user"). Capabilities are displayed first
+  because they represent the broadest grants.
 - **API endpoints** — every entry from `manifest.permissions.endpoints` with method, pattern, and
-  localised description.
+  localised description. Only relevant when `gzac_api` is among the declared capabilities;
+  otherwise this section is hidden.
 - **Events** — every CloudEvent type from `manifest.eventSubscriptions` that the plugin will
   receive at `handle_event`.
 
-Both are equally a permission decision: granting endpoints lets the plugin act on the user's data;
-granting events lets it observe domain activity. The single acknowledgement covers both — both are
-all-or-nothing, the backend rejects activation unless every declared item in both lists is
+All three are equally a permission decision: granting capabilities lets the plugin call host
+functions; granting endpoints scopes *which* GZAC endpoints the `gzac_api` capability can reach;
+granting events lets it observe domain activity. The single acknowledgement covers all three — all
+are all-or-nothing, the backend rejects activation unless every declared item in all lists is
 granted.
 
 - **Add / activate**: select → configure (properties or config iframe) → **Permissions**. Save →
-  `POST .../configuration` `{definitionId, title, properties, grantedEndpoints, grantedEvents}`.
+  `POST .../configuration` `{definitionId, title, properties, grantedEndpoints, grantedEvents,
+  grantedCapabilities}`.
 - **Edit**: same component with `[readonlyMode]="true"`; the UI update sends `{title, properties}`
-  only. Granted **events** are truly immutable post-activation (service-layer `update()` has no
-  `grantedEvents` parameter). Granted **endpoints** are immutable *in the UI*, but the backend
-  `update()` will replace them if a non-null `grantedEndpoints` is supplied (§3.1) — the
-  immutability of endpoint grants is a UI guarantee, not a service-layer one.
+  only. Granted **events** and **capabilities** are truly immutable post-activation (service-layer
+  `update()` has no `grantedEvents` or `grantedCapabilities` parameter). Granted **endpoints** are
+  immutable *in the UI*, but the backend `update()` will replace them if a non-null
+  `grantedEndpoints` is supplied (§3.1) — the immutability of endpoint grants is a UI guarantee,
+  not a service-layer one.
 
 ## 5. Data model ✅
 
@@ -251,6 +277,11 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
   row only changes when the admin re-grants.
 - `external_plugin_granted_endpoint` — `configuration_id`, `http_method`, `endpoint_pattern`,
   `granted_at`; `UNIQUE(configuration_id, http_method, endpoint_pattern)`.
+- `external_plugin_granted_capability` — `configuration_id`, `capability` (varchar, e.g.
+  `gzac_api`, `http_request`, `kv`, `log`), `granted_at`;
+  `UNIQUE(configuration_id, capability)`. Pushed to the host on every config push as the
+  authoritative capability set (§18.3). A later manifest update that adds a new capability cannot
+  widen this set — the admin must re-grant.
 - Each grant table enforces a DB unique constraint on its `(configuration_id, …)` natural key, so
   duplicate grant rows are structurally impossible. The replace-on-write `update()` flow deletes a
   configuration's endpoint grants and flushes that delete before re-inserting, so a replacement set
@@ -309,8 +340,9 @@ optionally `eventBroker` — only `serviceToken`/`gzacBaseUrl` are actually vali
 (HMAC-signed §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
 `…/bundles/**`, and **public `POST …/data`** (the `handle_request` RPC route, §13.4/§13.5 —
 unauthenticated for this iteration, with CORS `*` + `OPTIONS` preflight; ⚠️ must be capability/auth
-gated before production, see §14). Multi-version load keyed `pluginId@version`. The only registered
-host function is `gzac_api` (now also able to authenticate as the user, §13.4).
+gated before production, see §14). Multi-version load keyed `pluginId@version`. The registered
+host functions are `gzac_api` (now also able to authenticate as the user, §13.4), `http_request`,
+`kv`, and `log` — all four gated by a per-configuration capability allowlist (§18).
 
 Configs are **persisted to PostgreSQL**; `ConfigRegistry` is a thin pass-through over
 `ConfigRepository` — every read/write hits the DB, there is **no separate in-memory cache** despite
@@ -339,9 +371,10 @@ see §8.4), plus `DB_HOST` / `DB_PORT` (defaults to **5434**, not the standard 5
 (set together to serve HTTPS — §3.9) plus `TLS_CA_PATH` for a certificate chain. **No broker
 variables** — the host never configures a broker itself.
 
-Gaps to close for production: no `log` / `http_request` / `kv` host functions or capability
-allowlist; no HTMX `render_page`; the `handle_request` `/data` route ships **public** (no HMAC, no
-auth) — it must be capability/auth-gated before production (§13.5, §14).
+Gaps to close for production: no HTMX `render_page`; the `handle_request` `/data` route ships
+**public** (no HMAC, no auth) — it must be capability/auth-gated before production (§13.5, §14).
+Host capabilities (`gzac_api`, `http_request`, `kv`, `log`) and their persistent storage are
+covered in §18.
 
 ## 8. Event subscription & delivery ✅
 
@@ -1024,28 +1057,24 @@ Structure:
 
 ## 14. Not yet implemented ⛔
 
-- Host capabilities + host functions (`http_request`, `kv`, structured `log`) with allowlist
-  enforcement.
 - **Auth/capability gating of the public host `/data` route** (`handle_request`) — today it executes
   plugin Wasm unauthenticated and a service-token-backed handler can return system-scoped data
   (§7, §13.5). This is the top hardening item.
 - HTMX `render_page` (only the RPC-style `handle_request` for JSON data is implemented).
-- Case **widgets** and **menu pages** (the remaining iframe surfaces — the case **tab** (§13.1) and
-  the **task form** (§13.6) are done).
-- Host database for KV / API logs / retention.
+- Case **widgets** (the remaining iframe surface — the case **tab** (§13.1), **task form** (§13.6),
+  and **menu pages** (§17) are done).
 - DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
   queue and its contents).
 
 ## 15. Roadmap (priority order)
 
-1. **Harden the host `/data` route** — capability/auth gating so a `handle_request` handler can't be
+1. **Host capabilities** (§18) — `gzac_api`, `http_request`, `kv`, `log` behind a per-plugin
+   capability allowlist; persistent storage for KV + logs; admin log view modal; demo plugin scenarios.
+2. **Harden the host `/data` route** — capability/auth gating so a `handle_request` handler can't be
    triggered (and can't reach the service token) unauthenticated; tighten the allowlist surface.
-2. Capabilities + host functions + allowlist enforcement; surface in the acceptance screen by
-   category.
-3. Remaining iframe surfaces: HTMX pages, case widgets, menu pages (case **tab** §13.1 and **task
-   form** §13.6 done).
-4. Host database (KV, API logs, retention) + admin log view.
-5. Cleanup: align async-vs-sync SDK docs.
+3. Remaining iframe surfaces: HTMX pages, case widgets (case **tab** §13.1, **task form** §13.6,
+   and **menu pages** §17 done).
+4. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
 
@@ -1213,3 +1242,678 @@ Demo app `npm run build` clean (server `tsc` + three iframe bundles); a live run
 the public `/plugin-manifest`, a correctly-signed `GET /api/host/plugins` (→ 200 with the single
 plugin), and an unsigned / wrong-secret call (→ 401). Frontend `@valtimo/{plugin,plugin-management}`
 type-check clean; `en`/`nl` bundles updated (`addApp`, `tabs.integrations`, `labels.kind`, `kind.*`).
+
+## 18. Host capabilities — `gzac_api`, `http_request`, `kv`, `log` ⛔
+
+A capability is a host function a plugin may call. Every capability requires an explicit grant:
+the plugin declares what it needs in `manifest.permissions.capabilities`, the admin accepts each
+one during configuration (§4), and the host enforces the allowlist at call time. A plugin that
+calls a capability it was not granted receives a structured error — never silent access, never
+a crash.
+
+### 18.1 Manifest declaration
+
+```json
+{
+  "permissions": {
+    "capabilities": ["gzac_api", "http_request", "kv", "log"],
+    "endpoints": [
+      { "method": "GET", "pattern": "/api/v1/document/*" }
+    ]
+  }
+}
+```
+
+`permissions.capabilities` is a string array. Known capability names: `gzac_api`, `http_request`,
+`kv`, `log`. Unknown names are rejected at upload (manifest validation, §9). `endpoints` remains
+relevant only when `gzac_api` is declared — it scopes *which* GZAC REST endpoints the service/user
+token may reach. A plugin that does not declare `gzac_api` has no use for `endpoints`.
+
+**SDK type** (`PluginManifest`): `permissions?: { endpoints?: Endpoint[]; capabilities?: string[] }`.
+The `capabilities` field is added to the existing `permissions` object. Manifest validation
+(`validatePluginManifest`) rejects unknown capability names and requires the array when any
+capability-dependent feature is declared (e.g. `endpoints` without `gzac_api` is a validation
+error).
+
+### 18.2 GZAC-side storage and activation gate
+
+**New table** `external_plugin_granted_capability` (DDL in a new changeset under the current
+release changelog, e.g. `13-32-0/2026MMDD-external-plugin-granted-capability.xml`):
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | `uuid` | PK |
+| `configuration_id` | `uuid NOT NULL` | FK → `external_plugin_configuration` |
+| `capability` | `varchar(64) NOT NULL` | e.g. `gzac_api`, `http_request`, `kv`, `log` |
+| `granted_at` | `timestamptz NOT NULL` | |
+
+`UNIQUE(configuration_id, capability)`.
+
+`ExternalPluginConfigurationService.create()` receives `grantedCapabilities: List<String>` and
+runs `validateGrantedCapabilitiesCoverManifest()` — rejects the configuration unless every
+capability declared in the manifest is granted (all-or-nothing, matching endpoints and events).
+The granted capabilities are persisted and pushed to the host alongside the configuration (§18.3).
+`update()` does not accept `grantedCapabilities` — capability grants are immutable after
+activation (same semantics as event grants).
+
+**New Kotlin domain** `ExternalPluginGrantedCapability` (entity),
+`ExternalPluginGrantedCapabilityRepository` (Spring Data JPA).
+
+### 18.3 Config push — capabilities to the host
+
+The GZAC config-push body gains a `grantedCapabilities` array:
+
+```json
+{
+  "pluginId": "case-summary",
+  "pluginVersion": "0.1.0",
+  "properties": { },
+  "serviceToken": "eyJ…",
+  "gzacBaseUrl": "http://gzac:8080",
+  "grantedCapabilities": ["gzac_api", "http_request", "kv", "log"],
+  "eventSubscriptions": ["com.ritense.valtimo.document.created"],
+  "eventBroker": { }
+}
+```
+
+The host's `ConfigRepository` stores `granted_capabilities JSONB NOT NULL DEFAULT '[]'` on
+`plugin_configurations` (migration version 3). `ConfigRegistry` passes it through, and
+every host function checks it before executing.
+
+### 18.4 Host-side enforcement
+
+Each host function checks the calling configuration's granted capabilities at the start of every
+invocation. The `hostContext` (already carries `configurationId`) is used to look up the
+configuration's `grantedCapabilities` from the `ConfigRegistry`. If the required capability is
+absent, the host function returns a capability-denied error response without performing any work.
+
+```
+gzac_api    → requires "gzac_api" in grantedCapabilities
+http_request → requires "http_request" in grantedCapabilities
+kv          → requires "kv" in grantedCapabilities
+log         → requires "log" in grantedCapabilities
+```
+
+The check is implemented as a shared `assertCapability(configRegistry, configurationId, name)`
+helper used by all four host functions. On denial the Wasm call receives a structured JSON error
+`{ status: 403, body: { error: "Capability 'X' not granted for this configuration" } }` —
+deterministic, never ambiguous.
+
+**`gzac_api` retroactive gate.** The existing `gzac_api` host function (`host-functions/gzac-api.ts`)
+gains the capability check at the top of its handler, before any upstream fetch. Configurations
+created before the capability system was introduced will not have `grantedCapabilities` in their
+pushed config. To avoid breaking existing setups: when `grantedCapabilities` is absent or empty
+on a configuration that was pushed by an older GZAC (before the capability system), the host
+treats `gzac_api` as implicitly granted (backward compatibility). Once the GZAC is upgraded and
+re-pushes configurations with explicit `grantedCapabilities`, the host enforces the explicit list.
+
+### 18.5 Capability: `gzac_api` (existing host function, capability gate ⛔)
+
+Already implemented as a host function (§3.5, `host-functions/gzac-api.ts`). The capability gate
+is the only addition: the host function checks `grantedCapabilities` before making the upstream
+call. Everything else — service/user token selection, endpoint allowlist enforcement on the GZAC
+side, HMAC signing — is unchanged.
+
+SDK: `gzacApi.get()`, `gzacApi.post()`, etc. (unchanged). `gzacApi.asUser.*` (unchanged).
+
+### 18.6 Capability: `http_request` ⛔
+
+Allows the plugin to make HTTP requests to external (non-GZAC) services. The host performs the
+fetch and returns the response; the plugin never gets raw network access.
+
+**Host function** `http_request` (`host-functions/http-request.ts`):
+
+```typescript
+interface HttpRequestInput {
+  method: string;     // GET, POST, PUT, DELETE, PATCH
+  url: string;        // Full URL — must not target gzacBaseUrl (enforced)
+  body?: unknown;
+  headers?: Record<string, string>;
+  timeoutMs?: number; // default 30_000, max 60_000
+}
+
+interface HttpRequestOutput {
+  status: number;
+  headers: Record<string, string>;
+  body: unknown;      // parsed as JSON when possible, otherwise raw text
+}
+```
+
+**Security constraints:**
+- The `url` must not resolve to the configuration's `gzacBaseUrl` — use `gzac_api` for that. The
+  host strips `Authorization` headers pointing at the GZAC instance to prevent credential relay.
+- Timeout is capped at 60 s to prevent resource exhaustion.
+- The host does not follow redirects that would land on `gzacBaseUrl`.
+
+**Logging:** Every `http_request` call is logged to the plugin host's `plugin_api_call_logs` table
+(§18.9) with method, URL (query string redacted), status, duration, and the calling
+configuration/plugin id. This gives the admin visibility into what external calls plugins make.
+
+**SDK** (`plugin-sdk/src/http-request.ts`):
+
+```typescript
+export const httpRequest = {
+  get<T = unknown>(url: string, headers?: Record<string, string>): HttpRequestResponse<T>;
+  post<T = unknown>(url: string, body?: unknown, headers?: Record<string, string>): HttpRequestResponse<T>;
+  put<T = unknown>(url: string, body?: unknown, headers?: Record<string, string>): HttpRequestResponse<T>;
+  delete<T = unknown>(url: string, headers?: Record<string, string>): HttpRequestResponse<T>;
+};
+```
+
+Mirrors the `gzacApi` shape. Calls the `http_request` Extism host function under the hood, same
+`Host.getFunctions()` mechanism.
+
+### 18.7 Capability: `kv` ⛔
+
+A per-configuration key-value store persisted in the plugin host's PostgreSQL. Plugins use it to
+store state across invocations — counters, cached computations, user preferences, etc.
+
+**Host function** `kv` (`host-functions/kv.ts`):
+
+```typescript
+interface KvInput {
+  op: "get" | "set" | "delete" | "list";
+  key?: string;       // required for get/set/delete; max 256 chars
+  value?: unknown;     // required for set; stored as JSONB; max 1 MB serialized
+  prefix?: string;     // for list — returns keys matching this prefix
+}
+
+interface KvOutput {
+  status: number;      // 200 on success, 404 on missing key
+  value?: unknown;     // for get
+  keys?: string[];     // for list
+}
+```
+
+**Storage** (`plugin_kv_store` table in the host's PostgreSQL, §18.9):
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `configuration_id` | `text NOT NULL` | scoped to the configuration |
+| `key` | `text NOT NULL` | max 256 chars, validated host-side |
+| `value` | `jsonb NOT NULL` | max 1 MB serialized |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+PK: `(configuration_id, key)`. Deleting a configuration from the host (config-push DELETE)
+cascades to its KV entries.
+
+**SDK** (`plugin-sdk/src/kv.ts`):
+
+```typescript
+export const kv = {
+  get<T = unknown>(key: string): T | undefined;
+  set(key: string, value: unknown): void;
+  delete(key: string): boolean;
+  list(prefix?: string): string[];
+};
+```
+
+Synchronous from the plugin's perspective (Extism suspends the call).
+
+### 18.8 Capability: `log` ⛔
+
+Structured logging persisted in the plugin host's PostgreSQL. Replaces the existing console-based
+`log.info/warn/error` (which already exist in `host-functions.ts` but only pipe to stdout/stderr)
+with a host function that both logs to the host's pino logger *and* persists to the
+`plugin_structured_logs` table for admin visibility.
+
+**Host function** `log` (`host-functions/log.ts`):
+
+```typescript
+interface LogInput {
+  level: "info" | "warn" | "error" | "debug";
+  message: string;          // max 4 KB
+  data?: Record<string, unknown>;  // structured context, max 64 KB serialized
+}
+```
+
+No output — fire-and-forget from the plugin's perspective. The host function:
+1. Writes to the pino logger at the requested level (existing behaviour, now with structured
+   `data` attached).
+2. Inserts a row into `plugin_structured_logs` (§18.9) — async insert, does not block the Wasm
+   call. Failures are logged to pino but do not bubble to the plugin.
+
+**SDK** (`plugin-sdk/src/host-functions.ts` — the existing `log` export is enhanced):
+
+```typescript
+export const log = {
+  info(message: string, data?: Record<string, unknown>): void;
+  warn(message: string, data?: Record<string, unknown>): void;
+  error(message: string, data?: Record<string, unknown>): void;
+  debug(message: string, data?: Record<string, unknown>): void;
+};
+```
+
+The existing `log.info/warn/error` signatures are kept for backward compatibility; the new `data`
+parameter is optional. `debug` is added. Outside Wasm (build/test), falls back to `console.*`.
+
+### 18.9 Host persistent storage — new tables (plugin host PostgreSQL)
+
+Three new tables in the plugin host's PostgreSQL (migration versions 3–5 in
+`plugin-host/app/src/db/index.ts`):
+
+**Migration 3: `granted_capabilities` column on `plugin_configurations`**
+
+```sql
+ALTER TABLE plugin_configurations
+  ADD COLUMN IF NOT EXISTS granted_capabilities JSONB NOT NULL DEFAULT '[]';
+```
+
+**Migration 4: `plugin_kv_store`**
+
+```sql
+CREATE TABLE IF NOT EXISTS plugin_kv_store (
+  configuration_id TEXT NOT NULL,
+  key TEXT NOT NULL CHECK (length(key) <= 256),
+  value JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (configuration_id, key)
+);
+CREATE INDEX IF NOT EXISTS idx_kv_store_config ON plugin_kv_store(configuration_id);
+```
+
+**Migration 5: `plugin_structured_logs`**
+
+```sql
+CREATE TABLE IF NOT EXISTS plugin_structured_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  configuration_id TEXT NOT NULL,
+  plugin_id TEXT NOT NULL,
+  plugin_version TEXT NOT NULL,
+  level TEXT NOT NULL,
+  message TEXT NOT NULL,
+  data JSONB,
+  invocation_type TEXT,        -- 'action', 'event', 'request', 'submit'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_structured_logs_config_time
+  ON plugin_structured_logs(configuration_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_structured_logs_plugin_time
+  ON plugin_structured_logs(plugin_id, plugin_version, created_at DESC);
+```
+
+**Migration 6: `plugin_api_call_logs`**
+
+```sql
+CREATE TABLE IF NOT EXISTS plugin_api_call_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  configuration_id TEXT NOT NULL,
+  plugin_id TEXT NOT NULL,
+  plugin_version TEXT NOT NULL,
+  capability TEXT NOT NULL,     -- 'gzac_api' or 'http_request'
+  method TEXT NOT NULL,
+  url TEXT NOT NULL,
+  status_code INTEGER,
+  duration_ms INTEGER,
+  error_message TEXT,
+  invocation_type TEXT,        -- 'action', 'event', 'request', 'submit'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_api_call_logs_config_time
+  ON plugin_api_call_logs(configuration_id, created_at DESC);
+```
+
+**Repositories:**
+- `KvRepository` (`db/kv-repository.ts`) — `get`, `set`, `delete`, `list`, `deleteAll(configId)`.
+- `LogRepository` (`db/log-repository.ts`) — `insert`, `query(configId, { page, size, level?,
+  after?, before? })`, `deleteOlderThan(configId, retentionDays)`.
+- `ApiCallLogRepository` (`db/api-call-log-repository.ts`) — `insert`, `query(configId, { page,
+  size, capability?, after?, before? })`, `deleteOlderThan(configId, retentionDays)`.
+
+**Retention.** A scheduled cleanup job runs on host startup and every 24 h, deleting log and
+API-call rows older than a configurable retention period (`LOG_RETENTION_DAYS` env, default 30).
+KV entries have no automatic retention — they persist until explicitly deleted by the plugin or
+when the configuration is removed.
+
+**Config deletion cascade.** When a configuration is removed from the host (via the
+`DELETE /api/host/configurations/:configId` route), the host deletes the configuration's KV
+entries, structured logs, and API call logs. The SQL cascade is manual (repository calls in the
+delete handler), not FK-based, since `configuration_id` is `TEXT` referencing the config push id.
+
+### 18.10 Host routes — log query endpoints
+
+Two new HMAC-signed routes on the plugin host for the GZAC admin UI to query logs:
+
+**`GET /api/host/configurations/:configId/logs`** — paginated structured logs.
+
+Query params: `page` (0-based), `size` (default 25, max 100), `level` (optional filter),
+`after` / `before` (ISO-8601 timestamps). Returns:
+
+```json
+{
+  "content": [
+    {
+      "id": "uuid",
+      "level": "info",
+      "message": "[case-summary] event com.ritense.valtimo.document.created",
+      "data": { "resultId": "abc-123" },
+      "invocationType": "event",
+      "createdAt": "2026-07-16T10:30:00Z"
+    }
+  ],
+  "page": 0,
+  "size": 25,
+  "totalElements": 142
+}
+```
+
+**`GET /api/host/configurations/:configId/api-call-logs`** — paginated API call logs.
+
+Query params: same as above, plus `capability` (optional, `gzac_api` or `http_request`). Returns:
+
+```json
+{
+  "content": [
+    {
+      "id": "uuid",
+      "capability": "http_request",
+      "method": "GET",
+      "url": "https://jsonplaceholder.typicode.com/todos/1",
+      "statusCode": 200,
+      "durationMs": 245,
+      "invocationType": "request",
+      "createdAt": "2026-07-16T10:30:00Z"
+    }
+  ],
+  "page": 0,
+  "size": 25,
+  "totalElements": 58
+}
+```
+
+Both routes are HMAC-signed (§3.9) — the GZAC backend proxies the request via
+`ExternalPluginHostClient`.
+
+### 18.11 GZAC backend — log proxy endpoints
+
+Two new management endpoints on the GZAC backend that proxy the host's log routes:
+
+- `GET /api/management/v1/external-plugin/configuration/{configId}/logs`
+- `GET /api/management/v1/external-plugin/configuration/{configId}/api-call-logs`
+
+ADMIN-gated in `ExternalPluginHttpSecurityConfigurer`. The service looks up the configuration's
+host, signs the request with HMAC, forwards query params, and returns the host's paginated
+response. These need `@EndpointDescription(en, nl)` annotations (§4).
+
+### 18.12 Frontend — admin log view modal
+
+A new **"Logs"** option in the overflow menu (`ActionItem`) for external plugin configurations on
+the plugin management page (`plugin-management.component.ts`). Clicking it opens a
+`PluginLogModalComponent` — a `cds-modal` (size `lg`) containing a `valtimo-carbon-list` with
+pagination, modeled after the existing `logging-list` pattern (§ frontend pattern reference).
+
+**Overflow menu entry:**
+
+```typescript
+{
+  callback: this.viewLogs.bind(this),
+  label: 'pluginManagement.logs.menuItem',
+  disabledCallback: (row: UnifiedPluginConfigurationRow) => row.source !== 'external',
+}
+```
+
+Placed between "Edit" and "Delete" in the `actionItems` array. Disabled for embedded
+(non-external) configurations.
+
+**Modal component** (`plugin-management/components/plugin-log-modal/`):
+
+The modal has two tabs (Carbon `cds-tabs`):
+
+1. **Plugin logs** — structured logs from `plugin_structured_logs`. Table columns: timestamp
+   (date-time format), level (tag: `info`=blue, `warn`=yellow, `error`=red, `debug`=gray),
+   message (text with tooltip on overflow), invocation type (tag). Row click opens a detail
+   section showing the `data` JSON.
+2. **API calls** — from `plugin_api_call_logs`. Table columns: timestamp, capability (tag:
+   `gzac_api`=teal, `http_request`=purple), method (tag), URL (text with tooltip), status code
+   (tag: 2xx=green, 4xx=yellow, 5xx=red), duration (ms).
+
+Both tabs use `valtimo-carbon-list` with `[pagination]` and `(paginationClicked)` /
+`(paginationSet)`. Default page size 25. Each tab loads data independently on activation.
+
+**Service** (`ExternalPluginService` additions):
+- `getPluginLogs(configId, params): Observable<Page<PluginLogEntry>>`
+- `getApiCallLogs(configId, params): Observable<Page<ApiCallLogEntry>>`
+
+**i18n** — new keys under `pluginManagement.logs.*` in `en.json` and `nl.json`:
+`menuItem`, `title`, `tabs.pluginLogs`, `tabs.apiCalls`, `columns.timestamp`, `columns.level`,
+`columns.message`, `columns.invocationType`, `columns.capability`, `columns.method`,
+`columns.url`, `columns.statusCode`, `columns.duration`, `empty`, `close`.
+
+### 18.13 Demo plugin scenarios — `case-summary` enhancements ⛔
+
+The sample plugin (`plugin-host/sample-plugins/case-summary/`) gains scenarios that exercise
+`http_request`, `kv`, and `log` alongside the existing `gzac_api` usage, proving each capability
+produces results visible in GZAC.
+
+**Manifest additions:**
+
+```json
+{
+  "permissions": {
+    "capabilities": ["gzac_api", "http_request", "kv", "log"],
+    "endpoints": [
+      { "method": "GET", "pattern": "/api/v1/document/*" },
+      { "method": "POST", "pattern": "/api/v1/document/*/note" },
+      { "method": "POST", "pattern": "/api/v1/case/*/search" },
+      { "method": "POST", "pattern": "/api/v1/task/*/complete" }
+    ]
+  }
+}
+```
+
+**New `plugin.ts` scenarios:**
+
+1. **`http_request` — fetch from a trusted test API.** A new `request("/external-data", …)`
+   handler calls `httpRequest.get("https://jsonplaceholder.typicode.com/todos/1")` — a public,
+   stable, no-auth JSON API. The response (a todo item with `id`, `title`, `completed`) is
+   returned to the case-tab iframe, which renders it in a new "External API data" card alongside
+   the existing cards. This proves `http_request` works end-to-end: the plugin makes an outbound
+   HTTP call, the result travels through the host back to the iframe, and is visible in the GZAC
+   case tab.
+
+2. **`kv` — persistent view counter.** The existing `request("/summary", …)` handler is enhanced:
+   on each invocation it reads `kv.get("view-count")`, increments, and writes
+   `kv.set("view-count", count + 1)`. The count is returned in the response body and displayed in
+   the case-tab iframe as "Tab views: N". This proves `kv` persists across invocations — refresh
+   the tab and the counter increments. The counter is per-configuration, so two configurations of
+   the same plugin have independent counts.
+
+3. **`log` — structured logging visible in admin.** All existing `log.info(...)` calls are
+   enhanced with a `data` parameter carrying structured context (e.g.
+   `log.info("[case-summary] summary built", { documentId, summary, currency })`). The
+   `request("/summary")` handler additionally logs at `debug` level with timing information. A
+   new `log.warn(...)` call is added to the `countCases` handler when the upstream status is not
+   200. These log entries appear in the admin log modal (§18.12), proving the structured logging
+   pipeline works end-to-end.
+
+**Case-tab frontend updates** (`frontend/case-tab.tsx`):
+
+A new section/card is added to the case-tab UI:
+
+- **"External API data"** — calls `sdk.getPluginData("/external-data")` and renders the todo
+  item's title and completion status. Shows loading/error states matching the existing cards.
+- **"Tab views"** — the view count from the `/summary` response is displayed as a small badge or
+  counter in the "Plugin-served data" card header.
+
+**Translation additions** (`manifest.json` translations):
+
+```json
+{
+  "en": {
+    "caseTab.external.title": "External API data",
+    "caseTab.external.todoTitle": "Todo",
+    "caseTab.external.todoCompleted": "Completed",
+    "caseTab.external.error": "Could not load external data.",
+    "caseTab.viewCount": "Tab views"
+  },
+  "nl": {
+    "caseTab.external.title": "Externe API-gegevens",
+    "caseTab.external.todoTitle": "Todo",
+    "caseTab.external.todoCompleted": "Voltooid",
+    "caseTab.external.error": "Kon externe gegevens niet laden.",
+    "caseTab.viewCount": "Tabbladweergaven"
+  }
+}
+```
+
+### 18.14 Permission UX — capabilities section ⛔
+
+The `PluginExternalPermissionsComponent` gains a third section above the existing two:
+
+- **Host capabilities** — a `cds-structured-list` listing each declared capability with a
+  localised name and description. The names and descriptions are static (not fetched from the
+  backend like endpoint descriptions) — they are defined in the frontend translation bundle:
+
+  | Capability | EN name | EN description |
+  |-----------|---------|----------------|
+  | `gzac_api` | GZAC API | Make authenticated calls to the GZAC REST API on behalf of the plugin or the logged-in user |
+  | `http_request` | HTTP requests | Make outbound HTTP requests to external services |
+  | `kv` | Key-value store | Read and write persistent key-value data scoped to this configuration |
+  | `log` | Structured logging | Write structured log entries visible to administrators |
+
+  Each row shows a tag with the capability name and the localised description.
+
+- The existing single acknowledgement checkbox covers all three sections (capabilities, endpoints,
+  events). The checkbox is required when **any** of the three sections has entries.
+
+- In read-only mode (edit), all three sections are shown with the `acceptedNote` info notification.
+
+**Create payload change.** The `POST .../configuration` body gains `grantedCapabilities: string[]`.
+The frontend maps `manifest.permissions.capabilities` to the payload. The backend validates that
+every manifest-declared capability is present (§18.2).
+
+### 18.15 Verification plan
+
+- Host `tsc` build clean with four host functions and the new DB repositories.
+- Backend `:backend:external-plugin:test` — new test cases:
+  - `ExternalPluginConfigurationServiceTest`: `create()` rejects when `grantedCapabilities` does
+    not cover `manifest.permissions.capabilities`; `create()` persists granted capabilities;
+    `update()` does not accept `grantedCapabilities`.
+  - `ExternalPluginHostClientTest`: `pushConfiguration` body includes `grantedCapabilities`.
+- Sample plugin `build:pack` clean — manifest includes `permissions.capabilities`.
+- Frontend `@valtimo/plugin-management` `ng build` clean — permissions component renders the
+  capabilities section; log modal compiles.
+- End-to-end browser verification:
+  - Configure the sample plugin with all four capabilities accepted.
+  - Case tab renders: "External API data" card with todo from jsonplaceholder, view count
+    incrementing on refresh, case counts (existing), and plugin-served data (existing).
+  - Admin log modal shows structured log entries and API call logs for the configuration.
+  - Reconfigure without `http_request` → the `/external-data` handler returns a capability-denied
+    error, the card shows the error state.
+
+---
+
+## Implementation status (§18)
+
+Tracks what is done and what remains. No backward compatibility — still in dev.
+
+### ✅ Done — plugin-host side (SDK + host app + sample plugin)
+
+All compile clean (`tsc --noEmit` passes for SDK, host app, and sample plugin — the sample
+plugin has one pre-existing TS error in the submit handler unrelated to capabilities).
+
+**SDK (`plugin-sdk/`)**
+- `models/types.ts` — `HOST_CAPABILITIES` const, `HostCapability` type, `capabilities` on
+  `PluginManifest.permissions`, `HttpRequestResponse`, `KvGetResult` types.
+- `models/index.ts` — re-exports new types + `HOST_CAPABILITIES` value.
+- `manifest-validation.ts` — rejects unknown capabilities; flags `endpoints` without `gzac_api`.
+- `host-functions.ts` — `log` accepts optional `data` arg, calls real Extism host function,
+  added `debug` level.
+- `kv.ts` (new) — `kv.get()`, `.set()`, `.delete()`, `.list()` via Extism host function.
+- `http-request.ts` (new) — `httpRequest.get()`, `.post()`, `.put()`, `.delete()`.
+- `index.ts` — exports `httpRequest`, `kv`, new types.
+
+**Host app (`app/`)**
+- `db/index.ts` — migration 3 (`granted_capabilities` column) + migration 4 (`plugin_kv` +
+  `plugin_logs` tables with indexes).
+- `db/kv-repository.ts` (new) — `get`, `set`, `delete`, `list`, `deleteAll`.
+- `db/log-repository.ts` (new) — `insert`, `query` (paginated, filterable by level/source),
+  `deleteOlderThan`, `deleteByConfiguration`.
+- `db/config-repository.ts` — stores/reads `granted_capabilities` JSONB column.
+- `models/plugin-configuration.ts` — `grantedCapabilities?: string[]` field.
+- `host-functions/gzac-api.ts` — capability gate (`gzac_api`), `grantedCapabilities` on
+  `GzacApiCallContext`.
+- `host-functions/kv.ts` (new) — `kv` host function with capability gate, delegates to
+  `KvRepository`.
+- `host-functions/log.ts` (new) — `log` host function with capability gate, writes to pino +
+  persists to `plugin_logs` (async, non-blocking).
+- `host-functions/http-request.ts` (new) — `http_request` host function with capability gate,
+  HTTPS-only default (`HOST_ALLOW_HTTP=true` for dev), blocks calls to `gzacBaseUrl`, timeout
+  cap 60s, auto-logs to `plugin_logs`.
+- `plugin-manager.ts` — registers all 4 host functions on `createPlugin`, new constructor
+  params (`configRepository`, `kvRepository`, `logRepository`, `allowHttp`), private
+  `resolveCapabilities()` helper, threads `grantedCapabilities` through every `hostContext`.
+- `routes/plugin-logs.ts` (new) — `GET /api/host/configurations/:configId/logs` HMAC-signed,
+  paginated, filterable by `level`/`source`.
+- `index.ts` — wires `KvRepository`, `LogRepository`, `pluginLogRoutes`, log retention job
+  (`LOG_RETENTION_DAYS` env, default 30, runs on startup + every 6h), clears interval on
+  shutdown.
+
+**Sample plugin (`case-summary/`)**
+- `manifest.json` — `permissions.capabilities: ["gzac_api", "http_request", "kv", "log"]`,
+  new `en`/`nl` translations for external-data and view-count UI sections.
+- `src/plugin.ts` — KV view counter in `/summary`, new `/external-data` handler
+  (JSONPlaceholder + KV + structured log), new `/kv-stats` handler, all existing `log.info()`
+  calls updated to structured form with `data` parameter.
+
+### ✅ Done — GZAC backend (Kotlin)
+
+All compile clean (`compileKotlin` + `compileTestKotlin` + `test` pass).
+
+1. **Domain** — `ExternalPluginGrantedCapability` entity.
+2. **Repository** — `ExternalPluginGrantedCapabilityRepository`.
+3. **Liquibase** — `20260716-external-plugin-granted-capability.xml` in `13-32-0/`.
+4. **Service** — `ExternalPluginConfigurationService.create()`: add `grantedCapabilities`
+   parameter, `validateGrantedCapabilitiesCoverManifest()` gate, persist to new table.
+   `update()` does **not** accept `grantedCapabilities` (immutable after activation).
+4. **Service** — `create()` accepts + validates + persists `grantedCapabilities`. `pushToHost()`
+   includes them. `delete()` cleans them up. `getGrantedCapabilities()` query.
+5. **Config push** — `pushToHost()` reads `grantedCapabilities` and passes to client.
+   `ExternalPluginHostClient.pushConfiguration()` includes `grantedCapabilities` in body.
+6. **REST DTO** — `ConfigurationCreateRequest` gains `grantedCapabilities`, new
+   `GrantedCapabilityResponse`, `ConfigurationDetailResponse` includes capabilities.
+7. **Management resource** — `createConfiguration` passes capabilities through,
+   `getConfiguration` returns them.
+8. **Host service** — `delete()` cleans up `grantedCapabilityRepository`.
+9. **Autoconfiguration** — wired `grantedCapabilityRepository` into both services.
+10. **Tests** — all 3 test files updated for new constructor param; all pass.
+
+**Not yet done (backend):**
+- Log proxy endpoint (`GET /api/management/v1/external-plugin/configuration/{configId}/logs`)
+  that proxies the host's log route. Can be added later alongside the frontend log modal.
+
+### ✅ Done — GZAC frontend (Angular)
+
+All build clean (`ng build @valtimo/plugin` + `ng build @valtimo/plugin-management`).
+
+1. **Permission UX** — `plugin-external-permissions` component: capabilities section added
+   (structured list with purple `cds-tag` per capability + localised descriptions). Renders
+   before endpoints. Checkbox condition includes capabilities. i18n added (en + nl) under
+   `pluginManagement.permissions.capability.*`.
+2. **Add modal** — `capabilities$` observable, `onCapabilitiesResolved`, `onGrantedCapabilitiesChange`,
+   `grantedCapabilities` in save payload.
+3. **Configure component** — `capabilitiesResolved` output, `setGrantedCapabilities`, `grantedCapabilities`
+   in both save emit paths.
+4. **Edit modal** — `_$capabilities` signal, wired through to readonly permissions component,
+   `_$hasPermissionsStep` includes capabilities.
+5. **Model** — `ExternalPluginPermissions.capabilities?: Array<string>`,
+   `ExternalPluginConfigurationCreateRequest.grantedCapabilities`.
+
+### ✅ Done — all remaining items
+
+All builds pass: backend `compileKotlin` + `test`, host `tsc`, SDK `tsc`, frontend `ng build`.
+
+6. **Tag colors** — permissions screen: capabilities = purple, HTTP methods = color-coded by
+   verb (GET=blue, POST=green, PUT=teal, DELETE=red), endpoint patterns = cool-gray,
+   events = teal.
+7. **GZAC log proxy endpoint** — `GET .../configuration/{configId}/logs` proxies to host via
+   HMAC. `ExternalPluginHostClient.getConfigurationLogs()`. Autoconfiguration wired.
+8. **Admin log modal** — `PluginLogModalComponent` (standalone): `cds-modal size="lg"` with
+   level/source filter dropdowns + `valtimo-carbon-list` (paginated) + row-click detail aside.
+   Overflow menu "Logs" item on external configs. i18n (en + nl).
+9. **Frontend service** — `ExternalPluginService.getConfigurationLogs()`.
+10. **Frontend model** — `PluginLogEntry`, `PluginLogPage`.
+11. **Sample plugin frontend** — case-tab: "External API data" card (JSONPlaceholder todo via
+   `http_request`), per-document KV view counter badge, tab view count from `/summary`.

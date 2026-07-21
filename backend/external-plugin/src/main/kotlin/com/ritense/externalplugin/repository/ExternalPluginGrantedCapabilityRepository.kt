@@ -14,32 +14,15 @@
  * limitations under the License.
  */
 
-export type {
-  ActionInput,
-  ActionOutput,
-  ActionHandler,
-  EventInput,
-  EventOutput,
-  EventHandler,
-  RequestInput,
-  RequestOutput,
-  RequestHandler,
-  SubmitInput,
-  SubmitOutput,
-  SubmitHandler,
-  PluginManifest,
-  ManifestAction,
-  ManifestActionProperty,
-  Endpoint,
-  FrontendBundle,
-  FrontendBundleType,
-  GzacApiResponse,
-  HttpRequestResponse,
-  KvGetResult,
-  HostCapability,
-  Document,
-  DocumentContent,
-  DocumentDefinitionId,
-} from "./types.js";
+package com.ritense.externalplugin.repository
 
-export { HOST_CAPABILITIES } from "./types.js";
+import com.ritense.externalplugin.domain.ExternalPluginGrantedCapability
+import org.springframework.data.jpa.repository.JpaRepository
+import java.util.UUID
+
+interface ExternalPluginGrantedCapabilityRepository : JpaRepository<ExternalPluginGrantedCapability, UUID> {
+
+    fun findAllByConfigurationId(configurationId: UUID): List<ExternalPluginGrantedCapability>
+
+    fun deleteAllByConfigurationId(configurationId: UUID)
+}

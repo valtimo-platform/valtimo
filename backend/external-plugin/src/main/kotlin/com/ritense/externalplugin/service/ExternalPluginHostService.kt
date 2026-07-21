@@ -26,6 +26,7 @@ import com.ritense.externalplugin.exception.ExternalPluginHostInUseException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.plugin.service.EncryptionService
@@ -45,6 +46,7 @@ class ExternalPluginHostService(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
     private val grantedEventRepository: ExternalPluginGrantedEventRepository,
+    private val grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository,
     private val encryptionService: EncryptionService,
     private val hostClient: ExternalPluginHostClient,
     private val hostUsageResolver: ExternalPluginHostUsageResolver,
@@ -154,6 +156,7 @@ class ExternalPluginHostService(
             for (configuration in configurations) {
                 grantedEndpointRepository.deleteAllByConfigurationId(configuration.id)
                 grantedEventRepository.deleteAllByConfigurationId(configuration.id)
+                grantedCapabilityRepository.deleteAllByConfigurationId(configuration.id)
             }
             configurationRepository.deleteAll(configurations)
         }

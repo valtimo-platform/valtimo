@@ -14,66 +14,63 @@
  * limitations under the License.
  */
 
-// In Extism JS PDK, host functions are declared and called via the Host object.
-// For the POC, log is the only host function available.
-// In production, gzacApi, http, kv would also be here.
+function callLogHostFunction(level: string, message: string, data?: Record<string, unknown>): void {
+  try {
+    const Host = (globalThis as Record<string, unknown>).Host as
+      | { getFunctions(): Record<string, unknown> }
+      | undefined;
+    const Memory = (globalThis as Record<string, unknown>).Memory as
+      | {
+          fromString(s: string): { offset: bigint | number };
+        }
+      | undefined;
 
-// Declare the host function imports that the Wasm module can call.
-// These are provided by the Plugin Host at runtime via Extism host functions.
+    if (Host?.getFunctions && Memory?.fromString) {
+      const fn = Host.getFunctions().log as
+        | ((input: bigint | number) => void)
+        | undefined;
+      if (typeof fn === "function") {
+        const payload: Record<string, unknown> = { level, message };
+        if (data !== undefined) {
+          payload.data = data;
+        }
+        const mem = Memory.fromString(JSON.stringify(payload));
+        fn(mem.offset);
+        return;
+      }
+    }
+  } catch {
+    // Not in Wasm context
+  }
 
-/**
- * Logging — calls the host's log function.
- * In the POC, this writes to the host's pino logger.
- * In Wasm context, this calls the host function.
- * When running outside Wasm (e.g. during build/test), it falls back to console.
- */
+  const prefix = `[${level.toUpperCase()}]`;
+  const extra = data ? ` ${JSON.stringify(data)}` : "";
+  switch (level) {
+    case "warn":
+      console.warn(`${prefix} ${message}${extra}`);
+      break;
+    case "error":
+      console.error(`${prefix} ${message}${extra}`);
+      break;
+    case "debug":
+      console.debug(`${prefix} ${message}${extra}`);
+      break;
+    default:
+      console.log(`${prefix} ${message}${extra}`);
+  }
+}
+
 export const log = {
-  info(message: string): void {
-    try {
-      // @ts-ignore - Host global is injected by Extism PDK at runtime
-      const Host = (globalThis as any).Host;
-      if (Host?.getFunctions) {
-        const fn = Host.getFunctions();
-        if (fn?.log) {
-          fn.log(JSON.stringify({ level: "info", message }));
-          return;
-        }
-      }
-    } catch {
-      // Not in Wasm context
-    }
-    console.log(`[INFO] ${message}`);
+  info(message: string, data?: Record<string, unknown>): void {
+    callLogHostFunction("info", message, data);
   },
-
-  warn(message: string): void {
-    try {
-      const Host = (globalThis as any).Host;
-      if (Host?.getFunctions) {
-        const fn = Host.getFunctions();
-        if (fn?.log) {
-          fn.log(JSON.stringify({ level: "warn", message }));
-          return;
-        }
-      }
-    } catch {
-      // Not in Wasm context
-    }
-    console.warn(`[WARN] ${message}`);
+  warn(message: string, data?: Record<string, unknown>): void {
+    callLogHostFunction("warn", message, data);
   },
-
-  error(message: string): void {
-    try {
-      const Host = (globalThis as any).Host;
-      if (Host?.getFunctions) {
-        const fn = Host.getFunctions();
-        if (fn?.log) {
-          fn.log(JSON.stringify({ level: "error", message }));
-          return;
-        }
-      }
-    } catch {
-      // Not in Wasm context
-    }
-    console.error(`[ERROR] ${message}`);
+  error(message: string, data?: Record<string, unknown>): void {
+    callLogHostFunction("error", message, data);
+  },
+  debug(message: string, data?: Record<string, unknown>): void {
+    callLogHostFunction("debug", message, data);
   },
 };

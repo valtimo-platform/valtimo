@@ -139,6 +139,9 @@ export interface Endpoint {
   pattern: string;
 }
 
+export const HOST_CAPABILITIES = ["gzac_api", "http_request", "kv", "log"] as const;
+export type HostCapability = (typeof HOST_CAPABILITIES)[number];
+
 /**
  * Frontend bundle `type` values the platform knows how to render. Single source of truth for both
  * the compile-time {@link FrontendBundleType} and the runtime allow-list used by
@@ -197,6 +200,7 @@ export interface PluginManifest {
   configurationSchema?: Record<string, unknown>;
   permissions?: {
     endpoints?: Endpoint[];
+    capabilities?: HostCapability[];
   };
   frontendBundles?: FrontendBundle[];
   /**
@@ -228,6 +232,20 @@ export interface GzacApiResponse<T = unknown> {
   status: number;
   headers: Record<string, string>;
   body: T;
+}
+
+/**
+ * Response from the `http_request` host function. Same shape as {@link GzacApiResponse}.
+ */
+export interface HttpRequestResponse<T = unknown> {
+  status: number;
+  headers: Record<string, string>;
+  body: T;
+}
+
+export interface KvGetResult<T = unknown> {
+  found: boolean;
+  value: T | undefined;
 }
 
 /**

@@ -28,7 +28,8 @@ import {
 } from '@valtimo/plugin';
 import {ButtonModule, LoadingModule} from 'carbon-components-angular';
 import {BehaviorSubject, EMPTY, fromEvent, merge, Observable, of, Subject, timer} from 'rxjs';
-import {catchError, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {catchError, distinctUntilChanged, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {PluginHostModalComponent} from '../plugin-host-modal/plugin-host-modal.component';
 import {PluginHostEventQueueModalComponent} from '../plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
@@ -145,7 +146,8 @@ export class PluginAppsPageComponent implements OnDestroy {
       this._hostsInitialLoad = false;
       this.hostsLoading$.next(false);
       this.hostsRefreshing$.next(false);
-    })
+    }),
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
   constructor(

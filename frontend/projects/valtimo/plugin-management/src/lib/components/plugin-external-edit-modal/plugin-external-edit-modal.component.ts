@@ -90,6 +90,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
   public readonly _$endpoints = signal<Array<ExternalPluginEndpoint>>([]);
   public readonly _$eventSubscriptions = signal<Array<string>>([]);
+  public readonly _$capabilities = signal<Array<string>>([]);
   public readonly _$permissionsValid = signal(false);
   public readonly _$hasPermissionsStep = signal(false);
   public readonly _$definitionName = signal<string>('');
@@ -242,6 +243,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._iframeConfigData = null;
     this._$endpoints.set([]);
     this._$eventSubscriptions.set([]);
+    this._$capabilities.set([]);
     this._$permissionsValid.set(false);
     this._$hasPermissionsStep.set(false);
     this._$definition.set(null);
@@ -275,10 +277,11 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
           const endpoints = definition.manifest?.permissions?.endpoints ?? [];
           const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
+          const capabilities = definition.manifest?.permissions?.capabilities ?? [];
           this._$endpoints.set(endpoints);
           this._$eventSubscriptions.set(eventSubscriptions);
-          this._$hasPermissionsStep.set(endpoints.length > 0 || eventSubscriptions.length > 0);
-          // Permissions are read-only when editing, so the step never blocks saving.
+          this._$capabilities.set(capabilities);
+          this._$hasPermissionsStep.set(endpoints.length > 0 || eventSubscriptions.length > 0 || capabilities.length > 0);
           this._$permissionsValid.set(true);
 
           this._buildProgressSteps();
@@ -298,9 +301,11 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
           const endpoints = definition.manifest?.permissions?.endpoints ?? [];
           const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
+          const capabilities = definition.manifest?.permissions?.capabilities ?? [];
           this._$endpoints.set(endpoints);
           this._$eventSubscriptions.set(eventSubscriptions);
-          this._$hasPermissionsStep.set(endpoints.length > 0 || eventSubscriptions.length > 0);
+          this._$capabilities.set(capabilities);
+          this._$hasPermissionsStep.set(endpoints.length > 0 || eventSubscriptions.length > 0 || capabilities.length > 0);
           this._$permissionsValid.set(true);
 
           this._buildProgressSteps();
@@ -370,6 +375,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._iframeConfigData = null;
     this._$endpoints.set([]);
     this._$eventSubscriptions.set([]);
+    this._$capabilities.set([]);
     this._$permissionsValid.set(false);
     this._$hasPermissionsStep.set(false);
     this._$definition.set(null);

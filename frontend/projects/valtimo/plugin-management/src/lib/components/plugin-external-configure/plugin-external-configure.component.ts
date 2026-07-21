@@ -47,6 +47,7 @@ interface ExternalPluginSaveEvent {
   properties: Record<string, unknown>;
   grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
   grantedEvents: Array<ExternalPluginGrantedEventEntry>;
+  grantedCapabilities: Array<string>;
 }
 
 @Component({
@@ -68,6 +69,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   @Output() public saveEvent = new EventEmitter<ExternalPluginSaveEvent>();
   @Output() public endpointsResolved = new EventEmitter<Array<ExternalPluginEndpoint>>();
   @Output() public eventSubscriptionsResolved = new EventEmitter<Array<string>>();
+  @Output() public capabilitiesResolved = new EventEmitter<Array<string>>();
 
   public readonly _$configBundleUrl = signal<string | null>(null);
   public readonly _$loading = signal(true);
@@ -82,6 +84,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   private _iframeConfigData: Record<string, unknown> | null = null;
   private _grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry> = [];
   private _grantedEvents: Array<ExternalPluginGrantedEventEntry> = [];
+  private _grantedCapabilities: Array<string> = [];
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -100,6 +103,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
               this._$loading.set(false);
               this.endpointsResolved.emit([]);
               this.eventSubscriptionsResolved.emit([]);
+              this.capabilitiesResolved.emit([]);
               return [];
             }
 
@@ -124,6 +128,8 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 this.endpointsResolved.emit(endpoints);
                 const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
                 this.eventSubscriptionsResolved.emit(eventSubscriptions);
+                const capabilities = definition.manifest?.permissions?.capabilities ?? [];
+                this.capabilitiesResolved.emit(capabilities);
 
                 this._$loading.set(false);
               })
@@ -164,6 +170,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     this._grantedEvents = events;
   }
 
+  public setGrantedCapabilities(caps: Array<string>): void {
+    this._grantedCapabilities = caps;
+  }
+
   private _validateForm(): void {
     if (this._$configBundleUrl()) return;
 
@@ -190,6 +200,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
         properties: this._iframeConfigData,
         grantedEndpoints: this._grantedEndpoints,
         grantedEvents: this._grantedEvents,
+        grantedCapabilities: this._grantedCapabilities,
       });
       return;
     }
@@ -211,6 +222,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
       properties,
       grantedEndpoints: this._grantedEndpoints,
       grantedEvents: this._grantedEvents,
+      grantedCapabilities: this._grantedCapabilities,
     });
   }
 }

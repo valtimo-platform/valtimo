@@ -66,6 +66,12 @@ export interface PluginConfiguration {
    */
   eventSubscriptions: string[];
   /**
+   * Host capabilities the admin granted at activation (`gzac_api`, `http_request`, `kv`, `log`).
+   * Each host function checks this list before executing. Empty means the plugin cannot call any
+   * host function.
+   */
+  grantedCapabilities?: string[];
+  /**
    * Event broker of the owning GZAC instance. Absent when the instance has no broker configured —
    * the configuration then receives no platform events (actions still work).
    */

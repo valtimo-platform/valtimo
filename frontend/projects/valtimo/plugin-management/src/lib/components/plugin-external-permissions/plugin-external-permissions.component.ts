@@ -68,6 +68,7 @@ import {EnrichedEndpoint} from '../../models';
 export class PluginExternalPermissionsComponent implements OnChanges {
   @Input() public endpoints: Array<ExternalPluginEndpoint> = [];
   @Input() public eventSubscriptions: Array<string> = [];
+  @Input() public capabilities: Array<string> = [];
   @Input() public readonlyMode = false;
 
   @Output() public validEvent = new EventEmitter<boolean>();
@@ -75,19 +76,23 @@ export class PluginExternalPermissionsComponent implements OnChanges {
     Array<ExternalPluginGrantedEndpointEntry>
   >();
   @Output() public grantedEventsChange = new EventEmitter<Array<ExternalPluginGrantedEventEntry>>();
+  @Output() public grantedCapabilitiesChange = new EventEmitter<Array<string>>();
 
   public readonly _$enrichedEndpoints = signal<Array<EnrichedEndpoint>>([]);
   public readonly _$eventTypes = signal<Array<string>>([]);
+  public readonly _$capabilities = signal<Array<string>>([]);
   public readonly _$accepted = signal<boolean>(false);
 
   private readonly _externalPluginService = inject(ExternalPluginService);
   private readonly _translateService = inject(TranslateService);
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['endpoints'] || changes['eventSubscriptions'] || changes['readonlyMode']) {
+    if (changes['endpoints'] || changes['eventSubscriptions'] || changes['capabilities'] || changes['readonlyMode']) {
       this._$accepted.set(false);
       this._$eventTypes.set([...this.eventSubscriptions]);
+      this._$capabilities.set([...this.capabilities]);
       this._emitGrantedEvents(this._$eventTypes());
+      this._emitGrantedCapabilities(this._$capabilities());
       this._fetchDescriptionsAndInit();
     }
   }
@@ -95,6 +100,17 @@ export class PluginExternalPermissionsComponent implements OnChanges {
   public onAcceptanceChange(accepted: boolean): void {
     this._$accepted.set(accepted);
     this._emitValidity();
+  }
+
+  public _httpMethodTagType(method: string): string {
+    switch (method.toUpperCase()) {
+      case 'GET': return 'blue';
+      case 'POST': return 'green';
+      case 'PUT': return 'teal';
+      case 'PATCH': return 'cyan';
+      case 'DELETE': return 'red';
+      default: return 'warm-gray';
+    }
   }
 
   private _endpointKey(endpoint: ExternalPluginEndpoint): string {
@@ -154,8 +170,14 @@ export class PluginExternalPermissionsComponent implements OnChanges {
     this.grantedEventsChange.emit(eventTypes.map(eventType => ({eventType})));
   }
 
+  private _emitGrantedCapabilities(caps: Array<string>): void {
+    this.grantedCapabilitiesChange.emit([...caps]);
+  }
+
   private _emitValidity(): void {
-    const empty = this._$enrichedEndpoints().length === 0 && this._$eventTypes().length === 0;
+    const empty = this._$enrichedEndpoints().length === 0
+      && this._$eventTypes().length === 0
+      && this._$capabilities().length === 0;
     const valid = this.readonlyMode || empty || this._$accepted();
     this.validEvent.emit(valid);
   }

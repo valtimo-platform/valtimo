@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.externalplugin.compatibility.CompatibilityResult
+import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
 import com.ritense.externalplugin.compatibility.PluginPackageInspector
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
@@ -35,6 +36,7 @@ import com.ritense.externalplugin.web.rest.dto.ConfigurationDetailResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.DefinitionResponse
+import com.ritense.externalplugin.web.rest.dto.GrantedCapabilityResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
@@ -68,6 +70,7 @@ class ExternalPluginManagementResource(
     private val hostService: ExternalPluginHostService,
     private val definitionService: ExternalPluginDefinitionService,
     private val configurationService: ExternalPluginConfigurationService,
+    private val hostClient: ExternalPluginHostClient,
     private val endpointDescriptionService: EndpointDescriptionService,
     private val discoveryService: ExternalPluginDiscoveryService,
     private val environment: Environment,
@@ -284,6 +287,7 @@ class ExternalPluginManagementResource(
         val decrypted = configurationService.decryptedProperties(configuration)
         val grantedEndpoints = configurationService.getGrantedEndpoints(configurationId)
         val grantedEvents = configurationService.getGrantedEvents(configurationId)
+        val grantedCapabilities = configurationService.getGrantedCapabilities(configurationId)
         return ResponseEntity.ok(
             ConfigurationDetailResponse(
                 id = configuration.id,
@@ -292,6 +296,7 @@ class ExternalPluginManagementResource(
                 properties = decrypted,
                 grantedEndpoints = grantedEndpoints.map(GrantedEndpointResponse::from),
                 grantedEvents = grantedEvents.map(GrantedEventResponse::from),
+                grantedCapabilities = grantedCapabilities.map(GrantedCapabilityResponse::from),
                 createdAt = configuration.createdAt,
             )
         )
@@ -312,6 +317,7 @@ class ExternalPluginManagementResource(
             request.properties,
             request.grantedEndpoints,
             request.grantedEvents,
+            request.grantedCapabilities,
         )
         return ResponseEntity.status(HttpStatus.CREATED).body(ConfigurationResponse.from(configuration))
     }
@@ -350,6 +356,29 @@ class ExternalPluginManagementResource(
         @PathVariable configurationId: UUID,
     ): ResponseEntity<List<PluginUsageDto>> =
         ResponseEntity.ok(configurationService.findUsages(configurationId))
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get logs for an external plugin configuration",
+        nl = "Logs van externe-pluginconfiguratie ophalen",
+    )
+    @GetMapping("/configuration/{configurationId}/logs")
+    fun getConfigurationLogs(
+        @PathVariable configurationId: UUID,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "25") size: Int,
+        @RequestParam(required = false) level: String?,
+        @RequestParam(required = false) source: String?,
+    ): ResponseEntity<JsonNode> {
+        val configuration = configurationService.get(configurationId)
+        val definition = definitionService.get(configuration.definitionId)
+        val host = hostService.get(definition.hostId)
+        val adminToken = hostService.decryptedSecret(host)
+        val result = hostClient.getConfigurationLogs(
+            host.baseUrl, adminToken, configurationId.toString(), page, size, level, source
+        )
+        return ResponseEntity.ok(result)
+    }
 
     @RunWithoutAuthorization
     @EndpointDescription(

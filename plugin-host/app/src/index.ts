@@ -31,6 +31,9 @@ import {pluginDataRoutes} from "./routes/plugin-data.js";
 import {EventConsumerManager} from "./rabbitmq/event-consumer.js";
 import {closeDbPool, createDbPool, type DbPool, runMigrations} from "./db/index.js";
 import {ConfigRepository} from "./db/config-repository.js";
+import {KvRepository} from "./db/kv-repository.js";
+import {LogRepository} from "./db/log-repository.js";
+import {pluginLogRoutes} from "./routes/plugin-logs.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -80,12 +83,25 @@ async function main(): Promise<void> {
     },
   });
 
+  // Initialize repositories
+  const configRepository = new ConfigRepository(dbPool);
+  const kvRepository = new KvRepository(dbPool);
+  const logRepository = new LogRepository(dbPool);
+
   // Initialize plugin manager and config registry
+  const allowHttp = (process.env.HOST_ALLOW_HTTP ?? "").toLowerCase() === "true";
+  // Lets http_request reach loopback/private-network targets. Local development only — in
+  // production this would let a plugin use the host as a proxy into the internal network (SSRF).
+  const allowPrivateNetwork = (process.env.HOST_ALLOW_PRIVATE_NETWORK ?? "").toLowerCase() === "true";
   const pluginManager = new PluginManager(
     config.PLUGIN_STORAGE_DIR,
-    fastify.log
+    fastify.log,
+    configRepository,
+    kvRepository,
+    logRepository,
+    allowHttp,
+    allowPrivateNetwork
   );
-  const configRepository = new ConfigRepository(dbPool);
   const configRegistry = new ConfigRegistry(configRepository);
 
   // Brokers are learned from the configurations GZAC pushes; the manager opens/closes consumers as
@@ -134,10 +150,30 @@ async function main(): Promise<void> {
     configRegistry,
     config,
   });
+  await fastify.register(pluginLogRoutes, {
+    logRepository,
+    config,
+  });
+
+  // Log retention job
+  const retentionDays = parseInt(process.env.LOG_RETENTION_DAYS ?? "30", 10);
+  const runRetention = async () => {
+    try {
+      const deleted = await logRepository.deleteOlderThan(retentionDays);
+      if (deleted > 0) {
+        fastify.log.info({ deleted, retentionDays }, "Log retention cleanup");
+      }
+    } catch (err) {
+      fastify.log.warn({ error: (err as Error).message }, "Log retention failed");
+    }
+  };
+  await runRetention();
+  const retentionInterval = setInterval(runRetention, 6 * 60 * 60 * 1000);
 
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     fastify.log.info({ signal }, "Shutting down...");
+    clearInterval(retentionInterval);
     await eventConsumerManager.close();
     await closeDbPool(dbPool);
     await fastify.close();

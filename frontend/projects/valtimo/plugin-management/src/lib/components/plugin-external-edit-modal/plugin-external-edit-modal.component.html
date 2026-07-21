@@ -74,6 +74,7 @@
       <valtimo-plugin-external-permissions
         [endpoints]="_$endpoints()"
         [eventSubscriptions]="_$eventSubscriptions()"
+        [capabilities]="_$capabilities()"
         [readonlyMode]="true"
         (validEvent)="onPermissionsValid($event)"
       ></valtimo-plugin-external-permissions>
