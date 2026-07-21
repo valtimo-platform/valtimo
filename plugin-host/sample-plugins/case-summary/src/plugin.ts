@@ -283,6 +283,15 @@ action("case-summary", (input: ActionInput) => {
       [summaryVariable]: summary,
       [definitionKeyVariable]: document.definitionId?.name,
     },
+    // `result` is a separate channel from `variables`, consumed only by the process link's
+    // configured `actionResultMappings` (e.g. mapping "/summary" to a `doc:` path). Demonstrates
+    // the action-result write-back feature independently of the existing process-variable output.
+    result: {
+      summary,
+      title,
+      amount: amount ?? null,
+      currency,
+    },
   };
 });
 

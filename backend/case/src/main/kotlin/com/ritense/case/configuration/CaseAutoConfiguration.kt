@@ -127,7 +127,7 @@ class CaseAutoConfiguration {
         caseDefinitionChecker: CaseDefinitionChecker,
         configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
         caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
-        pluginConfigurationMappingResolver: PluginConfigurationMappingResolver?,
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
     ): CaseDefinitionResource {
         return CaseDefinitionResource(
             service,
@@ -138,7 +138,7 @@ class CaseAutoConfiguration {
             caseDefinitionChecker,
             configurationIssueRepository,
             caseDefinitionImportPreviewService,
-            pluginConfigurationMappingResolver,
+            pluginConfigurationMappingResolvers,
         )
     }
 
@@ -359,8 +359,9 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseTabImporter::class)
     fun caseTabImporter(
         objectMapper: ObjectMapper,
-        caseTabRepository: CaseTabRepository
-    ) = CaseTabImporter(objectMapper, caseTabRepository)
+        caseTabRepository: CaseTabRepository,
+        applicationEventPublisher: ApplicationEventPublisher
+    ) = CaseTabImporter(objectMapper, caseTabRepository, applicationEventPublisher)
 
     @Bean
     @ConditionalOnMissingBean(CaseTaskListExporter::class)

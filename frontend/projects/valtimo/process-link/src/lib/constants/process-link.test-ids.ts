@@ -28,3 +28,13 @@ export const BB_MAPPINGS_TEST_IDS = {
   inputTargetSelectWrapper: 'bbMappingsInputTargetSelectWrapper',
   outputSourceSelectWrapper: 'bbMappingsOutputSourceSelectWrapper',
 } as const;
+
+export const PLUGIN_ACTION_RESULT_MAPPINGS_TEST_IDS = {
+  section: 'pluginActionResultMappingsSection',
+  row: 'pluginActionResultMappingsRow',
+  sourceInput: 'pluginActionResultMappingsSourceInput',
+  sourceSelectWrapper: 'pluginActionResultMappingsSourceSelectWrapper',
+  targetSelectWrapper: 'pluginActionResultMappingsTargetSelectWrapper',
+  addButton: 'pluginActionResultMappingsAddButton',
+  deleteButton: 'pluginActionResultMappingsDeleteButton',
+} as const;

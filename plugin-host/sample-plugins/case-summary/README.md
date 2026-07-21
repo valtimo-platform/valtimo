@@ -10,6 +10,14 @@ Registers a single `case-summary` action that:
 - Calls back into GZAC via `gzacApi.get('/api/v1/document/{id}')` using the running case's `processBusinessKey` as the document ID.
 - Looks up the configured fields in `document.content` using RFC 6901 JSON pointers.
 - Returns a `caseSummary` process variable like `"Alice — EUR 12500 — (loan-application/<uuid>)"`.
+- Additionally returns a `result` payload (`{ summary, title, amount, currency }`) — a second,
+  independent channel from `variables` that GZAC's process-link **output mapping**
+  (`actionResultMappings`, #771) can write onto the case document or a process variable. The
+  action declares these keys in `manifest.json` (`actions[].outputs`), which is what makes the
+  dedicated "Output mapping" step appear in the process-link stepper at all — its source field is a
+  dropdown of the declared keys (`summary`, `title`, `amount`, `currency`), not a free-text JSON
+  pointer. This demonstrates the action-result write-back feature end-to-end; see "Manual Test Path"
+  below.
 
 This is the second sample plugin alongside `say-hello`. Where `say-hello` only uses static configuration and BPMN action properties, `case-summary` exercises the end-to-end host-function callback path.
 
@@ -80,6 +88,10 @@ Both the service token and the GZAC base URL are pushed to the Plugin Host on co
 1. Build & pack (`npm run build:pack`).
 2. Upload `dist/case-summary-0.1.0.zip` to the Plugin Host (`POST /api/host/plugins`).
 3. In GZAC admin UI: create a configuration of `case-summary` with `titleField=/applicantName` (and `amountField=/loanAmount` if your case has it).
-4. Wire the `case-summary` action onto a BPMN service task.
+4. Wire the `case-summary` action onto a BPMN service task. Because the action declares `outputs` in
+   its manifest, the stepper offers an extra "Output mapping" step after the action's properties —
+   select `summary` from the source dropdown and set the target to `doc:/summaryText` (or
+   `pv:summaryText` to write a process variable instead).
 5. Start a case where `document.content` has those fields.
 6. Verify on the running process instance: variable `caseSummary` is set; the Plugin Host log shows `gzac_api call` / `gzac_api response`; GZAC's request log shows the inbound `GET /api/v1/document/<uuid>` authenticated as `external-plugin:case-summary:<configId>`.
+7. Verify the output mapping: the case document now has a `/summaryText` field (or the process variable `summaryText`, if mapped to `pv:`) equal to the plugin's `result.summary` string — confirming the action-result write-back path independently of the `variables` channel.

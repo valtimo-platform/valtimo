@@ -93,7 +93,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             caseDefinitionChecker,
             configurationIssueRepository,
             caseDefinitionImportPreviewService,
-            null,
+            emptyList(),
         )
 
         mapper = MapperSingleton.get()

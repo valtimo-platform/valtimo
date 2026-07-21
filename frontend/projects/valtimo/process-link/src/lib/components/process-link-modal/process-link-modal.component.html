@@ -122,7 +122,12 @@
         <valtimo-select-plugin-action></valtimo-select-plugin-action>
       </ng-container>
 
-      <ng-container *ngIf="obs.currentStepId === 'configurePluginAction'">
+      <ng-container
+        *ngIf="
+          obs.currentStepId === 'configurePluginAction' ||
+          obs.currentStepId === 'configurePluginActionResultMappings'
+        "
+      >
         <valtimo-plugin-action-configuration
           [selectedPluginConfiguration$]="selectedPluginConfiguration$"
         ></valtimo-plugin-action-configuration>

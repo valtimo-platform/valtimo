@@ -120,8 +120,14 @@ class ExternalPluginHostUsageResolver(
     }
 
     private fun collectUsageLinks(configurationIds: Collection<UUID>): List<UsageLink> {
+        // externalPluginConfigurationId is nullable on the entity (BUILDING_BLOCK references, Phase
+        // 2, carry no fixed config id) but findAllByExternalPluginConfigurationIdIn only ever
+        // returns rows whose id is one of the (non-null) ids queried for — the mapNotNull is a type
+        //-level formality, not an expected filter.
         val actionLinks = processLinkRepository.findAllByExternalPluginConfigurationIdIn(configurationIds)
-            .map { UsageLink(it.id, it.processDefinitionId, it.activityId, it.externalPluginConfigurationId) }
+            .mapNotNull { link ->
+                link.externalPluginConfigurationId?.let { UsageLink(link.id, link.processDefinitionId, link.activityId, it) }
+            }
         val taskFormLinks = taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(configurationIds)
             .map { UsageLink(it.id, it.processDefinitionId, it.activityId, it.externalPluginConfigurationId) }
         return actionLinks + taskFormLinks

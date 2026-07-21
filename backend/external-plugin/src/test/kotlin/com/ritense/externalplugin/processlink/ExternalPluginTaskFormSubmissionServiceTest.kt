@@ -29,6 +29,8 @@ import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.plugin.domain.PluginConfigurationReference
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
@@ -157,7 +159,11 @@ class ExternalPluginTaskFormSubmissionServiceTest {
             activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
             externalPluginConfigurationId = configurationId,
             bundleKey = bundleKey,
-            pluginVersion = "0.1.0",
+            pluginConfigurationReference = PluginConfigurationReference(
+                type = PluginConfigurationReferenceType.FIXED,
+                pluginDefinitionKey = "case-summary",
+                pluginDefinitionVersion = "0.1.0",
+            ),
         )
         whenever(
             processLinkService.getProcessLink(processLinkId, ExternalPluginTaskFormProcessLink::class.java),
@@ -187,6 +193,7 @@ class ExternalPluginTaskFormSubmissionServiceTest {
             on { manifestJson } doReturn manifest
             on { this.hostId } doReturn hostId
             on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.1.0"
         }
         whenever(configurationService.get(configurationId)).thenReturn(configuration)
         whenever(definitionService.get(definitionId)).thenReturn(definition)

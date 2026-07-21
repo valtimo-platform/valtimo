@@ -104,7 +104,10 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   private readonly _refreshConfigurationIssues$ = new BehaviorSubject<null>(null);
 
   public readonly hasPluginProcessLinkIssue$: Observable<boolean> =
-    this.configurationIssueService.hasIssue$('plugin-process-link');
+    this.configurationIssueService.hasAnyOfIssues$([
+      'plugin-process-link',
+      'external-plugin-process-link',
+    ]);
 
   private readonly _tabIssueCache = new Map<string, Observable<boolean>>();
 

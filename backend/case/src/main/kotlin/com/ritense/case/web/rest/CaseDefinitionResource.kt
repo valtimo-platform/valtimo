@@ -89,7 +89,7 @@ class CaseDefinitionResource(
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     private val caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
-    private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolver?,
+    private val pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
 ) {
 
     @RunWithoutAuthorization
@@ -544,10 +544,12 @@ class CaseDefinitionResource(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
     ): ResponseEntity<List<DanglingPluginConfigurationDto>> {
-        val resolver = pluginConfigurationMappingResolver
-            ?: return ResponseEntity.ok(emptyList())
+        if (pluginConfigurationMappingResolvers.isEmpty()) {
+            return ResponseEntity.ok(emptyList())
+        }
         val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
-        return ResponseEntity.ok(resolver.getDanglingPluginConfigurations(caseDefinitionId))
+        val dangling = pluginConfigurationMappingResolvers.flatMap { it.getDanglingPluginConfigurations(caseDefinitionId) }
+        return ResponseEntity.ok(dangling)
     }
 
     @EndpointDescription(
@@ -561,10 +563,11 @@ class CaseDefinitionResource(
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
         @RequestBody mappings: Map<UUID, UUID>,
     ): ResponseEntity<Void> {
-        val resolver = pluginConfigurationMappingResolver
-            ?: return ResponseEntity.status(501).build()
+        if (pluginConfigurationMappingResolvers.isEmpty()) {
+            return ResponseEntity.status(501).build()
+        }
         val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
-        resolver.resolve(caseDefinitionId, mappings)
+        pluginConfigurationMappingResolvers.forEach { it.resolve(caseDefinitionId, mappings) }
         return ResponseEntity.noContent().build()
     }
 

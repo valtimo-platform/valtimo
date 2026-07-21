@@ -23,17 +23,21 @@ import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
+import com.ritense.case_.service.event.CaseTabCreatedEvent
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_TAB
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Transactional
 class CaseTabImporter(
     private val objectMapper: ObjectMapper,
     private val caseTabRepository: CaseTabRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) : Importer {
     override fun type() = CASE_TAB
 
@@ -42,28 +46,63 @@ class CaseTabImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        deploy(request.content.toString(Charsets.UTF_8), request.caseDefinitionId!!)
+        deploy(request)
     }
 
-    private fun deploy(fileContent: String, caseDefinitionId: CaseDefinitionId) {
+    private fun deploy(request: ImportRequest) {
+        val caseDefinitionId = request.caseDefinitionId!!
+        val fileContent = request.content.toString(Charsets.UTF_8)
         val tabs = try {
             objectMapper.readValue(fileContent, object : TypeReference<List<CaseTabDto>>() {})
         } catch (e: Exception) {
             throw IllegalArgumentException("Failed to parse file content as valid case widget tabs: ${e.message}", e)
         }
 
-        val toSave = tabs.mapIndexed { index, tab ->
-            CaseTab(
-                id = CaseTabId(caseDefinitionId, tab.key),
-                name = tab.name,
-                tabOrder = index,
-                type = tab.type,
-                contentKey = tab.contentKey,
-                showTasks = tab.showTasks
+        val savedTabs = tabs.mapIndexed { index, tab ->
+            val contentKey = if (tab.type == CaseTabType.EXTERNAL_PLUGIN) {
+                remapExternalPluginContentKey(tab.contentKey, request.pluginConfigurationMappings)
+            } else {
+                tab.contentKey
+            }
+
+            caseTabRepository.save(
+                CaseTab(
+                    id = CaseTabId(caseDefinitionId, tab.key),
+                    name = tab.name,
+                    tabOrder = index,
+                    type = tab.type,
+                    contentKey = contentKey,
+                    showTasks = tab.showTasks
+                )
             )
         }
 
-        caseTabRepository.saveAll(toSave)
+        savedTabs
+            .filter { it.type == CaseTabType.EXTERNAL_PLUGIN }
+            .forEach { applicationEventPublisher.publishEvent(CaseTabCreatedEvent(it)) }
+    }
+
+    /**
+     * `contentKey` must stay non-blank ([CaseTab]'s invariant), so a mapping value of `null` (admin
+     * left the tab's configuration unmapped) leaves the original, now-dangling id in place rather
+     * than producing an empty/invalid content key.
+     */
+    private fun remapExternalPluginContentKey(contentKey: String, mappings: Map<UUID, UUID?>?): String {
+        if (mappings.isNullOrEmpty()) {
+            return contentKey
+        }
+
+        val configPart = contentKey.substringBefore(':')
+        val bundlePart = contentKey.substringAfter(':', "")
+        val originalConfigId = try {
+            UUID.fromString(configPart)
+        } catch (_: IllegalArgumentException) {
+            null
+        } ?: return contentKey
+
+        val mappedConfigId = mappings[originalConfigId] ?: return contentKey
+
+        return if (bundlePart.isEmpty()) mappedConfigId.toString() else "$mappedConfigId:$bundlePart"
     }
 
     private companion object {

@@ -113,6 +113,43 @@ export function validatePluginManifest(manifest: unknown): string[] {
     }
   }
 
+  const actions = m.actions;
+  if (actions !== undefined) {
+    if (!Array.isArray(actions)) {
+      errors.push("manifest.json 'actions' must be an array when present");
+    } else {
+      actions.forEach((action, index) => {
+        if (typeof action !== "object" || action === null || Array.isArray(action)) {
+          errors.push(`manifest.json actions[${index}] must be an object`);
+          return;
+        }
+        const a = action as Record<string, unknown>;
+        const outputs = a.outputs;
+        if (outputs !== undefined) {
+          if (!Array.isArray(outputs)) {
+            errors.push(`manifest.json actions[${index}].outputs must be an array when present`);
+          } else {
+            const seen = new Set<string>();
+            outputs.forEach((output, outputIndex) => {
+              if (typeof output !== "string" || output.trim() === "") {
+                errors.push(
+                  `manifest.json actions[${index}].outputs[${outputIndex}] must be a non-empty string`
+                );
+                return;
+              }
+              if (seen.has(output)) {
+                errors.push(
+                  `manifest.json actions[${index}].outputs must contain unique keys; '${output}' is duplicated`
+                );
+              }
+              seen.add(output);
+            });
+          }
+        }
+      });
+    }
+  }
+
   const frontendBundles = m.frontendBundles;
   if (frontendBundles !== undefined) {
     if (!Array.isArray(frontendBundles)) {

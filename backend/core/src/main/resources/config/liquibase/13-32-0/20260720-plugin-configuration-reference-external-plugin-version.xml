@@ -1,0 +1,141 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="config/liquibase/13-32-0/20260720-plugin-configuration-reference-external-plugin-version.xml">
+
+    <!--
+      The shared PluginConfigurationReference embeddable (reference_type / plugin_definition_key)
+      is extended with a nullable plugin_definition_version column, and the external plugin process
+      links adopt it instead of their own version columns — one home for the version fact.
+
+      A new changeset (rather than editing 13-28-0/20260504-external-plugin.xml in place) because
+      editing an already-applied changeset breaks Liquibase checksums on dev DBs.
+    -->
+    <changeSet author="Ritense" id="1">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="process_link"/>
+        </preConditions>
+        <addColumn tableName="process_link">
+            <column name="plugin_definition_version" type="VARCHAR(64)"/>
+        </addColumn>
+    </changeSet>
+
+    <!--
+      Backfill: existing external_plugin process_link rows carry their (pluginId, version) via
+      external_plugin_config_id -> external_plugin_configuration -> external_plugin_definition.
+      Only FIXED-reference rows have a config id to join on; BUILDING_BLOCK rows (Phase 2) don't
+      exist yet on this branch, so there is nothing to backfill for that case here.
+    -->
+    <changeSet id="2" author="Ritense" dbms="postgresql">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="process_link"/>
+            <columnExists tableName="process_link" columnName="external_plugin_config_id"/>
+            <tableExists tableName="external_plugin_configuration"/>
+            <tableExists tableName="external_plugin_definition"/>
+        </preConditions>
+        <sql>
+            UPDATE process_link
+            SET plugin_definition_key = epd.plugin_id,
+                plugin_definition_version = epd.version
+            FROM external_plugin_configuration epc
+                INNER JOIN external_plugin_definition epd ON epc.definition_id = epd.id
+            WHERE process_link.external_plugin_config_id = epc.id
+              AND process_link.process_link_type = 'external_plugin'
+        </sql>
+    </changeSet>
+
+    <changeSet id="2-mysql" author="Ritense" dbms="mysql">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="process_link"/>
+            <columnExists tableName="process_link" columnName="external_plugin_config_id"/>
+            <tableExists tableName="external_plugin_configuration"/>
+            <tableExists tableName="external_plugin_definition"/>
+        </preConditions>
+        <sql>
+            UPDATE process_link pl
+            INNER JOIN external_plugin_configuration epc ON pl.external_plugin_config_id = epc.id
+            INNER JOIN external_plugin_definition epd ON epc.definition_id = epd.id
+            SET pl.plugin_definition_key = epd.plugin_id,
+                pl.plugin_definition_version = epd.version
+            WHERE pl.process_link_type = 'external_plugin'
+        </sql>
+    </changeSet>
+
+    <!--
+      Same backfill for task-form links, which reference their configuration through
+      external_plugin_task_form_config_id and carried their version in
+      external_plugin_task_form_version.
+    -->
+    <changeSet id="3" author="Ritense" dbms="postgresql">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="process_link"/>
+            <columnExists tableName="process_link" columnName="external_plugin_task_form_config_id"/>
+            <tableExists tableName="external_plugin_configuration"/>
+            <tableExists tableName="external_plugin_definition"/>
+        </preConditions>
+        <sql>
+            UPDATE process_link
+            SET plugin_definition_key = epd.plugin_id,
+                plugin_definition_version = epd.version
+            FROM external_plugin_configuration epc
+                INNER JOIN external_plugin_definition epd ON epc.definition_id = epd.id
+            WHERE process_link.external_plugin_task_form_config_id = epc.id
+              AND process_link.process_link_type = 'external_plugin_task_form'
+        </sql>
+    </changeSet>
+
+    <changeSet id="3-mysql" author="Ritense" dbms="mysql">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="process_link"/>
+            <columnExists tableName="process_link" columnName="external_plugin_task_form_config_id"/>
+            <tableExists tableName="external_plugin_configuration"/>
+            <tableExists tableName="external_plugin_definition"/>
+        </preConditions>
+        <sql>
+            UPDATE process_link pl
+            INNER JOIN external_plugin_configuration epc ON pl.external_plugin_task_form_config_id = epc.id
+            INNER JOIN external_plugin_definition epd ON epc.definition_id = epd.id
+            SET pl.plugin_definition_key = epd.plugin_id,
+                pl.plugin_definition_version = epd.version
+            WHERE pl.process_link_type = 'external_plugin_task_form'
+        </sql>
+    </changeSet>
+
+    <!--
+      Drop the now-superseded per-row version columns. Kept as their own changesets so the
+      backfills above always run against the still-present column set.
+    -->
+    <changeSet author="Ritense" id="4">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="process_link"/>
+            <columnExists tableName="process_link" columnName="external_plugin_version"/>
+        </preConditions>
+        <dropColumn tableName="process_link" columnName="external_plugin_version"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="5">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="process_link"/>
+            <columnExists tableName="process_link" columnName="external_plugin_task_form_version"/>
+        </preConditions>
+        <dropColumn tableName="process_link" columnName="external_plugin_task_form_version"/>
+    </changeSet>
+
+</databaseChangeLog>

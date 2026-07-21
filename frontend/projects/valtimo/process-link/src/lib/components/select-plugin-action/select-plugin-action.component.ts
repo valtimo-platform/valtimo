@@ -95,6 +95,7 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
                 key: action.key,
                 title: action.title ?? action.key,
                 description: action.description ?? '',
+                outputs: action.outputs,
               }));
           }),
           catchError(() => of([]))
@@ -184,16 +185,21 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
   }
 
   private _openBackButtonSubscription(): void {
-    this._buttonService.backButtonClick$
-      .pipe(
-        withLatestFrom(this._processLinkStateService.isEditing$),
-        filter(([, isEditing]) => !isEditing),
-        switchMap(() => this._stepService.hasOneProcessLinkType$),
-        take(1)
-      )
-      .subscribe((hasOneOption: boolean) => {
-        this._stepService.setProcessLinkTypeSteps('plugin', hasOneOption);
-      });
+    // Tracked in _subscriptions: an untracked handler here outlives the component (it is destroyed
+    // when the wizard moves past this step) and hijacks back-clicks made on later steps.
+    this._subscriptions.add(
+      this._buttonService.backButtonClick$
+        .pipe(
+          withLatestFrom(
+            this._processLinkStateService.isEditing$,
+            this._stepService.hasOneProcessLinkType$
+          ),
+          filter(([, isEditing]) => !isEditing)
+        )
+        .subscribe(([, , hasOneOption]) => {
+          this._stepService.setProcessLinkTypeSteps('plugin', hasOneOption);
+        })
+    );
   }
 
   private _openNextButtonSubscription(): void {

@@ -25,6 +25,8 @@ import com.ritense.externalplugin.repository.ExternalPluginConfigurationReposito
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
+import com.ritense.plugin.domain.PluginConfigurationReference
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -109,6 +111,50 @@ class ExternalPluginHostUsageResolverTest {
         val usages = resolver.findUsagesForHost(hostId)
 
         assertThat(usages).isEmpty()
+    }
+
+    /**
+     * A `BUILDING_BLOCK`-reference `ExternalPluginProcessLink` carries a `null`
+     * `externalPluginConfigurationId` (Phase 2) — it must never block deletion of a configuration,
+     * mirroring the embedded system's `PluginConfigurationUsageResolver` (`BUILDING_BLOCK`
+     * references there are likewise ignored by the delete guard). The repository query itself
+     * (`IN (...)` over non-null ids) already excludes such rows; this exercises the resolver's own
+     * `mapNotNull` defense so the guarantee holds even if a caller ever passes a broader result set.
+     */
+    @Test
+    fun `BUILDING_BLOCK link with null configuration id is ignored by the delete guard`() {
+        val hostId = UUID.randomUUID()
+        val definition = definition(hostId = hostId)
+        val configuration = configuration(definitionId = definition.id)
+        val fixedLink = processLink(
+            externalPluginConfigurationId = configuration.id,
+            processDefinitionId = "bezwaar:3:abc",
+            activityId = "SendLetter",
+        )
+        val buildingBlockLink = buildingBlockReferenceProcessLink(
+            processDefinitionId = "send-notification:2:bb-hash",
+            activityId = "PostMessage",
+        )
+
+        whenever(definitionRepository.findAllByHostId(hostId)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(listOf(fixedLink, buildingBlockLink))
+        whenever(operatonRepositoryService.findProcessDefinitionById("bezwaar:3:abc")).thenReturn(
+            operatonProcessDefinition(
+                id = "bezwaar:3:abc",
+                key = "bezwaar",
+                name = "Bezwaarprocedure",
+                versionTag = "CD:bezwaar:1.0.1",
+            )
+        )
+        whenever(bpmnRepositoryService.getBpmnModelInstance("bezwaar:3:abc")).thenReturn(mock<BpmnModelInstance>())
+
+        val usages = resolver.findUsagesForHost(hostId)
+
+        assertThat(usages).hasSize(1)
+        assertThat(usages[0].processLinkId).isEqualTo(fixedLink.id)
+        assertThat(usages.map { it.processDefinitionId }).doesNotContain("send-notification:2:bb-hash")
     }
 
     @Test
@@ -465,7 +511,28 @@ class ExternalPluginHostUsageResolverTest {
         activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
         externalPluginConfigurationId = externalPluginConfigurationId,
         actionKey = "action",
-        pluginVersion = "1.0.0",
+        pluginConfigurationReference = PluginConfigurationReference(
+            type = PluginConfigurationReferenceType.FIXED,
+            pluginDefinitionKey = "plugin",
+            pluginDefinitionVersion = "1.0.0",
+        ),
+    )
+
+    private fun buildingBlockReferenceProcessLink(
+        processDefinitionId: String,
+        activityId: String,
+    ): ExternalPluginProcessLink = ExternalPluginProcessLink(
+        id = UUID.randomUUID(),
+        processDefinitionId = processDefinitionId,
+        activityId = activityId,
+        activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+        externalPluginConfigurationId = null,
+        actionKey = "action",
+        pluginConfigurationReference = PluginConfigurationReference(
+            type = PluginConfigurationReferenceType.BUILDING_BLOCK,
+            pluginDefinitionKey = "plugin",
+            pluginDefinitionVersion = "1.0.0",
+        ),
     )
 
     private fun taskFormProcessLink(
@@ -478,7 +545,11 @@ class ExternalPluginHostUsageResolverTest {
         activityId = activityId,
         activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
         externalPluginConfigurationId = externalPluginConfigurationId,
-        pluginVersion = "1.0.0",
+        pluginConfigurationReference = PluginConfigurationReference(
+            type = PluginConfigurationReferenceType.FIXED,
+            pluginDefinitionKey = "plugin",
+            pluginDefinitionVersion = "1.0.0",
+        ),
         bundleKey = "review",
     )
 

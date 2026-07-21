@@ -28,13 +28,16 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Core-app backend module | `backend/external-plugin/` | ✅ |
 | Endpoint descriptions (`@EndpointDescription` on every controller method) + contract annotation | `backend/*/.../web/rest/*Resource.{kt,java}`, `com.ritense.valtimo.contract.endpoint.EndpointDescription` | ✅ |
 | Plugin host (Node + Fastify + Extism, multi-version) | `plugin-host/app/` | 🟡 |
-| Host capabilities (`gzac_api`, `http_request`, `kv`, `log`) — capability allowlist enforcement, new host functions, persistent storage (KV + logs), admin log view | `plugin-host/app/src/host-functions/{gzac-api,http-request,kv,log}.ts`, `plugin-host/app/src/db/{log-repository,kv-repository}.ts`, `plugin-host/app/src/routes/plugin-logs.ts` | ⛔ (`gzac_api` host function ✅, capability gate ⛔) |
+| Host capabilities (`gzac_api`, `http_request`, `kv`, `log`) — capability allowlist enforcement, new host functions, persistent storage (KV + logs), admin log view | `plugin-host/app/src/host-functions/{gzac-api,http-request,kv,log}.ts`, `plugin-host/app/src/db/{log-repository,kv-repository}.ts`, `plugin-host/app/src/routes/plugin-logs.ts` | ✅ |
 | Event consumer (RabbitMQ → `handle_event`) | `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
-| Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, requests (`handle_request`), `gzacApi` (+ `asUser`), `httpRequest`, `kv`, `log` (structured), frontend `t()` + parent-proxy data access (`callValtimo`/`getPluginData`) | `plugin-host/plugin-sdk/` | 🟡 (`gzacApi` ✅; SDK stubs for `http_request`/`kv`/structured `log` ⛔) |
+| Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, requests (`handle_request`), `gzacApi` (+ `asUser`), `httpRequest`, `kv`, `log` (structured), frontend `t()` + parent-proxy data access (`callValtimo`/`getPluginData`) | `plugin-host/plugin-sdk/` | ✅ |
 | Shared manifest validation (name/description-in-translations), one rule set for pack + host | `plugin-host/plugin-sdk/src/manifest-validation.ts` (subpath `@valtimo/plugin-sdk/manifest-validation`) | ✅ |
 | Sample plugin (action + event handler + logo + i18n) | `plugin-host/sample-plugins/case-summary/` | ✅ |
 | Frontend management UI + external models/service/iframe | `frontend/projects/valtimo/{plugin-management,plugin}/` | ✅ |
-| Process-link (`SERVICE_TASK_START`) | `backend/external-plugin/.../processlink/` + frontend process-link | 🟡 |
+| Process-link (`SERVICE_TASK_START`) — FIXED + BUILDING_BLOCK references, action result write-back | `backend/external-plugin/.../processlink/` + frontend process-link | ✅ |
+| Building-block support (shared `PluginConfigurationReference`, namespaced config mappings, required-plugins endpoint, BB-context admin UX) | `backend/external-plugin/.../processlink/ExternalPluginServiceTaskStartListener.kt` + `backend/building-block/.../service/BuildingBlockPluginDefinitionService.kt` ↔ frontend `process-link/.../{select-plugin-configuration,configure-building-block-plugins}` (§19) | ✅ |
+| Case-definition import/export parity (preview contributor, mapper remap hook, dangling repair, `EXTERNAL_PLUGIN` case-tab import) | `backend/external-plugin/.../{preview/ExternalPluginImportPreviewContributor,service/ExternalPluginConfigurationMappingResolver}.kt`, `backend/case/.../service/CaseTabImporter.kt` ↔ frontend `case-management/.../{case-management-upload,case-management-missing-plugin-configurations}` (§20) | ✅ |
+| Action result write-back (`action_result_mappings` + `result` output channel), embedded **and** external | `backend/plugin/.../service/PluginActionResultHandler.kt` ↔ frontend `process-link/.../plugin-action-result-mappings` (§21) | ✅ |
 | Per-host broker / callback config + defaults endpoint | `backend/external-plugin/.../web/rest/ExternalPluginManagementResource.kt#hostDefaults` | ✅ |
 | Per-host durable event queue mode + TTL (live/durable, `x-expires`) + narrow PATCH endpoint | `backend/external-plugin/.../domain/EventQueueMode.kt`, `service/ExternalPluginHostService.updateEventQueue`, `web/rest/...#updateHostEventQueue` ↔ `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
 | Plugin assets (logo + i18n bundle in manifest, served by host) | `plugin-host/plugin-sdk/bin/valtimo-plugin-pack.mjs`, `plugin-host/app/src/routes/plugin-bundles.ts` | ✅ |
@@ -286,9 +289,17 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
   duplicate grant rows are structurally impossible. The replace-on-write `update()` flow deletes a
   configuration's endpoint grants and flushes that delete before re-inserting, so a replacement set
   that overlaps the previous grants stays within the constraint.
-- `external_plugin_*` columns on `process_link` (`external_plugin_config_id`,
-  `external_plugin_action_key`, `external_plugin_version`, `external_plugin_action_properties`) for
-  the `SERVICE_TASK_START` action link.
+- `external_plugin_*` columns on `process_link` for the `SERVICE_TASK_START` action link:
+  `external_plugin_config_id` (nullable — null for `BUILDING_BLOCK` references and dangling
+  imports), `external_plugin_action_key`, `external_plugin_action_properties`. The plugin identity
+  and version live on the **shared** reference columns `reference_type` / `plugin_definition_key`
+  (= `pluginId`) / `plugin_definition_version` — the same `PluginConfigurationReference` embeddable
+  the embedded `PluginProcessLink` maps; embedded rows keep `plugin_definition_version` null
+  (embedded definitions are unversioned). The reference version is design-time metadata only —
+  the runtime invocation version always derives from the resolved configuration's definition
+  (§19). `action_result_mappings` (json, also shared with the embedded link type) holds the
+  action's result write-back rules (§21). The task-form link's version likewise lives on the
+  shared reference columns; its own columns are `external_plugin_task_form_{config_id,bundle_key}`.
 
 Events add **no new table**: subscriptions come from `manifest_json`, the broker connection
 details come from the host row, and at push time they are pushed transiently to the host (held
@@ -354,8 +365,10 @@ chain to avoid Extism reentrancy), sets `prefetch` on the broker channel, and ho
   properties}` — note it does **not** carry `actionKey` (URL param) or `configuration` (looked up
   host-side from the registry). The host assembles the **Wasm input** `{actionKey, configurationId,
   configuration, processInstanceId, documentId, activityId, properties}`; output `{status,
-  variables}` (plus `{errorCode, errorMessage}` on failure, surfaced to the process as a BPMN
-  error).
+  variables, result?}` (plus `{errorCode, errorMessage}` on failure, surfaced to the process as a
+  BPMN error). `variables` is applied as plain Operaton process variables; the optional `result`
+  is a separate channel evaluated only by the link's `action_result_mappings` (§21) — the two
+  never interfere, and a plugin that returns no `result` simply has nothing to map.
 - **Plugins run under Extism with `runInWorker: true`** so async host functions (`gzac_api`) can
   suspend the Wasm call until the host's fetch resolves. **This requires Node ≥ 22** (older Node
   fails to spawn the worker with `invalid execArgv flags: --disable-warning`).
@@ -646,7 +659,15 @@ versions of the same plugin must run side-by-side indefinitely**: there is no pa
   coexist as separate rows.
 - The host loads each `(pluginId, version)` as a distinct Wasm module.
 - A `Configuration` references one specific `definition_id` → pinned to one version.
-- A `ProcessLink` carries an explicit `pluginVersion` column → pinned to one version transitively.
+- A **`FIXED`** `ProcessLink` references one specific configuration → pinned to one version
+  transitively. The link additionally records `pluginId`/version on the shared reference columns
+  (`plugin_definition_key` / `plugin_definition_version`) as design-time metadata — the runtime
+  call always uses the resolved configuration's definition version, so the two can never diverge
+  at invocation time.
+- A **`BUILDING_BLOCK`** `ProcessLink` (§19) carries no configuration id — only the
+  `pluginId@version` reference. The concrete configuration is supplied per usage context through
+  the building block's `pluginConfigurationMappings`, keyed `external-plugin:<pluginId>@<version>`,
+  so each case definition using the block pins its own configuration (and thereby version).
 
 **Operator flow for adding a new version (no upgrade required).**
 1. Plugin author publishes v2 to the host alongside v1.
@@ -746,10 +767,10 @@ there is no force override on any path.
 | Entity | Blocked when… | Surface |
 |--------|---------------|---------|
 | **ProcessLink** | never (BPMN authoring is the source of truth — the case definition is the gate) | — |
-| **Configuration** (external) | any `ProcessLink` **or** any `EXTERNAL_PLUGIN` case tab references it | Server-side guard in `ExternalPluginConfigurationService.delete` throws `ExternalPluginConfigurationInUseException` (HTTP 409, `usages` payload). `ExternalPluginHostUsageResolver` folds in process-link usages **and** case-tab usages (via the case module's `CaseExternalPluginTabService.findUsagesForConfiguration`, §13.1). UI runs the pre-check and shows the read-only `PluginUsageModalComponent`, which renders both row kinds. No override. |
+| **Configuration** (external) | any *fixed* `ProcessLink` (a `BUILDING_BLOCK` reference carries no configuration id and never blocks, §19) **or** any `EXTERNAL_PLUGIN` case tab references it | Server-side guard in `ExternalPluginConfigurationService.delete` throws `ExternalPluginConfigurationInUseException` (HTTP 409, `usages` payload). `ExternalPluginHostUsageResolver` folds in process-link usages **and** case-tab usages (via the case module's `CaseExternalPluginTabService.findUsagesForConfiguration`, §13.1). UI runs the pre-check and shows the read-only `PluginUsageModalComponent`, which renders both row kinds. No override. |
 | **Configuration** (embedded) | any *fixed* `PluginProcessLink` references it | Server-side guard in `PluginService.deletePluginConfiguration` throws `PluginConfigurationInUseException` (HTTP 409, `usages` payload). Same UI flow and modal. |
 | **Definition** | any `Configuration` exists for it | Not directly user-deletable; cleared by the discovery cycle when the upstream host no longer lists the version **and** no configurations remain. |
-| **Host** | any `Configuration` under any definition on this host has at least one `ProcessLink` referencing it | Server-side guard in `ExternalPluginHostService.delete` throws `ExternalPluginHostInUseException` (HTTP 409, `usages` payload). Host delete in the UI shows the same `PluginUsageModalComponent`. Deletion of an entire host with active configurations remains blocked: removing the host would orphan service tokens, push paths, and broker bindings for live configurations. |
+| **Host** | any `Configuration` under any definition on this host has at least one *fixed* `ProcessLink` referencing it | Server-side guard in `ExternalPluginHostService.delete` throws `ExternalPluginHostInUseException` (HTTP 409, `usages` payload). Host delete in the UI shows the same `PluginUsageModalComponent`. Deletion of an entire host with active configurations remains blocked: removing the host would orphan service tokens, push paths, and broker bindings for live configurations. |
 | **Plugin on host** (host-side route) ✅ | active config refers to plugin version | `DELETE /api/host/plugins/:id/:version` returns HTTP 409 with `configurationIds`. |
 
 A configuration that *has* been activated but has no process links yet **can** be deleted (it is
@@ -983,9 +1004,11 @@ Structure:
 - **Process-link type** `external_plugin_task_form` is a distinct `ProcessLink` subtype, kept separate
   from the `external_plugin` service-task action type because the surfaces are unrelated (a form to
   render vs. a backend action to invoke). Entity `ExternalPluginTaskFormProcessLink` maps
-  `external_plugin_task_form_{config_id,bundle_key,version}` on the shared `process_link` table (DDL in
-  the release changelog `13-32-0/20260706-add-external-plugin-task-form-process-link.xml`, not in
-  `initial-setup`). It ships the five `ProcessLinkMapper` DTOs and a `SupportedProcessLinkTypeHandler`
+  `external_plugin_task_form_{config_id,bundle_key}` on the shared `process_link` table (DDL in
+  the release changelogs `13-32-0/20260706-add-external-plugin-task-form-process-link.xml` +
+  `13-32-0/20260720-plugin-configuration-reference-external-plugin-version.xml`, not in
+  `initial-setup`); the plugin identity/version rides on the shared reference columns like the
+  action link's (§5). It ships the five `ProcessLinkMapper` DTOs and a `SupportedProcessLinkTypeHandler`
   that declares **`USER_TASK_CREATE`** (the action type declares `SERVICE_TASK_START`).
 - **Render descriptor, no dedicated open controller.** A `ProcessLinkActivityHandler` (shaped like the
   URL/UI-component handlers — a render descriptor, not an execution listener) answers the generic
@@ -1068,13 +1091,11 @@ Structure:
 
 ## 15. Roadmap (priority order)
 
-1. **Host capabilities** (§18) — `gzac_api`, `http_request`, `kv`, `log` behind a per-plugin
-   capability allowlist; persistent storage for KV + logs; admin log view modal; demo plugin scenarios.
-2. **Harden the host `/data` route** — capability/auth gating so a `handle_request` handler can't be
+1. **Harden the host `/data` route** — capability/auth gating so a `handle_request` handler can't be
    triggered (and can't reach the service token) unauthenticated; tighten the allowlist surface.
-3. Remaining iframe surfaces: HTMX pages, case widgets (case **tab** §13.1, **task form** §13.6,
+2. Remaining iframe surfaces: HTMX pages, case widgets (case **tab** §13.1, **task form** §13.6,
    and **menu pages** §17 done).
-4. Cleanup: align async-vs-sync SDK docs.
+3. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
 
@@ -1200,6 +1221,16 @@ Structure:
   sample `build:pack`, but a live browser run of all three levels against a running task is not yet in
   the verified record. Level 2 reuses the previously code-verified `handle_request`/`gzacApi.asUser`
   path.
+- The **building-block, import-parity, and result-write-back features** (§19–§21) are verified by
+  unit suites (`:backend:{plugin,plugin-valtimo,external-plugin,building-block,process-link,case}:test`),
+  `:backend:external-plugin:integrationTestingPostgresql` / `:backend:plugin:integrationTesting{Postgresql,Mysql}`
+  (which run every Liquibase changelog against real databases), clean `ng build` of
+  `@valtimo/{process-link,case-management,plugin,shared}`, SDK/host `tsc`, and the sample
+  `build:pack` — but not by a live run. Outstanding live checks: a BB call activity resolving an
+  external action through the namespaced mapping and invoking the host; a result mapping writing to
+  a real case/BB document (`doc:`/`pv:`); the import wizard round-trip in the browser (external rows
+  mapped, external case tab surviving import with its side row); and the dangling-import → issue
+  banner → repair flow.
 
 ## 17. Apps — URL plugins ✅
 
@@ -1243,7 +1274,7 @@ the public `/plugin-manifest`, a correctly-signed `GET /api/host/plugins` (→ 2
 plugin), and an unsigned / wrong-secret call (→ 401). Frontend `@valtimo/{plugin,plugin-management}`
 type-check clean; `en`/`nl` bundles updated (`addApp`, `tabs.integrations`, `labels.kind`, `kind.*`).
 
-## 18. Host capabilities — `gzac_api`, `http_request`, `kv`, `log` ⛔
+## 18. Host capabilities — `gzac_api`, `http_request`, `kv`, `log` ✅
 
 A capability is a host function a plugin may call. Every capability requires an explicit grant:
 the plugin declares what it needs in `manifest.permissions.capabilities`, the admin accepts each
@@ -1347,7 +1378,7 @@ on a configuration that was pushed by an older GZAC (before the capability syste
 treats `gzac_api` as implicitly granted (backward compatibility). Once the GZAC is upgraded and
 re-pushes configurations with explicit `grantedCapabilities`, the host enforces the explicit list.
 
-### 18.5 Capability: `gzac_api` (existing host function, capability gate ⛔)
+### 18.5 Capability: `gzac_api` (host function + capability gate ✅)
 
 Already implemented as a host function (§3.5, `host-functions/gzac-api.ts`). The capability gate
 is the only addition: the host function checks `grantedCapabilities` before making the upstream
@@ -1802,6 +1833,122 @@ every manifest-declared capability is present (§18.2).
   - Admin log modal shows structured log entries and API call logs for the configuration.
   - Reconfigure without `http_request` → the `/external-data` handler returns a capability-denied
     error, the card shows the error state.
+
+## 19. Building-block process links ✅
+
+External plugin actions are usable inside building-block processes with the same abstraction the
+embedded plugin system uses: a link is either a **`FIXED`** reference (a concrete configuration
+UUID) or a **`BUILDING_BLOCK`** reference (an abstract `pluginId@version`, resolved to a concrete
+configuration per usage context at runtime).
+
+**Reference model.** Both external link types embed the same `PluginConfigurationReference`
+embeddable the embedded `PluginProcessLink` maps — shared `process_link` columns `reference_type`,
+`plugin_definition_key` (= `pluginId`), and `plugin_definition_version` (external-only; embedded
+rows keep it null because embedded definitions are unversioned). Two STI siblings mapping the same
+embeddable columns is verified safe by `PluginConfigurationReferenceStiSpikeTest`
+(`:backend:plugin`). The reference is **design-time metadata**: it drives validation, UI warnings,
+and the import chooser (§20), while the runtime invocation always derives `pluginId` **and**
+version from the resolved configuration's definition — a v1 action key can never be invoked
+against a v2 configuration's token. Invariants (`ExternalPluginProcessLinkMapper`): `FIXED` ⇒
+config id required (null only for a dangling import, §20), key/version derived from the
+configuration at save time; `BUILDING_BLOCK` ⇒ config id null, key + version required from the
+DTO.
+
+**Runtime resolution (`ExternalPluginServiceTaskStartListener`).** A `BUILDING_BLOCK` reference is
+resolved through the same optional `BuildingBlockPluginConfigurationResolver` SPI
+(`backend/plugin`) the embedded `PluginService` uses — the building-block module's resolver walks
+execution → `BuildingBlockInstance` → root instance → the call-activity's or case-definition
+link's `pluginConfigurationMappings`. External entries share that one `Map<String, UUID>` under
+the namespaced key **`external-plugin:<pluginId>@<version>`**, so embedded and external mappings
+coexist without collision and version pinning stays strict (a block referencing two versions of
+one plugin simply has two mapping rows). The listener validates the resolved configuration:
+exists, definition `pluginId` matches the reference key, and the definition manifest still
+declares the action key; a version mismatch proceeds on the resolved configuration's version with
+a warning.
+
+**Required-plugins surface.** `BuildingBlockPluginDefinitionService` /
+`GET /api/management/v1/building-block/{key}/version/{versionTag}/plugin` also collect the
+external `BUILDING_BLOCK` references from the block's process links (recursively through nested
+blocks), returned with a `source: embedded|external` discriminator plus pluginId/version.
+
+**Admin UX** (`@valtimo/process-link`). In building-block context the plugin picker
+(`select-plugin-configuration`) lists external plugin **definitions** alongside embedded ones
+(labels via `getExternalPluginDisplayName`, `Name (X.Y.Z)`); saving an external action in that
+context writes a `BUILDING_BLOCK` reference (no configuration id). The call-activity /
+case-definition mapping step (`configure-building-block-plugins`) renders a row per external
+requirement with a dropdown of activated configurations — exact `pluginId@version` matches by
+default, other versions of the same plugin selectable behind a non-blocking warning (the §11
+compatibility-warning pattern) — and writes the namespaced key. Delete guards are unaffected:
+`ExternalPluginHostUsageResolver` ignores links with a null configuration id, mirroring the
+embedded rule that only fixed references block deletion.
+
+## 20. Case-definition import/export parity ✅
+
+Importing a case definition treats external plugin configurations exactly like embedded ones: the
+import wizard shows every referenced configuration, the admin maps each to an existing
+configuration in the target environment, unmapped references import as dangling and are repaired
+later.
+
+- **Export metadata.** `ExternalPluginProcessLinkExportResponseDto` /
+  `ExternalPluginTaskFormProcessLinkExportResponseDto` carry `referenceType`,
+  `pluginDefinitionKey`, and the version alongside the configuration id, so the target environment
+  can list candidate configurations by `pluginId`.
+- **Remap hook.** `ProcessLinkImporter` delegates configuration remapping per link type: each
+  `ProcessLinkMapper` implements `applyPluginConfigurationMappings(node, mappings)` (the embedded
+  mapper rewrites `pluginConfigurationId`; both external mappers rewrite
+  `externalPluginConfigurationId`). One user-facing `Map<sourceUUID, targetUUID?>` covers both
+  plugin systems — source UUIDs are unambiguous across them.
+- **Preview.** `ExternalPluginImportPreviewContributor` (`backend/external-plugin/preview/`) scans
+  `*.process-link.json` for `external_plugin` / `external_plugin_task_form` links **and**
+  `*.case-tab.json` for `EXTERNAL_PLUGIN` tabs, emitting entries with `source: external`,
+  pluginId, version, and an existence check. `PluginConfigurationPreviewDto` carries the
+  `source: embedded|external` discriminator (default `embedded`).
+- **Dangling handling.** An unmapped external link imports with a null configuration id; both
+  external mappers' `afterImport` publish a `CaseConfigurationIssueDetectedEvent`
+  (`external-plugin-process-link`). `ExternalPluginConfigurationMappingResolver` registers as an
+  additional `PluginConfigurationMappingResolver` bean behind the existing
+  `dangling-plugin-configurations` / `plugin-configuration-mappings` endpoints — no new endpoints.
+- **`EXTERNAL_PLUGIN` case-tab import.** `CaseTabImporter` remaps the configuration UUID embedded
+  in the tab's `contentKey` (`"<configId>[:<bundleKey>]"`) through the same mappings and creates
+  the `case_external_plugin_tab` side row for imported tabs (the REST-driven create path derives
+  the side row from `CaseTabCreatedEvent`, which a repository-level import does not fire — the
+  importer therefore materialises it itself).
+- **Wizard & repair UI** (`@valtimo/case-management`). The upload wizard's PLUGINS step and the
+  missing-plugin-configurations repair component render external rows with options from
+  `ExternalPluginService.getConfigurations()`, exact-version matches by default and
+  version-mismatched candidates behind an explicit warning, labelled `Name (X.Y.Z)`.
+
+## 21. Action result write-back ✅
+
+A plugin action's result can be written declaratively to the case/building-block document or to
+process variables through value-resolver expressions — for embedded **and** external plugin
+actions, with no hand-coded `resultProcessVariable` action property needed.
+
+- **Model.** `process_link.action_result_mappings` (json), mapped by both `PluginProcessLink` and
+  `ExternalPluginProcessLink`; rows are `PluginActionResultMapping(source, target)` where `source`
+  is an RFC 6901 JSON pointer into the action result (empty pointer = whole result) and `target`
+  is a writable value-resolver key (`doc:`, `pv:`, `case:` — non-writable prefixes are rejected at
+  save time by `PluginActionResultMappingValidator` in both mappers).
+- **Dispatch (`PluginActionResultHandler`, `backend/plugin`).** Extracts each source pointer,
+  splits `pv:` targets from document targets, and applies them via
+  `ValueResolverService.handleValues` — the same pattern the building-block listeners use. Because
+  `doc:` targets the execution's business-key document, a result written inside a building-block
+  process lands on the **BB instance document** and BB output mappings carry it to the case as
+  usual. Pointer misses and a null result with configured mappings log a warning; they never fail
+  the process.
+- **Embedded source.** `PluginService.invoke` (both overloads) captures the `@PluginAction`
+  method's return value, serialises it, and delegates to the handler, so
+  every listener (service task, user task, call activity, send/receive/intermediate events) is
+  covered without listener changes.
+- **External source.** The action output's optional `result` field (§7):
+  `ExternalPluginServiceTaskStartListener` keeps applying `variables` as plain process variables
+  and additionally feeds `body.result` through the handler. SDK `ActionOutput` declares `result`;
+  the host passes it through verbatim; the `case-summary` sample action returns one.
+- **Admin UX** (`@valtimo/process-link`). `PluginActionResultMappingsComponent` — an "Output
+  mapping" section in the action-configuration step for both embedded and external actions:
+  source/target rows with a free-text JSON-pointer input and a `ValuePathSelectorComponent` target
+  (`doc:`/`case:` browsing with case/BB context; free-text `pv:` fallback for independent
+  processes).
 
 ---
 

@@ -19,19 +19,30 @@ package com.ritense.externalplugin.processlink.web.dto
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink.Companion.PROCESS_LINK_TYPE
+import com.ritense.plugin.domain.PluginActionResultMapping
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import java.util.UUID
 
+/**
+ * [pluginVersion]/[pluginDefinitionKey] are only required for `BUILDING_BLOCK` references — for
+ * `FIXED` the mapper derives both from [externalPluginConfigurationId]'s definition at save time,
+ * mirroring the embedded mapper's definition-key fallback (D1). The frontend keeps sending just the
+ * config id for `FIXED`.
+ */
 @JsonTypeName(PROCESS_LINK_TYPE)
 data class ExternalPluginProcessLinkCreateRequestDto(
     override val processDefinitionId: String,
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
-    val externalPluginConfigurationId: UUID,
+    val externalPluginConfigurationId: UUID? = null,
     val actionKey: String,
-    val pluginVersion: String,
     val actionProperties: ObjectNode? = null,
+    val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
+    val pluginDefinitionKey: String? = null,
+    val pluginVersion: String? = null,
+    val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 ) : ProcessLinkCreateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE

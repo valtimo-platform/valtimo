@@ -1142,6 +1142,7 @@
         "noPluginsTitle": "Geen plugins te configureren",
         "notInstalled": "Plugintype niet geïnstalleerd",
         "noConfigurations": "Geen configuraties beschikbaar",
+        "externalVersionMismatchWarning": "De pluginversie van deze configuratie ({{selectedVersion}}) komt niet overeen met de geëxporteerde versie ({{requiredVersion}}). Mogelijk worden niet dezelfde acties ondersteund.",
         "unidentifiable": {
           "title": "Niet-identificeerbare pluginconfiguraties",
           "message": "Sommige pluginconfiguraties konden niet worden herleid uit het exportbestand. De import kan doorgaan, maar de betreffende process links moeten achteraf handmatig worden geconfigureerd."
@@ -1155,6 +1156,7 @@
       "unknownPlugin": "Onbekende plugin",
       "notInstalled": "Plugintype niet geïnstalleerd",
       "noConfigurations": "Geen configuraties beschikbaar",
+      "externalVersionMismatchWarning": "De pluginversie van deze configuratie ({{selectedVersion}}) komt niet overeen met de vereiste versie ({{requiredVersion}}). Mogelijk worden niet dezelfde acties ondersteund.",
       "saveSuccess": "Pluginconfiguratie-koppelingen succesvol opgeslagen",
       "saveError": "Kon pluginconfiguratie-koppelingen niet opslaan",
       "legacyExport": {
@@ -2664,6 +2666,15 @@
     "externalPluginActionProperties": "Configureer de actie-eigenschappen voor deze externe plugin actie als JSON. Klik op opslaan wanneer gereed.",
     "actionPropertiesJson": "Actie-eigenschappen (JSON)",
     "invalidJson": "Ongeldige JSON",
+    "resultMappings": {
+      "title": "Output-mapping",
+      "description": "Koppel waarden uit het resultaat van de actie aan het dossierdocument of een procesvariabele.",
+      "source": "Pad in resultaat",
+      "target": "Bestemming",
+      "sourcePlaceholder": "/pad/in/resultaat",
+      "sourceSelectPlaceholder": "Selecteer een resultaatveld...",
+      "addRow": "Mapping toevoegen"
+    },
     "selectProcess": "Selecteer een proces",
     "process": "Proces",
     "version": "Versie",
@@ -2704,7 +2715,8 @@
         "zaakInstanceAndTypeLink": "Dit bouwblok heeft mogelijk zowel een zaakinstantiekoppeling als een zaaktypekoppeling nodig, die zijn geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
         "zaakInstanceLink": "Dit bouwblok heeft mogelijk een zaakinstantiekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
         "zaakTypeLink": "Dit bouwblok heeft mogelijk een zaaktypekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok is geconfigureerd, om correct te functioneren."
-      }
+      },
+      "externalPluginVersionMismatchWarning": "De pluginversie van de geselecteerde configuratie komt niet overeen met de versie ({{version}}) waaraan dit bouwblok is gekoppeld. Deze actie wordt mogelijk niet ondersteund."
     }
   },
   "processLinkType": {
@@ -2778,6 +2790,7 @@
     "choosePluginDefinition": "Kies plugin-definitie",
     "choosePluginAction": "Kies je actie",
     "configurePluginAction": "Configureer je actie",
+    "configurePluginActionResultMappings": "Uitvoer koppelen",
     "selectURL": "Configureer je URL",
     "subtitles": "Ondertitels",
     "addSubtitle": "Ondertitel toevoegen",

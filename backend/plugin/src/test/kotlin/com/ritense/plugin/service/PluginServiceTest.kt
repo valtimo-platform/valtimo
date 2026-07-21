@@ -23,6 +23,7 @@ import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.domain.PluginActionDefinition
 import com.ritense.plugin.domain.PluginActionDefinitionId
+import com.ritense.plugin.domain.PluginActionResultMapping
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
@@ -80,6 +81,7 @@ internal class PluginServiceTest {
     lateinit var encryptionService: EncryptionService
     lateinit var environment: Environment
     lateinit var pluginConfigurationUsageResolver: PluginConfigurationUsageResolver
+    lateinit var pluginActionResultHandler: PluginActionResultHandler
 
     @BeforeEach
     fun init() {
@@ -94,6 +96,7 @@ internal class PluginServiceTest {
         encryptionService = mock()
         environment = mock()
         pluginConfigurationUsageResolver = mock()
+        pluginActionResultHandler = mock()
         pluginService = spy(PluginService(
             pluginDefinitionRepository,
             pluginConfigurationRepository,
@@ -110,6 +113,7 @@ internal class PluginServiceTest {
             mock(),
             null,
             pluginConfigurationUsageResolver,
+            pluginActionResultHandler,
         ))
     }
 
@@ -453,6 +457,71 @@ internal class PluginServiceTest {
     }
 
     @Test
+    fun `should apply action result mappings when the link declares them`() {
+        val execution = mock<DelegateExecution>()
+        val processLink = PluginProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":123}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action-with-result",
+            actionResultMappings = listOf(PluginActionResultMapping(source = "/value", target = "pv:result")),
+        )
+
+        val pluginDefinition = newPluginDefinition()
+        val pluginConfiguration = newPluginConfiguration(pluginDefinition)
+        val testDependency = mock<TestDependency>()
+
+        whenever(pluginConfigurationRepository.getReferenceById(any())).thenReturn(pluginConfiguration)
+        whenever(pluginFactory.canCreate(any())).thenReturn(true)
+        whenever(pluginFactory.create(any())).thenReturn(TestPlugin(testDependency))
+        whenever(execution.processInstanceId).thenReturn("test")
+        whenever(valueResolverService.resolveValues(any(), any(), any())).thenReturn(mapOf("test" to 123))
+
+        pluginService.invoke(execution, processLink)
+
+        val resultCaptor = argumentCaptor<com.fasterxml.jackson.databind.JsonNode>()
+        verify(pluginActionResultHandler).handle(
+            org.mockito.kotlin.eq(execution),
+            resultCaptor.capture(),
+            org.mockito.kotlin.eq(processLink.actionResultMappings),
+        )
+        assertEquals(123, resultCaptor.firstValue.get("value").intValue())
+    }
+
+    @Test
+    fun `should not touch the result handler when the link declares no result mappings`() {
+        val execution = mock<DelegateExecution>()
+        val processLink = PluginProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().readTree("{\"test\":123}") as ObjectNode,
+            pluginConfigurationId = PluginConfigurationId.newId(),
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action-with-result",
+        )
+
+        val pluginDefinition = newPluginDefinition()
+        val pluginConfiguration = newPluginConfiguration(pluginDefinition)
+        val testDependency = mock<TestDependency>()
+
+        whenever(pluginConfigurationRepository.getReferenceById(any())).thenReturn(pluginConfiguration)
+        whenever(pluginFactory.canCreate(any())).thenReturn(true)
+        whenever(pluginFactory.create(any())).thenReturn(TestPlugin(testDependency))
+        whenever(execution.processInstanceId).thenReturn("test")
+        whenever(valueResolverService.resolveValues(any(), any(), any())).thenReturn(mapOf("test" to 123))
+
+        pluginService.invoke(execution, processLink)
+
+        verify(pluginActionResultHandler, org.mockito.kotlin.never()).handle(any(), any(), any())
+    }
+
+    @Test
     fun `should throw exception when invoking delegateExecution method with resolved variable where result does not match argument type`(){
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
@@ -501,6 +570,7 @@ internal class PluginServiceTest {
                 mock(),
                 resolver,
                 pluginConfigurationUsageResolver,
+                pluginActionResultHandler,
             )
         )
 
@@ -562,6 +632,7 @@ internal class PluginServiceTest {
                 mock(),
                 resolver,
                 pluginConfigurationUsageResolver,
+                pluginActionResultHandler,
             )
         )
 
@@ -778,7 +849,20 @@ internal class PluginServiceTest {
         fun doThing2(@PluginActionProperty test: Int?) {
             testDependency.processInt(test)
         }
+
+        @PluginAction(
+            key = "test-action-with-result",
+            title = "Test action with result",
+            description = "This is an action used to verify result-mapping write-back",
+            activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+        )
+        fun doThingWithResult(@PluginActionProperty test: Int): TestActionResult {
+            testDependency.processInt(test)
+            return TestActionResult(test)
+        }
     }
+
+    data class TestActionResult(val value: Int)
 
     class TestPlugin2 {
         @com.ritense.plugin.annotation.PluginProperty(key = "name", required = false, secret = false)

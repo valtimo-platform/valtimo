@@ -76,6 +76,13 @@ interface ExternalPluginAction {
    * action may be linked to — a user-task form is the separate `task-form` surface, not an action.
    */
   activityTypes?: Array<string>;
+  /**
+   * Keys the action's `result` object exposes for mapping. When present and non-empty, the
+   * process-link stepper offers a dedicated output-mapping step with a dropdown of these keys as
+   * mapping sources. Actions without `outputs` (or an empty array) have no declared shape and
+   * cannot use result mapping.
+   */
+  outputs?: Array<string>;
 }
 
 type ExternalPluginFrontendBundleType =

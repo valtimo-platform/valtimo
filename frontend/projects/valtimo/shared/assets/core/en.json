@@ -1135,6 +1135,7 @@
         "noPluginsTitle": "No plugins to configure",
         "notInstalled": "Plugin type not installed",
         "noConfigurations": "No configurations available",
+        "externalVersionMismatchWarning": "This configuration's plugin version ({{selectedVersion}}) does not match the exported version ({{requiredVersion}}). It may not support the same actions.",
         "unidentifiable": {
           "title": "Unidentified plugin configurations",
           "message": "Some plugin configurations could not be identified from the export. The import can continue, but you will need to manually configure the affected process links afterwards."
@@ -1148,6 +1149,7 @@
       "unknownPlugin": "Unknown plugin",
       "notInstalled": "Plugin type not installed",
       "noConfigurations": "No configurations available",
+      "externalVersionMismatchWarning": "This configuration's plugin version ({{selectedVersion}}) does not match the required version ({{requiredVersion}}). It may not support the same actions.",
       "saveSuccess": "Plugin configuration mappings saved successfully",
       "saveError": "Failed to save plugin configuration mappings",
       "legacyExport": {
@@ -2631,6 +2633,15 @@
     "externalPluginActionProperties": "Configure the action properties for this external plugin action as JSON. Click save when done.",
     "actionPropertiesJson": "Action properties (JSON)",
     "invalidJson": "Invalid JSON",
+    "resultMappings": {
+      "title": "Output mapping",
+      "description": "Map values from the action's result onto the case document or a process variable.",
+      "source": "Result path",
+      "target": "Destination",
+      "sourcePlaceholder": "/path/in/result",
+      "sourceSelectPlaceholder": "Select a result field...",
+      "addRow": "Add mapping"
+    },
     "selectProcess": "Select process",
     "process": "Process",
     "version": "Version",
@@ -2671,7 +2682,8 @@
         "zaakInstanceAndTypeLink": "This building block may need both a zaak instance link and a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly.",
         "zaakInstanceLink": "This building block may need a zaak instance link to be configured for the case definition under which this building block is used, in order to function correctly.",
         "zaakTypeLink": "This building block may need a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly."
-      }
+      },
+      "externalPluginVersionMismatchWarning": "The selected configuration's plugin version does not match the version ({{version}}) this building block was linked against. It may not support this action."
     }
   },
   "processLinkType": {
@@ -2745,6 +2757,7 @@
     "choosePluginDefinition": "Select plugin definition",
     "choosePluginAction": "Choose your action",
     "configurePluginAction": "Configure your action",
+    "configurePluginActionResultMappings": "Output mapping",
     "selectURL": "Configure your URL",
     "subtitles": "Subtitles",
     "addSubtitle": "Add subtitle",

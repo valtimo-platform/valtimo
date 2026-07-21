@@ -31,7 +31,7 @@
             <column name="capability" type="VARCHAR(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="granted_at" type="TIMESTAMP WITH TIME ZONE">
+            <column name="granted_at" type="DATETIME">
                 <constraints nullable="false"/>
             </column>
         </createTable>

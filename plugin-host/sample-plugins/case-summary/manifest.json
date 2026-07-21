@@ -257,7 +257,8 @@
         { "key": "amountField", "type": "string", "required": false },
         { "key": "summaryVariable", "type": "string", "required": false },
         { "key": "definitionKeyVariable", "type": "string", "required": false }
-      ]
+      ],
+      "outputs": ["summary", "title", "amount", "currency"]
     }
   ],
   "eventSubscriptions": [

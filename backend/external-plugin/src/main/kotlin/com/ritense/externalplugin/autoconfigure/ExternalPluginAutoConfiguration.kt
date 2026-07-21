@@ -22,6 +22,7 @@ import com.ritense.externalplugin.compatibility.DefaultGzacVersionProvider
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
 import com.ritense.externalplugin.compatibility.GzacVersionProvider
 import com.ritense.externalplugin.compatibility.PluginPackageInspector
+import com.ritense.externalplugin.preview.ExternalPluginImportPreviewContributor
 import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
 import com.ritense.externalplugin.processlink.ExternalPluginServiceTaskStartListener
 import com.ritense.externalplugin.processlink.ExternalPluginSupportedProcessLinkTypeHandler
@@ -50,6 +51,7 @@ import com.ritense.externalplugin.security.ExternalPluginUserTokenKeyProvider
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.ExternalPluginBundleUrlResolver
 import com.ritense.externalplugin.service.ExternalPluginCaseTabResolverImpl
+import com.ritense.externalplugin.service.ExternalPluginConfigurationMappingResolver
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
@@ -63,7 +65,15 @@ import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
+import com.ritense.case.repository.CaseTabRepository
+import com.ritense.case_.repository.CaseExternalPluginTabRepository
+import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
+import com.ritense.plugin.service.PluginActionResultHandler
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.importer.ImportPreviewContributor
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
@@ -72,6 +82,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.convert.DurationStyle
 import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
@@ -362,8 +373,12 @@ class ExternalPluginAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginProcessLinkMapper::class)
-    fun externalPluginProcessLinkMapper(objectMapper: ObjectMapper) =
-        ExternalPluginProcessLinkMapper(objectMapper)
+    fun externalPluginProcessLinkMapper(
+        objectMapper: ObjectMapper,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        processLinkRepository: ExternalPluginProcessLinkRepository,
+    ) = ExternalPluginProcessLinkMapper(objectMapper, configurationRepository, definitionRepository, processLinkRepository)
 
     @Bean
     @Order(40)
@@ -372,8 +387,12 @@ class ExternalPluginAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginTaskFormProcessLinkMapper::class)
-    fun externalPluginTaskFormProcessLinkMapper(objectMapper: ObjectMapper) =
-        ExternalPluginTaskFormProcessLinkMapper(objectMapper)
+    fun externalPluginTaskFormProcessLinkMapper(
+        objectMapper: ObjectMapper,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
+    ) = ExternalPluginTaskFormProcessLinkMapper(objectMapper, configurationRepository, definitionRepository, taskFormProcessLinkRepository)
 
     @Bean
     @Order(41)
@@ -430,6 +449,8 @@ class ExternalPluginAutoConfiguration {
         hostClient: ExternalPluginHostClient,
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
+        pluginActionResultHandler: PluginActionResultHandler,
+        buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?,
     ) = ExternalPluginServiceTaskStartListener(
         processLinkRepository,
         configurationService,
@@ -438,10 +459,41 @@ class ExternalPluginAutoConfiguration {
         hostClient,
         valueResolverService,
         objectMapper,
+        pluginActionResultHandler,
+        buildingBlockPluginConfigurationResolver,
     )
 
     @Bean
     @Order(430)
     @ConditionalOnMissingBean(ExternalPluginHttpSecurityConfigurer::class)
     fun externalPluginHttpSecurityConfigurer() = ExternalPluginHttpSecurityConfigurer()
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginImportPreviewContributor::class)
+    fun externalPluginImportPreviewContributor(
+        objectMapper: ObjectMapper,
+        configurationRepository: ExternalPluginConfigurationRepository,
+    ): ImportPreviewContributor = ExternalPluginImportPreviewContributor(objectMapper, configurationRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginConfigurationMappingResolver::class)
+    fun externalPluginConfigurationMappingResolver(
+        processLinkRepository: ExternalPluginProcessLinkRepository,
+        taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        caseExternalPluginTabRepository: CaseExternalPluginTabRepository,
+        caseTabRepository: CaseTabRepository,
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        caseDefinitionChecker: CaseDefinitionChecker,
+        applicationEventPublisher: ApplicationEventPublisher,
+    ): PluginConfigurationMappingResolver = ExternalPluginConfigurationMappingResolver(
+        processLinkRepository,
+        taskFormProcessLinkRepository,
+        configurationRepository,
+        caseExternalPluginTabRepository,
+        caseTabRepository,
+        processDefinitionCaseDefinitionService,
+        caseDefinitionChecker,
+        applicationEventPublisher,
+    )
 }

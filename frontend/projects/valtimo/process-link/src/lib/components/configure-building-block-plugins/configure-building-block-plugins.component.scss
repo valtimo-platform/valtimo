@@ -32,6 +32,14 @@
   margin-top: 30px;
 }
 
+.plugin-configuration-select {
+  &__warning {
+    margin-top: var(--cds-spacing-02);
+    color: var(--cds-support-warning);
+    font-size: var(--cds-label-01-font-size);
+  }
+}
+
 .configure-building-block-plugins__warning {
   display: flex;
   width: 100%;

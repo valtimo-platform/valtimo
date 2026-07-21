@@ -14,68 +14,88 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfig">
-  <ng-container *ngIf="isTaskForm$ | async; else externalActionConfig">
-    <!-- A task-form has nothing to configure here: the plugin renders the form and completes the
-         task. Saving links the selected task-form to this user task. -->
-    <p class="step-description">
-      {{ 'processLinkConfiguration.externalPluginTaskForm.description' | translate }}
-    </p>
-  </ng-container>
-
-  <ng-template #externalActionConfig>
-    <ng-container
-      *ngIf="{
-        url: externalActionBundleUrl$ | async,
-        resolved: externalBundleResolved$ | async,
-      } as bundle"
-    >
-      <valtimo-external-plugin-iframe
-        *ngIf="bundle.url"
-        [bundleUrl]="bundle.url"
-        [prefillConfiguration]="externalActionPrefill$ | async"
-        (configurationChangedEvent)="onIframeConfigurationChanged($event)"
-      ></valtimo-external-plugin-iframe>
-
-      <div *ngIf="bundle.resolved && !bundle.url" class="external-action-config">
-        <p class="step-description">
-          {{ 'processLinkConfiguration.externalPluginActionProperties' | translate }}
-        </p>
-        <div class="cds--form-item">
-          <label class="cds--label">{{
-            'processLinkConfiguration.actionPropertiesJson' | translate
-          }}</label>
-          <textarea
-            class="cds--text-area"
-            rows="10"
-            [ngModel]="externalActionPropertiesJson"
-            (ngModelChange)="onExternalActionPropertiesChange($event)"
-            [class.cds--text-area--invalid]="!externalActionPropertiesValid"
-          ></textarea>
-          <div *ngIf="!externalActionPropertiesValid" class="cds--form-requirement">
-            {{ 'processLinkConfiguration.invalidJson' | translate }}
-          </div>
-        </div>
-      </div>
-    </ng-container>
-  </ng-template>
+<ng-container *ngIf="(currentStepId$ | async) === 'configurePluginActionResultMappings'; else configureStep">
+  <!-- A separate stepper step, offered only for an external action that declares its `outputs` in
+       the manifest — embedded actions have no declaration mechanism and never reach this branch.
+       This component stays alive across the `configurePluginAction` <-> `configurePluginActionResultMappings`
+       transition (see the modal template), so `actionProperties`/`actionResultMappings` carry over
+       untouched. -->
+  <valtimo-plugin-action-result-mappings
+    [buildingBlockDefinitionKey]="(buildingBlockParams$ | async)?.buildingBlockDefinitionKey"
+    [buildingBlockDefinitionVersionTag]="(buildingBlockParams$ | async)?.buildingBlockDefinitionVersionTag"
+    [caseDefinitionKey]="(caseParams$ | async)?.caseDefinitionKey"
+    [caseDefinitionVersionTag]="(caseParams$ | async)?.caseDefinitionVersionTag"
+    [sourceKeys]="selectedFunctionOutputs$ | async"
+    [mappings]="actionResultMappings"
+    (mappingsChangeEvent)="onActionResultMappingsChange($event)"
+    (validityChangeEvent)="onActionResultMappingsValidityChange($event)"
+  ></valtimo-plugin-action-result-mappings>
 </ng-container>
 
-<ng-template #embeddedConfig>
-  <valtimo-import-plugin-configuration
-    [pluginActionKey]="functionKey$ | async"
-    (configurationEvent)="onImportConfiguration($event)"
-  ></valtimo-import-plugin-configuration>
+<ng-template #configureStep>
+  <ng-container *ngIf="isExternalPlugin$ | async; else embeddedConfig">
+    <ng-container *ngIf="isTaskForm$ | async; else externalActionConfig">
+      <!-- A task-form has nothing to configure here: the plugin renders the form and completes the
+           task. Saving links the selected task-form to this user task. -->
+      <p class="step-description">
+        {{ 'processLinkConfiguration.externalPluginTaskForm.description' | translate }}
+      </p>
+    </ng-container>
 
-  <valtimo-plugin-configuration-container
-    [pluginDefinitionKey]="pluginDefinitionKey$ | async"
-    [functionKey]="functionKey$ | async"
-    [save$]="save$"
-    [disabled$]="saving$"
-    [selectedPluginConfiguration$]="selectedPluginConfiguration$"
-    [prefillConfiguration$]="prefillConfiguration$"
-    (valid)="onValid($event)"
-    (configuration)="onConfiguration($event)"
-    type="function"
-  ></valtimo-plugin-configuration-container>
+    <ng-template #externalActionConfig>
+      <ng-container
+        *ngIf="{
+          url: externalActionBundleUrl$ | async,
+          resolved: externalBundleResolved$ | async,
+        } as bundle"
+      >
+        <valtimo-external-plugin-iframe
+          *ngIf="bundle.url"
+          [bundleUrl]="bundle.url"
+          [prefillConfiguration]="externalActionPrefill$ | async"
+          (configurationChangedEvent)="onIframeConfigurationChanged($event)"
+        ></valtimo-external-plugin-iframe>
+
+        <div *ngIf="bundle.resolved && !bundle.url" class="external-action-config">
+          <p class="step-description">
+            {{ 'processLinkConfiguration.externalPluginActionProperties' | translate }}
+          </p>
+          <div class="cds--form-item">
+            <label class="cds--label">{{
+              'processLinkConfiguration.actionPropertiesJson' | translate
+            }}</label>
+            <textarea
+              class="cds--text-area"
+              rows="10"
+              [ngModel]="externalActionPropertiesJson"
+              (ngModelChange)="onExternalActionPropertiesChange($event)"
+              [class.cds--text-area--invalid]="!externalActionPropertiesValid"
+            ></textarea>
+            <div *ngIf="!externalActionPropertiesValid" class="cds--form-requirement">
+              {{ 'processLinkConfiguration.invalidJson' | translate }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #embeddedConfig>
+    <valtimo-import-plugin-configuration
+      [pluginActionKey]="functionKey$ | async"
+      (configurationEvent)="onImportConfiguration($event)"
+    ></valtimo-import-plugin-configuration>
+
+    <valtimo-plugin-configuration-container
+      [pluginDefinitionKey]="pluginDefinitionKey$ | async"
+      [functionKey]="functionKey$ | async"
+      [save$]="save$"
+      [disabled$]="saving$"
+      [selectedPluginConfiguration$]="selectedPluginConfiguration$"
+      [prefillConfiguration$]="prefillConfiguration$"
+      (valid)="onValid($event)"
+      (configuration)="onConfiguration($event)"
+      type="function"
+    ></valtimo-plugin-configuration-container>
+  </ng-template>
 </ng-template>

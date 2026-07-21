@@ -14,6 +14,25 @@
  * limitations under the License.
  */
 
+dockerCompose {
+    projectName = "externalplugin"
+
+    securityTesting {
+        isRequiredBy(project.tasks.securityTesting)
+        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
+    }
+
+    integrationTestingPostgresql {
+        isRequiredBy(project.tasks.integrationTestingPostgresql)
+        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
+    }
+
+    integrationTestingMysql {
+        isRequiredBy(project.tasks.integrationTestingMysql)
+        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-mysql.yml", "docker-compose-override-mysql.yml")
+    }
+}
+
 dependencies {
     implementation project(":backend:process-link")
     implementation project(":backend:process-document")
@@ -41,6 +60,8 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation project(":backend:test-utils-common")
+    testImplementation project(":backend:importer")
+    testImplementation project(":backend:plugin-valtimo")
 
     // Modules whose controllers EndpointDescriptionCoverageTest scans — it requires every endpoint
     // to carry an @EndpointDescription, so those controllers must be on the test classpath

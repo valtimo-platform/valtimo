@@ -22,7 +22,14 @@ import java.util.UUID
 data class DanglingPluginConfigurationDto(
     val pluginDefinitionKey: String?,
     val sourcePluginConfigurationIds: Set<UUID>,
-)
+    val source: String = SOURCE_EMBEDDED,
+    val pluginDefinitionVersion: String? = null,
+) {
+    companion object {
+        const val SOURCE_EMBEDDED = "embedded"
+        const val SOURCE_EXTERNAL = "external"
+    }
+}
 
 interface PluginConfigurationMappingResolver {
     fun resolve(caseDefinitionId: CaseDefinitionId, mappings: Map<UUID, UUID>)

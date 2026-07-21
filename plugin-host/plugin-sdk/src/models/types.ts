@@ -24,9 +24,16 @@ export interface ActionInput {
   properties: Record<string, unknown>;
 }
 
+/**
+ * `variables` is applied as process variables, unchanged from before. `result` is a separate,
+ * optional channel: an arbitrary JSON payload that GZAC's `action_result_mappings` (JSON-pointer →
+ * `doc:`/`pv:`/`case:` target) resolve against, entirely independent of `variables`. Plugins that
+ * don't set `result` are unaffected — there is nothing to map.
+ */
 export interface ActionOutput {
   status: "completed" | "error";
   variables?: Record<string, unknown>;
+  result?: unknown;
   errorCode?: string;
   errorMessage?: string;
 }
@@ -126,6 +133,14 @@ export interface ManifestAction {
   description?: string;
   activityTypes: string[];
   properties?: ManifestActionProperty[];
+  /**
+   * Keys the action's {@link ActionOutput.result} object exposes for result-mapping. When present
+   * (and non-empty), GZAC's process-link stepper offers a dedicated output-mapping step letting an
+   * admin map these keys to `doc:`/`pv:`/`case:` targets, with the source restricted to this
+   * declared set (a dropdown instead of free-text JSON pointers). Actions without `outputs` (or an
+   * empty array) have no declared shape and cannot use result mapping.
+   */
+  outputs?: string[];
 }
 
 export interface ManifestActionProperty {

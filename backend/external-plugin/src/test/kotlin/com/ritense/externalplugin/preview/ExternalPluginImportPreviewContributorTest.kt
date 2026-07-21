@@ -1,0 +1,201 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.externalplugin.preview
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.valtimo.contract.importer.ImportPreviewContribution.Companion.SOURCE_EXTERNAL
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import java.util.UUID
+
+class ExternalPluginImportPreviewContributorTest {
+
+    private lateinit var configurationRepository: ExternalPluginConfigurationRepository
+    private lateinit var contributor: ExternalPluginImportPreviewContributor
+
+    @BeforeEach
+    fun setUp() {
+        configurationRepository = mock()
+        contributor = ExternalPluginImportPreviewContributor(ObjectMapper(), configurationRepository)
+    }
+
+    @Test
+    fun `contributes an entry for a FIXED external_plugin process link and checks existence`() {
+        val configId = UUID.randomUUID()
+        whenever(configurationRepository.existsById(configId)).thenReturn(true)
+
+        val json = """
+            [
+              {
+                "activityId": "Task_1",
+                "activityType": "bpmn:ServiceTask:start",
+                "processLinkType": "external_plugin",
+                "externalPluginConfigurationId": "$configId",
+                "actionKey": "send",
+                "referenceType": "FIXED",
+                "pluginDefinitionKey": "case-summary",
+                "pluginVersion": "1.2.3"
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("process-link/my-process.process-link.json" to json.toByteArray())
+        )
+
+        assertThat(result).hasSize(1)
+        val entry = result.single()
+        assertThat(entry.pluginConfigurationId).isEqualTo(configId)
+        assertThat(entry.pluginDefinitionKey).isEqualTo("case-summary")
+        assertThat(entry.pluginDefinitionVersion).isEqualTo("1.2.3")
+        assertThat(entry.processDefinitionKey).isEqualTo("my-process")
+        assertThat(entry.activityId).isEqualTo("Task_1")
+        assertThat(entry.source).isEqualTo(SOURCE_EXTERNAL)
+        assertThat(entry.existsInTargetEnvironment).isTrue()
+    }
+
+    @Test
+    fun `contributes an entry for an external_plugin_task_form process link`() {
+        val configId = UUID.randomUUID()
+        whenever(configurationRepository.existsById(configId)).thenReturn(false)
+
+        val json = """
+            [
+              {
+                "activityId": "Task_1",
+                "activityType": "bpmn:UserTask:create",
+                "processLinkType": "external_plugin_task_form",
+                "externalPluginConfigurationId": "$configId",
+                "referenceType": "FIXED",
+                "pluginVersion": "0.1.0"
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("process-link/my-process.process-link.json" to json.toByteArray())
+        )
+
+        assertThat(result).hasSize(1)
+        assertThat(result.single().existsInTargetEnvironment).isFalse()
+        assertThat(result.single().source).isEqualTo(SOURCE_EXTERNAL)
+    }
+
+    @Test
+    fun `ignores BUILDING_BLOCK external plugin references (no configuration id to check)`() {
+        val json = """
+            [
+              {
+                "activityId": "Task_1",
+                "activityType": "bpmn:ServiceTask:start",
+                "processLinkType": "external_plugin",
+                "actionKey": "send",
+                "referenceType": "BUILDING_BLOCK",
+                "pluginDefinitionKey": "case-summary",
+                "pluginVersion": "1.2.3"
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("process-link/my-process.process-link.json" to json.toByteArray())
+        )
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `ignores embedded plugin process links`() {
+        val json = """
+            [
+              {
+                "activityId": "Task_1",
+                "activityType": "bpmn:ServiceTask:start",
+                "processLinkType": "plugin",
+                "pluginConfigurationId": "${UUID.randomUUID()}",
+                "pluginActionDefinitionKey": "create-zaak"
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("process-link/my-process.process-link.json" to json.toByteArray())
+        )
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `contributes an entry for an EXTERNAL_PLUGIN case tab and checks existence`() {
+        val configId = UUID.randomUUID()
+        whenever(configurationRepository.existsById(configId)).thenReturn(true)
+
+        val json = """
+            [
+              {
+                "key": "summary",
+                "name": "Summary",
+                "type": "external_plugin",
+                "contentKey": "$configId:bundle-key"
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("case/tab/my-doc.case-tab.json" to json.toByteArray())
+        )
+
+        assertThat(result).hasSize(1)
+        val entry = result.single()
+        assertThat(entry.pluginConfigurationId).isEqualTo(configId)
+        assertThat(entry.source).isEqualTo(SOURCE_EXTERNAL)
+        assertThat(entry.existsInTargetEnvironment).isTrue()
+    }
+
+    @Test
+    fun `ignores non-EXTERNAL_PLUGIN case tabs`() {
+        val json = """
+            [
+              {
+                "key": "summary",
+                "name": "Summary",
+                "type": "widgets",
+                "contentKey": "widget-key"
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("case/tab/my-doc.case-tab.json" to json.toByteArray())
+        )
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `ignores unrelated files`() {
+        val result = contributor.contributePreview(
+            mapOf("case/definition/my-doc.case-definition.json" to "{}".toByteArray())
+        )
+
+        assertThat(result).isEmpty()
+    }
+}

@@ -22,8 +22,27 @@ import {
   BuildingBlockOutputMapping,
   ProcessLink,
 } from '../models';
+import {PluginRequirementSource, RequiredPlugin} from '../models/plugin.model';
 import {ProcessLinkBuildingBlockApiService} from './process-link-building-block-api.service';
 import {ensureDocPrefix} from '../utils';
+
+const EXTERNAL_PLUGIN_MAPPING_KEY_PREFIX = 'external-plugin:';
+
+/**
+ * The `pluginConfigurationMappings` key a required plugin is stored/looked-up under. Embedded
+ * requirements use the plain `pluginDefinitionKey`; external requirements are namespaced and
+ * versioned (`external-plugin:<pluginId>@<version>`, D2) so the two systems can never collide on
+ * the same map key.
+ */
+function toMappingKey(
+  pluginDefinitionKey: string,
+  source: PluginRequirementSource | undefined,
+  pluginDefinitionVersion: string | null | undefined
+): string {
+  return source === 'EXTERNAL' && pluginDefinitionVersion
+    ? `${EXTERNAL_PLUGIN_MAPPING_KEY_PREFIX}${pluginDefinitionKey}@${pluginDefinitionVersion}`
+    : pluginDefinitionKey;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +52,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private readonly _definitionVersionTag$ = new BehaviorSubject<string | null>(null);
   private readonly _versions$ = new BehaviorSubject<Array<string>>([]);
   private readonly _requiredPluginKeys$ = new BehaviorSubject<Array<string>>([]);
+  private readonly _requiredPlugins$ = new BehaviorSubject<Array<RequiredPlugin>>([]);
   private readonly _pluginMappings$ = new BehaviorSubject<Record<string, string | null>>({});
   private readonly _buildingBlockFields$ = new BehaviorSubject<Array<BuildingBlockField>>([]);
   private readonly _inputMappings$ = new BehaviorSubject<Array<BuildingBlockInputMapping>>([]);
@@ -64,6 +84,10 @@ export class BuildingBlockStateService implements OnDestroy {
 
   public get requiredPluginKeys$(): Observable<Array<string>> {
     return this._requiredPluginKeys$.asObservable();
+  }
+
+  public get requiredPlugins$(): Observable<Array<RequiredPlugin>> {
+    return this._requiredPlugins$.asObservable();
   }
 
   public get pluginMappings$(): Observable<Record<string, string | null>> {
@@ -270,30 +294,42 @@ export class BuildingBlockStateService implements OnDestroy {
       .subscribe({
         next: res => {
           const plugins = res?.plugins ?? [];
-          const pluginKeys = plugins.map(plugin => plugin.pluginDefinitionKey).filter(Boolean);
+          const requiredPlugins: Array<RequiredPlugin> = plugins
+            .filter(plugin => !!plugin.pluginDefinitionKey)
+            .map(plugin => ({
+              mappingKey: toMappingKey(
+                plugin.pluginDefinitionKey,
+                plugin.source,
+                plugin.pluginDefinitionVersion
+              ),
+              pluginDefinitionKey: plugin.pluginDefinitionKey,
+              pluginDefinitionVersion: plugin.pluginDefinitionVersion ?? null,
+              source: plugin.source ?? 'EMBEDDED',
+            }));
           const dependencies: string[] = Array.from(
             new Set(plugins.flatMap(p => p.dependencies ?? []).map(d => d.key))
           );
 
-          this.applyPluginKeys(pluginKeys ?? []);
+          this.applyRequiredPlugins(requiredPlugins);
           this._pluginDependencies$.next(dependencies);
           this._loadingRequirements$.next(false);
         },
         error: () => {
-          this.applyPluginKeys([]);
+          this.applyRequiredPlugins([]);
           this._pluginDependencies$.next([]);
           this._loadingRequirements$.next(false);
         },
       });
   }
 
-  private applyPluginKeys(pluginKeys: Array<string>): void {
+  private applyRequiredPlugins(requiredPlugins: Array<RequiredPlugin>): void {
     const currentMappings = this._pluginMappings$.getValue();
     const normalized: Record<string, string | null> = {};
-    pluginKeys.forEach(key => {
-      normalized[key] = currentMappings[key] ?? null;
+    requiredPlugins.forEach(plugin => {
+      normalized[plugin.mappingKey] = currentMappings[plugin.mappingKey] ?? null;
     });
-    this._requiredPluginKeys$.next(pluginKeys);
+    this._requiredPlugins$.next(requiredPlugins);
+    this._requiredPluginKeys$.next(requiredPlugins.map(plugin => plugin.mappingKey));
     this._pluginMappings$.next(normalized);
   }
 
@@ -319,6 +355,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private clearPluginRequirements(options: {preserveMappings?: boolean} = {}): void {
     this._requirementsSubscription?.unsubscribe();
     this._requiredPluginKeys$.next([]);
+    this._requiredPlugins$.next([]);
     if (!options.preserveMappings) {
       this._pluginMappings$.next({});
     }
