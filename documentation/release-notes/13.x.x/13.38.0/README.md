@@ -32,3 +32,9 @@
   such as the filename via `calculateValue`. On redraw, the Angular custom element was recreated
   with an empty value and the stored file references were never restored, causing the uploaded file
   to disappear from the UI.
+
+* **Case list export now enforces the export permission**
+
+  The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
+  before producing a file. A user without an applicable `export` permission for the case definition now receives a
+  403 (Forbidden) response instead of an empty CSV.
