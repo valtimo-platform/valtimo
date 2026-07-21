@@ -101,6 +101,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
   private readonly _skeletonRowCount$ = new BehaviorSubject<number>(5);
+  private _skeletonRowCountSet = false;
 
   private get _items(): CarbonListItem[] {
     return this._items$.getValue();
@@ -155,7 +156,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() loading: boolean;
   @Input() set skeletonRowCount(value: number) {
-    this._skeletonRowCount$.next(value);
+    this._skeletonRowCountSet = value != null;
+    this._skeletonRowCount$.next(value ?? this._skeletonRowCount$.value);
   }
 
   /**
@@ -320,7 +322,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
         ([headers, items, skeletonRowCount]) => {
           let rowCount = items?.length > 0 ? items?.length : skeletonRowCount;
 
-          if (items?.length === 0 && this.pagination?.size) {
+          if (items?.length === 0 && this.pagination?.size && !this._skeletonRowCountSet) {
             rowCount = this.pagination.size;
           }
           if (!this.hideToolbar) {
