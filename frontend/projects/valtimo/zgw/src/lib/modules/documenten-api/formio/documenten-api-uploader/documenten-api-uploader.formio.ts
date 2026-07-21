@@ -46,6 +46,12 @@ export function registerDocumentenApiFormioUploadComponent(injector: Injector) {
         return false;
       }
 
+      // Re-apply customOptions on every setValue. FormIO calls setValue() right after evaluating
+      // calculateValue, which can mutate this.component.customOptions as a side effect (e.g.
+      // component.customOptions.filename = 'Test'). Because this subclass bypasses the base
+      // setValue(), the base re-binding never runs, so we must re-bind here for those mutations to
+      // reach the Angular element without depending on a redraw firing.
+      this.bindCustomOptions();
       this._customAngularElement.value = value;
       return true;
     }
