@@ -55,4 +55,14 @@ public interface DocumentSearchService {
         AdvancedSearchRequest advancedSearchRequest
     );
 
+    @SuppressWarnings({"squid:S1452", "java:S1452"})
+    default Page<? extends Document> searchForExport(
+        String documentDefinitionName,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Pageable pageable
+    ) {
+        return search(documentDefinitionName, blueprintType, searchWithConfigRequest, pageable);
+    }
+
 }

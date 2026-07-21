@@ -35,4 +35,10 @@ public interface QueryDialectHelper {
     Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column);
 
     Expression<UUID> stringToUuid(CriteriaBuilder cb, Expression<String> expression);
+
+    default String escapeLikePattern(String value) {
+        return value.replace("\\", "\\\\")
+                    .replace("%", "\\%")
+                    .replace("_", "\\_");
+    }
 }

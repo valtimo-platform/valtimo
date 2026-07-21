@@ -261,6 +261,15 @@ const MENU_ITEM_CATALOG: MenuItemCatalogEntry[] = [
     category: 'admin',
   },
   {
+    itemId: 'opensearch',
+    defaultTitleKey: 'adminSettings.opensearch.title',
+    link: '/opensearch',
+    roles: [ROLE_ADMIN],
+    includeFunction: IncludeFunction.OpenSearchEnabled,
+    placement: 'admin',
+    category: 'admin',
+  },
+  {
     itemId: 'caseMigration',
     defaultTitleKey: 'Case migration (beta)',
     link: '/case-migration',
