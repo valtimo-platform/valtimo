@@ -28,7 +28,7 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.event.DocumentsExported
-import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
+import com.ritense.document.service.DocumentSearchService
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -49,7 +49,7 @@ import kotlin.text.Charsets.UTF_8
 @Transactional
 class CaseExporter(
     private val caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
-    private val documentSearchService: JsonSchemaDocumentSearchService,
+    private val documentSearchService: DocumentSearchService,
     private val outboxService: OutboxService,
     private val mapper: ObjectMapper,
     private val caseListRowMapper: CaseListRowMapper
