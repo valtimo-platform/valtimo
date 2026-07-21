@@ -37,8 +37,13 @@
   with an empty value and the stored file references were never restored, causing the uploaded file
   to disappear from the UI.
 
-* ZGW document actions such as **view** and **modify** could be incorrectly disabled for documents uploaded from a
-  building block process.
+* **`case:` value resolver now correctly resolves to case document inside building blocks**
+
+  The `case:` value resolver now always resolves to the parent case document, even when used inside
+  a building block. Previously, it incorrectly resolved to the building block's own document. This
+  allows building block forms to read case metadata like `case:assigneeFullName` or `case:internalStatus`.
+  Writing `case:` values from within a building block is not supported and will throw an error.
+  
 * **Lists no longer jump in size while loading**
 
   While a list is loading, its placeholder now stays a consistent, compact size instead of briefly expanding to a large
@@ -68,3 +73,6 @@
   The page for creating and finalizing draft versions of a case definition is now titled *Versiebeheer* (Dutch) and
   *Version management* (English), matching the rest of that screen. Previously it was labelled *Implementatie* /
   *Deployment*, which did not reflect what the page actually does.
+
+* ZGW document actions such as **view** and **modify** could be incorrectly disabled for documents uploaded from a
+  building block process.
