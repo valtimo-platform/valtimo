@@ -114,6 +114,11 @@ export class CaseListOrchestrationService {
   public readonly searchFields$: Observable<Array<SearchField> | null> =
     this.searchService.documentSearchFields$;
 
+  public readonly globalSearchFilter$: Observable<string> = this.searchService.globalSearchFilter$;
+
+  public readonly invalidSearchFields$: Observable<string[]> =
+    this.documentService.invalidSearchFields$;
+
   public readonly statuses$: Observable<Array<InternalCaseStatus>> =
     this.statusService.caseStatuses$;
 
@@ -330,6 +335,7 @@ export class CaseListOrchestrationService {
         this.hasApiColumnConfig$,
         this.statusService.caseStatuses$,
         this.caseListCaseTagService.caseTags$,
+        this.globalSearchFilter$,
       ]).pipe(debounceTime(50))
     ),
     distinctUntilChanged(this.areDocumentRequestsEqual),
@@ -343,6 +349,8 @@ export class CaseListOrchestrationService {
         _,
         hasApiColumnConfig,
         allStatuses,
+        __,
+        globalSearchFilter,
       ]) =>
         this.fetchDocuments(
           documentSearchRequest,
@@ -351,7 +359,8 @@ export class CaseListOrchestrationService {
           selectedStatuses,
           selectedCaseTagKeys,
           hasApiColumnConfig,
-          allStatuses
+          allStatuses,
+          globalSearchFilter
         )
     ),
     switchMap(res => this.checkDocumentPermissions(res)),
@@ -439,6 +448,10 @@ export class CaseListOrchestrationService {
       prevSelectedStatuses,
       prevCaseTagKeys,
       prevForceRefresh,
+      _prevHasApiColumnConfig,
+      _prevStatuses,
+      _prevCaseTags,
+      prevGlobalSearchFilter,
     ]: any[],
     [
       currSearchRequest,
@@ -447,6 +460,10 @@ export class CaseListOrchestrationService {
       currSelectedStatuses,
       currCaseTagKeys,
       currForceRefresh,
+      _currHasApiColumnConfig,
+      _currStatuses,
+      _currCaseTags,
+      currGlobalSearchFilter,
     ]: any[]
   ): boolean {
     return isEqual(
@@ -457,6 +474,7 @@ export class CaseListOrchestrationService {
         ...prevSelectedStatuses,
         ...prevCaseTagKeys,
         forceRefresh: prevForceRefresh,
+        globalSearchFilter: prevGlobalSearchFilter,
       },
       {
         ...currSearchRequest,
@@ -465,6 +483,7 @@ export class CaseListOrchestrationService {
         ...currSelectedStatuses,
         ...currCaseTagKeys,
         forceRefresh: currForceRefresh,
+        globalSearchFilter: currGlobalSearchFilter,
       }
     );
   }
@@ -476,7 +495,8 @@ export class CaseListOrchestrationService {
     selectedStatuses: string[],
     selectedCaseTagKeys: string[],
     hasApiColumnConfig: boolean,
-    allStatuses: InternalCaseStatus[]
+    allStatuses: InternalCaseStatus[],
+    globalSearchFilter?: string
   ): Observable<{
     documents: Documents | SpecifiedDocuments;
     hasApiColumnConfig: boolean;
@@ -496,6 +516,8 @@ export class CaseListOrchestrationService {
         ? this.searchService.mapSearchValuesToFilters(searchValues)
         : undefined;
 
+    const globalFilter = globalSearchFilter?.trim() || undefined;
+
     const documentsObs = !hasApiColumnConfig
       ? this.documentService.getDocumentsSearch(
           documentSearchRequest,
@@ -503,7 +525,8 @@ export class CaseListOrchestrationService {
           assigneeFilter,
           searchFilters,
           statusKeys,
-          selectedCaseTagKeys
+          selectedCaseTagKeys,
+          globalFilter
         )
       : this.documentService.getSpecifiedDocumentsSearch(
           documentSearchRequest,
@@ -511,13 +534,14 @@ export class CaseListOrchestrationService {
           assigneeFilter,
           searchFilters,
           statusKeys,
-          selectedCaseTagKeys
+          selectedCaseTagKeys,
+          globalFilter
         );
 
     return forkJoin({
       documents: documentsObs,
       hasApiColumnConfig: of(hasApiColumnConfig),
-      isSearchResult: of(!!searchFilters),
+      isSearchResult: of(!!searchFilters || !!globalFilter),
       allStatuses: of(allStatuses),
       assigneeFilter: of(assigneeFilter),
     });

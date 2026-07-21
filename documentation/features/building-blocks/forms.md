@@ -65,6 +65,21 @@ automatically assigned to the case assignee.
 When building forms for a building block, the value resolver selector in the form builder shows the data
 fields available within the building block's own document.
 
+The following value resolvers are available in building block forms:
+
+| Prefix | Resolves to | Read | Write |
+|--------|-------------|------|-------|
+| `doc:` | Building block document content (JSON data) | Yes | Yes |
+| `case:` | Parent case document metadata (assigneeFullName, internalStatus, etc.) | Yes | No |
+| `bb:` | Building block document metadata (createdOn, id, etc.) | Yes | No |
+| `pv:` | Process variables | Yes | Yes |
+
+{% hint style="info" %}
+The `case:` prefix resolves to the parent case document, not the building block document. This allows
+building block forms to display case metadata. Writing to `case:` fields from a building block is not
+supported. Use input/output mappings to exchange data with the case.
+{% endhint %}
+
 ## Import and export
 
 Building block forms are automatically included when exporting a building block. When importing a building

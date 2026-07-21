@@ -18,12 +18,13 @@ package com.ritense.zakenapi
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
-import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZakenApiPlugin.Companion.DOCUMENT_URL_PROCESS_VAR
@@ -80,6 +81,10 @@ import com.ritense.zgw.Page
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.Archiefnominatie
 import com.ritense.zgw.domain.Vertrouwelijkheid
+import java.net.URI
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -97,10 +102,6 @@ import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.PlatformTransactionManager
-import java.net.URI
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -116,6 +117,7 @@ internal class ZakenApiPluginTest {
         val authenticationMock = mock<ZakenApiAuthentication>()
 
         val documentId = UUID.randomUUID()
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(any())).thenReturn(zaakUri())
 
@@ -155,6 +157,7 @@ internal class ZakenApiPluginTest {
         val authenticationMock = mock<ZakenApiAuthentication>()
         val documentId = UUID.randomUUID()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(executionMock.getVariable(DOCUMENT_URL_PROCESS_VAR)).thenReturn(documentUrl())
         whenever(executionMock.getVariable(RESOURCE_ID_PROCESS_VAR)).thenReturn("myResourceId")
@@ -642,6 +645,7 @@ internal class ZakenApiPluginTest {
         val zaakUrlProvider: ZaakUrlProvider = mock()
 
         val documentId = UUID.randomUUID()
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(any())).thenReturn(zaakUri())
 
@@ -656,15 +660,12 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
         val zaaktypeUrl = zaaktypeUri()
 
-        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId))
-            .thenReturn(documentId)
-
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
 
@@ -689,7 +690,6 @@ internal class ZakenApiPluginTest {
             zakenApiClient = zakenApiClient,
             authenticationMock = authenticationMock,
             pluginService = pluginServiceMock(),
-            caseDocumentResolver = caseDocumentResolverMock
         )
 
         plugin.createZaak(
@@ -721,7 +721,6 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
@@ -736,9 +735,7 @@ internal class ZakenApiPluginTest {
         val caseGeometryCoordinates = "[4.932921, 52.370085]"
         val mainCase = zaakUrl("123")
 
-        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId))
-            .thenReturn(documentId)
-
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
 
@@ -763,7 +760,6 @@ internal class ZakenApiPluginTest {
             zakenApiClient = zakenApiClient,
             authenticationMock = authenticationMock,
             pluginService = pluginServiceMock(),
-            caseDocumentResolver = caseDocumentResolverMock
         )
 
         plugin.createZaak(
@@ -804,7 +800,6 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
@@ -816,12 +811,12 @@ internal class ZakenApiPluginTest {
         val lastPaymentDate = LocalDate.of(2026, 3, 1)
         val selectionListClass = "https://example.com/selectielijst/1"
 
-        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
             .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
 
-        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock())
 
         plugin.createZaak(
             execution = executionMock,
@@ -852,18 +847,17 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
         val zaaktypeUrl = zaaktypeUri()
 
-        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
             .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
 
-        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock())
 
         plugin.createZaak(
             execution = executionMock,
@@ -888,7 +882,6 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
@@ -896,12 +889,12 @@ internal class ZakenApiPluginTest {
         val productsAndServicesJson = """["https://example.com/product/1","https://example.com/product/2"]"""
         val characteristicsJson = """[{"kenmerk":"K1","bron":"B1"},{"kenmerk":"K2","bron":"B2"}]"""
 
-        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
             .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
 
-        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock())
 
         plugin.createZaak(
             execution = executionMock,
@@ -930,7 +923,6 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
@@ -938,12 +930,12 @@ internal class ZakenApiPluginTest {
         val archiveActionDate = LocalDate.of(2033, 1, 1)
         val startDateRetentionPeriod = LocalDate.of(2026, 1, 1)
 
-        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
             .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
 
-        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock())
 
         plugin.createZaak(
             execution = executionMock,
@@ -972,18 +964,17 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
         val zaaktypeUrl = zaaktypeUri()
 
-        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
             .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
 
-        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock())
 
         plugin.createZaak(
             execution = executionMock,
@@ -1016,7 +1007,6 @@ internal class ZakenApiPluginTest {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
-        val caseDocumentResolverMock = mock<CaseDocumentResolver>()
 
         val documentId = UUID.randomUUID()
         val rsin = Rsin("051845623")
@@ -1025,12 +1015,12 @@ internal class ZakenApiPluginTest {
         val relatedCasesJson = """[{"url":"https://zaken.plugin.url/zaken/def456"}]"""
         val lastOpenedDate = LocalDateTime.of(2026, 4, 22, 10, 0, 0)
 
-        whenever(caseDocumentResolverMock.resolveCaseDocumentId(documentId)).thenReturn(documentId)
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zakenApiClient.createZaak(authentication = eq(authenticationMock), baseUrl = eq(zakenApiUri()), request = any()))
             .thenReturn(ZaakResponse(url = zaakUri(), uuid = UUID.randomUUID(), zaaktype = zaaktypeUrl, bronorganisatie = rsin, startdatum = LocalDate.now(), verantwoordelijkeOrganisatie = rsin))
 
-        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock(), caseDocumentResolver = caseDocumentResolverMock)
+        val plugin = zakenApiPlugin(zakenApiClient = zakenApiClient, authenticationMock = authenticationMock, pluginService = pluginServiceMock())
 
         plugin.createZaak(
             execution = executionMock,
@@ -1087,6 +1077,7 @@ internal class ZakenApiPluginTest {
         val caseGeometryType = GeometryType.POINT.key
         val caseGeometryCoordinates = "[0.0, 1.0]"
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey)
             .thenReturn(documentId.toString())
 
@@ -1175,6 +1166,7 @@ internal class ZakenApiPluginTest {
         val zaakUrl = zaakUri()
         val statustypeUrl = statustypeUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
 
@@ -1207,6 +1199,7 @@ internal class ZakenApiPluginTest {
         val zaakUrl = zaakUri()
         val resultaatTypeUrl = resultaatTypeUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
 
@@ -1237,6 +1230,7 @@ internal class ZakenApiPluginTest {
         val documentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
 
@@ -1284,6 +1278,7 @@ internal class ZakenApiPluginTest {
         val documentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
 
@@ -1322,6 +1317,7 @@ internal class ZakenApiPluginTest {
         val documentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
         whenever(zakenApiClient.getZaak(authenticationMock, zaakUrl))
@@ -1370,6 +1366,7 @@ internal class ZakenApiPluginTest {
         val documentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
         whenever(zakenApiClient.getZaak(authenticationMock, zaakUrl))
@@ -1417,6 +1414,7 @@ internal class ZakenApiPluginTest {
         val documentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
         whenever(zakenApiClient.getZaak(authenticationMock, zaakUrl))
@@ -1474,6 +1472,7 @@ internal class ZakenApiPluginTest {
         val zaakUrl = zaakUri()
         val eigenschapUrl = eigenschapUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
         whenever(zakenApiClient.createZaakeigenschap(any(), any(), any()))
@@ -1521,6 +1520,7 @@ internal class ZakenApiPluginTest {
         val zaakUrl = zaakUri()
         val eigenschapUrl = eigenschapUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
         whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
@@ -1570,6 +1570,7 @@ internal class ZakenApiPluginTest {
         val zaakUrl = zaakUri()
         val eigenschapUrl = eigenschapUri()
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
         whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
@@ -1615,6 +1616,7 @@ internal class ZakenApiPluginTest {
         val teRelaterenZaakUri = zaakUri("7cbc216f-0fa9-40e8-92b0-00399b5340f8")
         val aardRelatie = "vervolg"
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(documentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
         whenever(zaakResponseMock.relevanteAndereZaken).thenReturn(listOf())
@@ -1708,6 +1710,7 @@ internal class ZakenApiPluginTest {
             )
         )
 
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(executionMock.businessKey).thenReturn(caseDocumentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
         whenever(zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)).thenReturn(relatedFiles)
@@ -1743,6 +1746,7 @@ internal class ZakenApiPluginTest {
         val caseDocumentId = UUID.randomUUID()
         val resultProcessVariable = "zaakbesluiten"
 
+        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(execution.businessKey).thenReturn(caseDocumentId.toString())
         whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUri())
 
@@ -1807,6 +1811,7 @@ internal class ZakenApiPluginTest {
         val zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock()
         val executionMock: DelegateExecution = mock {
             on { this.businessKey } doReturn caseDocumentId.toString()
+            on { this.processInstanceId } doReturn UUID.randomUUID().toString()
         }
 
         val plugin = zakenApiPlugin(
@@ -1903,6 +1908,7 @@ internal class ZakenApiPluginTest {
         }
         val executionMock: DelegateExecution = mock {
             on { this.businessKey } doReturn caseDocumentId.toString()
+            on { this.processInstanceId } doReturn UUID.randomUUID().toString()
         }
 
         val plugin = zakenApiPlugin(
@@ -2213,6 +2219,7 @@ internal class ZakenApiPluginTest {
         caseDocumentResolver: CaseDocumentResolver = mock(),
         userManagementService: UserManagementService = mock(),
     ): ZakenApiPlugin {
+        whenever(caseDocumentResolver.resolveCaseDocumentId(any())).thenAnswer { it.arguments[0] }
         return ZakenApiPlugin(
             client = zakenApiClient,
             zaakUrlProvider = zaakUrlProvider,

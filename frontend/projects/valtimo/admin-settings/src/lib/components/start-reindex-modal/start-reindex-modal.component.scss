@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,30 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi
+.start-reindex-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 
-import java.net.URI
-import java.util.UUID
-
-object ExtractUuid {
-
-    fun extractUuidFromUri(uri: URI): UUID? {
-        return try {
-            val lastSegment = uri.path
-                ?.substringAfterLast("/")
-                ?.takeIf { it.isNotBlank() }
-
-            lastSegment?.let { UUID.fromString(it) }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun extractUuidFromUri(uri: String): UUID? {
-        return try {
-            extractUuidFromUri(URI(uri))
-        } catch (e: Exception) {
-            null
-        }
-    }
+  .label-with-tooltip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
 }
