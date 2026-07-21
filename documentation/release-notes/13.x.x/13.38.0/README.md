@@ -32,3 +32,10 @@
   such as the filename via `calculateValue`. On redraw, the Angular custom element was recreated
   with an empty value and the stored file references were never restored, causing the uploaded file
   to disappear from the UI.
+
+* **`case:` value resolver now correctly resolves to case document inside building blocks**
+
+  The `case:` value resolver now always resolves to the parent case document, even when used inside
+  a building block. Previously, it incorrectly resolved to the building block's own document. This
+  allows building block forms to read case metadata like `case:assigneeFullName` or `case:internalStatus`.
+  Writing `case:` values from within a building block is not supported and will throw an error.
