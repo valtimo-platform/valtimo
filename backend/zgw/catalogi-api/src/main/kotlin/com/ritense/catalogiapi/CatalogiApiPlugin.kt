@@ -46,15 +46,15 @@ import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginDependency
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.Page
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.net.URI
 import java.time.LocalDate
-import java.util.UUID
+import org.operaton.bpm.engine.delegate.DelegateExecution
 
 @Plugin(
     key = "catalogiapi",
@@ -577,7 +577,7 @@ class CatalogiApiPlugin(
         }
 
     private fun getZaaktypeUrl(execution: DelegateExecution): URI =
-        zaaktypeUrlProvider.getZaaktypeUrl(UUID.fromString(execution.businessKey))
+        zaaktypeUrlProvider.getZaaktypeUrl(execution.getJsonSchemaDocumentId())
 
     companion object {
         private val logger = KotlinLogging.logger {}

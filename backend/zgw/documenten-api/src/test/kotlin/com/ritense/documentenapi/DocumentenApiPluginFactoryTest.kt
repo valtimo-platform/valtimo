@@ -28,6 +28,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -52,6 +53,7 @@ internal class DocumentenApiPluginFactoryTest {
         val documentDeleteHandlers: List<DocumentDeleteHandler> = mock()
         val documentenApiVersionService: DocumentenApiVersionService = mock()
         val runtimeService: OperatonRuntimeService = mock()
+        val caseDocumentResolver: CaseDocumentResolver = mock()
         whenever(pluginService.createInstance(any<PluginConfigurationId>())).thenReturn(authentication)
         whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
 
@@ -96,7 +98,8 @@ internal class DocumentenApiPluginFactoryTest {
             documentenApiVersionService,
             runtimeService,
             virusScanService,
-            false
+            false,
+            caseDocumentResolver,
         )
 
         val plugin = factory.create(configuration)
