@@ -30,15 +30,23 @@ import {FitPageDirective} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, Subscription, switchMap, throwError} from 'rxjs';
 import {CaseExternalPluginTabApiService, CaseTabService} from '../../../../services';
-import {ExternalPluginTabContent, ExternalPluginUserTokenResponse} from '../../../../models';
-
-type TabState = 'loading' | 'ready' | 'error';
+import {
+  ExternalPluginTabContent,
+  ExternalPluginTabState,
+  ExternalPluginUserTokenResponse,
+} from '../../../../models';
 
 @Component({
   templateUrl: './external-plugin.component.html',
   styleUrls: ['./external-plugin.component.scss'],
   standalone: true,
-  imports: [CommonModule, LoadingModule, TranslateModule, ExternalPluginIframeComponent, FitPageDirective],
+  imports: [
+    CommonModule,
+    LoadingModule,
+    TranslateModule,
+    ExternalPluginIframeComponent,
+    FitPageDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
@@ -46,7 +54,7 @@ export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
   @HostBinding('class.tab--no-background') private readonly _noBackground = true;
   @HostBinding('class.tab--no-min-height') private readonly _noMinHeight = true;
 
-  public readonly $state = signal<TabState>('loading');
+  public readonly $state = signal<ExternalPluginTabState>('loading');
   public readonly $content = signal<ExternalPluginTabContent | null>(null);
   public readonly $userToken = signal<string | null>(null);
   public readonly $pluginDataUrl = signal<string | null>(null);

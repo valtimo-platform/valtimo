@@ -1,0 +1,15 @@
+{
+  "pluginId": "test-plugin",
+  "version": "1.0.0",
+  "provider": "valtimo-tests",
+  "translations": {
+    "en": { "name": "Test Plugin", "description": "Deterministic fixture plugin for L3 Wasm tests" }
+  },
+  "actions": [
+    { "key": "echo", "title": "Echo", "activityTypes": ["bpmn:ServiceTask"] },
+    { "key": "async-double", "title": "Async double", "activityTypes": ["bpmn:ServiceTask"] },
+    { "key": "boom", "title": "Boom", "activityTypes": ["bpmn:ServiceTask"] },
+    { "key": "call-gzac", "title": "Call GZAC", "activityTypes": ["bpmn:ServiceTask"] }
+  ],
+  "eventSubscriptions": ["test.event.handled"]
+}

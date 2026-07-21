@@ -14,30 +14,20 @@
  * limitations under the License.
  */
 
-interface ExternalPluginTabContext {
-  documentId: string;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  pluginConfigurationId: string;
-}
+import {defineConfig} from "vitest/config";
 
-interface ExternalPluginTabContent {
-  bundleUrl: string | null;
-  configurationId: string;
-  bundleKey: string | null;
-  context: ExternalPluginTabContext;
-}
-
-interface ExternalPluginUserTokenResponse {
-  userToken: string;
-  expiresAt: string;
-}
-
-type ExternalPluginTabState = 'loading' | 'ready' | 'error';
-
-export {
-  ExternalPluginTabContext,
-  ExternalPluginTabContent,
-  ExternalPluginTabState,
-  ExternalPluginUserTokenResponse,
-};
+/**
+ * L4 (integration) test config. Spins up real Postgres and RabbitMQ via Testcontainers, so it
+ * requires a running Docker daemon. Kept separate from `npm test` — run with `npm run test:int`.
+ */
+export default defineConfig({
+  test: {
+    environment: "node",
+    include: ["test/integration/**/*.test.ts"],
+    // Pulling images + booting containers is slow; run integration files one at a time so we don't
+    // hold several containers open at once.
+    fileParallelism: false,
+    hookTimeout: 180_000,
+    testTimeout: 60_000,
+  },
+});

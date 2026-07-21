@@ -14,30 +14,22 @@
  * limitations under the License.
  */
 
-interface ExternalPluginTabContext {
-  documentId: string;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  pluginConfigurationId: string;
-}
+import {afterEach, describe, expect, it} from "vitest";
+import type {FastifyInstance} from "fastify";
+import {buildTestApp} from "../test-support/harness";
+import {healthRoutes} from "./health";
 
-interface ExternalPluginTabContent {
-  bundleUrl: string | null;
-  configurationId: string;
-  bundleKey: string | null;
-  context: ExternalPluginTabContext;
-}
+describe("health route", () => {
+  let app: FastifyInstance;
 
-interface ExternalPluginUserTokenResponse {
-  userToken: string;
-  expiresAt: string;
-}
+  afterEach(async () => {
+    await app.close();
+  });
 
-type ExternalPluginTabState = 'loading' | 'ready' | 'error';
-
-export {
-  ExternalPluginTabContext,
-  ExternalPluginTabContent,
-  ExternalPluginTabState,
-  ExternalPluginUserTokenResponse,
-};
+  it("responds 200 with status UP", async () => {
+    app = await buildTestApp((a) => healthRoutes(a));
+    const res = await app.inject({ method: "GET", url: "/health" });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ status: "UP" });
+  });
+});
