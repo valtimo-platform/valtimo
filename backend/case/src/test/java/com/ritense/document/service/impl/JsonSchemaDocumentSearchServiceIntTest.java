@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1716,5 +1716,238 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
             @Override public String getKey() { return key; }
             @Override public String getTitle() { return title; }
         });
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void globalSearchOnDocFieldWithLikeMatchTypeShouldUseWildcards() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Street"
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"street\": \"Funenpark\"}");
+        createDocument("{\"street\": \"Keizersgracht\"}");
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("funen");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void globalSearchOnDocFieldWithExactMatchTypeShouldNotUseWildcards() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Street"
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"street\": \"Funenpark\"}");
+        createDocument("{\"street\": \"Keizersgracht\"}");
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("funen");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void globalSearchOnDocFieldWithExactMatchTypeShouldFindExactMatch() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Street"
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        createDocument("{\"street\": \"Funenpark\"}");
+        createDocument("{\"street\": \"Keizersgracht\"}");
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("Funenpark");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void globalSearchOnCaseFieldWithLikeMatchTypeShouldUseWildcards() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "assignee", "case:assigneeFullName", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Assignee"
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        var document1 = (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow();
+        var document2 = (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow();
+        document1.setAssignee("1111", "John Smith");
+        document2.setAssignee("2222", "Jane Doe");
+        documentRepository.saveAll(List.of(document1, document2));
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("john");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).assigneeFullName()).isEqualTo("John Smith");
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void globalSearchOnCaseFieldWithExactMatchTypeShouldNotUseWildcards() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "assignee", "case:assigneeFullName", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Assignee"
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        var document1 = (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow();
+        var document2 = (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow();
+        document1.setAssignee("1111", "John Smith");
+        document2.setAssignee("2222", "Jane Doe");
+        documentRepository.saveAll(List.of(document1, document2));
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("john");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void globalSearchOnCaseFieldWithExactMatchTypeShouldFindExactMatchWithSingleWord() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var searchField = new SearchField(
+            "assignee", "case:assigneeFullName", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Assignee"
+        );
+        var searchFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        searchField.setId(searchFieldId);
+        searchFieldRepository.save(searchField);
+
+        var document1 = (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow();
+        var document2 = (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow();
+        document1.setAssignee("1111", "active");
+        document2.setAssignee("2222", "inactive");
+        documentRepository.saveAll(List.of(document1, document2));
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("active");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).assigneeFullName()).isEqualTo("active");
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void globalSearchWithMixedLikeAndExactCaseFieldsShouldRespectMatchTypes() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var likeField = new SearchField(
+            "assignee", "case:assigneeFullName", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Assignee"
+        );
+        var likeFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        likeField.setId(likeFieldId);
+
+        var exactField = new SearchField(
+            "createdBy", "case:createdBy", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Created By"
+        );
+        var exactFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        exactField.setId(exactFieldId);
+
+        searchFieldRepository.saveAll(List.of(likeField, exactField));
+
+        var document1 = (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow();
+        var document2 = (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow();
+        document1.setAssignee("1111", "John Smith");
+        document2.setAssignee("2222", "Jane Doe");
+        documentRepository.saveAll(List.of(document1, document2));
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("john");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).assigneeFullName()).isEqualTo("John Smith");
     }
 }

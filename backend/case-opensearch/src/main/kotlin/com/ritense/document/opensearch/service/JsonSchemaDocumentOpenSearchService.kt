@@ -425,12 +425,23 @@ class JsonSchemaDocumentOpenSearchService(
 
     private fun buildGlobalSearchQuery(query: String, searchFields: List<SearchField>): QueryBuilder {
         val fieldMap = searchFields.associateBy { removePrefixes(it.path) }
-        val docFields = searchFields
+        val docFieldsLike = searchFields
             .filter { it.path?.startsWith(DOC_PREFIX) == true }
+            .filter { it.matchType == SearchFieldMatchType.LIKE }
             .map { "content.${it.path?.removePrefix(DOC_PREFIX)}" }
-        val caseFields = searchFields
+        val docFieldsExact = searchFields
+            .filter { it.path?.startsWith(DOC_PREFIX) == true }
+            .filter { it.matchType != SearchFieldMatchType.LIKE }
+            .map { "content.${it.path?.removePrefix(DOC_PREFIX)}" }
+        val caseFieldsLike = searchFields
             .filter { it.path?.startsWith(CASE_PREFIX) == true }
             .filter { it.dataType == SearchFieldDataType.TEXT }
+            .filter { it.matchType == SearchFieldMatchType.LIKE }
+            .map { it.path?.removePrefix(CASE_PREFIX) }
+        val caseFieldsExact = searchFields
+            .filter { it.path?.startsWith(CASE_PREFIX) == true }
+            .filter { it.dataType == SearchFieldDataType.TEXT }
+            .filter { it.matchType != SearchFieldMatchType.LIKE }
             .map { it.path?.removePrefix(CASE_PREFIX) }
 
         val parsedTerms = parseGlobalSearch(query)
@@ -448,8 +459,9 @@ class JsonSchemaDocumentOpenSearchService(
         }
 
         val qualifiedCaseFieldQueries = mutableListOf<QueryBuilder>()
-        val unqualifiedCaseFieldQueries = mutableListOf<QueryBuilder>()
-        val queryStringParts = mutableListOf<String>()
+        val unqualifiedFieldQueries = mutableListOf<QueryBuilder>()
+        val queryStringPartsLike = mutableListOf<String>()
+        val queryStringPartsExact = mutableListOf<String>()
 
         parsedTerms.forEach { term ->
             if (term.field != null) {
@@ -485,22 +497,37 @@ class JsonSchemaDocumentOpenSearchService(
                     } else {
                         value
                     }
-                    queryStringParts.add("$osPath:$wrappedValue")
+                    if (field.matchType == SearchFieldMatchType.LIKE) {
+                        queryStringPartsLike.add("$osPath:$wrappedValue")
+                    } else {
+                        queryStringPartsExact.add("$osPath:$wrappedValue")
+                    }
                 }
             } else {
                 val escaped = escapeQueryStringValue(term.value)
-                queryStringParts.add(if (term.quoted) "\"$escaped\"" else "*$escaped*")
+                if (docFieldsLike.isNotEmpty()) {
+                    queryStringPartsLike.add(if (term.quoted) "\"$escaped\"" else "*$escaped*")
+                }
+                if (docFieldsExact.isNotEmpty()) {
+                    queryStringPartsExact.add(if (term.quoted) "\"$escaped\"" else escaped)
+                }
 
-                val pattern = "*${term.value}*"
-                caseFields.filterNotNull().forEach { caseField ->
-                    unqualifiedCaseFieldQueries.add(
+                caseFieldsLike.filterNotNull().forEach { caseField ->
+                    val pattern = "*${term.value}*"
+                    unqualifiedFieldQueries.add(
                         QueryBuilders.wildcardQuery(caseField, pattern).caseInsensitive(true)
+                    )
+                }
+                caseFieldsExact.filterNotNull().forEach { caseField ->
+                    unqualifiedFieldQueries.add(
+                        QueryBuilders.termQuery(caseField, term.value).caseInsensitive(true)
                     )
                 }
             }
         }
 
-        if (qualifiedCaseFieldQueries.isEmpty() && unqualifiedCaseFieldQueries.isEmpty() && queryStringParts.isEmpty()) {
+        val hasQueryStringParts = queryStringPartsLike.isNotEmpty() || queryStringPartsExact.isNotEmpty()
+        if (qualifiedCaseFieldQueries.isEmpty() && unqualifiedFieldQueries.isEmpty() && !hasQueryStringParts) {
             return QueryBuilders.matchAllQuery()
         }
 
@@ -508,24 +535,33 @@ class JsonSchemaDocumentOpenSearchService(
 
         qualifiedCaseFieldQueries.forEach { boolQuery.must(it) }
 
-        if (queryStringParts.isNotEmpty()) {
-            val docQuery = QueryBuilders.queryStringQuery(queryStringParts.joinToString(" AND "))
-                .apply { docFields.forEach { field(it) } }
-                .lenient(true)
-                .analyzeWildcard(true)
-                .defaultOperator(Operator.AND)
+        if (hasQueryStringParts || unqualifiedFieldQueries.isNotEmpty()) {
+            val shouldQuery = QueryBuilders.boolQuery()
 
-            if (unqualifiedCaseFieldQueries.isNotEmpty()) {
-                val shouldQuery = QueryBuilders.boolQuery()
-                    .should(docQuery)
-                unqualifiedCaseFieldQueries.forEach { shouldQuery.should(it) }
+            if (queryStringPartsLike.isNotEmpty() && docFieldsLike.isNotEmpty()) {
+                shouldQuery.should(
+                    QueryBuilders.queryStringQuery(queryStringPartsLike.joinToString(" AND "))
+                        .apply { docFieldsLike.forEach { field(it) } }
+                        .lenient(true)
+                        .analyzeWildcard(true)
+                        .defaultOperator(Operator.AND)
+                )
+            }
+            if (queryStringPartsExact.isNotEmpty() && docFieldsExact.isNotEmpty()) {
+                shouldQuery.should(
+                    QueryBuilders.queryStringQuery(queryStringPartsExact.joinToString(" AND "))
+                        .apply { docFieldsExact.forEach { field(it) } }
+                        .lenient(true)
+                        .analyzeWildcard(false)
+                        .defaultOperator(Operator.AND)
+                )
+            }
+            unqualifiedFieldQueries.forEach { shouldQuery.should(it) }
+
+            if (shouldQuery.should().isNotEmpty()) {
                 shouldQuery.minimumShouldMatch(1)
                 boolQuery.must(shouldQuery)
-            } else {
-                boolQuery.must(docQuery)
             }
-        } else if (unqualifiedCaseFieldQueries.isNotEmpty()) {
-            unqualifiedCaseFieldQueries.forEach { boolQuery.must(it) }
         }
 
         return boolQuery
