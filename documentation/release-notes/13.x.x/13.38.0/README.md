@@ -21,12 +21,30 @@
 
 ## Enhancements
 
+* **Case start menu updates automatically when process availability changes**
+
+  The start menu on the case detail page now keeps its list of startable supporting processes in sync
+  automatically as the case progresses. Previously a supporting process that became (un)available due to
+  permission (PBAC) changes only appeared or disappeared after a manual page refresh. The menu now re-fetches
+  the startable items in response to case updates, so it always reflects the current visibility.
+
 ## Bugfixes
 
 * **Tag columns in task lists now display their content correctly**
 
   A task list column configured with the *Tags* view type now displays its tag content correctly. Previously the
   tag content was not shown properly for tag-type columns in task lists.
+
+* **Version validation error no longer persists in the create case definition modal**
+
+  After entering an invalid version in the *Create case definition* modal, the validation error stayed
+  visible when the modal was closed without saving and reopened. The version field and its error are now reset
+  along with the rest of the form.
+
+* **Long case definition descriptions no longer fail to save**
+
+  The description in the *Create case definition* modal is now limited to 256 characters. Previously a longer description caused the save to fail with a server error.
+  The character limit is also shown in the field's tooltip.
 
 * **Documenten-api-file uploader loses uploaded file on redraw**
 
@@ -45,6 +63,13 @@
   The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
   before producing a file. A user without an applicable `export` permission for the case definition now receives a
   403 (Forbidden) response instead of an empty CSV.
+
+* **`case:` value resolver now correctly resolves to case document inside building blocks**
+
+  The `case:` value resolver now always resolves to the parent case document, even when used inside
+  a building block. Previously, it incorrectly resolved to the building block's own document. This
+  allows building block forms to read case metadata like `case:assigneeFullName` or `case:internalStatus`.
+  Writing `case:` values from within a building block is not supported and will throw an error.
 
 * **Lists no longer jump in size while loading**
 
@@ -75,3 +100,6 @@
   The page for creating and finalizing draft versions of a case definition is now titled *Versiebeheer* (Dutch) and
   *Version management* (English), matching the rest of that screen. Previously it was labelled *Implementatie* /
   *Deployment*, which did not reflect what the page actually does.
+
+* ZGW document actions such as **view** and **modify** could be incorrectly disabled for documents uploaded from a
+  building block process.

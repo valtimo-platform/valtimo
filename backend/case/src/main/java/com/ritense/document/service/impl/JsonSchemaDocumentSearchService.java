@@ -408,13 +408,26 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 var fieldMap = searchFields.stream()
                     .collect(Collectors.toMap(f -> removePrefixes(f.getPath()), f -> f, (a, b) -> a));
 
-                var docFields = searchFields.stream()
+                var docFieldsLike = searchFields.stream()
                     .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+                    .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
                     .toList();
 
-                var caseTextFields = searchFields.stream()
+                var docFieldsExact = searchFields.stream()
+                    .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+                    .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
+                    .toList();
+
+                var caseTextFieldsLike = searchFields.stream()
                     .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
                     .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
+                    .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
+                    .toList();
+
+                var caseTextFieldsExact = searchFields.stream()
+                    .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
+                    .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
+                    .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
                     .toList();
 
                 var parsedTerms = parseGlobalSearch(searchRequest.getGlobalSearchFilter());
@@ -461,7 +474,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                         var likePattern = "%" + queryDialectHelper.escapeLikePattern(term.value()).toLowerCase() + "%";
                         List<Predicate> termPredicates = new ArrayList<>();
 
-                        for (var f : docFields) {
+                        for (var f : docFieldsLike) {
                             var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
                             Expression<String> expr = queryDialectHelper.getJsonValueExpression(
                                 cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
@@ -469,11 +482,27 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                             termPredicates.add(cb.like(cb.lower(expr), likePattern));
                         }
 
-                        for (var f : caseTextFields) {
+                        for (var f : docFieldsExact) {
+                            var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
+                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                            );
+                            termPredicates.add(cb.equal(cb.lower(expr), term.value().toLowerCase()));
+                        }
+
+                        for (var f : caseTextFieldsLike) {
                             var columnName = f.getPath().substring(CASE_PREFIX.length());
                             termPredicates.add(cb.like(
                                 cb.lower(documentRoot.get(columnName).as(String.class)),
                                 likePattern
+                            ));
+                        }
+
+                        for (var f : caseTextFieldsExact) {
+                            var columnName = f.getPath().substring(CASE_PREFIX.length());
+                            termPredicates.add(cb.equal(
+                                cb.lower(documentRoot.get(columnName).as(String.class)),
+                                term.value().toLowerCase()
                             ));
                         }
 
