@@ -295,7 +295,7 @@
     [disabled]="obs.disableInput || !obs.valid"
     (click)="saveSearchField(obs.caseDefinitionKey)"
   >
-    {{ 'searchFieldsOverview.submit' | translate }}
+    {{ (searchFieldActionTypeIsAdd ? 'interface.create' : 'interface.save') | translate }}
   </button>
 </ng-template>
 
