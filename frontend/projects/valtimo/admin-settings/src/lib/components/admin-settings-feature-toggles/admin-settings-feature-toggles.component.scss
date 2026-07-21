@@ -33,6 +33,10 @@
     &:last-child {
       border-bottom: none;
     }
+
+    &--disabled {
+      opacity: 0.5;
+    }
   }
 
   &__info {

@@ -16,10 +16,7 @@
 
 package com.ritense.processdocument.domain.impl.delegate
 
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.OauthConfigHolder
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
@@ -38,7 +35,6 @@ import java.util.UUID
 
 internal class DocumentDelegateTest {
 
-    lateinit var processDocumentService: ProcessDocumentService
     lateinit var userManagementService: UserManagementService
     lateinit var documentService: DocumentService
     lateinit var caseDocumentResolver: CaseDocumentResolver
@@ -46,13 +42,11 @@ internal class DocumentDelegateTest {
 
     @BeforeEach
     fun beforeEach() {
-        processDocumentService = mock()
         userManagementService = mock()
         documentService = mock()
         caseDocumentResolver = mock()
         whenever(caseDocumentResolver.resolveCaseDocumentId(any())).thenAnswer { it.arguments[0] }
         documentDelegate = DocumentDelegate(
-            processDocumentService,
             userManagementService,
             documentService,
             caseDocumentResolver,
@@ -67,10 +61,7 @@ internal class DocumentDelegateTest {
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId)
-        whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
-        ).thenReturn(JsonSchemaDocumentId.existingId(UUID.fromString(documentId)))
+        whenever(delegateExecution.businessKey).thenReturn(documentId)
         whenever(userManagementService.findByEmail("john@example.com"))
             .thenReturn(Optional.of(ValtimoUserBuilder().id("anId").build()))
 
@@ -86,10 +77,7 @@ internal class DocumentDelegateTest {
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId)
-        whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
-        ).thenReturn(JsonSchemaDocumentId.existingId(UUID.fromString(documentId)))
+        whenever(delegateExecution.businessKey).thenReturn(documentId)
 
         documentDelegate.unassign(delegateExecution)
 

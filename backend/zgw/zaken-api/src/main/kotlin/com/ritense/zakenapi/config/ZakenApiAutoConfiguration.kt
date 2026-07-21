@@ -239,11 +239,9 @@ class ZakenApiAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BsnProvider::class)
     fun bsnProvider(
-        processDocumentService: ProcessDocumentService,
         zaakInstanceLinkService: ZaakInstanceLinkService,
         pluginService: PluginService
     ) = ZaakBsnProvider(
-        processDocumentService,
         zaakInstanceLinkService,
         pluginService
     )
@@ -252,11 +250,9 @@ class ZakenApiAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(KvkProvider::class)
     fun kvkProvider(
-        processDocumentService: ProcessDocumentService,
         zaakInstanceLinkService: ZaakInstanceLinkService,
         pluginService: PluginService
     ) = ZaakKvkProvider(
-        processDocumentService,
         zaakInstanceLinkService,
         pluginService
     )
