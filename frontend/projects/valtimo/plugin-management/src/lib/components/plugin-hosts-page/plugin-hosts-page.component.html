@@ -1,0 +1,110 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    hosts: hosts$ | async,
+    refreshing: hostsRefreshing$ | async,
+  } as hostObs"
+>
+  <valtimo-carbon-list
+    [loading]="hostsLoading$ | async"
+    [items]="hostObs.hosts"
+    [fields]="hostFields"
+    [actionItems]="hostActionItems"
+    [header]="false"
+  >
+    <ng-container carbonToolbarContent>
+      <cds-loading
+        *ngIf="hostObs.refreshing"
+        size="sm"
+        [isActive]="true"
+        class="plugin-hosts-page__spinner"
+      ></cds-loading>
+
+      <button
+        cdsButton="primary"
+        [disabled]="hostsLoading$ | async"
+        (click)="openHostModal()"
+      >
+        {{ 'pluginManagement.addHost' | translate }}
+
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </ng-container>
+
+    <valtimo-no-results
+      [action]="addHostButton"
+      [title]="'pluginManagement.noHosts' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <ng-template #addHostButton>
+    <button
+      cdsButton="primary"
+      [disabled]="hostsLoading$ | async"
+      (click)="openHostModal()"
+    >
+      {{ 'pluginManagement.addHost' | translate }}
+
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </ng-template>
+</ng-container>
+
+<valtimo-plugin-host-modal
+  [kind]="'PLUGIN_HOST'"
+  [open]="hostModalOpen$ | async"
+  (closeEvent)="closeHostModal()"
+  (submitEvent)="submitHost($event)"
+></valtimo-plugin-host-modal>
+
+<valtimo-plugin-host-event-queue-modal
+  [host]="hostToEditEventQueue$ | async"
+  [open]="eventQueueModalOpen$ | async"
+  (closeEvent)="closeEventQueueModal()"
+  (submitEvent)="submitEventQueueUpdate($event)"
+></valtimo-plugin-host-event-queue-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="reloadModalOpen$"
+  [titleTranslationKey]="'pluginManagement.reloadModal.title'"
+  [contentTranslationKey]="'pluginManagement.reloadModal.description'"
+  [confirmButtonTextTranslationKey]="'pluginManagement.reloadModal.reload'"
+  [cancelButtonTextTranslationKey]="'pluginManagement.reloadModal.later'"
+  (confirmEvent)="confirmReload()"
+  (cancelEvent)="cancelReload()"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="deleteHostModalOpen$"
+  [titleTranslationKey]="'pluginManagement.deleteHostModal.title'"
+  [contentTranslationKey]="'pluginManagement.deleteHostModal.description'"
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [confirmButtonType]="'danger'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="confirmDeleteHost()"
+  (cancelEvent)="cancelDeleteHost()"
+></valtimo-confirmation-modal>
+
+<valtimo-plugin-usage-modal
+  [descriptionTranslationKey]="usageModalDescriptionKey"
+  [entityName]="usageModalEntityName"
+  [open]="usageModalOpen$ | async"
+  [titleTranslationKey]="usageModalTitleKey"
+  [usages]="usageModalUsages$ | async"
+  (closeEvent)="closeUsageModal()"
+></valtimo-plugin-usage-modal>

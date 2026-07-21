@@ -16,7 +16,7 @@
 
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, distinctUntilChanged, Observable, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginDefinition} from '../../models';
@@ -29,6 +29,7 @@ import {
   toExternalPluginKey,
   PLUGIN_CATALOG_TEST_IDS,
 } from '@valtimo/plugin';
+import {isEqual} from 'lodash';
 
 @Component({
   standalone: false,
@@ -72,7 +73,8 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
           ...embedded.map(d => ({...d, source: 'embedded'} as UnifiedPluginDefinition)),
           ...externalDefs,
         ];
-      })
+      }),
+      distinctUntilChanged((prev, curr) => isEqual(prev, curr))
     );
 
   private readonly _subscriptions = new Subscription();

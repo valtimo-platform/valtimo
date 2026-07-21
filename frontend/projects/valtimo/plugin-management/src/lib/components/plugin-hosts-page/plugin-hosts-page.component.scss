@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,30 +14,8 @@
  * limitations under the License.
  */
 
-interface ExternalPluginTabContext {
-  documentId: string;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  pluginConfigurationId: string;
+.plugin-hosts-page__spinner {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
 }
-
-interface ExternalPluginTabContent {
-  bundleUrl: string | null;
-  configurationId: string;
-  bundleKey: string | null;
-  context: ExternalPluginTabContext;
-}
-
-interface ExternalPluginUserTokenResponse {
-  userToken: string;
-  expiresAt: string;
-}
-
-type ExternalPluginTabState = 'loading' | 'ready' | 'error';
-
-export {
-  ExternalPluginTabContext,
-  ExternalPluginTabContent,
-  ExternalPluginTabState,
-  ExternalPluginUserTokenResponse,
-};

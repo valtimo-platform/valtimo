@@ -60,7 +60,7 @@
 
     <button
       cdsButton="primary"
-      [disabled]="!_$selectedHostId() || (_fileSelected$ | async) === false || _$uploading()"
+      [disabled]="!_$selectedHostId() || !_$fileSelected() || _$uploading()"
       (click)="onUpload()"
     >
       <cds-loading *ngIf="_$uploading()" [isActive]="true" size="sm"></cds-loading>

@@ -14,30 +14,11 @@
  * limitations under the License.
  */
 
-interface ExternalPluginTabContext {
-  documentId: string;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  pluginConfigurationId: string;
+import {ExternalPluginEndpoint} from '@valtimo/plugin';
+
+/** A manifest endpoint enriched with its localized description for display in the permission list. */
+interface EnrichedEndpoint extends ExternalPluginEndpoint {
+  description: string | null;
 }
 
-interface ExternalPluginTabContent {
-  bundleUrl: string | null;
-  configurationId: string;
-  bundleKey: string | null;
-  context: ExternalPluginTabContext;
-}
-
-interface ExternalPluginUserTokenResponse {
-  userToken: string;
-  expiresAt: string;
-}
-
-type ExternalPluginTabState = 'loading' | 'ready' | 'error';
-
-export {
-  ExternalPluginTabContext,
-  ExternalPluginTabContent,
-  ExternalPluginTabState,
-  ExternalPluginUserTokenResponse,
-};
+export {EnrichedEndpoint};

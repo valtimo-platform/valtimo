@@ -17,7 +17,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   EventEmitter,
+  inject,
   Input,
   OnChanges,
   Output,
@@ -27,6 +29,7 @@ import {
 import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {
   ButtonModule,
@@ -39,7 +42,7 @@ import {
 } from 'carbon-components-angular';
 import {ConfirmationModalModule, ValtimoCdsModalDirective} from '@valtimo/components';
 import {ExternalPluginHost, ExternalPluginService} from '@valtimo/plugin';
-import {BehaviorSubject, map, startWith} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import {buildExternalPluginCompatibilityMessage} from '../../utils';
 
 @Component({
@@ -81,16 +84,22 @@ export class PluginUploadModalComponent implements OnChanges {
     file: this._formBuilder.control(new Set<any>(), [Validators.required]),
   });
 
-  public readonly _fileSelected$ = this._fileForm.get('file')?.valueChanges.pipe(
-    startWith(null),
-    map(value => !!(value instanceof Set && value.size > 0))
-  );
+  public readonly _$fileSelected = signal(false);
+
+  private readonly _destroyRef = inject(DestroyRef);
 
   constructor(
     private readonly _formBuilder: FormBuilder,
     private readonly _externalPluginService: ExternalPluginService,
     private readonly _translateService: TranslateService
-  ) {}
+  ) {
+    this._fileForm
+      .get('file')!
+      .valueChanges.pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(value => {
+        this._$fileSelected.set(value instanceof Set && value.size > 0);
+      });
+  }
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['hosts']) {
@@ -153,6 +162,7 @@ export class PluginUploadModalComponent implements OnChanges {
   private _resetAndClose(): void {
     this.closeEvent.emit();
     this._$selectedHostId.set(null);
+    this._$fileSelected.set(false);
     this._fileForm.reset({file: new Set()});
   }
 }
