@@ -1,0 +1,131 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="opensearch-reindex"
+  *ngIf="{
+    items: tableItems$ | async,
+    loading: loading$ | async,
+    starting: startingReindex$ | async,
+    documentDefinitions: documentDefinitions$ | async,
+    showModal: showModal$ | async,
+    hasRunning: hasRunningRun$ | async
+  } as obs"
+>
+  <valtimo-carbon-list
+    [header]="false"
+    [items]="obs.items || []"
+    [fields]="fields"
+    [loading]="obs.loading"
+    [pagination]="pagination"
+    [expandedRowTemplate]="expandedRowTemplate"
+    [expandedRowKey]="'runId'"
+    (paginationClicked)="onPageChange($event)"
+    (paginationSet)="onPageSizeChange($event)"
+  >
+    <ng-container header>
+      {{ 'adminSettings.opensearch.reindex.title' | translate }}
+    </ng-container>
+
+    <div carbonToolbarContent>
+      <button
+        cdsButton="primary"
+        [disabled]="obs.hasRunning || obs.starting"
+        (click)="openModal()"
+      >
+        @if (obs.starting) {
+          <cds-loading size="sm"></cds-loading>
+        }
+        {{ 'adminSettings.opensearch.reindex.startButton' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
+
+    <valtimo-no-results
+      title="{{ 'adminSettings.opensearch.reindex.noResults.title' | translate }}"
+      description="{{ 'adminSettings.opensearch.reindex.noResults.description' | translate }}"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <valtimo-start-reindex-modal
+    [open]="obs.showModal"
+    [documentDefinitions]="obs.documentDefinitions"
+    (closeEvent)="onModalClose($event)"
+  ></valtimo-start-reindex-modal>
+</div>
+
+<ng-template #expandedRowTemplate let-data="data">
+  <div class="opensearch-reindex__expanded">
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.started' | translate }}</span>
+    <span class="opensearch-reindex__value">{{ data.startedOn | date:'medium' }}</span>
+
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.finished' | translate }}</span>
+    <span class="opensearch-reindex__value">{{ data.finishedOn ? (data.finishedOn | date:'medium') : '-' }}</span>
+
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.documentDefinitionName' | translate }}</span>
+    <span class="opensearch-reindex__value">{{ data.scope?.documentDefinitionName || '-' }}</span>
+
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.pruneOrphans' | translate }}</span>
+    <span class="opensearch-reindex__value opensearch-reindex__value-with-tooltip">
+      {{ data.scope?.pruneOrphans ? ('interface.yes' | translate) : ('interface.no' | translate) }}
+      <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruneOrphans' | translate"></v-tooltip-icon>
+    </span>
+
+    <span class="opensearch-reindex__label">{{ 'adminSettings.opensearch.reindex.modifiedAfter' | translate }}</span>
+    <span class="opensearch-reindex__value">{{ data.scope?.modifiedAfter ? (data.scope.modifiedAfter | date:'medium') : '-' }}</span>
+
+    <div class="opensearch-reindex__results-column">
+      <div class="opensearch-reindex__progress">
+        <span class="opensearch-reindex__progress-label">
+          {{ 'adminSettings.opensearch.reindex.reindexing' | translate }}
+        </span>
+        <cds-progress-bar
+          [value]="data.totalCount > 0 ? (data.processedCount / data.totalCount) * 100 : 0"
+          [status]="data.status === 'RUNNING' && !data.pruningPhase ? 'active' : (data.status === 'COMPLETED' ? 'finished' : (data.status === 'RUNNING' ? 'finished' : 'error'))"
+        ></cds-progress-bar>
+        <div class="opensearch-reindex__progress-footer">
+          <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.processedCount, total: data.totalCount} }}</span>
+          <span>{{ 'adminSettings.opensearch.reindex.skipped' | translate }}: {{ data.skippedCount || 0 }}</span>
+        </div>
+      </div>
+
+      @if (data.pruningPhase || data.pruneTotalCount) {
+        <div class="opensearch-reindex__progress">
+          <span class="opensearch-reindex__progress-label">
+            {{ 'adminSettings.opensearch.reindex.pruning' | translate }}
+            <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.pruned' | translate"></v-tooltip-icon>
+          </span>
+          <cds-progress-bar
+            [value]="data.pruneTotalCount > 0 ? (data.pruneCheckedCount / data.pruneTotalCount) * 100 : 0"
+            [status]="data.pruningPhase ? 'active' : (data.status === 'COMPLETED' ? 'finished' : 'error')"
+          ></cds-progress-bar>
+          <div class="opensearch-reindex__progress-footer">
+            <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.pruneCheckedCount, total: data.pruneTotalCount || 0} }}</span>
+            <span>{{ 'adminSettings.opensearch.reindex.pruningProgress' | translate:{removed: data.prunedCount || 0} }}</span>
+          </div>
+        </div>
+      }
+
+      @if (data.status === 'FAILED') {
+        <a class="opensearch-reindex__error-link" (click)="navigateToLogs(data)">
+          {{ 'adminSettings.opensearch.reindex.viewErrorLogs' | translate }}
+          <svg cdsIcon="launch" size="16"></svg>
+        </a>
+      }
+    </div>
+  </div>
+</ng-template>

@@ -69,3 +69,9 @@ In backend, feature toggles can be configured in the `application.yml` file.
 
     If enabled, returns the content of the document when this is retrieved via the REST endpoint. This should only be
     used for debug purposes, normally content is retrieved through tabs and their widgets.
+
+*   **`useOpenSearchForDocumentSearch`**
+
+    If enabled, case list search and global document queries use OpenSearch instead of PostgreSQL. The toggle is
+    automatically disabled when OpenSearch becomes unreachable or during a full reindex operation to ensure query
+    results remain consistent.

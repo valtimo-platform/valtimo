@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.AutoConfigurationImportFilter=\
+  com.ritense.document.opensearch.autoconfigure.ExcludeElasticsearchAutoConfigurationFilter
