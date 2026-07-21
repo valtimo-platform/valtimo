@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
+import { Agent, fetch } from "undici";
+import type { Response } from "undici";
 import type { CallContext } from "@extism/extism";
 import type { HostLogger } from "../models/index.js";
 import type { LogRepository } from "../db/log-repository.js";
 import type { GzacApiCallContext } from "./gzac-api.js";
+import {
+  createGuardedAgent,
+  findBlockedIpLiteral,
+  isPrivateAddressError,
+  rootCauseMessage,
+} from "../security/url-guard.js";
 
 interface HttpRequestInput {
   method: string;
@@ -35,13 +43,55 @@ interface HttpRequestOutput {
 
 const MAX_TIMEOUT_MS = 60_000;
 const DEFAULT_TIMEOUT_MS = 30_000;
+const MAX_REDIRECTS = 5;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 export function createHttpRequestHostFunction(
   logger: HostLogger,
   logRepository: LogRepository,
-  allowHttp: boolean
+  allowHttp: boolean,
+  allowPrivateNetwork: boolean
 ): (callContext: CallContext, addr: bigint) => Promise<bigint> {
   const log = logger.child({ component: "http_request" });
+
+  // The guarded agent blocks connections to private/reserved addresses at the socket's own DNS
+  // lookup, so hostname checks are pinned to the exact addresses being connected to (no DNS
+  // rebinding window) and automatically cover every redirect hop.
+  const dispatcher = allowPrivateNetwork ? new Agent() : createGuardedAgent();
+
+  /**
+   * Validates a request target. Applied to the initial URL AND to every redirect hop, so a public
+   * URL cannot 3xx the host into the GZAC instance or an internal service.
+   */
+  const validateTarget = (url: URL, gzacBaseUrl: string | undefined): string | null => {
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      return "Only http(s) URLs are supported";
+    }
+    if (!allowHttp && url.protocol !== "https:") {
+      return "Only HTTPS URLs are allowed (set HOST_ALLOW_HTTP=true for dev)";
+    }
+
+    // Block calls to the GZAC instance — use gzac_api for that.
+    if (gzacBaseUrl) {
+      try {
+        if (url.origin === new URL(gzacBaseUrl).origin) {
+          return "Use gzac_api to call the GZAC instance, not http_request";
+        }
+      } catch {
+        // gzacBaseUrl unparseable — skip the check
+      }
+    }
+
+    // IP-literal hosts skip DNS, so the guarded agent's lookup never sees them — reject here.
+    if (!allowPrivateNetwork) {
+      const violation = findBlockedIpLiteral(url);
+      if (violation) {
+        return `${violation} (set HOST_ALLOW_PRIVATE_NETWORK=true for dev)`;
+      }
+    }
+
+    return null;
+  };
 
   return async (callContext: CallContext, addr: bigint): Promise<bigint> => {
     const ctx = callContext.hostContext<GzacApiCallContext | undefined>();
@@ -79,24 +129,9 @@ export function createHttpRequestHostFunction(
       return callContext.store(JSON.stringify(errorReply(400, "Invalid URL")));
     }
 
-    if (!allowHttp && parsed.protocol !== "https:") {
-      return callContext.store(
-        JSON.stringify(errorReply(400, "Only HTTPS URLs are allowed (set HOST_ALLOW_HTTP=true for dev)"))
-      );
-    }
-
-    // Block calls to the GZAC instance — use gzac_api for that.
-    if (ctx.gzacBaseUrl) {
-      try {
-        const gzacOrigin = new URL(ctx.gzacBaseUrl).origin;
-        if (parsed.origin === gzacOrigin) {
-          return callContext.store(
-            JSON.stringify(errorReply(400, "Use gzac_api to call the GZAC instance, not http_request"))
-          );
-        }
-      } catch {
-        // gzacBaseUrl unparseable — skip the check
-      }
+    const targetError = validateTarget(parsed, ctx.gzacBaseUrl);
+    if (targetError) {
+      return callContext.store(JSON.stringify(errorReply(400, targetError)));
     }
 
     const timeoutMs = Math.min(req.timeoutMs ?? DEFAULT_TIMEOUT_MS, MAX_TIMEOUT_MS);
@@ -105,7 +140,7 @@ export function createHttpRequestHostFunction(
       Accept: "application/json",
       ...(req.headers ?? {}),
     };
-    let bodyInit: BodyInit | undefined;
+    let bodyInit: string | undefined;
     if (req.body !== undefined && req.body !== null) {
       if (typeof req.body === "string") {
         bodyInit = req.body;
@@ -124,13 +159,67 @@ export function createHttpRequestHostFunction(
     );
 
     try {
-      const res = await fetch(req.url, {
-        method: req.method.toUpperCase(),
-        headers,
-        body: bodyInit,
-        signal: AbortSignal.timeout(timeoutMs),
-        redirect: "follow",
-      });
+      let currentUrl = parsed;
+      let method = req.method.toUpperCase();
+      let currentHeaders = headers;
+      let currentBody = bodyInit;
+      let redirects = 0;
+      let res: Response;
+
+      // Redirects are followed manually so every hop goes through validateTarget — with
+      // redirect: "follow" a public URL could bounce the request to an internal one unchecked.
+      for (;;) {
+        res = await fetch(currentUrl, {
+          method,
+          headers: currentHeaders,
+          body: currentBody,
+          signal: AbortSignal.timeout(timeoutMs),
+          redirect: "manual",
+          dispatcher,
+        });
+
+        const location = res.headers.get("location");
+        if (!REDIRECT_STATUSES.has(res.status) || !location) break;
+        await res.body?.cancel();
+
+        if (redirects >= MAX_REDIRECTS) {
+          return callContext.store(
+            JSON.stringify(errorReply(502, `Too many redirects (max ${MAX_REDIRECTS})`))
+          );
+        }
+        redirects++;
+
+        let next: URL;
+        try {
+          next = new URL(location, currentUrl);
+        } catch {
+          return callContext.store(
+            JSON.stringify(errorReply(502, `Invalid redirect location: ${location}`))
+          );
+        }
+
+        const redirectError = validateTarget(next, ctx.gzacBaseUrl);
+        if (redirectError) {
+          return callContext.store(
+            JSON.stringify(errorReply(400, `Redirect to '${next}' blocked: ${redirectError}`))
+          );
+        }
+
+        // Per fetch semantics: 303 — and 301/302 for body-bearing methods — becomes a GET without body.
+        if (res.status === 303 || ((res.status === 301 || res.status === 302) && method !== "GET" && method !== "HEAD")) {
+          method = "GET";
+          currentBody = undefined;
+        }
+        // Never forward credentials to a different origin.
+        if (next.origin !== currentUrl.origin) {
+          currentHeaders = Object.fromEntries(
+            Object.entries(currentHeaders).filter(
+              ([name]) => !["authorization", "cookie", "proxy-authorization"].includes(name.toLowerCase())
+            )
+          );
+        }
+        currentUrl = next;
+      }
 
       const text = await res.text();
       let body: unknown = text;
@@ -166,7 +255,8 @@ export function createHttpRequestHostFunction(
       return callContext.store(JSON.stringify(out));
     } catch (err) {
       const durationMs = Date.now() - start;
-      const errMsg = (err as Error).message;
+      // undici wraps connection failures in a generic "fetch failed" — report the real reason.
+      const errMsg = rootCauseMessage(err);
       log.warn({ method: req.method, url: req.url, error: errMsg, durationMs }, "http_request error");
 
       logRepository
@@ -180,6 +270,14 @@ export function createHttpRequestHostFunction(
           source: "http_request",
         })
         .catch((e) => log.warn({ error: (e as Error).message }, "Failed to persist http_request log"));
+
+      // The guarded agent refusing a private/reserved target is a policy rejection, not an
+      // upstream failure — report it like the other validation errors.
+      if (isPrivateAddressError(err)) {
+        return callContext.store(
+          JSON.stringify(errorReply(400, `${errMsg} (set HOST_ALLOW_PRIVATE_NETWORK=true for dev)`))
+        );
+      }
 
       return callContext.store(
         JSON.stringify(errorReply(502, `http_request failed: ${errMsg}`))

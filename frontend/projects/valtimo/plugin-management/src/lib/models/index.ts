@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
+export * from './external-plugin-permissions.model';
 export * from './plugin-modal.model';
 export * from './unified-plugin-definition.model';

@@ -230,7 +230,10 @@ export class BuildingBlockStateService implements OnDestroy {
     this._inputMappings$.next(
       (mappings ?? []).map(m => ({
         ...m,
-        source: ensureDocPrefix(m.source),
+        // The source is left untouched: it either already carries its own prefix
+        // (doc:/case:/pv:) when it points to a value, or it is a fixed literal value
+        // that must be stored as-is. Forcing a doc:/ prefix here would corrupt fixed values.
+        source: m.source,
         target: ensureDocPrefix(m.target),
       }))
     );

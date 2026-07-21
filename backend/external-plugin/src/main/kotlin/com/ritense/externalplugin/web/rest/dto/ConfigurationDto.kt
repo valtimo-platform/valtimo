@@ -77,7 +77,7 @@ data class GrantedCapabilityResponse(
         fun from(entity: ExternalPluginGrantedCapability) = GrantedCapabilityResponse(
             id = entity.id,
             configurationId = entity.configurationId,
-            capability = entity.capability,
+            capability = entity.capability.value,
             grantedAt = entity.grantedAt,
         )
     }

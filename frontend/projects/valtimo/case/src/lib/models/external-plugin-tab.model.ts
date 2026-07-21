@@ -33,4 +33,11 @@ interface ExternalPluginUserTokenResponse {
   expiresAt: string;
 }
 
-export {ExternalPluginTabContext, ExternalPluginTabContent, ExternalPluginUserTokenResponse};
+type ExternalPluginTabState = 'loading' | 'ready' | 'error';
+
+export {
+  ExternalPluginTabContext,
+  ExternalPluginTabContent,
+  ExternalPluginTabState,
+  ExternalPluginUserTokenResponse,
+};

@@ -17,7 +17,6 @@
 package com.ritense.portaaltaak
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRequest
 import com.ritense.objectmanagement.domain.ObjectManagement
@@ -25,7 +24,6 @@ import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZakenApiPlugin
@@ -37,8 +35,9 @@ import com.ritense.zakenapi.domain.rol.RolNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
-import org.operaton.bpm.engine.delegate.DelegateTask
-import org.operaton.bpm.engine.delegate.VariableScope
+import java.net.URI
+import java.time.LocalDateTime
+import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -47,9 +46,8 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.net.URI
-import java.time.LocalDateTime
-import java.util.UUID
+import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.operaton.bpm.engine.delegate.DelegateTask
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -61,31 +59,31 @@ internal class PortaaltaakPluginTest {
     lateinit var objectManagementService: ObjectManagementService
     lateinit var pluginService: PluginService
     lateinit var valueResolverService: ValueResolverService
-    lateinit var processDocumentService: ProcessDocumentService
     lateinit var zaakInstanceLinkService: ZaakInstanceLinkService
     lateinit var portaaltaakPlugin: PortaaltaakPlugin
     lateinit var zakenApiPlugin: ZakenApiPlugin
     lateinit var objectMapper: ObjectMapper
     val delegateTask = mock<DelegateTask>()
+    val delegateExecution = mock<DelegateExecution>()
     val bsn = "688223436"
     val kvk = "12345678"
-    val jsonSchemaDocumentId = mock<JsonSchemaDocumentId>()
+    val documentId = UUID.randomUUID()
 
     @BeforeEach
     fun init() {
         objectManagementService = mock()
         pluginService = mock()
         valueResolverService = mock()
-        processDocumentService = mock()
         zaakInstanceLinkService = mock()
         zakenApiPlugin = mock()
         objectMapper = MapperSingleton.get()
         whenever(pluginService.getObjectMapper()).thenReturn(objectMapper)
+        whenever(delegateTask.execution).thenReturn(delegateExecution)
+        whenever(delegateExecution.businessKey).thenReturn(documentId.toString())
         portaaltaakPlugin = PortaaltaakPlugin(
             objectManagementService,
             pluginService,
             valueResolverService,
-            processDocumentService,
             zaakInstanceLinkService,
             mock()
         )
@@ -117,13 +115,10 @@ internal class PortaaltaakPluginTest {
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(any())).thenReturn(objectTypeUrl)
         whenever(delegateTask.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(zaakInstanceLinkService.getByDocumentId(any())).thenReturn(getZaakInstanceLink())
-        whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
-        whenever(processDocumentService.getDocumentId(any(), any<DelegateTask>())).thenReturn(jsonSchemaDocumentId)
         whenever(zakenApiPlugin.getZaakRollen(any(), any())).thenReturn(getRol(BetrokkeneType.NATUURLIJK_PERSOON))
-        whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
+        whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(getZaakInstanceLink())
         whenever(delegateTask.name).thenReturn("delegateTaskName")
         whenever(delegateTask.id).thenReturn("delegateTaskId")
-        whenever(jsonSchemaDocumentId.toString()).thenReturn("documentId")
         whenever(valueResolverService.resolveValues(any<String>(), any())).thenReturn(emptyMap())
 
         portaaltaakPlugin.createPortaalTaak(
@@ -187,13 +182,10 @@ internal class PortaaltaakPluginTest {
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(any())).thenReturn(objectTypeUrl)
         whenever(delegateTask.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(zaakInstanceLinkService.getByDocumentId(any())).thenReturn(getZaakInstanceLink())
-        whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
-        whenever(processDocumentService.getDocumentId(any(), any<DelegateTask>())).thenReturn(jsonSchemaDocumentId)
         whenever(zakenApiPlugin.getZaakRollen(any(), any())).thenReturn(getRol(BetrokkeneType.NATUURLIJK_PERSOON))
-        whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
+        whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(getZaakInstanceLink())
         whenever(delegateTask.name).thenReturn("delegateTaskName")
         whenever(delegateTask.id).thenReturn("delegateTaskId")
-        whenever(jsonSchemaDocumentId.toString()).thenReturn("documentId")
         whenever(valueResolverService.resolveValues(any<String>(), any())).thenReturn(emptyMap())
         whenever(pluginService.getObjectMapper()).thenReturn(objectMapper)
 
@@ -259,15 +251,12 @@ internal class PortaaltaakPluginTest {
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(any())).thenReturn(objectTypeUrl)
         whenever(delegateTask.processInstanceId).thenReturn(UUID.randomUUID().toString())
         whenever(zaakInstanceLinkService.getByDocumentId(any())).thenReturn(getZaakInstanceLink())
-        whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
-        whenever(processDocumentService.getDocumentId(any(), any<DelegateTask>())).thenReturn(jsonSchemaDocumentId)
         whenever(zakenApiPlugin.getZaakRollen(any(), any())).thenReturn(getRol(BetrokkeneType.NATUURLIJK_PERSOON))
-        whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenThrow(
+        whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenThrow(
             ZaakInstanceLinkNotFoundException("No ZaakInstanceLink found")
         )
         whenever(delegateTask.name).thenReturn("delegateTaskName")
         whenever(delegateTask.id).thenReturn("delegateTaskId")
-        whenever(jsonSchemaDocumentId.toString()).thenReturn("documentId")
         whenever(valueResolverService.resolveValues(any<String>(), any())).thenReturn(emptyMap())
         whenever(pluginService.getObjectMapper()).thenReturn(objectMapper)
 
@@ -368,9 +357,7 @@ internal class PortaaltaakPluginTest {
     fun `should get a correct taak identification`() {
         val processInstanceId = UUID.randomUUID().toString()
         whenever(delegateTask.processInstanceId).thenReturn(processInstanceId)
-        whenever(processDocumentService.getDocumentId(any(), any<VariableScope>())).thenReturn(jsonSchemaDocumentId)
-        whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
-        whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
+        whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(getZaakInstanceLink())
         whenever(pluginService.createInstance(any<Class<ZakenApiPlugin>>(), any())).thenReturn(zakenApiPlugin)
         whenever(
             zakenApiPlugin.getZaakRollen(any(), any())
@@ -391,9 +378,7 @@ internal class PortaaltaakPluginTest {
     fun `should throw exception when getting zaak initiator with invalid zaakUrl`() {
         val processInstanceId = UUID.randomUUID().toString()
         whenever(delegateTask.processInstanceId).thenReturn(processInstanceId)
-        whenever(processDocumentService.getDocumentId(any(), any<VariableScope>())).thenReturn(jsonSchemaDocumentId)
-        whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
-        whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
+        whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(getZaakInstanceLink())
         whenever(pluginService.createInstance(any<Class<ZakenApiPlugin>>(), any())).thenReturn(null)
 
         val result = assertThrows<IllegalArgumentException> {
@@ -409,9 +394,7 @@ internal class PortaaltaakPluginTest {
     fun `should throw exception when no rol was found for zaak url`() {
         val processInstanceId = UUID.randomUUID().toString()
         whenever(delegateTask.processInstanceId).thenReturn(processInstanceId)
-        whenever(processDocumentService.getDocumentId(any(), any<VariableScope>())).thenReturn(jsonSchemaDocumentId)
-        whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
-        whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
+        whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(getZaakInstanceLink())
         whenever(pluginService.createInstance(any<Class<ZakenApiPlugin>>(), any())).thenReturn(zakenApiPlugin)
         whenever(
             zakenApiPlugin.getZaakRollen(any(), any())
@@ -430,9 +413,7 @@ internal class PortaaltaakPluginTest {
     fun `should get a correct zaak initiator`() {
         val processInstanceId = UUID.randomUUID().toString()
         whenever(delegateTask.processInstanceId).thenReturn(processInstanceId)
-        whenever(processDocumentService.getDocumentId(any(), any<VariableScope>())).thenReturn(jsonSchemaDocumentId)
-        whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
-        whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
+        whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(getZaakInstanceLink())
         whenever(pluginService.createInstance(any<Class<ZakenApiPlugin>>(), any())).thenReturn(zakenApiPlugin)
         whenever(
             zakenApiPlugin.getZaakRollen(any(), any())

@@ -39,10 +39,7 @@ import {
   ExternalPluginEndpoint,
   ExternalPluginService,
 } from '@valtimo/plugin';
-
-interface EnrichedEndpoint extends ExternalPluginEndpoint {
-  description: string | null;
-}
+import {EnrichedEndpoint} from '../../models';
 
 /**
  * Lists the GZAC API endpoints and platform events an external plugin requires. Permissions are
@@ -75,7 +72,9 @@ export class PluginExternalPermissionsComponent implements OnChanges {
   @Input() public readonlyMode = false;
 
   @Output() public validEvent = new EventEmitter<boolean>();
-  @Output() public grantedEndpointsChange = new EventEmitter<Array<ExternalPluginGrantedEndpointEntry>>();
+  @Output() public grantedEndpointsChange = new EventEmitter<
+    Array<ExternalPluginGrantedEndpointEntry>
+  >();
   @Output() public grantedEventsChange = new EventEmitter<Array<ExternalPluginGrantedEventEntry>>();
   @Output() public grantedCapabilitiesChange = new EventEmitter<Array<string>>();
 

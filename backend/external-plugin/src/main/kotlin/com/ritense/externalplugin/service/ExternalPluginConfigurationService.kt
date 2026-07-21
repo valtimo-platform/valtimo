@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.networknt.schema.JsonSchemaFactory
 import com.networknt.schema.SpecVersion
 import com.ritense.externalplugin.client.ExternalPluginHostClient
+import com.ritense.externalplugin.domain.ExternalPluginCapability
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginGrantedCapability
@@ -96,10 +97,13 @@ class ExternalPluginConfigurationService(
         val definition = definitionRepository.findById(definitionId)
             .orElseThrow { IllegalArgumentException("External plugin definition $definitionId not found") }
 
+        // Rejects unknown capability names before anything is persisted.
+        val capabilities = grantedCapabilities.map(ExternalPluginCapability::fromValue)
+
         validateAgainstSchema(properties, definition.configSchema)
         validateGrantedEndpointsCoverManifest(grantedEndpoints, definition)
         validateGrantedEventsCoverManifest(grantedEvents, definition)
-        validateGrantedCapabilitiesCoverManifest(grantedCapabilities, definition)
+        validateGrantedCapabilitiesCoverManifest(capabilities, definition)
 
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
 
@@ -114,7 +118,7 @@ class ExternalPluginConfigurationService(
 
         saveGrantedEndpoints(saved.id, grantedEndpoints)
         saveGrantedEvents(saved.id, grantedEvents)
-        saveGrantedCapabilities(saved.id, grantedCapabilities)
+        saveGrantedCapabilities(saved.id, capabilities)
 
         // Push decrypted config to the plugin host
         try {
@@ -148,7 +152,7 @@ class ExternalPluginConfigurationService(
         val grantedEventTypes = grantedEventRepository.findAllByConfigurationId(configuration.id)
             .map { it.eventType }
         val grantedCaps = grantedCapabilityRepository.findAllByConfigurationId(configuration.id)
-            .map { it.capability }
+            .map { it.capability.value }
         val pushed = hostClient.pushConfiguration(
             baseUrl = host.baseUrl,
             adminToken = adminToken,
@@ -325,7 +329,7 @@ class ExternalPluginConfigurationService(
         }
     }
 
-    private fun saveGrantedCapabilities(configurationId: UUID, capabilities: List<String>) {
+    private fun saveGrantedCapabilities(configurationId: UUID, capabilities: List<ExternalPluginCapability>) {
         capabilities.forEach { capability ->
             grantedCapabilityRepository.save(
                 ExternalPluginGrantedCapability(
@@ -338,7 +342,7 @@ class ExternalPluginConfigurationService(
     }
 
     private fun validateGrantedCapabilitiesCoverManifest(
-        grantedCapabilities: List<String>,
+        grantedCapabilities: List<ExternalPluginCapability>,
         definition: ExternalPluginDefinition,
     ) {
         val manifest = definition.manifestJson ?: return
@@ -346,7 +350,7 @@ class ExternalPluginConfigurationService(
         val declaredCapabilities = permissions.get("capabilities") ?: return
         if (!declaredCapabilities.isArray) return
 
-        val grantedSet = grantedCapabilities.toSet()
+        val grantedSet = grantedCapabilities.map { it.value }.toSet()
         val requiredSet = declaredCapabilities.mapNotNull { it.asText().takeIf { s -> s.isNotBlank() } }.toSet()
 
         val missing = requiredSet - grantedSet

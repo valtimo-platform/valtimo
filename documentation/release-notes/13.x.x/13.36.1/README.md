@@ -1,7 +1,7 @@
 # 13.36.1
 
 {% hint style="info" %}
-**Release date 15-07-2026**
+**Release date 10-07-2026**
 {% endhint %}
 
 ## Bugfixes

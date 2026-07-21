@@ -10,6 +10,9 @@ WebAssembly-based plugin system for extending Valtimo GZAC with custom actions a
 | [`plugin-sdk/`](./plugin-sdk/) | **SDK** — TypeScript library and build tools for plugin authors |
 | [`sample-plugins/`](./sample-plugins/) | **Sample plugins** — Reference implementations |
 
+> **Testing:** see [`TESTING.md`](./TESTING.md) for the test layers (unit, component, Wasm,
+> integration, contract), how to run them, and **which kind of test to write when** you change code.
+
 ## Architecture
 
 ```

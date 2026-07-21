@@ -60,23 +60,7 @@ import {
 import {Add16, Edit16, Locked16, TrashCan16} from '@carbon/icons';
 import {catchError, forkJoin, merge, of} from 'rxjs';
 import {MENU_CONFIGURATION_TEST_IDS} from '../../constants';
-
-/** A draggable entry in the right-hand "Available items" palette. */
-interface PaletteItem {
-  paletteType: 'catalog' | 'group' | 'section-header' | 'custom-link' | 'plugin-page';
-  label: string;
-  icon?: string;
-  itemId?: string;
-  page?: ExternalPluginMenuPage;
-}
-
-interface PaletteGroup {
-  categoryKey: string;
-  items: PaletteItem[];
-}
-
-/** Builder node = a stored config node plus a transient `_uid` for stable identity across redraws. */
-type BuilderNode = MenuConfigurationItem & {_uid: string; children?: BuilderNode[]};
+import {BuilderNode, PaletteGroup, PaletteItem} from '../../models';
 
 @Component({
   standalone: true,
@@ -487,8 +471,6 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
     this._removeByUid(this.$structure(), node._uid);
     this._bump();
   }
-
-  // ----- Save -----
 
   public onSave(): void {
     this.$saving.set(true);

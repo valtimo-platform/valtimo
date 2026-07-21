@@ -30,6 +30,7 @@ import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginDependency
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zakenapi.ZaakUrlProvider
@@ -40,7 +41,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.net.URI
 import java.time.LocalDate
-import java.util.UUID
 
 @Plugin(
     key = BesluitenApiPlugin.PLUGIN_KEY,
@@ -108,7 +108,7 @@ class BesluitenApiPlugin(
         @PluginActionProperty uiterlijkeReactieDatum: LocalDate?,
         @PluginActionProperty createdBesluitUrl: String?,
     ) {
-        val documentId = UUID.fromString(execution.businessKey)
+        val documentId = execution.getJsonSchemaDocumentId()
         val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
         withLoggingContext(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString()
@@ -151,7 +151,7 @@ class BesluitenApiPlugin(
         @PluginActionProperty verzenddatum: String? = null,
         @PluginActionProperty uiterlijkeReactieDatum: String? = null
     ) {
-        val documentId = UUID.fromString(execution.businessKey)
+        val documentId = execution.getJsonSchemaDocumentId()
         withLoggingContext(
             "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString()
         ) {
@@ -181,7 +181,7 @@ class BesluitenApiPlugin(
         @PluginActionProperty besluitUrl: String,
         @PluginActionProperty resultProcessVariable: String
     ): Besluit {
-        val documentId = UUID.fromString(execution.businessKey)
+        val documentId = execution.getJsonSchemaDocumentId()
 
         logger.debug { "Retrieving besluit with besluitUrl '$besluitUrl' for document '$documentId'" }
 

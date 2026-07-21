@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+  liquibase:
+    enabled: false
+  jpa:
+    show_sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        hbm2ddl.auto: none
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+        connection:
+          provider_disables_autocommit: true
+    hibernate:
+      ddl-auto: none
+
+spring-actuator:
+  username: test
+  password: test
+
+valtimo:
+  versioning:
+    enabled: false
+  plugin:
+    encryption-secret: "abcdefghijklmnop"
+  opensearch:
+    enabled: true
+    reconcile:
+      # Disable the scheduled reconcile job in tests so it cannot interfere with assertions; the tests
+      # invoke DocumentOpenSearchReconcileService.reconcile() directly instead.
+      enabled: false
+
+operaton:
+  bpm:
+    history-level: audit
+    generic-properties:
+      properties:
+        enforceHistoryTimeToLive: false

@@ -17,10 +17,8 @@
 import Fastify, {type FastifyServerOptions} from "fastify";
 import rawBody from "fastify-raw-body";
 import multipart from "@fastify/multipart";
-import {readFileSync} from "node:fs";
-import type {ServerOptions as HttpsServerOptions} from "node:https";
 import {loadConfig} from "./config.js";
-import type {AppConfig} from "./models/index.js";
+import {buildHttpsOptions} from "./https-options.js";
 import {PluginManager} from "./plugin-manager.js";
 import {ConfigRegistry} from "./config-registry.js";
 import {healthRoutes} from "./routes/health.js";
@@ -36,28 +34,6 @@ import {ConfigRepository} from "./db/config-repository.js";
 import {KvRepository} from "./db/kv-repository.js";
 import {LogRepository} from "./db/log-repository.js";
 import {pluginLogRoutes} from "./routes/plugin-logs.js";
-
-/**
- * Reads the TLS material when the host is configured to terminate HTTPS itself. Both the
- * certificate and key must be set together; supplying only one is a misconfiguration that would
- * otherwise silently fall back to plain HTTP, so it fails fast.
- */
-function buildHttpsOptions(config: AppConfig): HttpsServerOptions | undefined {
-  const { TLS_CERT_PATH, TLS_KEY_PATH, TLS_CA_PATH } = config;
-  if (!TLS_CERT_PATH && !TLS_KEY_PATH) {
-    return undefined;
-  }
-  if (!TLS_CERT_PATH || !TLS_KEY_PATH) {
-    throw new Error(
-      "TLS is half-configured: set both TLS_CERT_PATH and TLS_KEY_PATH (PEM files), or neither."
-    );
-  }
-  return {
-    cert: readFileSync(TLS_CERT_PATH),
-    key: readFileSync(TLS_KEY_PATH),
-    ...(TLS_CA_PATH ? { ca: readFileSync(TLS_CA_PATH) } : {}),
-  };
-}
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -114,13 +90,17 @@ async function main(): Promise<void> {
 
   // Initialize plugin manager and config registry
   const allowHttp = (process.env.HOST_ALLOW_HTTP ?? "").toLowerCase() === "true";
+  // Lets http_request reach loopback/private-network targets. Local development only — in
+  // production this would let a plugin use the host as a proxy into the internal network (SSRF).
+  const allowPrivateNetwork = (process.env.HOST_ALLOW_PRIVATE_NETWORK ?? "").toLowerCase() === "true";
   const pluginManager = new PluginManager(
     config.PLUGIN_STORAGE_DIR,
     fastify.log,
     configRepository,
     kvRepository,
     logRepository,
-    allowHttp
+    allowHttp,
+    allowPrivateNetwork
   );
   const configRegistry = new ConfigRegistry(configRepository);
 

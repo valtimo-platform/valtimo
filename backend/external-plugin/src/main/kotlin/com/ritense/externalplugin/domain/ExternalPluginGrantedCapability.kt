@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.domain
 
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
@@ -44,7 +45,8 @@ class ExternalPluginGrantedCapability(
     val configurationId: UUID,
 
     @Column(name = "capability", nullable = false, length = 64)
-    val capability: String,
+    @Convert(converter = ExternalPluginCapabilityConverter::class)
+    val capability: ExternalPluginCapability,
 
     @Column(name = "granted_at", nullable = false)
     val grantedAt: Instant = Instant.now(),

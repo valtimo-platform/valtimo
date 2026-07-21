@@ -150,7 +150,10 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
   private readonly _allCasesSort$ = new BehaviorSubject<SortState | null>(null);
   private readonly _allCasesReload$ = new BehaviorSubject<boolean>(false);
   private readonly _allCasesAssigneeFilter$ = new BehaviorSubject<AssigneeFilter>('ALL');
+  private readonly _allCasesGlobalSearch$ = new BehaviorSubject<string>('');
   public readonly allCasesAssigneeFilter$ = this._allCasesAssigneeFilter$.asObservable();
+  public readonly allCasesGlobalSearch$ = this._allCasesGlobalSearch$.asObservable();
+  public readonly allCasesInvalidSearchFields$ = this.documentService.invalidSearchFields$;
 
   public readonly allCasesFields$: Observable<ListField[]> = this.translateService
     .stream('fieldLabels')
@@ -170,16 +173,17 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
     this._allCasesSort$,
     this._allCasesReload$,
     this._allCasesAssigneeFilter$,
+    this._allCasesGlobalSearch$,
   ]).pipe(
     tap(() => this.allCasesLoading$.next(true)),
-    switchMap(([page, size, sort, _, assigneeFilter]) => {
+    switchMap(([page, size, sort, _, assigneeFilter, globalSearch]) => {
       const request = new DocumentSearchRequestImpl(
         '',
         page - 1,
         size,
         undefined,
         undefined,
-        undefined,
+        globalSearch || undefined,
         sort,
         undefined,
         assigneeFilter !== 'ALL' ? assigneeFilter : undefined
@@ -220,7 +224,7 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
     private readonly parameterService: CaseParameterService,
     private readonly quickSearchStateService: QuickSearchStateService,
     private readonly router: Router,
-    private readonly searchService: CaseListSearchService,
+    public readonly searchService: CaseListSearchService,
     private readonly statusService: CaseListStatusService,
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>,
@@ -260,12 +264,14 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
       this.parameterService.clearSearchFieldValues();
       this.paginationService.clearPagination();
       this.assigneeService.resetAssigneeFilter();
+      this.searchService.setGlobalSearchFilter(null);
       this.listService.setCaseDefinitionKey(newId);
       this.orchestration.setLoading();
       this.subscribeToPagination();
       this.subscribeToCanHaveAssignee();
       this.subscribeToSearchFields();
     } else {
+      this._allCasesGlobalSearch$.next('');
       this._allCasesPage$.next(1);
       this._allCasesReload$.next(!this._allCasesReload$.getValue());
     }
@@ -412,6 +418,7 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
         this.parameterService.setSearchFieldValues(
           this.parameterService.getSearchObject(queryParams['search']) as SearchFieldValues
         );
+        this.searchService.setGlobalSearchFilter(null);
       });
   }
 
@@ -438,6 +445,15 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
   public allCasesTabChange(tab: CaseListTab): void {
     this._allCasesAssigneeFilter$.next(tab as AssigneeFilter);
     this._allCasesPage$.next(1);
+  }
+
+  public allCasesSearch(searchTerm: string): void {
+    this._allCasesGlobalSearch$.next(searchTerm);
+    this._allCasesPage$.next(1);
+  }
+
+  public onGlobalSearchFilterChange(value: string): void {
+    this.searchService.setGlobalSearchFilter(value);
   }
 
   // --- Private ---
