@@ -38,6 +38,7 @@ import {
   AutoKeyInputComponent,
   CarbonListItem,
   runAfterCarbonModalClosed,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {BehaviorSubject} from 'rxjs';
 import {
@@ -65,6 +66,7 @@ import {WIDGET_DIVIDER_MODAL_TEST_IDS} from '../../../constants';
     ReactiveFormsModule,
     LayerModule,
     AutoKeyInputComponent,
+    ValtimoCdsModalDirective,
   ],
 })
 export class WidgetManagementDividerModalComponent {
