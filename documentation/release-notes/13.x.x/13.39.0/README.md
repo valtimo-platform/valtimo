@@ -4,6 +4,18 @@
 **Release date 29-07-2026**
 {% endhint %}
 
+## New Features
+
+* **New feature title**
+
+  New feature explanation.
+
+## Enhancements
+
+* **New enhancement title**
+
+  New enhancement explanation.
+
 ## Bugfixes
 
 * **Closing a modal with the ESC key now works reliably**
