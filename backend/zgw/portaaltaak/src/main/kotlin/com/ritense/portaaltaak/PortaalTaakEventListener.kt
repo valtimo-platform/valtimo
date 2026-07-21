@@ -32,13 +32,12 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.domain.ProcessInstanceId
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.context.event.EventListener
 import org.springframework.transaction.annotation.Transactional
@@ -49,10 +48,8 @@ import java.util.UUID
 open class PortaalTaakEventListener(
     private val objectManagementService: ObjectManagementService,
     private val pluginService: PluginService,
-    private val processDocumentService: ProcessDocumentService,
     private val processService: OperatonProcessService,
     private val taskService: OperatonTaskService,
-    private val runtimeService: RuntimeService,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper
 ) {
@@ -99,15 +96,12 @@ open class PortaalTaakEventListener(
                     val receiveData = getReceiveDataActionProperty(task, it.id.id) ?: return
 
                     val portaaltaakPlugin = pluginService.createInstance(it) as PortaaltaakPlugin
-                    val processInstanceId = OperatonProcessInstanceId(task.getProcessInstanceId())
-                    val documentId = runWithoutAuthorization {
-                        processDocumentService.getDocumentId(processInstanceId, task)
-                    }
+                    val documentId = task.getJsonSchemaDocumentId()
                     saveDataInDocument(taakObject, task, receiveData)
                     startProcessToUploadDocuments(
                         taakObject,
                         portaaltaakPlugin.completeTaakProcess,
-                        documentId.id.toString(),
+                        documentId.toString(),
                         objectManagement.objectenApiPluginConfigurationId.toString(),
                         event.resourceUrl
                     )

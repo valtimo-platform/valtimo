@@ -42,6 +42,7 @@ import com.ritense.resource.domain.VirusScanResult
 import com.ritense.resource.domain.VirusScanStatus
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.upload.VirusDetectedException
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
@@ -76,6 +77,7 @@ internal class DocumentenApiPluginTest {
     lateinit var client: DocumentenApiClient
     lateinit var runtimeService: OperatonRuntimeService
     lateinit var virusScanService: VirusScanService
+    lateinit var caseDocumentResolver: CaseDocumentResolver
 
     @BeforeEach
     fun setUp() {
@@ -98,6 +100,8 @@ internal class DocumentenApiPluginTest {
         client = mock()
         runtimeService = mock()
         virusScanService = mock()
+        caseDocumentResolver = mock()
+        whenever(caseDocumentResolver.resolveCaseDocumentId(any())).thenAnswer { it.getArgument(0) }
     }
 
     @Test
@@ -123,7 +127,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -142,7 +147,7 @@ internal class DocumentenApiPluginTest {
                 status = IN_BEWERKING
             )
         }
-        assertEquals("Failed to store document. Business key is null.", exception.message)
+        assertEquals("Failed to resolve document id", exception.message)
     }
 
     @Test
@@ -185,7 +190,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -290,7 +296,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -366,7 +373,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -471,7 +479,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -549,7 +558,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -608,7 +618,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -650,7 +661,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -704,7 +716,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.authenticationPluginConfiguration = authenticationMock
@@ -742,7 +755,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
 
@@ -780,18 +794,19 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
 
-        val exception = assertThrows<IllegalArgumentException> {
+        val exception = assertThrows<IllegalStateException> {
             plugin.getAuditTrail(
                 executionMock,
                 documentUrl,
                 "myAuditTrailVar"
             )
         }
-        assertEquals("Failed to get audit trail. Business key is null.", exception.message)
+        assertEquals("Failed to resolve document id", exception.message)
     }
 
     private fun createPlugin(
@@ -809,7 +824,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = false
+            virusScanEnabledForDocumentenApiPlugin = false,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -1064,7 +1080,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = false
+            virusScanEnabledForDocumentenApiPlugin = false,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -1133,7 +1150,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = false
+            virusScanEnabledForDocumentenApiPlugin = false,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -1179,7 +1197,8 @@ internal class DocumentenApiPluginTest {
             pluginService = pluginService,
             runtimeService = runtimeService,
             virusScanService = virusScanService,
-            virusScanEnabledForDocumentenApiPlugin = false
+            virusScanEnabledForDocumentenApiPlugin = false,
+            caseDocumentResolver = caseDocumentResolver,
         )
         plugin.url = URI("http://some-url")
 

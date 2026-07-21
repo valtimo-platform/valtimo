@@ -37,3 +37,6 @@
   such as the filename via `calculateValue`. On redraw, the Angular custom element was recreated
   with an empty value and the stored file references were never restored, causing the uploaded file
   to disappear from the UI.
+
+* ZGW document actions such as **view** and **modify** could be incorrectly disabled for documents uploaded from a
+  building block process.
