@@ -1950,4 +1950,175 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         assertThat(result.getTotalElements()).isEqualTo(1);
         assertThat(result.getContent().get(0).assigneeFullName()).isEqualTo("John Smith");
     }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void multipleSearchTermsWithMixedDocAndCaseFieldsShouldMatchAllTerms() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var streetField = new SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Street"
+        );
+        var streetFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        streetField.setId(streetFieldId);
+
+        var assigneeField = new SearchField(
+            "assignee", "case:assigneeFullName", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 1, "Assignee"
+        );
+        var assigneeFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        assigneeField.setId(assigneeFieldId);
+
+        searchFieldRepository.saveAll(List.of(streetField, assigneeField));
+
+        var doc1 = (JsonSchemaDocument) createDocument("{\"street\": \"Funenpark\"}").resultingDocument().orElseThrow();
+        doc1.setAssignee("1111", "John Smith");
+        var doc2 = (JsonSchemaDocument) createDocument("{\"street\": \"Keizersgracht\"}").resultingDocument().orElseThrow();
+        doc2.setAssignee("2222", "John Doe");
+        var doc3 = (JsonSchemaDocument) createDocument("{\"street\": \"Funenpark\"}").resultingDocument().orElseThrow();
+        doc3.setAssignee("3333", "Jane Doe");
+        documentRepository.saveAll(List.of(doc1, doc2, doc3));
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("funen john");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).assigneeFullName()).isEqualTo("John Smith");
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void multipleSearchTermsWithExactDocFieldShouldRequireExactMatchForEachTerm() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var streetField = new SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Street"
+        );
+        var streetFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        streetField.setId(streetFieldId);
+
+        var userInfoField = new SearchField(
+            "userInfo", "doc:userInfo", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "User Info"
+        );
+        var userInfoFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        userInfoField.setId(userInfoFieldId);
+
+        searchFieldRepository.saveAll(List.of(streetField, userInfoField));
+
+        createDocument("{\"street\": \"active\", \"userInfo\": \"urgent\"}");
+        createDocument("{\"street\": \"active\", \"userInfo\": \"normal\"}");
+        createDocument("{\"street\": \"inactive\", \"userInfo\": \"urgent\"}");
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("active urgent");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void multipleSearchTermsWithMixedLikeAndExactFieldsShouldApplyCorrectMatching() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var streetField = new SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Street"
+        );
+        var streetFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        streetField.setId(streetFieldId);
+
+        var userInfoField = new SearchField(
+            "userInfo", "doc:userInfo", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "User Info"
+        );
+        var userInfoFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        userInfoField.setId(userInfoFieldId);
+
+        searchFieldRepository.saveAll(List.of(streetField, userInfoField));
+
+        createDocument("{\"street\": \"Funenpark\", \"userInfo\": \"active\"}");
+        createDocument("{\"street\": \"Keizersgracht\", \"userInfo\": \"active\"}");
+        createDocument("{\"street\": \"Funenpark\", \"userInfo\": \"inactive\"}");
+
+        var searchRequestLikeAndExact = new AdvancedSearchRequest()
+            .globalSearchFilter("funen active");
+
+        var resultLikeAndExact = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequestLikeAndExact,
+            Pageable.unpaged()
+        );
+        assertThat(resultLikeAndExact.getTotalElements()).isEqualTo(1);
+
+        var searchRequestPartialExactFails = new AdvancedSearchRequest()
+            .globalSearchFilter("funen act");
+
+        var resultPartialExactFails = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequestPartialExactFails,
+            Pageable.unpaged()
+        );
+        assertThat(resultPartialExactFails.getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void multiTermSearchWhereEachTermMatchesDifferentFieldGroupShouldFindDocument() {
+        documentRepository.deleteAllInBatch();
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey(definition.id().name());
+
+        var streetField = new SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Street"
+        );
+        var streetFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        streetField.setId(streetFieldId);
+
+        var buildDateField = new SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Build Date"
+        );
+        var buildDateFieldId = SearchFieldId.newId(definition.id().name()).newIdentity();
+        buildDateField.setId(buildDateFieldId);
+
+        searchFieldRepository.saveAll(List.of(streetField, buildDateField));
+
+        createDocument("{\"street\": \"Funenpark\", \"buildDate\": \"2024\"}");
+        createDocument("{\"street\": \"Keizersgracht\", \"buildDate\": \"2023\"}");
+        createDocument("{\"street\": \"Alexanderplein\", \"buildDate\": \"2024\"}");
+
+        var searchRequest = new AdvancedSearchRequest()
+            .globalSearchFilter("funen 2024");
+
+        var result = documentSearchService.search(
+            definition.id().name(),
+            BlueprintType.CASE,
+            searchRequest,
+            Pageable.unpaged()
+        );
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+    }
 }

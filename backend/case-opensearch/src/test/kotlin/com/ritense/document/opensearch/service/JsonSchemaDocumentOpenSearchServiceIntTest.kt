@@ -293,6 +293,142 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
         assertThat(page.content[0].assigneeFullName()).isEqualTo("John Smith")
     }
 
+    @Test
+    fun `multiple search terms with mixed doc and case fields should match all terms`() {
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey("house")
+
+        val streetField = SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Street"
+        )
+        streetField.id = SearchFieldId.newId("house").newIdentity()
+
+        val assigneeField = SearchField(
+            "assignee", "case:assigneeFullName", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 1, "Assignee"
+        )
+        assigneeField.id = SearchFieldId.newId("house").newIdentity()
+
+        searchFieldRepository.saveAll(listOf(streetField, assigneeField))
+
+        seedDocumentWithAssignee("Funenpark", "John Smith")
+        seedDocumentWithAssignee("Keizersgracht", "John Doe")
+        seedDocumentWithAssignee("Funenpark", "Jane Doe")
+
+        val page = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest().globalSearchFilter("funen john"),
+            Pageable.unpaged()
+        )
+
+        assertThat(page.totalElements).isEqualTo(1L)
+        assertThat(page.content[0].assigneeFullName()).isEqualTo("John Smith")
+    }
+
+    @Test
+    fun `multiple search terms with EXACT doc field should require exact match for each term`() {
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey("house")
+
+        val streetField = SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Street"
+        )
+        streetField.id = SearchFieldId.newId("house").newIdentity()
+
+        val userInfoField = SearchField(
+            "userInfo", "doc:userInfo", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "User Info"
+        )
+        userInfoField.id = SearchFieldId.newId("house").newIdentity()
+
+        searchFieldRepository.saveAll(listOf(streetField, userInfoField))
+
+        seedDocumentWithContent(mapOf("street" to "active", "userInfo" to "urgent"))
+        seedDocumentWithContent(mapOf("street" to "active", "userInfo" to "normal"))
+        seedDocumentWithContent(mapOf("street" to "inactive", "userInfo" to "urgent"))
+
+        val page = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest().globalSearchFilter("active urgent"),
+            Pageable.unpaged()
+        )
+
+        assertThat(page.totalElements).isEqualTo(1L)
+    }
+
+    @Test
+    fun `multiple search terms with mixed LIKE and EXACT fields should apply correct matching`() {
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey("house")
+
+        val streetField = SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Street"
+        )
+        streetField.id = SearchFieldId.newId("house").newIdentity()
+
+        val userInfoField = SearchField(
+            "userInfo", "doc:userInfo", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "User Info"
+        )
+        userInfoField.id = SearchFieldId.newId("house").newIdentity()
+
+        searchFieldRepository.saveAll(listOf(streetField, userInfoField))
+
+        seedDocumentWithContent(mapOf("street" to "Funenpark", "userInfo" to "active"))
+        seedDocumentWithContent(mapOf("street" to "Keizersgracht", "userInfo" to "active"))
+        seedDocumentWithContent(mapOf("street" to "Funenpark", "userInfo" to "inactive"))
+
+        val pageLikeAndExact = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest().globalSearchFilter("funen active"),
+            Pageable.unpaged()
+        )
+        assertThat(pageLikeAndExact.totalElements).isEqualTo(1L)
+
+        val pagePartialExactFails = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest().globalSearchFilter("funen act"),
+            Pageable.unpaged()
+        )
+        assertThat(pagePartialExactFails.totalElements).isEqualTo(0L)
+    }
+
+    @Test
+    fun `multi-term search where each term matches different field group should find document`() {
+        searchFieldRepository.deleteAllByIdCaseDefinitionKey("house")
+
+        val streetField = SearchField(
+            "street", "doc:street", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Street"
+        )
+        streetField.id = SearchFieldId.newId("house").newIdentity()
+
+        val buildDateField = SearchField(
+            "buildDate", "doc:buildDate", SearchFieldDataType.TEXT,
+            SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Build Date"
+        )
+        buildDateField.id = SearchFieldId.newId("house").newIdentity()
+
+        searchFieldRepository.saveAll(listOf(streetField, buildDateField))
+
+        seedDocumentWithContent(mapOf("street" to "Funenpark", "buildDate" to "2024"))
+        seedDocumentWithContent(mapOf("street" to "Keizersgracht", "buildDate" to "2023"))
+        seedDocumentWithContent(mapOf("street" to "Alexanderplein", "buildDate" to "2024"))
+
+        val page = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest().globalSearchFilter("funen 2024"),
+            Pageable.unpaged()
+        )
+
+        assertThat(page.totalElements).isEqualTo(1L)
+    }
+
     private fun seedDocument(street: String): JsonSchemaDocument {
         val content = objectMapper.createObjectNode().apply { put("street", street) }
         val jpaDoc = runWithoutAuthorization {
@@ -373,6 +509,49 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
                 relatedFiles = null,
                 retentionDate = null,
                 contentText = street,
+            )
+        )
+        refreshIndex()
+        return jpaDoc
+    }
+
+    private fun seedDocumentWithContent(contentMap: Map<String, String>): JsonSchemaDocument {
+        val content = objectMapper.createObjectNode().apply {
+            contentMap.forEach { (key, value) -> put(key, value) }
+        }
+        val jpaDoc = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest("house", "house", "1.0.0", content)
+            ).resultingDocument().get()
+        }
+        openSearchRepository.save(
+            JsonSchemaDocumentOsDocument(
+                id = jpaDoc.id().toString(),
+                content = contentMap,
+                definitionId = OsDefinitionId(
+                    name = "house",
+                    version = null,
+                    blueprintId = OsBlueprintId(
+                        blueprintType = "CASE",
+                        blueprintKey = null,
+                        blueprintVersionTag = null,
+                        isBuildingBlock = null,
+                        isCase = null,
+                    ),
+                ),
+                createdOn = null,
+                modifiedOn = null,
+                createdBy = null,
+                sequence = null,
+                version = null,
+                assigneeId = null,
+                assigneeFullName = null,
+                internalStatus = null,
+                caseTags = null,
+                relations = null,
+                relatedFiles = null,
+                retentionDate = null,
+                contentText = contentMap.values.joinToString(" "),
             )
         )
         refreshIndex()

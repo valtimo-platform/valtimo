@@ -415,6 +415,30 @@ class JsonSchemaDocumentOpenSearchServiceTest {
     }
 
     @Test
+    fun `multiple search terms with multiple fields respects matchType for each`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name"),
+            SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Status"),
+            SearchField("assignee", "case:assigneeFullName", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 2, "Assignee")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("john active")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("*john*")
+        assertThat(capturedQuery.source).contains("*active*")
+        assertThat(capturedQuery.source).contains("content.name")
+        assertThat(capturedQuery.source).contains("content.status")
+        assertThat(capturedQuery.source).contains("assigneeFullName")
+    }
+
+    @Test
     fun `global search without definition name builds per-definition scoped query`() {
         val queryCaptor = argumentCaptor<StringQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
