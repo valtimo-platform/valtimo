@@ -29,9 +29,6 @@
 
 ## Bugfixes
 
-* ZGW document actions such as **view** and **modify** could be incorrectly disabled for documents uploaded from a
-  building block process.
-
 * **Fixed modal size not persisted for form-flow process links on a start event**
 
 * **Wide lists now scroll horizontally instead of being cut off**
