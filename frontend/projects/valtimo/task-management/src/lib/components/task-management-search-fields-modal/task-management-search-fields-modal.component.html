@@ -226,7 +226,7 @@
       [disabled]="form.invalid"
       (click)="onSave()"
     >
-      {{ 'interface.save' | translate }}
+      {{ (!prefillData ? 'interface.create' : 'interface.save') | translate }}
     </button>
   </cds-modal-footer>
 </cds-modal>

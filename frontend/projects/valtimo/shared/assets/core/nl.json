@@ -744,7 +744,7 @@
     "deploy": "Opslaan",
     "duplicate": "Dupliceren",
     "readOnly": "Alleen-lezen",
-    "add": "Formulier toevoegen",
+    "add": "Formulier aanmaken",
     "navigateToRelatedCase": "Ga naar dossier (opent in nieuw tabblad)",
     "tabs": {
       "formBuilder": "Formulier-bewerker",
@@ -958,7 +958,7 @@
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
-          "message": "Het dossier kan niet worden bijgewerkt omdat deze definitief is."
+          "message": "Deze dossierdefinitie kan niet worden gewijzigd omdat deze versie definitief is. Maak een nieuwe conceptversie om wijzigingen aan te brengen."
         },
         "linkUploadProcess": {
           "title": "Uploadproces koppelen aan dossierdefinitie",
@@ -995,10 +995,10 @@
         "showTasks": "Takenlijst zichtbaar"
       },
       "addModal": {
-        "addTab": "Tabblad toevoegen",
+        "addTab": "Tabblad aanmaken",
         "customComponent": "Maatwerkcomponent",
         "customComponentDisabled": "Er zijn geen maatwerkcomponenten beschikbaar, of ze zijn allemaal al toegevoegd.",
-        "description": "Selecteer een van de opties om een nieuw tabblad toe te voegen aan uw dossierdefinitie",
+        "description": "Selecteer een van de opties om een nieuw tabblad aan te maken in uw dossierdefinitie",
         "formIOComponent": "FormIO component",
         "formIOComponentDisabled": "Geen Form.io-formulierdefinities beschikbaar",
         "standardTab": "Standaardtabblad",
@@ -1006,7 +1006,7 @@
         "tabContentLabel": "Kies inhoud",
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tabblad naam (optioneel)",
-        "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}",
+        "title": "Nieuw tabblad aanmaken {{documentDefinitionName}}",
         "uniqueKeyError": "De key voor deze tab moet uniek zijn.",
         "invalidKeyError": "De key voor deze tab mag alleen letters, nummers en dashes bevatten.",
         "widgetsComponent": "Widgets component",
@@ -1015,10 +1015,10 @@
         "invisible": "Niet zichtbaar"
       },
       "titles": {
-        "custom": "Nieuw tabblad toevoegen met aangepaste component",
-        "formio": "Nieuw tabblad toevoegen met FormIO component",
-        "standard": "Nieuw tabblad toevoegen met standaard inhoud",
-        "widgets": "Nieuw tabblad met widgets toevoegen"
+        "custom": "Nieuw tabblad aanmaken met aangepaste component",
+        "formio": "Nieuw tabblad aanmaken met FormIO component",
+        "standard": "Nieuw tabblad aanmaken met standaard inhoud",
+        "widgets": "Nieuw tabblad met widgets aanmaken"
       },
       "contentLabels": {
         "custom": "Kies aangepaste component",
@@ -1037,7 +1037,7 @@
         "name": "Naam",
         "type": "Type"
       },
-      "addItem": "Actie toevoegen",
+      "addItem": "Actie aanmaken",
       "noResults": "Geen acties geconfigureerd",
       "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
       "infoNotification": {
@@ -1048,10 +1048,10 @@
         "BUILDING_BLOCK": "Bouwblok"
       },
       "modal": {
-        "addTitle": "Actie toevoegen",
+        "addTitle": "Actie aanmaken",
         "addDescription": "Selecteer een proces of bouwblok dat de gebruiker kan starten",
-        "addProcessTitle": "Proces toevoegen als actie",
-        "addBuildingBlockTitle": "Bouwblok toevoegen als actie",
+        "addProcessTitle": "Proces aanmaken als actie",
+        "addBuildingBlockTitle": "Bouwblok aanmaken als actie",
         "editProcessTitle": "Procesactie bewerken",
         "editBuildingBlockTitle": "Bouwblokactie bewerken",
         "selectProcess": "Selecteer een proces",
@@ -1059,7 +1059,7 @@
         "selectProcessDescription": "Selecteer een proces dat de gebruiker kan starten",
         "selectBuildingBlockDescription": "Selecteer een bouwblok dat de gebruiker kan starten",
         "filterPlaceholder": "Filteren...",
-        "add": "Toevoegen",
+        "add": "Aanmaken",
         "save": "Opslaan",
         "back": "Terug",
         "next": "Volgende",
@@ -1182,7 +1182,7 @@
     "statuses": {
       "withoutStatus": "Toon dossiers zonder status",
       "searchFieldTitle": "Status",
-      "add": "Status toevoegen",
+      "add": "Status aanmaken",
       "edit": "Status bewerken",
       "visibleTitle": "Standaardzichtbaarheid in dossierlijst",
       "visible": "Zichtbaar",
@@ -1211,7 +1211,7 @@
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
-      "add": "Tag toevoegen",
+      "add": "Tag aanmaken",
       "edit": "Tag bewerken",
       "visible": "Zichtbaar",
       "invisible": "Niet zichtbaar",
@@ -1581,7 +1581,7 @@
   "zgw": {
     "columns": {
       "column": "Kolom",
-      "add": "Kolom toevoegen",
+      "add": "Kolom aanmaken",
       "edit": "Kolom bewerken",
       "deleteText": "Weet je zeker dat je deze kolom wilt verwijderen?",
       "notSortable": "Deze kolom is niet sorteerbaar",
@@ -1659,10 +1659,10 @@
     },
     "tags": {
       "tag": "Trefwoord",
-      "add": "Trefwoord toevoegen",
+      "add": "Trefwoord aanmaken",
       "deleteText": "Weet je zeker dat je dit trefwoord wilt verwijderen?",
       "deleteMultipleText": "Weet je zeker dat je deze trefwoorden wilt verwijderen?",
-      "addModal": {"header": "Trefwoord toevoegen"},
+      "addModal": {"header": "Trefwoord aanmaken"},
       "list": {
         "noResultsTitle": "Geen trefwoorden",
         "noResultsDescription": "Voeg een trefwoord toe om te beginnen"
@@ -1784,7 +1784,7 @@
   "Create new Milestone Set": "Maak een nieuwe mijlpaal Set",
   "Forms": "Formulieren",
   "Overview of all Forms": "Overzicht van alle Formulieren",
-  "Create Form": "Formulier creëren",
+  "Create Form": "Formulier aanmaken",
   "Form Builder": "Formulier Bouwer",
   "Process links": "Proceskoppelingen",
   "Translations": "Vertalingen",
@@ -1793,7 +1793,7 @@
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestarte processen krijgen de nieuwe candidate group)",
   "Case": "Dossier",
   "Cases": "Dossiers",
-  "Deployment": "Implementatie",
+  "Deployment": "Versiebeheer",
   "document definition": "Documentdefinitie",
   "Upload document definition": "Upload documentdefinitie",
   "Remove document definition": "Verwijder documentdefinitie",
@@ -2287,7 +2287,7 @@
   "searchFieldsOverview": {
     "title": "Titel",
     "key": "Key",
-    "add": "Zoekveld toevoegen",
+    "add": "Zoekveld aanmaken",
     "edit": "Zoekveld bewerken",
     "path": "Pad",
     "dataType": "Datatype",
@@ -2306,7 +2306,7 @@
     "close": "Sluiten",
     "save": "Opslaan",
     "download": "Download",
-    "addRow": "Zoekveld toevoegen",
+    "addRow": "Zoekveld aanmaken",
     "searchFieldPlaceholder": "Kies een type...",
     "noSearchFieldsConfiguredWarningTitle": "Geen zoekvelden geconfigureerd",
     "deleteSearchField": "Zoekveld verwijderen",
@@ -2367,7 +2367,7 @@
     "hasEnvConfigWarning": "Dit dossiertype heeft al een kolom-configuratie in de omgevingsconfiguratie. Verwijder deze om kolommen hier te configureren.",
     "noConfigWarningTitle": "Geen kolommen",
     "noConfigWarning": "Er zijn geen kolommen geconfigureerd voor dit dossiertype.",
-    "addButtonText": "Kolom toevoegen",
+    "addButtonText": "Kolom aanmaken",
     "editColumnTitle": "Kolom bewerken",
     "close": "Sluiten",
     "save": "Kolom opslaan",
@@ -2980,7 +2980,7 @@
     "key": "Key",
     "version": "Versie",
     "readOnly": "Alleen lezen",
-    "add": "Nieuwe form flow toevoegen",
+    "add": "Nieuwe form flow aanmaken",
     "deleteModalContent": "Weet je zeker dat je deze form flow wilt verwijderen?",
     "deletedSuccessfully": "{{key}} is succesvol verwijderd",
     "savedSuccessTitle": "Succesvol opgeslagen",
