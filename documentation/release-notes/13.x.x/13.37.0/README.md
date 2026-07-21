@@ -29,8 +29,6 @@
 
 ## Bugfixes
 
-* **Fixed modal size not persisted for form-flow process links on a start event**
-
 * **Wide lists now scroll horizontally instead of being cut off**
 
   When a list with many columns is wider than the space available, it now scrolls
