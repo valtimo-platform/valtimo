@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -30,6 +31,7 @@ import {FormControl} from '@angular/forms';
 import {ArrowDown16, ArrowUp16, Draggable16, SettingsView16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {SortState} from '@valtimo/document';
+import {SearchField} from '@valtimo/shared';
 import {
   IconService,
   PaginationModel,
@@ -180,6 +182,19 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input() isSearchable = false;
+  @Input() set initialSearchValue(value: string | null) {
+    if (this._initialSearchValue !== value) {
+      this._initialSearchValue = value;
+      this.searchFormControl.setValue(value || '', {emitEvent: false});
+      this._lastExecutedSearch = value;
+      this.searchActive = !!value;
+    }
+  }
+  private _initialSearchValue: string | null = null;
+  public searchActive = false;
+  @Input() searchDebounceMs = 500;
+  @Input() invalidSearchFields: string[] = [];
+  @Input() searchFields: SearchField[] = [];
   @Input() enableSingleSelection = false;
   /**
    * @deprecated The lastColumnTemplate field is deprecated. Any template column can be added through the **@Input field**.
@@ -193,6 +208,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() movingRowsEnabled: boolean;
   @Input() dragAndDrop = false;
   @Input() dragAndDropDisabled = false;
+  @Input() expandedRowTemplate: TemplateRef<any>;
+  @Input() expandedRowKey: string;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -249,9 +266,16 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public skeletonModel = Table.skeletonModel(5, 5);
   public paginationModel: PaginationModel;
   public searchFormControl = new FormControl('');
+  public showAutocomplete = false;
+  public filteredSuggestions: SearchField[] = [];
+  public selectedSuggestionIndex = -1;
+  public autocompleteLeft = 0;
 
+  private _lastExecutedSearch: string | null = null;
+  private _searchInputElement: HTMLInputElement | null = null;
   private static readonly PAGINATION_SIZE = 'PaginationSize';
   private readonly _subscriptions = new Subscription();
+  private readonly _expandedRowKeys = new Set<string>();
 
   public get selectedItems(): CarbonListItem[] {
     const model = this._table.model;
@@ -282,7 +306,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly viewContentService: ViewContentService,
     private readonly keyStateService: KeyStateService,
     private readonly dragAndDropService: CarbonListDragAndDropService,
-    private readonly elementRef: ElementRef
+    private readonly elementRef: ElementRef,
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.iconService.registerAll([ArrowDown16, ArrowUp16, SettingsView16, Draggable16]);
   }
@@ -310,21 +335,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._subscriptions.add(
       this.searchFormControl.valueChanges
-        .pipe(debounceTime(500))
+        .pipe(debounceTime(this.searchDebounceMs))
         .subscribe((searchString: string | null) => {
-          if (this.search.observed) {
-            this.search.emit(searchString);
-            return;
-          }
-
-          if (!searchString) {
-            this._filteredItems$.next(null);
-            return;
-          }
-
-          this._filteredItems$.next(
-            this.filterPipe.transform(this._completeDataSource, searchString ?? '')
-          );
+          this.executeSearch(searchString);
         })
     );
   }
@@ -465,51 +478,60 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   ]).pipe(
     filter(([fields, items, viewInitialized]) => !!fields && !!items && viewInitialized),
     map(([fields, items]) =>
-      items.map((item: CarbonListItem, index: number) => [
-        ...this.getDragAndDropItemsItems(item, index, items.length),
-        ...fields.map((field: ColumnConfig) => {
-          switch (field.viewType) {
-            case ViewType.TEMPLATE:
-              return new TableItem({
-                data: {item, index, length: items.length, ...field.templateData},
-                item,
-                template: field.template,
-              });
-            case ViewType.BOOLEAN:
-              let data = this.resolveObject(field, item);
-              data = !BOOLEAN_CONVERTER_VALUES.includes(data)
-                ? data
-                : `${'viewTypeConverter.' + data}`;
-              return new TableItem({
-                data,
-                template: this.booleanTemplate,
-                item,
-              });
-            case ViewType.TAGS: {
-              return new TableItem({
-                data: {
-                  tags: this.resolveTagObject(item, field.key),
-                  tagAmount: field?.tagAmount || 1,
-                },
-                item,
-                template: this.tagTemplate,
-              });
+      items.map((item: CarbonListItem, index: number) => {
+        const row = [
+          ...this.getDragAndDropItemsItems(item, index, items.length),
+          ...fields.map((field: ColumnConfig) => {
+            switch (field.viewType) {
+              case ViewType.TEMPLATE:
+                return new TableItem({
+                  data: {item, index, length: items.length, ...field.templateData},
+                  item,
+                  template: field.template,
+                });
+              case ViewType.BOOLEAN:
+                let data = this.resolveObject(field, item);
+                data = !BOOLEAN_CONVERTER_VALUES.includes(data)
+                  ? data
+                  : `${'viewTypeConverter.' + data}`;
+                return new TableItem({
+                  data,
+                  template: this.booleanTemplate,
+                  item,
+                });
+              case ViewType.TAGS: {
+                return new TableItem({
+                  data: {
+                    tags: this.resolveTagObject(item, field.key),
+                    tagAmount: field?.tagAmount || 1,
+                  },
+                  item,
+                  template: this.tagTemplate,
+                });
+              }
+              default:
+                const resolvedObject: string = this.resolveObject(field, item);
+                return new TableItem({
+                  title: resolvedObject ?? '-',
+                  data:
+                    (field.tooltipCharLimit
+                      ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
+                      : resolvedObject) ?? '-',
+                  template: this.defaultTemplate,
+                  item,
+                });
             }
-            default:
-              const resolvedObject: string = this.resolveObject(field, item);
-              return new TableItem({
-                title: resolvedObject ?? '-',
-                data:
-                  (field.tooltipCharLimit
-                    ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
-                    : resolvedObject) ?? '-',
-                template: this.defaultTemplate,
-                item,
-              });
-          }
-        }),
-        ...this.getExtraItems(item, index, items.length),
-      ])
+          }),
+          ...this.getExtraItems(item, index, items.length),
+        ];
+
+        if (this.expandedRowTemplate && row.length > 0) {
+          row[0].expandedData = item;
+          row[0].expandedTemplate = this.expandedRowTemplate;
+        }
+
+        return row;
+      })
     ),
     tap((data: TableItem[][]) => {
       this._completeDataSource = data;
@@ -523,10 +545,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this._tableItems$,
     this._filteredItems$,
   ]).pipe(
+    tap(() => this._captureExpandedRows()),
     map(([header, data, filteredData]) => {
       const model = new TableModel();
       model.header = header;
       model.data = filteredData ?? data;
+      this._restoreExpandedRows(model);
       return model;
     }),
     startWith(new TableModel())
@@ -760,5 +784,283 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
       content,
       type: 'blue',
     }));
+  }
+
+  public getSearchSegments(): Array<{text: string; isInvalid: boolean}> {
+    const text = this.searchFormControl.value || '';
+    if (!text) return [{text, isInvalid: false}];
+
+    const segments: Array<{text: string; isInvalid: boolean}> = [];
+    const fieldPattern = /(\w+(?:\.\w+)*):("([^"]+)"|(\S+))/g;
+    const invalidSet = new Set((this.invalidSearchFields || []).map(f => f.toLowerCase()));
+
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = fieldPattern.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        segments.push({text: text.substring(lastIndex, match.index), isInvalid: false});
+      }
+
+      const fieldName = match[1];
+      const isInvalid = invalidSet.has(fieldName.toLowerCase());
+      segments.push({text: fieldName, isInvalid});
+
+      const rest = match[0].substring(fieldName.length);
+      segments.push({text: rest, isInvalid: false});
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+      segments.push({text: text.substring(lastIndex), isInvalid: false});
+    }
+
+    return segments;
+  }
+
+  private getSearchInputElement(): HTMLInputElement | null {
+    if (!this._searchInputElement) {
+      this._searchInputElement = this.elementRef.nativeElement.querySelector(
+        '.valtimo-search-container input'
+      );
+    }
+    return this._searchInputElement;
+  }
+
+  private getCurrentFieldToken(): {token: string; start: number} | null {
+    const value = this.searchFormControl.value || '';
+    const input = this.getSearchInputElement();
+    const cursor = input?.selectionStart ?? value.length;
+
+    let start = value.lastIndexOf(' ', cursor - 1) + 1;
+    const beforeCursor = value.substring(start, cursor);
+
+    if (beforeCursor.includes(':')) return null;
+
+    const nextSpace = value.indexOf(' ', cursor);
+    const end = nextSpace === -1 ? value.length : nextSpace;
+    const afterCursor = value.substring(cursor, end);
+
+    if (afterCursor.includes(':')) return null;
+
+    return {token: beforeCursor, start};
+  }
+
+  public onSearchFocus(): void {
+    const input = this.getSearchInputElement();
+    if (input && document.activeElement === input) {
+      this.updateAutocomplete();
+    }
+  }
+
+  public updateAutocomplete(): void {
+    const input = this.getSearchInputElement();
+
+    if (!input) {
+      this.showAutocomplete = false;
+      this.filteredSuggestions = [];
+      return;
+    }
+
+    const tokenInfo = this.getCurrentFieldToken();
+
+    if (!tokenInfo || !this.searchFields?.length) {
+      this.showAutocomplete = false;
+      this.filteredSuggestions = [];
+      return;
+    }
+
+    const searchToken = tokenInfo.token.toLowerCase();
+    this.filteredSuggestions = searchToken.length === 0
+      ? this.searchFields
+      : this.searchFields.filter(
+          field =>
+            field.key.toLowerCase().includes(searchToken) ||
+            (field.title && field.title.toLowerCase().includes(searchToken))
+        );
+
+    this.showAutocomplete = this.filteredSuggestions.length > 0;
+    this.selectedSuggestionIndex = -1;
+
+    if (this.showAutocomplete) {
+      this.autocompleteLeft = this.calculateTokenLeft(tokenInfo.start);
+    }
+  }
+
+  private calculateTokenLeft(tokenStart: number): number {
+    const input = this.getSearchInputElement();
+    if (!input) return 48;
+
+    const value = this.searchFormControl.value || '';
+    const textBefore = value.substring(0, tokenStart);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return 48;
+
+    const style = window.getComputedStyle(input);
+    ctx.font = `${style.fontSize} ${style.fontFamily}`;
+    const textWidth = ctx.measureText(textBefore).width;
+
+    return 48 + textWidth - 12;
+  }
+
+  public selectSuggestion(field: SearchField): void {
+    const tokenInfo = this.getCurrentFieldToken();
+    if (!tokenInfo) return;
+
+    const value = this.searchFormControl.value || '';
+    const input = this.getSearchInputElement();
+    const cursor = input?.selectionStart ?? value.length;
+
+    const fieldPath = field.path?.replace(/^(doc|case):/, '') || field.key;
+    const newValue =
+      value.substring(0, tokenInfo.start) + fieldPath + ':' + value.substring(cursor);
+
+    this.searchFormControl.setValue(newValue);
+    this.showAutocomplete = false;
+
+    setTimeout(() => {
+      const newCursor = tokenInfo.start + fieldPath.length + 1;
+      input?.setSelectionRange(newCursor, newCursor);
+      input?.focus();
+    });
+  }
+
+  public onSearchKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.onSearchEnter();
+      return;
+    }
+
+    if (!this.showAutocomplete || this.filteredSuggestions.length === 0) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.selectedSuggestionIndex =
+          this.selectedSuggestionIndex < 0
+            ? 0
+            : (this.selectedSuggestionIndex + 1) % this.filteredSuggestions.length;
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.selectedSuggestionIndex =
+          this.selectedSuggestionIndex < 0
+            ? this.filteredSuggestions.length - 1
+            : (this.selectedSuggestionIndex - 1 + this.filteredSuggestions.length) %
+              this.filteredSuggestions.length;
+        break;
+      case 'Tab':
+        event.preventDefault();
+        if (this.selectedSuggestionIndex >= 0) {
+          this.selectSuggestion(this.filteredSuggestions[this.selectedSuggestionIndex]);
+        } else {
+          this.showAutocomplete = false;
+        }
+        break;
+      case 'Escape':
+        this.showAutocomplete = false;
+        break;
+    }
+  }
+
+  public onSearchBlur(): void {
+    setTimeout(() => {
+      this.showAutocomplete = false;
+      this._searchInputElement = null;
+    }, 150);
+  }
+
+
+  public onSearchClear(): void {
+    this.showAutocomplete = false;
+  }
+
+  private executeSearch(searchString: string | null): void {
+    if (searchString === this._lastExecutedSearch) {
+      return;
+    }
+    this._lastExecutedSearch = searchString;
+
+    if (this.search.observed) {
+      this.search.emit(searchString);
+      return;
+    }
+
+    if (!searchString) {
+      this._filteredItems$.next(null);
+      return;
+    }
+
+    this._filteredItems$.next(
+      this.filterPipe.transform(this._completeDataSource, searchString ?? '')
+    );
+  }
+
+  public onSearchEnter(): void {
+    if (this.showAutocomplete && this.selectedSuggestionIndex >= 0) {
+      this.selectSuggestion(this.filteredSuggestions[this.selectedSuggestionIndex]);
+    } else {
+      this.showAutocomplete = false;
+      this.executeSearch(this.searchFormControl.value);
+    }
+  }
+
+  private _searchOpen = false;
+
+  public onSearchOpenChange(isOpen: boolean): void {
+    this._searchOpen = isOpen;
+    this._searchInputElement = null;
+
+    if (isOpen) {
+      setTimeout(() => {
+        this.updateAutocomplete();
+      }, 0);
+    } else {
+      this.showAutocomplete = false;
+    }
+  }
+
+  public onSearchFocusOut(event: FocusEvent): void {
+    const container = this.elementRef.nativeElement.querySelector('.valtimo-search-container');
+    const relatedTarget = event.relatedTarget as Node;
+
+    if (!container?.contains(relatedTarget)) {
+      setTimeout(() => {
+        this.showAutocomplete = false;
+        this.cdr.markForCheck();
+      }, 150);
+    }
+  }
+
+  private _captureExpandedRows(): void {
+    if (!this.expandedRowKey || !this._table?.model) return;
+
+    const model = this._table.model;
+    const items = this._items;
+
+    for (let i = 0; i < items.length; i++) {
+      const key = _get(items[i], this.expandedRowKey);
+      if (key && model.isRowExpanded(i)) {
+        this._expandedRowKeys.add(key);
+      } else if (key) {
+        this._expandedRowKeys.delete(key);
+      }
+    }
+  }
+
+  private _restoreExpandedRows(model: TableModel): void {
+    if (!this.expandedRowKey || this._expandedRowKeys.size === 0) return;
+
+    const items = this._items;
+    for (let i = 0; i < items.length; i++) {
+      const key = _get(items[i], this.expandedRowKey);
+      if (key && this._expandedRowKeys.has(key)) {
+        model.expandRow(i, true);
+      }
+    }
   }
 }

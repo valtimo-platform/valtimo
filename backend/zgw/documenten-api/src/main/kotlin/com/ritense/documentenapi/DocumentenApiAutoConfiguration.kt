@@ -49,6 +49,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
@@ -130,7 +131,8 @@ class DocumentenApiAutoConfiguration {
         runtimeService: OperatonRuntimeService,
         virusScanService: VirusScanService,
         @Value("\${valtimo.virusscan.clamav.DocumentenApiPlugin.enabled:false}")
-        virusScanEnabledForDocumentenApiPlugin: Boolean
+        virusScanEnabledForDocumentenApiPlugin: Boolean,
+        caseDocumentResolver: CaseDocumentResolver,
     ): DocumentenApiPluginFactory {
         return DocumentenApiPluginFactory(
             pluginService,
@@ -142,7 +144,8 @@ class DocumentenApiAutoConfiguration {
             documentenApiVersionService,
             runtimeService,
             virusScanService,
-            virusScanEnabledForDocumentenApiPlugin
+            virusScanEnabledForDocumentenApiPlugin,
+            caseDocumentResolver,
         )
     }
 

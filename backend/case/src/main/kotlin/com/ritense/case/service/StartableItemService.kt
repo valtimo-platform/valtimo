@@ -42,12 +42,12 @@ class StartableItemService(
         caseDefinitionKey: String? = null,
         caseDefinitionVersionTag: String? = null
     ): List<StartableItemDto> {
-        val document = caseDocumentId?.let {
+        val caseDocument = caseDocumentId?.let {
             runWithoutAuthorization { documentService.get(caseDocumentId.toString()) }
         }
 
-        val caseDefinitionId = if (document != null) {
-            document.definitionId().caseDefinitionId()
+        val caseDefinitionId = if (caseDocument != null) {
+            caseDocument.definitionId().caseDefinitionId()
         } else if (caseDefinitionKey != null && caseDefinitionVersionTag != null) {
             CaseDefinitionId(caseDefinitionKey, Semver(caseDefinitionVersionTag))
         } else if (caseDefinitionKey != null) {
@@ -57,7 +57,7 @@ class StartableItemService(
         }
 
         val allItems = startableItemProviders.flatMap { provider ->
-            provider.getStartableItems(caseDefinitionId, document)
+            provider.getStartableItems(caseDefinitionId, caseDocument)
         }
 
         val sortOrderMap = startableItemRepository

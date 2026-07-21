@@ -2143,7 +2143,9 @@
     "showingResults": "Showing {{number}} of {{total}} results",
     "showingResult": "Showing {{number}} result",
     "automaticallyGenerated": "Automatically generated",
-    "search": "Search..."
+    "search": "Search...",
+    "globalSearchFilter": "Search entire document",
+    "globalSearchFilterPlaceholder": "Search across all document fields..."
   },
   "webcam": {"takePicture": "Take picture", "save": "Save", "redo": "Redo"},
   "customers": {
@@ -3172,7 +3174,8 @@
     "title": "Settings",
     "tabs": {
       "appearance": "Appearance",
-      "featureToggles": "Feature toggles"
+      "featureToggles": "Feature toggles",
+      "opensearch": "OpenSearch"
     },
     "appearance": {
       "logo": {
@@ -3208,6 +3211,13 @@
       }
     },
     "featureToggles": {
+      "searchEngine": {
+        "useOpenSearch": {
+          "title": "Use OpenSearch for case search",
+          "description": "When enabled, case searches use OpenSearch for better performance. When disabled, PostgreSQL is used.",
+          "unavailable": "OpenSearch is not configured for this application."
+        }
+      },
       "refreshRequired": "Refresh required",
       "refreshModalText": "This setting requires a page refresh to take effect. Do you want to refresh now?",
       "refreshNow": "Refresh now",
@@ -3299,6 +3309,64 @@
         "menuCollapsedByDefault": {
           "title": "Menu collapsed by default",
           "description": "Start with the navigation menu collapsed instead of expanded."
+        },
+        "enableGenericCaseList": {
+          "title": "Enable generic case list",
+          "description": "Show a single case list view with a dropdown to switch between case definitions."
+        }
+      }
+    },
+    "opensearch": {
+      "title": "OpenSearch",
+      "reindex": {
+        "title": "Reindex Runs",
+        "description": "Reindex all documents from the database to OpenSearch. This operation runs in the background.",
+        "startButton": "Start Reindex",
+        "startModalTitle": "Start Reindex",
+        "detailTitle": "Run Details",
+        "parameters": "Parameters",
+        "results": "Results",
+        "reindexing": "Reindexing",
+        "pruning": "Pruning",
+        "counts": "Counts",
+        "status": "Status",
+        "processed": "Processed: {{current}} / {{total}}",
+        "skipped": "Skipped",
+        "pruned": "Pruned",
+        "started": "Started",
+        "elapsed": "Elapsed time",
+        "finished": "Finished",
+        "inProgress": "Reindexing in progress...",
+        "errorTitle": "Error",
+        "viewErrorLogs": "View error logs",
+        "pruneOrphans": "Prune orphaned documents",
+        "documentDefinitionName": "Document definition",
+        "documentDefinitionPlaceholder": "All document definitions",
+        "allDocumentDefinitions": "All document definitions",
+        "modifiedBefore": "Modified before",
+        "modifiedAfter": "Modified after",
+        "columns": {
+          "status": "Status",
+          "startedOn": "Started",
+          "finishedOn": "Finished",
+          "progress": "Progress",
+          "documentDefinition": "Document definition"
+        },
+        "noResults": {
+          "title": "No reindex runs",
+          "description": "No reindex runs have been started yet."
+        },
+        "statuses": {
+          "RUNNING": "Running",
+          "COMPLETED": "Completed",
+          "FAILED": "Failed",
+          "STOPPED": "Stopped",
+          "PRUNING": "Pruning orphaned documents"
+        },
+        "pruningProgress": "Removed: {{removed}}",
+        "tooltips": {
+          "pruneOrphans": "Remove entries from OpenSearch that no longer exist in the database",
+          "pruned": "Search entries removed because the original document was deleted"
         }
       }
     }

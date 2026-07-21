@@ -2170,7 +2170,9 @@
     "showingResults": "{{number}} van {{total}} resultaten zichtbaar",
     "showingResult": "{{number}} resultaat zichtbaar",
     "automaticallyGenerated": "Automatisch gegenereerd",
-    "search": "Zoeken..."
+    "search": "Zoeken...",
+    "globalSearchFilter": "Zoek in geheel document",
+    "globalSearchFilterPlaceholder": "Zoek in alle documentvelden..."
   },
   "webcam": {"takePicture": "Foto maken", "save": "Opslaan", "redo": "Opnieuw"},
   "customers": {
@@ -3205,7 +3207,8 @@
     "title": "Instellingen",
     "tabs": {
       "appearance": "Weergave",
-      "featureToggles": "Functie-instellingen"
+      "featureToggles": "Functie-instellingen",
+      "opensearch": "OpenSearch"
     },
     "appearance": {
       "logo": {
@@ -3241,6 +3244,13 @@
       }
     },
     "featureToggles": {
+      "searchEngine": {
+        "useOpenSearch": {
+          "title": "Gebruik OpenSearch voor zaakzoekopdrachten",
+          "description": "Indien ingeschakeld worden zaakzoekopdrachten uitgevoerd met OpenSearch voor betere prestaties. Indien uitgeschakeld wordt PostgreSQL gebruikt.",
+          "unavailable": "OpenSearch is niet geconfigureerd voor deze applicatie."
+        }
+      },
       "refreshRequired": "Vernieuwing vereist",
       "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
       "refreshNow": "Nu vernieuwen",
@@ -3332,6 +3342,64 @@
         "menuCollapsedByDefault": {
           "title": "Menu standaard ingeklapt",
           "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
+        },
+        "enableGenericCaseList": {
+          "title": "Generieke zaaklijst inschakelen",
+          "description": "Toon één zaaklijstweergave met een dropdown om tussen zaakdefinities te wisselen."
+        }
+      }
+    },
+    "opensearch": {
+      "title": "OpenSearch",
+      "reindex": {
+        "title": "Herindexering runs",
+        "description": "Herindexeer alle documenten van de database naar OpenSearch. Deze operatie draait op de achtergrond.",
+        "startButton": "Start herindexering",
+        "startModalTitle": "Start herindexering",
+        "detailTitle": "Run details",
+        "parameters": "Parameters",
+        "results": "Resultaten",
+        "reindexing": "Herindexering",
+        "pruning": "Opschonen",
+        "counts": "Aantallen",
+        "status": "Status",
+        "processed": "Verwerkt: {{current}} / {{total}}",
+        "skipped": "Overgeslagen",
+        "pruned": "Opgeschoond",
+        "started": "Gestart",
+        "elapsed": "Verstreken tijd",
+        "finished": "Voltooid",
+        "inProgress": "Herindexering bezig...",
+        "errorTitle": "Fout",
+        "viewErrorLogs": "Bekijk foutlogs",
+        "pruneOrphans": "Verwijder orphan documenten",
+        "documentDefinitionName": "Documentdefinitie",
+        "documentDefinitionPlaceholder": "Alle documentdefinities",
+        "allDocumentDefinitions": "Alle documentdefinities",
+        "modifiedBefore": "Gewijzigd voor",
+        "modifiedAfter": "Gewijzigd na",
+        "columns": {
+          "status": "Status",
+          "startedOn": "Gestart",
+          "finishedOn": "Voltooid",
+          "progress": "Voortgang",
+          "documentDefinition": "Documentdefinitie"
+        },
+        "noResults": {
+          "title": "Geen herindexering runs",
+          "description": "Er zijn nog geen herindexering runs gestart."
+        },
+        "statuses": {
+          "RUNNING": "Bezig",
+          "COMPLETED": "Voltooid",
+          "FAILED": "Mislukt",
+          "STOPPED": "Gestopt",
+          "PRUNING": "Orphan documenten opschonen"
+        },
+        "pruningProgress": "Verwijderd: {{removed}}",
+        "tooltips": {
+          "pruneOrphans": "Verwijder documenten uit OpenSearch die niet meer in de database bestaan",
+          "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd"
         }
       }
     }
