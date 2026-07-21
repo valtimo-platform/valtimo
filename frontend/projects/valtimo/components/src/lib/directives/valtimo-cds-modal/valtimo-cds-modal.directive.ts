@@ -61,12 +61,54 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
     this.applyStyleToModalElements();
 
     setTimeout(() => this.applyStyleToModalElements(), 0);
+
+    // Capture phase so this runs before Carbon's bubbling keydown HostListener, allowing us to
+    // preempt it. Listening on the document (not the host) makes ESC work regardless of focus.
+    this.document.addEventListener('keydown', this._onDocumentKeydown, true);
   }
 
   public ngOnDestroy(): void {
     this._mutationObserver?.disconnect();
     this.removeDocumentOverflowHidden();
+    this.document.removeEventListener('keydown', this._onDocumentKeydown, true);
   }
+
+  /**
+   * Closes the modal on ESC via the same path as the close (X) button.
+   *
+   * Carbon's built-in ESC handler mutates the modal's `open` field directly (bypassing the `[open]`
+   * binding) and calls `modalService.destroy()`, which can desync state or destroy an unrelated
+   * imperatively-created modal. Instead we preempt it and simulate a click on the close button,
+   * which fires the modal's own `(closeSelect)` handler.
+   */
+  private readonly _onDocumentKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    const visibleModals = this.document.querySelectorAll('.cds--modal.is-visible');
+    if (visibleModals.length === 0) {
+      return;
+    }
+
+    // Only the directive owning the top-most (last rendered) visible modal reacts. Matching the modal
+    // that directly owns the overlay (not merely an ancestor) ensures the correct handler acts when
+    // modals are nested/stacked, so ESC closes only the top modal.
+    const topModal = visibleModals[visibleModals.length - 1];
+    if (topModal.closest('cds-modal') !== this.elementRef.nativeElement) {
+      return;
+    }
+
+    event.stopImmediatePropagation();
+    event.preventDefault();
+
+    // Click this modal's own close (X) button — skipping close buttons of nested modals — so ESC
+    // runs exactly the same handling as the close button. Does nothing if there is no close button.
+    const closeButton = Array.from(
+      this.elementRef.nativeElement.querySelectorAll('.cds--modal-close') as NodeListOf<HTMLElement>
+    ).find(button => button.closest('cds-modal') === this.elementRef.nativeElement);
+    closeButton?.click();
+  };
 
   private handleMutations(mutations: MutationRecord[]): void {
     const OPEN_ATTRIBUTE_NAME = 'ng-reflect-open';
