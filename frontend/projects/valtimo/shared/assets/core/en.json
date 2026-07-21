@@ -46,6 +46,7 @@
     },
     "draftProcessConfirmation": {
       "title": "Start draft process",
+      "content": "Are you sure you want to start this draft process?",
       "warningTitle": "Warning: Draft process",
       "warningDescription": "This process definition is still in draft and may not work as expected.",
       "confirm": "Start anyway",
@@ -145,6 +146,7 @@
         "regularUser": "The document upload is not available for this case. Please contact an administrator",
         "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
       },
+      "maxFilesReached": "The maximum number of files ({{maxFiles}}) has been reached. No more files can be uploaded.",
       "navigateToCaseAdmin": "Configure Zaak",
       "noZaakFoundTitle": "No Zaak found",
       "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
