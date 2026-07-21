@@ -27,6 +27,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot
 import com.ritense.document.domain.impl.searchfield.SearchField
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.repository.SearchFieldRepository
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.document.service.impl.JsonSchemaDocumentService
@@ -102,6 +103,9 @@ abstract class BaseOpenSearchIntegrationTest {
 
     @Autowired
     lateinit var searchEngineToggle: SearchEngineToggle
+
+    @Autowired
+    lateinit var searchFieldRepository: SearchFieldRepository
 
     @BeforeEach
     fun setUpBase() {
