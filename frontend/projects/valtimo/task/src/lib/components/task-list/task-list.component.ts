@@ -56,8 +56,8 @@ import {
   SortState,
   TaskListTab,
 } from '@valtimo/shared';
-import {ColumnConfig, IQuickSearchService, ListHiddenColumn, QUICK_SEARCH_SERVICE, QuickSearchStateService, ViewType} from '@valtimo/components';
-import {DocumentService} from '@valtimo/document';
+import {CarbonTag, ColumnConfig, IQuickSearchService, ListHiddenColumn, QUICK_SEARCH_SERVICE, QuickSearchStateService, ViewType} from '@valtimo/components';
+import {CaseTag, CaseTagsUtils, DocumentService} from '@valtimo/document';
 import {TaskListQuickSearchService} from '../../services/task-list-quick-search.service';
 import {TaskListQuickSearchParams} from '../../models/task-list-quick-search.model';
 import {SseService} from '@valtimo/sse';
@@ -584,6 +584,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
     const MOMENT_FORMAT = 'DD MMM YYYY HH:mm';
 
     if (isSpecified) {
+      const tagColumnKeys = this.taskListColumnService.getTagColumnKeys();
+
       return (tasks as Page<SpecifiedTask>).content.map((specifiedTask, specifiedTaskIndex) =>
         specifiedTask.items.reduce(
           (acc, curr) =>
@@ -602,7 +604,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
                 caseLocked: !canViewCasePermissions[specifiedTaskIndex],
               }),
               ...acc,
-              [curr.key]: curr.value,
+              [curr.key]: tagColumnKeys.includes(curr.key)
+                ? this.mapCaseTagsToCarbonTags(curr.value)
+                : curr.value,
             }) as MappedSpecifiedTask,
           {}
         )
@@ -621,6 +625,15 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
       return taskCopy;
     }) as Task[];
+  }
+
+  private mapCaseTagsToCarbonTags(value: unknown): CarbonTag[] | unknown {
+    if (!Array.isArray(value)) return value;
+
+    return value.map((tag: CaseTag) => ({
+      content: tag.title,
+      type: CaseTagsUtils.getTagTypeFromCaseTagColor(tag.color),
+    }));
   }
 
   private setParamsFromQueryParams(): void {

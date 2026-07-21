@@ -39,6 +39,7 @@ open class OutboxLiquibaseRunner(
     liquibaseProperties: LiquibaseProperties,
     private val datasource: DataSource,
     private val staleLockThresholdMinutes: Int,
+    private val bootstrapEnabled: Boolean = true,
 ) : InitializingBean {
     private val context: Contexts = Contexts(liquibaseProperties.contexts)
 
@@ -47,6 +48,10 @@ open class OutboxLiquibaseRunner(
 
     @Throws(SQLException::class, DatabaseException::class)
     override fun afterPropertiesSet() {
+        if (!bootstrapEnabled) {
+            logger.info { "Bootstrap disabled (valtimo.bootstrap.enabled=false); skipping Outbox Liquibase migrations" }
+            return
+        }
         val connection = datasource.connection
         val jdbcConnection = JdbcConnection(connection)
         val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection)

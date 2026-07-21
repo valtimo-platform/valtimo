@@ -1,20 +1,31 @@
 # 13.37.0
 
 {% hint style="info" %}
-**Release date 15-07-2026**
+**Release date xx-xx-2026**
 {% endhint %}
 
 ## New Features
 
-* **New feature title**
+* **Readiness reflects startup completion**
 
-  New feature explanation.
+  The application now reports itself as ready only after it has finished starting up — running its database migrations
+  and deploying all of its configuration (case definitions, plugins, forms, and so on). In Kubernetes this means a pod
+  only starts receiving traffic once it is fully initialised, which removes a startup race that could cause errors right
+  after a (re)start. See [Kubernetes health probes](../../../running-valtimo/application-configuration/kubernetes-health-probes.md) for how to enable it.
+
+* **Skip startup migrations and deployments per instance**
+
+  A new setting `valtimo.bootstrap.enabled` (on by default) lets an instance start against an already-prepared database
+  without running migrations or deployments again. This is useful when running multiple instances, so only one needs to
+  do the startup work.
 
 ## Enhancements
 
-* **New enhancement title**
+* **Maximum number of files on the Documenten API File Upload component**
 
-  New enhancement explanation.
+  The Documenten API File Upload Form.io component (`documenten-api-file`) now has an optional **Maximum number of
+  files** property, which sets how many files may be uploaded through the component. Leaving the property empty keeps
+  the previous behaviour of no limit.
 
 ## Bugfixes
 
@@ -23,23 +34,17 @@
 
 * **Fixed modal size not persisted for form-flow process links on a start event**
 
-* Fixed the modal size not being saved for form-flow process links on a start event. When configuring a form-flow start
-  form, the chosen display type and modal size are now persisted and applied when the start form opens, instead of
-  reverting to the default medium size.
-  
-* **Long page titles are now truncated with an ellipsis**
+* **Wide lists now scroll horizontally instead of being cut off**
 
-  When a page title is too long to fit in the page header, it is now shown with an ellipsis and the full title
-  appears on hover. This keeps the header action buttons visible regardless of how long the title is. This was
-  most noticeable on the form builder header with long form names.
+  When a list with many columns is wider than the space available, it now scrolls
+  horizontally within its container instead of clipping the columns that do not fit. Previously the content that
+  overflowed was hidden and could not be reached.
 
-## Security
+* **Building block mappings can select whole object nodes again**
 
-* **Case documents can no longer be downloaded from the wrong case**
-
-  When downloading or previewing a case document, the application now checks that the document actually belongs to the
-  case in the request before returning it. Previously this check was only applied when editing or deleting a document,
-  so a signed-in user could retrieve a document from another case by referencing it directly. The read and download
-  paths now enforce the same check.
-
-* Updated several dependencies to address reported vulnerabilities.
+  When configuring a building block call activity, the input target and output source dropdowns only listed
+  individual leaf properties, so a nested object such as `applicantAddress` could no longer be picked as a whole —
+  each underlying field (for example `doc:/applicantAddress/city`) had to be mapped separately. Object and array
+  container nodes are selectable again, so an entire subtree can be mapped in a single mapping (for example
+  `doc:/applicantAddress`) in addition to its individual leaf properties. This restores the behaviour from before
+  nested document property support was introduced in 13.33.0. Existing mappings were unaffected at runtime.

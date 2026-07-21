@@ -187,9 +187,27 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
           }
         );
 
-        // Ensure we bind the value (if it isn't a multiple-value component with no wrapper)
-        if (!this._customAngularElement.value && !this.component.disableMultiValueWrapper) {
-          this.restoreValue();
+        // Ensure we bind the value (if it isn't a multiple-value component with no wrapper).
+        // Use Array.isArray check in the empty condition because ![] is false in JS, meaning
+        // array-type components (emptyValue: []) would never trigger restoreValue() after a
+        // redrawOn:"data" redraw without this explicit empty-array check.
+        const currentValue = this._customAngularElement.value;
+        const hasNoCurrentValue =
+          !currentValue || (Array.isArray(currentValue) && currentValue.length === 0);
+
+        if (hasNoCurrentValue && !this.component.disableMultiValueWrapper) {
+          const storedValue = this.dataValue;
+          if (Array.isArray(storedValue) && storedValue.length > 0) {
+            // Directly set array values instead of calling restoreValue() to avoid
+            // restoreValue()'s defaultValue branch triggering onChange/validation side
+            // effects when the component renders with no data yet (e.g. on initial render).
+            this._customAngularElement.value = storedValue;
+          } else if (!Array.isArray(currentValue)) {
+            // Original behaviour for non-array components.
+            this.restoreValue();
+          }
+          // For array components with no stored data: do nothing — matches original
+          // behaviour where ![] === false prevented restoreValue() from being called.
         }
       }
       return superAttach;
