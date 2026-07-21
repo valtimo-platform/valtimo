@@ -19,6 +19,11 @@
   apart different versions of zaaktypes that share the same description, preventing configuration
   mistakes.
 
+* **Option to keep the form.io token out of localStorage**
+
+  A new `disableFormioTokenInLocalStorage` feature toggle keeps the form.io token in memory only
+  instead of persisting it to localStorage. It is disabled by default.
+
 ## Bugfixes
 
 * **Tag columns in task lists now display their content correctly**

@@ -3246,6 +3246,10 @@
       "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
       "refreshNow": "Nu vernieuwen",
       "toggles": {
+        "disableFormioTokenInLocalStorage": {
+          "title": "Form.io-token niet in localStorage bewaren",
+          "description": "Houd het form.io-token alleen in het geheugen in plaats van het in localStorage te bewaren. Schakel dit alleen in als uw formulieren uitsluitend het Keycloak-token gebruiken en niet afhankelijk zijn van de eigen token-geverifieerde verzoeken van form.io."
+        },
         "allowUserThemeSwitching": {
           "title": "Thema wisselen toestaan",
           "description": "Gebruikers laten schakelen tussen lichte en donkere modus via de bovenbalk."

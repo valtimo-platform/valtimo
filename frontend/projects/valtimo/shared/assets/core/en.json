@@ -3213,6 +3213,10 @@
       "refreshModalText": "This setting requires a page refresh to take effect. Do you want to refresh now?",
       "refreshNow": "Refresh now",
       "toggles": {
+        "disableFormioTokenInLocalStorage": {
+          "title": "Do not store form.io token in localStorage",
+          "description": "Keep the form.io token in memory only instead of persisting it to localStorage. Only enable this when your forms rely solely on the Keycloak token and do not depend on form.io's own token-authenticated requests."
+        },
         "allowUserThemeSwitching": {
           "title": "Allow user theme switching",
           "description": "Let users switch between light and dark mode from the top bar."
