@@ -94,11 +94,11 @@ class DocumentenApiService(
     }
 
     fun getCaseInformatieObjecten(
-        @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID,
+        @LoggableResource(resourceType = JsonSchemaDocument::class) caseDocumentId: UUID,
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable
     ): Page<DocumentInformatieObject> {
-        val documentDefinitionName = valtimoDocumentService.get(documentId.toString()).definitionId().name()
+        val documentDefinitionName = valtimoDocumentService.get(caseDocumentId.toString()).definitionId().name()
         val (pluginConfiguration, plugin, version) = documentenApiVersionService.getPluginVersion(documentDefinitionName)
         check(pluginConfiguration != null && plugin != null) {
             "No Documenten API plugin configured for Case definition '$documentDefinitionName'"
@@ -110,7 +110,7 @@ class DocumentenApiService(
             check(version.sortableColumns.contains(sortColumn.property))
         }
         logger.debug { "Get Case Informatie Objecten $documentSearchRequest" }
-        return plugin.getInformatieObjecten( documentId, documentSearchRequest, pageable)
+        return plugin.getInformatieObjecten(caseDocumentId, documentSearchRequest, pageable)
     }
 
     fun modifyInformatieObject(

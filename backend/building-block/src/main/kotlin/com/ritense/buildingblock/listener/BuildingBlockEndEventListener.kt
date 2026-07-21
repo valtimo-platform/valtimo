@@ -23,8 +23,7 @@ import com.ritense.buildingblock.processlink.domain.BuildingBlockSyncTiming
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkService
 import com.ritense.document.service.DocumentService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentIdOrNull
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valueresolver.ValueResolverService
@@ -38,7 +37,6 @@ import org.springframework.stereotype.Component
 class BuildingBlockEndEventListener(
     private val buildingBlockInstanceService: BuildingBlockInstanceService,
     private val caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
-    private val processDocumentService: ProcessDocumentService,
     private val documentService: DocumentService,
     private val valueResolverService: ValueResolverService,
 ) {
@@ -53,10 +51,9 @@ class BuildingBlockEndEventListener(
         if (execution.parentId != null && execution.parentId != execution.processInstanceId) {
             return
         }
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
+        val documentId = execution.getJsonSchemaDocumentIdOrNull()
             ?: return
-        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(documentId.id)
+        val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(documentId)
             ?: return
         // BBs started via a call activity are synced by BuildingBlockCallActivityListener.onCallActivityEnd
         if (buildingBlockInstance.callerProcessDefinitionId != null) {

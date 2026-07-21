@@ -465,7 +465,7 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseExporter::class)
     fun caseExporter(
         caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
-        documentSearchService: JsonSchemaDocumentSearchService,
+        documentSearchService: DocumentSearchService,
         outboxService: OutboxService,
         mapper: ObjectMapper,
         caseListRowMapper: CaseListRowMapper
