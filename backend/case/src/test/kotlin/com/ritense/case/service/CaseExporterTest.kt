@@ -30,7 +30,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.search.SearchWithConfigRequest
-import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
+import com.ritense.document.service.DocumentSearchService
 import com.ritense.outbox.OutboxService
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
@@ -58,7 +58,7 @@ import kotlin.text.Charsets.UTF_8
 
 class CaseExporterTest : BaseTest() {
     private lateinit var caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository
-    private lateinit var documentSearchService: JsonSchemaDocumentSearchService
+    private lateinit var documentSearchService: DocumentSearchService
     private lateinit var outboxService: OutboxService
     private lateinit var mapper: ObjectMapper
     private lateinit var caseListRowMapper: CaseListRowMapper

@@ -6,15 +6,20 @@
 
 ## New Features
 
-* **New feature title**
+* **Global search**
 
-  New feature explanation.
+  A new global search feature allows users to search across all cases from a single search field. Users can find cases
+  by any text in their document content without knowing which specific field contains the information. Results are
+  filtered by the user's permissions.
+
+* **OpenSearch for document search**
+
+  Case list search and global document queries can now use OpenSearch as the search engine instead of PostgreSQL.
+  OpenSearch provides faster full-text search and scales better for large document volumes. The feature is opt-in
+  and PostgreSQL remains the source of truth. OpenSearch acts as a derived read model that syncs automatically.
+  See [OpenSearch search](../../../running-valtimo/application-configuration/opensearch.md) for setup instructions.
 
 ## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
 
 ## Bugfixes
 
@@ -39,3 +44,6 @@
   a building block. Previously, it incorrectly resolved to the building block's own document. This
   allows building block forms to read case metadata like `case:assigneeFullName` or `case:internalStatus`.
   Writing `case:` values from within a building block is not supported and will throw an error.
+  
+* ZGW document actions such as **view** and **modify** could be incorrectly disabled for documents uploaded from a
+  building block process.

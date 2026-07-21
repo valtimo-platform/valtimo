@@ -88,7 +88,7 @@ class DocumentTableValueResolver(
 
     private fun createResolver(document: Document): Function<String, Any?> {
         return Function { requestedValue ->
-            when (requestedValue) {
+            when (requestedValue.replace('/', '.').trim('.')) {
                 "assigneeFullName" -> document.assigneeFullName()
                 "assigneeId" -> document.assigneeId()
                 "assignedTeamKey" -> document.assignedTeamKey()
@@ -113,7 +113,7 @@ class DocumentTableValueResolver(
 
     private fun handleValues(documentId: Document.Id, values: Map<String, Any?>) {
         values.entries.forEach { (key, value) ->
-            when (key) {
+            when (key.replace('/', '.').trim('.')) {
                 "assigneeId" -> if (value != null) {
                     documentService.assignUserToDocument(documentId.id, value.toString())
                 } else {
@@ -136,8 +136,8 @@ class DocumentTableValueResolver(
             "createdBy",
             "createdOn",
             "retentionDate",
-            "definitionId.name",
-            "definitionId.version",
+            "definitionId.key",
+            "definitionId.versionTag",
             "documentDefinitionId",
             "documentDefinitionId.name",
             "id",

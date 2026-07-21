@@ -77,7 +77,7 @@ class BuildingBlockDocumentTableValueResolver(
 
     private fun createResolver(document: Document): Function<String, Any?> {
         return Function { requestedValue ->
-            when (requestedValue) {
+            when (requestedValue.replace('/', '.').trim('.')) {
                 "createdOn" -> document.createdOn()
                 "documentDefinitionId" -> document.definitionId()
                 "documentDefinitionId.name" -> document.definitionId().name()
@@ -95,8 +95,8 @@ class BuildingBlockDocumentTableValueResolver(
     companion object {
         val TABLE_COLUMN_LIST = listOf(
             "createdOn",
-            "definitionId.name",
-            "definitionId.version",
+            "definitionId.key",
+            "definitionId.versionTag",
             "documentDefinitionId",
             "documentDefinitionId.name",
             "id",
