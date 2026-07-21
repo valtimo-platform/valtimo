@@ -243,7 +243,15 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
         return;
       }
       for (const key in this.component.customOptions) {
-        if (this.component.customOptions.hasOwnProperty(key)) {
+        // Reject dangerous keys to prevent prototype pollution. customOptions can be
+        // manipulated through form schemas or calculateValue expressions, so a key like
+        // __proto__/constructor/prototype must never be assigned onto the element.
+        if (
+          Object.prototype.hasOwnProperty.call(this.component.customOptions, key) &&
+          key !== '__proto__' &&
+          key !== 'constructor' &&
+          key !== 'prototype'
+        ) {
           this._customAngularElement[key] = this.component.customOptions[key];
         }
       }
