@@ -16,3 +16,4 @@
 
 export * from './accent-colors.model';
 export * from './feature-toggle.model';
+export * from './menu-configuration.model';
