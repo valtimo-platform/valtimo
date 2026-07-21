@@ -25,6 +25,55 @@
             "input": true
         },
         {
+            "label": "Trigger redraw",
+            "description": "Typing here changes the form data, which redraws the file upload below (redrawOn: data). The uploaded file must remain visible and the submit button must stay enabled after the redraw.",
+            "tableView": true,
+            "key": "redrawTrigger",
+            "type": "textfield",
+            "input": true,
+            "attributes": {
+                "data-testid": "validate-request-redraw-trigger"
+            }
+        },
+        {
+            "key": "pv.bezwaarDocumenten",
+            "type": "documenten-api-file",
+            "input": true,
+            "label": "Upload bezwaar document",
+            "tableView": false,
+            "redrawOn": "data",
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "validate-request-pv.bezwaarDocumenten"
+            },
+            "customOptions": {
+                "title": "",
+                "author": "",
+                "camera": false,
+                "status": "definitief",
+                "filename": "",
+                "language": "nld",
+                "subtitle": "",
+                "hideTitle": false,
+                "description": "Bezwaar",
+                "maxFileSize": 1,
+                "documentType": "test",
+                "disableAuthor": false,
+                "disableStatus": false,
+                "documentTitle": "Bezwaar",
+                "disableFilename": false,
+                "disableLanguage": false,
+                "hideMaxFileSize": false,
+                "disableDescription": false,
+                "disableDocumentType": false,
+                "confidentialityLevel": "zaakvertrouwelijk",
+                "disableDocumentTitle": false,
+                "disableConfidentialityLevel": false
+            }
+        },
+        {
             "type": "button",
             "label": "Submit",
             "key": "submit",
