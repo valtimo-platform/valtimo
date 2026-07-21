@@ -12,9 +12,12 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Zaaktype dropdown now shows the begin and end date**
 
-  New enhancement explanation.
+  The 'Gekoppeld zaak type' dropdown in the case type link configuration now shows the start and end
+  date of each zaaktype between parentheses, next to its description. This makes it possible to tell
+  apart different versions of zaaktypes that share the same description, preventing configuration
+  mistakes.
 
 ## Bugfixes
 

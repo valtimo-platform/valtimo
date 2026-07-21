@@ -18,6 +18,8 @@ export interface ZaakType {
   url: string;
   omschrijving: string;
   omschrijvingGeneriek?: string;
+  beginGeldigheid?: string;
+  eindeGeldigheid?: string;
 }
 
 export interface InformatieObjectType {

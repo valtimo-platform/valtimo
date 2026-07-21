@@ -1891,6 +1891,7 @@
     "autoCreateForCase": "Automatically create for each case",
     "selectZaakTypeForCase": "Select zaak type for case",
     "selectZaakType": "Select zaak type",
+    "present": "present",
     "selectZakenApiPluginForCase": "Select Zaken Api plugin for case",
     "selectZakenApiPlugin": "Select Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
