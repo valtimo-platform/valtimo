@@ -196,7 +196,7 @@ object GetJsonSchemaDocumentHelper {
     }
 
     private fun String?.toUUIDOrNull(): UUID? {
-        return if (this != null && UUID_REGEX.toRegex().matchEntire(this) != null) {
+        return if (this != null && UUID_REGEX.matches(this)) {
             UUID.fromString(this)
         } else {
             null
@@ -205,5 +205,7 @@ object GetJsonSchemaDocumentHelper {
 
     private fun String?.toUUID(): UUID = toUUIDOrNull() ?: error("Failed to parse UUID from '$this'.")
 
-    const val UUID_REGEX = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    const val UUID_REGEX_PATTERN = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    @JvmField
+    val UUID_REGEX = UUID_REGEX_PATTERN.toRegex()
 }

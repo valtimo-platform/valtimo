@@ -391,7 +391,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             .orElseThrow(() -> new RuntimeException("Process instance not found by id " + processInstanceId))
             .getBusinessKey();
 
-        if (businessKey != null && businessKey.matches(GetJsonSchemaDocumentHelper.UUID_REGEX)) {
+        if (businessKey != null && GetJsonSchemaDocumentHelper.UUID_REGEX.matches(businessKey)) {
             return JsonSchemaDocumentId.existingId(UUID.fromString(businessKey));
         }
 

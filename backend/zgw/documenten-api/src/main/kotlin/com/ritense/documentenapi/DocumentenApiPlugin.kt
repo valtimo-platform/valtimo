@@ -53,6 +53,7 @@ import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
 import com.ritense.resource.domain.VirusScanStatus
 import com.ritense.temporaryresource.domain.StorageMetadataKeys
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.upload.VirusDetectedException
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
@@ -87,7 +88,8 @@ class DocumentenApiPlugin(
     private val pluginService: PluginService,
     private val runtimeService: OperatonRuntimeService,
     private val virusScanService: VirusScanService,
-    private val virusScanEnabledForDocumentenApiPlugin: Boolean
+    private val virusScanEnabledForDocumentenApiPlugin: Boolean,
+    private val caseDocumentResolver: CaseDocumentResolver,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -220,8 +222,8 @@ class DocumentenApiPlugin(
         @PluginActionProperty processVariableName: String? = null
     ): String {
         val documentUrl = resolveDownloadDocumentUrl(execution)
-        val caseDocumentId = execution.getJsonSchemaDocumentId()
-
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
         val metaData = client.getInformatieObject(
             authenticationPluginConfiguration,
             caseDocumentId,
@@ -355,7 +357,8 @@ class DocumentenApiPlugin(
         @PluginActionProperty objectType: String,
     ): ObjectInformatieObject {
         requireObjectInformatieObjectenSupport()
-        val caseDocumentId = execution.getJsonSchemaDocumentId()
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
         val documentUrl = execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?
             ?: throw IllegalStateException("Failed to link document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
 
@@ -394,7 +397,8 @@ class DocumentenApiPlugin(
         @PluginActionProperty objectInformatieObjectUrl: String,
     ) {
         requireObjectInformatieObjectenSupport()
-        val caseDocumentId = execution.getJsonSchemaDocumentId()
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
 
         withLoggingContext(
             "OBJECT_INFORMATIE_OBJECT" to objectInformatieObjectUrl
@@ -494,7 +498,8 @@ class DocumentenApiPlugin(
             }
         } ?: (inhoudAsInputStream to metadata)
 
-        val caseDocumentId = execution.getJsonSchemaDocumentId()
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
 
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
             vertrouwelijkheidaanduiding ?: getUploadField(
@@ -545,12 +550,12 @@ class DocumentenApiPlugin(
         )
         applicationEventPublisher.publishEvent(event)
         execution.setVariable(storedDocumentKey, documentCreateResult.url)
-        val documentId = documentCreateResult.url.substringAfterLast('/')
-        execution.setVariable(DOCUMENT_ID_PROCESS_VAR, documentId)
+        val documentApiDocumentId = documentCreateResult.url.substringAfterLast('/')
+        execution.setVariable(DOCUMENT_ID_PROCESS_VAR, documentApiDocumentId)
         try {
             val test = URI.create(documentCreateResult.url)
             val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(test)
-            execution.setVariable(DOWNLOAD_URL_PROCESS_VAR, createDownloadUrl(pluginConfiguration.id.id, documentId))
+            execution.setVariable(DOWNLOAD_URL_PROCESS_VAR, createDownloadUrl(pluginConfiguration.id.id, documentApiDocumentId))
         } catch (e: Exception) {
             throw IllegalStateException(
                 "Failed to set the $DOWNLOAD_URL_PROCESS_VAR variable in the DelegateExecution", e
