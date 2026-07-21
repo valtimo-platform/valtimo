@@ -238,7 +238,7 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
     }
 
     // Push the (possibly calculateValue-mutated) customOptions to the Angular element.
-    private bindCustomOptions(): void {
+    public bindCustomOptions(): void {
       if (!this._customAngularElement) {
         return;
       }
