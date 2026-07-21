@@ -56,6 +56,7 @@ export class PluginManager {
   private kvRepository: KvRepository;
   private logRepository: LogRepository;
   private allowHttp: boolean;
+  private allowPrivateNetwork: boolean;
 
   constructor(
     storageDir: string,
@@ -63,7 +64,8 @@ export class PluginManager {
     configRepository: ConfigRepository,
     kvRepository: KvRepository,
     logRepository: LogRepository,
-    allowHttp: boolean = false
+    allowHttp: boolean = false,
+    allowPrivateNetwork: boolean = false
   ) {
     this.storageDir = storageDir;
     this.logger = logger.child({ component: "PluginManager" });
@@ -71,6 +73,7 @@ export class PluginManager {
     this.kvRepository = kvRepository;
     this.logRepository = logRepository;
     this.allowHttp = allowHttp;
+    this.allowPrivateNetwork = allowPrivateNetwork;
   }
 
   private key(pluginId: string, version: string): string {
@@ -234,7 +237,12 @@ export class PluginManager {
           gzac_api: createGzacApiHostFunction(this.logger),
           kv: createKvHostFunction(this.logger, this.kvRepository),
           log: createLogHostFunction(this.logger, this.logRepository),
-          http_request: createHttpRequestHostFunction(this.logger, this.logRepository, this.allowHttp),
+          http_request: createHttpRequestHostFunction(
+            this.logger,
+            this.logRepository,
+            this.allowHttp,
+            this.allowPrivateNetwork
+          ),
         },
       },
     });

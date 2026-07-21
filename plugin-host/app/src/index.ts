@@ -114,13 +114,17 @@ async function main(): Promise<void> {
 
   // Initialize plugin manager and config registry
   const allowHttp = (process.env.HOST_ALLOW_HTTP ?? "").toLowerCase() === "true";
+  // Lets http_request reach loopback/private-network targets. Local development only — in
+  // production this would let a plugin use the host as a proxy into the internal network (SSRF).
+  const allowPrivateNetwork = (process.env.HOST_ALLOW_PRIVATE_NETWORK ?? "").toLowerCase() === "true";
   const pluginManager = new PluginManager(
     config.PLUGIN_STORAGE_DIR,
     fastify.log,
     configRepository,
     kvRepository,
     logRepository,
-    allowHttp
+    allowHttp,
+    allowPrivateNetwork
   );
   const configRegistry = new ConfigRegistry(configRepository);
 
