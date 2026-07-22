@@ -18,17 +18,15 @@ package com.ritense.processdocument.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.service.DocumentService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.logging.LoggableResource
 import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto
 import com.ritense.processdocument.event.ProcessVariableInspectionEditedEvent
 import com.ritense.processdocument.service.BuildingBlockProcessLookup
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.service.ProcessInstanceCaseAccessService
 import com.ritense.processdocument.web.rest.dto.JobInspectionDto
 import com.ritense.processdocument.web.rest.dto.ProcessInstanceInspectionDto
 import com.ritense.processdocument.web.rest.dto.TaskInspectionDto
@@ -57,7 +55,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -65,8 +62,7 @@ import java.util.UUID
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class ProcessInspectionResource(
-    private val documentService: DocumentService,
-    private val authorizationService: AuthorizationService,
+    private val caseAccessService: ProcessInstanceCaseAccessService,
     private val processDocumentAssociationService: ProcessDocumentAssociationService,
     private val runtimeService: RuntimeService,
     private val historyService: HistoryService,
@@ -81,7 +77,7 @@ class ProcessInspectionResource(
     fun getProcessInspection(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID
     ): ResponseEntity<List<ProcessInstanceInspectionDto>> {
-        loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT)
+        caseAccessService.loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT)
 
         val instances = runWithoutAuthorization {
             processDocumentAssociationService.findProcessDocumentInstanceDtos(
@@ -102,9 +98,9 @@ class ProcessInspectionResource(
         @PathVariable processInstanceId: String,
         @RequestBody @Valid request: ProcessVariableMutationRequest,
     ): ResponseEntity<Void> {
-        loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
-        requireBelongsToCase(caseId, processInstanceId)
-        requireActive(processInstanceId)
+        caseAccessService.loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
+        caseAccessService.requireBelongsToCase(caseId, processInstanceId)
+        caseAccessService.requireActive(processInstanceId)
 
         val existing = runWithoutAuthorization {
             findVariableInstance(processInstanceId, request.name())
@@ -136,9 +132,9 @@ class ProcessInspectionResource(
         @PathVariable name: String,
         @RequestBody @Valid request: ProcessVariableMutationRequest,
     ): ResponseEntity<Void> {
-        loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
-        requireBelongsToCase(caseId, processInstanceId)
-        requireActive(processInstanceId)
+        caseAccessService.loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
+        caseAccessService.requireBelongsToCase(caseId, processInstanceId)
+        caseAccessService.requireActive(processInstanceId)
 
         val previousInstance = runWithoutAuthorization {
             findVariableInstance(processInstanceId, name)
@@ -167,9 +163,9 @@ class ProcessInspectionResource(
         @PathVariable processInstanceId: String,
         @PathVariable name: String,
     ): ResponseEntity<Void> {
-        loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
-        requireBelongsToCase(caseId, processInstanceId)
-        requireActive(processInstanceId)
+        caseAccessService.loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
+        caseAccessService.requireBelongsToCase(caseId, processInstanceId)
+        caseAccessService.requireActive(processInstanceId)
 
         val previousInstance = runWithoutAuthorization {
             findVariableInstance(processInstanceId, name)
@@ -192,59 +188,11 @@ class ProcessInspectionResource(
         return ResponseEntity.noContent().build()
     }
 
-    private fun loadAndAuthorize(
-        caseId: UUID,
-        action: com.ritense.authorization.Action<JsonSchemaDocument>,
-    ): JsonSchemaDocument {
-        val document = runWithoutAuthorization {
-            documentService.findBy(JsonSchemaDocumentId.existingId(caseId)).orElseThrow()
-        } as JsonSchemaDocument
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                JsonSchemaDocument::class.java,
-                action,
-                document,
-            )
-        )
-
-        return document
-    }
-
-    private fun requireBelongsToCase(caseId: UUID, processInstanceId: String) {
-        val belongs = runWithoutAuthorization {
-            processDocumentAssociationService.findProcessDocumentInstanceDtos(
-                JsonSchemaDocumentId.existingId(caseId)
-            )
-        }.any { (it as ProcessDocumentInstanceDto).processDocumentInstanceId().processInstanceId().toString() == processInstanceId }
-
-        if (!belongs) {
-            throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Process instance $processInstanceId is not associated with case $caseId"
-            )
-        }
-    }
-
     private fun findVariableInstance(processInstanceId: String, name: String) =
         runtimeService.createVariableInstanceQuery()
             .processInstanceIdIn(processInstanceId)
             .variableName(name)
             .singleResult()
-
-    private fun requireActive(processInstanceId: String) {
-        val active = runWithoutAuthorization {
-            runtimeService.createProcessInstanceQuery()
-                .processInstanceId(processInstanceId)
-                .singleResult()
-        }
-        if (active == null) {
-            throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Process instance $processInstanceId is not active"
-            )
-        }
-    }
 
     private fun publishEvent(
         caseId: UUID,

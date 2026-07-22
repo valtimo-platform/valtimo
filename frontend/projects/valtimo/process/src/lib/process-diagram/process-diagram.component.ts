@@ -24,10 +24,12 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {ProcessService} from '../process.service';
+import {SkippableTimer} from '../models';
 
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
@@ -43,11 +45,18 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   private bpmnViewer: NavigatedViewer;
   private heatMapInstance: any;
+  private _imported = false;
+  private _skipOverlayIds: string[] = [];
 
   @ViewChild('ref', {static: true}) public el: ElementRef;
   @Output() public importDone: EventEmitter<any> = new EventEmitter();
+  @Output() public skipTimerEvent: EventEmitter<SkippableTimer> = new EventEmitter();
   @Input() public processDefinitionKey?: string;
   @Input() public processInstanceId?: string;
+  @Input() public skippableTimers: SkippableTimer[] = [];
+  @Input() public canSkipTimer = false;
+  @Input() public skipTimerLabel = 'Skip timer';
+  @Input() public reloadToken?: number;
 
   public processDiagram: any;
   public processDefinition: any;
@@ -91,6 +100,9 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
           });
         }
 
+        this._imported = true;
+        this.renderSkipTimerOverlays();
+
         canvas.zoom('fit-viewport', 'auto');
         if (this.processDefinitionVersions) {
           eventBus.on('canvas.init', () => {
@@ -112,11 +124,21 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  ngOnChanges(): void {
-    if (this.processDefinitionKey) {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['processDefinitionKey'] && this.processDefinitionKey) {
       this.loadProcessDefinitionFromKey(this.processDefinitionKey);
-    } else if (this.processInstanceId) {
+    } else if (changes['processInstanceId'] && this.processInstanceId) {
       this.loadProcessInstanceXml(this.processInstanceId);
+    } else if (
+      changes['reloadToken'] &&
+      !changes['reloadToken'].firstChange &&
+      this.processInstanceId
+    ) {
+      this.loadProcessInstanceXml(this.processInstanceId);
+    }
+
+    if (changes['skippableTimers'] || changes['canSkipTimer']) {
+      this.renderSkipTimerOverlays();
     }
   }
 
@@ -154,10 +176,61 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private loadProcessInstanceXml(processInstanceId) {
+    this._imported = false;
     this.processService.getProcessXml(processInstanceId).subscribe(response => {
       this.processDiagram = response;
       this.bpmnViewer.importXML(this.processDiagram.bpmn20Xml);
       this.bpmnViewer.attachTo(this.el.nativeElement);
+    });
+  }
+
+  private renderSkipTimerOverlays(): void {
+    if (!this.bpmnViewer || !this._imported) {
+      return;
+    }
+
+    const overlays = this.bpmnViewer.get('overlays') as any;
+    this._skipOverlayIds.forEach(overlayId => {
+      try {
+        overlays.remove(overlayId);
+      } catch {
+        // overlay already gone (e.g. after a diagram re-import); ignore
+      }
+    });
+    this._skipOverlayIds = [];
+
+    if (!this.canSkipTimer || !this.skippableTimers?.length) {
+      return;
+    }
+
+    this.skippableTimers.forEach(timer => {
+      if (!timer.activityId) {
+        return;
+      }
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'valtimo-skip-timer-overlay';
+      button.title = this.skipTimerLabel;
+      button.setAttribute('aria-label', this.skipTimerLabel);
+      button.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" focusable="false">' +
+        '<path fill="currentColor" d="M8 26V6l14 10L8 26z M24 6h2v20h-2z"/></svg>';
+      button.addEventListener('click', (event: MouseEvent) => {
+        event.stopPropagation();
+        this.skipTimerEvent.emit(timer);
+      });
+
+      try {
+        const overlayId = overlays.add(timer.activityId, {
+          position: {top: -14, right: 14},
+          show: {minZoom: 0, maxZoom: 5.0},
+          html: button,
+        });
+        this._skipOverlayIds.push(overlayId);
+      } catch {
+        // activity not present in the rendered diagram; nothing to attach to
+      }
     });
   }
 

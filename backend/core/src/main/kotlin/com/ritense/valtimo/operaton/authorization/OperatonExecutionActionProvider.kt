@@ -22,11 +22,14 @@ import com.ritense.valtimo.operaton.domain.OperatonExecution
 
 class OperatonExecutionActionProvider : ResourceActionProvider<OperatonExecution> {
     override fun getAvailableActions(): List<Action<OperatonExecution>> {
-        return listOf(CREATE)
+        return listOf(CREATE, MODIFY)
     }
 
     companion object {
         @JvmField
         val CREATE = Action<OperatonExecution>(Action.CREATE)
+
+        @JvmField
+        val MODIFY = Action<OperatonExecution>(Action.MODIFY)
     }
 }

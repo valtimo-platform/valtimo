@@ -14,7 +14,7 @@ Access to the processes can be configured through access control. More informati
 
 ### Resources and actions
 
-<table><thead><tr><th width="329">Resource type</th><th width="143">Action</th><th>Effect</th></tr></thead><tbody><tr><td><code>com.ritense.valtimo.operaton.domain.OperatonExecution</code></td><td><code>create</code></td><td>Allows creating an execution for a process definition.</td></tr><tr><td><code>com.ritense.valtimo.operaton.domain.OperatonProcessDefinition</code></td><td>-</td><td>-</td></tr></tbody></table>
+<table><thead><tr><th width="329">Resource type</th><th width="143">Action</th><th>Effect</th></tr></thead><tbody><tr><td><code>com.ritense.valtimo.operaton.domain.OperatonExecution</code></td><td><code>create</code></td><td>Allows creating an execution for a process definition.</td></tr><tr><td></td><td><code>modify</code></td><td>Allows modifying a running process execution, such as skipping a waiting timer from the case Progress tab.</td></tr><tr><td><code>com.ritense.valtimo.operaton.domain.OperatonProcessDefinition</code></td><td>-</td><td>-</td></tr></tbody></table>
 
 Process definitions have no actions currently. As a result, they can only be used as part of container conditions. See the [example below](./#permission-to-start-a-process-for-one-specific-process-definition) on how to use this.
 

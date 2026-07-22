@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,27 @@
 
 import {Component} from '@angular/core';
 import {ActivatedRoute, ParamMap} from '@angular/router';
+import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, LoadedValue, ProcessDocumentInstance} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, map, Observable, startWith, switchMap, tap} from 'rxjs';
+import {SkippableTimer} from '@valtimo/process';
+import {GlobalNotificationService} from '@valtimo/shared';
+import {TranslateService} from '@ngx-translate/core';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {ListItem} from 'carbon-components-angular/dropdown';
+import {CaseProcessTimerService} from '../../../../services';
+import {CAN_MODIFY_EXECUTION_PERMISSION} from '../../../../permissions';
 
 @Component({
   standalone: false,
@@ -27,6 +45,11 @@ import {ListItem} from 'carbon-components-angular/dropdown';
   styleUrls: ['./progress.component.scss'],
 })
 export class CaseDetailTabProgressComponent {
+  private readonly _documentId$: Observable<string | null> = this.route.paramMap.pipe(
+    map((params: ParamMap) => params.get('documentId')),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
   private readonly processDocumentInstances$: Observable<Array<ProcessDocumentInstance>> =
     this.route.paramMap.pipe(
       switchMap((params: ParamMap) =>
@@ -81,14 +104,86 @@ export class CaseDetailTabProgressComponent {
       startWith({isLoading: true})
     );
 
+  public readonly canSkipTimer$: Observable<boolean> = this.permissionService
+    .requestPermission(CAN_MODIFY_EXECUTION_PERMISSION)
+    .pipe(startWith(false), shareReplay({bufferSize: 1, refCount: true}));
+
+  public readonly diagramReloadToken$ = new BehaviorSubject<number>(0);
+  public readonly showSkipConfirm$ = new BehaviorSubject<boolean>(false);
+
+  private readonly _reloadTimers$ = new BehaviorSubject<void>(undefined);
+  public readonly skippableTimers$: Observable<Array<SkippableTimer>> = combineLatest([
+    this._documentId$,
+    this.selectedProcessInstanceId$,
+    this.canSkipTimer$,
+    this._reloadTimers$,
+  ]).pipe(
+    switchMap(([documentId, processInstanceId, canSkipTimer]) => {
+      if (!documentId || !processInstanceId || !canSkipTimer) {
+        return of<Array<SkippableTimer>>([]);
+      }
+      return this.caseProcessTimerService.getSkippableTimers(documentId, processInstanceId).pipe(
+        map(jobs => jobs.map(job => ({jobId: job.id, activityId: job.activityId}))),
+        catchError(() => of<Array<SkippableTimer>>([]))
+      );
+    }),
+    startWith<Array<SkippableTimer>>([])
+  );
+
+  private readonly _pendingSkip$ = new BehaviorSubject<SkippableTimer | null>(null);
+
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly caseProcessTimerService: CaseProcessTimerService,
+    private readonly permissionService: PermissionService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly translateService: TranslateService
   ) {}
 
-  public loadProcessInstance(processInstanceId: string) {
+  public loadProcessInstance(processInstanceId: string): void {
     if (!!processInstanceId) {
       this.selectedProcessInstanceId$.next(processInstanceId);
     }
+  }
+
+  public onRequestSkipTimer(timer: SkippableTimer): void {
+    this._pendingSkip$.next(timer);
+    this.showSkipConfirm$.next(true);
+  }
+
+  public onConfirmSkipTimer(): void {
+    this.showSkipConfirm$.next(false);
+    const timer = this._pendingSkip$.value;
+    const processInstanceId = this.selectedProcessInstanceId$.value;
+
+    this._documentId$.pipe(take(1)).subscribe(documentId => {
+      if (!timer || !documentId || !processInstanceId) {
+        this._pendingSkip$.next(null);
+        return;
+      }
+
+      this.caseProcessTimerService.skipTimer(documentId, processInstanceId, timer.jobId).subscribe({
+        next: () => {
+          this.notificationService.showToast({
+            type: 'success',
+            title: this.translateService.instant('progress.skipTimer.successToast'),
+            message: '',
+          });
+          this._pendingSkip$.next(null);
+          this._reloadTimers$.next();
+          this.diagramReloadToken$.next(this.diagramReloadToken$.value + 1);
+        },
+        // HTTP failures are surfaced globally by HttpErrorInterceptor; only reset local state here.
+        error: () => {
+          this._pendingSkip$.next(null);
+        },
+      });
+    });
+  }
+
+  public onCancelSkipTimer(): void {
+    this.showSkipConfirm$.next(false);
+    this._pendingSkip$.next(null);
   }
 }

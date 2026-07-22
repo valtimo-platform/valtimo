@@ -44,14 +44,17 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentCaseLogScopeContributor;
 import com.ritense.processdocument.service.ProcessDocumentService;
+import com.ritense.processdocument.service.ProcessInstanceCaseAccessService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
 import com.ritense.processdocument.web.rest.LogInspectionResource;
 import com.ritense.processdocument.web.rest.ProcessDocumentResource;
 import com.ritense.processdocument.web.rest.ProcessInspectionResource;
+import com.ritense.processdocument.web.rest.ProcessTimerResource;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.document.CaseDocumentResolver;
+import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
@@ -188,10 +191,25 @@ public class ProcessDocumentAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ProcessInspectionResource.class)
-    public ProcessInspectionResource processInspectionResource(
+    @ConditionalOnMissingBean(ProcessInstanceCaseAccessService.class)
+    public ProcessInstanceCaseAccessService processInstanceCaseAccessService(
         DocumentService documentService,
         AuthorizationService authorizationService,
+        ProcessDocumentAssociationService processDocumentAssociationService,
+        RuntimeService runtimeService
+    ) {
+        return new ProcessInstanceCaseAccessService(
+            documentService,
+            authorizationService,
+            processDocumentAssociationService,
+            runtimeService
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessInspectionResource.class)
+    public ProcessInspectionResource processInspectionResource(
+        ProcessInstanceCaseAccessService processInstanceCaseAccessService,
         ProcessDocumentAssociationService processDocumentAssociationService,
         RuntimeService runtimeService,
         HistoryService historyService,
@@ -202,8 +220,7 @@ public class ProcessDocumentAutoConfiguration {
         ObjectMapper objectMapper
     ) {
         return new ProcessInspectionResource(
-            documentService,
-            authorizationService,
+            processInstanceCaseAccessService,
             processDocumentAssociationService,
             runtimeService,
             historyService,
@@ -212,6 +229,24 @@ public class ProcessDocumentAutoConfiguration {
             buildingBlockProcessLookup.orElse(null),
             eventPublisher,
             objectMapper
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessTimerResource.class)
+    public ProcessTimerResource processTimerResource(
+        ProcessInstanceCaseAccessService processInstanceCaseAccessService,
+        AuthorizationService authorizationService,
+        OperatonExecutionRepository operatonExecutionRepository,
+        ManagementService managementService,
+        ApplicationEventPublisher eventPublisher
+    ) {
+        return new ProcessTimerResource(
+            processInstanceCaseAccessService,
+            authorizationService,
+            operatonExecutionRepository,
+            managementService,
+            eventPublisher
         );
     }
 

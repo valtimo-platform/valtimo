@@ -15,7 +15,8 @@
     "BesluitAddedEvent": "Decision added > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "The assignee has been changed to {{assigneeName}}",
     "DocumentUnassignedEvent": "The assignee has been unassigned",
-    "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
+    "TaskDueDateSetEvent": "Task due date set > {{taskName}}",
+    "ProcessTimerSkippedEvent": "Timer skipped > {{activityId}}"
   },
   "case": {
     "allCases": "All cases",
@@ -552,7 +553,14 @@
     "startedBy": "Started by",
     "startedOn": "Started on",
     "system": "System",
-    "of": "of"
+    "of": "of",
+    "skipTimer": {
+      "action": "Skip timer",
+      "confirmTitle": "Skip timer",
+      "confirmContent": "Are you sure you want to skip this timer? The process will continue as if the timer had elapsed. This cannot be undone.",
+      "confirmButton": "Skip",
+      "successToast": "Timer skipped"
+    }
   },
   "dashboard": {
     "openTasks": {"title": "All tasks"},
