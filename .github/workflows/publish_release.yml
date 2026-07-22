@@ -311,5 +311,5 @@ jobs:
               --base next-minor \
               --head "$NEW_BRANCH" \
               --title "Add release notes skeleton for ${NEXT_VERSION}" \
-              --body "Release notes skeleton for ${NEXT_VERSION} and merge-back of ${STABLE}. Don't squash!"
+              --body "Don't squash!"
           fi
