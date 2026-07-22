@@ -236,10 +236,13 @@ class PluginService(
                 Regex("\\$\\{([^\\}]+)\\}").findAll(value)
                     .map { it.groupValues }
                     .forEach { (placeholder, placeholderValue) ->
-                        val resolvedValue = environment.getProperty(placeholderValue)
-                            ?: System.getenv(placeholderValue)
-                            ?: System.getProperty(placeholderValue)
-                            ?: throw IllegalStateException("Failed to find environment variable: '$placeholderValue'")
+                        val name = placeholderValue.substringBefore(':')
+                        val default = placeholderValue.substringAfter(':', missingDelimiterValue = "").takeIf { ':' in placeholderValue }
+                        val resolvedValue = environment.getProperty(name)
+                            ?: System.getenv(name)
+                            ?: System.getProperty(name)
+                            ?: default
+                            ?: throw IllegalStateException("Failed to find environment variable: '$name'")
                         value = value.replace(placeholder, resolvedValue)
                     }
                 return TextNode(value)
