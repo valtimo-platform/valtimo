@@ -23,7 +23,9 @@
   Pressing the ESC key now closes the top-most open modal through the same handling as the close (X)
   button, regardless of where keyboard focus is. Previously ESC only closed a modal while focus was
   inside it, so pressing ESC after clicking a non-focusable part of the modal — or right after
-  opening in development builds — did nothing.
+  opening in development builds — did nothing. When a Carbon dropdown or combo-box inside the modal
+  is open, the first ESC closes only that menu and leaves the modal open; a second ESC then closes
+  the modal.
 
 * **Several modals were missing shared modal behaviour**
 
