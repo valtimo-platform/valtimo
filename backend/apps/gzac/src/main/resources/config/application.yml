@@ -15,6 +15,18 @@ logging:
     file:
         name: /tmp/spring.log
 
+management:
+    endpoint:
+        health:
+            group:
+                # readiness (and a dedicated startup group) only report UP once the bootstrap
+                # health indicator is UP, i.e. after migrations + autodeployments have finished.
+                # Point the Kubernetes readinessProbe/startupProbe at these groups.
+                readiness:
+                    include: readinessState,bootstrap
+                startup:
+                    include: readinessState,bootstrap
+
 spring:
     profiles:
         active: ${SPRING_PROFILES_ACTIVE}
@@ -125,6 +137,11 @@ server:
         mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
         min-response-size: 1024
 
+opensearch:
+    uris: ${OPENSEARCH_URIS:}
+    username: ${OPENSEARCH_USERNAME:}
+    password: ${OPENSEARCH_PASSWORD:}
+
 mailing:
     onlyAllowWhitelistedRecipients: true
     redirectAllMails: false
@@ -133,6 +150,8 @@ mailing:
     sendRedirectedMailsTo:
 
 valtimo:
+    opensearch:
+        enabled: ${VALTIMO_OPENSEARCH_ENABLED:false}
     app:
         scheme: http
         hostname: ${VALTIMO_APP_HOSTNAME}

@@ -145,10 +145,12 @@ export class CaseManagementLinkProcessComponent implements OnInit, OnDestroy {
   }
 
   private setDocumentenApiUploaderProvider(config: ValtimoConfig): void {
-    const hasDocumentenApiUploadProvider = config.uploadProvider === UploadProvider.DOCUMENTEN_API;
+    const supportsUploadProcessLink =
+      config.uploadProvider === UploadProvider.DOCUMENTEN_API ||
+      config.uploadProvider === UploadProvider.S3;
 
-    this.documentenApiUploadProviders$.next(hasDocumentenApiUploadProvider);
-    if (hasDocumentenApiUploadProvider) this.getDefaultSelection();
+    this.documentenApiUploadProviders$.next(supportsUploadProcessLink);
+    if (supportsUploadProcessLink) this.getDefaultSelection();
   }
 
   private getDefaultSelection(): void {

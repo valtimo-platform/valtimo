@@ -30,6 +30,7 @@
         cdsText
         cdsLayer
         placeholder="{{ 'interface.title' | translate }}"
+        [attr.data-test-id]="testIds.titleInput"
         [attr.modal-primary-focus]="true"
       />
     </cds-label>
@@ -51,11 +52,16 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onCancel()">
+    <button cdsButton="secondary" [attr.data-test-id]="testIds.cancelButton" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()">
+    <button
+      [disabled]="formGroup.invalid"
+      cdsButton="primary"
+      [attr.data-test-id]="testIds.saveButton"
+      (click)="onSave()"
+    >
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

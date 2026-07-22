@@ -20,6 +20,7 @@
       * [Authorization](fundamentals/getting-started/modules/core/authorization.md)
       * [Operaton](fundamentals/getting-started/modules/core/operaton-webapps.md)
       * [Case](fundamentals/getting-started/modules/core/case.md)
+      * [Case OpenSearch](fundamentals/getting-started/modules/core/case-opensearch.md)
       * [Contract](fundamentals/getting-started/modules/core/contract.md)
       * [Core](fundamentals/getting-started/modules/core/core.md)
       * [Dashboard](fundamentals/getting-started/modules/core/dashboard.md)
@@ -148,6 +149,10 @@
   * [For developers](features/logging/for-developers.md)
 * [📋 Objecten management](features/objecten-management/README.md)
   * [Objecten API object form](features/objecten-management/configure-object-form.md)
+  * [Object Management Select](features/objecten-management/object-management-select.md)
+  * [Access control](features/objecten-management/access-control.md)
+  * [For developers](features/objecten-management/for-developers/README.md)
+    * [Registering the component](features/objecten-management/for-developers/object-management-select-registration.md)
 * [👤 IKO](features/iko/README.md)
   * [Views](features/iko/views.md)
   * [Search actions](features/iko/search-actions.md)
@@ -195,6 +200,10 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [13.x.x](release-notes/13.x.x/)
+  * [13.38.0](release-notes/13.x.x/13.38.0/README.md)
+  * [13.37.0](release-notes/13.x.x/13.37.0/README.md)
+  * [13.36.1](release-notes/13.x.x/13.36.1/README.md)
+  * [13.36.0](release-notes/13.x.x/13.36.0/README.md)
   * [13.35.0](release-notes/13.x.x/13.35.0/README.md)
   * [13.34.0](release-notes/13.x.x/13.34.0/README.md)
   * [13.33.0](release-notes/13.x.x/13.33.0/README.md)
@@ -256,7 +265,10 @@
   * [Configuring Keycloak](running-valtimo/application-configuration/configuring-keycloak.md)
   * [Security baseline](running-valtimo/application-configuration/security-baseline.md)
   * [Temporary file storage](running-valtimo/application-configuration/temporary-file-storage.md)
+  * [Document upload size limit](running-valtimo/application-configuration/document-upload-size.md)
   * [Feature toggles](running-valtimo/application-configuration/feature-toggles.md)
+  * [Kubernetes health probes](running-valtimo/application-configuration/kubernetes-health-probes.md)
+  * [OpenSearch](running-valtimo/application-configuration/opensearch.md)
 
 ## Customizing Valtimo
 

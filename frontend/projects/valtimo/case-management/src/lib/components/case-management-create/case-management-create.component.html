@@ -119,7 +119,10 @@
 
       <cds-tooltip
         [caret]="true"
-        [description]="'caseManagement.createDefinition.descriptionTooltip' | translate"
+        [description]="
+          'caseManagement.createDefinition.descriptionTooltip'
+            | translate: {maxLength: descriptionMaxLength}
+        "
       >
         <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
       </cds-tooltip>
@@ -128,6 +131,7 @@
         cdsTextArea
         formControlName="description"
         [attr.data-test-id]="testIds.descriptionInput"
+        [attr.maxlength]="descriptionMaxLength"
         placeholder="{{ 'caseManagement.createDefinition.descriptionPlaceholder' | translate }}"
         [rows]="3"
         [cols]="150"

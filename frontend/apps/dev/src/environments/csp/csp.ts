@@ -23,7 +23,7 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
     'default-src': [SELF],
     'frame-src': [SELF, BLOB],
     'object-src': [SELF, BLOB],
-    'img-src': [SELF, DATA, 'https://tile.openstreetmap.org/'],
+    'img-src': [SELF, DATA, BLOB, 'https://tile.openstreetmap.org/'],
     // BLOB is required by Native Federation's es-module-shims: in shim mode it
     // executes import-map-rewritten modules from blob: URLs, which the browser
     // validates against script-src.
@@ -39,6 +39,7 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
     'connect-src': [
       SELF,
       UrlUtils.getUrlHost(authenticationKeycloak.options.keycloakOptions.config.url),
+      'http://localhost:4566', // LocalStack S3
     ],
     'style-src': [
       SELF,

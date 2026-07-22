@@ -67,7 +67,7 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
                 cb.function(
                     "jsonpath",
                     String.class,
-                    cb.literal("$.** ? (@ like_regex \"" + value + "\")")
+                    cb.literal("$.** ? (@ like_regex \"" + escapeJsonPathRegex(value) + "\" flag \"i\")")
                 )
             )
         );
@@ -81,7 +81,7 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
                 String.class,
                 getValueForPathText(cb, column, path)
             ),
-            "%" + value.toLowerCase() + "%"
+            "%" + escapeLikePattern(value.toLowerCase()) + "%"
         );
     }
 
@@ -138,5 +138,9 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
 
     private Expression<Object> toJsonb(CriteriaBuilder cb, Path column) {
         return cb.function("to_jsonb", Object.class, column);
+    }
+
+    private String escapeJsonPathRegex(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

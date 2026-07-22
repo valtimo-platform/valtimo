@@ -44,7 +44,6 @@ test.describe('Case details management — ZGW General (6P)', () => {
     request = context.request;
     testPage = new CaseDetailsManagementZgwGeneralPage(page, request);
 
-    await page.goto('/');
     await testPage.goToCaseManagementForCase(CASE_KEY);
     draftVersion = await ensureDraftVersionSelected(page);
 

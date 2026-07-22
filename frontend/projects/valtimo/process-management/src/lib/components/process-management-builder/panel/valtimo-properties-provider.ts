@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -417,9 +417,9 @@ const ValidationErrorsElement = (props: {
   const getErrorMessage = (error: ProcessDefinitionValidationError): string => {
     if (error.errorCode) {
       const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
-      const translated = props.translateService.instant(translationKey);
+      const translated = props.translateService.instant(translationKey, {expression: error.expression ? `'${error.expression}'` : ''});
       if (translated !== translationKey) {
-        return error.expression ? `${translated}: '${error.expression}'` : translated;
+        return translated;
       }
     }
     return error.reason;

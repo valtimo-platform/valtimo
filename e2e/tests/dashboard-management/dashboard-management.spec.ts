@@ -47,8 +47,6 @@ test.describe('Dashboard management', () => {
     dashboardPage = new DashboardManagementPage(page);
     jsonEditor = new JsonEditor(page);
 
-    await page.goto('/');
-
     // Clean up stale test dashboards from previous runs
     await dashboardPage.deleteTestDashboardsViaApi(TEST_TITLE);
     await dashboardPage.deleteTestDashboardsViaApi(EDITED_TITLE);
@@ -226,7 +224,6 @@ test.describe('Dashboard management — Widget management', () => {
     dashboardPage = new DashboardManagementPage(page);
 
     // Create a test dashboard via API
-    await page.goto('/');
     dashboardKey = await dashboardPage.createDashboardViaApi(
       dashboardData.title,
       dashboardData.description

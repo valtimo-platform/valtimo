@@ -1,17 +1,19 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 import {
@@ -90,10 +92,10 @@ export const environment: ValtimoConfig = {
         children: [],
       },
       {
-        roles: [ROLE_ADMIN],
+        roles: [ROLE_ADMIN, ROLE_USER],
         title: 'Objects',
         iconClass: 'icon mdi mdi-archive',
-        includeFunction: IncludeFunction.ObjectManagementEnabled,
+        includeFunction: [IncludeFunction.ObjectManagementEnabled, IncludeFunction.ZgwFeaturesEnabled],
       },
       {
         roles: [ROLE_USER],
@@ -127,15 +129,20 @@ export const environment: ValtimoConfig = {
           {link: ['/access-control'], title: 'Access Control'},
           {link: ['/translation-management'], title: 'Translations'},
           {link: ['/choice-fields'], title: 'Choice fields'},
-          {title: 'Object management', textClass: 'text-dark font-weight-bold c-default'},
-          {link: ['/object-management'], title: 'Objects'},
+          {title: 'Object management', textClass: 'text-dark font-weight-bold c-default', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
+          {link: ['/object-management'], title: 'Objects', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
           {link: ['/form-management'], title: 'Forms'},
-          {link: ['/notifications-api/notifications/failed'], title: 'Notifications'},
+          {link: ['/notifications-api/notifications/failed'], title: 'Notifications', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
           {title: 'System processes', textClass: 'text-dark font-weight-bold c-default'},
           {link: ['/processes'], title: 'Processes'},
           {link: ['/decision-tables'], title: 'Decision tables'},
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default'},
           {link: ['/logging'], title: 'Logs'},
+          {
+            link: ['/opensearch'],
+            title: 'adminSettings.opensearch.title',
+            includeFunction: IncludeFunction.OpenSearchEnabled,
+          },
           {link: ['/case-migration'], title: 'Case migration (beta)'},
           {link: ['/process-migration'], title: 'Process migration'},
           {link: ['/task-management'], title: 'Tasks (legacy)'},
@@ -240,6 +247,7 @@ export const environment: ValtimoConfig = {
     enablePbacDocumentenApiDocuments: true,
     enableSuppressDocumentError: false,
     enableGenericCaseList: false,
+    enableZgwFeatures: true,
   },
   csp: cspHeaderParamsDev,
   formioOptions: {

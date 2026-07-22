@@ -36,8 +36,6 @@ test.describe('Choice field management — Manage definitions', () => {
     page = await context.newPage();
     choiceFieldPage = new ChoiceFieldManagementPage(page);
 
-    await page.goto('/');
-
     // Clean up stale test data
     await choiceFieldPage.deleteTestChoiceFieldsViaApi('e2e_test_');
 
@@ -140,8 +138,6 @@ test.describe('Choice field management — Add/edit/delete choice options', () =
     context = await browser.newContext({baseURL: baseURL ?? 'http://localhost:4200'});
     page = await context.newPage();
     choiceFieldPage = new ChoiceFieldManagementPage(page);
-
-    await page.goto('/');
 
     // Clean up stale data and create a choice field via API
     await choiceFieldPage.deleteTestChoiceFieldsViaApi('e2e_test_');
