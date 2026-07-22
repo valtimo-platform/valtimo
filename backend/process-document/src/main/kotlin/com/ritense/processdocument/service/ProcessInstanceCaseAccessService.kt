@@ -16,18 +16,12 @@
 
 package com.ritense.processdocument.service
 
-import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto
-import org.operaton.bpm.engine.RuntimeService
+import java.util.UUID
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
-import java.util.UUID
 
 /**
  * Shared case-scoped access checks for endpoints that operate on the runtime state
@@ -39,27 +33,8 @@ import java.util.UUID
  * [com.ritense.processdocument.web.rest.ProcessTimerResource].
  */
 open class ProcessInstanceCaseAccessService(
-    private val documentService: DocumentService,
-    private val authorizationService: AuthorizationService,
     private val processDocumentAssociationService: ProcessDocumentAssociationService,
-    private val runtimeService: RuntimeService,
 ) {
-
-    open fun loadAndAuthorize(caseId: UUID, action: Action<JsonSchemaDocument>): JsonSchemaDocument {
-        val document = runWithoutAuthorization {
-            documentService.findBy(JsonSchemaDocumentId.existingId(caseId)).orElseThrow()
-        } as JsonSchemaDocument
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                JsonSchemaDocument::class.java,
-                action,
-                document,
-            )
-        )
-
-        return document
-    }
 
     open fun requireBelongsToCase(caseId: UUID, processInstanceId: String) {
         val belongs = runWithoutAuthorization {
@@ -72,20 +47,6 @@ open class ProcessInstanceCaseAccessService(
             throw ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "Process instance $processInstanceId is not associated with case $caseId"
-            )
-        }
-    }
-
-    open fun requireActive(processInstanceId: String) {
-        val active = runWithoutAuthorization {
-            runtimeService.createProcessInstanceQuery()
-                .processInstanceId(processInstanceId)
-                .singleResult()
-        }
-        if (active == null) {
-            throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Process instance $processInstanceId is not active"
             )
         }
     }

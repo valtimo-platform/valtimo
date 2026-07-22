@@ -193,22 +193,18 @@ public class ProcessDocumentAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ProcessInstanceCaseAccessService.class)
     public ProcessInstanceCaseAccessService processInstanceCaseAccessService(
-        DocumentService documentService,
-        AuthorizationService authorizationService,
-        ProcessDocumentAssociationService processDocumentAssociationService,
-        RuntimeService runtimeService
+        ProcessDocumentAssociationService processDocumentAssociationService
     ) {
         return new ProcessInstanceCaseAccessService(
-            documentService,
-            authorizationService,
-            processDocumentAssociationService,
-            runtimeService
+            processDocumentAssociationService
         );
     }
 
     @Bean
     @ConditionalOnMissingBean(ProcessInspectionResource.class)
     public ProcessInspectionResource processInspectionResource(
+        DocumentService documentService,
+        AuthorizationService authorizationService,
         ProcessInstanceCaseAccessService processInstanceCaseAccessService,
         ProcessDocumentAssociationService processDocumentAssociationService,
         RuntimeService runtimeService,
@@ -220,6 +216,8 @@ public class ProcessDocumentAutoConfiguration {
         ObjectMapper objectMapper
     ) {
         return new ProcessInspectionResource(
+            documentService,
+            authorizationService,
             processInstanceCaseAccessService,
             processDocumentAssociationService,
             runtimeService,
