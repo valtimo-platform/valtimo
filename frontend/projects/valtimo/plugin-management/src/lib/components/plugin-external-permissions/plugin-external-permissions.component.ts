@@ -78,38 +78,49 @@ export class PluginExternalPermissionsComponent implements OnChanges {
   @Output() public grantedEventsChange = new EventEmitter<Array<ExternalPluginGrantedEventEntry>>();
   @Output() public grantedCapabilitiesChange = new EventEmitter<Array<string>>();
 
-  public readonly _$enrichedEndpoints = signal<Array<EnrichedEndpoint>>([]);
-  public readonly _$eventTypes = signal<Array<string>>([]);
-  public readonly _$capabilities = signal<Array<string>>([]);
-  public readonly _$accepted = signal<boolean>(false);
+  public readonly $enrichedEndpoints = signal<Array<EnrichedEndpoint>>([]);
+  public readonly $eventTypes = signal<Array<string>>([]);
+  public readonly $capabilities = signal<Array<string>>([]);
+  public readonly $accepted = signal<boolean>(false);
 
   private readonly _externalPluginService = inject(ExternalPluginService);
   private readonly _translateService = inject(TranslateService);
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['endpoints'] || changes['eventSubscriptions'] || changes['capabilities'] || changes['readonlyMode']) {
-      this._$accepted.set(false);
-      this._$eventTypes.set([...this.eventSubscriptions]);
-      this._$capabilities.set([...this.capabilities]);
-      this._emitGrantedEvents(this._$eventTypes());
-      this._emitGrantedCapabilities(this._$capabilities());
+    if (
+      changes['endpoints'] ||
+      changes['eventSubscriptions'] ||
+      changes['capabilities'] ||
+      changes['readonlyMode']
+    ) {
+      this.$accepted.set(false);
+      this.$eventTypes.set([...this.eventSubscriptions]);
+      this.$capabilities.set([...this.capabilities]);
+      this._emitGrantedEvents(this.$eventTypes());
+      this._emitGrantedCapabilities(this.$capabilities());
       this._fetchDescriptionsAndInit();
     }
   }
 
   public onAcceptanceChange(accepted: boolean): void {
-    this._$accepted.set(accepted);
+    this.$accepted.set(accepted);
     this._emitValidity();
   }
 
   public _httpMethodTagType(method: string): string {
     switch (method.toUpperCase()) {
-      case 'GET': return 'blue';
-      case 'POST': return 'green';
-      case 'PUT': return 'teal';
-      case 'PATCH': return 'cyan';
-      case 'DELETE': return 'red';
-      default: return 'warm-gray';
+      case 'GET':
+        return 'blue';
+      case 'POST':
+        return 'green';
+      case 'PUT':
+        return 'teal';
+      case 'PATCH':
+        return 'cyan';
+      case 'DELETE':
+        return 'red';
+      default:
+        return 'warm-gray';
     }
   }
 
@@ -146,7 +157,7 @@ export class PluginExternalPermissionsComponent implements OnChanges {
   }
 
   private _setEnriched(enriched: Array<EnrichedEndpoint>): void {
-    this._$enrichedEndpoints.set(enriched);
+    this.$enrichedEndpoints.set(enriched);
     this._emitGrantedEndpoints(enriched);
     this._emitValidity();
   }
@@ -175,10 +186,11 @@ export class PluginExternalPermissionsComponent implements OnChanges {
   }
 
   private _emitValidity(): void {
-    const empty = this._$enrichedEndpoints().length === 0
-      && this._$eventTypes().length === 0
-      && this._$capabilities().length === 0;
-    const valid = this.readonlyMode || empty || this._$accepted();
+    const empty =
+      this.$enrichedEndpoints().length === 0 &&
+      this.$eventTypes().length === 0 &&
+      this.$capabilities().length === 0;
+    const valid = this.readonlyMode || empty || this.$accepted();
     this.validEvent.emit(valid);
   }
 }

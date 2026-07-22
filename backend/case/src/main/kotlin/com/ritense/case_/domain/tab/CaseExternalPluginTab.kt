@@ -40,4 +40,30 @@ data class CaseExternalPluginTab(
 
     @Column(name = "bundle_key")
     val bundleKey: String? = null,
-)
+) {
+
+    companion object {
+
+        /**
+         * Parses the generic `contentKey` of an `EXTERNAL_PLUGIN` tab, formatted as
+         * `"<configurationId>[:<bundleKey>]"` (see [formatContentKey]). Returns `null` when the
+         * configuration-id part is not a valid UUID.
+         */
+        fun parseContentKeyOrNull(contentKey: String): Pair<UUID, String?>? {
+            val configPart = contentKey.substringBefore(':')
+            val bundlePart = contentKey.substringAfter(':', "").takeIf { it.isNotBlank() }
+            val configurationId = try {
+                UUID.fromString(configPart)
+            } catch (_: IllegalArgumentException) {
+                return null
+            }
+            return configurationId to bundlePart
+        }
+
+        /** Formats the `contentKey` counterpart of [parseContentKeyOrNull]. */
+        fun formatContentKey(configurationId: UUID, bundleKey: String?): String =
+            if (bundleKey.isNullOrBlank()) configurationId.toString() else "$configurationId:$bundleKey"
+
+        fun isValidContentKey(contentKey: String): Boolean = parseContentKeyOrNull(contentKey) != null
+    }
+}

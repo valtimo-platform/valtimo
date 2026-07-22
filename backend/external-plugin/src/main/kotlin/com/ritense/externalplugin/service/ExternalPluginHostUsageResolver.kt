@@ -22,16 +22,11 @@ import com.ritense.externalplugin.repository.ExternalPluginConfigurationReposito
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
+import com.ritense.plugin.service.ProcessDefinitionUsageMeta
+import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.model.bpmn.BpmnModelInstance
-import org.operaton.bpm.model.bpmn.instance.FlowElement
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.Optional
@@ -45,8 +40,8 @@ class ExternalPluginHostUsageResolver(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val processLinkRepository: ExternalPluginProcessLinkRepository,
     private val taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
-    private val operatonRepositoryService: OperatonRepositoryService,
-    private val bpmnRepositoryService: RepositoryService,
+    /** Shared with the embedded plugin module — resolves process-definition/parent/activity meta. */
+    private val processDefinitionUsageMetaResolver: ProcessDefinitionUsageMetaResolver,
     /**
      * Optional so the module still wires up if the case module's tab service is unavailable; in a
      * normal GZAC deployment it is always present (external-plugin depends on case).
@@ -96,11 +91,11 @@ class ExternalPluginHostUsageResolver(
         val links = collectUsageLinks(configById.keys)
         if (links.isEmpty()) return emptyList()
 
-        val metaCache = mutableMapOf<String, ProcessDefinitionMeta>()
+        val metaCache = mutableMapOf<String, ProcessDefinitionUsageMeta>()
 
         return links.map { link ->
             val meta = metaCache.getOrPut(link.processDefinitionId) {
-                resolveProcessDefinitionMeta(link.processDefinitionId)
+                processDefinitionUsageMetaResolver.resolveMeta(link.processDefinitionId)
             }
             val configuration = configById.getValue(link.configurationId)
             PluginUsageDto(
@@ -113,7 +108,7 @@ class ExternalPluginHostUsageResolver(
                 processDefinitionKey = meta.processDefinitionKey,
                 processDefinitionName = meta.processDefinitionName,
                 activityId = link.activityId,
-                activityName = resolveActivityName(link.activityId, meta),
+                activityName = processDefinitionUsageMetaResolver.resolveActivityName(meta, link.activityId),
                 processLinkId = link.id,
             )
         }
@@ -139,61 +134,6 @@ class ExternalPluginHostUsageResolver(
         return definitions.flatMap { configurationRepository.findAllByDefinitionId(it.id) }
     }
 
-    private fun resolveProcessDefinitionMeta(processDefinitionId: String): ProcessDefinitionMeta {
-        val processDefinition: OperatonProcessDefinition? = runCatching {
-            operatonRepositoryService.findProcessDefinitionById(processDefinitionId)
-        }.getOrNull()
-
-        val parent = classifyParent(processDefinition)
-
-        return ProcessDefinitionMeta(
-            processDefinitionKey = processDefinition?.key,
-            processDefinitionName = processDefinition?.name,
-            parentType = parent.type,
-            parentKey = parent.key,
-            parentVersionTag = parent.versionTag,
-            bpmnModelLoader = {
-                runCatching { bpmnRepositoryService.getBpmnModelInstance(processDefinitionId) }.getOrNull()
-            },
-        )
-    }
-
-    /**
-     * Operaton stores the owning case-definition or building-block in the `versionTag` of the
-     * process definition (encoded with the `CD:` or `BB:` prefix — see [CaseDefinitionId] /
-     * [BuildingBlockDefinitionId]). `OperatonProcessDefinition.getBlueprintId` already does the
-     * parsing; we just need to widen the result into the public-facing enum.
-     */
-    private fun classifyParent(processDefinition: OperatonProcessDefinition?): ParentClassification {
-        return when (val blueprint = processDefinition?.getBlueprintId()) {
-            is CaseDefinitionId -> ParentClassification(
-                type = PluginUsageParentType.CASE,
-                key = blueprint.key,
-                versionTag = blueprint.versionTag.toString(),
-            )
-            is BuildingBlockDefinitionId -> ParentClassification(
-                type = PluginUsageParentType.BUILDING_BLOCK,
-                key = blueprint.key,
-                versionTag = blueprint.versionTag.toString(),
-            )
-            else -> ParentClassification(
-                type = PluginUsageParentType.GLOBAL,
-                key = null,
-                versionTag = null,
-            )
-        }
-    }
-
-    private fun resolveActivityName(
-        activityId: String,
-        meta: ProcessDefinitionMeta,
-    ): String? {
-        val model = meta.bpmnModel ?: return null
-        return runCatching {
-            model.getModelElementById<FlowElement>(activityId)?.name
-        }.getOrNull()
-    }
-
     /**
      * Configuration-referencing process link, unified across the external-plugin surfaces (service-task
      * action + user-task form) so the delete guard treats both identically.
@@ -204,21 +144,4 @@ class ExternalPluginHostUsageResolver(
         val activityId: String,
         val configurationId: UUID,
     )
-
-    private data class ParentClassification(
-        val type: PluginUsageParentType,
-        val key: String?,
-        val versionTag: String?,
-    )
-
-    private class ProcessDefinitionMeta(
-        val processDefinitionKey: String?,
-        val processDefinitionName: String?,
-        val parentType: PluginUsageParentType,
-        val parentKey: String?,
-        val parentVersionTag: String?,
-        bpmnModelLoader: () -> BpmnModelInstance?,
-    ) {
-        val bpmnModel: BpmnModelInstance? by lazy(bpmnModelLoader)
-    }
 }

@@ -18,6 +18,7 @@ package com.ritense.case.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseTabService
+import com.ritense.case.service.exception.InvalidTabContentKeyException
 import com.ritense.case.service.exception.TabAlreadyExistsException
 import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case.web.rest.dto.CaseTabUpdateDto
@@ -67,6 +68,8 @@ class CaseTabManagementResource(
             ResponseEntity.ok(CaseTabWithMetadataDto.of(caseTab, userManagementService))
         } catch (ex: TabAlreadyExistsException) {
             ResponseEntity.status(HttpStatus.CONFLICT).build()
+        } catch (ex: InvalidTabContentKeyException) {
+            ResponseEntity.badRequest().build()
         }
     }
 
@@ -81,12 +84,16 @@ class CaseTabManagementResource(
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
         @Valid @RequestBody caseTabDtos: List<CaseTabUpdateOrderDto>
     ): ResponseEntity<List<CaseTabWithMetadataDto>> {
-        val caseTabs = caseTabService.updateCaseTabs(
-            CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
-            caseTabDtos
-        )
-            .map { CaseTabWithMetadataDto.of(it, userManagementService) }
-        return ResponseEntity.ok(caseTabs)
+        return try {
+            val caseTabs = caseTabService.updateCaseTabs(
+                CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
+                caseTabDtos
+            )
+                .map { CaseTabWithMetadataDto.of(it, userManagementService) }
+            ResponseEntity.ok(caseTabs)
+        } catch (ex: InvalidTabContentKeyException) {
+            ResponseEntity.badRequest().build()
+        }
     }
 
     @RunWithoutAuthorization
@@ -101,12 +108,16 @@ class CaseTabManagementResource(
         @PathVariable tabKey: String,
         @Valid @RequestBody caseTab: CaseTabUpdateDto
     ): ResponseEntity<Unit> {
-        caseTabService.updateCaseTab(
-            CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
-            tabKey,
-            caseTab
-        )
-        return ResponseEntity.noContent().build()
+        return try {
+            caseTabService.updateCaseTab(
+                CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
+                tabKey,
+                caseTab
+            )
+            ResponseEntity.noContent().build()
+        } catch (ex: InvalidTabContentKeyException) {
+            ResponseEntity.badRequest().build()
+        }
     }
 
     @RunWithoutAuthorization
@@ -126,8 +137,8 @@ class CaseTabManagementResource(
 
     @RunWithoutAuthorization
     @EndpointDescription(
-        en = "List case tabs",
-        nl = "Dossiertabbladen ophalen",
+        en = "List case tabs (management)",
+        nl = "Dossiertabbladen ophalen (beheer)",
     )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab")
     fun getCaseTabs(

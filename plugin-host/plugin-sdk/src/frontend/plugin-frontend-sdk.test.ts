@@ -31,6 +31,8 @@ interface PostedMessage {
   event: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
+  /** The targetOrigin the SDK posted to — "*" or the pinned parent origin. */
+  targetOrigin: string;
 }
 
 let postedMessages: PostedMessage[];
@@ -45,13 +47,28 @@ function installFakeParent(): void {
   postedMessages = [];
   Object.defineProperty(window, "parent", {
     configurable: true,
-    value: { postMessage: vi.fn((msg: PostedMessage) => postedMessages.push(msg)) },
+    value: {
+      postMessage: vi.fn((msg: Omit<PostedMessage, "targetOrigin">, targetOrigin: string) =>
+        postedMessages.push({ ...msg, targetOrigin })
+      ),
+    },
   });
 }
 
-function sendFromParent(event: string, payload: unknown, origin = "http://parent.example"): void {
+const PARENT_ORIGIN = "http://parent.example";
+
+function sendFromParent(event: string, payload: unknown, origin = PARENT_ORIGIN): void {
   window.dispatchEvent(
     new MessageEvent("message", { data: { source: "valtimo-host", event, payload }, origin })
+  );
+}
+
+/** Completes the init handshake, which pins the parent origin for subsequent emits. */
+function initFromParent(origin = PARENT_ORIGIN): void {
+  sendFromParent(
+    "init",
+    { context: { pluginId: "case-summary" }, accessToken: "t", theme: "g10", locale: "en" },
+    origin
   );
 }
 
@@ -79,6 +96,7 @@ afterEach(() => {
 describe("parent-proxy transport", () => {
   it("emits a proxyRequest for callValtimo and resolves on the matching proxyResponse", async () => {
     sdk = new ValtimoPluginSDK();
+    initFromParent();
     const promise = sdk.callValtimo("GET", "/api/v1/document/123");
 
     const req = lastProxyRequest();
@@ -96,6 +114,7 @@ describe("parent-proxy transport", () => {
 
   it("rejects the pending call when the parent reports an error", async () => {
     sdk = new ValtimoPluginSDK();
+    initFromParent();
     const promise = sdk.callValtimo("GET", "/api/v1/document/123");
     const req = lastProxyRequest();
 
@@ -106,6 +125,7 @@ describe("parent-proxy transport", () => {
 
   it("routes getPluginData to the plugin target with a GET and query", () => {
     sdk = new ValtimoPluginSDK();
+    initFromParent();
     void sdk.getPluginData("/summary", { docId: "42" });
 
     const req = lastProxyRequest();
@@ -114,6 +134,7 @@ describe("parent-proxy transport", () => {
 
   it("keys concurrent requests by distinct correlation ids and resolves each independently", async () => {
     sdk = new ValtimoPluginSDK();
+    initFromParent();
     const p1 = sdk.callValtimo("GET", "/a");
     const p2 = sdk.callValtimo("GET", "/b");
 
@@ -127,6 +148,78 @@ describe("parent-proxy transport", () => {
 
     await expect(p1).resolves.toEqual({ status: 200, body: "A" });
     await expect(p2).resolves.toEqual({ status: 200, body: "B" });
+  });
+});
+
+describe("origin pinning", () => {
+  it("queues data-bearing emits until init pins the parent origin, then flushes them to it — never to '*'", async () => {
+    sdk = new ValtimoPluginSDK();
+    const promise = sdk.callValtimo("GET", "/api/v1/document/123");
+
+    // Nothing data-bearing may have been broadcast before the origin is known.
+    expect(postedMessages.filter((m) => m.event === "proxyRequest")).toEqual([]);
+
+    initFromParent();
+    const req = lastProxyRequest();
+    expect(req.targetOrigin).toBe(PARENT_ORIGIN);
+
+    sendFromParent("proxyResponse", {
+      correlationId: req.payload.correlationId,
+      status: 200,
+      body: { id: "123" },
+    });
+    await expect(promise).resolves.toEqual({ status: 200, body: { id: "123" } });
+  });
+
+  it("still sends the credential-free handshake events to '*' before init (compat)", () => {
+    sdk = new ValtimoPluginSDK();
+    sdk.emit("ready", {});
+    sdk.emit("resize", { height: 100 });
+    expect(postedMessages.map((m) => [m.event, m.targetOrigin])).toEqual([
+      ["ready", "*"],
+      ["resize", "*"],
+    ]);
+  });
+
+  it("pins every emit to the origin of the first init and ignores messages from other origins afterwards", () => {
+    sdk = new ValtimoPluginSDK();
+    initFromParent();
+
+    sdk.emit("notification", { type: "info", message: "hi" });
+    expect(postedMessages.at(-1)!.targetOrigin).toBe(PARENT_ORIGIN);
+
+    // A different origin cannot re-init or inject state once the pin exists.
+    sendFromParent(
+      "init",
+      { context: {}, accessToken: "attacker", theme: "g10", locale: "en" },
+      "http://evil.example"
+    );
+    sendFromParent("tokenRefresh", { accessToken: "attacker" }, "http://evil.example");
+    expect(sdk.getAccessToken()).toBe("t");
+  });
+
+  it("only an init message can establish the pin — pre-init messages from any origin are ignored", () => {
+    sdk = new ValtimoPluginSDK();
+    sendFromParent("tokenRefresh", { accessToken: "attacker" }, "http://evil.example");
+    expect(sdk.getAccessToken()).toBeNull();
+  });
+
+  describe("with an explicit parentOrigin option", () => {
+    it("ignores init from any other origin entirely", () => {
+      sdk = new ValtimoPluginSDK({ parentOrigin: PARENT_ORIGIN });
+      initFromParent("http://evil.example");
+      expect(sdk.getAccessToken()).toBeNull();
+
+      initFromParent();
+      expect(sdk.getAccessToken()).toBe("t");
+    });
+
+    it("posts every message (including the ready handshake) to the configured origin only", () => {
+      sdk = new ValtimoPluginSDK({ parentOrigin: PARENT_ORIGIN });
+      sdk.emit("ready", {});
+      void sdk.getPluginData("/summary");
+      expect(postedMessages.map((m) => m.targetOrigin)).toEqual([PARENT_ORIGIN, PARENT_ORIGIN]);
+    });
   });
 });
 

@@ -29,6 +29,7 @@ import {
 import {CommonModule} from '@angular/common';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {TranslateService} from '@ngx-translate/core';
+import {ConfigService} from '@valtimo/shared';
 import {ExternalPluginEndpoint} from '../../models';
 
 @Component({
@@ -82,18 +83,25 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     data: Record<string, unknown>;
   }>();
 
-  public readonly _$trustedUrl = signal<SafeResourceUrl | null>(null);
+  public readonly $trustedUrl = signal<SafeResourceUrl | null>(null);
 
   private readonly _onMessageBound = this._onMessage.bind(this);
+  /** Pathname prefix all proxied GZAC calls must stay under (derived from the API endpoint URI). */
+  private readonly _apiBasePath: string;
 
   constructor(
     private readonly _sanitizer: DomSanitizer,
-    private readonly _translateService: TranslateService
-  ) {}
+    private readonly _translateService: TranslateService,
+    private readonly _configService: ConfigService
+  ) {
+    this._apiBasePath = this._deriveApiBasePath();
+  }
 
   public ngOnInit(): void {
-    if (this.bundleUrl) {
-      this._$trustedUrl.set(this._sanitizer.bypassSecurityTrustResourceUrl(this.bundleUrl));
+    // Only http(s) bundle URLs may be trusted as an iframe src: anything else (javascript:, data:,
+    // malformed, …) would defeat the sandbox and is silently ignored, leaving the iframe unrendered.
+    if (this.bundleUrl && this._isSafeBundleUrl(this.bundleUrl)) {
+      this.$trustedUrl.set(this._sanitizer.bypassSecurityTrustResourceUrl(this.bundleUrl));
     }
 
     window.addEventListener('message', this._onMessageBound);
@@ -133,7 +141,6 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   public onIframeLoad(): void {
     this._postToIframe('init', {
       context: this.context,
-      accessToken: '',
       theme: 'white',
       locale: this._translateService.currentLang ?? this._translateService.defaultLang ?? 'en',
     });
@@ -174,18 +181,9 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
       case 'submitTask':
         this.submitTaskEvent.emit(data.payload);
         break;
-      case 'resize':
-        this._handleResize(data.payload);
-        break;
       case 'proxyRequest':
         void this._handleProxyRequest(data.payload);
         break;
-    }
-  }
-
-  private _handleResize(payload: {height?: number}): void {
-    if (payload.height && this.iframeRef?.nativeElement) {
-      // this.iframeRef.nativeElement.style.height = `${payload.height}px`;
     }
   }
 
@@ -229,16 +227,42 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     if (!this.userToken) {
       throw new Error('No user token available for proxied GZAC call');
     }
-    if (this.allowedEndpoints && !this._isAllowed(method, path)) {
-      return {status: 403, body: {error: 'Endpoint not allowed for this plugin tab'}};
+
+    // The iframe-supplied path is untrusted: resolve it against our own origin and hard-require the
+    // result to stay same-origin. This rejects absolute URLs to other origins, protocol-relative
+    // `//host/...` forms and non-http schemes like `javascript:` — a compromised bundle must never
+    // be able to point the fetch (and thus the bearer token) at a foreign host.
+    let url: URL;
+    try {
+      url = new URL(path, window.location.origin);
+    } catch {
+      return {status: 403, body: {error: 'Malformed proxy request path'}};
+    }
+    if (url.origin !== window.location.origin) {
+      return {status: 403, body: {error: 'Proxied GZAC calls must be same-origin'}};
+    }
+
+    // Second hard guarantee: only paths under the GZAC API base path may be reached via the proxy.
+    if (!url.pathname.startsWith(this._apiBasePath)) {
+      return {
+        status: 403,
+        body: {error: `Proxied GZAC calls must target the API base path (${this._apiBasePath})`},
+      };
+    }
+
+    // From here on only the normalized same-origin path is used — never the raw iframe input.
+    const normalizedPath = url.pathname + url.search;
+
+    if (!this._isAllowed(method, normalizedPath)) {
+      return {status: 403, body: {error: 'Endpoint not allowed for this plugin surface'}};
     }
 
     const upperMethod = method.toUpperCase();
     const hasBody = body !== undefined && upperMethod !== 'GET' && upperMethod !== 'HEAD';
 
     // Raw fetch (NOT HttpClient) so the Keycloak bearer interceptor never attaches the full Keycloak
-    // token alongside the downscoped one — a confused-deputy guard. `path` is same-origin relative.
-    const response = await fetch(path, {
+    // token alongside the downscoped one — a confused-deputy guard.
+    const response = await fetch(normalizedPath, {
       method: upperMethod,
       headers: {
         ...(headers ?? {}),
@@ -292,14 +316,46 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Client-side allowlist precheck. Semantics of `allowedEndpoints`:
+   * - `undefined` — no allowlist was provided: skip this precheck. The same-origin + API-base-path
+   *   hard guarantees in {@link _proxyToGzac} and the server-side allowlist remain authoritative.
+   * - empty array — an allowlist WAS provided but grants nothing: deny every call. An empty
+   *   allowlist must never be treated as "allow all".
+   */
   private _isAllowed(method: string, path: string): boolean {
-    if (!this.allowedEndpoints?.length) return true;
+    if (this.allowedEndpoints === undefined) return true;
     const pathname = path.split('?')[0];
     return this.allowedEndpoints.some(
       endpoint =>
         endpoint.method.toUpperCase() === method.toUpperCase() &&
         this._matchesPattern(endpoint.pattern, pathname)
     );
+  }
+
+  /**
+   * Computes the pathname of the configured GZAC API endpoint (`valtimoApi.endpointUri`), which may
+   * be absolute (`http://localhost:8080/api/`) or relative (`/api/`). Falls back to `/api/` when
+   * missing or unparseable.
+   */
+  private _deriveApiBasePath(): string {
+    try {
+      const endpointUri = this._configService.config?.valtimoApi?.endpointUri;
+      if (!endpointUri) return '/api/';
+      const pathname = new URL(endpointUri, window.location.origin).pathname;
+      return pathname.endsWith('/') ? pathname : `${pathname}/`;
+    } catch {
+      return '/api/';
+    }
+  }
+
+  private _isSafeBundleUrl(bundleUrl: string): boolean {
+    try {
+      const url = new URL(bundleUrl, window.location.origin);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
   }
 
   private _matchesPattern(pattern: string, pathname: string): boolean {

@@ -60,8 +60,8 @@ class CaseHeaderWidgetManagementResource(
     }
 
     @EndpointDescription(
-        en = "Get case header widget",
-        nl = "Dossierheaderwidget ophalen",
+        en = "Get case header widget (management)",
+        nl = "Dossierheaderwidget ophalen (beheer)",
     )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget")
     fun get(

@@ -17,6 +17,7 @@
 import type {FastifyInstance} from "fastify";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {buildTestApp, signHeaders, testConfig} from "../test-support/harness";
+import {resetReplayCacheForTests} from "../security/hmac-auth";
 import {pluginActionRoutes} from "./plugin-actions";
 
 const PLUGIN = "case-summary";
@@ -39,6 +40,7 @@ describe("plugin-actions routes", () => {
   });
 
   beforeEach(async () => {
+    resetReplayCacheForTests();
     pluginManager = {
       getManifest: vi.fn(() => ({ actions: [{ key: ACTION }] })),
       callAction: vi.fn(async () => ({ status: "completed", variables: { done: true } })),

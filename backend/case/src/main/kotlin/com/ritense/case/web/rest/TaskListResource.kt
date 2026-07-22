@@ -57,8 +57,8 @@ class TaskListResource(
     }
 
     @EndpointDescription(
-        en = "List task list columns",
-        nl = "Takenlijstkolommen ophalen",
+        en = "List task list columns (management)",
+        nl = "Takenlijstkolommen ophalen (beheer)",
     )
     @GetMapping("/management/v1/case/{caseDefinitionName}/task-list-column")
     @RunWithoutAuthorization

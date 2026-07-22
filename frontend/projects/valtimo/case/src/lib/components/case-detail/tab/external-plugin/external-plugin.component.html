@@ -19,7 +19,10 @@
     <cds-loading [isActive]="true" [overlay]="false" size="normal"></cds-loading>
   </div>
 
-  <div *ngSwitchCase="'error'" class="external-plugin-tab__status external-plugin-tab__status--error">
+  <div
+    *ngSwitchCase="'error'"
+    class="external-plugin-tab__status external-plugin-tab__status--error"
+  >
     {{ 'caseManagement.tabManagement.externalPlugin.loadError' | translate }}
   </div>
 
@@ -29,12 +32,15 @@
     </div>
 
     <valtimo-external-plugin-iframe
-      fitPage [bottomMargin]="0" [disableOverflow]="true"
+      fitPage
+      [bottomMargin]="0"
+      [disableOverflow]="true"
+      [allowedEndpoints]="sessionService.$allowedEndpoints()"
       [bundleUrl]="$content()!.bundleUrl!"
       [configurationId]="$content()!.configurationId"
       [context]="$content()!.context"
       [pluginDataUrl]="$pluginDataUrl()"
-      [userToken]="$userToken()"
+      [userToken]="sessionService.$userToken()"
       (readyEvent)="onIframeReady()"
     ></valtimo-external-plugin-iframe>
   </ng-container>

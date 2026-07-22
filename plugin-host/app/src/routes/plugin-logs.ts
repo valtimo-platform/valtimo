@@ -39,13 +39,17 @@ export const pluginLogRoutes: FastifyPluginCallback<PluginLogRoutesOptions> = (
     { preHandler: hmacAuth },
     async (request, reply) => {
       const { configId } = request.params;
-      const page = parseInt(request.query.page ?? "0", 10);
-      const size = parseInt(request.query.size ?? "25", 10);
+      // Defensive coercion: parseInt on garbage yields NaN, which would flow into the SQL
+      // LIMIT/OFFSET. Fall back to defaults and clamp; the response echoes the coerced values.
+      const rawPage = Number.parseInt(request.query.page ?? "", 10);
+      const rawSize = Number.parseInt(request.query.size ?? "", 10);
+      const page = Number.isNaN(rawPage) ? 0 : Math.max(0, rawPage);
+      const size = Number.isNaN(rawSize) ? 25 : Math.max(1, Math.min(rawSize, 100));
       const level = request.query.level || undefined;
       const source = request.query.source || undefined;
 
       const result = await logRepository.query(configId, { page, size, level, source });
-      return reply.code(200).send(result);
+      return reply.code(200).send({ ...result, page, size });
     }
   );
 

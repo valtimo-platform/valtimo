@@ -165,10 +165,16 @@ try {
   const zip = new AdmZip();
   // If a logo was found, set its filename on the manifest so the host knows what file to serve
   // at GET /plugins/:id/:version/logo. We write the modified manifest into the zip rather than
-  // touching the user's source manifest.json.
-  const manifestForZip = logoFile
-    ? { ...manifest, logo: basename(logoFile) }
-    : manifest;
+  // touching the user's source manifest.json. The SDK version the plugin was packed with is
+  // stamped on as `sdkVersion` so the host can tell which SDK/ABI a stored plugin targets.
+  const sdkVersion = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf-8")
+  ).version;
+  const manifestForZip = {
+    ...manifest,
+    sdkVersion,
+    ...(logoFile ? { logo: basename(logoFile) } : {}),
+  };
   zip.addFile("manifest.json", Buffer.from(JSON.stringify(manifestForZip, null, 2), "utf-8"));
   zip.addLocalFile(wasmPath, "", "plugin.wasm");
   if (logoFile) {

@@ -28,13 +28,18 @@ describe("SDK runtime dispatch (compiled Wasm)", () => {
   let plugin: Plugin;
 
   beforeAll(async () => {
+    // Stub every host import the SDK bundle declares (the module fails to instantiate if one is
+    // missing); only gzac_api returns a meaningful reply, the rest just satisfy the import.
+    const okReply = (body: unknown) => (cc: { store: (s: string) => bigint }) =>
+      cc.store(JSON.stringify(body));
     plugin = await createPlugin(FIXTURE_WASM, {
       useWasi: true,
       functions: {
         "extism:host/user": {
-          gzac_api(cc: { store: (s: string) => bigint }) {
-            return cc.store(JSON.stringify({ status: 200, headers: {}, body: {} }));
-          },
+          gzac_api: okReply({ status: 200, headers: {}, body: {} }),
+          http_request: okReply({ status: 200, headers: {}, body: {} }),
+          kv: okReply({ status: 200 }),
+          log: okReply({ status: 200 }),
         },
       },
     });

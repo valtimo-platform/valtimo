@@ -29,16 +29,35 @@ import type {AppConfig} from "../config.js";
  * Served cross-origin to the GZAC frontend (`Access-Control-Allow-Origin: *`), like the bundle
  * routes.
  *
- * ⚠️ SECURITY: this route is **public** (no HMAC, no auth) for this iteration — it executes plugin
- * Wasm unauthenticated, exactly like the public bundle routes. It must be capability-gated (and/or
- * authenticated) before production. Plugins must therefore treat `handle_request` input as
- * untrusted and never return data they would not expose publicly.
+ * Security: the route carries no HMAC (the caller is a browser, not GZAC), but executing plugin
+ * Wasm is gated on the target configuration: the request must name a `configurationId` whose
+ * pushed configuration exists, targets this plugin version, and was granted the `frontend_data`
+ * capability by an admin — otherwise 403 and the Wasm never runs. A per-configuration in-memory
+ * rate limit (`DATA_RATE_LIMIT_PER_MINUTE`) bounds abuse of the public endpoint. Plugins must
+ * still treat `handle_request` input as untrusted and never return data they would not expose to
+ * every user of the configuration's GZAC instance.
  */
 export async function pluginDataRoutes(
   fastify: FastifyInstance,
   opts: { pluginManager: PluginManager; configRegistry: ConfigRegistry; config: AppConfig }
 ): Promise<void> {
-  const { pluginManager, configRegistry } = opts;
+  const { pluginManager, configRegistry, config } = opts;
+
+  // Fixed-window request counter per configurationId. In-memory (per replica) — good enough to
+  // stop a single host being hammered; 0 disables.
+  const rateLimitPerMinute = config.DATA_RATE_LIMIT_PER_MINUTE ?? 0;
+  const windows = new Map<string, { windowStart: number; count: number }>();
+  const isRateLimited = (configurationId: string): boolean => {
+    if (rateLimitPerMinute <= 0) return false;
+    const now = Date.now();
+    const window = windows.get(configurationId);
+    if (!window || now - window.windowStart >= 60_000) {
+      windows.set(configurationId, { windowStart: now, count: 1 });
+      return false;
+    }
+    window.count += 1;
+    return window.count > rateLimitPerMinute;
+  };
 
   // CORS preflight for the cross-origin POST from the opaque-origin iframe / GZAC frontend.
   fastify.options<{ Params: { pluginId: string; version: string } }>(
@@ -65,8 +84,7 @@ export async function pluginDataRoutes(
       /**
        * Downscoped user token forwarded from the tab. Lets a `handle_request` handler call back into
        * GZAC *as the user* (`gzacApi.asUser`, PBAC ∩ allowlist). Optional — when absent the handler
-       * can still use the service token. ⚠️ The host now holds the user token for the call; see the
-       * route-level security note.
+       * can still use the service token.
        */
       userToken?: string;
     };
@@ -90,17 +108,35 @@ export async function pluginDataRoutes(
         return;
       }
 
-      let configuration: Record<string, unknown> = {};
-      let serviceToken: string | undefined;
-      let gzacBaseUrl: string | undefined;
-      if (configurationId) {
-        const pluginConfig = await configRegistry.get(configurationId);
-        if (pluginConfig) {
-          configuration = pluginConfig.properties;
-          serviceToken = pluginConfig.serviceToken;
-          gzacBaseUrl = pluginConfig.gzacBaseUrl;
-        }
+      // Capability gate: this public route only executes Wasm for a configuration an admin
+      // explicitly granted the `frontend_data` capability.
+      if (!configurationId) {
+        reply.code(400).send({ error: "Missing required field: configurationId" });
+        return;
       }
+      const pluginConfig = await configRegistry.get(configurationId);
+      if (
+        !pluginConfig ||
+        pluginConfig.pluginId !== pluginId ||
+        pluginConfig.pluginVersion !== version ||
+        !pluginConfig.grantedCapabilities?.includes("frontend_data")
+      ) {
+        // One message for "unknown config" / "wrong plugin" / "capability not granted" so the
+        // public endpoint doesn't leak which configurations exist.
+        reply.code(403).send({
+          error: `Configuration '${configurationId}' does not exist for ${pluginId}@${version} or was not granted the 'frontend_data' capability`,
+        });
+        return;
+      }
+
+      if (isRateLimited(configurationId)) {
+        reply.code(429).send({ error: "Rate limit exceeded for this configuration" });
+        return;
+      }
+
+      const configuration = pluginConfig.properties;
+      const serviceToken = pluginConfig.serviceToken;
+      const gzacBaseUrl = pluginConfig.gzacBaseUrl;
 
       try {
         const result = await pluginManager.callRequest(pluginId, version, {
@@ -113,6 +149,9 @@ export async function pluginDataRoutes(
           context,
           serviceToken,
           gzacBaseUrl,
+          // The caller-supplied user token is forwarded as-is: the host cannot (and does not)
+          // validate it — GZAC verifies it server-side on every gzac_api `as:"user"` callback, so
+          // a forged token only yields 401s from GZAC.
           userToken,
         });
 

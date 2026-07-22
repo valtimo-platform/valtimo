@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import {MenuItem} from '@valtimo/shared';
+import {IncludeFunction, MenuItem} from '@valtimo/shared';
 import {
   CatalogMenuConfigurationItem,
   GroupMenuConfigurationItem,
+  includeFunctionToName,
+  IncludeFunctionName,
   MENU_CONFIGURATION_VERSION,
   MenuConfiguration,
   MenuConfigurationItem,
+  SectionHeaderMenuConfigurationItem,
 } from './menu-configuration.model';
 import {
   findMenuCatalogEntryByLink,
@@ -58,7 +61,11 @@ function seedMenuItem(item: MenuItem): MenuConfigurationItem {
     // children is a plain section-header label.
     if (Array.isArray(item.children)) return seedGroupNode(item);
 
-    return {kind: 'section-header', title: item.title};
+    const header: SectionHeaderMenuConfigurationItem = {kind: 'section-header', title: item.title};
+    if (item.roles) header.roles = item.roles;
+    const headerIncludeFunction = persistedIncludeFunctionOf(item);
+    if (headerIncludeFunction !== undefined) header.includeFunction = headerIncludeFunction;
+    return header;
   }
 
   const linkEntry = findMenuCatalogEntryByLink(item.link);
@@ -82,22 +89,34 @@ function seedGroupNode(item: MenuItem): GroupMenuConfigurationItem {
   return node;
 }
 
-function seedCatalogNode(item: MenuItem, entry: MenuItemCatalogEntry): CatalogMenuConfigurationItem {
+function seedCatalogNode(
+  item: MenuItem,
+  entry: MenuItemCatalogEntry
+): CatalogMenuConfigurationItem {
   const node: CatalogMenuConfigurationItem = {kind: 'catalog', itemId: entry.itemId};
 
   // Record title/icon only when they deviate from the catalog default, keeping the stored tree lean.
   if (item.title && item.title !== entry.defaultTitleKey) node.title = item.title;
   if (item.iconClass && item.iconClass !== entry.defaultIcon) node.icon = item.iconClass;
-  // The persisted config carries a single include function (the builder edits one); a runtime item
-  // may declare several, so keep the first when an array is supplied.
-  const includeFunction = Array.isArray(item.includeFunction)
-    ? item.includeFunction[0]
-    : item.includeFunction;
+  const includeFunction = persistedIncludeFunctionOf(item);
   if (includeFunction !== undefined) node.includeFunction = includeFunction;
   if (item.roles) node.roles = item.roles;
   if (Array.isArray(item.children)) node.children = item.children.map(child => seedMenuItem(child));
 
   return node;
+}
+
+/**
+ * The runtime item's include function in its persisted form: the enum member **name**, so the
+ * stored config survives enum reorders. The persisted config carries a single include function
+ * (the builder edits one); a runtime item may declare several, so keep the first when an array is
+ * supplied.
+ */
+function persistedIncludeFunctionOf(item: MenuItem): IncludeFunctionName | undefined {
+  const includeFunction: IncludeFunction | undefined = Array.isArray(item.includeFunction)
+    ? item.includeFunction[0]
+    : item.includeFunction;
+  return includeFunction === undefined ? undefined : includeFunctionToName(includeFunction);
 }
 
 export {buildMenuConfigurationFromRuntimeMenu};

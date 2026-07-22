@@ -283,6 +283,10 @@ public class KeycloakUserManagementService implements UserManagementService {
         ManageableUser user = getCurrentUser();
         if (user == null || user.getUsername() == null || teamManagementService == null) {
             return List.of();
+        } else if (SYSTEM_ACCOUNT.equals(user.getId())) {
+            // The system account is not a Keycloak user and is never a team member; don't query
+            // teams for its (synthetic) username in every system context.
+            return List.of();
         } else {
             return teamManagementService.findTeamKeysByUsername(user.getUsername());
         }

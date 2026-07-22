@@ -41,7 +41,7 @@ import java.util.UUID
  * Reuses [PluginConfigurationReference] — the same embeddable mapped by the embedded-plugin
  * `PluginProcessLink` — on the same `process_link` columns (`reference_type`,
  * `plugin_definition_key`, `plugin_definition_version`); verified safe for two STI siblings to
- * share by `PluginConfigurationReferenceStiSpikeTest` in `:backend:plugin`.
+ * share by `PluginConfigurationReferenceSharedStiColumnsTest` in `:backend:plugin`.
  */
 @Entity
 @DiscriminatorValue(PROCESS_LINK_TYPE)

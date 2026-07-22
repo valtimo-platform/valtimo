@@ -33,11 +33,12 @@
       </div>
 
       <valtimo-external-plugin-iframe
+        [allowedEndpoints]="sessionService.$allowedEndpoints()"
         [bundleUrl]="$page()!.bundleUrl!"
         [configurationId]="$page()!.configurationId"
         [context]="$context()"
         [pluginDataUrl]="$pluginDataUrl()"
-        [userToken]="$userToken()"
+        [userToken]="sessionService.$userToken()"
         (readyEvent)="onIframeReady()"
       ></valtimo-external-plugin-iframe>
     </ng-container>

@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.service
 
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
@@ -33,7 +34,7 @@ class ExternalPluginDefinitionService(
     fun list(): List<ExternalPluginDefinition> = definitionRepository.findAll()
 
     fun get(id: UUID): ExternalPluginDefinition = definitionRepository.findById(id)
-        .orElseThrow { IllegalArgumentException("External plugin definition $id not found") }
+        .orElseThrow { ExternalPluginNotFoundException("External plugin definition", id) }
 
     fun getAllByPluginId(pluginId: String): List<ExternalPluginDefinition> =
         definitionRepository.findAllByPluginId(pluginId)

@@ -55,6 +55,7 @@ dependencies {
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "com.networknt:json-schema-validator:1.5.6"
+    implementation "net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
@@ -93,6 +94,8 @@ dependencies {
     testImplementation project(":backend:zgw:documenten-api-preview")
     testImplementation project(":backend:exact-plugin")
     testImplementation project(":backend:keycloak-iam")
+    testImplementation project(":backend:aws:s3-resource")
+    testImplementation project(":backend:case-opensearch")
 
     jar {
         enabled = true

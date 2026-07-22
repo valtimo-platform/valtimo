@@ -25,21 +25,22 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {ExternalPluginIframeComponent} from '@valtimo/plugin';
+import {
+  derivePluginDataUrl,
+  ExternalPluginIframeComponent,
+  ExternalPluginSessionService,
+} from '@valtimo/plugin';
 import {FitPageDirective} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, Subscription, switchMap, throwError} from 'rxjs';
 import {CaseExternalPluginTabApiService, CaseTabService} from '../../../../services';
-import {
-  ExternalPluginTabContent,
-  ExternalPluginTabState,
-  ExternalPluginUserTokenResponse,
-} from '../../../../models';
+import {ExternalPluginTabContent, ExternalPluginTabState} from '../../../../models';
 
 @Component({
   templateUrl: './external-plugin.component.html',
   styleUrls: ['./external-plugin.component.scss'],
   standalone: true,
+  providers: [ExternalPluginSessionService],
   imports: [
     CommonModule,
     LoadingModule,
@@ -53,10 +54,12 @@ export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
   @HostBinding('class.tab--no-margin') private readonly _noMargin = true;
   @HostBinding('class.tab--no-background') private readonly _noBackground = true;
   @HostBinding('class.tab--no-min-height') private readonly _noMinHeight = true;
+  // Carries the external-plugin-specific height/overflow overrides in case-detail.component.scss,
+  // so they no longer leak onto other tabs that use .tab--no-min-height (widgets, documents).
+  @HostBinding('class.tab--external-plugin') private readonly _externalPlugin = true;
 
   public readonly $state = signal<ExternalPluginTabState>('loading');
   public readonly $content = signal<ExternalPluginTabContent | null>(null);
-  public readonly $userToken = signal<string | null>(null);
   public readonly $pluginDataUrl = signal<string | null>(null);
   public readonly $iframeReady = signal<boolean>(false);
 
@@ -67,12 +70,12 @@ export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
   private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
 
   private readonly _subscriptions = new Subscription();
-  private _reMintHandle: number | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly caseTabService: CaseTabService,
-    private readonly apiService: CaseExternalPluginTabApiService
+    private readonly apiService: CaseExternalPluginTabApiService,
+    protected readonly sessionService: ExternalPluginSessionService
   ) {}
 
   public ngOnInit(): void {
@@ -85,23 +88,22 @@ export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
               .pipe(
                 switchMap(content =>
                   content?.bundleUrl
-                    ? this.apiService
-                        .mintUserToken(content.configurationId)
-                        .pipe(map(token => ({content, token})))
+                    ? this.sessionService
+                        .startSession(content.configurationId)
+                        .pipe(map(() => content))
                     : throwError(() => new Error('bundle-unavailable'))
                 )
               )
           )
         )
         .subscribe({
-          next: ({content, token}) => this.onLoaded(content, token),
+          next: content => this.onLoaded(content),
           error: () => this.$state.set('error'),
         })
     );
   }
 
   public ngOnDestroy(): void {
-    this._clearReMint();
     this._subscriptions.unsubscribe();
   }
 
@@ -111,43 +113,11 @@ export class CaseDetailExternalPluginTabComponent implements OnInit, OnDestroy {
     setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
   }
 
-  private onLoaded(
-    content: ExternalPluginTabContent,
-    token: ExternalPluginUserTokenResponse
-  ): void {
+  private onLoaded(content: ExternalPluginTabContent): void {
     this.$content.set(content);
-    this.$userToken.set(token.userToken);
-    this.$pluginDataUrl.set(this._derivePluginDataUrl(content.bundleUrl));
+    this.$pluginDataUrl.set(derivePluginDataUrl(content.bundleUrl));
     this.$state.set('ready');
-    this._scheduleReMint(content.configurationId, token.expiresAt);
     // Trigger fitPage recalculation after the iframe element is rendered
     setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
-  }
-
-  private _derivePluginDataUrl(bundleUrl: string | null): string | null {
-    if (!bundleUrl) return null;
-    const idx = bundleUrl.indexOf('/bundles/');
-    return idx >= 0 ? `${bundleUrl.substring(0, idx)}/data` : null;
-  }
-
-  private _scheduleReMint(configurationId: string, expiresAt: string): void {
-    this._clearReMint();
-    const expiry = new Date(expiresAt).getTime();
-    const delay = Math.max(expiry - Date.now() - 60_000, 30_000);
-    this._reMintHandle = window.setTimeout(() => {
-      this._subscriptions.add(
-        this.apiService.mintUserToken(configurationId).subscribe(token => {
-          this.$userToken.set(token.userToken);
-          this._scheduleReMint(configurationId, token.expiresAt);
-        })
-      );
-    }, delay);
-  }
-
-  private _clearReMint(): void {
-    if (this._reMintHandle !== null) {
-      window.clearTimeout(this._reMintHandle);
-      this._reMintHandle = null;
-    }
   }
 }

@@ -23,7 +23,8 @@ import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
-import com.ritense.case_.service.event.CaseTabCreatedEvent
+import com.ritense.case_.domain.tab.CaseExternalPluginTab
+import com.ritense.case_.service.event.CaseTabUpdatedEvent
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_TAB
@@ -77,9 +78,10 @@ class CaseTabImporter(
             )
         }
 
-        savedTabs
-            .filter { it.type == CaseTabType.EXTERNAL_PLUGIN }
-            .forEach { applicationEventPublisher.publishEvent(CaseTabCreatedEvent(it)) }
+        // Import is an upsert: publish an update event for every tab so type-specific side tables
+        // stay in sync — including dropping a stale `case_external_plugin_tab` row when a
+        // re-imported tab changed to a non-EXTERNAL_PLUGIN type.
+        savedTabs.forEach { applicationEventPublisher.publishEvent(CaseTabUpdatedEvent(it)) }
     }
 
     /**
@@ -92,17 +94,12 @@ class CaseTabImporter(
             return contentKey
         }
 
-        val configPart = contentKey.substringBefore(':')
-        val bundlePart = contentKey.substringAfter(':', "")
-        val originalConfigId = try {
-            UUID.fromString(configPart)
-        } catch (_: IllegalArgumentException) {
-            null
-        } ?: return contentKey
+        val (originalConfigId, bundleKey) = CaseExternalPluginTab.parseContentKeyOrNull(contentKey)
+            ?: return contentKey
 
         val mappedConfigId = mappings[originalConfigId] ?: return contentKey
 
-        return if (bundlePart.isEmpty()) mappedConfigId.toString() else "$mappedConfigId:$bundlePart"
+        return CaseExternalPluginTab.formatContentKey(mappedConfigId, bundleKey)
     }
 
     private companion object {

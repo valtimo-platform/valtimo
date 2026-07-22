@@ -44,7 +44,17 @@ import {
   Subject,
   timer,
 } from 'rxjs';
-import {catchError, distinctUntilChanged, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginConfigurationRow} from '../../models';
 import {cloneDeep, isEqual} from 'lodash';
@@ -101,9 +111,7 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
           this._externalPluginService
             .getConfigurations()
             .pipe(catchError(() => of([] as ExternalPluginConfiguration[]))),
-          this._externalPluginService
-            .getDefinitions()
-            .pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
+          this._allDefinitions$,
           this._allHosts$,
           this._translateService.stream('key'),
         ]).pipe(
@@ -128,9 +136,7 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
             const external: UnifiedPluginConfigurationRow[] = externalConfigurations.map(config => {
               const definition = externalDefinitions.find(d => d.id === config.definitionId);
               const incompatible = isExternalPluginDefinitionIncompatible(definition);
-              const host = definition
-                ? hosts.find(h => h.id === definition.hostId)
-                : undefined;
+              const host = definition ? hosts.find(h => h.id === definition.hostId) : undefined;
               return {
                 id: config.id,
                 title: config.title,
@@ -188,46 +194,61 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     map(() => document.visibilityState === 'visible')
   );
 
-  public readonly externalDefinitions$: Observable<ExternalPluginDefinition[]> = merge(
-    this._tabVisible$.pipe(switchMap(visible => (visible ? timer(0, 5000) : EMPTY))),
-    this._stateService.refresh$
+  private readonly _pollTick$: Observable<number> = this._tabVisible$.pipe(
+    switchMap(visible => (visible ? timer(0, 5000) : EMPTY))
+  );
+
+  /**
+   * Single shared definitions poll: no matter how many consumers subscribe, only one
+   * `getDefinitions()` request is made per tick/refresh. Deduped so consumers only re-render when
+   * the data actually changed. The toolbar refresh spinner is only driven by explicit refreshes
+   * (upload/save/delete), never by the background poll, so it does not blink every 5 seconds when
+   * the data is unchanged.
+   */
+  private readonly _allDefinitions$: Observable<ExternalPluginDefinition[]> = merge(
+    this._pollTick$,
+    this._stateService.refresh$.pipe(
+      tap(() => {
+        if (!this._externalDefsInitialLoad) {
+          this.externalDefsRefreshing$.next(true);
+        }
+      })
+    )
   ).pipe(
     takeUntil(this._destroy$),
-    tap(() => {
-      if (!this._externalDefsInitialLoad) {
-        this.externalDefsRefreshing$.next(true);
-      }
-    }),
     switchMap(() =>
       this._externalPluginService
         .getDefinitions()
         .pipe(catchError(() => of([] as ExternalPluginDefinition[])))
     ),
+    // The spinner must be reset before the dedupe: a refresh that yields unchanged data would
+    // otherwise never emit past `distinctUntilChanged`, leaving the spinner on forever.
     tap(() => {
       this._externalDefsInitialLoad = false;
       this.externalDefsRefreshing$.next(false);
     }),
-    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr)),
+    shareReplay({bufferSize: 1, refCount: true})
   );
+
+  public readonly externalDefinitions$: Observable<ExternalPluginDefinition[]> =
+    this._allDefinitions$;
 
   // --- Plugin upload ---
   public readonly uploadModalOpen$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _refreshHosts$ = new Subject<void>();
-  private _hostsInitialLoad = true;
-
-  private readonly _allHosts$: Observable<ExternalPluginHost[]> = merge(
-    this._tabVisible$.pipe(switchMap(visible => (visible ? timer(0, 5000) : EMPTY))),
-    this._refreshHosts$
-  ).pipe(
+  /**
+   * Single shared hosts poll: one `getHosts()` request per tick, shared by every consumer
+   * (configurations list, connected hosts, upload button state). Deduped so consumers only
+   * re-render when the data actually changed.
+   */
+  private readonly _allHosts$: Observable<ExternalPluginHost[]> = this._pollTick$.pipe(
     takeUntil(this._destroy$),
     switchMap(() =>
       this._externalPluginService.getHosts().pipe(catchError(() => of([] as ExternalPluginHost[])))
     ),
-    tap(() => {
-      this._hostsInitialLoad = false;
-    }),
-    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr)),
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   public readonly connectedHosts$: Observable<Array<ExternalPluginHost>> = this._allHosts$.pipe(

@@ -62,6 +62,7 @@ import com.ritense.externalplugin.service.ExternalPluginMenuPageService
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
+import com.ritense.externalplugin.web.rest.ExternalPluginHostOriginsResource
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
@@ -70,36 +71,53 @@ import com.ritense.case_.repository.CaseExternalPluginTabRepository
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginActionResultHandler
+import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
-import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.convert.DurationStyle
 import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 
-@Configuration
+// @EnableScheduling stays even though this is an @AutoConfiguration: the discovery job's @Scheduled
+// method needs a ScheduledAnnotationBeanPostProcessor, which no other module is guaranteed to
+// contribute (same pattern as DocumentOpenSearchAutoConfiguration).
+@AutoConfiguration
 @EnableScheduling
 @EntityScan("com.ritense.externalplugin.domain")
 @EnableJpaRepositories("com.ritense.externalplugin.repository")
 class ExternalPluginAutoConfiguration {
 
+    /**
+     * RestTemplate for all GZAC→host calls. Timeouts are mandatory: host calls run on request
+     * threads and in the discovery cycle, so an unresponsive host must fail fast instead of
+     * hanging a thread (or, worse, a transaction) indefinitely.
+     */
     @Bean("externalPluginRestTemplate")
     @ConditionalOnMissingBean(name = ["externalPluginRestTemplate"])
-    fun externalPluginRestTemplate(builder: RestTemplateBuilder): RestTemplate = builder.build()
+    fun externalPluginRestTemplate(
+        builder: RestTemplateBuilder,
+        @Value("\${valtimo.external-plugin.connect-timeout:PT2S}") connectTimeout: String,
+        @Value("\${valtimo.external-plugin.read-timeout:PT10S}") readTimeout: String,
+    ): RestTemplate = builder
+        .connectTimeout(DurationStyle.detectAndParse(connectTimeout))
+        .readTimeout(DurationStyle.detectAndParse(readTimeout))
+        .build()
 
     @Bean
     @ConditionalOnMissingBean(PluginPropertyEncryptor::class)
@@ -120,16 +138,14 @@ class ExternalPluginAutoConfiguration {
         configurationRepository: ExternalPluginConfigurationRepository,
         processLinkRepository: ExternalPluginProcessLinkRepository,
         taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
-        operatonRepositoryService: OperatonRepositoryService,
-        bpmnRepositoryService: RepositoryService,
+        processDefinitionUsageMetaResolver: ProcessDefinitionUsageMetaResolver,
         caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
     ) = ExternalPluginHostUsageResolver(
         definitionRepository,
         configurationRepository,
         processLinkRepository,
         taskFormProcessLinkRepository,
-        operatonRepositoryService,
-        bpmnRepositoryService,
+        processDefinitionUsageMetaResolver,
         caseExternalPluginTabService,
     )
 
@@ -190,6 +206,12 @@ class ExternalPluginAutoConfiguration {
     ) = ExternalPluginMenuPageResource(menuPageService)
 
     @Bean
+    @ConditionalOnMissingBean(ExternalPluginHostOriginsResource::class)
+    fun externalPluginHostOriginsResource(
+        hostService: ExternalPluginHostService,
+    ) = ExternalPluginHostOriginsResource(hostService)
+
+    @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenKeyProvider::class)
     fun externalPluginServiceTokenKeyProvider(
         @Value("\${valtimo.plugin.encryption-secret}") secret: String,
@@ -243,12 +265,38 @@ class ExternalPluginAutoConfiguration {
         authenticator: ExternalPluginUserTokenAuthenticator,
     ) = ExternalPluginUserTokenFilter(keyProvider, authenticator)
 
+    /**
+     * The three external-plugin filters are exposed as `Filter`-typed beans (so the security
+     * configurer can insert them at the right position in the Spring Security chain), which means
+     * Spring Boot would *also* auto-register each of them as a plain servlet filter running on
+     * every request. These disabled registrations suppress that second, chain-independent
+     * registration — the filters must only ever run inside the security filter chain.
+     */
+    @Bean
+    fun externalPluginServiceTokenFilterRegistration(
+        filter: ExternalPluginServiceTokenFilter,
+    ): FilterRegistrationBean<ExternalPluginServiceTokenFilter> =
+        FilterRegistrationBean(filter).apply { isEnabled = false }
+
+    @Bean
+    fun externalPluginUserTokenFilterRegistration(
+        filter: ExternalPluginUserTokenFilter,
+    ): FilterRegistrationBean<ExternalPluginUserTokenFilter> =
+        FilterRegistrationBean(filter).apply { isEnabled = false }
+
+    @Bean
+    fun externalPluginEndpointAllowlistFilterRegistration(
+        filter: ExternalPluginEndpointAllowlistFilter,
+    ): FilterRegistrationBean<ExternalPluginEndpointAllowlistFilter> =
+        FilterRegistrationBean(filter).apply { isEnabled = false }
+
     @Bean
     @ConditionalOnMissingBean(ExternalPluginUserTokenResource::class)
     fun externalPluginUserTokenResource(
         configurationRepository: ExternalPluginConfigurationRepository,
+        grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         userTokenService: ExternalPluginUserTokenService,
-    ) = ExternalPluginUserTokenResource(configurationRepository, userTokenService)
+    ) = ExternalPluginUserTokenResource(configurationRepository, grantedEndpointRepository, userTokenService)
 
     @Bean
     @Order(450)
@@ -313,8 +361,18 @@ class ExternalPluginAutoConfiguration {
         configurationService: ExternalPluginConfigurationService,
         hostService: ExternalPluginHostService,
         hostClient: ExternalPluginHostClient,
+        transactionManager: PlatformTransactionManager,
         @Value("\${valtimo.external-plugin.polling.failure-threshold:3}") failureThreshold: Int,
-    ) = ExternalPluginDiscoveryService(hostRepository, definitionRepository, configurationRepository, configurationService, hostService, hostClient, failureThreshold)
+    ) = ExternalPluginDiscoveryService(
+        hostRepository,
+        definitionRepository,
+        configurationRepository,
+        configurationService,
+        hostService,
+        hostClient,
+        TransactionTemplate(transactionManager),
+        failureThreshold,
+    )
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDiscoveryJob::class)

@@ -32,8 +32,13 @@ open class MenuConfiguration(
 
     @Id
     @Column(name = "id", nullable = false)
-    open val id: String = "singleton",
+    open val id: String = SINGLETON_ID,
 
     @Column(name = "configuration", columnDefinition = "TEXT", nullable = false)
     open var configuration: String = "{}"
-)
+) {
+
+    companion object {
+        const val SINGLETON_ID = "singleton"
+    }
+}

@@ -20,7 +20,7 @@ import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
-import com.ritense.case_.service.event.CaseTabCreatedEvent
+import com.ritense.case_.service.event.CaseTabUpdatedEvent
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.FORM
@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
@@ -137,7 +137,7 @@ class CaseTabImporterTest(
     }
 
     @Test
-    fun `should publish CaseTabCreatedEvent for imported EXTERNAL_PLUGIN tabs so the side row gets created`() {
+    fun `should publish CaseTabUpdatedEvent for imported EXTERNAL_PLUGIN tabs so the side row gets upserted`() {
         val configId = UUID.randomUUID()
         val content = """
             [
@@ -159,14 +159,14 @@ class CaseTabImporterTest(
 
         importer.import(request)
 
-        val captor = argumentCaptor<CaseTabCreatedEvent>()
+        val captor = argumentCaptor<CaseTabUpdatedEvent>()
         verify(applicationEventPublisher).publishEvent(captor.capture())
         assertThat(captor.firstValue.tab.contentKey).isEqualTo(configId.toString())
         assertThat(captor.firstValue.tab.type).isEqualTo(CaseTabType.EXTERNAL_PLUGIN)
     }
 
     @Test
-    fun `should not publish CaseTabCreatedEvent for non-EXTERNAL_PLUGIN tabs`() {
+    fun `should publish CaseTabUpdatedEvent for non-EXTERNAL_PLUGIN tabs so a stale side row from a type change gets removed`() {
         val content = """
             [
               {
@@ -187,7 +187,45 @@ class CaseTabImporterTest(
 
         importer.import(request)
 
-        verify(applicationEventPublisher, never()).publishEvent(any<CaseTabCreatedEvent>())
+        val captor = argumentCaptor<CaseTabUpdatedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        assertThat(captor.firstValue.tab.type).isEqualTo(CaseTabType.WIDGETS)
+        assertThat(captor.firstValue.tab.id.key).isEqualTo("widgets")
+    }
+
+    @Test
+    fun `should publish a CaseTabUpdatedEvent per imported tab`() {
+        val configId = UUID.randomUUID()
+        val content = """
+            [
+              {
+                "key": "summary",
+                "name": "Summary",
+                "type": "external_plugin",
+                "contentKey": "$configId",
+                "showTasks": false
+              },
+              {
+                "key": "widgets",
+                "name": "Widgets",
+                "type": "widgets",
+                "contentKey": "widgets-tab",
+                "showTasks": false
+              }
+            ]
+        """.trimIndent()
+
+        val request = ImportRequest(
+            fileName = FILENAME,
+            content = content.toByteArray(Charsets.UTF_8),
+            caseDefinitionId = CASE_DEFINITION_ID,
+        )
+
+        importer.import(request)
+
+        val captor = argumentCaptor<CaseTabUpdatedEvent>()
+        verify(applicationEventPublisher, times(2)).publishEvent(captor.capture())
+        assertThat(captor.allValues.map { it.tab.id.key }).containsExactly("summary", "widgets")
     }
 
     private companion object {

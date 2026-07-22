@@ -40,8 +40,8 @@ class CaseWidgetTabManagementResource(
 ) {
 
     @EndpointDescription(
-        en = "Get case widget tab",
-        nl = "Dossiertabblad met widgets ophalen",
+        en = "Get case widget tab (management)",
+        nl = "Dossiertabblad met widgets ophalen (beheer)",
     )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab/{tabKey}")
     fun getCaseWidgetTab(

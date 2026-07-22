@@ -76,10 +76,11 @@ async function main(): Promise<void> {
     runFirst: true, // Run before JSON parsing
   });
 
-  // Register multipart for file uploads
+  // Register multipart for file uploads. The cap applies BEFORE the upload route buffers the file
+  // for its HMAC check, so an unauthenticated caller can't make the host buffer huge payloads.
   await fastify.register(multipart, {
     limits: {
-      fileSize: 100 * 1024 * 1024, // 100 MB max plugin package size
+      fileSize: config.UPLOAD_MAX_BYTES,
     },
   });
 
@@ -88,7 +89,9 @@ async function main(): Promise<void> {
   const kvRepository = new KvRepository(dbPool);
   const logRepository = new LogRepository(dbPool);
 
-  // Initialize plugin manager and config registry
+  // Initialize config registry and plugin manager. The registry fronts the repository with a
+  // short-TTL cache; the manager reads per-call grants through it so hot paths stay off Postgres.
+  const configRegistry = new ConfigRegistry(configRepository, config.CONFIG_CACHE_TTL_MS);
   const allowHttp = (process.env.HOST_ALLOW_HTTP ?? "").toLowerCase() === "true";
   // Lets http_request reach loopback/private-network targets. Local development only — in
   // production this would let a plugin use the host as a proxy into the internal network (SSRF).
@@ -96,13 +99,18 @@ async function main(): Promise<void> {
   const pluginManager = new PluginManager(
     config.PLUGIN_STORAGE_DIR,
     fastify.log,
-    configRepository,
+    configRegistry,
     kvRepository,
     logRepository,
-    allowHttp,
-    allowPrivateNetwork
+    {
+      allowHttp,
+      allowPrivateNetwork,
+      wasmTimeoutMs: config.WASM_TIMEOUT_MS,
+      wasmMaxMemoryPages: config.WASM_MAX_MEMORY_PAGES,
+      gzacApiTimeoutMs: config.GZAC_API_TIMEOUT_MS,
+      instanceIdleTtlMs: config.WASM_INSTANCE_IDLE_TTL_MS,
+    }
   );
-  const configRegistry = new ConfigRegistry(configRepository);
 
   // Brokers are learned from the configurations GZAC pushes; the manager opens/closes consumers as
   // configurations come and go (see hostConfigurationRoutes).
@@ -175,6 +183,7 @@ async function main(): Promise<void> {
     fastify.log.info({ signal }, "Shutting down...");
     clearInterval(retentionInterval);
     await eventConsumerManager.close();
+    await pluginManager.close();
     await closeDbPool(dbPool);
     await fastify.close();
     process.exit(0);

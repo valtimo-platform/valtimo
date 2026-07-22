@@ -23,7 +23,7 @@
   [cdkDropListOrientation]="orientation"
   [cdkDropListSortingDisabled]="sortingDisabled"
   [id]="listId"
-  (cdkDropListDropped)="dropped.emit($event)"
+  (cdkDropListDropped)="droppedEvent.emit($event)"
   class="valtimo-drag-drop-list"
   [class.valtimo-drag-drop-list--empty]="!items?.length"
 >
@@ -33,23 +33,33 @@
       [cdkDragData]="item"
       [cdkDragDisabled]="dragDisabled(item, $index)"
       class="valtimo-drag-drop-list__item"
-      (cdkDragStarted)="dragStarted.emit()"
-      (cdkDragEnded)="dragEnded.emit()"
+      (cdkDragStarted)="dragStartedEvent.emit()"
+      (cdkDragEnded)="dragEndedEvent.emit()"
     >
       <div class="valtimo-drag-drop-list__placeholder" *cdkDragPlaceholder></div>
 
       <!-- The styled, draggable header row: background, hover and handle cover only this. -->
       <div
         class="valtimo-drag-drop-list__row"
-        [class.valtimo-drag-drop-list__row--grabbable]="wholeRowDraggable && !dragDisabled(item, $index)"
+        [class.valtimo-drag-drop-list__row--grabbable]="
+          wholeRowDraggable && !dragDisabled(item, $index)
+        "
       >
         @if (showHandle) {
           @if (wholeRowDraggable) {
-            <span class="valtimo-drag-drop-list__handle valtimo-drag-drop-list__handle--static" aria-hidden="true">
+            <span
+              class="valtimo-drag-drop-list__handle valtimo-drag-drop-list__handle--static"
+              aria-hidden="true"
+            >
               <svg cdsIcon="draggable" size="16"></svg>
             </span>
           } @else if (!dragDisabled(item, $index)) {
-            <button cdkDragHandle [attr.aria-label]="handleAriaLabel" class="valtimo-drag-drop-list__handle" type="button">
+            <button
+              cdkDragHandle
+              [attr.aria-label]="handleAriaLabel | translate"
+              class="valtimo-drag-drop-list__handle"
+              type="button"
+            >
               <svg cdsIcon="draggable" size="16"></svg>
             </button>
           }
@@ -60,7 +70,9 @@
           (mousedown)="onContentPointerDown($event)"
           (touchstart)="onContentPointerDown($event)"
         >
-          <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: item, index: $index}"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="itemTemplate; context: {$implicit: item, index: $index}"
+          ></ng-container>
         </div>
       </div>
 

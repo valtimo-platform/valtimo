@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {FormLinkProcessDiagramComponent} from './components/form-link-process-diagram/form-link-process-diagram.component';
 import {CommonModule} from '@angular/common';
 import {ProcessLinkRoutingModule} from './process-link-routing.module';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {ReactiveFormsModule} from '@angular/forms';
 import {
   CarbonMultiInputModule,
   FormIoModule,
@@ -99,7 +99,6 @@ import {PluginActionResultMappingsComponent} from './components/plugin-action-re
   imports: [
     CommonModule,
     ProcessLinkRoutingModule,
-    FormsModule,
     ReactiveFormsModule,
     ModalModule,
     TranslateModule,

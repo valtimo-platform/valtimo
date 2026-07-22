@@ -29,11 +29,11 @@ import {
 } from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
+  derivePluginDataUrl,
   ExternalPluginIframeComponent,
+  ExternalPluginSessionService,
   ExternalPluginTaskFormSubmissionResult,
   ExternalPluginTaskFormSubmissionService,
-  ExternalPluginUserTokenResponse,
-  ExternalPluginUserTokenService,
 } from '@valtimo/plugin';
 import {LoadingModule, NotificationModule} from 'carbon-components-angular';
 import {Subscription} from 'rxjs';
@@ -58,7 +58,9 @@ type FormState = 'loading' | 'ready' | 'error';
 @Component({
   selector: 'valtimo-task-external-plugin-form',
   templateUrl: './task-external-plugin-form.component.html',
+  styleUrls: ['./task-external-plugin-form.component.scss'],
   standalone: true,
+  providers: [ExternalPluginSessionService],
   imports: [
     CommonModule,
     LoadingModule,
@@ -80,31 +82,27 @@ export class TaskExternalPluginFormComponent implements OnInit, OnDestroy {
   private readonly _iframe?: ExternalPluginIframeComponent;
 
   public readonly $state = signal<FormState>('loading');
-  public readonly $userToken = signal<string | null>(null);
   public readonly $pluginDataUrl = signal<string | null>(null);
 
   private readonly _subscriptions = new Subscription();
-  private _reMintHandle: number | null = null;
 
   constructor(
-    private readonly userTokenService: ExternalPluginUserTokenService,
+    protected readonly sessionService: ExternalPluginSessionService,
     private readonly submissionService: ExternalPluginTaskFormSubmissionService,
     private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
-    this._subscriptions.add(
-      this.userTokenService.mintUserToken(this.configurationId).subscribe({
-        next: token => this._onToken(token),
-        // A token is only needed for the Level 2 escape hatch (and live GZAC reads while editing);
-        // Level 0/1 submission goes through GZAC directly. Render anyway so a pure form still works.
-        error: () => this._onTokenUnavailable(),
-      })
-    );
+    // The session service owns minting, the pre-expiry re-mint and retry-with-backoff on failure.
+    this.sessionService.startSession(this.configurationId).subscribe({
+      next: () => this._onReady(),
+      // A token is only needed for the Level 2 escape hatch (and live GZAC reads while editing);
+      // Level 0/1 submission goes through GZAC directly. Render anyway so a pure form still works.
+      error: () => this._onReady(),
+    });
   }
 
   public ngOnDestroy(): void {
-    this._clearReMint();
     this._subscriptions.unsubscribe();
   }
 
@@ -143,49 +141,8 @@ export class TaskExternalPluginFormComponent implements OnInit, OnDestroy {
     this._iframe?.sendSubmitResult({correlationId, ok: false, errors, fieldErrors});
   }
 
-  private _onToken(token: ExternalPluginUserTokenResponse): void {
-    this.$userToken.set(token.userToken);
-    this.$pluginDataUrl.set(this._derivePluginDataUrl(this.bundleUrl));
+  private _onReady(): void {
+    this.$pluginDataUrl.set(derivePluginDataUrl(this.bundleUrl));
     this.$state.set('ready');
-    this._scheduleReMint(token.expiresAt);
-  }
-
-  private _onTokenUnavailable(): void {
-    this.$pluginDataUrl.set(this._derivePluginDataUrl(this.bundleUrl));
-    this.$state.set('ready');
-  }
-
-  /**
-   * Derives the plugin host data route (`{base}/data`) from the bundle URL
-   * (`{base}/bundles/task-form.html`). Returns null when the URL doesn't follow the bundle layout.
-   */
-  private _derivePluginDataUrl(bundleUrl: string): string | null {
-    const idx = bundleUrl.indexOf('/bundles/');
-    return idx >= 0 ? `${bundleUrl.substring(0, idx)}/data` : null;
-  }
-
-  /**
-   * Re-mints the downscoped user token shortly before its (≤15-min) expiry so a long-lived form does
-   * not submit with a stale token. Purely parent-side — the iframe never holds a token.
-   */
-  private _scheduleReMint(expiresAt: string): void {
-    this._clearReMint();
-    const expiry = new Date(expiresAt).getTime();
-    const delay = Math.max(expiry - Date.now() - 60_000, 30_000);
-    this._reMintHandle = window.setTimeout(() => {
-      this._subscriptions.add(
-        this.userTokenService.mintUserToken(this.configurationId).subscribe(token => {
-          this.$userToken.set(token.userToken);
-          this._scheduleReMint(token.expiresAt);
-        })
-      );
-    }, delay);
-  }
-
-  private _clearReMint(): void {
-    if (this._reMintHandle !== null) {
-      window.clearTimeout(this._reMintHandle);
-      this._reMintHandle = null;
-    }
   }
 }

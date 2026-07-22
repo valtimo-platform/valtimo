@@ -38,7 +38,7 @@ export async function buildTestApp(
     encoding: false,
     runFirst: true,
   });
-  await app.register(multipart, { limits: { fileSize: 100 * 1024 * 1024 } });
+  await app.register(multipart, { limits: { fileSize: 25 * 1024 * 1024 } });
   await register(app);
   await app.ready();
   return app;
@@ -80,6 +80,13 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     DB_NAME: "pluginhost",
     DB_USER: "pluginhost",
     DB_PASSWORD: "pluginhost",
+    WASM_TIMEOUT_MS: 30_000,
+    WASM_MAX_MEMORY_PAGES: 4096,
+    WASM_INSTANCE_IDLE_TTL_MS: 10 * 60 * 1000,
+    GZAC_API_TIMEOUT_MS: 60_000,
+    UPLOAD_MAX_BYTES: 25 * 1024 * 1024,
+    DATA_RATE_LIMIT_PER_MINUTE: 120,
+    CONFIG_CACHE_TTL_MS: 10_000,
     ...overrides,
   } as AppConfig;
 }

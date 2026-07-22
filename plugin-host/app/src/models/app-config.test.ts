@@ -54,6 +54,33 @@ describe("envSchema", () => {
     expect(() => envSchema.parse({ ADMIN_TOKEN: "secret", LOG_LEVEL: "trace" })).toThrow();
   });
 
+  it("defaults the execution/limit knobs and coerces their env strings", () => {
+    const defaults = envSchema.parse({ ADMIN_TOKEN: "secret" });
+    expect(defaults.WASM_TIMEOUT_MS).toBe(30_000);
+    expect(defaults.WASM_MAX_MEMORY_PAGES).toBe(4096);
+    expect(defaults.WASM_INSTANCE_IDLE_TTL_MS).toBe(10 * 60 * 1000);
+    expect(defaults.GZAC_API_TIMEOUT_MS).toBe(60_000);
+    expect(defaults.UPLOAD_MAX_BYTES).toBe(25 * 1024 * 1024);
+    expect(defaults.DATA_RATE_LIMIT_PER_MINUTE).toBe(120);
+    expect(defaults.CONFIG_CACHE_TTL_MS).toBe(10_000);
+
+    const cfg = envSchema.parse({
+      ADMIN_TOKEN: "secret",
+      WASM_TIMEOUT_MS: "5000",
+      WASM_MAX_MEMORY_PAGES: "0",
+      DATA_RATE_LIMIT_PER_MINUTE: "0",
+    });
+    expect(cfg.WASM_TIMEOUT_MS).toBe(5000);
+    expect(cfg.WASM_MAX_MEMORY_PAGES).toBe(0); // 0 = no memory cap
+    expect(cfg.DATA_RATE_LIMIT_PER_MINUTE).toBe(0); // 0 = rate limit off
+  });
+
+  it("rejects non-positive or non-numeric execution limits", () => {
+    expect(() => envSchema.parse({ ADMIN_TOKEN: "secret", WASM_TIMEOUT_MS: "0" })).toThrow();
+    expect(() => envSchema.parse({ ADMIN_TOKEN: "secret", WASM_TIMEOUT_MS: "abc" })).toThrow();
+    expect(() => envSchema.parse({ ADMIN_TOKEN: "secret", UPLOAD_MAX_BYTES: "-1" })).toThrow();
+  });
+
   it("leaves TLS paths undefined when not set", () => {
     const cfg = envSchema.parse({ ADMIN_TOKEN: "secret" });
     expect(cfg.TLS_CERT_PATH).toBeUndefined();

@@ -15,7 +15,9 @@
  */
 
 import type {CallContext} from "@extism/extism";
-import type {HostLogger} from "../models/index.js";
+import type {Endpoint, HostLogger} from "../models/index.js";
+import {isEndpointAllowed} from "../security/endpoint-allowlist.js";
+import {guardHostCall} from "./guard.js";
 
 /**
  * Per-call context the host attaches to every `plugin.call(...)`. Made available to host
@@ -37,6 +39,13 @@ export interface GzacApiCallContext {
    * executing. A configuration must explicitly include the required capability.
    */
   grantedCapabilities?: string[];
+  /**
+   * GZAC endpoints the admin granted at activation (Ant-style patterns; see
+   * `security/endpoint-allowlist.ts`). Requests outside this list are refused before the fetch.
+   * `undefined` means the owning GZAC instance didn't push an endpoint list (older push) — the
+   * host then warns and allows, relying on GZAC's server-side allowlist filter alone.
+   */
+  grantedEndpoints?: Endpoint[];
 }
 
 interface GzacApiRequest {
@@ -66,35 +75,18 @@ interface GzacApiResponse {
  * `plugin-manager.ts`) so that async host functions work on Node versions without JSPI.
  */
 export function createGzacApiHostFunction(
-  logger: HostLogger
+  logger: HostLogger,
+  options: { timeoutMs?: number } = {}
 ): (callContext: CallContext, addr: bigint) => Promise<bigint> {
   const log = logger.child({ component: "gzac_api" });
+  const timeoutMs = options.timeoutMs ?? 60_000;
 
   return async (callContext: CallContext, addr: bigint): Promise<bigint> => {
-    const ctx = callContext.hostContext<GzacApiCallContext | undefined>();
-    if (!ctx) {
-      return callContext.store(
-        JSON.stringify(errorReply(500, "No active invocation context"))
-      );
+    const guard = guardHostCall<GzacApiRequest>(callContext, addr, "gzac_api");
+    if (!guard.ok) {
+      return callContext.store(JSON.stringify(errorReply(guard.status, guard.message)));
     }
-
-    if (!ctx.grantedCapabilities?.includes("gzac_api")) {
-      return callContext.store(
-        JSON.stringify(errorReply(403, "Capability 'gzac_api' not granted for this configuration"))
-      );
-    }
-
-    const inputJson = callContext.read(addr)?.string() ?? "{}";
-    let req: GzacApiRequest;
-    try {
-      req = JSON.parse(inputJson) as GzacApiRequest;
-    } catch (err) {
-      return callContext.store(
-        JSON.stringify(
-          errorReply(400, `Invalid gzac_api request JSON: ${(err as Error).message}`)
-        )
-      );
-    }
+    const { ctx, req } = guard;
 
     if (!req.method || typeof req.method !== "string") {
       return callContext.store(
@@ -105,6 +97,30 @@ export function createGzacApiHostFunction(
       return callContext.store(
         JSON.stringify(
           errorReply(400, "'path' must be set and start with '/' in gzac_api request")
+        )
+      );
+    }
+
+    // Enforce the granted-endpoint allowlist before anything leaves the host. GZAC's servlet
+    // filter is the authoritative gate; this check refuses non-granted callbacks early. A config
+    // without an endpoint list (older GZAC push) is allowed with a warning — see
+    // GzacApiCallContext.grantedEndpoints.
+    if (ctx.grantedEndpoints === undefined) {
+      log.warn(
+        { configurationId: ctx.configurationId, method: req.method, path: req.path },
+        "Configuration carries no granted-endpoint list (older GZAC push) — allowing gzac_api call without host-side allowlist check"
+      );
+    } else if (!isEndpointAllowed(req.method, req.path, ctx.grantedEndpoints)) {
+      log.warn(
+        { configurationId: ctx.configurationId, method: req.method, path: req.path },
+        "gzac_api call refused: endpoint not in the configuration's granted allowlist"
+      );
+      return callContext.store(
+        JSON.stringify(
+          errorReply(
+            403,
+            `Endpoint not granted for this configuration: ${req.method.toUpperCase()} ${req.path}`
+          )
         )
       );
     }
@@ -124,10 +140,23 @@ export function createGzacApiHostFunction(
     }
 
     const url = `${ctx.gzacBaseUrl.replace(/\/$/, "")}${req.path}`;
+    // Plugin-supplied headers first, host-controlled credentials LAST — so a plugin can never
+    // override the Authorization header the host attaches. Any Authorization the plugin sends is
+    // stripped explicitly (and logged) rather than silently shadowed.
+    const pluginHeaders: Record<string, string> = { ...(req.headers ?? {}) };
+    for (const name of Object.keys(pluginHeaders)) {
+      if (name.toLowerCase() === "authorization") {
+        log.warn(
+          { configurationId: ctx.configurationId, pluginId: ctx.pluginId, path: req.path },
+          "Stripping plugin-supplied Authorization header from gzac_api request"
+        );
+        delete pluginHeaders[name];
+      }
+    }
     const headers: Record<string, string> = {
-      Authorization: `Bearer ${token}`,
       Accept: "application/json",
-      ...(req.headers ?? {}),
+      ...pluginHeaders,
+      Authorization: `Bearer ${token}`,
     };
     let bodyInit: BodyInit | undefined;
     if (req.body !== undefined && req.body !== null) {
@@ -158,6 +187,9 @@ export function createGzacApiHostFunction(
         method: req.method.toUpperCase(),
         headers,
         body: bodyInit,
+        // Bound the callback so a hung GZAC endpoint can't pin the plugin call (and its
+        // per-plugin lock) indefinitely.
+        signal: AbortSignal.timeout(timeoutMs),
       });
       const text = await res.text();
       let body: unknown = text;
@@ -183,6 +215,15 @@ export function createGzacApiHostFunction(
         { method: req.method, url, error: (err as Error).message, durationMs: Date.now() - start },
         "gzac_api error"
       );
+      // AbortSignal.timeout rejects with a TimeoutError DOMException — report it distinctly so
+      // plugins can tell a slow GZAC from an unreachable one.
+      if ((err as Error).name === "TimeoutError" || (err as Error).name === "AbortError") {
+        return callContext.store(
+          JSON.stringify(
+            errorReply(504, `gzac_api request timed out after ${timeoutMs}ms: ${req.method.toUpperCase()} ${req.path}`)
+          )
+        );
+      }
       return callContext.store(
         JSON.stringify(errorReply(502, `gzac_api fetch failed: ${(err as Error).message}`))
       );

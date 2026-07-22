@@ -18,12 +18,44 @@ import { FastifyInstance } from "fastify";
 import { PluginManager } from "../plugin-manager.js";
 import { ConfigRegistry } from "../config-registry.js";
 import { AppConfig } from "../config.js";
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { join, dirname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import AdmZip from "adm-zip";
 import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
 import { createHmacAuthHook, verifyDeferredHmac } from "../security/hmac-auth.js";
+
+/** Raised for a malicious/malformed plugin package — mapped to a 400, not a 500. */
+export class InvalidPluginPackageError extends Error {}
+
+/**
+ * Extracts a plugin package entry-by-entry, defending against zip-slip: every entry's resolved
+ * destination must stay inside `extractDir` (a crafted `../`, absolute, or drive-letter entry name
+ * rejects the whole package). Additionally only the files a plugin package may legitimately carry
+ * are extracted — root-level files (manifest.json, plugin.wasm, the logo) and `frontend/**` — so a
+ * hostile zip cannot plant anything else even inside the temp dir.
+ */
+async function safeExtractPluginZip(zip: AdmZip, extractDir: string): Promise<void> {
+  const root = resolve(extractDir);
+  for (const entry of zip.getEntries()) {
+    if (entry.isDirectory) continue;
+    const name = entry.entryName;
+    const destination = resolve(root, name);
+    if (destination !== root && !destination.startsWith(root + sep)) {
+      throw new InvalidPluginPackageError(
+        `Zip entry escapes the extraction directory: ${name}`
+      );
+    }
+    // Allowlist: root-level files or frontend assets only.
+    const isRootFile = !name.includes("/") && !name.includes("\\");
+    const isFrontendAsset = name.startsWith("frontend/");
+    if (!isRootFile && !isFrontendAsset) {
+      continue;
+    }
+    await mkdir(dirname(destination), { recursive: true });
+    await writeFile(destination, entry.getData());
+  }
+}
 
 /**
  * Admin-authenticated plugin management routes.
@@ -92,15 +124,24 @@ export async function hostManagementRoutes(
       }
       const zipBuffer = Buffer.concat(chunks);
 
+      // The multipart parser truncates a stream that exceeds its size limit rather than erroring —
+      // reject explicitly so an oversized upload can't slip through as a corrupt zip.
+      if (data.file.truncated) {
+        reply.code(413).send({
+          error: `Plugin package exceeds the maximum upload size of ${config.UPLOAD_MAX_BYTES} bytes`,
+        });
+        return;
+      }
+
       // Authenticate: the HMAC signature binds these exact file bytes (see deferHmac note above).
       if (!verifyDeferredHmac(request, reply, config.ADMIN_TOKEN, zipBuffer)) {
         return;
       }
 
-      // Extract zip
+      // Extract zip — per entry, with zip-slip protection (see safeExtractPluginZip).
       const extractDir = join(tempDir, "extracted");
       const zip = new AdmZip(zipBuffer);
-      zip.extractAllTo(extractDir, true);
+      await safeExtractPluginZip(zip, extractDir);
 
       // Read manifest
       const manifestPath = join(extractDir, "manifest.json");
@@ -146,6 +187,13 @@ export async function hostManagementRoutes(
         { error: (err as Error).message },
         "Plugin upload failed"
       );
+      if (err instanceof InvalidPluginPackageError) {
+        reply.code(400).send({
+          error: "Invalid plugin package",
+          message: err.message,
+        });
+        return;
+      }
       reply.code(500).send({
         error: "Plugin upload failed",
         message: (err as Error).message,

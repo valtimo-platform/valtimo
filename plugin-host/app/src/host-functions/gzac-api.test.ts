@@ -57,6 +57,8 @@ const baseCtx: GzacApiCallContext = {
   pluginVersion: "0.1.0",
   serviceToken: "service-token-abc",
   gzacBaseUrl: "http://gzac:8080",
+  grantedCapabilities: ["gzac_api"],
+  // No grantedEndpoints: an older push without an endpoint list — the host warns and allows.
 };
 
 describe("gzac_api host function", () => {
@@ -93,6 +95,87 @@ describe("gzac_api host function", () => {
       const reply = await invoke(baseCtx, { method: "GET", path: "/api/v1/foo", as: "user" });
       expect(reply.status).toBe(401);
       expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("capability gate", () => {
+    it("returns 403 and does NOT fetch when the gzac_api capability is not granted", async () => {
+      const reply = await invoke({ ...baseCtx, grantedCapabilities: ["kv"] }, {
+        method: "GET",
+        path: "/api/v1/foo",
+      });
+      expect(reply.status).toBe(403);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("endpoint allowlist", () => {
+    const endpoints = [
+      { method: "GET", pattern: "/api/v1/document/*" },
+      { method: "POST", pattern: "/api/v1/case/**" },
+    ];
+
+    it("allows a call matching a granted endpoint", async () => {
+      const reply = await invoke({ ...baseCtx, grantedEndpoints: endpoints }, {
+        method: "GET",
+        path: "/api/v1/document/123",
+      });
+      expect(reply.status).toBe(200);
+      expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
+    it("refuses a call outside the granted endpoints with 403 and does NOT fetch", async () => {
+      const reply = await invoke({ ...baseCtx, grantedEndpoints: endpoints }, {
+        method: "DELETE",
+        path: "/api/v1/document/123",
+      });
+      expect(reply.status).toBe(403);
+      expect(reply.body.error).toContain("DELETE /api/v1/document/123");
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("denies everything when the pushed endpoint list is empty", async () => {
+      const reply = await invoke({ ...baseCtx, grantedEndpoints: [] }, {
+        method: "GET",
+        path: "/api/v1/document/123",
+      });
+      expect(reply.status).toBe(403);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("warns-and-allows when the configuration carries no endpoint list (older GZAC push)", async () => {
+      // Backward compatibility: GZAC's server-side allowlist filter still applies.
+      const reply = await invoke(baseCtx, { method: "GET", path: "/api/v1/anything" });
+      expect(reply.status).toBe(200);
+      expect(fetchMock).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe("header handling", () => {
+    it("strips a plugin-supplied Authorization header and keeps the host-attached token", async () => {
+      await invoke(baseCtx, {
+        method: "GET",
+        path: "/api/v1/foo",
+        headers: { AUTHORIZATION: "Bearer stolen-or-forged", "X-Custom": "yes" },
+      });
+      const headers = fetchMock.mock.calls[0][1].headers as Record<string, string>;
+      // The host's service token wins; the plugin's value is gone under any casing.
+      expect(headers.Authorization).toBe("Bearer service-token-abc");
+      expect(Object.keys(headers).filter((h) => h.toLowerCase() === "authorization")).toEqual([
+        "Authorization",
+      ]);
+      expect(headers["X-Custom"]).toBe("yes");
+    });
+  });
+
+  describe("timeout", () => {
+    it("passes an abort signal to fetch and maps a timeout to a 504 reply", async () => {
+      const timeoutError = new DOMException("The operation timed out.", "TimeoutError");
+      fetchMock.mockRejectedValueOnce(timeoutError);
+      const reply = await invoke(baseCtx, { method: "GET", path: "/api/v1/slow" });
+      expect(reply.status).toBe(504);
+      expect(reply.body.error).toContain("timed out");
+      expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
     });
   });
 

@@ -14,14 +14,9 @@
   ~ limitations under the License.
   -->
 
-<cds-modal
-  *ngIf="open"
-  [open]="open"
-  size="md"
-  valtimoCdsModal
->
+<cds-modal *ngIf="open" [open]="open" size="md" valtimoCdsModal>
   <cds-modal-header (closeSelect)="onClose()">
-    {{ configuration?.title }} - {{ _$definitionName() }}
+    {{ configuration?.title }} - {{ $definitionName() }}
 
     <cds-progress-indicator
       *ngIf="progressSteps.length > 1"
@@ -33,14 +28,14 @@
   </cds-modal-header>
 
   <section cdsModalContent>
-    <cds-loading *ngIf="_$loading()" [isActive]="true" size="sm"></cds-loading>
+    <cds-loading *ngIf="$loading()" [isActive]="true" size="sm"></cds-loading>
 
-    <div [hidden]="currentStepIndex !== 0 || _$loading()">
-      <ng-container *ngIf="!_$loading()">
-        <ng-container *ngIf="_$configBundleUrl() as bundleUrl; else jsonForm">
+    <div [hidden]="currentStepIndex !== 0 || $loading()">
+      <ng-container *ngIf="!$loading()">
+        <ng-container *ngIf="$configBundleUrl() as bundleUrl; else jsonForm">
           <valtimo-external-plugin-iframe
             [bundleUrl]="bundleUrl"
-            [prefillConfiguration]="_$prefillConfiguration()"
+            [prefillConfiguration]="$prefillConfiguration()"
             (configurationChangedEvent)="onIframeConfigurationChanged($event)"
           ></valtimo-external-plugin-iframe>
         </ng-container>
@@ -48,12 +43,16 @@
         <ng-template #jsonForm>
           <form [formGroup]="_form">
             <div class="cds--form-item">
-              <label class="cds--label">{{ 'pluginManagement.labels.configurationName' | translate }}</label>
+              <label class="cds--label">{{
+                'pluginManagement.labels.configurationName' | translate
+              }}</label>
               <input class="cds--text-input" formControlName="title" />
             </div>
 
             <div class="cds--form-item">
-              <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
+              <label class="cds--label">{{
+                'pluginManagement.labels.properties' | translate
+              }}</label>
 
               <textarea
                 class="cds--text-area plugin-external-edit-modal__properties-textarea"
@@ -61,7 +60,7 @@
                 rows="12"
               ></textarea>
 
-              <div *ngIf="_$propertiesInvalid()" class="cds--form-requirement">
+              <div *ngIf="$propertiesInvalid()" class="cds--form-requirement">
                 {{ 'pluginManagement.invalidJson' | translate }}
               </div>
             </div>
@@ -70,11 +69,11 @@
       </ng-container>
     </div>
 
-    <div *ngIf="_$hasPermissionsStep()" [hidden]="currentStepIndex !== 1">
+    <div *ngIf="$hasPermissionsStep()" [hidden]="currentStepIndex !== 1">
       <valtimo-plugin-external-permissions
-        [endpoints]="_$endpoints()"
-        [eventSubscriptions]="_$eventSubscriptions()"
-        [capabilities]="_$capabilities()"
+        [endpoints]="$endpoints()"
+        [eventSubscriptions]="$eventSubscriptions()"
+        [capabilities]="$capabilities()"
         [readonlyMode]="true"
         (validEvent)="onPermissionsValid($event)"
       ></valtimo-plugin-external-permissions>
@@ -82,36 +81,32 @@
   </section>
 
   <cds-modal-footer>
-    <button
-      cdsButton="danger"
-      [disabled]="_$loading()"
-      (click)="onDelete()"
-    >
+    <button cdsButton="danger" [disabled]="$loading()" (click)="onDelete()">
       {{ 'pluginManagement.remove' | translate }}
     </button>
 
     <button
-      *ngIf="currentStepIndex === 0 && _$hasPermissionsStep()"
+      *ngIf="currentStepIndex === 0 && $hasPermissionsStep()"
       cdsButton="primary"
-      [disabled]="_$loading()"
+      [disabled]="$loading()"
       (click)="goToNextStep()"
     >
       {{ 'pluginManagement.editSteps.step1' | translate }}
     </button>
 
     <button
-      *ngIf="currentStepIndex === 0 && !_$hasPermissionsStep()"
+      *ngIf="currentStepIndex === 0 && !$hasPermissionsStep()"
       cdsButton="primary"
-      [disabled]="!configValid || _$loading()"
+      [disabled]="!configValid || $loading()"
       (click)="onSave()"
     >
       {{ 'pluginManagement.editSteps.save' | translate }}
     </button>
 
     <button
-      *ngIf="currentStepIndex === 1 && _$hasPermissionsStep()"
+      *ngIf="currentStepIndex === 1 && $hasPermissionsStep()"
       cdsButton="primary"
-      [disabled]="!_$permissionsValid() || _$loading()"
+      [disabled]="!$permissionsValid() || $loading()"
       (click)="onSave()"
     >
       {{ 'pluginManagement.editSteps.save' | translate }}

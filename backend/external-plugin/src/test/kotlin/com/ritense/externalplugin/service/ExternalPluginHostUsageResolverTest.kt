@@ -27,6 +27,7 @@ import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
@@ -68,8 +69,9 @@ class ExternalPluginHostUsageResolverTest {
             configurationRepository,
             processLinkRepository,
             taskFormProcessLinkRepository,
-            operatonRepositoryService,
-            bpmnRepositoryService,
+            // Real shared resolver over the mocked Operaton services — the tests keep asserting
+            // the full resolution behaviour through it.
+            ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
             java.util.Optional.empty(),
         )
     }

@@ -22,11 +22,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.security.ExternalPluginHmacSigner
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpHeaders
+import org.springframework.stereotype.Component
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.RequestEntity
-import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.ResourceAccessException
@@ -81,6 +82,12 @@ class ExternalPluginHostClient(
         /** The CloudEvent types the admin granted. The host uses this list — not the manifest. */
         eventSubscriptions: List<String>,
         grantedCapabilities: List<String> = emptyList(),
+        /**
+         * The GZAC endpoints the admin granted, as method/Ant-pattern pairs. The host enforces this
+         * list on every `gzac_api` call, so the allowlist holds even if GZAC-side token scoping
+         * were to regress.
+         */
+        grantedEndpoints: List<Pair<String, String>> = emptyList(),
         eventBrokerUrl: String?,
         eventBrokerExchange: String,
         eventBrokerExchangeType: String,
@@ -104,6 +111,11 @@ class ExternalPluginHostClient(
             set<ObjectNode>("grantedCapabilities", objectMapper.createArrayNode().apply {
                 grantedCapabilities.forEach { add(it) }
             })
+            set<ObjectNode>("grantedEndpoints", objectMapper.createArrayNode().apply {
+                grantedEndpoints.forEach { (method, pattern) ->
+                    addObject().put("method", method).put("pattern", pattern)
+                }
+            })
             // The host learns this GZAC instance's broker from the push (it never configures one
             // itself). Omitted when no broker is configured — events are then disabled for the config.
             if (!eventBrokerUrl.isNullOrBlank()) {
@@ -125,6 +137,7 @@ class ExternalPluginHostClient(
         val request = RequestEntity(bodyBytes, headers, HttpMethod.POST, uri)
         restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
     } catch (e: Exception) {
+        logger.warn(e) { "Failed to push configuration $configId for plugin '$pluginId@$pluginVersion' to plugin host at $baseUrl" }
         false
     }
 
@@ -135,6 +148,7 @@ class ExternalPluginHostClient(
         val request = RequestEntity<Void>(headers, HttpMethod.DELETE, uri)
         restTemplate.exchange(request, Void::class.java).statusCode.is2xxSuccessful
     } catch (e: Exception) {
+        logger.warn(e) { "Failed to delete configuration $configId from plugin host at $baseUrl" }
         false
     }
 
@@ -154,15 +168,7 @@ class ExternalPluginHostClient(
             contentType = MediaType.APPLICATION_JSON
         }
 
-        return try {
-            val response = restTemplate.exchange(
-                RequestEntity(body, headers, HttpMethod.POST, uri),
-                JsonNode::class.java,
-            )
-            ActionResponse(status = response.statusCode.value(), body = response.body)
-        } catch (e: HttpClientErrorException) {
-            ActionResponse(status = e.statusCode.value(), body = parseBody(e.responseBodyAsByteArray))
-        }
+        return exchangeForActionResponse(RequestEntity(body, headers, HttpMethod.POST, uri))
     }
 
     /**
@@ -187,15 +193,32 @@ class ExternalPluginHostClient(
             contentType = MediaType.APPLICATION_JSON
         }
 
-        return try {
-            val response = restTemplate.exchange(
-                RequestEntity(body, headers, HttpMethod.POST, uri),
-                JsonNode::class.java,
-            )
-            ActionResponse(status = response.statusCode.value(), body = response.body)
-        } catch (e: HttpClientErrorException) {
-            ActionResponse(status = e.statusCode.value(), body = parseBody(e.responseBodyAsByteArray))
-        }
+        return exchangeForActionResponse(RequestEntity(body, headers, HttpMethod.POST, uri))
+    }
+
+    /**
+     * Executes a plugin invocation and maps every failure mode onto an [ActionResponse] so the
+     * callers' error paths (`actionFailed`, hook rejection) always engage:
+     * - 4xx/5xx from the host → the host's status plus its parsed error body;
+     * - connection failure / timeout → a synthetic 503 with a clear "host unreachable" error body.
+     */
+    private fun exchangeForActionResponse(request: RequestEntity<*>): ActionResponse = try {
+        val response = restTemplate.exchange(request, JsonNode::class.java)
+        ActionResponse(status = response.statusCode.value(), body = response.body)
+    } catch (e: HttpClientErrorException) {
+        ActionResponse(status = e.statusCode.value(), body = parseBody(e.responseBodyAsByteArray))
+    } catch (e: HttpServerErrorException) {
+        logger.warn(e) { "Plugin host at ${request.url} returned ${e.statusCode.value()}" }
+        ActionResponse(status = e.statusCode.value(), body = parseBody(e.responseBodyAsByteArray))
+    } catch (e: ResourceAccessException) {
+        logger.warn(e) { "Plugin host at ${request.url} is unreachable" }
+        ActionResponse(
+            status = 503,
+            body = objectMapper.createObjectNode().apply {
+                put("errorCode", HOST_UNREACHABLE_ERROR_CODE)
+                put("errorMessage", "Plugin host is unreachable: ${e.message}")
+            },
+        )
     }
 
     fun uploadPlugin(
@@ -238,6 +261,9 @@ class ExternalPluginHostClient(
         val path = "/api/host/configurations/$configId/logs"
         val queryPath = "$path?${params.joinToString("&")}"
         val uri = buildUri(baseUrl, queryPath)
+        // Deliberately signs `path` (without the query string), not `queryPath`: the plugin host
+        // strips the query string before verifying (`request.url.split("?")[0]` in hmac-auth.ts),
+        // so the canonical strings match. Query parameters are not signature-bound by design.
         val headers = hmacHeaders(adminToken, HttpMethod.GET.name(), path, EMPTY_BODY)
         val request = RequestEntity<Void>(headers, HttpMethod.GET, uri)
         return restTemplate.exchange(request, JsonNode::class.java).body
@@ -278,7 +304,11 @@ class ExternalPluginHostClient(
 
     data class ActionResponse(val status: Int, val body: JsonNode?)
 
-    private companion object {
+    companion object {
+        /** Error code surfaced when the plugin host cannot be reached at all (no HTTP response). */
+        const val HOST_UNREACHABLE_ERROR_CODE = "EXTERNAL_PLUGIN_HOST_UNREACHABLE"
+
         private val EMPTY_BODY = ByteArray(0)
+        private val logger = KotlinLogging.logger {}
     }
 }

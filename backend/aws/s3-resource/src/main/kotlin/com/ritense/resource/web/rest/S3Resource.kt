@@ -19,6 +19,7 @@ package com.ritense.resource.web.rest
 import com.ritense.resource.service.S3Service
 import com.ritense.resource.web.ObjectUrlDTO
 import com.ritense.resource.web.ResourceDTO
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,6 +29,10 @@ class S3Resource(
     private val s3Service: S3Service
 ) : ResourceResource {
 
+    @EndpointDescription(
+        en = "Generate pre-signed upload URL for file",
+        nl = "Vooraf ondertekende upload-URL voor bestand genereren",
+    )
     @GetMapping(value = ["/v1/resource/pre-signed-url/{fileName}"], produces = ["text/plain;charset=UTF-8"])
     fun generatePreSignedPutObjectUrlForFileName(@PathVariable(name = "fileName") fileName: String): ResponseEntity<String> {
         return ResponseEntity.ok(s3Service.generatePreSignedPutObjectUrl(fileName).toString())

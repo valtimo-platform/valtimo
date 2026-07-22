@@ -81,9 +81,9 @@
           [emptyTemplate]="structureEmptyTpl"
           [wholeRowDraggable]="true"
           listId="structure-root"
-          (dropped)="onDrop($event)"
-          (dragStarted)="onDragStarted()"
-          (dragEnded)="onDragEnded()"
+          (dragEndedEvent)="onDragEnded()"
+          (dragStartedEvent)="onDragStarted()"
+          (droppedEvent)="onDrop($event)"
         ></valtimo-drag-drop-list>
       </section>
 
@@ -115,8 +115,8 @@
                 [listId]="'palette-' + group.categoryKey"
                 [sortingDisabled]="true"
                 [wholeRowDraggable]="true"
-                (dragStarted)="onDragStarted()"
-                (dragEnded)="onDragEnded()"
+                (dragEndedEvent)="onDragEnded()"
+                (dragStartedEvent)="onDragStarted()"
               ></valtimo-drag-drop-list>
             }
           </div>
@@ -193,9 +193,9 @@
         [expansionTemplate]="structureExpansionTpl"
         [listId]="containerListId(node)"
         [wholeRowDraggable]="true"
-        (dropped)="onDrop($event)"
-        (dragStarted)="onDragStarted()"
-        (dragEnded)="onDragEnded()"
+        (dragEndedEvent)="onDragEnded()"
+        (dragStartedEvent)="onDragStarted()"
+        (droppedEvent)="onDrop($event)"
       ></valtimo-drag-drop-list>
     </div>
   }

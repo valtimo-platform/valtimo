@@ -18,6 +18,7 @@ package com.ritense.externalplugin.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -45,6 +46,7 @@ import java.util.UUID
 @RequestMapping("/api/v1/external-plugin", produces = [APPLICATION_JSON_UTF8_VALUE])
 class ExternalPluginUserTokenResource(
     private val configurationRepository: ExternalPluginConfigurationRepository,
+    private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
     private val userTokenService: ExternalPluginUserTokenService,
 ) {
 
@@ -74,11 +76,22 @@ class ExternalPluginUserTokenResource(
         }
 
         val issued = userTokenService.issue(userLogin, roles, configurationId)
-        return ResponseEntity.ok(UserTokenResponse(issued.token, issued.expiresAt))
+        // The configuration's granted endpoints ride along so the iframe host can precheck proxied
+        // calls client-side (audit-C1). This leaks nothing: the caller just received a token scoped
+        // to exactly these endpoints — the server-side allowlist remains authoritative.
+        val grantedEndpoints = grantedEndpointRepository.findAllByConfigurationId(configurationId)
+            .map { GrantedEndpointDto(it.httpMethod, it.endpointPattern) }
+        return ResponseEntity.ok(UserTokenResponse(issued.token, issued.expiresAt, grantedEndpoints))
     }
 
     data class UserTokenResponse(
         val userToken: String,
         val expiresAt: Instant,
+        val grantedEndpoints: List<GrantedEndpointDto>,
+    )
+
+    data class GrantedEndpointDto(
+        val method: String,
+        val pattern: String,
     )
 }

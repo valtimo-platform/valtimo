@@ -16,6 +16,7 @@
 
 package com.valtimo.keycloak.service;
 
+import static com.ritense.valtimo.contract.Constants.SYSTEM_ACCOUNT;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.DEVELOPER;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
@@ -30,12 +31,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
+import com.ritense.valtimo.contract.authentication.SystemPrincipal;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.User;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
 import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
@@ -65,6 +69,7 @@ class KeycloakUserManagementServiceTest {
     private CacheManager cacheManager;
     private CacheManagerUserCache cacheManagerUserCache;
     private AuthorizationService authorizationService;
+    private TeamManagementService teamManagementService;
 
     private UserRepresentation jamesVance;
     private UserRepresentation johnDoe;
@@ -81,12 +86,13 @@ class KeycloakUserManagementServiceTest {
         cacheManager = new ConcurrentMapCacheManager();
         cacheManagerUserCache = new CacheManagerUserCache(cacheManager);
         authorizationService = mock(AuthorizationService.class);
+        teamManagementService = mock(TeamManagementService.class);
         userManagementService = new KeycloakUserManagementService(
             keycloakService,
             "clientName",
             cacheManagerUserCache,
             authorizationService,
-            mock()
+            teamManagementService
         );
 
         jamesVance = newUser("James", "Vance", List.of(USER));
@@ -294,6 +300,66 @@ class KeycloakUserManagementServiceTest {
         assertThatThrownBy(() -> userManagementService.findById(johnDoe.getId()))
             .isInstanceOf(RuntimeException.class)
             .hasMessage("Permission denied");
+    }
+
+    @Test
+    void getCurrentUserShouldResolveSystemUserForSystemPrincipalAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        when(authentication.getPrincipal()).thenReturn(new SystemPrincipal() {});
+
+        var user = userManagementService.getCurrentUser();
+
+        assertThat(user).isNotNull();
+        assertThat(user.getId()).isEqualTo(SYSTEM_ACCOUNT);
+        assertThat(user.getUsername()).isEqualTo(SYSTEM_ACCOUNT);
+    }
+
+    @Test
+    void getCurrentUserShouldResolveSystemUserWhenNoAuthenticationIsPresent() {
+        SecurityContextHolder.clearContext();
+
+        var user = userManagementService.getCurrentUser();
+
+        assertThat(user).isNotNull();
+        assertThat(user.getId()).isEqualTo(SYSTEM_ACCOUNT);
+    }
+
+    @Test
+    void getCurrentUserIdShouldResolveSystemAccountForSystemPrincipalAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        when(authentication.getPrincipal()).thenReturn(new SystemPrincipal() {});
+
+        assertThat(userManagementService.getCurrentUserId()).isEqualTo(SYSTEM_ACCOUNT);
+    }
+
+    @Test
+    void getCurrentUserTeamsShouldReturnNoTeamsForSystemPrincipalAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        when(authentication.getPrincipal()).thenReturn(new SystemPrincipal() {});
+
+        assertThat(userManagementService.getCurrentUserTeams()).isEmpty();
+        verifyNoInteractions(teamManagementService);
+    }
+
+    @Test
+    void getCurrentUserTeamsShouldReturnNoTeamsWhenNoAuthenticationIsPresent() {
+        SecurityContextHolder.clearContext();
+
+        assertThat(userManagementService.getCurrentUserTeams()).isEmpty();
+        verifyNoInteractions(teamManagementService);
+    }
+
+    @Test
+    void getCurrentUserTeamsShouldQueryTeamsForRegularUserAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        when(authentication.getName()).thenReturn(johnDoe.getEmail());
+        when(keycloakService.usersResource(any()).searchByEmail(eq(johnDoe.getEmail()), eq(true)))
+            .thenReturn(List.of(johnDoe));
+        when(teamManagementService.findTeamKeysByUsername(johnDoe.getUsername()))
+            .thenReturn(List.of("team-a"));
+
+        assertThat(userManagementService.getCurrentUserTeams()).containsExactly("team-a");
+        verify(teamManagementService).findTeamKeysByUsername(johnDoe.getUsername());
     }
 
     private UserRepresentation newUser(String firstName, String lastName, List<String> roles, String username) {

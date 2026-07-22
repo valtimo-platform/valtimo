@@ -57,6 +57,24 @@ describe("validatePluginManifest", () => {
     expect(validatePluginManifest(m)).toContain("manifest.json must contain a non-empty 'version'");
   });
 
+  it("accepts the pack-tool-stamped sdkVersion and the frontend_data capability", () => {
+    const m = {
+      ...validManifest(),
+      sdkVersion: "0.1.0",
+      permissions: { capabilities: ["gzac_api", "frontend_data"] },
+    };
+    expect(validatePluginManifest(m)).toEqual([]);
+  });
+
+  it("rejects a non-string or empty sdkVersion (when present)", () => {
+    expect(validatePluginManifest({ ...validManifest(), sdkVersion: 42 })).toContain(
+      "manifest.json 'sdkVersion' must be a non-empty string when present"
+    );
+    expect(validatePluginManifest({ ...validManifest(), sdkVersion: " " })).toContain(
+      "manifest.json 'sdkVersion' must be a non-empty string when present"
+    );
+  });
+
   it("rejects a missing translations block and stops there", () => {
     const m = validManifest() as Record<string, unknown>;
     delete m.translations;

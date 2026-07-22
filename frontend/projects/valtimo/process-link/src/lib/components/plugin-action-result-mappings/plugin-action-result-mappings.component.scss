@@ -21,7 +21,7 @@
   .section-description {
     color: var(--cds-text-secondary);
     margin-bottom: var(--cds-spacing-04);
-    font-size: 14px;
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
   }
 
   .mapping-header,
@@ -42,9 +42,9 @@
 
     .arrow {
       text-align: center;
-      width: 40px;
-      line-height: 40px;
-      font-size: large;
+      width: var(--cds-spacing-08);
+      line-height: var(--cds-spacing-08);
+      font-size: var(--cds-body-02-font-size, 1rem);
     }
 
     .mapping-cell {

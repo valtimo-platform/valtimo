@@ -19,17 +19,20 @@
   [notificationObj]="{
     type: readonlyMode ? 'info' : 'warning',
     title: '',
-    message: (readonlyMode
-      ? 'pluginManagement.permissions.descriptionReadonly'
-      : 'pluginManagement.permissions.description'
-    ) | translate,
+    message:
+      (readonlyMode
+        ? 'pluginManagement.permissions.descriptionReadonly'
+        : 'pluginManagement.permissions.description'
+      ) | translate,
     showClose: false,
     lowContrast: true,
   }"
 ></cds-inline-notification>
 
 <cds-inline-notification
-  *ngIf="_$capabilities().length === 0 && _$enrichedEndpoints().length === 0 && _$eventTypes().length === 0"
+  *ngIf="
+    $capabilities().length === 0 && $enrichedEndpoints().length === 0 && $eventTypes().length === 0
+  "
   [notificationObj]="{
     type: 'info',
     title: '',
@@ -39,7 +42,7 @@
   }"
 ></cds-inline-notification>
 
-<section *ngIf="_$capabilities().length > 0" class="plugin-external-permissions__section">
+<section *ngIf="$capabilities().length > 0" class="plugin-external-permissions__section">
   <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
     {{ 'pluginManagement.permissions.capabilitiesHeading' | translate }}
   </h6>
@@ -55,7 +58,7 @@
     </cds-list-header>
 
     <cds-list-row
-      *ngFor="let cap of _$capabilities()"
+      *ngFor="let cap of $capabilities()"
       [attr.data-test-id]="'external-plugin-permission-capability-' + cap"
     >
       <cds-list-column nowrap="true">
@@ -69,7 +72,7 @@
   </cds-structured-list>
 </section>
 
-<section *ngIf="_$enrichedEndpoints().length > 0" class="plugin-external-permissions__section">
+<section *ngIf="$enrichedEndpoints().length > 0" class="plugin-external-permissions__section">
   <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
     {{ 'pluginManagement.permissions.endpointsHeading' | translate }}
   </h6>
@@ -88,11 +91,13 @@
     </cds-list-header>
 
     <cds-list-row
-      *ngFor="let endpoint of _$enrichedEndpoints()"
+      *ngFor="let endpoint of $enrichedEndpoints()"
       [attr.data-test-id]="'external-plugin-permission-' + endpoint.method + '-' + endpoint.pattern"
     >
       <cds-list-column nowrap="true">
-        <cds-tag [type]="_httpMethodTagType(endpoint.method)" size="sm">{{ endpoint.method | uppercase }}</cds-tag>
+        <cds-tag [type]="_httpMethodTagType(endpoint.method)" size="sm">{{
+          endpoint.method | uppercase
+        }}</cds-tag>
       </cds-list-column>
 
       <cds-list-column nowrap="true">
@@ -109,14 +114,14 @@
   </cds-structured-list>
 </section>
 
-<section *ngIf="_$eventTypes().length > 0" class="plugin-external-permissions__section">
+<section *ngIf="$eventTypes().length > 0" class="plugin-external-permissions__section">
   <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
     {{ 'pluginManagement.permissions.eventsHeading' | translate }}
   </h6>
 
   <cds-structured-list>
     <cds-list-row
-      *ngFor="let eventType of _$eventTypes()"
+      *ngFor="let eventType of $eventTypes()"
       [attr.data-test-id]="'external-plugin-permission-event-' + eventType"
     >
       <cds-list-column>
@@ -127,9 +132,12 @@
 </section>
 
 <cds-checkbox
-  *ngIf="!readonlyMode && (_$capabilities().length > 0 || _$enrichedEndpoints().length > 0 || _$eventTypes().length > 0)"
+  *ngIf="
+    !readonlyMode &&
+    ($capabilities().length > 0 || $enrichedEndpoints().length > 0 || $eventTypes().length > 0)
+  "
   class="plugin-external-permissions__acceptance"
-  [checked]="_$accepted()"
+  [checked]="$accepted()"
   (checkedChange)="onAcceptanceChange($event)"
   data-test-id="external-plugin-permissions-accept"
 >

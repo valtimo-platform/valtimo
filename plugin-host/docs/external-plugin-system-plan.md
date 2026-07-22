@@ -16,19 +16,20 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 
 ## 1. Components
 
-> **Host capabilities** are a per-plugin allowlist of host functions a plugin may call. Every
+> **Host capabilities** are a per-plugin allowlist of host-side abilities a plugin may use. Every
 > host function — including `gzac_api` — requires an explicit grant. A plugin declares the
 > capabilities it needs in `manifest.permissions.capabilities`; the admin accepts each one
 > individually during configuration. The host enforces the allowlist at call time — a plugin
 > that was not granted a capability gets an error response, never silent access.
-> Four capabilities ship: `gzac_api`, `http_request`, `kv`, and `log`.
+> Five capability names are declarable: `gzac_api`, `http_request`, `kv`, and `log` are host
+> functions; `frontend_data` gates the host's public plugin-data route (§13.5).
 
 | Area | Path | Status |
 |------|------|--------|
 | Core-app backend module | `backend/external-plugin/` | ✅ |
 | Endpoint descriptions (`@EndpointDescription` on every controller method) + contract annotation | `backend/*/.../web/rest/*Resource.{kt,java}`, `com.ritense.valtimo.contract.endpoint.EndpointDescription` | ✅ |
 | Plugin host (Node + Fastify + Extism, multi-version) | `plugin-host/app/` | 🟡 |
-| Host capabilities (`gzac_api`, `http_request`, `kv`, `log`) — capability allowlist enforcement, new host functions, persistent storage (KV + logs), admin log view | `plugin-host/app/src/host-functions/{gzac-api,http-request,kv,log}.ts`, `plugin-host/app/src/db/{log-repository,kv-repository}.ts`, `plugin-host/app/src/routes/plugin-logs.ts` | ✅ |
+| Host capabilities (`gzac_api`, `http_request`, `kv`, `log`) — capability allowlist enforcement, host functions, persistent storage (KV + logs), admin log view | `plugin-host/app/src/host-functions/{gzac-api,http-request,kv,log}.ts`, `plugin-host/app/src/db/{log-repository,kv-repository}.ts`, `plugin-host/app/src/routes/plugin-logs.ts` | ✅ |
 | Event consumer (RabbitMQ → `handle_event`) | `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
 | Backend plugin SDK (`@valtimo/plugin-sdk`) — actions, events, requests (`handle_request`), `gzacApi` (+ `asUser`), `httpRequest`, `kv`, `log` (structured), frontend `t()` + parent-proxy data access (`callValtimo`/`getPluginData`) | `plugin-host/plugin-sdk/` | ✅ |
 | Shared manifest validation (name/description-in-translations), one rule set for pack + host | `plugin-host/plugin-sdk/src/manifest-validation.ts` (subpath `@valtimo/plugin-sdk/manifest-validation`) | ✅ |
@@ -47,7 +48,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Strict delete guards (embedded + external), shared usage DTO/resolver + `/usages` endpoints + read-only in-use modal, no force override | core `backend/plugin/.../{web/rest/dto/PluginUsageDto, service/ProcessDefinitionUsageMetaResolver, service/PluginConfigurationUsageResolver, exception/PluginConfigurationInUseException}` + `backend/external-plugin/.../{service/ExternalPluginHostUsageResolver, exception/ExternalPlugin*InUseException}` ↔ frontend `plugin-management/.../plugin-usage-modal/` | ✅ |
 | Iframe case-detail tab (`EXTERNAL_PLUGIN` tab type, side table, PBAC content endpoint, bundle-resolver SPI) + admin UX | `backend/case/.../case_/{domain/tab/CaseExternalPluginTab, repository/CaseExternalPluginTabRepository, service/CaseExternalPluginTabService, rest/CaseExternalPluginTabResource, service/ExternalPluginCaseTabResolver}` + `backend/external-plugin/.../service/ExternalPluginCaseTabResolverImpl` ↔ frontend `case/.../case-detail/tab/external-plugin`, `case-management/.../tabs` | ✅ |
 | Downscoped user token (PBAC ∩ allowlist), non-management mint endpoint, parent-proxy iframe (opaque origin, no token in iframe) | `backend/external-plugin/.../security/ExternalPluginUserToken{KeyProvider,Authenticator,Filter}, security/ExternalPluginUserPrincipal, service/ExternalPluginUserTokenService, web/rest/ExternalPluginUserTokenResource` ↔ frontend `plugin/.../external-plugin-iframe`, SDK `frontend/plugin-frontend-sdk.ts` (proxy bridge) | ✅ |
-| Plugin-served data route (`handle_request` Wasm export + host `POST .../data`) + backend-as-user (`gzacApi.asUser`) | `plugin-host/plugin-sdk/src/{requests.ts,runtime.ts,gzac-api.ts}`, `plugin-host/app/src/{routes/plugin-data.ts,host-functions/gzac-api.ts,plugin-manager.ts#callRequest}` | 🟡 |
+| Plugin-served data route (`handle_request` Wasm export + host `POST .../data`, gated on the granted `frontend_data` capability + per-config rate limit) + backend-as-user (`gzacApi.asUser`) | `plugin-host/plugin-sdk/src/{requests.ts,runtime.ts,gzac-api.ts}`, `plugin-host/app/src/{routes/plugin-data.ts,host-functions/gzac-api.ts,plugin-manager.ts#callRequest}` | ✅ |
 
 Single-core-app model with **multiple hosts per instance**: the core app pushes each configuration
 directly to its host with a freshly issued service token, a `gzacBaseUrl` callback target taken
@@ -67,7 +68,8 @@ rest of Valtimo already requires. Every value the module needs is either:
 
 | What the module needs | Where it comes from | When |
 |----------------------|---------------------|------|
-| JWT signing key | `SHA-256(valtimo.plugin.encryption-secret)` | At every JWT issue/verify. The hash gives a stable 32-byte HmacSHA256 key regardless of the encryption secret's raw length, so AES-128 (16-byte) and AES-256 (32-byte) deployments both work without reconfiguration. Hashing also keeps the signing key cryptographically separate from the AES key. |
+| JWT signing keys | `SHA-256(valtimo.plugin.encryption-secret + "\|service")` for service tokens, `SHA-256(… + "\|user")` for user tokens | At every JWT issue/verify. The hash gives a stable 32-byte HmacSHA256 key regardless of the encryption secret's raw length, so AES-128 (16-byte) and AES-256 (32-byte) deployments both work without reconfiguration; hashing also keeps the signing keys cryptographically separate from the AES key. The domain suffix gives each token kind its **own** key, so a token of one kind can never validate against the other kind's parser (§3.2, §13.3). |
+| Host HTTP timeouts | `valtimo.external-plugin.connect-timeout` / `read-timeout` (Spring durations, defaults 2 s / 10 s) | Applied to the shared `RestTemplate` every GZAC→host call uses, so an unreachable or slow host fails fast instead of pinning request threads. |
 | `gzacBaseUrl` per push | `external_plugin_host.gzac_callback_base_url` | Set in the add-host UI; default pre-fill is `http://localhost:{server.port}` because the admin's browser URL (often the Angular dev proxy at `:4200` or a reverse proxy in production) is not a reliable signal for the URL plugin hosts should call back on. |
 | Broker AMQP URL per push | `external_plugin_host.event_broker_amqp_url` (nullable) | Set in the add-host UI; default pre-fill built from `spring.rabbitmq.*`. Null disables events for hosts under this host (actions still work). A non-null broker URL requires the host base URL to be a confidential transport (HTTPS, or a loopback address for local dev); registration is rejected otherwise so AMQP credentials never travel over plaintext (§3.9). |
 | Broker exchange per push | `external_plugin_host.event_broker_exchange`, else `valtimo.outbox.publisher.rabbitmq.exchange` | Set in the add-host UI; default pre-fill from the outbox exchange, which is what GZAC itself publishes to. |
@@ -85,13 +87,19 @@ callbacks.
 
 **3.1 Activation stores grants (`service/ExternalPluginConfigurationService.kt`)**
 - `create()` validates properties against the definition JSON schema, then
-  `validateGrantedEndpointsCoverManifest()` **rejects the configuration unless every endpoint
-  declared in the manifest is granted** — permissions are all-or-nothing.
-- `create()` likewise runs `validateGrantedEventsCoverManifest()` — the same all-or-nothing gate
+  `validateGrantedEndpointsCoverManifest()` **rejects the configuration unless the granted
+  endpoints exactly match the manifest's declared set** (`requireExactGrantMatch`): every declared
+  endpoint must be granted — the admin explicitly acknowledges the plugin's full footprint — and
+  nothing beyond the declaration can be granted (a grant the plugin never asked for is always a
+  mistake). A manifest without a declaration section requires an empty grant set — nothing may be
+  granted.
+- `create()` likewise runs `validateGrantedEventsCoverManifest()` — the same exact-match gate
   applied to `manifest.eventSubscriptions`. `create()` also runs
-  `validateGrantedCapabilitiesCoverManifest()` — the same all-or-nothing gate applied to
-  `manifest.permissions.capabilities`. All three — `grantedEndpoints`, `grantedEvents`, and
-  `grantedCapabilities` — are **required** parameters of `create()`; all three are enforced at
+  `validateGrantedCapabilitiesCoverManifest()` — the same exact-match gate applied to
+  `manifest.permissions.capabilities`; capability names are additionally parsed into the
+  `ExternalPluginCapability` enum **before anything is persisted**, so an unknown capability name
+  is rejected up front. All three — `grantedEndpoints`, `grantedEvents`, and
+  `grantedCapabilities` — are parameters of `create()`; all three are enforced at
   the service layer, not only in the UX (§4).
 - Grants persist to `external_plugin_granted_endpoint` (`configuration_id`, `http_method`,
   `endpoint_pattern`), `external_plugin_granted_event` (`configuration_id`, `event_type`), and
@@ -104,7 +112,11 @@ callbacks.
 **3.2 Token (`service/ExternalPluginServiceTokenService.kt`)** — HS256 JWT:
 `sub=external-plugin:{pluginId}:{configId}`, `type=external_plugin_service`, `plugin_config_id`,
 `plugin_id`, `plugin_version`, `iss=valtimo-gzac`, `exp=now+ttl`. **No roles.** Signed with
-`SHA-256(valtimo.plugin.encryption-secret)` — see `security/ExternalPluginServiceTokenKeyProvider.kt`.
+`SHA-256(valtimo.plugin.encryption-secret + "|service")` — the shared
+`security/ExternalPluginTokenKeyProvider.kt` base derives a **domain-separated** key per token
+kind (`|service` here, `|user` for the iframe token, §13.3), so a token of one kind can never
+validate against the other kind's parser — the `type` claim is a routing hint, not the security
+boundary. See `security/ExternalPluginServiceTokenKeyProvider.kt`.
 The lifetime `ttl` is the `valtimo.external-plugin.service-token.ttl` property — a Spring duration
 (ISO-8601 `PT24H` or the `24h` shorthand), defaulting to 24h — parsed in the autoconfiguration
 (`DurationStyle.detectAndParse`) and handed to the service; the service itself falls back to 24h
@@ -112,20 +124,29 @@ when constructed without one.
 
 **3.3 Recognition (`security/ExternalPluginServiceTokenFilter.kt`)** — registered **before**
 `BearerTokenAuthenticationFilter` (`security/ExternalPluginCallbackHttpSecurityConfigurer.kt`,
-`@Order(450)`): parses the bearer JWT with the plugin signing key; passes through if signature or
-`type` claim don't match (Keycloak tokens untouched); on match sets an
+`@Order(450)`): parses the bearer JWT with the service-token signing key; passes through if
+signature or `type` claim don't match (Keycloak tokens untouched); on match sets an
 `ExternalPluginServicePrincipal`, **strips the `Authorization` header**, and runs the rest of the
 chain inside `AuthorizationContext.runWithoutAuthorization` (PBAC is intentionally bypassed for
-service tokens — the allowlist is the sole gate).
+service tokens — the allowlist is the sole gate). The service- and user-token filters share the
+`AbstractExternalPluginTokenFilter` base, and all three plugin filters are excluded from servlet
+auto-registration (disabled `FilterRegistrationBean`s in the autoconfiguration) so they run only
+inside the Spring Security chain, never a second time as bare servlet filters.
 
 **3.4 Enforcement (`security/ExternalPluginEndpointAllowlistFilter.kt`)** — registered **after**
 `BearerTokenAuthenticationFilter`:
-1. Principal not `ExternalPluginServicePrincipal` → pass through (users and existing plugins
-   unaffected).
-2. Request to `/api/management/v1/external-plugin/**` → 403 (a plugin can never reach its own
-   management API).
+1. Principal not `ExternalPluginServicePrincipal` (or `ExternalPluginUserPrincipal`, §13.3) → pass
+   through (users and existing plugins unaffected).
+2. **Hard denylist** (`DENYLIST_PATTERNS`) → 403 **regardless of what was granted**: plugin tokens
+   can never reach `/api/management/v1/external-plugin/**` and `/api/v1/external-plugin/**`
+   (external-plugin management incl. host registration, plus user-token minting — a plugin must
+   not mint tokens for arbitrary users) or `/api/management/v1/roles/**` and
+   `/api/management/v1/permissions/**` (role/permission management — privilege escalation).
 3. Load grants for `plugin_config_id`, match request via `AntPathRequestMatcher(pattern, method)`;
-   no match → 403; empty grants → deny.
+   no match → 403; empty grants → deny. The compiled matchers are cached per configuration id for
+   a short TTL (30 s) so the per-request cost is a map lookup instead of a DB query; an invalid
+   stored pattern is skipped with a warning (deny unless another grant matches) rather than
+   failing the request with a 500.
 
 **3.5 Host callback** — the host's `gzac_api` host function
 (`plugin-host/app/src/host-functions/gzac-api.ts`) attaches the per-config `serviceToken` as
@@ -133,7 +154,16 @@ service tokens — the allowlist is the sole gate).
 token is passed via Extism `hostContext`, never serialised into the Wasm input — plugin code never
 sees it. This is the same mechanism for both action handlers and event handlers. `gzac_api` is a
 **capability** (§18) — the configuration must be granted `gzac_api` in its capability allowlist
-or the host function returns a capability-denied error without making the upstream call.
+or the host function returns a capability-denied error without making the upstream call. The host
+additionally enforces the configuration's **granted-endpoint allowlist on its own side**
+(`security/endpoint-allowlist.ts`, Ant-style patterns): a call outside the granted set is refused
+with a 403-shaped reply before anything leaves the host — GZAC's servlet filter (§3.4) remains
+the authoritative gate; a configuration whose push carried no endpoint list is allowed with a
+warning (§8.2). A plugin-supplied `Authorization` header is **stripped** (and logged) and the
+host-controlled credential is attached last, so a plugin can never substitute its own token. The
+callback fetch is bounded by an `AbortSignal` timeout (`GZAC_API_TIMEOUT_MS`, default 60 s —
+reported as a 504-shaped reply, with a 502-shaped reply for a failed fetch), so a hung GZAC
+endpoint cannot pin the plugin call and its per-plugin lock indefinitely.
 
 **3.6 Token lifecycle** — operator-tunable TTL (`valtimo.external-plugin.service-token.ttl`,
 default 24h, §3.2), **no separate refresh loop**. Each healthy discovery poll re-pushes every
@@ -141,7 +171,13 @@ configuration with a freshly issued token
 (`service/ExternalPluginDiscoveryService.syncConfigurations()`), continuously replacing tokens
 well inside their lifetime. That poll *is* the refresh mechanism (default 60s,
 `valtimo.external-plugin.polling.rate`), so a tuned TTL must stay comfortably above the poll
-interval or a token can lapse between pushes.
+interval or a token can lapse between pushes. The polling job (`service/ExternalPluginDiscoveryJob.kt`)
+runs under ShedLock (`@SchedulerLock`, `lockAtLeastFor` 10 s / `lockAtMostFor` 10 min), so in a
+multi-replica deployment exactly one instance polls per tick instead of every replica hammering
+the same hosts. Discovery keeps a strict transaction discipline: all host HTTP I/O (health probe,
+plugin listing, config re-pushes) runs **outside** any database transaction, with the bookkeeping
+writes in short per-host transactions (`TransactionTemplate`) — a slow or hanging host never pins
+a database connection, and one host's failure never rolls back another host's bookkeeping.
 
 **3.7 Caveat** — service tokens bypass PBAC, so the allowlist is the entire authorization surface;
 an over-broad grant (`/api/v1/**`) gives broad role-free access. Hence the activation-time
@@ -153,7 +189,8 @@ section) and the iframe user-token path (§13, ✅) — one block, **two princip
 `ExternalPluginEndpointAllowlistFilter` (`ExternalPluginServicePrincipal` and
 `ExternalPluginUserPrincipal`). SDK type `Endpoint`, Kotlin DTO `GrantedEndpointEntry`, frontend type
 `ExternalPluginEndpoint`. The capability allowlist lives at `permissions.capabilities` in the
-manifest — a string array of capability names (`["gzac_api", "http_request", "kv", "log"]`).
+manifest — a string array of capability names (any of `gzac_api`, `http_request`, `kv`, `log`,
+`frontend_data`).
 SDK type `string[]`, Kotlin `List<String>`, frontend `string[]`. See §18 for the full capability
 system.
 
@@ -166,14 +203,20 @@ client signs `{METHOD}\n{path}\n{timestamp}\n{bodyHash}` (`bodyHash = SHA-256(bo
 HMAC key is therefore the host's admin token (`hostService.decryptedSecret(host)` == the host's
 `ADMIN_TOKEN`); the secret is always carried as a signature, never as a bearer token.
 `client/ExternalPluginHostClient` signs through one `hmacHeaders(secret, method, path, body)` helper
-for all five calls (`invokeAction`, `pushConfiguration`, `deleteConfiguration`, `listPlugins`,
-`uploadPlugin`).
+for every call (`invokeAction`, `invokeSubmit`, `pushConfiguration`, `deleteConfiguration`,
+`listPlugins`, `uploadPlugin`, `getConfigurationLogs`).
 
 The host verifies in a shared Fastify `preHandler` (`createHmacAuthHook`,
 `plugin-host/app/src/security/hmac-auth.ts`, delegating to `security/hmac.ts`): headers present,
-±5-min timestamp window (replay protection), timing-safe compare against
-`computeSignature(ADMIN_TOKEN, …)`. The hook is the action route's `preHandler` and a plugin-level
-`preHandler` on both `routes/host-configurations.ts` and `routes/host-management.ts`.
+±5-min timestamp window, timing-safe compare against `computeSignature(ADMIN_TOKEN, …)`. On top of
+the timestamp window, a process-wide **seen-signature replay cache** (`security/replay-cache.ts`)
+records every accepted signature and rejects a duplicate on side-effecting methods
+(POST/PUT/DELETE/PATCH) — closing the replay gap the ±5-min drift window would otherwise leave
+open; the signature binds method+path+timestamp+bodyHash, so any legitimate new request differs in
+at least the timestamp. The cache is shared by every HMAC-authenticated route, so a signature
+accepted by one route can never be replayed against another. The hook is the action route's
+`preHandler` and a plugin-level `preHandler` on both `routes/host-configurations.ts` and
+`routes/host-management.ts`.
 
 **Body binding per route shape:**
 - **JSON-body routes** (action POST; config-push POST/PUT) opt in to raw-body capture
@@ -225,7 +268,7 @@ translations, so the description requirement cannot drift as endpoints are added
 The Permissions step shows three read-only sections under a single acknowledgement checkbox:
 
 - **Host capabilities** — every entry from `manifest.permissions.capabilities` (`gzac_api`,
-  `http_request`, `kv`, `log`). Each capability is shown with a localised name and description
+  `http_request`, `kv`, `log`, `frontend_data`). Each capability is shown with a localised name and description
   explaining what it grants the plugin (e.g. "GZAC API — Make authenticated calls to the GZAC
   REST API on behalf of the plugin or the logged-in user"). Capabilities are displayed first
   because they represent the broadest grants.
@@ -237,9 +280,10 @@ The Permissions step shows three read-only sections under a single acknowledgeme
 
 All three are equally a permission decision: granting capabilities lets the plugin call host
 functions; granting endpoints scopes *which* GZAC endpoints the `gzac_api` capability can reach;
-granting events lets it observe domain activity. The single acknowledgement covers all three — all
-are all-or-nothing, the backend rejects activation unless every declared item in all lists is
-granted.
+granting events lets it observe domain activity. The single acknowledgement covers all three — each
+granted set must **exactly match** the manifest's declared set: the backend rejects activation when
+any declared item is missing from the grants *and* when a grant names anything the manifest does
+not declare (§3.1).
 
 - **Add / activate**: select → configure (properties or config iframe) → **Permissions**. Save →
   `POST .../configuration` `{definitionId, title, properties, grantedEndpoints, grantedEvents,
@@ -273,7 +317,13 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
   given activated configuration is `external_plugin_granted_event` (next paragraph), not the
   manifest copy.
 - `external_plugin_configuration` — `definition_id`, `title`, `properties` (encrypted on schema
-  `x-secret` fields), `created_at`.
+  `x-secret` fields), `created_at`. API responses never carry secret values:
+  `GET .../configuration/{id}` returns **masked** properties with the `x-secret` fields omitted
+  entirely (mirroring the embedded module's `PluginConfigurationDto`), and an update whose payload
+  leaves a secret field absent or blank means "unchanged" — the stored ciphertext is kept and the
+  stored plaintext is substituted server-side for schema validation, so a round-tripped masked
+  payload never overwrites a secret. Decrypted properties exist server-side only, for the host
+  push.
 - `external_plugin_granted_event` — `configuration_id`, `event_type`, `granted_at`;
   `UNIQUE(configuration_id, event_type)`. Pushed to the host on every config push as the actual
   subscription set. A later manifest update that adds a new event type cannot widen this set — the
@@ -281,7 +331,7 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
 - `external_plugin_granted_endpoint` — `configuration_id`, `http_method`, `endpoint_pattern`,
   `granted_at`; `UNIQUE(configuration_id, http_method, endpoint_pattern)`.
 - `external_plugin_granted_capability` — `configuration_id`, `capability` (varchar, e.g.
-  `gzac_api`, `http_request`, `kv`, `log`), `granted_at`;
+  `gzac_api`, `http_request`, `kv`, `log`, `frontend_data`), `granted_at`;
   `UNIQUE(configuration_id, capability)`. Pushed to the host on every config push as the
   authoritative capability set (§18.3). A later manifest update that adds a new capability cannot
   widen this set — the admin must re-grant.
@@ -313,13 +363,19 @@ returns pre-fills the add-host UI uses to populate the new-host form:
 ```json
 {
   "gzacCallbackBaseUrl": "http://localhost:8080",
-  "eventBrokerAmqpUrl": "amqp://guest:guest@localhost:5672",
+  "eventBrokerAmqpUrl": "amqp://***@localhost:5672",
   "eventBrokerExchange": "valtimo-events",
   "defaultEventQueueTtlMs": 259200000,
   "minEventQueueTtlMs": 3600000,
   "maxEventQueueTtlMs": 2592000000
 }
 ```
+
+Broker credentials never reach the browser: the AMQP URL's userinfo is **redacted to `***`** in
+every API response (`HostResponse.redactAmqpUserInfo` — both here and on stored host rows in
+`GET .../host`); the full URL stays server-side. When the redacted default is echoed back on host
+registration, `resolveBrokerAmqpUrl` substitutes the real credentials from `spring.rabbitmq.*`
+server-side, so a round-tripped redacted URL never ends up stored.
 
 The operator edits whatever does not match the host's network. URL fields exposed:
 `gzacCallbackBaseUrl` is required; `eventBrokerAmqpUrl` and `eventBrokerExchange` are optional.
@@ -345,49 +401,90 @@ immediately instead of waiting for the next polling tick.
 
 Routes: `GET /health`; `*/api/host/plugins[...]` (HMAC-signed §3.9; POST upload, GET list,
 DELETE); `POST|PUT|DELETE|GET /api/host/configurations/:configId` (HMAC-signed §3.9; push body
-carries `pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl, eventSubscriptions` and
-optionally `eventBroker` — only `serviceToken`/`gzacBaseUrl` are actually validated, `pluginId`/
-`pluginVersion` are not null-checked); `POST /plugins/:id/:version/actions/:key`
+carries `pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl, eventSubscriptions,
+grantedCapabilities, grantedEndpoints` and optionally `eventBroker` — only `serviceToken`/
+`gzacBaseUrl` are actually validated, `pluginId`/`pluginVersion` are not null-checked beyond the
+plugin having to be loaded); `POST /plugins/:id/:version/actions/:key`
 (HMAC-signed §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
-`…/bundles/**`, and **public `POST …/data`** (the `handle_request` RPC route, §13.4/§13.5 —
-unauthenticated for this iteration, with CORS `*` + `OPTIONS` preflight; ⚠️ must be capability/auth
-gated before production, see §14). Multi-version load keyed `pluginId@version`. The registered
-host functions are `gzac_api` (now also able to authenticate as the user, §13.4), `http_request`,
-`kv`, and `log` — all four gated by a per-configuration capability allowlist (§18).
+`…/bundles/**`, and `POST …/data` (the `handle_request` RPC route, §13.4/§13.5 — browser-facing
+with CORS `*` + `OPTIONS` preflight, so it carries no HMAC, but executing Wasm is gated: the
+request must name a `configurationId` whose pushed configuration exists, targets this plugin
+version, **and was granted the `frontend_data` capability** — otherwise 403 with a single
+deliberately-uninformative message so the public endpoint doesn't leak which configurations
+exist — and a per-configuration fixed-window rate limit (`DATA_RATE_LIMIT_PER_MINUTE`, default
+120/min, in-memory per replica) bounds abuse). Multi-version load keyed `pluginId@version`. The
+registered host functions are `gzac_api` (which can also authenticate as the user, §13.4),
+`http_request`, `kv`, and `log` — all four gated by a per-configuration capability allowlist (§18).
 
-Configs are **persisted to PostgreSQL**; `ConfigRegistry` is a thin pass-through over
-`ConfigRepository` — every read/write hits the DB, there is **no separate in-memory cache** despite
-the name. The plugin manager serialises calls per plugin (a `lock` promise
-chain to avoid Extism reentrancy), sets `prefetch` on the broker channel, and hot-reloads a plugin
-(unload + reload) when a newer upload of the same `pluginId@version` arrives.
+Configs are **persisted to PostgreSQL**; `ConfigRegistry` sits over `ConfigRepository` with a
+**short-TTL in-memory read cache** (`CONFIG_CACHE_TTL_MS`, default 10 s) so hot paths — one lookup
+per consumed event per configuration, one per data/action call — don't hit Postgres every time.
+Writes through the registry (push/delete) invalidate the cache immediately; a write done by
+another replica against the shared database becomes visible after at most the TTL; the
+plugin-delete guard's `listByPlugin` reads uncached (staleness there would risk deleting a plugin
+a just-pushed configuration references). The plugin manager serialises calls per plugin (a `lock`
+promise chain to avoid Extism reentrancy — unload, delete, and idle eviction chain through the
+**same** lock, so an instance is never closed mid-execution), sets `prefetch` on the broker
+channel, and hot-reloads a plugin (unload + reload) when a newer upload of the same
+`pluginId@version` arrives. Every Wasm call is bounded by a hard wall-clock limit
+(`WASM_TIMEOUT_MS`, default 30 s): Extism cancels a timed-out call, the cached instance is
+dropped and the next call starts from a fresh one. The module's linear memory is capped
+(`WASM_MAX_MEMORY_PAGES`, default 4096 pages = 256 MiB; 0 uncaps), and idle instances — each
+holding a worker thread plus Wasm memory — are evicted by a periodic sweep after
+`WASM_INSTANCE_IDLE_TTL_MS` (default 10 min) without a call; the next call transparently
+re-instantiates. All four exports (`handle_action`/`handle_event`/`handle_request`/`handle_submit`)
+funnel through one generic `callExport`; the public `callAction`/`callEvent`/`callRequest`/
+`callSubmit` wrappers only shape their input and host context.
 
 - **Action HTTP body** (GZAC→host): `{configurationId, processInstanceId, activityId, documentId?,
   properties}` — note it does **not** carry `actionKey` (URL param) or `configuration` (looked up
-  host-side from the registry). The host assembles the **Wasm input** `{actionKey, configurationId,
+  host-side from the registry). Before the invocation, `ExternalPluginServiceTaskStartListener`
+  resolves the link's action properties against the process context: a textual value is routed
+  through `ValueResolverService` **only when a resolver factory actually supports its prefix**
+  (`ValueResolverService.supportsValue` — `pv:`, `doc:`, `case:`, …); a literal that merely
+  contains a colon (e.g. `https://example.com`) passes through untouched instead of tripping the
+  resolver on an unknown prefix. The host assembles the **Wasm input** `{actionKey, configurationId,
   configuration, processInstanceId, documentId, activityId, properties}`; output `{status,
   variables, result?}` (plus `{errorCode, errorMessage}` on failure, surfaced to the process as a
   BPMN error). `variables` is applied as plain Operaton process variables; the optional `result`
   is a separate channel evaluated only by the link's `action_result_mappings` (§21) — the two
-  never interfere, and a plugin that returns no `result` simply has nothing to map.
+  never interfere, and a plugin that returns no `result` simply has nothing to map. On the GZAC
+  side, `ExternalPluginHostClient` maps **every** failure mode of an action/submit invocation onto
+  a structured `ActionResponse` so the callers' error paths always engage: a 4xx/5xx from the host
+  becomes the host's status plus its parsed error body, and a connection failure or timeout
+  becomes a synthetic 503 carrying `errorCode: EXTERNAL_PLUGIN_HOST_UNREACHABLE` — an unreachable
+  host surfaces to the process as a BPMN error like any other action failure.
 - **Plugins run under Extism with `runInWorker: true`** so async host functions (`gzac_api`) can
   suspend the Wasm call until the host's fetch resolves. **This requires Node ≥ 22** (older Node
   fails to spawn the worker with `invalid execArgv flags: --disable-warning`).
 - **`DELETE /api/host/plugins/:pluginId/:version`** refuses removal with HTTP 409 if any active
   configurations on the host reference the plugin version
   (`configRegistry.listByPlugin(pluginId, version)`), returning the offending `configurationIds`.
+- **Upload safety** (`POST /api/host/plugins`): the package size is capped (`UPLOAD_MAX_BYTES`,
+  default 25 MB; a truncated multipart stream is rejected explicitly with 413 rather than slipping
+  through as a corrupt zip), and the zip is extracted **entry by entry** with zip-slip protection
+  (`safeExtractPluginZip`): every entry's resolved destination must stay inside the extraction
+  directory — a crafted `../`, absolute, or drive-letter entry name rejects the whole package with
+  400 — and only the files a plugin package may legitimately carry are extracted (root-level
+  `manifest.json`, `plugin.wasm`, the logo, and `frontend/**`), so a hostile zip cannot plant
+  anything else even inside the temp dir.
 
 Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required — the shared secret used as the
 HMAC key for every GZAC→host route, §3.9), `PORT` (8090),
 `PLUGIN_STORAGE_DIR` (`./plugins`), `LOG_LEVEL` (info), `HOST_ID` (defaults to the OS hostname;
-see §8.4), plus `DB_HOST` / `DB_PORT` (defaults to **5434**, not the standard 5432) / `DB_NAME` /
-`DB_USER` / `DB_PASSWORD` for the host's PostgreSQL, and optional `TLS_CERT_PATH` / `TLS_KEY_PATH`
-(set together to serve HTTPS — §3.9) plus `TLS_CA_PATH` for a certificate chain. **No broker
-variables** — the host never configures a broker itself.
+see §8.4), the execution/abuse bounds `WASM_TIMEOUT_MS` (30 s), `WASM_MAX_MEMORY_PAGES` (4096),
+`WASM_INSTANCE_IDLE_TTL_MS` (10 min), `GZAC_API_TIMEOUT_MS` (60 s), `UPLOAD_MAX_BYTES` (25 MB),
+`DATA_RATE_LIMIT_PER_MINUTE` (120) and `CONFIG_CACHE_TTL_MS` (10 s), plus `DB_HOST` / `DB_PORT`
+(defaults to **5434**, not the standard 5432) / `DB_NAME` / `DB_USER` / `DB_PASSWORD` for the
+host's PostgreSQL, and optional `TLS_CERT_PATH` / `TLS_KEY_PATH` (set together to serve HTTPS —
+§3.9) plus `TLS_CA_PATH` for a certificate chain. `HOST_ALLOW_HTTP` / `HOST_ALLOW_PRIVATE_NETWORK`
+relax the `http_request` target policy for local development (§18.6), and `LOG_RETENTION_DAYS`
+(30) drives the log-retention job (§18.9). **No broker variables** — the host never configures a
+broker itself.
 
-Gaps to close for production: no HTMX `render_page`; the `handle_request` `/data` route ships
-**public** (no HMAC, no auth) — it must be capability/auth-gated before production (§13.5, §14).
-Host capabilities (`gzac_api`, `http_request`, `kv`, `log`) and their persistent storage are
-covered in §18.
+Gaps to close for production: no HTMX `render_page`.
+Host capabilities (`gzac_api`, `http_request`, `kv`, `log`, `frontend_data`) and their persistent
+storage are covered in §18.
 
 ## 8. Event subscription & delivery ✅
 
@@ -428,7 +525,16 @@ hosts can serve one instance.
   events don't.
 - The granted event types off `external_plugin_granted_event` for this configuration. These are
   sent as the push body's `eventSubscriptions` array — the host's authoritative subscription set
-  for this configuration, narrower-or-equal to the manifest's declared list.
+  for this configuration, matching the manifest's declared list (§3.1).
+- The granted capabilities off `external_plugin_granted_capability`, sent as the push body's
+  `grantedCapabilities` array — the allowlist the host's `guardHostCall` checks on every host
+  function invocation (§18.4).
+
+`pushToHost` is deliberately **not** transactional — it performs HTTP I/O and must never run
+inside a database transaction. Activation and update register the push as an after-commit action
+(`runAfterCommit`), so a slow or unreachable host can never pin a database transaction open; a
+failed push is a warning only, self-healed by the next discovery re-sync. Configuration deletes
+remove the config from the host through the same after-commit mechanism.
 
 Push body shape (relevant fields):
 
@@ -440,6 +546,8 @@ Push body shape (relevant fields):
   "serviceToken": "eyJ…",
   "gzacBaseUrl": "http://gzac:8080",
   "eventSubscriptions": ["com.ritense.valtimo.document.created", "com.ritense.valtimo.task.completed"],
+  "grantedCapabilities": ["gzac_api", "log"],
+  "grantedEndpoints": [{"method": "GET", "pattern": "/api/v1/document/*"}],
   "eventBroker": {
     "amqpUrl": "amqp://…",
     "exchange": "valtimo-events",
@@ -449,6 +557,13 @@ Push body shape (relevant fields):
   }
 }
 ```
+
+Every push carries the configuration's granted endpoint list as a `grantedEndpoints` array
+(`{method, pattern}` entries), persisted in the host's `granted_endpoints` column (`NULL` when a
+push carries no array) and enforced host-side by `gzac_api` (§3.5): the array is filtered to
+well-formed entries and an **empty result denies all**, while a configuration whose push carried
+no list at all is allowed with a warning (compatibility for pushes from other clients) — GZAC's
+server-side allowlist filter (§3.4) remains the authoritative gate either way.
 
 `queueMode` is `"live"` or `"durable"` (lowercased on the wire — the host's `normalizeEventBroker`
 defaults unknown/absent values to `"live"`, so older GZACs that don't push it stay compatible).
@@ -560,7 +675,10 @@ synchronous from the plugin's view (the host suspends the call). Build: `valtimo
 DX done: the build auto-generates the Wasm interface (`handle_action` + `handle_event` +
 `handle_request` exports + `gzac_api` import) so authors write only `src/plugin.ts`; the runtime
 settles returned promises and never serialises a pending `Promise`; the pack copies `manifest.json`
-verbatim so `eventSubscriptions`, `permissions`, and `translations` carry through, and compiles each
+verbatim so `eventSubscriptions`, `permissions`, and `translations` carry through — additionally
+stamping the SDK package's own version onto the in-zip manifest as `sdkVersion`, so the host can
+tell which SDK/ABI a stored plugin targets (the upload validator requires it to be a non-empty
+string when present) — and compiles each
 `frontend/*.tsx` referenced by a `frontend/*.html` `<script>` into a `*.bundle.js` (e.g. the
 `config`, `process-link-action`, and `case-tab` bundles).
 
@@ -583,6 +701,15 @@ requires a non-empty `pluginId`/`version`, a non-empty `translations` object, an
 Frontend SDK (`@valtimo/plugin-sdk/frontend`):
 - `ValtimoPluginSDK` running inside the iframe communicates with the Angular parent via
   postMessage (`init`, `save`, `prefillConfiguration`, `ready`, `configurationChanged`, etc.).
+- **Parent-origin pinning.** The SDK only exchanges messages with one origin. An optional
+  constructor option `parentOrigin` pins it explicitly (recommended for production bundles);
+  when omitted — required when the same bundle must run under several Valtimo frontends whose
+  origin isn't known at build time — the SDK pins the origin of the **first validated `init`
+  message** and ignores every other origin from then on. Until the pin is established, only the
+  credential-free handshake events (`ready`, `resize`) are posted to `"*"`; anything that carries
+  data is **queued** and flushed to the pinned origin after `init`. (The iframe itself runs at an
+  opaque origin, but the parent's messages still carry the parent's real origin — so pinning works
+  either way.)
 - **Parent-proxy data access (§13.2):** `sdk.callValtimo(method, path, body?)` and
   `sdk.getPluginData(path, query?)` return a `Promise<{status, body}>`. Each emits a
   correlation-id-keyed `proxyRequest` to the parent and resolves on the matching `proxyResponse`;
@@ -642,8 +769,11 @@ at pack-time and upload-time (§9).
 `frame-src` (iframe loading), `img-src` (logo loading), **and `connect-src`** (the parent-proxy's
 cross-origin `POST .../data` fetch, §13.2/§13.5 — without it the call is blocked by
 `connect-src 'self' …`, even though the iframe already loaded via `frame-src`). The bootstrap fetches
-`/api/management/v1/external-plugin/host` and passes the origins into the initializer before the meta
-tag is inserted (the CSP meta is immutable once parsed).
+`GET /api/v1/external-plugin/host-origins` (`ExternalPluginHostOriginsResource` — a non-management,
+`.authenticated()` endpoint, because every user who renders a plugin tab, task form or page needs
+the origins, and it returns only the distinct `scheme://host[:port]` origins of the registered
+hosts — no admin tokens, broker URLs or configuration data) and passes the origins into the
+initializer before the meta tag is inserted (the CSP meta is immutable once parsed).
 
 ## 11. Multi-version support & compatibility 🟡 (coexistence ✅, compatibility check ✅, in-place upgrade ⛔)
 
@@ -813,7 +943,10 @@ Two thin usage resolvers sit on top of it:
 with `getCause() = null` (so no stack leaks into the body) and a `parameters` map rendered as
 top-level keys: `PluginConfigurationInUseException` (core, `configurationId` + `usages`),
 `ExternalPluginConfigurationInUseException` (`configurationId` + `usages`), and
-`ExternalPluginHostInUseException` (`hostId` + `usages`).
+`ExternalPluginHostInUseException` (`hostId` + `usages`). Not-found lookups (a configuration,
+definition or host by id) throw `ExternalPluginNotFoundException` from the same Zalando Problem
+family — HTTP **404** `application/problem+json`, again with `getCause() = null` — instead of
+surfacing as a 500.
 
 **12.3 Advisory `/usages` endpoints (proactive UI).** Each delete is preceded by a read-only
 lookup so the UI can disable / divert the delete control before the user commits, returning the
@@ -842,12 +975,13 @@ in one place (matching the external edit modal). `PluginUsageModalComponent` is 
 translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
 configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
-## 13. Iframe surfaces & user-scoped access ✅ (case tab, task form) / 🟡 (POC)
+## 13. Iframe surfaces & user-scoped access ✅ (case tab, task form, menu page)
 
 A plugin's iframe surfaces need to call GZAC **on behalf of the logged-in user** (respect what the
-user can see/do), and the plugin **backend** may call GZAC either as the user or as the system. Two
-iframe surfaces exist — the **case-detail tab** (§13.1) and the **task form** (§13.6); case widgets
-and menu pages remain ⛔. The iframe holds **no token** and routes calls through the Angular parent
+user can see/do), and the plugin **backend** may call GZAC either as the user or as the system.
+Three iframe surfaces exist — the **case-detail tab** (§13.1), the **task form** (§13.6) and the
+routed **menu page** (`ExternalPluginMenuPageService` ↔ `ExternalPluginPageComponent`); case
+widgets remain ⛔. The iframe holds **no token** and routes calls through the Angular parent
 (the **parent-proxy** model, §13.2) rather than being handed the token via `init`.
 
 ### 13.1 Case-tab surface (`EXTERNAL_PLUGIN` tab type) ✅
@@ -879,13 +1013,14 @@ and menu pages remain ⛔. The iframe holds **no token** and routes calls throug
   when no activated configuration exposes a `case-tab` bundle; an inline content selector lists
   activated configs' `case-tab` bundles (bundle-title suffix when a plugin ships more than one) and
   writes the `contentKey`. Tab dispatch (`@valtimo/case`) maps `ApiTabType.EXTERNAL_PLUGIN` to
-  `CaseDetailExternalPluginTabComponent`, which loads the content endpoint, mints a user token, and
-  renders `<valtimo-external-plugin-iframe>` (re-minting before the ≤15-min expiry).
+  `CaseDetailExternalPluginTabComponent`, which loads the content endpoint, starts a token session
+  via the shared `ExternalPluginSessionService` (§13.3), and renders
+  `<valtimo-external-plugin-iframe>` with the session's token and granted-endpoint allowlist.
 
 ### 13.2 Parent-proxy transport — the iframe holds no token ✅
 
-The original design proposed passing the user token into the iframe via `init` and letting the
-iframe fetch with it. **That was not implemented.** The iframe is rendered at an **opaque origin**
+The iframe is never handed a token via `init` and never fetches with a credential itself. It is
+rendered at an **opaque origin**
 (`sandbox="allow-scripts allow-forms"`, *without* `allow-same-origin`; `allow-forms` lets a task-form
 submit through an idiomatic `<form>` — §13.6 — and does not affect origin isolation) and never holds a
 credential:
@@ -898,12 +1033,29 @@ credential:
   interceptor never attaches the full Keycloak token — a confused-deputy guard) with the downscoped
   user token over a same-origin relative `/api/...` path (**zero CORS**). For plugin data
   (`target:"plugin"`) it POSTs to the host `/data` route (cross-origin; the host serves
-  `Access-Control-Allow-Origin: *`).
+  `Access-Control-Allow-Origin: *`), forwarding the `configurationId` the host's `frontend_data`
+  gate checks (§13.5).
+- The iframe-supplied path of a GZAC proxy call is **untrusted**: the parent resolves it against
+  `window.location.origin` and hard-requires the result to stay **same-origin** — rejecting
+  absolute URLs to other origins, protocol-relative `//host/...` forms and non-http schemes like
+  `javascript:` — and to sit **under the GZAC API base path** (derived from
+  `valtimoApi.endpointUri`, fallback `/api/`) before the bearer token is attached. A compromised
+  bundle can therefore never point the fetch (and thus the token) at a foreign host or a non-API
+  route. On top of these hard guarantees sits a client-side **allowlist precheck** against the
+  configuration's granted endpoints (`allowedEndpoints`, supplied by the mint response — §13.3):
+  `undefined` means no allowlist was provided and the precheck is skipped (origin/prefix guards
+  and the server-side allowlist remain authoritative); an **empty array denies every call** — an
+  empty allowlist is never treated as "allow all".
+- The `bundleUrl` itself is only trusted as an iframe `src` when it parses to an `http:`/`https:`
+  URL — anything else (`javascript:`, `data:`, malformed) is silently ignored and the iframe stays
+  unrendered.
 - Inbound messages are validated by `event.source === iframe.contentWindow` (an opaque-origin iframe
-  reports `event.origin === "null"`); the token never enters a postMessage.
+  reports `event.origin === "null"`); the token never enters a postMessage. Inside the iframe the
+  SDK applies the mirror-image guard: it pins the parent origin and ignores messages from any
+  other origin (§9).
 - **Why opaque-origin matters for escalation:** a same-origin (`allow-same-origin`) iframe could read
   the GZAC app's session / full Keycloak token and escalate beyond the allowlist. The opaque origin
-  forecloses that, and is the reason the parent-proxy is retained even when token *confidentiality*
+  forecloses that, and is the reason the parent-proxy is used even when token *confidentiality*
   is not a concern.
 
 ### 13.3 Downscoped user token ✅
@@ -913,12 +1065,25 @@ credential:
   always bounded by PBAC ∩ allowlist). Explicitly whitelisted `.authenticated()` in
   `ExternalPluginHttpSecurityConfigurer`. Reads the current user via
   `SecurityUtils.getCurrentUserLogin()/getCurrentUserRoles()`, verifies the configuration exists, and
-  returns `{ userToken, expiresAt }`.
+  returns `{ userToken, expiresAt, grantedEndpoints }` — the configuration's granted endpoints ride
+  along so the iframe parent can seed its client-side allowlist precheck (§13.2) without a second
+  call. (Plugin tokens themselves can never call this endpoint — it sits on the hard denylist,
+  §3.4.)
 - **Token** (`ExternalPluginUserTokenService`): HS256, `sub=userLogin`, custom `roles` claim,
   `plugin_config_id`, `type=external_plugin_user`, `iss=valtimo-gzac`, `iat`, `exp`. TTL from
-  `valtimo.external-plugin.user-token.ttl`, **hard-capped at 15 minutes**. Signed with the same
-  `SHA-256(valtimo.plugin.encryption-secret)` key as the service token; `ExternalPluginUserTokenKeyProvider`
-  discriminates by `type`.
+  `valtimo.external-plugin.user-token.ttl`, **hard-capped at 15 minutes**. Signed with its **own**
+  domain-separated key, `SHA-256(valtimo.plugin.encryption-secret + "|user")`
+  (`ExternalPluginUserTokenKeyProvider`, on the shared key-provider base — §3.2): a user token can
+  never validate against the service-token parser or vice versa, so the `type` claim is a routing
+  hint, not the security boundary.
+- **Session ownership** (`@valtimo/plugin` `ExternalPluginSessionService`): all three hosting
+  surfaces — case tab (§13.1), task form (§13.6) and routed page — share one page-scoped service
+  that mints the token, re-mints it 60 s before expiry, and retries failed re-mints with capped
+  exponential backoff (5 s → 10 s → … ≤ 60 s) instead of letting the session die silently. It
+  exposes the token, its expiry and the mint response's granted endpoints as signals the surface
+  binds to the iframe component; each surface provides its own instance so parallel surfaces never
+  share token state. The shared `derivePluginDataUrl` util derives the host `/data` URL from the
+  bundle URL for all three surfaces.
 - **Recognition** (`ExternalPluginUserTokenFilter`, before `BearerTokenAuthenticationFilter` in
   `ExternalPluginCallbackHttpSecurityConfigurer`): sets an `ExternalPluginUserPrincipal`, strips the
   `Authorization` header, and — the **one critical divergence** from the service-token filter — does
@@ -927,7 +1092,7 @@ credential:
   **not** a `SystemPrincipal`. `getUsername()` = the user login (so `getCurrentUserLogin()` and PBAC
   conditions referencing the current user behave as for a Keycloak session); authorities = the token
   roles (so `getCurrentUserRoles()` round-trips). Roles are frozen ≤15 min — no Keycloak round-trip.
-- **Enforcement**: `ExternalPluginEndpointAllowlistFilter` now extracts the `pluginConfigId` from
+- **Enforcement**: `ExternalPluginEndpointAllowlistFilter` extracts the `pluginConfigId` from
   **either** `ExternalPluginServicePrincipal` **or** `ExternalPluginUserPrincipal` and intersects with
   the configuration's granted endpoints. Net for the user token: **PBAC (enforced, not bypassed) ∩
   allowlist**.
@@ -939,7 +1104,9 @@ A `handle_request` handler can call GZAC **as the user** — not just as the sys
 forwards the downscoped user token in the `/data` POST body; `callRequest` threads it through the
 Extism per-call `hostContext` (host-only, **never** serialised into the Wasm input), and the
 `gzac_api` host function uses it when the request carries `as:"user"` (401-shaped reply if absent),
-else the service token. ⚠️ This hands the user token to the **plugin host** — a deliberate relaxation
+else the service token. The host forwards the caller-supplied token as-is and never validates it
+itself — GZAC verifies it server-side on every `as:"user"` callback, so a forged token only yields
+401s from GZAC. ⚠️ This hands the user token to the **plugin host** — a deliberate relaxation
 of "the token never leaves the browser," bounded by PBAC ∩ allowlist + the short TTL; plugin code
 receives data, never the token.
 
@@ -956,15 +1123,21 @@ The `case-summary` case tab demonstrates, side by side:
 Levels 3 & 4 count cases via `POST /api/v1/case/{key}/search` (`totalElements`), a **row-level
 PBAC-filtered** list, so the user token returns the user's visible subset and the service token the
 full set — a faithful scope comparison. (A single-document GET can't show this: it's all-or-nothing
-and the user already has access to the case whose tab they opened — so it was replaced by the count.)
-This adds `{ "method": "POST", "pattern": "/api/v1/case/*/search" }` to the sample manifest's
-`permissions.endpoints`; the configuration must be (re)granted it for the allowlist to permit either
-token.
+and the user already has access to the case whose tab they opened — hence the count.)
+The sample manifest's `permissions.endpoints` therefore includes
+`{ "method": "POST", "pattern": "/api/v1/case/*/search" }`; the configuration must be granted it
+for the allowlist to permit either token.
 
-Service tokens (action/event callbacks) are unchanged. ⚠️ The host `/data` route is still **public**
-(§7), so a level-4 handler exposes system-scoped data unauthenticated — gating `/data`
-(capability/auth) is the priority hardening item before non-POC use, and matters far more for
-privilege-escalation than the front-end transport choice.
+Service tokens (action/event callbacks) work identically on every path. The host `/data` route is
+browser-facing (no HMAC — the caller is a browser, not GZAC), so executing plugin Wasm through it
+is gated on the target configuration: the request must name a `configurationId` whose pushed
+configuration exists, targets the addressed plugin version, and **was granted the `frontend_data`
+capability** by an admin — otherwise 403 and the Wasm never runs — and a per-configuration rate
+limit (`DATA_RATE_LIMIT_PER_MINUTE`) bounds abuse (§7). A plugin that wants to serve iframe data
+therefore declares `frontend_data` in `manifest.permissions.capabilities` (§18.1). Plugins must
+still treat `handle_request` input as untrusted and never return data they would not expose to
+every user of the configuration's GZAC instance — level-3/4 access to *GZAC* data stays bounded by
+the user token's PBAC ∩ allowlist and the service token's allowlist respectively.
 
 ### 13.6 Task-form surface (`external_plugin_task_form` process-link type) ✅
 
@@ -1020,7 +1193,9 @@ Structure:
 - **Submission — a vertical slice mirroring form.io.** `ExternalPluginTaskFormSubmissionResource`
   exposes `POST /api/v1/process-link/{processLinkId}/external-plugin-task-form/submission
   ?documentId=&taskInstanceId=` (`.authenticated()` in `ExternalPluginHttpSecurityConfigurer`).
-  `ExternalPluginTaskFormSubmissionService` loads the link, asserts the caller's COMPLETE permission,
+  `ExternalPluginTaskFormSubmissionService` **requires a non-null `taskInstanceId` up front** —
+  without a task there is nothing to complete and, crucially, no task to check the COMPLETE
+  permission on, so no hook may run either — then loads the link, asserts the caller's COMPLETE permission,
   optionally runs the Level 1 hook (via `ExternalPluginHostClient.invokeSubmit` → host
   `POST /plugins/:id/:version/submit/:key` → `pluginManager.callSubmit` → Wasm `handle_submit`),
   categorizes the effective submission by value-resolver prefix (`pv:` → process vars, everything else
@@ -1062,9 +1237,10 @@ Structure:
   authoritative `taskInstanceId`/`documentId` come from the process-link result, not the iframe). On
   success it emits `completedEvent` (parent closes the task + refreshes) and replies `submitResult{ok:true}`;
   a validation failure replies `submitResult{ok:false, errors, fieldErrors}` so the form renders inline
-  errors without being torn down. The Level 2 `taskCompleted` → `taskCompletedEvent` path is retained.
-  The downscoped user token is now minted **best-effort** (only Level 2 and live in-form GZAC reads
-  need it), so a pure Level 0/1 form still renders and submits if the mint fails.
+  errors without being torn down. Level 2 keeps its own `taskCompleted` → `taskCompletedEvent` path.
+  The downscoped user token is minted **best-effort** through the shared
+  `ExternalPluginSessionService` (§13.3 — only Level 2 and live in-form GZAC reads need it), so a
+  pure Level 0/1 form still renders and submits if the mint fails.
 - **SDK.** `task-form` is a `FrontendBundle.type` (checked by the shared manifest validator), and the
   bundle may set `submitHandler: true` (Level 1). The backend SDK adds `submit(key, handler)` plus the
   `handle_submit` Wasm export (wired automatically by the build tool alongside `handle_action`/
@@ -1080,22 +1256,17 @@ Structure:
 
 ## 14. Not yet implemented ⛔
 
-- **Auth/capability gating of the public host `/data` route** (`handle_request`) — today it executes
-  plugin Wasm unauthenticated and a service-token-backed handler can return system-scoped data
-  (§7, §13.5). This is the top hardening item.
 - HTMX `render_page` (only the RPC-style `handle_request` for JSON data is implemented).
 - Case **widgets** (the remaining iframe surface — the case **tab** (§13.1), **task form** (§13.6),
-  and **menu pages** (§17) are done).
+  and **menu pages** (§13) are done).
 - DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
   queue and its contents).
 
 ## 15. Roadmap (priority order)
 
-1. **Harden the host `/data` route** — capability/auth gating so a `handle_request` handler can't be
-   triggered (and can't reach the service token) unauthenticated; tighten the allowlist surface.
-2. Remaining iframe surfaces: HTMX pages, case widgets (case **tab** §13.1, **task form** §13.6,
-   and **menu pages** §17 done).
-3. Cleanup: align async-vs-sync SDK docs.
+1. Remaining iframe surfaces: HTMX pages, case widgets (case **tab** §13.1, **task form** §13.6,
+   and **menu pages** §13 done).
+2. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
 
@@ -1199,11 +1370,14 @@ Structure:
   libs and the sample plugin `build:pack` are clean.
 
 **Not yet verified end-to-end** (confirmed by code reading and clean builds, not by a live run):
-- The host has no unit-test harness, so host-side HMAC verification (`createHmacAuthHook` /
-  `verifyDeferredHmac`) and the HTTPS listen path (`buildHttpsOptions`, including the both-cert-and-key
-  guard and the TLS handshake itself) rest on code reading and a clean `tsc`. A live client↔host run
+- The host carries a vitest suite (unit tests for the HMAC hook and replay cache, the routes —
+  config-push, management, actions, data, logs, bundles — the plugin manager, the config registry,
+  the `gzac_api`/`http_request` host functions and `buildHttpsOptions`, plus separate Wasm and
+  Postgres integration configs), so host-side HMAC verification (`createHmacAuthHook` /
+  `verifyDeferredHmac`) is unit-verified. A live client↔host run
   over the config-push / management / upload routes — a successful push returning 201, a tampered body
-  or stale timestamp returning 401, and a push over an HTTPS listener — is not in the verified record.
+  or stale timestamp returning 401, and a push over an HTTPS listener (the TLS handshake itself) —
+  is not in the verified record.
 - The **synchronous action path** (process service task → `ExternalPluginServiceTaskStartListener`
   → HMAC-signed `invokeAction` → host `preHandler` verify → Wasm `handle_action` → returned
   `variables` applied to the execution, and the 4xx→`BpmnError` path) is not verified end-to-end; the
@@ -1274,9 +1448,11 @@ the public `/plugin-manifest`, a correctly-signed `GET /api/host/plugins` (→ 2
 plugin), and an unsigned / wrong-secret call (→ 401). Frontend `@valtimo/{plugin,plugin-management}`
 type-check clean; `en`/`nl` bundles updated (`addApp`, `tabs.integrations`, `labels.kind`, `kind.*`).
 
-## 18. Host capabilities — `gzac_api`, `http_request`, `kv`, `log` ✅
+## 18. Host capabilities — `gzac_api`, `http_request`, `kv`, `log`, `frontend_data` ✅
 
-A capability is a host function a plugin may call. Every capability requires an explicit grant:
+A capability is a host-side ability a plugin may be granted: the four host functions (`gzac_api`,
+`http_request`, `kv`, `log`) plus `frontend_data`, which gates the host's public plugin-data route
+(§13.5) rather than a host function. Every capability requires an explicit grant:
 the plugin declares what it needs in `manifest.permissions.capabilities`, the admin accepts each
 one during configuration (§4), and the host enforces the allowlist at call time. A plugin that
 calls a capability it was not granted receives a structured error — never silent access, never
@@ -1295,21 +1471,22 @@ a crash.
 }
 ```
 
-`permissions.capabilities` is a string array. Known capability names: `gzac_api`, `http_request`,
-`kv`, `log`. Unknown names are rejected at upload (manifest validation, §9). `endpoints` remains
+`permissions.capabilities` is a string array. Known capability names (`HOST_CAPABILITIES` in the
+SDK): `gzac_api`, `http_request`, `kv`, `log`, `frontend_data`. Unknown names are rejected at
+upload (manifest validation, §9). `endpoints` remains
 relevant only when `gzac_api` is declared — it scopes *which* GZAC REST endpoints the service/user
 token may reach. A plugin that does not declare `gzac_api` has no use for `endpoints`.
 
-**SDK type** (`PluginManifest`): `permissions?: { endpoints?: Endpoint[]; capabilities?: string[] }`.
-The `capabilities` field is added to the existing `permissions` object. Manifest validation
+**SDK type** (`PluginManifest`): `permissions?: { endpoints?: Endpoint[]; capabilities?: string[] }`,
+with the `HOST_CAPABILITIES` const and `HostCapability` union alongside. Manifest validation
 (`validatePluginManifest`) rejects unknown capability names and requires the array when any
 capability-dependent feature is declared (e.g. `endpoints` without `gzac_api` is a validation
 error).
 
 ### 18.2 GZAC-side storage and activation gate
 
-**New table** `external_plugin_granted_capability` (DDL in a new changeset under the current
-release changelog, e.g. `13-32-0/2026MMDD-external-plugin-granted-capability.xml`):
+**Table** `external_plugin_granted_capability` (DDL in the release changelog,
+`13-32-0/20260716-external-plugin-granted-capability.xml`):
 
 | Column | Type | Notes |
 |--------|------|-------|
@@ -1320,19 +1497,23 @@ release changelog, e.g. `13-32-0/2026MMDD-external-plugin-granted-capability.xml
 
 `UNIQUE(configuration_id, capability)`.
 
-`ExternalPluginConfigurationService.create()` receives `grantedCapabilities: List<String>` and
-runs `validateGrantedCapabilitiesCoverManifest()` — rejects the configuration unless every
-capability declared in the manifest is granted (all-or-nothing, matching endpoints and events).
+`ExternalPluginConfigurationService.create()` receives `grantedCapabilities: List<String>`, parses
+each name into the `ExternalPluginCapability` enum **before anything is persisted** (an unknown
+name is rejected up front), and runs `validateGrantedCapabilitiesCoverManifest()` — the same
+exact-match gate as endpoints and events (§3.1): every capability declared in the manifest must be
+granted, and nothing undeclared may be.
 The granted capabilities are persisted and pushed to the host alongside the configuration (§18.3).
 `update()` does not accept `grantedCapabilities` — capability grants are immutable after
 activation (same semantics as event grants).
 
-**New Kotlin domain** `ExternalPluginGrantedCapability` (entity),
-`ExternalPluginGrantedCapabilityRepository` (Spring Data JPA).
+**Kotlin domain** `ExternalPluginGrantedCapability` (entity),
+`ExternalPluginGrantedCapabilityRepository` (Spring Data JPA), `ExternalPluginCapability` (enum
+whose `value` is the lowercase wire/manifest form, persisted via an `AttributeConverter` so the
+database column holds the same identifier the manifest and the host protocol use).
 
 ### 18.3 Config push — capabilities to the host
 
-The GZAC config-push body gains a `grantedCapabilities` array:
+The GZAC config-push body carries a `grantedCapabilities` array:
 
 ```json
 {
@@ -1365,29 +1546,32 @@ kv          → requires "kv" in grantedCapabilities
 log         → requires "log" in grantedCapabilities
 ```
 
-The check is implemented as a shared `assertCapability(configRegistry, configurationId, name)`
-helper used by all four host functions. On denial the Wasm call receives a structured JSON error
-`{ status: 403, body: { error: "Capability 'X' not granted for this configuration" } }` —
-deterministic, never ambiguous.
+The check is implemented as one shared entry guard, `guardHostCall(callContext, addr, name)`
+(`host-functions/guard.ts`), used by all four host functions: it resolves the per-call host
+context, enforces the capability gate, and parses the plugin's JSON request; each host function
+maps a failed guard onto its own reply envelope. On denial the Wasm call receives a structured
+JSON error carrying `"Capability 'X' not granted for this configuration"` (403-shaped) —
+deterministic, never ambiguous. The grants are resolved per call from the config registry
+(`PluginManager.resolveGrants`, through the registry's short-TTL cache — §7), so a re-push takes
+effect immediately.
 
-**`gzac_api` retroactive gate.** The existing `gzac_api` host function (`host-functions/gzac-api.ts`)
-gains the capability check at the top of its handler, before any upstream fetch. Configurations
-created before the capability system was introduced will not have `grantedCapabilities` in their
-pushed config. To avoid breaking existing setups: when `grantedCapabilities` is absent or empty
-on a configuration that was pushed by an older GZAC (before the capability system), the host
-treats `gzac_api` as implicitly granted (backward compatibility). Once the GZAC is upgraded and
-re-pushes configurations with explicit `grantedCapabilities`, the host enforces the explicit list.
+There is **no implicit grant**: a configuration pushed without a `grantedCapabilities` list stores
+an empty allowlist, and every gated host function denies it. (The only lenient default is the
+*endpoint* list on `gzac_api`, where an absent list means "no host-side allowlist check, warn and
+rely on GZAC's server-side filter" — §8.2.)
 
-### 18.5 Capability: `gzac_api` (host function + capability gate ✅)
+### 18.5 Capability: `gzac_api` ✅
 
-Already implemented as a host function (§3.5, `host-functions/gzac-api.ts`). The capability gate
-is the only addition: the host function checks `grantedCapabilities` before making the upstream
-call. Everything else — service/user token selection, endpoint allowlist enforcement on the GZAC
-side, HMAC signing — is unchanged.
+The host function of §3.5 (`host-functions/gzac-api.ts`): the shared guard checks
+`grantedCapabilities` before anything runs, the configuration's granted-endpoint allowlist is
+enforced host-side before the upstream fetch, plugin-supplied `Authorization` headers are
+stripped with the host credential attached last, and the fetch is timeout-bounded — see §3.5 for
+the full mechanics. Service/user token selection (§13.4) and the GZAC-side allowlist filter (§3.4)
+complete the chain.
 
-SDK: `gzacApi.get()`, `gzacApi.post()`, etc. (unchanged). `gzacApi.asUser.*` (unchanged).
+SDK: `gzacApi.get()`, `gzacApi.post()`, etc., plus `gzacApi.asUser.*`.
 
-### 18.6 Capability: `http_request` ⛔
+### 18.6 Capability: `http_request` ✅
 
 Allows the plugin to make HTTP requests to external (non-GZAC) services. The host performs the
 fetch and returns the response; the plugin never gets raw network access.
@@ -1411,14 +1595,26 @@ interface HttpRequestOutput {
 ```
 
 **Security constraints:**
-- The `url` must not resolve to the configuration's `gzacBaseUrl` — use `gzac_api` for that. The
-  host strips `Authorization` headers pointing at the GZAC instance to prevent credential relay.
-- Timeout is capped at 60 s to prevent resource exhaustion.
-- The host does not follow redirects that would land on `gzacBaseUrl`.
+- **HTTPS-only by default** — plain-http targets require `HOST_ALLOW_HTTP=true` (local dev).
+- **SSRF guard**: connections to private/reserved addresses are blocked at the socket's own DNS
+  lookup (a guarded undici `Agent`, `security/url-guard.ts`), so the address check is pinned to
+  the exact addresses being connected to — no DNS-rebinding window — and automatically covers
+  every redirect hop; IP-literal hosts (which skip DNS) are rejected up front. Disabled with
+  `HOST_ALLOW_PRIVATE_NETWORK=true` (local dev).
+- The `url` must not resolve to the configuration's `gzacBaseUrl` origin — use `gzac_api` for
+  that.
+- **Redirects are followed manually** (max 5) so every hop re-runs the full target validation —
+  with `redirect: "follow"` a public URL could bounce the request to an internal one or to GZAC
+  unchecked. Credential headers (`Authorization`, `Cookie`, `Proxy-Authorization`) are stripped
+  when a redirect crosses origins, and 303 (plus 301/302 for body-bearing methods) becomes a GET
+  without body per fetch semantics.
+- Timeout defaults to 30 s and is capped at 60 s to prevent resource exhaustion.
 
-**Logging:** Every `http_request` call is logged to the plugin host's `plugin_api_call_logs` table
-(§18.9) with method, URL (query string redacted), status, duration, and the calling
-configuration/plugin id. This gives the admin visibility into what external calls plugins make.
+**Logging:** Every `http_request` call is logged to the plugin host's `plugin_logs` table (§18.9,
+`source: "http_request"`) with method, **redacted URL** (userinfo and query string stripped —
+`user:pass@` and `?token=…` routinely carry secrets, so only scheme+host+path are recorded),
+status, duration, and the calling configuration/plugin id. This gives the admin visibility into
+what external calls plugins make.
 
 **SDK** (`plugin-sdk/src/http-request.ts`):
 
@@ -1434,7 +1630,7 @@ export const httpRequest = {
 Mirrors the `gzacApi` shape. Calls the `http_request` Extism host function under the hood, same
 `Host.getFunctions()` mechanism.
 
-### 18.7 Capability: `kv` ⛔
+### 18.7 Capability: `kv` ✅
 
 A per-configuration key-value store persisted in the plugin host's PostgreSQL. Plugins use it to
 store state across invocations — counters, cached computations, user preferences, etc.
@@ -1445,7 +1641,7 @@ store state across invocations — counters, cached computations, user preferenc
 interface KvInput {
   op: "get" | "set" | "delete" | "list";
   key?: string;       // required for get/set/delete; max 256 chars
-  value?: unknown;     // required for set; stored as JSONB; max 1 MB serialized
+  value?: unknown;     // required for set; stored as JSONB
   prefix?: string;     // for list — returns keys matching this prefix
 }
 
@@ -1456,18 +1652,19 @@ interface KvOutput {
 }
 ```
 
-**Storage** (`plugin_kv_store` table in the host's PostgreSQL, §18.9):
+**Storage** (`plugin_kv` table in the host's PostgreSQL, §18.9):
 
 | Column | Type | Notes |
 |--------|------|-------|
 | `configuration_id` | `text NOT NULL` | scoped to the configuration |
 | `key` | `text NOT NULL` | max 256 chars, validated host-side |
-| `value` | `jsonb NOT NULL` | max 1 MB serialized |
+| `value` | `jsonb NOT NULL` | |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-PK: `(configuration_id, key)`. Deleting a configuration from the host (config-push DELETE)
-cascades to its KV entries.
+PK: `(configuration_id, key)`, plus a `text_pattern_ops` index backing prefix `list`. KV rows have
+no automatic retention or delete cascade — they persist until the plugin deletes them
+(`KvRepository.deleteAll(configId)` exists for manual cleanup).
 
 **SDK** (`plugin-sdk/src/kv.ts`):
 
@@ -1482,30 +1679,28 @@ export const kv = {
 
 Synchronous from the plugin's perspective (Extism suspends the call).
 
-### 18.8 Capability: `log` ⛔
+### 18.8 Capability: `log` ✅
 
-Structured logging persisted in the plugin host's PostgreSQL. Replaces the existing console-based
-`log.info/warn/error` (which already exist in `host-functions.ts` but only pipe to stdout/stderr)
-with a host function that both logs to the host's pino logger *and* persists to the
-`plugin_structured_logs` table for admin visibility.
+Structured logging persisted in the plugin host's PostgreSQL: a host function that both logs to
+the host's pino logger *and* persists to the `plugin_logs` table for admin visibility.
 
 **Host function** `log` (`host-functions/log.ts`):
 
 ```typescript
 interface LogInput {
   level: "info" | "warn" | "error" | "debug";
-  message: string;          // max 4 KB
-  data?: Record<string, unknown>;  // structured context, max 64 KB serialized
+  message: string;          // truncated to 4 KB
+  data?: Record<string, unknown>;  // structured context
 }
 ```
 
 No output — fire-and-forget from the plugin's perspective. The host function:
-1. Writes to the pino logger at the requested level (existing behaviour, now with structured
-   `data` attached).
-2. Inserts a row into `plugin_structured_logs` (§18.9) — async insert, does not block the Wasm
-   call. Failures are logged to pino but do not bubble to the plugin.
+1. Writes to the pino logger at the requested level (an unknown level coerces to `info`), with the
+   structured `data` attached.
+2. Inserts a row into `plugin_logs` (§18.9, `source: "plugin"`) — async insert, does not block the
+   Wasm call. Failures are logged to pino but do not bubble to the plugin.
 
-**SDK** (`plugin-sdk/src/host-functions.ts` — the existing `log` export is enhanced):
+**SDK** (`plugin-sdk/src/host-functions.ts`):
 
 ```typescript
 export const log = {
@@ -1516,13 +1711,11 @@ export const log = {
 };
 ```
 
-The existing `log.info/warn/error` signatures are kept for backward compatibility; the new `data`
-parameter is optional. `debug` is added. Outside Wasm (build/test), falls back to `console.*`.
+The `data` parameter is optional. Outside Wasm (build/test), falls back to `console.*`.
 
-### 18.9 Host persistent storage — new tables (plugin host PostgreSQL)
+### 18.9 Host persistent storage (plugin host PostgreSQL)
 
-Three new tables in the plugin host's PostgreSQL (migration versions 3–5 in
-`plugin-host/app/src/db/index.ts`):
+Migrations 3–5 in `plugin-host/app/src/db/index.ts`:
 
 **Migration 3: `granted_capabilities` column on `plugin_configurations`**
 
@@ -1531,96 +1724,81 @@ ALTER TABLE plugin_configurations
   ADD COLUMN IF NOT EXISTS granted_capabilities JSONB NOT NULL DEFAULT '[]';
 ```
 
-**Migration 4: `plugin_kv_store`**
+**Migration 4: `plugin_kv` + `plugin_logs`**
 
 ```sql
-CREATE TABLE IF NOT EXISTS plugin_kv_store (
+CREATE TABLE IF NOT EXISTS plugin_kv (
   configuration_id TEXT NOT NULL,
-  key TEXT NOT NULL CHECK (length(key) <= 256),
+  key TEXT NOT NULL,
   value JSONB NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (configuration_id, key)
 );
-CREATE INDEX IF NOT EXISTS idx_kv_store_config ON plugin_kv_store(configuration_id);
-```
+CREATE INDEX IF NOT EXISTS idx_plugin_kv_prefix ON plugin_kv (configuration_id, key text_pattern_ops);
 
-**Migration 5: `plugin_structured_logs`**
-
-```sql
-CREATE TABLE IF NOT EXISTS plugin_structured_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS plugin_logs (
+  id BIGSERIAL PRIMARY KEY,
   configuration_id TEXT NOT NULL,
   plugin_id TEXT NOT NULL,
   plugin_version TEXT NOT NULL,
-  level TEXT NOT NULL,
+  level VARCHAR(8) NOT NULL,
   message TEXT NOT NULL,
   data JSONB,
-  invocation_type TEXT,        -- 'action', 'event', 'request', 'submit'
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  source VARCHAR(32) NOT NULL,   -- 'plugin' (SDK log calls) or 'http_request' (API-call log)
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_structured_logs_config_time
-  ON plugin_structured_logs(configuration_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_structured_logs_plugin_time
-  ON plugin_structured_logs(plugin_id, plugin_version, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_plugin_logs_config ON plugin_logs (configuration_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_plugin_logs_level ON plugin_logs (configuration_id, level, created_at DESC);
 ```
 
-**Migration 6: `plugin_api_call_logs`**
+One log table serves both purposes, discriminated by `source`: SDK `log.*` calls insert with
+`source: "plugin"`, and every `http_request` invocation auto-inserts its call record (redacted
+URL, status, duration — §18.6) with `source: "http_request"`.
+
+**Migration 5: `granted_endpoints` column on `plugin_configurations`**
 
 ```sql
-CREATE TABLE IF NOT EXISTS plugin_api_call_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  configuration_id TEXT NOT NULL,
-  plugin_id TEXT NOT NULL,
-  plugin_version TEXT NOT NULL,
-  capability TEXT NOT NULL,     -- 'gzac_api' or 'http_request'
-  method TEXT NOT NULL,
-  url TEXT NOT NULL,
-  status_code INTEGER,
-  duration_ms INTEGER,
-  error_message TEXT,
-  invocation_type TEXT,        -- 'action', 'event', 'request', 'submit'
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_api_call_logs_config_time
-  ON plugin_api_call_logs(configuration_id, created_at DESC);
+-- NULL (default) means "not pushed" — a push without a granted-endpoint list makes the host skip
+-- its side of the gzac_api allowlist check (GZAC still enforces it server-side). A pushed empty
+-- list ('[]') denies every endpoint.
+ALTER TABLE plugin_configurations
+  ADD COLUMN IF NOT EXISTS granted_endpoints JSONB;
 ```
 
 **Repositories:**
 - `KvRepository` (`db/kv-repository.ts`) — `get`, `set`, `delete`, `list`, `deleteAll(configId)`.
 - `LogRepository` (`db/log-repository.ts`) — `insert`, `query(configId, { page, size, level?,
-  after?, before? })`, `deleteOlderThan(configId, retentionDays)`.
-- `ApiCallLogRepository` (`db/api-call-log-repository.ts`) — `insert`, `query(configId, { page,
-  size, capability?, after?, before? })`, `deleteOlderThan(configId, retentionDays)`.
+  source? })`, `deleteOlderThan(retentionDays)`, `deleteByConfiguration(configId)`.
 
-**Retention.** A scheduled cleanup job runs on host startup and every 24 h, deleting log and
-API-call rows older than a configurable retention period (`LOG_RETENTION_DAYS` env, default 30).
-KV entries have no automatic retention — they persist until explicitly deleted by the plugin or
-when the configuration is removed.
+**Retention.** A scheduled cleanup job runs on host startup and every 6 h, deleting log rows older
+than a configurable retention period (`LOG_RETENTION_DAYS` env, default 30). KV entries have no
+automatic retention — they persist until explicitly deleted by the plugin. Removing a
+configuration does not cascade to its KV/log rows: log rows age out through the retention job, and
+the repositories expose `deleteAll`/`deleteByConfiguration` for manual cleanup.
 
-**Config deletion cascade.** When a configuration is removed from the host (via the
-`DELETE /api/host/configurations/:configId` route), the host deletes the configuration's KV
-entries, structured logs, and API call logs. The SQL cascade is manual (repository calls in the
-delete handler), not FK-based, since `configuration_id` is `TEXT` referencing the config push id.
+### 18.10 Host route — log query endpoint
 
-### 18.10 Host routes — log query endpoints
-
-Two new HMAC-signed routes on the plugin host for the GZAC admin UI to query logs:
+One HMAC-signed route on the plugin host (`routes/plugin-logs.ts`) for the GZAC admin UI to query
+logs:
 
 **`GET /api/host/configurations/:configId/logs`** — paginated structured logs.
 
-Query params: `page` (0-based), `size` (default 25, max 100), `level` (optional filter),
-`after` / `before` (ISO-8601 timestamps). Returns:
+Query params: `page` (0-based), `size` (default 25, max 100), `level` (optional filter), `source`
+(optional filter — `plugin` or `http_request`, so API-call records are a filter of the same
+route). `page`/`size` are defensively coerced: `parseInt` on garbage yields `NaN`, which would
+flow into the SQL `LIMIT`/`OFFSET`, so a non-numeric value falls back to the default and the
+result is clamped; the response echoes the coerced values. Returns:
 
 ```json
 {
   "content": [
     {
-      "id": "uuid",
+      "id": 42,
       "level": "info",
       "message": "[case-summary] event com.ritense.valtimo.document.created",
       "data": { "resultId": "abc-123" },
-      "invocationType": "event",
+      "source": "plugin",
       "createdAt": "2026-07-16T10:30:00Z"
     }
   ],
@@ -1630,100 +1808,51 @@ Query params: `page` (0-based), `size` (default 25, max 100), `level` (optional 
 }
 ```
 
-**`GET /api/host/configurations/:configId/api-call-logs`** — paginated API call logs.
+The route is HMAC-signed (§3.9) — the GZAC backend proxies the request via
+`ExternalPluginHostClient.getConfigurationLogs`.
 
-Query params: same as above, plus `capability` (optional, `gzac_api` or `http_request`). Returns:
+### 18.11 GZAC backend — log proxy endpoint
 
-```json
-{
-  "content": [
-    {
-      "id": "uuid",
-      "capability": "http_request",
-      "method": "GET",
-      "url": "https://jsonplaceholder.typicode.com/todos/1",
-      "statusCode": 200,
-      "durationMs": 245,
-      "invocationType": "request",
-      "createdAt": "2026-07-16T10:30:00Z"
-    }
-  ],
-  "page": 0,
-  "size": 25,
-  "totalElements": 58
-}
-```
-
-Both routes are HMAC-signed (§3.9) — the GZAC backend proxies the request via
-`ExternalPluginHostClient`.
-
-### 18.11 GZAC backend — log proxy endpoints
-
-Two new management endpoints on the GZAC backend that proxy the host's log routes:
+One management endpoint on the GZAC backend proxies the host's log route:
 
 - `GET /api/management/v1/external-plugin/configuration/{configId}/logs`
-- `GET /api/management/v1/external-plugin/configuration/{configId}/api-call-logs`
 
-ADMIN-gated in `ExternalPluginHttpSecurityConfigurer`. The service looks up the configuration's
-host, signs the request with HMAC, forwards query params, and returns the host's paginated
-response. These need `@EndpointDescription(en, nl)` annotations (§4).
+ADMIN-gated in `ExternalPluginHttpSecurityConfigurer`, with an `@EndpointDescription(en, nl)`
+annotation (§4). The resource looks up the configuration's host, signs the request with HMAC, and
+forwards `page`/`size`/`level`/`source`. The client deliberately signs the bare path **without**
+the query string — the host strips the query before verifying (§3.9), so the canonical strings
+match; query parameters are not signature-bound by design.
 
 ### 18.12 Frontend — admin log view modal
 
-A new **"Logs"** option in the overflow menu (`ActionItem`) for external plugin configurations on
-the plugin management page (`plugin-management.component.ts`). Clicking it opens a
-`PluginLogModalComponent` — a `cds-modal` (size `lg`) containing a `valtimo-carbon-list` with
-pagination, modeled after the existing `logging-list` pattern (§ frontend pattern reference).
+A **"Logs"** option in the overflow menu (`ActionItem`) for external plugin configurations on
+the plugin management page (`plugin-management.component.ts`), enabled only for external rows,
+opens `PluginLogModalComponent` (`plugin-management/components/plugin-log-modal/`) — a standalone
+`cds-modal` (size `lg`) containing one paginated `valtimo-carbon-list` over the proxied
+`plugin_logs` rows, with **level** and **source** filter dropdowns (mapping to the route's query
+params, so plugin logs and `http_request` API-call records live in the same list, filterable by
+`source`). Columns: timestamp, level (tag, color-coded per level), source (tag), message; a row
+click opens a detail aside showing the structured `data` JSON. Default page size 25.
 
-**Overflow menu entry:**
+**Service** (`ExternalPluginService`):
+- `getConfigurationLogs(configId, params): Observable<PluginLogPage>` (models `PluginLogEntry`,
+  `PluginLogPage`).
 
-```typescript
-{
-  callback: this.viewLogs.bind(this),
-  label: 'pluginManagement.logs.menuItem',
-  disabledCallback: (row: UnifiedPluginConfigurationRow) => row.source !== 'external',
-}
-```
+**i18n** — keys under `pluginManagement.logs.*` in `en.json` and `nl.json` (menu item, title,
+column headers, level/source labels, empty state, close).
 
-Placed between "Edit" and "Delete" in the `actionItems` array. Disabled for embedded
-(non-external) configurations.
+### 18.13 Demo plugin scenarios — `case-summary` ✅
 
-**Modal component** (`plugin-management/components/plugin-log-modal/`):
-
-The modal has two tabs (Carbon `cds-tabs`):
-
-1. **Plugin logs** — structured logs from `plugin_structured_logs`. Table columns: timestamp
-   (date-time format), level (tag: `info`=blue, `warn`=yellow, `error`=red, `debug`=gray),
-   message (text with tooltip on overflow), invocation type (tag). Row click opens a detail
-   section showing the `data` JSON.
-2. **API calls** — from `plugin_api_call_logs`. Table columns: timestamp, capability (tag:
-   `gzac_api`=teal, `http_request`=purple), method (tag), URL (text with tooltip), status code
-   (tag: 2xx=green, 4xx=yellow, 5xx=red), duration (ms).
-
-Both tabs use `valtimo-carbon-list` with `[pagination]` and `(paginationClicked)` /
-`(paginationSet)`. Default page size 25. Each tab loads data independently on activation.
-
-**Service** (`ExternalPluginService` additions):
-- `getPluginLogs(configId, params): Observable<Page<PluginLogEntry>>`
-- `getApiCallLogs(configId, params): Observable<Page<ApiCallLogEntry>>`
-
-**i18n** — new keys under `pluginManagement.logs.*` in `en.json` and `nl.json`:
-`menuItem`, `title`, `tabs.pluginLogs`, `tabs.apiCalls`, `columns.timestamp`, `columns.level`,
-`columns.message`, `columns.invocationType`, `columns.capability`, `columns.method`,
-`columns.url`, `columns.statusCode`, `columns.duration`, `empty`, `close`.
-
-### 18.13 Demo plugin scenarios — `case-summary` enhancements ⛔
-
-The sample plugin (`plugin-host/sample-plugins/case-summary/`) gains scenarios that exercise
-`http_request`, `kv`, and `log` alongside the existing `gzac_api` usage, proving each capability
+The sample plugin (`plugin-host/sample-plugins/case-summary/`) ships scenarios that exercise
+`http_request`, `kv`, and `log` alongside its `gzac_api` usage, proving each capability
 produces results visible in GZAC.
 
-**Manifest additions:**
+**Manifest permissions:**
 
 ```json
 {
   "permissions": {
-    "capabilities": ["gzac_api", "http_request", "kv", "log"],
+    "capabilities": ["gzac_api", "http_request", "kv", "log", "frontend_data"],
     "endpoints": [
       { "method": "GET", "pattern": "/api/v1/document/*" },
       { "method": "POST", "pattern": "/api/v1/document/*/note" },
@@ -1734,41 +1863,39 @@ produces results visible in GZAC.
 }
 ```
 
-**New `plugin.ts` scenarios:**
+**`plugin.ts` scenarios:**
 
-1. **`http_request` — fetch from a trusted test API.** A new `request("/external-data", …)`
+1. **`http_request` — fetch from a trusted test API.** A `request("/external-data", …)`
    handler calls `httpRequest.get("https://jsonplaceholder.typicode.com/todos/1")` — a public,
    stable, no-auth JSON API. The response (a todo item with `id`, `title`, `completed`) is
-   returned to the case-tab iframe, which renders it in a new "External API data" card alongside
-   the existing cards. This proves `http_request` works end-to-end: the plugin makes an outbound
+   returned to the case-tab iframe, which renders it in an "External API data" card alongside
+   the other cards. This proves `http_request` works end-to-end: the plugin makes an outbound
    HTTP call, the result travels through the host back to the iframe, and is visible in the GZAC
    case tab.
 
-2. **`kv` — persistent view counter.** The existing `request("/summary", …)` handler is enhanced:
-   on each invocation it reads `kv.get("view-count")`, increments, and writes
+2. **`kv` — persistent view counter.** The `request("/summary", …)` handler
+   on each invocation reads `kv.get("view-count")`, increments, and writes
    `kv.set("view-count", count + 1)`. The count is returned in the response body and displayed in
    the case-tab iframe as "Tab views: N". This proves `kv` persists across invocations — refresh
    the tab and the counter increments. The counter is per-configuration, so two configurations of
    the same plugin have independent counts.
 
-3. **`log` — structured logging visible in admin.** All existing `log.info(...)` calls are
-   enhanced with a `data` parameter carrying structured context (e.g.
+3. **`log` — structured logging visible in admin.** The `log.info(...)` calls
+   carry a `data` parameter with structured context (e.g.
    `log.info("[case-summary] summary built", { documentId, summary, currency })`). The
-   `request("/summary")` handler additionally logs at `debug` level with timing information. A
-   new `log.warn(...)` call is added to the `countCases` handler when the upstream status is not
+   `request("/summary")` handler additionally logs at `debug` level with timing information, and
+   the `countCases` handler emits a `log.warn(...)` when the upstream status is not
    200. These log entries appear in the admin log modal (§18.12), proving the structured logging
    pipeline works end-to-end.
 
-**Case-tab frontend updates** (`frontend/case-tab.tsx`):
-
-A new section/card is added to the case-tab UI:
+**Case-tab frontend** (`frontend/case-tab.tsx`):
 
 - **"External API data"** — calls `sdk.getPluginData("/external-data")` and renders the todo
   item's title and completion status. Shows loading/error states matching the existing cards.
 - **"Tab views"** — the view count from the `/summary` response is displayed as a small badge or
   counter in the "Plugin-served data" card header.
 
-**Translation additions** (`manifest.json` translations):
+**Translations** (`manifest.json`):
 
 ```json
 {
@@ -1789,9 +1916,9 @@ A new section/card is added to the case-tab UI:
 }
 ```
 
-### 18.14 Permission UX — capabilities section ⛔
+### 18.14 Permission UX — capabilities section ✅
 
-The `PluginExternalPermissionsComponent` gains a third section above the existing two:
+The `PluginExternalPermissionsComponent` shows a capabilities section above the other two:
 
 - **Host capabilities** — a `cds-structured-list` listing each declared capability with a
   localised name and description. The names and descriptions are static (not fetched from the
@@ -1811,9 +1938,9 @@ The `PluginExternalPermissionsComponent` gains a third section above the existin
 
 - In read-only mode (edit), all three sections are shown with the `acceptedNote` info notification.
 
-**Create payload change.** The `POST .../configuration` body gains `grantedCapabilities: string[]`.
-The frontend maps `manifest.permissions.capabilities` to the payload. The backend validates that
-every manifest-declared capability is present (§18.2).
+**Create payload.** The `POST .../configuration` body carries `grantedCapabilities: string[]`.
+The frontend maps `manifest.permissions.capabilities` to the payload. The backend validates the
+exact match against the manifest declaration (§18.2).
 
 ### 18.15 Verification plan
 
@@ -1827,7 +1954,7 @@ every manifest-declared capability is present (§18.2).
 - Frontend `@valtimo/plugin-management` `ng build` clean — permissions component renders the
   capabilities section; log modal compiles.
 - End-to-end browser verification:
-  - Configure the sample plugin with all four capabilities accepted.
+  - Configure the sample plugin with all declared capabilities accepted.
   - Case tab renders: "External API data" card with todo from jsonplaceholder, view count
     incrementing on refresh, case counts (existing), and plugin-served data (existing).
   - Admin log modal shows structured log entries and API call logs for the configuration.
@@ -2026,10 +2153,6 @@ All compile clean (`compileKotlin` + `compileTestKotlin` + `test` pass).
 8. **Host service** — `delete()` cleans up `grantedCapabilityRepository`.
 9. **Autoconfiguration** — wired `grantedCapabilityRepository` into both services.
 10. **Tests** — all 3 test files updated for new constructor param; all pass.
-
-**Not yet done (backend):**
-- Log proxy endpoint (`GET /api/management/v1/external-plugin/configuration/{configId}/logs`)
-  that proxies the host's log route. Can be added later alongside the frontend log modal.
 
 ### ✅ Done — GZAC frontend (Angular)
 

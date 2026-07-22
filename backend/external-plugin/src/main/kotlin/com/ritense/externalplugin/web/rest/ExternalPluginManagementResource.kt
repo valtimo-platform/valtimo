@@ -60,6 +60,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.client.HttpStatusCodeException
+import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
@@ -100,7 +102,7 @@ class ExternalPluginManagementResource(
             request.baseUrl,
             request.secret,
             request.gzacCallbackBaseUrl,
-            request.eventBrokerAmqpUrl,
+            resolveBrokerAmqpUrl(request.eventBrokerAmqpUrl),
             request.eventBrokerExchange,
             request.eventQueueMode,
             request.eventQueueTtlMs,
@@ -162,15 +164,6 @@ class ExternalPluginManagementResource(
         val serverPort = environment.getProperty("server.port", Int::class.java, 8080)
         val gzacCallbackBaseUrl = "http://localhost:$serverPort"
 
-        val rabbitHost = environment.getProperty("spring.rabbitmq.host", "localhost")
-        val rabbitPort = environment.getProperty("spring.rabbitmq.port", Int::class.java, 5672)
-        val rabbitUsername = environment.getProperty("spring.rabbitmq.username", "guest")
-        val rabbitPassword = environment.getProperty("spring.rabbitmq.password", "guest")
-        val rabbitVirtualHost = environment.getProperty("spring.rabbitmq.virtual-host", "/")
-        val vhostPath = if (rabbitVirtualHost == "/") "" else "/$rabbitVirtualHost"
-        val eventBrokerAmqpUrl =
-            "amqp://$rabbitUsername:$rabbitPassword@$rabbitHost:$rabbitPort$vhostPath"
-
         val eventBrokerExchange = environment.getProperty(
             "valtimo.outbox.publisher.rabbitmq.exchange",
             "valtimo-events",
@@ -179,13 +172,38 @@ class ExternalPluginManagementResource(
         return ResponseEntity.ok(
             HostDefaultsResponse(
                 gzacCallbackBaseUrl = gzacCallbackBaseUrl,
-                eventBrokerAmqpUrl = eventBrokerAmqpUrl,
+                // Credentials are never sent to the browser: the userinfo is redacted here and
+                // resolveBrokerAmqpUrl substitutes the real credentials server-side when the
+                // redacted default comes back on host registration.
+                eventBrokerAmqpUrl = HostResponse.redactAmqpUserInfo(defaultBrokerAmqpUrl())!!,
                 eventBrokerExchange = eventBrokerExchange,
                 defaultEventQueueTtlMs = ExternalPluginHostService.DEFAULT_EVENT_QUEUE_TTL_MS,
                 minEventQueueTtlMs = ExternalPluginHostService.MIN_EVENT_QUEUE_TTL_MS,
                 maxEventQueueTtlMs = ExternalPluginHostService.MAX_EVENT_QUEUE_TTL_MS,
             )
         )
+    }
+
+    /** The broker AMQP URL GZAC itself uses, built from `spring.rabbitmq.*` — full credentials. */
+    private fun defaultBrokerAmqpUrl(): String {
+        val rabbitHost = environment.getProperty("spring.rabbitmq.host", "localhost")
+        val rabbitPort = environment.getProperty("spring.rabbitmq.port", Int::class.java, 5672)
+        val rabbitUsername = environment.getProperty("spring.rabbitmq.username", "guest")
+        val rabbitPassword = environment.getProperty("spring.rabbitmq.password", "guest")
+        val rabbitVirtualHost = environment.getProperty("spring.rabbitmq.virtual-host", "/")
+        val vhostPath = if (rabbitVirtualHost == "/") "" else "/$rabbitVirtualHost"
+        return "amqp://$rabbitUsername:$rabbitPassword@$rabbitHost:$rabbitPort$vhostPath"
+    }
+
+    /**
+     * Accepts full AMQP URLs as-is. When the redacted default from [hostDefaults] is echoed back
+     * (userinfo `***`), the real credentials from `spring.rabbitmq.*` are substituted server-side
+     * so a round-tripped redacted URL never ends up stored.
+     */
+    private fun resolveBrokerAmqpUrl(requested: String?): String? {
+        if (requested.isNullOrBlank()) return requested
+        val redactedDefault = HostResponse.redactAmqpUserInfo(defaultBrokerAmqpUrl())
+        return if (requested == redactedDefault) defaultBrokerAmqpUrl() else requested
     }
 
     /**
@@ -231,8 +249,9 @@ class ExternalPluginManagementResource(
         @RequestParam("file") file: MultipartFile,
         @RequestParam(name = "force", required = false, defaultValue = "false") force: Boolean,
     ): ResponseEntity<JsonNode> {
+        val fileBytes = file.bytes
         if (!force) {
-            val range = pluginPackageInspector.readCompatibilityRange(file.bytes)
+            val range = pluginPackageInspector.readCompatibilityRange(fileBytes)
             if (range != null) {
                 val compatibility = compatibilityChecker.check(range.minGzacVersion, range.maxGzacVersion)
                 if (!compatibility.compatible) {
@@ -240,7 +259,17 @@ class ExternalPluginManagementResource(
                 }
             }
         }
-        val result = hostService.uploadPlugin(hostId, file.originalFilename ?: "plugin.zip", file.bytes)
+        val result = try {
+            hostService.uploadPlugin(hostId, file.originalFilename ?: "plugin.zip", fileBytes)
+        } catch (e: HttpStatusCodeException) {
+            // The host rejected the upload (bad package, duplicate version, …) or failed on it —
+            // relay its status and error body instead of surfacing a raw 500.
+            return ResponseEntity.status(e.statusCode)
+                .body(uploadErrorBody("Plugin host rejected the upload", e.responseBodyAsString))
+        } catch (e: ResourceAccessException) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(uploadErrorBody("Plugin host is unreachable", e.message))
+        }
         discoveryService.discoverAll()
         return ResponseEntity.status(HttpStatus.CREATED).body(result)
     }
@@ -284,7 +313,9 @@ class ExternalPluginManagementResource(
         @PathVariable configurationId: UUID,
     ): ResponseEntity<ConfigurationDetailResponse> {
         val configuration = configurationService.get(configurationId)
-        val decrypted = configurationService.decryptedProperties(configuration)
+        // Secrets never travel to the browser: x-secret fields are omitted (see maskedProperties);
+        // on update an absent/blank secret means "unchanged".
+        val maskedProperties = configurationService.maskedProperties(configuration)
         val grantedEndpoints = configurationService.getGrantedEndpoints(configurationId)
         val grantedEvents = configurationService.getGrantedEvents(configurationId)
         val grantedCapabilities = configurationService.getGrantedCapabilities(configurationId)
@@ -293,7 +324,7 @@ class ExternalPluginManagementResource(
                 id = configuration.id,
                 definitionId = configuration.definitionId,
                 title = configuration.title,
-                properties = decrypted,
+                properties = maskedProperties,
                 grantedEndpoints = grantedEndpoints.map(GrantedEndpointResponse::from),
                 grantedEvents = grantedEvents.map(GrantedEventResponse::from),
                 grantedCapabilities = grantedCapabilities.map(GrantedCapabilityResponse::from),
@@ -417,5 +448,11 @@ class ExternalPluginManagementResource(
             put("currentGzacVersion", compatibility.currentGzacVersion)
             put("minGzacVersion", compatibility.minGzacVersion)
             put("maxGzacVersion", compatibility.maxGzacVersion)
+        }
+
+    private fun uploadErrorBody(message: String, detail: String?): JsonNode =
+        objectMapper.createObjectNode().apply {
+            put("error", message)
+            if (!detail.isNullOrBlank()) put("detail", detail)
         }
 }

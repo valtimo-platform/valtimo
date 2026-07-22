@@ -15,9 +15,10 @@
  */
 
 import {IncludeFunction, MenuItem, ROLE_ADMIN, ROLE_USER} from '@valtimo/shared';
-import {MenuConfiguration} from './menu-configuration.model';
+import {CatalogMenuConfigurationItem, MenuConfiguration} from './menu-configuration.model';
 import {resolveMenuConfiguration} from './menu-configuration.resolver';
 import {buildMenuConfigurationFromRuntimeMenu} from './menu-configuration.seed';
+import {menuLinkToString} from './menu-item-catalog';
 
 describe('menu configuration resolver', () => {
   it('fills catalog defaults for a bare catalog node', () => {
@@ -103,9 +104,7 @@ describe('menu configuration resolver', () => {
     expect(group.title).toBe('My section');
     expect(group.iconClass).toBe('icon mdi mdi-folder');
     expect(group.link).toBeUndefined();
-    expect(group.children).toEqual([
-      {title: 'Docs', roles: [ROLE_USER], link: ['/docs']},
-    ]);
+    expect(group.children).toEqual([{title: 'Docs', roles: [ROLE_USER], link: ['/docs']}]);
   });
 
   it('resolves a plugin-page without a bundle key to a two-segment route', () => {
@@ -123,7 +122,10 @@ describe('menu configuration resolver', () => {
     spyOn(console, 'warn');
     const config: MenuConfiguration = {
       version: 1,
-      items: [{kind: 'catalog', itemId: 'does-not-exist'}, {kind: 'catalog', itemId: 'tasks'}],
+      items: [
+        {kind: 'catalog', itemId: 'does-not-exist'},
+        {kind: 'catalog', itemId: 'tasks'},
+      ],
     };
 
     const resolved = resolveMenuConfiguration(config);
@@ -141,14 +143,20 @@ describe('menu configuration resolver', () => {
 
     const admin = resolved.find(item => item.title === 'Admin');
     expect(admin).toBeDefined();
-    expect(admin?.children?.some(child => (child.link ?? []).join('') === '/admin-settings')).toBeTrue();
+    expect(
+      admin?.children?.some(child => (child.link ?? []).join('') === '/admin-settings')
+    ).toBeTrue();
   });
 
   it('strips an include function from a required item so it can never be hidden at runtime', () => {
     const config: MenuConfiguration = {
       version: 1,
       items: [
-        {kind: 'catalog', itemId: 'adminSettings', includeFunction: IncludeFunction.ObjectManagementEnabled},
+        {
+          kind: 'catalog',
+          itemId: 'adminSettings',
+          includeFunction: IncludeFunction.ObjectManagementEnabled,
+        },
       ],
     };
 
@@ -156,6 +164,83 @@ describe('menu configuration resolver', () => {
 
     expect(settings.title).toBe('adminSettings.title');
     expect(settings.includeFunction).toBeUndefined();
+  });
+
+  it('does not append a duplicate Admin group when the Admin item has been renamed', () => {
+    const config: MenuConfiguration = {
+      version: 1,
+      items: [
+        {
+          kind: 'catalog',
+          itemId: 'admin',
+          title: 'Beheer',
+          children: [{kind: 'catalog', itemId: 'adminSettings'}],
+        },
+      ],
+    };
+
+    const resolved = resolveMenuConfiguration(config);
+
+    expect(resolved.length).toBe(1);
+    expect(resolved[0].title).toBe('Beheer');
+    expect(resolved.some(item => item.title === 'Admin')).toBeFalse();
+  });
+
+  it('injects the required Settings link into a renamed Admin group instead of a new one', () => {
+    const config: MenuConfiguration = {
+      version: 1,
+      items: [{kind: 'catalog', itemId: 'admin', title: 'Beheer', children: []}],
+    };
+
+    const resolved = resolveMenuConfiguration(config);
+
+    expect(resolved.length).toBe(1);
+    expect(resolved[0].title).toBe('Beheer');
+    expect(
+      resolved[0].children?.some(child => (child.link ?? []).join('') === '/admin-settings')
+    ).toBeTrue();
+  });
+
+  it('accepts an includeFunction persisted as the enum member name', () => {
+    const config: MenuConfiguration = {
+      version: 1,
+      items: [{kind: 'catalog', itemId: 'objects', includeFunction: 'OpenSearchEnabled'}],
+    };
+
+    const [objects] = resolveMenuConfiguration(config);
+
+    expect(objects.includeFunction).toBe(IncludeFunction.OpenSearchEnabled);
+  });
+
+  it('maps a legacy numeric includeFunction through the historical enum order', () => {
+    // Before the switch to enum names, configs stored ordinals of the then-current declaration
+    // order [ObjectManagementEnabled, ZgwFeaturesEnabled] — so a persisted 1 means
+    // ZgwFeaturesEnabled, not the member currently holding ordinal 1 (OpenSearchEnabled).
+    const config: MenuConfiguration = {
+      version: 1,
+      items: [
+        {kind: 'catalog', itemId: 'objects', includeFunction: 0},
+        {kind: 'catalog', itemId: 'opensearch', includeFunction: 1},
+      ],
+    };
+
+    const [objects, opensearch] = resolveMenuConfiguration(config);
+
+    expect(objects.includeFunction).toBe(IncludeFunction.ObjectManagementEnabled);
+    expect(opensearch.includeFunction).toBe(IncludeFunction.ZgwFeaturesEnabled);
+  });
+
+  it('skips a plugin-page entry without a configuration id instead of producing a broken link', () => {
+    spyOn(console, 'warn');
+    const config: MenuConfiguration = {
+      version: 1,
+      items: [{kind: 'plugin-page', configurationId: '', title: 'Broken page'}],
+    };
+
+    const resolved = resolveMenuConfiguration(config);
+
+    expect(console.warn).toHaveBeenCalled();
+    expect(resolved.some(item => item.title === 'Broken page')).toBeFalse();
   });
 
   it('does not duplicate Settings when it has been moved out of Admin to the top level', () => {
@@ -184,7 +269,12 @@ describe('menu configuration resolver', () => {
 describe('menu configuration reverse-seed mapper', () => {
   it('round-trips the live runtime menu through seed + resolve', () => {
     const menu: MenuItem[] = [
-      {roles: [ROLE_USER], link: ['/'], title: 'Dashboard', iconClass: 'icon mdi mdi-view-dashboard'},
+      {
+        roles: [ROLE_USER],
+        link: ['/'],
+        title: 'Dashboard',
+        iconClass: 'icon mdi mdi-view-dashboard',
+      },
       {roles: [ROLE_USER], title: 'Cases', iconClass: 'icon mdi mdi-layers', children: []},
       {
         roles: [ROLE_ADMIN],
@@ -207,7 +297,12 @@ describe('menu configuration reverse-seed mapper', () => {
           },
         ],
       },
-      {roles: [ROLE_USER], link: ['/my-downstream-link'], title: 'Downstream', iconClass: 'icon mdi mdi-link'},
+      {
+        roles: [ROLE_USER],
+        link: ['/my-downstream-link'],
+        title: 'Downstream',
+        iconClass: 'icon mdi mdi-link',
+      },
     ];
 
     const resolved = resolveMenuConfiguration(buildMenuConfigurationFromRuntimeMenu(menu));
@@ -247,5 +342,58 @@ describe('menu configuration reverse-seed mapper', () => {
       icon: 'icon mdi mdi-lock',
       roles: ['ROLE_SPECIAL'],
     });
+  });
+
+  it('persists the include function as the enum member name, not its ordinal', () => {
+    const config = buildMenuConfigurationFromRuntimeMenu([
+      {
+        roles: [ROLE_ADMIN],
+        title: 'Objects',
+        iconClass: 'icon mdi mdi-archive',
+        includeFunction: IncludeFunction.ObjectManagementEnabled,
+      },
+    ]);
+
+    expect((config.items[0] as CatalogMenuConfigurationItem).includeFunction).toBe(
+      'ObjectManagementEnabled'
+    );
+  });
+
+  it('preserves roles and includeFunction on a section header through seed + resolve', () => {
+    const header: MenuItem = {
+      title: 'Zgw group',
+      textClass: 'text-dark font-weight-bold c-default',
+      roles: [ROLE_ADMIN],
+      includeFunction: IncludeFunction.ZgwFeaturesEnabled,
+    };
+
+    const config = buildMenuConfigurationFromRuntimeMenu([header]);
+
+    expect(config.items[0]).toEqual({
+      kind: 'section-header',
+      title: 'Zgw group',
+      roles: [ROLE_ADMIN],
+      includeFunction: 'ZgwFeaturesEnabled',
+    });
+    // The resolver additionally appends the required Admin item (this menu omits it), which the
+    // required-item test covers separately.
+    expect(resolveMenuConfiguration(config)[0]).toEqual(header);
+  });
+});
+
+describe('menuLinkToString', () => {
+  it('passes single-segment links through unchanged', () => {
+    expect(menuLinkToString(['/'])).toBe('/');
+    expect(menuLinkToString(['/tasks'])).toBe('/tasks');
+    expect(menuLinkToString([])).toBe('');
+    expect(menuLinkToString(undefined)).toBe('');
+  });
+
+  it('joins multi-segment links with a slash, never doubling separators', () => {
+    expect(menuLinkToString(['/plugin-pages', 'abc-123', 'overview'])).toBe(
+      '/plugin-pages/abc-123/overview'
+    );
+    expect(menuLinkToString(['/plugin-pages/', '/abc-123'])).toBe('/plugin-pages/abc-123');
+    expect(menuLinkToString(['/', 'tasks'])).toBe('/tasks');
   });
 });

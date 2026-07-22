@@ -14,7 +14,9 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="(currentStepId$ | async) === 'configurePluginActionResultMappings'; else configureStep">
+<ng-container
+  *ngIf="(currentStepId$ | async) === 'configurePluginActionResultMappings'; else configureStep"
+>
   <!-- A separate stepper step, offered only for an external action that declares its `outputs` in
        the manifest — embedded actions have no declaration mechanism and never reach this branch.
        This component stays alive across the `configurePluginAction` <-> `configurePluginActionResultMappings`
@@ -22,7 +24,9 @@
        untouched. -->
   <valtimo-plugin-action-result-mappings
     [buildingBlockDefinitionKey]="(buildingBlockParams$ | async)?.buildingBlockDefinitionKey"
-    [buildingBlockDefinitionVersionTag]="(buildingBlockParams$ | async)?.buildingBlockDefinitionVersionTag"
+    [buildingBlockDefinitionVersionTag]="
+      (buildingBlockParams$ | async)?.buildingBlockDefinitionVersionTag
+    "
     [caseDefinitionKey]="(caseParams$ | async)?.caseDefinitionKey"
     [caseDefinitionVersionTag]="(caseParams$ | async)?.caseDefinitionVersionTag"
     [sourceKeys]="selectedFunctionOutputs$ | async"
@@ -65,11 +69,10 @@
               'processLinkConfiguration.actionPropertiesJson' | translate
             }}</label>
             <textarea
+              [formControl]="externalActionPropertiesControl"
+              [class.cds--text-area--invalid]="!externalActionPropertiesValid"
               class="cds--text-area"
               rows="10"
-              [ngModel]="externalActionPropertiesJson"
-              (ngModelChange)="onExternalActionPropertiesChange($event)"
-              [class.cds--text-area--invalid]="!externalActionPropertiesValid"
             ></textarea>
             <div *ngIf="!externalActionPropertiesValid" class="cds--form-requirement">
               {{ 'processLinkConfiguration.invalidJson' | translate }}

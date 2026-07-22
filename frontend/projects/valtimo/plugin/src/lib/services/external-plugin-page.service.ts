@@ -18,12 +18,13 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
-import {ExternalPluginMenuPage, ExternalPluginUserTokenResponse} from '../models';
+import {ExternalPluginMenuPage} from '../models';
 
 /**
  * Non-management (`/api/v1/...`) client for external-plugin menu pages: the unfiltered list the
- * menu-configuration builder offers as the "Plugin pages" catalog category, and the downscoped
- * user-token mint the routed page wrapper uses to authorise proxied GZAC reads.
+ * menu-configuration builder offers as the "Plugin pages" catalog category. Minting the downscoped
+ * user token is the responsibility of the shared `ExternalPluginUserTokenService` (via
+ * `ExternalPluginSessionService`).
  */
 @Injectable({
   providedIn: 'root',
@@ -39,18 +40,6 @@ export class ExternalPluginPageService extends BaseApiService {
   public getMenuPages(): Observable<Array<ExternalPluginMenuPage>> {
     return this.httpClient.get<Array<ExternalPluginMenuPage>>(
       this.getApiUrl('/v1/external-plugin/menu-pages')
-    );
-  }
-
-  /**
-   * Mints a short-lived, downscoped user token for the configuration backing this page. Uses
-   * `HttpClient` so the Keycloak bearer interceptor authenticates the mint call as the current
-   * user — the result is bounded by PBAC ∩ the plugin's granted-endpoint allowlist.
-   */
-  public mintUserToken(configurationId: string): Observable<ExternalPluginUserTokenResponse> {
-    return this.httpClient.post<ExternalPluginUserTokenResponse>(
-      this.getApiUrl(`/v1/external-plugin/configuration/${configurationId}/user-token`),
-      {}
     );
   }
 }

@@ -23,6 +23,7 @@ import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.exception.ExternalPluginHostInUseException
+import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
@@ -33,6 +34,7 @@ import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.util.UUID
@@ -55,7 +57,7 @@ class ExternalPluginHostService(
     fun list(): List<ExternalPluginHost> = hostRepository.findAll()
 
     fun get(id: UUID): ExternalPluginHost = hostRepository.findById(id)
-        .orElseThrow { IllegalArgumentException("External plugin host $id not found") }
+        .orElseThrow { ExternalPluginNotFoundException("External plugin host", id) }
 
     fun decryptedSecret(host: ExternalPluginHost): String = encryptionService.decrypt(host.secret)
 
@@ -164,6 +166,12 @@ class ExternalPluginHostService(
         hostRepository.deleteById(hostId)
     }
 
+    /**
+     * `NOT_SUPPORTED`: the upload is a (potentially large/slow) HTTP call to the host and must not
+     * run inside a database transaction. The host lookup runs non-transactionally, which is fine —
+     * it is a single read.
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     fun uploadPlugin(hostId: UUID, fileName: String, fileBytes: ByteArray): JsonNode {
         val host = get(hostId)
         // An app *is* its single plugin — it serves its own manifest and accepts no uploads. The UI

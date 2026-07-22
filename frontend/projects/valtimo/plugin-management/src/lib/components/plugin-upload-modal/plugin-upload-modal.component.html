@@ -14,12 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal
-  *ngIf="open"
-  [open]="open"
-  size="sm"
-  valtimoCdsModal
->
+<cds-modal *ngIf="open" [open]="open" size="sm" valtimoCdsModal>
   <cds-modal-header (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>{{ 'pluginManagement.uploadPlugin' | translate }}</h3>
   </cds-modal-header>
@@ -31,7 +26,7 @@
       [placeholder]="'pluginManagement.selectHost' | translate"
       (selected)="onHostSelected($event)"
     >
-      <cds-dropdown-list [items]="_$hostItems()"></cds-dropdown-list>
+      <cds-dropdown-list [items]="$hostItems()"></cds-dropdown-list>
     </cds-dropdown>
 
     <div [formGroup]="_fileForm">
@@ -39,7 +34,7 @@
         [accept]="['zip']"
         [buttonText]="'pluginManagement.upload.buttonText' | translate"
         [description]="'pluginManagement.upload.description' | translate"
-        [disabled]="_$uploading()"
+        [disabled]="$uploading()"
         [multiple]="false"
         [title]="'pluginManagement.upload.title' | translate"
         buttonType="primary"
@@ -50,20 +45,16 @@
   </section>
 
   <cds-modal-footer>
-    <button
-      cdsButton="secondary"
-      [disabled]="_$uploading()"
-      (click)="onClose()"
-    >
+    <button cdsButton="secondary" [disabled]="$uploading()" (click)="onClose()">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
       cdsButton="primary"
-      [disabled]="!_$selectedHostId() || !_$fileSelected() || _$uploading()"
+      [disabled]="!$selectedHostId() || !$fileSelected() || $uploading()"
       (click)="onUpload()"
     >
-      <cds-loading *ngIf="_$uploading()" [isActive]="true" size="sm"></cds-loading>
+      <cds-loading *ngIf="$uploading()" [isActive]="true" size="sm"></cds-loading>
       {{ 'interface.upload' | translate }}
     </button>
   </cds-modal-footer>
@@ -72,7 +63,7 @@
 <valtimo-confirmation-modal
   [showModalSubject$]="_compatibilityModalOpen$"
   [titleTranslationKey]="'pluginManagement.compatibility.uploadWarningTitle'"
-  [content]="_$compatibilityWarning()"
+  [content]="$compatibilityWarning()"
   [confirmButtonTextTranslationKey]="'pluginManagement.compatibility.uploadAnyway'"
   [cancelButtonTextTranslationKey]="'interface.cancel'"
   (confirmEvent)="onConfirmIncompatibleUpload()"

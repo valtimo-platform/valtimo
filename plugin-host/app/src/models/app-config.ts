@@ -31,6 +31,33 @@ export const envSchema = z.object({
   // event once) instead of each handling it. Defaults to the OS hostname.
   HOST_ID: z.string().min(1).default(() => hostname()),
 
+  // Wasm execution limits. Every plugin call is bounded by WASM_TIMEOUT_MS (Extism cancels the
+  // call and the route reports a HOST_ERROR); WASM_MAX_MEMORY_PAGES caps the module's linear
+  // memory (64 KiB per page — the default 4096 pages = 256 MiB). Set WASM_MAX_MEMORY_PAGES=0 to
+  // remove the cap (not recommended outside local development).
+  WASM_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  WASM_MAX_MEMORY_PAGES: z.coerce.number().int().min(0).default(4096),
+  // Idle Extism instances are closed after this long without a call (a periodic sweep frees the
+  // worker + memory; the next call transparently re-instantiates). 0 disables eviction.
+  WASM_INSTANCE_IDLE_TTL_MS: z.coerce.number().int().min(0).default(10 * 60 * 1000),
+
+  // Upper bound on the gzac_api callback fetch — matches http_request's hard cap so a hung GZAC
+  // endpoint cannot pin a plugin call (and its per-plugin lock) forever.
+  GZAC_API_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+
+  // Maximum accepted plugin package (.zip) upload size in bytes. The multipart parser enforces
+  // this before the file is buffered for the HMAC check.
+  UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(25 * 1024 * 1024),
+
+  // Per-configuration rate limit for the public /plugins/:id/:version/data route (requests per
+  // minute per configurationId). 0 disables the limit.
+  DATA_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(0).default(120),
+
+  // How long the ConfigRegistry serves configurations from its in-memory cache before re-reading
+  // Postgres. Writes through this host invalidate immediately; pushes handled by ANOTHER replica
+  // are picked up after at most this TTL. 0 disables caching.
+  CONFIG_CACHE_TTL_MS: z.coerce.number().int().min(0).default(10_000),
+
   // Database configuration
   DB_HOST: z.string().default("localhost"),
   DB_PORT: z.coerce.number().default(5434),

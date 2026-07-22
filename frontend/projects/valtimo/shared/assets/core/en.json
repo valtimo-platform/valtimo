@@ -1946,6 +1946,7 @@
     "icon": "Icon",
     "iconPlaceholder": "Select an icon",
     "iconTooltip": "Select an icon",
+    "dragToReorder": "Drag to reorder",
     "mainMenu": "Main menu",
     "toggleMenu": "Menu",
     "typeToSearch": "Type here to search",
@@ -2290,15 +2291,15 @@
         "gzac_api": "Make authenticated API calls to the GZAC instance (read and write case data, tasks, documents, etc.)",
         "http_request": "Make outbound HTTP requests to external services",
         "kv": "Store and retrieve persistent key–value data scoped to this configuration",
-        "log": "Write structured log entries visible to administrators"
+        "log": "Write structured log entries visible to administrators",
+        "frontend_data": "Serve data requests from the plugin's own user interface"
       },
       "endpointsHeading": "API endpoints",
       "eventsHeading": "Events",
       "methodHeading": "Method",
       "endpointHeading": "Endpoint",
       "descriptionHeading": "Description",
-      "accept": "I trust this plugin and accept the requested permissions",
-      "acceptedNote": "These permissions were accepted when the configuration was activated and cannot be changed here."
+      "accept": "I trust this plugin and accept the requested permissions"
     },
     "logs": {
       "menuItem": "Logs",
@@ -2311,6 +2312,17 @@
       },
       "data": "Data",
       "filterAll": "All",
+      "levels": {
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error",
+        "debug": "Debug"
+      },
+      "sources": {
+        "plugin": "Plugin",
+        "gzacApi": "GZAC API",
+        "httpRequest": "HTTP Request"
+      },
       "empty": "No log entries found.",
       "close": "Close"
     },
@@ -2612,6 +2624,7 @@
     "modalTitle": "Process step: {{processStepName}}",
     "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
     "externalPluginTaskForm": {
+      "defaultTitle": "Form",
       "description": "The selected plugin renders the form for this user task and completes the task itself, using the current user's permissions. There's nothing more to configure here — save to link it."
     },
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
@@ -2632,11 +2645,11 @@
       "checkboxDescription": "Enables Form View Model form processing"
     },
     "importConfiguration": "Import configuration",
+    "externalPlugin": "External plugin",
     "externalPluginActionProperties": "Configure the action properties for this external plugin action as JSON. Click save when done.",
     "actionPropertiesJson": "Action properties (JSON)",
     "invalidJson": "Invalid JSON",
     "resultMappings": {
-      "title": "Output mapping",
       "description": "Map values from the action's result onto the case document or a process variable.",
       "source": "Result path",
       "target": "Destination",
@@ -2685,7 +2698,7 @@
         "zaakInstanceLink": "This building block may need a zaak instance link to be configured for the case definition under which this building block is used, in order to function correctly.",
         "zaakTypeLink": "This building block may need a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly."
       },
-      "externalPluginVersionMismatchWarning": "The selected configuration's plugin version does not match the version ({{version}}) this building block was linked against. It may not support this action."
+      "externalPluginVersionMismatchWarning": "The selected configuration's plugin version ({{selectedVersion}}) does not match the version ({{requiredVersion}}) this building block was linked against. It may not support this action."
     }
   },
   "processLinkType": {
@@ -2694,8 +2707,7 @@
     "form-flow": "FormFlow",
     "url": "URL",
     "ui-component": "UI Component",
-    "building-block": "Building block",
-    "external_plugin": "Plugin"
+    "building-block": "Building block"
   },
   "externalPlugin": {
     "menuTitle": "External Plugins",
@@ -2766,8 +2778,7 @@
     "uiComponent": "Select UI component",
     "selectBuildingBlock": "Select building block",
     "configureBuildingBlockPlugins": "Configure plugin mappings",
-    "configureBuildingBlockMappings": "Input & Sync",
-    "configureExternalPlugin": "Configure external plugin"
+    "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",

@@ -68,7 +68,8 @@ valtimo-plugin-pack [--wasm plugin.wasm] [--manifest manifest.json] [--output .]
 ```
 
 Reads `pluginId` and `version` from `manifest.json` and produces `{pluginId}-{version}.zip` containing:
-- `manifest.json`
+- `manifest.json` — with the packing SDK's version stamped on as `sdkVersion`, so the host can
+  tell which SDK/ABI a stored plugin targets
 - `plugin.wasm`
 - `frontend/` (if the directory exists)
 
@@ -90,3 +91,30 @@ action("my-action", (input) => {
 // log.warn(msg)    — log at warn level
 // log.error(msg)   — log at error level
 ```
+
+### Capabilities
+
+Host functions only work when the admin granted the matching capability at activation:
+`gzac_api`, `http_request`, `kv`, `log`. A fifth capability, `frontend_data`, gates the host's
+public `POST /plugins/:id/:version/data` route — without it the host refuses to execute the
+plugin's `handle_request` for that configuration, so declare it under
+`permissions.capabilities` in `manifest.json` when the plugin serves data to its own iframes.
+
+## Frontend SDK (`@valtimo/plugin-sdk/frontend`)
+
+The browser-side `ValtimoPluginSDK` runs inside the plugin's iframe and talks to the Valtimo
+(Angular) parent via `postMessage`.
+
+```typescript
+import { ValtimoPluginSDK } from "@valtimo/plugin-sdk/frontend";
+
+// Recommended for production: pin the hosting Valtimo frontend's origin. Inbound messages from
+// any other origin are ignored and every outgoing message is posted to this origin only.
+const sdk = new ValtimoPluginSDK({ parentOrigin: "https://valtimo.example.com" });
+```
+
+When `parentOrigin` is omitted (e.g. one bundle deployed under several Valtimo frontends), the
+SDK pins the origin of the first `init` message it receives and ignores other origins from then
+on. Until that pin exists, only the credential-free handshake events (`ready`, `resize`) are sent
+with a `"*"` target; anything carrying data is queued and flushed to the pinned origin after
+`init`. Pass `parentOrigin` whenever the hosting origin is known at build/deploy time.

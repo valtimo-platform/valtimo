@@ -263,9 +263,11 @@ underlying code, update the test to expect the new behaviour.
   the small JS engine the sandbox uses. In practice plugins don't hit it, because the backend-callback
   helper (`gzacApi`) already returns its result directly (the host pauses the plugin while it fetches)
   — so authors never need `await`. Documented by the L3 SDK test.
-- **The plugin "data" endpoint is currently open.** The route a plugin's iframe uses to fetch its own
-  data has no authentication yet (it's an early-stage feature). The L2 test records this and carries a
-  TODO to require authentication once that's added.
+- **The plugin "data" endpoint is capability-gated, not authenticated.** The route a plugin's iframe
+  uses to fetch its own data carries no HMAC (the caller is a browser, not GZAC); instead the host
+  refuses to run the plugin unless the named configuration exists, targets that plugin version, and
+  was granted the `frontend_data` capability — plus a per-configuration rate limit. The L2 tests
+  pin both the refusals (400/403/429) and the success path.
 - **A plugin with no message broker reads back as `null`.** When a configuration has no broker, the
   database stores nothing and reads it back as `null` (rather than "absent"). It's harmless — the code
   that uses it treats both the same — but the test documents the real behaviour. Pinned by the L4

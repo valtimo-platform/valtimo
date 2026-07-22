@@ -30,7 +30,10 @@ enum class ExternalPluginCapability(val value: String) {
     GZAC_API("gzac_api"),
     HTTP_REQUEST("http_request"),
     KV("kv"),
-    LOG("log");
+    LOG("log"),
+
+    /** Allows the plugin's `handle_request` export to be invoked via the host's public data route. */
+    FRONTEND_DATA("frontend_data");
 
     companion object {
         fun fromValue(value: String): ExternalPluginCapability = entries.firstOrNull { it.value == value }

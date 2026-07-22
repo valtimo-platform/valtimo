@@ -184,8 +184,8 @@ class CaseDefinitionResource(
 
     @RunWithoutAuthorization
     @EndpointDescription(
-        en = "List case definitions",
-        nl = "Dossierdefinities ophalen",
+        en = "List case definitions (management)",
+        nl = "Dossierdefinities ophalen (beheer)",
     )
     @GetMapping("/management/v1/case-definition")
     fun getCaseDefinitionsForManagement(
@@ -266,8 +266,8 @@ class CaseDefinitionResource(
     }
 
     @EndpointDescription(
-        en = "Get case settings",
-        nl = "Dossierinstellingen ophalen",
+        en = "Get case settings (management)",
+        nl = "Dossierinstellingen ophalen (beheer)",
     )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
     @RunWithoutAuthorization
@@ -395,8 +395,8 @@ class CaseDefinitionResource(
     }
 
     @EndpointDescription(
-        en = "List case list columns",
-        nl = "Dossierlijstkolommen ophalen",
+        en = "List case list columns (management)",
+        nl = "Dossierlijstkolommen ophalen (beheer)",
     )
     @GetMapping("/management/v1/case/{caseDefinitionName}/list-column")
     @RunWithoutAuthorization

@@ -53,8 +53,8 @@ class StartableItemManagementResource(
 
     @RunWithoutAuthorization
     @EndpointDescription(
-        en = "List startable items",
-        nl = "Startbare items ophalen",
+        en = "List startable items (management)",
+        nl = "Startbare items ophalen (beheer)",
     )
     @GetMapping
     fun getStartableItems(
@@ -87,8 +87,8 @@ class StartableItemManagementResource(
 
     @RunWithoutAuthorization
     @EndpointDescription(
-        en = "Update startable item",
-        nl = "Startbaar item bijwerken",
+        en = "Update startable item by version",
+        nl = "Startbaar item bijwerken op versie",
     )
     @PutMapping("/{itemKey}/version/{versionTag}")
     fun updateStartableItem(
@@ -118,8 +118,8 @@ class StartableItemManagementResource(
 
     @RunWithoutAuthorization
     @EndpointDescription(
-        en = "Get startable item properties",
-        nl = "Eigenschappen startbaar item ophalen",
+        en = "Get startable item properties by version",
+        nl = "Eigenschappen startbaar item ophalen op versie",
     )
     @GetMapping("/{itemKey}/version/{versionTag}/properties")
     fun getStartableItemProperties(
@@ -149,8 +149,8 @@ class StartableItemManagementResource(
 
     @RunWithoutAuthorization
     @EndpointDescription(
-        en = "Delete startable item",
-        nl = "Startbaar item verwijderen",
+        en = "Delete startable item by version",
+        nl = "Startbaar item verwijderen op versie",
     )
     @DeleteMapping("/{itemKey}/version/{versionTag}")
     fun deleteStartableItem(

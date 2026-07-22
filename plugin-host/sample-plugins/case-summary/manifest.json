@@ -181,7 +181,7 @@
     "additionalProperties": false
   },
   "permissions": {
-    "capabilities": ["gzac_api", "http_request", "kv", "log"],
+    "capabilities": ["gzac_api", "http_request", "kv", "log", "frontend_data"],
     "endpoints": [
       { "method": "GET", "pattern": "/api/v1/document/*" },
       { "method": "POST", "pattern": "/api/v1/document/*/note" },

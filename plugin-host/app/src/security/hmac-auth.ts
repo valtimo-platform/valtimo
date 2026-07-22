@@ -25,6 +25,7 @@ import {
   TIMESTAMP_HEADER,
   type HmacVerificationResult,
 } from "./hmac.js";
+import { ReplayCache } from "./replay-cache.js";
 
 declare module "fastify" {
   interface FastifyContextConfig {
@@ -37,6 +38,31 @@ declare module "fastify" {
 
 function rawBodyOf(request: FastifyRequest): Buffer {
   return (request as unknown as { rawBody?: Buffer }).rawBody ?? Buffer.alloc(0);
+}
+
+/**
+ * Process-wide seen-signature cache: every HMAC-authenticated route shares it, so a signature
+ * accepted by one route can never be replayed against another. Only side-effecting methods are
+ * checked — replaying a GET is harmless and read routes may legitimately repeat.
+ */
+const SIDE_EFFECTING_METHODS = new Set(["POST", "PUT", "DELETE", "PATCH"]);
+const replayCache = new ReplayCache();
+
+/** Empties the shared replay cache. For tests only, which re-send identical signed requests. */
+export function resetReplayCacheForTests(): void {
+  replayCache.clear();
+}
+
+/**
+ * Rejects a *verified* request whose signature was already accepted once within the replay window.
+ * The signature binds method+path+timestamp+bodyHash, so an identical signature means a byte-for-
+ * byte identical request — a replay (or a duplicate send within the same timestamp granularity,
+ * which callers must avoid by using millisecond-precision timestamps).
+ */
+function isReplay(request: FastifyRequest): boolean {
+  if (!SIDE_EFFECTING_METHODS.has(request.method.toUpperCase())) return false;
+  const signature = request.headers[SIGNATURE_HEADER] as string;
+  return replayCache.checkAndRecord(signature);
 }
 
 function rejectUnauthorized(
@@ -74,6 +100,9 @@ export function verifyHmacRequest(
  * body-bound signature rather than a static bearer. Routes that opt in to raw-body capture
  * (`config.rawBody`) bind their JSON body; routes that do not bind an empty body (GET/DELETE).
  * Routes flagged `config.deferHmac` are skipped here and verify themselves once their body is read.
+ *
+ * Side-effecting requests (POST/PUT/DELETE) are additionally checked against the shared
+ * seen-signature cache, closing the replay window the ±5-minute timestamp drift check leaves open.
  */
 export function createHmacAuthHook(secret: string): preHandlerHookHandler {
   return async (request: FastifyRequest, reply: FastifyReply) => {
@@ -83,6 +112,10 @@ export function createHmacAuthHook(secret: string): preHandlerHookHandler {
     const result = verifyHmacRequest(request, secret, rawBodyOf(request));
     if (!result.valid) {
       rejectUnauthorized(request, reply, result.error);
+      return;
+    }
+    if (isReplay(request)) {
+      rejectUnauthorized(request, reply, "Duplicate signature (possible replay)");
     }
   };
 }
@@ -101,6 +134,10 @@ export function verifyDeferredHmac(
   const result = verifyHmacRequest(request, secret, body);
   if (!result.valid) {
     rejectUnauthorized(request, reply, result.error);
+    return false;
+  }
+  if (isReplay(request)) {
+    rejectUnauthorized(request, reply, "Duplicate signature (possible replay)");
     return false;
   }
   return true;

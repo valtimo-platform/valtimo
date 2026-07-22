@@ -123,6 +123,33 @@ type IframeEventType = keyof IframeToParentEvents;
 
 type EventHandler<T> = (payload: T) => void;
 
+/** Options for {@link ValtimoPluginSDK}. */
+export interface ValtimoPluginSDKOptions {
+  /**
+   * Origin of the hosting Valtimo frontend (the Angular parent), e.g.
+   * `"https://valtimo.example.com"`. **Recommended for production bundles.** When set:
+   *
+   * - inbound messages from any other origin are ignored entirely, and
+   * - every outgoing message is posted to this origin only (never `"*"`).
+   *
+   * When omitted (backward-compatible default — required when the same bundle must run under
+   * several Valtimo frontends whose origin isn't known at build time), the SDK pins the origin of
+   * the first `init` message it receives and ignores other origins from then on. Until that pin is
+   * established, only the credential-free handshake events (`ready`, `resize`) are posted to
+   * `"*"`; anything that carries data is queued and flushed to the pinned origin after `init`.
+   *
+   * Note: the iframe itself runs at an opaque origin (sandbox without `allow-same-origin`), but
+   * the *parent's* messages still carry the parent's real origin — so pinning works either way.
+   */
+  parentOrigin?: string;
+}
+
+/**
+ * Events that may be posted to `"*"` before the parent origin is known: they carry no data an
+ * eavesdropping embedder could use, and `ready` is required to bootstrap the init handshake.
+ */
+const HANDSHAKE_SAFE_EVENTS: ReadonlySet<string> = new Set(["ready", "resize"]);
+
 // ---- SDK class ----
 
 class ValtimoPluginSDK {
@@ -145,7 +172,16 @@ class ValtimoPluginSDK {
     string,
     { resolve: (value: SubmitResult) => void; reject: (reason: unknown) => void }
   >();
+  /**
+   * The only origin we exchange messages with. Set from the constructor option, or pinned to the
+   * origin of the first validated `init` message. While null, data-bearing emits are queued in
+   * {@link _pendingEmits} instead of being posted to `"*"`.
+   */
   private _parentOrigin: string | null = null;
+  /** True when the origin came from the `parentOrigin` option (never overwritten by messages). */
+  private readonly _explicitParentOrigin: boolean;
+  // Emits held back until the parent origin is established (see emit()).
+  private readonly _pendingEmits: Array<{ event: string; payload: unknown }> = [];
   // Bound once so addEventListener and removeEventListener share the same reference.
   private readonly _boundOnMessage = this._onMessage.bind(this);
   /**
@@ -158,7 +194,9 @@ class ValtimoPluginSDK {
   private _resolveInit: () => void = () => {};
   private readonly _initPromise: Promise<void>;
 
-  constructor() {
+  constructor(options: ValtimoPluginSDKOptions = {}) {
+    this._parentOrigin = options.parentOrigin ?? null;
+    this._explicitParentOrigin = options.parentOrigin != null;
     window.addEventListener("message", this._boundOnMessage);
     this._initPromise = new Promise<void>((resolve) => {
       this._resolveInit = resolve;
@@ -202,14 +240,35 @@ class ValtimoPluginSDK {
 
   // ---- Outgoing events ----
 
-  /** Emit an event to the Angular parent. */
+  /**
+   * Emit an event to the Angular parent.
+   *
+   * Once the parent origin is established (constructor option or validated `init`), every message
+   * is posted to that origin only. Before that, only the credential-free handshake events go to
+   * `"*"`; data-bearing events are queued and flushed as soon as `init` pins the origin, so
+   * payload data is never broadcast to an unknown embedder.
+   */
   public emit<E extends IframeEventType>(event: E, payload: IframeToParentEvents[E]): void {
     if (!window.parent || window.parent === window) return;
+
+    if (this._parentOrigin === null && !HANDSHAKE_SAFE_EVENTS.has(event)) {
+      this._pendingEmits.push({ event, payload });
+      return;
+    }
 
     window.parent.postMessage(
       { source: "valtimo-plugin", event, payload },
       this._parentOrigin ?? "*"
     );
+  }
+
+  /** Sends emits queued before the parent origin was known. Called once `init` pins the origin. */
+  private _flushPendingEmits(): void {
+    if (this._parentOrigin === null) return;
+    const pending = this._pendingEmits.splice(0);
+    for (const { event, payload } of pending) {
+      this.emit(event as IframeEventType, payload as IframeToParentEvents[IframeEventType]);
+    }
   }
 
   /** Convenience: emit configurationChanged with validity, title, and data. */
@@ -382,16 +441,24 @@ class ValtimoPluginSDK {
     const data = event.data;
     if (!data || typeof data !== "object" || data.source !== "valtimo-host") return;
 
-    // Store parent origin for targeted postMessage
-    if (!this._parentOrigin) {
-      this._parentOrigin = event.origin;
+    const eventType = data.event as ParentEventType;
+
+    // Origin filtering: once an origin is established (explicit option, or pinned from the first
+    // `init`), messages from any other origin are ignored. Before a pin exists only an `init`
+    // message is accepted — it establishes the pin.
+    if (this._parentOrigin !== null) {
+      if (event.origin !== this._parentOrigin) return;
+    } else if (eventType !== "init") {
+      return;
     }
 
-    const eventType = data.event as ParentEventType;
     const payload = data.payload;
 
     // Handle built-in state updates
     if (eventType === "init") {
+      if (this._parentOrigin === null) {
+        this._parentOrigin = event.origin;
+      }
       const initPayload = payload as ParentToIframeEvents["init"];
       this._accessToken = initPayload.accessToken;
       this._context = initPayload.context;
@@ -399,6 +466,7 @@ class ValtimoPluginSDK {
       this._locale = initPayload.locale;
       this._applyLocale();
       this._resolveInit();
+      this._flushPendingEmits();
     } else if (eventType === "tokenRefresh") {
       this._accessToken = (payload as ParentToIframeEvents["tokenRefresh"]).accessToken;
     } else if (eventType === "themeChanged") {
@@ -456,3 +524,4 @@ export {
   ParentEventType,
   IframeEventType,
 };
+// ValtimoPluginSDKOptions is exported inline above.

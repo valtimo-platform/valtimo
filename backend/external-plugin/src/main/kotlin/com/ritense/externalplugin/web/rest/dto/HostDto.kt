@@ -43,12 +43,16 @@ data class HostResponse(
     val status: ExternalPluginHostStatus,
     val lastHealthCheck: Instant?,
     val gzacCallbackBaseUrl: String?,
+    /** Redacted — the userinfo is replaced with `***`; broker credentials never leave the server. */
     val eventBrokerAmqpUrl: String?,
     val eventBrokerExchange: String?,
     val eventQueueMode: EventQueueMode,
     val eventQueueTtlMs: Long?,
 ) {
     companion object {
+        /** Marker replacing the `user:password` userinfo of an AMQP URL in API responses. */
+        const val AMQP_USERINFO_REDACTION = "***"
+
         fun from(host: ExternalPluginHost) = HostResponse(
             id = host.id,
             name = host.name,
@@ -57,11 +61,21 @@ data class HostResponse(
             status = host.status,
             lastHealthCheck = host.lastHealthCheck,
             gzacCallbackBaseUrl = host.gzacCallbackBaseUrl,
-            eventBrokerAmqpUrl = host.eventBrokerAmqpUrl,
+            eventBrokerAmqpUrl = redactAmqpUserInfo(host.eventBrokerAmqpUrl),
             eventBrokerExchange = host.eventBrokerExchange,
             eventQueueMode = host.eventQueueMode,
             eventQueueTtlMs = host.eventQueueTtlMs,
         )
+
+        /**
+         * Replaces the userinfo (`user:password@`) of an AMQP(S) URL with `***@` so credentials are
+         * never echoed to the browser. URLs without userinfo pass through unchanged; the full URL
+         * stays server-side on the host row.
+         */
+        fun redactAmqpUserInfo(url: String?): String? {
+            if (url.isNullOrBlank()) return url
+            return url.replace(Regex("^(amqps?://)[^@/]+@"), "$1$AMQP_USERINFO_REDACTION@")
+        }
     }
 }
 

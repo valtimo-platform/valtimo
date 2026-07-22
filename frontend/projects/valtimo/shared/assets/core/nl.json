@@ -1974,6 +1974,7 @@
     "icon": "Icoon",
     "iconPlaceholder": "Selecteer een icoon",
     "iconTooltip": "Selecteer een icoon",
+    "dragToReorder": "Sleep om te herschikken",
     "mainMenu": "Hoofdmenu",
     "toggleMenu": "Menu",
     "typeToSearch": "Typ hier om te zoeken",
@@ -2317,15 +2318,15 @@
         "gzac_api": "Geauthenticeerde API-aanroepen doen naar de GZAC-instantie (zaakgegevens, taken, documenten lezen en schrijven, enz.)",
         "http_request": "Uitgaande HTTP-verzoeken doen naar externe diensten",
         "kv": "Persistente sleutel-waardeparen opslaan en ophalen, beperkt tot deze configuratie",
-        "log": "Gestructureerde logboekregels schrijven die zichtbaar zijn voor beheerders"
+        "log": "Gestructureerde logboekregels schrijven die zichtbaar zijn voor beheerders",
+        "frontend_data": "Dataverzoeken vanuit de eigen gebruikersinterface van de plugin afhandelen"
       },
       "endpointsHeading": "API-endpoints",
       "eventsHeading": "Events",
       "methodHeading": "Methode",
       "endpointHeading": "Endpoint",
       "descriptionHeading": "Omschrijving",
-      "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten",
-      "acceptedNote": "Deze rechten zijn geaccepteerd bij het activeren van de configuratie en kunnen hier niet worden gewijzigd."
+      "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten"
     },
     "logs": {
       "menuItem": "Logs",
@@ -2338,6 +2339,17 @@
       },
       "data": "Gegevens",
       "filterAll": "Alle",
+      "levels": {
+        "info": "Info",
+        "warn": "Waarschuwing",
+        "error": "Fout",
+        "debug": "Debug"
+      },
+      "sources": {
+        "plugin": "Plugin",
+        "gzacApi": "GZAC API",
+        "httpRequest": "HTTP-verzoek"
+      },
       "empty": "Geen logboekregels gevonden.",
       "close": "Sluiten"
     },
@@ -2645,6 +2657,7 @@
     "modalTitle": "Processtap: {{processStepName}}",
     "pluginConfiguration": "Plugin configuratie: {{pluginConfigTitle}}",
     "externalPluginTaskForm": {
+      "defaultTitle": "Formulier",
       "description": "De geselecteerde plugin toont het formulier voor deze gebruikerstaak en voltooit de taak zelf, met de rechten van de huidige gebruiker. Er is hier niets meer te configureren — sla op om te koppelen."
     },
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
@@ -2665,11 +2678,11 @@
       "checkboxDescription": "Activeert Form View Model form afhandeling"
     },
     "importConfiguration": "Configuratie importeren",
+    "externalPlugin": "Externe plugin",
     "externalPluginActionProperties": "Configureer de actie-eigenschappen voor deze externe plugin actie als JSON. Klik op opslaan wanneer gereed.",
     "actionPropertiesJson": "Actie-eigenschappen (JSON)",
     "invalidJson": "Ongeldige JSON",
     "resultMappings": {
-      "title": "Output-mapping",
       "description": "Koppel waarden uit het resultaat van de actie aan het dossierdocument of een procesvariabele.",
       "source": "Pad in resultaat",
       "target": "Bestemming",
@@ -2718,7 +2731,7 @@
         "zaakInstanceLink": "Dit bouwblok heeft mogelijk een zaakinstantiekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
         "zaakTypeLink": "Dit bouwblok heeft mogelijk een zaaktypekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok is geconfigureerd, om correct te functioneren."
       },
-      "externalPluginVersionMismatchWarning": "De pluginversie van de geselecteerde configuratie komt niet overeen met de versie ({{version}}) waaraan dit bouwblok is gekoppeld. Deze actie wordt mogelijk niet ondersteund."
+      "externalPluginVersionMismatchWarning": "De pluginversie van de geselecteerde configuratie ({{selectedVersion}}) komt niet overeen met de versie ({{requiredVersion}}) waaraan dit bouwblok is gekoppeld. Deze actie wordt mogelijk niet ondersteund."
     }
   },
   "processLinkType": {
@@ -2727,8 +2740,7 @@
     "form-flow": "FormFlow",
     "url": "URL",
     "ui-component": "UI Component",
-    "building-block": "Bouwblok",
-    "external_plugin": "Plugin"
+    "building-block": "Bouwblok"
   },
   "externalPlugin": {
     "menuTitle": "Externe Plugins",
@@ -2799,8 +2811,7 @@
     "uiComponent": "Selecteer UI component",
     "selectBuildingBlock": "Selecteer bouwblok",
     "configureBuildingBlockPlugins": "Configureer plugin mappings",
-    "configureBuildingBlockMappings": "Input & Sync",
-    "configureExternalPlugin": "Configureer externe plugin"
+    "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een plugin-configuratie aan om deze te kunnen koppelen aan een processtap.",

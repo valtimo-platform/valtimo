@@ -15,6 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {FormControl} from '@angular/forms';
 import {
   PluginStateService,
   ProcessLinkButtonService,
@@ -23,7 +24,15 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
-import {filter, map, shareReplay, switchMap, take, withLatestFrom} from 'rxjs/operators';
+import {
+  catchError,
+  filter,
+  map,
+  shareReplay,
+  switchMap,
+  take,
+  withLatestFrom,
+} from 'rxjs/operators';
 import {
   ExternalPluginDefinition,
   ExternalPluginService,
@@ -98,7 +107,9 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
         map((extDef: ExternalPluginDefinition) => {
           const action = extDef.manifest?.actions?.find(a => a.key === actionKey);
           return action?.outputs ?? [];
-        })
+        }),
+        // A failed manifest lookup must not kill the outer stream — fall back to "no outputs".
+        catchError(() => of([] as Array<string>))
       );
     }),
     shareReplay({bufferSize: 1, refCount: true})
@@ -132,8 +143,12 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   );
 
   public externalActionProperties: Record<string, unknown> = {};
-  public externalActionPropertiesJson = '{}';
   public externalActionPropertiesValid = true;
+
+  /** Reactive control backing the raw-JSON textarea fallback (no iframe bundle available). */
+  public readonly externalActionPropertiesControl = new FormControl<string>('{}', {
+    nonNullable: true,
+  });
 
   /**
    * `actionResultMappings` (#771): row-based JSON-pointer -> value-resolver-target write-back
@@ -216,12 +231,20 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
         ([isExternal, hasResultMappingsStep]) => {
           // A pending output-mapping step keeps Next/Save handled by
           // `setConfigurePluginActionSteps()`/`setConfigurePluginActionResultMappingsSteps()` — do
-          // not race that with an unconditional enableSaveButton() here.
-          if (isExternal && !hasResultMappingsStep) {
+          // not race that with an unconditional enableSaveButton() here. Save is only enabled when
+          // the current action configuration is valid — an invalid configuration must never be
+          // saveable (subsequent validity changes are handled by `applyActionPropertiesValidity`).
+          if (isExternal && !hasResultMappingsStep && this.externalActionPropertiesValid) {
             this._buttonService.enableSaveButton();
           }
         }
       )
+    );
+
+    this._subscriptions.add(
+      this.externalActionPropertiesControl.valueChanges.subscribe(value => {
+        this.handleExternalActionPropertiesChange(value);
+      })
     );
 
     this._subscriptions.add(
@@ -245,7 +268,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
       this._stateService.selectedProcessLink$.pipe(take(1)).subscribe(processLink => {
         if (processLink?.actionProperties) {
           const json = JSON.stringify(processLink.actionProperties, null, 2);
-          this.externalActionPropertiesJson = json;
+          // Programmatic update: properties/validity are set directly, so skip re-parsing.
+          this.externalActionPropertiesControl.setValue(json, {emitEvent: false});
           this.externalActionProperties = processLink.actionProperties;
         }
         this.actionResultMappings = processLink?.actionResultMappings ?? [];
@@ -281,8 +305,7 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     this._prefillConfigurationSubject$.next(configuration);
   }
 
-  public onExternalActionPropertiesChange(value: string): void {
-    this.externalActionPropertiesJson = value;
+  private handleExternalActionPropertiesChange(value: string): void {
     try {
       this.externalActionProperties = JSON.parse(value);
       this.externalActionPropertiesValid = true;
@@ -298,7 +321,10 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     data: Record<string, unknown>;
   }): void {
     this.externalActionProperties = event.data;
-    this.externalActionPropertiesJson = JSON.stringify(event.data, null, 2);
+    // Programmatic update: properties/validity are set directly, so skip re-parsing.
+    this.externalActionPropertiesControl.setValue(JSON.stringify(event.data, null, 2), {
+      emitEvent: false,
+    });
     this.externalActionPropertiesValid = event.valid;
     this.applyActionPropertiesValidity();
   }
@@ -367,9 +393,13 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             const actionKey = selectedFunction?.key || selectedProcessLink?.actionKey || null;
 
             const definitionId = extractExternalDefinitionId(definition.key);
-            return this._externalPluginService
-              .getDefinition(definitionId)
-              .pipe(map((extDef: ExternalPluginDefinition) => ({extDef, actionKey})));
+            return this._externalPluginService.getDefinition(definitionId).pipe(
+              map((extDef: ExternalPluginDefinition) => ({extDef, actionKey})),
+              // A failed bundle resolve must not break the flow: emit null so the subscriber
+              // marks the lookup as resolved without a bundle URL, which makes the template fall
+              // back to the raw-JSON textarea configuration mode.
+              catchError(() => of(null))
+            );
           })
         )
         .subscribe(result => {
@@ -495,7 +525,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
         .pipe(
           withLatestFrom(this._stateService.isEditing$, this.currentStepId$),
           filter(
-            ([, isEditing, currentStepId]) => !isEditing && currentStepId === 'configurePluginAction'
+            ([, isEditing, currentStepId]) =>
+              !isEditing && currentStepId === 'configurePluginAction'
           )
         )
         .subscribe(() => {
@@ -529,7 +560,11 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this._buttonService.nextButtonClick$
         .pipe(
-          withLatestFrom(this._stateService.isEditing$, this.currentStepId$, this.hasResultMappingsStep$),
+          withLatestFrom(
+            this._stateService.isEditing$,
+            this.currentStepId$,
+            this.hasResultMappingsStep$
+          ),
           filter(
             ([, isEditing, currentStepId, hasResultMappingsStep]) =>
               !isEditing && currentStepId === 'configurePluginAction' && hasResultMappingsStep
@@ -595,7 +630,13 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
                 selectedProcessLink,
                 pluginVersion: definition.version,
                 pluginDefinitionKey: definition.pluginId,
-              }))
+              })),
+              // A failed definition lookup would otherwise leave the modal in the "saving" state
+              // forever — release it and bail out (the global HTTP interceptor shows the error).
+              catchError(() => {
+                this._stateService.stopSaving();
+                return of(null);
+              })
             );
           }
         )
@@ -619,6 +660,13 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           : modalData?.element?.activityListenerType === USER_TASK_ACTIVITY;
 
         if (isTaskForm) {
+          // A task-form link always references a concrete configuration — without one (or its id)
+          // there is nothing valid to persist, so release the saving state and bail out.
+          if (!selectedConfiguration?.id) {
+            this._stateService.stopSaving();
+            return;
+          }
+
           // The selected "function" is a task-form bundle; its key is the bundle key (empty = the
           // plugin's sole task-form bundle → null).
           const bundleKey = selectedFunction.key || null;

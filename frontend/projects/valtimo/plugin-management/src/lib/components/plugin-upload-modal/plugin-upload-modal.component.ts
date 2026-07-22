@@ -72,19 +72,19 @@ export class PluginUploadModalComponent implements OnChanges {
   @Output() public closeEvent = new EventEmitter<void>();
   @Output() public uploadedEvent = new EventEmitter<void>();
 
-  public readonly _$uploading = signal(false);
-  public readonly _$hostItems = signal<Array<ListItem>>([]);
-  public readonly _$selectedHostId = signal<string | null>(null);
+  public readonly $uploading = signal(false);
+  public readonly $hostItems = signal<Array<ListItem>>([]);
+  public readonly $selectedHostId = signal<string | null>(null);
 
   // Drives the "upload anyway?" confirmation shown when the backend rejects an incompatible plugin.
   public readonly _compatibilityModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly _$compatibilityWarning = signal<string>('');
+  public readonly $compatibilityWarning = signal<string>('');
 
   public readonly _fileForm = this._formBuilder.group({
     file: this._formBuilder.control(new Set<any>(), [Validators.required]),
   });
 
-  public readonly _$fileSelected = signal(false);
+  public readonly $fileSelected = signal(false);
 
   private readonly _destroyRef = inject(DestroyRef);
 
@@ -97,14 +97,14 @@ export class PluginUploadModalComponent implements OnChanges {
       .get('file')!
       .valueChanges.pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe(value => {
-        this._$fileSelected.set(value instanceof Set && value.size > 0);
+        this.$fileSelected.set(value instanceof Set && value.size > 0);
       });
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['hosts']) {
-      const selectedHostId = this._$selectedHostId();
-      this._$hostItems.set(
+      const selectedHostId = this.$selectedHostId();
+      this.$hostItems.set(
         (this.hosts ?? []).map(host => ({
           content: `${host.name} (${host.baseUrl})`,
           selected: host.id === selectedHostId,
@@ -115,28 +115,28 @@ export class PluginUploadModalComponent implements OnChanges {
   }
 
   public onHostSelected(event: {item: ListItem & {hostId?: string}}): void {
-    this._$selectedHostId.set(event?.item?.hostId ?? null);
+    this.$selectedHostId.set(event?.item?.hostId ?? null);
   }
 
   public onUpload(force = false): void {
-    const hostId = this._$selectedHostId();
+    const hostId = this.$selectedHostId();
     const fileSet = this._fileForm.value.file;
     const file: File | undefined = fileSet?.values()?.next()?.value?.file;
 
     if (!hostId || !file) return;
 
-    this._$uploading.set(true);
+    this.$uploading.set(true);
 
     this._externalPluginService.uploadPlugin(hostId, file, force).subscribe({
       next: () => {
-        this._$uploading.set(false);
+        this.$uploading.set(false);
         this.uploadedEvent.emit();
         this._resetAndClose();
       },
       error: (error: HttpErrorResponse) => {
-        this._$uploading.set(false);
+        this.$uploading.set(false);
         if (error.status === 409 && error.error?.incompatible) {
-          this._$compatibilityWarning.set(
+          this.$compatibilityWarning.set(
             buildExternalPluginCompatibilityMessage(error.error, this._translateService)
           );
           this._compatibilityModalOpen$.next(true);
@@ -155,14 +155,14 @@ export class PluginUploadModalComponent implements OnChanges {
   }
 
   public onClose(): void {
-    if (this._$uploading()) return;
+    if (this.$uploading()) return;
     this._resetAndClose();
   }
 
   private _resetAndClose(): void {
     this.closeEvent.emit();
-    this._$selectedHostId.set(null);
-    this._$fileSelected.set(false);
+    this.$selectedHostId.set(null);
+    this.$fileSelected.set(false);
     this._fileForm.reset({file: new Set()});
   }
 }

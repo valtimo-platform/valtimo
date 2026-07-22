@@ -15,7 +15,7 @@
   -->
 
 @if ($state() === 'loading') {
-  <div style="width: 100%; display: flex; justify-content: center; padding: 1rem">
+  <div class="task-external-plugin-form__loading">
     <cds-loading size="sm"></cds-loading>
   </div>
 } @else if ($state() === 'error') {
@@ -30,11 +30,12 @@
   ></cds-inline-notification>
 } @else {
   <valtimo-external-plugin-iframe
+    [allowedEndpoints]="sessionService.$allowedEndpoints()"
     [bundleUrl]="bundleUrl"
     [configurationId]="configurationId"
     [context]="context"
     [pluginDataUrl]="$pluginDataUrl()"
-    [userToken]="$userToken()"
+    [userToken]="sessionService.$userToken()"
     (taskCompletedEvent)="onTaskCompleted()"
     (submitTaskEvent)="onSubmitTask($event)"
   ></valtimo-external-plugin-iframe>

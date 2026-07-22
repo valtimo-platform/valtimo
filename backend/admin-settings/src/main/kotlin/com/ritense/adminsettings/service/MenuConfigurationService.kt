@@ -19,10 +19,13 @@ package com.ritense.adminsettings.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.adminsettings.domain.MenuConfiguration
+import com.ritense.adminsettings.domain.MenuConfiguration.Companion.SINGLETON_ID
 import com.ritense.adminsettings.repository.MenuConfigurationRepository
 import com.ritense.adminsettings.web.rest.dto.MenuConfigurationDto
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 
 open class MenuConfigurationService(
     private val menuConfigurationRepository: MenuConfigurationRepository,
@@ -31,7 +34,7 @@ open class MenuConfigurationService(
 
     @Transactional(readOnly = true)
     open fun getMenuConfiguration(): MenuConfigurationDto {
-        val entity = menuConfigurationRepository.findByIdOrNull("singleton")
+        val entity = menuConfigurationRepository.findByIdOrNull(SINGLETON_ID)
         val configuration: JsonNode = if (entity != null) {
             objectMapper.readTree(entity.configuration)
         } else {
@@ -42,12 +45,24 @@ open class MenuConfigurationService(
 
     @Transactional
     open fun updateMenuConfiguration(configuration: JsonNode): MenuConfigurationDto {
-        val entity = menuConfigurationRepository.findByIdOrNull("singleton")
+        val serializedConfiguration = objectMapper.writeValueAsString(configuration)
+        if (serializedConfiguration.length > MAX_CONFIGURATION_LENGTH) {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Menu configuration exceeds the maximum size of $MAX_CONFIGURATION_LENGTH characters"
+            )
+        }
+
+        val entity = menuConfigurationRepository.findByIdOrNull(SINGLETON_ID)
             ?: MenuConfiguration()
 
-        entity.configuration = objectMapper.writeValueAsString(configuration)
+        entity.configuration = serializedConfiguration
         menuConfigurationRepository.save(entity)
 
         return MenuConfigurationDto(configuration)
+    }
+
+    companion object {
+        const val MAX_CONFIGURATION_LENGTH = 100_000
     }
 }

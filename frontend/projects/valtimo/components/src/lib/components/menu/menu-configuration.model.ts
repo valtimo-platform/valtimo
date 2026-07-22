@@ -16,6 +16,61 @@
 
 import {IncludeFunction} from '@valtimo/shared';
 
+/** The persisted (string) form of an `IncludeFunction`: the enum member's name. */
+type IncludeFunctionName = keyof typeof IncludeFunction;
+
+/**
+ * The persisted `includeFunction` value: written as the enum member **name** (stable across enum
+ * reorders); legacy configs stored the numeric ordinal, which is still accepted on read via
+ * [parseIncludeFunction].
+ */
+type PersistedIncludeFunction = IncludeFunctionName | IncludeFunction;
+
+/**
+ * Maps a **legacy** numeric `includeFunction` ordinal (configs saved before the switch to string
+ * names) to the current enum member. The mapping follows the order the members held their ordinals
+ * while configs were still persisted numerically: `OpenSearchEnabled` was only inserted (at
+ * ordinal 1, shifting `ZgwFeaturesEnabled` from 1 to 2) just before the switch to names, so a
+ * persisted `1` almost always predates that insertion and means `ZgwFeaturesEnabled`; a persisted
+ * `2` can only come from a post-insertion save and also means `ZgwFeaturesEnabled`.
+ */
+const LEGACY_INCLUDE_FUNCTION_BY_ORDINAL: Readonly<Record<number, IncludeFunction>> = {
+  0: IncludeFunction.ObjectManagementEnabled,
+  1: IncludeFunction.ZgwFeaturesEnabled,
+  2: IncludeFunction.ZgwFeaturesEnabled,
+};
+
+/**
+ * Parses a persisted `includeFunction` value — the enum member name (current format) or a legacy
+ * numeric ordinal — into the runtime `IncludeFunction`. Unknown values yield `undefined`.
+ */
+function parseIncludeFunction(
+  value: PersistedIncludeFunction | string | number | null | undefined
+): IncludeFunction | undefined {
+  if (value === null || value === undefined || value === '') return undefined;
+  if (typeof value === 'number') return LEGACY_INCLUDE_FUNCTION_BY_ORDINAL[value];
+  const parsed = IncludeFunction[value as IncludeFunctionName];
+  return typeof parsed === 'number' ? parsed : undefined;
+}
+
+/**
+ * Serialises a **persisted** include function value (enum name or legacy numeric ordinal) into the
+ * enum-name form. Numbers are interpreted as legacy ordinals (see
+ * [LEGACY_INCLUDE_FUNCTION_BY_ORDINAL]) — for a *runtime* enum value use [includeFunctionToName].
+ */
+function serializeIncludeFunction(
+  value: PersistedIncludeFunction | string | number | null | undefined
+): IncludeFunctionName | undefined {
+  const parsed = parseIncludeFunction(value);
+  return parsed === undefined ? undefined : includeFunctionToName(parsed);
+}
+
+/** The persisted (name) form of a **runtime** `IncludeFunction` value (current enum ordinals, no legacy mapping). */
+function includeFunctionToName(value: IncludeFunction): IncludeFunctionName | undefined {
+  const name = IncludeFunction[value] as IncludeFunctionName | undefined;
+  return typeof name === 'string' ? name : undefined;
+}
+
 /** The kinds of node the persisted menu tree can hold. */
 type MenuConfigurationItemKind =
   | 'catalog'
@@ -39,7 +94,7 @@ interface CatalogMenuConfigurationItem extends MenuConfigurationItemBase {
   itemId: string;
   title?: string;
   icon?: string;
-  includeFunction?: IncludeFunction;
+  includeFunction?: PersistedIncludeFunction;
   children?: MenuConfigurationItem[];
 }
 
@@ -55,6 +110,7 @@ interface GroupMenuConfigurationItem extends MenuConfigurationItemBase {
 interface SectionHeaderMenuConfigurationItem extends MenuConfigurationItemBase {
   kind: 'section-header';
   title: string;
+  includeFunction?: PersistedIncludeFunction;
 }
 
 /** A free-form link an admin added (or an unmatched downstream link captured on seed). */
@@ -104,6 +160,11 @@ function hasSavedMenuConfiguration(
 }
 
 export {
+  IncludeFunctionName,
+  PersistedIncludeFunction,
+  includeFunctionToName,
+  parseIncludeFunction,
+  serializeIncludeFunction,
   MenuConfigurationItemKind,
   CatalogMenuConfigurationItem,
   GroupMenuConfigurationItem,

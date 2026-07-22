@@ -64,8 +64,10 @@ npm run build:pack
 
 Every GZAC→host request is HMAC-SHA256 signed (not a bearer token): the signature covers
 `{METHOD}\n{path}\n{timestamp}\n{bodyHash}` keyed with the `ADMIN_TOKEN`, sent as `X-Valtimo-Signature`
-+ `X-Valtimo-Timestamp` (±5-minute replay window). The plugin upload signs the file bytes; other
-write routes sign the request body. HMAC authenticates and integrity-binds each request but does not
++ `X-Valtimo-Timestamp`. Replay protection is two-layered: the timestamp must be within ±5 minutes
+of the host's clock, and on side-effecting routes (POST/PUT/DELETE) each accepted signature is
+single-use within that window — resending a captured request verbatim is refused with 401. The
+plugin upload signs the file bytes; other write routes sign the request body. HMAC authenticates and integrity-binds each request but does not
 encrypt it — run the host over TLS (set `TLS_CERT_PATH`/`TLS_KEY_PATH`) so the config push, which
 carries broker credentials and the service token, is also confidential. See
 [`app/README.md`](app/README.md#api-reference) for the full scheme and the `host_sign` helper used
