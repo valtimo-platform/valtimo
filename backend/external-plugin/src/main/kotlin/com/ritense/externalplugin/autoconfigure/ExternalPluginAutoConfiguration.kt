@@ -65,6 +65,7 @@ import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginHostOriginsResource
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
+import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenIntrospectionResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case_.repository.CaseExternalPluginTabRepository
@@ -297,6 +298,12 @@ class ExternalPluginAutoConfiguration {
         grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         userTokenService: ExternalPluginUserTokenService,
     ) = ExternalPluginUserTokenResource(configurationRepository, grantedEndpointRepository, userTokenService)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginUserTokenIntrospectionResource::class)
+    fun externalPluginUserTokenIntrospectionResource(
+        keyProvider: ExternalPluginUserTokenKeyProvider,
+    ) = ExternalPluginUserTokenIntrospectionResource(keyProvider)
 
     @Bean
     @Order(450)

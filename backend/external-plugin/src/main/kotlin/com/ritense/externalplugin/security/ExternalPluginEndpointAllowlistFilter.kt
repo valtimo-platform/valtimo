@@ -42,7 +42,9 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * On top of the grants, a hard denylist ([DENYLIST_PATTERNS]) shields sensitive surfaces — external-
  * plugin management (incl. host registration), user-token minting and role/permission management —
- * from plugin tokens **regardless of what was granted**.
+ * from plugin tokens **regardless of what was granted**. One narrow exception: a **user** token may
+ * always `GET` the user-token introspection endpoint, which the plugin host needs to validate the
+ * token before executing Wasm (see the carve-out in [doFilterInternal]).
  *
  * Granted endpoints are compiled into request matchers and cached per configuration id for a short
  * TTL so the per-request cost is a map lookup instead of a DB query. An invalid stored pattern is
@@ -61,13 +63,24 @@ class ExternalPluginEndpointAllowlistFilter(
         filterChain: FilterChain,
     ) {
         val authentication = SecurityContextHolder.getContext().authentication
-        val configurationId = when (val principal = authentication?.principal) {
+        val principal = authentication?.principal
+        val configurationId = when (principal) {
             is ExternalPluginServicePrincipal -> principal.pluginConfigId
             is ExternalPluginUserPrincipal -> principal.pluginConfigId
             else -> {
                 filterChain.doFilter(request, response)
                 return
             }
+        }
+
+        // Carve-out: a USER token may always introspect itself, regardless of denylist and grants.
+        // The plugin host must introspect user tokens against GZAC before executing Wasm for its
+        // public /data route, and the only credential it holds for that is the token itself. The
+        // endpoint is read-only (exact path, GET only) and leaks nothing beyond the token's own
+        // claims. Service-token principals get no carve-out — introspection is meaningless for them.
+        if (principal is ExternalPluginUserPrincipal && USER_TOKEN_INTROSPECT_MATCHER.matches(request)) {
+            filterChain.doFilter(request, response)
+            return
         }
 
         // Hard denylist: sensitive surfaces are unreachable for plugin tokens regardless of grants.
@@ -145,6 +158,10 @@ class ExternalPluginEndpointAllowlistFilter(
         )
 
         private val DENYLIST_MATCHERS = DENYLIST_PATTERNS.map { AntPathRequestMatcher(it) }
+
+        /** Exact-path, GET-only carve-out for user-token introspection (see [doFilterInternal]). */
+        private val USER_TOKEN_INTROSPECT_MATCHER =
+            AntPathRequestMatcher("/api/v1/external-plugin/user-token/introspect", "GET")
 
         private val kLogger = KotlinLogging.logger {}
     }

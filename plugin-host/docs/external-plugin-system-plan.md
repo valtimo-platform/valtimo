@@ -48,7 +48,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Strict delete guards (embedded + external), shared usage DTO/resolver + `/usages` endpoints + read-only in-use modal, no force override | core `backend/plugin/.../{web/rest/dto/PluginUsageDto, service/ProcessDefinitionUsageMetaResolver, service/PluginConfigurationUsageResolver, exception/PluginConfigurationInUseException}` + `backend/external-plugin/.../{service/ExternalPluginHostUsageResolver, exception/ExternalPlugin*InUseException}` ↔ frontend `plugin-management/.../plugin-usage-modal/` | ✅ |
 | Iframe case-detail tab (`EXTERNAL_PLUGIN` tab type, side table, PBAC content endpoint, bundle-resolver SPI) + admin UX | `backend/case/.../case_/{domain/tab/CaseExternalPluginTab, repository/CaseExternalPluginTabRepository, service/CaseExternalPluginTabService, rest/CaseExternalPluginTabResource, service/ExternalPluginCaseTabResolver}` + `backend/external-plugin/.../service/ExternalPluginCaseTabResolverImpl` ↔ frontend `case/.../case-detail/tab/external-plugin`, `case-management/.../tabs` | ✅ |
 | Downscoped user token (PBAC ∩ allowlist), non-management mint endpoint, parent-proxy iframe (opaque origin, no token in iframe) | `backend/external-plugin/.../security/ExternalPluginUserToken{KeyProvider,Authenticator,Filter}, security/ExternalPluginUserPrincipal, service/ExternalPluginUserTokenService, web/rest/ExternalPluginUserTokenResource` ↔ frontend `plugin/.../external-plugin-iframe`, SDK `frontend/plugin-frontend-sdk.ts` (proxy bridge) | ✅ |
-| Plugin-served data route (`handle_request` Wasm export + host `POST .../data`, gated on the granted `frontend_data` capability + per-config rate limit) + backend-as-user (`gzacApi.asUser`) | `plugin-host/plugin-sdk/src/{requests.ts,runtime.ts,gzac-api.ts}`, `plugin-host/app/src/{routes/plugin-data.ts,host-functions/gzac-api.ts,plugin-manager.ts#callRequest}` | ✅ |
+| Plugin-served data route (`handle_request` Wasm export + host `POST .../data`, gated on the granted `frontend_data` capability + per-config rate limit + a required, GZAC-introspected, configuration-bound user token) + backend-as-user (`gzacApi.asUser`) | `plugin-host/plugin-sdk/src/{requests.ts,runtime.ts,gzac-api.ts}`, `plugin-host/app/src/{routes/plugin-data.ts,security/user-token-introspection.ts,host-functions/gzac-api.ts,plugin-manager.ts#callRequest}` ↔ `backend/external-plugin/.../web/rest/ExternalPluginUserTokenIntrospectionResource.kt` | ✅ |
 
 Single-core-app model with **multiple hosts per instance**: the core app pushes each configuration
 directly to its host with a freshly issued service token, a `gzacBaseUrl` callback target taken
@@ -141,7 +141,11 @@ inside the Spring Security chain, never a second time as bare servlet filters.
    can never reach `/api/management/v1/external-plugin/**` and `/api/v1/external-plugin/**`
    (external-plugin management incl. host registration, plus user-token minting — a plugin must
    not mint tokens for arbitrary users) or `/api/management/v1/roles/**` and
-   `/api/management/v1/permissions/**` (role/permission management — privilege escalation).
+   `/api/management/v1/permissions/**` (role/permission management — privilege escalation). One
+   narrow carve-out precedes the denylist: a **user**-token principal may always `GET
+   /api/v1/external-plugin/user-token/introspect` (exact path, GET only — the plugin host must be
+   able to introspect the token before serving `/data`, §13.5; the endpoint is read-only and
+   returns nothing beyond the token's own claims). Service-token principals get no carve-out.
 3. Load grants for `plugin_config_id`, match request via `AntPathRequestMatcher(pattern, method)`;
    no match → 403; empty grants → deny. The compiled matchers are cached per configuration id for
    a short TTL (30 s) so the per-request cost is a map lookup instead of a DB query; an invalid
@@ -407,12 +411,20 @@ grantedCapabilities, grantedEndpoints` and optionally `eventBroker` — only `se
 plugin having to be loaded); `POST /plugins/:id/:version/actions/:key`
 (HMAC-signed §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
 `…/bundles/**`, and `POST …/data` (the `handle_request` RPC route, §13.4/§13.5 — browser-facing
-with CORS `*` + `OPTIONS` preflight, so it carries no HMAC, but executing Wasm is gated: the
-request must name a `configurationId` whose pushed configuration exists, targets this plugin
-version, **and was granted the `frontend_data` capability** — otherwise 403 with a single
-deliberately-uninformative message so the public endpoint doesn't leak which configurations
-exist — and a per-configuration fixed-window rate limit (`DATA_RATE_LIMIT_PER_MINUTE`, default
-120/min, in-memory per replica) bounds abuse). Multi-version load keyed `pluginId@version`. The
+with CORS `*` + `OPTIONS` preflight, so it carries no HMAC, but executing Wasm is gated on a
+chain of checks: the request must name a `configurationId` whose pushed configuration exists,
+targets this plugin version, **and was granted the `frontend_data` capability** — otherwise 403
+with a single deliberately-uninformative message so the public endpoint doesn't leak which
+configurations exist; a per-configuration fixed-window rate limit (`DATA_RATE_LIMIT_PER_MINUTE`,
+default 120/min, in-memory per replica) bounds abuse; and the request **must carry a GZAC-minted
+downscoped `userToken`** (400 when absent), which the host validates by remote introspection
+against the configuration's GZAC (`GET /api/v1/external-plugin/user-token/introspect`, the token
+itself as bearer credential, bounded by `USER_TOKEN_INTROSPECTION_TIMEOUT_MS`, default 10 s) —
+GZAC rejecting the token → 401, a token bound to a **different** configuration than the request
+names → 403, GZAC unreachable → 503 (**fail closed**: Wasm never runs on an unvalidated token);
+positive verdicts are cached in-memory for ≤60 s (never past the token's own expiry), keyed by a
+SHA-256 hash of the token, so steady-state calls cost no GZAC round-trip per call). Multi-version
+load keyed `pluginId@version`. The
 registered host functions are `gzac_api` (which can also authenticate as the user, §13.4),
 `http_request`, `kv`, and `log` — all four gated by a per-configuration capability allowlist (§18).
 
@@ -1034,7 +1046,9 @@ credential:
   user token over a same-origin relative `/api/...` path (**zero CORS**). For plugin data
   (`target:"plugin"`) it POSTs to the host `/data` route (cross-origin; the host serves
   `Access-Control-Allow-Origin: *`), forwarding the `configurationId` the host's `frontend_data`
-  gate checks (§13.5).
+  gate checks **and the downscoped user token the host introspects against GZAC before executing
+  Wasm** (§13.5); when no user token is available (not yet minted, or the mint failed) the parent
+  answers the proxy request locally with a 401 instead of calling the host.
 - The iframe-supplied path of a GZAC proxy call is **untrusted**: the parent resolves it against
   `window.location.origin` and hard-requires the result to stay **same-origin** — rejecting
   absolute URLs to other origins, protocol-relative `//host/...` forms and non-http schemes like
@@ -1069,6 +1083,14 @@ credential:
   along so the iframe parent can seed its client-side allowlist precheck (§13.2) without a second
   call. (Plugin tokens themselves can never call this endpoint — it sits on the hard denylist,
   §3.4.)
+- **Introspection endpoint** `GET /api/v1/external-plugin/user-token/introspect`
+  (`ExternalPluginUserTokenIntrospectionResource`) — the plugin host's validation counterpart:
+  the host presents a user token as the bearer credential and receives the token's own claims,
+  `{ subject, configurationId, expiresAt }`, with 200. The user-token filter authenticates the
+  token; the resource rejects any other principal (a Keycloak user, a service token) with 403 —
+  introspection is only meaningful for user tokens. Registered `.authenticated()` in
+  `ExternalPluginHttpSecurityConfigurer` and reachable for user-token principals through the
+  narrow denylist carve-out (§3.4). The host calls it before executing Wasm for `/data` (§13.5).
 - **Token** (`ExternalPluginUserTokenService`): HS256, `sub=userLogin`, custom `roles` claim,
   `plugin_config_id`, `type=external_plugin_user`, `iss=valtimo-gzac`, `iat`, `exp`. TTL from
   `valtimo.external-plugin.user-token.ttl`, **hard-capped at 15 minutes**. Signed with its **own**
@@ -1104,11 +1126,14 @@ A `handle_request` handler can call GZAC **as the user** — not just as the sys
 forwards the downscoped user token in the `/data` POST body; `callRequest` threads it through the
 Extism per-call `hostContext` (host-only, **never** serialised into the Wasm input), and the
 `gzac_api` host function uses it when the request carries `as:"user"` (401-shaped reply if absent),
-else the service token. The host forwards the caller-supplied token as-is and never validates it
-itself — GZAC verifies it server-side on every `as:"user"` callback, so a forged token only yields
-401s from GZAC. ⚠️ This hands the user token to the **plugin host** — a deliberate relaxation
-of "the token never leaves the browser," bounded by PBAC ∩ allowlist + the short TTL; plugin code
-receives data, never the token.
+else the service token. The `/data` route **requires** the token and validates it before any Wasm
+runs: the host introspects it against the configuration's GZAC (§13.5) and rejects tokens GZAC
+refuses (401) or that are bound to another configuration (403). GZAC additionally verifies the
+token server-side on every `as:"user"` callback — the introspection gates Wasm execution, while
+each individual callback stays independently authenticated, so a forged token gets no execution
+and would only yield 401s from GZAC anyway. ⚠️ This hands the user token to the **plugin host** —
+a deliberate relaxation of "the token never leaves the browser," bounded by PBAC ∩ allowlist + the
+short TTL; plugin code receives data, never the token.
 
 ### 13.5 Four communication levels (sample plugin) ✅
 
@@ -1130,14 +1155,21 @@ for the allowlist to permit either token.
 
 Service tokens (action/event callbacks) work identically on every path. The host `/data` route is
 browser-facing (no HMAC — the caller is a browser, not GZAC), so executing plugin Wasm through it
-is gated on the target configuration: the request must name a `configurationId` whose pushed
-configuration exists, targets the addressed plugin version, and **was granted the `frontend_data`
-capability** by an admin — otherwise 403 and the Wasm never runs — and a per-configuration rate
-limit (`DATA_RATE_LIMIT_PER_MINUTE`) bounds abuse (§7). A plugin that wants to serve iframe data
-therefore declares `frontend_data` in `manifest.permissions.capabilities` (§18.1). Plugins must
-still treat `handle_request` input as untrusted and never return data they would not expose to
-every user of the configuration's GZAC instance — level-3/4 access to *GZAC* data stays bounded by
-the user token's PBAC ∩ allowlist and the service token's allowlist respectively.
+is gated on a chain: the request must name a `configurationId` whose pushed configuration exists,
+targets the addressed plugin version, and **was granted the `frontend_data` capability** by an
+admin — otherwise 403 and the Wasm never runs; a per-configuration rate limit
+(`DATA_RATE_LIMIT_PER_MINUTE`) bounds abuse; and the request must carry the downscoped
+`userToken`, which the host **introspects against GZAC** (`GET
+/api/v1/external-plugin/user-token/introspect` — the token authenticates itself; the endpoint
+echoes `{subject, configurationId, expiresAt}`) and requires to be bound to the very
+configuration the request names (§7). The route is therefore public in transport terms only —
+executing Wasm always requires proof of an authenticated GZAC user of that configuration; GZAC
+being unreachable fails closed with a 503. A plugin that wants to serve iframe data declares
+`frontend_data` in `manifest.permissions.capabilities` (§18.1). Plugins must still treat
+`handle_request` input as untrusted and never return data they would not expose to every user of
+the configuration's GZAC instance — the token proves *who is asking*, not that any field is
+truthful — and level-3/4 access to *GZAC* data stays bounded by the user token's PBAC ∩ allowlist
+and the service token's allowlist respectively.
 
 ### 13.6 Task-form surface (`external_plugin_task_form` process-link type) ✅
 
@@ -1293,7 +1325,12 @@ Structure:
   authorities from the `roles` claim, strips the `Authorization` header, and — critically — leaves
   `AuthorizationContext.ignoreAuthorization` **false** so PBAC stays active (`ExternalPluginUserTokenFilterTest`);
   and `ExternalPluginEndpointAllowlistFilterTest` permits a granted and denies an ungranted
-  `(method, path)` for an `ExternalPluginUserPrincipal`. The bundle-resolver SPI
+  `(method, path)` for an `ExternalPluginUserPrincipal`, and pins the introspection carve-out
+  (a user token reaches `GET …/user-token/introspect` despite the denylist and without grants; a
+  service token does not; other `/api/v1/external-plugin/**` paths stay denied). The
+  introspection resource suite (`ExternalPluginUserTokenIntrospectionResourceTest`) asserts a
+  user-token principal receives the token's `{subject, configurationId, expiresAt}` and every
+  other principal is rejected with 403. The bundle-resolver SPI
   (`ExternalPluginCaseTabResolverImplTest`) asserts URL construction by bundle key / sole bundle and
   null-handling. The host-client-HMAC suite
   (`client/ExternalPluginHostClientHmacTest`) asserts `pushConfiguration` (body-bound, **including
@@ -1451,8 +1488,9 @@ type-check clean; `en`/`nl` bundles updated (`addApp`, `tabs.integrations`, `lab
 ## 18. Host capabilities — `gzac_api`, `http_request`, `kv`, `log`, `frontend_data` ✅
 
 A capability is a host-side ability a plugin may be granted: the four host functions (`gzac_api`,
-`http_request`, `kv`, `log`) plus `frontend_data`, which gates the host's public plugin-data route
-(§13.5) rather than a host function. Every capability requires an explicit grant:
+`http_request`, `kv`, `log`) plus `frontend_data`, which gates the host's plugin-data route
+(§13.5, reachable only with an introspected, configuration-bound user token) rather than a host
+function. Every capability requires an explicit grant:
 the plugin declares what it needs in `manifest.permissions.capabilities`, the admin accepts each
 one during configuration (§4), and the host enforces the allowlist at call time. A plugin that
 calls a capability it was not granted receives a structured error — never silent access, never

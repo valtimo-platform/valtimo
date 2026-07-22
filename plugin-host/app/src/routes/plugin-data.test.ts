@@ -17,6 +17,7 @@
 import type {FastifyInstance} from "fastify";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {buildTestApp, testConfig} from "../test-support/harness";
+import {UserTokenIntrospector} from "../security/user-token-introspection";
 import {pluginDataRoutes} from "./plugin-data";
 
 const PLUGIN = "case-summary";
@@ -27,6 +28,7 @@ describe("plugin-data route", () => {
   let app: FastifyInstance;
   let pluginManager: { getManifest: ReturnType<typeof vi.fn>; callRequest: ReturnType<typeof vi.fn> };
   let configRegistry: { get: ReturnType<typeof vi.fn> };
+  let introspector: { introspect: ReturnType<typeof vi.fn> };
 
   async function buildApp(rateLimitPerMinute = 120): Promise<void> {
     app = await buildTestApp((a) =>
@@ -34,6 +36,7 @@ describe("plugin-data route", () => {
         pluginManager: pluginManager as never,
         configRegistry: configRegistry as never,
         config: testConfig({ DATA_RATE_LIMIT_PER_MINUTE: rateLimitPerMinute }),
+        userTokenIntrospector: introspector as unknown as UserTokenIntrospector,
       })
     );
   }
@@ -53,6 +56,9 @@ describe("plugin-data route", () => {
         grantedCapabilities: ["gzac_api", "frontend_data"],
       })),
     };
+    introspector = {
+      introspect: vi.fn(async () => ({ kind: "valid", configurationId: "cfg-1" })),
+    };
     await buildApp();
   });
 
@@ -71,7 +77,7 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { configurationId: "cfg-1", method: "GET", path: "/summary" },
+      payload: { configurationId: "cfg-1", method: "GET", path: "/summary", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ ok: true });
@@ -106,8 +112,8 @@ describe("plugin-data route", () => {
         context: { documentId: "doc-1" },
         serviceToken: "svc-token",
         gzacBaseUrl: "http://gzac:8080",
-        // Forwarded as-is: the host doesn't validate the user token — GZAC does, server-side,
-        // on every as:"user" callback.
+        // Introspected against GZAC before the call, then forwarded so the handler can use
+        // gzacApi.asUser (GZAC re-verifies it on every as:"user" callback).
         userToken: "user-tok",
       })
     );
@@ -117,10 +123,63 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { method: "GET", path: "/summary" },
+      payload: { method: "GET", path: "/summary", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(400);
     expect(pluginManager.callRequest).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when userToken is absent (Wasm never runs, no introspection)", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: DATA_URL,
+      payload: { configurationId: "cfg-1", method: "GET", path: "/summary" },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(introspector.introspect).not.toHaveBeenCalled();
+    expect(pluginManager.callRequest).not.toHaveBeenCalled();
+  });
+
+  it("returns 401 when GZAC rejects the user token (Wasm never runs)", async () => {
+    introspector.introspect.mockResolvedValueOnce({ kind: "invalid" });
+    const res = await app.inject({
+      method: "POST",
+      url: DATA_URL,
+      payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "forged" },
+    });
+    expect(res.statusCode).toBe(401);
+    expect(pluginManager.callRequest).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when the token is bound to a different configuration (Wasm never runs)", async () => {
+    introspector.introspect.mockResolvedValueOnce({ kind: "valid", configurationId: "cfg-OTHER" });
+    const res = await app.inject({
+      method: "POST",
+      url: DATA_URL,
+      payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(pluginManager.callRequest).not.toHaveBeenCalled();
+  });
+
+  it("returns 503 when GZAC is unreachable — fail closed, Wasm never runs", async () => {
+    introspector.introspect.mockResolvedValueOnce({ kind: "unavailable" });
+    const res = await app.inject({
+      method: "POST",
+      url: DATA_URL,
+      payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
+    });
+    expect(res.statusCode).toBe(503);
+    expect(pluginManager.callRequest).not.toHaveBeenCalled();
+  });
+
+  it("introspects against the configuration's own GZAC base URL", async () => {
+    await app.inject({
+      method: "POST",
+      url: DATA_URL,
+      payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
+    });
+    expect(introspector.introspect).toHaveBeenCalledWith("http://gzac:8080", "user-tok");
   });
 
   it("returns 403 for an unknown configuration (Wasm never runs)", async () => {
@@ -128,7 +187,7 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { configurationId: "ghost", method: "GET", path: "/x" },
+      payload: { configurationId: "ghost", method: "GET", path: "/x", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(403);
     expect(pluginManager.callRequest).not.toHaveBeenCalled();
@@ -146,7 +205,7 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { configurationId: "cfg-1", method: "GET", path: "/x" },
+      payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(403);
     expect(pluginManager.callRequest).not.toHaveBeenCalled();
@@ -164,7 +223,7 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { configurationId: "cfg-1", method: "GET", path: "/x" },
+      payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(403);
     expect(pluginManager.callRequest).not.toHaveBeenCalled();
@@ -177,7 +236,7 @@ describe("plugin-data route", () => {
       app.inject({
         method: "POST",
         url: DATA_URL,
-        payload: { configurationId: "cfg-1", method: "GET", path: "/x" },
+        payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
       });
     expect((await post()).statusCode).toBe(200);
     expect((await post()).statusCode).toBe(200);
@@ -189,7 +248,7 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { configurationId: "cfg-1", method: "GET", path: "/x" },
+      payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(404);
   });
@@ -198,7 +257,7 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { configurationId: "cfg-1", path: "/x" },
+      payload: { configurationId: "cfg-1", path: "/x", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(400);
   });
@@ -212,10 +271,43 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { configurationId: "cfg-1", method: "POST", path: "/x" },
+      payload: { configurationId: "cfg-1", method: "POST", path: "/x", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(201);
     expect(res.headers["x-custom"]).toBe("yes");
+  });
+
+  it("serves a second call from the introspection cache — one GZAC round-trip", async () => {
+    // Real introspector, stubbed network: proves the route + cache wiring end-to-end.
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            subject: "john@example.com",
+            configurationId: "cfg-1",
+            expiresAt: new Date(Date.now() + 900_000).toISOString(),
+          }),
+          { status: 200 }
+        )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      await app.close();
+      introspector = new UserTokenIntrospector() as never;
+      await buildApp();
+
+      const post = () =>
+        app.inject({
+          method: "POST",
+          url: DATA_URL,
+          payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
+        });
+      expect((await post()).statusCode).toBe(200);
+      expect((await post()).statusCode).toBe(200);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("returns 500 when the plugin request handler throws", async () => {
@@ -223,7 +315,7 @@ describe("plugin-data route", () => {
     const res = await app.inject({
       method: "POST",
       url: DATA_URL,
-      payload: { configurationId: "cfg-1", method: "GET", path: "/x" },
+      payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(500);
   });

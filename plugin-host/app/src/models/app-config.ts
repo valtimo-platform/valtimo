@@ -45,6 +45,12 @@ export const envSchema = z.object({
   // endpoint cannot pin a plugin call (and its per-plugin lock) forever.
   GZAC_API_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
 
+  // Upper bound on the user-token introspection call the /data route makes against GZAC before
+  // executing Wasm. Deliberately shorter than GZAC_API_TIMEOUT_MS: introspection happens on the
+  // request path of a public route, so a hung GZAC should fail the request (503, fail closed)
+  // quickly rather than pin it for a minute.
+  USER_TOKEN_INTROSPECTION_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+
   // Maximum accepted plugin package (.zip) upload size in bytes. The multipart parser enforces
   // this before the file is buffered for the HMAC check.
   UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(25 * 1024 * 1024),

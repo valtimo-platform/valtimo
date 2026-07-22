@@ -156,6 +156,41 @@ describe('ExternalPluginIframeComponent', () => {
     });
   });
 
+  describe('plugin data proxy', () => {
+    const proxyToPlugin = (method: string, path: string): Promise<{status: number; body: unknown}> =>
+      (component as any)._proxyToPlugin(method, path, undefined, undefined);
+
+    beforeEach(() => {
+      component.pluginDataUrl = 'https://host.example/plugins/p/1.0.0/data';
+      component.configurationId = 'cfg-1';
+    });
+
+    it('answers locally with a 401 when no user token is available yet', async () => {
+      const fetchSpy = spyOn(window, 'fetch');
+      component.userToken = null;
+
+      const result = await proxyToPlugin('GET', '/summary');
+
+      expect(result.status).toBe(401);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('POSTs to the host with the configurationId and the user token', async () => {
+      const fetchSpy = spyOn(window, 'fetch').and.resolveTo(
+        new Response(JSON.stringify({ok: true}), {status: 200})
+      );
+
+      const result = await proxyToPlugin('GET', '/summary');
+
+      expect(result.status).toBe(200);
+      const [url, init] = fetchSpy.calls.mostRecent().args;
+      expect(url).toBe('https://host.example/plugins/p/1.0.0/data');
+      const payload = JSON.parse(init?.body as string);
+      expect(payload.configurationId).toBe('cfg-1');
+      expect(payload.userToken).toBe('test-user-token');
+    });
+  });
+
   describe('message filtering', () => {
     let iframe: HTMLIFrameElement;
 

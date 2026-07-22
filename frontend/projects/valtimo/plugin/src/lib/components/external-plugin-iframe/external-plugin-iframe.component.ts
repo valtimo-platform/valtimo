@@ -285,6 +285,13 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
       throw new Error('No plugin data URL configured');
     }
 
+    // The host requires the downscoped user token and introspects it against GZAC before any Wasm
+    // runs, so a call without one can never succeed. Answer locally instead of burning a network
+    // round-trip; the plugin can retry once the tab has minted its token.
+    if (!this.userToken) {
+      return {status: 401, body: {error: 'User token not available for plugin data call'}};
+    }
+
     const response = await fetch(this.pluginDataUrl, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -295,11 +302,12 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
         query,
         body,
         context: this.context,
-        // Forward the downscoped user token so a `handle_request` handler can call GZAC *as the user*
-        // (gzacApi.asUser). NOTE: this hands the user token to the plugin host — a deliberate
+        // Forward the downscoped user token: the host requires it (it introspects the token against
+        // GZAC before executing Wasm), and it lets a `handle_request` handler call GZAC *as the
+        // user* (gzacApi.asUser). NOTE: this hands the user token to the plugin host — a deliberate
         // relaxation of the "token never leaves the browser" guarantee, bounded by PBAC ∩ allowlist
         // and the token's short TTL. The plugin only receives data, never the token itself.
-        userToken: this.userToken ?? undefined,
+        userToken: this.userToken,
       }),
     });
 

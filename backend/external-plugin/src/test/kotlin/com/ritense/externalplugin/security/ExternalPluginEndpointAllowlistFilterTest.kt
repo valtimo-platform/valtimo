@@ -230,6 +230,69 @@ class ExternalPluginEndpointAllowlistFilterTest {
     }
 
     @Test
+    fun `user-token introspection carve-out lets a user principal through despite denylist and grants`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        // No grants at all — the carve-out must not depend on them (nor hit the repository).
+        val request = request("GET", "/api/v1/external-plugin/user-token/introspect")
+        val response = MockHttpServletResponse()
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, response, chain)
+
+        assertThat(response.status).isEqualTo(200)
+        assertThat(chain.request).isNotNull()
+        verify(grantedEndpointRepository, never()).findAllByConfigurationId(any())
+    }
+
+    @Test
+    fun `user-token introspection carve-out is GET-only`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId)).thenReturn(emptyList())
+        val request = request("POST", "/api/v1/external-plugin/user-token/introspect")
+        val response = MockHttpServletResponse()
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, response, chain)
+
+        assertThat(response.status).isEqualTo(403)
+        assertThat(chain.request).isNull()
+    }
+
+    @Test
+    fun `service tokens get no introspection carve-out`() {
+        val configId = UUID.randomUUID()
+        authenticateAsPlugin(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId))
+            .thenReturn(listOf(grantedEndpoint(configId, "GET", "/**")))
+        val request = request("GET", "/api/v1/external-plugin/user-token/introspect")
+        val response = MockHttpServletResponse()
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, response, chain)
+
+        assertThat(response.status).isEqualTo(403)
+        assertThat(chain.request).isNull()
+    }
+
+    @Test
+    fun `other external-plugin endpoints remain denylisted for user principals`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId))
+            .thenReturn(listOf(grantedEndpoint(configId, "GET", "/**")))
+        val request = request("GET", "/api/v1/external-plugin/menu-pages")
+        val response = MockHttpServletResponse()
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, response, chain)
+
+        assertThat(response.status).isEqualTo(403)
+        assertThat(chain.request).isNull()
+    }
+
+    @Test
     fun `an invalid stored pattern is skipped instead of failing the request`() {
         val configId = UUID.randomUUID()
         authenticateAsPlugin(configId)

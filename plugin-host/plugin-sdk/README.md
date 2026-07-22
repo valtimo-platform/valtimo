@@ -96,9 +96,13 @@ action("my-action", (input) => {
 
 Host functions only work when the admin granted the matching capability at activation:
 `gzac_api`, `http_request`, `kv`, `log`. A fifth capability, `frontend_data`, gates the host's
-public `POST /plugins/:id/:version/data` route — without it the host refuses to execute the
+`POST /plugins/:id/:version/data` route — without it the host refuses to execute the
 plugin's `handle_request` for that configuration, so declare it under
 `permissions.capabilities` in `manifest.json` when the plugin serves data to its own iframes.
+The `/data` route also requires a GZAC-minted downscoped user token, which the host validates
+against GZAC before executing any Wasm; the Angular parent-proxy attaches it automatically, so
+`sdk.getPluginData(...)` calls only succeed for authenticated users of the configuration's GZAC
+instance.
 
 ## Frontend SDK (`@valtimo/plugin-sdk/frontend`)
 
