@@ -741,7 +741,7 @@
     "deploy": "Save",
     "duplicate": "Duplicate",
     "readOnly": "Read-only",
-    "add": "Add form",
+    "add": "Create form",
     "navigateToRelatedCase": "Go to case (opens in new tab)",
     "tabs": {"formBuilder": "Form builder", "jsonEditor": "JSON editor", "output": "Output"},
     "intermediateSave": {
@@ -951,7 +951,7 @@
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",
-          "message": "This case cannot be updated because it is final."
+          "message": "This case definition cannot be changed because this version is final. Please create a new draft to make changes."
         },
         "linkUploadProcess": {
           "title": "Link upload process to case",
@@ -988,10 +988,10 @@
         "showTasks": "Task list visible"
       },
       "addModal": {
-        "addTab": "Add tab",
+        "addTab": "Create tab",
         "customComponent": "Custom component",
         "customComponentDisabled": "There are no custom components available, or they have all been added already.",
-        "description": "Select one of the options to add a new tab to your case definition",
+        "description": "Select one of the options to create a new tab in your case definition",
         "formIOComponent": "FormIO component",
         "formIOComponentDisabled": "No Form.io form definitions available",
         "standardTab": "Standard tab",
@@ -999,7 +999,7 @@
         "tabContentLabel": "Choose content",
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tab name (optional)",
-        "title": "Add new tab in {{documentDefinitionName}}",
+        "title": "Create new tab in {{documentDefinitionName}}",
         "uniqueKeyError": "The key for this tab must be unique.",
         "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
         "widgetsComponent": "Widgets component",
@@ -1008,10 +1008,10 @@
         "invisible": "Not visible"
       },
       "titles": {
-        "custom": "Add new tab with custom component",
-        "formio": "Add new tab with FormIO component",
-        "standard": "Add new tab with standard content",
-        "widgets": "Add a new tab with widgets"
+        "custom": "Create new tab with custom component",
+        "formio": "Create new tab with FormIO component",
+        "standard": "Create new tab with standard content",
+        "widgets": "Create a new tab with widgets"
       },
       "contentLabels": {
         "custom": "Choose custom component",
@@ -1030,7 +1030,7 @@
         "name": "Name",
         "type": "Type"
       },
-      "addItem": "Add an action",
+      "addItem": "Create an action",
       "noResults": "No actions configured",
       "noResultsDescription": "No actions are configured for this case type.",
       "infoNotification": {
@@ -1041,10 +1041,10 @@
         "BUILDING_BLOCK": "Building block"
       },
       "modal": {
-        "addTitle": "Add an action",
+        "addTitle": "Create an action",
         "addDescription": "Select a process or a building block for the user to start",
-        "addProcessTitle": "Add process as action",
-        "addBuildingBlockTitle": "Add building block as action",
+        "addProcessTitle": "Create process as action",
+        "addBuildingBlockTitle": "Create building block as action",
         "editProcessTitle": "Edit process action",
         "editBuildingBlockTitle": "Edit building block action",
         "selectProcess": "Select a process",
@@ -1052,7 +1052,7 @@
         "selectProcessDescription": "Select a process for the user to start",
         "selectBuildingBlockDescription": "Select a building block for the user to start",
         "filterPlaceholder": "Filter...",
-        "add": "Add",
+        "add": "Create",
         "save": "Save",
         "back": "Back",
         "next": "Next",
@@ -1163,12 +1163,12 @@
       "versionTooltip": "The version is used for the visible version of the case definition in the UI. Use Semantic Versioning (e.g. 1.0.0).",
       "description": "Case definition description",
       "descriptionPlaceholder": "Enter description here",
-      "descriptionTooltip": "The description is used for the visible description of the case definition in the UI"
+      "descriptionTooltip": "The description is used for the visible description of the case definition in the UI. Maximum {{ maxLength }} characters."
     },
     "statuses": {
       "withoutStatus": "Show cases without a status",
       "searchFieldTitle": "Status",
-      "add": "Add status",
+      "add": "Create status",
       "edit": "Edit status",
       "visibleTitle": "Default visibility in case list",
       "visible": "Visible",
@@ -1197,7 +1197,7 @@
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
-      "add": "Add tag",
+      "add": "Create tag",
       "edit": "Edit tag",
       "visible": "Visible",
       "invisible": "Not visible",
@@ -1556,7 +1556,7 @@
   "zgw": {
     "columns": {
       "column": "Column",
-      "add": "Add column",
+      "add": "Create column",
       "edit": "Edit column",
       "deleteText": "Are you sure you want to delete this column?",
       "notSortable": "This column is not sortable",
@@ -1634,10 +1634,10 @@
     },
     "tags": {
       "tag": "Tag",
-      "add": "Add tag",
+      "add": "Create tag",
       "deleteText": "Are you sure you want to delete this tag?",
       "deleteMultipleText": "Are you sure you want to delete these tags?",
-      "addModal": {"header": "Add tag"},
+      "addModal": {"header": "Create tag"},
       "list": {"noResultsTitle": "No tags", "noResultsDescription": "Add a tag to start"},
       "search": {
         "noResultsTitle": "No results",
@@ -1765,7 +1765,7 @@
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
   "Case": "Case",
   "Cases": "Cases",
-  "Deployment": "Deployment",
+  "Deployment": "Version management",
   "document definition": "Document definition",
   "Upload document definition": "Upload document definition",
   "Remove document definition": "Remove document definition",
@@ -2144,7 +2144,9 @@
     "showingResults": "Showing {{number}} of {{total}} results",
     "showingResult": "Showing {{number}} result",
     "automaticallyGenerated": "Automatically generated",
-    "search": "Search..."
+    "search": "Search...",
+    "globalSearchFilter": "Search entire document",
+    "globalSearchFilterPlaceholder": "Search across all document fields..."
   },
   "webcam": {"takePicture": "Take picture", "save": "Save", "redo": "Redo"},
   "customers": {
@@ -2259,7 +2261,7 @@
   "searchFieldsOverview": {
     "title": "Title",
     "key": "Key",
-    "add": "Add search field",
+    "add": "Create search field",
     "edit": "Edit search field",
     "path": "Path",
     "dataType": "Data type",
@@ -2278,7 +2280,7 @@
     "save": "save",
     "delete": "Delete",
     "download": "Download",
-    "addRow": "Add search field",
+    "addRow": "Create search field",
     "searchFieldPlaceholder": "Select a type...",
     "noSearchFieldsConfiguredWarningTitle": "No search fields configured",
     "deleteSearchField": "Delete search field",
@@ -2339,7 +2341,7 @@
     "hasEnvConfigWarning": "This case type already has a column configuration in the environment configuration. Delete this in order to add columns here.",
     "noConfigWarningTitle": "No columns",
     "noConfigWarning": "There are no columns configured for this case type.",
-    "addButtonText": "Add column",
+    "addButtonText": "Create column",
     "editColumnTitle": "Edit column",
     "close": "Close",
     "save": "Save column",
@@ -2946,7 +2948,7 @@
     "key": "Key",
     "version": "Version",
     "readOnly": "Read only",
-    "add": "Add new form flow",
+    "add": "Create new form flow",
     "deleteModalContent": "Are you sure you want to delete this form flow?",
     "deletedSuccessfully": "{{key}} was deleted successfully",
     "savedSuccessTitle": "Saved successfully",
@@ -3173,7 +3175,8 @@
     "title": "Settings",
     "tabs": {
       "appearance": "Appearance",
-      "featureToggles": "Feature toggles"
+      "featureToggles": "Feature toggles",
+      "opensearch": "OpenSearch"
     },
     "appearance": {
       "logo": {
@@ -3209,6 +3212,13 @@
       }
     },
     "featureToggles": {
+      "searchEngine": {
+        "useOpenSearch": {
+          "title": "Use OpenSearch for case search",
+          "description": "When enabled, case searches use OpenSearch for better performance. When disabled, PostgreSQL is used.",
+          "unavailable": "OpenSearch is not configured for this application."
+        }
+      },
       "refreshRequired": "Refresh required",
       "refreshModalText": "This setting requires a page refresh to take effect. Do you want to refresh now?",
       "refreshNow": "Refresh now",
@@ -3304,6 +3314,64 @@
         "menuCollapsedByDefault": {
           "title": "Menu collapsed by default",
           "description": "Start with the navigation menu collapsed instead of expanded."
+        },
+        "enableGenericCaseList": {
+          "title": "Enable generic case list",
+          "description": "Show a single case list view with a dropdown to switch between case definitions."
+        }
+      }
+    },
+    "opensearch": {
+      "title": "OpenSearch",
+      "reindex": {
+        "title": "Reindex Runs",
+        "description": "Reindex all documents from the database to OpenSearch. This operation runs in the background.",
+        "startButton": "Start Reindex",
+        "startModalTitle": "Start Reindex",
+        "detailTitle": "Run Details",
+        "parameters": "Parameters",
+        "results": "Results",
+        "reindexing": "Reindexing",
+        "pruning": "Pruning",
+        "counts": "Counts",
+        "status": "Status",
+        "processed": "Processed: {{current}} / {{total}}",
+        "skipped": "Skipped",
+        "pruned": "Pruned",
+        "started": "Started",
+        "elapsed": "Elapsed time",
+        "finished": "Finished",
+        "inProgress": "Reindexing in progress...",
+        "errorTitle": "Error",
+        "viewErrorLogs": "View error logs",
+        "pruneOrphans": "Prune orphaned documents",
+        "documentDefinitionName": "Document definition",
+        "documentDefinitionPlaceholder": "All document definitions",
+        "allDocumentDefinitions": "All document definitions",
+        "modifiedBefore": "Modified before",
+        "modifiedAfter": "Modified after",
+        "columns": {
+          "status": "Status",
+          "startedOn": "Started",
+          "finishedOn": "Finished",
+          "progress": "Progress",
+          "documentDefinition": "Document definition"
+        },
+        "noResults": {
+          "title": "No reindex runs",
+          "description": "No reindex runs have been started yet."
+        },
+        "statuses": {
+          "RUNNING": "Running",
+          "COMPLETED": "Completed",
+          "FAILED": "Failed",
+          "STOPPED": "Stopped",
+          "PRUNING": "Pruning orphaned documents"
+        },
+        "pruningProgress": "Removed: {{removed}}",
+        "tooltips": {
+          "pruneOrphans": "Remove entries from OpenSearch that no longer exist in the database",
+          "pruned": "Search entries removed because the original document was deleted"
         }
       }
     }

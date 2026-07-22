@@ -72,8 +72,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -392,6 +395,126 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
         if (searchRequest.getCaseTagsFilter() != null && !searchRequest.getCaseTagsFilter().isEmpty()) {
             predicates.add(getCaseTagsFilterPredicate(cb, documentRoot, searchRequest.getCaseTagsFilter()));
+        }
+
+        if (searchRequest.getGlobalSearchFilter() != null && !searchRequest.getGlobalSearchFilter().isBlank()) {
+            var searchFields = !StringUtils.isEmpty(documentDefinitionName)
+                ? searchFieldService.getSearchFields(documentDefinitionName)
+                : List.<SearchField>of();
+
+            if (searchFields.isEmpty()) {
+                predicates.add(cb.disjunction());
+            } else {
+                var fieldMap = searchFields.stream()
+                    .collect(Collectors.toMap(f -> removePrefixes(f.getPath()), f -> f, (a, b) -> a));
+
+                var docFieldsLike = searchFields.stream()
+                    .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+                    .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
+                    .toList();
+
+                var docFieldsExact = searchFields.stream()
+                    .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+                    .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
+                    .toList();
+
+                var caseTextFieldsLike = searchFields.stream()
+                    .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
+                    .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
+                    .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
+                    .toList();
+
+                var caseTextFieldsExact = searchFields.stream()
+                    .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
+                    .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
+                    .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
+                    .toList();
+
+                var parsedTerms = parseGlobalSearch(searchRequest.getGlobalSearchFilter());
+
+                List<Predicate> qualifiedPredicates = new ArrayList<>();
+                List<Predicate> unqualifiedPredicates = new ArrayList<>();
+
+                for (ParsedTerm term : parsedTerms) {
+                    if (term.field() != null) {
+                        var fieldPath = removePrefixes(term.field());
+                        var field = fieldMap.get(fieldPath);
+                        if (field == null) {
+                            throw new IllegalArgumentException("Unknown search field: " + term.field());
+                        }
+
+                        boolean isDocField = field.getPath().startsWith(DOC_PREFIX);
+
+                        if (isDocField) {
+                            var jsonPath = "$." + fieldPath;
+                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                            );
+                            var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
+                            qualifiedPredicates.add(cb.like(cb.lower(expr), likePattern.toLowerCase()));
+                        } else {
+                            if (field.getDataType() == SearchFieldDataType.DATE ||
+                                field.getDataType() == SearchFieldDataType.DATETIME) {
+                                var date = LocalDate.parse(term.value());
+                                var startOfDay = date.atStartOfDay();
+                                var endOfDay = date.plusDays(1).atStartOfDay();
+                                qualifiedPredicates.add(cb.and(
+                                    cb.greaterThanOrEqualTo(documentRoot.get(fieldPath), startOfDay),
+                                    cb.lessThan(documentRoot.get(fieldPath), endOfDay)
+                                ));
+                            } else {
+                                var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
+                                qualifiedPredicates.add(cb.like(
+                                    cb.lower(documentRoot.get(fieldPath).as(String.class)),
+                                    likePattern.toLowerCase()
+                                ));
+                            }
+                        }
+                    } else {
+                        var likePattern = "%" + queryDialectHelper.escapeLikePattern(term.value()).toLowerCase() + "%";
+                        List<Predicate> termPredicates = new ArrayList<>();
+
+                        for (var f : docFieldsLike) {
+                            var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
+                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                            );
+                            termPredicates.add(cb.like(cb.lower(expr), likePattern));
+                        }
+
+                        for (var f : docFieldsExact) {
+                            var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
+                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                            );
+                            termPredicates.add(cb.equal(cb.lower(expr), term.value().toLowerCase()));
+                        }
+
+                        for (var f : caseTextFieldsLike) {
+                            var columnName = f.getPath().substring(CASE_PREFIX.length());
+                            termPredicates.add(cb.like(
+                                cb.lower(documentRoot.get(columnName).as(String.class)),
+                                likePattern
+                            ));
+                        }
+
+                        for (var f : caseTextFieldsExact) {
+                            var columnName = f.getPath().substring(CASE_PREFIX.length());
+                            termPredicates.add(cb.equal(
+                                cb.lower(documentRoot.get(columnName).as(String.class)),
+                                term.value().toLowerCase()
+                            ));
+                        }
+
+                        if (!termPredicates.isEmpty()) {
+                            unqualifiedPredicates.add(cb.or(termPredicates.toArray(Predicate[]::new)));
+                        }
+                    }
+                }
+
+                qualifiedPredicates.forEach(predicates::add);
+                unqualifiedPredicates.forEach(predicates::add);
+            }
         }
 
         query.where(predicates.toArray(Predicate[]::new));
@@ -811,5 +934,76 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             CriteriaQuery<?> query,
             Root<JsonSchemaDocument> documentRoot
         );
+    }
+
+    private record ParsedTerm(String field, String value, boolean quoted) {}
+
+    private List<ParsedTerm> parseGlobalSearch(String query) {
+        List<ParsedTerm> terms = new ArrayList<>();
+        Pattern fieldPattern = Pattern.compile("(\\w+(?:\\.\\w+)*):(\"([^\"]+)\"|(\\S+))");
+        Matcher matcher = fieldPattern.matcher(query);
+
+        int lastEnd = 0;
+        while (matcher.find()) {
+            String before = query.substring(lastEnd, matcher.start()).trim();
+            if (!before.isEmpty()) {
+                terms.addAll(parseUnqualifiedTerms(before));
+            }
+
+            String fieldName = matcher.group(1);
+            boolean quoted = matcher.group(3) != null && !matcher.group(3).isEmpty();
+            String value = quoted ? matcher.group(3) : matcher.group(4);
+
+            terms.add(new ParsedTerm(fieldName, value, quoted));
+            lastEnd = matcher.end();
+        }
+
+        String after = query.substring(lastEnd).trim();
+        if (!after.isEmpty()) {
+            terms.addAll(parseUnqualifiedTerms(after));
+        }
+
+        return terms;
+    }
+
+    private List<ParsedTerm> parseUnqualifiedTerms(String text) {
+        List<ParsedTerm> terms = new ArrayList<>();
+        Pattern quotedPattern = Pattern.compile("\"([^\"]+)\"");
+        Matcher matcher = quotedPattern.matcher(text);
+
+        int lastEnd = 0;
+        while (matcher.find()) {
+            String before = text.substring(lastEnd, matcher.start()).trim();
+            if (!before.isEmpty()) {
+                Arrays.stream(before.split("\\s+"))
+                    .filter(s -> !s.isEmpty())
+                    .forEach(s -> terms.add(new ParsedTerm(null, s, false)));
+            }
+            terms.add(new ParsedTerm(null, matcher.group(1), true));
+            lastEnd = matcher.end();
+        }
+
+        String after = text.substring(lastEnd).trim();
+        if (!after.isEmpty()) {
+            Arrays.stream(after.split("\\s+"))
+                .filter(s -> !s.isEmpty())
+                .forEach(s -> terms.add(new ParsedTerm(null, s, false)));
+        }
+
+        return terms;
+    }
+
+    private String removePrefixes(String path) {
+        if (path == null) return null;
+        if (path.startsWith(DOC_PREFIX)) return path.substring(DOC_PREFIX.length());
+        if (path.startsWith(CASE_PREFIX)) return path.substring(CASE_PREFIX.length());
+        return path;
+    }
+
+    private String buildLikePattern(String value, boolean quoted, SearchFieldMatchType matchType) {
+        if (quoted || matchType != SearchFieldMatchType.LIKE) {
+            return value;
+        }
+        return "%" + queryDialectHelper.escapeLikePattern(value) + "%";
     }
 }

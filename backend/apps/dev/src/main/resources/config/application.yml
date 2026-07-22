@@ -175,7 +175,14 @@ mailing:
     whitelistedDomains:
     sendRedirectedMailsTo:
 
+opensearch:
+    uris: https://localhost:9200
+    username: admin
+    password: 2cr8zkOoEXQJ3xUk!Aa1
+
 valtimo:
+    opensearch:
+        enabled: true
     app:
         scheme: http
         hostname: ${VALTIMO_APP_HOSTNAME}

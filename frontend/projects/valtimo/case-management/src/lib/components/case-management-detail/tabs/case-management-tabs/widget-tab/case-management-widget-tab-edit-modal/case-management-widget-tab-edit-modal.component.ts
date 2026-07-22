@@ -129,6 +129,7 @@ export class CaseManagementWidgetTabEditModalComponent implements OnInit, OnDest
           name: this.widgetTabName?.value,
           contentKey: '-',
           type: ApiTabType.WIDGETS,
+          showTasks: this.tabItem.showTasks,
         },
         this.tabItem.key
       )

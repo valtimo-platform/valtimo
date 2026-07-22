@@ -47,9 +47,9 @@ class JsonSchemaDocumentCaseDefinitionMapper(
     DocumentCaseDefinitionPredicateProvider {
 
     override fun mapRelated(entity: JsonSchemaDocument): List<CaseDefinition> {
-        val documentId = caseDocumentResolver.resolveCaseDocumentId(entity.id().id)
-        val document = documentService.get(documentId)
-        val caseDefinition = caseDefinitionService.getCaseDefinition(document.definitionId().caseDefinitionId())
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(entity.id().id)
+        val caseDocument = documentService.get(caseDocumentId)
+        val caseDefinition = caseDefinitionService.getCaseDefinition(caseDocument.definitionId().caseDefinitionId())
         return listOf(caseDefinition)
     }
 

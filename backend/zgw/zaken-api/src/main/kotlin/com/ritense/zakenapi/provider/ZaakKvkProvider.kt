@@ -18,8 +18,7 @@ package com.ritense.zakenapi.provider
 
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
@@ -30,16 +29,14 @@ import kotlin.contracts.ExperimentalContracts
 
 @OptIn(ExperimentalContracts::class)
 class ZaakKvkProvider(
-    private val processDocumentService: ProcessDocumentService,
     private val zaakInstanceLinkService: ZaakInstanceLinkService,
     private val pluginService: PluginService
 ) : KvkProvider {
 
     override fun getKvkNummer(task: DelegateTask): String? {
         return withLoggingContext(OperatonTask::class, task.id) {
-            val documentId =
-                processDocumentService.getDocumentId(OperatonProcessInstanceId(task.processInstanceId), task)
-            val zaakUrl = zaakInstanceLinkService.getByDocumentId(documentId.id).zaakInstanceUrl
+            val documentId = task.getJsonSchemaDocumentId()
+            val zaakUrl = zaakInstanceLinkService.getByDocumentId(documentId).zaakInstanceUrl
 
             val zakenPlugin = checkNotNull(
                 pluginService.createInstance(ZakenApiPlugin::class.java, ZakenApiPlugin.findConfigurationByUrl(zaakUrl))
