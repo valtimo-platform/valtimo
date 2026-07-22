@@ -40,8 +40,10 @@ import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.domain.PluginProperty
+import com.ritense.plugin.events.PluginConfigurationCreatedEvent
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationIdUpdatedEvent
+import com.ritense.plugin.events.PluginConfigurationUpdatedEvent
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.exception.PluginPropertyParseException
 import com.ritense.plugin.exception.PluginPropertyRequiredException
@@ -148,12 +150,12 @@ class PluginService(
         }
 
         val pluginConfigurationToBeSaved = PluginConfiguration(
-            id,
-            title,
-            properties,
-            pluginDefinition,
-            encryptionService,
-            objectMapper
+            id = id,
+            title = title,
+            properties = properties,
+            pluginDefinition = pluginDefinition,
+            encryptionService = encryptionService,
+            objectMapper = objectMapper
         )
 
         val pluginConfiguration = pluginConfigurationRepository.save(pluginConfigurationToBeSaved)
@@ -167,6 +169,7 @@ class PluginService(
         }
 
         applicationEventPublisher.publishEvent(PluginsDeployedEvent())
+        applicationEventPublisher.publishEvent(PluginConfigurationCreatedEvent(pluginConfiguration))
 
         return pluginConfiguration
     }
@@ -194,12 +197,12 @@ class PluginService(
             }
 
             pluginConfiguration = PluginConfiguration(
-                deploymentDto.id?.let { PluginConfigurationId.existingId(it) } ?: PluginConfigurationId.newId(),
-                deploymentDto.title,
-                resolvedProperties,
-                pluginDefinition,
-                encryptionService,
-                objectMapper
+                id = deploymentDto.id?.let { PluginConfigurationId.existingId(it) } ?: PluginConfigurationId.newId(),
+                title = deploymentDto.title,
+                properties = resolvedProperties,
+                pluginDefinition = pluginDefinition,
+                encryptionService = encryptionService,
+                objectMapper = objectMapper
             )
 
             pluginConfigurationRepository.saveAndFlush(pluginConfiguration)
@@ -277,6 +280,7 @@ class PluginService(
 
         val savedPluginConfiguration = pluginConfigurationRepository.save(pluginConfiguration)
         applicationEventPublisher.publishEvent(PluginsDeployedEvent())
+        applicationEventPublisher.publishEvent(PluginConfigurationUpdatedEvent(savedPluginConfiguration))
         return savedPluginConfiguration
     }
 
@@ -313,9 +317,9 @@ class PluginService(
 
         return actions.map {
             PluginActionDefinitionDto(
-                it.id.key,
-                it.title,
-                it.description
+                key = it.id.key,
+                title = it.title,
+                description = it.description
             )
         }
     }
@@ -328,9 +332,9 @@ class PluginService(
     ): Boolean {
         return pluginProcessLinkRepository
             .findByPluginConfigurationIdAndActivityIdAndActivityType(
-                pluginConfigurationId,
-                activityId,
-                activityType
+                pluginConfigurationId = pluginConfigurationId,
+                activityId = activityId,
+                activityType = activityType
             ).size == 1
     }
 
@@ -376,7 +380,10 @@ class PluginService(
             activityType = processLink.activityType
         )
         pluginProcessLinkRepository.save(newProcessLink).also {
-            applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(PROCESS_LINK_TYPE_PLUGIN, it.processDefinitionId))
+            applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(
+                processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                processDefinitionId = it.processDefinitionId
+            ))
         }
     }
 
@@ -397,7 +404,10 @@ class PluginService(
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey
             )
             pluginProcessLinkRepository.save(link).also {
-                applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(PROCESS_LINK_TYPE_PLUGIN, it.processDefinitionId))
+                applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(
+                    processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                    processDefinitionId = it.processDefinitionId
+                ))
             }
         }
     }
@@ -411,7 +421,10 @@ class PluginService(
         val processLink = try { pluginProcessLinkRepository. getById(pluginProcessLinkId) } catch (_: Exception) { null }
         pluginProcessLinkRepository.deleteById(pluginProcessLinkId)
         if (processLink != null) {
-            applicationEventPublisher.publishEvent(ProcessLinkDeletedEvent(PROCESS_LINK_TYPE_PLUGIN, processLink.processDefinitionId))
+            applicationEventPublisher.publishEvent(ProcessLinkDeletedEvent(
+                processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                processDefinitionId = processLink.processDefinitionId
+            ))
         }
     }
 
@@ -535,19 +548,19 @@ class PluginService(
         pluginConfigurationRepository.deleteById(oldPluginConfigurationId)
         val newPluginConfiguration = pluginConfigurationRepository.save(
             PluginConfiguration(
-                newPluginConfigurationId,
-                oldPluginConfiguration.title,
-                oldPluginConfiguration.properties,
-                oldPluginConfiguration.pluginDefinition,
-                encryptionService,
-                objectMapper
+                id = newPluginConfigurationId,
+                title = oldPluginConfiguration.title,
+                properties = oldPluginConfiguration.properties,
+                pluginDefinition = oldPluginConfiguration.pluginDefinition,
+                encryptionService = encryptionService,
+                objectMapper = objectMapper
             )
         )
 
         val event = PluginConfigurationIdUpdatedEvent(
-            newPluginConfigurationId.id,
-            oldPluginConfigurationId.id,
-            newPluginConfiguration
+            newId = newPluginConfigurationId.id,
+            oldId = oldPluginConfigurationId.id,
+            pluginConfiguration = newPluginConfiguration
         )
 
         applicationEventPublisher.publishEvent(event)
@@ -623,7 +636,11 @@ class PluginService(
                 it.value.textValue()
             }.run {
                 // Resolve all string values, which might or might not be placeholders.
-                valueResolverService.resolveValues(execution.processInstanceId, execution, values.toList())
+                valueResolverService.resolveValues(
+                    processInstanceId = execution.processInstanceId,
+                    variableScope = execution,
+                    requestedValues = values.toList()
+                )
             }
 
         return mapActionParamValues(paramValues, resolvedValueMap)
@@ -660,9 +677,9 @@ class PluginService(
                 }.run {
                     // Resolve all string values, which might or might not be placeholders.
                     valueResolverService.resolveValues(
-                        task.execution.processInstanceId,
-                        task.execution,
-                        values.toList()
+                        processInstanceId = task.execution.processInstanceId,
+                        variableScope = task.execution,
+                        requestedValues = values.toList()
                     )
                 }
 

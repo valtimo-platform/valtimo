@@ -22,13 +22,16 @@ import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.exception.NotificatiesApiAbonnementException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
+import com.ritense.logging.withLoggingContext
+import com.ritense.plugin.domain.PluginConfiguration
+import com.ritense.plugin.events.PluginConfigurationCreatedEvent
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
+import com.ritense.plugin.events.PluginConfigurationUpdatedEvent
 import com.ritense.processlink.event.ProcessLinkCreatedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.plugin.service.PluginConfigurationSearchParameters
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
-import com.ritense.valtimo.contract.event.PluginsDeployedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT
@@ -52,7 +55,14 @@ class PluginsDeployedEventListener(
         registerAbonnementenForNotificatiesApiPlugins()
     }
 
-    @EventListener(PluginConfigurationDeletedEvent::class, PluginsDeployedEvent::class)
+    @TransactionalEventListener(
+        classes = [
+            PluginConfigurationCreatedEvent::class,
+            PluginConfigurationUpdatedEvent::class,
+            PluginConfigurationDeletedEvent::class
+        ],
+        phase = AFTER_COMMIT
+    )
     fun handlePluginConfigurationChangedEvent() {
         if (!applicationFullyReady) return
         registerAbonnementenForNotificatiesApiPlugins()
@@ -71,7 +81,10 @@ class PluginsDeployedEventListener(
     }
 
     fun registerAbonnementenForNotificatiesApiPlugins() {
-        if (!registerAbonnementen) return
+        if (!registerAbonnementen) {
+            logger.info { "Notificaties API abonnement registration is disabled (valtimo.zgw.register-abonnementen=false); skipping" }
+            return
+        }
 
         val pluginConfigurations = pluginService
             .getPluginConfigurations(PluginConfigurationSearchParameters(category = "notificaties-api-plugin"))
@@ -80,16 +93,21 @@ class PluginsDeployedEventListener(
 
         val knownNotificatiesApiAbonnementLinks = notificatiesApiAbonnementLinkRepository.findAll()
 
-        pluginConfigurations.forEach { _, configurations ->
+        pluginConfigurations.forEach { (_, configurations) ->
             val notificatiesApiPluginInstance =
                 configurations.first().getNotificatiesApiPlugin()
 
-            retry {
-                registerAbonnementenForPluginNotificatiesApiPlugins(
-                    notificatiesApiPluginInstance,
-                    knownNotificatiesApiAbonnementLinks,
-                    configurations
-                )
+            withLoggingContext(
+                PluginConfiguration::class.java.canonicalName to
+                    notificatiesApiPluginInstance.notificatiesApiConfigurationId.id.toString()
+            ) {
+                retry {
+                    registerAbonnementenForPluginNotificatiesApiPlugins(
+                        notificatiesApiPluginInstance,
+                        knownNotificatiesApiAbonnementLinks,
+                        configurations
+                    )
+                }
             }
         }
     }
@@ -113,6 +131,9 @@ class PluginsDeployedEventListener(
                     notificatiesApiPluginInstance.url,
                     abonnement.getId()!!
                 )
+                logger.info {
+                    "Successfully deleted stale abonnement with id '${abonnement.getId()}' not tracked locally"
+                }
             }
 
         val kanalen = configurations
@@ -152,7 +173,9 @@ class PluginsDeployedEventListener(
                     auth = authKey,
                     kanalen = kanalen
                 )
-            )
+            ).also { created ->
+                logger.info { "Successfully created abonnement with id '${created.getId()}'" }
+            }
         } else {
             val desiredCallbackUrl = notificatiesApiPluginInstance.callbackUrl.toASCIIString()
             val abonnementUnchanged = currentNotificatiesApiAbonnement.callbackUrl == desiredCallbackUrl &&
@@ -178,7 +201,9 @@ class PluginsDeployedEventListener(
                         auth = authKey,
                         kanalen = kanalen
                     )
-                )
+                ).also { updated ->
+                    logger.info { "Successfully updated abonnement with id '${updated.getId()}'" }
+                }
             }
         }
 
@@ -223,8 +248,10 @@ class PluginsDeployedEventListener(
                 return block()
             } catch (e: Exception) {
                 lastException = e
+                logger.warn(e) { "Attempt ${it + 1} of $times to register abonnementen failed" }
             }
         }
+        logger.error(lastException) { "Failed to register abonnementen after $times attempts" }
         throw NotificatiesApiAbonnementException(lastException)
     }
 
