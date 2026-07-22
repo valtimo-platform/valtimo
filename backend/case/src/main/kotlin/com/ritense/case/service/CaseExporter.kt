@@ -33,7 +33,6 @@ import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.event.DocumentsExported
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider.EXPORT
-import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging

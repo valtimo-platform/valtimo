@@ -55,9 +55,6 @@
   with an empty value and the stored file references were never restored, causing the uploaded file
   to disappear from the UI.
 
-* ZGW document actions such as **view** and **modify** could be incorrectly disabled for documents uploaded from a
-  building block process.
-
 * **Case list export now enforces the export permission**
 
   The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
