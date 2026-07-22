@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,17 @@
 
 import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {ValtimoCdsModalDirective} from './valtimo-cds-modal.directive';
+import {ValtimoCdsModalDirective} from '@valtimo/components';
 
 @Component({
   standalone: true,
   imports: [ValtimoCdsModalDirective],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  template: `
-    <cds-modal valtimoCdsModal>
-      <div class="cds--modal is-visible">
-        <button class="cds--modal-close outer-close" type="button"></button>
-        @if (showNested) {
-          <cds-modal>
-            <div class="cds--modal is-visible">
-              <button class="cds--modal-close nested-close" type="button"></button>
-            </div>
-          </cds-modal>
-        }
-      </div>
-    </cds-modal>
-  `,
+  templateUrl: './valtimo-cds-modal.directive.spec.html',
 })
 class TestHostComponent {
   public showNested = false;
+  public showExpandedDropdown = false;
 }
 
 describe('ValtimoCdsModalDirective', () => {
@@ -113,6 +101,46 @@ describe('ValtimoCdsModalDirective', () => {
     dispatchEscape();
 
     expect(clickSpy).not.toHaveBeenCalled();
+  });
+
+  it('closes only the open dropdown, not the modal, when a list-box is expanded inside the modal', () => {
+    fixture.componentInstance.showExpandedDropdown = true;
+    fixture.detectChanges();
+    const clickSpy = spyOn(outerClose, 'click');
+    const bodyClickSpy = jasmine.createSpy('bodyClick');
+    document.body.addEventListener('click', bodyClickSpy);
+    const event = new KeyboardEvent('keydown', {key: 'Escape', bubbles: true, cancelable: true});
+    const stopSpy = spyOn(event, 'stopImmediatePropagation');
+
+    document.dispatchEvent(event);
+
+    // Modal is protected (event stopped, close button not clicked) and the open menu is closed via
+    // a synthetic outside click on the body — which is how every Carbon list-box closes.
+    expect(clickSpy).not.toHaveBeenCalled();
+    expect(stopSpy).toHaveBeenCalled();
+    expect(bodyClickSpy).toHaveBeenCalled();
+    document.body.removeEventListener('click', bodyClickSpy);
+  });
+
+  it('detects an expanded list-box appended to the body (combo-box with appendInline=false)', () => {
+    // A combo-box with `appendInline=false` relocates its expanded list-box out of the modal to the
+    // document body, so detection must span the whole document, not just this modal.
+    const bodyListBox = document.createElement('div');
+    bodyListBox.className = 'cds--list-box cds--list-box--expanded';
+    document.body.appendChild(bodyListBox);
+    const clickSpy = spyOn(outerClose, 'click');
+    const bodyClickSpy = jasmine.createSpy('bodyClick');
+    document.body.addEventListener('click', bodyClickSpy);
+    const event = new KeyboardEvent('keydown', {key: 'Escape', bubbles: true, cancelable: true});
+    const stopSpy = spyOn(event, 'stopImmediatePropagation');
+
+    document.dispatchEvent(event);
+
+    expect(clickSpy).not.toHaveBeenCalled();
+    expect(stopSpy).toHaveBeenCalled();
+    expect(bodyClickSpy).toHaveBeenCalled();
+    document.body.removeEventListener('click', bodyClickSpy);
+    document.body.removeChild(bodyListBox);
   });
 
   it('removes the document keydown listener on destroy', () => {

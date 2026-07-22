@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,6 +101,19 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
 
     event.stopImmediatePropagation();
     event.preventDefault();
+
+    // If a Carbon dropdown/combo-box menu is open, this ESC should close only that menu, not the
+    // modal. We can't simply defer to Carbon: `cds-combo-box` closes its menu on ESC but does not
+    // stop the event, so it would still bubble to the modal's ESC handler and close it too (and
+    // with `appendInline=false` the expanded `.cds--list-box--expanded` element is detached to the
+    // document body, outside this modal — hence the document-wide query). So we keep the modal
+    // safe (via stopImmediatePropagation above) and close the open menu ourselves with a synthetic
+    // outside click, which every Carbon list-box listens for. A second ESC (no menu open) then
+    // closes the modal.
+    if (this.document.querySelector('.cds--list-box--expanded')) {
+      this.document.body.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
+      return;
+    }
 
     // Click this modal's own close (X) button — skipping close buttons of nested modals — so ESC
     // runs exactly the same handling as the close button. Does nothing if there is no close button.
