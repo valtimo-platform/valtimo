@@ -17,7 +17,7 @@
 package com.ritense.exporter.manifest
 
 /**
- * Root of the `export-manifest.json` file written to the root of an export ZIP. It describes what the
+ * Root of the `valtimo-manifest.json` file written to the root of an export ZIP. It describes what the
  * ZIP contains and what is needed to import it.
  */
 data class ExportManifest(
