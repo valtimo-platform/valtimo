@@ -1,0 +1,107 @@
+name: Backend - smoke test image and promote to Docker Hub
+
+# Release gate for backend images. The image was already built and pushed to
+# GHCR by backend_build_push_docker_image.yml (GHCR-only during release). Here we
+# BOOT that exact image against a minimal Postgres + Keycloak stack and wait for
+# the app's "... is running!" banner — logged by main() right after
+# runApplication() returns, i.e. once the Spring context has fully started and
+# every ready-event listener (Liquibase migrations, autodeployments) completed
+# without throwing. Only if it boots do we promote the identical multi-arch
+# manifest to Docker Hub with `docker buildx imagetools create` (a manifest copy,
+# no rebuild), so Docker Hub never receives an image that has not booted.
+
+permissions:
+  contents: read
+  packages: read
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        description: "GHCR/Docker Hub image name, e.g. gzac-backend"
+        required: true
+        type: string
+      release_image_tag:
+        description: "Tag to publish on Docker Hub, e.g. 13.40.0"
+        required: true
+        type: string
+      startup_timeout_seconds:
+        description: "How long to wait for the app to log its running banner"
+        required: false
+        type: number
+        default: 300
+
+jobs:
+  smoke_and_promote:
+    name: "Smoke + promote ${{ inputs.image_name }}"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      # The build workflow tags every image with a deterministic, slash-free
+      # commit tag; use it as the exact image under test and promotion source.
+      SMOKE_IMAGE: ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:commit-production-${{ github.sha }}
+      COMPOSE_FILE: backend/apps/dev/docker-compose.smoke.yml
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Boot image against Postgres + Keycloak
+        run: |
+          set -euo pipefail
+          echo "Image under test: $SMOKE_IMAGE"
+          docker compose -f "$COMPOSE_FILE" pull app
+          docker compose -f "$COMPOSE_FILE" up -d
+
+      - name: Wait for application-running banner
+        run: |
+          set -uo pipefail
+          deadline=$(( $(date +%s) + ${{ inputs.startup_timeout_seconds }} ))
+          # The app's main() logs this banner immediately after runApplication()
+          # returns — i.e. once the Spring context has fully started and every
+          # ready-event listener (migrations, autodeployments) completed without
+          # throwing. Its presence is our "image boots cleanly" signal.
+          banner="is running!"
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            logs="$(docker compose -f "$COMPOSE_FILE" logs --no-color app 2>/dev/null || true)"
+            if printf '%s' "$logs" | grep -qF "$banner"; then
+              echo "Application-running banner detected — image boots cleanly."
+              printf '%s\n' "$logs" | grep -F "$banner"
+              exit 0
+            fi
+            if ! docker compose -f "$COMPOSE_FILE" ps app --status running --quiet | grep -q .; then
+              echo "::error::App container exited before logging the running banner."
+              break
+            fi
+            sleep 5
+          done
+          echo "::error::Image ${SMOKE_IMAGE} did not log the running banner in ${{ inputs.startup_timeout_seconds }}s."
+          echo "----- last 200 lines of app logs -----"
+          docker compose -f "$COMPOSE_FILE" logs --tail=200 app || true
+          exit 1
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose -f "$COMPOSE_FILE" down -v || true
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Promote tested image to Docker Hub
+        run: |
+          set -euo pipefail
+          TARGET="docker.io/ritense/${{ inputs.image_name }}:${{ inputs.release_image_tag }}"
+          echo "Promoting $SMOKE_IMAGE -> $TARGET (multi-arch manifest copy)"
+          docker buildx imagetools create --tag "$TARGET" "$SMOKE_IMAGE"
+          docker buildx imagetools inspect "$TARGET"
