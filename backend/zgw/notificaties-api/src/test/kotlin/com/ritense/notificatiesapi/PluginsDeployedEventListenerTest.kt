@@ -23,6 +23,11 @@ import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.exception.NotificatiesApiAbonnementException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.domain.PluginConfiguration
+import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginDefinition
+import com.ritense.plugin.events.PluginConfigurationCreatedEvent
+import com.ritense.plugin.events.PluginConfigurationDeletedEvent
+import com.ritense.plugin.events.PluginConfigurationUpdatedEvent
 import com.ritense.plugin.service.PluginService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -34,12 +39,14 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
 import java.net.URI
+import java.util.Optional
 import java.util.UUID
 
 @ExtendWith(OutputCaptureExtension::class)
@@ -487,12 +494,39 @@ class PluginsDeployedEventListenerTest {
     }
 
     @Test
-    fun `should not register abonnementen when PluginsDeployedEvent fires before application is fully ready`() {
-        pluginsDeployedEventListener.handlePluginConfigurationChangedEvent()
+    fun `should not register abonnementen when a plugin configuration changes before application is fully ready`() {
+        pluginsDeployedEventListener.handlePluginConfigurationCreatedEvent(
+            PluginConfigurationCreatedEvent(mock())
+        )
 
         verifyNoInteractions(client)
         verifyNoInteractions(pluginService)
         verifyNoInteractions(notificatiesApiAbonnementLinkRepository)
+    }
+
+    @Test
+    fun `should register abonnementen when a Notificaties API plugin configuration is created`() {
+        markApplicationFullyReady()
+
+        pluginsDeployedEventListener.handlePluginConfigurationCreatedEvent(
+            PluginConfigurationCreatedEvent(notificatiesApiPluginConfiguration())
+        )
+
+        // getPluginConfigurations is called by markApplicationFullyReady() and again for the create
+        verify(pluginService, times(2)).getPluginConfigurations(any())
+    }
+
+    @Test
+    fun `should not register abonnementen when an unrelated plugin configuration is changed`() {
+        markApplicationFullyReady()
+
+        pluginsDeployedEventListener.handlePluginConfigurationUpdatedEvent(
+            PluginConfigurationUpdatedEvent(unrelatedPluginConfiguration())
+        )
+
+        // only the markApplicationFullyReady() call, none triggered by the unrelated change
+        verify(pluginService, times(1)).getPluginConfigurations(any())
+        verifyNoInteractions(client)
     }
 
     @Test
@@ -510,6 +544,96 @@ class PluginsDeployedEventListenerTest {
         verifyNoInteractions(client)
         verifyNoInteractions(pluginService)
         verifyNoInteractions(notificatiesApiAbonnementLinkRepository)
+    }
+
+    @Test
+    fun `should delete remote abonnement and local link when a tracked plugin configuration is deleted`(output: CapturedOutput) {
+        markApplicationFullyReady()
+
+        val pluginConfigurationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        val configurationId = NotificatiesApiConfigurationId.existingId(pluginConfigurationId)
+        val abonnementLink = NotificatiesApiAbonnementLink(
+            notificatiesApiConfigurationId = configurationId,
+            url = "http://localhost:9999/nothing/123",
+            auth = "test"
+        )
+        val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
+        whenever(notificatiesApiPlugin.url)
+            .thenReturn(URI("http://localhost:9999/nothing"))
+        whenever(notificatiesApiPlugin.authenticationPluginConfiguration)
+            .thenReturn(mock())
+
+        val deletedConfiguration = notificatiesApiPluginConfiguration(pluginConfigurationId)
+        whenever(notificatiesApiAbonnementLinkRepository.findById(configurationId))
+            .thenReturn(Optional.of(abonnementLink))
+        whenever(pluginService.createInstance(any<PluginConfiguration>()))
+            .thenReturn(notificatiesApiPlugin)
+
+        pluginsDeployedEventListener.handlePluginConfigurationDeletedEvent(
+            PluginConfigurationDeletedEvent(deletedConfiguration)
+        )
+
+        verify(client).deleteAbonnement(any(), any(), eq("123"))
+        verify(notificatiesApiAbonnementLinkRepository).delete(abonnementLink)
+
+        assertThat(output).contains("Successfully deleted abonnement with id '123' for removed plugin configuration")
+        assertThat(output).contains("123e4567-e89b-12d3-a456-426614174000")
+    }
+
+    @Test
+    fun `should not delete any abonnement when the deleted configuration is not tracked`() {
+        markApplicationFullyReady()
+
+        val deletedConfiguration = notificatiesApiPluginConfiguration()
+        whenever(notificatiesApiAbonnementLinkRepository.findById(any()))
+            .thenReturn(Optional.empty())
+
+        pluginsDeployedEventListener.handlePluginConfigurationDeletedEvent(
+            PluginConfigurationDeletedEvent(deletedConfiguration)
+        )
+
+        verify(client, never()).deleteAbonnement(any(), any(), any())
+        verify(notificatiesApiAbonnementLinkRepository, never()).delete(any())
+    }
+
+    @Test
+    fun `should skip remote deletion when abonnement registration is disabled`(output: CapturedOutput) {
+        val disabledListener = PluginsDeployedEventListener(
+            client = client,
+            notificatiesApiAbonnementLinkRepository = notificatiesApiAbonnementLinkRepository,
+            pluginService = pluginService,
+            registerAbonnementen = false
+        )
+        disabledListener.handleApplicationFullyReadyEvent()
+
+        disabledListener.handlePluginConfigurationDeletedEvent(
+            PluginConfigurationDeletedEvent(notificatiesApiPluginConfiguration())
+        )
+
+        assertThat(output).contains("Notificaties API abonnement registration is disabled")
+        verifyNoInteractions(client)
+    }
+
+    private fun markApplicationFullyReady() {
+        whenever(pluginService.getPluginConfigurations(any()))
+            .thenReturn(emptyList())
+        pluginsDeployedEventListener.handleApplicationFullyReadyEvent()
+    }
+
+    private fun notificatiesApiPluginConfiguration(
+        id: UUID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+    ): PluginConfiguration = pluginConfiguration(id, NotificatiesApiPlugin::class.java.name)
+
+    private fun unrelatedPluginConfiguration(): PluginConfiguration =
+        pluginConfiguration(UUID.randomUUID(), String::class.java.name)
+
+    private fun pluginConfiguration(id: UUID, fullyQualifiedClassName: String): PluginConfiguration {
+        val pluginDefinition: PluginDefinition = mock()
+        whenever(pluginDefinition.fullyQualifiedClassName).thenReturn(fullyQualifiedClassName)
+        val configuration: PluginConfiguration = mock()
+        whenever(configuration.id).thenReturn(PluginConfigurationId.existingId(id))
+        whenever(configuration.pluginDefinition).thenReturn(pluginDefinition)
+        return configuration
     }
 
 }

@@ -20,6 +20,7 @@ import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
+import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.exception.NotificatiesApiAbonnementException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.logging.withLoggingContext
@@ -55,18 +56,38 @@ class PluginsDeployedEventListener(
         registerAbonnementenForNotificatiesApiPlugins()
     }
 
-    @TransactionalEventListener(
-        classes = [
-            PluginConfigurationCreatedEvent::class,
-            PluginConfigurationUpdatedEvent::class,
-            PluginConfigurationDeletedEvent::class
-        ],
-        phase = AFTER_COMMIT
-    )
-    fun handlePluginConfigurationChangedEvent() {
-        if (!applicationFullyReady) return
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    fun handlePluginConfigurationCreatedEvent(event: PluginConfigurationCreatedEvent) {
+        handleNotificatiesApiPluginConfigurationChanged(event.pluginConfiguration)
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    fun handlePluginConfigurationUpdatedEvent(event: PluginConfigurationUpdatedEvent) {
+        handleNotificatiesApiPluginConfigurationChanged(event.pluginConfiguration)
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    fun handlePluginConfigurationDeletedEvent(event: PluginConfigurationDeletedEvent) {
+        if (!applicationFullyReady || !isNotificatiesApiListener(event.pluginConfiguration)) return
+        removeAbonnementForDeletedConfiguration(event.pluginConfiguration)
         registerAbonnementenForNotificatiesApiPlugins()
     }
+
+    private fun handleNotificatiesApiPluginConfigurationChanged(pluginConfiguration: PluginConfiguration) {
+        if (!applicationFullyReady || !isNotificatiesApiListener(pluginConfiguration)) return
+        registerAbonnementenForNotificatiesApiPlugins()
+    }
+
+    /**
+     * The plugin configuration lifecycle events fire for every plugin, so only react when the
+     * configuration involved actually participates in Notificaties API subscriptions. Uses the
+     * (eagerly fetched) plugin definition class name to avoid touching the lazily loaded categories
+     * on the detached event payload.
+     */
+    private fun isNotificatiesApiListener(pluginConfiguration: PluginConfiguration): Boolean =
+        NotificatiesApiListener::class.java.isAssignableFrom(
+            Class.forName(pluginConfiguration.pluginDefinition.fullyQualifiedClassName)
+        )
 
     @TransactionalEventListener(phase = AFTER_COMMIT)
     fun handleProcessLinkCreatedEvent(event: ProcessLinkCreatedEvent) {
@@ -94,8 +115,7 @@ class PluginsDeployedEventListener(
         val knownNotificatiesApiAbonnementLinks = notificatiesApiAbonnementLinkRepository.findAll()
 
         pluginConfigurations.forEach { (_, configurations) ->
-            val notificatiesApiPluginInstance =
-                configurations.first().getNotificatiesApiPlugin()
+            val notificatiesApiPluginInstance = configurations.first().getNotificatiesApiPlugin()
 
             withLoggingContext(
                 PluginConfiguration::class.java.canonicalName to
@@ -103,10 +123,41 @@ class PluginsDeployedEventListener(
             ) {
                 retry {
                     registerAbonnementenForPluginNotificatiesApiPlugins(
-                        notificatiesApiPluginInstance,
-                        knownNotificatiesApiAbonnementLinks,
-                        configurations
+                        notificatiesApiPluginInstance, knownNotificatiesApiAbonnementLinks, configurations
                     )
+                }
+            }
+        }
+    }
+
+    private fun removeAbonnementForDeletedConfiguration(deletedConfiguration: PluginConfiguration) {
+        if (!registerAbonnementen) {
+            logger.info {
+                "Notificaties API abonnement registration is disabled (valtimo.zgw.register-abonnementen=false); skipping"
+            }
+            return
+        }
+
+        val notificatiesApiConfigurationId = NotificatiesApiConfigurationId(deletedConfiguration.id.id)
+        val abonnementLink =
+            notificatiesApiAbonnementLinkRepository.findById(notificatiesApiConfigurationId).orElse(null)
+                ?: return
+
+        withLoggingContext(
+            PluginConfiguration::class.java.canonicalName to notificatiesApiConfigurationId.id.toString()
+        ) {
+            retry {
+                val notificatiesApiPluginInstance =
+                    pluginService.createInstance(deletedConfiguration) as? NotificatiesApiPlugin
+                        ?: return@retry
+                client.deleteAbonnement(
+                    authentication = notificatiesApiPluginInstance.authenticationPluginConfiguration,
+                    baseUrl = notificatiesApiPluginInstance.url,
+                    abonnementId = abonnementLink.getAbonnementId()
+                )
+                notificatiesApiAbonnementLinkRepository.delete(abonnementLink)
+                logger.info {
+                    "Successfully deleted abonnement with id '${abonnementLink.getAbonnementId()}' for removed plugin configuration"
                 }
             }
         }
@@ -118,18 +169,19 @@ class PluginsDeployedEventListener(
         configurations: List<NotificatiesApiListener>
     ) {
         val abonnementenInApi = client.getAbonnementen(
-            notificatiesApiPluginInstance.authenticationPluginConfiguration,
-            notificatiesApiPluginInstance.url
+            authentication = notificatiesApiPluginInstance.authenticationPluginConfiguration,
+            baseUrl = notificatiesApiPluginInstance.url
         )
 
-        abonnementenInApi.filter { abonnement -> abonnement.callbackUrl == notificatiesApiPluginInstance.callbackUrl.toString() }
+        abonnementenInApi
             .filter { abonnement ->
-                knownNotificatiesApiAbonnementLinks.none { it.url == abonnement.url }
+                abonnement.callbackUrl == notificatiesApiPluginInstance.callbackUrl.toString() &&
+                    knownNotificatiesApiAbonnementLinks.none { it.url == abonnement.url }
             }.forEach { abonnement ->
                 client.deleteAbonnement(
-                    notificatiesApiPluginInstance.authenticationPluginConfiguration,
-                    notificatiesApiPluginInstance.url,
-                    abonnement.getId()!!
+                    authentication = notificatiesApiPluginInstance.authenticationPluginConfiguration,
+                    baseUrl = notificatiesApiPluginInstance.url,
+                    abonnementId = abonnement.getId()!!
                 )
                 logger.info {
                     "Successfully deleted stale abonnement with id '${abonnement.getId()}' not tracked locally"
@@ -193,10 +245,10 @@ class PluginsDeployedEventListener(
                         "'${notificatiesApiPluginInstance.notificatiesApiConfigurationId.id}'"
                 }
                 client.updateAbonnement(
-                    notificatiesApiPluginInstance.authenticationPluginConfiguration,
-                    notificatiesApiPluginInstance.url,
-                    currentNotificatiesApiAbonnementLink!!.getAbonnementId(),
-                    Abonnement(
+                    authentication = notificatiesApiPluginInstance.authenticationPluginConfiguration,
+                    baseUrl = notificatiesApiPluginInstance.url,
+                    abonnementId = currentNotificatiesApiAbonnementLink!!.getAbonnementId(),
+                    abonnement = Abonnement(
                         callbackUrl = desiredCallbackUrl,
                         auth = authKey,
                         kanalen = kanalen
@@ -209,8 +261,9 @@ class PluginsDeployedEventListener(
 
         if (currentNotificatiesApiAbonnement == null && currentNotificatiesApiAbonnementLink != null) {
             logger.debug {
-                "Removing existing Notificaties API abonnement link with abonnement id '${currentNotificatiesApiAbonnementLink.getAbonnementId()}' " +
-                    "for plugin configuration with id '${notificatiesApiPluginInstance.notificatiesApiConfigurationId.id}' " +
+                "Removing existing Notificaties API abonnement link with " +
+                    "abonnement id '${currentNotificatiesApiAbonnementLink.getAbonnementId()}' for " +
+                    "plugin configuration with id '${notificatiesApiPluginInstance.notificatiesApiConfigurationId.id}' " +
                     "because it is not known in the API"
             }
             notificatiesApiAbonnementLinkRepository.delete(currentNotificatiesApiAbonnementLink)
@@ -230,14 +283,27 @@ class PluginsDeployedEventListener(
         authenticationPluginConfiguration: NotificatiesApiAuthentication,
         url: URI,
     ) {
-        logger.debug { "Ensuring Notificaties API kanalen '$kanalen' exist for authentication configuration with id '${authenticationPluginConfiguration.configurationId.id}'" }
+        logger.debug {
+            "Ensuring Notificaties API kanalen '$kanalen' exist for authentication configuration with " +
+                "id '${authenticationPluginConfiguration.configurationId.id}'"
+        }
         val existingKanalen = client.getKanalen(authenticationPluginConfiguration, url).map { it.naam }
         kanalen
             .filter { !existingKanalen.contains(it) }
             .forEach { kanaalNaam ->
-                logger.debug { "Attempting to create Notificaties API kanaal with name '$kanaalNaam' for authentication configuration with id '${authenticationPluginConfiguration.configurationId.id}'" }
-                client.createKanaal(authenticationPluginConfiguration, url, Kanaal(naam = kanaalNaam))
-                logger.info { "Successfully created Notificaties API kanaal with name '$kanaalNaam' for authentication configuration with id '${authenticationPluginConfiguration.configurationId.id}'" }
+                logger.debug {
+                    "Attempting to create Notificaties API kanaal with name '$kanaalNaam' for authentication " +
+                        "configuration with id '${authenticationPluginConfiguration.configurationId.id}'"
+                }
+                client.createKanaal(
+                    authentication = authenticationPluginConfiguration,
+                    baseUrl = url,
+                    kanaal = Kanaal(naam = kanaalNaam)
+                )
+                logger.info {
+                    "Successfully created Notificaties API kanaal with name '$kanaalNaam' for authentication " +
+                        "configuration with id '${authenticationPluginConfiguration.configurationId.id}'"
+                }
             }
     }
 
@@ -263,6 +329,6 @@ class PluginsDeployedEventListener(
     }
 
     companion object {
-        val logger = KotlinLogging.logger {}
+        private val logger = KotlinLogging.logger {}
     }
 }

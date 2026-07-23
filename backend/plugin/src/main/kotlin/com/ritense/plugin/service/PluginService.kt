@@ -162,14 +162,13 @@ class PluginService(
 
         try {
             pluginConfiguration.runAllPluginEvents(EventType.CREATE)
-
         } catch (e: Exception) {
             pluginConfigurationRepository.deleteById(pluginConfiguration.id)
             throw PluginEventInvocationException(pluginConfiguration, e)
         }
-
-        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
         applicationEventPublisher.publishEvent(PluginConfigurationCreatedEvent(pluginConfiguration))
+        // TODO remove publish of PluginsDeployedEvent in next major version
+        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
 
         return pluginConfiguration
     }
@@ -190,7 +189,8 @@ class PluginService(
             validateProperties(resolvedProperties, pluginDefinition)
 
             deploymentDto.id?.let {
-                oldConfiguration = pluginConfigurationRepository.findByIdOrNull(PluginConfigurationId.existingId(deploymentDto.id))
+                oldConfiguration =
+                    pluginConfigurationRepository.findByIdOrNull(PluginConfigurationId.existingId(deploymentDto.id))
                 if (oldConfiguration != null) {
                     action = EventType.UPDATE
                 }
@@ -279,8 +279,9 @@ class PluginService(
         }
 
         val savedPluginConfiguration = pluginConfigurationRepository.save(pluginConfiguration)
-        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
         applicationEventPublisher.publishEvent(PluginConfigurationUpdatedEvent(savedPluginConfiguration))
+        // TODO remove publish of PluginsDeployedEvent in next major version
+        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
         return savedPluginConfiguration
     }
 
@@ -291,14 +292,12 @@ class PluginService(
             ?.let {
                 try {
                     it.runAllPluginEvents(EventType.DELETE)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     logger.warn { "Failed to run events on plugin ${it.title} with id ${it.id.id}" }
                 }
 
                 pluginConfigurationRepository.deleteById(pluginConfigurationId)
-
-                val event = PluginConfigurationDeletedEvent(it)
-                applicationEventPublisher.publishEvent(event)
+                applicationEventPublisher.publishEvent(PluginConfigurationDeletedEvent(it))
             }
             ?: logger.warn { "Plugin configuration with Id: [$pluginConfigurationId] was not found." }
     }
@@ -380,10 +379,12 @@ class PluginService(
             activityType = processLink.activityType
         )
         pluginProcessLinkRepository.save(newProcessLink).also {
-            applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(
-                processLinkType = PROCESS_LINK_TYPE_PLUGIN,
-                processDefinitionId = it.processDefinitionId
-            ))
+            applicationEventPublisher.publishEvent(
+                ProcessLinkCreatedEvent(
+                    processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                    processDefinitionId = it.processDefinitionId
+                )
+            )
         }
     }
 
@@ -404,10 +405,12 @@ class PluginService(
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey
             )
             pluginProcessLinkRepository.save(link).also {
-                applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(
-                    processLinkType = PROCESS_LINK_TYPE_PLUGIN,
-                    processDefinitionId = it.processDefinitionId
-                ))
+                applicationEventPublisher.publishEvent(
+                    ProcessLinkUpdatedEvent(
+                        processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                        processDefinitionId = it.processDefinitionId
+                    )
+                )
             }
         }
     }
@@ -418,13 +421,19 @@ class PluginService(
     ) {
         caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
         val pluginProcessLinkId = PluginProcessLinkId.existingId(id)
-        val processLink = try { pluginProcessLinkRepository. getById(pluginProcessLinkId) } catch (_: Exception) { null }
+        val processLink = try {
+            pluginProcessLinkRepository.getById(pluginProcessLinkId)
+        } catch (_: Exception) {
+            null
+        }
         pluginProcessLinkRepository.deleteById(pluginProcessLinkId)
         if (processLink != null) {
-            applicationEventPublisher.publishEvent(ProcessLinkDeletedEvent(
-                processLinkType = PROCESS_LINK_TYPE_PLUGIN,
-                processDefinitionId = processLink.processDefinitionId
-            ))
+            applicationEventPublisher.publishEvent(
+                ProcessLinkDeletedEvent(
+                    processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                    processDefinitionId = processLink.processDefinitionId
+                )
+            )
         }
     }
 
@@ -812,19 +821,20 @@ class PluginService(
     }
 
     fun <T> findPluginConfiguration(clazz: Class<T>, configurationFilter: (JsonNode) -> Boolean): PluginConfiguration? {
-        return findPluginConfigurations(clazz, configurationFilter)
-            .firstOrNull()
+        return findPluginConfigurations(clazz, configurationFilter).firstOrNull()
     }
 
     fun findPluginConfiguration(
         @LoggableResource(resourceType = PluginDefinition::class) pluginDefinitionKey: String,
         filter: (JsonNode) -> Boolean
     ): PluginConfiguration? {
-        return findPluginConfigurations(pluginDefinitionKey, filter)
-            .firstOrNull()
+        return findPluginConfigurations(pluginDefinitionKey, filter).firstOrNull()
     }
 
-    fun <T> findPluginConfigurations(clazz: Class<T>, filter: (JsonNode) -> Boolean = { true }): List<PluginConfiguration> {
+    fun <T> findPluginConfigurations(
+        clazz: Class<T>,
+        filter: (JsonNode) -> Boolean = { true }
+    ): List<PluginConfiguration> {
         val annotation = clazz.getAnnotation(Plugin::class.java)
             ?: throw IllegalArgumentException("Requested plugin for class ${clazz.name}, but class is not annotated as plugin")
 
@@ -867,7 +877,7 @@ class PluginService(
     }
 
     companion object {
-        val logger = KotlinLogging.logger {}
+        private val logger = KotlinLogging.logger {}
 
         const val PROCESS_LINK_TYPE_PLUGIN = "plugin"
     }
