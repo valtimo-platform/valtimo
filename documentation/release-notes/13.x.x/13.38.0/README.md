@@ -55,19 +55,13 @@
   with an empty value and the stored file references were never restored, causing the uploaded file
   to disappear from the UI.
 
-* **Case list export now enforces the export permission**
-
-  The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
-  before producing a file. A user without an applicable `export` permission for the case definition now receives a
-  403 (Forbidden) response instead of an empty CSV.
-
 * **`case:` value resolver now correctly resolves to case document inside building blocks**
 
   The `case:` value resolver now always resolves to the parent case document, even when used inside
   a building block. Previously, it incorrectly resolved to the building block's own document. This
   allows building block forms to read case metadata like `case:assigneeFullName` or `case:internalStatus`.
   Writing `case:` values from within a building block is not supported and will throw an error.
-
+  
 * **Lists no longer jump in size while loading**
 
   While a list is loading, its placeholder now stays a consistent, compact size instead of briefly expanding to a large
