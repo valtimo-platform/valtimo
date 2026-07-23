@@ -19,6 +19,7 @@ import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {NGXLogger} from 'ngx-logger';
 import {AlertService} from '@valtimo/components';
+import {ListItem} from 'carbon-components-angular';
 
 @Component({
   standalone: false,
@@ -78,23 +79,77 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
     return Object.keys(this.taskMapping).length;
   }
 
+  // ComboBox closes itself on every `items` change, so these must be stable
+  // references that only get reassigned when the underlying data changes -
+  // not getters/method calls re-evaluated on every change detection cycle.
+  public sourceDefinitionItems: ListItem[] = [];
+  public targetDefinitionItems: ListItem[] = [];
+  public sourceVersionItems: ListItem[] = [];
+  public targetVersionItems: ListItem[] = [];
+  private readonly targetFlowNodeItemsMap = new Map<string, ListItem[]>();
+
+  private refreshDefinitionItems(): void {
+    this.sourceDefinitionItems = this.processDefinitions.map(processDef => ({
+      key: processDef.key,
+      content: processDef.name,
+      selected: this.fields.source.definition === processDef.key,
+    }));
+    this.targetDefinitionItems = this.processDefinitions.map(processDef => ({
+      key: processDef.key,
+      content: processDef.name,
+      selected: this.fields.target.definition === processDef.key,
+    }));
+  }
+
+  private refreshVersionItems(type: string): void {
+    const items = this.selectedVersions[type].map(processVer => ({
+      id: processVer.id,
+      content: `${processVer.version}`,
+      selected: this.fields[type].version === processVer.id,
+    }));
+    if (type === 'source') {
+      this.sourceVersionItems = items;
+    } else {
+      this.targetVersionItems = items;
+    }
+  }
+
   loadProcessDefinitions() {
     this.processService
       .getProcessDefinitions()
       .subscribe((processDefinitions: ProcessDefinition[]) => {
         this.processDefinitions = processDefinitions;
+        this.refreshDefinitionItems();
       });
+  }
+
+  onDefinitionSelected(selection: ListItem | ListItem[], type: string) {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    this.loadProcessDefinitionVersions(item?.key ?? null, type);
+  }
+
+  onVersionSelected(selection: ListItem | ListItem[], type: string) {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    this.loadProcess(item?.id ?? null, type);
+  }
+
+  onTaskMappingSelected(selection: ListItem | ListItem[], nodeId: string) {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    this.taskMapping[nodeId] = item?.id ?? null;
   }
 
   loadProcessDefinitionVersions(key: string | null, type: string) {
     this.fields[type].definition = key;
     this.selectedVersions[type] = [];
     this.clearProcess(type);
+    this.refreshDefinitionItems();
+    this.refreshVersionItems(type);
     if (key) {
       this.processService
         .getProcessDefinitionVersions(key)
         .subscribe((processDefinitionVersions: ProcessDefinition[]) => {
           this.selectedVersions[type] = processDefinitionVersions;
+          this.refreshVersionItems(type);
         });
     }
   }
@@ -102,6 +157,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
   loadProcess(id: string | null, type: string) {
     this.fields[type].version = id;
     this.clearProcess(type);
+    this.refreshVersionItems(type);
     if (id) {
       this.loadProcessDefinitionXML(id, type);
       if (type === 'source') {
@@ -157,10 +213,25 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
     });
   }
 
+  getFilteredTargetFlowNodeMapItems(node): ListItem[] {
+    if (!this.targetFlowNodeItemsMap.has(node.id)) {
+      this.targetFlowNodeItemsMap.set(
+        node.id,
+        this.getFilteredTargetFlowNodeMap(node.$type).map(targetFlowNode => ({
+          id: targetFlowNode.id,
+          content: targetFlowNode.name || targetFlowNode.id,
+          selected: this.taskMapping[node.id] === targetFlowNode.id,
+        }))
+      );
+    }
+    return this.targetFlowNodeItemsMap.get(node.id);
+  }
+
   diagramLoaded(diagramName: string) {
     this.loaded[diagramName] = true;
     if (this.loaded.source && this.loaded.target) {
       this.taskMapping = {};
+      this.targetFlowNodeItemsMap.clear();
       this.setUniqueFlowNodeMap();
     }
   }
@@ -183,6 +254,9 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
               version: null,
             },
           };
+          this.refreshDefinitionItems();
+          this.refreshVersionItems('source');
+          this.refreshVersionItems('target');
         },
         err => {
           this.alertService.error('Process migration failed!');

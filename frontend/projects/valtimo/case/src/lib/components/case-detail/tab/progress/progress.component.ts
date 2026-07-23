@@ -86,7 +86,10 @@ export class CaseDetailTabProgressComponent {
     private readonly documentService: DocumentService
   ) {}
 
-  public loadProcessInstance(processInstanceId: string) {
+  public loadProcessInstance(selection: ListItem | Array<ListItem>) {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    const processInstanceId = item?.processInstanceId;
+
     if (!!processInstanceId) {
       this.selectedProcessInstanceId$.next(processInstanceId);
     }

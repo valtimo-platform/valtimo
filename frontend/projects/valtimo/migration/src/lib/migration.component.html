@@ -26,60 +26,52 @@
     </div>
     <div class="row mb-5">
       <div class="col-4">
-        <label for="sourceDef">Source Definition</label>
-        <select
-          class="form-control"
-          id="sourceDef"
-          [ngModel]="fields.source.definition"
-          (ngModelChange)="loadProcessDefinitionVersions($event, 'source')"
+        <cds-combo-box
+          [dropUp]="false"
+          [appendInline]="true"
+          [label]="'Source Definition'"
+          [placeholder]="'- Source Definition -'"
+          [items]="sourceDefinitionItems"
+          (selected)="onDefinitionSelected($event, 'source')"
         >
-          <option [ngValue]="null" selected>- Source Definition -</option>
-          <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">
-            {{ processDef.name }}
-          </option>
-        </select>
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
       </div>
       <div class="col-2">
-        <label for="sourceVer">Source Version</label>
-        <select
-          class="form-control"
-          id="sourceVer"
-          [ngModel]="fields.source.version"
-          (ngModelChange)="loadProcess($event, 'source')"
+        <cds-combo-box
+          [dropUp]="false"
+          [appendInline]="true"
+          [label]="'Source Version'"
+          [placeholder]="'- Source Version -'"
+          [items]="sourceVersionItems"
+          (selected)="onVersionSelected($event, 'source')"
         >
-          <option [ngValue]="null" selected>- Source Version -</option>
-          <option *ngFor="let processVer of selectedVersions.source" [ngValue]="processVer.id">
-            {{ processVer.version }}
-          </option>
-        </select>
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
       </div>
       <div class="col-4">
-        <label for="targetDef">Target Definition</label>
-        <select
-          class="form-control"
-          id="targetDef"
-          [ngModel]="fields.target.definition"
-          (ngModelChange)="loadProcessDefinitionVersions($event, 'target')"
+        <cds-combo-box
+          [dropUp]="false"
+          [appendInline]="true"
+          [label]="'Target Definition'"
+          [placeholder]="'- Target Definition -'"
+          [items]="targetDefinitionItems"
+          (selected)="onDefinitionSelected($event, 'target')"
         >
-          <option [ngValue]="null" selected>- Target Definition -</option>
-          <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">
-            {{ processDef.name }}
-          </option>
-        </select>
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
       </div>
       <div class="col-2">
-        <label for="targetVer">Target Version</label>
-        <select
-          class="form-control"
-          id="targetVer"
-          [ngModel]="fields.target.version"
-          (ngModelChange)="loadProcess($event, 'target')"
+        <cds-combo-box
+          [dropUp]="false"
+          [appendInline]="true"
+          [label]="'Target Version'"
+          [placeholder]="'- Target Version -'"
+          [items]="targetVersionItems"
+          (selected)="onVersionSelected($event, 'target')"
         >
-          <option [ngValue]="null" selected>- Target Version -</option>
-          <option *ngFor="let processVer of selectedVersions.target" [ngValue]="processVer.id">
-            {{ processVer.version }}
-          </option>
-        </select>
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
       </div>
     </div>
 
@@ -103,15 +95,15 @@
       <tr *ngFor="let node of uniqueFlowNodeMap">
         <td>{{ node.name ? node.name : node.id }}</td>
         <td>
-          <select class="form-control" (change)="taskMapping[node.id] = $event.target.value">
-            <option [value]="null" disabled selected>- Choose Target -</option>
-            <option
-              *ngFor="let targetFlowNode of getFilteredTargetFlowNodeMap(node.$type)"
-              [value]="targetFlowNode.id"
-            >
-              {{ targetFlowNode.name ? targetFlowNode.name : targetFlowNode.id }}
-            </option>
-          </select>
+          <cds-combo-box
+            [dropUp]="false"
+            [appendInline]="true"
+            [placeholder]="'- Choose Target -'"
+            [items]="getFilteredTargetFlowNodeMapItems(node)"
+            (selected)="onTaskMappingSelected($event, node.id)"
+          >
+            <cds-dropdown-list></cds-dropdown-list>
+          </cds-combo-box>
         </td>
       </tr>
     </table>

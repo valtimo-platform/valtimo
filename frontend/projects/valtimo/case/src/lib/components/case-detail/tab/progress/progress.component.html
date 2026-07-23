@@ -26,16 +26,17 @@
   }}</span>
 
   <div class="process-info-row">
-    <cds-dropdown
+    <cds-combo-box
       [dropUp]="false"
+      [appendInline]="true"
+      [disabled]="obs.processInstanceItems.isLoading"
       [label]="'progress.process' | translate"
-      [skeleton]="obs.processInstanceItems.isLoading"
-      [style.width.px]="350"
-      (selected)="loadProcessInstance($event.item.processInstanceId)"
+      [placeholder]="'progress.process' | translate"
+      [items]="obs.processInstanceItems.value || []"
+      (selected)="loadProcessInstance($event)"
     >
-      <cds-dropdown-list [items]="obs.processInstanceItems.value || []"></cds-dropdown-list>
-    </cds-dropdown>
-
+      <cds-dropdown-list></cds-dropdown-list>
+    </cds-combo-box>
     <div>
       <v-input-label [title]="'progress.version' | translate"></v-input-label>
 
