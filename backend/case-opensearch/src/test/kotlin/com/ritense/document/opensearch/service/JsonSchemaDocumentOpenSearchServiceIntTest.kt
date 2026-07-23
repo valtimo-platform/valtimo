@@ -25,6 +25,7 @@ import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
 import com.ritense.document.domain.impl.searchfield.SearchFieldId
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.AdvancedSearchRequest
+import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.domain.OsBlueprintId
@@ -588,5 +589,71 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
         )
         refreshIndex()
         return jpaDoc
+    }
+
+    @Test
+    fun `unpaged search should return more than default OpenSearch size of 10 documents`() {
+        repeat(15) { i ->
+            seedDocument("Street $i")
+        }
+
+        val page = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest(),
+            Pageable.unpaged()
+        )
+
+        assertThat(page.totalElements).isEqualTo(15L)
+        assertThat(page.content)
+            .describedAs("Unpaged search should return all 15 documents, not default OpenSearch size of 10")
+            .hasSize(15)
+    }
+
+    @Test
+    fun `unpaged search with sort should return all documents in correct order`() {
+        val docA = seedDocument("Alpha Street")
+        val docB = seedDocument("Beta Street")
+        val docC = seedDocument("Gamma Street")
+        val docD = seedDocument("Delta Street")
+        val docE = seedDocument("Epsilon Street")
+        val docF = seedDocument("Zeta Street")
+        val docG = seedDocument("Eta Street")
+        val docH = seedDocument("Theta Street")
+        val docI = seedDocument("Iota Street")
+        val docJ = seedDocument("Kappa Street")
+        val docK = seedDocument("Lambda Street")
+        val docL = seedDocument("Mu Street")
+
+        val page = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest(),
+            Pageable.unpaged(Sort.by(Sort.Direction.ASC, "doc:street"))
+        )
+
+        assertThat(page.totalElements).isEqualTo(12L)
+        assertThat(page.content).hasSize(12)
+        assertThat(page.content[0].id()).isEqualTo(docA.id())
+        assertThat(page.content[1].id()).isEqualTo(docB.id())
+    }
+
+    @Test
+    fun `searchForExport with unpaged should return more than default OpenSearch size of 10 documents`() {
+        repeat(15) { i ->
+            seedDocument("Street $i")
+        }
+
+        val page = documentSearchService.searchForExport(
+            "house",
+            BlueprintType.CASE,
+            SearchWithConfigRequest(),
+            Pageable.unpaged()
+        )
+
+        assertThat(page.totalElements).isEqualTo(15L)
+        assertThat(page.content)
+            .describedAs("Export with unpaged should return all 15 documents, not default OpenSearch size of 10")
+            .hasSize(15)
     }
 }

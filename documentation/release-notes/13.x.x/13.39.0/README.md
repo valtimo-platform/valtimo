@@ -40,4 +40,4 @@
 * **Sorting on columns in the case list**
   
   When sorting the columns, the default sorting would not be respected in some cases.
-  Additionally, when open search was used, sorting did not work. These issues have now been resolved.
+  Additionally, when OpenSearch was used, sorting did not work. These issues have now been resolved.
