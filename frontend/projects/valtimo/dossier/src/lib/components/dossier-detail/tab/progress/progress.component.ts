@@ -163,7 +163,10 @@ export class DossierDetailTabProgressComponent {
     private readonly destroyRef: DestroyRef
   ) {}
 
-  public loadProcessInstance(processInstanceId: string): void {
+  public loadProcessInstance(selection: ListItem | Array<ListItem>) {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    const processInstanceId = item?.processInstanceId;
+
     if (!!processInstanceId) {
       this.selectedProcessInstanceId$.next(processInstanceId);
     }
