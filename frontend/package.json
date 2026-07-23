@@ -9,6 +9,7 @@
     "reset": "npx --yes npm-run-all clean installDeps devMode",
     "clean": "npx rimraf@6 dist .angular node_modules package-lock.json",
     "ng": "ng",
+    "copy-plugins": "node scripts/copy-plugins.js",
     "installDeps": "npm install",
     "devMode": "npm run start",
     "syncLibDepsToRootDeps": "node scripts/sync-lib-deps.js && npm run prettier:write",

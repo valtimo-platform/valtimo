@@ -9,13 +9,6 @@
     "polyfills.ts"
   ],
   "include": [
-    "**/*.d.ts",
-    "../../../projects/valtimo/components/src/public_api.ts",
-    "../../../projects/valtimo/document/src/public_api.ts",
-    "../../../projects/valtimo/plugin/src/public-api.ts",
-    "../../../projects/valtimo/process/src/public_api.ts",
-    "../../../projects/valtimo/resource/src/public-api.ts",
-    "../../../projects/valtimo/security/src/public_api.ts",
-    "../../../projects/valtimo/shared/src/public-api.ts"
+    "**/*.d.ts"
   ]
 }
