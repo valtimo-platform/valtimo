@@ -47,7 +47,14 @@ jobs:
           set -euo pipefail
           echo "Image under test: $SMOKE_IMAGE"
           docker pull "$SMOKE_IMAGE"
-          docker run -d --name fe -p 8080:8080 "$SMOKE_IMAGE"
+          # The nginx config proxies /api to the literal upstream host "gzac-backend"
+          # (frontend/conf/default.conf), and nginx resolves upstream hostnames at
+          # startup. Run in isolation the name does not resolve, so nginx aborts with
+          # "host not found in upstream" and the container never serves a page. This
+          # smoke test only exercises static Angular serving (index.html, config.js,
+          # a JS bundle) with no backend, so map the upstream name to localhost purely
+          # to satisfy nginx's boot-time resolution — /api is never called here.
+          docker run -d --name fe --add-host gzac-backend:127.0.0.1 -p 8080:8080 "$SMOKE_IMAGE"
 
       - name: Smoke test served content
         run: |
