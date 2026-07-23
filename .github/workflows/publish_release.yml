@@ -59,8 +59,43 @@ jobs:
       - frontend_release
       - prepare
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
-      - name: Create release
+      # action-gh-release below creates the tag when it is absent, but it will
+      # NOT move a tag that already exists. So the FIRST release of a version
+      # tags the release-branch commit and never clobbers anything; a SECOND run
+      # for the same (already-tagged) version is treated as a re-release and we
+      # force-move the tag here to the current release-branch commit, so a
+      # corrected build ships instead of the stale one.
+      - name: Checkout release commit
+        uses: actions/checkout@v4
+        with:
+          # Force-move the tag with the valtimo-platform PAT — not GITHUB_TOKEN —
+          # so a tag-protecting repository ruleset doesn't block the update
+          # (GITHUB_TOKEN is not on the ruleset bypass list).
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+          fetch-depth: 0
+
+      - name: Force-move tag on re-run
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --tags --exit-code origin "refs/tags/${VERSION}" >/dev/null 2>&1; then
+            echo "Tag ${VERSION} already exists — re-run detected; force-moving it to ${GITHUB_SHA}."
+            git tag -f "${VERSION}" "${GITHUB_SHA}"
+            git push --force origin "refs/tags/${VERSION}"
+          else
+            echo "Tag ${VERSION} does not exist yet — first release; the release step will create it."
+          fi
+
+      # action-gh-release updates an existing release in place when name/body are
+      # provided, so this is create-on-first-run / update-on-re-run. The tag was
+      # already force-moved above, so on a re-run the release re-points to the
+      # corrected commit (its source archives + shown commit follow the tag) and
+      # the body below is refreshed.
+      - name: Create or update release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare.outputs.version }}
@@ -69,7 +104,9 @@ jobs:
           # which mis-tags non-v13 releases (e.g. v12) onto next-minor content.
           target_commitish: ${{ github.sha }}
           name: ${{ needs.prepare.outputs.version }}
-          body: "Release for Valtimo version ${{ needs.prepare.outputs.version }}."
+          body: |
+            Release for Valtimo version ${{ needs.prepare.outputs.version }}.
+            Build from commit ${{ github.sha }}.
           draft: false
           prerelease: false
 
