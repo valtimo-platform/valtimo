@@ -281,15 +281,161 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         whenever(emptySearchHits.totalHits).thenReturn(0L)
         whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
-            SearchField("city", "doc:city", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "City")
+            SearchField("city", "doc:city", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "City")
         ))
 
         val request = AdvancedSearchRequest().globalSearchFilter("city:amsterdam urgent")
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("content.city:amsterdam")
+        assertThat(capturedQuery.source).contains("content.city:*amsterdam*")
         assertThat(capturedQuery.source).contains("*urgent*")
+    }
+
+    @Test
+    fun `unqualified global search on case field with LIKE matchType uses wildcard`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("assignee", "case:assigneeFullName", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Assignee")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("john")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("wildcard")
+        assertThat(capturedQuery.source).contains("assigneeFullName")
+        assertThat(capturedQuery.source).contains("*john*")
+    }
+
+    @Test
+    fun `unqualified global search on case field with EXACT matchType uses term query`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("status", "case:internalStatus", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Status")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("active")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("term")
+        assertThat(capturedQuery.source).contains("internalStatus")
+        assertThat(capturedQuery.source).doesNotContain("*active*")
+    }
+
+    @Test
+    fun `unqualified global search with mixed LIKE and EXACT case fields uses appropriate queries`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("assignee", "case:assigneeFullName", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Assignee"),
+            SearchField("status", "case:internalStatus", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Status")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("test")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("wildcard")
+        assertThat(capturedQuery.source).contains("assigneeFullName")
+        assertThat(capturedQuery.source).contains("*test*")
+        assertThat(capturedQuery.source).contains("term")
+        assertThat(capturedQuery.source).contains("internalStatus")
+    }
+
+    @Test
+    fun `unqualified global search on doc field with LIKE matchType uses wildcards`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("john")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("*john*")
+        assertThat(capturedQuery.source).contains("content.name")
+    }
+
+    @Test
+    fun `unqualified global search on doc field with EXACT matchType does not use wildcards`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Status")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("active")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("content.status")
+        assertThat(capturedQuery.source).doesNotContain("*active*")
+    }
+
+    @Test
+    fun `unqualified global search with mixed LIKE and EXACT doc fields uses appropriate queries`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name"),
+            SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Status")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("test")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("content.name")
+        assertThat(capturedQuery.source).contains("*test*")
+        assertThat(capturedQuery.source).contains("content.status")
+    }
+
+    @Test
+    fun `multiple search terms with multiple fields respects matchType for each`() {
+        val queryCaptor = argumentCaptor<StringQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
+            SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name"),
+            SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Status"),
+            SearchField("assignee", "case:assigneeFullName", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 2, "Assignee")
+        ))
+
+        val request = AdvancedSearchRequest().globalSearchFilter("john active")
+        service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
+
+        val capturedQuery = queryCaptor.firstValue
+        assertThat(capturedQuery.source).contains("*john*")
+        assertThat(capturedQuery.source).contains("*active*")
+        assertThat(capturedQuery.source).contains("content.name")
+        assertThat(capturedQuery.source).contains("content.status")
+        assertThat(capturedQuery.source).contains("assigneeFullName")
     }
 
     @Test
