@@ -75,7 +75,7 @@ export class TooltipDirective implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     // The overlay lives outside the host element. When the host is destroyed while the tooltip is
     // shown (e.g. a page removing the hovered element), no mouseleave ever fires, so without
     // disposal the tooltip stays on screen forever.
