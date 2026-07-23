@@ -54,7 +54,7 @@ abstract class BaseIntegrationTest {
         fun setUp() {
             server = MockWebServer()
             setupMockKeycloakApiServer()
-            server.start(port = 49152)
+            server.start(port = 19152)
         }
 
         @JvmStatic

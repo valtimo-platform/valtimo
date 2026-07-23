@@ -12,7 +12,7 @@
         "title": "Objecten API",
         "pluginDefinitionKey": "objectenapi",
         "properties": {
-            "url": "http://localhost:47797/some-object/",
+            "url": "http://localhost:17797/some-object/",
             "authenticationPluginConfiguration": "feb1d774-229e-4c28-b385-b7f59def8bba"
         }
     },
@@ -21,7 +21,7 @@
         "title": "Objecttypen API",
         "pluginDefinitionKey": "objecttypenapi",
         "properties": {
-            "url": "http://localhost:47797/some-objectTypesApi/",
+            "url": "http://localhost:17797/some-objectTypesApi/",
             "authenticationPluginConfiguration": "feb1d774-229e-4c28-b385-b7f59def8bba"
         }
     }

@@ -56,7 +56,7 @@ internal class ZakenApiClientIT @Autowired constructor(
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 56273)
+        server.start(port = 16273)
 
         zakenApiPlugin = pluginService.createInstance("3079d6fe-42e3-4f8f-a9db-52ce2507b7ee")
 
@@ -90,8 +90,8 @@ internal class ZakenApiClientIT @Autowired constructor(
             CASE_DOCUMENT_ID,
             zakenApiPlugin.url,
             LinkDocumentRequest(
-                informatieobject = "https://localhost:56273/documenten/informatieobject/1234",
-                zaak = "https://localhost:56273/zaken/1234",
+                informatieobject = "https://localhost:16273/documenten/informatieobject/1234",
+                zaak = "https://localhost:16273/zaken/1234",
                 titel = "titel",
                 beschrijving = "beschrijving",
                 vernietigingsdatum = null,
@@ -109,8 +109,8 @@ internal class ZakenApiClientIT @Autowired constructor(
                 CASE_DOCUMENT_ID,
                 zakenApiPlugin.url,
                 LinkDocumentRequest(
-                    informatieobject = "https://localhost:56273/documenten/informatieobject/1234",
-                    zaak = "https://localhost:56273/zaken/1234",
+                    informatieobject = "https://localhost:16273/documenten/informatieobject/1234",
+                    zaak = "https://localhost:16273/zaken/1234",
                     titel = "titel",
                     beschrijving = "beschrijving",
                     vernietigingsdatum = null,
@@ -265,7 +265,7 @@ internal class ZakenApiClientIT @Autowired constructor(
     companion object {
         private const val ZAAK_ID = "57f66ff6-db7f-43bc-84ef-6847640d3609"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
-        private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
+        private const val ZAKEN_API_URL = "http://localhost:16273$ZAKEN_API_PATH"
         val CASE_DOCUMENT_ID: UUID = UUID.fromString(ZAAK_ID)
 
         private val ZAAK_URL = URI("${ZAKEN_API_URL}/zaken/$ZAAK_ID")

@@ -65,7 +65,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
     internal fun setUp() {
         server = MockWebServer()
         setupMockDocumentenApiServer()
-        server.start(port = 56273)
+        server.start(port = 16274)
 
         documentenApiPlugin = pluginService.createInstance("5474fe57-532a-4050-8d89-32e62ca3e895")
 
@@ -152,7 +152,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
             documentenApiPlugin.url,
             Pageable.ofSize(10),
             DocumentSearchRequest(
-                zaakUrl = URI("https://localhost:56273/documenten/1234"),
+                zaakUrl = URI("https://localhost:16274/documenten/1234"),
             )
         )
 
@@ -169,7 +169,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
             documentenApiPlugin.url,
             Pageable.ofSize(10),
             DocumentSearchRequest(
-                zaakUrl = URI("https://localhost:56273/documenten/1234"),
+                zaakUrl = URI("https://localhost:16274/documenten/1234"),
             )
         )
 
@@ -317,7 +317,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
         permissionRepository.saveAllAndFlush(permissions)
 
         // Use objectUrl (non-zaak filter, simulating a custom ZGW object) with objectType "zaak"
-        val zaakUrl = URI("http://localhost:56273/documenten/zaken/1234")
+        val zaakUrl = URI("http://localhost:16274/documenten/zaken/1234")
         val results = documentenApiClient.getInformatieObjecten(
             documentenApiPlugin.authenticationPluginConfiguration,
             documentId,
@@ -349,7 +349,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         // Drain any previously queued requests so takeRequest() returns this test's request
         val requestCountBefore = server.requestCount
-        val objectUrl = URI("http://localhost:56273/documenten/zaken/5678")
+        val objectUrl = URI("http://localhost:16274/documenten/zaken/5678")
         documentenApiClient.getInformatieObjecten(
             documentenApiPlugin.authenticationPluginConfiguration,
             documentId,
@@ -387,7 +387,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         val request = ObjectInformatieObjectRequest(
             informatieobject = URI("${documentenApiPlugin.url}enkelvoudiginformatieobjecten/objectId"),
-            `object` = URI("http://localhost:56273/documenten/zaken/objectId"),
+            `object` = URI("http://localhost:16274/documenten/zaken/objectId"),
             objectType = "zaak",
         )
 
@@ -411,7 +411,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         val request = ObjectInformatieObjectRequest(
             informatieobject = URI("${documentenApiPlugin.url}enkelvoudiginformatieobjecten/objectId"),
-            `object` = URI("http://localhost:56273/documenten/zaken/objectId"),
+            `object` = URI("http://localhost:16274/documenten/zaken/objectId"),
             objectType = "zaak",
         )
 
@@ -490,7 +490,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
             {
               "url": "${server.url("/")}objectinformatieobjecten/new-link-id",
               "informatieobject": "${server.url("/")}enkelvoudiginformatieobjecten/objectId",
-              "object": "http://localhost:56273/documenten/zaken/objectId",
+              "object": "http://localhost:16274/documenten/zaken/objectId",
               "objectType": "zaak"
             }
         """.trimIndent()

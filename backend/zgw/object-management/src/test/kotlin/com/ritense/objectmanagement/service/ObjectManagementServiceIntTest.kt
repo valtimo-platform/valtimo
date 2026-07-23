@@ -73,7 +73,7 @@ internal class ObjectManagementServiceIntTest : BaseIntegrationTest() {
     @BeforeAll
     fun setUp() {
         mockApi = MockWebServer()
-        mockApi.start(port = 47797)
+        mockApi.start(port = 17797)
     }
 
     @AfterAll

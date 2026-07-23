@@ -59,7 +59,7 @@ class ZaakValueResolverValueIT @Autowired constructor(
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 56273)
+        server.start(port = 16273)
     }
 
     @AfterEach
@@ -82,10 +82,10 @@ class ZaakValueResolverValueIT @Autowired constructor(
 
             // Create zaak instance link so the resolver can find the zaak URL
             zaakInstanceLinkService.createZaakInstanceLink(
-                URI("http://localhost:56273$ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
+                URI("http://localhost:16273$ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
                 java.util.UUID.fromString("57f66ff6-db7f-43bc-84ef-6847640d3609"),
                 documentId,
-                URI("http://localhost:56273/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002")
+                URI("http://localhost:16273/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002")
             )
 
             val formDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId("form-with-zaak-fields", caseDefinitionId).get()
@@ -118,13 +118,13 @@ class ZaakValueResolverValueIT @Autowired constructor(
     private fun getZaakRequest(): MockResponse {
         val body = """
             {
-                "url": "http://localhost:56273/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
+                "url": "http://localhost:16273/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "uuid": "a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "identificatie": "ZK2023-00001",
                 "bronorganisatie": "104978119",
                 "omschrijving": "Test",
                 "toelichting": "",
-                "zaaktype": "http://localhost:56273/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002",
+                "zaaktype": "http://localhost:16273/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002",
                 "registratiedatum": "2023-03-22",
                 "verantwoordelijkeOrganisatie": "104978119",
                 "startdatum": "2023-03-22",

@@ -45,7 +45,7 @@ class ZakenFormFlowIntTest : BaseIntegrationTest() {
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 56273)
+        server.start(port = 16273)
 
         ExpressionProcessorFactoryHolder
             .setInstance(SpelExpressionProcessorFactory(), applicationContext = applicationContext)
@@ -123,13 +123,13 @@ class ZakenFormFlowIntTest : BaseIntegrationTest() {
 
     private fun zaak(identificatie: String) = """
         {
-            "url": "http://localhost:56273$ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609",
+            "url": "http://localhost:16273$ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609",
             "uuid": "57f66ff6-db7f-43bc-84ef-6847640d3609",
             "identificatie": "$identificatie",
             "bronorganisatie": "419071349",
             "omschrijving": "",
             "toelichting": "",
-            "zaaktype": "http://localhost:56273/catalogi/api/v1/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002",
+            "zaaktype": "http://localhost:16273/catalogi/api/v1/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002",
             "registratiedatum": "2024-02-13",
             "verantwoordelijkeOrganisatie": "420936440",
             "startdatum": "2023-01-23",

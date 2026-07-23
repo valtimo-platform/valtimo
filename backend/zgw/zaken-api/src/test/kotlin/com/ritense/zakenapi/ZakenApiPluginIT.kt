@@ -107,7 +107,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 56273)
+        server.start(port = 16273)
         sleep(2000) // Needed to fix connection refused error
 
         // Since we do not have an actual authentication plugin in this context we will mock one
@@ -300,9 +300,9 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     fun `should create zaak object`() {
         val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
 
-        val zaakUrl = URI("http://localhost:56273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900")
+        val zaakUrl = URI("http://localhost:16273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900")
         val objectUrl = URI("")
-        val zaakobjecttype = "http://localhost:56273/catalogi/my-zaaktype-id"
+        val zaakobjecttype = "http://localhost:16273/catalogi/my-zaaktype-id"
         val objectType = ZaakObjectType.ADRES
         val relatieomschrijving = ""
 
@@ -329,7 +329,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     fun `should create zaak object via legacy function`() {
         val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
 
-        val zaakUrl = URI("http://localhost:56273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900")
+        val zaakUrl = URI("http://localhost:16273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900")
         val objectUrl = URI("")
         val objectType = ZaakObjectType.OVERIGE
         val objectTypeOverige = "zaakdetails"
@@ -353,7 +353,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
 
         val edossierNummer = "E.123.4"
-        val zaakUrl = URI("http://localhost:56273/zaken/123")
+        val zaakUrl = URI("http://localhost:16273/zaken/123")
         val relatieomschrijving = "Betrokken erfpachtdossier"
         val identificatie = "doc:verzoek.metaData.eDossiernummer"
         val avgAard = "Erfpacht"
@@ -381,7 +381,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             zaakUrl,
             UUID.randomUUID(),
             document.id().id,
-            URI("http://localhost:56273/zaak-type/456")
+            URI("http://localhost:16273/zaak-type/456")
         )
 
         val execution: DelegateExecution = mock()
@@ -557,9 +557,9 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             {
                 "url": "http://example.com",
                 "uuid": "ffa06285-d60f-4748-8fcf-15a93c5fb308",
-                "zaak": "http://localhost:56273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900",
+                "zaak": "http://localhost:16273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900",
                 "object": "",
-                "zaakobjecttype": "http://localhost:56273/catalogi/my-zaaktype-id",
+                "zaakobjecttype": "http://localhost:16273/catalogi/my-zaaktype-id",
                 "objectType": "adres",
                 "objectTypeOverige": "a",
                 "objectTypeOverigeDefinitie": {
@@ -678,9 +678,9 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         private const val ZAAK_ID = "57f66ff6-db7f-43bc-84ef-6847640d3609"
 
         private const val CATALOGI_API_PATH = "/catalogi/api/v1"
-        private const val CATALOGI_API_URL = "http://localhost:56273$CATALOGI_API_PATH"
+        private const val CATALOGI_API_URL = "http://localhost:16273$CATALOGI_API_PATH"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
-        private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
+        private const val ZAKEN_API_URL = "http://localhost:16273$ZAKEN_API_PATH"
 
         private val ZAAKTYPE_URL = URI("${CATALOGI_API_URL}/zaaktypen/$ZAAKTYPE_ID")
         private val ZAAK_URL = URI("${ZAKEN_API_URL}/zaken/$ZAAK_ID")

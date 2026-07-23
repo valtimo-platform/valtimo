@@ -51,7 +51,7 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 56273)
+        server.start(port = 16273)
     }
 
     @AfterEach
@@ -195,8 +195,8 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
 
     companion object {
         private const val CATALOGI_API_PATH = "/catalogi/api/v1"
-        private const val CATALOGI_API_URL = "http://localhost:56273$CATALOGI_API_PATH"
+        private const val CATALOGI_API_URL = "http://localhost:16273$CATALOGI_API_PATH"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
-        private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
+        private const val ZAKEN_API_URL = "http://localhost:16273$ZAKEN_API_PATH"
     }
 }
