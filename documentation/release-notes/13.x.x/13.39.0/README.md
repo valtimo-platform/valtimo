@@ -36,3 +36,8 @@
   OpenSearch and generic case list feature toggles, case statuses and tags, retention settings, the metroline
   widget and access control. These texts now consistently use *dossier*. Dutch ZGW-related terms (such as
   *zaaktype* and *zaaknummer*) are unchanged.
+
+* **Sorting on columns in the case list**
+  
+  When sorting the columns, the default sorting would not be respected in some cases.
+  Additionally, when open search was used, sorting did not work. These issues have now been resolved.

@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 
 @WithMockUser(username = BaseOpenSearchIntegrationTest.USERNAME, authorities = [BaseOpenSearchIntegrationTest.FULL_ACCESS_ROLE])
@@ -513,6 +514,37 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
         )
         refreshIndex()
         return jpaDoc
+    }
+
+    @Test
+    fun `should sort by doc field using doc prefix`() {
+        val docA = seedDocument("Apple Street")
+        val docB = seedDocument("Zebra Lane")
+        val docC = seedDocument("Maple Avenue")
+
+        val pageAsc = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "doc:street"))
+        )
+
+        assertThat(pageAsc.totalElements).isEqualTo(3L)
+        assertThat(pageAsc.content[0].id()).isEqualTo(docA.id())
+        assertThat(pageAsc.content[1].id()).isEqualTo(docC.id())
+        assertThat(pageAsc.content[2].id()).isEqualTo(docB.id())
+
+        val pageDesc = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest(),
+            PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "doc:street"))
+        )
+
+        assertThat(pageDesc.totalElements).isEqualTo(3L)
+        assertThat(pageDesc.content[0].id()).isEqualTo(docB.id())
+        assertThat(pageDesc.content[1].id()).isEqualTo(docC.id())
+        assertThat(pageDesc.content[2].id()).isEqualTo(docA.id())
     }
 
     private fun seedDocumentWithContent(contentMap: Map<String, String>): JsonSchemaDocument {

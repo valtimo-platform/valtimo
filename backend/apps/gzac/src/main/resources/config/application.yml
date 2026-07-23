@@ -142,11 +142,6 @@ server:
         mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
         min-response-size: 1024
 
-opensearch:
-    uris: ${OPENSEARCH_URIS:http://localhost:9200}
-    username: ${OPENSEARCH_USERNAME:}
-    password: ${OPENSEARCH_PASSWORD:}
-
 mailing:
     onlyAllowWhitelistedRecipients: true
     redirectAllMails: false
@@ -155,8 +150,6 @@ mailing:
     sendRedirectedMailsTo:
 
 valtimo:
-    opensearch:
-        enabled: ${VALTIMO_OPENSEARCH_ENABLED:false}
     app:
         scheme: http
         hostname: ${VALTIMO_APP_HOSTNAME}
