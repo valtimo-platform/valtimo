@@ -121,6 +121,7 @@ internal class PluginServiceTest {
         pluginService.getPluginConfigurations(PluginConfigurationSearchParameters())
         verify(pluginConfigurationSearchRepository).search(any())
     }
+
     @Test
     fun `should save plugin configuration`(){
         val pluginDefinition = newPluginDefinition()
