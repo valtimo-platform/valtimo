@@ -114,8 +114,8 @@ public class MilestoneService {
             throw new MultipleProcessesWithinMilestoneSetException(
                 "Milestones within a set must all have the same process. " +
                     "Selected process differs from existing milestones in this Set.",
-                "incorrectProcessSelected",
-                "Milestone"
+                "Milestone",
+                "incorrectProcessSelected"
             );
         }
     }

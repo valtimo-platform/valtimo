@@ -92,8 +92,15 @@ class BuildingBlockCallActivityListenerTest {
             inputMappings = inputMappings
         )
         whenever(processLinkService.getProcessLinks("case-process", "callActivity")).thenReturn(listOf(link))
-        whenever(valueResolverService.resolveValues(eq(caseDocumentId.toString()), eq(inputMappings.map { it.source })))
-            .thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
+        whenever(
+            valueResolverService.resolveValues(
+                eq("case-process-instance"),
+                eq(execution),
+                eq(inputMappings.map { it.source })
+            )
+        ).thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
+        whenever(valueResolverService.preProcessValuesForNewCase(mapOf("doc:name" to "Ada Lovelace")))
+            .thenReturn(mapOf("doc" to mapOf("name" to "Ada Lovelace")))
 
         whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
 
@@ -177,8 +184,15 @@ class BuildingBlockCallActivityListenerTest {
             inputMappings = inputMappings
         )
         whenever(processLinkService.getProcessLinks("parent-bb-process", "nestedCallActivity")).thenReturn(listOf(link))
-        whenever(valueResolverService.resolveValues(eq(parentBBDocumentId.toString()), eq(inputMappings.map { it.source })))
-            .thenReturn(mapOf("doc:/data" to "parent data"))
+        whenever(
+            valueResolverService.resolveValues(
+                eq("parent-bb-process-instance"),
+                eq(execution),
+                eq(inputMappings.map { it.source })
+            )
+        ).thenReturn(mapOf("doc:/data" to "parent data"))
+        whenever(valueResolverService.preProcessValuesForNewCase(mapOf("doc:input" to "parent data")))
+            .thenReturn(mapOf("doc" to mapOf("input" to "parent data")))
 
         // Parent BB instance is found because we're calling from a BB process
         whenever(buildingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)
@@ -275,9 +289,9 @@ class BuildingBlockCallActivityListenerTest {
         whenever(
             valueResolverService.resolveValues(
                 buildingBlockDocumentId.toString(),
-                listOf("doc:/result")
+                listOf("doc:result")
             )
-        ).thenReturn(mapOf("doc:/result" to "value"))
+        ).thenReturn(mapOf("doc:result" to "value"))
 
         listener.onCallActivityEnd(OperatonExecutionEvent(execution))
 

@@ -46,8 +46,7 @@ public class ProcessInstanceResource {
     @PostMapping("/v1/process-instance/{id}/variables")
     public ResponseEntity<Map<String, Object>> getProcessInstanceVariables(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String id,
-        @RequestBody List<String> variableNames
-    ) {
+        @RequestBody List<String> variableNames) {
         final Map<String, Object> processVariables = AuthorizationContext
             .runWithoutAuthorization(() -> runtimeService.getVariables(id, variableNames));
         return ResponseEntity.ok(processVariables);

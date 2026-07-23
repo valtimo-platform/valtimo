@@ -28,6 +28,7 @@ dependencies {
         api(project(":backend:authorization"))
         api(project(":backend:building-block"))
         api(project(":backend:case"))
+        api(project(":backend:case-opensearch"))
         api(project(":backend:changelog"))
         api(project(":backend:command-handling"))
         api(project(":backend:contract"))
@@ -95,6 +96,10 @@ dependencies {
         api(project(":backend:dependencies:valtimo-gzac-dependencies"))
 
         //!GZAC
+
+        api("org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}")
+        api("org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}")
 
         api("org.liquibase:liquibase-core:${liquibaseVersion}")
 

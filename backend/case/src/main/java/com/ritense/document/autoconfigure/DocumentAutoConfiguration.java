@@ -29,8 +29,8 @@ import com.ritense.document.importer.CaseJsonSchemaDocumentDefinitionImporter;
 import com.ritense.document.listener.DocumentDefinitionCaseEventListener;
 import com.ritense.document.listener.JsonSchemaDocumentTeamChangedListener;
 import com.ritense.document.repository.DocumentDefinitionRepository;
-import com.ritense.document.repository.InternalCaseStatusHistoryRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
+import com.ritense.document.repository.InternalCaseStatusHistoryRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
 import com.ritense.document.service.DefaultCaseDocumentResolver;
@@ -40,6 +40,7 @@ import com.ritense.document.service.DocumentSequenceGeneratorService;
 import com.ritense.document.service.DocumentService;
 import com.ritense.document.service.DocumentStatisticService;
 import com.ritense.document.service.InternalCaseStatusService;
+import com.ritense.document.service.JsonSchemaDocumentActionProvider;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionSequenceGeneratorService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService;
@@ -49,12 +50,14 @@ import com.ritense.document.web.rest.DocumentDefinitionManagementResource;
 import com.ritense.document.web.rest.DocumentDefinitionResource;
 import com.ritense.document.web.rest.DocumentResource;
 import com.ritense.document.web.rest.DocumentSearchResource;
-import com.ritense.document.web.rest.error.DocumentModuleExceptionTranslator;
+import com.ritense.document.web.rest.error.ValidationExceptionMapper;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentDefinitionResource;
+import com.ritense.document.web.rest.impl.JsonSchemaDocumentInspectionResource;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentSearchResource;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
+import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
@@ -62,7 +65,6 @@ import com.ritense.valtimo.contract.document.BlueprintCaseDocumentResolver;
 import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
-import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -74,7 +76,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.zalando.problem.spring.web.advice.AdviceTrait;
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = "com.ritense.document.repository")
@@ -259,13 +260,9 @@ public class DocumentAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(DocumentModuleExceptionTranslator.class)
-    public DocumentModuleExceptionTranslator documentModuleExceptionTranslator(
-        List<AdviceTrait> adviceTraits
-    ) {
-        return new DocumentModuleExceptionTranslator(
-            adviceTraits.get(0)
-        );
+    @ConditionalOnMissingBean(ValidationExceptionMapper.class)
+    public ValidationExceptionMapper validationExceptionMapper() {
+        return new ValidationExceptionMapper();
     }
 
     @Bean
@@ -285,6 +282,26 @@ public class DocumentAutoConfiguration {
     ) {
         return new JsonSchemaDocumentTeamChangedListener(
             jsonSchemaDocumentRepository
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(JsonSchemaDocumentActionProvider.class)
+    public JsonSchemaDocumentActionProvider jsonSchemaDocumentActionProvider() {
+        return new JsonSchemaDocumentActionProvider();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(JsonSchemaDocumentInspectionResource.class)
+    public JsonSchemaDocumentInspectionResource jsonSchemaDocumentInspectionResource(
+        final DocumentService documentService,
+        final AuthorizationService authorizationService,
+        final ApplicationEventPublisher applicationEventPublisher
+    ) {
+        return new JsonSchemaDocumentInspectionResource(
+            documentService,
+            authorizationService,
+            applicationEventPublisher
         );
     }
 }

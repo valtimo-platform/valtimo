@@ -68,8 +68,10 @@ class OutboxAutoConfiguration {
         // @Value, not ValtimoProperties: outbox is forbidden from depending on other Valtimo modules.
         // Property is shared with the contract runner so operators have one knob.
         @Value("\${valtimo.liquibase.stale-lock-threshold-minutes:30}") staleLockThresholdMinutes: Int,
+        // Same shared-property reasoning: gates the outbox migration alongside the rest of the bootstrap.
+        @Value("\${valtimo.bootstrap.enabled:true}") bootstrapEnabled: Boolean,
     ): OutboxLiquibaseRunner {
-        return OutboxLiquibaseRunner(liquibaseProperties, datasource, staleLockThresholdMinutes)
+        return OutboxLiquibaseRunner(liquibaseProperties, datasource, staleLockThresholdMinutes, bootstrapEnabled)
     }
 
     @Bean

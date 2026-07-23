@@ -21,6 +21,7 @@ import com.ritense.valtimo.config.CustomFormTypesProcessEnginePlugin;
 import com.ritense.valtimo.config.OperatonConfiguration;
 import com.ritense.valtimo.contract.annotation.ProcessBean;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import com.ritense.valtimo.contract.config.LiquibaseRunner;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.contract.mail.MailSender;
@@ -37,7 +38,7 @@ import com.ritense.valtimo.operaton.processaudit.TaskEventHandler;
 import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
 import com.ritense.valtimo.operaton.task.service.NotificationService;
 import com.ritense.valtimo.operaton.task.service.impl.NotificationServiceImpl;
-import com.ritense.valtimo.web.rest.error.OperatonExceptionTranslator;
+import com.ritense.valtimo.web.rest.error.FormFieldValidatorExceptionMapper;
 import org.operaton.bpm.application.impl.event.ProcessApplicationEventListenerPlugin;
 import org.operaton.bpm.spring.boot.starter.OperatonBpmAutoConfiguration;
 import org.operaton.bpm.spring.boot.starter.configuration.Ordering;
@@ -50,7 +51,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 @AutoConfiguration
@@ -100,8 +100,16 @@ public class OperatonAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ValtimoSchemaOperationsCommand.class)
-    public ValtimoSchemaOperationsCommand valtimoSchemaOperationsCommand(final LiquibaseRunner liquibaseRunner) {
-        return new ValtimoSchemaOperationsCommand(liquibaseRunner);
+    public ValtimoSchemaOperationsCommand valtimoSchemaOperationsCommand(
+        final LiquibaseRunner liquibaseRunner,
+        final ValtimoProperties valtimoProperties,
+        final BootstrapState bootstrapState
+    ) {
+        return new ValtimoSchemaOperationsCommand(
+            liquibaseRunner,
+            valtimoProperties.getBootstrap().isEnabled(),
+            bootstrapState
+        );
     }
 
     @Primary
@@ -145,11 +153,10 @@ public class OperatonAutoConfiguration {
         return new ProcessDefinitionDeployedEventPublisher(applicationEventPublisher, operatonDeploymentSourceHelper);
     }
 
-    @Order(Ordered.HIGHEST_PRECEDENCE)
     @Bean
-    @ConditionalOnMissingBean(OperatonExceptionTranslator.class)
-    public OperatonExceptionTranslator operatonExceptionTranslator() {
-        return new OperatonExceptionTranslator();
+    @ConditionalOnMissingBean(FormFieldValidatorExceptionMapper.class)
+    public FormFieldValidatorExceptionMapper formFieldValidatorExceptionMapper() {
+        return new FormFieldValidatorExceptionMapper();
     }
 
     @Bean

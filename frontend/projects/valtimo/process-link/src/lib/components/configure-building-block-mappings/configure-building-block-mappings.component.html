@@ -68,8 +68,10 @@
                 <valtimo-value-path-selector
                   [cdsLayer]="2"
                   [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [notation]="'slashes'"
                   [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                  [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
                   [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
                   [buildingBlockDefinitionVersionTag]="
                     obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
@@ -87,7 +89,7 @@
               <div class="mapping-cell" [attr.data-test-id]="testIds.inputTargetSelectWrapper">
                 @if (isRequiredTarget(obs.fields, group.get('target')?.value)) {
                   <div class="required-target" [attr.data-test-id]="testIds.inputRequiredTargetLabel">
-                    {{ 'doc:' + group.get('target')?.value }}
+                    {{ group.get('target')?.value }}
                   </div>
                 } @else {
                   <v-select
@@ -208,8 +210,10 @@
                 <valtimo-value-path-selector
                   [cdsLayer]="2"
                   [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [notation]="'slashes'"
                   [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                  [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
                   [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
                   [buildingBlockDefinitionVersionTag]="
                     obs.buildingBlockParams?.buildingBlockDefinitionVersionTag

@@ -39,6 +39,10 @@ import {
   SelectItem,
   SelectModule,
   ValtimoCdsModalDirective,
+  WIDGET_LAYOUT_TRANSLATION_KEYS,
+  WIDGET_LAYOUT_VALUES,
+  WidgetLayout,
+  WidgetLayoutInfoComponent,
 } from '@valtimo/components';
 import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
 import {
@@ -54,6 +58,7 @@ import {filter, map, Observable, switchMap} from 'rxjs';
 import {IkoTabType, PropertyField, TabDto} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {PropertiesFormComponent} from '../../../iko-management-properties/iko-management-properties.component';
+import {IKO_TAB_DETAILS_MODAL_TEST_IDS} from '../../../../constants/iko.test-ids';
 
 @Component({
   selector: 'valtimo-iko-management-tab-details-modal',
@@ -78,9 +83,12 @@ import {PropertiesFormComponent} from '../../../iko-management-properties/iko-ma
     NumberModule,
     AutoKeyInputComponent,
     PropertiesFormComponent,
+    WidgetLayoutInfoComponent,
   ],
 })
 export class IkoManagementTabDetailsModalComponent {
+  public readonly testIds = IKO_TAB_DETAILS_MODAL_TEST_IDS;
+
   public readonly $openModal = signal<boolean>(false);
   @Input() public set openModal(value: boolean) {
     this.$openModal.set(value);
@@ -92,7 +100,13 @@ export class IkoManagementTabDetailsModalComponent {
   @Input() public set selectedTab(value: TabDto) {
     if (!value) return;
     this.$selectedKey.set(value.key);
-    this.form.setValue({...value, title: value.title || '', properties: value.properties || {}});
+    this.form.setValue({
+      key: value.key,
+      title: value.title || '',
+      type: value.type,
+      properties: value.properties || {},
+      widgetLayout: value.widgetLayout ?? WidgetLayout.MUURI_GAP_FREE,
+    });
     this.form.markAsPristine();
   }
 
@@ -112,6 +126,7 @@ export class IkoManagementTabDetailsModalComponent {
     key: this.formBuilder.control('', [Validators.required]),
     type: this.formBuilder.control('', [Validators.required]),
     properties: this.formBuilder.group({}),
+    widgetLayout: this.formBuilder.control<WidgetLayout>(WidgetLayout.MUURI_GAP_FREE),
   });
 
   public get title(): AbstractControl<string> {
@@ -137,6 +152,11 @@ export class IkoManagementTabDetailsModalComponent {
   public readonly tabTypeSelectItems: SelectItem[] = this._TAB_TYPES.map(tabType => ({
     id: tabType,
     translationKey: `ikoManagement.tabTypes.${tabType}`,
+  }));
+
+  public readonly widgetLayoutSelectItems: SelectItem[] = WIDGET_LAYOUT_VALUES.map(value => ({
+    id: value,
+    translationKey: WIDGET_LAYOUT_TRANSLATION_KEYS[value],
   }));
 
   public readonly propertyFields$: Observable<PropertyField[]> =

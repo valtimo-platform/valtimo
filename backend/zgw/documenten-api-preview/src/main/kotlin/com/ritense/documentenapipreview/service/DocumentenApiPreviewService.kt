@@ -16,19 +16,16 @@
 
 package com.ritense.documentenapipreview.service
 
-import com.ritense.documentenapi.DocumentenApiPlugin
-import com.ritense.documentenapi.DocumentenApiPlugin.Companion.findConfigurationByUrl
 import com.ritense.documentenapipreview.DocumentenApiPreviewPlugin
 import com.ritense.documentenapipreview.domain.PdfFile
 import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.InputStream
 import java.util.UUID
 
 @Transactional(readOnly = true)
@@ -36,12 +33,15 @@ import java.util.UUID
 @SkipComponentScan
 class DocumentenApiPreviewService(
     private val pluginService: PluginService,
+    private val zaakDocumentService: ZaakDocumentService,
 ) {
     open fun generatePreview(
         @LoggableResource(resourceType = PluginConfigurationId::class) documentenApiConfigurationId: String,
         caseDocumentId: UUID,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ): PdfFile {
+        zaakDocumentService.verifyInformatieObjectRelatedToCase(documentenApiConfigurationId, caseDocumentId, documentId)
+
         val documentPreviewApiPlugin = getDocumentenApiPreviewPlugin(documentenApiConfigurationId)
 
         return documentPreviewApiPlugin.generatePreview(caseDocumentId, documentId)

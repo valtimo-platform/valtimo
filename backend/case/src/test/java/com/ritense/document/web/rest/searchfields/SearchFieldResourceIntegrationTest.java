@@ -44,7 +44,6 @@ import com.ritense.document.domain.impl.searchfield.SearchFieldDto;
 import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType;
 import com.ritense.document.domain.impl.searchfield.SearchFieldId;
 import com.ritense.document.service.SearchFieldService;
-import com.ritense.document.web.rest.error.DocumentModuleExceptionTranslator;
 import com.ritense.document.web.rest.impl.SearchFieldMapper;
 import com.ritense.document.web.rest.impl.SearchFieldResource;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
@@ -67,9 +66,6 @@ class SearchFieldResourceIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter;
-
-    @Autowired
-    private DocumentModuleExceptionTranslator documentModuleExceptionTranslator;
 
     @Autowired
     private WebModuleExceptionTranslator webModuleExceptionTranslator;
@@ -109,7 +105,7 @@ class SearchFieldResourceIntegrationTest extends BaseIntegrationTest {
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(searchFieldResource)
-                .setControllerAdvice(documentModuleExceptionTranslator, webModuleExceptionTranslator)
+                .setControllerAdvice(webModuleExceptionTranslator)
                 .setMessageConverters(mappingJackson2HttpMessageConverter)
                 .build();
     }
@@ -200,7 +196,7 @@ class SearchFieldResourceIntegrationTest extends BaseIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail", is("JsonPath '$.invalid.path' doesn't point to any property inside document definition '" + DOCUMENT_DEFINITION_NAME + "'")));
+                .andExpect(jsonPath("$.title", is("JsonPath '$.invalid.path' doesn't point to any property inside document definition '" + DOCUMENT_DEFINITION_NAME + "'")));
     }
 
     @Test

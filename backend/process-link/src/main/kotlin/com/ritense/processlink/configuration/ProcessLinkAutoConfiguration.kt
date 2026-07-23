@@ -34,15 +34,19 @@ import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkActivityHandler
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.processlink.web.rest.ProcessLinkResource
 import com.ritense.processlink.web.rest.ProcessLinkTaskResource
+import com.ritense.processlink.web.rest.error.ProcessDefinitionValidationExceptionMapper
 import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
+import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.ProcessPropertyService
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -51,6 +55,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
@@ -137,7 +142,9 @@ class ProcessLinkAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         repositoryService: RepositoryService,
-        processDeploymentService: ProcessDeploymentService
+        processDeploymentService: ProcessDeploymentService,
+        processDefinitionValidator: ProcessDefinitionValidator,
+        processPropertyService: ProcessPropertyService
     ): ProcessLinkResource {
         return ProcessLinkResource(
             processLinkService,
@@ -145,7 +152,9 @@ class ProcessLinkAutoConfiguration {
             operatonProcessService,
             processDefinitionCaseDefinitionService,
             repositoryService,
-            processDeploymentService
+            processDeploymentService,
+            processDefinitionValidator,
+            processPropertyService
         )
     }
 
@@ -220,16 +229,36 @@ class ProcessLinkAutoConfiguration {
     ) = ProcessDefinitionDeletedEventListener(processDefinitionCaseDefinitionService, processLinkService)
 
     @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionValidator::class)
+    fun processDefinitionValidator(
+        applicationContext: ApplicationContext
+    ): ProcessDefinitionValidator {
+        return ProcessDefinitionValidator {
+            applicationContext.getBeansWithAnnotation(ProcessBean::class.java)
+        }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionValidationExceptionMapper::class)
+    fun processDefinitionValidationExceptionTranslator(): ProcessDefinitionValidationExceptionMapper {
+        return ProcessDefinitionValidationExceptionMapper()
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessDeploymentService::class)
     fun processDeploymentService(
         operatonProcessService: OperatonProcessService,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         processLinkService: ProcessLinkService,
+        processDefinitionValidator: ProcessDefinitionValidator,
+        repositoryService: RepositoryService,
     ): ProcessDeploymentService {
         return ProcessDeploymentService(
             operatonProcessService,
             processDefinitionCaseDefinitionService,
-            processLinkService
+            processLinkService,
+            processDefinitionValidator,
+            repositoryService
         )
     }
 }

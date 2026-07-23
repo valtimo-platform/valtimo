@@ -16,10 +16,13 @@
 
 package com.ritense.dashboard.deployment
 
+import com.ritense.dashboard.domain.WidgetLayout
+
 data class DashboardDto(
     val key: String,
     val title: String,
     val description: String,
     val widgetConfigurations: List<WidgetConfigurationDto>,
-    val order: Int
+    val order: Int,
+    val widgetLayout: WidgetLayout? = null
 )

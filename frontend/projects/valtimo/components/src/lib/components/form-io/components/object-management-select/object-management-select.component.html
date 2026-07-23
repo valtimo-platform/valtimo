@@ -1,0 +1,197 @@
+<!--
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ -->
+
+<ng-template #textFilter let-col>
+  <div class="search-field-container">
+    <v-input
+      [name]="col.path"
+      [title]="col.label | translate"
+      [fullWidth]="true"
+      [smallLabel]="true"
+      [disabled]="disabled"
+      [defaultValue]="filterValues[col.path] || ''"
+      [clear$]="clearInputs$"
+      (valueChange)="filterValues[col.path] = $event"
+      (keyup.enter)="onSearch()"
+    ></v-input>
+  </div>
+</ng-template>
+
+<ng-template #dropdownFilter let-col>
+  <div class="search-field-container">
+    <v-input-label [title]="col.label | translate" [small]="true"></v-input-label>
+    <v-select
+      [items]="dropdownOptionsMap[col.path]"
+      [margin]="false"
+      [required]="false"
+      [name]="col.path"
+      [disabled]="disabled"
+      [defaultSelectionId]="filterValues[col.path] ?? null"
+      [clearSelectionSubject$]="clearSelects$"
+      (selectedChange)="filterValues[col.path] = $event"
+      [appendInline]="false"
+    ></v-select>
+  </div>
+</ng-template>
+
+<ng-template #dateFilter let-col>
+  <div class="search-field-container">
+    <v-date-picker
+      [title]="col.label | translate"
+      [name]="col.path"
+      fullWidth="true"
+      [smallLabel]="true"
+      [disabled]="disabled"
+      [defaultDate]="filterValues[col.path] || ''"
+      [clear$]="clearInputs$"
+      (valueChange)="filterValues[col.path] = $event"
+      (keyup.enter)="onSearch()"
+    ></v-date-picker>
+  </div>
+</ng-template>
+
+<ng-template #dateRangeFilter let-col>
+  <div class="search-field-container search-field-container--full">
+    <v-input-label [title]="col.label | translate" [small]="true"></v-input-label>
+    <div class="date-range-fields">
+      <v-date-picker
+        [name]="col.path + '_start'"
+        fullWidth="true"
+        [disabled]="disabled"
+        [defaultDate]="filterValues[col.path + '_start'] || ''"
+        [clear$]="clearInputs$"
+        (valueChange)="filterValues[col.path + '_start'] = $event"
+        (keyup.enter)="onSearch()"
+      ></v-date-picker>
+      <span class="to-text">{{ 'searchFields.to' | translate }}</span>
+      <v-date-picker
+        [name]="col.path + '_end'"
+        fullWidth="true"
+        [disabled]="disabled"
+        [defaultDate]="filterValues[col.path + '_end'] || ''"
+        [clear$]="clearInputs$"
+        (valueChange)="filterValues[col.path + '_end'] = $event"
+        (keyup.enter)="onSearch()"
+      ></v-date-picker>
+    </div>
+  </div>
+</ng-template>
+
+<div class="object-management-select" data-test-id="object-management-select">
+  <cds-accordion *ngIf="showFilters" class="filter-accordion">
+    <cds-accordion-item [title]="'searchFields.searchButtonText' | translate" [expanded]="filtersExpanded">
+      <div class="search-fields-container">
+        <ng-container *ngFor="let col of filterableColumns">
+          <ng-container *ngIf="col.inputType === 'text' || !col.inputType">
+            <ng-container *ngTemplateOutlet="textFilter; context: { $implicit: col }"></ng-container>
+          </ng-container>
+          <ng-container *ngIf="col.inputType === 'dropdown'">
+            <ng-container *ngTemplateOutlet="dropdownFilter; context: { $implicit: col }"></ng-container>
+          </ng-container>
+          <ng-container *ngIf="col.inputType === 'date'">
+            <ng-container *ngTemplateOutlet="dateFilter; context: { $implicit: col }"></ng-container>
+          </ng-container>
+          <ng-container *ngIf="col.inputType === 'dateRange'">
+            <ng-container *ngTemplateOutlet="dateRangeFilter; context: { $implicit: col }"></ng-container>
+          </ng-container>
+        </ng-container>
+      </div>
+
+      <div class="buttons-container">
+        <button type="button" cdsButton="tertiary" (click)="onClearFilters()" [disabled]="disabled">
+          {{ 'searchFields.clearButtonText' | translate }}
+        </button>
+        <button type="button" cdsButton="primary" (click)="onSearch()" [disabled]="disabled">
+          {{ 'searchFields.searchButtonText' | translate }}
+        </button>
+      </div>
+    </cds-accordion-item>
+  </cds-accordion>
+
+  <valtimo-carbon-list
+    #carbonList
+    [fields]="tableFields"
+    [items]="tableItems"
+    [loading]="loading"
+    [skeletonRowCount]="2"
+    [header]="false"
+    [hideToolbar]="false"
+    [isSearchable]="false"
+    [showSelectionColumn]="true"
+    [pagination]="pagination"
+    [initialSortState]="initialSortState"
+    (sortChanged)="onSort($event)"
+    (paginationClicked)="onPageChange($event)"
+    (paginationSet)="onPageSizeChange($event)"
+    data-test-id="object-management-select-list"
+  >
+    <button
+      type="button"
+      carbonToolbarContent
+      cdsButton="ghost"
+      [title]="'searchFields.searchButtonText' | translate"
+      (click)="loadData()"
+      [disabled]="loading"
+    >
+      <svg cdsIcon="search" size="16"></svg>
+    </button>
+    <button
+      type="button"
+      carbonToolbarActions
+      cdsButton="primary"
+      (click)="onAddSelection()"
+      [disabled]="disabled || !canAddMore"
+      data-test-id="object-management-select-add-button"
+    >
+      {{ 'interface.add' | translate }}
+    </button>
+  </valtimo-carbon-list>
+
+  <div class="selections-section" *ngIf="accumulatedSelections.length > 0">
+    <valtimo-carbon-list
+      #selectionList
+      [fields]="selectionFields"
+      [items]="selectionTableItems"
+      [header]="true"
+      [hideToolbar]="false"
+      [isSearchable]="false"
+      [showSelectionColumn]="true"
+      (sortChanged)="onSelectionSort($event)"
+      data-test-id="object-management-select-selections"
+    >
+      <span header>{{ 'interface.list.multipleSelect' | translate:{count: accumulatedSelections.length} }}</span>
+      <button
+        type="button"
+        carbonToolbarContent
+        cdsButton="ghost"
+        (click)="onClearSelections()"
+        [disabled]="disabled"
+      >
+        {{ 'interface.clearAll' | translate }}
+      </button>
+      <button
+        type="button"
+        carbonToolbarActions
+        cdsButton="danger"
+        (click)="onRemoveSelectedSelections()"
+        [disabled]="disabled"
+        data-test-id="object-management-select-remove-button"
+      >
+        {{ 'interface.delete' | translate }}
+      </button>
+    </valtimo-carbon-list>
+  </div>
+</div>

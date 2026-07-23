@@ -81,6 +81,18 @@ export const documentenApiUploaderEditForm = () => {
       },
     },
     {
+      type: 'number',
+      input: true,
+      key: 'customOptions.maxFiles',
+      label: 'Maximum number of files',
+      placeholder: 'Maximum number of files',
+      tooltip: 'The maximum number of files that may be uploaded. Leave empty for no limit.',
+      validate: {
+        required: false,
+        min: 1,
+      },
+    },
+    {
       type: 'checkbox',
       input: true,
       inputType: 'checkbox',

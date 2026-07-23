@@ -14,4 +14,8 @@
  * limitations under the License.
  */
 
+export * from './access-control-editor-tab.model';
+export * from './pbac-editor.model';
+export * from './permission.model';
+export * from './permission-schema.model';
 export * from './role.model';

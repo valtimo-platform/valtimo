@@ -16,10 +16,7 @@
 
 package com.ritense.zakenapi.provider
 
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.rol.BetrokkeneIdentificatie
@@ -29,6 +26,8 @@ import com.ritense.zakenapi.domain.rol.RolNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
+import java.net.URI
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,24 +36,20 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
-import java.net.URI
-import java.util.UUID
 
 class ZaakKvkProviderTest {
 
-    lateinit var processDocumentService: ProcessDocumentService
     lateinit var zaakInstanceLinkService: ZaakInstanceLinkService
     lateinit var pluginService: PluginService
     lateinit var zaakKvkProvider: ZaakKvkProvider
 
     @BeforeEach
     fun setUp() {
-        processDocumentService = mock()
         zaakInstanceLinkService = mock()
         pluginService = mock()
         zaakKvkProvider = ZaakKvkProvider(
-                processDocumentService,
                 zaakInstanceLinkService,
                 pluginService
         )
@@ -100,7 +95,10 @@ class ZaakKvkProviderTest {
 
     private fun prepareMocks(task: DelegateTask, zaakUrl: URI) {
         val documentId = UUID.randomUUID()
-        whenever(processDocumentService.getDocumentId(eq(OperatonProcessInstanceId(task.processInstanceId)), eq(task))).thenReturn(JsonSchemaDocumentId.existingId(documentId))
+        val execution = mock<DelegateExecution> {
+            on { businessKey }.thenReturn(documentId.toString())
+        }
+        whenever(task.execution).thenReturn(execution)
         val zaakInstanceLink = mock<ZaakInstanceLink>()
         whenever(zaakInstanceLink.zaakInstanceUrl).thenReturn(zaakUrl)
         whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(zaakInstanceLink)

@@ -1,0 +1,53 @@
+{
+    "aanvrager": {
+        "naam": "Helga van Weer",
+        "adres": "Weena 505, 3013 AL Rotterdam",
+        "contactgegevens": {
+            "telefoon": "+31 10 123 4567",
+            "email": "info@marathonlopenrotterdam.nl"
+        }
+    },
+    "milieuBeheer": {
+        "afvalBeheerPlan": "Extra afvalbakken en recyclepunten langs het parcours en bij de finish.",
+        "milieuMaatregelen": "Gebruik van biologisch afbreekbare bekers en herbruikbare waterflesstations.",
+        "sanitaireVoorzieningen": true
+    },
+    "etenEnDrinken": {
+        "alcoholSchenken": false,
+        "horecaVergunning": true,
+        "alcoholControleMaatregelen": "Niet van toepassing, geen alcoholverkoop."
+    },
+    "evenementDetails": {
+        "evenementNaam": "NN Marathon Rotterdam",
+        "evenementType": "Hardloopevenement",
+        "evenementDatum": "2025-04-13",
+        "verwachteBezoekers": 50000,
+        "isOpenbaarEvenement": true
+    },
+    "geluidEnOverlast": {
+        "versterktGeluid": true,
+        "geluidReductieMaatregelen": "Beperkt geluidsniveau bij woonwijken en spreiding van speakers langs het parcours."
+    },
+    "verkeerEnParkeren": {
+        "verkeerPlan": "Grote delen van de stad afgesloten, uitgebreide verkeersomleidingen en extra inzet van openbaar vervoer.",
+        "alternatiefTransport": "Aanbevolen: trein en metro, extra pendelbussen beschikbaar.",
+        "parkeerVoorzieningen": false
+    },
+    "locatieEnOpstelling": {
+        "evenementLocatie": "Centrum Rotterdam, met start en finish op de Coolsingel",
+        "voorzieningen": [
+            "Drinkposten",
+            "EHBO-posten",
+            "Kleedruimtes",
+            "Toiletten",
+            "Infopunten"
+        ],
+        "indelingsplan": "https://marathonrotterdam.nl/indelingsplan.pdf"
+    },
+    "veiligheidsMaatregelen": {
+        "beveiligingsPlan": "Toezicht door politie, beveiligers en verkeersregelaars langs de route.",
+        "noodPlan": "Evacuatieprocedures en noodcommunicatie met lokale hulpdiensten.",
+        "EHBO": true,
+        "beveiligingsPersoneel": 100
+    }
+}

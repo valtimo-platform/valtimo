@@ -16,8 +16,12 @@
 
 package com.ritense.iko.web.rest.request
 
+import jakarta.validation.constraints.Size
+
 data class IkoViewUpdateRequest(
+    @field:Size(max = 256)
     val ikoRepositoryConfigKey: String,
+    @field:Size(max = 256)
     val title: String,
     val properties: Map<String, Any?>,
 )

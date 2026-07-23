@@ -1,0 +1,82 @@
+[
+    {
+        "name": "Samenvatting",
+        "key": "summary",
+        "type": "standard",
+        "contentKey": "summary"
+    },
+    {
+        "name": "Voortgang",
+        "key": "progress",
+        "type": "standard",
+        "contentKey": "progress",
+        "showTasks": true
+    },
+    {
+        "name": "Persoonsgegevens",
+        "key": "personal-info",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Adres & Contact",
+        "key": "address-contact",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Werkgever",
+        "key": "employment",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Aanvraag",
+        "key": "request-info",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Project & Budget",
+        "key": "project-budget",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Financieel",
+        "key": "financial",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Logistiek",
+        "key": "logistics",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Kwaliteit & SLA",
+        "key": "quality-sla",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Compliance",
+        "key": "compliance-audit",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Alles",
+        "key": "everything",
+        "type": "widgets",
+        "contentKey": "-"
+    },
+    {
+        "name": "Audit",
+        "key": "audit",
+        "type": "standard",
+        "contentKey": "audit",
+        "showTasks": true
+    }
+]

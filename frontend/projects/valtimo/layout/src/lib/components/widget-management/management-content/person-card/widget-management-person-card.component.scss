@@ -26,8 +26,7 @@
   }
 
   &__title-form {
-    padding: 8px 0 16px 16px;
-    background: var(--cds-layer);
+    background: var(--cds-layer-02);
     display: flex;
     gap: 16px;
   }
@@ -36,7 +35,7 @@
     max-width: 288px;
 
     input {
-      background: var(--cds-layer-02);
+      background: var(--cds-layer-01);
     }
   }
 
@@ -45,13 +44,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 16px;
     row-gap: 16px;
-    padding: 16px;
-    background: var(--cds-layer);
-
-    .cds--text-input,
-    .cds--list-box {
-      background: var(--cds-layer-02);
-    }
+    background: var(--cds-layer-02);
   }
 
   &__field {
@@ -59,6 +52,13 @@
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    padding: 8px;
+    background: var(--cds-layer-01);
+
+    .cds--text-input,
+    .cds--list-box {
+      background: var(--cds-layer-02);
+    }
 
     &--full {
       grid-column: 1 / -1;

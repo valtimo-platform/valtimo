@@ -17,7 +17,6 @@
 <valtimo-json-editor
   [model]="documentDefinitionModel$ | async"
   [fitPage]="true"
-  [fitPageSpaceAdjustment]="128"
   [showEditButton]="hasEditPermissions$ | async"
   (changeEvent)="onChangeEvent()"
   (discardEvent)="onDiscardEvent()"

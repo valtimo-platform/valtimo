@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,9 @@ td:first-child {
     cursor: pointer;
   }
 
+  // The extended tag colours (orange, light-green, yellow, periwinkle) are now defined globally in
+  // carbon.scss, so no component-scoped overrides are needed here.
+
   label {
     margin-bottom: 0 !important;
   }
@@ -130,6 +133,98 @@ td:first-child {
   }
 
   ::ng-deep cds-table {
-    overflow: hidden;
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  ::ng-deep .cds--expandable-row:not(.cds--parent-row) td {
+    border-top: none;
+    border-bottom-width: 2px;
+  }
+
+  ::ng-deep tbody .cds--expandable-row.cds--parent-row td {
+    border-bottom-width: 2px;
+  }
+
+  ::ng-deep tbody tr:first-child td {
+    border-top: none !important;
+  }
+}
+
+.valtimo-search-container {
+  position: relative;
+  flex: 1;
+
+  ::ng-deep cds-table-toolbar-search {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+
+    // Expanded: fill full width
+    .cds--toolbar-search-container-active {
+      width: 100%;
+    }
+  }
+}
+
+.valtimo-search-container ::ng-deep .cds--toolbar-search-container-active input {
+  color: transparent !important;
+  caret-color: var(--cds-text-primary, #161616);
+}
+
+.valtimo-search-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  height: 3rem;
+  padding: 0 3rem;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.16px;
+  line-height: 1.28572;
+  color: var(--cds-text-primary, #161616);
+  white-space: pre;
+  pointer-events: none;
+  overflow: hidden;
+
+  &__invalid {
+    text-decoration: underline wavy var(--cds-support-error, #da1e28);
+    text-decoration-skip-ink: none;
+    text-underline-offset: 3px;
+  }
+}
+
+.valtimo-search-autocomplete {
+  position: absolute;
+  top: 100%;
+  max-height: 150px;
+  min-width: 120px;
+  max-width: 250px;
+  width: auto;
+  overflow-y: auto;
+  background: var(--cds-layer);
+  border: 1px solid var(--cds-border-subtle);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 9000;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    white-space: nowrap;
+
+    &:hover,
+    &.selected {
+      background: var(--cds-layer-hover);
+    }
   }
 }

@@ -1,0 +1,297 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section class="case-inspection-process-detail">
+  <header class="case-inspection-process-detail__header">
+    <h3>
+      {{ row.processName || row.processDefinitionKey }}
+      <small>{{ 'case.inspection.processes.version' | translate }} {{ row.version }}</small>
+    </h3>
+
+    <div class="case-inspection-process-detail__tags">
+      <cds-tag
+        size="sm"
+        [type]="row.active ? 'blue' : 'cool-gray'"
+        [title]="
+          row.active
+            ? ('case.inspection.processes.active' | translate)
+            : ('case.inspection.processes.completed' | translate)
+        "
+      >
+        {{
+          row.active
+            ? ('case.inspection.processes.active' | translate)
+            : ('case.inspection.processes.completed' | translate)
+        }}
+      </cds-tag>
+
+      @if (row.buildingBlock; as bb) {
+        <cds-tag
+          size="sm"
+          type="green"
+          [title]="'case.inspection.processes.buildingBlockTagTooltip' | translate"
+        >
+          {{ 'case.inspection.processes.buildingBlockTag' | translate }}: {{ bb.definitionKey }}
+          {{ bb.definitionVersionTag }}
+        </cds-tag>
+      }
+
+      <button cdsButton="ghost" size="sm" type="button" (click)="onViewProcessLogs()">
+        {{ 'case.inspection.processes.viewLogs' | translate }}
+      </button>
+    </div>
+
+    <cds-structured-list class="case-inspection-process-detail__meta" [condensed]="true">
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.processes.instanceId' | translate }}</cds-list-column>
+        <cds-list-column
+          ><code>{{ row.processInstanceId }}</code></cds-list-column
+        >
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.processes.startedBy' | translate }}</cds-list-column>
+        <cds-list-column>{{ row.startedBy || row.startedByUserId || '—' }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{ 'case.inspection.processes.startedOn' | translate }}</cds-list-column>
+        <cds-list-column>{{ row.startedOn | date: 'medium' }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row *ngIf="row.buildingBlock as bb">
+        <cds-list-column>{{
+          'case.inspection.processes.buildingBlock' | translate
+        }}</cds-list-column>
+        <cds-list-column>
+          <a
+            cdsLink
+            href="javascript:void(0)"
+            (click)="onViewBuildingBlock(bb); $event.preventDefault()"
+          >
+            {{ bb.definitionKey }} {{ bb.definitionVersionTag }}
+            <span aria-hidden="true">→</span>
+          </a>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
+  </header>
+
+  <cds-tabs type="inline">
+    <cds-tab
+      [active]="$activeTab() === ProcessDetailTab.DETAILS"
+      [heading]="'case.inspection.processes.detailsTab' | translate"
+      (selected)="onSelectTab(ProcessDetailTab.DETAILS)"
+    >
+      <div class="case-inspection-process-detail__pane">
+        @if (row.incidents.length > 0) {
+          <h4 class="case-inspection-process-detail__subhead">
+            {{ 'case.inspection.processes.incidentsHeader' | translate }}
+          </h4>
+
+          <cds-structured-list>
+            <cds-list-header>
+              @for (column of incidentColumns; track column) {
+                <cds-list-column>{{ column | translate }}</cds-list-column>
+              }
+            </cds-list-header>
+
+            @for (incident of row.incidents; track incident.id) {
+              <cds-list-row>
+                <cds-list-column>{{ incident.incidentType }}</cds-list-column>
+                <cds-list-column>{{ incident.activityId || '—' }}</cds-list-column>
+                <cds-list-column>{{ incident.incidentMessage || '—' }}</cds-list-column>
+                <cds-list-column>{{ incident.incidentTimestamp | date: 'medium' }}</cds-list-column>
+              </cds-list-row>
+            }
+          </cds-structured-list>
+        }
+
+        <h4
+          class="case-inspection-process-detail__subhead case-inspection-process-detail__subhead--no-margin"
+        >
+          {{ 'case.inspection.processes.tasksHeader' | translate }}
+        </h4>
+
+        @if (row.tasks.length > 0) {
+          <cds-structured-list>
+            <cds-list-header>
+              @for (column of taskColumns; track column) {
+                <cds-list-column>{{ column | translate }}</cds-list-column>
+              }
+            </cds-list-header>
+
+            @for (task of row.tasks; track task.id) {
+              <cds-list-row>
+                <cds-list-column>{{ task.name }}</cds-list-column>
+                <cds-list-column>{{ task.assignee || '—' }}</cds-list-column>
+                <cds-list-column>{{ task.created | date: 'medium' }}</cds-list-column>
+              </cds-list-row>
+            }
+          </cds-structured-list>
+        } @else {
+          <p class="case-inspection-process-detail__empty">
+            {{ 'case.inspection.processes.noTasks' | translate }}
+          </p>
+        }
+
+        <div class="case-inspection-process-detail__subhead-row">
+          <h4 class="case-inspection-process-detail__subhead">
+            {{ 'case.inspection.processes.variablesHeader' | translate }}
+          </h4>
+          <button
+            *ngIf="$canMutate()"
+            cdsButton="ghost"
+            size="sm"
+            type="button"
+            (click)="onAddVariable()"
+          >
+            {{ 'case.inspection.processes.variableActions.add' | translate }}
+            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </div>
+
+        @if (row.variables.length > 0) {
+          <cds-structured-list>
+            <cds-list-header>
+              @for (column of variableColumns; track column) {
+                <cds-list-column>{{ column | translate }}</cds-list-column>
+              }
+              @if ($canMutate()) {
+                <cds-list-column></cds-list-column>
+              }
+            </cds-list-header>
+
+            @for (variable of row.variables; track variable.name) {
+              <cds-list-row>
+                <cds-list-column>
+                  <code>{{ variable.name }}</code>
+                </cds-list-column>
+                <cds-list-column>{{ variable.type }}</cds-list-column>
+                <cds-list-column>
+                  <code class="case-inspection-process-detail__variable-value">{{
+                    formatVariableValue(variable)
+                  }}</code>
+                </cds-list-column>
+                @if ($canMutate()) {
+                  <cds-list-column>
+                    <div class="case-inspection-process-detail__variable-actions">
+                      <button
+                        cdsButton="ghost"
+                        size="sm"
+                        type="button"
+                        [iconOnly]="true"
+                        [title]="'case.inspection.processes.variableActions.edit' | translate"
+                        (click)="onEditVariable(variable)"
+                      >
+                        <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
+                      </button>
+
+                      <button
+                        cdsButton="danger--ghost"
+                        size="sm"
+                        type="button"
+                        [iconOnly]="true"
+                        [title]="'case.inspection.processes.variableActions.delete' | translate"
+                        (click)="onRequestDelete(variable)"
+                      >
+                        <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+                      </button>
+                    </div>
+                  </cds-list-column>
+                }
+              </cds-list-row>
+            }
+          </cds-structured-list>
+        } @else {
+          <p class="case-inspection-process-detail__empty">
+            {{ 'case.inspection.processes.noVariables' | translate }}
+          </p>
+        }
+
+        <h4 class="case-inspection-process-detail__subhead">
+          {{ 'case.inspection.processes.jobsHeader' | translate }}
+        </h4>
+
+        @if (row.jobs.length > 0) {
+          <cds-structured-list>
+            <cds-list-header>
+              @for (column of jobColumns; track column) {
+                <cds-list-column>{{ column | translate }}</cds-list-column>
+              }
+            </cds-list-header>
+
+            @for (job of row.jobs; track job.id) {
+              <cds-list-row>
+                <cds-list-column>
+                  {{ 'case.inspection.processes.jobTypeLabel.' + job.jobType | translate }}
+                </cds-list-column>
+                <cds-list-column>
+                  @if (job.activityId) {
+                    <code>{{ job.activityId }}</code>
+                  } @else {
+                    —
+                  }
+                </cds-list-column>
+                <cds-list-column>{{ job.retries }}</cds-list-column>
+                <cds-list-column>{{ job.dueDate | date: 'medium' }}</cds-list-column>
+                <cds-list-column>{{ job.exceptionMessage || '—' }}</cds-list-column>
+              </cds-list-row>
+            }
+          </cds-structured-list>
+        } @else {
+          <p class="case-inspection-process-detail__empty">
+            {{ 'case.inspection.processes.noJobs' | translate }}
+          </p>
+        }
+      </div>
+    </cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === ProcessDetailTab.DIAGRAM"
+      [heading]="'case.inspection.processes.diagramTab' | translate"
+      (selected)="onSelectTab(ProcessDetailTab.DIAGRAM)"
+    >
+      <div class="case-inspection-process-detail__pane case-inspection-process-detail__diagram">
+        @if ($activeTab() === ProcessDetailTab.DIAGRAM) {
+          <valtimo-process-diagram
+            [processInstanceId]="row.processInstanceId"
+          ></valtimo-process-diagram>
+        }
+      </div>
+    </cds-tab>
+  </cds-tabs>
+</section>
+
+<valtimo-case-inspection-process-variable-modal
+  [open]="$modalOpen()"
+  [mode]="$modalMode()"
+  [initialVariable]="$modalInitial()"
+  (modalClosed)="onModalClosed($event)"
+></valtimo-case-inspection-process-variable-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="case.inspection.processes.variableActions.delete"
+  confirmButtonType="danger"
+  titleTranslationKey="case.inspection.processes.variableActions.deleteConfirmTitle"
+  [content]="
+    'case.inspection.processes.variableActions.deleteConfirmContent'
+      | translate: {name: (pendingDeleteName$ | async) ?? ''}
+  "
+  [showModalSubject$]="showConfirmDelete$"
+  (cancelEvent)="onCancelDelete()"
+  (confirmEvent)="onConfirmDelete()"
+></valtimo-confirmation-modal>

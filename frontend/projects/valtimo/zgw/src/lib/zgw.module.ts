@@ -18,10 +18,12 @@ import {NgModule} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {FormioModule} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
+import {ZGW_CASE_INSPECTION_TAB_TOKEN} from '@valtimo/case';
 import {DropzoneModule, FileSizeModule} from '@valtimo/components';
 import {
   CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   CASE_MANAGEMENT_TAB_TOKEN,
+  ConfigService,
   ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
   ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
 } from '@valtimo/shared';
@@ -36,6 +38,7 @@ import {
   NotificatiesApiRoutingModule,
 } from './modules';
 import {CaseManagementZgwComponent} from './components';
+import {CaseInspectionZgwTabComponent} from './case-inspection/zgw-tab.component';
 
 @NgModule({
   imports: [
@@ -55,17 +58,23 @@ import {CaseManagementZgwComponent} from './components';
   providers: [
     {
       provide: CASE_MANAGEMENT_TAB_TOKEN,
-      useValue: {
+      useFactory: (configService: ConfigService) => ({
         translationKey: 'caseManagement.tabs.zgw',
         component: CaseManagementZgwComponent,
         tabRoute: 'zgw',
         issueTypes: ['zaak-type-link', 'zaakdetail-sync'],
-      },
+        enabled$: configService.getFeatureToggleObservable('enableZgwFeatures', true),
+      }),
+      deps: [ConfigService],
       multi: true,
     },
     {
       provide: ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
       useValue: CaseDetailTabObjectTypeComponent,
+    },
+    {
+      provide: ZGW_CASE_INSPECTION_TAB_TOKEN,
+      useValue: CaseInspectionZgwTabComponent,
     },
     {
       provide: ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,

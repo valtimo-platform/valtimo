@@ -15,6 +15,40 @@ The list of configured tabs for a case is displayed within the case settings. To
 
 <figure><img src="../../../../.gitbook/assets/image (11).png" alt=""><figcaption><p>Widget configuration UI</p></figcaption></figure>
 
+## Layout algorithm
+
+The way a widget tab's widgets are arranged can be chosen per tab. The same options are available for dashboards and IKO tabs.
+
+| Selector label | Stored value (`widgetLayout`) | Behaviour |
+| --- | --- | --- |
+| Default (less gaps) | `MUURI_GAP_FREE` | An algorithm that fills small gaps, while keeping widgets in their configured order as much as possible. **Used when nothing is configured** (the original behaviour). |
+| Default | `MUURI` | Plain layout algorithm without gap filling. Keeps the configured order, but empty gaps can remain. |
+| Gap free | `BEAUTIFUL` | Custom dense-packing algorithm. May reorder widgets within a section to remove gaps and almost always produces a clean layout without holes. |
+
+**Trade-off:** *Default* and *Default (less gaps)* keep the widgets in the order you configured (predictable) but can leave empty space, while *Gap free* reorders widgets to eliminate gaps at the cost of changing their order.
+
+{% tabs %}
+{% tab title="Via UI" %}
+Open the widget tab and click **Edit widget tab**. Pick an option in the **Layout algorithm** dropdown of the modal and save. An information block underneath the dropdown summarises the trade-off.
+{% endtab %}
+
+{% tab title="Via IDE" %}
+Add the optional `widgetLayout` property (one of the stored values above) to the tab object in the `*.case-widget-tab.json` file. When omitted, the layout falls back to `MUURI_GAP_FREE`.
+
+```json
+[
+  {
+    "key": "personal-info",
+    "widgetLayout": "BEAUTIFUL",
+    "widgets": []
+  }
+]
+```
+{% endtab %}
+{% endtabs %}
+
+## Adding widgets
+
 Click **Add widget** to open the create new widget modal that will guide the widget creation in 4 steps.
 
 {% stepper %}
@@ -41,6 +75,8 @@ The following widget types are currently supported:
   _Display personal data for a single person (full name, birth date, BSN, phone, email and city) in a compact card._
 * **Highlight**\
   _Compact widget that highlights a single value or the count of items in a collection._
+* **Image**\
+  _Display image files stored on the case, either in a grid or as a carousel._
 
 <figure><img src="../../../../.gitbook/assets/image (21).png" alt=""><figcaption><p>Choosing widget type</p></figcaption></figure>
 {% endstep %}
@@ -657,5 +693,42 @@ accordingly.
 When the configured path does not resolve to a value (path missing in the document, value is `null`/`undefined`,
 or the resolved value is a non-primitive object), the widget renders a discreet "No value" placeholder rather
 than a stringified representation of the underlying object.
+
+</details>
+
+<details>
+
+<summary>Image widget</summary>
+
+The image widget displays image files that are stored on the case. It resolves a value resolver path to one or
+more uploaded file resources and renders the ones that are browser-renderable images. Each image is shown with
+its file name and with buttons to open the image in a new tab or download it.
+
+**Configuration**
+
+The widget configuration is split into three sections:
+
+1. **Widget identity**
+   * **Widget title** — the label displayed at the top of the widget.
+   * **Icon** — an optional MDI icon, identical to the icon picker used by the other widgets.
+2. **Action**
+   * **Action button type** — optionally choose between a process action (start a process from the widget) or an
+     external link, identical to the action button on the other widgets.
+3. **Value**
+   * **Value** — the value resolver path that points to the file resources to display (for example
+     `doc:/uploadedFiles`). The path must resolve to one or more uploaded file resources.
+   * **Display as carousel** — when enabled, the images are presented one at a time in a carousel with navigation
+     dots and previous/next arrows instead of the default grid. The carousel is only used when more than one image
+     is resolved; with a single image the carousel controls are hidden.
+
+**Supported formats**
+
+Only browser-renderable image files are shown: `png`, `jpg`, `jpeg`, `gif`, `webp`, `avif`, `svg`, `bmp` and
+`ico`. Resources that resolve to other file types (for example a PDF) are filtered out so they are not rendered
+incorrectly.
+
+**Empty handling**
+
+When the path resolves to no renderable images, the widget renders a "No image found" placeholder.
 
 </details>

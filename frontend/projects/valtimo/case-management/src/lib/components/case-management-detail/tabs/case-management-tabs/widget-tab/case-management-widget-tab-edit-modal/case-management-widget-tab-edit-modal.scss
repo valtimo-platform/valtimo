@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-.edit-widget-tab-modal .form__row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-end;
+.edit-widget-tab-modal {
+  .widget-tab-modal__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form__row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
 }

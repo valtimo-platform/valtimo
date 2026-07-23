@@ -2,6 +2,47 @@
 /* eslint-disable */
 // Generated using typescript-generator version 3.2.1263 on 2026-04-28 11:17:58.
 
+export interface PbacConditionFieldDto {
+    name: string;
+    type: string;
+}
+
+export interface PbacConditionTypeDto {
+    key: string;
+}
+
+export interface PbacEntityMapperDto {
+    fromResourceType: string;
+    toResourceType: string;
+}
+
+export interface PbacFieldAliasDto {
+    alias: string;
+    field: string;
+}
+
+export interface PbacOperatorDto {
+    key: string;
+}
+
+export interface PbacRegistryDto {
+    resources: PbacResourceDto[];
+    operators: PbacOperatorDto[];
+    conditionTypes: PbacConditionTypeDto[];
+    entityMappers: PbacEntityMapperDto[];
+    roles: string[];
+}
+
+export interface PbacResourceDto {
+    resourceType: string;
+    shortName: string;
+    actions: string[];
+    fields: PbacConditionFieldDto[];
+    fieldAliases: PbacFieldAliasDto[];
+    hasSpecificationFactory: boolean;
+    containerTargets: string[];
+}
+
 export interface AdminSettingsLogoDto {
     logoType: string;
     imageBase64: string;
@@ -47,12 +88,14 @@ export interface BuildingBlockProcessDefinitionDto {
     name: string | null;
     versionTag: string | null;
     main: boolean;
+    draft: boolean;
 }
 
 export interface BuildingBlockProcessDefinitionWithLinksDto {
     processDefinition: ProcessDefinitionWithPropertiesDto;
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
+    draft: boolean;
 }
 
 export interface BuildingBlockVersionDto {
@@ -780,6 +823,7 @@ export interface CaseProcessDefinitionResponseDto {
     processCaseLink: ProcessDefinitionCaseDefinition;
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
+    draft: boolean;
 }
 
 export interface ProcessDefinitionResponseDto {

@@ -19,6 +19,7 @@ package com.ritense.valtimo.web.autoconfigure;
 import com.ritense.valtimo.contract.hardening.config.HardeningProperties;
 import com.ritense.valtimo.contract.hardening.service.HardeningService;
 import com.ritense.valtimo.contract.hardening.service.impl.HardeningServiceImpl;
+import com.ritense.valtimo.contract.web.rest.error.ExceptionMapper;
 import com.ritense.valtimo.web.config.WebProperties;
 import com.ritense.valtimo.web.rest.error.WebModuleExceptionTranslator;
 import java.util.List;
@@ -66,8 +67,11 @@ public class WebAutoConfiguration {
     @Order(0)
     @Bean
     @ConditionalOnMissingBean
-    public WebModuleExceptionTranslator webModuleExceptionTranslator(Optional<HardeningService> hardeningService) {
-        return new WebModuleExceptionTranslator(hardeningService);
+    public WebModuleExceptionTranslator webModuleExceptionTranslator(
+        Optional<HardeningService> hardeningService,
+        List<ExceptionMapper<? extends Throwable>> exceptionMappers
+    ) {
+        return new WebModuleExceptionTranslator(hardeningService, exceptionMappers);
     }
 
     /*

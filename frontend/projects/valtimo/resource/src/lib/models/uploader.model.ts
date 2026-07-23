@@ -44,7 +44,14 @@ export class S3Resource implements Resource {
   documentId?: string;
 
   constructor(file: File, preSignedUrl: URL, documentId?: string) {
-    this.key = decodeURIComponent(preSignedUrl.pathname.substring(1));
+    // Extract key from URL pathname
+    // Path-style URL: /bucket-name/key -> extract key after bucket
+    // Virtual-hosted URL: /key -> extract key directly
+    const pathParts = preSignedUrl.pathname.substring(1).split('/');
+    // If path has multiple segments, first is bucket name (path-style), rest is key
+    // If path has single segment, it's the key directly (virtual-hosted)
+    const key = pathParts.length > 1 ? pathParts.slice(1).join('/') : pathParts[0];
+    this.key = decodeURIComponent(key);
     this.name = file.name;
     this.sizeInBytes = file.size;
     if (!documentId) {

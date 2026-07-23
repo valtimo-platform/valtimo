@@ -47,7 +47,6 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.utils.SecurityUtils
-import com.ritense.zakenapi.ExtractUuid.extractUuidFromUri
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInformatieObject
@@ -58,6 +57,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.InputStream
 import java.net.URI
 import java.util.UUID
 import kotlin.math.min
@@ -89,7 +89,7 @@ class ZaakDocumentService(
         val (viewPermissions, modifyPermissions, deletePermissions) = prefetchDocumentPermissions()
 
         return zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUri)
-            .map { getRelatedFiles(it, viewPermissions, modifyPermissions, deletePermissions) }
+            .map { getRelatedFiles(it, caseDocumentId, viewPermissions, modifyPermissions, deletePermissions) }
     }
 
     fun getInformatieObjectenAsRelatedFilesPage(
@@ -136,7 +136,7 @@ class ZaakDocumentService(
         } else {
             val zakenApiPlugin = getZakenApiPlugin(zaakUri)
             val documenten = zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUri)
-                .map { mapDocumentenApiDocument(it, version, viewPermissions, modifyPermissions, deletePermissions) }
+                .map { mapDocumentenApiDocument(it, version, caseDocumentId, viewPermissions, modifyPermissions, deletePermissions) }
             toPage(documenten, pageable)
         }
     }
@@ -185,13 +185,13 @@ class ZaakDocumentService(
 
     private fun getRelatedFiles(
         zaakInformatieObject: ZaakInformatieObject,
+        caseDocumentId: UUID,
         viewPermissions: List<Permission>,
         modifyPermissions: List<Permission>,
         deletePermissions: List<Permission>,
     ): RelatedFileDto {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
         val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
-        val caseDocumentId = extractUuidFromUri(zaakInformatieObject.zaak) ?: throw IllegalStateException("Could not extract caseDocumentId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
         val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseDocumentId)
         return mapRelatedFile(informatieObject, pluginConfiguration, caseDocumentId, viewPermissions, modifyPermissions, deletePermissions)
     }
@@ -278,13 +278,13 @@ class ZaakDocumentService(
     private fun mapDocumentenApiDocument(
         zaakInformatieObject: ZaakInformatieObject,
         version: DocumentenApiVersion,
+        caseDocumentId: UUID,
         viewPermissions: List<Permission>,
         modifyPermissions: List<Permission>,
         deletePermissions: List<Permission>,
     ): DocumentenApiDocumentDto {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
         val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
-        val caseDocumentId = extractUuidFromUri(zaakInformatieObject.zaak) ?: throw IllegalStateException("Could not extract caseDocumentId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
         val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseDocumentId)
         val trefwoorden = if (version.supportsTrefwoorden) {
             informatieObject.trefwoorden
@@ -421,6 +421,19 @@ class ZaakDocumentService(
         )
     }
 
+    /**
+     * Asserts that the given document is related to the given case, throwing when it is not.
+     * Use this from read/download paths (e.g. document preview) that would otherwise serve
+     * document content without verifying the case-document linkage.
+     */
+    fun verifyInformatieObjectRelatedToCase(
+        pluginConfigurationId: String,
+        caseDocumentId: UUID,
+        documentId: String,
+    ) {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    }
+
     private fun getVerifiedInformatieObject(
         pluginConfigurationId: String,
         caseDocumentId: UUID,
@@ -448,9 +461,13 @@ class ZaakDocumentService(
         return Pair(documentenApiPlugin, informatieobjectUrl)
     }
 
-    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
-        documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String): InputStream {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        return documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    }
 
-    fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String) =
-        documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String): DocumentInformatieObject {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        return documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    }
 }

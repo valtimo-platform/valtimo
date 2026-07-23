@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 import {CommonModule, DatePipe} from '@angular/common';
-import {ChangeDetectionStrategy, Component, HostBinding, Input, ViewEncapsulation} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostBinding,
+  Input,
+  ViewEncapsulation,
+} from '@angular/core';
 import {Information16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
@@ -22,12 +28,7 @@ import {
   MdiIconViewerComponent,
   RemoveClassnamesDirective,
 } from '@valtimo/components';
-import {
-  IconModule,
-  IconService,
-  SkeletonModule,
-  ToggletipModule,
-} from 'carbon-components-angular';
+import {IconModule, IconService, SkeletonModule, ToggletipModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {
   METROLINE_SKELETON_STEP_COUNT,
@@ -87,7 +88,9 @@ export class WidgetMetrolineComponent {
   public readonly orientation$: Observable<'horizontal' | 'vertical'> =
     this.widgetConfiguration$.pipe(
       map(config =>
-        config?.properties?.orientation === MetrolineOrientation.VERTICAL ? 'vertical' : 'horizontal'
+        config?.properties?.orientation === MetrolineOrientation.VERTICAL
+          ? 'vertical'
+          : 'horizontal'
       )
     );
 
@@ -96,7 +99,7 @@ export class WidgetMetrolineComponent {
     this.widgetConfiguration$,
   ]).pipe(
     map(([items, config]) => {
-      const mode = config?.properties?.mode ?? MetrolineMode.INTERNAL_CASE_STATUS;
+      const mode = config?.properties?.mode ?? null;
       return {
         steps: this.toSteps(items, mode),
         currentStepIndex: this.toCurrentStepIndex(items, mode),
@@ -130,36 +133,36 @@ export class WidgetMetrolineComponent {
     return MetrolineStepState.INCOMPLETE;
   }
 
-  private toSteps(items: MetrolineItem[] | null, mode: MetrolineMode): MetrolineStep[] {
+  private toSteps(items: MetrolineItem[] | null, mode: MetrolineMode | null): MetrolineStep[] {
     if (!items?.length) return [];
 
-    if (mode === MetrolineMode.ZAAKSTATUS) {
-      return items.map(item => ({
+    if (mode === MetrolineMode.INTERNAL_CASE_STATUS) {
+      const lastIndex = items.length - 1;
+      return items.map((item, index) => ({
         label: item.title,
         secondaryLabel: this.formatCompleted(item.completed),
-        complete: item.completed != null,
+        complete: index < lastIndex,
         itemLabel: item.label,
       }));
     }
 
-    const lastIndex = items.length - 1;
-    return items.map((item, index) => ({
+    return items.map(item => ({
       label: item.title,
       secondaryLabel: this.formatCompleted(item.completed),
-      complete: index < lastIndex,
+      complete: item.completed != null,
       itemLabel: item.label,
     }));
   }
 
-  private toCurrentStepIndex(items: MetrolineItem[] | null, mode: MetrolineMode): number {
+  private toCurrentStepIndex(items: MetrolineItem[] | null, mode: MetrolineMode | null): number {
     if (!items?.length) return 0;
 
-    if (mode === MetrolineMode.ZAAKSTATUS) {
-      const firstNotCompleted = items.findIndex(item => item.completed == null);
-      return firstNotCompleted === -1 ? items.length : firstNotCompleted;
+    if (mode === MetrolineMode.INTERNAL_CASE_STATUS) {
+      return items.length - 1;
     }
 
-    return items.length - 1;
+    const firstNotCompleted = items.findIndex(item => item.completed == null);
+    return firstNotCompleted === -1 ? items.length : firstNotCompleted;
   }
 
   private formatCompleted(completed: string | null): string | undefined {

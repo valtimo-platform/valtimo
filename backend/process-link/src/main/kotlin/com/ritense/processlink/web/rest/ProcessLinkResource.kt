@@ -29,17 +29,23 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.dto.CaseProcessDefinitionResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
+import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateRequestDto
+import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionConflictResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
+import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.ProcessPropertyService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
+import jakarta.validation.Valid
 import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.engine.impl.util.IoUtil
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -69,7 +75,9 @@ class ProcessLinkResource(
     private val operatonProcessService: OperatonProcessService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val repositoryService: RepositoryService,
-    private val processDeploymentService: ProcessDeploymentService
+    private val processDeploymentService: ProcessDeploymentService,
+    private val processDefinitionValidator: ProcessDefinitionValidator,
+    private val processPropertyService: ProcessPropertyService
 ) {
 
     @GetMapping("/v1/process-link")
@@ -95,7 +103,7 @@ class ProcessLinkResource(
 
     @PostMapping("/v1/process-link")
     fun createProcessLink(
-        @RequestBody processLink: ProcessLinkCreateRequestDto
+        @Valid @RequestBody processLink: ProcessLinkCreateRequestDto
     ): ResponseEntity<Unit> {
         return withLoggingContext(OperatonProcessDefinition::class.java, processLink.processDefinitionId) {
             // To
@@ -106,7 +114,7 @@ class ProcessLinkResource(
 
     @PutMapping("/v1/process-link")
     fun updateProcessLink(
-        @RequestBody processLink: ProcessLinkUpdateRequestDto
+        @Valid @RequestBody processLink: ProcessLinkUpdateRequestDto
     ): ResponseEntity<Unit> {
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLinkService.updateProcessLink(processLink, null)
@@ -147,7 +155,7 @@ class ProcessLinkResource(
     ): ResponseEntity<List<CaseProcessDefinitionResponseDto>> {
         val definitions = runWithoutAuthorization {
             operatonProcessService
-                .getDeployedDefinitions(CaseDefinitionId.of(caseDefinitionKey, versionTag))
+                .getAllDefinitions(CaseDefinitionId.of(caseDefinitionKey, versionTag))
                 .stream()
                 .map { definition: OperatonProcessDefinition? ->
                     CaseProcessDefinitionResponseDto(
@@ -160,12 +168,8 @@ class ProcessLinkResource(
                         processLinkService.getProcessLinks(definition.id).map {
                             getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                         },
-                        String(
-                            IoUtil.readInputStream(
-                                repositoryService.getProcessModel(definition.id),
-                                "processModelBpmn20Xml"
-                            ), StandardCharsets.UTF_8
-                        )
+                        getBpmnXml(definition),
+                        draft = definition.isSuspended()
                     )
                 }
                 .collect(Collectors.toList())
@@ -182,17 +186,15 @@ class ProcessLinkResource(
                 .getUnlinkedDeployedDefinitions()
                 .stream()
                 .map { definition ->
+                    val processDefinitionDto = ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition)
+                    processDefinitionDto.setReadOnly(processPropertyService.isReadOnly(definition.key))
                     ProcessDefinitionResponseDto(
-                        ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
+                        processDefinitionDto,
                         processLinkService.getProcessLinks(definition.id).map {
                             getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                         },
-                        String(
-                            IoUtil.readInputStream(
-                                repositoryService.getProcessModel(definition.id),
-                                "processModelBpmn20Xml"
-                            ), StandardCharsets.UTF_8
-                        )
+                        getBpmnXml(definition),
+                        draft = definition.isSuspended()
                     )
                 }
                 .collect(Collectors.toList())
@@ -211,17 +213,15 @@ class ProcessLinkResource(
         }
 
         val responseDtos = definitions.map { definition ->
+            val processDefinitionDto = ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition)
+            processDefinitionDto.setReadOnly(processPropertyService.isReadOnly(definition.key))
             ProcessDefinitionResponseDto(
-                ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
+                processDefinitionDto,
                 processLinkService.getProcessLinks(definition.id).map {
                     getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                 },
-                String(
-                    IoUtil.readInputStream(
-                        repositoryService.getProcessModel(definition.id),
-                        "processModelBpmn20Xml"
-                    ), StandardCharsets.UTF_8
-                )
+                getBpmnXml(definition),
+                draft = definition.isSuspended()
             )
         }.sortedBy { it.processDefinition.version }
 
@@ -248,12 +248,7 @@ class ProcessLinkResource(
             processLinkService.getProcessLinks(definition.id).map {
                 getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
             },
-            String(
-                IoUtil.readInputStream(
-                    repositoryService.getProcessModel(definition.id),
-                    "processModelBpmn20Xml"
-                ), StandardCharsets.UTF_8
-            )
+            getBpmnXml(definition)
         )
 
         return ResponseEntity.ok(responseDto)
@@ -266,18 +261,13 @@ class ProcessLinkResource(
     ): ResponseEntity<List<ProcessDefinitionResponseDto>> {
         val definitions = operatonProcessService.getGlobalDefinitionsByKey(processDefinitionKey)
 
-        val responseDto = definitions.map {
+        val responseDto = definitions.map { definition ->
             ProcessDefinitionResponseDto(
-                ProcessDefinitionWithPropertiesDto.fromProcessDefinition(it),
-                processLinkService.getProcessLinks(it.id).map {
+                ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
+                processLinkService.getProcessLinks(definition.id).map {
                     getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                 },
-                String(
-                    IoUtil.readInputStream(
-                        repositoryService.getProcessModel(it.id),
-                        "processModelBpmn20Xml"
-                    ), StandardCharsets.UTF_8
-                )
+                getBpmnXml(definition)
             )
         }.sortedBy { it.processDefinition.version }
 
@@ -310,12 +300,7 @@ class ProcessLinkResource(
             processLinkService.getProcessLinks(definition.id).map {
                 getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
             },
-            String(
-                IoUtil.readInputStream(
-                    repositoryService.getProcessModel(definition.id),
-                    "processModelBpmn20Xml"
-                ), StandardCharsets.UTF_8
-            )
+            getBpmnXml(definition)
         )
 
         return ResponseEntity.ok(responseDto)
@@ -475,8 +460,40 @@ class ProcessLinkResource(
     }
 
 
+    @PostMapping(
+        value = ["/management/v1/process-definition/validate"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    fun validateProcessDefinition(
+        @RequestBody request: ProcessDefinitionValidateRequestDto
+    ): ResponseEntity<ProcessDefinitionValidateResponseDto> {
+        val bpmnModel = Bpmn.readModelFromStream(request.bpmnXml.byteInputStream())
+        val result = processDefinitionValidator.validate(bpmnModel, request.processLinks)
+        return ResponseEntity.ok(
+            ProcessDefinitionValidateResponseDto(
+                isValid = result.isValid,
+                hasWarnings = result.hasWarnings,
+                errors = result.errors
+            )
+        )
+    }
+
     private fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
         return processLinkMappers.singleOrNull { it.supportsProcessLinkType(processLinkType) }
             ?: throw IllegalStateException("No ProcessLinkMapper found for processLinkType $processLinkType")
+    }
+
+    private fun getBpmnXml(definition: OperatonProcessDefinition): String {
+        val xml = String(
+            IoUtil.readInputStream(
+                repositoryService.getProcessModel(definition.id),
+                "processModelBpmn20Xml"
+            ), StandardCharsets.UTF_8
+        )
+        if (definition.isSuspended()) {
+            return xml.replace("isExecutable=\"true\"", "isExecutable=\"false\"")
+        }
+        return xml
     }
 }

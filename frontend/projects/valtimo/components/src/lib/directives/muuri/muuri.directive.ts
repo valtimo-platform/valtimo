@@ -26,6 +26,7 @@ import {
 import Muuri from 'muuri';
 import {BehaviorSubject, combineLatest, fromEvent, Observable, Subscription, switchMap} from 'rxjs';
 import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
+import {resolveWidgetLayout, WidgetLayout} from './widget-layout';
 
 @Directive({
   selector: '[muuri]',
@@ -33,6 +34,7 @@ import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
 })
 export class MuuriDirective implements AfterViewInit, OnDestroy {
   @Input() public readonly columnMinWidth = 250;
+  @Input() public widgetLayout?: WidgetLayout;
 
   private readonly _muuriSubject$ = new BehaviorSubject<Muuri | null>(null);
   private readonly _containerWidthSubject$ = new BehaviorSubject<number>(0);
@@ -110,9 +112,7 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
 
     this._muuriSubject$.next(
       new Muuri(nativeElement, {
-        layout: {
-          fillGaps: true,
-        },
+        layout: resolveWidgetLayout(this.widgetLayout).muuriLayout,
         layoutOnResize: false,
       })
     );
@@ -160,7 +160,7 @@ export class MuuriDirective implements AfterViewInit, OnDestroy {
         this._muuri.refreshItems();
         this._muuri.layout(true);
       }
-    }, 50);
+    }, 200);
   }
 
   private observeContainerWidthChanges(): void {

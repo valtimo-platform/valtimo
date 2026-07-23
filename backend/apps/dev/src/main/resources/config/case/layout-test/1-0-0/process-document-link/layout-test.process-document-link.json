@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "layout-test",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

@@ -188,7 +188,7 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
             "title",
             "description",
             widgetConfigurations = widgets,
-            1
+            order = 1
         )
         val widget = WidgetConfiguration(
             "some-key",

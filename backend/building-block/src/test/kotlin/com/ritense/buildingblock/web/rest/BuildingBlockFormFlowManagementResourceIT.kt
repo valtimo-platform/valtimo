@@ -18,13 +18,13 @@ package com.ritense.buildingblock.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
-import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.AfterEach
@@ -54,7 +54,7 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     lateinit var buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService
 
     @MockitoSpyBean
-    lateinit var buildingBlockFormFlowDefinitionImporter: BuildingBlockFormFlowDefinitionImporter
+    lateinit var buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
 
     @Autowired
     lateinit var formFlowDefinitionRepository: FormFlowDefinitionRepository
@@ -72,6 +72,9 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
         // Both a building-block-linked and a case-linked form flow are present in the DB
         formFlowDefinitionRepository.save(FormFlowDefinition(bbDefinitionId, "start", emptySet()))
         formFlowDefinitionRepository.save(FormFlowDefinition(caseDefinitionId, "start", emptySet()))
+
+        doReturn(true).whenever(buildingBlockDefinitionChecker).canUpdateBuildingBlockDefinition(eq(bbId))
+        doNothing().whenever(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(eq(bbId))
     }
 
     @AfterEach
@@ -178,9 +181,7 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     fun `PUT update returns 403 when definition is auto-deployed (read-only)`() {
         val dto = FormFlowDefinitionDto(key = "readonly-flow", startStep = "start", steps = emptyList())
 
-        doReturn(true)
-            .whenever(buildingBlockFormFlowDefinitionImporter)
-            .isAutoDeployed(any(), eq("readonly-flow"))
+        doReturn(false).whenever(buildingBlockDefinitionChecker).canUpdateBuildingBlockDefinition(eq(bbId))
 
         mockMvc.put("$base/{key}/version/{versionTag}/form-flow-definition/{definitionKey}",
             "bezwaar", "1.0.0", "readonly-flow") {
@@ -204,9 +205,7 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     @Test
     @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `DELETE returns 403 when definition is auto-deployed (read-only)`() {
-        doReturn(true)
-            .whenever(buildingBlockFormFlowDefinitionImporter)
-            .isAutoDeployed(any(), eq("readonly-flow"))
+        doReturn(false).whenever(buildingBlockDefinitionChecker).canUpdateBuildingBlockDefinition(eq(bbId))
 
         mockMvc.delete("$base/{key}/version/{versionTag}/form-flow-definition/{definitionKey}",
             "bezwaar", "1.0.0", "readonly-flow")

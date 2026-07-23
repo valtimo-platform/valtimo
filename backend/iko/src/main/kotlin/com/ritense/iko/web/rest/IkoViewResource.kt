@@ -20,18 +20,21 @@ import com.ritense.iko.service.IkoViewService
 import com.ritense.iko.web.rest.response.IkoViewUserListResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.constraints.Size
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort.Direction.ASC
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 @SkipComponentScan
+@Validated
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class IkoViewResource(
     private val ikoViewService: IkoViewService,
@@ -39,8 +42,8 @@ class IkoViewResource(
 
     @GetMapping("/v1/iko-view")
     fun getIkoViews(
-        @RequestParam key: String?,
-        @RequestParam title: String?,
+        @RequestParam @Size(max = 256) key: String?,
+        @RequestParam @Size(max = 256) title: String?,
         @PageableDefault(size = 10000, sort = ["title"], direction = ASC) pageable: Pageable
     ): ResponseEntity<Page<IkoViewUserListResponse>> {
         val ikoViews = ikoViewService.findAll(

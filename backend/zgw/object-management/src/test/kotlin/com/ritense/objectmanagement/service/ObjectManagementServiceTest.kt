@@ -16,6 +16,7 @@
 
 package com.ritense.objectmanagement.service
 
+import com.ritense.authorization.AuthorizationService
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectsList
 import com.ritense.objectmanagement.domain.ObjectManagement
@@ -27,10 +28,13 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.service.SearchListColumnService
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageRequest
 import java.net.URI
@@ -42,12 +46,15 @@ internal class ObjectManagementServiceTest {
     val pluginService = mock<PluginService>()
     val searchFieldV2Service = mock<SearchFieldV2Service>()
     val searchListColumnService = mock<SearchListColumnService>()
+    val authorizationService = mock<AuthorizationService>()
 
     val objectManagementService = ObjectManagementService(
         objectManagementRepository,
         pluginService,
         searchFieldV2Service,
-        searchListColumnService
+        searchListColumnService,
+        authorizationService,
+        false
     )
 
     lateinit var objectenApiPlugin: ObjectenApiPlugin
@@ -152,5 +159,180 @@ internal class ObjectManagementServiceTest {
         whenever(objectenApiPlugin.getObjectsByObjectTypeId(any(), any(), any(), any(), any())).thenReturn(
             ObjectsList(count = 0, results = emptyList())
         )
+    }
+
+    @Test
+    fun `getObjectsByConfig should resolve config by id`() {
+        val objectManagement = createObjectManagement()
+        preparePlugins(objectManagement)
+        whenever(objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any()))
+            .thenReturn(ObjectsList(count = 0, results = emptyList()))
+
+        objectManagementService.getObjectsByConfig(
+            id = objectManagement.id,
+            title = null,
+            dataAttrs = null,
+            pageable = PageRequest.of(0, 10)
+        )
+
+        verify(objectenApiPlugin).getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `getObjectsByConfig should resolve config by title`() {
+        val objectManagement = createObjectManagement()
+        whenever(objectManagementRepository.findByTitle(objectManagement.title)).thenReturn(objectManagement)
+        preparePlugins(objectManagement)
+        whenever(objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any()))
+            .thenReturn(ObjectsList(count = 0, results = emptyList()))
+
+        objectManagementService.getObjectsByConfig(
+            id = null,
+            title = objectManagement.title,
+            dataAttrs = null,
+            pageable = PageRequest.of(0, 10)
+        )
+
+        verify(objectenApiPlugin).getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `getObjectsByConfig should return empty when config not found by id`() {
+        val id = UUID.randomUUID()
+        whenever(objectManagementRepository.findById(id)).thenReturn(java.util.Optional.empty())
+
+        val result = objectManagementService.getObjectsByConfig(
+            id = id,
+            title = null,
+            dataAttrs = null,
+            pageable = PageRequest.of(0, 10)
+        )
+
+        assertThat(result.content).isEmpty()
+        assertThat(result.totalElements).isEqualTo(0)
+    }
+
+    @Test
+    fun `getObjectsByConfig should return empty when config not found by title`() {
+        whenever(objectManagementRepository.findByTitle("nonexistent")).thenReturn(null)
+
+        val result = objectManagementService.getObjectsByConfig(
+            id = null,
+            title = "nonexistent",
+            dataAttrs = null,
+            pageable = PageRequest.of(0, 10)
+        )
+
+        assertThat(result.content).isEmpty()
+        assertThat(result.totalElements).isEqualTo(0)
+    }
+
+    @Test
+    fun `getObjectsByConfig should throw when neither id nor title provided`() {
+        assertThatThrownBy {
+            objectManagementService.getObjectsByConfig(
+                id = null,
+                title = null,
+                dataAttrs = null,
+                pageable = PageRequest.of(0, 10)
+            )
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("Either id or title must be provided")
+    }
+
+    @Test
+    fun `getObjectsByConfig should parse dataAttrs correctly`() {
+        val objectManagement = createObjectManagement()
+        preparePlugins(objectManagement)
+        whenever(objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any()))
+            .thenReturn(ObjectsList(count = 0, results = emptyList()))
+
+        objectManagementService.getObjectsByConfig(
+            id = objectManagement.id,
+            title = null,
+            dataAttrs = "name__icontains__test,status__exact__active",
+            pageable = PageRequest.of(0, 10)
+        )
+
+        verify(objectenApiPlugin).getObjectsByObjectTypeIdWithSearchParams(
+            any(), any(), any(), any(), any()
+        )
+    }
+
+    @Test
+    fun `getObjectsByConfig should throw on invalid dataAttrs format`() {
+        val objectManagement = createObjectManagement()
+        preparePlugins(objectManagement)
+
+        assertThatThrownBy {
+            objectManagementService.getObjectsByConfig(
+                id = objectManagement.id,
+                title = null,
+                dataAttrs = "invalid_format",
+                pageable = PageRequest.of(0, 10)
+            )
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("Invalid dataAttrs entry")
+    }
+
+    @Test
+    fun `getObjectsByConfig should throw on unknown comparator`() {
+        val objectManagement = createObjectManagement()
+        preparePlugins(objectManagement)
+
+        assertThatThrownBy {
+            objectManagementService.getObjectsByConfig(
+                id = objectManagement.id,
+                title = null,
+                dataAttrs = "name__unknown__test",
+                pageable = PageRequest.of(0, 10)
+            )
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("Invalid dataAttrs entry")
+    }
+
+    @Test
+    fun `getObjectsByConfig should parse nested dataAttrs path`() {
+        val objectManagement = createObjectManagement()
+        preparePlugins(objectManagement)
+        whenever(objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any()))
+            .thenReturn(ObjectsList(count = 0, results = emptyList()))
+
+        objectManagementService.getObjectsByConfig(
+            id = objectManagement.id,
+            title = null,
+            dataAttrs = "address__city__icontains__amsterdam",
+            pageable = PageRequest.of(0, 10)
+        )
+
+        val searchString = argumentCaptor<String>()
+        verify(objectenApiPlugin).getObjectsByObjectTypeIdWithSearchParams(
+            any(), any(), searchString.capture(), any(), any()
+        )
+        assertThat(searchString.firstValue).isEqualTo("address__city__icontains__amsterdam")
+    }
+
+    @Test
+    fun `getObjectsByConfig should keep multi-word dataAttrs value intact`() {
+        val objectManagement = createObjectManagement()
+        preparePlugins(objectManagement)
+        whenever(objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any()))
+            .thenReturn(ObjectsList(count = 0, results = emptyList()))
+
+        objectManagementService.getObjectsByConfig(
+            id = objectManagement.id,
+            title = null,
+            dataAttrs = "name__icontains__van der berg",
+            pageable = PageRequest.of(0, 10)
+        )
+
+        val searchString = argumentCaptor<String>()
+        verify(objectenApiPlugin).getObjectsByObjectTypeIdWithSearchParams(
+            any(), any(), searchString.capture(), any(), any()
+        )
+        assertThat(searchString.firstValue).isEqualTo("name__icontains__van der berg")
     }
 }

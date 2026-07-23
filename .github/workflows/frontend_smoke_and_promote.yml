@@ -1,0 +1,121 @@
+name: Frontend - smoke test image and promote to Docker Hub
+
+# Release gate for frontend images. The image was already built and pushed to
+# GHCR by frontend_build_push_docker_image.yml (GHCR-only during release). Here
+# we RUN that exact image and assert the things that actually break in these
+# nginx images: the Angular variant bundle was really copied in, the container's
+# startup `envsubst` produced assets/config.js, and nginx serves without
+# crash-looping. Only then do we promote the identical multi-arch manifest to
+# Docker Hub with `docker buildx imagetools create` (a manifest copy, no
+# rebuild), so Docker Hub never receives an image that has not served a page.
+
+permissions:
+  contents: read
+  packages: read
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        description: "GHCR/Docker Hub image name, e.g. gzac-frontend"
+        required: true
+        type: string
+      release_image_tag:
+        description: "Tag to publish on Docker Hub, e.g. 13.40.0"
+        required: true
+        type: string
+
+jobs:
+  smoke_and_promote:
+    name: "Smoke + promote ${{ inputs.image_name }}"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      SMOKE_IMAGE: ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:commit-production-${{ github.sha }}
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run image
+        run: |
+          set -euo pipefail
+          echo "Image under test: $SMOKE_IMAGE"
+          docker pull "$SMOKE_IMAGE"
+          docker run -d --name fe -p 8080:8080 "$SMOKE_IMAGE"
+
+      - name: Smoke test served content
+        run: |
+          set -uo pipefail
+
+          # 1) index.html is served (200) and is a real Angular shell — proves the
+          #    variant browser/ dir was actually copied in (catches an empty image
+          #    from a wrong VARIANT build-arg).
+          index=""
+          for _ in $(seq 1 30); do
+            index="$(curl -fsS http://localhost:8080/ 2>/dev/null || true)"
+            [ -n "$index" ] && break
+            sleep 2
+          done
+          if ! echo "$index" | grep -q '<app-root'; then
+            echo "::error::index.html did not contain <app-root — variant bundle missing or empty."
+            echo "$index" | head -20
+            docker logs fe || true
+            exit 1
+          fi
+          echo "index.html OK (<app-root present)"
+
+          # 2) assets/config.js exists — proves config.template.js shipped and the
+          #    container's startup envsubst succeeded (the fragile part of the CMD).
+          if ! curl -fsS http://localhost:8080/assets/config.js >/dev/null 2>&1; then
+            echo "::error::/assets/config.js missing — startup envsubst of config.template.js failed."
+            docker logs fe || true
+            exit 1
+          fi
+          echo "assets/config.js OK (envsubst ran)"
+
+          # 3) a real Angular JS bundle referenced by index.html resolves —
+          #    proves the build produced bundles, not a zero-byte dist. Exclude
+          #    assets/config.js (it always exists and is checked above), so this
+          #    targets an actual app bundle (runtime.js / main.js / hashed).
+          bundle="$(echo "$index" | grep -oE 'src="[^"]+\.js"' | sed -E 's/src="([^"]+)"/\1/' | grep -viE '(^|/)config\.js$' | head -1)"
+          if [ -z "$bundle" ]; then
+            echo "::error::no app .js bundle referenced in index.html."
+            exit 1
+          fi
+          if ! curl -fsS "http://localhost:8080/${bundle#/}" >/dev/null 2>&1; then
+            echo "::error::referenced bundle ${bundle} did not resolve (200)."
+            exit 1
+          fi
+          echo "bundle ${bundle} OK"
+
+          # 4) container is still up (catches nginx config errors that crash-loop).
+          if [ "$(docker inspect -f '{{.State.Running}}' fe)" != "true" ]; then
+            echo "::error::container is not running — nginx likely crashed."
+            docker logs fe || true
+            exit 1
+          fi
+          echo "container still running OK"
+
+      - name: Tear down container
+        if: always()
+        run: docker rm -f fe || true
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Promote tested image to Docker Hub
+        run: |
+          set -euo pipefail
+          TARGET="docker.io/ritense/${{ inputs.image_name }}:${{ inputs.release_image_tag }}"
+          echo "Promoting $SMOKE_IMAGE -> $TARGET (multi-arch manifest copy)"
+          docker buildx imagetools create --tag "$TARGET" "$SMOKE_IMAGE"
+          docker buildx imagetools inspect "$TARGET"

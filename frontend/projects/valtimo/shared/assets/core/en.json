@@ -44,6 +44,14 @@
       "content": "Are you sure you want to change tabs? All selection will be lost.",
       "confirm": "Change tab"
     },
+    "draftProcessConfirmation": {
+      "title": "Start draft process",
+      "content": "Are you sure you want to start this draft process?",
+      "warningTitle": "Warning: Draft process",
+      "warningDescription": "This process definition is still in draft and may not work as expected.",
+      "confirm": "Start anyway",
+      "cancel": "Cancel"
+    },
     "noResults": {
       "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
       "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
@@ -138,6 +146,7 @@
         "regularUser": "The document upload is not available for this case. Please contact an administrator",
         "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
       },
+      "maxFilesReached": "The maximum number of files ({{maxFiles}}) has been reached. No more files can be uploaded.",
       "navigateToCaseAdmin": "Configure Zaak",
       "noZaakFoundTitle": "No Zaak found",
       "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
@@ -169,7 +178,271 @@
       "noFormSpecified": "No form definition has been specified for this tab.",
       "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
     },
-    "rowLocked": "You don't have access to this case"
+    "rowLocked": "You don't have access to this case",
+    "inspection": {
+      "openInspector": "Inspect case",
+      "pageTitle": "Case inspection",
+      "placeholder": "This tab will be populated in a later phase.",
+      "tabs": {
+        "document": "Document",
+        "processes": "Processes",
+        "buildingBlocks": "Building blocks",
+        "logs": "Logs",
+        "zgw": "ZGW",
+        "metadata": "Metadata"
+      },
+      "document": {
+        "loading": "Loading document...",
+        "saved": "Document updated"
+      },
+      "buildingBlocks": {
+        "loading": "Loading building blocks...",
+        "emptyTitle": "No building blocks",
+        "empty": "This case has no building block instances.",
+        "notEnabled": "Building blocks are not enabled for this Valtimo installation.",
+        "saved": "Building block document updated",
+        "listAriaLabel": "Building blocks",
+        "detail": {
+          "instanceId": "Instance ID",
+          "documentId": "Document ID",
+          "processInstance": "Process instance",
+          "parent": "Parent",
+          "content": "Document content",
+          "loading": "Loading building block..."
+        }
+      },
+      "processes": {
+        "loading": "Loading processes...",
+        "empty": "No process instances are associated with this case.",
+        "listAriaLabel": "Process instances",
+        "buildingBlockTag": "BB",
+        "buildingBlockTagTooltip": "This process belongs to a building block",
+        "instanceId": "Instance ID",
+        "buildingBlock": "Building block",
+        "detailsTab": "Details",
+        "diagramTab": "Diagram",
+        "version": "Version",
+        "active": "Active",
+        "completed": "Completed",
+        "incidentsHeader": "Incidents",
+        "incidentTooltip": "Active incidents on this instance",
+        "incidentType": "Type",
+        "activity": "Activity",
+        "message": "Message",
+        "timestamp": "Timestamp",
+        "tasksHeader": "Tasks",
+        "taskName": "Task",
+        "taskAssignee": "Assignee",
+        "taskCreated": "Created",
+        "noTasks": "No active tasks.",
+        "variablesHeader": "Variables",
+        "variableName": "Name",
+        "variableType": "Type",
+        "variableValue": "Value",
+        "noVariables": "No variables.",
+        "jobsHeader": "Jobs",
+        "jobType": "Type",
+        "jobActivity": "Activity",
+        "jobRetries": "Retries left",
+        "jobDueDate": "Due",
+        "jobException": "Exception",
+        "jobTypeLabel": {
+          "TIMER": "Timer",
+          "ASYNC_CONTINUATION": "Async continuation",
+          "MESSAGE": "Message",
+          "BATCH": "Batch",
+          "OTHER": "Other"
+        },
+        "noJobs": "No jobs.",
+        "startedBy": "Started by",
+        "startedOn": "Started on",
+        "viewLogs": "View logs",
+        "variableActions": {
+          "add": "Add variable",
+          "edit": "Edit",
+          "delete": "Delete",
+          "deleteConfirmTitle": "Delete variable",
+          "deleteConfirmContent": "Are you sure you want to delete the variable '{{name}}'? This affects the running process.",
+          "createdToast": "Variable '{{name}}' created",
+          "updatedToast": "Variable '{{name}}' updated",
+          "deletedToast": "Variable '{{name}}' deleted",
+          "createFailed": "Failed to create variable",
+          "updateFailed": "Failed to update variable",
+          "deleteFailed": "Failed to delete variable",
+          "alreadyExists": "A variable with this name already exists"
+        },
+        "variableModal": {
+          "addTitle": "Add process variable",
+          "editTitle": "Edit process variable",
+          "name": "Name",
+          "type": "Type",
+          "value": "Value",
+          "invalidJson": "Value is not valid JSON",
+          "invalidNumber": "Value is not a valid number",
+          "save": "Save",
+          "cancel": "Cancel",
+          "types": {
+            "STRING": "String",
+            "INTEGER": "Integer",
+            "LONG": "Long",
+            "DOUBLE": "Double",
+            "BOOLEAN": "Boolean",
+            "JSON": "JSON / Object"
+          }
+        }
+      },
+      "logs": {
+        "loading": "Loading logs...",
+        "empty": "No log entries are stored for this case.",
+        "emptyFiltered": "No log entries match the current filters.",
+        "filters": {
+          "message": "Message contains",
+          "messagePlaceholder": "Search message...",
+          "level": "Minimum level",
+          "levelPlaceholder": "All levels",
+          "after": "From",
+          "before": "Until",
+          "apply": "Apply",
+          "reset": "Reset",
+          "processInstanceChip": "Process instance",
+          "clearProcessInstance": "Clear process filter"
+        },
+        "columns": {
+          "timestamp": "Timestamp",
+          "level": "Level",
+          "message": "Message"
+        },
+        "detail": {
+          "properties": "Context (MDC)",
+          "stacktrace": "Stacktrace"
+        }
+      },
+      "metadata": {
+        "loading": "Loading metadata...",
+        "documentId": "Document ID",
+        "definitionName": "Definition",
+        "sequence": "Sequence",
+        "version": "Version",
+        "createdBy": "Created by",
+        "createdOn": "Created on",
+        "modifiedOn": "Modified on",
+        "assignee": "Assignee",
+        "assignedTeam": "Assigned team",
+        "internalStatus": "Internal status",
+        "tags": "Tags",
+        "relations": "Relations",
+        "relatedFiles": "Related files",
+        "unassigned": "Unassigned",
+        "noStatus": "No status",
+        "noTags": "No tags",
+        "noRelations": "No relations"
+      },
+      "zgw": {
+        "loading": "Loading ZGW information...",
+        "empty": "This case is not linked to a zaak.",
+        "yes": "Yes",
+        "no": "No",
+        "zaakUnreachable": {
+          "title": "Failed to load zaak",
+          "message": "The zaak linked to this case could not be loaded. The link may be stale, the Zaken API plugin may be misconfigured, or the zaak may have been deleted.",
+          "details": "Error details"
+        },
+        "warnings": {
+          "title": "Some sections failed to load"
+        },
+        "actions": {
+          "copy": "Copy",
+          "openExternal": "Open in external system",
+          "resolveContent": "Resolve content",
+          "viewLatestContent": "View latest content"
+        },
+        "zaak": {
+          "title": "Zaak",
+          "identificatie": "Identificatie",
+          "uuid": "UUID",
+          "url": "Zaak URL",
+          "bronorganisatie": "Bronorganisatie",
+          "zaaktype": "Zaaktype",
+          "registratiedatum": "Registratiedatum",
+          "startdatum": "Startdatum",
+          "einddatum": "Einddatum",
+          "einddatumGepland": "Einddatum (gepland)",
+          "uiterlijkeEinddatumAfdoening": "Uiterlijke einddatum afdoening",
+          "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding",
+          "archiefstatus": "Archiefstatus",
+          "betalingsindicatie": "Betalingsindicatie",
+          "currentStatus": "Current status",
+          "currentResultaat": "Current resultaat",
+          "noStatus": "No status set",
+          "noResultaat": "No resultaat set"
+        },
+        "eigenschappen": {
+          "title": "Eigenschappen",
+          "empty": "No eigenschappen for this zaak.",
+          "naam": "Naam",
+          "waarde": "Waarde",
+          "eigenschapUrl": "Eigenschap",
+          "zaakeigenschapUrl": "Zaakeigenschap"
+        },
+        "rollen": {
+          "title": "Rollen",
+          "empty": "No rollen for this zaak.",
+          "betrokkeneType": "Betrokkene type",
+          "roltype": "Roltype",
+          "identificatie": "Identificatie (BSN / KvK)",
+          "indicatieMachtiging": "Indicatie machtiging",
+          "url": "Rol URL"
+        },
+        "statusHistory": {
+          "title": "Status history",
+          "empty": "No statuses recorded.",
+          "datumStatusGezet": "Datum status gezet",
+          "statustype": "Statustype",
+          "statustoelichting": "Statustoelichting"
+        },
+        "resultaat": {
+          "title": "Resultaat",
+          "empty": "No resultaat for this zaak.",
+          "resultaattype": "Resultaattype",
+          "toelichting": "Toelichting"
+        },
+        "zaakobjecten": {
+          "title": "Zaakobjecten",
+          "empty": "No zaakobjecten linked to this zaak.",
+          "objectUrl": "Object URL",
+          "objectType": "Object type",
+          "relatieomschrijving": "Relatieomschrijving",
+          "resolveLoading": "Resolving content...",
+          "notResolved": "Could not resolve content"
+        },
+        "zaakinformatieobjecten": {
+          "title": "Zaakinformatieobjecten",
+          "empty": "No documents linked to this zaak.",
+          "titel": "Title",
+          "url": "Document URL",
+          "registratiedatum": "Registratiedatum"
+        },
+        "besluiten": {
+          "title": "Besluiten",
+          "empty": "No besluiten linked to this zaak.",
+          "url": "Besluit URL"
+        },
+        "zaakdetails": {
+          "title": "Zaakdetails sync object",
+          "notConfigured": "No portal sync configured for this case type.",
+          "objectManagementTitle": "Object management configuration",
+          "caseDefinitionKey": "Case definition",
+          "enabled": "Enabled",
+          "objectUrl": "Zaakdetails object URL",
+          "linkedToZaak": "Linked to zaak",
+          "contentLoading": "Resolving content...",
+          "contentNotResolved": "Could not resolve content"
+        },
+        "rawJson": {
+          "title": "Raw zaak JSON"
+        }
+      }
+    }
   },
   "document": {
     "title": {"single": "Document", "plural": "Documents"},
@@ -421,8 +694,25 @@
       "fileUploaderDescription": "Only files with the .dmn extension are allowed.",
       "fileUploaderButton": "Choose DMN file"
     },
+    "create": "Create DMN table",
+    "createModal": {
+      "title": "Create decision table",
+      "name": "Name",
+      "namePlaceholder": "e.g. Eligibility decision",
+      "nameRequired": "Name is required",
+      "inputVariables": "Input variables (optional)",
+      "inputVariablesHelper": "Input columns are optional - you can leave this empty. For every row you add, the process variable is required; the label is optional and the process variable name is used as the column header when it is left blank. You can add or change these later in the editor.",
+      "inputLabel": "Label (optional)",
+      "inputExpression": "Process variable (required)",
+      "inputExpressionRequired": "A process variable is required for each input column.",
+      "addInputVariable": "Add input variable"
+    },
+    "editModal": {
+      "title": "Edit decision table"
+    },
     "version": "Version",
     "deploy": "Save",
+    "readOnly": "Read-only",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
     "deployFailure": "Something went wrong with deploying your decision table.",
@@ -435,6 +725,7 @@
   },
   "message": {"empty": "No result found"},
   "cta": {"close": "Close", "moreDetails": "More details"},
+  "carousel": {"previous": "Previous", "next": "Next", "goToSlide": "Go to slide"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To configure this, click on the button below.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
@@ -450,7 +741,7 @@
     "deploy": "Save",
     "duplicate": "Duplicate",
     "readOnly": "Read-only",
-    "add": "Add form",
+    "add": "Create form",
     "navigateToRelatedCase": "Go to case (opens in new tab)",
     "tabs": {"formBuilder": "Form builder", "jsonEditor": "JSON editor", "output": "Output"},
     "intermediateSave": {
@@ -601,7 +892,8 @@
       "notFinalizableWarning": {
         "title": "This case definition cannot be finalized.",
         "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
-        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing."
+        "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing.",
+        "PROCESS_DEFINITION_IN_DRAFT": "The case definition contains process definitions that are still in draft. Finalize all process definitions before finalizing the case definition."
       }
     },
     "environmentConfig": {
@@ -659,7 +951,7 @@
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",
-          "message": "This case cannot be updated because it is final."
+          "message": "This case definition cannot be changed because this version is final. Please create a new draft to make changes."
         },
         "linkUploadProcess": {
           "title": "Link upload process to case",
@@ -696,10 +988,10 @@
         "showTasks": "Task list visible"
       },
       "addModal": {
-        "addTab": "Add tab",
+        "addTab": "Create tab",
         "customComponent": "Custom component",
         "customComponentDisabled": "There are no custom components available, or they have all been added already.",
-        "description": "Select one of the options to add a new tab to your case definition",
+        "description": "Select one of the options to create a new tab in your case definition",
         "formIOComponent": "FormIO component",
         "formIOComponentDisabled": "No Form.io form definitions available",
         "standardTab": "Standard tab",
@@ -707,7 +999,7 @@
         "tabContentLabel": "Choose content",
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tab name (optional)",
-        "title": "Add new tab in {{documentDefinitionName}}",
+        "title": "Create new tab in {{documentDefinitionName}}",
         "uniqueKeyError": "The key for this tab must be unique.",
         "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
         "widgetsComponent": "Widgets component",
@@ -716,10 +1008,10 @@
         "invisible": "Not visible"
       },
       "titles": {
-        "custom": "Add new tab with custom component",
-        "formio": "Add new tab with FormIO component",
-        "standard": "Add new tab with standard content",
-        "widgets": "Add a new tab with widgets"
+        "custom": "Create new tab with custom component",
+        "formio": "Create new tab with FormIO component",
+        "standard": "Create new tab with standard content",
+        "widgets": "Create a new tab with widgets"
       },
       "contentLabels": {
         "custom": "Choose custom component",
@@ -738,7 +1030,7 @@
         "name": "Name",
         "type": "Type"
       },
-      "addItem": "Add an action",
+      "addItem": "Create an action",
       "noResults": "No actions configured",
       "noResultsDescription": "No actions are configured for this case type.",
       "infoNotification": {
@@ -749,10 +1041,10 @@
         "BUILDING_BLOCK": "Building block"
       },
       "modal": {
-        "addTitle": "Add an action",
+        "addTitle": "Create an action",
         "addDescription": "Select a process or a building block for the user to start",
-        "addProcessTitle": "Add process as action",
-        "addBuildingBlockTitle": "Add building block as action",
+        "addProcessTitle": "Create process as action",
+        "addBuildingBlockTitle": "Create building block as action",
         "editProcessTitle": "Edit process action",
         "editBuildingBlockTitle": "Edit building block action",
         "selectProcess": "Select a process",
@@ -760,7 +1052,7 @@
         "selectProcessDescription": "Select a process for the user to start",
         "selectBuildingBlockDescription": "Select a building block for the user to start",
         "filterPlaceholder": "Filter...",
-        "add": "Add",
+        "add": "Create",
         "save": "Save",
         "back": "Back",
         "next": "Next",
@@ -871,12 +1163,12 @@
       "versionTooltip": "The version is used for the visible version of the case definition in the UI. Use Semantic Versioning (e.g. 1.0.0).",
       "description": "Case definition description",
       "descriptionPlaceholder": "Enter description here",
-      "descriptionTooltip": "The description is used for the visible description of the case definition in the UI"
+      "descriptionTooltip": "The description is used for the visible description of the case definition in the UI. Maximum {{ maxLength }} characters."
     },
     "statuses": {
       "withoutStatus": "Show cases without a status",
       "searchFieldTitle": "Status",
-      "add": "Add status",
+      "add": "Create status",
       "edit": "Edit status",
       "visibleTitle": "Default visibility in case list",
       "visible": "Visible",
@@ -905,7 +1197,7 @@
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
-      "add": "Add tag",
+      "add": "Create tag",
       "edit": "Edit tag",
       "visible": "Visible",
       "invisible": "Not visible",
@@ -995,7 +1287,10 @@
       "collection": {"title": "Collection", "description": "Create a collection"},
       "divider": {"title": "Divider"},
       "map": {"title": "Map", "description": "Create a map widget"},
-      "person-card": {"title": "Person card", "description": "A person with their key details and contact info"},
+      "person-card": {
+        "title": "Person card",
+        "description": "A person with their key details and contact info"
+      },
       "metroline": {
         "title": "Metroline",
         "description": "Show progression as a metroline"
@@ -1003,6 +1298,18 @@
       "highlight": {
         "title": "Highlight",
         "description": "A small widget that highlights a single value or a count"
+      },
+      "image": {
+        "title": "Image",
+        "description": "Show an uploaded image"
+      },
+      "generic": {
+        "title": "Generic widgets",
+        "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
+      },
+      "specific": {
+        "title": "Specific widgets",
+        "description": "Each is built for one kind of data — a person, a count, a single value. Fewer options to configure, but only suitable for that purpose."
       }
     },
     "width": {
@@ -1089,7 +1396,7 @@
         "keyTooltip": "Value resolver path to GeoJSON data"
       },
       "person-card": {
-        "description": "Pick the icon and the source paths for each person field.",
+        "description": "Choose the person to render and which sections to show on the card.",
         "fullNameLabel": "Full name",
         "birthDateLabel": "Birth date (Optional)",
         "bsnLabel": "BSN (Optional)",
@@ -1154,6 +1461,28 @@
           "placeholder": "Select a status source",
           "internalStatus": "Internal status",
           "zaakStatus": "Zaak status"
+        },
+        "iko": {
+          "source": {
+            "label": "Items source",
+            "placeholder": "iko:/statushistorie",
+            "tooltip": "Path expression resolving to an array. Each element of the array becomes one step in the timeline. Example: iko:/statushistorie"
+          },
+          "titlePath": {
+            "label": "Title path",
+            "placeholder": "/statustype/omschrijving",
+            "tooltip": "Path applied to each item to extract its title. Example: /statustype/omschrijving"
+          },
+          "labelPath": {
+            "label": "Tooltip text path (optional)",
+            "placeholder": "/statustype/toelichting",
+            "tooltip": "Optional path applied to each item to extract the text shown in the step's info tooltip (the icon next to the title). Example: /statustype/toelichting"
+          },
+          "completedPath": {
+            "label": "Completion timestamp path",
+            "placeholder": "/datumStatusGezet",
+            "tooltip": "Path applied to each item to extract the timestamp at which the step was reached. Expected as an ISO-8601 timestamp, with or without a timezone offset (e.g. 2025-08-15T10:30:00, 2025-08-15T10:30:00Z, or 2025-08-15T10:30:00+02:00). Items whose value is empty or unparseable are rendered as not yet reached. Example: /datumStatusGezet"
+          }
         }
       },
       "highlight": {
@@ -1162,6 +1491,13 @@
         "valuePlaceholder": "Select or type a path",
         "valueHelper": "Shows the value at this path. If it resolves to an array, the count of items is shown instead.",
         "accentColor": "Accent color"
+      },
+      "image": {
+        "description": "",
+        "value": "Value",
+        "valuePlaceholder": "Select or type a path",
+        "valueHelper": "Shows the image stored at this path. The path must resolve to an uploaded file resource.",
+        "displayAsCarousel": "Display as carousel"
       }
     },
     "filters": {
@@ -1220,7 +1556,7 @@
   "zgw": {
     "columns": {
       "column": "Column",
-      "add": "Add column",
+      "add": "Create column",
       "edit": "Edit column",
       "deleteText": "Are you sure you want to delete this column?",
       "notSortable": "This column is not sortable",
@@ -1298,10 +1634,10 @@
     },
     "tags": {
       "tag": "Tag",
-      "add": "Add tag",
+      "add": "Create tag",
       "deleteText": "Are you sure you want to delete this tag?",
       "deleteMultipleText": "Are you sure you want to delete these tags?",
-      "addModal": {"header": "Add tag"},
+      "addModal": {"header": "Create tag"},
       "list": {"noResultsTitle": "No tags", "noResultsDescription": "Add a tag to start"},
       "search": {
         "noResultsTitle": "No results",
@@ -1429,7 +1765,7 @@
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
   "Case": "Case",
   "Cases": "Cases",
-  "Deployment": "Deployment",
+  "Deployment": "Version management",
   "document definition": "Document definition",
   "Upload document definition": "Upload document definition",
   "Remove document definition": "Remove document definition",
@@ -1476,6 +1812,15 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
+    "validate": "Validate",
+    "validationSuccessNotification": "Process definition is valid",
+    "validationWarningNotification": "Process definition has warnings",
+    "draft": "Draft",
+    "status": "Status",
+    "draftTooltip": "When enabled, the process definition is saved as a draft. Draft definitions are not validated and cannot be started.",
+    "validationErrors": "Validation errors",
+    "validationErrorsCount": "Validation errors ({{count}})",
+    "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
     "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
     "upload": {
@@ -1492,7 +1837,22 @@
       "replaceConfirm": "Replace"
     },
     "canInitializeDocument": "Starts case",
-    "startableByUser": "Startable by user"
+    "startableByUser": "Startable by user",
+    "expressionErrors": {
+      "MISSING_EL_MARKERS": "Expression {{expression}} must use ${...} or #{...} syntax",
+      "UNCLOSED_PARENTHESIS": "Expression {{expression}} has an unclosed parenthesis '('",
+      "UNCLOSED_BRACE": "Expression {{expression}} is missing a closing brace '}'",
+      "UNCLOSED_BRACKET": "Expression {{expression}} has an unclosed bracket '['",
+      "MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
+      "INCOMPLETE_EXPRESSION": "Expression {{expression}} is incomplete",
+      "INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
+      "BEAN_NOT_FOUND": "No bean found with this name: {{expression}}. If using a process variable, ensure it exists at runtime"
+    },
+    "warningConfirmation": {
+      "title": "Process has warnings",
+      "content": "The process definition contains warnings. Are you sure you want to save it without resolving the warnings?",
+      "confirm": "Save anyway"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "No processes",
@@ -1783,7 +2143,9 @@
     "showingResults": "Showing {{number}} of {{total}} results",
     "showingResult": "Showing {{number}} result",
     "automaticallyGenerated": "Automatically generated",
-    "search": "Search..."
+    "search": "Search...",
+    "globalSearchFilter": "Search entire document",
+    "globalSearchFilterPlaceholder": "Search across all document fields..."
   },
   "webcam": {"takePicture": "Take picture", "save": "Save", "redo": "Redo"},
   "customers": {
@@ -1898,7 +2260,7 @@
   "searchFieldsOverview": {
     "title": "Title",
     "key": "Key",
-    "add": "Add search field",
+    "add": "Create search field",
     "edit": "Edit search field",
     "path": "Path",
     "dataType": "Data type",
@@ -1917,7 +2279,7 @@
     "save": "save",
     "delete": "Delete",
     "download": "Download",
-    "addRow": "Add search field",
+    "addRow": "Create search field",
     "searchFieldPlaceholder": "Select a type...",
     "noSearchFieldsConfiguredWarningTitle": "No search fields configured",
     "deleteSearchField": "Delete search field",
@@ -1966,6 +2328,7 @@
     "defaultSort": "Default Sort",
     "defaultSortTitle": "Default Sort (optional)",
     "defaultSortTooltip": "If this field has a value, the table will be sorted by default on this property, in the direction specified. Only one column at a time can have this property. On creating a new column, if another column already has a default sort specified, this input field will be disabled.",
+    "defaultSortDisabledNotice": "Another column already has a default sort configured. Only one column can have a default sort at a time. Remove the existing default sort to enable this field.",
     "selectDefaultSort": "Select a default sort",
     "sortableYes": "Yes",
     "sortableNo": "No",
@@ -1977,7 +2340,7 @@
     "hasEnvConfigWarning": "This case type already has a column configuration in the environment configuration. Delete this in order to add columns here.",
     "noConfigWarningTitle": "No columns",
     "noConfigWarning": "There are no columns configured for this case type.",
-    "addButtonText": "Add column",
+    "addButtonText": "Create column",
     "editColumnTitle": "Edit column",
     "close": "Close",
     "save": "Save column",
@@ -2165,8 +2528,8 @@
       "options": {"modal": "Modal", "panel": "Panel"}
     },
     "formSize": {
-      "label": "Select modal size",
-      "placeholder": "Select a modal size",
+      "label": "Select form size",
+      "placeholder": "Select a form size",
       "options": {
         "extraSmall": "Extra small",
         "small": "Small",
@@ -2201,6 +2564,9 @@
       "key": "Role key",
       "add": "Add new role",
       "name": "Role name",
+      "selectRole": "Select a role",
+      "chooseFromList": "Choose from list",
+      "enterManually": "Enter manually",
       "deleteModalContent": "Are you sure you want to delete these roles and all underlying permissions? This action cannot be undone.",
       "editMetadata": "Edit metadata",
       "editRole": "Edit Role",
@@ -2211,6 +2577,343 @@
       "noResults": {
         "description": "Click <strong>Add new role</strong> to start designing your role",
         "title": "No roles added"
+      },
+      "tabs": {
+        "summary": "Summary",
+        "editor": "Editor",
+        "jsonEditor": "JSON editor"
+      }
+    },
+    "resourceTypes": {
+      "caseDefinition": "Case definition",
+      "caseTab": "Case tab",
+      "caseWidget": "Case widget",
+      "caseWidgetTabWidget": "Case tab widget",
+      "dashboard": "Dashboard",
+      "jsonSchemaDocument": "Document",
+      "jsonSchemaDocumentDefinition": "Document definition",
+      "jsonSchemaDocumentSnapshot": "Document snapshot",
+      "searchField": "Search field",
+      "zgwDocument": "ZGW document",
+      "ikoView": "IKO view",
+      "note": "Note",
+      "object": "Objecten API Object",
+      "resourcePermission": "Uploaded resource",
+      "team": "Team",
+      "user": "User",
+      "operatonExecution": "Process instance",
+      "operatonIdentityLink": "User assignment",
+      "operatonProcessDefinition": "Process definition",
+      "operatonTask": "Task"
+    },
+    "actions": {
+      "view": "View",
+      "view_list": "View list",
+      "create": "Create",
+      "modify": "Modify",
+      "delete": "Delete",
+      "assign": "Assign",
+      "assignable": "Be assigned to",
+      "claim": "Claim",
+      "complete": "Complete",
+      "export": "Export",
+      "inspect": "Inspect",
+      "inspect_modify": "Inspect and modify"
+    },
+    "actionDescriptions": {
+      "view": "Open and read a single resource.",
+      "view_list": "See the resource in lists and search results.",
+      "create": "Create a new resource.",
+      "modify": "Change an existing resource.",
+      "delete": "Permanently remove a resource.",
+      "assign": "Assign the resource to a user.",
+      "assignable": "Be selectable as the assignee of the resource.",
+      "claim": "Claim the resource to work on it yourself.",
+      "complete": "Mark the resource as completed.",
+      "export": "Export the resource's data.",
+      "inspect": "View the resource's details without changing it.",
+      "inspect_modify": "View the resource's details and change it."
+    },
+    "filter": {
+      "resourceType": "Resource type",
+      "action": "Action",
+      "allResourceTypes": "All resource types",
+      "allActions": "All actions"
+    },
+    "editor": {
+      "permission": "Permission",
+      "permissions": "Permissions",
+      "newPermission": "New permission",
+      "hasConditions": "Conditions",
+      "hasContext": "Context",
+      "preview": {
+        "actions": "Actions",
+        "includes": "Includes"
+      },
+      "addPermission": "Add permission",
+      "removePermission": "Remove permission",
+      "removePermissionModal": {
+        "title": "Remove permission?",
+        "content": "This permission is removed from the list. It is not actually deleted until you save the whole set of permissions."
+      },
+      "resourceAndActions": "Resource & actions",
+      "resourceActionsHint": "Choose the resource this permission applies to and the actions it grants.",
+      "permissionsHint": "You're configuring a permission on {{resource}} for the {{role}} role. Only options the system supports can be selected.",
+      "permissionsHintNew": "You're configuring a permission for the {{role}} role. Only options the system supports can be selected.",
+      "resourceType": "Resource type",
+      "resourceTypePlaceholder": "Select a resource type",
+      "actions": "Allowed actions",
+      "noActions": "No actions are available for this resource type.",
+      "conditions": "Conditions",
+      "conditionsHint": "Access is only granted when all conditions are met. Leave empty to always grant access.",
+      "conditionType": "Condition type",
+      "conditionTypes": {
+        "field": "Field",
+        "expression": "JSON field",
+        "container": "Related resource"
+      },
+      "field": "Field to read from",
+      "fieldPlaceholder": "Select a field",
+      "operator": "Operator to compare with",
+      "value": "Value to compare to",
+      "valuePlaceholder": "e.g. null, true, 42, ${currentUserId} or [\"OPEN\", \"CLOSED\"]",
+      "path": "JSON path",
+      "pathPlaceholder": "e.g. /root/status",
+      "clazz": "Value type (class)",
+      "clazzPlaceholder": "e.g. java.lang.String",
+      "valueTypeFromList": "Choose from list",
+      "valueTypeManual": "Enter manually",
+      "relatedResource": "Related resource",
+      "relatedResourcePlaceholder": "Select a related resource",
+      "addCondition": "Add condition",
+      "contextSection": "Context",
+      "contextHint": "Choose whether and how context affects this permission.",
+      "contextModeNone": "No restriction",
+      "contextModeNoContext": "Only without context",
+      "contextModeSpecific": "Specific context",
+      "noContextHint": "This permission only applies when the resource is accessed on its own — not within any related resource.",
+      "contextResourceType": "Context resource",
+      "contextResourceTypePlaceholder": "Select a context resource",
+      "empty": {
+        "title": "No permissions yet",
+        "message": "Add a permission to start granting this role access to resources."
+      },
+      "tooltips": {
+        "resourceType": "The type of resource this permission grants access to. For example: a case definition, document or task.",
+        "actions": "What this role is allowed to do with the resource. For example: view, modify or delete. At least one must be selected.",
+        "conditionType": "Field compares a property of the resource. JSON field reads a value at a JSON path inside the field's JSON content. Related resource checks a linked resource (e.g. the document of a case).",
+        "field": "A property of the resource to check. For example: name, createdBy or active.",
+        "operator": "How the field is compared to the value. For example: equals, is one of, or contains.",
+        "value": "The value to compare against — e.g. text like OPEN, a number like 42, true/false, or one of the supported placeholders: ${currentUserId}, ${currentUsername}, ${currentUserEmail}, ${currentUserRoles}, ${currentUserTeams}. For the 'is one of' and 'contains' operators, enter a JSON array such as [\"OPEN\", \"CLOSED\"]. Type null for no value — the field may not be left empty.",
+        "path": "A JSON path into the content of the field chosen in 'Field to read from'. For example: /root/status or /aanvrager/bsn.",
+        "clazz": "The fully-qualified Java type of the value. For example: java.lang.String or java.lang.Boolean.",
+        "relatedResource": "The linked resource to evaluate the nested conditions against. For example: the document attached to a case.",
+        "contextResourceType": "Only grant this permission when the resource is accessed within another resource. For example: documents within a specific case definition."
+      }
+    },
+    "overview": {
+      "canDo": "Can",
+      "can": "can",
+      "cannot": "cannot",
+      "and": "and",
+      "or": "or",
+      "when": "when",
+      "unconditional": "without conditions",
+      "relatedResource": "Related",
+      "where": "where",
+      "atJsonPath": "at JSON path",
+      "inContextOf": "in the context of",
+      "noContext": "Without context",
+      "customField": "(custom field)",
+      "customResource": "(custom resource)",
+      "noAccess": "No access",
+      "empty": {
+        "title": "No permissions",
+        "message": "This role has no permissions configured yet."
+      },
+      "operators": {
+        "eq": "equals",
+        "neq": "does not equal",
+        "gt": "is greater than",
+        "gte": "is greater than or equal to",
+        "lt": "is less than",
+        "lte": "is less than or equal to",
+        "in": "is one of",
+        "list_contains": "contains"
+      },
+      "specialValues": {
+        "currentUserId": "the current user's ID",
+        "currentUsername": "the current user",
+        "currentUserEmail": "the current user's email",
+        "currentUserRoles": "the current user's roles",
+        "currentUserTeams": "the current user's teams",
+        "null": "(none)",
+        "empty": "(empty)"
+      },
+      "fields": {
+        "caseDefinition": {
+          "idKey": "case definition key",
+          "idVersionTag": "case definition version",
+          "name": "case definition name",
+          "description": "description",
+          "basedOnVersionTag": "based on version",
+          "final": "is final",
+          "active": "is active",
+          "canHaveAssignee": "can have assignee",
+          "autoAssignTasks": "auto-assign tasks",
+          "hasExternalStartForm": "has external start form",
+          "externalStartFormUrl": "external start form URL",
+          "externalStartFormDescription": "external start form description",
+          "originalKey": "original key",
+          "originalName": "original name",
+          "originalVersionTag": "original version",
+          "createdBy": "created by",
+          "createdDate": "created date"
+        },
+        "caseTab": {
+          "idCaseDefinitionIdKey": "case definition key",
+          "idCaseDefinitionIdVersionTag": "case definition version",
+          "idKey": "tab key",
+          "name": "tab name",
+          "tabOrder": "tab order",
+          "type": "tab type",
+          "contentKey": "content key",
+          "createdOn": "created on",
+          "createdBy": "created by",
+          "showTasks": "shows tasks"
+        },
+        "caseWidgetTabWidget": {
+          "title": "title",
+          "icon": "icon",
+          "color": "color",
+          "order": "order",
+          "width": "width",
+          "highContrast": "high contrast",
+          "isCompact": "is compact"
+        },
+        "dashboard": {
+          "key": "dashboard key",
+          "title": "title",
+          "description": "description",
+          "order": "order",
+          "createdBy": "created by",
+          "createdOn": "created on"
+        },
+        "jsonSchemaDocument": {
+          "id": "document ID",
+          "contentContent": "document content",
+          "assigneeId": "assignee",
+          "assigneeFullName": "assignee name",
+          "assignedTeamKey": "assigned team",
+          "assignedTeamTitle": "assigned team title",
+          "documentDefinitionIdName": "document definition name",
+          "documentDefinitionIdVersion": "document definition version",
+          "documentDefinitionIdCaseDefinitionIdKey": "case definition key (via document definition)",
+          "documentDefinitionIdCaseDefinitionIdVersionTag": "case definition version (via document definition)",
+          "version": "version",
+          "createdOn": "created on",
+          "modifiedOn": "modified on",
+          "createdBy": "created by",
+          "sequence": "sequence",
+          "internalStatus": "internal status",
+          "retentionDate": "retention date"
+        },
+        "jsonSchemaDocumentDefinition": {
+          "idName": "document definition name",
+          "idVersion": "document definition version",
+          "createdOn": "created on"
+        },
+        "jsonSchemaDocumentSnapshot": {
+          "id": "snapshot ID",
+          "createdOn": "created on",
+          "createdBy": "created by"
+        },
+        "searchField": {
+          "key": "search field key",
+          "title": "title",
+          "path": "JSON path",
+          "dataType": "data type",
+          "fieldType": "field type",
+          "matchType": "match type",
+          "order": "order"
+        },
+        "zgwDocument": {
+          "caseDocumentId": "case document ID",
+          "vertrouwelijkheidaanduiding": "confidentiality",
+          "status": "status",
+          "informatieobjecttypeUrl": "document type URL",
+          "informatieobjecttypeOmschrijving": "document type description"
+        },
+        "ikoView": {
+          "key": "IKO view key",
+          "title": "title"
+        },
+        "note": {
+          "id": "note ID",
+          "createdByUserId": "created by",
+          "createdByUserFullName": "created by name",
+          "createdDate": "created date",
+          "content": "content",
+          "documentId": "document ID"
+        },
+        "team": {
+          "key": "team key",
+          "title": "team title",
+          "users": "team members"
+        },
+        "user": {
+          "roles": "user roles"
+        },
+        "operatonExecution": {
+          "id": "process instance ID",
+          "businessKey": "business key",
+          "activityId": "current activity",
+          "activityInstanceId": "activity instance ID",
+          "active": "is active",
+          "caseInstanceId": "case instance ID",
+          "processInstanceId": "process instance ID",
+          "processDefinitionId": "process definition ID",
+          "processDefinitionKey": "process definition key",
+          "parentId": "parent execution ID",
+          "tenantId": "tenant ID"
+        },
+        "operatonIdentityLink": {
+          "groupId": "Candidate group",
+          "type": "link type",
+          "userId": "user ID",
+          "processDefinitionKey": "process definition key",
+          "tenantId": "tenant ID"
+        },
+        "operatonProcessDefinition": {
+          "id": "process definition ID",
+          "category": "category",
+          "name": "process name",
+          "key": "process definition key",
+          "version": "version",
+          "versionTag": "version tag",
+          "deploymentId": "deployment ID",
+          "isStartableInTasklist": "startable in tasklist",
+          "tenantId": "tenant ID"
+        },
+        "operatonTask": {
+          "id": "task ID",
+          "name": "task name",
+          "description": "description",
+          "taskDefinitionKey": "task definition key",
+          "owner": "owner",
+          "assignee": "assignee",
+          "priority": "priority",
+          "createTime": "created at",
+          "lastUpdated": "last updated",
+          "dueDate": "due date",
+          "followUpDate": "follow-up date",
+          "caseInstanceId": "case instance ID",
+          "caseDefinitionId": "case definition ID",
+          "processInstanceId": "process instance ID",
+          "processDefinitionId": "process definition ID",
+          "processDefinitionKey": "process definition key",
+          "tenantId": "tenant ID"
+        }
       }
     }
   },
@@ -2244,7 +2947,7 @@
     "key": "Key",
     "version": "Version",
     "readOnly": "Read only",
-    "add": "Add new form flow",
+    "add": "Create new form flow",
     "deleteModalContent": "Are you sure you want to delete this form flow?",
     "deletedSuccessfully": "{{key}} was deleted successfully",
     "savedSuccessTitle": "Saved successfully",
@@ -2301,11 +3004,16 @@
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",
     "noCustomComponentDescription": "The custom component configured for this widget is not available.",
+    "image": {
+      "noImage": "No image found",
+      "openInNewTab": "Open in new tab",
+      "download": "Download"
+    },
     "map": {
       "title": "Map"
     },
     "personCard": {
-      "age": "{{age}} yr"
+      "age": "{{age}} year"
     },
     "metroline": {
       "stepState": {
@@ -2330,6 +3038,14 @@
       "selectedResult": "Selected result",
       "openInNewTab": "Open in new tab"
     }
+  },
+  "widgetLayout": {
+    "label": "Layout algorithm",
+    "muuriGapFree": "Default (less gaps)",
+    "muuri": "Default",
+    "beautiful": "Gap free",
+    "infoTitle": "About the layout algorithm",
+    "info": "Default and Default (less gaps) keep the widgets in their configured order as much as possible, which can leave empty gaps. Gap free may reorder widgets within a section to remove those gaps and almost always shows a clean layout without holes."
   },
   "ikoManagement": {
     "preparingDownload": "Preparing download",
@@ -2458,7 +3174,8 @@
     "title": "Settings",
     "tabs": {
       "appearance": "Appearance",
-      "featureToggles": "Feature toggles"
+      "featureToggles": "Feature toggles",
+      "opensearch": "OpenSearch"
     },
     "appearance": {
       "logo": {
@@ -2494,6 +3211,13 @@
       }
     },
     "featureToggles": {
+      "searchEngine": {
+        "useOpenSearch": {
+          "title": "Use OpenSearch for case search",
+          "description": "When enabled, case searches use OpenSearch for better performance. When disabled, PostgreSQL is used.",
+          "unavailable": "OpenSearch is not configured for this application."
+        }
+      },
       "refreshRequired": "Refresh required",
       "refreshModalText": "This setting requires a page refresh to take effect. Do you want to refresh now?",
       "refreshNow": "Refresh now",
@@ -2529,10 +3253,6 @@
         "applicationTitleAsSuffix": {
           "title": "Application title as suffix",
           "description": "Append the application title as a suffix to the browser tab title."
-        },
-        "experimentalDmnEditing": {
-          "title": "Experimental DMN editing",
-          "description": "Enable the experimental DMN decision table editor."
         },
         "disableCaseCount": {
           "title": "Disable case count",
@@ -2585,6 +3305,68 @@
         "enableIkoType": {
           "title": "Enable IKO type",
           "description": "Enable the IKO (Informatie Kanaal Objecten) integration type."
+        },
+        "menuCollapsedByDefault": {
+          "title": "Menu collapsed by default",
+          "description": "Start with the navigation menu collapsed instead of expanded."
+        },
+        "enableGenericCaseList": {
+          "title": "Enable generic case list",
+          "description": "Show a single case list view with a dropdown to switch between case definitions."
+        }
+      }
+    },
+    "opensearch": {
+      "title": "OpenSearch",
+      "reindex": {
+        "title": "Reindex Runs",
+        "description": "Reindex all documents from the database to OpenSearch. This operation runs in the background.",
+        "startButton": "Start Reindex",
+        "startModalTitle": "Start Reindex",
+        "detailTitle": "Run Details",
+        "parameters": "Parameters",
+        "results": "Results",
+        "reindexing": "Reindexing",
+        "pruning": "Pruning",
+        "counts": "Counts",
+        "status": "Status",
+        "processed": "Processed: {{current}} / {{total}}",
+        "skipped": "Skipped",
+        "pruned": "Pruned",
+        "started": "Started",
+        "elapsed": "Elapsed time",
+        "finished": "Finished",
+        "inProgress": "Reindexing in progress...",
+        "errorTitle": "Error",
+        "viewErrorLogs": "View error logs",
+        "pruneOrphans": "Prune orphaned documents",
+        "documentDefinitionName": "Document definition",
+        "documentDefinitionPlaceholder": "All document definitions",
+        "allDocumentDefinitions": "All document definitions",
+        "modifiedBefore": "Modified before",
+        "modifiedAfter": "Modified after",
+        "columns": {
+          "status": "Status",
+          "startedOn": "Started",
+          "finishedOn": "Finished",
+          "progress": "Progress",
+          "documentDefinition": "Document definition"
+        },
+        "noResults": {
+          "title": "No reindex runs",
+          "description": "No reindex runs have been started yet."
+        },
+        "statuses": {
+          "RUNNING": "Running",
+          "COMPLETED": "Completed",
+          "FAILED": "Failed",
+          "STOPPED": "Stopped",
+          "PRUNING": "Pruning orphaned documents"
+        },
+        "pruningProgress": "Removed: {{removed}}",
+        "tooltips": {
+          "pruneOrphans": "Remove entries from OpenSearch that no longer exist in the database",
+          "pruned": "Search entries removed because the original document was deleted"
         }
       }
     }

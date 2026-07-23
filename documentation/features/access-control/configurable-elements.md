@@ -78,6 +78,18 @@ define what can be configured for that element.
 			<td valign="top">Notes</td>
 		</tr>
 		<tr>
+			<td valign="top">
+				<a href="../objecten-management/access-control.md">
+					<strong>Object Management</strong>
+				</a>
+			</td>
+			<td valign="top"></td>
+			<td valign="top">
+				<code>com.ritense.objectmanagement.domain.ObjectManagement</code>
+			</td>
+			<td valign="top">Object management</td>
+		</tr>
+		<tr>
 			<td valign="top"></td>
 			<td valign="top">
 				<a href="../case/case-list/search-fields.md#access-control">Search fields</a>
@@ -191,6 +203,16 @@ define what can be configured for that element.
 			<td valign="top">
 				<strong>ZGW</strong>
 			</td>
+			<td valign="top">
+				<a href="../zgw/load-zaak-in-form-flow.md#access-control">Zaak</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.zakenapi.security.Zaak</code>
+			</td>
+			<td valign="top">Zaken API</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
 			<td valign="top">
 				<a href="../case/zgw/zgw-documents/access-control.md">Documents</a>
 			</td>

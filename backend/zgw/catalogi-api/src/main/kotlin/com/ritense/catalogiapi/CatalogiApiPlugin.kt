@@ -35,6 +35,7 @@ import com.ritense.catalogiapi.domain.Zaaktype
 import com.ritense.catalogiapi.domain.ZaaktypeInformatieobjecttype
 import com.ritense.catalogiapi.exception.BesluittypeNotFoundException
 import com.ritense.catalogiapi.exception.EigenschapNotFoundException
+import com.ritense.catalogiapi.exception.InformatieobjecttypeNotFoundException
 import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
@@ -45,15 +46,15 @@ import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginDependency
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.Page
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.net.URI
 import java.time.LocalDate
-import java.util.UUID
+import org.operaton.bpm.engine.delegate.DelegateExecution
 
 @Plugin(
     key = "catalogiapi",
@@ -245,12 +246,65 @@ class CatalogiApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "get-informatieobjecttype",
+        title = "Get Informatieobjecttype",
+        description = "Retrieve the informatieobjecttype URL by description and store it in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getInformatieobjecttypeUrl(
+        execution: DelegateExecution,
+        @PluginActionProperty informatieobjecttype: String,
+        @PluginActionProperty processVariable: String,
+    ) {
+        withLoggingContext(
+            CATALOGI_API.INFORMATIEOBJECTTYPE to informatieobjecttype
+        ) {
+            logger.debug { "Retrieving informatieobjecttype by description '$informatieobjecttype' and storing it in process variable: $processVariable" }
+            val zaaktypeUrl = getZaaktypeUrl(execution)
+            val informatieobjecttypeUrl = getInformatieobjecttypeByOmschrijving(zaaktypeUrl, informatieobjecttype).url!!.toASCIIString()
+
+            logger.info { "Setting process variable '$processVariable' with informatieobjecttype URL: $informatieobjecttypeUrl" }
+
+            execution.setVariable(processVariable, informatieobjecttypeUrl)
+        }
+    }
+
+    @PluginAction(
+        key = "get-informatieobjecttypen",
+        title = "Get Informatieobjecttypen",
+        description = "Retrieve the informatieobjecttypen and save them in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getInformatieobjecttypen(
+        execution: DelegateExecution,
+        @PluginActionProperty processVariable: String,
+        @PluginActionProperty zaaktypeUrl: String? = null
+    ) {
+        logger.debug { "Retrieving informatieobjecttypen and storing these in process variable: $processVariable" }
+        zaaktypeUriFrom(zaaktypeUrl, execution).let { zaaktypeUri ->
+            withLoggingContext(
+                CATALOGI_API.ZAAKTYPE to zaaktypeUri.toString()
+            ) {
+                getInformatieobjecttypes(zaaktypeUri).map { informatieobjecttype ->
+                    mapOf(
+                        URL_KEY to informatieobjecttype.url!!.toASCIIString(),
+                        NAME_KEY to informatieobjecttype.omschrijving
+                    )
+                }.let { informatieobjecttypen ->
+                    execution.setVariable(processVariable, informatieobjecttypen)
+                }
+                logger.info { "Setting process variable $processVariable with (retrieved) informatieobjecttypen" }
+            }
+        }
+    }
+
     fun getInformatieobjecttypes(
         zaakTypeUrl: URI,
     ): List<Informatieobjecttype> {
         withLoggingContext(CATALOGI_API.ZAAKTYPEINFORMATIEOBJECTTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<ZaaktypeInformatieobjecttype>?
+            var currentResults: Page<ZaaktypeInformatieobjecttype>
             val results = mutableListOf<Informatieobjecttype>()
 
             do {
@@ -292,7 +346,7 @@ class CatalogiApiPlugin(
                 }
 
                 results.addAll(filteredTypes)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -311,10 +365,21 @@ class CatalogiApiPlugin(
         }
     }
 
+    fun getInformatieobjecttypeByOmschrijving(zaakTypeUrl: URI, omschrijving: String): Informatieobjecttype {
+        withLoggingContext(
+            CATALOGI_API.INFORMATIEOBJECTTYPE to zaakTypeUrl.toString()
+        ) {
+            logger.debug { "Getting Informatieobjecttype by omschrijving: $omschrijving for zaaktype $zaakTypeUrl" }
+            return getInformatieobjecttypes(zaakTypeUrl)
+                .singleOrNull { it.omschrijving.equals(omschrijving, ignoreCase = true) }
+                ?: throw InformatieobjecttypeNotFoundException("with 'omschrijving': '$omschrijving'")
+        }
+    }
+
     fun getRoltypes(zaakTypeUrl: URI): List<Roltype> {
         withLoggingContext(CATALOGI_API.ROLTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<Roltype>?
+            var currentResults: Page<Roltype>
             val results = mutableListOf<Roltype>()
 
             do {
@@ -328,7 +393,7 @@ class CatalogiApiPlugin(
                     )
                 )
                 results.addAll(currentResults.results)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -337,7 +402,7 @@ class CatalogiApiPlugin(
     fun getStatustypen(zaakTypeUrl: URI): List<Statustype> {
         withLoggingContext(CATALOGI_API.STATUSTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<Statustype>?
+            var currentResults: Page<Statustype>
             val results = mutableListOf<Statustype>()
 
             do {
@@ -351,7 +416,7 @@ class CatalogiApiPlugin(
                     )
                 )
                 results.addAll(currentResults.results)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -378,7 +443,7 @@ class CatalogiApiPlugin(
     fun getResultaattypen(zaakTypeUrl: URI): List<Resultaattype> {
         withLoggingContext(CATALOGI_API.RESULTAATTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<Resultaattype>?
+            var currentResults: Page<Resultaattype>
             val results = mutableListOf<Resultaattype>()
 
             do {
@@ -392,7 +457,7 @@ class CatalogiApiPlugin(
                     )
                 )
                 results.addAll(currentResults.results)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -419,7 +484,7 @@ class CatalogiApiPlugin(
     fun getBesluittypen(zaakTypeUrl: URI): List<Besluittype> {
         withLoggingContext(CATALOGI_API.BESLUITTYPE to zaakTypeUrl.toString()) {
             var currentPage = 1
-            var currentResults: Page<Besluittype>?
+            var currentResults: Page<Besluittype>
             val results = mutableListOf<Besluittype>()
 
             do {
@@ -433,7 +498,7 @@ class CatalogiApiPlugin(
                     )
                 )
                 results.addAll(currentResults.results)
-            } while (currentResults?.next != null)
+            } while (currentResults.next != null)
 
             return results
         }
@@ -512,7 +577,7 @@ class CatalogiApiPlugin(
         }
 
     private fun getZaaktypeUrl(execution: DelegateExecution): URI =
-        zaaktypeUrlProvider.getZaaktypeUrl(UUID.fromString(execution.businessKey))
+        zaaktypeUrlProvider.getZaaktypeUrl(execution.getJsonSchemaDocumentId())
 
     companion object {
         private val logger = KotlinLogging.logger {}

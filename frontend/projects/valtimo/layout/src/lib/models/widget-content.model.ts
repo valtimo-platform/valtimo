@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,6 +130,14 @@ interface WidgetMetrolineContent {
   mode: MetrolineMode | null;
 }
 
+interface WidgetIkoMetrolineContent {
+  orientation: MetrolineOrientation;
+  source: string;
+  titlePath: string;
+  labelPath: string | null;
+  completedPath: string;
+}
+
 interface MetrolineItem {
   title: string;
   label: string | null;
@@ -174,6 +182,30 @@ interface WidgetHighlightContent {
   displayProperties: HighlightDisplayProperties;
 }
 
+interface WidgetImageContent {
+  value: string;
+  displayAsCarousel?: boolean;
+}
+
+interface WidgetImageItem {
+  resourceId: string;
+  fileName?: string;
+  mimeType?: string;
+  sizeInBytes?: number;
+}
+
+interface WidgetImageData {
+  images: WidgetImageItem[];
+}
+
+interface WidgetImageResolved {
+  resourceId: string;
+  url: string;
+  displayUrl: string;
+  fileName: string;
+  mimeType?: string;
+}
+
 type WidgetDropdownValue = {[key: string]: string};
 
 type WidgetContentProperties =
@@ -185,8 +217,10 @@ type WidgetContentProperties =
   | WidgetCollectionContent
   | WidgetMapContent
   | WidgetMetrolineContent
+  | WidgetIkoMetrolineContent
   | WidgetPersonCardContent
-  | WidgetHighlightContent;
+  | WidgetHighlightContent
+  | WidgetImageContent;
 
 export {
   WidgetContentProperties,
@@ -198,6 +232,7 @@ export {
   WidgetCollectionContent,
   WidgetMapContent,
   WidgetMetrolineContent,
+  WidgetIkoMetrolineContent,
   MetrolineItem,
   MetrolineMode,
   MetrolineOrientation,
@@ -206,6 +241,10 @@ export {
   WidgetHighlightContent,
   HighlightDisplayProperties,
   HighlightDisplayType,
+  WidgetImageContent,
+  WidgetImageItem,
+  WidgetImageData,
+  WidgetImageResolved,
   WidgetPersonCardContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,
@@ -215,5 +254,5 @@ export {
   CollectionWidgetResolvedField,
   CollectionWidgetTitle,
   CollectionWidgetCardData,
-  FilterDropdownDataProvider
+  FilterDropdownDataProvider,
 };

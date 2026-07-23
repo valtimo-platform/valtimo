@@ -67,14 +67,24 @@ export default async () => {
     throw new Error(`[GLOBAL SETUP] Token request failed (${tokenResp.status()}): ${errBody}`);
   }
 
-  const { access_token } = await tokenResp.json() as { access_token: string };
+  const { access_token, refresh_token } = await tokenResp.json() as {
+    access_token: string;
+    refresh_token?: string;
+  };
 
   if (!access_token) throw new Error('[GLOBAL SETUP] No access_token in response');
 
   process.env.PLAYWRIGHT_BEARER_TOKEN = access_token;
 
+  if (refresh_token) {
+    process.env.PLAYWRIGHT_REFRESH_TOKEN = refresh_token;
+  }
+
   mkdirSync('playwright/.auth', { recursive: true });
-  writeFileSync(tokenPath, JSON.stringify({ accessToken: access_token }, null, 2));
+  writeFileSync(
+    tokenPath,
+    JSON.stringify({ accessToken: access_token, refreshToken: refresh_token }, null, 2),
+  );
 
   console.log('[GLOBAL SETUP] Access token (with roles) acquired ✅');
 

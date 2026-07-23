@@ -16,16 +16,11 @@
 
 package com.ritense.valtimo.contract.exception;
 
-public class ProcessNotFoundException extends Exception {
+import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException;
 
-    private final String message;
+public class ProcessNotFoundException extends BadRequestAlertException {
 
     public ProcessNotFoundException(String message) {
-        this.message = message;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
+        super(message, "processNotFound");
     }
 }

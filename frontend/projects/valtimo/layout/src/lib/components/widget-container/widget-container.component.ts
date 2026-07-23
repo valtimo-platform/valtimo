@@ -26,6 +26,7 @@ import {
 import {TranslatePipe} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
+import {resolveWidgetLayout, ResolvedWidgetLayout, WidgetLayout} from '@valtimo/components';
 import Muuri from 'muuri';
 import {BehaviorSubject, delay, merge, Observable, Subject, Subscription, take} from 'rxjs';
 import {filter} from 'rxjs/operators';
@@ -58,6 +59,13 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
     this.loadingWidgetConfiguration$.next(false);
     this.initLayout();
   }
+
+  @Input() public set widgetLayout(value: WidgetLayout | null | undefined) {
+    this._resolvedLayout = resolveWidgetLayout(value);
+    this.widgetLayoutService.setRowHeightUnit(this._resolvedLayout.rowHeightUnit);
+  }
+
+  private _resolvedLayout: ResolvedWidgetLayout = resolveWidgetLayout(null);
 
   private readonly _widgetComponentMap$ = new BehaviorSubject<WidgetComponentMap>(
     DEFAULT_WIDGET_COMPONENT_MAP
@@ -125,9 +133,7 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
     this.widgetLayoutService.loaded$.pipe(take(1), delay(300)).subscribe(() => {
       this.widgetLayoutService.setMuuri(
         new Muuri(this._widgetsContainerRef.nativeElement, {
-          layout: {
-            fillGaps: true,
-          },
+          layout: this._resolvedLayout.muuriLayout,
           layoutOnResize: false,
         })
       );

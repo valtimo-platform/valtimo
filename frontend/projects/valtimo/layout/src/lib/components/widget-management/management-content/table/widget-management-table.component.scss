@@ -23,8 +23,7 @@
     gap: 16px;
     grid-template-columns: repeat(3, 1fr);
     align-items: flex-end;
-    padding: 16px;
-    background-color: var(--cds-layer-01);
+    background-color: var(--cds-layer-02);
   }
 
   &__subtitle {
@@ -42,10 +41,17 @@
   &__path-selector {
     display: flex;
     flex-direction: column;
+    padding: 8px;
+    background-color: var(--cds-layer-01);
+
+    ::ng-deep .cds--text-input,
+    ::ng-deep .cds--list-box {
+      background: var(--cds-layer-02);
+    }
   }
 
-  .cds--text-input,
-  .cds--list-box {
-    background: var(--cds-layer-02);
+  ::ng-deep .cds--text-input,
+  ::ng-deep .cds--list-box {
+    background: var(--cds-layer-01);
   }
 }

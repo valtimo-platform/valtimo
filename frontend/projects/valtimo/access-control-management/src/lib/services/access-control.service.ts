@@ -16,9 +16,9 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, InterceptorSkipHeader, PbacRegistryDto} from '@valtimo/shared';
 import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
-import {DeleteRolesRequest, Role} from '../models';
+import {DeleteRolesRequest, Permission, PermissionSchema, Role} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class AccessControlService {
@@ -26,6 +26,7 @@ export class AccessControlService {
   public readonly loading$ = new BehaviorSubject<boolean>(false);
 
   private valtimoEndpointUri: string;
+  private readonly apiEndpointUri: string;
 
   private get roleDtos$(): Observable<Role[]> {
     return this.http.get<Role[]>(`${this.valtimoEndpointUri}v1/roles`);
@@ -35,7 +36,24 @@ export class AccessControlService {
     private readonly configService: ConfigService,
     private readonly http: HttpClient
   ) {
-    this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}management/`;
+    this.apiEndpointUri = this.configService.config.valtimoApi.endpointUri;
+    this.valtimoEndpointUri = `${this.apiEndpointUri}management/`;
+  }
+
+  // The roles known to the identity provider (e.g. Keycloak realm roles), optionally filtered by a
+  // name prefix. Used to let an admin pick an existing role when configuring access control instead
+  // of typing its key by hand. Degrades to an empty list (and stays silent) when the endpoint is
+  // unavailable — e.g. a deployment using a different IAM — so the caller can fall back to manual
+  // entry.
+  public getExternalRoles(externalRoleNamePrefix?: string): Observable<string[]> {
+    const params = externalRoleNamePrefix
+      ? `?externalRoleNamePrefix=${encodeURIComponent(externalRoleNamePrefix)}`
+      : '';
+    return this.http
+      .get<string[]>(`${this.apiEndpointUri}v1/external-role${params}`, {
+        headers: InterceptorSkipHeader,
+      })
+      .pipe(catchError(() => of([])));
   }
 
   public addRole(role: Role): Observable<Role> {
@@ -86,10 +104,8 @@ export class AccessControlService {
       });
   }
 
-  public getRolePermissions(roleKey: string): Observable<Array<object>> {
-    return this.http.get<Array<object>>(
-      `${this.valtimoEndpointUri}v1/roles/${roleKey}/permissions`
-    );
+  public getRolePermissions(roleKey: string): Observable<Permission[]> {
+    return this.http.get<Permission[]>(`${this.valtimoEndpointUri}v1/roles/${roleKey}/permissions`);
   }
 
   public exportRolePermissions(roles: string[]): Observable<object[]> {
@@ -101,6 +117,14 @@ export class AccessControlService {
       `${this.valtimoEndpointUri}v1/roles/${roleKey}/permissions`,
       updatedPermission
     );
+  }
+
+  public getPermissionSchema(): Observable<PermissionSchema> {
+    return this.http.get<PermissionSchema>(`${this.valtimoEndpointUri}v1/permissions/schema`);
+  }
+
+  public getPbacRegistry(): Observable<PbacRegistryDto> {
+    return this.http.get<PbacRegistryDto>(`${this.valtimoEndpointUri}v1/pbac/registry`);
   }
 
   public updateRole(roleKey: string, request: Role): Observable<object> {

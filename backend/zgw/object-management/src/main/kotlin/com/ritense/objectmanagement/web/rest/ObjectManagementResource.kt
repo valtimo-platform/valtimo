@@ -65,6 +65,10 @@ class ObjectManagementResource(
         return ResponseEntity.noContent().build()
     }
 
+    @Deprecated(
+        "To be removed in Valtimo 14. Use ObjectManagementConsumerResource: " +
+            "GET /api/v1/object-management/configuration/{id}/object."
+    )
     @GetMapping("/{id}/object")
     fun getObjects(
         @PathVariable id: UUID,
@@ -72,11 +76,15 @@ class ObjectManagementResource(
     ): ResponseEntity<PageImpl<ObjectsListRowDto>> =
         ResponseEntity.ok(objectManagementService.getObjects(id, pageable))
 
+    @Deprecated(
+        "To be removed in Valtimo 14. Use ObjectManagementConsumerResource: " +
+            "POST /api/v1/object-management/configuration/{id}/object."
+    )
     @PostMapping("/{id}/object")
     fun getObjectsWithSearchFields(
         @PathVariable id: UUID,
         @PageableDefault pageable: Pageable,
-        @RequestBody searchRequest: SearchWithConfigRequest
+        @Valid @RequestBody searchRequest: SearchWithConfigRequest
     ): ResponseEntity<PageImpl<ObjectsListRowDto>> =
         ResponseEntity.ok(objectManagementService.getObjectsWithSearchParams(searchRequest, id, pageable))
 }

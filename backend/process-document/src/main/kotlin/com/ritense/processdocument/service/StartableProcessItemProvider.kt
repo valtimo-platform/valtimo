@@ -31,6 +31,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.stereotype.Component
 
 @SkipComponentScan
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Component
 class StartableProcessItemProvider(
     private val processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
     private val authorizationService: AuthorizationService,
+    private val repositoryService: OperatonRepositoryService,
 ) : StartableItemProvider {
 
     override val type: StartableItemType = StartableItemType.PROCESS
@@ -49,13 +51,17 @@ class StartableProcessItemProvider(
         return processDefinitionCaseDefinitionRepository
             .findAll(caseDefinitionId, startableByUser = true, canInitializeDocument = null)
             .filter { hasExecutionPermission(it.id.processDefinitionId.id, document) }
-            .map { pdcd ->
+            .mapNotNull { pdcd ->
+                val processDefinition = com.ritense.authorization.AuthorizationContext.runWithoutAuthorization {
+                    repositoryService.findProcessDefinitionById(pdcd.id.processDefinitionId.id)
+                } ?: return@mapNotNull null
                 StartableItemDto(
                     type = StartableItemType.PROCESS,
                     name = pdcd.processDefinitionName,
                     key = pdcd.processDefinitionKey ?: error("Process definition key is null"),
                     versionTag = null,
-                    processDefinitionId = pdcd.id.processDefinitionId.id
+                    processDefinitionId = pdcd.id.processDefinitionId.id,
+                    draft = processDefinition.isSuspended()
                 )
             }
     }
@@ -68,6 +74,10 @@ class StartableProcessItemProvider(
             .findAllByIdCaseDefinitionIdAndIdProcessDefinitionIdId(caseDefinitionId, processDefinitionId)
             .firstOrNull()
             ?: throw NoSuchElementException("Process definition '$processDefinitionId' is not linked to case definition '$caseDefinitionId'")
+
+        val processDefinition = com.ritense.authorization.AuthorizationContext.runWithoutAuthorization {
+            repositoryService.findProcessDefinitionById(processDefinitionId)
+        }
 
         val processDefinitionName = pdcd.processDefinitionName
         val processDefinitionKey = pdcd.processDefinitionKey
@@ -82,7 +92,8 @@ class StartableProcessItemProvider(
             name = processDefinitionName,
             key = processDefinitionKey,
             versionTag = null,
-            processDefinitionId = pdcd.id.processDefinitionId.id
+            processDefinitionId = pdcd.id.processDefinitionId.id,
+            draft = processDefinition?.isSuspended() ?: false
         )
     }
 
@@ -100,6 +111,10 @@ class StartableProcessItemProvider(
             .firstOrNull()
             ?: throw NoSuchElementException("Process definition '$processDefinitionId' is not linked to case definition '$caseDefinitionId'")
 
+        val processDefinition = com.ritense.authorization.AuthorizationContext.runWithoutAuthorization {
+            repositoryService.findProcessDefinitionById(processDefinitionId)
+        }
+
         if (!pdcd.startableByUser) {
             processDefinitionCaseDefinitionRepository.save(pdcd.copy(startableByUser = true))
         }
@@ -109,7 +124,8 @@ class StartableProcessItemProvider(
             name = pdcd.processDefinitionName,
             key = itemKey,
             versionTag = versionTag,
-            processDefinitionId = pdcd.id.processDefinitionId.id
+            processDefinitionId = pdcd.id.processDefinitionId.id,
+            draft = processDefinition?.isSuspended() ?: false
         )
     }
 

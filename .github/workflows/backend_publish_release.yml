@@ -4,19 +4,113 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
 
 env:
-  ORG_GRADLE_PROJECT_includeDev: false
+  PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
 
 jobs:
   build_run_tests:
     uses: ./.github/workflows/backend_build_test_libraries.yml
 
+  # Release images are built to GHCR only here (no push_to_dockerhub). The
+  # smoke_and_promote jobs below boot each image and only then copy it to Docker
+  # Hub, so Docker Hub never receives an image that has not booted.
+  build_gzac_image:
+    name: Build gzac-backend image (GHCR)
+    needs:
+      - build_run_tests
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+      variant: gzac
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  build_valtimo_image:
+    name: Build valtimo-backend image (GHCR)
+    needs:
+      - build_run_tests
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+      variant: valtimo
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  build_evenementenvergunning_image:
+    name: Build gzac-evenementenvergunning-backend image (GHCR)
+    needs:
+      - build_run_tests
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+      variant: evenementenvergunning
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_gzac:
+    name: Smoke test + promote gzac-backend
+    needs:
+      - build_gzac_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/backend_smoke_and_promote.yml
+    with:
+      image_name: gzac-backend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_valtimo:
+    name: Smoke test + promote valtimo-backend
+    needs:
+      - build_valtimo_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/backend_smoke_and_promote.yml
+    with:
+      image_name: valtimo-backend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_evenementenvergunning:
+    name: Smoke test + promote gzac-evenementenvergunning-backend
+    needs:
+      - build_evenementenvergunning_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/backend_smoke_and_promote.yml
+    with:
+      image_name: gzac-evenementenvergunning-backend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
   publish:
-    needs: [build_run_tests]
+    needs:
+      - build_run_tests
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.ref_name, 'release/') }}
     env:
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
@@ -40,16 +134,8 @@ jobs:
           name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
           path: .
 
-      - name: Compute version from branch
-        id: version
-        shell: bash
-        run: |
-          SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
-          VERSION_RELEASE="${SEMVER_VERSION}.RELEASE"
-          echo "version_release=$VERSION_RELEASE" >> "$GITHUB_OUTPUT"
-
       - name: Check license compliance
-        run: ./gradlew -PincludeDev=false :backend:checkLicense
+        run: ./gradlew :backend:checkLicense
 
       - name: Fail if disallowed licenses found
         run: |
@@ -65,17 +151,37 @@ jobs:
             exit 1
           fi
 
+      # Idempotency guard: Maven Central releases are immutable, so re-running a
+      # release whose artifacts already landed would fail on the duplicate. Probe
+      # a representative artifact (core) on Maven Central; if this version is
+      # already there, skip both publish steps so the release run is re-runnable.
+      - name: Check whether this version is already on Maven Central
+        id: maven_central
+        run: |
+          set -euo pipefail
+          URL="https://repo1.maven.org/maven2/com/ritense/valtimo/core/${PROJECT_VERSION}.RELEASE/"
+          code="$(curl -sS --max-time 30 -o /dev/null -w '%{http_code}' "$URL" || echo 000)"
+          if [ "$code" = "200" ]; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::com.ritense.valtimo:core:${PROJECT_VERSION}.RELEASE already on Maven Central — skipping Sonatype/JReleaser publish (idempotent re-run)."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "Not on Maven Central yet (HTTP ${code}) — proceeding with publish."
+          fi
+
       - name: Publish to Sonatype staging
+        if: ${{ steps.maven_central.outputs.already_published != 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${PROJECT_VERSION}.RELEASE"
 
       - name: Deploy with JReleaser to Maven Central
+        if: ${{ steps.maven_central.outputs.already_published != 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew -PincludeDev=false :backend:jreleaserDeploy --stacktrace -PprojectVersion="${{ steps.version.outputs.version_release }}"
+        run: ./gradlew :backend:jreleaserDeploy --stacktrace -PprojectVersion="${PROJECT_VERSION}.RELEASE"
 
       - name: Archive Reports
         if: always()

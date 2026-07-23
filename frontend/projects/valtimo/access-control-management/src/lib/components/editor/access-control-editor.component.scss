@@ -33,3 +33,15 @@
     height: min-content;
   }
 }
+
+:host ::ng-deep .cds--tab-content {
+  background-color: var(--cds-layer);
+  outline: none !important;
+  padding: 0;
+}
+
+// The tab content is rendered outside the Carbon panes, so the white layer background that the
+// pane used to provide is applied to the content wrapper instead.
+.access-control-editor__content {
+  background-color: var(--cds-layer);
+}
