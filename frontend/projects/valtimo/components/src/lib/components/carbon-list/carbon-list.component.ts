@@ -210,6 +210,14 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() dragAndDropDisabled = false;
   @Input() expandedRowTemplate: TemplateRef<any>;
   @Input() expandedRowKey: string;
+  /**
+   * Dot-notation path to a stable per-item identity (e.g. `'id'`). When set, a row whose key is
+   * unchanged across `items` emissions keeps its DOM: the existing table row and cells are updated
+   * in place instead of being torn down and re-created. This prevents visual churn (tooltips,
+   * focus, hover state) on polling pages. Defaults to [expandedRowKey] when that is set; without
+   * either input, rows are rebuilt on every emission exactly as before.
+   */
+  @Input() trackByKey: string;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -477,66 +485,124 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this._viewInitialized$,
   ]).pipe(
     filter(([fields, items, viewInitialized]) => !!fields && !!items && viewInitialized),
-    map(([fields, items]) =>
-      items.map((item: CarbonListItem, index: number) => {
-        const row = [
-          ...this.getDragAndDropItemsItems(item, index, items.length),
-          ...fields.map((field: ColumnConfig) => {
-            switch (field.viewType) {
-              case ViewType.TEMPLATE:
-                return new TableItem({
-                  data: {item, index, length: items.length, ...field.templateData},
-                  item,
-                  template: field.template,
-                });
-              case ViewType.BOOLEAN:
-                let data = this.resolveObject(field, item);
-                data = !BOOLEAN_CONVERTER_VALUES.includes(data)
-                  ? data
-                  : `${'viewTypeConverter.' + data}`;
-                return new TableItem({
-                  data,
-                  template: this.booleanTemplate,
-                  item,
-                });
-              case ViewType.TAGS: {
-                return new TableItem({
-                  data: {
-                    tags: this.resolveTagObject(item, field.key),
-                    tagAmount: field?.tagAmount || 1,
-                  },
-                  item,
-                  template: this.tagTemplate,
-                });
-              }
-              default:
-                const resolvedObject: string = this.resolveObject(field, item);
-                return new TableItem({
-                  title: resolvedObject ?? '-',
-                  data:
-                    (field.tooltipCharLimit
-                      ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
-                      : resolvedObject) ?? '-',
-                  template: this.defaultTemplate,
-                  item,
-                });
-            }
-          }),
-          ...this.getExtraItems(item, index, items.length),
-        ];
-
-        if (this.expandedRowTemplate && row.length > 0) {
-          row[0].expandedData = item;
-          row[0].expandedTemplate = this.expandedRowTemplate;
-        }
-
-        return row;
-      })
-    ),
+    map(([fields, items]) => this.buildRowsPreservingIdentity(fields, items)),
     tap((data: TableItem[][]) => {
       this._completeDataSource = data;
     })
   );
+
+  /**
+   * Cached rows from the previous `items` emission, keyed by the item's [trackByKey] (or
+   * [expandedRowKey]) value. Used by [buildRowsPreservingIdentity] to keep row/cell instances —
+   * and therefore their DOM — stable across emissions.
+   */
+  private _reusableRowsByKey = new Map<unknown, TableItem[]>();
+
+  private buildRowsPreservingIdentity(
+    fields: ColumnConfig[],
+    items: CarbonListItem[]
+  ): TableItem[][] {
+    const identityKey = this.trackByKey || this.expandedRowKey;
+
+    if (!identityKey) {
+      return items.map((item: CarbonListItem, index: number) =>
+        this.buildRow(fields, item, index, items.length)
+      );
+    }
+
+    const previousRows = this._reusableRowsByKey;
+    const nextRows = new Map<unknown, TableItem[]>();
+    const rows = items.map((item: CarbonListItem, index: number) => {
+      const freshRow = this.buildRow(fields, item, index, items.length);
+      const key = _get(item, identityKey);
+      // Duplicate or absent keys fall back to the fresh row (no identity to preserve).
+      const previousRow = key != null && !nextRows.has(key) ? previousRows.get(key) : undefined;
+
+      if (!previousRow || previousRow.length !== freshRow.length) {
+        if (key != null && !nextRows.has(key)) nextRows.set(key, freshRow);
+        return freshRow;
+      }
+
+      // Same row identity: update the existing TableItem instances in place. Carbon's internal
+      // ngFor tracks rows/cells by object identity, so reusing the instances keeps the DOM (incl.
+      // the expanded row) while all bindings re-render with the fresh values.
+      previousRow.forEach((cell: TableItem, cellIndex: number) => {
+        const freshCell = freshRow[cellIndex];
+        cell.data = freshCell.data;
+        cell.title = freshCell.title;
+        cell.template = freshCell.template;
+        // `item` is not declared on TableItem; it is smuggled in via the constructor object above.
+        (cell as any).item = (freshCell as any).item;
+        cell.expandedData = freshCell.expandedData;
+        cell.expandedTemplate = freshCell.expandedTemplate;
+      });
+      nextRows.set(key, previousRow);
+      return previousRow;
+    });
+    this._reusableRowsByKey = nextRows;
+
+    return rows;
+  }
+
+  private buildRow(
+    fields: ColumnConfig[],
+    item: CarbonListItem,
+    index: number,
+    length: number
+  ): TableItem[] {
+    const row = [
+      ...this.getDragAndDropItemsItems(item, index, length),
+      ...fields.map((field: ColumnConfig) => {
+        switch (field.viewType) {
+          case ViewType.TEMPLATE:
+            return new TableItem({
+              data: {item, index, length, ...field.templateData},
+              item,
+              template: field.template,
+            });
+          case ViewType.BOOLEAN:
+            let data = this.resolveObject(field, item);
+            data = !BOOLEAN_CONVERTER_VALUES.includes(data)
+              ? data
+              : `${'viewTypeConverter.' + data}`;
+            return new TableItem({
+              data,
+              template: this.booleanTemplate,
+              item,
+            });
+          case ViewType.TAGS: {
+            return new TableItem({
+              data: {
+                tags: this.resolveTagObject(item, field.key),
+                tagAmount: field?.tagAmount || 1,
+              },
+              item,
+              template: this.tagTemplate,
+            });
+          }
+          default:
+            const resolvedObject: string = this.resolveObject(field, item);
+            return new TableItem({
+              title: resolvedObject ?? '-',
+              data:
+                (field.tooltipCharLimit
+                  ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
+                  : resolvedObject) ?? '-',
+              template: this.defaultTemplate,
+              item,
+            });
+        }
+      }),
+      ...this.getExtraItems(item, index, length),
+    ];
+
+    if (this.expandedRowTemplate && row.length > 0) {
+      row[0].expandedData = item;
+      row[0].expandedTemplate = this.expandedRowTemplate;
+    }
+
+    return row;
+  }
 
   private readonly _filteredItems$ = new BehaviorSubject<TableItem[][] | null>(null);
 
