@@ -19,7 +19,6 @@ package com.ritense.processdocument.web.rest
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.Document
-import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId
 import com.ritense.processdocument.domain.ProcessInstanceId
 import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto
@@ -29,32 +28,30 @@ import com.ritense.processdocument.service.ProcessInstanceCaseAccessService
 import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
+import java.util.Optional
+import java.util.UUID
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.ManagementService
-import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.management.JobDefinition
 import org.operaton.bpm.engine.runtime.Job
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.web.server.ResponseStatusException
-import java.util.Optional
-import java.util.UUID
-import kotlin.test.assertEquals
 
 class ProcessTimerResourceTest {
 
-    private lateinit var documentService: DocumentService
     private lateinit var authorizationService: AuthorizationService
     private lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
-    private lateinit var runtimeService: RuntimeService
     private lateinit var operatonExecutionRepository: OperatonExecutionRepository
     private lateinit var managementService: ManagementService
     private lateinit var eventPublisher: ApplicationEventPublisher
@@ -65,19 +62,14 @@ class ProcessTimerResourceTest {
 
     @BeforeEach
     fun setUp() {
-        documentService = mock()
         authorizationService = mock()
         processDocumentAssociationService = mock()
-        runtimeService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
         operatonExecutionRepository = mock()
         managementService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
         eventPublisher = mock()
 
         val caseAccessService = ProcessInstanceCaseAccessService(
-            documentService,
-            authorizationService,
-            processDocumentAssociationService,
-            runtimeService,
+            processDocumentAssociationService
         )
 
         resource = ProcessTimerResource(
@@ -97,10 +89,12 @@ class ProcessTimerResourceTest {
 
         resource.skipTimer(caseId, processInstanceId, "job-1")
 
-        val captor = argumentCaptor<EntityAuthorizationRequest<OperatonExecution>>()
-        verify(authorizationService).requirePermission(captor.capture())
-        assertEquals(OperatonExecution::class.java, captor.firstValue.resourceType)
-        assertEquals(OperatonExecutionActionProvider.MODIFY, captor.firstValue.action)
+        verify(authorizationService).requirePermission(
+            argThat<EntityAuthorizationRequest<OperatonExecution>> {
+                resourceType == OperatonExecution::class.java &&
+                    action == OperatonExecutionActionProvider.MODIFY
+            }
+        )
     }
 
     @Test
@@ -178,9 +172,12 @@ class ProcessTimerResourceTest {
         assertEquals(1, response.body!!.size)
         assertEquals("job-1", response.body!!.single().id)
 
-        val captor = argumentCaptor<EntityAuthorizationRequest<OperatonExecution>>()
-        verify(authorizationService).requirePermission(captor.capture())
-        assertEquals(OperatonExecutionActionProvider.MODIFY, captor.firstValue.action)
+        verify(authorizationService).requirePermission(
+            argThat<EntityAuthorizationRequest<OperatonExecution>> {
+                resourceType == OperatonExecution::class.java &&
+                    action == OperatonExecutionActionProvider.MODIFY
+            }
+        )
     }
 
     private fun associateInstance(): String {

@@ -97,13 +97,12 @@ class ProcessInspectionResourceTest {
         objectMapper = ObjectMapper()
 
         val caseAccessService = ProcessInstanceCaseAccessService(
-            documentService,
-            authorizationService,
-            processDocumentAssociationService,
-            runtimeService,
+            processDocumentAssociationService
         )
 
         resource = ProcessInspectionResource(
+            documentService = documentService,
+            authorizationService = authorizationService,
             caseAccessService = caseAccessService,
             processDocumentAssociationService = processDocumentAssociationService,
             runtimeService = runtimeService,
