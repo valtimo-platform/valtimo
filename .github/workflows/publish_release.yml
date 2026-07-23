@@ -218,6 +218,55 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+      # The prepare_next job seeds each version's release notes with skeleton
+      # placeholders ("New feature title", "New enhancement title", "New bugfix.")
+      # that developers are meant to overwrite or delete during the dev cycle. When
+      # a section is left untouched those placeholders leak into the stable branch,
+      # which then needs a manual cleanup PR (e.g. #820). Strip any still-unfilled
+      # placeholders from THIS version's notes and push the fix onto the release
+      # branch so the release -> stable PR below never carries them. The template
+      # PR to next-minor keeps its placeholders — this only touches the released
+      # version's notes. Idempotent: a re-run finds nothing to strip and no-ops.
+      - name: Strip unfilled release-note placeholders
+        run: |
+          set -euo pipefail
+          MAJOR="${VERSION%%.*}"
+          README="documentation/release-notes/${MAJOR}.x.x/${VERSION}/README.md"
+          if [ ! -f "$README" ]; then
+            echo "No release-notes README at ${README}; nothing to strip."
+            exit 0
+          fi
+
+          # The placeholders are fixed text emitted by prepare_next, so we just
+          # delete those literal blocks. Matching the exact placeholder text means
+          # authored content is never touched, so there is no need to reflow the
+          # file. The first three substitutions drop a whole "placeholder-only"
+          # section (header + its lone placeholder) — but only when nothing else
+          # follows in that section (next line is another "##" heading or EOF), so
+          # a genuinely-empty section header a release intentionally left behind is
+          # NOT removed. The last three drop a stray placeholder bullet from a
+          # section that also has real content (its header is kept).
+          before="$(cat "$README")"
+          perl -0777 -i -pe '
+            s/^## New Features\n\n\* \*\*New feature title\*\*\n\n  New feature explanation\.\n(?:[ \t]*\n)*(?=##|\z)//mg;
+            s/^## Enhancements\n\n\* \*\*New enhancement title\*\*\n\n  New enhancement explanation\.\n(?:[ \t]*\n)*(?=##|\z)//mg;
+            s/^## Bugfixes\n\n\* New bugfix\.\n(?:[ \t]*\n)*(?=##|\z)//mg;
+            s/^\* \*\*New feature title\*\*\n\n  New feature explanation\.\n\n?//mg;
+            s/^\* \*\*New enhancement title\*\*\n\n  New enhancement explanation\.\n\n?//mg;
+            s/^\* New bugfix\.\n?\n?//mg;
+          ' "$README"
+
+          if [ "$before" = "$(cat "$README")" ]; then
+            echo "No unfilled placeholders in ${README}."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$README"
+          git commit -m "Remove unfilled release-note placeholders for ${VERSION}"
+          git push origin "HEAD:refs/heads/release/${VERSION}"
+          echo "Stripped unfilled placeholders from ${README} and pushed to release/${VERSION}."
       - name: Create release -> stable PR
         run: |
           set -euo pipefail
