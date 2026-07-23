@@ -18,10 +18,11 @@ package com.ritense.processdocument.domain.impl.listener;
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization;
 import com.ritense.document.domain.Document;
+import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
 import com.ritense.processdocument.domain.listener.StartEventFromCallActivityListener;
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
-import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.valtimo.event.OperatonExecutionEvent;
 import org.operaton.bpm.engine.delegate.DelegateExecution;
 import org.operaton.bpm.model.bpmn.impl.instance.ProcessImpl;
@@ -31,14 +32,11 @@ import org.springframework.core.annotation.Order;
 public class StartEventFromCallActivityListenerImpl implements StartEventFromCallActivityListener {
 
     private final ProcessDocumentAssociationService processDocumentAssociationService;
-    private final ProcessDocumentService processDocumentService;
 
     public StartEventFromCallActivityListenerImpl(
-        ProcessDocumentAssociationService processDocumentAssociationService,
-        ProcessDocumentService processDocumentService
+        ProcessDocumentAssociationService processDocumentAssociationService
     ) {
         this.processDocumentAssociationService = processDocumentAssociationService;
-        this.processDocumentService = processDocumentService;
     }
 
     @Order(200)
@@ -69,8 +67,8 @@ public class StartEventFromCallActivityListenerImpl implements StartEventFromCal
      * - Building block document ID for building block processes and their sub-processes
      */
     private Document.Id getDocumentId(DelegateExecution execution) {
-        var processId = new OperatonProcessInstanceId(execution.getProcessInstanceId());
-        return processDocumentService.getDocumentId(processId, execution);
+        var documentId = GetJsonSchemaDocumentHelper.getJsonSchemaDocumentIdOrNull(execution);
+        return documentId == null ? null : JsonSchemaDocumentId.existingId(documentId);
     }
 
     private String getProcessNameFrom(DelegateExecution execution) {

@@ -115,7 +115,10 @@ class FormFlowProcessLinkActivityHandler(
                 FormFlowTaskOpenResultProperties(
                     formFlowService.save(
                         formFlowDefinition.createInstance(additionalProperties)
-                    ).id.id
+                    ).id.id,
+                    processLink.formDisplayType,
+                    processLink.formSize,
+                    processLink.subtitles
                 )
             )
         }

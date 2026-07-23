@@ -273,7 +273,7 @@
           modalObs.disableInput || modalObs.valid === false || modalObs.validKey === false
         "
       >
-        {{ 'listColumn.save' | translate }}
+        {{ (modalObs.type === 'create' ? 'interface.create' : 'listColumn.save') | translate }}
       </button>
     </ng-container>
   </cds-modal-footer>

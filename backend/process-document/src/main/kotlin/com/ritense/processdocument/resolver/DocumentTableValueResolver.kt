@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class DocumentTableValueResolver(
         processInstanceId: String,
         variableScope: VariableScope
     ): Function<String, Any?> {
-        val document = processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+        val document = processDocumentService.getCaseDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
         return createResolver(document)
     }
 
@@ -65,9 +65,13 @@ class DocumentTableValueResolver(
     }
 
     override fun handleValues(processInstanceId: String, variableScope: VariableScope?, values: Map<String, Any?>) {
-        val documentId =
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), variableScope)
-        handleValues(documentId, values)
+        val operatonProcessInstanceId = OperatonProcessInstanceId(processInstanceId)
+        val documentId = processDocumentService.getDocumentId(operatonProcessInstanceId, variableScope)
+        val caseDocumentId = processDocumentService.getCaseDocumentId(operatonProcessInstanceId, variableScope)
+        if (documentId != caseDocumentId) {
+            throw UnsupportedOperationException("Writing case: values from within a building block is not supported")
+        }
+        handleValues(caseDocumentId, values)
     }
 
     override fun handleValues(documentId: UUID, values: Map<String, Any?>) {
@@ -84,7 +88,7 @@ class DocumentTableValueResolver(
 
     private fun createResolver(document: Document): Function<String, Any?> {
         return Function { requestedValue ->
-            when (requestedValue) {
+            when (requestedValue.replace('/', '.').trim('.')) {
                 "assigneeFullName" -> document.assigneeFullName()
                 "assigneeId" -> document.assigneeId()
                 "assignedTeamKey" -> document.assignedTeamKey()
@@ -109,7 +113,7 @@ class DocumentTableValueResolver(
 
     private fun handleValues(documentId: Document.Id, values: Map<String, Any?>) {
         values.entries.forEach { (key, value) ->
-            when (key) {
+            when (key.replace('/', '.').trim('.')) {
                 "assigneeId" -> if (value != null) {
                     documentService.assignUserToDocument(documentId.id, value.toString())
                 } else {
@@ -132,8 +136,8 @@ class DocumentTableValueResolver(
             "createdBy",
             "createdOn",
             "retentionDate",
-            "definitionId.name",
-            "definitionId.version",
+            "definitionId.key",
+            "definitionId.versionTag",
             "documentDefinitionId",
             "documentDefinitionId.name",
             "id",

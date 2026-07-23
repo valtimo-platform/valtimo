@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.contract.config;
 
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -51,21 +52,42 @@ public class LiquibaseRunner {
     private final Contexts context;
     private final DataSource datasource;
     private final int staleLockThresholdMinutes;
+    private final boolean bootstrapEnabled;
+    private final BootstrapState bootstrapState;
     private volatile boolean aborting = false;
 
     public LiquibaseRunner(
         final List<LiquibaseMasterChangeLogLocation> liquibaseMasterChangeLogLocations,
         final LiquibaseProperties liquibaseProperties,
         final DataSource datasource,
-        final int staleLockThresholdMinutes
+        final int staleLockThresholdMinutes,
+        final boolean bootstrapEnabled,
+        final BootstrapState bootstrapState
     ) {
         this.liquibaseMasterChangeLogLocations = liquibaseMasterChangeLogLocations;
         this.datasource = datasource;
         this.context = new Contexts(liquibaseProperties.getContexts());
         this.staleLockThresholdMinutes = staleLockThresholdMinutes;
+        this.bootstrapEnabled = bootstrapEnabled;
+        this.bootstrapState = bootstrapState;
     }
 
     public void run() throws SQLException, DatabaseException {
+        if (!bootstrapEnabled) {
+            logger.info("Bootstrap disabled (valtimo.bootstrap.enabled=false); skipping Liquibase migrations");
+            return;
+        }
+        try {
+            doRun();
+        } catch (SQLException | DatabaseException | RuntimeException e) {
+            if (bootstrapState != null) {
+                bootstrapState.markFailed("liquibase", e);
+            }
+            throw e;
+        }
+    }
+
+    private void doRun() throws SQLException, DatabaseException {
         Connection connection = datasource.getConnection();
         JdbcConnection jdbcConnection = new JdbcConnection(connection);
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);

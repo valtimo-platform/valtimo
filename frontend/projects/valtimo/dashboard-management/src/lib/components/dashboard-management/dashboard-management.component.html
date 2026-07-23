@@ -49,7 +49,7 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent [cdsLayer]="1">
     <form [formGroup]="form" class="valtimo-dashboard-management__form">
       <cds-label [invalid]="getControlInvalid('title')">
         {{ 'dashboardManagement.addModal.name' | translate }}
