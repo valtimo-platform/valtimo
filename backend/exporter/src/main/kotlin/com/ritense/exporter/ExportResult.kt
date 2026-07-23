@@ -16,11 +16,23 @@
 
 package com.ritense.exporter
 
+import com.ritense.exporter.manifest.ArtifactDependency
+import com.ritense.exporter.manifest.ArtifactManifestEntry
 import com.ritense.exporter.request.ExportRequest
 
 data class ExportResult(
     val exportFiles: Set<ExportFile> = setOf(),
-    val relatedRequests: Set<ExportRequest> = setOf()
+    val relatedRequests: Set<ExportRequest> = setOf(),
+    /**
+     * The manifest artifact this export produces. Only used when this result belongs to the root
+     * export request; ignored when the request was pulled in as a (transitive) dependency.
+     */
+    val manifestArtifact: ArtifactManifestEntry? = null,
+    /**
+     * Manifest dependencies contributed by this export (e.g. plugins referenced by a process link, or
+     * a building block pulled in as a dependency). Collected for non-root export requests.
+     */
+    val manifestDependencies: Set<ArtifactDependency> = setOf(),
 ) {
     constructor(exportFile: ExportFile?, relatedRequests: Set<ExportRequest> = setOf()) : this(
         if (exportFile != null) setOf(exportFile) else setOf(),

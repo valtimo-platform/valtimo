@@ -6,9 +6,11 @@
 
 ## New Features
 
-* **New feature title**
+* **Exports now include a manifest describing their contents**
 
-  New feature explanation.
+  Exporting a case definition or building block now adds a manifest file to the export. It summarizes what the
+  export contains and what is needed to import it, such as the title, version, and the plugins and building blocks
+  it depends on.
 
 ## Enhancements
 

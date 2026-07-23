@@ -23,6 +23,9 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.manifest.ArtifactManifestEntry
+import com.ritense.exporter.manifest.ArtifactType
+import com.ritense.exporter.manifest.ResolvableValue
 import com.ritense.exporter.request.CaseDefinitionBuildingBlockLinkExportRequest
 import com.ritense.exporter.request.CaseDefinitionExportRequest
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
@@ -47,8 +50,9 @@ class CaseDefinitionExporter(
             "${it.major}-${it.minor}-${it.patch}"
         }
 
+        val caseDefinitionPath = PATH.format(caseDefinitionKey, formattedCaseDefinitionVersion, caseDefinitionKey)
         val caseDefinitionExport = ExportFile(
-            PATH.format(caseDefinitionKey, formattedCaseDefinitionVersion, caseDefinitionKey),
+            caseDefinitionPath,
             objectMapper
                 .writer(ExportPrettyPrinter())
                 .writeValueAsBytes(
@@ -72,7 +76,17 @@ class CaseDefinitionExporter(
         relatedRequests.add(CaseDefinitionBuildingBlockLinkExportRequest(caseDefinition.id))
         relatedRequests.add(StartableItemExportRequest(caseDefinition.id))
 
-        return ExportResult(caseDefinitionExport, relatedRequests)
+        return ExportResult(
+            exportFiles = setOf(caseDefinitionExport),
+            relatedRequests = relatedRequests,
+            manifestArtifact = ArtifactManifestEntry(
+                artifactVersionTag = ResolvableValue.ref(caseDefinitionPath, "/versionTag"),
+                title = ResolvableValue.ref(caseDefinitionPath, "/name"),
+                type = ArtifactType.CASE_DEFINITION,
+                valtimoVersion = "",
+                dependencies = emptyList(),
+            ),
+        )
     }
 
     private fun createDocumentDefinitionExportRequest(caseDefinitionId: CaseDefinitionId): Set<DocumentDefinitionExportRequest>  {

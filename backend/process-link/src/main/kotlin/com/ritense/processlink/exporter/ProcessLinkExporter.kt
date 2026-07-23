@@ -21,6 +21,7 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.manifest.ArtifactDependency
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
 import com.ritense.processlink.service.ProcessLinkService
@@ -44,10 +45,12 @@ class ProcessLinkExporter(
         }
 
         val relatedRequests = mutableSetOf<ExportRequest>()
+        val manifestDependencies = mutableSetOf<ArtifactDependency>()
         val createDtos = processLinks.map { processLink ->
             val mapper = processLinkService.getProcessLinkMapper(processLink.processLinkType)
 
             relatedRequests.addAll(mapper.createRelatedExportRequests(processLink, request.caseDefinitionId))
+            manifestDependencies.addAll(mapper.toManifestDependencies(processLink))
 
             mapper.toProcessLinkExportResponseDto(processLink)
         }
@@ -61,11 +64,14 @@ class ProcessLinkExporter(
         }
 
         return ExportResult(
-            ExportFile(
-                PATH.format(request.caseDefinitionId.key, formattedCaseDefinitionVersion, processDefinitionKey),
-                objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(createDtos)
+            exportFiles = setOf(
+                ExportFile(
+                    PATH.format(request.caseDefinitionId.key, formattedCaseDefinitionVersion, processDefinitionKey),
+                    objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(createDtos)
+                )
             ),
-            relatedRequests
+            relatedRequests = relatedRequests,
+            manifestDependencies = manifestDependencies,
         )
     }
 

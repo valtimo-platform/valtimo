@@ -21,6 +21,7 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.manifest.ArtifactDependency
 import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
@@ -46,8 +47,11 @@ class BuildingBlockProcessLinkExporter(
                 .singleResult()
         ).key
 
+        val manifestDependencies = mutableSetOf<ArtifactDependency>()
         val exportDtos = processLinkService.getProcessLinks(processDefinitionId).map { link ->
-            getProcessLinkMapper(link.processLinkType).toProcessLinkExportResponseDto(link)
+            val mapper = getProcessLinkMapper(link.processLinkType)
+            manifestDependencies.addAll(mapper.toManifestDependencies(link))
+            mapper.toProcessLinkExportResponseDto(link)
         }
 
         if (exportDtos.isEmpty()) {
@@ -71,7 +75,11 @@ class BuildingBlockProcessLinkExporter(
             bytes
         )
 
-        return ExportResult(file, buildingBlocks)
+        return ExportResult(
+            exportFiles = setOf(file),
+            relatedRequests = buildingBlocks,
+            manifestDependencies = manifestDependencies,
+        )
     }
 
     private fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
