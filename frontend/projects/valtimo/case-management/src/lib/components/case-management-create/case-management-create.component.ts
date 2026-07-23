@@ -36,6 +36,8 @@ export class CaseManagementCreateComponent {
 
   protected readonly testIds = CASE_MANAGEMENT_CREATE_TEST_IDS;
 
+  protected readonly descriptionMaxLength = 256;
+
   public formGroup: FormGroup = this.fb.group({
     name: this.fb.control('', Validators.required),
     caseDefinitionKey: this.fb.control({value: '', disabled: true}, [
@@ -43,7 +45,7 @@ export class CaseManagementCreateComponent {
       Validators.pattern('[A-Za-z0-9-]*'),
     ]),
     caseDefinitionVersion: this.fb.control('', Validators.required),
-    description: this.fb.control(''),
+    description: this.fb.control('', Validators.maxLength(this.descriptionMaxLength)),
   });
 
   private readonly _editActive$ = new BehaviorSubject<boolean>(false);
@@ -129,6 +131,7 @@ export class CaseManagementCreateComponent {
     setTimeout(() => {
       this.formGroup.reset();
       this.idError$.next(null);
+      this.versionError$.next(null);
       this._editActive$.next(false);
       this.editDisabled$.next(true);
     }, CARBON_CONSTANTS.modalAnimationMs);
