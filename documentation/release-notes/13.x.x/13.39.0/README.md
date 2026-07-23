@@ -19,3 +19,8 @@
 ## Bugfixes
 
 * New bugfix.
+
+## Security
+
+* Addressed the reported security alerts. One underlying dependency was updated to a fixed version, and the remaining
+  alerts were reviewed and found not to affect Valtimo.
