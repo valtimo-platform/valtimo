@@ -23,8 +23,11 @@ jobs:
   build_run_tests:
     uses: ./.github/workflows/backend_build_test_libraries.yml
 
-  build_and_push_gzac_image:
-    name: Build and push gzac-backend image
+  # Release images are built to GHCR only here (no push_to_dockerhub). The
+  # smoke_and_promote jobs below boot each image and only then copy it to Docker
+  # Hub, so Docker Hub never receives an image that has not booted.
+  build_gzac_image:
+    name: Build gzac-backend image (GHCR)
     needs:
       - build_run_tests
     permissions:
@@ -34,13 +37,11 @@ jobs:
     with:
       backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
       variant: gzac
-      push_to_dockerhub: true
-      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
       project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
-  build_and_push_valtimo_image:
-    name: Build and push valtimo-backend image
+  build_valtimo_image:
+    name: Build valtimo-backend image (GHCR)
     needs:
       - build_run_tests
     permissions:
@@ -50,13 +51,11 @@ jobs:
     with:
       backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
       variant: valtimo
-      push_to_dockerhub: true
-      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
       project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
-  build_and_push_evenementenvergunning_image:
-    name: Build and push gzac-evenementenvergunning-backend image
+  build_evenementenvergunning_image:
+    name: Build gzac-evenementenvergunning-backend image (GHCR)
     needs:
       - build_run_tests
     permissions:
@@ -66,9 +65,46 @@ jobs:
     with:
       backend_libraries_build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
       variant: evenementenvergunning
-      push_to_dockerhub: true
-      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
       project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_gzac:
+    name: Smoke test + promote gzac-backend
+    needs:
+      - build_gzac_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/backend_smoke_and_promote.yml
+    with:
+      image_name: gzac-backend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_valtimo:
+    name: Smoke test + promote valtimo-backend
+    needs:
+      - build_valtimo_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/backend_smoke_and_promote.yml
+    with:
+      image_name: valtimo-backend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_evenementenvergunning:
+    name: Smoke test + promote gzac-evenementenvergunning-backend
+    needs:
+      - build_evenementenvergunning_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/backend_smoke_and_promote.yml
+    with:
+      image_name: gzac-evenementenvergunning-backend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
   publish:
