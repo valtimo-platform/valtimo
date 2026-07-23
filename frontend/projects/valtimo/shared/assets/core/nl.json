@@ -160,7 +160,7 @@
       "removeSuccessful": "Document succesvol uit het dossier verwijderd",
       "removeFailed": "Het verwijderen van het document uit het dossier is mislukt"
     },
-    "caseUpdated": "Zaak aangepast",
+    "caseUpdated": "Dossier aangepast",
     "startSubProcess": "Start",
     "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
     "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
@@ -1196,7 +1196,7 @@
       "columns": {
         "title": "Statusnaam",
         "retentionPeriod": "Bewaartermijn in dagen",
-        "retentionPeriodTooltip": "0 of hoger: retentie is actief, de zaak wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, de zaak wordt niet automatisch verwijderd.",
+        "retentionPeriodTooltip": "0 of hoger: retentie is actief, het dossier wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, het dossier wordt niet automatisch verwijderd.",
         "deletedImmediately": "Wordt direct verwijderd",
         "key": "Status-key",
         "label": "Label (Optioneel)",
@@ -1207,7 +1207,7 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit dossiertype."}
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -1228,7 +1228,7 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit dossiertype."}
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
@@ -1312,7 +1312,7 @@
       },
       "metroline": {
         "title": "Metrolijn",
-        "description": "Toon de voortgang van een zaak als een metrolijn"
+        "description": "Toon de voortgang van een dossier als een metrolijn"
       },
       "highlight": {
         "title": "Markering",
@@ -2732,7 +2732,7 @@
         "message": "Voeg een permissie toe om deze rol toegang tot resources te geven."
       },
       "tooltips": {
-        "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een zaakdefinitie, document of taak.",
+        "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een dossierdefinitie, document of taak.",
         "actions": "Wat deze rol met de resource mag doen. Bijvoorbeeld: bekijken, wijzigen of verwijderen. Er moet minstens één geselecteerd zijn.",
         "conditionType": "Veld vergelijkt een eigenschap van de resource. JSON-veld leest een waarde op een JSON-pad in de JSON-inhoud van het veld. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een zaak).",
         "field": "Een eigenschap van de resource om te controleren. Bijvoorbeeld: name, createdBy of active.",
@@ -3173,7 +3173,7 @@
     "addTab": "Tab toevoegen",
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",
-    "canStartCase": "Kan zaak starten",
+    "canStartCase": "Kan dossier starten",
     "collectionPathTooltip": "Een pad dat leidt naar de verzameling van waarden die je wilt weergeven. Voor het tonen van eigenschappen in IKO's, volg dit voorbeeld: 'iko:/pad/naar/eigenschap'.",
     "tabTypes": {
       "widgets": "Widgets"
@@ -3246,8 +3246,8 @@
     "featureToggles": {
       "searchEngine": {
         "useOpenSearch": {
-          "title": "Gebruik OpenSearch voor zaakzoekopdrachten",
-          "description": "Indien ingeschakeld worden zaakzoekopdrachten uitgevoerd met OpenSearch voor betere prestaties. Indien uitgeschakeld wordt PostgreSQL gebruikt.",
+          "title": "Gebruik OpenSearch voor dossierzoekopdrachten",
+          "description": "Indien ingeschakeld worden dossierzoekopdrachten uitgevoerd met OpenSearch voor betere prestaties. Indien uitgeschakeld wordt PostgreSQL gebruikt.",
           "unavailable": "OpenSearch is niet geconfigureerd voor deze applicatie."
         }
       },
@@ -3344,8 +3344,8 @@
           "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
         },
         "enableGenericCaseList": {
-          "title": "Generieke zaaklijst inschakelen",
-          "description": "Toon één zaaklijstweergave met een dropdown om tussen zaakdefinities te wisselen."
+          "title": "Generieke dossierlijst inschakelen",
+          "description": "Toon één dossierlijstweergave met een dropdown om tussen dossierdefinities te wisselen."
         }
       }
     },
