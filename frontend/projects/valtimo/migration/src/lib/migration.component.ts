@@ -78,10 +78,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
   public get taskMappingLength() {
     return Object.keys(this.taskMapping).length;
   }
-
-  // ComboBox closes itself on every `items` change, so these must be stable
-  // references that only get reassigned when the underlying data changes -
-  // not getters/method calls re-evaluated on every change detection cycle.
+  
   public sourceDefinitionItems: ListItem[] = [];
   public targetDefinitionItems: ListItem[] = [];
   public sourceVersionItems: ListItem[] = [];
@@ -125,7 +122,11 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
 
   onDefinitionSelected(selection: ListItem | ListItem[], type: string) {
     const item = Array.isArray(selection) ? selection[0] : selection;
-    this.loadProcessDefinitionVersions(item?.key ?? null, type);
+    const key = item?.key ?? null;
+    this.loadProcessDefinitionVersions(key, type);
+    if (type === 'source') {
+      this.loadProcessDefinitionVersions(key, 'target');
+    }
   }
 
   onVersionSelected(selection: ListItem | ListItem[], type: string) {
