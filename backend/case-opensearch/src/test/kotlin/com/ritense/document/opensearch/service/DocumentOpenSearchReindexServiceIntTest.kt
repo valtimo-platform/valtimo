@@ -151,13 +151,11 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
 
     @Test
     fun `scoped re-index by modifiedAfter only indexes documents modified after the cutoff`() {
-        val untouched = createDocument("untouched")           // modifiedOn stays null -> excluded
+        val untouched = createDocument("untouched")
         val modified = createDocument("before-modify")
-        val cutoff = LocalDateTime.now()
-        Thread.sleep(50)
-        runWithoutAuthorization {
-            documentService.modifyDocument(modified, objectMapper.createObjectNode().put("street", "after-modify"))
-        }
+        // Set cutoff after document creation; MySQL DATETIME has second precision so we must advance by >= 1 second
+        val cutoff = LocalDateTime.now().plusSeconds(1).truncatedTo(java.time.temporal.ChronoUnit.SECONDS)
+        setModifiedOn(modified.id(), cutoff.plusSeconds(1))   // modified has modifiedOn after cutoff
         clearIndex()
 
         reindex(ReindexRequest(modifiedAfter = cutoff))
@@ -165,6 +163,17 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         refreshIndex()
         assertThat(openSearchRepository.findById(modified.id().toString())).isPresent
         assertThat(openSearchRepository.findById(untouched.id().toString())).isEmpty
+    }
+
+    private fun setModifiedOn(documentId: JsonSchemaDocumentId, modifiedOn: LocalDateTime) {
+        TransactionTemplate(transactionManager).execute {
+            entityManager.createNativeQuery(
+                "UPDATE json_schema_document SET modified_on = :modifiedOn WHERE json_schema_document_id = :id"
+            )
+                .setParameter("modifiedOn", modifiedOn)
+                .setParameter("id", documentId.id)
+                .executeUpdate()
+        }
     }
 
     @Test
