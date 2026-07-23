@@ -21,4 +21,21 @@ interface DocumentUpdatedSseEvent extends BaseSseEvent {
   caseDefinitionKey: string;
 }
 
-export {DocumentUpdatedSseEvent};
+interface CaseAssignedSseEvent extends BaseSseEvent {
+  documentId: string;
+}
+
+interface CaseUnassignedSseEvent extends BaseSseEvent {
+  documentId: string;
+}
+
+interface CaseStatusUpdatedSseEvent extends BaseSseEvent {
+  documentId: string;
+}
+
+export {
+  CaseAssignedSseEvent,
+  CaseStatusUpdatedSseEvent,
+  CaseUnassignedSseEvent,
+  DocumentUpdatedSseEvent,
+};

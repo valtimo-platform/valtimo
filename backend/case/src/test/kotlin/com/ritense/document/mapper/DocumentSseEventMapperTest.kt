@@ -19,8 +19,10 @@ package com.ritense.document.mapper
 import com.ritense.document.domain.event.CaseAssignedEvent
 import com.ritense.document.domain.event.CaseCreatedEvent
 import com.ritense.document.domain.event.CaseUnassignedEvent
+import com.ritense.document.event.CaseStatusUpdatedSseEvent
 import com.ritense.document.event.DocumentAssigned
 import com.ritense.document.event.DocumentCreated
+import com.ritense.document.event.DocumentStatusChanged
 import com.ritense.document.event.DocumentUnassigned
 import com.ritense.document.event.DocumentUpdated
 import com.ritense.document.event.DocumentUpdatedSseEvent
@@ -54,19 +56,50 @@ class DocumentSseEventMapperTest {
     @Test
     fun `should map to sse event for a case assigned`() {
         val valtimoEvent = mock<ValtimoEvent>()
+        val documentId = "document-id"
         whenever(valtimoEvent.type).thenReturn(DocumentAssigned.TYPE)
+        whenever(valtimoEvent.resultId).thenReturn(documentId)
 
         val sseEvent = documentSseEventMapper.map(valtimoEvent)
+
         assertInstanceOf(CaseAssignedEvent::class.java, sseEvent)
+        assertEquals(documentId, (sseEvent as CaseAssignedEvent).documentId)
     }
 
     @Test
     fun `should map to sse event for a case unassigned`() {
         val valtimoEvent = mock<ValtimoEvent>()
+        val documentId = "document-id"
         whenever(valtimoEvent.type).thenReturn(DocumentUnassigned.TYPE)
+        whenever(valtimoEvent.resultId).thenReturn(documentId)
 
         val sseEvent = documentSseEventMapper.map(valtimoEvent)
+
         assertInstanceOf(CaseUnassignedEvent::class.java, sseEvent)
+        assertEquals(documentId, (sseEvent as CaseUnassignedEvent).documentId)
+    }
+
+    @Test
+    fun `should map to sse event for a case status changed`() {
+        val valtimoEvent = mock<ValtimoEvent>()
+        val documentId = "document-id"
+        whenever(valtimoEvent.type).thenReturn(DocumentStatusChanged.TYPE)
+        whenever(valtimoEvent.resultId).thenReturn(documentId)
+
+        val sseEvent = documentSseEventMapper.map(valtimoEvent)
+
+        assertInstanceOf(CaseStatusUpdatedSseEvent::class.java, sseEvent)
+        assertEquals(documentId, (sseEvent as CaseStatusUpdatedSseEvent).documentId)
+    }
+
+    @Test
+    fun `should return null when case status changed event has no resultId`() {
+        val valtimoEvent = mock<ValtimoEvent>()
+        whenever(valtimoEvent.type).thenReturn(DocumentStatusChanged.TYPE)
+        whenever(valtimoEvent.resultId).thenReturn(null)
+
+        val sseEvent = documentSseEventMapper.map(valtimoEvent)
+        assertNull(sseEvent)
     }
 
     @Test

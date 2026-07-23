@@ -45,6 +45,7 @@ import com.ritense.outbox.domain.BaseEvent
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.authentication.NamedUser
+import com.ritense.valtimo.contract.authentication.Team
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
@@ -556,6 +557,74 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
             .single { it is DocumentUnassigned }
         assertThat(event.resultId).isEqualTo(document.id!!.toString())
         assertThat(event.result).isEqualTo(objectMapper.valueToTree(document))
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `should send outboxMessage on assignTeamToDocument`() {
+        val document = createDocument("""{"street": "Admin street"}""")
+        mockTeamFindByKey("team1", "Team 1")
+
+        reset(outboxService)
+
+        documentService.assignTeamToDocument(document.id!!.id, "team1")
+
+        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
+        verify(outboxService, atLeastOnce()).send(eventCapture.capture())
+        val event = eventCapture.allValues.map { it.get() }
+            .single { it is DocumentAssigned }
+        assertThat(event.resultId).isEqualTo(document.id!!.toString())
+        assertThat(event.result).isEqualTo(objectMapper.valueToTree(document))
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `should send outboxMessage on assignTeamToDocuments`() {
+        val documents = IntRange(0, 1).map {
+            createDocument("""{"street": "Admin street"}""")
+        }
+        mockTeamFindByKey("team1", "Team 1")
+
+        reset(outboxService)
+
+        documentService.assignTeamToDocuments(documents.map { it.id().id }, "team1")
+
+        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
+        verify(outboxService, atLeastOnce()).send(eventCapture.capture())
+        val events = eventCapture.allValues.map { it.get() }
+            .filterIsInstance<DocumentAssigned>()
+        documents.forEach { document ->
+            val event = events.single { it.resultId == document.id!!.toString() }
+            assertThat(event.result).isEqualTo(objectMapper.valueToTree(document))
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `should send outboxMessage when team unassigned`() {
+        val document = createDocument("""{"street": "Admin street"}""")
+        mockTeamFindByKey("team1", "Team 1")
+        documentService.assignTeamToDocument(document.id!!.id, "team1")
+
+        reset(outboxService)
+
+        documentService.unassignTeamFromDocument(document.id!!.id)
+
+        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
+        verify(outboxService, atLeastOnce()).send(eventCapture.capture())
+        val event = eventCapture.allValues.map { it.get() }
+            .single { it is DocumentUnassigned }
+        assertThat(event.resultId).isEqualTo(document.id!!.toString())
+        assertThat(event.result).isEqualTo(objectMapper.valueToTree(document))
+    }
+
+    private fun mockTeamFindByKey(key: String, title: String) {
+        whenever(teamManagementService.findByKey(key)).thenReturn(
+            object : Team {
+                override val key = key
+                override val title = title
+            }
+        )
     }
 
     private fun createDocument(content: String): JsonSchemaDocument {

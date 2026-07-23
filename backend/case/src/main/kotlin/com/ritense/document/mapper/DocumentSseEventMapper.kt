@@ -19,8 +19,10 @@ package com.ritense.document.mapper
 import com.ritense.document.domain.event.CaseAssignedEvent
 import com.ritense.document.domain.event.CaseCreatedEvent
 import com.ritense.document.domain.event.CaseUnassignedEvent
+import com.ritense.document.event.CaseStatusUpdatedSseEvent
 import com.ritense.document.event.DocumentAssigned
 import com.ritense.document.event.DocumentCreated
+import com.ritense.document.event.DocumentStatusChanged
 import com.ritense.document.event.DocumentUnassigned
 import com.ritense.document.event.DocumentUpdated
 import com.ritense.document.event.DocumentUpdatedSseEvent
@@ -34,19 +36,21 @@ class DocumentSseEventMapper : SseEventMapper {
     override fun map(event: ValtimoEvent): BaseSseEvent? {
         return when (event.type) {
             DocumentCreated.TYPE -> CaseCreatedEvent()
-            DocumentAssigned.TYPE -> CaseAssignedEvent()
-            DocumentUnassigned.TYPE -> CaseUnassignedEvent()
-            DocumentUpdated.TYPE -> {
-                val resultId = event.resultId
-                if (resultId == null) {
-                    logger.warn { "Received DocumentUpdated event without resultId, skipping" }
-                    return null
-                }
-                DocumentUpdatedSseEvent(resultId)
-            }
-
+            DocumentAssigned.TYPE -> withDocumentId(event) { CaseAssignedEvent(it) }
+            DocumentUnassigned.TYPE -> withDocumentId(event) { CaseUnassignedEvent(it) }
+            DocumentStatusChanged.TYPE -> withDocumentId(event) { CaseStatusUpdatedSseEvent(it) }
+            DocumentUpdated.TYPE -> withDocumentId(event) { DocumentUpdatedSseEvent(it) }
             else -> null
         }
+    }
+
+    private fun withDocumentId(event: ValtimoEvent, mapper: (String) -> BaseSseEvent): BaseSseEvent? {
+        val resultId = event.resultId
+        if (resultId == null) {
+            logger.warn { "Received ${event.type} event without resultId, skipping" }
+            return null
+        }
+        return mapper(resultId)
     }
 
     companion object {
