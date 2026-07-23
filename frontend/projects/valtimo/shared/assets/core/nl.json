@@ -1178,7 +1178,7 @@
       "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie. Gebruik Semantic Versioning (bijv. 1.0.0).",
       "description": "Beschrijving van de dossierdefinitie",
       "descriptionPlaceholder": "Voer hier een beschrijving in",
-      "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie."
+      "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie. Maximaal {{ maxLength }} tekens."
     },
     "documentDefinition": {
       "cancelModal": {

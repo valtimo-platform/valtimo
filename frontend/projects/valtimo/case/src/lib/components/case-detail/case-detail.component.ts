@@ -51,15 +51,18 @@ import {
 } from '@valtimo/document';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
-import {IntermediateSubmission} from '@valtimo/task';
+import {SseService} from '@valtimo/sse';
+import {IntermediateSubmission, TaskUpdateSseEvent} from '@valtimo/task';
 import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
   combineLatest,
+  debounceTime,
   filter,
   map,
+  merge,
   Observable,
   of,
   shareReplay,
@@ -76,7 +79,7 @@ import {
   CASE_DETAIL_GUTTER_SIZE,
   CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
 } from '../../constants';
-import {TabImpl, TabLoaderImpl} from '../../models';
+import {DocumentUpdatedSseEvent, TabImpl, TabLoaderImpl} from '../../models';
 import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
@@ -363,6 +366,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     private readonly router: Router,
     private readonly widgetsService: WidgetsService,
     private readonly userProviderService: UserProviderService,
+    private readonly sseService: SseService,
     @Inject(DOCUMENT) private readonly htmlDocument: Document
   ) {
     this._snapshot = this.route.snapshot.paramMap;
@@ -381,6 +385,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.enableResetOnBackNavigation();
     this.openWidgetProcessSubscription();
     this.openSmallTitleSubscription();
+    this.openStartableItemsSseSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -407,6 +412,37 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
           },
         ];
       })
+    );
+  }
+
+  /**
+   * Keeps the start menu in sync with PBAC visibility: supporting processes can become
+   * (un)available as the case progresses. Instead of requiring a page refresh, re-fetch the
+   * startable items whenever an SSE event signals that the case state changed. The backend
+   * re-evaluates PBAC on every request, so a fresh fetch reflects the current visibility.
+   */
+  private openStartableItemsSseSubscription(): void {
+    this._subscriptions.add(
+      merge(
+        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
+        this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED')
+      )
+        .pipe(
+          filter(event => event?.documentId === this.documentId),
+          debounceTime(300)
+        )
+        .subscribe(() => this.reloadStartableItems())
+    );
+  }
+
+  private reloadStartableItems(): void {
+    this._subscriptions.add(
+      this.documentService
+        .getStartableItems({caseDocumentId: this.documentId})
+        .subscribe(startableItems => {
+          this.startableItems = this.mapStartableItems(startableItems);
+          this.setProcessDropdownWidth();
+        })
     );
   }
 
