@@ -103,44 +103,63 @@ describe('ValtimoCdsModalDirective', () => {
     expect(clickSpy).not.toHaveBeenCalled();
   });
 
-  it('closes only the open dropdown, not the modal, when a list-box is expanded inside the modal', () => {
+  it('shields the modal and lets Carbon close the menu when ESC fires inside an open combo-box', () => {
     fixture.componentInstance.showExpandedDropdown = true;
     fixture.detectChanges();
+    const comboInput = fixture.nativeElement.querySelector('.combo-input') as HTMLInputElement;
     const clickSpy = spyOn(outerClose, 'click');
-    const bodyClickSpy = jasmine.createSpy('bodyClick');
-    document.body.addEventListener('click', bodyClickSpy);
     const event = new KeyboardEvent('keydown', {key: 'Escape', bubbles: true, cancelable: true});
-    const stopSpy = spyOn(event, 'stopImmediatePropagation');
+    const stopImmediateSpy = spyOn(event, 'stopImmediatePropagation');
+    const stopPropagationSpy = spyOn(event, 'stopPropagation');
 
-    document.dispatchEvent(event);
+    // Dispatch from inside the open combo-box so the event target resolves to the list-box host.
+    comboInput.dispatchEvent(event);
 
-    // Modal is protected (event stopped, close button not clicked) and the open menu is closed via
-    // a synthetic outside click on the body — which is how every Carbon list-box closes.
+    // We do NOT preempt Carbon (no stopImmediatePropagation, close button not clicked) so Carbon
+    // closes its own menu. The modal is shielded by a one-time keydown listener the directive adds
+    // on the list-box host, which stops propagation before the ESC reaches the modal.
     expect(clickSpy).not.toHaveBeenCalled();
-    expect(stopSpy).toHaveBeenCalled();
-    expect(bodyClickSpy).toHaveBeenCalled();
-    document.body.removeEventListener('click', bodyClickSpy);
+    expect(stopImmediateSpy).not.toHaveBeenCalled();
+    expect(stopPropagationSpy).toHaveBeenCalled();
   });
 
-  it('detects an expanded list-box appended to the body (combo-box with appendInline=false)', () => {
-    // A combo-box with `appendInline=false` relocates its expanded list-box out of the modal to the
-    // document body, so detection must span the whole document, not just this modal.
-    const bodyListBox = document.createElement('div');
-    bodyListBox.className = 'cds--list-box cds--list-box--expanded';
-    document.body.appendChild(bodyListBox);
+  it('does not close the modal when a list-box is expanded outside it (appendInline=false menu)', () => {
+    // A dropdown/combo-box with `appendInline=false` detaches its expanded menu to the body and
+    // moves focus into it, so neither the marker nor the event target is inside the modal.
+    // Detection is document-wide and the modal must not close (Carbon closes the detached menu).
+    const detachedMenu = document.createElement('div');
+    detachedMenu.className = 'cds--list-box cds--list-box--expanded';
+    const focusedOption = document.createElement('div');
+    detachedMenu.appendChild(focusedOption);
+    document.body.appendChild(detachedMenu);
     const clickSpy = spyOn(outerClose, 'click');
-    const bodyClickSpy = jasmine.createSpy('bodyClick');
-    document.body.addEventListener('click', bodyClickSpy);
     const event = new KeyboardEvent('keydown', {key: 'Escape', bubbles: true, cancelable: true});
-    const stopSpy = spyOn(event, 'stopImmediatePropagation');
+    const stopImmediateSpy = spyOn(event, 'stopImmediatePropagation');
 
-    document.dispatchEvent(event);
+    focusedOption.dispatchEvent(event);
 
     expect(clickSpy).not.toHaveBeenCalled();
-    expect(stopSpy).toHaveBeenCalled();
-    expect(bodyClickSpy).toHaveBeenCalled();
-    document.body.removeEventListener('click', bodyClickSpy);
-    document.body.removeChild(bodyListBox);
+    expect(stopImmediateSpy).not.toHaveBeenCalled();
+    document.body.removeChild(detachedMenu);
+  });
+
+  it('closes the modal when ESC is pressed and no list-box is expanded', () => {
+    // Second ESC: the combo-box exists but its menu is closed (no `.cds--list-box--expanded`), so
+    // ESC falls through to the modal close.
+    fixture.componentInstance.showExpandedDropdown = true;
+    fixture.detectChanges();
+    const comboInput = fixture.nativeElement.querySelector('.combo-input') as HTMLInputElement;
+    fixture.nativeElement
+      .querySelector('.cds--list-box--expanded')
+      .classList.remove('cds--list-box--expanded');
+    const clickSpy = spyOn(outerClose, 'click');
+    const event = new KeyboardEvent('keydown', {key: 'Escape', bubbles: true, cancelable: true});
+    const stopImmediateSpy = spyOn(event, 'stopImmediatePropagation');
+
+    comboInput.dispatchEvent(event);
+
+    expect(stopImmediateSpy).toHaveBeenCalled();
+    expect(clickSpy).toHaveBeenCalledTimes(1);
   });
 
   it('removes the document keydown listener on destroy', () => {

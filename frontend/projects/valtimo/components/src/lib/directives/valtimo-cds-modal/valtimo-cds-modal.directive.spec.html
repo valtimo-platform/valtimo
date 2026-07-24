@@ -18,7 +18,11 @@
   <div class="cds--modal is-visible">
     <button class="cds--modal-close outer-close" type="button"></button>
     @if (showExpandedDropdown) {
-    <div class="cds--list-box cds--list-box--expanded"></div>
+    <cds-combo-box>
+      <div class="cds--list-box cds--list-box--expanded">
+        <input class="combo-input" aria-expanded="true" />
+      </div>
+    </cds-combo-box>
     } @if (showNested) {
     <cds-modal>
       <div class="cds--modal is-visible">

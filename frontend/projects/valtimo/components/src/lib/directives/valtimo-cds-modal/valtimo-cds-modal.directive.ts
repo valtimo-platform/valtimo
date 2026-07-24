@@ -99,21 +99,29 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       return;
     }
 
-    event.stopImmediatePropagation();
-    event.preventDefault();
-
-    // If a Carbon dropdown/combo-box menu is open, this ESC should close only that menu, not the
-    // modal. We can't simply defer to Carbon: `cds-combo-box` closes its menu on ESC but does not
-    // stop the event, so it would still bubble to the modal's ESC handler and close it too (and
-    // with `appendInline=false` the expanded `.cds--list-box--expanded` element is detached to the
-    // document body, outside this modal — hence the document-wide query). So we keep the modal
-    // safe (via stopImmediatePropagation above) and close the open menu ourselves with a synthetic
-    // outside click, which every Carbon list-box listens for. A second ESC (no menu open) then
-    // closes the modal.
+    // If a Carbon dropdown/combo-box menu is open, this ESC belongs to that menu, not the modal, so
+    // we do not close the modal — Carbon's own keydown handler closes the menu (updating its state
+    // and the DOM correctly, because it runs on the real event in Angular's zone). Detection spans
+    // the whole document: with `appendInline=false` the expanded list-box is detached to the body,
+    // and Carbon moves focus into it, so neither the marker nor the event target is inside the
+    // modal. A second ESC (menu closed, marker gone) falls through and closes the modal.
+    //
+    // We also shield the modal: `cds-combo-box` closes on ESC but, unlike `cds-dropdown`, does not
+    // stop propagation, so with focus still in its host the ESC would bubble up to the modal's ESC
+    // handler and close it too. When the focused element is inside a list-box host, a one-time
+    // keydown listener added here fires during the bubble phase after Carbon's own handler (which
+    // was registered earlier) and stops propagation before the event reaches the modal. (When focus
+    // is inside a detached menu the event never reaches the modal, so no shield is needed.)
     if (this.document.querySelector('.cds--list-box--expanded')) {
-      this.document.body.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
+      const listBox = (event.target as HTMLElement | null)?.closest?.(
+        'cds-combo-box, cds-dropdown, cds-multi-select'
+      );
+      listBox?.addEventListener('keydown', (e: Event) => e.stopPropagation(), {once: true});
       return;
     }
+
+    event.stopImmediatePropagation();
+    event.preventDefault();
 
     // Click this modal's own close (X) button — skipping close buttons of nested modals — so ESC
     // runs exactly the same handling as the close button. Does nothing if there is no close button.
