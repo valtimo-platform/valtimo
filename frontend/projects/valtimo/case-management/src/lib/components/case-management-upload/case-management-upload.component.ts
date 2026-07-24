@@ -322,7 +322,11 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   private loadPluginMappingRows(pluginConfigs: PluginConfigurationPreview[]): void {
     const uniqueById = new Map<string, PluginConfigurationPreview>();
     for (const config of pluginConfigs) {
-      if (!uniqueById.has(config.pluginConfigurationId)) {
+      // One row per configuration id, but never let a key-less contribution (e.g. an external
+      // plugin case tab) shadow a mappable one (a process link) for the same configuration —
+      // key-less rows are filtered out below, which would hide the mapping choice entirely.
+      const existing = uniqueById.get(config.pluginConfigurationId);
+      if (!existing || (existing.pluginDefinitionKey === null && config.pluginDefinitionKey !== null)) {
         uniqueById.set(config.pluginConfigurationId, config);
       }
     }
@@ -627,11 +631,14 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   private buildPluginConfigurationMappings(): Record<string, string | null> {
     const mappings: Record<string, string | null> = {};
     for (const row of this.pluginMappingRows$.value) {
+      // Only rows the user could actually act on are sent. An explicit null tells the importer
+      // to clear the configuration id (a deliberate dangling import); omitting the key keeps the
+      // original id. Rows without a dropdown (plugin not installed / no configurations — possibly
+      // a transient lookup failure) must not silently clear ids: a cleared id disappears from the
+      // next export's import preview, making the mapping unrecoverable through the wizard.
       if (row.status === 'available') {
         const control = this.pluginMappingForm.get(row.sourcePluginConfigurationId);
         mappings[row.sourcePluginConfigurationId] = control?.value ?? null;
-      } else {
-        mappings[row.sourcePluginConfigurationId] = null;
       }
     }
     return mappings;

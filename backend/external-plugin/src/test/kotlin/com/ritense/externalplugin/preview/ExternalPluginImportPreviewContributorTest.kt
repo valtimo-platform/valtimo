@@ -17,24 +17,32 @@
 package com.ritense.externalplugin.preview
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.externalplugin.domain.ExternalPluginConfiguration
+import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.valtimo.contract.importer.ImportPreviewContribution.Companion.SOURCE_EXTERNAL
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.Instant
+import java.util.Optional
 import java.util.UUID
 
 class ExternalPluginImportPreviewContributorTest {
 
     private lateinit var configurationRepository: ExternalPluginConfigurationRepository
+    private lateinit var definitionRepository: ExternalPluginDefinitionRepository
     private lateinit var contributor: ExternalPluginImportPreviewContributor
 
     @BeforeEach
     fun setUp() {
         configurationRepository = mock()
-        contributor = ExternalPluginImportPreviewContributor(ObjectMapper(), configurationRepository)
+        definitionRepository = mock()
+        contributor = ExternalPluginImportPreviewContributor(ObjectMapper(), configurationRepository, definitionRepository)
     }
 
     @Test
@@ -144,9 +152,31 @@ class ExternalPluginImportPreviewContributorTest {
     }
 
     @Test
-    fun `contributes an entry for an EXTERNAL_PLUGIN case tab and checks existence`() {
+    fun `contributes an entry for an EXTERNAL_PLUGIN case tab with the resolved plugin key and version`() {
         val configId = UUID.randomUUID()
-        whenever(configurationRepository.existsById(configId)).thenReturn(true)
+        val definitionId = UUID.randomUUID()
+        whenever(configurationRepository.findById(configId)).thenReturn(
+            Optional.of(
+                ExternalPluginConfiguration(
+                    id = configId,
+                    definitionId = definitionId,
+                    title = "Config",
+                    createdAt = Instant.now(),
+                )
+            )
+        )
+        whenever(definitionRepository.findById(definitionId)).thenReturn(
+            Optional.of(
+                ExternalPluginDefinition(
+                    id = definitionId,
+                    pluginId = "case-summary",
+                    version = "0.1.0",
+                    hostId = UUID.randomUUID(),
+                    baseUrl = "http://localhost:1234",
+                    status = ExternalPluginDefinitionStatus.AVAILABLE,
+                )
+            )
+        )
 
         val json = """
             [
@@ -166,8 +196,35 @@ class ExternalPluginImportPreviewContributorTest {
         assertThat(result).hasSize(1)
         val entry = result.single()
         assertThat(entry.pluginConfigurationId).isEqualTo(configId)
+        assertThat(entry.pluginDefinitionKey).isEqualTo("case-summary")
+        assertThat(entry.pluginDefinitionVersion).isEqualTo("0.1.0")
         assertThat(entry.source).isEqualTo(SOURCE_EXTERNAL)
         assertThat(entry.existsInTargetEnvironment).isTrue()
+    }
+
+    @Test
+    fun `an EXTERNAL_PLUGIN case tab whose configuration is unknown stays a key-less entry`() {
+        val configId = UUID.randomUUID()
+        whenever(configurationRepository.findById(configId)).thenReturn(Optional.empty())
+
+        val json = """
+            [
+              {
+                "key": "summary",
+                "name": "Summary",
+                "type": "external_plugin",
+                "contentKey": "$configId:bundle-key"
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("case/tab/my-doc.case-tab.json" to json.toByteArray())
+        )
+
+        assertThat(result).hasSize(1)
+        assertThat(result.single().pluginDefinitionKey).isNull()
+        assertThat(result.single().existsInTargetEnvironment).isFalse()
     }
 
     @Test

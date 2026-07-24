@@ -19,6 +19,7 @@ package com.ritense.externalplugin.preview
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.valtimo.contract.importer.ImportPreviewContribution
 import com.ritense.valtimo.contract.importer.ImportPreviewContribution.Companion.SOURCE_EXTERNAL
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
@@ -34,6 +35,7 @@ import java.util.UUID
 class ExternalPluginImportPreviewContributor(
     private val objectMapper: ObjectMapper,
     private val configurationRepository: ExternalPluginConfigurationRepository,
+    private val definitionRepository: ExternalPluginDefinitionRepository,
 ) : ImportPreviewContributor {
 
     override fun contributePreview(zipEntries: Map<String, ByteArray>): List<ImportPreviewContribution> {
@@ -107,16 +109,23 @@ class ExternalPluginImportPreviewContributor(
             val configId = contentKey.substringBefore(':').toUuidOrNull() ?: continue
             val tabKey = node.path("key").asText(fileName)
 
+            // The tab's contentKey only carries the config id; resolve the plugin key/version
+            // through the configuration when it exists locally. Without a pluginDefinitionKey the
+            // import wizard cannot offer the row for mapping at all (it filters key-less rows), so
+            // an unresolvable configuration stays a key-less "unidentifiable" row as before.
+            val configuration = configurationRepository.findById(configId).orElse(null)
+            val definition = configuration?.let { definitionRepository.findById(it.definitionId).orElse(null) }
+
             result.add(
                 ImportPreviewContribution(
                     pluginConfigurationId = configId,
-                    pluginDefinitionKey = null,
+                    pluginDefinitionKey = definition?.pluginId,
                     pluginActionDefinitionKey = "case-tab",
                     processDefinitionKey = fileName,
                     activityId = tabKey,
-                    existsInTargetEnvironment = configurationRepository.existsById(configId),
+                    existsInTargetEnvironment = configuration != null,
                     source = SOURCE_EXTERNAL,
-                    pluginDefinitionVersion = null,
+                    pluginDefinitionVersion = definition?.version,
                 )
             )
         }

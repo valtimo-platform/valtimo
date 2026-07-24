@@ -473,7 +473,9 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginImportPreviewContributor(
         objectMapper: ObjectMapper,
         configurationRepository: ExternalPluginConfigurationRepository,
-    ): ImportPreviewContributor = ExternalPluginImportPreviewContributor(objectMapper, configurationRepository)
+        definitionRepository: ExternalPluginDefinitionRepository,
+    ): ImportPreviewContributor =
+        ExternalPluginImportPreviewContributor(objectMapper, configurationRepository, definitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginConfigurationMappingResolver::class)
