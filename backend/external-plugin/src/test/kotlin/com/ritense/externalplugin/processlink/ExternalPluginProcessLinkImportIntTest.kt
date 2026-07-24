@@ -142,10 +142,11 @@ class ExternalPluginProcessLinkImportIntTest @Autowired constructor(
     }
 
     private fun fixture(externalPluginConfigurationId: UUID): String {
+        // processDefinitionId is intentionally absent — ProcessLinkImporter resolves the latest
+        // deployed definition for the file's key and sets it on the node itself.
         return """
             [
                 {
-                    "processDefinitionId": "will-be-overwritten",
                     "activityId": "my-service-task",
                     "activityType": "bpmn:ServiceTask:start",
                     "processLinkType": "external_plugin",
@@ -155,11 +156,7 @@ class ExternalPluginProcessLinkImportIntTest @Autowired constructor(
                     "actionResultMappings": []
                 }
             ]
-        """.trimIndent().let {
-            // processDefinitionId is set by the importer itself when absent from the node;
-            // drop the placeholder so ProcessLinkImporter fills it in.
-            it.replace(""""processDefinitionId": "will-be-overwritten",\n                    """, "")
-        }
+        """.trimIndent()
     }
 
     private companion object {
