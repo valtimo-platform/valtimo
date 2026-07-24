@@ -120,7 +120,8 @@ class NotificatiesApiPlugin(
             NOTIFICATIES_API_PLUGIN_DEFINITION_KEY,
             RECEIVE_NOTIFICATIE_ACTION_KEY
         ).mapNotNull { pluginProcessLink ->
-            val notificatie = objectMapper.treeToValue(pluginProcessLink.actionProperties, ReceiveNotificatieProperties::class.java)
+            val notificatie =
+                objectMapper.treeToValue(pluginProcessLink.actionProperties, ReceiveNotificatieProperties::class.java)
             val kanaal = notificatie.kanaal ?: return@mapNotNull null
             val filters = buildMap {
                 notificatie.actie?.let { put("actie", it) }
@@ -148,7 +149,7 @@ class NotificatiesApiPlugin(
     }
 
     companion object {
-        val logger = KotlinLogging.logger {}
+        private val logger = KotlinLogging.logger {}
         const val NOTIFICATIES_API_PLUGIN_DEFINITION_KEY = "notificatiesapi"
         const val RECEIVE_NOTIFICATIE_ACTION_KEY = "receive-notificatie"
     }
