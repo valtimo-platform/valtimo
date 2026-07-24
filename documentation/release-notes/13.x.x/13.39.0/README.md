@@ -52,12 +52,3 @@
   that is not a button or input field. Previously the dialog could ignore Esc and had to be closed by
   refreshing the page.
 
-* **Several modals were missing shared modal behaviour**
-
-  A number of modals did not wire up the shared `valtimoCdsModal` behaviour, so they missed the
-  background scroll lock, content sizing, close-button tooltip suppression and the ESC-to-close
-  handling. This affected, among others, the ZGW "Connected zaak type" configuration, the Documenten
-  API column/upload-field/tag modals, the process, form and building block upload modals, the widget
-  management modals, the decision deploy modal and the access control role modals. These modals now
-  behave consistently with the rest of the application.
-
