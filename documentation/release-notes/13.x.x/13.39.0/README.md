@@ -19,16 +19,12 @@
   reason, making it easier to trace subscription problems. When subscription registration is turned
   off (`valtimo.zgw.register-abonnementen=false`), this is now logged instead of happening silently.
 
-* **Case detail updates the internal status and assignee live**
+* **Case detail keeps the status and assignee up to date automatically**
 
-  The case detail screen now refreshes the internal status tag and the assignee automatically when they change, without
-  switching tabs or reloading the page. When a case's internal status changes — for example because a user task is
-  completed or a timer expires — or when the case is (un)assigned, the change is now broadcast over the existing
-  Server-Sent Events (SSE) connection and the screen re-fetches the case so it always reflects the current state. This
-  adds a new `CASE_STATUS_UPDATED` SSE event and includes the `documentId` on the existing `CASE_ASSIGNED`
-  and `CASE_UNASSIGNED` events. Team assignment and unassignment now also emit `CASE_ASSIGNED` / `CASE_UNASSIGNED`
-  (previously `DOCUMENT_UPDATED`), so a team change is treated consistently with a user assignment. As with all SSE
-  events, the payload contains only the `documentId` and no sensitive data.
+  The case detail screen now updates the internal status and the assignee on its own as soon as they
+  change, so you no longer have to switch tabs or reload the page to see the current situation. This
+  happens for example when a status changes automatically because a task is completed or a timer
+  expires, and when a case is assigned to — or unassigned from — a colleague or a team.
 
 ## Bugfixes
 
