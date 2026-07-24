@@ -47,11 +47,18 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
 
     lateinit var server: MockWebServer
 
+    // Derived from the mock server's actual (randomly assigned) address so the test does not depend on a fixed port.
+    private val zakenApiUrl get() = server.url(ZAKEN_API_PATH).toString()
+    private val catalogiApiUrl get() = server.url(CATALOGI_API_PATH).toString()
+
     @BeforeEach
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 16273)
+        server.start()
+
+        setPluginConfigurationUrl(ZAKEN_API_PLUGIN_ID, server.url("$ZAKEN_API_PATH/").toString())
+        setPluginConfigurationUrl(CATALOGI_API_PLUGIN_ID, server.url("$CATALOGI_API_PATH/").toString())
     }
 
     @AfterEach
@@ -74,10 +81,10 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
 
             // Create zaak instance link so the resolver can find the zaak URL
             zaakInstanceLinkService.createZaakInstanceLink(
-                URI("$ZAKEN_API_URL/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
+                URI("$zakenApiUrl/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
                 java.util.UUID.fromString("57f66ff6-db7f-43bc-84ef-6847640d3609"),
                 documentId,
-                URI("$CATALOGI_API_URL/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002")
+                URI("$catalogiApiUrl/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002")
             )
 
             val formDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId("form-with-zaak-fields", caseDefinitionId).get()
@@ -112,13 +119,13 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
     private fun getZaakRequest(): MockResponse {
         val body = """
             {
-                "url": "${ZAKEN_API_URL}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
+                "url": "${zakenApiUrl}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "uuid": "a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "identificatie": "ZK2023-00001",
                 "bronorganisatie": "104978119",
                 "omschrijving": "Test",
                 "toelichting": "",
-                "zaaktype": "${CATALOGI_API_URL}/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002",
+                "zaaktype": "${catalogiApiUrl}/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002",
                 "registratiedatum": "2023-03-22",
                 "verantwoordelijkeOrganisatie": "104978119",
                 "startdatum": "2023-03-22",
@@ -144,7 +151,7 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
                 "relevanteAndereZaken": [],
                 "eigenschappen": [],
                 "rollen": [],
-                "status": "${ZAKEN_API_URL}/zaken/statussen/f0ca7629-115d-4231-b684-7eaa130ac1af",
+                "status": "${zakenApiUrl}/zaken/statussen/f0ca7629-115d-4231-b684-7eaa130ac1af",
                 "zaakinformatieobjecten": [],
                 "zaakobjecten": [],
                 "kenmerken": [],
@@ -164,10 +171,10 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
     private fun getZaakStatusRequest(): MockResponse {
         val body = """
         {
-            "url": "${ZAKEN_API_URL}/zaken/f7ef2339-fe9a-435e-a2d3-ae75ca4fb51a",
+            "url": "${zakenApiUrl}/zaken/f7ef2339-fe9a-435e-a2d3-ae75ca4fb51a",
             "uuid": "f7ef2339-fe9a-435e-a2d3-ae75ca4fb51a",
-            "zaak": "${ZAKEN_API_URL}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
-            "statustype": "${CATALOGI_API_URL}/statustypen/40cb531f-fbde-46af-9693-90e78535ff9f",
+            "zaak": "${zakenApiUrl}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
+            "statustype": "${catalogiApiUrl}/statustypen/40cb531f-fbde-46af-9693-90e78535ff9f",
             "datumStatusGezet": "2023-12-01T14:52:07Z",
             "statustoelichting": "",
             "indicatieLaatstGezetteStatus": true
@@ -179,15 +186,15 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
     private fun getStatusTypeRequest(): MockResponse {
         val body = """
         {
-            "url": "${CATALOGI_API_URL}/statustypen/33e13d2c-6441-4d70-a30b-bdda74105c1f",
+            "url": "${catalogiApiUrl}/statustypen/33e13d2c-6441-4d70-a30b-bdda74105c1f",
             "omschrijving": "Zaak gestart",
             "omschrijvingGeneriek": "Zaak gestart",
             "statustekst": "",
-            "zaaktype": "${CATALOGI_API_URL}/zaaktypen/01afac88-36e0-466b-b233-b8e2301c57e2",
+            "zaaktype": "${catalogiApiUrl}/zaaktypen/01afac88-36e0-466b-b233-b8e2301c57e2",
             "zaaktypeIdentificatie": "TEST_AANV",
             "volgnummer": 1,
             "checklistitemStatustype": [],
-            "catalogus": "${CATALOGI_API_URL}/759c3861-9c86-44f6-9c17-178ce9c331a7"
+            "catalogus": "${catalogiApiUrl}/759c3861-9c86-44f6-9c17-178ce9c331a7"
         }
         """.trimIndent()
         return mockResponse(body)
@@ -195,8 +202,8 @@ class ZaakStatusValueResolverValueIT @Autowired constructor(
 
     companion object {
         private const val CATALOGI_API_PATH = "/catalogi/api/v1"
-        private const val CATALOGI_API_URL = "http://localhost:16273$CATALOGI_API_PATH"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
-        private const val ZAKEN_API_URL = "http://localhost:16273$ZAKEN_API_PATH"
+        private const val ZAKEN_API_PLUGIN_ID = "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        private const val CATALOGI_API_PLUGIN_ID = "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec"
     }
 }

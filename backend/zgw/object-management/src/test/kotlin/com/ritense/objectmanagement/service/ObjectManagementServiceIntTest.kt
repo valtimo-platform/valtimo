@@ -27,6 +27,7 @@ import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.domain.search.SearchRequestValue
 import com.ritense.objectmanagement.domain.search.SearchWithConfigFilter
 import com.ritense.objectmanagement.domain.search.SearchWithConfigRequest
+import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.search.domain.DataType
 import com.ritense.search.domain.DisplayType
@@ -69,16 +70,38 @@ internal class ObjectManagementServiceIntTest : BaseIntegrationTest() {
     lateinit var objectMapper: ObjectMapper
 
     lateinit var mockApi: MockWebServer
+    private var previousObjectenApiUrl: String = ""
+    private var previousObjecttypenApiUrl: String = ""
 
     @BeforeAll
     fun setUp() {
         mockApi = MockWebServer()
-        mockApi.start(port = 17797)
+        mockApi.start()
+
+        // The "My Object Management" fixture binds these statically-deployed plugin configurations by id, so point
+        // them at the randomly assigned mock server port. @BeforeAll runs outside the per-test transaction, so the
+        // original URLs are captured and restored in tearDown.
+        previousObjectenApiUrl =
+            setPluginConfigurationUrl(OBJECTEN_API_PLUGIN_ID, mockApi.url("/some-object/").toString())
+        previousObjecttypenApiUrl =
+            setPluginConfigurationUrl(OBJECTTYPEN_API_PLUGIN_ID, mockApi.url("/some-objectTypesApi/").toString())
     }
 
     @AfterAll
     fun tearDown() {
+        setPluginConfigurationUrl(OBJECTEN_API_PLUGIN_ID, previousObjectenApiUrl)
+        setPluginConfigurationUrl(OBJECTTYPEN_API_PLUGIN_ID, previousObjecttypenApiUrl)
         mockApi.shutdown()
+    }
+
+    private fun setPluginConfigurationUrl(pluginConfigurationId: String, url: String): String {
+        val id = PluginConfigurationId.existingId(UUID.fromString(pluginConfigurationId))
+        val configuration = pluginService.getPluginConfiguration(id)
+        val properties: ObjectNode = configuration.properties!!.deepCopy()
+        val previousUrl = properties.get("url")?.asText() ?: ""
+        properties.put("url", url)
+        pluginService.updatePluginConfiguration(id, configuration.title, properties)
+        return previousUrl
     }
 
     @Test
@@ -324,5 +347,10 @@ internal class ObjectManagementServiceIntTest : BaseIntegrationTest() {
         return MockResponse()
             .addHeader("Content-Type", "application/json")
             .setBody(body)
+    }
+
+    companion object {
+        private const val OBJECTEN_API_PLUGIN_ID = "8f35c270-21f4-4e99-a8a1-6c4f9d5a6c5c"
+        private const val OBJECTTYPEN_API_PLUGIN_ID = "5f35c270-21f4-4e99-a8a1-6c4f9d5a6c5c"
     }
 }

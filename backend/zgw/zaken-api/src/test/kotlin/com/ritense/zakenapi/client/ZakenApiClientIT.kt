@@ -52,13 +52,20 @@ internal class ZakenApiClientIT @Autowired constructor(
     lateinit var zakenApiPlugin: ZakenApiPlugin
     lateinit var roleTest: Role
 
+    // Derived from the mock server's actual (randomly assigned) address so the test does not depend on a fixed port.
+    private val baseUrl get() = server.url("").toString().removeSuffix("/")
+    private val zakenApiUrl get() = server.url(ZAKEN_API_PATH).toString()
+    private val zaakUrl get() = URI("$zakenApiUrl/zaken/$ZAAK_ID")
+    private val zaakInformatieObjectUrl get() = URI("$zakenApiUrl/zaakinformatieobjecten/$ZAAK_ID")
+
     @BeforeEach
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 16273)
+        server.start()
 
-        zakenApiPlugin = pluginService.createInstance("3079d6fe-42e3-4f8f-a9db-52ce2507b7ee")
+        setPluginConfigurationUrl(ZAKEN_API_PLUGIN_ID, server.url("$ZAKEN_API_PATH/").toString())
+        zakenApiPlugin = pluginService.createInstance(ZAKEN_API_PLUGIN_ID)
 
         roleTest = roleRepository.findByKey("ROLE_TEST")!!
         permissionRepository.deleteByRoleKeyIn(listOf("ROLE_TEST"))
@@ -90,8 +97,8 @@ internal class ZakenApiClientIT @Autowired constructor(
             CASE_DOCUMENT_ID,
             zakenApiPlugin.url,
             LinkDocumentRequest(
-                informatieobject = "https://localhost:16273/documenten/informatieobject/1234",
-                zaak = "https://localhost:16273/zaken/1234",
+                informatieobject = "$baseUrl/documenten/informatieobject/1234",
+                zaak = "$baseUrl/zaken/1234",
                 titel = "titel",
                 beschrijving = "beschrijving",
                 vernietigingsdatum = null,
@@ -109,8 +116,8 @@ internal class ZakenApiClientIT @Autowired constructor(
                 CASE_DOCUMENT_ID,
                 zakenApiPlugin.url,
                 LinkDocumentRequest(
-                    informatieobject = "https://localhost:16273/documenten/informatieobject/1234",
-                    zaak = "https://localhost:16273/zaken/1234",
+                    informatieobject = "$baseUrl/documenten/informatieobject/1234",
+                    zaak = "$baseUrl/zaken/1234",
                     titel = "titel",
                     beschrijving = "beschrijving",
                     vernietigingsdatum = null,
@@ -139,7 +146,7 @@ internal class ZakenApiClientIT @Autowired constructor(
         val result = zakenApiClient.getZaakInformatieObject(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
             baseUrl = zakenApiPlugin.url,
-            zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
+            zaakInformatieobjectUrl = zaakInformatieObjectUrl,
             caseDocumentId = CASE_DOCUMENT_ID
         )
 
@@ -153,7 +160,7 @@ internal class ZakenApiClientIT @Autowired constructor(
             zakenApiClient.getZaakInformatieObject(
                 authentication = zakenApiPlugin.authenticationPluginConfiguration,
                 baseUrl = zakenApiPlugin.url,
-                zaakInformatieobjectUrl = ZAAK_INFORMATIEOBJECT_URL,
+                zaakInformatieobjectUrl = zaakInformatieObjectUrl,
                 caseDocumentId = CASE_DOCUMENT_ID
             )
         }
@@ -179,7 +186,7 @@ internal class ZakenApiClientIT @Autowired constructor(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
             CASE_DOCUMENT_ID,
             baseUrl = zakenApiPlugin.url,
-            zaakUrl = ZAAK_URL
+            zaakUrl = zaakUrl
         )
 
         assertEquals(1, results.count())
@@ -192,7 +199,7 @@ internal class ZakenApiClientIT @Autowired constructor(
             authentication = zakenApiPlugin.authenticationPluginConfiguration,
             CASE_DOCUMENT_ID,
             baseUrl = zakenApiPlugin.url,
-            zaakUrl = ZAAK_URL
+            zaakUrl = zaakUrl
         )
 
         assertEquals(0, results.count())
@@ -265,11 +272,8 @@ internal class ZakenApiClientIT @Autowired constructor(
     companion object {
         private const val ZAAK_ID = "57f66ff6-db7f-43bc-84ef-6847640d3609"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
-        private const val ZAKEN_API_URL = "http://localhost:16273$ZAKEN_API_PATH"
+        private const val ZAKEN_API_PLUGIN_ID = "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
         val CASE_DOCUMENT_ID: UUID = UUID.fromString(ZAAK_ID)
-
-        private val ZAAK_URL = URI("${ZAKEN_API_URL}/zaken/$ZAAK_ID")
-        val ZAAK_INFORMATIEOBJECT_URL = URI("${ZAKEN_API_URL}/zaakinformatieobjecten/$ZAAK_ID")
     }
 
 }
