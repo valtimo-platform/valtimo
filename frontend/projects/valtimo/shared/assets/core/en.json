@@ -2331,12 +2331,12 @@
     "hostInUseModal": {
       "title": "Plugin host is in use",
       "thisHost": "this plugin host",
-      "description": "{{ entityName }} cannot be deleted because the following BPMN activities still use a configuration from this host. Remove these process links first."
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs or building blocks still use a plugin or configuration from this host. Remove these usages first."
     },
     "configurationInUseModal": {
       "title": "Plugin configuration is in use",
       "thisConfiguration": "this plugin configuration",
-      "description": "{{ entityName }} cannot be deleted because the following BPMN activities still reference it. Remove these process links first."
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs or building blocks still reference it. Remove these usages first."
     },
     "usageModal": {
       "headers": {
@@ -2351,7 +2351,8 @@
         "BUILDING_BLOCK": "Building block",
         "GLOBAL": "Global"
       },
-      "caseTab": "Case tab"
+      "caseTab": "Case tab",
+      "buildingBlockMapping": "Building block plugin mapping"
     },
     "compatibility": {
       "incompatibleTag": "Incompatible",
@@ -2685,7 +2686,7 @@
         "zaakInstanceLink": "This building block may need a zaak instance link to be configured for the case definition under which this building block is used, in order to function correctly.",
         "zaakTypeLink": "This building block may need a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly."
       },
-      "externalPluginVersionMismatchWarning": "The selected configuration's plugin version does not match the version ({{version}}) this building block was linked against. It may not support this action."
+      "externalPluginVersionMismatchWarning": "The selected configuration runs plugin version {{selectedVersion}}, but this building block was linked against version {{requiredVersion}}. It may not support this action."
     }
   },
   "processLinkType": {

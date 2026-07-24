@@ -17,8 +17,11 @@
 package com.ritense.externalplugin.repository
 
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import java.util.UUID
 
 interface ExternalPluginProcessLinkRepository : JpaRepository<ExternalPluginProcessLink, UUID> {
@@ -33,5 +36,23 @@ interface ExternalPluginProcessLinkRepository : JpaRepository<ExternalPluginProc
 
     fun findAllByExternalPluginConfigurationIdIn(
         externalPluginConfigurationIds: Collection<UUID>,
+    ): List<ExternalPluginProcessLink>
+
+    /**
+     * Links whose (design-time) reference pins one of the given plugin definition keys with the
+     * given reference type — used by the host delete guard to find `BUILDING_BLOCK` references,
+     * which carry no configuration id and are therefore invisible to the configuration-based
+     * usage queries above.
+     */
+    @Query(
+        """
+        select link from ExternalPluginProcessLink link
+        where link.pluginConfigurationReference.type = :referenceType
+        and link.pluginConfigurationReference.pluginDefinitionKey in :pluginDefinitionKeys
+        """
+    )
+    fun findAllByReferenceTypeAndPluginDefinitionKeyIn(
+        @Param("referenceType") referenceType: PluginConfigurationReferenceType,
+        @Param("pluginDefinitionKeys") pluginDefinitionKeys: Collection<String>,
     ): List<ExternalPluginProcessLink>
 }

@@ -28,6 +28,8 @@ import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapp
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
 import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
+import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginMappingUsageFinder
+import com.ritense.buildingblock.repository.BuildingBlockProcessLinkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
@@ -98,6 +100,7 @@ import com.ritense.formflow.service.FormFlowService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
+import com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.BuildingBlockProcessLookup
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
@@ -474,6 +477,17 @@ class BuildingBlockAutoConfiguration {
             processLinkService,
             linkRepository,
             documentService,
+        )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockPluginMappingUsageFinder::class)
+    fun buildingBlockPluginMappingUsageFinder(
+        buildingBlockProcessLinkRepository: BuildingBlockProcessLinkRepository,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+    ): BuildingBlockPluginMappingUsageFinder =
+        DefaultBuildingBlockPluginMappingUsageFinder(
+            buildingBlockProcessLinkRepository,
+            caseDefinitionBuildingBlockLinkRepository,
         )
 
     @Bean

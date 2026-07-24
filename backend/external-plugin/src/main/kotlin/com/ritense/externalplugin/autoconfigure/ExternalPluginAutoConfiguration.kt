@@ -123,6 +123,7 @@ class ExternalPluginAutoConfiguration {
         operatonRepositoryService: OperatonRepositoryService,
         bpmnRepositoryService: RepositoryService,
         caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
+        buildingBlockMappingUsageFinder: java.util.Optional<com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder>,
     ) = ExternalPluginHostUsageResolver(
         definitionRepository,
         configurationRepository,
@@ -131,6 +132,7 @@ class ExternalPluginAutoConfiguration {
         operatonRepositoryService,
         bpmnRepositoryService,
         caseExternalPluginTabService,
+        buildingBlockMappingUsageFinder,
     )
 
     @Bean
