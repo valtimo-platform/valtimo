@@ -50,8 +50,7 @@
 
   Pressing Esc now reliably closes the open dialog, even when you first clicked somewhere inside it
   that is not a button or input field. Previously the dialog could ignore Esc and had to be closed by
-  refreshing the page. When a dropdown inside the dialog is open, the first Esc closes only the
-  dropdown and a second Esc closes the dialog.
+  refreshing the page.
 
 * **Several modals were missing shared modal behaviour**
 
