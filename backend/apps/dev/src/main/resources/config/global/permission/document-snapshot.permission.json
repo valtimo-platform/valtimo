@@ -1,12 +1,10 @@
 [
     {
         "resourceType": "com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot",
-        "action": "view",
-        "roleKey": "ROLE_USER"
-    },
-    {
-        "resourceType": "com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot",
-        "action": "view_list",
+        "actions": [
+            "view",
+            "view_list"
+        ],
         "roleKey": "ROLE_USER"
     }
 ]

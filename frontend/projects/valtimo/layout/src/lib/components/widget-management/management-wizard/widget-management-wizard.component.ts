@@ -31,7 +31,7 @@ import {
 } from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, KeyGeneratorService} from '@valtimo/components';
+import {CARBON_CONSTANTS, KeyGeneratorService, ValtimoCdsModalDirective} from '@valtimo/components';
 import {WIDGET_WIZARD_TEST_IDS} from '../../../constants';
 import {ButtonModule, ModalModule, ProgressIndicatorModule, Step} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, of, Subscription, switchMap, take} from 'rxjs';
@@ -62,6 +62,7 @@ import {WIDGET_STEPS} from './steps';
     ModalModule,
     ButtonModule,
     ...WIDGET_STEPS,
+    ValtimoCdsModalDirective,
   ],
 })
 export class WidgetManagementWizardComponent implements OnDestroy {
