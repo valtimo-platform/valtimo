@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.LocalDateTime;
@@ -109,6 +111,9 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
 
     @Column(name = "modified_on", columnDefinition = "DATETIME")
     private LocalDateTime modifiedOn = null;
+
+    @Column(name = "changed_on", columnDefinition = "DATETIME", nullable = false)
+    private LocalDateTime changedOn;
 
     @Column(name = "created_by", columnDefinition = "VARCHAR(255)")
     private String createdBy;
@@ -180,6 +185,7 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
         this.content = content;
         this.documentDefinitionId = documentDefinition.id();
         this.createdOn = LocalDateTime.now();
+        this.modifiedOn = this.createdOn;
         this.createdBy = createdBy;
         this.sequence = sequence;
 
@@ -402,6 +408,17 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @Override
     public Optional<LocalDateTime> modifiedOn() {
         return Optional.ofNullable(modifiedOn);
+    }
+
+    @JsonIgnore
+    public LocalDateTime changedOn() {
+        return changedOn;
+    }
+
+    @PrePersist
+    @PreUpdate
+    void updateChangedOn() {
+        this.changedOn = LocalDateTime.now();
     }
 
     @Override

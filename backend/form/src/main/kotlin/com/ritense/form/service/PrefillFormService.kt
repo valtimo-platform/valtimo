@@ -31,21 +31,23 @@ import com.ritense.document.service.DocumentService
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.logging.LoggableResource
+import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
-import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.form.DataResolvingContext
 import com.ritense.valtimo.contract.form.FormFieldDataResolver
 import com.ritense.valtimo.contract.json.JsonPointerHelper
 import com.ritense.valtimo.contract.json.patch.JsonPatch
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
+import com.ritense.valtimo.operaton.domain.OperatonExecution
+import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
+import java.util.UUID
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @Transactional
 @Service
@@ -59,7 +61,7 @@ class PrefillFormService(
     private val processDocumentAssociationService: ProcessDocumentAssociationService,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
-    private val authorizationService: AuthorizationService,
+    private val processDocumentService: ProcessDocumentService,
 ) {
 
     fun getPrefilledFormDefinition(
@@ -71,9 +73,12 @@ class PrefillFormService(
             operatonProcessService.findExecutionByProcessInstanceId(processInstanceId)
                 ?: throw RuntimeException("Process instance not found by id $processInstanceId")
         }
-        val documentId = processInstance.businessKey
-            ?: throw RuntimeException("Process instance with id $processInstanceId has no businessKey")
-        val document = runWithoutAuthorization { documentService.get(documentId) }
+        val document = runWithoutAuthorization {
+            processDocumentService.getDocument(
+                OperatonProcessInstanceId(processInstance.id),
+                processInstance
+            )
+        }
         val formDefinition = formDefinitionService.getFormDefinitionById(formDefinitionId)
             .orElseThrow { RuntimeException("Form definition not found by id $formDefinitionId") }
         prefillFormDefinition(formDefinition, document, processInstanceId, taskInstanceId)

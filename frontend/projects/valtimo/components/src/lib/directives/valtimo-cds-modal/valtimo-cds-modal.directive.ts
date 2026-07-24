@@ -110,7 +110,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       this.renderer.setStyle(
         element,
         'min-height',
-        `${this.minContentHeight}px`,
+        `min(${this.minContentHeight}px, calc(90dvh - 13rem))`,
         RendererStyleFlags2.Important
       );
     }

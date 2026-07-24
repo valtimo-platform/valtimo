@@ -615,11 +615,16 @@ public class JsonSchemaDocumentService implements DocumentService {
             });
             documentRepository.saveAll(documents);
             documentRepository.deleteAll(documents);
-            documents.forEach(document -> outboxService.send(() ->
-                new DocumentDeleted(
-                    document.id().toString()
-                )
-            ));
+            documents.forEach(document -> {
+                // Per-document Spring event so bulk deletes are handled identically to single deletes
+                // (durable pending index deletion + best-effort live delete). Fires inside this transaction.
+                applicationEventPublisher.publishEvent(new DocumentDeletedEvent(document.id().getId()));
+                outboxService.send(() ->
+                    new DocumentDeleted(
+                        document.id().toString()
+                    )
+                );
+            });
             documentSequenceGeneratorService.deleteSequenceRecordBy(documentDefinitionName);
         }
     }

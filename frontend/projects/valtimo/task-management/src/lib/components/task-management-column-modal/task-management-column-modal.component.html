@@ -221,7 +221,7 @@
         cdsButton="primary"
         [disabled]="obs.disabled || formGroup.invalid || (obs.showEnum && !obs.enumValid)"
       >
-        {{ 'listColumn.save' | translate }}
+        {{ (obs.type === 'add' ? 'interface.create' : 'listColumn.save') | translate }}
       </button>
     </cds-modal-footer>
   </cds-modal>

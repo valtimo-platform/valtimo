@@ -15,16 +15,25 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {catchError, Observable, of} from 'rxjs';
 import {
   AdminSettingsLogoDto,
   AdminSettingsLogosDto,
   BaseApiService,
   ConfigService,
   CreateAdminSettingsLogoDto,
+  Page,
 } from '@valtimo/shared';
-import {AccentColorsDto, FeatureToggleOverridesDto, UpdateFeatureToggleDto} from '../models';
+import {
+  AccentColorsDto,
+  FeatureToggleOverridesDto,
+  ReindexStatusDto,
+  SearchEngineDto,
+  StartReindexRequestDto,
+  StartReindexResponseDto,
+  UpdateFeatureToggleDto,
+} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -88,6 +97,46 @@ export class AdminSettingsManagementApiService extends BaseApiService {
     return this.httpClient.put<AccentColorsDto>(
       this.getApiUrl('/management/v1/admin-settings/accent-colors'),
       dto
+    );
+  }
+
+  public getSearchEngine(): Observable<SearchEngineDto | null> {
+    return this.httpClient
+      .get<SearchEngineDto>(this.getApiUrl('/management/v1/search-engine'))
+      .pipe(catchError(() => of(null)));
+  }
+
+  public updateSearchEngine(useOpenSearch: boolean): Observable<SearchEngineDto> {
+    return this.httpClient.put<SearchEngineDto>(
+      this.getApiUrl('/management/v1/search-engine'),
+      {active: useOpenSearch ? 'OPENSEARCH' : 'POSTGRES'}
+    );
+  }
+
+  public startReindex(request: StartReindexRequestDto = {}): Observable<StartReindexResponseDto> {
+    return this.httpClient.post<StartReindexResponseDto>(
+      this.getApiUrl('/management/v1/document-opensearch/reindex'),
+      request
+    );
+  }
+
+  public getReindexStatus(): Observable<ReindexStatusDto | null> {
+    return this.httpClient
+      .get<ReindexStatusDto>(this.getApiUrl('/management/v1/document-opensearch/reindex/status'))
+      .pipe(catchError(() => of(null)));
+  }
+
+  public getReindexRuns(page: number, size: number): Observable<Page<ReindexStatusDto>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.httpClient.get<Page<ReindexStatusDto>>(
+      this.getApiUrl('/management/v1/document-opensearch/reindex/runs'),
+      {params}
+    );
+  }
+
+  public getReindexRun(runId: string): Observable<ReindexStatusDto> {
+    return this.httpClient.get<ReindexStatusDto>(
+      this.getApiUrl(`/management/v1/document-opensearch/reindex/${runId}`)
     );
   }
 }

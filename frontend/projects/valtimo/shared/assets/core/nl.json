@@ -160,7 +160,7 @@
       "removeSuccessful": "Document succesvol uit het dossier verwijderd",
       "removeFailed": "Het verwijderen van het document uit het dossier is mislukt"
     },
-    "caseUpdated": "Zaak aangepast",
+    "caseUpdated": "Dossier aangepast",
     "startSubProcess": "Start",
     "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
     "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
@@ -744,7 +744,7 @@
     "deploy": "Opslaan",
     "duplicate": "Dupliceren",
     "readOnly": "Alleen-lezen",
-    "add": "Formulier toevoegen",
+    "add": "Formulier aanmaken",
     "navigateToRelatedCase": "Ga naar dossier (opent in nieuw tabblad)",
     "tabs": {
       "formBuilder": "Formulier-bewerker",
@@ -958,7 +958,7 @@
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
-          "message": "Het dossier kan niet worden bijgewerkt omdat deze definitief is."
+          "message": "Deze dossierdefinitie kan niet worden gewijzigd omdat deze versie definitief is. Maak een nieuwe conceptversie om wijzigingen aan te brengen."
         },
         "linkUploadProcess": {
           "title": "Uploadproces koppelen aan dossierdefinitie",
@@ -995,10 +995,10 @@
         "showTasks": "Takenlijst zichtbaar"
       },
       "addModal": {
-        "addTab": "Tabblad toevoegen",
+        "addTab": "Tabblad aanmaken",
         "customComponent": "Maatwerkcomponent",
         "customComponentDisabled": "Er zijn geen maatwerkcomponenten beschikbaar, of ze zijn allemaal al toegevoegd.",
-        "description": "Selecteer een van de opties om een nieuw tabblad toe te voegen aan uw dossierdefinitie",
+        "description": "Selecteer een van de opties om een nieuw tabblad aan te maken in uw dossierdefinitie",
         "formIOComponent": "FormIO component",
         "formIOComponentDisabled": "Geen Form.io-formulierdefinities beschikbaar",
         "standardTab": "Standaardtabblad",
@@ -1006,7 +1006,7 @@
         "tabContentLabel": "Kies inhoud",
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tabblad naam (optioneel)",
-        "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}",
+        "title": "Nieuw tabblad aanmaken {{documentDefinitionName}}",
         "uniqueKeyError": "De key voor deze tab moet uniek zijn.",
         "invalidKeyError": "De key voor deze tab mag alleen letters, nummers en dashes bevatten.",
         "widgetsComponent": "Widgets component",
@@ -1015,10 +1015,10 @@
         "invisible": "Niet zichtbaar"
       },
       "titles": {
-        "custom": "Nieuw tabblad toevoegen met aangepaste component",
-        "formio": "Nieuw tabblad toevoegen met FormIO component",
-        "standard": "Nieuw tabblad toevoegen met standaard inhoud",
-        "widgets": "Nieuw tabblad met widgets toevoegen"
+        "custom": "Nieuw tabblad aanmaken met aangepaste component",
+        "formio": "Nieuw tabblad aanmaken met FormIO component",
+        "standard": "Nieuw tabblad aanmaken met standaard inhoud",
+        "widgets": "Nieuw tabblad met widgets aanmaken"
       },
       "contentLabels": {
         "custom": "Kies aangepaste component",
@@ -1037,7 +1037,7 @@
         "name": "Naam",
         "type": "Type"
       },
-      "addItem": "Actie toevoegen",
+      "addItem": "Actie aanmaken",
       "noResults": "Geen acties geconfigureerd",
       "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
       "infoNotification": {
@@ -1048,10 +1048,10 @@
         "BUILDING_BLOCK": "Bouwblok"
       },
       "modal": {
-        "addTitle": "Actie toevoegen",
+        "addTitle": "Actie aanmaken",
         "addDescription": "Selecteer een proces of bouwblok dat de gebruiker kan starten",
-        "addProcessTitle": "Proces toevoegen als actie",
-        "addBuildingBlockTitle": "Bouwblok toevoegen als actie",
+        "addProcessTitle": "Proces aanmaken als actie",
+        "addBuildingBlockTitle": "Bouwblok aanmaken als actie",
         "editProcessTitle": "Procesactie bewerken",
         "editBuildingBlockTitle": "Bouwblokactie bewerken",
         "selectProcess": "Selecteer een proces",
@@ -1059,7 +1059,7 @@
         "selectProcessDescription": "Selecteer een proces dat de gebruiker kan starten",
         "selectBuildingBlockDescription": "Selecteer een bouwblok dat de gebruiker kan starten",
         "filterPlaceholder": "Filteren...",
-        "add": "Toevoegen",
+        "add": "Aanmaken",
         "save": "Opslaan",
         "back": "Terug",
         "next": "Volgende",
@@ -1170,7 +1170,7 @@
       "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie. Gebruik Semantic Versioning (bijv. 1.0.0).",
       "description": "Beschrijving van de dossierdefinitie",
       "descriptionPlaceholder": "Voer hier een beschrijving in",
-      "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie."
+      "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie. Maximaal {{ maxLength }} tekens."
     },
     "documentDefinition": {
       "cancelModal": {
@@ -1182,7 +1182,7 @@
     "statuses": {
       "withoutStatus": "Toon dossiers zonder status",
       "searchFieldTitle": "Status",
-      "add": "Status toevoegen",
+      "add": "Status aanmaken",
       "edit": "Status bewerken",
       "visibleTitle": "Standaardzichtbaarheid in dossierlijst",
       "visible": "Zichtbaar",
@@ -1196,7 +1196,7 @@
       "columns": {
         "title": "Statusnaam",
         "retentionPeriod": "Bewaartermijn in dagen",
-        "retentionPeriodTooltip": "0 of hoger: retentie is actief, de zaak wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, de zaak wordt niet automatisch verwijderd.",
+        "retentionPeriodTooltip": "0 of hoger: retentie is actief, het dossier wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, het dossier wordt niet automatisch verwijderd.",
         "deletedImmediately": "Wordt direct verwijderd",
         "key": "Status-key",
         "label": "Label (Optioneel)",
@@ -1207,11 +1207,11 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit dossiertype."}
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
-      "add": "Tag toevoegen",
+      "add": "Tag aanmaken",
       "edit": "Tag bewerken",
       "visible": "Zichtbaar",
       "invisible": "Niet zichtbaar",
@@ -1228,7 +1228,7 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit dossiertype."}
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
@@ -1312,7 +1312,7 @@
       },
       "metroline": {
         "title": "Metrolijn",
-        "description": "Toon de voortgang van een zaak als een metrolijn"
+        "description": "Toon de voortgang van een dossier als een metrolijn"
       },
       "highlight": {
         "title": "Markering",
@@ -1581,7 +1581,7 @@
   "zgw": {
     "columns": {
       "column": "Kolom",
-      "add": "Kolom toevoegen",
+      "add": "Kolom aanmaken",
       "edit": "Kolom bewerken",
       "deleteText": "Weet je zeker dat je deze kolom wilt verwijderen?",
       "notSortable": "Deze kolom is niet sorteerbaar",
@@ -1659,10 +1659,10 @@
     },
     "tags": {
       "tag": "Trefwoord",
-      "add": "Trefwoord toevoegen",
+      "add": "Trefwoord aanmaken",
       "deleteText": "Weet je zeker dat je dit trefwoord wilt verwijderen?",
       "deleteMultipleText": "Weet je zeker dat je deze trefwoorden wilt verwijderen?",
-      "addModal": {"header": "Trefwoord toevoegen"},
+      "addModal": {"header": "Trefwoord aanmaken"},
       "list": {
         "noResultsTitle": "Geen trefwoorden",
         "noResultsDescription": "Voeg een trefwoord toe om te beginnen"
@@ -1784,7 +1784,7 @@
   "Create new Milestone Set": "Maak een nieuwe mijlpaal Set",
   "Forms": "Formulieren",
   "Overview of all Forms": "Overzicht van alle Formulieren",
-  "Create Form": "Formulier creëren",
+  "Create Form": "Formulier aanmaken",
   "Form Builder": "Formulier Bouwer",
   "Process links": "Proceskoppelingen",
   "Translations": "Vertalingen",
@@ -1793,7 +1793,7 @@
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestarte processen krijgen de nieuwe candidate group)",
   "Case": "Dossier",
   "Cases": "Dossiers",
-  "Deployment": "Implementatie",
+  "Deployment": "Versiebeheer",
   "document definition": "Documentdefinitie",
   "Upload document definition": "Upload documentdefinitie",
   "Remove document definition": "Verwijder documentdefinitie",
@@ -2170,7 +2170,9 @@
     "showingResults": "{{number}} van {{total}} resultaten zichtbaar",
     "showingResult": "{{number}} resultaat zichtbaar",
     "automaticallyGenerated": "Automatisch gegenereerd",
-    "search": "Zoeken..."
+    "search": "Zoeken...",
+    "globalSearchFilter": "Zoek in geheel document",
+    "globalSearchFilterPlaceholder": "Zoek in alle documentvelden..."
   },
   "webcam": {"takePicture": "Foto maken", "save": "Opslaan", "redo": "Opnieuw"},
   "customers": {
@@ -2285,7 +2287,7 @@
   "searchFieldsOverview": {
     "title": "Titel",
     "key": "Key",
-    "add": "Zoekveld toevoegen",
+    "add": "Zoekveld aanmaken",
     "edit": "Zoekveld bewerken",
     "path": "Pad",
     "dataType": "Datatype",
@@ -2304,7 +2306,7 @@
     "close": "Sluiten",
     "save": "Opslaan",
     "download": "Download",
-    "addRow": "Zoekveld toevoegen",
+    "addRow": "Zoekveld aanmaken",
     "searchFieldPlaceholder": "Kies een type...",
     "noSearchFieldsConfiguredWarningTitle": "Geen zoekvelden geconfigureerd",
     "deleteSearchField": "Zoekveld verwijderen",
@@ -2365,7 +2367,7 @@
     "hasEnvConfigWarning": "Dit dossiertype heeft al een kolom-configuratie in de omgevingsconfiguratie. Verwijder deze om kolommen hier te configureren.",
     "noConfigWarningTitle": "Geen kolommen",
     "noConfigWarning": "Er zijn geen kolommen geconfigureerd voor dit dossiertype.",
-    "addButtonText": "Kolom toevoegen",
+    "addButtonText": "Kolom aanmaken",
     "editColumnTitle": "Kolom bewerken",
     "close": "Sluiten",
     "save": "Kolom opslaan",
@@ -2730,7 +2732,7 @@
         "message": "Voeg een permissie toe om deze rol toegang tot resources te geven."
       },
       "tooltips": {
-        "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een zaakdefinitie, document of taak.",
+        "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een dossierdefinitie, document of taak.",
         "actions": "Wat deze rol met de resource mag doen. Bijvoorbeeld: bekijken, wijzigen of verwijderen. Er moet minstens één geselecteerd zijn.",
         "conditionType": "Veld vergelijkt een eigenschap van de resource. JSON-veld leest een waarde op een JSON-pad in de JSON-inhoud van het veld. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een zaak).",
         "field": "Een eigenschap van de resource om te controleren. Bijvoorbeeld: name, createdBy of active.",
@@ -2978,7 +2980,7 @@
     "key": "Key",
     "version": "Versie",
     "readOnly": "Alleen lezen",
-    "add": "Nieuwe form flow toevoegen",
+    "add": "Nieuwe form flow aanmaken",
     "deleteModalContent": "Weet je zeker dat je deze form flow wilt verwijderen?",
     "deletedSuccessfully": "{{key}} is succesvol verwijderd",
     "savedSuccessTitle": "Succesvol opgeslagen",
@@ -3171,7 +3173,7 @@
     "addTab": "Tab toevoegen",
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",
-    "canStartCase": "Kan zaak starten",
+    "canStartCase": "Kan dossier starten",
     "collectionPathTooltip": "Een pad dat leidt naar de verzameling van waarden die je wilt weergeven. Voor het tonen van eigenschappen in IKO's, volg dit voorbeeld: 'iko:/pad/naar/eigenschap'.",
     "tabTypes": {
       "widgets": "Widgets"
@@ -3205,7 +3207,8 @@
     "title": "Instellingen",
     "tabs": {
       "appearance": "Weergave",
-      "featureToggles": "Functie-instellingen"
+      "featureToggles": "Functie-instellingen",
+      "opensearch": "OpenSearch"
     },
     "appearance": {
       "logo": {
@@ -3241,6 +3244,13 @@
       }
     },
     "featureToggles": {
+      "searchEngine": {
+        "useOpenSearch": {
+          "title": "Gebruik OpenSearch voor dossierzoekopdrachten",
+          "description": "Indien ingeschakeld worden dossierzoekopdrachten uitgevoerd met OpenSearch voor betere prestaties. Indien uitgeschakeld wordt PostgreSQL gebruikt.",
+          "unavailable": "OpenSearch is niet geconfigureerd voor deze applicatie."
+        }
+      },
       "refreshRequired": "Vernieuwing vereist",
       "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
       "refreshNow": "Nu vernieuwen",
@@ -3332,6 +3342,64 @@
         "menuCollapsedByDefault": {
           "title": "Menu standaard ingeklapt",
           "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
+        },
+        "enableGenericCaseList": {
+          "title": "Generieke dossierlijst inschakelen",
+          "description": "Toon één dossierlijstweergave met een dropdown om tussen dossierdefinities te wisselen."
+        }
+      }
+    },
+    "opensearch": {
+      "title": "OpenSearch",
+      "reindex": {
+        "title": "Herindexering runs",
+        "description": "Herindexeer alle documenten van de database naar OpenSearch. Deze operatie draait op de achtergrond.",
+        "startButton": "Start herindexering",
+        "startModalTitle": "Start herindexering",
+        "detailTitle": "Run details",
+        "parameters": "Parameters",
+        "results": "Resultaten",
+        "reindexing": "Herindexering",
+        "pruning": "Opschonen",
+        "counts": "Aantallen",
+        "status": "Status",
+        "processed": "Verwerkt: {{current}} / {{total}}",
+        "skipped": "Overgeslagen",
+        "pruned": "Opgeschoond",
+        "started": "Gestart",
+        "elapsed": "Verstreken tijd",
+        "finished": "Voltooid",
+        "inProgress": "Herindexering bezig...",
+        "errorTitle": "Fout",
+        "viewErrorLogs": "Bekijk foutlogs",
+        "pruneOrphans": "Verwijder orphan documenten",
+        "documentDefinitionName": "Documentdefinitie",
+        "documentDefinitionPlaceholder": "Alle documentdefinities",
+        "allDocumentDefinitions": "Alle documentdefinities",
+        "modifiedBefore": "Gewijzigd voor",
+        "modifiedAfter": "Gewijzigd na",
+        "columns": {
+          "status": "Status",
+          "startedOn": "Gestart",
+          "finishedOn": "Voltooid",
+          "progress": "Voortgang",
+          "documentDefinition": "Documentdefinitie"
+        },
+        "noResults": {
+          "title": "Geen herindexering runs",
+          "description": "Er zijn nog geen herindexering runs gestart."
+        },
+        "statuses": {
+          "RUNNING": "Bezig",
+          "COMPLETED": "Voltooid",
+          "FAILED": "Mislukt",
+          "STOPPED": "Gestopt",
+          "PRUNING": "Orphan documenten opschonen"
+        },
+        "pruningProgress": "Verwijderd: {{removed}}",
+        "tooltips": {
+          "pruneOrphans": "Verwijder documenten uit OpenSearch die niet meer in de database bestaan",
+          "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd"
         }
       }
     }

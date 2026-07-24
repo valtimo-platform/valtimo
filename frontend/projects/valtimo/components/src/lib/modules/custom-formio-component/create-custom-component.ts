@@ -155,11 +155,7 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
         }
 
         // Bind customOptions
-        for (const key in this.component.customOptions) {
-          if (this.component.customOptions.hasOwnProperty(key)) {
-            this._customAngularElement[key] = this.component.customOptions[key];
-          }
-        }
+        this.bindCustomOptions();
         // Bind validate options
         for (const key in this.component.validate) {
           if (this.component.validate.hasOwnProperty(key)) {
@@ -187,9 +183,27 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
           }
         );
 
-        // Ensure we bind the value (if it isn't a multiple-value component with no wrapper)
-        if (!this._customAngularElement.value && !this.component.disableMultiValueWrapper) {
-          this.restoreValue();
+        // Ensure we bind the value (if it isn't a multiple-value component with no wrapper).
+        // Use Array.isArray check in the empty condition because ![] is false in JS, meaning
+        // array-type components (emptyValue: []) would never trigger restoreValue() after a
+        // redrawOn:"data" redraw without this explicit empty-array check.
+        const currentValue = this._customAngularElement.value;
+        const hasNoCurrentValue =
+          !currentValue || (Array.isArray(currentValue) && currentValue.length === 0);
+
+        if (hasNoCurrentValue && !this.component.disableMultiValueWrapper) {
+          const storedValue = this.dataValue;
+          if (Array.isArray(storedValue) && storedValue.length > 0) {
+            // Directly set array values instead of calling restoreValue() to avoid
+            // restoreValue()'s defaultValue branch triggering onChange/validation side
+            // effects when the component renders with no data yet (e.g. on initial render).
+            this._customAngularElement.value = storedValue;
+          } else if (!Array.isArray(currentValue)) {
+            // Original behaviour for non-array components.
+            this.restoreValue();
+          }
+          // For array components with no stored data: do nothing — matches original
+          // behaviour where ![] === false prevented restoreValue() from being called.
         }
       }
       return superAttach;
@@ -210,9 +224,37 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
         return false;
       }
 
+      // Re-apply customOptions on every setValue. calculateValue expressions can mutate
+      // this.component.customOptions (e.g. "component.customOptions.filename = 'test'") for
+      // their side effect, and FormIO calls setValue() right after evaluating calculateValue.
+      // customOptions are otherwise only bound during attach(), which is only re-run on a
+      // redraw triggered by *another* component's data change — so without this, calculated
+      // customOptions never reach the Angular element in a single-component form.
+      this.bindCustomOptions();
+
       this._customAngularElement.value = value;
 
       return true;
+    }
+
+    // Push the (possibly calculateValue-mutated) customOptions to the Angular element.
+    public bindCustomOptions(): void {
+      if (!this._customAngularElement) {
+        return;
+      }
+      for (const key in this.component.customOptions) {
+        // Reject dangerous keys to prevent prototype pollution. customOptions can be
+        // manipulated through form schemas or calculateValue expressions, so a key like
+        // __proto__/constructor/prototype must never be assigned onto the element.
+        if (
+          Object.prototype.hasOwnProperty.call(this.component.customOptions, key) &&
+          key !== '__proto__' &&
+          key !== 'constructor' &&
+          key !== 'prototype'
+        ) {
+          this._customAngularElement[key] = this.component.customOptions[key];
+        }
+      }
     }
   };
 }

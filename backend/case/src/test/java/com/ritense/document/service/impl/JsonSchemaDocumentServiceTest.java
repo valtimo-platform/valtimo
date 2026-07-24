@@ -33,10 +33,10 @@ import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
+import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.domain.impl.request.NewDocumentRequest;
 import com.ritense.document.event.DocumentAssigneeChangedEvent;
 import com.ritense.document.event.DocumentUnassignedEvent;
-import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.CaseTagService;
 import com.ritense.document.service.InternalCaseStatusService;
@@ -47,6 +47,7 @@ import com.ritense.valtimo.contract.authentication.Team;
 import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
+import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.contract.resource.Resource;
 import jakarta.persistence.EntityManager;
@@ -218,6 +219,10 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         verify(documentRepository, times(1)).saveAll(eq(jsonSchemaDocuments.toList()));
         verify(documentRepository, times(1)).deleteAll(eq(jsonSchemaDocuments.toList()));
         verify(documentSequenceGeneratorService, times(1)).deleteSequenceRecordBy(eq(documentDefinitionName));
+        // A per-document Spring event is published so bulk deletes reach OpenSearch (pending index deletion) like single deletes.
+        var captor = ArgumentCaptor.forClass(DocumentDeletedEvent.class);
+        verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
+        assertEquals(jsonSchemaDocument.id().getId(), captor.getValue().getCaseDocumentId());
     }
 
     @Test

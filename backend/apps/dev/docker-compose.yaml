@@ -82,6 +82,24 @@ services:
         volumes:
             - gzac-database-data-mysql:/var/lib/mysql # persist data even if container shuts down
 
+    gzac-opensearch:
+        container_name: gzac-docker-compose-gzac-opensearch
+        image: opensearchproject/opensearch:2.19.2
+        ports:
+            - "9200:9200"
+        environment:
+            - discovery.type=single-node
+            - OPENSEARCH_INITIAL_ADMIN_PASSWORD=2cr8zkOoEXQJ3xUk!Aa1
+            - OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx256m
+        volumes:
+            - gzac-opensearch-data:/usr/share/opensearch/data
+        healthcheck:
+            test: [ "CMD-SHELL", "curl -sf -u admin:2cr8zkOoEXQJ3xUk!Aa1 https://localhost:9200/_cluster/health -k || exit 1" ]
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 30s
+
     gzac-rabbitmq:
         image: rabbitmq:4.1.0-management
         container_name: gzac-docker-compose-gzac-rabbitmq
@@ -733,3 +751,4 @@ services:
 volumes:
     gzac-database-data:
     gzac-database-data-mysql:
+    gzac-opensearch-data:

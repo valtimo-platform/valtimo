@@ -23,8 +23,8 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.exception.DocumentNotFoundException
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstance
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.service.OperatonProcessService
@@ -39,17 +39,12 @@ class ProcessDocumentsService(
     private val documentService: DocumentService,
     private val operatonProcessService: OperatonProcessService,
     private val associationService: ProcessDocumentAssociationService,
-    private val processDocumentService: ProcessDocumentService,
     private val repositoryService: RepositoryService,
     private val operatonRuntimeService: OperatonRuntimeService,
 ) {
 
     fun deleteAllProcessInstancesForThisDocument(execution: DelegateExecution, reason: String) {
-        val thisProcessInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(thisProcessInstanceId, execution)
-        requireNotNull(documentId) {
-            "Failed to delete processes for document. Reason: current process has no association with a document."
-        }
+        val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
         withLoggingContext(JsonSchemaDocument::class, documentId.toString()) {
             val processInstanceIds = associationService.findProcessDocumentInstances(documentId)
                 .map { it.processDocumentInstanceId().processInstanceId().toString() }
@@ -121,11 +116,7 @@ class ProcessDocumentsService(
     }
 
     fun getActiveProcessInstanceIds(execution: DelegateExecution): List<String> {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
-        requireNotNull(documentId) {
-            "No associated document found for process instance ID: ${execution.processInstanceId}"
-        }
+        val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
 
         return associationService.findProcessDocumentInstances(documentId)
             .filterIsInstance<OperatonProcessJsonSchemaDocumentInstance>()

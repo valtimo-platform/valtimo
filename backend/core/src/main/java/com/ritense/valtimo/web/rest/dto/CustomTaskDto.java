@@ -60,7 +60,6 @@ public class CustomTaskDto {
         this.processName = processDefinition.getName();
         this.processKey = processDefinition.getKey();
         this.processVersion = Integer.toString(processDefinition.getVersion());
-        this.businessKey = processInstance.getBusinessKey();
     }
 
     public OperatonTaskDto getTask() {

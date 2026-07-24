@@ -19,7 +19,12 @@
     width: 1px;
   }
 
-  &__form > *:not(:last-child) {
-    margin-bottom: 32px;
+  &__form {
+    display: flex;
+    flex-direction: column;
+
+    > *:not(:last-child) {
+      margin-bottom: 16px;
+    }
   }
 }

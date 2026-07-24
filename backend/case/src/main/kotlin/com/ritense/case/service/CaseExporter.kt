@@ -18,6 +18,8 @@ package com.ritense.case.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.opencsv.CSVWriter
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.case.domain.CaseExportRequest
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
@@ -26,9 +28,11 @@ import com.ritense.case.service.exception.NoExportableColumnsException
 import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.event.DocumentsExported
-import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
+import com.ritense.document.service.DocumentSearchService
+import com.ritense.document.service.JsonSchemaDocumentActionProvider.EXPORT
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -49,16 +53,19 @@ import kotlin.text.Charsets.UTF_8
 @Transactional
 class CaseExporter(
     private val caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
-    private val documentSearchService: JsonSchemaDocumentSearchService,
+    private val documentSearchService: DocumentSearchService,
     private val outboxService: OutboxService,
     private val mapper: ObjectMapper,
-    private val caseListRowMapper: CaseListRowMapper
+    private val caseListRowMapper: CaseListRowMapper,
+    private val authorizationService: AuthorizationService
 ) {
     fun exportCases(
         caseDefinitionKey: String,
         searchRequest: SearchWithConfigRequest,
         pageable: Pageable
     ): ResponseEntity<ByteArray> {
+        requireExportPermission(caseDefinitionKey)
+
         val userLabel = currentUserInfo()
 
         val exportableColumns = getExportableColumns(caseDefinitionKey, userLabel)
@@ -82,6 +89,17 @@ class CaseExporter(
         })
 
         return toCsvResponse(caseDefinitionKey, exportableCases, exportableColumns)
+    }
+
+    private fun requireExportPermission(caseDefinitionKey: String) {
+        authorizationService.requirePermission(
+            RelatedEntityAuthorizationRequest(
+                JsonSchemaDocument::class.java,
+                EXPORT,
+                JsonSchemaDocumentDefinition::class.java,
+                caseDefinitionKey
+            )
+        )
     }
 
     private fun toCsvResponse(
