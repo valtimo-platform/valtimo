@@ -21,6 +21,12 @@
 
 ## Bugfixes
 
+* **Case list export now enforces the export permission**
+
+  The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
+  before producing a file. A user without an applicable `export` permission for the case definition now receives a
+  403 (Forbidden) response instead of an empty CSV.
+
 * **Tooltips no longer stay on screen when the hovered element is removed**
 
   A tooltip shown for an element that was removed or re-rendered while hovered (for example on pages that
