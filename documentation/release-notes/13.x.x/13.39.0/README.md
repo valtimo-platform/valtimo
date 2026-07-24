@@ -51,3 +51,10 @@
   When a plugin that uses the Notificatie API (such as the Verzoek plugin) is added, changed, or
   removed, its subscription is now updated reliably. Previously the remote subscription could end up
   out of sync with the saved configuration, and failures went unnoticed.
+
+## Security
+
+* Addressed the reported security alerts. The `sigstore` dependency was updated to a fixed version. The remaining
+  Angular alerts (hydration DOM clobbering, `HttpTransferCache` cache-key handling, and `formatDate` denial of
+  service) were reviewed as non-exploitable in Valtimo's browser-only SPA and remain tracked for the next major
+  Angular upgrade.
