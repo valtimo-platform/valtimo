@@ -25,7 +25,20 @@
   Gradle build before then. See [Backend migration](./back-end-migration.md) for
   the steps.
 
+* **Better logging for Notificatie API subscriptions**
+
+  Creating, updating, and deleting a Notificatie API subscription ("abonnement") is now logged.
+  Successful changes are logged at `INFO` level and failures at `WARN`/`ERROR` level including the
+  reason, making it easier to trace subscription problems. When subscription registration is turned
+  off (`valtimo.zgw.register-abonnementen=false`), this is now logged instead of happening silently.
+
 ## Bugfixes
+
+* **Case list export now enforces the export permission**
+
+  The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
+  before producing a file. A user without an applicable `export` permission for the case definition now receives a
+  403 (Forbidden) response instead of an empty CSV.
 
 * **Tooltips no longer stay on screen when the hovered element is removed**
 
@@ -45,3 +58,16 @@
   OpenSearch and generic case list feature toggles, case statuses and tags, retention settings, the metroline
   widget and access control. These texts now consistently use *dossier*. Dutch ZGW-related terms (such as
   *zaaktype* and *zaaknummer*) are unchanged.
+
+* **Notificatie API subscriptions are now reliably (re)registered when plugin configuration changes**
+
+  When a plugin that uses the Notificatie API (such as the Verzoek plugin) is added, changed, or
+  removed, its subscription is now updated reliably. Previously the remote subscription could end up
+  out of sync with the saved configuration, and failures went unnoticed.
+
+## Security
+
+* Addressed the reported security alerts. The `sigstore` dependency was updated to a fixed version. The remaining
+  Angular alerts (hydration DOM clobbering, `HttpTransferCache` cache-key handling, and `formatDate` denial of
+  service) were reviewed as non-exploitable in Valtimo's browser-only SPA and remain tracked for the next major
+  Angular upgrade.
