@@ -544,6 +544,12 @@ export class ProcessLinkStepService {
   ): string {
     if (this._context === 'buildingBlock') {
       const definitionKey = selectedDefinition?.key || selectedConfiguration?.pluginDefinition?.key;
+      // External definitions have no plugin-translation bundle — looking one up would render the
+      // raw `external:<uuid>.title` key. Their localized display name comes from the manifest and
+      // is carried on the (synthetic) definition's title.
+      if (isExternalPluginKey(definitionKey)) {
+        return selectedDefinition?.title || selectedConfiguration?.pluginDefinition?.title || '';
+      }
       return definitionKey ? this.pluginTranslateService.instant('title', definitionKey) : '';
     }
     return selectedConfiguration?.title || '';
