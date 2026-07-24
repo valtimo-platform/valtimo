@@ -39,5 +39,7 @@
 
 ## Security
 
-* Addressed the reported security alerts. One underlying dependency was updated to a fixed version, and the remaining
-  alerts were reviewed and found not to affect Valtimo.
+* Addressed the reported security alerts. The `sigstore` dependency was updated to a fixed version. The remaining
+  Angular alerts (hydration DOM clobbering, `HttpTransferCache` cache-key handling, and `formatDate` denial of
+  service) were reviewed as non-exploitable in Valtimo's browser-only SPA and remain tracked for the next major
+  Angular upgrade.
