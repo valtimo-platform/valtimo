@@ -95,9 +95,57 @@ class ExternalPluginServiceTaskStartListener(
         )
 
         when {
-            response.status in 200..299 -> applySuccess(execution, processLink, response.body)
+            response.status in 200..299 -> {
+                validateDeclaredOutputs(definition, processLink, response.body)
+                applySuccess(execution, processLink, response.body)
+            }
+
             else -> throw actionFailed(response, definition, processLink)
         }
+    }
+
+    /**
+     * Enforces the manifest's result contract at runtime: when the resolved definition's manifest
+     * declares `outputs` for the invoked action, the response's `result` must contain every
+     * declared key. A key may hold JSON null — null is a legitimate value — but an absent key means
+     * the plugin broke its own contract (typically a value dropped during serialization, e.g. an
+     * `undefined` in a JS plugin), which would otherwise surface only as a silently skipped result
+     * mapping. Validated before anything (variables or mappings) is applied, so a contract
+     * violation fails the invocation without partial writes.
+     */
+    private fun validateDeclaredOutputs(
+        definition: ExternalPluginDefinition,
+        processLink: ExternalPluginProcessLink,
+        body: JsonNode?,
+    ) {
+        val declaredOutputs = declaredOutputs(definition, processLink.actionKey)
+        if (declaredOutputs.isEmpty()) {
+            return
+        }
+
+        val result = body?.get("result")
+        val missingKeys = if (result != null && result.isObject) {
+            declaredOutputs.filterNot { result.has(it) }
+        } else {
+            declaredOutputs
+        }
+        if (missingKeys.isNotEmpty()) {
+            val message = "External plugin '${definition.pluginId}@${definition.version}' action " +
+                "'${processLink.actionKey}' declares outputs $declaredOutputs in its manifest, but its " +
+                "result is missing key(s) $missingKeys. Every declared output must be returned; " +
+                "returning null for a key is allowed."
+            logger.warn { message }
+            throw ExternalPluginActionFailedException("RESULT_CONTRACT_VIOLATION", message)
+        }
+    }
+
+    private fun declaredOutputs(definition: ExternalPluginDefinition, actionKey: String): List<String> {
+        val actions = definition.manifestJson?.get("actions") ?: return emptyList()
+        if (!actions.isArray) return emptyList()
+        val action = actions.firstOrNull { it.get("key")?.asText() == actionKey } ?: return emptyList()
+        val outputs = action.get("outputs") ?: return emptyList()
+        if (!outputs.isArray) return emptyList()
+        return outputs.mapNotNull { if (it.isTextual) it.asText() else null }
     }
 
     /**

@@ -63,18 +63,17 @@ class PluginActionResultHandler(
         val valuesToHandle = mappings.mapNotNull { mapping ->
             val pointer = mapping.source.ifBlank { "" }
             val node = result.at(pointer)
-            if (node.isMissingNode || node.isNull) {
-                // A null result value is skipped like a missing one: writing JSON null would wipe
-                // existing data and fails schema validation on non-nullable document fields.
+            if (node.isMissingNode) {
                 logger.warn {
-                    "Plugin action result mapping source pointer '${mapping.source}' was " +
-                        (if (node.isNull) "null" else "absent") +
-                        " in the action result for activity '${execution.currentActivityId}' " +
+                    "Plugin action result mapping source pointer '${mapping.source}' was absent " +
+                        "in the action result for activity '${execution.currentActivityId}' " +
                         "of process instance '${execution.processInstanceId}' — target " +
                         "'${mapping.target}' was not written."
                 }
                 return@mapNotNull null
             }
+            // JSON null is a value, not an absence: the plugin explicitly returned null for this
+            // key, so it is written through to the target (which may clear an existing value).
             mapping.target to objectMapper.treeToValue(node, Any::class.java)
         }.toMap()
 

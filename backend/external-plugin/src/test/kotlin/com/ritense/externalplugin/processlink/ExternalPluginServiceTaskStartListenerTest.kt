@@ -292,6 +292,75 @@ class ExternalPluginServiceTaskStartListenerTest {
     }
 
     @Test
+    fun `a result missing a manifest-declared output key fails with RESULT_CONTRACT_VIOLATION`() {
+        stubDefinitionWithDeclaredOutputs("summary", "title")
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(
+                status = 200,
+                body = objectMapper.readTree("""{"result":{"summary":"a summary"}}"""),
+            ),
+        )
+
+        assertThatThrownBy { listener.notify(globalProcessServiceTaskEvent()) }
+            .isInstanceOf(ExternalPluginActionFailedException::class.java)
+            .hasMessageContaining("title")
+            .hasMessageContaining("declares outputs")
+
+        val exception = runCatching { listener.notify(globalProcessServiceTaskEvent()) }.exceptionOrNull()
+        assertThat((exception as ExternalPluginActionFailedException).errorCode)
+            .isEqualTo("RESULT_CONTRACT_VIOLATION")
+        verify(pluginActionResultHandler, never()).handle(any(), any(), any())
+    }
+
+    @Test
+    fun `a response without a result object fails when the manifest declares outputs`() {
+        stubDefinitionWithDeclaredOutputs("summary")
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        assertThatThrownBy { listener.notify(globalProcessServiceTaskEvent()) }
+            .isInstanceOf(ExternalPluginActionFailedException::class.java)
+            .hasMessageContaining("summary")
+    }
+
+    @Test
+    fun `declared output keys returned as null pass validation`() {
+        stubDefinitionWithDeclaredOutputs("summary", "title")
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(
+                status = 200,
+                body = objectMapper.readTree("""{"result":{"summary":null,"title":null}}"""),
+            ),
+        )
+
+        listener.notify(globalProcessServiceTaskEvent())
+    }
+
+    @Test
+    fun `a definition without declared outputs skips result validation`() {
+        // setUp's definition has no manifestJson at all — a 200 without any result must pass.
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listener.notify(globalProcessServiceTaskEvent())
+    }
+
+    private fun stubDefinitionWithDeclaredOutputs(vararg outputs: String) {
+        val outputsJson = outputs.joinToString(",") { "\"$it\"" }
+        val definition = mock<ExternalPluginDefinition> {
+            on { this.hostId } doReturn hostId
+            on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.1.0"
+            on { manifestJson } doReturn objectMapper.readTree(
+                """{"actions":[{"key":"case-summary","outputs":[$outputsJson]}]}""",
+            ) as com.fasterxml.jackson.databind.node.ObjectNode
+        }
+        whenever(definitionService.get(definitionId)).thenReturn(definition)
+    }
+
+    @Test
     fun `BUILDING_BLOCK reference without a resolver bean throws a clear error`() {
         // listener from setUp() was constructed with a null resolver (the default)
         val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.1.0")

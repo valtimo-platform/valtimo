@@ -125,7 +125,7 @@ class PluginActionResultHandlerTest {
     }
 
     @Test
-    fun `skips null result values but still writes the non-null ones`() {
+    fun `writes null result values through to the target instead of skipping them`() {
         val result = MapperSingleton.get().readTree("""{"remarks": null, "decision": "APPROVED"}""")
         val businessKey = UUID.randomUUID()
         whenever(execution.processBusinessKey).thenReturn(businessKey.toString())
@@ -141,7 +141,7 @@ class PluginActionResultHandlerTest {
 
         verify(valueResolverService).handleValues(
             businessKey,
-            mapOf("doc:/approvalDecision" to "APPROVED")
+            mapOf("doc:/reviewerRemarks" to null, "doc:/approvalDecision" to "APPROVED")
         )
     }
 
