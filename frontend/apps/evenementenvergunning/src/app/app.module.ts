@@ -1,5 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
-import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
+import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {HttpBackend, HttpClient, provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
@@ -50,7 +50,7 @@ import {FormManagementModule} from '@valtimo/form-management';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {MigrationModule} from '@valtimo/migration';
 import {CaseManagementModule} from '@valtimo/case-management';
-import {BootstrapModule} from '@valtimo/bootstrap';
+import {BootstrapModule, provideNativeFederationPlugins} from '@valtimo/bootstrap';
 import {ConfigModule, ConfigService, CustomMultiTranslateHttpLoaderFactory, LocalizationService} from '@valtimo/shared';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
@@ -96,7 +96,6 @@ import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zg
 import {SseModule} from '@valtimo/sse';
 import {LoggingModule} from '@valtimo/logging';
 import {BUILT_IN_PLUGINS} from './plugins/built-in-plugins';
-import {StartupPluginLoaderService} from './plugins/startup-plugin-loader.service';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -184,13 +183,8 @@ export function tabsFactory() {
     }),
   ],
   providers: [
-    {
-      // Load the app's built-in plugins (Native Federation remotes) at start time.
-      provide: APP_INITIALIZER,
-      multi: true,
-      useFactory: (loader: StartupPluginLoaderService) => () => loader.loadAll(BUILT_IN_PLUGINS),
-      deps: [StartupPluginLoaderService],
-    },
+    // Load the app's built-in plugins (Native Federation remotes) at start time.
+    provideNativeFederationPlugins(BUILT_IN_PLUGINS),
     {
       provide: PLUGINS_TOKEN,
       useValue: [

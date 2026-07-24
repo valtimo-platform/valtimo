@@ -27,17 +27,7 @@ import {
 } from '@valtimo/shared';
 import {NGXLogger} from 'ngx-logger';
 
-/** The Native Federation `remoteEntry.json` produced by a plugin's build. */
-interface RemoteEntry {
-  name?: string;
-  exposes?: Array<{key: string; outFileName: string}>;
-  shared?: Array<{packageName: string; outFileName: string; version: string}>;
-}
-
-/** Native Federation's global runtime cache (see @softarc/native-federation-runtime). */
-interface NativeFederationGlobal {
-  externals?: Map<string, string>;
-}
+import {aliasRemoteSharedToHost, RemoteEntry} from './native-federation-version-bridge';
 
 /**
  * Loads plugins shipped as Native Federation remotes at application start time.
@@ -54,6 +44,9 @@ interface NativeFederationGlobal {
  * PluginManagementService work), then we read its contribution tokens and push
  * them into the host's reactive registries. Registration is idempotent, so
  * loading a remote twice is harmless.
+ *
+ * This service is host-only glue and lives in `@valtimo/bootstrap` so all
+ * consuming apps share a single implementation (see `provideNativeFederationPlugins`).
  */
 @Injectable({providedIn: 'root'})
 export class StartupPluginLoaderService {
@@ -114,7 +107,7 @@ export class StartupPluginLoaderService {
       throw new Error(`HTTP ${response.status} loading ${remoteEntryUrl}`);
     }
     const entry: RemoteEntry = await response.json();
-    this.aliasRemoteSharedToHost(entry);
+    aliasRemoteSharedToHost(entry);
 
     for (const exposed of entry.exposes ?? []) {
       try {
@@ -196,38 +189,5 @@ export class StartupPluginLoaderService {
   private toArray<T>(value: unknown): T[] {
     if (Array.isArray(value)) return value.flat() as T[];
     return value ? [value as T] : [];
-  }
-
-  /**
-   * Bridge the version-key gap between the host and a prebuilt remote. Native
-   * Federation keys every shared dependency by `packageName@version`; the host
-   * shares its workspace `@valtimo/*` libs as tsconfig path-mappings (no version)
-   * while the remote declares a real version (e.g. `@valtimo/plugin@13.34.0`). We
-   * point each version the remote declares at the host's already-loaded chunk
-   * URL so the remote dedupes onto the host's instances — otherwise it loads its
-   * own copies and `PLUGINS_TOKEN` / tab-token identity breaks. Runs before
-   * loadRemoteModule, which reads these entries when building the import-map scope.
-   */
-  private aliasRemoteSharedToHost(entry: RemoteEntry): void {
-    const nf = (globalThis as unknown as {__NATIVE_FEDERATION__?: NativeFederationGlobal})
-      .__NATIVE_FEDERATION__;
-    const externals = nf?.externals;
-    if (!externals || !entry.shared?.length) return;
-
-    const hostUrlByPackage = new Map<string, string>();
-    for (const [key, url] of externals) {
-      const at = key.lastIndexOf('@');
-      const packageName = at > 0 ? key.slice(0, at) : key;
-      if (!hostUrlByPackage.has(packageName)) {
-        hostUrlByPackage.set(packageName, url);
-      }
-    }
-
-    for (const shared of entry.shared) {
-      const hostUrl = hostUrlByPackage.get(shared.packageName);
-      if (hostUrl) {
-        externals.set(`${shared.packageName}@${shared.version}`, hostUrl);
-      }
-    }
   }
 }
