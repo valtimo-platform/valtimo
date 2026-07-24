@@ -18,6 +18,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, ModalModule} from 'carbon-components-angular';
+import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {FailedNotification} from '../../models';
 import moment from 'moment';
 
@@ -26,7 +27,7 @@ import moment from 'moment';
   templateUrl: './failed-notification-detail.component.html',
   styleUrls: ['./failed-notification-detail.component.scss'],
   standalone: true,
-  imports: [CommonModule, TranslateModule, ModalModule, ButtonModule],
+  imports: [CommonModule, TranslateModule, ModalModule, ButtonModule, ValtimoCdsModalDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationDetailComponent {

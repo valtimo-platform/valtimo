@@ -26,6 +26,7 @@ import {
   RenderInPageHeaderDirective,
   SelectModule,
   TooltipIconModule,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {AccessControlManagementRoutingModule} from './access-control-management-routing.module';
 import {AccessControlOverviewComponent} from './components/overview/access-control-overview.component';
@@ -75,6 +76,7 @@ import {ActionDescriptionPipe, ActionLabelPipe, ActionTagTypePipe} from './pipes
     ModalModule,
     TranslateModule,
     ReactiveFormsModule,
+    ValtimoCdsModalDirective,
     InputModule,
     IconModule,
     ConfirmationModalModule,
