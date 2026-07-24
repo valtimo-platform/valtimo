@@ -46,14 +46,12 @@
   removed, its subscription is now updated reliably. Previously the remote subscription could end up
   out of sync with the saved configuration, and failures went unnoticed.
 
-* **Closing a modal with the ESC key now works reliably**
+* **Closing a dialog with the Esc key now works reliably**
 
-  Pressing the ESC key now closes the top-most open modal through the same handling as the close (X)
-  button, regardless of where keyboard focus is. Previously ESC only closed a modal while focus was
-  inside it, so pressing ESC after clicking a non-focusable part of the modal — or right after
-  opening in development builds — did nothing. When a Carbon dropdown or combo-box inside the modal
-  is open, the first ESC closes only that menu and leaves the modal open; a second ESC then closes
-  the modal.
+  Pressing Esc now reliably closes the open dialog, even when you first clicked somewhere inside it
+  that is not a button or input field. Previously the dialog could ignore Esc and had to be closed by
+  refreshing the page. When a dropdown inside the dialog is open, the first Esc closes only the
+  dropdown and a second Esc closes the dialog.
 
 * **Several modals were missing shared modal behaviour**
 
