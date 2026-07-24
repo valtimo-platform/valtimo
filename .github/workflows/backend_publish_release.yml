@@ -220,4 +220,6 @@ jobs:
       project_version: ${{ inputs.project_version || github.event.inputs.project_version }}.RELEASE
       s3_bucket: valtimo-releases
       build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
-    secrets: inherit
+    secrets:
+      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_OVHCLOUD_S3_BUCKET_ACCESS_KEY_ID }}
+      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_OVHCLOUD_S3_BUCKET_ACCESS_KEY_SECRET }}

@@ -76,12 +76,19 @@ jobs:
           # (GITHUB_TOKEN is not on the ruleset bypass list).
           token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
           fetch-depth: 0
+          # Don't leave the ruleset-bypassing PAT in the git config: the third-party
+          # softprops/action-gh-release step runs later in this job and could read it.
+          # The force-move step below re-supplies the token to origin explicitly.
+          persist-credentials: false
 
       - name: Force-move tag on re-run
+        env:
+          RELEASE_PAT: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${RELEASE_PAT}@github.com/${GITHUB_REPOSITORY}.git"
           if git ls-remote --tags --exit-code origin "refs/tags/${VERSION}" >/dev/null 2>&1; then
             echo "Tag ${VERSION} already exists — re-run detected; force-moving it to ${GITHUB_SHA}."
             git tag -f "${VERSION}" "${GITHUB_SHA}"
