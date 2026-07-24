@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-import {ComponentRef, Directive, ElementRef, HostListener, Input, OnInit} from '@angular/core';
+import {
+  ComponentRef,
+  Directive,
+  ElementRef,
+  HostListener,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {Overlay, OverlayPositionBuilder, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
 import {TooltipComponent} from './tooltip.component';
 
 @Directive({selector: '[vTooltip]', standalone: false})
-export class TooltipDirective implements OnInit {
+export class TooltipDirective implements OnInit, OnDestroy {
   @Input('vTooltip') text = '';
   @Input() onBottom = false;
   @Input() tooltipDisabled = false;
@@ -65,5 +73,12 @@ export class TooltipDirective implements OnInit {
     if (this.overlayRef.hasAttached()) {
       this.overlayRef.detach();
     }
+  }
+
+  public ngOnDestroy(): void {
+    // The overlay lives outside the host element. When the host is destroyed while the tooltip is
+    // shown (e.g. a page removing the hovered element), no mouseleave ever fires, so without
+    // disposal the tooltip stays on screen forever.
+    this.overlayRef?.dispose();
   }
 }
