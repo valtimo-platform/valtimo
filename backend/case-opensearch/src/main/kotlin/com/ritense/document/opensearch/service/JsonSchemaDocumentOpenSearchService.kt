@@ -411,7 +411,6 @@ class JsonSchemaDocumentOpenSearchService(
                     .order(sortOrder)
                     .unmappedType("keyword")
                 queryBuilder.withSorts(sortBuilder)
-                logger.info { "executeSearch: adding sort $osField $sortOrder" }
             }
         }
 
@@ -419,7 +418,6 @@ class JsonSchemaDocumentOpenSearchService(
         val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
         val total = hits.totalHits
         val ids: List<String> = hits.searchHits.mapNotNull { it.id }
-        logger.info { "executeSearch: returned ${ids.size} IDs in order: $ids" }
 
         val docIds = ids.map { JsonSchemaDocumentId.existingId(it) }
         val entities = runWithoutAuthorization { jpaRepository.findAllById(docIds) }

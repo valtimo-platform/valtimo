@@ -34,7 +34,6 @@ import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valueresolver.ValueResolverService
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -176,10 +175,8 @@ class CaseInstanceService(
     private fun mutatePageable(caseListColumns: Collection<CaseListColumn>, pageable: Pageable): PageRequest {
         val newSortOrders = pageable.sort.map { sortOrder ->
             val sortKey = sortOrder.property.removePrefix("$.")
-            logger.info { "mutatePageable: sortKey=$sortKey, columns=${caseListColumns.map { it.id.key }}" }
             val caseListColumn = caseListColumns.find { caseListColumn -> caseListColumn.id.key == sortKey }
             val sortingProperty = caseListColumn?.path ?: sortOrder.property
-            logger.info { "mutatePageable: found column=${caseListColumn?.id?.key}, using path=$sortingProperty" }
             Sort.Order(sortOrder.direction, sortingProperty, sortOrder.nullHandling)
         }
         val newSort = Sort.by(newSortOrders.toMutableList())
@@ -211,9 +208,5 @@ class CaseInstanceService(
         private val value by lazy(delegate)
 
         override fun invoke() = value
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }
