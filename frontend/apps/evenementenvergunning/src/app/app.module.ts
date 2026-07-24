@@ -183,7 +183,6 @@ export function tabsFactory() {
     }),
   ],
   providers: [
-    // Load the app's built-in plugins (Native Federation remotes) at start time.
     provideNativeFederationPlugins(BUILT_IN_PLUGINS),
     {
       provide: PLUGINS_TOKEN,
