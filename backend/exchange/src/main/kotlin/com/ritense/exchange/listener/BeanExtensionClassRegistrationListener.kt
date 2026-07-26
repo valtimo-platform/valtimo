@@ -43,7 +43,9 @@ class BeanExtensionClassRegistrationListener(
 
     override fun classRegistered(extensionClass: Class<*>) {
         if (isSpringBean(extensionClass)) {
-            checkAllowed(extensionClass)
+            if (extensionProperties.enforceWhitelist) {
+                checkAllowed(extensionClass)
+            }
             registerSpringBean(extensionClass)
         }
     }

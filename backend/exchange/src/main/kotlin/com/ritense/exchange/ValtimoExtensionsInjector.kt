@@ -46,7 +46,19 @@ class ValtimoExtensionsInjector(
     }
 
     override fun injectExtensions() {
-        springPluginManager.startedPlugins.toList().forEach { extension -> registerExtension(extension) }
+        // Register each started extension independently and in isolation: a
+        // single extension that fails to wire (e.g. a plugin whose internal
+        // beans can't be autowired in this host) is marked FAILED and skipped,
+        // rather than aborting application startup and taking down every other
+        // extension along with it.
+        springPluginManager.startedPlugins.toList().forEach { extension ->
+            try {
+                registerExtension(extension)
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to register extension '${extension.pluginId}'; marking it FAILED" }
+                extensionManager.fail(extension, e)
+            }
+        }
     }
 
     override fun pluginStateChanged(event: PluginStateEvent) {
@@ -68,7 +80,19 @@ class ValtimoExtensionsInjector(
     }
 
     fun registerExtension(extension: PluginWrapper) {
-        extensionManager.getExtensionClasses(extension.pluginId).forEach { registerExtension(it) }
+        // Register each extension class in isolation. A class that can't be
+        // wired into this host (e.g. a plugin PluginFactory whose collaborators
+        // aren't available as beans here) is logged and skipped, so the rest of
+        // the extension — and crucially its served frontend bundle — still load.
+        extensionManager.getExtensionClasses(extension.pluginId).forEach { extensionClass ->
+            try {
+                registerExtension(extensionClass)
+            } catch (e: Exception) {
+                logger.warn(e) {
+                    "Skipping extension class '${extensionClass.name}' of '${extension.pluginId}': could not register it in this host"
+                }
+            }
+        }
     }
 
     public override fun registerExtension(extensionClass: Class<*>) {

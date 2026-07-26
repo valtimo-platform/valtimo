@@ -204,8 +204,7 @@ export class ExtensionService {
       if (!providers.length) continue;
 
       // The host registries take a batch and register idempotently, so we
-      // collect each token's contributions and hand them over in one call
-      // (mirrors StartupPluginLoaderService, the host's other remote loader).
+      // collect each token's contributions and hand them over in one call.
       const specifications = providers
         .filter(p => p && p.provide === PLUGINS_TOKEN)
         .flatMap(p => (Array.isArray(p.useValue) ? p.useValue : [p.useValue]));

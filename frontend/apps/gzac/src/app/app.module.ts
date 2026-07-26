@@ -35,7 +35,7 @@ import {AccessControlManagementModule} from '@valtimo/access-control-management'
 import {AccountModule} from '@valtimo/account';
 import {AdminSettingsModule} from '@valtimo/admin-settings';
 import {AnalyseModule} from '@valtimo/analyse';
-import {BootstrapModule, provideNativeFederationPlugins} from '@valtimo/bootstrap';
+import {BootstrapModule} from '@valtimo/bootstrap';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
 import {ExtensionManagementModule} from '@valtimo/exchange';
 import {
@@ -125,7 +125,6 @@ import {TaskModule} from '@valtimo/task';
 import {TeamsModule} from '@valtimo/teams';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 
-import {BUILT_IN_PLUGINS} from './plugins/built-in-plugins';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -223,7 +222,6 @@ export function tabsFactory() {
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
-    provideNativeFederationPlugins(BUILT_IN_PLUGINS),
     {
       provide: PLUGINS_TOKEN,
       useValue: [

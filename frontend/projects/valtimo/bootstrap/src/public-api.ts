@@ -19,5 +19,3 @@
  */
 
 export * from './lib/bootstrap.module';
-export {StartupPluginLoaderService} from './lib/plugins/startup-plugin-loader.service';
-export {provideNativeFederationPlugins} from './lib/plugins/native-federation.providers';

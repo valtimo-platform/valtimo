@@ -35,11 +35,13 @@ class WhitelistSpringExtensionFactory(
         val extension = extensionManager.whichPlugin(extensionClass)
         val extensionClassNames = extensionManager.getExtensionClassNames(extension.pluginId)
 
-        val illegalConstructorParameters = extensionClass.constructors
-            .flatMap { it.parameterTypes.toList() }
-            .filter { !extensionProperties.autowireWhitelist.contains(it.name) && !extensionClassNames.contains(it.name) }
-        check(illegalConstructorParameters.isEmpty()) {
-            "$extensionClass uses illegal constructor parameters: $illegalConstructorParameters"
+        if (extensionProperties.enforceWhitelist) {
+            val illegalConstructorParameters = extensionClass.constructors
+                .flatMap { it.parameterTypes.toList() }
+                .filter { !extensionProperties.autowireWhitelist.contains(it.name) && !extensionClassNames.contains(it.name) }
+            check(illegalConstructorParameters.isEmpty()) {
+                "$extensionClass uses illegal constructor parameters: $illegalConstructorParameters"
+            }
         }
 
         return if (extensionClass.annotations.any { it.annotationClass == Repository::class }) {

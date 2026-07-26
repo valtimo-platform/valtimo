@@ -50,7 +50,7 @@ import {FormManagementModule} from '@valtimo/form-management';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {MigrationModule} from '@valtimo/migration';
 import {CaseManagementModule} from '@valtimo/case-management';
-import {BootstrapModule, provideNativeFederationPlugins} from '@valtimo/bootstrap';
+import {BootstrapModule} from '@valtimo/bootstrap';
 import {ConfigModule, ConfigService, CustomMultiTranslateHttpLoaderFactory, LocalizationService} from '@valtimo/shared';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
@@ -95,7 +95,6 @@ import {CaseMigrationModule} from '@valtimo/case-migration';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {SseModule} from '@valtimo/sse';
 import {LoggingModule} from '@valtimo/logging';
-import {BUILT_IN_PLUGINS} from './plugins/built-in-plugins';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -183,7 +182,6 @@ export function tabsFactory() {
     }),
   ],
   providers: [
-    provideNativeFederationPlugins(BUILT_IN_PLUGINS),
     {
       provide: PLUGINS_TOKEN,
       useValue: [

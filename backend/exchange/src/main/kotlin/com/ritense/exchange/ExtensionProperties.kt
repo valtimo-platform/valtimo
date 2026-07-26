@@ -23,6 +23,12 @@ import java.net.URL
 data class ExtensionProperties(
     val repositories: Map<String, URL> = emptyMap(),
     val multiInstanceCron: String = "0 0 * * * ?",
+    // Security is out of scope for the exchange mechanism, so by default the
+    // whitelists are NOT enforced: an extension may autowire any bean and use
+    // any interface/annotation. Set valtimo.extension.enforceWhitelist=true to
+    // re-enable the sandbox checks in WhitelistSpringExtensionFactory and
+    // BeanExtensionClassRegistrationListener.
+    val enforceWhitelist: Boolean = false,
     val autowireWhitelist: List<String> = DEFAULT_AUTOWIRE_WHITELIST,
     val annotationWhitelist: List<String> = DEFAULT_BEAN_ANNOTATION_WHITELIST,
     val interfaceWhitelist: List<String> = DEFAULT_BEAN_INTERFACE_WHITELIST,
