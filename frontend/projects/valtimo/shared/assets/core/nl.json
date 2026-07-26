@@ -548,6 +548,13 @@
     "noResultsOtherTasks": "Er zijn geen taken beschikbaar voor andere gebruikers.",
     "taskIsAssigned": "Taak is toegewezen"
   },
+  "extensionManagement": {
+    "noResults": "Geen extensions beschikbaar",
+    "installedVersion": "Geïnstalleerde versie",
+    "install": "Installeren",
+    "update": "Updaten",
+    "uninstall": "Deïnstalleren"
+  },
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart",
     "process": "Proces",

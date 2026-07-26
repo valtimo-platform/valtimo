@@ -35,6 +35,7 @@
       "@valtimo/dashboard-management": ["./projects/valtimo/dashboard-management/src/public-api.ts"],
       "@valtimo/decision": ["./projects/valtimo/decision/src/public-api.ts"],
       "@valtimo/document": ["./projects/valtimo/document/src/public_api.ts"],
+      "@valtimo/exchange": ["./projects/valtimo/exchange/src/public-api.ts"],
       "@valtimo/form": ["./projects/valtimo/form/src/public_api.ts"],
       "@valtimo/form-flow-management": ["./projects/valtimo/form-flow-management/src/public-api.ts"],
       "@valtimo/form-management": ["./projects/valtimo/form-management/src/public-api.ts"],

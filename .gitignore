@@ -20,3 +20,7 @@
 
 # Riptide artifacts (cloud-synced)
 .humanlayer/tasks/
+
+# Runtime-loaded exchange extension jars (dropped into the dev pf4j plugins dir).
+# These are deployed at startup and must not be committed with the source.
+backend/apps/dev/src/main/resources/config/extensions/
