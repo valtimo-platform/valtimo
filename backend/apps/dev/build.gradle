@@ -48,62 +48,11 @@ dependencies {
     implementation(project(":backend:outbox:outbox-rabbitmq"))
     implementation(project(":backend:process-link-url"))
 
-    // Plugins
-    implementation("com.ritense.valtimo:smartdocuments")
-    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
-    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
-
-    // Test: backend modules for the Native Federation frontend plugins wired into
-    // built-in-plugins.ts. Versions are the latest Maven Central release per plugin;
-    // cross-version compatibility with this Valtimo line is not guaranteed.
-    implementation("com.ritense.valtimoplugins:archief:0.0.1-hackathon")
-    implementation("com.ritense.valtimoplugins:open-vtb:0.0.2")
-    implementation("com.ritense.valtimoplugins:cloud-event:0.1.0")
-    // externe-klanttaak:3.0.1 ships the same BPMN twice (bpmn/ and config/global/bpmn/) plus a
-    // META-INF/processes.xml with isScanForProcessDefinitions=true. Operaton scans that unnamed
-    // process archive, finds both identical copies, and rejects the deployment: ENGINE-08043
-    // "definitions with the same key 'externe-klanttaak-verwerk-afgeronde-externe-klanttaak'".
-    // The defect is in the published artifact and can't be fixed from here, so the app can't boot
-    // with it on the classpath. Its frontend remote entry can stay in built-in-plugins.ts (a plugin
-    // without its backend is simply inactive — the host is unaffected).
-    // implementation("com.ritense.valtimoplugins:externe-klanttaak:3.0.1")
-    implementation("com.ritense.valtimoplugins:graph-mail:1.0.1")
-    implementation("com.ritense.valtimoplugins:haal-centraal:2.0.0")
-    // haal-centraal:2.0.0 references com.ritense.valtimoplugins.haalcentraalauth.HaalCentraalAuthentication
-    // from this plugin at runtime, so it must be present. Pin 0.13: it ships that interface, but 0.14
-    // dropped it (moved to HaalCentraalAuthPlugin), so pairing 2.0.0 with 0.14 fails with
-    // ClassNotFoundException at bean init. The exclude drops the transitive object-management:1.0.1,
-    // a Valtimo 12 plugin (imports valtimo-dependency-versions:12.29.0.RELEASE) that requests
-    // com.ritense.valtimo:document at a version this V13 app doesn't supply → unresolved.
-    implementation("com.ritense.valtimoplugins:haal-centraal-authentication:0.13") {
-        exclude group: "com.ritense.valtimoplugins", module: "object-management"
-    }
-    implementation("com.ritense.valtimoplugins:hasura-plugin:1.3.0")
-    implementation("com.ritense.valtimoplugins:kvk-handelsregister:1.1.0")
-    implementation("com.ritense.valtimoplugins:lrk-import-plugin:1.1.0")
-    implementation("com.ritense.valtimoplugins:mTLS-SSLContext:2.0.4")
-    implementation("com.ritense.valtimoplugins:notify-nl:2.0.0")
-    implementation("com.ritense.valtimoplugins:open-product:1.2.0")
-    implementation("com.ritense.valtimoplugins:openklant:2.5.0")
-    implementation("com.ritense.valtimoplugins:publictask:2.1.0")
-    // samenwerkfunctionaliteit:0.1.0 requests spring-cloud-starter-gateway-server-webmvc with
-    // no version; the artifact only exists for Spring Cloud 2025 (this repo is on 2024, via
-    // spring-cloud-stream 4.2.1), so no compatible version is supplied → unresolved.
-    // implementation("com.ritense.valtimoplugins:samenwerkfunctionaliteit:0.1.0")
-    implementation("com.ritense.valtimoplugins:slack:6.0.0")
-    implementation("com.ritense.valtimoplugins:socrates:2.0.1")
-    // spotler:1.0.1 was built against the old Camunda engine: its @PluginAction method takes an
-    // org.camunda.bpm.engine.delegate.DelegateExecution parameter. This Valtimo line runs Operaton
-    // (org.operaton.*), so that class is absent and PluginDeploymentListener.findPluginActions fails
-    // with NoClassDefFoundError while reflecting over the plugin's methods at deploy time.
-    // implementation("com.ritense.valtimoplugins:spotler:1.0.1")
-    implementation("com.ritense.valtimoplugins:suwinet:3.0.0")
-    implementation("com.ritense.valtimoplugins:suwinet-auth:1.1.1")
-    implementation("com.ritense.valtimoplugins:token-authentication:0.9")
-    implementation("com.ritense.valtimoplugins:valtimo-llm:6.0.0")
-    implementation("com.ritense.valtimoplugins:valtimo-ocr:1.0.0")
-    implementation("com.ritense.valtimoplugins:valuemapper:2.0.1")
-    implementation("com.ritense.valtimoplugins:xential:2.4.2")
+    // Plugins are NOT hardcoded as compile-time dependencies. They are loaded at
+    // runtime from jars dropped into the exchange plugins directory
+    // (src/main/resources/config/extensions), built by the extension-store
+    // pipeline. Drop e.g. freemarker-<version>.jar there and it is loaded on
+    // startup — no dependency here, no rebuild.
 
     implementation("io.github.oshai:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"

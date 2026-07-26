@@ -15,11 +15,12 @@
  */
 
 import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import {createNgModule, EnvironmentInjector, Injectable, Type} from '@angular/core';
+import {Route, ROUTES, Router} from '@angular/router';
 import {CASE_MANAGEMENT_TAB_TOKEN, ConfigService} from '@valtimo/shared';
 import {defer, from, Observable} from 'rxjs';
 import {ExtensionListItem} from '../models';
-import {PLUGINS_TOKEN, PluginService} from '@valtimo/plugin';
+import {PLUGINS_TOKEN, PluginService, PluginSpecification} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
 import {TabService} from '@valtimo/case-management';
 import {loadRemoteModule} from '@angular-architects/native-federation';
@@ -53,6 +54,8 @@ export class ExtensionService {
     private readonly http: HttpClient,
     private readonly pluginService: PluginService,
     private readonly tabService: TabService,
+    private readonly injector: EnvironmentInjector,
+    private readonly router: Router,
     private readonly logger: NGXLogger
   ) {
     this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}`;
@@ -191,46 +194,73 @@ export class ExtensionService {
   }
 
   /**
-   * Walk every export of a loaded remote module, register any NgModule
-   * `providers` we recognise (plugin specifications + case-management tabs).
-   * Extensions remain free to add new contribution points without code changes
-   * here, as long as they expose them via providers on a recognisable token.
+   * Instantiate every exposed NgModule against the host's root injector and
+   * register its contributions with the host.
+   *
+   * We create the module with `createNgModule` (rather than statically reading
+   * `ɵmod.providers`) for two reasons: (1) provider factories that depend on
+   * host services — e.g. a plugin spec's `enabled$` factory — resolve against
+   * the host injector, and (2) the module's own ROUTES (declared via
+   * `RouterModule.forChild` inside the modules it imports) only become
+   * reachable this way. Registration is idempotent, so loading twice is safe.
    */
   private registerLoadedModule(loaded: Record<string, unknown>): void {
     for (const exportName of Object.keys(loaded)) {
-      const value = loaded[exportName];
-      if (!value || typeof value !== 'function') continue;
-      const providers = this.extractModuleProviders(value);
-      if (!providers.length) continue;
+      const exported = loaded[exportName];
+      if (typeof exported !== 'function' || !(exported as {ɵmod?: unknown}).ɵmod) continue;
 
-      // The host registries take a batch and register idempotently, so we
-      // collect each token's contributions and hand them over in one call.
-      const specifications = providers
-        .filter(p => p && p.provide === PLUGINS_TOKEN)
-        .flatMap(p => (Array.isArray(p.useValue) ? p.useValue : [p.useValue]));
+      const moduleRef = createNgModule(exported as Type<unknown>, this.injector);
+
+      const specifications = this.toArray<PluginSpecification>(
+        moduleRef.injector.get(PLUGINS_TOKEN, [])
+      );
       if (specifications.length) {
         this.pluginService.registerPluginSpecifications(specifications);
+        // A plugin's config/function components are declared in this module, so
+        // the host must create them with this module's injector to resolve its
+        // module-scoped providers.
+        specifications.forEach(specification =>
+          this.pluginService.registerPluginEnvironmentInjector(
+            specification.pluginId,
+            moduleRef.injector
+          )
+        );
       }
 
-      const caseManagementTabs = providers
-        .filter(p => p && p.provide === CASE_MANAGEMENT_TAB_TOKEN)
-        .flatMap(p => (Array.isArray(p.useValue) ? p.useValue : [p.useValue]));
+      const caseManagementTabs = this.toArray<unknown>(
+        moduleRef.injector.get(CASE_MANAGEMENT_TAB_TOKEN, [])
+      );
       if (caseManagementTabs.length) {
-        this.tabService.registerCaseManagementTabs(caseManagementTabs);
+        this.tabService.registerCaseManagementTabs(caseManagementTabs as never);
       }
+
+      this.registerRoutes(moduleRef.injector.get(ROUTES, []));
     }
   }
 
-  private extractModuleProviders(maybeNgModule: any): any[] {
-    // Angular's AOT compiler stores NgModule metadata under different keys
-    // depending on whether the module was compiled in partial-Ivy or full-Ivy
-    // mode. Check the well-known ones; fall back to empty.
-    const candidates =
-      maybeNgModule?.ɵmod?.providers ??
-      maybeNgModule?.ɵinj?.providers ??
-      maybeNgModule?.__annotations__?.flatMap((a: any) => a?.providers ?? []) ??
-      [];
-    return Array.isArray(candidates) ? candidates : [];
+  /**
+   * Append the routes a plugin module declares via `RouterModule.forChild` to
+   * the live Router. A remote instantiated after bootstrap never feeds its
+   * ROUTES to the running Router, so its own management pages (e.g. the
+   * mail-template editor at `.../mail-template/:templateKey`) would not match.
+   * The ROUTES token is a multi provider of route arrays; we flatten and append
+   * the paths not already registered. The app has no wildcard route, so
+   * appending is safe and order-independent.
+   */
+  private registerRoutes(routeConfigs: Route[][]): void {
+    const pluginRoutes = (routeConfigs ?? []).flat();
+    if (pluginRoutes.length === 0) return;
+
+    const knownPaths = new Set(this.router.config.map(route => route.path));
+    const additions = pluginRoutes.filter(route => !knownPaths.has(route.path));
+    if (additions.length > 0) {
+      this.router.resetConfig([...this.router.config, ...additions]);
+    }
+  }
+
+  private toArray<T>(value: unknown): T[] {
+    if (Array.isArray(value)) return value.flat() as T[];
+    return value ? [value as T] : [];
   }
 
   public getExtensions(): Observable<Array<ExtensionListItem>> {
