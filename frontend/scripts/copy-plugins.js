@@ -46,25 +46,52 @@ const pluginsRoot = process.env.PLUGINS_ROOT
   : path.resolve(repoDir, '..');
 
 /**
- * name        = folder served under /assets/plugins/<name>;
- * dist        = built remote path in a sibling checkout (preferred when present);
- * pkg         = published npm package name (fallback when no sibling checkout);
- * remoteSubdir= subfolder inside that package holding the remote (default 'remote').
+ * A plugin lives in a sibling checkout (`repo`) and publishes an npm package
+ * (`pkg`). Most repos are named `<pkg-last-segment>-plugin`, but not all
+ * (e.g. berichten-api → @valtimo-plugins/open-vtb), and a few packages already
+ * end in `-plugin`, so the repo dir and package are listed explicitly rather
+ * than derived. From each pair:
+ *   name         = pkg's last segment without a trailing '-plugin'
+ *                  → served at /assets/plugins/<name>/ (must match BUILT_IN_PLUGINS)
+ *   remoteSubdir = 'remote'  (the remote bundle folder inside the published package)
+ *   dist         = '<repo>/frontend/dist/remote'  (sibling checkout, dev)
  */
-const PLUGINS = [
-  {
-    name: 'freemarker',
-    dist: 'freemarker-plugin/frontend/dist/freemarker-remote',
-    pkg: '@valtimo-plugins/freemarker',
-    remoteSubdir: 'remote',
-  },
-  {
-    name: 'smtpmail',
-    dist: 'smtpmail-plugin/frontend/dist/smtpmail-remote',
-    pkg: '@valtimo-plugins/smtpmail',
-    remoteSubdir: 'remote',
-  },
+const PLUGIN_REPOS = [
+  // [sibling checkout dir, published npm package]
+  ['freemarker-plugin', '@valtimo-plugins/freemarker'],
+  ['smtpmail-plugin', '@valtimo-plugins/smtpmail'],
+  ['archief-plugin', '@valtimo-plugins/archief'],
+  ['berichten-api', '@valtimo-plugins/open-vtb'],
+  ['cloud-event-plugin', '@valtimo-plugins/cloud-event'],
+  ['externe-klanttaak-plugin', '@valtimo-plugins/externe-klanttaak'],
+  ['graph-mail-plugin', '@valtimo-plugins/graph-mail'],
+  ['haal-centraal-plugin', '@valtimo-plugins/haal-centraal'],
+  ['haal-centraal-auth-plugin', '@valtimo-plugins/haal-centraal-auth'],
+  ['hasura-plugin', '@valtimo-plugins/hasura-plugin'],
+  ['kvk-handelsregister-plugin', '@valtimo-plugins/kvk-handelsregister'],
+  ['lrk-import-plugin', '@valtimo-plugins/lrk-import-plugin'],
+  ['mtls-sslcontext-plugin', '@valtimo-plugins/mtls-sslcontext'],
+  ['notify-nl-plugin', '@valtimo-plugins/notify-nl'],
+  ['open-product-plugin', '@valtimo-plugins/open-product'],
+  ['openklant-plugin', '@valtimo-plugins/openklant'],
+  ['publictask-plugin', '@valtimo-plugins/publictask'],
+  ['samenwerkfunctionaliteit-plugin', '@valtimo-plugins/samenwerkfunctionaliteit-plugin'],
+  ['slack-plugin', '@valtimo-plugins/slack'],
+  ['socrates-plugin', '@valtimo-plugins/socrates'],
+  ['spotler-plugin', '@valtimo-plugins/spotler'],
+  ['suwinet-plugin', '@valtimo-plugins/suwinet'],
+  ['suwinet-auth-plugin', '@valtimo-plugins/suwinet-auth'],
+  ['token-authentication-plugin', '@valtimo-plugins/token-authentication'],
+  ['valtimo-llm-plugin', '@valtimo-plugins/valtimo-llm'],
+  ['valtimo-ocr-plugin', '@valtimo-plugins/valtimo-ocr'],
+  ['value-mapper-plugin', '@valtimo-plugins/value-mapper'],
+  ['xential-plugin', '@valtimo-plugins/xential'],
 ];
+
+const PLUGINS = PLUGIN_REPOS.map(([repo, pkg]) => {
+  const name = pkg.split('/').pop().replace(/-plugin$/, '');
+  return {name, pkg, remoteSubdir: 'remote', dist: `${repo}/frontend/dist/remote`};
+});
 
 const APPS = ['dev', 'gzac', 'valtimo', 'evenementenvergunning'];
 
