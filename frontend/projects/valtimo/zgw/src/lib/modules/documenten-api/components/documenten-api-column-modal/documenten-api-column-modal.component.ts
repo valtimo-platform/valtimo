@@ -43,7 +43,7 @@ import {
   DocumentenApiColumnModalTypeCloseEvent,
 } from '../../models';
 import {DocumentenApiColumnService} from '../../services';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {ZGW_DOCUMENT_COLUMNS_TEST_IDS} from '../../../../constants';
 
 @Component({
@@ -63,6 +63,7 @@ import {ZGW_DOCUMENT_COLUMNS_TEST_IDS} from '../../../../constants';
     RadioModule,
     NotificationModule,
     LayerModule,
+    ValtimoCdsModalDirective,
   ],
 })
 export class DocumentenApiColumnModalComponent implements OnInit, OnDestroy {

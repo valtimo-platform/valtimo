@@ -21,6 +21,12 @@
 
 ## Bugfixes
 
+* **Case list export now enforces the export permission**
+
+  The case list CSV export endpoint (`POST /api/v1/case/{caseDefinitionKey}/export`) now checks the `export` permission
+  before producing a file. A user without an applicable `export` permission for the case definition now receives a
+  403 (Forbidden) response instead of an empty CSV.
+
 * **Tooltips no longer stay on screen when the hovered element is removed**
 
   A tooltip shown for an element that was removed or re-rendered while hovered (for example on pages that
@@ -45,3 +51,16 @@
   When a plugin that uses the Notificatie API (such as the Verzoek plugin) is added, changed, or
   removed, its subscription is now updated reliably. Previously the remote subscription could end up
   out of sync with the saved configuration, and failures went unnoticed.
+
+* **Closing a dialog with the Esc key now works reliably**
+
+  Pressing Esc now reliably closes the open dialog, even when you first clicked somewhere inside it
+  that is not a button or input field. Previously the dialog could ignore Esc and had to be closed by
+  refreshing the page.
+
+## Security
+
+* Addressed the reported security alerts. The `sigstore` dependency was updated to a fixed version. The remaining
+  Angular alerts (hydration DOM clobbering, `HttpTransferCache` cache-key handling, and `formatDate` denial of
+  service) were reviewed as non-exploitable in Valtimo's browser-only SPA and remain tracked for the next major
+  Angular upgrade.
