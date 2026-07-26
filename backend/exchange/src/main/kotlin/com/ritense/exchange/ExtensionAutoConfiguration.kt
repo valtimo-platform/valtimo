@@ -19,6 +19,7 @@ package com.ritense.exchange
 import com.ritense.exchange.listener.BeanExtensionClassRegistrationListener
 import com.ritense.exchange.web.rest.ExtensionManagementResource
 import com.ritense.exchange.web.rest.ExtensionPublicResource
+import com.ritense.exchange.web.rest.ExtensionCatchAllSecurityConfigurer
 import com.ritense.exchange.web.rest.ExtensionSecurityConfigurer
 import jakarta.persistence.EntityManager
 import org.pf4j.update.UpdateManager
@@ -28,6 +29,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Lazy
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.core.io.support.ResourcePatternResolver
@@ -137,6 +140,23 @@ class ExtensionAutoConfiguration {
     @ConditionalOnMissingBean(ExtensionSecurityConfigurer::class)
     fun extensionSecurityConfigurer(): ExtensionSecurityConfigurer {
         return ExtensionSecurityConfigurer()
+    }
+
+    // Applied LAST so it only covers requests no host configurer matched — i.e.
+    // endpoints contributed by runtime-loaded extensions, which register after the
+    // security chain is built. Only active when the exchange sandbox is off
+    // (the default; security is out of scope for the exchange mechanism).
+    // Applied FIRST (highest precedence): the host chain calls anyRequest() and
+    // Spring forbids adding matchers after it, so a permit rule for extension
+    // endpoints must be registered before the host's rules. It permits everything,
+    // which is acceptable because security is explicitly out of scope for the
+    // exchange mechanism (disable with valtimo.extension.enforceWhitelist=true).
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ConditionalOnProperty(value = ["valtimo.extension.enforceWhitelist"], havingValue = "false", matchIfMissing = true)
+    @ConditionalOnMissingBean(ExtensionCatchAllSecurityConfigurer::class)
+    fun extensionCatchAllSecurityConfigurer(): ExtensionCatchAllSecurityConfigurer {
+        return ExtensionCatchAllSecurityConfigurer()
     }
 
     @Bean

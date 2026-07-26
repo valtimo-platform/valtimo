@@ -27,6 +27,8 @@ import org.pf4j.PluginStateListener
 import org.pf4j.PluginWrapper
 import org.pf4j.spring.ExtensionsInjector
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
+import org.springframework.context.ApplicationListener
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Component
 
 @SkipComponentScan
@@ -34,14 +36,27 @@ import org.springframework.stereotype.Component
 class ValtimoExtensionsInjector(
     private val extensionManager: ExtensionManager,
     private val extensionClassRegistrationListeners: List<ExtensionClassRegistrationListener>,
-) : PluginStateListener, ExtensionsInjector(
+) : PluginStateListener, ApplicationListener<ContextRefreshedEvent>, ExtensionsInjector(
     extensionManager,
     extensionManager.applicationContext.autowireCapableBeanFactory as AbstractAutowireCapableBeanFactory
 ) {
 
+    private val springDeployer = ExtensionSpringDeployer(extensionManager)
+    private var injected = false
+
     @PostConstruct
     fun init() {
         extensionManager.addPluginStateListener(this)
+    }
+
+    /**
+     * Deploy started extensions only once the host context is fully refreshed, so
+     * the datasource, EntityManagerFactory and RequestMappingHandlerMapping the
+     * deployer needs all exist. Doing this in @PostConstruct would run too early.
+     */
+    override fun onApplicationEvent(event: ContextRefreshedEvent) {
+        if (injected) return
+        injected = true
         injectExtensions()
     }
 
@@ -80,19 +95,12 @@ class ValtimoExtensionsInjector(
     }
 
     fun registerExtension(extension: PluginWrapper) {
-        // Register each extension class in isolation. A class that can't be
-        // wired into this host (e.g. a plugin PluginFactory whose collaborators
-        // aren't available as beans here) is logged and skipped, so the rest of
-        // the extension — and crucially its served frontend bundle — still load.
-        extensionManager.getExtensionClasses(extension.pluginId).forEach { extensionClass ->
-            try {
-                registerExtension(extensionClass)
-            } catch (e: Exception) {
-                logger.warn(e) {
-                    "Skipping extension class '${extensionClass.name}' of '${extension.pluginId}': could not register it in this host"
-                }
-            }
-        }
+        // Deploy the extension's whole backend (services, repositories, REST
+        // controllers, its Liquibase tables) into the host context — not just the
+        // pf4j @Extension classes — so an ordinary Valtimo plugin works end-to-end
+        // when dropped in as a jar. Each phase is isolated inside the deployer, so
+        // a plugin that only partially fits this host still loads what it can.
+        springDeployer.deploy(extension)
     }
 
     public override fun registerExtension(extensionClass: Class<*>) {
