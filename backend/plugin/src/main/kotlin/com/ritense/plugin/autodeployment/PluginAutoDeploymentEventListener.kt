@@ -32,7 +32,6 @@ import org.springframework.core.annotation.Order
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
-import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
 
 class PluginAutoDeploymentEventListener(
@@ -42,9 +41,9 @@ class PluginAutoDeploymentEventListener(
     private val eventPublisher: ApplicationEventPublisher
 ) {
 
-    @Order(Ordered.LOWEST_PRECEDENCE-1)
+    @Order(Ordered.LOWEST_PRECEDENCE - 1)
     @EventListener(ApplicationReadyEvent::class)
-    fun deployPluginConfigurations(){
+    fun deployPluginConfigurations() {
         logger.info { "Deploying all plugins from $PATH" }
         try {
             val resources = loadResources()

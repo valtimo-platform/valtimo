@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,12 +61,75 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
     this.applyStyleToModalElements();
 
     setTimeout(() => this.applyStyleToModalElements(), 0);
+
+    // Capture phase so this runs before Carbon's bubbling keydown HostListener, allowing us to
+    // preempt it. Listening on the document (not the host) makes ESC work regardless of focus.
+    this.document.addEventListener('keydown', this._onDocumentKeydown, true);
   }
 
   public ngOnDestroy(): void {
     this._mutationObserver?.disconnect();
     this.removeDocumentOverflowHidden();
+    this.document.removeEventListener('keydown', this._onDocumentKeydown, true);
   }
+
+  /**
+   * Closes the modal on ESC via the same path as the close (X) button.
+   *
+   * Carbon's built-in ESC handler mutates the modal's `open` field directly (bypassing the `[open]`
+   * binding) and calls `modalService.destroy()`, which can desync state or destroy an unrelated
+   * imperatively-created modal. Instead we preempt it and simulate a click on the close button,
+   * which fires the modal's own `(closeSelect)` handler.
+   */
+  private readonly _onDocumentKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    const visibleModals = this.document.querySelectorAll('.cds--modal.is-visible');
+    if (visibleModals.length === 0) {
+      return;
+    }
+
+    // Only the directive owning the top-most (last rendered) visible modal reacts. Matching the modal
+    // that directly owns the overlay (not merely an ancestor) ensures the correct handler acts when
+    // modals are nested/stacked, so ESC closes only the top modal.
+    const topModal = visibleModals[visibleModals.length - 1];
+    if (topModal.closest('cds-modal') !== this.elementRef.nativeElement) {
+      return;
+    }
+
+    // If a Carbon dropdown/combo-box menu is open, this ESC belongs to that menu, not the modal, so
+    // we do not close the modal — Carbon's own keydown handler closes the menu (updating its state
+    // and the DOM correctly, because it runs on the real event in Angular's zone). Detection spans
+    // the whole document: with `appendInline=false` the expanded list-box is detached to the body,
+    // and Carbon moves focus into it, so neither the marker nor the event target is inside the
+    // modal. A second ESC (menu closed, marker gone) falls through and closes the modal.
+    //
+    // We also shield the modal: `cds-combo-box` closes on ESC but, unlike `cds-dropdown`, does not
+    // stop propagation, so with focus still in its host the ESC would bubble up to the modal's ESC
+    // handler and close it too. When the focused element is inside a list-box host, a one-time
+    // keydown listener added here fires during the bubble phase after Carbon's own handler (which
+    // was registered earlier) and stops propagation before the event reaches the modal. (When focus
+    // is inside a detached menu the event never reaches the modal, so no shield is needed.)
+    if (this.document.querySelector('.cds--list-box--expanded')) {
+      const listBox = (event.target as HTMLElement | null)?.closest?.(
+        'cds-combo-box, cds-dropdown, cds-multi-select'
+      );
+      listBox?.addEventListener('keydown', (e: Event) => e.stopPropagation(), {once: true});
+      return;
+    }
+
+    event.stopImmediatePropagation();
+    event.preventDefault();
+
+    // Click this modal's own close (X) button — skipping close buttons of nested modals — so ESC
+    // runs exactly the same handling as the close button. Does nothing if there is no close button.
+    const closeButton = Array.from(
+      this.elementRef.nativeElement.querySelectorAll('.cds--modal-close') as NodeListOf<HTMLElement>
+    ).find(button => button.closest('cds-modal') === this.elementRef.nativeElement);
+    closeButton?.click();
+  };
 
   private handleMutations(mutations: MutationRecord[]): void {
     const OPEN_ATTRIBUTE_NAME = 'ng-reflect-open';
