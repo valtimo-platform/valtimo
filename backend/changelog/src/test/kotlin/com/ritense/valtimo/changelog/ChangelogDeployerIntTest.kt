@@ -110,4 +110,45 @@ internal class ChangelogDeployerIntTest : BaseIntegrationTest() {
         assertThat(changeset.get().md5sum).isEqualTo("7b30a822ba6369cfb1d7bb2a1adf0f92")
         assertThat(changeset.get().checksumType).isEqualTo(ChangesetCheckSumType.FILE_HASH)
     }
+
+    @Test
+    fun `should use default value when property is not set`() {
+        val content = """{"url": "${'$'}{SOME_UNSET_CHANGELOG_PROPERTY:https://default.example.com}"}"""
+
+        val result = changelogDeployer.resolveProperties(content)
+
+        assertThat(result).isEqualTo("""{"url": "https://default.example.com"}""")
+    }
+
+    @Test
+    fun `should prefer set property over default value`() {
+        System.setProperty("MY_SET_CHANGELOG_PROPERTY", "actual-value")
+        try {
+            val content = """{"value": "${'$'}{MY_SET_CHANGELOG_PROPERTY:default-value}"}"""
+
+            val result = changelogDeployer.resolveProperties(content)
+
+            assertThat(result).isEqualTo("""{"value": "actual-value"}""")
+        } finally {
+            System.clearProperty("MY_SET_CHANGELOG_PROPERTY")
+        }
+    }
+
+    @Test
+    fun `should resolve empty default to empty string`() {
+        val content = """{"suffix": "value=${'$'}{SOME_UNSET_CHANGELOG_PROPERTY:}"}"""
+
+        val result = changelogDeployer.resolveProperties(content)
+
+        assertThat(result).isEqualTo("""{"suffix": "value="}""")
+    }
+
+    @Test
+    fun `should leave placeholder untouched when property not set and no default`() {
+        val content = """{"value": "${'$'}{SOME_UNSET_CHANGELOG_PROPERTY}"}"""
+
+        val result = changelogDeployer.resolveProperties(content)
+
+        assertThat(result).isEqualTo(content)
+    }
 }
