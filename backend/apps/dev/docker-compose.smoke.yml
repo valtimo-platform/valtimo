@@ -1,0 +1,106 @@
+# Minimal boot stack for the release Docker-image smoke test.
+#
+# Boots a single backend image (gzac / valtimo / evenementenvergunning) against
+# the smallest set of dependencies it needs to reach full readiness: a Postgres
+# database and a Keycloak with the dev realm imported. RabbitMQ auto-config is
+# excluded by the apps, and OpenSearch/Gotenberg/ZGW are only used lazily, so
+# they are intentionally omitted here — the goal is "does this image boot and
+# migrate cleanly?", not a full functional environment.
+#
+# The image under test is injected via ${SMOKE_IMAGE}; the env block mirrors the
+# proven `gzac-backend` service in docker-compose.yaml, but points at the
+# in-network service names instead of host-gateway (no browser is involved).
+#
+# Usage (see backend_smoke_and_promote.yml):
+#   SMOKE_IMAGE=ghcr.io/<owner>/<repo>/gzac-backend:commit-production-<sha> \
+#     docker compose -f backend/apps/dev/docker-compose.smoke.yml up -d
+
+name: gzac-smoke
+
+services:
+    smoke-keycloak-database:
+        image: postgres:17.4
+        environment:
+            POSTGRES_USER: keycloak
+            POSTGRES_PASSWORD: keycloak
+
+    smoke-keycloak:
+        image: quay.io/keycloak/keycloak:26.6
+        depends_on:
+            - smoke-keycloak-database
+        environment:
+            KEYCLOAK_ADMIN: admin
+            KEYCLOAK_ADMIN_PASSWORD: admin
+            KC_DB: postgres
+            KC_DB_URL: jdbc:postgresql://smoke-keycloak-database/keycloak
+            KC_DB_USERNAME: keycloak
+            KC_DB_PASSWORD: keycloak
+            KC_HTTP_RELATIVE_PATH: /auth
+            KC_HOSTNAME_STRICT: false
+            KC_HOSTNAME_STRICT_HTTPS: false
+        volumes:
+            - ./imports/keycloak:/opt/keycloak/data/import
+        command:
+            - start-dev
+            - --import-realm
+            - --http-enabled=true
+            - --hostname-strict=false
+        healthcheck:
+            test: [ 'CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() == 200 ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/auth' ]
+            interval: 10s
+            timeout: 5s
+            retries: 60
+            start_period: 5s
+
+    smoke-database:
+        image: postgres:17.4
+        environment:
+            POSTGRES_USER: gzac
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: gzac
+
+    # The outbox module wires RabbitMQ beans at boot (even though the base config
+    # excludes the plain RabbitAutoConfiguration), so a broker + connection env
+    # are required for the context to start — independent of any plugin autodeploy.
+    smoke-rabbitmq:
+        image: rabbitmq:4.1-management
+
+    app:
+        image: ${SMOKE_IMAGE:?set SMOKE_IMAGE to the backend image under test}
+        depends_on:
+            smoke-keycloak:
+                condition: service_healthy
+            smoke-database:
+                condition: service_started
+            smoke-rabbitmq:
+                condition: service_started
+        environment:
+            SPRING_PROFILES_ACTIVE: dev
+            SPRING_DATASOURCE_URL: jdbc:postgresql://smoke-database:5432/gzac
+            SPRING_DATASOURCE_NAME: gzac
+            SPRING_DATASOURCE_USERNAME: gzac
+            SPRING_DATASOURCE_PASSWORD: password
+            SPRING_RABBITMQ_HOST: smoke-rabbitmq
+            SPRING_RABBITMQ_PORT: "5672"
+            SPRING_RABBITMQ_USERNAME: guest
+            SPRING_RABBITMQ_PASSWORD: guest
+            SPRING_RABBITMQ_SSL_ENABLED: "false"
+            # Actuator basic-auth creds have no defaults in the base config; the
+            # actuator security filter chain fails to wire without them.
+            SPRING_ACTUATOR_USERNAME: actuator
+            SPRING_ACTUATOR_PASSWORD: actuator
+            VALTIMO_APP_HOSTNAME: http://localhost:4200
+            SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://smoke-keycloak:8080/auth/realms/valtimo/protocol/openid-connect/certs
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI: http://smoke-keycloak:8080/auth/realms/valtimo
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI: http://smoke-keycloak:8080/auth/realms/valtimo
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKJWT_CLIENTID: valtimo-console
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTID: valtimo-user-m2m-client
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTSECRET: 6ef6ca16-6b86-482a-a3d9-0561704c1db9
+            VALTIMO_PLUGIN_ENCRYPTIONSECRET: abcdefghijklmnop
+            VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDORIGINS: http://localhost
+            VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDMETHODS: "*"
+            VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDHEADERS: "*"
+            VALTIMO_WEB_CORS_PATHS: /**
+            VALTIMO_CHANGELOG_PBAC_CLEARTABLES: "false"
+        ports:
+            - "8080:8080"
