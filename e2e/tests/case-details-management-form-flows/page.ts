@@ -53,9 +53,12 @@ export class CaseDetailsManagementFormFlowsPage {
   }
 
   get addFormFlowButton() {
-    // Two "Add new form flow" buttons exist when list is empty: toolbar + no-results panel.
+    // Label comes from formFlow.add ("Create new form flow").
+    // Two of these exist when the list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
-    return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add new form flow'});
+    return this.page
+      .getByLabel('Table action bar')
+      .getByRole('button', {name: 'Create new form flow', exact: true});
   }
 
   // Create modal: only a key field, no data-test-ids
@@ -64,7 +67,11 @@ export class CaseDetailsManagementFormFlowsPage {
   }
 
   get createFormFlowButton() {
-    return this.page.locator('cds-modal-footer').getByRole('button', {name: 'Create'});
+    // interface.create — exact, so it cannot also match the modal heading's
+    // "Create new form flow" if that ever moves into the footer.
+    return this.page
+      .locator('cds-modal-footer')
+      .getByRole('button', {name: 'Create', exact: true});
   }
 
   get cancelFormFlowButton() {

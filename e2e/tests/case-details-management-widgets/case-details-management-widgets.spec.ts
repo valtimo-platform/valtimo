@@ -21,6 +21,12 @@ import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 
 test.use({storageState: undefined});
 
+// Tests share a single context/page created in beforeAll and depend on each other
+// (create → assert properties → reorder → delete). Serial mode keeps them in one
+// group (so beforeAll/afterAll run exactly once despite fullyParallel) and skips the
+// remaining tests when one fails, instead of cascading "context closed" errors.
+test.describe.configure({mode: 'serial'});
+
 test.describe('Case details management — Widgets', () => {
   let context;
   let page;
@@ -82,7 +88,7 @@ test.describe('Case details management — Widgets', () => {
       'E2e Reorder Widget'
     );
 
-    await context.close();
+    if (context) await context.close();
   });
 
   // ─── 6.88 Add widget ─────────────────────────────────────────────

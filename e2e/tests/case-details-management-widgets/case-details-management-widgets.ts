@@ -25,7 +25,11 @@ export function createWidgetTestData() {
     tabKey: `e2e-widget-tab-${id}`,
     widgetTitle: `E2e Test Widget ${id}`,
     fieldTitle: 'Test Field',
-    valuePath: 'case:definitionId.name',
+    // The value-resolver advertises the paths in DocumentTableValueResolver.
+    // 'case:definitionId.name' was dropped in #776 (it never actually resolved —
+    // the list was stale); 'case:documentDefinitionId.name' is the current
+    // equivalent. 'case:definitionId' now exposes .key / .versionTag instead.
+    valuePath: 'case:documentDefinitionId.name',
   };
 }
 

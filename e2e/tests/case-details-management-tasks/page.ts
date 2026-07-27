@@ -72,9 +72,12 @@ export class CaseDetailsManagementTasksPage {
   // No data-test-ids in column modal — use cds-label + hasText
 
   get addColumnButton() {
-    // Two "Add column" buttons exist when list is empty: toolbar + no-results panel.
+    // Label comes from listColumn.addButtonText ("Create column").
+    // Two of these exist when the list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
-    return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add column'});
+    return this.page
+      .getByLabel('Table action bar')
+      .getByRole('button', {name: 'Create column', exact: true});
   }
 
   get columnTitleInput() {
@@ -111,17 +114,25 @@ export class CaseDetailsManagementTasksPage {
       .locator('cds-dropdown');
   }
 
+  // The column modal's primary button is label-switched on mode:
+  // add -> interface.create ("Create"), edit -> listColumn.save ("Save column").
+  // Only the add flow is exercised here.
   get columnSaveButton() {
-    return this.page.locator('cds-modal-footer').getByRole('button', {name: 'Save column'});
+    return this.page
+      .locator('cds-modal-footer')
+      .getByRole('button', {name: 'Create', exact: true});
   }
 
   // ─── Search Field Modal Elements ──────────────────────────────────
   // Search field modal uses data-testid attributes
 
   get addSearchFieldButton() {
-    // Two "Add search field" buttons exist when list is empty: toolbar + no-results panel.
+    // Label comes from searchFieldsOverview.add ("Create search field").
+    // Two of these exist when the list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
-    return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add search field'});
+    return this.page
+      .getByLabel('Table action bar')
+      .getByRole('button', {name: 'Create search field', exact: true});
   }
 
   get searchFieldKeyInput() {
@@ -167,6 +178,26 @@ export class CaseDetailsManagementTasksPage {
     }).toPass({timeout: 10_000});
   }
 
+  // Both task-management modals schedule a deferred wipe of their reactive form:
+  //   task-management-column-modal:        set show(false) -> setTimeout(resetForm, 240ms)
+  //   task-management-search-fields-modal: resetForm()     -> setTimeout(form.reset(), 240ms)
+  // (240ms = CARBON_CONSTANTS.modalAnimationMs). When the modal is reopened before
+  // that timer fires, the pending reset lands mid-fill and nulls whatever has already
+  // been typed — leaving the required control empty and the submit button disabled.
+  // Re-fill only what does not already hold the expected value, until everything sticks.
+  private async fillTextFields(fields: Array<{input: Locator; value: string}>) {
+    await expect(async () => {
+      for (const {input, value} of fields) {
+        if ((await input.inputValue()) !== value) {
+          await input.fill(value);
+        }
+      }
+      for (const {input, value} of fields) {
+        await expect(input).toHaveValue(value);
+      }
+    }).toPass({timeout: 10_000});
+  }
+
   // ─── Cleanup ───────────────────────────────────────────────────────
 
   async cleanupStaleColumns() {
@@ -190,12 +221,17 @@ export class CaseDetailsManagementTasksPage {
     await this.addColumnButton.click();
     await expect(this.columnKeyInput).toBeVisible();
 
-    if (column.title) {
-      await this.columnTitleInput.fill(column.title);
-    }
-    await this.columnKeyInput.fill(column.key);
+    const textFields = [
+      ...(column.title ? [{input: this.columnTitleInput, value: column.title}] : []),
+      {input: this.columnKeyInput, value: column.key},
+    ];
+
+    await this.fillTextFields(textFields);
     await this.fillValuePathManually(this.columnPathToggle, this.columnPathInput, column.path);
     await this.selectDropdownItem(this.columnDisplayTypeDropdown, column.displayType);
+    // A reset that lands after the first fill would have cleared these again, so
+    // re-verify (and re-fill) right before relying on the form being valid.
+    await this.fillTextFields(textFields);
     await expect(this.columnSaveButton).toBeEnabled();
     await this.columnSaveButton.click();
   }
@@ -216,8 +252,16 @@ export class CaseDetailsManagementTasksPage {
   async addSearchField(field: {title: string; key: string; path: string; dataType: string; matchType?: string; fieldType: string}) {
     await this.addSearchFieldButton.click();
     await expect(this.searchFieldKeyInput).toBeVisible();
-    await this.page.locator('[data-testid="task-management-search-title"]').fill(field.title);
-    await this.searchFieldKeyInput.fill(field.key);
+
+    const textFields = [
+      {
+        input: this.page.locator('[data-testid="task-management-search-title"]'),
+        value: field.title,
+      },
+      {input: this.searchFieldKeyInput, value: field.key},
+    ];
+
+    await this.fillTextFields(textFields);
     await this.fillValuePathManually(this.searchFieldPathToggle, this.searchFieldPathInput, field.path);
     await this.selectDropdownItem(this.searchFieldDataTypeDropdown, field.dataType);
     if (field.matchType) {
@@ -227,6 +271,7 @@ export class CaseDetailsManagementTasksPage {
       }
     }
     await this.selectDropdownItem(this.searchFieldFieldTypeDropdown, field.fieldType);
+    await this.fillTextFields(textFields);
     await expect(this.searchFieldSaveButton).toBeEnabled();
     await this.searchFieldSaveButton.click();
   }

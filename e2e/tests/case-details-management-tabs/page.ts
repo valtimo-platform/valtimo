@@ -36,8 +36,11 @@ export class CaseDetailsManagementTabsPage {
   }
 
   get addTabButton() {
-    // Toolbar button inside the tabs panel
-    return this.tabsPanel.getByRole('button', {name: /Add tab/i});
+    // Toolbar button inside the tabs panel.
+    // Label comes from caseManagement.tabManagement.addModal.addTab ("Create tab").
+    // Exact match so it does not also hit the modal's "Create" confirm button,
+    // which renders inside this same panel while the modal is open.
+    return this.tabsPanel.getByRole('button', {name: 'Create tab', exact: true});
   }
 
   get tabNameInput() {
@@ -49,8 +52,11 @@ export class CaseDetailsManagementTabsPage {
   }
 
   get addTabConfirmButton() {
-    // Primary "Add tab" button in the modal footer (only visible after a type is selected)
-    return this.page.locator('cds-modal-footer .valtimo-add-tab-modal__actions').getByRole('button', {name: /Add tab/i});
+    // Primary confirm button in the modal footer (only rendered once a tab type is
+    // selected). Label is interface.create ("Create"), not the toolbar's "Create tab".
+    return this.page
+      .locator('cds-modal-footer .valtimo-add-tab-modal__actions')
+      .getByRole('button', {name: 'Create', exact: true});
   }
 
   get modalCancelButton() {
@@ -67,8 +73,12 @@ export class CaseDetailsManagementTabsPage {
   }
 
   async switchToCaseDetailsTabs() {
-    await this.page.getByRole('tab', {name: 'Case details'}).click();
-    await this.page.getByRole('tab', {name: 'Tabs'}).click();
+    await this.page.getByRole('tab', {name: 'Case details', exact: true}).click();
+    await this.page.getByRole('tab', {name: 'Tabs', exact: true}).click();
+    // Fail here — inside beforeAll — rather than letting every test fail later on
+    // a panel that was never reached.
+    await expect(this.tabsPanel).toBeVisible();
+    await expect(this.addTabButton).toBeVisible();
   }
 
   async ensureDraftVersionSelected(): Promise<string> {
@@ -108,10 +118,29 @@ export class CaseDetailsManagementTabsPage {
     await this.addTabButton.click();
     await this.page.getByRole('button', {name: 'Widgets component'}).click();
     await expect(this.addTabConfirmButton).toBeVisible();
-    await this.tabNameInput.fill(title);
-    await this.tabKeyInput.fill(key);
+    await this.fillTabForm(title, key);
     await expect(this.addTabConfirmButton).toBeEnabled();
     await this.addTabConfirmButton.click();
+  }
+
+  /**
+   * Carbon's Modal steals focus ~100ms after the modal opens:
+   *   ngOnChanges({open}) -> setTimeout(() => focusInitialElement(), 100)
+   *   focusInitialElement() -> querySelector('[modal-primary-focus]').focus()
+   * The tab form only renders after a tab type is picked, so that deferred focus
+   * can land mid-fill and redirect the keystrokes to the first
+   * [modal-primary-focus] element (the name input) — leaving `key` empty and the
+   * Create button disabled. Fill both fields together and re-fill until both
+   * actually hold their value; a retry re-fills `name` too, clearing any text
+   * the steal appended to it.
+   */
+  private async fillTabForm(title: string, key: string) {
+    await expect(async () => {
+      await this.tabNameInput.fill(title);
+      await this.tabKeyInput.fill(key);
+      await expect(this.tabNameInput).toHaveValue(title);
+      await expect(this.tabKeyInput).toHaveValue(key);
+    }).toPass({timeout: 10_000});
   }
 
   async deleteTab(title: string) {
