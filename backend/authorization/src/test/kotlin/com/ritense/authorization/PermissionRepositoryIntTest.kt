@@ -141,33 +141,22 @@ internal class PermissionRepositoryIntTest : BaseIntegrationTest() {
 
         assertThat(permissions).hasSize(2)
 
-        assertThat(permissions[0].id).isNotNull
-        assertThat(permissions[0].resourceType).isEqualTo(Class.forName("com.ritense.authorization.testimpl.TestDocument"))
-        assertThat(permissions[0].actions.first()).isIn(
-            mutableListOf(
-                Action<TestDocument>(Action.VIEW_LIST),
-                Action<TestDocument>(Action.VIEW)
-            )
+        // Both permissions share the same roleKey and resourceType, so the ordering between them is not
+        // guaranteed by findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc. Assert their contents without
+        // relying on their relative order.
+        assertThat(permissions).allSatisfy { permission ->
+            assertThat(permission.id).isNotNull
+            assertThat(permission.resourceType).isEqualTo(Class.forName("com.ritense.authorization.testimpl.TestDocument"))
+            assertThat(permission.conditionContainer.conditions).hasSize(1)
+            assertThat(permission.conditionContainer.conditions[0].type).isEqualTo(FIELD)
+            assertTrue(permission.conditionContainer.conditions[0] is FieldPermissionCondition<*>)
+            assertThat((permission.conditionContainer.conditions[0] as FieldPermissionCondition<*>).field).isEqualTo("document.name")
+            assertThat((permission.conditionContainer.conditions[0] as FieldPermissionCondition<*>).operator).isEqualTo(EQUAL_TO)
+            assertThat((permission.conditionContainer.conditions[0] as FieldPermissionCondition<*>).value).isEqualTo("loan")
+        }
+        assertThat(permissions.map { it.actions.first() }).containsExactlyInAnyOrder(
+            Action<TestDocument>(Action.VIEW_LIST),
+            Action<TestDocument>(Action.VIEW)
         )
-        assertThat(permissions[0].conditionContainer.conditions).hasSize(1)
-        assertThat(permissions[0].conditionContainer.conditions[0].type).isEqualTo(FIELD)
-        assertTrue(permissions[0].conditionContainer.conditions[0] is FieldPermissionCondition<*>)
-        assertThat((permissions[0].conditionContainer.conditions[0] as FieldPermissionCondition<*>).field).isEqualTo("document.name")
-        assertThat((permissions[0].conditionContainer.conditions[0] as FieldPermissionCondition<*>).operator).isEqualTo(
-            EQUAL_TO
-        )
-        assertThat((permissions[0].conditionContainer.conditions[0] as FieldPermissionCondition<*>).value).isEqualTo("loan")
-
-        assertThat(permissions[1].id).isNotNull
-        assertThat(permissions[1].resourceType).isEqualTo(Class.forName("com.ritense.authorization.testimpl.TestDocument"))
-        assertThat(permissions[1].actions.first()).isEqualTo(Action<TestDocument>(Action.VIEW))
-        assertThat(permissions[1].conditionContainer.conditions).hasSize(1)
-        assertThat(permissions[1].conditionContainer.conditions[0].type).isEqualTo(FIELD)
-        assertTrue(permissions[1].conditionContainer.conditions[0] is FieldPermissionCondition<*>)
-        assertThat((permissions[1].conditionContainer.conditions[0] as FieldPermissionCondition<*>).field).isEqualTo("document.name")
-        assertThat((permissions[1].conditionContainer.conditions[0] as FieldPermissionCondition<*>).operator).isEqualTo(
-            EQUAL_TO
-        )
-        assertThat((permissions[1].conditionContainer.conditions[0] as FieldPermissionCondition<*>).value).isEqualTo("loan")
     }
 }
