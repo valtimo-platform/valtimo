@@ -86,7 +86,6 @@ applyDataGridPatch();
 export class FormIoModule {
   constructor(private translateService: TranslateService) {
     registerFormioFlatpickr();
-    setFormioFlatpickrLocale(this.translateService.currentLang);
     this.translateService.onLangChange.subscribe(({lang}) => setFormioFlatpickrLocale(lang));
   }
 }

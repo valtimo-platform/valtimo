@@ -1,4 +1,4 @@
-import flatpickr from 'flatpickr';
+ import flatpickr from 'flatpickr';
 import {Dutch} from 'flatpickr/dist/l10n/nl';
 import {Formio} from 'formiojs';
 
@@ -8,22 +8,36 @@ import {Formio} from 'formiojs';
  * For all active datepickers, the new language is set and the component instance is reloaded.
  * The new language is immediately visible without a window reload.
  */
-let activeLocale: 'nl' | 'en' = 'nl';
+const DEFAULT_LOCALE_KEY = 'en';
+
+const SUPPORTED_LOCALES: Record<string, object> = new Proxy(
+  {
+    en: (flatpickr as any).l10ns.default,
+    nl: Dutch,
+  },
+  {
+    get: (target, prop: string) => target[prop] ?? target[DEFAULT_LOCALE_KEY],
+  }
+);
+
+let activeLocale: string = DEFAULT_LOCALE_KEY;
 
 const activeInstances = new Set<any>();
 
-function getLocaleConfig(locale: 'nl' | 'en'): object {
-  return locale === 'en' ? (flatpickr as any).l10ns.default : Dutch;
+function getLocaleConfig(locale: string): object {
+  return SUPPORTED_LOCALES[locale];
 }
 
 export function setFormioFlatpickrLocale(langKey: string): void {
-  activeLocale = langKey === 'en' ? 'en' : 'nl';
+  activeLocale = langKey in SUPPORTED_LOCALES ? langKey : DEFAULT_LOCALE_KEY;
   const localeConfig = getLocaleConfig(activeLocale);
   activeInstances.forEach(instance => instance.set('locale', localeConfig));
 }
 
 export function registerFormioFlatpickr(): void {
-  flatpickr.l10ns.nl = Dutch;
+  Object.entries(SUPPORTED_LOCALES).forEach(([key, config]) => {
+    flatpickr.l10ns[key] = config as any;
+  });
 
   const formioFlatpickr: any = function (element: unknown, config: object) {
     const result = (flatpickr as any)(element, {...config, locale: activeLocale});
