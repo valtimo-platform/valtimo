@@ -52,6 +52,9 @@ import org.apache.commons.lang3.NotImplementedException
 import org.opensearch.index.query.Operator
 import org.opensearch.index.query.QueryBuilder
 import org.opensearch.index.query.QueryBuilders
+import org.opensearch.search.sort.SortBuilders
+import org.opensearch.search.sort.SortOrder
+import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -63,7 +66,10 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
+
+private val logger = KotlinLogging.logger {}
 
 @Transactional
 class JsonSchemaDocumentOpenSearchService(
@@ -385,17 +391,30 @@ class JsonSchemaDocumentOpenSearchService(
     }
 
     private fun executeSearch(combinedQuery: QueryBuilder, pageable: Pageable): Page<JsonSchemaDocument> {
-        val translatedSort = translateSort(pageable.sort)
-        val effectivePageable = if (pageable.isPaged) {
-            PageRequest.of(pageable.pageNumber, pageable.pageSize, translatedSort)
-        } else {
-            Pageable.unpaged(translatedSort)
+        val queryBuilder = NativeSearchQueryBuilder()
+            .withQuery(combinedQuery)
+            .withTrackTotalHitsUpTo(Int.MAX_VALUE)
+
+        if (pageable.isPaged) {
+            queryBuilder.withPageable(PageRequest.of(pageable.pageNumber, pageable.pageSize))
         }
 
-        val queryJson = combinedQuery.toString()
-        val dataQuery = StringQuery(queryJson, effectivePageable)
-        dataQuery.setTrackTotalHitsUpTo(Int.MAX_VALUE)
+        if (pageable.sort.isSorted) {
+            pageable.sort.forEach { order ->
+                val osField = when {
+                    order.property.startsWith(DOC_PREFIX) -> "content.${order.property.removePrefix(DOC_PREFIX)}.keyword"
+                    order.property.startsWith(CASE_PREFIX) -> order.property.removePrefix(CASE_PREFIX)
+                    else -> order.property
+                }
+                val sortOrder = if (order.isAscending) SortOrder.ASC else SortOrder.DESC
+                val sortBuilder = SortBuilders.fieldSort(osField)
+                    .order(sortOrder)
+                    .unmappedType("keyword")
+                queryBuilder.withSorts(sortBuilder)
+            }
+        }
 
+        val dataQuery = queryBuilder.build()
         val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
         val total = hits.totalHits
         val ids: List<String> = hits.searchHits.mapNotNull { it.id }
@@ -410,18 +429,6 @@ class JsonSchemaDocumentOpenSearchService(
         return PageImpl(orderedEntities, pageable, total)
     }
 
-    private fun translateSort(sort: Sort): Sort {
-        if (sort.isUnsorted) return sort
-        val orders = sort.map { order ->
-            val osField = when {
-                order.property.startsWith(DOC_PREFIX) -> "content.${order.property.removePrefix(DOC_PREFIX)}"
-                order.property.startsWith(CASE_PREFIX) -> order.property.removePrefix(CASE_PREFIX)
-                else -> order.property
-            }
-            if (order.isAscending) Sort.Order.asc(osField) else Sort.Order.desc(osField)
-        }.toList()
-        return Sort.by(orders)
-    }
 
     private fun buildGlobalSearchQuery(query: String, searchFields: List<SearchField>): QueryBuilder {
         val fieldMap = searchFields.associateBy { removePrefixes(it.path) }
