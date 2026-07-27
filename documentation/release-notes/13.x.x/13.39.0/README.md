@@ -46,6 +46,11 @@
   widget and access control. These texts now consistently use *dossier*. Dutch ZGW-related terms (such as
   *zaaktype* and *zaaknummer*) are unchanged.
 
+* **Sorting on columns in the case list**
+  
+  When sorting the columns, the default sorting would not be respected in some cases.
+  Additionally, when OpenSearch was used, sorting did not work. These issues have now been resolved.
+
 * **Notificatie API subscriptions are now reliably (re)registered when plugin configuration changes**
 
   When a plugin that uses the Notificatie API (such as the Verzoek plugin) is added, changed, or
