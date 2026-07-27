@@ -4,6 +4,10 @@
 **Release date 29-07-2026**
 {% endhint %}
 
+## Migration
+
+* [Backend migration](./back-end-migration.md)
+
 ## New Features
 
 * **New feature title**
@@ -11,6 +15,15 @@
   New feature explanation.
 
 ## Enhancements
+
+* **Backend libraries are now published to S3 (Sonatype Central is being phased out)**
+
+  From this version the Valtimo backend libraries are published to S3 in addition to Sonatype
+  Central. Publishing to Sonatype Central stops on **10 August 2026**; releases published
+  after that date are available only from S3 (versions already on Maven Central stay
+  there), so consumers must add the S3 repository to their
+  Gradle build before then. See [Backend migration](./back-end-migration.md) for
+  the steps.
 
 * **Better logging for Notificatie API subscriptions**
 
@@ -45,6 +58,11 @@
   OpenSearch and generic case list feature toggles, case statuses and tags, retention settings, the metroline
   widget and access control. These texts now consistently use *dossier*. Dutch ZGW-related terms (such as
   *zaaktype* and *zaaknummer*) are unchanged.
+
+* **Sorting on columns in the case list**
+  
+  When sorting the columns, the default sorting would not be respected in some cases.
+  Additionally, when OpenSearch was used, sorting did not work. These issues have now been resolved.
 
 * **Notificatie API subscriptions are now reliably (re)registered when plugin configuration changes**
 
