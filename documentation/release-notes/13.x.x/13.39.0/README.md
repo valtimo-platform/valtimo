@@ -87,6 +87,16 @@
   removed, its subscription is now updated reliably. Previously the remote subscription could end up
   out of sync with the saved configuration, and failures went unnoticed.
 
+* **Task permissions are re-evaluated after changing a task assignment**
+
+  Permission checks in the task detail dialog were cached, so after assigning a task to another user the
+  "Assign user" control stayed active even when the user no longer had the `assign` permission, and a second
+  attempt was only rejected by the backend. Permissions for the task are now re-evaluated after every
+  assignment change (including changes made by other users): the assign control is deactivated when the
+  `assign` permission is lost, and the dialog closes automatically when the `view` permission is lost.
+  For custom components, `PermissionService` now offers a public `invalidateResource(resource, identifier?)`
+  method to clear cached permission results.
+
 * **Closing a dialog with the Esc key now works reliably**
 
   Pressing Esc now reliably closes the open dialog, even when you first clicked somewhere inside it

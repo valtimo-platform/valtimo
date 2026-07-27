@@ -39,7 +39,19 @@ import {
   TaskService,
 } from '@valtimo/task';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, of, shareReplay, switchMap, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  EMPTY,
+  filter,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  take,
+} from 'rxjs';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 
 @Component({
@@ -104,7 +116,9 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     this.task$.pipe(filter(task => !!task)),
     this.canAssignUserToTask$,
   ]).pipe(
-    switchMap(([task, canAssign]) => (canAssign ? this.taskService.getCandidateUsers(task.id) : of([]))),
+    switchMap(([task, canAssign]) =>
+      canAssign ? this.taskService.getCandidateUsers(task.id) : of([])
+    ),
     shareReplay(1)
   );
 
@@ -113,7 +127,9 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     this.canAssignUserToTask$,
   ]).pipe(
     switchMap(([task, canAssign]) =>
-      canAssign ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content)) : of([])
+      canAssign
+        ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content))
+        : of([])
     ),
     shareReplay(1)
   );
@@ -158,12 +174,11 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
       this.taskService
         .assignTask(task.id, assignRequest)
         .pipe(
-          switchMap(() => this.taskService.getTask(task.id)),
+          switchMap(() => this.refreshTaskAfterAssignmentChange(task.id)),
           take(1)
         )
         .subscribe(response => {
-          this.refreshTask(response);
-          this.assignmentOfTaskChanged.emit();
+          this.handleAssignmentChangeResponse(response);
         });
     });
   }
@@ -174,14 +189,33 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
       this.taskService
         .unassignTask(task.id)
         .pipe(
-          switchMap(() => this.taskService.getTask(task.id)),
+          switchMap(() => this.refreshTaskAfterAssignmentChange(task.id)),
           take(1)
         )
         .subscribe(response => {
-          this.refreshTask(response);
-          this.assignmentOfTaskChanged.emit();
+          this.handleAssignmentChangeResponse(response);
         });
     });
+  }
+
+  private refreshTaskAfterAssignmentChange(taskId: string): Observable<any> {
+    // The new assignment can change the outcome of permission checks for this task,
+    // so drop cached permissions before the task is re-fetched and re-checked
+    this.permissionService.invalidateResource(TASK_DETAIL_PERMISSION_RESOURCE.task, taskId);
+
+    return this.taskService.getTask(taskId).pipe(
+      // a 403 or 404 means the user can no longer view the task
+      catchError(error => (error?.status === 403 || error?.status === 404 ? of(null) : EMPTY))
+    );
+  }
+
+  private handleAssignmentChangeResponse(response: any): void {
+    if (response) {
+      this.refreshTask(response);
+    } else {
+      this.onClose();
+    }
+    this.assignmentOfTaskChanged.emit();
   }
 
   private refreshTask(response: any): void {
