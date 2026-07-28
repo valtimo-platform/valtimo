@@ -41,6 +41,7 @@ class TestArtifactExporter : Exporter<TestArtifactExportRequest> {
             valtimoVersion = "",
             dependencies = emptyList(),
         ),
+        manifestDependencies = emptySet(),
     )
 }
 
@@ -51,6 +52,7 @@ class TestManifestDependencyExporter : Exporter<TestNestedExportRequest> {
         TestNestedExportRequest::class.java
 
     override fun export(request: TestNestedExportRequest) = ExportResult(
+        manifestArtifact = null,
         manifestDependencies = setOf(
             ArtifactDependency(
                 type = DependencyType.PLUGIN,

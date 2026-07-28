@@ -71,6 +71,7 @@ class ProcessLinkExporter(
                 )
             ),
             relatedRequests = relatedRequests,
+            manifestArtifact = null,
             manifestDependencies = manifestDependencies,
         )
     }

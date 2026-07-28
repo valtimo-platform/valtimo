@@ -86,6 +86,7 @@ class CaseDefinitionExporter(
                 valtimoVersion = "",
                 dependencies = emptyList(),
             ),
+            manifestDependencies = emptySet(),
         )
     }
 

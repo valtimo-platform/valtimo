@@ -78,6 +78,7 @@ class BuildingBlockProcessLinkExporter(
         return ExportResult(
             exportFiles = setOf(file),
             relatedRequests = buildingBlocks,
+            manifestArtifact = null,
             manifestDependencies = manifestDependencies,
         )
     }

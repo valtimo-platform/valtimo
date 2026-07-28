@@ -167,6 +167,7 @@ class ValtimoExportServiceTest {
     private inner class PluginDependencyExporter : Exporter<PluginDependencyRequest> {
         override fun supports() = PluginDependencyRequest::class.java
         override fun export(request: PluginDependencyRequest) = ExportResult(
+            manifestArtifact = null,
             manifestDependencies = setOf(
                 ArtifactDependency(
                     DependencyType.PLUGIN,
@@ -180,6 +181,7 @@ class ValtimoExportServiceTest {
     private inner class DuplicatePluginDependencyExporter : Exporter<DuplicatePluginDependencyRequest> {
         override fun supports() = DuplicatePluginDependencyRequest::class.java
         override fun export(request: DuplicatePluginDependencyRequest) = ExportResult(
+            manifestArtifact = null,
             manifestDependencies = setOf(
                 ArtifactDependency(
                     DependencyType.PLUGIN,
@@ -193,6 +195,7 @@ class ValtimoExportServiceTest {
     private inner class BuildingBlockDependencyExporter : Exporter<BuildingBlockDependencyRequest> {
         override fun supports() = BuildingBlockDependencyRequest::class.java
         override fun export(request: BuildingBlockDependencyRequest) = ExportResult(
+            manifestArtifact = null,
             manifestDependencies = setOf(
                 ArtifactDependency(
                     DependencyType.BUILDING_BLOCK,
