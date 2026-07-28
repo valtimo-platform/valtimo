@@ -136,6 +136,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_MIGRATION_URL/{migrationKey}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/status")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/start")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/dry-run")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/dry-run/status")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

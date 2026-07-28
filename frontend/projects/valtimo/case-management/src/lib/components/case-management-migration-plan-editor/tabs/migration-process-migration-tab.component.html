@@ -20,7 +20,7 @@
   }
 
   <div class="migration-tab__items" formArrayName="instructions">
-    @for (instruction of instructionsArray.controls; track $index) {
+    @for (instruction of instructionsArray.controls; track instruction) {
       <div class="migration-tab__card" [formGroupName]="$index">
         <div class="migration-tab__card-header">
           <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
@@ -75,7 +75,7 @@
         }
 
         <div class="migration-tab__mapping" formArrayName="mapActivities">
-          @for (mapping of mapActivitiesArray(instruction).controls; track $index) {
+          @for (mapping of mapActivitiesArray(instruction).controls; track mapping) {
             <div class="migration-tab__mapping-row" [formGroupName]="$index">
               @if (activitiesFor(instruction).sourceNodes.length) {
                 <cds-select
@@ -148,7 +148,7 @@
         </p>
 
         <div class="migration-tab__patches" formArrayName="setProcessVariables">
-          @for (variable of setProcessVariablesArray(instruction).controls; track $index) {
+          @for (variable of setProcessVariablesArray(instruction).controls; track variable) {
             <div class="migration-tab__patch" [formGroupName]="$index">
               <!-- Source (left) -->
               <div class="migration-tab__patch-side migration-tab__patch-side--from">

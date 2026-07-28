@@ -86,11 +86,24 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
   public readonly $isEdit = signal<boolean>(false);
   public readonly $caseDefinitionKey = signal<string | null>(null);
   public readonly $caseDefinitionVersionTag = signal<string | null>(null);
+  // The source (predecessor) version the plan migrates FROM (`basedOnVersionTag`); falls back to the
+  // plan's own version when there is no predecessor. Resolved asynchronously in loadProcessKeys().
+  public readonly $sourceVersionTag = signal<string | null>(null);
   // Memoized so the data-migration value-path selectors get a stable context reference each render.
   public readonly $caseContext = computed(() => ({
     caseDefinitionKey: this.$caseDefinitionKey(),
     caseDefinitionVersionTag: this.$caseDefinitionVersionTag(),
   }));
+  // The "from" side resolves against the source (predecessor) version, not the plan's own version.
+  public readonly $sourceCaseContext = computed(() => ({
+    caseDefinitionKey: this.$caseDefinitionKey(),
+    caseDefinitionVersionTag: this.$sourceVersionTag(),
+  }));
+  // Extra version tags to merge into the "to" list so source-only fields can be cleared to null.
+  public readonly $targetAdditionalVersionTags = computed(() => {
+    const sourceVersion = this.$sourceVersionTag();
+    return sourceVersion && sourceVersion !== this.$caseDefinitionVersionTag() ? [sourceVersion] : [];
+  });
   public readonly $runAfterOptions = signal<SelectItem[]>([]);
   // `key -> processDefinitionId` maps that scope the processMigration pickers AND drive the activity
   // lookups. A plan migrates FROM its predecessor (basedOnVersionTag) TO its own version, so the
@@ -324,6 +337,7 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
       .pipe(take(1))
       .subscribe(definition => {
         const sourceVersion = definition?.basedOnVersionTag || this._params.caseDefinitionVersionTag;
+        this.$sourceVersionTag.set(sourceVersion);
         this.linkedProcessDefinitions(sourceVersion)
           .pipe(take(1))
           .subscribe(defs => this.$sourceProcessDefs.set(defs));

@@ -35,9 +35,26 @@ interface MigrationExecutionError {
 
 interface MigrationExecutionStatus {
   status: CaseMigrationStatus;
+  /** Cases still needing migration; drops to 0 once the run has migrated its whole matching slice. */
   casesToMigrate: number;
+  /** Total cases the run is migrating (its matched slice) — the denominator of the progress display. */
+  casesTotal: number;
   casesMigrated: number;
   casesWithErrors: number;
+  errors: MigrationExecutionError[];
+  startedOn: string | null;
+  finishedOn: string | null;
+}
+
+/**
+ * The result of a plan's latest dry run: a simulation that migrates nothing, reporting how many
+ * matching cases would migrate, how many would fail, and — per failing case — the reason.
+ */
+interface DryRunStatus {
+  status: CaseMigrationStatus;
+  casesChecked: number;
+  casesWouldMigrate: number;
+  casesWouldFail: number;
   errors: MigrationExecutionError[];
   startedOn: string | null;
   finishedOn: string | null;
@@ -48,7 +65,9 @@ interface MigrationPlanManagement {
   title: string | null;
   source: string;
   target: string;
+  triggers: MigrationTriggers;
   status: MigrationExecutionStatus;
+  dryRun: DryRunStatus;
 }
 
 /** A single value-resolver patch of the `dataMigration` block of a migration plan. */
@@ -156,6 +175,7 @@ export {
   MigrationCondition,
   MigrationExecutionError,
   MigrationExecutionStatus,
+  DryRunStatus,
   MigrationPlanManagement,
   DataMigrationPatch,
   DataMigrationTargetType,

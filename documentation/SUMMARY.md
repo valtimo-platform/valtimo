@@ -129,7 +129,6 @@
     * [Case list tab order](features/case/for-developers/customizing-case-list-tabs.md)
     * [Custom case list columns](features/case/for-developers/custom-case-list-columns.md)
     * [Custom case tabs](features/case/for-developers/case-tabs.md)
-    * [Case migration](features/case/for-developers/case-migration.md)
     * [Custom case headers](features/case/for-developers/custom-case-headers.md)
     * [Register Angular component](features/case/for-developers/register-angular-component.md)
 * [🧱 Building blocks](features/building-blocks/README.md)

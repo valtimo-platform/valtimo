@@ -21,12 +21,17 @@ import com.ritense.case_.domain.migration.CaseDefinitionMigrationExecution
 import com.ritense.case_.domain.migration.CaseMigrationCase
 import com.ritense.case_.domain.migration.CaseMigrationCaseId
 import com.ritense.case_.domain.migration.CaseMigrationCaseStatus
+import com.ritense.case_.domain.migration.CaseMigrationDryRun
+import com.ritense.case_.domain.migration.CaseMigrationDryRunCase
 import com.ritense.case_.domain.migration.CaseMigrationStatus
+import com.ritense.case_.domain.migration.DryRunCaseStatus
 import com.ritense.case_.domain.migration.MigrationExecutionError
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
+import com.ritense.case_.repository.CaseMigrationDryRunCaseRepository
+import com.ritense.case_.repository.CaseMigrationDryRunRepository
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
@@ -72,6 +77,8 @@ class CaseMigrationService(
     private val caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
     private val executionRepository: CaseDefinitionMigrationExecutionRepository,
     private val caseMigrationCaseRepository: CaseMigrationCaseRepository,
+    private val dryRunRepository: CaseMigrationDryRunRepository,
+    private val dryRunCaseRepository: CaseMigrationDryRunCaseRepository,
     private val documentRepository: JsonSchemaDocumentRepository,
     private val conditionEvaluator: MigrationConditionEvaluator,
     private val candidateProviders: List<MigrationCandidateProvider>,
@@ -87,6 +94,8 @@ class CaseMigrationService(
         transactionTemplate.executeWithoutResult {
             componentDeployers.forEach { it.undeploy(migrationId) }
             caseMigrationCaseRepository.deleteByIdMigrationId(migrationId)
+            dryRunCaseRepository.deleteByIdMigrationId(migrationId)
+            dryRunRepository.findById(migrationId).ifPresent { dryRunRepository.delete(it) }
             executionRepository.findById(migrationId).ifPresent { executionRepository.delete(it) }
             caseDefinitionMigrationRepository.findById(migrationId).ifPresent {
                 caseDefinitionMigrationRepository.delete(it)
@@ -114,6 +123,7 @@ class CaseMigrationService(
                         .filter { it.getComponentToExport(plan.id) != null }
                         .map { it.componentKey() },
                     status = getStatus(plan.id),
+                    dryRun = getDryRunStatus(plan.id),
                 )
             }
     }
@@ -134,6 +144,9 @@ class CaseMigrationService(
             return executionRepository.findById(migrationId).orElseThrow()
         }
 
+        // A real run makes the latest dry run stale (it simulated the pre-migration state), so drop it.
+        clearDryRun(migrationId)
+
         return try {
             migrateMatchingCases(migrationId, plan, runToken)
             finalize(migrationId, runToken)
@@ -148,17 +161,73 @@ class CaseMigrationService(
         val execution = executionRepository.findById(migrationId).orElse(null)
             ?: return notStartedStatus(migrationId)
         val casesMigrated = caseMigrationCaseRepository
-            .countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.MIGRATED)
+            .countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.MIGRATED).toInt()
         val failedCases = caseMigrationCaseRepository
             .findByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.FAILED)
+        val casesTotal = execution.casesToMigrate
+        // Cases still needing migration = the run's matched slice minus those already migrated or failed.
+        // Reaches 0 once every matching case has been processed.
+        val casesToMigrate = (casesTotal - casesMigrated - failedCases.size).coerceAtLeast(0)
         return MigrationExecutionStatusDto(
             status = execution.status,
-            casesToMigrate = execution.casesToMigrate,
-            casesMigrated = casesMigrated.toInt(),
+            casesToMigrate = casesToMigrate,
+            casesTotal = casesTotal,
+            casesMigrated = casesMigrated,
             casesWithErrors = failedCases.size,
             errors = failedCases.map { MigrationExecutionError(it.id.caseId, it.errorMessage) },
             startedOn = execution.startedOn,
             finishedOn = execution.finishedOn,
+        )
+    }
+
+    /**
+     * Start a **dry run** of the migration plan: simulate migrating every matching case — running
+     * the real per-case migration ([applyMigration]) inside a transaction that is always rolled
+     * back — and record, per case, whether it would migrate or fail (and why). Persists **nothing**
+     * to the cases: no document is re-homed, no process is migrated, no [CaseMigratedEvent] is
+     * published, and (crucially) no real-run [CaseMigrationCase] `MIGRATED` row is written, so a
+     * dry run never influences whether a later real run migrates or skips a case.
+     *
+     * Each dry run starts fresh (prior per-case results are cleared on claim). Does nothing if a dry
+     * run is already in progress elsewhere (a live lease), and stops cleanly if fenced by a takeover.
+     */
+    fun startDryRun(migrationId: BlueprintMigrationId): DryRunStatusDto {
+        val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
+            NoSuchElementException("No migration plan found for '$migrationId'")
+        }
+
+        val runToken = claimDryRun(migrationId)
+        if (runToken == null) {
+            logger.debug { "Dry run for migration plan '$migrationId' is already in progress; skipping" }
+            return getDryRunStatus(migrationId)
+        }
+
+        return try {
+            dryRunMatchingCases(migrationId, plan, runToken)
+            finalizeDryRun(migrationId, runToken)
+            getDryRunStatus(migrationId)
+        } catch (e: MigrationOwnershipLostException) {
+            logger.info { "Stopped dry run for migration plan '$migrationId': ${e.message}" }
+            getDryRunStatus(migrationId)
+        }
+    }
+
+    /** Assemble the latest dry-run status (counts and errors come from the per-case dry-run table). */
+    fun getDryRunStatus(migrationId: BlueprintMigrationId): DryRunStatusDto {
+        val dryRun = dryRunRepository.findById(migrationId).orElse(null)
+            ?: return DryRunStatusDto.NOT_STARTED
+        val wouldMigrate = dryRunCaseRepository
+            .countByIdMigrationIdAndStatus(migrationId, DryRunCaseStatus.WOULD_MIGRATE).toInt()
+        val wouldFail = dryRunCaseRepository
+            .findByIdMigrationIdAndStatus(migrationId, DryRunCaseStatus.WOULD_FAIL)
+        return DryRunStatusDto(
+            status = dryRun.status,
+            casesChecked = wouldMigrate + wouldFail.size,
+            casesWouldMigrate = wouldMigrate,
+            casesWouldFail = wouldFail.size,
+            errors = wouldFail.map { MigrationExecutionError(it.id.caseId, it.errorMessage) },
+            startedOn = dryRun.startedOn,
+            finishedOn = dryRun.finishedOn,
         )
     }
 
@@ -183,7 +252,7 @@ class CaseMigrationService(
     private fun notStartedStatus(migrationId: BlueprintMigrationId): MigrationExecutionStatusDto {
         val estimate = caseDefinitionMigrationRepository.findById(migrationId).orElse(null)
             ?.estimatedCasesToMigrate ?: 0
-        return MigrationExecutionStatusDto.NOT_STARTED.copy(casesToMigrate = estimate)
+        return MigrationExecutionStatusDto.NOT_STARTED.copy(casesToMigrate = estimate, casesTotal = estimate)
     }
 
     /**
@@ -316,10 +385,7 @@ class CaseMigrationService(
                 if (caseMigrationCaseRepository.existsByIdAndStatus(caseRecordId, CaseMigrationCaseStatus.MIGRATED)) {
                     return@executeWithoutResult // already migrated (idempotent re-run)
                 }
-                // Re-home the case onto the target blueprint version first (independent of which
-                // components run), so component writes are validated against the target schema.
-                val fromVersionTag = attachToTarget(caseId, target)
-                componentExecutors.forEach { it.execute(migrationId, target, caseId) }
+                val fromVersionTag = applyMigration(migrationId, target, caseId)
                 caseMigrationCaseRepository.save(CaseMigrationCase(caseRecordId, CaseMigrationCaseStatus.MIGRATED))
                 // Record the migration on the case's audit trail (in the same transaction, so it is
                 // present exactly when the case is recorded migrated — and rolled back if it is not).
@@ -385,6 +451,210 @@ class CaseMigrationService(
     }
 
     /**
+     * The heart of migrating a single case, shared by the real run and the dry run: re-home the case
+     * onto the [target] blueprint version first (independent of which components run, so component
+     * writes are validated against the target schema), then run every registered component executor.
+     * Runs in the caller's transaction. Returns the source version tag the document was on before the
+     * re-home (for the audit trail). The real run commits this; the dry run rolls it back.
+     */
+    private fun applyMigration(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID): String {
+        val fromVersionTag = attachToTarget(caseId, target)
+        componentExecutors.forEach { it.execute(migrationId, target, caseId) }
+        return fromVersionTag
+    }
+
+    /**
+     * Simulate migrating [caseId]: run the real [applyMigration] inside a transaction, then force a
+     * rollback so nothing is persisted — capturing whether the case would migrate or fail. Because
+     * the process engine shares the application's transaction manager and datasource, the rollback
+     * cleanly undoes both the data migration and the (synchronous) process migration. The outcome is
+     * recorded in its own (separate, committed) transaction so it survives the rollback.
+     */
+    private fun simulateCase(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID, runToken: String) {
+        try {
+            transactionTemplate.executeWithoutResult {
+                assertDryRunOwnership(migrationId, runToken) // stop if another node has taken over
+                applyMigration(migrationId, target, caseId)
+                throw DryRunRollback // undo the simulated migration; commit nothing
+            }
+        } catch (e: DryRunRollback) {
+            recordDryRunOutcome(migrationId, caseId, DryRunCaseStatus.WOULD_MIGRATE, null, runToken)
+        } catch (e: MigrationOwnershipLostException) {
+            throw e // propagate: this node has been fenced, stop the dry run
+        } catch (e: Exception) {
+            logger.debug(e) { "Dry run: case '$caseId' would fail in plan '$migrationId'" }
+            recordDryRunOutcome(migrationId, caseId, DryRunCaseStatus.WOULD_FAIL, e, runToken)
+        }
+    }
+
+    private fun recordDryRunOutcome(
+        migrationId: BlueprintMigrationId,
+        caseId: UUID,
+        status: DryRunCaseStatus,
+        error: Throwable?,
+        runToken: String,
+    ) {
+        val stackTrace = error?.let { StringWriter().also { w -> it.printStackTrace(PrintWriter(w)) }.toString() }
+        transactionTemplate.executeWithoutResult {
+            assertDryRunOwnership(migrationId, runToken)
+            dryRunCaseRepository.save(
+                CaseMigrationDryRunCase(CaseMigrationCaseId(migrationId, caseId.toString()), status, stackTrace)
+            )
+        }
+    }
+
+    /**
+     * Enumerate the candidate cases page-by-page and simulate migrating the ones whose conditions
+     * currently hold. Mirrors [migrateMatchingCases] but persists nothing to the cases — every
+     * matching case's simulated outcome (or a condition-evaluation failure) is recorded in the
+     * dry-run table. The lease is renewed as the scan progresses.
+     */
+    private fun dryRunMatchingCases(
+        migrationId: BlueprintMigrationId,
+        plan: CaseDefinitionMigration,
+        runToken: String,
+    ) {
+        val target = resolveTarget(migrationId)
+        val source = resolveSource(target)
+        val provider = candidateProvider(source.blueprintType()) ?: return
+
+        val renewInterval = leaseDuration.dividedBy(2)
+        var leaseRenewedAt = LocalDateTime.now()
+        var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
+
+        while (true) {
+            val page = provider.findCandidateIds(source, pageable)
+
+            page.content.forEach { caseId ->
+                if (matchesConditionsForDryRun(migrationId, plan, caseId, runToken)) {
+                    simulateCase(migrationId, target, caseId, runToken)
+                }
+                if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
+                    renewDryRunLease(migrationId, runToken)
+                    leaseRenewedAt = LocalDateTime.now()
+                }
+            }
+
+            if (!page.hasNext()) break
+            pageable = page.nextPageable()
+        }
+    }
+
+    /**
+     * Whether the case's conditions currently hold, for a dry run. A case whose conditions cannot be
+     * evaluated is recorded as a dry-run failure (WOULD_FAIL) and treated as not matching.
+     */
+    private fun matchesConditionsForDryRun(
+        migrationId: BlueprintMigrationId,
+        plan: CaseDefinitionMigration,
+        caseId: UUID,
+        runToken: String,
+    ): Boolean {
+        return try {
+            transactionTemplate.execute { conditionEvaluator.matches(caseId, plan.conditions) } ?: false
+        } catch (e: Exception) {
+            logger.warn(e) { "Could not evaluate conditions for case '$caseId' in dry run of plan '$migrationId'" }
+            recordDryRunOutcome(migrationId, caseId, DryRunCaseStatus.WOULD_FAIL, e, runToken)
+            false
+        }
+    }
+
+    /**
+     * Become the single active dry-run runner: move the dry run to RUNNING with a fresh fencing token
+     * and lease (unless another dry run holds it with a live lease), and clear the previous per-case
+     * results so this run starts fresh. Returns the token, or null when it is already owned or a
+     * concurrent claim won the optimistic-lock/insert race.
+     */
+    private fun claimDryRun(migrationId: BlueprintMigrationId): String? {
+        var runToken: String? = null
+        try {
+            transactionTemplate.executeWithoutResult {
+                val dryRun = dryRunRepository.findById(migrationId)
+                    .orElseGet { CaseMigrationDryRun(migrationId) }
+                if (dryRun.status == CaseMigrationStatus.RUNNING && isLeaseLive(dryRun.leaseExpiresAt)) {
+                    return@executeWithoutResult // another node is actively running it
+                }
+                val token = UUID.randomUUID().toString()
+                dryRun.status = CaseMigrationStatus.RUNNING
+                dryRun.runToken = token
+                dryRun.startedOn = LocalDateTime.now()
+                dryRun.finishedOn = null
+                dryRun.leaseExpiresAt = LocalDateTime.now().plus(leaseDuration)
+                dryRunRepository.save(dryRun)
+                dryRunCaseRepository.deleteByIdMigrationId(migrationId) // fresh results for this run
+                runToken = token
+            }
+        } catch (e: OptimisticLockingFailureException) {
+            return null // another dry run claimed it first
+        } catch (e: DataIntegrityViolationException) {
+            return null // another dry run inserted the row first
+        }
+        return runToken
+    }
+
+    private fun finalizeDryRun(migrationId: BlueprintMigrationId, runToken: String): CaseMigrationDryRun {
+        val hasErrors = dryRunCaseRepository
+            .countByIdMigrationIdAndStatus(migrationId, DryRunCaseStatus.WOULD_FAIL) > 0
+        return updateDryRun(migrationId, runToken) { dryRun ->
+            dryRun.status = if (hasErrors) {
+                CaseMigrationStatus.COMPLETED_WITH_ERRORS
+            } else {
+                CaseMigrationStatus.COMPLETED
+            }
+            dryRun.finishedOn = LocalDateTime.now()
+            dryRun.leaseExpiresAt = null // release the lease
+            dryRun.runToken = null
+        }
+    }
+
+    private fun renewDryRunLease(migrationId: BlueprintMigrationId, runToken: String) {
+        updateDryRun(migrationId, runToken) { it.leaseExpiresAt = LocalDateTime.now().plus(leaseDuration) }
+    }
+
+    /**
+     * Drop the plan's latest dry run entirely (status row and per-case results). Called when a real run
+     * starts, so the UI never shows a now-stale dry run (it simulated the pre-migration state) next to
+     * the real run. After this, [getDryRunStatus] reports [DryRunStatusDto.NOT_STARTED] again.
+     */
+    private fun clearDryRun(migrationId: BlueprintMigrationId) {
+        transactionTemplate.executeWithoutResult {
+            dryRunCaseRepository.deleteByIdMigrationId(migrationId)
+            dryRunRepository.findById(migrationId).ifPresent { dryRunRepository.delete(it) }
+        }
+    }
+
+    private fun assertDryRunOwnership(migrationId: BlueprintMigrationId, runToken: String) {
+        val dryRun = dryRunRepository.findById(migrationId).orElseThrow()
+        if (dryRun.runToken != runToken) {
+            throw MigrationOwnershipLostException("Dry run of migration plan '${dryRun.id}' was taken over by another run")
+        }
+    }
+
+    /**
+     * Mutate and save the dry run, but only while this run still owns it (fencing token unchanged and
+     * optimistic lock held). Ownership loss surfaces as [MigrationOwnershipLostException] so the dry
+     * run stops cleanly.
+     */
+    private fun updateDryRun(
+        migrationId: BlueprintMigrationId,
+        runToken: String,
+        mutate: (CaseMigrationDryRun) -> Unit,
+    ): CaseMigrationDryRun {
+        return try {
+            transactionTemplate.execute {
+                val dryRun = dryRunRepository.findById(migrationId).orElseThrow()
+                if (dryRun.runToken != runToken) {
+                    throw MigrationOwnershipLostException("Dry run of migration plan '$migrationId' was taken over by another run")
+                }
+                mutate(dryRun)
+                dryRunRepository.save(dryRun)
+            }!!
+        } catch (e: OptimisticLockingFailureException) {
+            throw MigrationOwnershipLostException("Concurrent modification of dry run for migration plan '$migrationId'")
+        }
+    }
+
+    /**
      * Detach the case document [caseId] from its source blueprint version and attach it to the
      * [target] version: keep the document-definition name but point the `documentDefinitionId` at
      * the target blueprint (case definition or building block definition), then persist it. Runs for
@@ -440,7 +710,11 @@ class CaseMigrationService(
     }
 
     private fun isLeaseLive(execution: CaseDefinitionMigrationExecution): Boolean {
-        return execution.leaseExpiresAt?.isAfter(LocalDateTime.now()) == true
+        return isLeaseLive(execution.leaseExpiresAt)
+    }
+
+    private fun isLeaseLive(leaseExpiresAt: LocalDateTime?): Boolean {
+        return leaseExpiresAt?.isAfter(LocalDateTime.now()) == true
     }
 
     private fun assertOwnership(migrationId: BlueprintMigrationId, runToken: String) {
@@ -473,6 +747,16 @@ class CaseMigrationService(
         } catch (e: OptimisticLockingFailureException) {
             throw MigrationOwnershipLostException("Concurrent modification of migration plan '$migrationId'")
         }
+    }
+
+    /**
+     * Thrown at the end of a successful dry-run simulation to force the surrounding transaction to
+     * roll back, so nothing the simulation did is committed. A singleton with no stacktrace (it is
+     * control flow, thrown once per simulated case, not a real error).
+     */
+    private object DryRunRollback : RuntimeException() {
+        private fun readResolve(): Any = DryRunRollback
+        override fun fillInStackTrace(): Throwable = this
     }
 
     private companion object {

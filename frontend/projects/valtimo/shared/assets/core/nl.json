@@ -837,7 +837,7 @@
           "targetTypeAuto": "Auto"
         },
         "processMigration": {
-          "description": "Migreer lopende procesinstanties naar de procesdefinities van deze zaakversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit. Dit wordt één-op-één vertaald naar een Operaton-migratieplan.",
+          "description": "Migreer lopende procesinstanties naar de procesdefinities van deze zaakversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit.",
           "empty": "Nog geen procesmigraties geconfigureerd.",
           "addInstruction": "Procesmigratie toevoegen",
           "sourceProcess": "Bronproces",
@@ -891,7 +891,18 @@
         "title": "Migratie starten",
         "content": "Weet je zeker dat je deze migratie nu wilt starten? De overeenkomende dossiers worden gemigreerd."
       },
-      "duplicateSuffix": "kopie",
+      "dryRun": "Testrun",
+      "dryRunModal": {
+        "title": "Testrun starten",
+        "content": "Simuleer dit migratieplan voor alle overeenkomende dossiers zonder er ook maar één te migreren? Er wordt niets gewijzigd; je krijgt een overzicht van welke dossiers zouden migreren en welke zouden mislukken."
+      },
+      "dryRunResults": {
+        "heading": "Laatste testrun",
+        "casesChecked": "Gecontroleerde dossiers",
+        "casesWouldMigrate": "Zouden migreren",
+        "casesWouldFail": "Zouden mislukken",
+        "errorsHeading": "Dossiers die zouden mislukken"
+      },
       "duplicateSuffix": "kopie",
       "columns": {
         "plan": "Migratieplan",
@@ -3607,6 +3618,7 @@
     },
     "migration": {
       "addPlan": "Migratieplan toevoegen",
+      "addPlanDisabledHint": "Deze versie heeft geen voorganger om vanaf te migreren, dus er kan geen migratieplan voor worden aangemaakt.",
       "startNow": "Migratie nu starten",
       "errorCount": "{{count}} fouten",
       "duplicateSuffix": "kopie",
@@ -3656,7 +3668,7 @@
           "targetTypeAuto": "Auto"
         },
         "processMigration": {
-          "description": "Migreer lopende procesinstanties naar de doel-procesdefinitie. Koppel de activiteiten van het bronproces aan die van het doelproces. Dit wordt één-op-één vertaald naar een Operaton-migratieplan.",
+          "description": "Migreer lopende procesinstanties naar de doel-procesdefinitie. Koppel de activiteiten van het bronproces aan die van het doelproces.",
           "empty": "Nog geen procesmigraties geconfigureerd.",
           "addInstruction": "Procesmigratie toevoegen",
           "sourceProcess": "Bronproces",
@@ -3689,6 +3701,18 @@
       "startModal": {
         "title": "Migratie starten",
         "content": "Weet je zeker dat je deze migratie nu wilt starten? De overeenkomende bouwblokken worden gemigreerd."
+      },
+      "dryRun": "Testrun",
+      "dryRunModal": {
+        "title": "Testrun starten",
+        "content": "Simuleer dit migratieplan voor alle overeenkomende bouwblokken zonder er ook maar één te migreren? Er wordt niets gewijzigd; je krijgt een overzicht van welke bouwblokken zouden migreren en welke zouden mislukken."
+      },
+      "dryRunResults": {
+        "heading": "Laatste testrun",
+        "casesChecked": "Gecontroleerde bouwblokken",
+        "casesWouldMigrate": "Zouden migreren",
+        "casesWouldFail": "Zouden mislukken",
+        "errorsHeading": "Bouwblokken die zouden mislukken"
       },
       "columns": {
         "plan": "Migratieplan",

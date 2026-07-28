@@ -20,7 +20,7 @@
   </p>
 
   <div class="migration-tab__patches" formArrayName="patches">
-    @for (patch of patchesArray.controls; track $index) {
+    @for (patch of patchesArray.controls; track patch) {
       <div class="migration-tab__patch" [formGroupName]="$index">
         <!-- Source (left) -->
         <div class="migration-tab__patch-side migration-tab__patch-side--from">
@@ -72,6 +72,7 @@
             formControlName="target"
             [buildingBlockDefinitionKey]="targetContext?.buildingBlockKey ?? null"
             [buildingBlockDefinitionVersionTag]="targetContext?.buildingBlockVersionTag ?? null"
+            [additionalVersionTags]="targetAdditionalVersionTags"
             [label]="'buildingBlockManagement.migration.editor.dataMigration.target' | translate"
             [prefixes]="TARGET_PREFIXES"
             [notation]="'slashes'"

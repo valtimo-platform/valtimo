@@ -67,6 +67,8 @@ import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
+import com.ritense.case_.repository.CaseMigrationDryRunCaseRepository
+import com.ritense.case_.repository.CaseMigrationDryRunRepository
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.case_.repository.HiddenCaseListColumnRepository
@@ -648,6 +650,8 @@ class CaseAutoConfiguration {
         caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
         caseDefinitionMigrationExecutionRepository: CaseDefinitionMigrationExecutionRepository,
         caseMigrationCaseRepository: CaseMigrationCaseRepository,
+        caseMigrationDryRunRepository: CaseMigrationDryRunRepository,
+        caseMigrationDryRunCaseRepository: CaseMigrationDryRunCaseRepository,
         documentRepository: JsonSchemaDocumentRepository,
         migrationConditionEvaluator: MigrationConditionEvaluator,
         migrationCandidateProviders: List<MigrationCandidateProvider>,
@@ -660,6 +664,8 @@ class CaseAutoConfiguration {
         caseDefinitionMigrationRepository,
         caseDefinitionMigrationExecutionRepository,
         caseMigrationCaseRepository,
+        caseMigrationDryRunRepository,
+        caseMigrationDryRunCaseRepository,
         documentRepository,
         migrationConditionEvaluator,
         migrationCandidateProviders,

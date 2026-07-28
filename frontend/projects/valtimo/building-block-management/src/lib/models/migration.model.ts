@@ -44,9 +44,26 @@ interface MigrationExecutionError {
 
 interface MigrationExecutionStatus {
   status: BuildingBlockMigrationStatus;
+  /** Cases still needing migration; drops to 0 once the run has migrated its whole matching slice. */
   casesToMigrate: number;
+  /** Total cases the run is migrating (its matched slice) — the denominator of the progress display. */
+  casesTotal: number;
   casesMigrated: number;
   casesWithErrors: number;
+  errors: MigrationExecutionError[];
+  startedOn: string | null;
+  finishedOn: string | null;
+}
+
+/**
+ * The result of a plan's latest dry run: a simulation that migrates nothing, reporting how many
+ * matching building blocks would migrate, how many would fail, and — per failing one — the reason.
+ */
+interface DryRunStatus {
+  status: BuildingBlockMigrationStatus;
+  casesChecked: number;
+  casesWouldMigrate: number;
+  casesWouldFail: number;
   errors: MigrationExecutionError[];
   startedOn: string | null;
   finishedOn: string | null;
@@ -61,6 +78,7 @@ interface MigrationPlanManagement {
   conditions: MigrationCondition[];
   components: string[];
   status: MigrationExecutionStatus;
+  dryRun: DryRunStatus;
 }
 
 type DataMigrationTargetType = 'string' | 'integer' | 'long' | 'number' | 'double' | 'boolean';
@@ -112,6 +130,7 @@ export {
   MigrationCondition,
   MigrationExecutionError,
   MigrationExecutionStatus,
+  DryRunStatus,
   MigrationPlanManagement,
   DataMigrationTargetType,
   DataMigrationPatch,

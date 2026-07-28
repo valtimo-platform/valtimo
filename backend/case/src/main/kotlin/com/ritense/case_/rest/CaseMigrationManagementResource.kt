@@ -19,6 +19,7 @@ package com.ritense.case_.rest
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case_.service.migration.CaseMigrationService
+import com.ritense.case_.service.migration.DryRunStatusDto
 import com.ritense.case_.service.migration.MigrationExecutionStatusDto
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
@@ -205,6 +206,29 @@ class CaseMigrationManagementResource(
     ): ResponseEntity<MigrationExecutionStatusDto> {
         val migrationId = migrationId(caseDefinitionKey, caseDefinitionVersionTag, migrationKey)
         return ResponseEntity.ok(caseMigrationService.getStatus(migrationId))
+    }
+
+    /** Manual (button) trigger: dry-run the migration plan now — simulate it without migrating any case. */
+    @RunWithoutAuthorization
+    @PostMapping("/{migrationKey}/dry-run")
+    fun startDryRun(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable migrationKey: String,
+    ): ResponseEntity<DryRunStatusDto> {
+        val migrationId = migrationId(caseDefinitionKey, caseDefinitionVersionTag, migrationKey)
+        return ResponseEntity.ok(caseMigrationService.startDryRun(migrationId))
+    }
+
+    @RunWithoutAuthorization
+    @GetMapping("/{migrationKey}/dry-run/status")
+    fun getDryRunStatus(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable migrationKey: String,
+    ): ResponseEntity<DryRunStatusDto> {
+        val migrationId = migrationId(caseDefinitionKey, caseDefinitionVersionTag, migrationKey)
+        return ResponseEntity.ok(caseMigrationService.getDryRunStatus(migrationId))
     }
 
     private fun migrationId(caseDefinitionKey: String, caseDefinitionVersionTag: String, migrationKey: String) =

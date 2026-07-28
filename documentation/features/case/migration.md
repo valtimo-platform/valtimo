@@ -45,26 +45,28 @@ Here you see all migration plans for that version, together with their current s
 
 ## Creating a migration plan
 
-Select **New migration plan** to open the plan editor. A plan is made up of a few parts:
+Select **New migration plan** to open the plan editor. The editor is split into a few tabs, each
+covering one part of the plan:
 
-* **Title** — a recognisable name for the plan.
-* **Which cases** — the conditions that decide which cases this plan applies to (for example,
-  only cases with a certain status or a certain value in their data). Cases that don't match are
-  left for other plans. Leave the conditions empty to apply to all cases.
-* **What data changes** — the data migration (see [Source and target](#source-and-target)). Each
-  row writes one **target** field from a **source**: copy an existing field's value, set a fixed
-  value, or clear it. Each change can optionally be given a type (text, number, yes/no, and so on).
-* **How the process moves** — the process migration. For each running process you pick a **source
-  process** and a **target process** and map the steps of one onto the other (see
+* **General** — the plan's **title**, **when it runs** (its trigger, see below), and **which cases**
+  it applies to. The conditions decide which cases this plan touches (for example, only cases with a
+  certain status or a certain value in their data). Cases that don't match are left for other plans;
+  leave the conditions empty to apply the plan to all cases.
+* **Data migration** — what happens to the case data (see [Source and target](#source-and-target)).
+  Each row writes one **target** field from a **source**: copy an existing field's value, set a
+  fixed value, or clear it. Each change can optionally be given a type (text, number, yes/no, and so
+  on).
+* **Process migration** — how the running process moves. For each running process you pick a
+  **source process** and a **target process** and map the steps of one onto the other (see
   [Source and target](#source-and-target)). You can optionally set process variables during the
   migration.
-* **Adding or removing building blocks** — optionally create or dissolve building blocks on each
-  migrated case (see [Adding and removing building blocks](#adding-and-removing-building-blocks)).
-* **When it runs** — the trigger (see below).
+* **Add building block** / **Remove building block** — optionally create or dissolve building blocks
+  on each migrated case (see [Adding and removing building blocks](#adding-and-removing-building-blocks)).
+* **JSON editor** — a raw view of the whole plan for advanced users who prefer to read or tweak the
+  configuration directly. Everything here is also editable through the guided tabs above.
 
-You can build a plan through these guided sections. Everything is configured in the UI and saved
-with the case definition, so the same plan behaves identically in every environment (test,
-acceptance, production).
+Everything is configured in the UI and saved with the case definition, so the same plan behaves
+identically in every environment (test, acceptance, production).
 
 ## Source and target
 
@@ -75,6 +77,31 @@ At the level of the whole plan this is fixed and you don't choose it: a plan alw
 **from the previous version** (the source — the version the cases are currently on) **into the
 version the plan belongs to** (the target). That is why you create the plan under the version you
 want cases to end up on.
+
+## Adding and removing building blocks
+
+Sometimes a new case version doesn't just reshape data and process — it also changes how the case is
+split into **building blocks**. A migration plan can do this too, as part of the same run.
+
+* **Add building block** — creates one or more building blocks on each migrated case. For every
+  entry you choose the building block and version to create; a new (empty) building block is filled
+  using its own data migration (reading from the case), and the case's process is moved into the new
+  building block.
+* **Remove building block** — dissolves one or more building blocks on each migrated case. Before a
+  building block is removed, its data is transferred back to the case (again via a small data
+  migration) and its process is handed back to the case.
+
+Both use the same **source and target** idea as the rest of the editor — the only difference is
+which document is being read from and written to, which the editor explains inline for each.
+
+## Managing plans
+
+A version can hold several plans, and each one on the migration screen can be:
+
+* **Edited** — reopen the plan editor to change any part of it.
+* **Duplicated** — make a copy as a starting point for a similar plan (the copy is given a
+  "copy" suffix so you can rename it).
+* **Deleted** — remove a plan you no longer need.
 
 ## When a plan runs (triggers)
 
@@ -92,12 +119,34 @@ Start a plan with the **Start** button. The migration screen then shows, per pla
 
 * the **status** — not started, running, completed, or completed with errors;
 * how many cases still need to migrate, how many were migrated, and how many failed;
-* a list of the cases that failed, with the reason, so you can see exactly what went wrong.
+* a list of the cases that failed, each with the reason — you can expand a case to read the full
+  error or copy it, so you can see exactly what went wrong.
 
 Because migration is all-or-nothing per case and already-migrated cases are skipped, you can fix
 the cause of any failures and simply run the plan again — only the remaining and failed cases are
 processed. Migration runs in the background, so it never blocks the application, and it resumes
 safely if the application restarts mid-run.
+
+## Dry run
+
+Before running a plan for real, you can **dry run** it with the **Dry run** button on the migration
+screen. A dry run goes through exactly the cases the plan would migrate and simulates migrating each
+one — applying the data changes and the process migration — but then **rolls everything back**, so
+**nothing is changed**. It changes no case data, moves no process, and leaves no trace, so it is
+safe to run against production data.
+
+When it finishes, the plan shows a dry-run report:
+
+* how many cases were **checked**, how many **would migrate**, and how many **would fail**;
+* the list of cases that would fail, each with the full reason — the same detail you get for a real
+  run's failures.
+
+Use a dry run to validate a plan against real data and fix any problems up front. Because a dry run
+persists nothing, it never affects a later real run (an already-migrated case is decided only by
+real runs, never by a dry run).
+
+Dry runs work the same way for **building blocks** — use the **Dry run** button on the building
+block version's `Migration` tab.
 
 ## Good to know
 

@@ -64,6 +64,12 @@ export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
   // against. They can differ: e.g. add building block copies FROM the owner case INTO the block.
   @Input() public sourceContext: ValuePathContext | null = null;
   @Input() public targetContext: ValuePathContext | null = null;
+  /**
+   * Extra version tags (of the target's definition) merged into the target ("to") field list, on top
+   * of the target version. Set to the source (predecessor) version so a patch can null out a field
+   * that only exists in the source version and would otherwise be an unclearable leftover.
+   */
+  @Input() public targetAdditionalVersionTags: string[] = [];
   /** Intro text above the patches. Hosts that already explain the direction pass `null` to hide it. */
   @Input() public descriptionKey: string | null =
     'caseManagement.migration.editor.dataMigration.description';

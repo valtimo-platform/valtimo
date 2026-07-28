@@ -19,6 +19,7 @@ package com.ritense.buildingblock.web.rest
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case_.service.migration.CaseMigrationService
+import com.ritense.case_.service.migration.DryRunStatusDto
 import com.ritense.case_.service.migration.MigrationExecutionStatusDto
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
@@ -178,6 +179,29 @@ class BuildingBlockMigrationManagementResource(
     ): ResponseEntity<MigrationExecutionStatusDto> {
         val migrationId = migrationId(key, versionTag, migrationKey)
         return ResponseEntity.ok(caseMigrationService.getStatus(migrationId))
+    }
+
+    /** Manual (button) trigger: dry-run the migration plan now — simulate it without migrating any instance. */
+    @RunWithoutAuthorization
+    @PostMapping("/{migrationKey}/dry-run")
+    fun startDryRun(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @PathVariable migrationKey: String,
+    ): ResponseEntity<DryRunStatusDto> {
+        val migrationId = migrationId(key, versionTag, migrationKey)
+        return ResponseEntity.ok(caseMigrationService.startDryRun(migrationId))
+    }
+
+    @RunWithoutAuthorization
+    @GetMapping("/{migrationKey}/dry-run/status")
+    fun getDryRunStatus(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @PathVariable migrationKey: String,
+    ): ResponseEntity<DryRunStatusDto> {
+        val migrationId = migrationId(key, versionTag, migrationKey)
+        return ResponseEntity.ok(caseMigrationService.getDryRunStatus(migrationId))
     }
 
     private fun migrationId(key: String, versionTag: String, migrationKey: String) =

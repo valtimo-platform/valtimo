@@ -26,10 +26,6 @@ The for developers section within each feature gives more tech heavy information
 [case-tabs.md](case-tabs.md)
 {% endcontent-ref %}
 
-{% content-ref url="case-migration.md" %}
-[case-migration.md](case-migration.md)
-{% endcontent-ref %}
-
 {% content-ref url="custom-case-headers.md" %}
 [custom-case-headers.md](custom-case-headers.md)
 {% endcontent-ref %}

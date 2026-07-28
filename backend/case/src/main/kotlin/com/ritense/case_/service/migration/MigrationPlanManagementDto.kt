@@ -34,4 +34,6 @@ data class MigrationPlanManagementDto(
     val conditions: List<MigrationCondition>,
     val components: List<String>,
     val status: MigrationExecutionStatusDto,
+    /** The result of the plan's latest dry run (a simulation that migrates nothing), if it has run. */
+    val dryRun: DryRunStatusDto,
 )

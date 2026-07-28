@@ -79,6 +79,8 @@ export const CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS = {
 
 export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   startButton: 'caseMigrationStartButton',
+  dryRunButton: 'caseMigrationDryRunButton',
+  dryRunResults: 'caseMigrationDryRunResults',
   addButton: 'caseMigrationAddButton',
   saveButton: 'caseMigrationSaveButton',
   cancelButton: 'caseMigrationCancelButton',

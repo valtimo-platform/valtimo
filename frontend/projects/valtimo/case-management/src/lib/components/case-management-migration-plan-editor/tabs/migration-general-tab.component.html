@@ -73,7 +73,7 @@
   </p>
 
   <div class="migration-tab__mapping" formArrayName="conditions">
-    @for (condition of conditionsArray.controls; track $index) {
+    @for (condition of conditionsArray.controls; track condition) {
       <div class="migration-tab__condition-row" [formGroupName]="$index">
         <valtimo-value-path-selector
           formControlName="path"

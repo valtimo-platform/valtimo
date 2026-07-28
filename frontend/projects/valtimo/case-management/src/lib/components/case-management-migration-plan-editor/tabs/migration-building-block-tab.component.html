@@ -20,7 +20,7 @@
   </p>
 
   <div class="migration-tab__items" formArrayName="instructions">
-    @for (instruction of instructionsArray.controls; track $index) {
+    @for (instruction of instructionsArray.controls; track instruction) {
       <div class="migration-tab__card" [formGroupName]="$index">
         <div class="migration-tab__card-header">
           <span class="migration-tab__card-index">#{{ $index + 1 }}</span>

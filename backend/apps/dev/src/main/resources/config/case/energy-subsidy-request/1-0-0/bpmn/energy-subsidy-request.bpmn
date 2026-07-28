@@ -1,81 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_EnergySubsidyRequest" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.46.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
-  <bpmn:collaboration id="Collaboration_1205zf2">
-    <bpmn:participant id="Participant_1xft0oj" name="V1" processRef="Process_0ulnt52" />
-    <bpmn:participant id="Participant_1pabv7u" name="V1" processRef="Process_1ufp9vj" />
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_EnergySubsidyRequest" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_EnergySubsidyRequest">
+    <bpmn:participant id="EnergySubsidyRequestParticipant" name="Energietoeslag Aanvraag" processRef="energy-subsidy-request" />
   </bpmn:collaboration>
-  <bpmn:process id="Process_0ulnt52" isExecutable="true">
-    <bpmn:endEvent id="Event_0n9osj3">
-      <bpmn:incoming>Flow_15nffwl</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:startEvent id="Event_12rhdbr">
-      <bpmn:outgoing>Flow_1atz99h</bpmn:outgoing>
+  <bpmn:process id="energy-subsidy-request" name="Energietoeslag Aanvraag Process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Aanvraag Ontvangen">
+      <bpmn:outgoing>Flow_Start_To_CallSubsidyCalculator</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="Activity_1xf28db" name="Taak">
-      <bpmn:incoming>Flow_1atz99h</bpmn:incoming>
-      <bpmn:outgoing>Flow_15nffwl</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_15nffwl" sourceRef="Activity_1xf28db" targetRef="Event_0n9osj3" />
-    <bpmn:sequenceFlow id="Flow_1atz99h" sourceRef="Event_12rhdbr" targetRef="Activity_1xf28db" />
-  </bpmn:process>
-  <bpmn:process id="Process_1ufp9vj" isExecutable="true">
-    <bpmn:endEvent id="Event_1c1dlpc">
-      <bpmn:incoming>Flow_1pu83hi</bpmn:incoming>
+    <bpmn:callActivity id="CallSubsidyCalculatorActivity" name="Bereken Energietoeslag" camunda:asyncAfter="true" calledElement="subsidy-calculator-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:subsidy-calculator:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Start_To_CallSubsidyCalculator</bpmn:incoming>
+      <bpmn:outgoing>Flow_CallSubsidyCalculator_To_End</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="EndEvent" name="Aanvraag Afgehandeld">
+      <bpmn:incoming>Flow_CallSubsidyCalculator_To_End</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:startEvent id="Event_05e8i5z">
-      <bpmn:outgoing>Flow_0gwpbeb</bpmn:outgoing>
-    </bpmn:startEvent>
-    <bpmn:serviceTask id="Activity_0jvc283" name="Taak">
-      <bpmn:incoming>Flow_0gwpbeb</bpmn:incoming>
-      <bpmn:outgoing>Flow_1pu83hi</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_1pu83hi" sourceRef="Activity_0jvc283" targetRef="Event_1c1dlpc" />
-    <bpmn:sequenceFlow id="Flow_0gwpbeb" sourceRef="Event_05e8i5z" targetRef="Activity_0jvc283" />
+    <bpmn:sequenceFlow id="Flow_Start_To_CallSubsidyCalculator" sourceRef="StartEvent" targetRef="CallSubsidyCalculatorActivity" />
+    <bpmn:sequenceFlow id="Flow_CallSubsidyCalculator_To_End" sourceRef="CallSubsidyCalculatorActivity" targetRef="EndEvent" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1205zf2">
-      <bpmndi:BPMNShape id="Participant_1xft0oj_di" bpmnElement="Participant_1xft0oj" isHorizontal="true">
-        <dc:Bounds x="158" y="80" width="600" height="160" />
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_EnergySubsidyRequest">
+      <bpmndi:BPMNShape id="Participant_EnergySubsidyRequest_di" bpmnElement="EnergySubsidyRequestParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="500" height="200" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0n9osj3_di" bpmnElement="Event_0n9osj3">
-        <dc:Bounds x="702" y="122" width="36" height="36" />
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="222" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="185" width="88" height="27" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_12rhdbr_di" bpmnElement="Event_12rhdbr">
-        <dc:Bounds x="292" y="122" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0bi9233_di" bpmnElement="Activity_1xf28db">
-        <dc:Bounds x="440" y="100" width="100" height="80" />
+      <bpmndi:BPMNShape id="CallSubsidyCalculatorActivity_di" bpmnElement="CallSubsidyCalculatorActivity">
+        <dc:Bounds x="330" y="120" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_15nffwl_di" bpmnElement="Flow_15nffwl">
-        <di:waypoint x="540" y="140" />
-        <di:waypoint x="702" y="140" />
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="512" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="498" y="185" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_CallSubsidyCalculator_di" bpmnElement="Flow_Start_To_CallSubsidyCalculator">
+        <di:waypoint x="258" y="160" />
+        <di:waypoint x="330" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1atz99h_di" bpmnElement="Flow_1atz99h">
-        <di:waypoint x="328" y="140" />
-        <di:waypoint x="440" y="140" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="BPMNShape_1rrg475" bpmnElement="Participant_1pabv7u" isHorizontal="true">
-        <dc:Bounds x="158" y="350" width="600" height="150" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1t3lru2" bpmnElement="Event_1c1dlpc">
-        <dc:Bounds x="702" y="422" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_03nwn5l" bpmnElement="Event_05e8i5z">
-        <dc:Bounds x="292" y="422" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_14hs3m7" bpmnElement="Activity_0jvc283">
-        <dc:Bounds x="440" y="400" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="BPMNEdge_0t0q3nm" bpmnElement="Flow_1pu83hi">
-        <di:waypoint x="540" y="440" />
-        <di:waypoint x="702" y="440" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_16m7e0q" bpmnElement="Flow_0gwpbeb">
-        <di:waypoint x="328" y="440" />
-        <di:waypoint x="440" y="440" />
+      <bpmndi:BPMNEdge id="Flow_CallSubsidyCalculator_To_End_di" bpmnElement="Flow_CallSubsidyCalculator_To_End">
+        <di:waypoint x="430" y="160" />
+        <di:waypoint x="512" y="160" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

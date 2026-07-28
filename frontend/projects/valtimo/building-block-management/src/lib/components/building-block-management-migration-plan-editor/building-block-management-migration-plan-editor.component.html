@@ -35,8 +35,9 @@
       [attr.data-test-id]="testIds.dataMigrationTab"
     >
       <valtimo-bb-migration-data-migration-tab
-        [sourceContext]="$buildingBlockContext()"
+        [sourceContext]="$sourceBuildingBlockContext()"
         [targetContext]="$buildingBlockContext()"
+        [targetAdditionalVersionTags]="$targetAdditionalVersionTags()"
         [patches]="$plan().dataMigration"
         (patchesChange)="onDataMigrationChange($event)"
       ></valtimo-bb-migration-data-migration-tab>

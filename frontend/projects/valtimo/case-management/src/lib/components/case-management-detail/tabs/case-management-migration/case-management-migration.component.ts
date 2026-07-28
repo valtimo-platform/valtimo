@@ -116,7 +116,12 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   };
 
   public readonly ACTION_ITEMS: ActionItem[] = [
-    {label: 'caseManagement.migration.startNow', callback: this.onStartPlan.bind(this)},
+    {
+      label: 'caseManagement.migration.startNow',
+      callback: this.onStartPlan.bind(this),
+      disabledCallback: (plan: MigrationPlanViewModel) => !plan.triggers.triggeredByButton,
+    },
+    {label: 'caseManagement.migration.dryRun', callback: this.onDryRunPlan.bind(this)},
     {label: 'interface.edit', callback: this.onEditPlan.bind(this)},
     {label: 'interface.duplicate', callback: this.onDuplicatePlan.bind(this)},
     {label: 'interface.delete', callback: this.onDeletePlan.bind(this), type: 'danger'},
@@ -124,12 +129,16 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
 
   public readonly $planToDelete = signal<MigrationPlanViewModel | null>(null);
   public readonly $planToStart = signal<MigrationPlanViewModel | null>(null);
+  public readonly $planToDryRun = signal<MigrationPlanViewModel | null>(null);
 
   private readonly _showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteModal$ = this._showDeleteModal$.asObservable();
 
   private readonly _showStartModal$ = new BehaviorSubject<boolean>(false);
   public readonly showStartModal$ = this._showStartModal$.asObservable();
+
+  private readonly _showDryRunModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showDryRunModal$ = this._showDryRunModal$.asObservable();
 
   private readonly _showDetailModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDetailModal$ = this._showDetailModal$.asObservable();
@@ -189,6 +198,23 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     })
   );
 
+  private readonly _dryRunErrorPage$ = new BehaviorSubject<number>(1);
+
+  // The current page of would-fail cases from the selected plan's latest dry run.
+  public readonly dryRunErrorsView$: Observable<{
+    items: MigrationExecutionError[];
+    pagination: Pagination;
+  }> = combineLatest([this.selectedPlan$, this._dryRunErrorPage$]).pipe(
+    map(([plan, page]) => {
+      const errors = plan?.dryRun.errors ?? [];
+      const start = (page - 1) * this.ERROR_PAGE_SIZE;
+      return {
+        items: errors.slice(start, start + this.ERROR_PAGE_SIZE),
+        pagination: {page, size: this.ERROR_PAGE_SIZE, collectionSize: errors.length},
+      };
+    })
+  );
+
   // A plan migrates FROM this version's predecessor (basedOnVersionTag) TO this version, so a version
   // with no predecessor has nothing to migrate from — adding a plan is disabled for it.
   public readonly canAddPlan$: Observable<boolean> = this._params$.pipe(
@@ -236,6 +262,7 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     // Open the read-only details/status modal for the clicked plan. Keeping _selectedKey$ set means
     // the modal's content keeps live-updating from the polled plan list while it is open.
     this._errorPage$.next(1);
+    this._dryRunErrorPage$.next(1);
     this._$expandedErrors.set(new Set());
     this._selectedKey$.next(plan.migrationKey);
     this._showDetailModal$.next(true);
@@ -245,11 +272,16 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     this._showDetailModal$.next(false);
     this._selectedKey$.next(null);
     this._errorPage$.next(1);
+    this._dryRunErrorPage$.next(1);
     this._$expandedErrors.set(new Set());
   }
 
   public onErrorPageChange(page: number): void {
     this._errorPage$.next(page);
+  }
+
+  public onDryRunPageChange(page: number): void {
+    this._dryRunErrorPage$.next(page);
   }
 
   public isErrorExpanded(caseId: string): boolean {
@@ -309,6 +341,25 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
         this._showStartModal$.next(false);
+        this._refresh$.next();
+      });
+  }
+
+  public onDryRunPlan(plan: MigrationPlanViewModel): void {
+    // Close the details modal first so the dry-run confirmation isn't stacked behind it.
+    this._showDetailModal$.next(false);
+    this.$planToDryRun.set(plan);
+    this._showDryRunModal$.next(true);
+  }
+
+  public onDryRunConfirm(plan: MigrationPlanViewModel): void {
+    if (!this._params || !plan) return;
+
+    this.caseMigrationApiService
+      .startDryRun(this._params, plan.migrationKey)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this._showDryRunModal$.next(false);
         this._refresh$.next();
       });
   }

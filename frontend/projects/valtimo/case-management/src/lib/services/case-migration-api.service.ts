@@ -20,6 +20,7 @@ import {BaseApiService, CaseManagementParams, ConfigService} from '@valtimo/shar
 import {Observable} from 'rxjs';
 import {
   DataMigrationPatch,
+  DryRunStatus,
   MigrationExecutionStatus,
   MigrationPlanManagement,
   ProcessMigrationInstruction,
@@ -51,6 +52,23 @@ export class CaseMigrationApiService extends BaseApiService {
     return this.httpClient.post<MigrationExecutionStatus>(
       `${this.getMigrationUrl(params)}/${migrationKey}/start`,
       {}
+    );
+  }
+
+  /** Start a dry run: simulate the plan for all matching cases without migrating any of them. */
+  public startDryRun(params: CaseManagementParams, migrationKey: string): Observable<DryRunStatus> {
+    return this.httpClient.post<DryRunStatus>(
+      `${this.getMigrationUrl(params)}/${migrationKey}/dry-run`,
+      {}
+    );
+  }
+
+  public getDryRunStatus(
+    params: CaseManagementParams,
+    migrationKey: string
+  ): Observable<DryRunStatus> {
+    return this.httpClient.get<DryRunStatus>(
+      `${this.getMigrationUrl(params)}/${migrationKey}/dry-run/status`
     );
   }
 

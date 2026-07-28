@@ -21,12 +21,17 @@ import com.ritense.case_.domain.migration.CaseDefinitionMigrationExecution
 import com.ritense.case_.domain.migration.CaseMigrationCase
 import com.ritense.case_.domain.migration.CaseMigrationCaseId
 import com.ritense.case_.domain.migration.CaseMigrationCaseStatus
+import com.ritense.case_.domain.migration.CaseMigrationDryRun
+import com.ritense.case_.domain.migration.CaseMigrationDryRunCase
 import com.ritense.case_.domain.migration.CaseMigrationStatus
+import com.ritense.case_.domain.migration.DryRunCaseStatus
 import com.ritense.case_.domain.migration.MigrationTriggers
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
+import com.ritense.case_.repository.CaseMigrationDryRunCaseRepository
+import com.ritense.case_.repository.CaseMigrationDryRunRepository
 import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
@@ -70,6 +75,8 @@ class CaseMigrationServiceTest(
     @Mock private val migrationRepository: CaseDefinitionMigrationRepository,
     @Mock private val executionRepository: CaseDefinitionMigrationExecutionRepository,
     @Mock private val caseRepository: CaseMigrationCaseRepository,
+    @Mock private val dryRunRepository: CaseMigrationDryRunRepository,
+    @Mock private val dryRunCaseRepository: CaseMigrationDryRunCaseRepository,
     @Mock private val documentRepository: JsonSchemaDocumentRepository,
     @Mock private val documentDefinitionService: DocumentDefinitionService,
     @Mock private val caseDefinitionRepository: CaseDefinitionRepository,
@@ -87,6 +94,7 @@ class CaseMigrationServiceTest(
     private val case2 = UUID.randomUUID()
 
     private lateinit var execution: CaseDefinitionMigrationExecution
+    private lateinit var dryRun: CaseMigrationDryRun
 
     @BeforeEach
     fun setUp() {
@@ -97,6 +105,8 @@ class CaseMigrationServiceTest(
             migrationRepository,
             executionRepository,
             caseRepository,
+            dryRunRepository,
+            dryRunCaseRepository,
             documentRepository,
             conditionEvaluator,
             listOf(CaseMigrationCandidateProvider(documentRepository, documentDefinitionService, caseDefinitionRepository)),
@@ -114,6 +124,12 @@ class CaseMigrationServiceTest(
         whenever(caseRepository.save(any())).thenAnswer { it.getArgument(0) }
         whenever(caseRepository.existsByIdAndStatus(any(), any())).thenReturn(false)
         whenever(caseRepository.countByIdMigrationIdAndStatus(any(), any())).thenReturn(0L)
+        dryRun = CaseMigrationDryRun(migrationId)
+        whenever(dryRunRepository.findById(migrationId)).thenReturn(Optional.of(dryRun))
+        whenever(dryRunRepository.save(any())).thenAnswer { it.getArgument(0) }
+        whenever(dryRunCaseRepository.save(any())).thenAnswer { it.getArgument(0) }
+        whenever(dryRunCaseRepository.countByIdMigrationIdAndStatus(any(), any())).thenReturn(0L)
+        whenever(dryRunCaseRepository.findByIdMigrationIdAndStatus(any(), any())).thenReturn(emptyList())
         whenever(caseDefinitionRepository.findById(any())).thenReturn(Optional.empty())
         val document = mock<JsonSchemaDocument>(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
         whenever(document.definitionId().name()).thenReturn("bezwaar")
@@ -280,6 +296,49 @@ class CaseMigrationServiceTest(
 
         assertThat(status.status).isEqualTo(CaseMigrationStatus.NOT_STARTED)
         assertThat(status.casesToMigrate).isEqualTo(7)
+        assertThat(status.casesTotal).isEqualTo(7)
+    }
+
+    @Test
+    fun `getStatus should report remaining as total minus migrated and errors`() {
+        execution.status = CaseMigrationStatus.RUNNING
+        execution.casesToMigrate = 5 // the run's matched slice
+        whenever(caseRepository.countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.MIGRATED))
+            .thenReturn(3L)
+        whenever(caseRepository.findByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.FAILED))
+            .thenReturn(listOf(CaseMigrationCase(caseRecordId(case1), CaseMigrationCaseStatus.FAILED, "boom")))
+
+        val status = service.getStatus(migrationId)
+
+        assertThat(status.casesTotal).isEqualTo(5)
+        assertThat(status.casesMigrated).isEqualTo(3)
+        assertThat(status.casesWithErrors).isEqualTo(1)
+        assertThat(status.casesToMigrate).isEqualTo(1) // 5 matched - 3 migrated - 1 failed
+    }
+
+    @Test
+    fun `getStatus should report 0 remaining once every matching case has been migrated`() {
+        execution.status = CaseMigrationStatus.COMPLETED
+        execution.casesToMigrate = 1
+        whenever(caseRepository.countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.MIGRATED))
+            .thenReturn(1L)
+
+        val status = service.getStatus(migrationId)
+
+        assertThat(status.casesTotal).isEqualTo(1)
+        assertThat(status.casesMigrated).isEqualTo(1)
+        assertThat(status.casesToMigrate).isEqualTo(0)
+    }
+
+    @Test
+    fun `should clear the latest dry run when a real run starts`() {
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        service.startMigration(migrationId)
+
+        verify(dryRunCaseRepository).deleteByIdMigrationId(migrationId)
+        verify(dryRunRepository).delete(dryRun)
     }
 
     @Test
@@ -301,5 +360,98 @@ class CaseMigrationServiceTest(
         verify(migrationRepository).save(plan)
         // Estimating must not touch per-case state or record failures.
         verify(caseRepository, never()).save(any())
+    }
+
+    @Test
+    fun `dry run should simulate every matching case and record it as would-migrate`() {
+        stubCandidates(case1, case2)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+        whenever(dryRunCaseRepository.countByIdMigrationIdAndStatus(migrationId, DryRunCaseStatus.WOULD_MIGRATE))
+            .thenReturn(2L)
+
+        val result = service.startDryRun(migrationId)
+
+        // The real migration is exercised for each case (so real validation/mapping errors surface)...
+        verify(executor).execute(migrationId, caseDefinitionId, case1)
+        verify(executor).execute(migrationId, caseDefinitionId, case2)
+        // ...recorded as a would-migrate dry-run outcome...
+        verify(dryRunCaseRepository).save(CaseMigrationDryRunCase(caseRecordId(case1), DryRunCaseStatus.WOULD_MIGRATE))
+        verify(dryRunCaseRepository).save(CaseMigrationDryRunCase(caseRecordId(case2), DryRunCaseStatus.WOULD_MIGRATE))
+        assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
+        assertThat(result.casesWouldMigrate).isEqualTo(2)
+        assertThat(result.casesChecked).isEqualTo(2)
+    }
+
+    @Test
+    fun `dry run must not write any real migration row or publish an audit event (isolation)`() {
+        stubCandidates(case1, case2)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        service.startDryRun(migrationId)
+
+        // The critical invariant: a dry run leaves no real-run trace, so it can never make a later
+        // real run skip a case, and it never records a migration on the audit trail.
+        verify(caseRepository, never()).save(any())
+        verify(applicationEventPublisher, never()).publishEvent(any())
+    }
+
+    @Test
+    fun `dry run should record a case whose migration would fail, with the reason`() {
+        stubCandidates(case1, case2)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+        whenever(executor.execute(migrationId, caseDefinitionId, case2)).thenThrow(RuntimeException("boom"))
+        whenever(dryRunCaseRepository.countByIdMigrationIdAndStatus(migrationId, DryRunCaseStatus.WOULD_FAIL))
+            .thenReturn(1L)
+
+        val result = service.startDryRun(migrationId)
+
+        verify(dryRunCaseRepository).save(CaseMigrationDryRunCase(caseRecordId(case1), DryRunCaseStatus.WOULD_MIGRATE))
+        // The failing case is recorded with its full stacktrace (a @Lob column), so match on content.
+        val saved = argumentCaptor<CaseMigrationDryRunCase>()
+        verify(dryRunCaseRepository, times(2)).save(saved.capture())
+        val failed = saved.allValues.single { it.status == DryRunCaseStatus.WOULD_FAIL }
+        assertThat(failed.id).isEqualTo(caseRecordId(case2))
+        assertThat(failed.errorMessage).contains("boom")
+        // No real migration row is written for the failing (or the succeeding) case.
+        verify(caseRepository, never()).save(any())
+        assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED_WITH_ERRORS)
+    }
+
+    @Test
+    fun `dry run should record a would-fail when a case's conditions cannot be evaluated`() {
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(eq(case1), any())).thenThrow(RuntimeException("condition boom"))
+        whenever(dryRunCaseRepository.countByIdMigrationIdAndStatus(migrationId, DryRunCaseStatus.WOULD_FAIL))
+            .thenReturn(1L)
+
+        val result = service.startDryRun(migrationId)
+
+        // A case whose conditions cannot be evaluated is a would-fail and is not simulated.
+        verify(executor, never()).execute(any(), any(), any())
+        val saved = argumentCaptor<CaseMigrationDryRunCase>()
+        verify(dryRunCaseRepository).save(saved.capture())
+        assertThat(saved.firstValue.status).isEqualTo(DryRunCaseStatus.WOULD_FAIL)
+        assertThat(saved.firstValue.errorMessage).contains("condition boom")
+        assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED_WITH_ERRORS)
+    }
+
+    @Test
+    fun `dry run should clear previous results on claim so each run starts fresh`() {
+        stubCandidates()
+
+        service.startDryRun(migrationId)
+
+        verify(dryRunCaseRepository).deleteByIdMigrationId(migrationId)
+    }
+
+    @Test
+    fun `dry run should not run when another dry run holds a live lease`() {
+        dryRun.status = CaseMigrationStatus.RUNNING
+        dryRun.leaseExpiresAt = LocalDateTime.now().plusMinutes(10)
+
+        service.startDryRun(migrationId)
+
+        verify(documentDefinitionService, never()).findByBlueprintId(any())
+        verify(executor, never()).execute(any(), any(), any())
     }
 }

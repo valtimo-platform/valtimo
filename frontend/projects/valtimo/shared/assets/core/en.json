@@ -830,7 +830,7 @@
           "targetTypeAuto": "Auto"
         },
         "processMigration": {
-          "description": "Migrate running process instances onto the process definitions of this case version. For each instruction pick the source process — the definition the running instances currently use, from the version being migrated away from — and the target process — the definition in this version they move onto — then map each source activity onto a target activity. This is translated one-to-one into an Operaton migration plan.",
+          "description": "Migrate running process instances onto the process definitions of this case version. For each instruction pick the source process — the definition the running instances currently use, from the version being migrated away from — and the target process — the definition in this version they move onto — then map each source activity onto a target activity.",
           "empty": "No process migrations configured yet.",
           "addInstruction": "Add process migration",
           "sourceProcess": "Source process",
@@ -884,7 +884,18 @@
         "title": "Start migration",
         "content": "Are you sure you want to start this migration now? Matching cases will be migrated."
       },
-      "duplicateSuffix": "copy",
+      "dryRun": "Dry run",
+      "dryRunModal": {
+        "title": "Start dry run",
+        "content": "Simulate this migration plan for all matching cases without migrating any of them? Nothing is changed; you get a report of which cases would migrate and which would fail."
+      },
+      "dryRunResults": {
+        "heading": "Latest dry run",
+        "casesChecked": "Cases checked",
+        "casesWouldMigrate": "Would migrate",
+        "casesWouldFail": "Would fail",
+        "errorsHeading": "Cases that would fail"
+      },
       "duplicateSuffix": "copy",
       "columns": {
         "plan": "Migration plan",
@@ -3574,6 +3585,7 @@
     },
     "migration": {
       "addPlan": "Add migration plan",
+      "addPlanDisabledHint": "This version has no predecessor to migrate from, so a migration plan cannot be created for it.",
       "startNow": "Start migration now",
       "errorCount": "{{count}} errors",
       "duplicateSuffix": "copy",
@@ -3623,7 +3635,7 @@
           "targetTypeAuto": "Auto"
         },
         "processMigration": {
-          "description": "Migrate running process instances to the target process definition. Map the activities of the source process onto the target process. This is translated one-to-one into an Operaton migration plan.",
+          "description": "Migrate running process instances to the target process definition. Map the activities of the source process onto the target process.",
           "empty": "No process migrations configured yet.",
           "addInstruction": "Add process migration",
           "sourceProcess": "Source process",
@@ -3656,6 +3668,18 @@
       "startModal": {
         "title": "Start migration",
         "content": "Are you sure you want to start this migration now? Matching building blocks will be migrated."
+      },
+      "dryRun": "Dry run",
+      "dryRunModal": {
+        "title": "Start dry run",
+        "content": "Simulate this migration plan for all matching building blocks without migrating any of them? Nothing is changed; you get a report of which building blocks would migrate and which would fail."
+      },
+      "dryRunResults": {
+        "heading": "Latest dry run",
+        "casesChecked": "Building blocks checked",
+        "casesWouldMigrate": "Would migrate",
+        "casesWouldFail": "Would fail",
+        "errorsHeading": "Building blocks that would fail"
       },
       "columns": {
         "plan": "Migration plan",

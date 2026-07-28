@@ -20,33 +20,28 @@ import com.ritense.case_.domain.migration.CaseMigrationStatus
 import com.ritense.case_.domain.migration.MigrationExecutionError
 import java.time.LocalDateTime
 
-/** Read model for the migration status shown in the UI. */
-data class MigrationExecutionStatusDto(
+/**
+ * Read model for the result of a migration plan **dry run** shown in the UI: how many matching cases
+ * were checked, how many would migrate, how many would fail — plus, for each failing case, the
+ * reason (the full stacktrace). Reuses [CaseMigrationStatus] for the run state and
+ * [MigrationExecutionError] for the per-case failures, so the UI can render dry-run failures with
+ * the same table as real-run failures.
+ */
+data class DryRunStatusDto(
     val status: CaseMigrationStatus,
-    /**
-     * Cases that still need migrating: before a run, the (approximate) estimate of matching cases;
-     * during/after a run, the ones matched by the run that have not yet been migrated or failed. Drops
-     * to 0 once the run has migrated every matching case.
-     */
-    val casesToMigrate: Int,
-    /**
-     * Total cases the run is migrating (its matched slice) — the denominator of the "migrated of total"
-     * progress. Before a run, the same estimate as [casesToMigrate].
-     */
-    val casesTotal: Int,
-    val casesMigrated: Int,
-    val casesWithErrors: Int,
+    val casesChecked: Int,
+    val casesWouldMigrate: Int,
+    val casesWouldFail: Int,
     val errors: List<MigrationExecutionError>,
     val startedOn: LocalDateTime?,
     val finishedOn: LocalDateTime?,
 ) {
     companion object {
-        val NOT_STARTED = MigrationExecutionStatusDto(
+        val NOT_STARTED = DryRunStatusDto(
             status = CaseMigrationStatus.NOT_STARTED,
-            casesToMigrate = 0,
-            casesTotal = 0,
-            casesMigrated = 0,
-            casesWithErrors = 0,
+            casesChecked = 0,
+            casesWouldMigrate = 0,
+            casesWouldFail = 0,
             errors = emptyList(),
             startedOn = null,
             finishedOn = null,
