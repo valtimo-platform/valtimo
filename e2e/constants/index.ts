@@ -1,3 +1,4 @@
+export * from './building-block-management-test-ids';
 export * from './case-management-test-ids';
 export * from './dashboard-management-test-ids';
 export * from './components-test-ids';

@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 239        | 96             |
-| **Total**                   | **20**   | **356**   | **251**    | **105**        |
+| Admin Features (ROLE_ADMIN) | 15       | 339       | 252        | 87             |
+| **Total**                   | **20**   | **360**   | **264**    | **96**         |
 
-**Coverage:** `251 / 356` — `70.5%`
+**Coverage:** `264 / 360` — `73.3%`
 
 ---
 
@@ -465,17 +465,21 @@
 
 #### 13A · BB Overview
 
-| #    | Function                      | Test Scenarios                                     | Coverage | Notes                                           |
-|:-----|:------------------------------|:---------------------------------------------------|:--------:|:------------------------------------------------|
-| 13.1 | View building blocks list     | Display list of building blocks                    |    ❌    |                                                 |
-| 13.2 | View BB metadata              | View building block name, key, and version         |    ❌    |                                                 |
-| 13.3 | Upload BB definition          | Upload building block definition (ZIP, max 500 kb) |    ❌    |                                                 |
-| 13.4 | Acknowledge overwrite warning | Acknowledge overwrite warning for existing blocks  |    ❌    |                                                 |
-| 13.5 | Create new building block     | Create new building block                          |    ❌    |                                                 |
-| 13.6 | Enter BB name                 | Enter building block name                          |    ❌    |                                                 |
-| 13.7 | Auto-generate BB key          | Auto-generate building block key                   |    ❌    |                                                 |
-| 13.8 | Enter BB version              | Enter building block version                       |    ❌    |                                                 |
-| 13.9 | Enter BB description          | Enter building block description                   |    ❌    |                                                 |
+| #     | Function                      | Test Scenarios                                                     | Coverage | Notes                                           |
+|:------|:------------------------------|:-------------------------------------------------------------------|:--------:|:------------------------------------------------|
+| 13.1  | View building blocks list     | Display list of building blocks                                    |    ✅    | building-block-management.spec.ts               |
+| 13.2  | View BB metadata              | View building block name, key, and version                         |    ✅    | building-block-management.spec.ts               |
+| 13.3  | Upload BB definition          | Upload building block definition (ZIP, max 500 kb)                 |    ✅    | building-block-management.spec.ts               |
+| 13.4  | Acknowledge overwrite warning | Acknowledge overwrite warning for existing blocks                  |    ✅    | building-block-management.spec.ts               |
+| 13.5  | Create new building block     | Create new building block                                          |    ✅    | building-block-management.spec.ts               |
+| 13.6  | Enter BB name                 | Enter building block name                                          |    ✅    | building-block-management.spec.ts               |
+| 13.7  | Auto-generate BB key          | Auto-generate building block key                                   |    ✅    | building-block-management.spec.ts               |
+| 13.8  | Enter BB version              | Enter building block version                                       |    ✅    | building-block-management.spec.ts               |
+| 13.9  | Enter BB description          | Enter building block description                                   |    ✅    | building-block-management.spec.ts               |
+| 13.9a | Reject invalid BB key         | Duplicate key blocked · Key with invalid characters blocked        |    ✅    | building-block-management.spec.ts               |
+| 13.9b | Reject incomplete BB form     | Save disabled while name or version is missing                     |    ✅    | building-block-management.spec.ts               |
+| 13.9c | Block unacknowledged upload   | Upload disabled until overwrite warning is acknowledged            |    ✅    | building-block-management.spec.ts               |
+| 13.9d | Reject invalid BB archive     | Archive without a BB definition shows the import error             |    ✅    | building-block-management.spec.ts               |
 
 #### 13B · BB Details
 
@@ -726,9 +730,9 @@
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   356   |
-| ✅ Covered by Playwright |   251   |
-| ❌ Not covered           |   105   |
+| Total Functions          |   360   |
+| ✅ Covered by Playwright |   264   |
+| ❌ Not covered           |   96    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **70.5%** |
+| **Coverage %**           | **73.3%** |
