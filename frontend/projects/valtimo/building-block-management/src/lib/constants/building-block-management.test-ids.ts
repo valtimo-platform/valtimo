@@ -37,3 +37,43 @@ export const BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS = {
   nextButton: 'buildingBlockUploadNextButton',
   finishButton: 'buildingBlockUploadFinishButton',
 } as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS = {
+  tabs: 'buildingBlockTabs',
+} as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_METADATA_TEST_IDS = {
+  nameInput: 'buildingBlockMetadataNameInput',
+  keyInput: 'buildingBlockMetadataKeyInput',
+  descriptionInput: 'buildingBlockMetadataDescriptionInput',
+  saveButton: 'buildingBlockMetadataSaveButton',
+} as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_ARTWORK_TEST_IDS = {
+  fileUploader: 'buildingBlockArtworkFileUploader',
+  image: 'buildingBlockArtworkImage',
+  uploadButton: 'buildingBlockArtworkUploadButton',
+  deleteButton: 'buildingBlockArtworkDeleteButton',
+} as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_PLUGINS_TEST_IDS = {
+  usedPlugins: 'buildingBlockUsedPlugins',
+  noPluginsUsed: 'buildingBlockNoPluginsUsed',
+} as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS = {
+  versionSelectDropdown: 'buildingBlockVersionSelectDropdown',
+  moreButton: 'buildingBlockMoreButton',
+  exportButton: 'buildingBlockExportButton',
+  makeFinalButton: 'buildingBlockMakeFinalButton',
+  createDraftButton: 'buildingBlockCreateDraftButton',
+  draftVersionInput: 'buildingBlockDraftVersionInput',
+  draftCancelButton: 'buildingBlockDraftCancelButton',
+  draftConfirmButton: 'buildingBlockDraftConfirmButton',
+} as const;
+
+/**
+ * Prefix for the per-version options of the version dropdown. The full test id is
+ * `buildingBlockVersion-<versionTag>`, built in the version selector component.
+ */
+export const BUILDING_BLOCK_VERSION_OPTION_TEST_ID_PREFIX = 'buildingBlockVersion-';

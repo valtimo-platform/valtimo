@@ -48,6 +48,7 @@ import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.
 import {ObjectLevel} from '../../models';
 import {collectObjectLevels, setRequiredOnSchema} from '../../utils';
 import {DocumentRequirements16} from '@carbon/icons';
+import {SCHEMA_EDITOR_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-schema-editor',
@@ -69,6 +70,8 @@ import {DocumentRequirements16} from '@carbon/icons';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
+  protected readonly testIds = SCHEMA_EDITOR_TEST_IDS;
+
   @ViewChild('host', {static: true}) public readonly hostEl!: ElementRef<HTMLDivElement>;
 
   @Input() public schemaJson = '{ "type": "object", "properties": {} }';

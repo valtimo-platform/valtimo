@@ -20,6 +20,10 @@ export const CONFIRMATION_MODAL_TEST_IDS = {
   confirmButton: 'confirmationModalConfirm',
 } as const;
 
+export const SCHEMA_EDITOR_TEST_IDS = {
+  editor: 'schemaEditor',
+} as const;
+
 export const VALUE_PATH_SELECTOR_TEST_IDS = {
   toggle: 'valuePathSelectorToggle',
   path: 'valueValuePathSelectorPath',

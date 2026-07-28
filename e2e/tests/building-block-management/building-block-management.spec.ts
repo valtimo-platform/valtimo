@@ -79,7 +79,7 @@ test.describe('Building block management — building block overview', () => {
       await expect(buildingBlockPage.carbonList.rows).toHaveCount(buildingBlocks.length);
 
       for (const buildingBlock of buildingBlocks) {
-        await buildingBlockPage.assertBuildingBlockVisible(buildingBlock.name);
+        await buildingBlockPage.assertBuildingBlockVisibleByKey(buildingBlock.key);
       }
     });
 

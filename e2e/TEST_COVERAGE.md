@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 339       | 252        | 87             |
-| **Total**                   | **20**   | **360**   | **264**    | **96**         |
+| Admin Features (ROLE_ADMIN) | 15       | 342       | 268        | 74             |
+| **Total**                   | **20**   | **363**   | **280**    | **83**         |
 
-**Coverage:** `264 / 360` — `73.3%`
+**Coverage:** `280 / 363` — `77.1%`
 
 ---
 
@@ -483,21 +483,24 @@
 
 #### 13B · BB Details
 
-| #     | Function                  | Test Scenarios                                       | Coverage | Notes                                           |
-|:------|:--------------------------|:-----------------------------------------------------|:--------:|:------------------------------------------------|
-| 13.10 | View BB general info      | View building block general information              |    ❌    |                                                 |
-| 13.11 | View BB document tab      | View building block document tab                     |    ❌    |                                                 |
-| 13.12 | View BB processes tab     | View building block processes tab                    |    ❌    |                                                 |
-| 13.13 | View plugin configuration | View plugin configuration used (e.g. Zaak API)       |    ❌    |                                                 |
-| 13.14 | Upload/update BB artwork  | Upload or update building block artwork              |    ❌    |                                                 |
-| 13.15 | Delete BB artwork         | Delete building block artwork                        |    ❌    |                                                 |
-| 13.16 | Save BB metadata          | Save building block metadata                         |    ❌    |                                                 |
-| 13.17 | Export BB as ZIP          | Export building block as ZIP                         |    ❌    |                                                 |
-| 13.18 | Create draft version      | Create draft version                                 |    ❌    |                                                 |
-| 13.19 | Enter version tag         | Enter new version tag for draft                      |    ❌    |                                                 |
-| 13.20 | View version status badge | View version status badge (`DRAFT` / `RELEASE`)      |    ❌    |                                                 |
-| 13.21 | Switch versions           | Switch between versions via dropdown                 |    ❌    |                                                 |
-| 13.22 | Finalize draft version    | Finalize draft version (convert `DRAFT` → `RELEASE`) |    ❌    |                                                 |
+| #      | Function                          | Test Scenarios                                                              | Coverage | Notes                                             |
+|:-------|:----------------------------------|:----------------------------------------------------------------------------|:--------:|:--------------------------------------------------|
+| 13.10  | View BB general info              | View building block general information                                     |    ✅    | building-block-details-management.spec.ts         |
+| 13.11  | View BB document tab              | View building block document tab                                            |    ✅    | building-block-details-management.spec.ts         |
+| 13.12  | View BB processes tab             | View building block processes tab                                           |    ✅    | building-block-details-management.spec.ts         |
+| 13.13  | View plugin configuration         | Plugins used listed · Empty message when none are used                      |    ✅    | building-block-details-management.spec.ts         |
+| 13.14  | Upload/update BB artwork          | Upload building block artwork                                               |    ✅    | building-block-details-management.spec.ts         |
+| 13.15  | Delete BB artwork                 | Delete artwork after confirming                                             |    ✅    | building-block-details-management.spec.ts         |
+| 13.16  | Save BB metadata                  | Save building block name and description                                    |    ✅    | building-block-details-management.spec.ts         |
+| 13.17  | Export BB as ZIP                  | Export building block as ZIP                                                |    ✅    | building-block-details-management.spec.ts         |
+| 13.18  | Create draft version              | Create draft version from a finalized version                               |    ✅    | building-block-details-management.spec.ts         |
+| 13.19  | Enter version tag                 | Enter new version tag for draft                                             |    ✅    | building-block-details-management.spec.ts         |
+| 13.20  | View version status badge         | Draft badged `DRAFT: <tag>` · final badged `<tag>` (no `RELEASE` label)     |    ✅    | building-block-details-management.spec.ts         |
+| 13.21  | Switch versions                   | Switch between versions via dropdown                                        |    ✅    | building-block-details-management.spec.ts         |
+| 13.22  | Finalize draft version            | Finalize draft version, which becomes read-only                             |    ✅    | building-block-details-management.spec.ts         |
+| 13.22a | Reject incomplete BB metadata     | Save disabled while pristine or with an empty name                          |    ✅    | building-block-details-management.spec.ts         |
+| 13.22b | Reject artwork upload without file | Upload disabled until a file is selected                                    |    ✅    | building-block-details-management.spec.ts         |
+| 13.22c | Reject draft without version tag  | Create draft disabled while the version tag is empty                        |    ✅    | building-block-details-management.spec.ts         |
 
 #### 13C · BB Document
 
@@ -730,9 +733,9 @@
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   360   |
-| ✅ Covered by Playwright |   264   |
-| ❌ Not covered           |   96    |
+| Total Functions          |   363   |
+| ✅ Covered by Playwright |   280   |
+| ❌ Not covered           |   83    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **73.3%** |
+| **Coverage %**           | **77.1%** |

@@ -28,4 +28,5 @@ export {
   SINGLE_VALUE_TEST_IDS,
   AUTO_KEY_INPUT_TEST_IDS,
   RIGHT_SIDEBAR_TEST_IDS,
+  SCHEMA_EDITOR_TEST_IDS,
 } from '../../frontend/projects/valtimo/components/src/lib/constants/components.test-ids';

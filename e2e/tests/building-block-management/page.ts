@@ -35,6 +35,10 @@ import {BUILDING_BLOCK_TEXTS} from './building-block-config';
 const ARCHIVES_DIR = 'building-block-archives';
 const BUILDING_BLOCK_API_URL = '/api/management/v1/building-block';
 
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export interface BuildingBlockDefinition {
   key: string;
   name: string;
@@ -179,11 +183,20 @@ export class BuildingBlockManagementPage {
   }
 
   /**
+   * Locate a row by its key column. Names are not unique — two building blocks
+   * may share a name — and substring matching would make a name that is a prefix
+   * of another match several rows, so identify rows by their exact key.
+   */
+  async assertBuildingBlockVisibleByKey(key: string) {
+    await this.carbonList.row(new RegExp(`^${escapeForRegExp(key)}$`)).assertVisible();
+  }
+
+  /**
    * Assert the name, key and version tag rendered for a single building block.
    * The version is rendered as a Carbon tag rather than plain cell text.
    */
   async assertBuildingBlockMetadata(definition: {name: string; key: string; versionTag: string}) {
-    const row = this.carbonList.row(definition.name);
+    const row = this.carbonList.row(new RegExp(`^${escapeForRegExp(definition.key)}$`));
     await row.assertVisible();
     await expect(row.cellByIndex(0)).toHaveText(definition.name);
     await expect(row.cellByIndex(1)).toHaveText(definition.key);
