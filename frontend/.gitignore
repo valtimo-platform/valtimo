@@ -6,8 +6,6 @@
 /tmp
 /out-tsc
 
-# plugin bundles served as static assets (generated Native Federation output,
-# downloaded/built per app — not source)
 apps/*/src/assets/plugins/
 
 # dependencies
