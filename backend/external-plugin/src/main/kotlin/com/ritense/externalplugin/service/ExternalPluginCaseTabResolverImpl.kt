@@ -17,6 +17,9 @@
 package com.ritense.externalplugin.service
 
 import com.ritense.case_.service.ExternalPluginCaseTabResolver
+import com.ritense.case_.service.ExternalPluginTabDefinition
+import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -24,16 +27,25 @@ import java.util.UUID
 /**
  * external-plugin's implementation of the case-module [ExternalPluginCaseTabResolver] SPI. Resolves
  * a plugin configuration's `case-tab` bundle to its absolute URL by delegating to the shared
- * [ExternalPluginBundleUrlResolver] with the `case-tab` bundle type (behaviour-preserving).
+ * [ExternalPluginBundleUrlResolver] with the `case-tab` bundle type (behaviour-preserving), and the
+ * configuration's plugin definition (`pluginId`/version) for the self-describing tab export.
  */
 @Service
 @SkipComponentScan
 class ExternalPluginCaseTabResolverImpl(
     private val bundleUrlResolver: ExternalPluginBundleUrlResolver,
+    private val configurationRepository: ExternalPluginConfigurationRepository,
+    private val definitionRepository: ExternalPluginDefinitionRepository,
 ) : ExternalPluginCaseTabResolver {
 
     override fun resolveBundleUrl(configurationId: UUID, bundleKey: String?): String? =
         bundleUrlResolver.resolve(configurationId, CASE_TAB_TYPE, bundleKey)
+
+    override fun resolvePluginDefinition(configurationId: UUID): ExternalPluginTabDefinition? {
+        val configuration = configurationRepository.findById(configurationId).orElse(null) ?: return null
+        val definition = definitionRepository.findById(configuration.definitionId).orElse(null) ?: return null
+        return ExternalPluginTabDefinition(definition.pluginId, definition.version)
+    }
 
     companion object {
         private const val CASE_TAB_TYPE = "case-tab"

@@ -27,7 +27,6 @@ import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginHostService
-import com.ritense.plugin.domain.PluginActionResultMapping
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
@@ -238,6 +237,44 @@ class ExternalPluginServiceTaskStartListenerTest {
 
         listenerWithResolver.notify(OperatonExecutionEvent(execution, "start"))
 
+        verify(hostClient).invokeAction(
+            baseUrl = any(),
+            pluginId = eq("case-summary"),
+            version = eq("0.1.0"),
+            actionKey = any(),
+            payload = any(),
+            hostSecret = any(),
+        )
+    }
+
+    @Test
+    fun `BUILDING_BLOCK reference falls back to a mapping made for a different version of the same plugin`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val listenerWithResolver = ExternalPluginServiceTaskStartListener(
+            processLinkRepository,
+            configurationService,
+            definitionService,
+            hostService,
+            hostClient,
+            valueResolverService,
+            objectMapper,
+            pluginActionResultHandler,
+            resolver,
+        )
+
+        // The reference pins 0.2.0, but only a mapping for another version (the wired-up 0.1.0) exists.
+        val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.2.0")
+        val execution = executionFor(processLink)
+
+        whenever(resolver.resolve(execution, "external-plugin:case-summary@0.2.0")).thenReturn(null)
+        whenever(resolver.resolveByKeyPrefix(execution, "external-plugin:case-summary@")).thenReturn(configurationId)
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listenerWithResolver.notify(OperatonExecutionEvent(execution, "start"))
+
+        verify(resolver).resolveByKeyPrefix(execution, "external-plugin:case-summary@")
         verify(hostClient).invokeAction(
             baseUrl = any(),
             pluginId = eq("case-summary"),

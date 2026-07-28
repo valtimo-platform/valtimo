@@ -109,23 +109,26 @@ class ExternalPluginImportPreviewContributor(
             val configId = contentKey.substringBefore(':').toUuidOrNull() ?: continue
             val tabKey = node.path("key").asText(fileName)
 
-            // The tab's contentKey only carries the config id; resolve the plugin key/version
-            // through the configuration when it exists locally. Without a pluginDefinitionKey the
-            // import wizard cannot offer the row for mapping at all (it filters key-less rows), so
-            // an unresolvable configuration stays a key-less "unidentifiable" row as before.
+            // Self-describing exports carry the tab's plugin key/version directly (like a process
+            // link), so the plugin stays identifiable even when the referenced configuration was
+            // deleted in the target. Fall back to resolving through the configuration for exports
+            // produced before that field existed; without a pluginDefinitionKey the import wizard
+            // filters the row out as "unidentifiable" (unmappable), as before.
             val configuration = configurationRepository.findById(configId).orElse(null)
             val definition = configuration?.let { definitionRepository.findById(it.definitionId).orElse(null) }
+            val pluginDefinitionKey = node.path("pluginDefinitionKey").asText(null) ?: definition?.pluginId
+            val pluginDefinitionVersion = node.path("pluginVersion").asText(null) ?: definition?.version
 
             result.add(
                 ImportPreviewContribution(
                     pluginConfigurationId = configId,
-                    pluginDefinitionKey = definition?.pluginId,
+                    pluginDefinitionKey = pluginDefinitionKey,
                     pluginActionDefinitionKey = "case-tab",
                     processDefinitionKey = fileName,
                     activityId = tabKey,
                     existsInTargetEnvironment = configuration != null,
                     source = SOURCE_EXTERNAL,
-                    pluginDefinitionVersion = definition?.version,
+                    pluginDefinitionVersion = pluginDefinitionVersion,
                 )
             )
         }

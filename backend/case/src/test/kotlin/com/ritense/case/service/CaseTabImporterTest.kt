@@ -17,15 +17,14 @@
 package com.ritense.case.service
 
 import com.ritense.case.domain.CaseTab
-import com.ritense.case.domain.CaseTabId
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case_.service.event.CaseTabCreatedEvent
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
-import com.ritense.importer.ValtimoImportTypes.Companion.FORM
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -188,6 +187,28 @@ class CaseTabImporterTest(
         importer.import(request)
 
         verify(applicationEventPublisher, never()).publishEvent(any<CaseTabCreatedEvent>())
+    }
+
+    @Test
+    fun `afterImport rechecks configuration issues for the case definition (in-transaction tab detection)`() {
+        val resolver = mock<PluginConfigurationMappingResolver>()
+        val importerWithResolver = CaseTabImporter(objectMapper, caseTabRepository, applicationEventPublisher, listOf(resolver))
+
+        importerWithResolver.afterImport(
+            ImportRequest(fileName = FILENAME, content = "[]".toByteArray(Charsets.UTF_8), caseDefinitionId = CASE_DEFINITION_ID)
+        )
+
+        verify(resolver).recheckIssuesForCaseDefinition(CASE_DEFINITION_ID)
+    }
+
+    @Test
+    fun `afterImport does nothing without a case definition id`() {
+        val resolver = mock<PluginConfigurationMappingResolver>()
+        val importerWithResolver = CaseTabImporter(objectMapper, caseTabRepository, applicationEventPublisher, listOf(resolver))
+
+        importerWithResolver.afterImport(ImportRequest(fileName = FILENAME, content = "[]".toByteArray(Charsets.UTF_8)))
+
+        verify(resolver, never()).recheckIssuesForCaseDefinition(any())
     }
 
     private companion object {

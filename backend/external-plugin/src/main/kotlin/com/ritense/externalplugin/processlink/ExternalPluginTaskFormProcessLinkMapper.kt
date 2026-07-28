@@ -170,10 +170,13 @@ class ExternalPluginTaskFormProcessLinkMapper(
     }
 
     /**
-     * Mirrors [ExternalPluginProcessLinkMapper.afterImport]. Unlike the service-task link, the
-     * task-form link's `externalPluginConfigurationId` is never nullable — it always references a
-     * `FIXED` configuration — so "dangling" here only means the referenced configuration no longer
-     * exists in the target environment.
+     * Mirrors [ExternalPluginProcessLinkMapper.afterImport], but publishes under its **own**
+     * [ISSUE_TYPE]. The two link kinds inspect disjoint repositories, so sharing a single issue type
+     * let one mapper's "resolved" verdict clobber the other's "detected" verdict (last writer in the
+     * mapper loop wins). Each owning its own type removes that coupling entirely. Unlike the
+     * service-task link, the task-form link's `externalPluginConfigurationId` is never nullable — it
+     * always references a `FIXED` configuration — so "dangling" here only means the referenced
+     * configuration no longer exists in the target environment.
      */
     override fun afterImport(
         caseDefinitionId: CaseDefinitionId,
@@ -186,11 +189,11 @@ class ExternalPluginTaskFormProcessLinkMapper(
 
         if (hasIssue) {
             applicationEventPublisher.publishEvent(
-                CaseConfigurationIssueDetectedEvent(caseDefinitionId, ExternalPluginProcessLinkMapper.ISSUE_TYPE)
+                CaseConfigurationIssueDetectedEvent(caseDefinitionId, ISSUE_TYPE)
             )
         } else {
             applicationEventPublisher.publishEvent(
-                CaseConfigurationIssueResolvedEvent(caseDefinitionId, ExternalPluginProcessLinkMapper.ISSUE_TYPE)
+                CaseConfigurationIssueResolvedEvent(caseDefinitionId, ISSUE_TYPE)
             )
         }
     }
@@ -212,5 +215,9 @@ class ExternalPluginTaskFormProcessLinkMapper(
             pluginDefinitionKey = definition?.pluginId,
             pluginDefinitionVersion = definition?.version ?: pluginVersion,
         )
+    }
+
+    companion object {
+        const val ISSUE_TYPE = "external-plugin-task-form"
     }
 }

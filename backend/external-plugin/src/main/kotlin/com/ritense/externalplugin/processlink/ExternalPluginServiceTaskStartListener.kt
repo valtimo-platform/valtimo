@@ -181,6 +181,17 @@ class ExternalPluginServiceTaskStartListener(
 
                 val mappingKey = buildingBlockMappingKey(pluginId, version)
                 resolver.resolve(execution, mappingKey)
+                    ?: resolver.resolveByKeyPrefix(execution, buildingBlockMappingKeyPrefix(pluginId))?.also {
+                        // Version-tolerant fallback: no mapping for the exact pinned version, but one
+                        // exists for another version of the same plugin. The resolved configuration's
+                        // version wins at runtime (D1), mirroring how a mismatched version is accepted
+                        // for FIXED links; validateResolvedDefinition surfaces the mismatch as a warning.
+                        logger.warn {
+                            "No building-block plugin configuration mapping for '$mappingKey' (process " +
+                                "link '${processLink.id}'); using a mapping for a different version of " +
+                                "external plugin '$pluginId'."
+                        }
+                    }
                     ?: throw IllegalStateException(
                         "No plugin configuration mapping provided for external plugin '$mappingKey' " +
                             "(process link '${processLink.id}')"
@@ -232,6 +243,9 @@ class ExternalPluginServiceTaskStartListener(
     }
 
     private fun buildingBlockMappingKey(pluginId: String, version: String) = "external-plugin:$pluginId@$version"
+
+    /** Version-agnostic prefix of [buildingBlockMappingKey]: matches a mapping for any version of the plugin. */
+    private fun buildingBlockMappingKeyPrefix(pluginId: String) = "external-plugin:$pluginId@"
 
     private fun resolveActionProperties(execution: DelegateExecution, processLink: ExternalPluginProcessLink): ObjectNode {
         val rawProperties = processLink.actionProperties ?: objectMapper.createObjectNode()

@@ -228,6 +228,38 @@ class ExternalPluginImportPreviewContributorTest {
     }
 
     @Test
+    fun `a self-describing EXTERNAL_PLUGIN case tab stays identifiable when its configuration was deleted`() {
+        val configId = UUID.randomUUID()
+        whenever(configurationRepository.findById(configId)).thenReturn(Optional.empty())
+
+        val json = """
+            [
+              {
+                "key": "summary",
+                "name": "Summary",
+                "type": "external_plugin",
+                "contentKey": "$configId:bundle-key",
+                "pluginDefinitionKey": "case-summary",
+                "pluginVersion": "0.1.0"
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("case/tab/my-doc.case-tab.json" to json.toByteArray())
+        )
+
+        assertThat(result).hasSize(1)
+        val entry = result.single()
+        assertThat(entry.pluginConfigurationId).isEqualTo(configId)
+        // Read from the export, not from the (deleted) configuration — so the row is mappable.
+        assertThat(entry.pluginDefinitionKey).isEqualTo("case-summary")
+        assertThat(entry.pluginDefinitionVersion).isEqualTo("0.1.0")
+        assertThat(entry.existsInTargetEnvironment).isFalse()
+        assertThat(entry.source).isEqualTo(SOURCE_EXTERNAL)
+    }
+
+    @Test
     fun `ignores non-EXTERNAL_PLUGIN case tabs`() {
         val json = """
             [

@@ -17,6 +17,8 @@
 package com.ritense.externalplugin.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.case.repository.CaseTabRepository
+import com.ritense.case_.repository.CaseExternalPluginTabRepository
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.compatibility.DefaultGzacVersionProvider
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
@@ -65,8 +67,6 @@ import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
-import com.ritense.case.repository.CaseTabRepository
-import com.ritense.case_.repository.CaseExternalPluginTabRepository
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginActionResultHandler
@@ -175,7 +175,9 @@ class ExternalPluginAutoConfiguration {
     @ConditionalOnMissingBean(ExternalPluginCaseTabResolverImpl::class)
     fun externalPluginCaseTabResolver(
         bundleUrlResolver: ExternalPluginBundleUrlResolver,
-    ) = ExternalPluginCaseTabResolverImpl(bundleUrlResolver)
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+    ) = ExternalPluginCaseTabResolverImpl(bundleUrlResolver, configurationRepository, definitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginMenuPageService::class)
