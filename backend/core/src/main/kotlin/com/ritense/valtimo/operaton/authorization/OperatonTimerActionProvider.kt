@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,19 @@ package com.ritense.valtimo.operaton.authorization
 
 import com.ritense.authorization.Action
 import com.ritense.authorization.ResourceActionProvider
-import com.ritense.valtimo.operaton.domain.OperatonExecution
+import com.ritense.valtimo.operaton.domain.OperatonTimer
 
-class OperatonExecutionActionProvider : ResourceActionProvider<OperatonExecution> {
-    override fun getAvailableActions(): List<Action<OperatonExecution>> {
-        return listOf(CREATE)
+class OperatonTimerActionProvider : ResourceActionProvider<OperatonTimer> {
+    override fun getAvailableActions(): List<Action<OperatonTimer>> {
+        return listOf(COMPLETE)
     }
 
     companion object {
+        /**
+         * Completing a timer means firing it ahead of its due date, so the process continues as if
+         * the timer had elapsed.
+         */
         @JvmField
-        val CREATE = Action<OperatonExecution>(Action.CREATE)
+        val COMPLETE = Action<OperatonTimer>(Action.COMPLETE)
     }
 }

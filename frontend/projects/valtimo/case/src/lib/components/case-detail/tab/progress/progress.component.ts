@@ -16,7 +16,6 @@
 
 import {Component} from '@angular/core';
 import {ActivatedRoute, ParamMap} from '@angular/router';
-import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, LoadedValue, ProcessDocumentInstance} from '@valtimo/document';
 import {SkippableTimer} from '@valtimo/process';
 import {GlobalNotificationService} from '@valtimo/shared';
@@ -36,7 +35,6 @@ import {
 } from 'rxjs';
 import {ListItem} from 'carbon-components-angular/dropdown';
 import {CaseProcessTimerService} from '../../../../services';
-import {CAN_MODIFY_EXECUTION_PERMISSION} from '../../../../permissions';
 
 @Component({
   standalone: false,
@@ -104,22 +102,23 @@ export class CaseDetailTabProgressComponent {
       startWith({isLoading: true})
     );
 
-  public readonly canSkipTimer$: Observable<boolean> = this.permissionService
-    .requestPermission(CAN_MODIFY_EXECUTION_PERMISSION)
-    .pipe(startWith(false), shareReplay({bufferSize: 1, refCount: true}));
-
   public readonly diagramReloadToken$ = new BehaviorSubject<number>(0);
   public readonly showSkipConfirm$ = new BehaviorSubject<boolean>(false);
 
   private readonly _reloadTimers$ = new BehaviorSubject<void>(undefined);
+
+  /**
+   * The endpoint only returns the timers the user is allowed to complete, so no separate permission
+   * check is needed here. Checking the `complete` permission on `OperatonTimer` up front would not
+   * work for permissions that are conditional on the timer or the case it belongs to.
+   */
   public readonly skippableTimers$: Observable<Array<SkippableTimer>> = combineLatest([
     this._documentId$,
     this.selectedProcessInstanceId$,
-    this.canSkipTimer$,
     this._reloadTimers$,
   ]).pipe(
-    switchMap(([documentId, processInstanceId, canSkipTimer]) => {
-      if (!documentId || !processInstanceId || !canSkipTimer) {
+    switchMap(([documentId, processInstanceId]) => {
+      if (!documentId || !processInstanceId) {
         return of<Array<SkippableTimer>>([]);
       }
       return this.caseProcessTimerService.getSkippableTimers(documentId, processInstanceId).pipe(
@@ -127,7 +126,12 @@ export class CaseDetailTabProgressComponent {
         catchError(() => of<Array<SkippableTimer>>([]))
       );
     }),
-    startWith<Array<SkippableTimer>>([])
+    startWith<Array<SkippableTimer>>([]),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  public readonly canSkipTimer$: Observable<boolean> = this.skippableTimers$.pipe(
+    map(timers => timers.length > 0)
   );
 
   private readonly _pendingSkip$ = new BehaviorSubject<SkippableTimer | null>(null);
@@ -136,7 +140,6 @@ export class CaseDetailTabProgressComponent {
     private readonly route: ActivatedRoute,
     private readonly documentService: DocumentService,
     private readonly caseProcessTimerService: CaseProcessTimerService,
-    private readonly permissionService: PermissionService,
     private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService
   ) {}

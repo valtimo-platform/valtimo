@@ -25,12 +25,11 @@ import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto
 import com.ritense.processdocument.event.ProcessTimerSkippedEvent
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessInstanceCaseAccessService
-import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
-import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
-import java.util.Optional
+import com.ritense.valtimo.operaton.authorization.OperatonTimerActionProvider
+import com.ritense.valtimo.operaton.domain.OperatonTimer
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -52,7 +51,6 @@ class ProcessTimerResourceTest {
 
     private lateinit var authorizationService: AuthorizationService
     private lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
-    private lateinit var operatonExecutionRepository: OperatonExecutionRepository
     private lateinit var managementService: ManagementService
     private lateinit var eventPublisher: ApplicationEventPublisher
 
@@ -64,7 +62,6 @@ class ProcessTimerResourceTest {
     fun setUp() {
         authorizationService = mock()
         processDocumentAssociationService = mock()
-        operatonExecutionRepository = mock()
         managementService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
         eventPublisher = mock()
 
@@ -75,24 +72,23 @@ class ProcessTimerResourceTest {
         resource = ProcessTimerResource(
             caseAccessService = caseAccessService,
             authorizationService = authorizationService,
-            operatonExecutionRepository = operatonExecutionRepository,
             managementService = managementService,
             eventPublisher = eventPublisher,
         )
     }
 
     @Test
-    fun `skip should require MODIFY permission on the execution`() {
+    fun `skip should require COMPLETE permission on the timer`() {
         val processInstanceId = associateInstance()
-        stubExecution(processInstanceId)
         stubJobsForInstance(processInstanceId, Triple("job-1", "timer", "timerBoundary"))
 
         resource.skipTimer(caseId, processInstanceId, "job-1")
 
         verify(authorizationService).requirePermission(
-            argThat<EntityAuthorizationRequest<OperatonExecution>> {
-                resourceType == OperatonExecution::class.java &&
-                    action == OperatonExecutionActionProvider.MODIFY
+            argThat<EntityAuthorizationRequest<OperatonTimer>> {
+                resourceType == OperatonTimer::class.java &&
+                    action == OperatonTimerActionProvider.COMPLETE &&
+                    entities.single().id == "job-1"
             }
         )
     }
@@ -100,7 +96,6 @@ class ProcessTimerResourceTest {
     @Test
     fun `skip should execute the timer job and publish event`() {
         val processInstanceId = associateInstance()
-        stubExecution(processInstanceId)
         stubJobsForInstance(processInstanceId, Triple("job-1", "timer", "timerBoundary"))
 
         val response = resource.skipTimer(caseId, processInstanceId, "job-1")
@@ -120,7 +115,6 @@ class ProcessTimerResourceTest {
     @Test
     fun `skip should return 404 when job is not a skippable timer of the instance`() {
         val processInstanceId = associateInstance()
-        stubExecution(processInstanceId)
         stubJobsForInstance(processInstanceId, Triple("async-1", "async-continuation", "someTask"))
 
         val ex = assertThrows<ResponseStatusException> {
@@ -134,7 +128,6 @@ class ProcessTimerResourceTest {
     @Test
     fun `skip should return 404 when process instance does not belong to case`() {
         val processInstanceId = UUID.randomUUID().toString()
-        stubExecution(processInstanceId)
         whenever(processDocumentAssociationService.findProcessDocumentInstanceDtos(any<Document.Id>())).thenReturn(emptyList())
 
         val ex = assertThrows<ResponseStatusException> {
@@ -145,9 +138,9 @@ class ProcessTimerResourceTest {
     }
 
     @Test
-    fun `skip should return 404 when process instance is not active`() {
+    fun `skip should return 404 when process instance has no jobs`() {
         val processInstanceId = associateInstance()
-        whenever(operatonExecutionRepository.findById(processInstanceId)).thenReturn(Optional.empty())
+        stubJobsForInstance(processInstanceId)
 
         val ex = assertThrows<ResponseStatusException> {
             resource.skipTimer(caseId, processInstanceId, "job-1")
@@ -157,14 +150,14 @@ class ProcessTimerResourceTest {
     }
 
     @Test
-    fun `getSkippableTimers should require MODIFY permission and return only timer jobs`() {
+    fun `getSkippableTimers should only return timer jobs the user may complete`() {
         val processInstanceId = associateInstance()
-        stubExecution(processInstanceId)
         stubJobsForInstance(
             processInstanceId,
             Triple("job-1", "timer", "timerBoundary"),
             Triple("async-1", "async-continuation", "someTask"),
         )
+        whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<OperatonTimer>>())).thenReturn(true)
 
         val response = resource.getSkippableTimers(caseId, processInstanceId)
 
@@ -172,12 +165,25 @@ class ProcessTimerResourceTest {
         assertEquals(1, response.body!!.size)
         assertEquals("job-1", response.body!!.single().id)
 
-        verify(authorizationService).requirePermission(
-            argThat<EntityAuthorizationRequest<OperatonExecution>> {
-                resourceType == OperatonExecution::class.java &&
-                    action == OperatonExecutionActionProvider.MODIFY
+        verify(authorizationService).hasPermission(
+            argThat<EntityAuthorizationRequest<OperatonTimer>> {
+                resourceType == OperatonTimer::class.java &&
+                    action == OperatonTimerActionProvider.COMPLETE &&
+                    entities.single().id == "job-1"
             }
         )
+    }
+
+    @Test
+    fun `getSkippableTimers should not return timers the user may not complete`() {
+        val processInstanceId = associateInstance()
+        stubJobsForInstance(processInstanceId, Triple("job-1", "timer", "timerBoundary"))
+        whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<OperatonTimer>>())).thenReturn(false)
+
+        val response = resource.getSkippableTimers(caseId, processInstanceId)
+
+        assertEquals(200, response.statusCode.value())
+        assertTrue(response.body!!.isEmpty())
     }
 
     private fun associateInstance(): String {
@@ -192,17 +198,13 @@ class ProcessTimerResourceTest {
         return processInstanceId
     }
 
-    private fun stubExecution(processInstanceId: String) {
-        whenever(operatonExecutionRepository.findById(processInstanceId))
-            .thenReturn(Optional.of(mock<OperatonExecution>()))
-    }
-
     private fun stubJobsForInstance(processInstanceId: String, vararg specs: Triple<String, String, String?>) {
         val jobs = specs.map { (jobId, jobType, activityId) ->
             val jobDefinitionId = "jobdef-$jobId"
             val job = mock<Job>()
             whenever(job.id).thenReturn(jobId)
             whenever(job.jobDefinitionId).thenReturn(jobDefinitionId)
+            whenever(job.processInstanceId).thenReturn(processInstanceId)
             val jobDefinition = mock<JobDefinition>()
             whenever(jobDefinition.id).thenReturn(jobDefinitionId)
             whenever(jobDefinition.activityId).thenReturn(activityId)

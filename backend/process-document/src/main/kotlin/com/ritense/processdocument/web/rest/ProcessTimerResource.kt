@@ -29,13 +29,13 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.utils.RequestHelper
-import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
-import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
+import com.ritense.valtimo.operaton.authorization.OperatonTimerActionProvider
+import com.ritense.valtimo.operaton.domain.OperatonTimer
 import org.operaton.bpm.engine.ManagementService
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -51,36 +51,41 @@ import java.util.UUID
 class ProcessTimerResource(
     private val caseAccessService: ProcessInstanceCaseAccessService,
     private val authorizationService: AuthorizationService,
-    private val operatonExecutionRepository: OperatonExecutionRepository,
     private val managementService: ManagementService,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
 
+    @Transactional(readOnly = true)
     @GetMapping("/case/{caseId}/process-instance/{processInstanceId}/timers")
     fun getSkippableTimers(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
         @PathVariable processInstanceId: String,
     ): ResponseEntity<List<JobInspectionDto>> {
-        requireExecutionModifyPermission(processInstanceId)
         caseAccessService.requireBelongsToCase(caseId, processInstanceId)
 
-        return ResponseEntity.ok(getTimerJobs(processInstanceId))
+        val timers = getTimerJobs(processInstanceId)
+            .filter { hasCompletePermission(it.timer) }
+            .map { it.dto }
+
+        return ResponseEntity.ok(timers)
     }
 
+    @Transactional
     @PostMapping("/case/{caseId}/process-instance/{processInstanceId}/timer/{jobId}/skip")
     fun skipTimer(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
         @PathVariable processInstanceId: String,
         @PathVariable jobId: String,
     ): ResponseEntity<Void> {
-        requireExecutionModifyPermission(processInstanceId)
         caseAccessService.requireBelongsToCase(caseId, processInstanceId)
 
-        val timer = getTimerJobs(processInstanceId).find { it.id == jobId }
+        val timer = getTimerJobs(processInstanceId).find { it.dto.id == jobId }
             ?: throw ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "Timer job $jobId is not a skippable timer of process instance $processInstanceId"
             )
+
+        requireCompletePermission(timer.timer)
 
         runWithoutAuthorization {
             managementService.executeJob(jobId)
@@ -90,35 +95,29 @@ class ProcessTimerResource(
             caseId = caseId,
             processInstanceId = processInstanceId,
             jobId = jobId,
-            activityId = timer.activityId,
+            activityId = timer.dto.activityId,
         )
 
         return ResponseEntity.noContent().build()
     }
 
+    private fun hasCompletePermission(timer: OperatonTimer) =
+        authorizationService.hasPermission(completePermissionRequest(timer))
+
+    private fun requireCompletePermission(timer: OperatonTimer) =
+        authorizationService.requirePermission(completePermissionRequest(timer))
+
+    private fun completePermissionRequest(timer: OperatonTimer) = EntityAuthorizationRequest(
+        OperatonTimer::class.java,
+        OperatonTimerActionProvider.COMPLETE,
+        timer,
+    )
+
     /**
-     * Loads the process-instance-level execution and requires the [OperatonExecutionActionProvider.MODIFY]
-     * permission on it. The process-instance execution row has `ID_ == PROC_INST_ID_`, so it is loaded by
-     * [processInstanceId]. A missing execution means the instance is not active.
+     * Reads the active timers of a process instance from the engine. A process instance that is no
+     * longer active has no jobs, so it simply yields an empty list.
      */
-    private fun requireExecutionModifyPermission(processInstanceId: String) {
-        val execution = runWithoutAuthorization {
-            operatonExecutionRepository.findById(processInstanceId).orElse(null)
-        } ?: throw ResponseStatusException(
-            HttpStatus.NOT_FOUND,
-            "Process instance $processInstanceId is not active"
-        )
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                OperatonExecution::class.java,
-                OperatonExecutionActionProvider.MODIFY,
-                execution,
-            )
-        )
-    }
-
-    private fun getTimerJobs(processInstanceId: String): List<JobInspectionDto> = runWithoutAuthorization {
+    private fun getTimerJobs(processInstanceId: String): List<TimerJob> = runWithoutAuthorization {
         val rawJobs = managementService.createJobQuery()
             .processInstanceId(processInstanceId)
             .list()
@@ -130,8 +129,13 @@ class ProcessTimerResource(
                     .singleResult()
             }
             .associateBy { it.id }
-        rawJobs.map { job -> JobInspectionDto.from(job, definitionsById[job.jobDefinitionId]) }
-            .filter { it.jobType == JobType.TIMER }
+        rawJobs.map { job ->
+            val definition = definitionsById[job.jobDefinitionId]
+            TimerJob(
+                dto = JobInspectionDto.from(job, definition),
+                timer = OperatonTimer.from(job, definition),
+            )
+        }.filter { it.dto.jobType == JobType.TIMER }
     }
 
     private fun publishTimerSkippedEvent(
@@ -153,4 +157,12 @@ class ProcessTimerResource(
             )
         )
     }
+
+    /**
+     * Pairs the API representation of a timer with the authorization resource for the same timer.
+     */
+    private data class TimerJob(
+        val dto: JobInspectionDto,
+        val timer: OperatonTimer,
+    )
 }

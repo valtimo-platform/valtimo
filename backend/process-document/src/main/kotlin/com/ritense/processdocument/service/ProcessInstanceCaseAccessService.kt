@@ -27,9 +27,9 @@ import org.springframework.web.server.ResponseStatusException
  * Shared case-scoped access checks for endpoints that operate on the runtime state
  * of a process instance belonging to a specific case.
  *
- * Loads and authorizes the case document, verifies that a process instance actually
- * belongs to the case, and verifies that the instance is still active. Used by both
- * [com.ritense.processdocument.web.rest.ProcessInspectionResource] and
+ * Verifies that a process instance actually belongs to the case it is addressed through, so a
+ * caller cannot reach an unrelated process instance through a case they do have access to. Used by
+ * both [com.ritense.processdocument.web.rest.ProcessInspectionResource] and
  * [com.ritense.processdocument.web.rest.ProcessTimerResource].
  */
 open class ProcessInstanceCaseAccessService(

@@ -32,7 +32,6 @@ enum CASE_DETAIL_PERMISSION_RESOURCE {
   jsonSchemaDocument = 'com.ritense.document.domain.impl.JsonSchemaDocument',
   note = 'com.ritense.note.domain.Note',
   jsonSchemaDocumentDefinition = 'com.ritense.document.domain.impl.JsonSchemaDocumentDefinition',
-  operatonExecution = 'com.ritense.valtimo.operaton.domain.OperatonExecution',
 }
 
 const CAN_CLAIM_CASE_PERMISSION: PermissionRequest = {
@@ -90,11 +89,6 @@ const CAN_INSPECT_MODIFY_CASE_PERMISSION: PermissionRequest = {
   resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
 };
 
-const CAN_MODIFY_EXECUTION_PERMISSION: PermissionRequest = {
-  action: PERMISSION_ACTION.edit,
-  resource: CASE_DETAIL_PERMISSION_RESOURCE.operatonExecution,
-};
-
 export {
   CAN_ADD_NOTE_PERMISSION,
   CAN_ASSIGN_CASE_PERMISSION,
@@ -108,5 +102,4 @@ export {
   CAN_EXPORT_CASE_PERMISSION,
   CAN_INSPECT_CASE_PERMISSION,
   CAN_INSPECT_MODIFY_CASE_PERMISSION,
-  CAN_MODIFY_EXECUTION_PERMISSION,
 };

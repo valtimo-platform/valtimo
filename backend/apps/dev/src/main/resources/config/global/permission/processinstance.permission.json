@@ -22,10 +22,5 @@
         "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
         "action": "create",
         "roleKey": "ROLE_ADMIN"
-    },
-    {
-        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
-        "action": "modify",
-        "roleKey": "ROLE_ADMIN"
     }
 ]
