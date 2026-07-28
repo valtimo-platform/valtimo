@@ -22,7 +22,19 @@ export const CONFIRMATION_MODAL_TEST_IDS = {
 
 export const SCHEMA_EDITOR_TEST_IDS = {
   editor: 'schemaEditor',
+  saveButton: 'schemaEditorSaveButton',
+  manageRequiredFieldsButton: 'schemaEditorManageRequiredFieldsButton',
+  requiredFieldsPanel: 'schemaEditorRequiredFieldsPanel',
+  requiredFieldsPanelCloseButton: 'schemaEditorRequiredFieldsPanelCloseButton',
 } as const;
+
+/**
+ * Prefix for the required-field checkboxes of the schema editor. The full test id
+ * is `schemaEditorRequiredProperty-<dot separated path>`, e.g.
+ * `schemaEditorRequiredProperty-applicantName` for a root property and
+ * `schemaEditorRequiredProperty-address.street` for a nested one.
+ */
+export const SCHEMA_EDITOR_REQUIRED_PROPERTY_TEST_ID_PREFIX = 'schemaEditorRequiredProperty-';
 
 export const VALUE_PATH_SELECTOR_TEST_IDS = {
   toggle: 'valuePathSelectorToggle',

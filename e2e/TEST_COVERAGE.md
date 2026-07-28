@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 342       | 268        | 74             |
-| **Total**                   | **20**   | **363**   | **280**    | **83**         |
+| Admin Features (ROLE_ADMIN) | 15       | 345       | 278        | 67             |
+| **Total**                   | **20**   | **366**   | **290**    | **76**         |
 
-**Coverage:** `280 / 363` — `77.1%`
+**Coverage:** `290 / 366` — `79.2%`
 
 ---
 
@@ -483,36 +483,39 @@
 
 #### 13B · BB Details
 
-| #      | Function                          | Test Scenarios                                                              | Coverage | Notes                                             |
-|:-------|:----------------------------------|:----------------------------------------------------------------------------|:--------:|:--------------------------------------------------|
-| 13.10  | View BB general info              | View building block general information                                     |    ✅    | building-block-details-management.spec.ts         |
-| 13.11  | View BB document tab              | View building block document tab                                            |    ✅    | building-block-details-management.spec.ts         |
-| 13.12  | View BB processes tab             | View building block processes tab                                           |    ✅    | building-block-details-management.spec.ts         |
-| 13.13  | View plugin configuration         | Plugins used listed · Empty message when none are used                      |    ✅    | building-block-details-management.spec.ts         |
-| 13.14  | Upload/update BB artwork          | Upload building block artwork                                               |    ✅    | building-block-details-management.spec.ts         |
-| 13.15  | Delete BB artwork                 | Delete artwork after confirming                                             |    ✅    | building-block-details-management.spec.ts         |
-| 13.16  | Save BB metadata                  | Save building block name and description                                    |    ✅    | building-block-details-management.spec.ts         |
-| 13.17  | Export BB as ZIP                  | Export building block as ZIP                                                |    ✅    | building-block-details-management.spec.ts         |
-| 13.18  | Create draft version              | Create draft version from a finalized version                               |    ✅    | building-block-details-management.spec.ts         |
-| 13.19  | Enter version tag                 | Enter new version tag for draft                                             |    ✅    | building-block-details-management.spec.ts         |
-| 13.20  | View version status badge         | Draft badged `DRAFT: <tag>` · final badged `<tag>` (no `RELEASE` label)     |    ✅    | building-block-details-management.spec.ts         |
-| 13.21  | Switch versions                   | Switch between versions via dropdown                                        |    ✅    | building-block-details-management.spec.ts         |
-| 13.22  | Finalize draft version            | Finalize draft version, which becomes read-only                             |    ✅    | building-block-details-management.spec.ts         |
-| 13.22a | Reject incomplete BB metadata     | Save disabled while pristine or with an empty name                          |    ✅    | building-block-details-management.spec.ts         |
-| 13.22b | Reject artwork upload without file | Upload disabled until a file is selected                                    |    ✅    | building-block-details-management.spec.ts         |
-| 13.22c | Reject draft without version tag  | Create draft disabled while the version tag is empty                        |    ✅    | building-block-details-management.spec.ts         |
+| #      | Function                          | Test Scenarios                                                          | Coverage | Notes                                             |
+|:-------|:----------------------------------|:------------------------------------------------------------------------|:--------:|:--------------------------------------------------|
+| 13.10  | View BB general info              | View building block general information                                 |    ✅    | building-block-details-management.spec.ts         |
+| 13.11  | View BB document tab              | View building block document tab                                        |    ✅    | building-block-details-management.spec.ts         |
+| 13.12  | View BB processes tab             | View building block processes tab                                       |    ✅    | building-block-details-management.spec.ts         |
+| 13.13  | View plugin configuration         | Plugins used listed · Empty message when none are used                  |    ✅    | building-block-details-management.spec.ts         |
+| 13.14  | Upload/update BB artwork          | Upload building block artwork                                           |    ✅    | building-block-details-management.spec.ts         |
+| 13.15  | Delete BB artwork                 | Delete artwork after confirming                                         |    ✅    | building-block-details-management.spec.ts         |
+| 13.16  | Save BB metadata                  | Save building block name and description                                |    ✅    | building-block-details-management.spec.ts         |
+| 13.17  | Export BB as ZIP                  | Export building block as ZIP                                            |    ✅    | building-block-details-management.spec.ts         |
+| 13.18  | Create draft version              | Create draft version from a finalized version                           |    ✅    | building-block-details-management.spec.ts         |
+| 13.19  | Enter version tag                 | Enter new version tag for draft                                         |    ✅    | building-block-details-management.spec.ts         |
+| 13.20  | View version status badge         | Draft badged `DRAFT: <tag>` · final badged `<tag>` (no `RELEASE` label) |    ✅    | building-block-details-management.spec.ts         |
+| 13.21  | Switch versions                   | Switch between versions via dropdown                                    |    ✅    | building-block-details-management.spec.ts         |
+| 13.22  | Finalize draft version            | Finalize draft version, which becomes read-only                         |    ✅    | building-block-details-management.spec.ts         |
+| 13.22a | Reject incomplete BB metadata     | Save disabled while pristine or with an empty name                      |    ✅    | building-block-details-management.spec.ts         |
+| 13.22b | Reject artwork upload without file | Upload disabled until a file is selected                               |    ✅    | building-block-details-management.spec.ts         |
+| 13.22c | Reject draft without version tag  | Create draft disabled while the version tag is empty                    |    ✅    | building-block-details-management.spec.ts         |
 
 #### 13C · BB Document
 
-| #     | Function                   | Test Scenarios                                               | Coverage | Notes                                           |
-|:------|:---------------------------|:-------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 13.23 | View BB document structure | View building block document structure (JSON)                |    ❌    |                                                 |
-| 13.24 | Edit document structure    | Edit document structure in JSON editor                       |    ❌    |                                                 |
-| 13.25 | Manage required fields     | Manage required fields with checkboxes                       |    ❌    |                                                 |
-| 13.26 | View field types           | View field types (`string`, `object`, `array`, `boolean`, …) |    ❌    |                                                 |
-| 13.27 | View field descriptions    | View field descriptions                                      |    ❌    |                                                 |
-| 13.28 | Search/filter fields       | Search and filter document fields                            |    ❌    |                                                 |
-| 13.29 | Save document config       | Save document configuration                                  |    ❌    |                                                 |
+| #      | Function                          | Test Scenarios                                                              | Coverage | Notes                                             |
+|:-------|:----------------------------------|:----------------------------------------------------------------------------|:--------:|:--------------------------------------------------|
+| 13.23  | View BB document structure        | View building block document structure (JSON)                               |    ✅    | building-block-document.spec.ts                   |
+| 13.24  | Edit document structure           | Edit document structure in the JSON editor                                  |    ✅    | building-block-document.spec.ts                   |
+| 13.25  | Manage required fields            | Panel grouped per object level · Mark and unmark required                   |    ✅    | building-block-document.spec.ts                   |
+| 13.26  | View field types                  | View field types (`string`, `integer`, `boolean`, `object`, `array`)        |    ✅    | building-block-document.spec.ts                   |
+| 13.27  | View field descriptions           | View field descriptions                                                     |    ✅    | building-block-document.spec.ts                   |
+| 13.28  | Search/filter fields              | Search highlights matches and reports the match count                       |    ✅    | building-block-document.spec.ts                   |
+| 13.29  | Save document config              | Save document configuration (edit and required-field changes)               |    ✅    | building-block-document.spec.ts                   |
+| 13.29a | Reject unchanged document save    | Save disabled until the document is changed                                 |    ✅    | building-block-document.spec.ts                   |
+| 13.29b | Reject invalid document JSON      | Parse error shown · Save disabled · document untouched                      |    ✅    | building-block-document.spec.ts                   |
+| 13.29c | Block edits on finalized version  | Document readable but Save and required checkboxes disabled                 |    ✅    | building-block-document.spec.ts                   |
 
 #### 13D · BB Processes
 
@@ -733,9 +736,9 @@
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   363   |
-| ✅ Covered by Playwright |   280   |
-| ❌ Not covered           |   83    |
+| Total Functions          |   366   |
+| ✅ Covered by Playwright |   290   |
+| ❌ Not covered           |   76    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    2    |
-| **Coverage %**           | **77.1%** |
+| **Coverage %**           | **79.2%** |
