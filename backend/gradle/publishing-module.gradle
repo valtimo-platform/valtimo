@@ -15,6 +15,11 @@
  */
 
 def publishToS3 = project.hasProperty('publishToS3') && project.property('publishToS3') == 'true'
+// The S3 endpoint + region are supplied at invocation time via -Dorg.gradle.s3.endpoint /
+// -Dorg.gradle.s3.region, so the build works against any S3-compatible store (AWS S3,
+// OVHcloud, …) without hardcoding the host.
+// Bucket per pipeline: valtimo-releases for release/RC, valtimo-snapshots for snapshots.
+def s3Bucket = project.findProperty('s3Bucket') ?: 'valtimo-snapshots'
 def sonatypeCentralStagingDir = uri("build/staging-deploy")
 def signingConfigSet = false
 if(System.getenv('SIGNING_KEY_BASE64') &&
@@ -46,7 +51,7 @@ publishing {
                     accessKey System.getenv('AWS_ACCESS_KEY_ID')
                     secretKey System.getenv('AWS_SECRET_ACCESS_KEY')
                 }
-                url = 's3://valtimo-snapshots'
+                url = uri("s3://${s3Bucket}")
             }
         }
     }

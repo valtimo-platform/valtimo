@@ -60,20 +60,27 @@ internal class DocumentenApiClientIT @Autowired constructor(
     lateinit var server: MockWebServer
     lateinit var documentenApiPlugin: DocumentenApiPlugin
     lateinit var roleTest: Role
+    private var previousPluginUrl: String = ""
+
+    // Derived from the mock server's actual (randomly assigned) address so the test does not depend on a fixed port.
+    private val baseUrl get() = server.url("").toString().removeSuffix("/")
 
     @BeforeAll
     internal fun setUp() {
         server = MockWebServer()
         setupMockDocumentenApiServer()
-        server.start(port = 56273)
+        server.start()
 
-        documentenApiPlugin = pluginService.createInstance("5474fe57-532a-4050-8d89-32e62ca3e895")
+        // @BeforeAll runs outside the per-test transaction, so capture the original URL and restore it in tearDown.
+        previousPluginUrl = setPluginConfigurationUrl(DOCUMENTEN_API_PLUGIN_ID, server.url("/documenten/").toString())
+        documentenApiPlugin = pluginService.createInstance(DOCUMENTEN_API_PLUGIN_ID)
 
         roleTest = roleRepository.findByKey("ROLE_TEST")!!
     }
 
     @AfterAll
     internal fun tearDown() {
+        setPluginConfigurationUrl(DOCUMENTEN_API_PLUGIN_ID, previousPluginUrl)
         server.shutdown()
     }
 
@@ -152,7 +159,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
             documentenApiPlugin.url,
             Pageable.ofSize(10),
             DocumentSearchRequest(
-                zaakUrl = URI("https://localhost:56273/documenten/1234"),
+                zaakUrl = URI("$baseUrl/documenten/1234"),
             )
         )
 
@@ -169,7 +176,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
             documentenApiPlugin.url,
             Pageable.ofSize(10),
             DocumentSearchRequest(
-                zaakUrl = URI("https://localhost:56273/documenten/1234"),
+                zaakUrl = URI("$baseUrl/documenten/1234"),
             )
         )
 
@@ -317,7 +324,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
         permissionRepository.saveAllAndFlush(permissions)
 
         // Use objectUrl (non-zaak filter, simulating a custom ZGW object) with objectType "zaak"
-        val zaakUrl = URI("http://localhost:56273/documenten/zaken/1234")
+        val zaakUrl = URI("$baseUrl/documenten/zaken/1234")
         val results = documentenApiClient.getInformatieObjecten(
             documentenApiPlugin.authenticationPluginConfiguration,
             documentId,
@@ -349,7 +356,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         // Drain any previously queued requests so takeRequest() returns this test's request
         val requestCountBefore = server.requestCount
-        val objectUrl = URI("http://localhost:56273/documenten/zaken/5678")
+        val objectUrl = URI("$baseUrl/documenten/zaken/5678")
         documentenApiClient.getInformatieObjecten(
             documentenApiPlugin.authenticationPluginConfiguration,
             documentId,
@@ -387,7 +394,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         val request = ObjectInformatieObjectRequest(
             informatieobject = URI("${documentenApiPlugin.url}enkelvoudiginformatieobjecten/objectId"),
-            `object` = URI("http://localhost:56273/documenten/zaken/objectId"),
+            `object` = URI("$baseUrl/documenten/zaken/objectId"),
             objectType = "zaak",
         )
 
@@ -411,7 +418,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
 
         val request = ObjectInformatieObjectRequest(
             informatieobject = URI("${documentenApiPlugin.url}enkelvoudiginformatieobjecten/objectId"),
-            `object` = URI("http://localhost:56273/documenten/zaken/objectId"),
+            `object` = URI("$baseUrl/documenten/zaken/objectId"),
             objectType = "zaak",
         )
 
@@ -490,7 +497,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
             {
               "url": "${server.url("/")}objectinformatieobjecten/new-link-id",
               "informatieobject": "${server.url("/")}enkelvoudiginformatieobjecten/objectId",
-              "object": "http://localhost:56273/documenten/zaken/objectId",
+              "object": "$baseUrl/documenten/zaken/objectId",
               "objectType": "zaak"
             }
         """.trimIndent()
@@ -605,6 +612,7 @@ internal class DocumentenApiClientIT @Autowired constructor(
     }
 
     companion object {
+        private const val DOCUMENTEN_API_PLUGIN_ID = "5474fe57-532a-4050-8d89-32e62ca3e895"
         val CASE_DOCUMENT_ID: UUID =
             UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
     }
