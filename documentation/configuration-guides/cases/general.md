@@ -50,7 +50,7 @@ case creation happens through an external portal or citizen-facing form applicat
 |----------|-------------|
 | External start form enabled | Toggle to enable or disable the external form link |
 | URL of external start form | The full URL where users can access the form (e.g., `https://forms.example.com/request`) |
-| Description | A brief description shown to users explaining what the form is for |
+| Description | Label shown in the "Start new case" modal as a clickable tile. When users have multiple ways to start a case (external form + linked processes), this text helps them identify the external form option. |
 
 When enabled, click **Save** to apply changes.
 
