@@ -32,6 +32,13 @@
   reason, making it easier to trace subscription problems. When subscription registration is turned
   off (`valtimo.zgw.register-abonnementen=false`), this is now logged instead of happening silently.
 
+* **Case detail keeps the status and assignee up to date automatically**
+
+  The case detail screen now updates the internal status and the assignee on its own as soon as they
+  change, so you no longer have to switch tabs or reload the page to see the current situation. This
+  happens for example when a status changes automatically because a task is completed or a timer
+  expires, and when a case is assigned to — or unassigned from — a colleague or a team.
+
 ## Bugfixes
 
 * **Case list export now enforces the export permission**
