@@ -49,6 +49,12 @@
   before producing a file. A user without an applicable `export` permission for the case definition now receives a
   403 (Forbidden) response instead of an empty CSV.
 
+* **Documents tab no longer fails when a linked document is missing in the Documenten API**
+
+  Documents that are still linked to the zaak but no longer exist in the Documenten API are
+  now skipped (with a warning in the log), so the remaining documents of the case are still
+  shown instead of an error.
+
 * **Tooltips no longer stay on screen when the hovered element is removed**
 
   A tooltip shown for an element that was removed or re-rendered while hovered (for example on pages that
