@@ -23,4 +23,8 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Documents tab no longer fails when a linked document is missing in the Documenten API**
+
+  Documents that are still linked to the zaak but no longer exist in the Documenten API are
+  now skipped (with a warning in the log), so the remaining documents of the case are still
+  shown instead of an error.

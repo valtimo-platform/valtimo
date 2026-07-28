@@ -51,6 +51,8 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
+import org.springframework.web.client.HttpClientErrorException
 import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.LocalDate
@@ -125,6 +127,74 @@ class ZaakDocumentServiceTest {
             assertEquals(UUID.fromString("b059092c-9557-431a-9118-97f147903270"), relatedFile.fileId)
             assertEquals(documentenApiPluginConfiguration.id.id, relatedFile.pluginConfigurationId)
             assertEquals("http://localhost/informatieobjecttype", relatedFile.informatieobjecttype)
+        }
+    }
+
+    @Test
+    fun `should skip informatieobjecten that no longer exist in the Documenten API`() {
+        val caseId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/$caseId")
+        whenever(zaakUrlProvider.getZaakUrl(caseId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+
+        val zaakInformatieObjects = createZaakInformatieObjecten(zaakUrl)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakUrl)).thenReturn(
+            zaakInformatieObjects
+        )
+
+        val documentenApiPluginConfiguration = mock<PluginConfiguration>()
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.findPluginConfiguration(eq(DocumentenApiPlugin::class.java), any()))
+            .doReturn(documentenApiPluginConfiguration)
+        whenever(documentenApiPluginConfiguration.id)
+            .doReturn(PluginConfigurationId(UUID.randomUUID()))
+        whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
+            .doReturn(documentenApiPlugin)
+        val missingInformatieobjectUrl = zaakInformatieObjects[2].informatieobject
+        whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any())).doAnswer { answer ->
+            val uri = answer.getArgument(0) as URI
+            if (uri == missingInformatieobjectUrl) {
+                throw HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found")
+            }
+            createDocumentInformatieObject(uri)
+        }
+
+        val relatedFiles = service.getInformatieObjectenAsRelatedFiles(caseId)
+
+        assertEquals(4, relatedFiles.size)
+    }
+
+    @Test
+    fun `should throw when the Documenten API fails with an error other than not found`() {
+        val caseId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/$caseId")
+        whenever(zaakUrlProvider.getZaakUrl(caseId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+
+        val zaakInformatieObjects = createZaakInformatieObjecten(zaakUrl)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakUrl)).thenReturn(
+            zaakInformatieObjects
+        )
+
+        val documentenApiPluginConfiguration = mock<PluginConfiguration>()
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.findPluginConfiguration(eq(DocumentenApiPlugin::class.java), any()))
+            .doReturn(documentenApiPluginConfiguration)
+        whenever(documentenApiPluginConfiguration.id)
+            .doReturn(PluginConfigurationId(UUID.randomUUID()))
+        whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
+            .doReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any()))
+            .doAnswer { throw HttpClientErrorException(HttpStatus.FORBIDDEN, "Forbidden") }
+
+        assertThrows<HttpClientErrorException> {
+            service.getInformatieObjectenAsRelatedFiles(caseId)
         }
     }
 
