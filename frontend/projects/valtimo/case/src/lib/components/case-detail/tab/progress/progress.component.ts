@@ -36,6 +36,12 @@ import {
 import {ListItem} from 'carbon-components-angular/dropdown';
 import {CaseProcessTimerService} from '../../../../services';
 
+interface PendingSkip {
+  timer: SkippableTimer;
+  documentId: string;
+  processInstanceId: string;
+}
+
 @Component({
   standalone: false,
   selector: 'valtimo-case-detail-tab-progress',
@@ -48,9 +54,11 @@ export class CaseDetailTabProgressComponent {
     shareReplay({bufferSize: 1, refCount: true})
   );
 
+  private readonly _reloadProcessInstances$ = new BehaviorSubject<void>(undefined);
+
   private readonly processDocumentInstances$: Observable<Array<ProcessDocumentInstance>> =
-    this.route.paramMap.pipe(
-      switchMap((params: ParamMap) =>
+    combineLatest([this.route.paramMap, this._reloadProcessInstances$]).pipe(
+      switchMap(([params]: [ParamMap, void]) =>
         this.documentService.findProcessDocumentInstances(params.get('documentId'))
       ),
       map(processDocumentInstances =>
@@ -65,7 +73,17 @@ export class CaseDetailTabProgressComponent {
         )
       ),
       tap(processDocumentInstances => {
-        if (processDocumentInstances.length > 0) {
+        if (processDocumentInstances.length === 0) {
+          return;
+        }
+
+        // Reloading keeps the selected process instance, as long as it is still part of the case.
+        const stillPresent = processDocumentInstances.some(
+          processDocumentInstance =>
+            processDocumentInstance.id.processInstanceId === this.selectedProcessInstanceId$.value
+        );
+
+        if (!stillPresent) {
           this.selectedProcessInstanceId$.next(processDocumentInstances[0].id.processInstanceId);
         }
       })
@@ -74,10 +92,11 @@ export class CaseDetailTabProgressComponent {
   public readonly processInstanceItems$: Observable<LoadedValue<Array<ListItem>>> =
     this.processDocumentInstances$.pipe(
       map(processDocumentInstances =>
-        processDocumentInstances.map((processDocumentInstance, index) => ({
+        processDocumentInstances.map(processDocumentInstance => ({
           processInstanceId: processDocumentInstance.id.processInstanceId,
           content: processDocumentInstance.processName || '-',
-          selected: index === 0,
+          selected:
+            processDocumentInstance.id.processInstanceId === this.selectedProcessInstanceId$.value,
         }))
       ),
       map(processInstanceItems => ({
@@ -134,7 +153,7 @@ export class CaseDetailTabProgressComponent {
     map(timers => timers.length > 0)
   );
 
-  private readonly _pendingSkip$ = new BehaviorSubject<SkippableTimer | null>(null);
+  private readonly _pendingSkip$ = new BehaviorSubject<PendingSkip | null>(null);
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -150,23 +169,35 @@ export class CaseDetailTabProgressComponent {
     }
   }
 
+  /**
+   * The case and process instance the timer belongs to are captured here, so confirming skips the
+   * timer in the context it was requested from, even when the selection or the route changed in the
+   * meantime.
+   */
   public onRequestSkipTimer(timer: SkippableTimer): void {
-    this._pendingSkip$.next(timer);
-    this.showSkipConfirm$.next(true);
+    const processInstanceId = this.selectedProcessInstanceId$.value;
+
+    this._documentId$.pipe(take(1)).subscribe(documentId => {
+      if (!documentId || !processInstanceId) {
+        return;
+      }
+
+      this._pendingSkip$.next({timer, documentId, processInstanceId});
+      this.showSkipConfirm$.next(true);
+    });
   }
 
   public onConfirmSkipTimer(): void {
     this.showSkipConfirm$.next(false);
-    const timer = this._pendingSkip$.value;
-    const processInstanceId = this.selectedProcessInstanceId$.value;
+    const pendingSkip = this._pendingSkip$.value;
 
-    this._documentId$.pipe(take(1)).subscribe(documentId => {
-      if (!timer || !documentId || !processInstanceId) {
-        this._pendingSkip$.next(null);
-        return;
-      }
+    if (!pendingSkip) {
+      return;
+    }
 
-      this.caseProcessTimerService.skipTimer(documentId, processInstanceId, timer.jobId).subscribe({
+    this.caseProcessTimerService
+      .skipTimer(pendingSkip.documentId, pendingSkip.processInstanceId, pendingSkip.timer.jobId)
+      .subscribe({
         next: () => {
           this.notificationService.showToast({
             type: 'success',
@@ -174,6 +205,8 @@ export class CaseDetailTabProgressComponent {
             message: '',
           });
           this._pendingSkip$.next(null);
+          // Skipping a timer can complete the process, so the process instance data is stale too.
+          this._reloadProcessInstances$.next();
           this._reloadTimers$.next();
           this.diagramReloadToken$.next(this.diagramReloadToken$.value + 1);
         },
@@ -182,7 +215,6 @@ export class CaseDetailTabProgressComponent {
           this._pendingSkip$.next(null);
         },
       });
-    });
   }
 
   public onCancelSkipTimer(): void {
