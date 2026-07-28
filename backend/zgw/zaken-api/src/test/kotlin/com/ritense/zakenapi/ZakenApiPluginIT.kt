@@ -71,7 +71,6 @@ import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
-import java.lang.Thread.sleep
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -103,12 +102,18 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
     private var executedRequests: MutableList<RecordedRequest> = mutableListOf()
 
+    // Derived from the mock server's actual (randomly assigned) address so the test does not depend on a fixed port.
+    private val baseUrl get() = server.url("").toString().removeSuffix("/")
+    private val catalogiApiUrl get() = server.url(CATALOGI_API_PATH).toString()
+    private val zakenApiUrl get() = server.url(ZAKEN_API_PATH).toString()
+    private val zaaktypeUrl get() = URI("$catalogiApiUrl/zaaktypen/$ZAAKTYPE_ID")
+    private val zaakInstanceUrl get() = URI("$zakenApiUrl/zaken/$ZAAK_ID")
+
     @BeforeEach
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 56273)
-        sleep(2000) // Needed to fix connection refused error
+        server.start()
 
         // Since we do not have an actual authentication plugin in this context we will mock one
         val mockedId = PluginConfigurationId.existingId(UUID.fromString(AUTHENTICATION_PLUGIN_ID))
@@ -118,6 +123,10 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             .whenever(pluginService).createInstance(mockedId)
         doCallRealMethod()
             .whenever(pluginService).createPluginConfiguration(any(), any(), any())
+
+        // Point the statically-deployed plugin configurations at the randomly assigned mock server port.
+        setPluginConfigurationUrl(ZAKEN_API_PLUGIN_ID, server.url("$ZAKEN_API_PATH/").toString())
+        setPluginConfigurationUrl(CATALOGI_API_PLUGIN_ID, server.url("$CATALOGI_API_PATH/").toString())
 
         // Setting up plugin
         val pluginPropertiesJson = """
@@ -176,7 +185,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         zakenApiPlugin.createZaak(
             caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
-            zaaktypeUrl = ZAAKTYPE_URL
+            zaaktypeUrl = zaaktypeUrl
         )
 
         val requestBody = createZaakRequestBody()
@@ -193,7 +202,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         zakenApiPlugin.createZaak(
             caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
-            zaaktypeUrl = ZAAKTYPE_URL,
+            zaaktypeUrl = zaaktypeUrl,
             description = description,
             plannedEndDate = plannedEndDate,
             finalDeliveryDate = null
@@ -216,7 +225,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         zakenApiPlugin.createZaak(
             caseDocumentId = document.id().id,
             rsin = Rsin("155539620"),
-            zaaktypeUrl = ZAAKTYPE_URL,
+            zaaktypeUrl = zaaktypeUrl,
         )
 
         val description = "omschrijving na patch"
@@ -254,7 +263,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
         assertEquals(4, parsedOutput.size)
         assertEquals(INFORMATIE_OBJECT_URL, parsedOutput["informatieobject"])
-        assertEquals(ZAAK_URL.toString(), parsedOutput["zaak"])
+        assertEquals(zaakInstanceUrl.toString(), parsedOutput["zaak"])
         assertEquals("titelVariableName", parsedOutput["titel"])
         assertEquals("beschrijvingVariableName", parsedOutput["beschrijving"])
 
@@ -285,7 +294,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
         assertEquals(4, parsedOutput.size)
         assertEquals(INFORMATIE_OBJECT_URL, parsedOutput["informatieobject"])
-        assertEquals(ZAAK_URL.toString(), parsedOutput["zaak"])
+        assertEquals(zaakInstanceUrl.toString(), parsedOutput["zaak"])
         assertEquals("titelVariableName", parsedOutput["titel"])
         assertEquals("beschrijvingVariableName", parsedOutput["beschrijving"])
 
@@ -300,9 +309,9 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     fun `should create zaak object`() {
         val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
 
-        val zaakUrl = URI("http://localhost:56273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900")
+        val zaakUrl = URI("$baseUrl/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900")
         val objectUrl = URI("")
-        val zaakobjecttype = "http://localhost:56273/catalogi/my-zaaktype-id"
+        val zaakobjecttype = "$baseUrl/catalogi/my-zaaktype-id"
         val objectType = ZaakObjectType.ADRES
         val relatieomschrijving = ""
 
@@ -329,7 +338,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     fun `should create zaak object via legacy function`() {
         val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
 
-        val zaakUrl = URI("http://localhost:56273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900")
+        val zaakUrl = URI("$baseUrl/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900")
         val objectUrl = URI("")
         val objectType = ZaakObjectType.OVERIGE
         val objectTypeOverige = "zaakdetails"
@@ -353,7 +362,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
 
         val edossierNummer = "E.123.4"
-        val zaakUrl = URI("http://localhost:56273/zaken/123")
+        val zaakUrl = URI("$baseUrl/zaken/123")
         val relatieomschrijving = "Betrokken erfpachtdossier"
         val identificatie = "doc:verzoek.metaData.eDossiernummer"
         val avgAard = "Erfpacht"
@@ -381,7 +390,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             zaakUrl,
             UUID.randomUUID(),
             document.id().id,
-            URI("http://localhost:56273/zaak-type/456")
+            URI("$baseUrl/zaak-type/456")
         )
 
         val execution: DelegateExecution = mock()
@@ -436,10 +445,10 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             val result = invocation.callRealMethod() as com.ritense.document.service.result.CreateDocumentResult
             result.resultingDocument().ifPresent { document ->
                 zaakInstanceLinkService.createZaakInstanceLink(
-                    ZAAK_URL,
+                    zaakInstanceUrl,
                     UUID.fromString(ZAAK_ID),
                     document.id().id,
-                    ZAAKTYPE_URL
+                    zaaktypeUrl
                 )
             }
             result
@@ -496,7 +505,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
               "url": "http://example.com",
               "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
               "informatieobject": "$INFORMATIE_OBJECT_URL",
-              "zaak": "$ZAAK_URL",
+              "zaak": "$zaakInstanceUrl",
               "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
               "titel": "string",
               "beschrijving": "string",
@@ -509,13 +518,13 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     private fun zaakResponse(): MockResponse {
         val body = """
             {
-                "url": "$ZAAK_URL",
+                "url": "$zaakInstanceUrl",
                 "uuid": "$ZAAK_ID",
                 "identificatie": "ZAAK-2023-0000000001",
                 "bronorganisatie": "419071349",
                 "omschrijving": "",
                 "toelichting": "",
-                "zaaktype": "$ZAAKTYPE_URL",
+                "zaaktype": "$zaaktypeUrl",
                 "registratiedatum": "2024-02-13",
                 "verantwoordelijkeOrganisatie": "420936440",
                 "startdatum": "2023-01-23",
@@ -557,9 +566,9 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             {
                 "url": "http://example.com",
                 "uuid": "ffa06285-d60f-4748-8fcf-15a93c5fb308",
-                "zaak": "http://localhost:56273/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900",
+                "zaak": "$baseUrl/zaken/41e90cab-7f81-4a45-883d-430b7a6d9900",
                 "object": "",
-                "zaakobjecttype": "http://localhost:56273/catalogi/my-zaaktype-id",
+                "zaakobjecttype": "$baseUrl/catalogi/my-zaaktype-id",
                 "objectType": "adres",
                 "objectTypeOverige": "a",
                 "objectTypeOverigeDefinitie": {
@@ -588,7 +597,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     private fun zaaktypeResponse(): MockResponse {
         val body = """
             {
-                "url": "$ZAAKTYPE_URL",
+                "url": "$zaaktypeUrl",
                 "identificatie": "example-case",
                 "omschrijving": "Example case",
                 "omschrijvingGeneriek": "Example case",
@@ -619,19 +628,19 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
                     "naam": "Example case",
                     "link": "http://ritense.com"
                 },
-                "catalogus": "${CATALOGI_API_URL}catalogussen/8225508a-6840-413e-acc9-6422af120db1",
+                "catalogus": "${catalogiApiUrl}catalogussen/8225508a-6840-413e-acc9-6422af120db1",
                 "statustypen": [
-                    "${CATALOGI_API_URL}statustypen/12345678-3f25-4716-5432-49ea8e954fd0"
+                    "${catalogiApiUrl}statustypen/12345678-3f25-4716-5432-49ea8e954fd0"
                 ],
                 "resultaattypen": [],
                 "eigenschappen": [
-                    "${CATALOGI_API_URL}eigenschappen/12345678-b04b-424b-ab02-c4102b562633"
+                    "${catalogiApiUrl}eigenschappen/12345678-b04b-424b-ab02-c4102b562633"
                 ],
                 "informatieobjecttypen": [
-                    "${CATALOGI_API_URL}informatieobjecttypen/12345678-be3b-4bad-9e3c-49a6219c92ad"
+                    "${catalogiApiUrl}informatieobjecttypen/12345678-be3b-4bad-9e3c-49a6219c92ad"
                 ],
                 "roltypen": [
-                    "${CATALOGI_API_URL}roltypen/12345678-c38d-47b8-bed5-994db88ead61"
+                    "${catalogiApiUrl}roltypen/12345678-c38d-47b8-bed5-994db88ead61"
                 ],
                 "besluittypen": [],
                 "deelzaaktypen": [],
@@ -672,17 +681,13 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         private const val DOCUMENT_DEFINITION_KEY = "profile"
         private const val INFORMATIE_OBJECT_URL = "http://informatie.object.url"
         private const val ZAKEN_API_PLUGIN_ID = "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        private const val CATALOGI_API_PLUGIN_ID = "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec"
         private const val AUTHENTICATION_PLUGIN_ID = "27a399c7-9d70-4833-a651-57664e2e9e09"
 
         private const val ZAAKTYPE_ID = "21c0946a-9058-11ee-b9d1-0242ac120002"
         private const val ZAAK_ID = "57f66ff6-db7f-43bc-84ef-6847640d3609"
 
         private const val CATALOGI_API_PATH = "/catalogi/api/v1"
-        private const val CATALOGI_API_URL = "http://localhost:56273$CATALOGI_API_PATH"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
-        private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
-
-        private val ZAAKTYPE_URL = URI("${CATALOGI_API_URL}/zaaktypen/$ZAAKTYPE_ID")
-        private val ZAAK_URL = URI("${ZAKEN_API_URL}/zaken/$ZAAK_ID")
     }
 }
