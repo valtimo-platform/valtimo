@@ -103,7 +103,7 @@ jobs:
       packages: read
     uses: ./.github/workflows/backend_smoke_and_promote.yml
     with:
-      image_name: gzac-evenementenvergunning-backend
+      image_name: gzac-evenementenvergunning-demo-backend
       release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
