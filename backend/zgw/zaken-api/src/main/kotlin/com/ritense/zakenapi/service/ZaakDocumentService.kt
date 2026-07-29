@@ -167,10 +167,24 @@ class ZaakDocumentService(
                     zaakInformatieobject.informatieobject
                 ).size == 1
             ) {
-                documentenApiService.deleteInformatieObject(
-                    zaakInformatieobject.informatieobject,
-                    caseDocumentId
-                )
+                try {
+                    // Call the plugin directly instead of DocumentenApiService: an exception that
+                    // crossed the service's @Transactional proxy would have marked the transaction
+                    // rollback-only, so catching it here would no longer save the case deletion.
+                    val pluginConfiguration =
+                        getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieobject.informatieobject)
+                    val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
+                    plugin.deleteInformatieObject(caseDocumentId, zaakInformatieobject.informatieobject)
+                } catch (e: HttpClientErrorException) {
+                    if (e.statusCode == HttpStatus.NOT_FOUND) {
+                        logger.warn(e) {
+                            "Skipping deletion of informatieobject '${zaakInformatieobject.informatieobject}' " +
+                                "of case '$caseDocumentId': it was not found in the Documenten API"
+                        }
+                    } else {
+                        throw e
+                    }
+                }
             } else {
                 zakenApiPlugin.deleteZaakInformatieobject(zaakInformatieobject.url, caseDocumentId)
             }
@@ -187,7 +201,9 @@ class ZaakDocumentService(
     }
 
     private fun <T> toPage(list: List<T>, pageable: Pageable): Page<T> {
-        val startIndex = pageable.offset.toInt()
+        // The offset can point past the end of the list, e.g. when documents that are missing
+        // in the Documenten API were filtered out. Clamp to avoid an out-of-bounds subList.
+        val startIndex = min(pageable.offset.toInt(), list.size)
         val endIndex = min(startIndex + pageable.pageSize, list.size)
         return PageImpl(list.subList(startIndex, endIndex), pageable, list.size.toLong())
     }
