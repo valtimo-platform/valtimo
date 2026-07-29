@@ -1322,6 +1322,10 @@
         "title": "Afbeelding",
         "description": "Toon een geüploade afbeelding"
       },
+      "text": {
+        "title": "Tekst",
+        "description": "Toon een vaste toelichting"
+      },
       "generic": {
         "title": "Generieke widgets",
         "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
@@ -1523,6 +1527,14 @@
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource.",
         "displayAsCarousel": "Weergeven als carrousel"
+      },
+      "text": {
+        "description": "",
+        "content": "Tekst",
+        "contentTooltip": "De tekst die in de widget wordt getoond. Markdown wordt ondersteund.",
+        "contentPlaceholder": "## Kop\n\nEen toelichting, met een [link](https://example.org) en een lijst:\n\n- eerste item\n- tweede item",
+        "contentHelper": "Opmaak met markdown wordt ondersteund: # voor koppen, - voor een lijst met opsommingstekens, **vet**, *cursief* en [linktekst](https://example.org). Links openen in een nieuw tabblad.",
+        "accentColor": "Accentkleur"
       }
     },
     "filters": {

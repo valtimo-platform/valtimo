@@ -1,0 +1,46 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    html: html$ | async,
+  } as obs"
+>
+  <header class="valtimo-widget-text__header">
+    <p class="valtimo-widget-text__title" [attr.title]="obs.widgetConfiguration?.title">
+      {{ obs.widgetConfiguration?.title }}
+    </p>
+
+    <span *ngIf="obs.widgetConfiguration?.icon" class="valtimo-widget-text__icon">
+      <valtimo-mdi-icon-viewer [mdiIcon]="obs.widgetConfiguration.icon"></valtimo-mdi-icon-viewer>
+    </span>
+  </header>
+
+  <!-- Plain [innerHTML] on purpose: Angular's DomSanitizer cleans the rendered markdown. -->
+  <div class="valtimo-widget-text__content" [innerHTML]="obs.html"></div>
+
+  <!--
+    No [resolvedData]: a text widget resolves no values, and the action button falls back to the
+    configured url as-is when it has no resolved data. Placeholders in that url are therefore not
+    supported here.
+  -->
+  <div class="valtimo-widget-text__actions">
+    <valtimo-widget-action-button
+      [widgetConfiguration]="obs.widgetConfiguration"
+    ></valtimo-widget-action-button>
+  </div>
+</ng-container>
