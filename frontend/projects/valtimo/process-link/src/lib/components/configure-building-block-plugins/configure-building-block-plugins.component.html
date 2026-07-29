@@ -78,17 +78,39 @@
                     {{ plugin.label }}
                   </div>
 
-                  <cds-combo-box
-                    cdsLayer
-                    size="lg"
-                    [appendInline]="true"
-                    [items]="plugin.dropdownItems"
-                    [placeholder]="configurationPlaceholder || ''"
-                    (selected)="onMappingChange(plugin.key, $event?.id || '')"
-                    (clear)="onMappingChange(plugin.key, '')"
-                  >
-                    <cds-dropdown-list></cds-dropdown-list>
-                  </cds-combo-box>
+                  <div class="plugin-configuration-select">
+                    <cds-combo-box
+                      cdsLayer
+                      size="lg"
+                      [appendInline]="true"
+                      [items]="plugin.dropdownItems"
+                      [placeholder]="configurationPlaceholder || ''"
+                      (selected)="onMappingChange(plugin.key, $event?.id || '')"
+                      (clear)="onMappingChange(plugin.key, '')"
+                    >
+                      <cds-dropdown-list></cds-dropdown-list>
+                    </cds-combo-box>
+
+                    @if (plugin.selectedConfigurationVersion) {
+                      <div class="plugin-configuration-select__warning">
+                        <cds-inline-notification
+                          [notificationObj]="{
+                            type: 'warning',
+                            title: '',
+                            message:
+                              ('processLinkConfiguration.buildingBlock.externalPluginVersionMismatchWarning'
+                              | translate
+                                : {
+                                    selectedVersion: plugin.selectedConfigurationVersion,
+                                    requiredVersion: plugin.pluginDefinitionVersion,
+                                  }),
+                            showClose: false,
+                            lowContrast: true,
+                          }"
+                        ></cds-inline-notification>
+                      </div>
+                    }
+                  </div>
                 </div>
               }
             }

@@ -71,4 +71,23 @@ class PluginConfigurationReferenceTest {
             )
         }.doesNotThrowAnyException()
     }
+
+    @Test
+    fun `pluginDefinitionVersion defaults to null`() {
+        val ref = PluginConfigurationReference(
+            type = PluginConfigurationReferenceType.FIXED,
+            pluginDefinitionKey = "zaken-api",
+        )
+        assertThat(ref.pluginDefinitionVersion).isNull()
+    }
+
+    @Test
+    fun `pluginDefinitionVersion can be set for external plugin usage`() {
+        val ref = PluginConfigurationReference(
+            type = PluginConfigurationReferenceType.BUILDING_BLOCK,
+            pluginDefinitionKey = "case-summary",
+            pluginDefinitionVersion = "1.2.3",
+        )
+        assertThat(ref.pluginDefinitionVersion).isEqualTo("1.2.3")
+    }
 }

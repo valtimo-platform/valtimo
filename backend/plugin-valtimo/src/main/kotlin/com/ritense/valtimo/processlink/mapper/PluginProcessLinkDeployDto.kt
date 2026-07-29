@@ -19,6 +19,7 @@ package com.ritense.valtimo.processlink.mapper
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.plugin.domain.PluginActionResultMapping
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
@@ -35,6 +36,7 @@ class PluginProcessLinkDeployDto(
     val actionProperties: ObjectNode? = JsonNodeFactory.instance.objectNode(),
     val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
     val pluginDefinitionKey: String? = null,
+    val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 ) : ProcessLinkDeployDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_PLUGIN

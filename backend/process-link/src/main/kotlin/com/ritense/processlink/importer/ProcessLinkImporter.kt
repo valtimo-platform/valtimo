@@ -77,29 +77,18 @@ open class ProcessLinkImporter(
                     node.set<ObjectNode>("processDefinitionId", TextNode.valueOf(processDefinitionId))
                 }
 
+                val processLinkType = node.path("processLinkType").asText(null)
+                    ?: throw IllegalStateException(
+                        "Error while processing file ${request.fileName}. Item at index $index has no 'processLinkType'!"
+                    )
+                val mapper = processLinkService.getProcessLinkMapper(processLinkType)
+
                 val mappings = request.pluginConfigurationMappings
-                if (mappings != null && node.has("pluginConfigurationId")) {
-                    val originalIdText = node.get("pluginConfigurationId").asText(null)
-                    if (originalIdText != null) {
-                        val originalId = try {
-                            java.util.UUID.fromString(originalIdText)
-                        } catch (_: IllegalArgumentException) {
-                            null
-                        }
-                        if (originalId != null && mappings.containsKey(originalId)) {
-                            val mappedId = mappings[originalId]
-                            if (mappedId != null) {
-                                node.set<ObjectNode>("pluginConfigurationId", TextNode.valueOf(mappedId.toString()))
-                            } else {
-                                node.putNull("pluginConfigurationId")
-                            }
-                        }
-                    }
+                if (mappings != null) {
+                    mapper.applyPluginConfigurationMappings(node, mappings)
                 }
 
                 val deployDto = objectMapper.treeToValue<ProcessLinkDeployDto>(node)
-
-                val mapper = processLinkService.getProcessLinkMapper(deployDto.processLinkType)
                 val createDto = mapper.toProcessLinkCreateRequestDto(deployDto, request.caseDefinitionId)
 
                 try {

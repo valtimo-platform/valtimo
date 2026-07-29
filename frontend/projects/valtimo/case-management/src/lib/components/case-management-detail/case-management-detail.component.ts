@@ -74,10 +74,14 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     map(params => params?.caseDefinitionKey ?? '')
   );
 
-  public readonly caseListColumn$ =
-    this.configService.getFeatureToggleObservable('caseListColumn', true);
-  public readonly tabManagementEnabled$ =
-    this.configService.getFeatureToggleObservable('enableTabManagement', true);
+  public readonly caseListColumn$ = this.configService.getFeatureToggleObservable(
+    'caseListColumn',
+    true
+  );
+  public readonly tabManagementEnabled$ = this.configService.getFeatureToggleObservable(
+    'enableTabManagement',
+    true
+  );
 
   public _activeTab: TabEnum | string;
   public pendingTab: TabEnum | null | string;
@@ -104,7 +108,12 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   private readonly _refreshConfigurationIssues$ = new BehaviorSubject<null>(null);
 
   public readonly hasPluginProcessLinkIssue$: Observable<boolean> =
-    this.configurationIssueService.hasIssue$('plugin-process-link');
+    this.configurationIssueService.hasAnyOfIssues$([
+      'plugin-process-link',
+      'external-plugin-process-link',
+      'external-plugin-task-form',
+      'external-plugin-case-tab',
+    ]);
 
   private readonly _tabIssueCache = new Map<string, Observable<boolean>>();
 

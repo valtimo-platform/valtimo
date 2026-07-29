@@ -70,7 +70,7 @@ class CaseExternalPluginTabService(
     @EventListener(CaseTabCreatedEvent::class)
     fun handleCaseTabCreatedEvent(event: CaseTabCreatedEvent) {
         if (event.tab.type != CaseTabType.EXTERNAL_PLUGIN) return
-        upsertSideRow(event.tab)
+        upsertSideRow(event.tab, event.pluginDefinitionKey, event.pluginDefinitionVersion)
     }
 
     /**
@@ -88,13 +88,27 @@ class CaseExternalPluginTabService(
         }
     }
 
-    private fun upsertSideRow(tab: CaseTab) {
+    /**
+     * Persists the side row, capturing the tab's plugin identity. Prefers resolving it from the
+     * (present) configuration — authoritative, and how the management-API create/update path works —
+     * and falls back to the [importedPluginDefinitionKey]/[importedPluginDefinitionVersion] carried
+     * from the export when the configuration is missing here (a dangling import). Without either, the
+     * key stays `null` and the repair panel can't identify the plugin (unchanged legacy behaviour).
+     */
+    private fun upsertSideRow(
+        tab: CaseTab,
+        importedPluginDefinitionKey: String? = null,
+        importedPluginDefinitionVersion: String? = null,
+    ) {
         val (configurationId, bundleKey) = parseContentKey(tab.contentKey)
+        val resolved = resolver.orElse(null)?.resolvePluginDefinition(configurationId)
         caseExternalPluginTabRepository.save(
             CaseExternalPluginTab(
                 id = tab.id,
                 externalPluginConfigurationId = configurationId,
                 bundleKey = bundleKey,
+                pluginDefinitionKey = resolved?.pluginDefinitionKey ?: importedPluginDefinitionKey,
+                pluginDefinitionVersion = resolved?.pluginDefinitionVersion ?: importedPluginDefinitionVersion,
             )
         )
     }

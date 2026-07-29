@@ -27,6 +27,10 @@ import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.plugin.domain.PluginConfigurationReference
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
+import com.ritense.plugin.service.PluginActionResultHandler
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valueresolver.ValueResolverService
@@ -36,7 +40,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.BpmnError
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -51,6 +58,7 @@ class ExternalPluginServiceTaskStartListenerTest {
     private lateinit var hostClient: ExternalPluginHostClient
     private lateinit var valueResolverService: ValueResolverService
     private lateinit var objectMapper: ObjectMapper
+    private lateinit var pluginActionResultHandler: PluginActionResultHandler
     private lateinit var listener: ExternalPluginServiceTaskStartListener
 
     private val configurationId = UUID.randomUUID()
@@ -66,6 +74,7 @@ class ExternalPluginServiceTaskStartListenerTest {
         hostClient = mock()
         valueResolverService = mock()
         objectMapper = ObjectMapper()
+        pluginActionResultHandler = mock()
         listener = ExternalPluginServiceTaskStartListener(
             processLinkRepository,
             configurationService,
@@ -74,6 +83,7 @@ class ExternalPluginServiceTaskStartListenerTest {
             hostClient,
             valueResolverService,
             objectMapper,
+            pluginActionResultHandler,
         )
 
         val configuration = mock<ExternalPluginConfiguration> {
@@ -83,6 +93,7 @@ class ExternalPluginServiceTaskStartListenerTest {
         val definition = mock<ExternalPluginDefinition> {
             on { this.hostId } doReturn hostId
             on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.1.0"
         }
         val host = mock<ExternalPluginHost> {
             on { baseUrl } doReturn "http://localhost:8090"
@@ -136,6 +147,325 @@ class ExternalPluginServiceTaskStartListenerTest {
             .hasMessageContaining("case-summary")
     }
 
+    @Test
+    fun `BUILDING_BLOCK reference resolves the configuration via the namespaced key`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val listenerWithResolver = ExternalPluginServiceTaskStartListener(
+            processLinkRepository,
+            configurationService,
+            definitionService,
+            hostService,
+            hostClient,
+            valueResolverService,
+            objectMapper,
+            pluginActionResultHandler,
+            resolver,
+        )
+
+        val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.1.0")
+        val execution = executionFor(processLink)
+
+        whenever(resolver.resolve(execution, "external-plugin:case-summary@0.1.0")).thenReturn(configurationId)
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listenerWithResolver.notify(OperatonExecutionEvent(execution, "start"))
+
+        verify(resolver).resolve(execution, "external-plugin:case-summary@0.1.0")
+        verify(hostClient).invokeAction(
+            baseUrl = eq("http://localhost:8090"),
+            pluginId = eq("case-summary"),
+            version = eq("0.1.0"),
+            actionKey = eq("case-summary"),
+            payload = any(),
+            hostSecret = eq("secret"),
+        )
+    }
+
+    @Test
+    fun `BUILDING_BLOCK reference with mismatched pluginId throws a clear error`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val listenerWithResolver = ExternalPluginServiceTaskStartListener(
+            processLinkRepository,
+            configurationService,
+            definitionService,
+            hostService,
+            hostClient,
+            valueResolverService,
+            objectMapper,
+            pluginActionResultHandler,
+            resolver,
+        )
+
+        // configurationId resolves to a definition with pluginId "case-summary" (see setUp),
+        // but the reference expects a different plugin — must not silently invoke the wrong plugin.
+        val processLink = buildingBlockProcessLink(pluginId = "other-plugin", version = "0.1.0")
+        val execution = executionFor(processLink)
+
+        whenever(resolver.resolve(execution, "external-plugin:other-plugin@0.1.0")).thenReturn(configurationId)
+
+        assertThatThrownBy { listenerWithResolver.notify(OperatonExecutionEvent(execution, "start")) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("other-plugin")
+            .hasMessageContaining("case-summary")
+    }
+
+    @Test
+    fun `BUILDING_BLOCK reference with a version mismatch proceeds with the resolved configuration's version`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val listenerWithResolver = ExternalPluginServiceTaskStartListener(
+            processLinkRepository,
+            configurationService,
+            definitionService,
+            hostService,
+            hostClient,
+            valueResolverService,
+            objectMapper,
+            pluginActionResultHandler,
+            resolver,
+        )
+
+        // setUp wires the definition to version "0.1.0"; the reference is pinned to "0.0.9".
+        val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.0.9")
+        val execution = executionFor(processLink)
+
+        whenever(resolver.resolve(execution, "external-plugin:case-summary@0.0.9")).thenReturn(configurationId)
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listenerWithResolver.notify(OperatonExecutionEvent(execution, "start"))
+
+        verify(hostClient).invokeAction(
+            baseUrl = any(),
+            pluginId = eq("case-summary"),
+            version = eq("0.1.0"),
+            actionKey = any(),
+            payload = any(),
+            hostSecret = any(),
+        )
+    }
+
+    @Test
+    fun `BUILDING_BLOCK reference falls back to a mapping made for a different version of the same plugin`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val listenerWithResolver = ExternalPluginServiceTaskStartListener(
+            processLinkRepository,
+            configurationService,
+            definitionService,
+            hostService,
+            hostClient,
+            valueResolverService,
+            objectMapper,
+            pluginActionResultHandler,
+            resolver,
+        )
+
+        // The reference pins 0.2.0, but only a mapping for another version (the wired-up 0.1.0) exists.
+        val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.2.0")
+        val execution = executionFor(processLink)
+
+        whenever(resolver.resolve(execution, "external-plugin:case-summary@0.2.0")).thenReturn(null)
+        whenever(resolver.resolveByKeyPrefix(execution, "external-plugin:case-summary@")).thenReturn(configurationId)
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listenerWithResolver.notify(OperatonExecutionEvent(execution, "start"))
+
+        verify(resolver).resolveByKeyPrefix(execution, "external-plugin:case-summary@")
+        verify(hostClient).invokeAction(
+            baseUrl = any(),
+            pluginId = eq("case-summary"),
+            version = eq("0.1.0"),
+            actionKey = any(),
+            payload = any(),
+            hostSecret = any(),
+        )
+    }
+
+    @Test
+    fun `BUILDING_BLOCK reference to a definition whose manifest no longer declares the action key throws a clear error`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val listenerWithResolver = ExternalPluginServiceTaskStartListener(
+            processLinkRepository,
+            configurationService,
+            definitionService,
+            hostService,
+            hostClient,
+            valueResolverService,
+            objectMapper,
+            pluginActionResultHandler,
+            resolver,
+        )
+
+        val staleDefinitionId = UUID.randomUUID()
+        val staleConfigurationId = UUID.randomUUID()
+        val staleConfiguration = mock<ExternalPluginConfiguration> {
+            on { id } doReturn staleConfigurationId
+            on { this.definitionId } doReturn staleDefinitionId
+        }
+        val staleDefinition = mock<ExternalPluginDefinition> {
+            on { this.hostId } doReturn hostId
+            on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.2.0"
+            on { manifestJson } doReturn objectMapper.readTree(
+                """{"actions":[{"key":"some-other-action"}]}""",
+            ) as com.fasterxml.jackson.databind.node.ObjectNode
+        }
+        whenever(configurationService.get(staleConfigurationId)).thenReturn(staleConfiguration)
+        whenever(definitionService.get(staleDefinitionId)).thenReturn(staleDefinition)
+
+        val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.2.0")
+        val execution = executionFor(processLink)
+
+        whenever(resolver.resolve(execution, "external-plugin:case-summary@0.2.0")).thenReturn(staleConfigurationId)
+
+        assertThatThrownBy { listenerWithResolver.notify(OperatonExecutionEvent(execution, "start")) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("case-summary")
+            .hasMessageContaining("does not declare")
+    }
+
+    @Test
+    fun `a result missing a manifest-declared output key fails with RESULT_CONTRACT_VIOLATION`() {
+        stubDefinitionWithDeclaredOutputs("summary", "title")
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(
+                status = 200,
+                body = objectMapper.readTree("""{"result":{"summary":"a summary"}}"""),
+            ),
+        )
+
+        assertThatThrownBy { listener.notify(globalProcessServiceTaskEvent()) }
+            .isInstanceOf(ExternalPluginActionFailedException::class.java)
+            .hasMessageContaining("title")
+            .hasMessageContaining("declares outputs")
+
+        val exception = runCatching { listener.notify(globalProcessServiceTaskEvent()) }.exceptionOrNull()
+        assertThat((exception as ExternalPluginActionFailedException).errorCode)
+            .isEqualTo("RESULT_CONTRACT_VIOLATION")
+        verify(pluginActionResultHandler, never()).handle(any(), any(), any())
+    }
+
+    @Test
+    fun `a response without a result object fails when the manifest declares outputs`() {
+        stubDefinitionWithDeclaredOutputs("summary")
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        assertThatThrownBy { listener.notify(globalProcessServiceTaskEvent()) }
+            .isInstanceOf(ExternalPluginActionFailedException::class.java)
+            .hasMessageContaining("summary")
+    }
+
+    @Test
+    fun `declared output keys returned as null pass validation`() {
+        stubDefinitionWithDeclaredOutputs("summary", "title")
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(
+                status = 200,
+                body = objectMapper.readTree("""{"result":{"summary":null,"title":null}}"""),
+            ),
+        )
+
+        listener.notify(globalProcessServiceTaskEvent())
+    }
+
+    @Test
+    fun `a definition without declared outputs skips result validation`() {
+        // setUp's definition has no manifestJson at all — a 200 without any result must pass.
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listener.notify(globalProcessServiceTaskEvent())
+    }
+
+    private fun stubDefinitionWithDeclaredOutputs(vararg outputs: String) {
+        val outputsJson = outputs.joinToString(",") { "\"$it\"" }
+        val definition = mock<ExternalPluginDefinition> {
+            on { this.hostId } doReturn hostId
+            on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.1.0"
+            on { manifestJson } doReturn objectMapper.readTree(
+                """{"actions":[{"key":"case-summary","outputs":[$outputsJson]}]}""",
+            ) as com.fasterxml.jackson.databind.node.ObjectNode
+        }
+        whenever(definitionService.get(definitionId)).thenReturn(definition)
+    }
+
+    @Test
+    fun `BUILDING_BLOCK reference without a resolver bean throws a clear error`() {
+        // listener from setUp() was constructed with a null resolver (the default)
+        val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.1.0")
+        val execution = executionFor(processLink)
+
+        assertThatThrownBy { listener.notify(OperatonExecutionEvent(execution, "start")) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("resolver")
+    }
+
+    @Test
+    fun `BUILDING_BLOCK reference with no mapping throws a clear error`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val listenerWithResolver = ExternalPluginServiceTaskStartListener(
+            processLinkRepository,
+            configurationService,
+            definitionService,
+            hostService,
+            hostClient,
+            valueResolverService,
+            objectMapper,
+            pluginActionResultHandler,
+            resolver,
+        )
+
+        val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.1.0")
+        val execution = executionFor(processLink)
+
+        whenever(resolver.resolve(execution, "external-plugin:case-summary@0.1.0")).thenReturn(null)
+
+        assertThatThrownBy { listenerWithResolver.notify(OperatonExecutionEvent(execution, "start")) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("external-plugin:case-summary@0.1.0")
+    }
+
+    private fun buildingBlockProcessLink(pluginId: String, version: String): ExternalPluginProcessLink =
+        ExternalPluginProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "process-def-id",
+            activityId = "ServiceTask_ExternalPlugin",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            externalPluginConfigurationId = null,
+            actionKey = "case-summary",
+            pluginConfigurationReference = PluginConfigurationReference(
+                type = PluginConfigurationReferenceType.BUILDING_BLOCK,
+                pluginDefinitionKey = pluginId,
+                pluginDefinitionVersion = version,
+            ),
+            actionProperties = null,
+        )
+
+    private fun executionFor(processLink: ExternalPluginProcessLink): DelegateExecution {
+        whenever(
+            processLinkRepository.findByProcessDefinitionIdAndActivityIdAndActivityType(
+                "process-def-id",
+                "ServiceTask_ExternalPlugin",
+                ActivityTypeWithEventName.SERVICE_TASK_START,
+            ),
+        ).thenReturn(listOf(processLink))
+
+        return mock<DelegateExecution> {
+            on { processDefinitionId } doReturn "process-def-id"
+            on { currentActivityId } doReturn "ServiceTask_ExternalPlugin"
+            on { processInstanceId } doReturn "process-instance-id"
+            on { processBusinessKey } doReturn "business-key"
+        }
+    }
+
     private fun globalProcessServiceTaskEvent(): OperatonExecutionEvent {
         val processLink = ExternalPluginProcessLink(
             id = UUID.randomUUID(),
@@ -144,7 +474,11 @@ class ExternalPluginServiceTaskStartListenerTest {
             activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
             externalPluginConfigurationId = configurationId,
             actionKey = "case-summary",
-            pluginVersion = "0.1.0",
+            pluginConfigurationReference = PluginConfigurationReference(
+                type = PluginConfigurationReferenceType.FIXED,
+                pluginDefinitionKey = "case-summary",
+                pluginDefinitionVersion = "0.1.0",
+            ),
             actionProperties = null,
         )
         whenever(

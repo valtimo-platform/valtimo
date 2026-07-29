@@ -17,10 +17,12 @@
 package com.ritense.externalplugin.domain
 
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink.Companion.PROCESS_LINK_TYPE
+import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import java.util.UUID
 
@@ -31,6 +33,12 @@ import java.util.UUID
  * the downscoped user token. The link only records which plugin configuration and which `task-form`
  * bundle to render — [bundleKey] is optional and, when null, the plugin's sole `task-form` bundle is
  * used.
+ *
+ * [pluginConfigurationReference] carries the design-time-only `pluginId`/version metadata, mirroring
+ * [ExternalPluginProcessLink] — it reuses the same shared `process_link` columns
+ * (`reference_type`, `plugin_definition_key`, `plugin_definition_version`) rather than a
+ * task-form-specific version column. The **runtime** invocation version always derives from the
+ * resolved configuration's definition, never from this reference.
  */
 @Entity
 @DiscriminatorValue(PROCESS_LINK_TYPE)
@@ -46,8 +54,8 @@ class ExternalPluginTaskFormProcessLink(
     @Column(name = "external_plugin_task_form_bundle_key")
     val bundleKey: String? = null,
 
-    @Column(name = "external_plugin_task_form_version")
-    val pluginVersion: String,
+    @Embedded
+    val pluginConfigurationReference: PluginConfigurationReference = PluginConfigurationReference(),
 ) : ProcessLink(
     id,
     processDefinitionId,
@@ -69,7 +77,7 @@ class ExternalPluginTaskFormProcessLink(
         activityType: ActivityTypeWithEventName = this.activityType,
         externalPluginConfigurationId: UUID = this.externalPluginConfigurationId,
         bundleKey: String? = this.bundleKey,
-        pluginVersion: String = this.pluginVersion,
+        pluginConfigurationReference: PluginConfigurationReference = this.pluginConfigurationReference,
     ) = ExternalPluginTaskFormProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
@@ -77,7 +85,7 @@ class ExternalPluginTaskFormProcessLink(
         activityType = activityType,
         externalPluginConfigurationId = externalPluginConfigurationId,
         bundleKey = bundleKey,
-        pluginVersion = pluginVersion,
+        pluginConfigurationReference = pluginConfigurationReference,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -89,7 +97,7 @@ class ExternalPluginTaskFormProcessLink(
 
         if (externalPluginConfigurationId != other.externalPluginConfigurationId) return false
         if (bundleKey != other.bundleKey) return false
-        if (pluginVersion != other.pluginVersion) return false
+        if (pluginConfigurationReference != other.pluginConfigurationReference) return false
 
         return true
     }
@@ -98,7 +106,7 @@ class ExternalPluginTaskFormProcessLink(
         var result = super.hashCode()
         result = 31 * result + externalPluginConfigurationId.hashCode()
         result = 31 * result + (bundleKey?.hashCode() ?: 0)
-        result = 31 * result + pluginVersion.hashCode()
+        result = 31 * result + pluginConfigurationReference.hashCode()
         return result
     }
 

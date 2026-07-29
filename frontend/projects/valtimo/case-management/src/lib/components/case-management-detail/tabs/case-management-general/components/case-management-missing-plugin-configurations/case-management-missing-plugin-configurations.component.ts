@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ArrowRight16, Save16} from '@carbon/icons';
-import {SelectModule} from '@valtimo/components';
+import {SelectItem, SelectModule} from '@valtimo/components';
 import {
   ButtonModule,
   IconModule,
@@ -29,6 +29,10 @@ import {
   NotificationModule,
 } from 'carbon-components-angular';
 import {
+  ExternalPluginConfiguration,
+  ExternalPluginDefinition,
+  ExternalPluginService,
+  getExternalPluginDisplayName,
   PluginConfiguration,
   PluginManagementService,
   PluginTranslationService,
@@ -39,13 +43,30 @@ import {
   getCaseManagementRouteParams,
   GlobalNotificationService,
 } from '@valtimo/shared';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+} from 'rxjs';
 import {CaseManagementService} from '../../../../../../services';
 import {
   DanglingPluginConfiguration,
   MappingRow,
+  PluginConfigurationPreviewSource,
   PluginMappingStatus,
 } from '../../../../../../models/case-deployment.model';
+
+const EMBEDDED_ISSUE_TYPE = 'plugin-process-link';
+const EXTERNAL_ISSUE_TYPE = 'external-plugin-process-link';
+const EXTERNAL_TASK_FORM_ISSUE_TYPE = 'external-plugin-task-form';
+const EXTERNAL_CASE_TAB_ISSUE_TYPE = 'external-plugin-case-tab';
 
 @Component({
   selector: 'valtimo-case-management-missing-plugin-configurations',
@@ -63,7 +84,12 @@ import {
   ],
 })
 export class CaseManagementMissingPluginConfigurationsComponent implements OnInit {
-  public readonly hasIssue$ = this.configurationIssueService.hasIssue$('plugin-process-link');
+  public readonly hasIssue$ = this.configurationIssueService.hasAnyOfIssues$([
+    EMBEDDED_ISSUE_TYPE,
+    EXTERNAL_ISSUE_TYPE,
+    EXTERNAL_TASK_FORM_ISSUE_TYPE,
+    EXTERNAL_CASE_TAB_ISSUE_TYPE,
+  ]);
   public readonly mappingRows$ = new BehaviorSubject<MappingRow[]>([]);
   public readonly hasUnknownPluginConfigurations$ = new BehaviorSubject<boolean>(false);
   public readonly visible$ = combineLatest([
@@ -87,6 +113,7 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
   constructor(
     private readonly caseManagementService: CaseManagementService,
     private readonly configurationIssueService: ConfigurationIssueService,
+    private readonly externalPluginService: ExternalPluginService,
     private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
     private readonly pluginManagementService: PluginManagementService,
@@ -119,6 +146,22 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
 
   public onMappingChange(index: number, selectedId: string | number): void {
     this._selections.set(index, selectedId ? String(selectedId) : null);
+  }
+
+  /**
+   * The actual definition version of the currently selected external configuration for the row at
+   * [index], `null` when the selection is an exact `pluginId@version` match, embedded, or the row
+   * has no selection yet (D3 non-blocking warning).
+   */
+  public selectedConfigurationVersion(row: MappingRow, index: number): string | null {
+    if (!row.mismatchedVersionsById || row.mismatchedVersionsById.size === 0) {
+      return null;
+    }
+    const selectedId = this._selections.get(index);
+    if (!selectedId) {
+      return null;
+    }
+    return row.mismatchedVersionsById.get(selectedId) ?? null;
   }
 
   public save(): void {
@@ -182,78 +225,177 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
       return;
     }
 
-    this.pluginManagementService
-      .getPluginDefinitions()
+    const embeddedDangling = knownKeyDangling.filter(d => (d.source ?? 'embedded') === 'embedded');
+    const externalDangling = knownKeyDangling.filter(d => d.source === 'external');
+
+    combineLatest([
+      this.loadEmbeddedRows(embeddedDangling),
+      this.loadExternalRows(externalDangling),
+    ])
       .pipe(take(1))
-      .subscribe(definitions => {
-        const installedKeys = new Set(definitions.map(d => d.key));
-        this.loadPluginConfigurations(knownKeyDangling, installedKeys);
+      .subscribe(([embeddedRows, externalRows]) => {
+        this._selections.clear();
+        this.mappingRows$.next([...embeddedRows, ...externalRows]);
       });
+  }
+
+  private loadEmbeddedRows(dangling: DanglingPluginConfiguration[]): Observable<MappingRow[]> {
+    if (dangling.length === 0) {
+      return of([]);
+    }
+
+    return this.pluginManagementService.getPluginDefinitions().pipe(
+      take(1),
+      switchMap(definitions => {
+        const installedKeys = new Set(definitions.map(d => d.key));
+        return this.loadPluginConfigurations(dangling, installedKeys);
+      })
+    );
   }
 
   private loadPluginConfigurations(
     dangling: DanglingPluginConfiguration[],
     installedKeys: Set<string>
-  ): void {
+  ): Observable<MappingRow[]> {
     const uniqueKeys = [...new Set(dangling.map(d => d.pluginDefinitionKey).filter(Boolean))];
     const installableKeys = uniqueKeys.filter(k => installedKeys.has(k));
-    const configsByKey = new Map<string, PluginConfiguration[]>();
-    let remaining = installableKeys.length;
 
-    if (remaining === 0) {
-      this.buildRows(dangling, configsByKey, installedKeys);
-      return;
+    if (installableKeys.length === 0) {
+      return of(this.buildEmbeddedRows(dangling, new Map(), installedKeys));
     }
 
+    const configRequests: Record<string, Observable<PluginConfiguration[]>> = {};
     for (const key of installableKeys) {
-      this.pluginManagementService
+      configRequests[key] = this.pluginManagementService
         .getPluginConfigurationsByPluginDefinitionKey(key)
-        .pipe(take(1))
-        .subscribe({
-          next: configs => {
-            configsByKey.set(key, configs);
-            remaining--;
-            if (remaining === 0) this.buildRows(dangling, configsByKey, installedKeys);
-          },
-          error: () => {
-            configsByKey.set(key, []);
-            remaining--;
-            if (remaining === 0) this.buildRows(dangling, configsByKey, installedKeys);
-          },
-        });
+        .pipe(
+          take(1),
+          catchError(() => of([] as PluginConfiguration[]))
+        );
     }
+
+    return forkJoin(configRequests).pipe(
+      take(1),
+      map(results => {
+        const configsByKey = new Map<string, PluginConfiguration[]>(Object.entries(results));
+        return this.buildEmbeddedRows(dangling, configsByKey, installedKeys);
+      })
+    );
   }
 
-  private buildRows(
+  private buildEmbeddedRows(
     dangling: DanglingPluginConfiguration[],
     configsByKey: Map<string, PluginConfiguration[]>,
     installedKeys: Set<string>
-  ): void {
-    this._selections.clear();
-    this.mappingRows$.next(
-      dangling.map(d => {
-        const key = d.pluginDefinitionKey;
-        const isInstalled = key ? installedKeys.has(key) : false;
-        const available = configsByKey.get(key) || [];
+  ): MappingRow[] {
+    return dangling.map(d => {
+      const key = d.pluginDefinitionKey;
+      const isInstalled = key ? installedKeys.has(key) : false;
+      const available = configsByKey.get(key) || [];
 
-        let status: PluginMappingStatus;
-        if (!isInstalled) {
-          status = 'not-installed';
-        } else if (available.length === 0) {
-          status = 'no-configurations';
-        } else {
-          status = 'available';
-        }
+      const status = this.determineStatus(isInstalled, available.length > 0);
 
-        return {
-          pluginDefinitionKey: key,
-          pluginDefinitionTitle: this.getPluginTitle(key),
-          sourcePluginConfigurationIds: d.sourcePluginConfigurationIds,
-          selectItems: available.map(c => ({id: c.id, text: c.title})),
-          status,
-        };
+      return {
+        pluginDefinitionKey: key,
+        pluginDefinitionTitle: this.getPluginTitle(key),
+        sourcePluginConfigurationIds: d.sourcePluginConfigurationIds,
+        selectItems: available.map(c => ({id: c.id, text: c.title})),
+        status,
+        source: 'embedded' as PluginConfigurationPreviewSource,
+        pluginDefinitionVersion: null,
+      };
+    });
+  }
+
+  private loadExternalRows(dangling: DanglingPluginConfiguration[]): Observable<MappingRow[]> {
+    if (dangling.length === 0) {
+      return of([]);
+    }
+
+    return combineLatest([
+      this.externalPluginService
+        .getConfigurations()
+        .pipe(catchError(() => of([] as Array<ExternalPluginConfiguration>))),
+      this.externalPluginService
+        .getDefinitions()
+        .pipe(catchError(() => of([] as Array<ExternalPluginDefinition>))),
+    ]).pipe(
+      take(1),
+      map(([configurations, definitions]) => {
+        const definitionById = new Map(definitions.map(d => [d.id, d]));
+        const lang = this.translateService.currentLang;
+
+        return dangling.map(d => {
+          const matchingConfigurations = configurations.filter(configuration => {
+            const definition = definitionById.get(configuration.definitionId);
+            return definition?.pluginId === d.pluginDefinitionKey;
+          });
+
+          const isInstalled = [...definitionById.values()].some(
+            def => def.pluginId === d.pluginDefinitionKey
+          );
+          const status = this.determineStatus(isInstalled, matchingConfigurations.length > 0);
+
+          const mismatchedVersionsById = new Map<string, string>();
+          const selectItems: SelectItem[] = matchingConfigurations.map(configuration => {
+            const definition = definitionById.get(configuration.definitionId);
+            if (definition && definition.version !== d.pluginDefinitionVersion) {
+              mismatchedVersionsById.set(configuration.id, definition.version);
+            }
+            return {
+              id: configuration.id,
+              text: definition
+                ? `${configuration.title} — ${getExternalPluginDisplayName(definition, lang)}`
+                : configuration.title,
+            };
+          });
+
+          return {
+            pluginDefinitionKey: d.pluginDefinitionKey,
+            pluginDefinitionTitle: this.getExternalPluginTitle(d, definitionById),
+            sourcePluginConfigurationIds: d.sourcePluginConfigurationIds,
+            selectItems,
+            status,
+            source: 'external' as PluginConfigurationPreviewSource,
+            pluginDefinitionVersion: d.pluginDefinitionVersion ?? null,
+            mismatchedVersionsById,
+          };
+        });
       })
     );
+  }
+
+  private getExternalPluginTitle(
+    dangling: DanglingPluginConfiguration,
+    definitionById: Map<string, ExternalPluginDefinition>
+  ): string {
+    if (!dangling.pluginDefinitionKey) {
+      return this.translateService.instant(
+        'caseManagement.missingPluginConfigurations.unknownPlugin'
+      );
+    }
+    const lang = this.translateService.currentLang;
+    const matchingDefinition = [...definitionById.values()].find(
+      d =>
+        d.pluginId === dangling.pluginDefinitionKey &&
+        d.version === dangling.pluginDefinitionVersion
+    );
+    if (matchingDefinition) {
+      return getExternalPluginDisplayName(matchingDefinition, lang);
+    }
+    return dangling.pluginDefinitionVersion
+      ? `${dangling.pluginDefinitionKey} (${dangling.pluginDefinitionVersion})`
+      : dangling.pluginDefinitionKey;
+  }
+
+  private determineStatus(isInstalled: boolean, hasConfigurations: boolean): PluginMappingStatus {
+    if (!isInstalled) {
+      return 'not-installed';
+    }
+    if (!hasConfigurations) {
+      return 'no-configurations';
+    }
+    return 'available';
   }
 
   private getPluginTitle(pluginDefinitionKey: string | null): string {

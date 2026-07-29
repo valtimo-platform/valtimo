@@ -18,4 +18,15 @@ package com.ritense.case_.service.event
 
 import com.ritense.case.domain.CaseTab
 
-data class CaseTabCreatedEvent(val tab: CaseTab)
+/**
+ * [pluginDefinitionKey]/[pluginDefinitionVersion] carry the design-time plugin identity for an
+ * `EXTERNAL_PLUGIN` tab so its side row can persist it — populated by the importer from the
+ * self-describing export, so a tab dangling on import (its configuration missing here) stays
+ * identifiable. `null` for other tab types and for callers that resolve the plugin from the
+ * (present) configuration instead.
+ */
+data class CaseTabCreatedEvent(
+    val tab: CaseTab,
+    val pluginDefinitionKey: String? = null,
+    val pluginDefinitionVersion: String? = null,
+)

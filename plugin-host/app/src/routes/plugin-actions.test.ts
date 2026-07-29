@@ -109,6 +109,43 @@ describe("plugin-actions routes", () => {
     expect(res.json()).toMatchObject({ status: "error", errorCode: "BOOM" });
   });
 
+  it("returns 500 RESULT_CONTRACT_VIOLATION when a declared output key is absent from the result", async () => {
+    pluginManager.getManifest.mockReturnValue({
+      actions: [{ key: ACTION, outputs: ["summary", "title"] }],
+    });
+    pluginManager.callAction.mockResolvedValueOnce({
+      status: "completed",
+      result: { summary: "a summary" },
+    });
+    const res = await invokeAction(actionBody());
+    expect(res.statusCode).toBe(500);
+    expect(res.json()).toMatchObject({ status: "error", errorCode: "RESULT_CONTRACT_VIOLATION" });
+    expect(res.json().errorMessage).toContain("title");
+  });
+
+  it("returns 500 RESULT_CONTRACT_VIOLATION when outputs are declared but there is no result object", async () => {
+    pluginManager.getManifest.mockReturnValue({
+      actions: [{ key: ACTION, outputs: ["summary"] }],
+    });
+    pluginManager.callAction.mockResolvedValueOnce({ status: "completed", variables: { done: true } });
+    const res = await invokeAction(actionBody());
+    expect(res.statusCode).toBe(500);
+    expect(res.json()).toMatchObject({ errorCode: "RESULT_CONTRACT_VIOLATION" });
+  });
+
+  it("accepts declared output keys returned as null", async () => {
+    pluginManager.getManifest.mockReturnValue({
+      actions: [{ key: ACTION, outputs: ["summary", "title"] }],
+    });
+    pluginManager.callAction.mockResolvedValueOnce({
+      status: "completed",
+      result: { summary: null, title: null },
+    });
+    const res = await invokeAction(actionBody());
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ result: { summary: null, title: null } });
+  });
+
   it("returns 500 when callAction throws (host/infrastructure error)", async () => {
     pluginManager.callAction.mockRejectedValueOnce(new Error("wasm crash"));
     const res = await invokeAction(actionBody());

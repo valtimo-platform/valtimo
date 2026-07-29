@@ -73,6 +73,27 @@ class PluginProcessLinkMapperTest {
     }
 
     @Test
+    fun `applyPluginConfigurationMappings rewrites pluginConfigurationId to the mapped target id`() {
+        val sourceId = UUID.randomUUID()
+        val targetId = UUID.randomUUID()
+        val node = jacksonObjectMapper().createObjectNode().put("pluginConfigurationId", sourceId.toString())
+
+        mapper.applyPluginConfigurationMappings(node, mapOf(sourceId to targetId))
+
+        assertThat(node.get("pluginConfigurationId").asText()).isEqualTo(targetId.toString())
+    }
+
+    @Test
+    fun `applyPluginConfigurationMappings nulls pluginConfigurationId when mapping value is null`() {
+        val sourceId = UUID.randomUUID()
+        val node = jacksonObjectMapper().createObjectNode().put("pluginConfigurationId", sourceId.toString())
+
+        mapper.applyPluginConfigurationMappings(node, mapOf(sourceId to null))
+
+        assertThat(node.get("pluginConfigurationId").isNull).isTrue()
+    }
+
+    @Test
     fun `afterImport emits detected event when FIXED link has missing pluginConfigurationId`() {
         val configId = PluginConfigurationId.existingId(UUID.randomUUID())
         val link = pluginLink(

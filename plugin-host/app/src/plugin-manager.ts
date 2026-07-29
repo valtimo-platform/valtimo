@@ -296,6 +296,7 @@ export class PluginManager {
   ): Promise<{
     status: string;
     variables?: Record<string, unknown>;
+    result?: unknown;
     errorCode?: string;
     errorMessage?: string;
   }> {

@@ -24,9 +24,18 @@ export interface ActionInput {
   properties: Record<string, unknown>;
 }
 
+/**
+ * `variables` is applied as process variables, unchanged from before. `result` is a separate,
+ * optional channel: an arbitrary JSON payload that GZAC's `action_result_mappings` (JSON-pointer →
+ * `doc:`/`pv:`/`case:` target) resolve against, entirely independent of `variables`. Plugins that
+ * don't set `result` are unaffected — there is nothing to map. Actions that declare
+ * {@link ManifestAction.outputs} must return a `result` containing every declared key (`null`
+ * values are allowed; absent keys fail the invocation).
+ */
 export interface ActionOutput {
   status: "completed" | "error";
   variables?: Record<string, unknown>;
+  result?: unknown;
   errorCode?: string;
   errorMessage?: string;
 }
@@ -126,6 +135,19 @@ export interface ManifestAction {
   description?: string;
   activityTypes: string[];
   properties?: ManifestActionProperty[];
+  /**
+   * Keys the action's {@link ActionOutput.result} object exposes for result-mapping. When present
+   * (and non-empty), GZAC's process-link stepper offers a dedicated output-mapping step letting an
+   * admin map these keys to `doc:`/`pv:`/`case:` targets, with the source restricted to this
+   * declared set (a dropdown instead of free-text JSON pointers). Actions without `outputs` (or an
+   * empty array) have no declared shape and cannot use result mapping.
+   *
+   * Declaring `outputs` is a runtime contract: a completed action's `result` must contain every
+   * declared key — the host (and GZAC) reject a result with missing keys — but a key's value may
+   * be `null`. The runtime serialises `undefined` values on the result object as `null`, so
+   * `result: {title}` keeps the `title` key even when the lookup found nothing.
+   */
+  outputs?: string[];
 }
 
 export interface ManifestActionProperty {

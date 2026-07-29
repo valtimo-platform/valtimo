@@ -16,6 +16,7 @@
 import {PluginConfiguration} from '@valtimo/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {ListItem} from 'carbon-components-angular/dropdown';
+import {PluginRequirementSource} from './plugin.model';
 
 interface ProcessLink {
   id: string;
@@ -30,6 +31,7 @@ interface ProcessLink {
   actionProperties?: {
     [key: string]: any;
   };
+  actionResultMappings?: Array<PluginActionResultMapping>;
   formDefinitionId?: string;
   formFlowDefinitionKey?: string;
   viewModelEnabled?: boolean;
@@ -66,6 +68,7 @@ type ProcessLinkConfigurationStep =
   | 'choosePluginConfiguration'
   | 'choosePluginAction'
   | 'configurePluginAction'
+  | 'configurePluginActionResultMappings'
   | 'selectForm'
   | 'selectFormFlow'
   | 'selectBuildingBlock'
@@ -109,6 +112,7 @@ interface PluginProcessLinkCreateDto {
   actionProperties: object;
   referenceType?: PluginConfigurationReferenceType;
   pluginDefinitionKey?: string;
+  actionResultMappings?: Array<PluginActionResultMapping>;
 }
 
 interface PluginProcessLinkUpdateDto {
@@ -121,6 +125,7 @@ interface PluginProcessLinkUpdateDto {
   };
   referenceType: PluginConfigurationReferenceType;
   pluginDefinitionKey?: string;
+  actionResultMappings?: Array<PluginActionResultMapping>;
 }
 
 interface FormFlowProcessLinkUpdateRequestDto {
@@ -208,24 +213,37 @@ interface BuildingBlockProcessLinkUpdateDto {
   outputMappings: Array<BuildingBlockOutputMapping>;
 }
 
+/**
+ * `externalPluginConfigurationId` is required for `FIXED` references and omitted for
+ * `BUILDING_BLOCK` references, mirroring the embedded plugin process link (D1). For
+ * `BUILDING_BLOCK`, `pluginDefinitionKey` (the external plugin's `pluginId`) and `pluginVersion`
+ * are required instead — field names must match
+ * `ExternalPluginProcessLinkCreateRequestDto`/`UpdateRequestDto` on the backend exactly.
+ */
 interface ExternalPluginProcessLinkCreateDto {
   processDefinitionId: string;
   activityId: string;
   activityType: string;
   processLinkType: 'external_plugin';
-  externalPluginConfigurationId: string;
+  externalPluginConfigurationId?: string;
   actionKey: string;
   pluginVersion: string;
+  referenceType?: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
   actionProperties?: object;
+  actionResultMappings?: Array<PluginActionResultMapping>;
 }
 
 interface ExternalPluginProcessLinkUpdateDto {
   id: string;
   processLinkType: 'external_plugin';
-  externalPluginConfigurationId: string;
+  externalPluginConfigurationId?: string;
   actionKey: string;
   pluginVersion: string;
+  referenceType?: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
   actionProperties?: object;
+  actionResultMappings?: Array<PluginActionResultMapping>;
 }
 
 interface ExternalPluginTaskFormProcessLinkCreateDto {
@@ -260,6 +278,17 @@ interface BuildingBlockOutputMapping {
   source: string;
   target: string;
   syncTiming: BuildingBlockSyncTiming;
+}
+
+/**
+ * A single plugin-action result write-back rule (`com.ritense.plugin.domain.PluginActionResultMapping`
+ * on the backend). `source` is an RFC 6901 JSON pointer into the action's result (empty string =
+ * whole result); `target` is a value-resolver-prefixed key (`doc:`, `pv:`, `case:`) describing where
+ * to write it.
+ */
+interface PluginActionResultMapping {
+  source: string;
+  target: string;
 }
 
 type TaskProcessLinkType =
@@ -380,6 +409,14 @@ interface PluginConfigurationViewModel {
   label: string;
   dropdownItems: Array<ListItem>;
   hasOptions: boolean;
+  source: PluginRequirementSource;
+  pluginDefinitionVersion?: string | null;
+  /**
+   * The selected external configuration's actual definition version, set only when it differs from
+   * `pluginDefinitionVersion` (D3 non-blocking warning). `undefined` for embedded plugins and exact
+   * version matches.
+   */
+  selectedConfigurationVersion?: string;
 }
 
 interface DuplicateProcessDefinitionDescriptor {
@@ -419,6 +456,7 @@ export {
   BuildingBlockSyncTiming,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
+  PluginActionResultMapping,
   PluginConfigurationViewModel,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,

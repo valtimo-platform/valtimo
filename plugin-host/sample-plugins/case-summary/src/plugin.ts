@@ -283,6 +283,17 @@ action("case-summary", (input: ActionInput) => {
       [summaryVariable]: summary,
       [definitionKeyVariable]: document.definitionId?.name,
     },
+    // `result` is a separate channel from `variables`, consumed only by the process link's
+    // configured `actionResultMappings` (e.g. mapping "/summary" to a `doc:` path). Every key
+    // declared under the action's `outputs` in manifest.json must be present here — `?? null`
+    // keeps a key on the wire when the lookup found nothing (undefined would be dropped by JSON
+    // serialization and violate the outputs contract).
+    result: {
+      summary,
+      title: title ?? null,
+      amount: amount ?? null,
+      currency,
+    },
   };
 });
 

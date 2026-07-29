@@ -17,13 +17,16 @@
 package com.ritense.valtimo.processlink.mapper
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
+import com.ritense.plugin.domain.PluginActionResultMapping
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginConfigurationRepository
+import com.ritense.plugin.service.PluginActionResultMappingValidator
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
@@ -31,6 +34,7 @@ import com.ritense.plugin.web.rest.result.PluginProcessLinkResultDto
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.mapper.remapConfigurationIdField
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
@@ -76,6 +80,7 @@ class PluginProcessLinkMapper(
                 pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
                 actionProperties = processLink.actionProperties,
+                actionResultMappings = processLink.actionResultMappings,
             )
         }
     }
@@ -91,6 +96,7 @@ class PluginProcessLinkMapper(
             activityType = deployDto.activityType,
             referenceType = deployDto.referenceType,
             pluginDefinitionKey = deployDto.pluginDefinitionKey,
+            actionResultMappings = deployDto.actionResultMappings,
         )
     }
 
@@ -107,6 +113,7 @@ class PluginProcessLinkMapper(
             actionProperties = deployDto.actionProperties,
             referenceType = deployDto.referenceType,
             pluginDefinitionKey = deployDto.pluginDefinitionKey,
+            actionResultMappings = deployDto.actionResultMappings,
         )
     }
 
@@ -127,6 +134,7 @@ class PluginProcessLinkMapper(
                 actionProperties = processLink.actionProperties,
                 referenceType = processLink.pluginConfigurationReference.type,
                 pluginDefinitionKey = definitionKey,
+                actionResultMappings = processLink.actionResultMappings,
             )
         }
     }
@@ -136,6 +144,7 @@ class PluginProcessLinkMapper(
         val reference = createReference(createRequestDto.referenceType, createRequestDto.pluginDefinitionKey)
         val configurationId = createRequestDto.pluginConfigurationId?.let { PluginConfigurationId.existingId(it) }
         validateReference(reference.type, configurationId)
+        PluginActionResultMappingValidator.validate(createRequestDto.actionResultMappings)
         return PluginProcessLink(
             id = UUID.randomUUID(),
             processDefinitionId = createRequestDto.processDefinitionId,
@@ -145,6 +154,7 @@ class PluginProcessLinkMapper(
             pluginConfigurationReference = reference,
             pluginActionDefinitionKey = createRequestDto.pluginActionDefinitionKey,
             actionProperties = createRequestDto.actionProperties,
+            actionResultMappings = createRequestDto.actionResultMappings,
         )
     }
 
@@ -158,6 +168,7 @@ class PluginProcessLinkMapper(
             val reference = createReference(updateRequestDto.referenceType, updateRequestDto.pluginDefinitionKey)
             val configurationId = updateRequestDto.pluginConfigurationId?.let { PluginConfigurationId.existingId(it) }
             validateReference(reference.type, configurationId)
+            PluginActionResultMappingValidator.validate(updateRequestDto.actionResultMappings)
             PluginProcessLink(
                 id = updateRequestDto.id,
                 processDefinitionId = processLinkToUpdate.processDefinitionId,
@@ -167,6 +178,7 @@ class PluginProcessLinkMapper(
                 pluginConfigurationReference = reference,
                 pluginActionDefinitionKey = updateRequestDto.pluginActionDefinitionKey,
                 actionProperties = updateRequestDto.actionProperties,
+                actionResultMappings = updateRequestDto.actionResultMappings,
             )
         }
     }
@@ -187,6 +199,10 @@ class PluginProcessLinkMapper(
                 }
             )
         }
+    }
+
+    override fun applyPluginConfigurationMappings(node: ObjectNode, mappings: Map<UUID, UUID?>) {
+        remapConfigurationIdField(node, "pluginConfigurationId", mappings)
     }
 
     override fun afterImport(

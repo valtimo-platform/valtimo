@@ -76,6 +76,13 @@ interface ExternalPluginAction {
    * action may be linked to — a user-task form is the separate `task-form` surface, not an action.
    */
   activityTypes?: Array<string>;
+  /**
+   * Keys the action's `result` object exposes for mapping. When present and non-empty, the
+   * process-link stepper offers a dedicated output-mapping step with a dropdown of these keys as
+   * mapping sources. Actions without `outputs` (or an empty array) have no declared shape and
+   * cannot use result mapping.
+   */
+  outputs?: Array<string>;
 }
 
 type ExternalPluginFrontendBundleType =
@@ -258,6 +265,9 @@ interface ExternalPluginHostUsage {
   // Populated only for an external-plugin case-tab usage.
   tabKey?: string | null;
   tabName?: string | null;
+  // Populated only for a building-block mapping usage (the BB's pluginConfigurationMappings
+  // reference the configuration); names the building block holding the mapping.
+  buildingBlockKey?: string | null;
 }
 
 const EXTERNAL_PLUGIN_KEY_PREFIX = 'external:';

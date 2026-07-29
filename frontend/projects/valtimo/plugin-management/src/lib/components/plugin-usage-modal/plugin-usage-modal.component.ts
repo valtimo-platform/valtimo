@@ -65,7 +65,14 @@ export class PluginUsageModalComponent {
   }
 
   public trackByUsage(_index: number, usage: ExternalPluginHostUsage): string {
-    return usage.processLinkId ?? `tab:${usage.parentKey}:${usage.tabKey}`;
+    if (usage.processLinkId) {
+      return usage.processLinkId;
+    }
+    if (usage.tabKey) {
+      return `tab:${usage.parentKey}:${usage.tabKey}`;
+    }
+    // Building-block mapping usage on a case-definition ↔ BB link (no process link, no tab).
+    return `bb:${usage.parentKey}:${usage.buildingBlockKey}:${usage.configurationId}`;
   }
 
   public parentTypeTagColor(parentType: ExternalPluginHostUsageParentType): string {

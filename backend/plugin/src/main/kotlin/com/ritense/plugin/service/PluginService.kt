@@ -103,6 +103,7 @@ class PluginService(
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?,
     private val pluginConfigurationUsageResolver: PluginConfigurationUsageResolver,
+    private val pluginActionResultHandler: PluginActionResultHandler,
 ) {
 
     fun getObjectMapper(): ObjectMapper {
@@ -481,7 +482,9 @@ class PluginService(
 
             logger.debug { "Invoking method ${method.name} of class ${instance.javaClass.simpleName} for activity ${execution.currentActivityId} of process-instance ${execution.processInstanceId}" }
 
-            method.invoke(instance, *methodArguments)
+            val result = method.invoke(instance, *methodArguments)
+            applyActionResultMappings(execution, processLink, result)
+            result
         }
     }
 
@@ -503,8 +506,23 @@ class PluginService(
 
             logger.debug { "Invoking method ${method.name} of class ${instance.javaClass.simpleName} for task ${task.taskDefinitionKey} of process-instance ${task.processInstanceId}" }
 
-            method.invoke(instance, *methodArguments)
+            val result = method.invoke(instance, *methodArguments)
+            applyActionResultMappings(task.execution, processLink, result)
+            result
         }
+    }
+
+    /**
+     * Covers every listener that calls [invoke] (service task, user task create, call activity,
+     * send/receive/intermediate events) with zero listener changes — the return value a
+     * `@PluginAction` method produces was discarded here before result mappings existed.
+     */
+    private fun applyActionResultMappings(execution: DelegateExecution, processLink: PluginProcessLink, result: Any?) {
+        if (processLink.actionResultMappings.isEmpty()) {
+            return
+        }
+        val resultNode = result?.let { objectMapper.valueToTree<JsonNode>(it) }
+        pluginActionResultHandler.handle(execution, resultNode, processLink.actionResultMappings)
     }
 
 

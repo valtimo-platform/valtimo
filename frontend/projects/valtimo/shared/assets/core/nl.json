@@ -1142,6 +1142,7 @@
         "noPluginsTitle": "Geen plugins te configureren",
         "notInstalled": "Plugintype niet geïnstalleerd",
         "noConfigurations": "Geen configuraties beschikbaar",
+        "externalVersionMismatchWarning": "De pluginversie van deze configuratie ({{selectedVersion}}) komt niet overeen met de geëxporteerde versie ({{requiredVersion}}). Mogelijk worden niet dezelfde acties ondersteund.",
         "unidentifiable": {
           "title": "Niet-identificeerbare pluginconfiguraties",
           "message": "Sommige pluginconfiguraties konden niet worden herleid uit het exportbestand. De import kan doorgaan, maar de betreffende process links moeten achteraf handmatig worden geconfigureerd."
@@ -1155,6 +1156,7 @@
       "unknownPlugin": "Onbekende plugin",
       "notInstalled": "Plugintype niet geïnstalleerd",
       "noConfigurations": "Geen configuraties beschikbaar",
+      "externalVersionMismatchWarning": "De pluginversie van deze configuratie ({{selectedVersion}}) komt niet overeen met de vereiste versie ({{requiredVersion}}). Mogelijk worden niet dezelfde acties ondersteund.",
       "saveSuccess": "Pluginconfiguratie-koppelingen succesvol opgeslagen",
       "saveError": "Kon pluginconfiguratie-koppelingen niet opslaan",
       "legacyExport": {
@@ -2356,12 +2358,12 @@
     "hostInUseModal": {
       "title": "Plugin-host is in gebruik",
       "thisHost": "deze plugin-host",
-      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten nog gebruikmaken van een configuratie van deze host. Verwijder eerst deze proceskoppelingen."
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, zaaktabbladen of bouwblokken nog gebruikmaken van een plugin of configuratie van deze host. Verwijder eerst deze verwijzingen."
     },
     "configurationInUseModal": {
       "title": "Plugin-configuratie is in gebruik",
       "thisConfiguration": "deze plugin-configuratie",
-      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten er nog naar verwijzen. Verwijder eerst deze proceskoppelingen."
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, zaaktabbladen of bouwblokken er nog naar verwijzen. Verwijder eerst deze verwijzingen."
     },
     "usageModal": {
       "headers": {
@@ -2376,7 +2378,8 @@
         "BUILDING_BLOCK": "Bouwblok",
         "GLOBAL": "Globaal"
       },
-      "caseTab": "Zaaktabblad"
+      "caseTab": "Zaaktabblad",
+      "buildingBlockMapping": "Plugin-koppeling van bouwblok"
     },
     "compatibility": {
       "incompatibleTag": "Incompatibel",
@@ -2666,6 +2669,15 @@
     "externalPluginActionProperties": "Configureer de actie-eigenschappen voor deze externe plugin actie als JSON. Klik op opslaan wanneer gereed.",
     "actionPropertiesJson": "Actie-eigenschappen (JSON)",
     "invalidJson": "Ongeldige JSON",
+    "resultMappings": {
+      "title": "Output-mapping",
+      "description": "Koppel waarden uit het resultaat van de actie aan het dossierdocument of een procesvariabele.",
+      "source": "Pad in resultaat",
+      "target": "Bestemming",
+      "sourcePlaceholder": "/pad/in/resultaat",
+      "sourceSelectPlaceholder": "Selecteer een resultaatveld...",
+      "addRow": "Mapping toevoegen"
+    },
     "selectProcess": "Selecteer een proces",
     "process": "Proces",
     "version": "Versie",
@@ -2706,7 +2718,8 @@
         "zaakInstanceAndTypeLink": "Dit bouwblok heeft mogelijk zowel een zaakinstantiekoppeling als een zaaktypekoppeling nodig, die zijn geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
         "zaakInstanceLink": "Dit bouwblok heeft mogelijk een zaakinstantiekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
         "zaakTypeLink": "Dit bouwblok heeft mogelijk een zaaktypekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok is geconfigureerd, om correct te functioneren."
-      }
+      },
+      "externalPluginVersionMismatchWarning": "De geselecteerde configuratie gebruikt pluginversie {{selectedVersion}}, maar dit bouwblok is gekoppeld aan versie {{requiredVersion}}. Deze actie wordt mogelijk niet ondersteund."
     }
   },
   "processLinkType": {
@@ -2780,6 +2793,7 @@
     "choosePluginDefinition": "Kies plugin-definitie",
     "choosePluginAction": "Kies je actie",
     "configurePluginAction": "Configureer je actie",
+    "configurePluginActionResultMappings": "Uitvoer koppelen",
     "selectURL": "Configureer je URL",
     "subtitles": "Ondertitels",
     "addSubtitle": "Ondertitel toevoegen",

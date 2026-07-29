@@ -19,6 +19,8 @@ package com.ritense.externalplugin.processlink.web.dto
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink.Companion.PROCESS_LINK_TYPE
+import com.ritense.plugin.domain.PluginActionResultMapping
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import java.util.UUID
@@ -27,10 +29,13 @@ import java.util.UUID
 class ExternalPluginProcessLinkExportResponseDto(
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
-    val externalPluginConfigurationId: UUID,
+    val externalPluginConfigurationId: UUID?,
     val actionKey: String,
-    val pluginVersion: String,
     val actionProperties: ObjectNode? = null,
+    val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
+    val pluginDefinitionKey: String? = null,
+    val pluginVersion: String? = null,
+    val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 ) : ProcessLinkExportResponseDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE

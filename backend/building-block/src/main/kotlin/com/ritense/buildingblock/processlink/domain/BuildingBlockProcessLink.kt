@@ -30,6 +30,7 @@ import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.SecondaryTable
+import org.hibernate.annotations.SecondaryRow
 import org.hibernate.annotations.Type
 import java.util.UUID
 
@@ -38,6 +39,12 @@ import java.util.UUID
     name = SECONDARY_TABLE_NAME,
     pkJoinColumns = [PrimaryKeyJoinColumn(name = "process_link_id")]
 )
+// A building-block process link ALWAYS has its secondary row. Declaring it non-optional stops
+// Hibernate from writing the row through the optional-secondary-table upsert `MERGE`, which on
+// Hibernate 6.6 mis-binds the `jsonb` mapping columns as `integer`
+// ("column input_mappings is of type jsonb but expression is of type integer") — a plain
+// INSERT/UPDATE binds them correctly through the JsonType binder.
+@SecondaryRow(table = SECONDARY_TABLE_NAME, optional = false)
 @DiscriminatorValue(PROCESS_LINK_TYPE)
 class BuildingBlockProcessLink(
     id: UUID,

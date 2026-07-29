@@ -22,6 +22,8 @@ import java.util.UUID
 
 interface ExternalPluginTaskFormProcessLinkRepository : JpaRepository<ExternalPluginTaskFormProcessLink, UUID> {
 
+    fun findByProcessDefinitionId(processDefinitionId: String): List<ExternalPluginTaskFormProcessLink>
+
     fun findAllByExternalPluginConfigurationIdIn(
         externalPluginConfigurationIds: Collection<UUID>,
     ): List<ExternalPluginTaskFormProcessLink>

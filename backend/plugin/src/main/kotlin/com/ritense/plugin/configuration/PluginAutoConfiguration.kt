@@ -34,6 +34,7 @@ import com.ritense.plugin.repository.PluginPropertyRepository
 import com.ritense.plugin.security.config.PluginHttpSecurityConfigurer
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
+import com.ritense.plugin.service.PluginActionResultHandler
 import com.ritense.plugin.service.PluginConfigurationListener
 import com.ritense.plugin.service.PluginConfigurationUsageResolver
 import com.ritense.plugin.service.PluginService
@@ -156,6 +157,7 @@ class PluginAutoConfiguration {
         caseDefinitionChecker: CaseDefinitionChecker,
         buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?,
         pluginConfigurationUsageResolver: PluginConfigurationUsageResolver,
+        pluginActionResultHandler: PluginActionResultHandler,
     ): PluginService {
         return PluginService(
             pluginDefinitionRepository,
@@ -173,8 +175,16 @@ class PluginAutoConfiguration {
             caseDefinitionChecker,
             buildingBlockPluginConfigurationResolver,
             pluginConfigurationUsageResolver,
+            pluginActionResultHandler,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(PluginActionResultHandler::class)
+    fun pluginActionResultHandler(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+    ) = PluginActionResultHandler(valueResolverService, objectMapper)
 
     @Bean
     @ConditionalOnMissingBean

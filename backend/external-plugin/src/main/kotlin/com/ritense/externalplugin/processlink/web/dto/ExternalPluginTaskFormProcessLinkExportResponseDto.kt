@@ -27,7 +27,8 @@ class ExternalPluginTaskFormProcessLinkExportResponseDto(
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
     val externalPluginConfigurationId: UUID,
-    val pluginVersion: String,
+    val pluginDefinitionKey: String? = null,
+    val pluginVersion: String? = null,
     val bundleKey: String? = null,
 ) : ProcessLinkExportResponseDto {
     override val processLinkType: String

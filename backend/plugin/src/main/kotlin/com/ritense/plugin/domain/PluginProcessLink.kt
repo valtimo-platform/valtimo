@@ -48,7 +48,11 @@ class PluginProcessLink(
     val pluginConfigurationReference: PluginConfigurationReference = PluginConfigurationReference(),
 
     @Column(name = "plugin_action_definition_key", nullable = false)
-    val pluginActionDefinitionKey: String
+    val pluginActionDefinitionKey: String,
+
+    @Type(value = JsonType::class)
+    @Column(name = "action_result_mappings", columnDefinition = "JSON")
+    val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 
 ) : ProcessLink(
     id,
@@ -107,6 +111,7 @@ class PluginProcessLink(
         pluginConfigurationId: PluginConfigurationId? = this.pluginConfigurationId,
         pluginConfigurationReference: PluginConfigurationReference = this.pluginConfigurationReference,
         pluginActionDefinitionKey: String = this.pluginActionDefinitionKey,
+        actionResultMappings: List<PluginActionResultMapping> = this.actionResultMappings,
     ) = PluginProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
@@ -115,7 +120,8 @@ class PluginProcessLink(
         actionProperties = actionProperties,
         pluginConfigurationId = pluginConfigurationId,
         pluginConfigurationReference = pluginConfigurationReference,
-        pluginActionDefinitionKey = pluginActionDefinitionKey
+        pluginActionDefinitionKey = pluginActionDefinitionKey,
+        actionResultMappings = actionResultMappings,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -129,6 +135,7 @@ class PluginProcessLink(
         if (pluginConfigurationId != other.pluginConfigurationId) return false
         if (pluginConfigurationReference != other.pluginConfigurationReference) return false
         if (pluginActionDefinitionKey != other.pluginActionDefinitionKey) return false
+        if (actionResultMappings != other.actionResultMappings) return false
 
         return true
     }
@@ -139,6 +146,7 @@ class PluginProcessLink(
         result = 31 * result + (pluginConfigurationId?.hashCode() ?: 0)
         result = 31 * result + pluginConfigurationReference.hashCode()
         result = 31 * result + pluginActionDefinitionKey.hashCode()
+        result = 31 * result + actionResultMappings.hashCode()
         return result
     }
 }

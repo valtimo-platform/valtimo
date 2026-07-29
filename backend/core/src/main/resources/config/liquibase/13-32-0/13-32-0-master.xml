@@ -28,5 +28,8 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
     <include file="20260625-create-admin-settings-menu.xml" relativeToChangelogFile="true"/>
     <include file="20260708-external-plugin-host-kind.xml" relativeToChangelogFile="true"/>
     <include file="20260716-external-plugin-granted-capability.xml" relativeToChangelogFile="true"/>
+    <include file="20260720-plugin-configuration-reference-external-plugin-version.xml" relativeToChangelogFile="true"/>
+    <include file="20260720-plugin-action-result-mappings.xml" relativeToChangelogFile="true"/>
+    <include file="20260728-add-case-external-plugin-tab-plugin-definition.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

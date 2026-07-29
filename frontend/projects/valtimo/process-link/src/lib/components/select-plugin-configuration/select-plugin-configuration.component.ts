@@ -62,13 +62,18 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
               modalData?.element?.activityListenerType
             ),
             this._pluginService.pluginSpecifications$,
+            this._externalPluginService
+              .getDefinitions()
+              .pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
+            this._translateService.stream('key'),
           ]).pipe(
-            map(([definitions, specs]) => {
+            map(([definitions, specs, externalDefinitions]) => {
+              const lang = this._translateService.currentLang;
               const limitedDefinitions =
                 definitions?.filter(definition =>
                   specs.some(spec => spec.pluginId === definition.key)
                 ) ?? [];
-              const enriched: PluginListItem[] = limitedDefinitions.map(definition => {
+              const embeddedItems: PluginListItem[] = limitedDefinitions.map(definition => {
                 const spec = specs.find(item => item.pluginId === definition.key);
                 return {
                   id: definition.key,
@@ -83,8 +88,34 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
                   isDefinition: true,
                 };
               });
-              this._pluginDefinitionsCache = limitedDefinitions;
-              return enriched;
+
+              // Building-block process links may reference an external plugin **definition** (not a
+              // concrete configuration) — the configuration is resolved at runtime from the building
+              // block's plugin mappings (D1/D2). List every known external definition here, labeled
+              // via getExternalPluginDisplayName so multiple versions of the same plugin stay
+              // distinguishable.
+              const externalDefinitionItems: PluginListItem[] = externalDefinitions.map(
+                externalDefinition => ({
+                  id: toExternalPluginKey(externalDefinition.id),
+                  title: getExternalPluginDisplayName(externalDefinition, lang),
+                  description: getExternalPluginDescription(externalDefinition, lang) ?? '',
+                  logo: externalDefinition.logoUrl ?? null,
+                  payload: toExternalPluginKey(externalDefinition.id),
+                  isDefinition: true,
+                  external: true,
+                  externalDefinitionId: externalDefinition.id,
+                })
+              );
+              const externalPluginDefinitions: PluginDefinition[] = externalDefinitions.map(
+                externalDefinition => ({
+                  key: toExternalPluginKey(externalDefinition.id),
+                  title: getExternalPluginDisplayName(externalDefinition, lang),
+                  description: getExternalPluginDescription(externalDefinition, lang) ?? '',
+                })
+              );
+
+              this._pluginDefinitionsCache = [...limitedDefinitions, ...externalPluginDefinitions];
+              return [...embeddedItems, ...externalDefinitionItems];
             })
           )
         : combineLatest([

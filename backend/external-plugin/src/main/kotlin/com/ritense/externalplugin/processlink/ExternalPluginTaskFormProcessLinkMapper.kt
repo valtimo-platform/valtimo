@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.processlink
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink.Companion.PROCESS_LINK_TYPE
 import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkCreateRequestDto
@@ -24,18 +25,39 @@ import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProc
 import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkExportResponseDto
 import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkResponseDto
 import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormProcessLinkUpdateRequestDto
+import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
+import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
+import com.ritense.plugin.domain.PluginConfigurationReference
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.FIXED
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.mapper.remapConfigurationIdField
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.event.CaseConfigurationIssueDetectedEvent
+import com.ritense.valtimo.contract.event.CaseConfigurationIssueResolvedEvent
+import org.springframework.context.ApplicationEventPublisher
 import java.util.UUID
 
+/**
+ * The task-form link is always a `FIXED` reference today; `pluginDefinitionKey`/`pluginVersion` are
+ * derived from
+ * [ExternalPluginTaskFormProcessLinkCreateRequestDto.externalPluginConfigurationId]'s definition at
+ * save time — mirrors [ExternalPluginProcessLinkMapper]'s `FIXED` handling. The frontend keeps
+ * sending `pluginVersion` for backward compatibility, but it is only used as a dangling-import
+ * fallback when the configuration can no longer be resolved.
+ */
 class ExternalPluginTaskFormProcessLinkMapper(
     objectMapper: ObjectMapper,
+    private val configurationRepository: ExternalPluginConfigurationRepository,
+    private val definitionRepository: ExternalPluginDefinitionRepository,
+    private val processLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
 ) : ProcessLinkMapper {
 
     init {
@@ -58,7 +80,7 @@ class ExternalPluginTaskFormProcessLinkMapper(
             activityId = processLink.activityId,
             activityType = processLink.activityType,
             externalPluginConfigurationId = processLink.externalPluginConfigurationId,
-            pluginVersion = processLink.pluginVersion,
+            pluginVersion = processLink.pluginConfigurationReference.pluginDefinitionVersion,
             bundleKey = processLink.bundleKey,
         )
     }
@@ -71,7 +93,10 @@ class ExternalPluginTaskFormProcessLinkMapper(
             activityId = createRequestDto.activityId,
             activityType = createRequestDto.activityType,
             externalPluginConfigurationId = createRequestDto.externalPluginConfigurationId,
-            pluginVersion = createRequestDto.pluginVersion,
+            pluginConfigurationReference = createReference(
+                createRequestDto.externalPluginConfigurationId,
+                createRequestDto.pluginVersion,
+            ),
             bundleKey = createRequestDto.bundleKey,
         )
     }
@@ -89,7 +114,10 @@ class ExternalPluginTaskFormProcessLinkMapper(
             activityId = processLinkToUpdate.activityId,
             activityType = processLinkToUpdate.activityType,
             externalPluginConfigurationId = updateRequestDto.externalPluginConfigurationId,
-            pluginVersion = updateRequestDto.pluginVersion,
+            pluginConfigurationReference = createReference(
+                updateRequestDto.externalPluginConfigurationId,
+                updateRequestDto.pluginVersion,
+            ),
             bundleKey = updateRequestDto.bundleKey,
         )
     }
@@ -126,8 +154,70 @@ class ExternalPluginTaskFormProcessLinkMapper(
             activityId = processLink.activityId,
             activityType = processLink.activityType,
             externalPluginConfigurationId = processLink.externalPluginConfigurationId,
-            pluginVersion = processLink.pluginVersion,
+            pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
+            pluginVersion = processLink.pluginConfigurationReference.pluginDefinitionVersion,
             bundleKey = processLink.bundleKey,
         )
+    }
+
+    /**
+     * `externalPluginConfigurationId` is non-nullable on this link's deploy DTO (always `FIXED`),
+     * so a mapping value of `null` (admin chose to leave it dangling) is left as the original,
+     * unmapped id rather than nulled out — nulling it would fail deserialization outright.
+     */
+    override fun applyPluginConfigurationMappings(node: ObjectNode, mappings: Map<UUID, UUID?>) {
+        remapConfigurationIdField(node, "externalPluginConfigurationId", mappings, allowNull = false)
+    }
+
+    /**
+     * Mirrors [ExternalPluginProcessLinkMapper.afterImport], but publishes under its **own**
+     * [ISSUE_TYPE]. The two link kinds inspect disjoint repositories, so sharing a single issue type
+     * let one mapper's "resolved" verdict clobber the other's "detected" verdict (last writer in the
+     * mapper loop wins). Each owning its own type removes that coupling entirely. Unlike the
+     * service-task link, the task-form link's `externalPluginConfigurationId` is never nullable — it
+     * always references a `FIXED` configuration — so "dangling" here only means the referenced
+     * configuration no longer exists in the target environment.
+     */
+    override fun afterImport(
+        caseDefinitionId: CaseDefinitionId,
+        processDefinitionIds: Set<String>,
+        applicationEventPublisher: ApplicationEventPublisher
+    ) {
+        val allLinks = processDefinitionIds.flatMap { pdId -> processLinkRepository.findByProcessDefinitionId(pdId) }
+
+        val hasIssue = allLinks.any { link -> !configurationRepository.existsById(link.externalPluginConfigurationId) }
+
+        if (hasIssue) {
+            applicationEventPublisher.publishEvent(
+                CaseConfigurationIssueDetectedEvent(caseDefinitionId, ISSUE_TYPE)
+            )
+        } else {
+            applicationEventPublisher.publishEvent(
+                CaseConfigurationIssueResolvedEvent(caseDefinitionId, ISSUE_TYPE)
+            )
+        }
+    }
+
+    /**
+     * Always `FIXED` today: `pluginDefinitionKey`/`pluginVersion` are derived from
+     * [externalPluginConfigurationId]'s definition, falling back to the dto-supplied [pluginVersion]
+     * only when the configuration can no longer be resolved (dangling import).
+     */
+    private fun createReference(
+        externalPluginConfigurationId: UUID,
+        pluginVersion: String,
+    ): PluginConfigurationReference {
+        val definition = configurationRepository.findById(externalPluginConfigurationId)
+            .map { configuration -> definitionRepository.findById(configuration.definitionId).orElse(null) }
+            .orElse(null)
+        return PluginConfigurationReference(
+            type = FIXED,
+            pluginDefinitionKey = definition?.pluginId,
+            pluginDefinitionVersion = definition?.version ?: pluginVersion,
+        )
+    }
+
+    companion object {
+        const val ISSUE_TYPE = "external-plugin-task-form"
     }
 }

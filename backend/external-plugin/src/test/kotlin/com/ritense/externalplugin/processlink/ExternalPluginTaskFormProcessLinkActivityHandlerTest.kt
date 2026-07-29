@@ -19,6 +19,8 @@ package com.ritense.externalplugin.processlink
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.service.ExternalPluginBundleUrlResolver
+import com.ritense.plugin.domain.PluginConfigurationReference
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonTask
@@ -46,7 +48,11 @@ class ExternalPluginTaskFormProcessLinkActivityHandlerTest {
                     activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
                     externalPluginConfigurationId = UUID.randomUUID(),
                     actionKey = "some-action",
-                    pluginVersion = "0.1.0",
+                    pluginConfigurationReference = PluginConfigurationReference(
+                        type = PluginConfigurationReferenceType.FIXED,
+                        pluginDefinitionKey = "case-summary",
+                        pluginDefinitionVersion = "0.1.0",
+                    ),
                 )
             )
         ).isFalse()
@@ -111,6 +117,10 @@ class ExternalPluginTaskFormProcessLinkActivityHandlerTest {
         activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
         externalPluginConfigurationId = configurationId,
         bundleKey = bundleKey,
-        pluginVersion = "0.1.0",
+        pluginConfigurationReference = PluginConfigurationReference(
+            type = PluginConfigurationReferenceType.FIXED,
+            pluginDefinitionKey = "case-summary",
+            pluginDefinitionVersion = "0.1.0",
+        ),
     )
 }

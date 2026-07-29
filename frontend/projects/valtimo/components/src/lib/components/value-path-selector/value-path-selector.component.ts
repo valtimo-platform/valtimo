@@ -363,10 +363,15 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
         return mappedOption;
       });
     }),
-    tap(() => this.loadingValuePathItems$.next(false))
+    tap(() => {
+      this.loadingValuePathItems$.next(false);
+      this.scheduleDisplayFlush();
+    })
   );
 
   private readonly _subscriptions = new Subscription();
+  private _displayFlushTimeoutId?: ReturnType<typeof setTimeout>;
+  private _destroyed = false;
 
   constructor(
     private readonly valuePathSelectorService: ValuePathSelectorService,
@@ -383,6 +388,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   }
 
   public ngOnDestroy(): void {
+    this._destroyed = true;
+    if (this._displayFlushTimeoutId !== undefined) clearTimeout(this._displayFlushTimeoutId);
     this._subscriptions.unsubscribe();
   }
 
@@ -392,6 +399,26 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     if (!value) {
       this._inputMode$.next(ValuePathSelectorInputMode.DROPDOWN);
     }
+    this.scheduleDisplayFlush();
+  }
+
+  /**
+   * The Carbon combobox computes its displayed value asynchronously after receiving items with a
+   * `selected` entry. Under an OnPush ancestor that is not marked dirty, neither the items binding
+   * nor Carbon's internal display update is ever flushed to the DOM, so the control's state is
+   * correct while its input renders empty until the user interacts. Flush in two passes after
+   * every options emission or written value: the first detectChanges renders the emission into the
+   * combobox (which then schedules its internal update), the nested one flushes that update.
+   */
+  private scheduleDisplayFlush(): void {
+    if (this._displayFlushTimeoutId !== undefined) clearTimeout(this._displayFlushTimeoutId);
+    this._displayFlushTimeoutId = setTimeout(() => {
+      if (this._destroyed) return;
+      this.changeDetectorRef.detectChanges();
+      this._displayFlushTimeoutId = setTimeout(() => {
+        if (!this._destroyed) this.changeDetectorRef.detectChanges();
+      });
+    });
   }
 
   public registerOnChange(fn: (value: string) => void): void {

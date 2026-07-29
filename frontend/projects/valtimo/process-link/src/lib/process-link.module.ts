@@ -75,6 +75,7 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
 import {SelectBuildingBlockComponent} from './components/select-building-block';
 import {ConfigureBuildingBlockPluginsComponent} from './components/configure-building-block-plugins';
 import {ConfigureBuildingBlockMappingsComponent} from './components/configure-building-block-mappings/configure-building-block-mappings.component';
+import {PluginActionResultMappingsComponent} from './components/plugin-action-result-mappings/plugin-action-result-mappings.component';
 
 @NgModule({
   declarations: [
@@ -136,6 +137,7 @@ import {ConfigureBuildingBlockMappingsComponent} from './components/configure-bu
     CarbonRadioModule,
     ValuePathSelectorComponent,
     ConfigureBuildingBlockMappingsComponent,
+    PluginActionResultMappingsComponent,
     NotificationModule,
     ExternalPluginIframeComponent,
   ],

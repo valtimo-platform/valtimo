@@ -27,6 +27,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 import java.util.UUID
 
 /**
@@ -43,8 +44,8 @@ class ExternalPluginProcessLinkTypeDeductionTest {
     // Register both mappers' subtypes on one ObjectMapper, exactly as the auto-configuration does, so
     // deduction sees the same candidate set as at runtime.
     private val mapper = MapperSingleton.get().copy().also {
-        ExternalPluginProcessLinkMapper(it)
-        ExternalPluginTaskFormProcessLinkMapper(it)
+        ExternalPluginProcessLinkMapper(it, mock(), mock(), mock())
+        ExternalPluginTaskFormProcessLinkMapper(it, mock(), mock(), mock())
     }
 
     @Test

@@ -102,10 +102,10 @@ export function handleAction(inputJson: string): string {
       if (rejected) {
         throw rejection instanceof Error ? rejection : new Error(String(rejection));
       }
-      return JSON.stringify(resolved);
+      return serializeActionOutput(resolved as ActionOutput);
     }
 
-    return JSON.stringify(result);
+    return serializeActionOutput(result as ActionOutput);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     log.error(`Action execution failed: ${message}`);
@@ -115,6 +115,25 @@ export function handleAction(inputJson: string): string {
       errorMessage: message,
     } satisfies ActionOutput);
   }
+}
+
+/**
+ * JSON has no `undefined`: `JSON.stringify` silently drops object keys whose value is `undefined`,
+ * which would turn a returned-but-empty output (e.g. `result: {title}` where `title` is undefined)
+ * into an absent key and violate the manifest's `outputs` contract — every declared output key must
+ * be present, though null is allowed. Normalise the top-level `result` channel so a key the author
+ * put on the object survives serialization as an explicit null.
+ */
+function serializeActionOutput(output: ActionOutput): string {
+  const result = output?.result;
+  if (result && typeof result === "object" && !Array.isArray(result)) {
+    const normalized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(result as Record<string, unknown>)) {
+      normalized[key] = value === undefined ? null : value;
+    }
+    return JSON.stringify({ ...output, result: normalized });
+  }
+  return JSON.stringify(output);
 }
 
 /**

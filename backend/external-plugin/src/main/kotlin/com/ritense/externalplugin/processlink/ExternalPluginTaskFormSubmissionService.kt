@@ -198,10 +198,13 @@ class ExternalPluginTaskFormSubmissionService(
         // is required to route the hook.
         val submitKey = bundle.get("key")?.asText() ?: return null
         val host = hostService.get(definition.hostId)
+        // Version always comes from the resolved configuration's definition, never from the link's
+        // (design-time-only) reference — same rule as ExternalPluginServiceTaskStartListener. See
+        // PluginConfigurationReference / D1.
         return SubmitHook(
             baseUrl = host.baseUrl,
             pluginId = definition.pluginId,
-            version = processLink.pluginVersion,
+            version = definition.version,
             submitKey = submitKey,
             hostSecret = hostService.decryptedSecret(host),
         )
