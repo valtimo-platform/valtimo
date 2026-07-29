@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3334:5432"
+        environment:
+            - POSTGRES_DB=notificaties-api-test

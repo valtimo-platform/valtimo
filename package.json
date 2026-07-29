@@ -1,0 +1,9 @@
+{
+  "name": "valtimo-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "create-monorepo": "node create-monorepo.mjs"
+  }
+}

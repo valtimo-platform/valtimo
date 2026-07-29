@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3316:5432"
+        environment:
+            - POSTGRES_DB=wordpress-mail-test

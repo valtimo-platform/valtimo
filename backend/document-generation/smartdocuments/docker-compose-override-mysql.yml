@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3317:3306"
+        environment:
+            - MYSQL_DATABASE=smartdocuments-test

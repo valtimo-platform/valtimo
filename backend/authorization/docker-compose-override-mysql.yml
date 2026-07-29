@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3344:3306"
+        environment:
+            - MYSQL_DATABASE=authorization-test

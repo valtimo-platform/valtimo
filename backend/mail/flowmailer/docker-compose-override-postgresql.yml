@@ -1,0 +1,6 @@
+services:
+  db:
+    ports:
+      - "3331:5432"
+    environment:
+      - POSTGRES_DB=flowmailer-test

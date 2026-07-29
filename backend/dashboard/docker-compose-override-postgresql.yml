@@ -1,0 +1,6 @@
+services:
+  db:
+    ports:
+      - "3343:5432"
+    environment:
+      - POSTGRES_DB=dashboard-test
