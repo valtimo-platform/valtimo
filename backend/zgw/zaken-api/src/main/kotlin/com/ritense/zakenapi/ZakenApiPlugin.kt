@@ -491,6 +491,16 @@ class ZakenApiPlugin(
         )
     }
 
+    fun getZaakInformatieObject(zaakUrl: URI, informatieobjectUrl: URI): ZaakInformatieObject? {
+        val results = client.getZaakInformatieObjecten(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            zaakUrl = zaakUrl,
+            informatieobjectUrl = informatieobjectUrl,
+        )
+        return results.singleOrNull()
+    }
+
     fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI) {
         return client.deleteZaakInformatieObject(
             authentication = authenticationPluginConfiguration,

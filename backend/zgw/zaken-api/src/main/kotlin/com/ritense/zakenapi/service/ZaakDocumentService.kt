@@ -33,6 +33,7 @@ import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiDocumentDto
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.domain.PluginConfiguration
+import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zakenapi.ZaakUrlProvider
@@ -45,6 +46,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.InputStream
 import java.net.URI
 import java.util.UUID
 import kotlin.math.min
@@ -273,6 +275,42 @@ class ZaakDocumentService(
                 ZakenApiPlugin.findConfigurationByUrl(zaakUri)
             )
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakUri" }
+    }
+
+    private fun getVerifiedInformatieObject(
+        pluginConfigurationId: String,
+        caseDocumentId: UUID,
+        documentId: String,
+    ): Pair<DocumentenApiPlugin, URI> {
+        val zaakUrl = zaakUrlProvider.getZaakUrl(caseDocumentId)
+        val zakenApiPlugin = getZakenApiPlugin(zaakUrl)
+
+        val documentenApiPlugin = pluginService.createInstance(
+            PluginConfigurationId.existingId(UUID.fromString(pluginConfigurationId))
+        ) as DocumentenApiPlugin
+
+        val informatieobjectUrl = documentenApiPlugin.createInformatieObjectUrl(documentId)
+
+        val zaakInformatieObject = zakenApiPlugin.getZaakInformatieObject(
+            zaakUrl,
+            informatieobjectUrl
+        )
+
+        if (zaakInformatieObject == null) {
+            throw IllegalArgumentException("InformatieObject is not related to this Zaak")
+        }
+
+        return Pair(documentenApiPlugin, informatieobjectUrl)
+    }
+
+    fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String): InputStream {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        return documentenApiService.downloadInformatieObject(pluginConfigurationId, documentId)
+    }
+
+    fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String): DocumentInformatieObject {
+        getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        return documentenApiService.getInformatieObject(pluginConfigurationId, documentId)
     }
 
 }

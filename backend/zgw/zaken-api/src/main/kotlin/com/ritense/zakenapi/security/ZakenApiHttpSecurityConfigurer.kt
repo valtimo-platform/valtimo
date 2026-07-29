@@ -33,6 +33,12 @@ class ZakenApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                 requests.requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/files")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v2/zaken-api/document/{documentId}/files")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/zaken-api/document/{documentId}/zaak")).authenticated()
+                    .requestMatchers(
+                        antMatcher(
+                            GET,
+                            "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download"
+                        )
+                    ).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/{documentDefinitionName}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/zaak-type-link/process/{processDefinitionKey}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/zaak-type-link")).hasAuthority(ADMIN)

@@ -102,6 +102,13 @@ allprojects {
                 dependency "io.netty:netty-codec:${nettyCodecVersionOverride}"
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
+
+                // CVE override: the Spring Boot BOM ships an httpcore5 affected by
+                // CVE-2026-54399 (HTTP/1.1 header exhaustion DoS) and CVE-2026-54428 (HTTP/2
+                // HPACK header-bomb DoS). Fixed in 5.4.3. httpcore5 is pulled transitively via
+                // httpclient5. Override until a Spring Boot patch includes the fix.
+                dependency "org.apache.httpcomponents.core5:httpcore5:${httpcore5Version}"
+                dependency "org.apache.httpcomponents.core5:httpcore5-h2:${httpcore5Version}"
             }
         }
 
