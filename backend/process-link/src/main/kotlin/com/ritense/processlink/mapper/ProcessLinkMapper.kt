@@ -16,6 +16,7 @@
 
 package com.ritense.processlink.mapper
 
+import com.ritense.exporter.manifest.ArtifactDependency
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
@@ -53,6 +54,13 @@ interface ProcessLinkMapper {
      * @param caseDefinitionId The caseDefinitionId of the case the processLink is part of
      */
     fun createRelatedExportRequests(processLink: ProcessLink, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> = setOf()
+
+    /**
+     * Used by the export service to build the export manifest.
+     * Should return the manifest dependencies (e.g. plugins) the provided processLink introduces.
+     * @param processLink The processLink to derive manifest dependencies from
+     */
+    fun toManifestDependencies(processLink: ProcessLink): Set<ArtifactDependency> = setOf()
 
     fun getImporterType(): String? = null
 
