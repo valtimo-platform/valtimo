@@ -4,12 +4,6 @@
 
 * [Backend migration](./back-end-migration.md)
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
 ## Enhancements
 
 * **Backend libraries are now published to S3 (Sonatype Central is being phased out)**
