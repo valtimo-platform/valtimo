@@ -537,14 +537,21 @@ export class DocumentService {
     caseDefinitionKey: string,
     versionTag: string
   ): Observable<DocumentType[]> {
+    // A 403 is expected when the user may open the form but not view the case's document types
+    // (e.g. task access without document access); it is skipped so no error toast is shown and
+    // callers can fall back to an empty list.
     return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`,
+      {headers: new HttpHeaders().set(InterceptorSkip, '403')}
     );
   }
 
   public getDocumentTypesForDocument(documentId: string): Observable<DocumentType[]> {
+    // See getDocumentTypesForCase: a 403 is expected when the user cannot view the document and is
+    // skipped to avoid an error toast.
     return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`
+      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`,
+      {headers: new HttpHeaders().set(InterceptorSkip, '403')}
     );
   }
 

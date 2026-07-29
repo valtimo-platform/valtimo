@@ -100,6 +100,12 @@
   `PermissionService` now offers a public `invalidateResource(resource, identifier?)` method to clear
   cached permission results.
 
+* **No spurious error notification when document types cannot be viewed in a task form**
+
+  Opening a task whose form contains a document upload field no longer shows an "access denied" error
+  notification when the user is allowed to open the task but not to view the case's document types. The
+  document type lookup now treats a `403` as an expected outcome and falls back to an empty list.
+
 * **Closing a dialog with the Esc key now works reliably**
 
   Pressing Esc now reliably closes the open dialog, even when you first clicked somewhere inside it
