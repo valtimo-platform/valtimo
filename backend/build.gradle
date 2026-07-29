@@ -146,6 +146,20 @@ allprojects {
                 dependency "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
+
+                // CVE override: httpcore5 shipped transitively is affected by
+                // CVE-2026-54399 (HTTP/1.1 header exhaustion DoS) and CVE-2026-54428 (HTTP/2
+                // HPACK header-bomb DoS). Fixed in 5.4.3. Override until a Spring Boot patch
+                // includes the fix.
+                dependency "org.apache.httpcomponents.core5:httpcore5:${httpcore5Version}"
+                dependency "org.apache.httpcomponents.core5:httpcore5-h2:${httpcore5Version}"
+
+                // CVE override: logback shipped transitively is affected by CVE-2026-13006
+                // (arbitrary code execution via unicode-escape bypass in Janino <if>
+                // conditions). Fixed in 1.5.37. Override until a Spring Boot patch includes
+                // the fix.
+                dependency "ch.qos.logback:logback-core:${logbackVersion}"
+                dependency "ch.qos.logback:logback-classic:${logbackVersion}"
             }
         }
 
