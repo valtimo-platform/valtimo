@@ -1,0 +1,39 @@
+name: Frontend - Publish to NPMJS
+
+on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "The determined project version. Required for release-candidate, not for snapshot"
+        required: false
+        type: string
+      frontend_libraries_build_artifact_name:
+        required: true
+        description: Name of the frontend build artifact to download with 'download-artifact'
+        type: "string"
+
+defaults:
+  run:
+    working-directory: frontend
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: "Restore build artifact: dist"
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.frontend_libraries_build_artifact_name }}
+          path: frontend/dist
+
+      - name: "Publish all libs to NPM"
+        env:
+          NPM_JS_REPOSITORY_AUTH_TOKEN: ${{ secrets.NPM_JS_REPOSITORY_AUTH_TOKEN }}
+          PROJECT_VERSION: ${{ inputs.project_version }}
+        run: |
+          npm run libs-publish-all -- release $NPM_JS_REPOSITORY_AUTH_TOKEN $PROJECT_VERSION
