@@ -130,7 +130,7 @@ class DefaultFormSubmissionService(
 
             val formFields = getFormFields(formDefinition, formData)
             preProcessFormFields(formFields, document)
-            val categorizedKeyValues = getCategorizedSubmitValues(formDefinition, formData, document)
+            val categorizedKeyValues = getCategorizedSubmitValues(formDefinition, formData, document, documentDefinitionNameToUse)
 
             val modifyDocumentWithJsonPatch = getPreJsonPatch(
                 formDefinition, categorizedKeyValues.modifyDocumentWithJsonPatchValues, processVariables, document
@@ -211,7 +211,8 @@ class DefaultFormSubmissionService(
     private fun getCategorizedSubmitValues(
         formDefinition: FormIoFormDefinition,
         formData: JsonNode,
-        document: Document?
+        document: Document?,
+        documentDefinitionName: String
     ): CategorizedSubmitValues {
         val categorizedMap = formDefinition.inputFields
             .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
@@ -240,12 +241,12 @@ class DefaultFormSubmissionService(
 
         // Preprocess the document paths & values. The result is an ObjectNode.
         val createDocumentWithContent = categorizedMap["createDocumentWithContent"]
-            ?.let { valueResolverService.preProcessValuesForNewCase(it)[DOC_PREFIX] as? ObjectNode }
+            ?.let { valueResolverService.preProcessValuesForNewDocument(it, documentDefinitionName)[DOC_PREFIX] as? ObjectNode }
             ?: objectMapper.createObjectNode()
 
         // After pre-processing process-variables we have a key-value map where the prefix is stripped from the keys.
         val withProcessVars = categorizedMap["withProcessVar"]
-            ?.let { valueResolverService.preProcessValuesForNewCase(it)[PV_PREFIX] as? Map<String, Any> }
+            ?.let { valueResolverService.preProcessValuesForNewDocument(it, documentDefinitionName)[PV_PREFIX] as? Map<String, Any> }
             ?: mapOf()
 
         // Do not process/handle other values yet.

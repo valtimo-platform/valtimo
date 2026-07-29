@@ -29,6 +29,7 @@ import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlan
+import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
@@ -46,6 +47,9 @@ import java.util.UUID
  * together with the instance's data migration. Only acts on building block migration plans; case
  * plans are handled by the `process-document` executor.
  */
+// Order 200 — the building block counterpart of the process migration stage (same position as the
+// case process migration; the two are mutually exclusive by blueprint type).
+@Order(200)
 @Transactional
 class BuildingBlockProcessMigrationComponentExecutor(
     private val processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,

@@ -1,0 +1,17 @@
+{
+    "aanvrager": {
+        "naam": "Sofie Hendriks",
+        "email": "sofie.hendriks@example.com"
+    },
+    "nieuwAdres": "Oudegracht 100, 3511 AV Utrecht",
+    "status": "in_behandeling",
+    "aantalPersonen": 3,
+    "oppervlakte": 88.4,
+    "documenten": [
+        "taxatie.pdf",
+        "foto.pdf"
+    ],
+    "afgerond": false,
+    "inspectieStatus": "gepland",
+    "aantalKamers": 3
+}

@@ -35,11 +35,12 @@
                 },
                 {
                     "target": "doc:/householdSize",
-                    "source": "doc:/spoed"
+                    "value": 2,
+                    "targetType": "integer"
                 },
                 {
                     "target": "doc:/applicantName",
-                    "source": "doc:/oppervlakte"
+                    "source": "doc:/aanvrager/naam"
                 },
                 {
                     "target": "doc:/zaakEinddatumGeplandBB3",
@@ -51,8 +52,8 @@
                     "sourceProcessDefinitionKey": "verhuizing",
                     "targetProcessDefinitionKey": "income-check-process",
                     "mapActivities": {
-                        "beoordelen_verhuizing": "SetEinddatumGeplandTask",
-                        "controleren_inspectie": "SetEinddatumGeplandTask",
+                        "beoordelen_verhuizing": "BeoordeelInkomenstoetsTask",
+                        "controleren_inspectie": "BeoordeelInkomenstoetsTask",
                         "registreer_ontvangst": "StoreCheckStatusTask",
                         "markeer_spoed": "StoreCheckStatusTask",
                         "afronden": "ReadZaakEinddatumTask"
@@ -79,7 +80,8 @@
         },
         {
             "target": "doc:/verhuisdatum",
-            "source": "doc:/status"
+            "value": "2026-09-01",
+            "targetType": "string"
         },
         {
             "target": "doc:/oppervlakte",
@@ -92,7 +94,7 @@
             "targetProcessDefinitionKey": "verhuizing",
             "mapActivities": {
                 "beoordelen": "beoordelen_verhuizing",
-                "akkoord_geven": "afronden",
+                "akkoord_geven": "controleren_inspectie",
                 "registreer_ontvangst": "registreer_ontvangst"
             },
             "setProcessVariables": [],

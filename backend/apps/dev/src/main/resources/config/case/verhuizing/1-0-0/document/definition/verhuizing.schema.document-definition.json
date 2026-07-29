@@ -18,21 +18,21 @@
                     "type": "string"
                 },
                 "emailadres": {
-                    "type": "string"
+                    "type": ["string", "null"]
                 }
             }
         },
         "nieuwAdres": {
-            "type": "string"
+            "type": ["string", "null"]
         },
         "status": {
             "type": "string"
         },
         "spoed": {
-            "type": "boolean"
+            "type": ["boolean", "null"]
         },
         "aantalPersonen": {
-            "type": "integer"
+            "type": ["integer", "null"]
         }
     }
 }

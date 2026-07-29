@@ -5,10 +5,14 @@
   </bpmn:collaboration>
   <bpmn:process id="income-check-process" name="Inkomenstoets Process" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="StartEvent" name="Start Inkomenstoets">
-      <bpmn:outgoing>Flow_Start_To_SetStatusInkomenstoets</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Start_To_Beoordeel</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:userTask id="BeoordeelInkomenstoetsTask" name="Beoordeel inkomenstoets">
+      <bpmn:incoming>Flow_Start_To_Beoordeel</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beoordeel_To_SetStatus</bpmn:outgoing>
+    </bpmn:userTask>
     <bpmn:serviceTask id="SetStatusInkomenstoetsTask" name="Status: Inkomenstoets Gestart" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.setInternalStatus(execution, 'inkomenstoets-gestart')}">
-      <bpmn:incoming>Flow_Start_To_SetStatusInkomenstoets</bpmn:incoming>
+      <bpmn:incoming>Flow_Beoordeel_To_SetStatus</bpmn:incoming>
       <bpmn:outgoing>Flow_SetStatusInkomenstoets_To_RemoveTagPriority</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="RemoveTagPriorityTask" name="Verwijder Tag: Prioriteit" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.removeCaseTag(execution, 'prioriteit-hoog')}">
@@ -52,7 +56,8 @@
     <bpmn:endEvent id="EndEvent" name="Inkomenstoets Afgerond">
       <bpmn:incoming>Flow_ReadEinddatum_To_End</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_Start_To_SetStatusInkomenstoets" sourceRef="StartEvent" targetRef="SetStatusInkomenstoetsTask" />
+    <bpmn:sequenceFlow id="Flow_Start_To_Beoordeel" sourceRef="StartEvent" targetRef="BeoordeelInkomenstoetsTask" />
+    <bpmn:sequenceFlow id="Flow_Beoordeel_To_SetStatus" sourceRef="BeoordeelInkomenstoetsTask" targetRef="SetStatusInkomenstoetsTask" />
     <bpmn:sequenceFlow id="Flow_SetStatusInkomenstoets_To_RemoveTagPriority" sourceRef="SetStatusInkomenstoetsTask" targetRef="RemoveTagPriorityTask" />
     <bpmn:sequenceFlow id="Flow_RemoveTagPriority_To_DMN" sourceRef="RemoveTagPriorityTask" targetRef="ResolveHouseholdSizeTask" />
     <bpmn:sequenceFlow id="Flow_ResolveHouseholdSize_To_DMN" sourceRef="ResolveHouseholdSizeTask" targetRef="DetermineEligibilityDmnTask" />
@@ -117,9 +122,19 @@
           <dc:Bounds x="1468" y="185" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_Start_To_SetStatusInkomenstoets_di" bpmnElement="Flow_Start_To_SetStatusInkomenstoets">
-        <di:waypoint x="258" y="160" />
-        <di:waypoint x="290" y="160" />
+      <bpmndi:BPMNShape id="BeoordeelInkomenstoetsTask_di" bpmnElement="BeoordeelInkomenstoetsTask">
+        <dc:Bounds x="270" y="260" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Beoordeel_di" bpmnElement="Flow_Start_To_Beoordeel">
+        <di:waypoint x="240" y="178" />
+        <di:waypoint x="240" y="300" />
+        <di:waypoint x="270" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Beoordeel_To_SetStatus_di" bpmnElement="Flow_Beoordeel_To_SetStatus">
+        <di:waypoint x="370" y="300" />
+        <di:waypoint x="340" y="300" />
+        <di:waypoint x="340" y="200" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_SetStatusInkomenstoets_To_RemoveTagPriority_di" bpmnElement="Flow_SetStatusInkomenstoets_To_RemoveTagPriority">
         <di:waypoint x="390" y="160" />

@@ -1,0 +1,10 @@
+{
+    "aanvrager": {
+        "naam": "Anouk de Jong",
+        "emailadres": "anouk.dejong@example.com"
+    },
+    "nieuwAdres": "Dorpsstraat 12, 7607 AA Almelo",
+    "status": "in_behandeling",
+    "spoed": true,
+    "aantalPersonen": 3
+}

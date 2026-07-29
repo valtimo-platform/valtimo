@@ -39,6 +39,7 @@ import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlan
 import org.operaton.bpm.engine.runtime.ProcessInstance
+import org.springframework.core.annotation.Order
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -58,6 +59,9 @@ import java.util.UUID
  *
  * Runs synchronously in the caller's transaction, so it commits/rolls back with the whole case.
  */
+// Order 300 — runs after the process migration: an added block hijacks the now-migrated process, so
+// the process must already be on its target version.
+@Order(300)
 @Transactional
 class AddBuildingBlockMigrationComponentExecutor(
     private val objectMapper: ObjectMapper,
@@ -115,14 +119,23 @@ class AddBuildingBlockMigrationComponentExecutor(
             return
         }
 
-        // 1. Create the building block's document (empty) + instance, linked to the owner.
+        // 1. Create the building block's document + instance, linked to the owner. The document is
+        // created already populated from the entry's dataMigration (read from the owner), so schema
+        // validation at creation succeeds even when the building block's schema has required fields.
+        // Step 2 still re-applies the full patch list against the persisted document (idempotent for
+        // doc targets, and the path that handles any non-`doc:` targets).
+        val initialContent = dataPatchApplier.resolveToContent(
+            instruction.dataMigration,
+            ownerDocumentId,
+            instruction.buildingBlockKey
+        )
         val request = NewDocumentRequest(
             instruction.buildingBlockKey,
             null,
             null,
             instruction.buildingBlockKey,
             instruction.buildingBlockVersionTag,
-            objectMapper.createObjectNode(),
+            initialContent,
         )
         val instance = runWithoutAuthorization {
             buildingBlockInstanceService.create(
@@ -251,7 +264,10 @@ class AddBuildingBlockMigrationComponentExecutor(
     ): String? {
         return processDefinitionBuildingBlockDefinitionRepository
             .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
-            .firstOrNull { it.processDefinitionKey == processDefinitionKey }
+            .filter { it.processDefinitionKey == processDefinitionKey }
+            // A building block can have several deployed versions of a process definition linked
+            // (each redeploy adds one); target the current `main` version, not an arbitrary/older one.
+            .let { matches -> matches.firstOrNull { it.main } ?: matches.firstOrNull() }
             ?.id
             ?.processDefinitionId
             ?.id

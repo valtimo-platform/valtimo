@@ -21,6 +21,7 @@ import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import com.ritense.valueresolver.ValueResolverService
+import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
@@ -36,6 +37,8 @@ import kotlin.jvm.optionals.getOrNull
  * this runs (so `handleValues` writes/validates against the target schema); this executor only
  * moves the values — source and target are the same document (the case).
  */
+// Order 100 — runs first: the case's data is migrated before its process or any building blocks.
+@Order(100)
 @Transactional
 class DataMigrationComponentExecutor(
     private val dataMigrationConfigurationRepository: DataMigrationConfigurationRepository,

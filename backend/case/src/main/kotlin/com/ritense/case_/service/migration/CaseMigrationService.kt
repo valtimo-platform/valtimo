@@ -459,6 +459,9 @@ class CaseMigrationService(
      */
     private fun applyMigration(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID): String {
         val fromVersionTag = attachToTarget(caseId, target)
+        // Spring injects componentExecutors already sorted by each executor's @Order, so they run in
+        // a dependency-correct order without the orchestrator knowing which executors exist or what
+        // their component keys are.
         componentExecutors.forEach { it.execute(migrationId, target, caseId) }
         return fromVersionTag
     }

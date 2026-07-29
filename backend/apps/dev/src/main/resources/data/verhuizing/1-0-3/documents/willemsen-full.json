@@ -1,0 +1,22 @@
+{
+    "aanvrager": {
+        "naam": "Nienke Willemsen",
+        "emailadres": "nienke@example.com",
+        "email": "n.willemsen@work.example.com"
+    },
+    "nieuwAdres": "Grote Markt 1, 8911 KA Leeuwarden",
+    "status": "afgehandeld",
+    "spoed": false,
+    "aantalPersonen": 1,
+    "oppervlakte": 52.0,
+    "verhuisdatum": "2026-11-20",
+    "documenten": [
+        "contract.pdf"
+    ],
+    "migratedFrom": "1.0.2",
+    "afgerond": true,
+    "inspectieStatus": "afgerond",
+    "inspectieAkkoord": true,
+    "aantalKamers": 2,
+    "geschatteWaarde": 189500.0
+}

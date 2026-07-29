@@ -120,6 +120,28 @@ class DataMigrationComponentExecutorTest(
         verify(valueResolverService, never()).handleValues(any<UUID>(), any())
     }
 
+    @Test
+    fun `should skip copy patches whose source resolves to null`() {
+        stubPatches(DataMigrationPatch(source = "doc:/optional", target = "doc:/target"))
+        whenever(valueResolverService.resolveValues(eq(caseId.toString()), any()))
+            .thenReturn(mapOf("doc:/optional" to null))
+
+        executor.execute(migrationId, migrationId.blueprintId(), caseId)
+
+        verify(valueResolverService, never()).handleValues(any<UUID>(), any())
+    }
+
+    @Test
+    fun `should write an explicit null literal to clear the target field`() {
+        stubPatches(DataMigrationPatch(value = null, target = "doc:/toelichting"))
+
+        executor.execute(migrationId, migrationId.blueprintId(), caseId)
+
+        val handled = handledValues()
+        assertThat(handled).containsKey("doc:/toelichting")
+        assertThat(handled["doc:/toelichting"]).isNull()
+    }
+
     private fun stubPatches(vararg patches: DataMigrationPatch) {
         whenever(dataMigrationConfigurationRepository.findById(migrationId))
             .thenReturn(Optional.of(DataMigrationConfiguration(migrationId, patches.toList())))

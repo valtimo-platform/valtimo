@@ -1,0 +1,56 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Behandelen aanvraag",
+            "content": "Behandel de aangevraagde woninginspectie.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvrager.naam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "disabled": true,
+            "attributes": {
+                "data-testid": "behandelen-woninginspectie-naam"
+            },
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "adres",
+            "type": "textfield",
+            "input": true,
+            "label": "Adres",
+            "tableView": true,
+            "disabled": true,
+            "attributes": {
+                "data-testid": "behandelen-woninginspectie-adres"
+            },
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "opmerking",
+            "type": "textarea",
+            "input": true,
+            "label": "Opmerking",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "behandelen-woninginspectie-opmerking"
+            }
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Opslaan",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

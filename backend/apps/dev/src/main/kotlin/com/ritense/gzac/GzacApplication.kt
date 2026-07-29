@@ -50,10 +50,13 @@ fun main(args: Array<String>) {
         """.trimIndent()
     }
 
-    // Development-only demo data for the "Present images as thumbnails" (GH-289) feature.
-    // Runs after the context is fully initialised so the bezwaar case definition is deployed.
+    // Development-only demo data. Runs after the context is fully initialised so the required case
+    // definitions are deployed first:
+    // - BezwaarImageDemoDataService: "Present images as thumbnails" (GH-289) feature.
+    // - DemoDataService: generically seeds every demo case folder under resources/data/ on its
+    //   source version so cases can be migrated via the shipped migration plans.
     if (environment.activeProfiles.contains("dev")) {
         applicationContext.getBean<BezwaarImageDemoDataService>().deployBezwaarWithImages()
-        applicationContext.getBean<DemoDataService>()
+        applicationContext.getBean<DemoDataService>().deployDemoData()
     }
 }

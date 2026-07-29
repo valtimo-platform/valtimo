@@ -32,6 +32,10 @@ import java.util.UUID
  * Implementations must run in the caller's transaction (propagation REQUIRED — never open a new
  * transaction) and must let exceptions propagate so the whole instance rolls back. An executor
  * that does not apply to the plan's [BlueprintMigrationId.blueprintType] must no-op.
+ *
+ * Executors run in a deterministic, dependency-correct order: each declares its position with a
+ * Spring `@Order` annotation (lower runs first), so the injected executor list arrives pre-sorted
+ * and the orchestrator never needs to know the concrete executors or their keys.
  */
 interface MigrationComponentExecutor {
 

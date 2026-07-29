@@ -27,6 +27,7 @@ import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlan
+import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
@@ -45,6 +46,8 @@ import java.util.UUID
  * process migration commits or rolls back together with the case's data migration. Because the
  * engine shares the application's transaction manager and datasource, no XA/2PC is required.
  */
+// Order 200 — runs after the case data migration, before building blocks are added/removed.
+@Order(200)
 @Transactional
 class ProcessMigrationComponentExecutor(
     private val processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,

@@ -36,6 +36,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlan
+import org.springframework.core.annotation.Order
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -55,6 +56,8 @@ import java.util.UUID
  *
  * Runs synchronously in the caller's transaction, so it commits/rolls back with the whole case.
  */
+// Order 400 — runs last: blocks are removed only after data and process migration and any additions.
+@Order(400)
 @Transactional
 class RemoveBuildingBlockMigrationComponentExecutor(
     private val removeBuildingBlockConfigurationRepository: RemoveBuildingBlockConfigurationRepository,

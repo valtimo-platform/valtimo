@@ -235,12 +235,28 @@ class ValueResolverServiceImpl(
         }
     }
 
+    @Deprecated("Replaced by preProcessValuesForNewDocument", level = DeprecationLevel.WARNING)
+    @Suppress("DEPRECATION")
     override fun preProcessValuesForNewCase(
         values: Map<String, Any?>
     ): Map<String, Any> {
         return toResolverFactoryMap(values.keys).mapValues { (resolverFactory, propertyPaths) ->
             resolverFactory.preProcessValuesForNewCase(
                 mapPropertyPaths(propertyPaths, values)
+            )
+        }.mapKeys { (resolverFactory, _) ->
+            resolverFactory.supportedPrefix()
+        }
+    }
+
+    override fun preProcessValuesForNewDocument(
+        values: Map<String, Any?>,
+        documentDefinitionName: String
+    ): Map<String, Any> {
+        return toResolverFactoryMap(values.keys).mapValues { (resolverFactory, propertyPaths) ->
+            resolverFactory.preProcessValuesForNewDocument(
+                mapPropertyPaths(propertyPaths, values),
+                documentDefinitionName
             )
         }.mapKeys { (resolverFactory, _) ->
             resolverFactory.supportedPrefix()
