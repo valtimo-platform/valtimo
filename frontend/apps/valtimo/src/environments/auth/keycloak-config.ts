@@ -29,8 +29,13 @@ const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
     config: keycloakConfig,
     initOptions: keycloakInitOptions,
     enableBearerInterceptor: true,
+    // Presigned S3 upload URLs must not receive the Keycloak bearer token: the extra
+    // Authorization header breaks the SigV4 signature and leaks the token to the storage
+    // host. Exclude both S3 hosts we may issue presigned URLs for (AWS and OVHcloud).
     bearerExcludedUrls: [
-      '/assets'
+      '/assets',
+      '^https?://[^/]+\\.amazonaws\\.com/',
+      '^https?://[^/]+\\.io\\.cloud\\.ovh\\.net/'
     ]
   },
   logoutRedirectUri: window['env']['keycloakLogoutRedirectUri'] || 'http://localhost:4200'

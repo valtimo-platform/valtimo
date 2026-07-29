@@ -136,11 +136,7 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
         }
 
         // Bind customOptions
-        for (const key in this.component.customOptions) {
-          if (this.component.customOptions.hasOwnProperty(key)) {
-            this._customAngularElement[key] = this.component.customOptions[key];
-          }
-        }
+        this.bindCustomOptions();
         // Bind validate options
         for (const key in this.component.validate) {
           if (this.component.validate.hasOwnProperty(key)) {
@@ -174,6 +170,36 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
         }
       }
       return superAttach;
+    }
+
+    // Push the (possibly mutated) customOptions onto the Angular element. Extracted from attach() so
+    // it can also be re-run from setValue(): a calculateValue expression can mutate
+    // this.component.customOptions as a side effect, but attach() (and therefore the original inline
+    // binding) only re-runs on a redraw, which is not guaranteed to fire after the calculation.
+    // Binding is idempotent, so re-running it is harmless.
+    bindCustomOptions(): void {
+      if (!this._customAngularElement) {
+        return;
+      }
+      for (const key in this.component.customOptions) {
+        if (
+          Object.prototype.hasOwnProperty.call(this.component.customOptions, key) &&
+          key !== '__proto__' &&
+          key !== 'constructor' &&
+          key !== 'prototype'
+        ) {
+          this._customAngularElement[key] = this.component.customOptions[key];
+        }
+      }
+    }
+
+    // @ts-ignore
+    setValue(value: any, flags: any = {}) {
+      const changed = super.setValue(value, flags);
+      // FormIO calls setValue() immediately after evaluating calculateValue, so re-applying the
+      // customOptions here reaches the Angular element right away, independent of redraw timing.
+      this.bindCustomOptions();
+      return changed;
     }
 
     // Add extra option to support multiple value (e.g. datagrid) with single angular component (disableMultiValueWrapper)

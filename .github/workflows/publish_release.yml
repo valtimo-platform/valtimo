@@ -59,8 +59,43 @@ jobs:
       - frontend_release
       - prepare
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
-      - name: Create release
+      # action-gh-release below creates the tag when it is absent, but it will
+      # NOT move a tag that already exists. So the FIRST release of a version
+      # tags the release-branch commit and never clobbers anything; a SECOND run
+      # for the same (already-tagged) version is treated as a re-release and we
+      # force-move the tag here to the current release-branch commit, so a
+      # corrected build ships instead of the stale one.
+      - name: Checkout release commit
+        uses: actions/checkout@v4
+        with:
+          # Force-move the tag with the valtimo-platform PAT — not GITHUB_TOKEN —
+          # so a tag-protecting repository ruleset doesn't block the update
+          # (GITHUB_TOKEN is not on the ruleset bypass list).
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+          fetch-depth: 0
+
+      - name: Force-move tag on re-run
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --tags --exit-code origin "refs/tags/${VERSION}" >/dev/null 2>&1; then
+            echo "Tag ${VERSION} already exists — re-run detected; force-moving it to ${GITHUB_SHA}."
+            git tag -f "${VERSION}" "${GITHUB_SHA}"
+            git push --force origin "refs/tags/${VERSION}"
+          else
+            echo "Tag ${VERSION} does not exist yet — first release; the release step will create it."
+          fi
+
+      # action-gh-release updates an existing release in place when name/body are
+      # provided, so this is create-on-first-run / update-on-re-run. The tag was
+      # already force-moved above, so on a re-run the release re-points to the
+      # corrected commit (its source archives + shown commit follow the tag) and
+      # the body below is refreshed.
+      - name: Create or update release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare.outputs.version }}
@@ -69,7 +104,9 @@ jobs:
           # which mis-tags non-v13 releases (e.g. v12) onto next-minor content.
           target_commitish: ${{ github.sha }}
           name: ${{ needs.prepare.outputs.version }}
-          body: "Release for Valtimo version ${{ needs.prepare.outputs.version }}."
+          body: |
+            Release for Valtimo version ${{ needs.prepare.outputs.version }}.
+            Build from commit ${{ github.sha }}.
           draft: false
           prerelease: false
 
@@ -181,6 +218,55 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+      # The prepare_next job seeds each version's release notes with skeleton
+      # placeholders ("New feature title", "New enhancement title", "New bugfix.")
+      # that developers are meant to overwrite or delete during the dev cycle. When
+      # a section is left untouched those placeholders leak into the stable branch,
+      # which then needs a manual cleanup PR (e.g. #820). Strip any still-unfilled
+      # placeholders from THIS version's notes and push the fix onto the release
+      # branch so the release -> stable PR below never carries them. The template
+      # PR to next-minor keeps its placeholders — this only touches the released
+      # version's notes. Idempotent: a re-run finds nothing to strip and no-ops.
+      - name: Strip unfilled release-note placeholders
+        run: |
+          set -euo pipefail
+          MAJOR="${VERSION%%.*}"
+          README="documentation/release-notes/${MAJOR}.x.x/${VERSION}/README.md"
+          if [ ! -f "$README" ]; then
+            echo "No release-notes README at ${README}; nothing to strip."
+            exit 0
+          fi
+
+          # The placeholders are fixed text emitted by prepare_next, so we just
+          # delete those literal blocks. Matching the exact placeholder text means
+          # authored content is never touched, so there is no need to reflow the
+          # file. The first three substitutions drop a whole "placeholder-only"
+          # section (header + its lone placeholder) — but only when nothing else
+          # follows in that section (next line is another "##" heading or EOF), so
+          # a genuinely-empty section header a release intentionally left behind is
+          # NOT removed. The last three drop a stray placeholder bullet from a
+          # section that also has real content (its header is kept).
+          before="$(cat "$README")"
+          perl -0777 -i -pe '
+            s/^## New Features\n\n\* \*\*New feature title\*\*\n\n  New feature explanation\.\n(?:[ \t]*\n)*(?=##|\z)//mg;
+            s/^## Enhancements\n\n\* \*\*New enhancement title\*\*\n\n  New enhancement explanation\.\n(?:[ \t]*\n)*(?=##|\z)//mg;
+            s/^## Bugfixes\n\n\* New bugfix\.\n(?:[ \t]*\n)*(?=##|\z)//mg;
+            s/^\* \*\*New feature title\*\*\n\n  New feature explanation\.\n\n?//mg;
+            s/^\* \*\*New enhancement title\*\*\n\n  New enhancement explanation\.\n\n?//mg;
+            s/^\* New bugfix\.\n?\n?//mg;
+          ' "$README"
+
+          if [ "$before" = "$(cat "$README")" ]; then
+            echo "No unfilled placeholders in ${README}."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$README"
+          git commit -m "Remove unfilled release-note placeholders for ${VERSION}"
+          git push origin "HEAD:refs/heads/release/${VERSION}"
+          echo "Stripped unfilled placeholders from ${README} and pushed to release/${VERSION}."
       - name: Create release -> stable PR
         run: |
           set -euo pipefail

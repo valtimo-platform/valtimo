@@ -18,6 +18,10 @@
  * npm run libs-publish-all -- ritense-nexus <npmtoken>
  * npm run libs-publish-all -- npmjs <npmtoken>
  * npm run libs-publish-all -- s3 <aws_access_key_id> <aws_secret_acces_key> 4.15.2
+ *
+ * The s3 target works against any S3-compatible store. It defaults to AWS; to target a
+ * non-AWS store (e.g. OVHcloud) set S3_ENDPOINT and S3_REGION in the environment:
+ *   S3_ENDPOINT=https://s3.eu-west-par.io.cloud.ovh.net S3_REGION=eu-west-par npm run libs-publish-all -- ...
  */
 
 const fs = require('fs');
@@ -100,11 +104,15 @@ fs.readdirSync(distDir).forEach(dir => {
     for (e in process.env) envCopy[e] = process.env[e];
     envCopy.AWS_ACCESS_KEY_ID = accessKeyIdOrNpmToken;
     envCopy.AWS_SECRET_ACCESS_KEY = secretAccessKey;
-    envCopy.AWS_DEFAULT_REGION = 'eu-central-1';
+    envCopy.AWS_DEFAULT_REGION = process.env.S3_REGION || 'eu-central-1';
+
+    // A custom S3_ENDPOINT targets a non-AWS S3-compatible store such as OVHcloud;
+    // leave it unset for native AWS S3.
+    const endpointArg = process.env.S3_ENDPOINT ? ` --endpoint-url "${process.env.S3_ENDPOINT}"` : '';
 
     exec.execSync('npm pack');
     exec.execSync(
-      `aws s3 cp --recursive --exclude \"*\" --include \"*.tgz\" . s3://${bucketName}/snapshots/${packageVersion}/`,
+      `aws s3 cp${endpointArg} --recursive --exclude \"*\" --include \"*.tgz\" . s3://${bucketName}/snapshots/${packageVersion}/`,
       {env: envCopy}
     );
   }
