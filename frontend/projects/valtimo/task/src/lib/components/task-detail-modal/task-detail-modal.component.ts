@@ -114,7 +114,9 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.canAssignUserToTask$,
   ]).pipe(
     switchMap(([task, canAssign]) =>
-      canAssign ? this.taskService.getCandidateUsers(task.id) : of([])
+      canAssign
+        ? this.taskService.getCandidateUsers(task.id).pipe(catchError(() => of([])))
+        : of([])
     ),
     shareReplay(1)
   );
@@ -125,7 +127,10 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   ]).pipe(
     switchMap(([task, canAssign]) =>
       canAssign
-        ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content))
+        ? this.taskService.getCandidateTeams(task.id).pipe(
+            map(page => page.content),
+            catchError(() => of([]))
+          )
         : of([])
     ),
     shareReplay(1)
@@ -232,9 +237,10 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
               event.taskId
             );
 
-            return this.taskService.getTask(event.taskId).pipe(
+            // a 403 or 404 means the user can no longer view the task; these are expected
+            // outcomes here, so they are skipped to avoid a global error toast
+            return this.taskService.getTask(event.taskId, ['403', '404']).pipe(
               catchError(err => {
-                // a 403 or 404 means the user can no longer view the task
                 if (err.status === 403 || err.status === 404) {
                   return of(null);
                 }
@@ -386,9 +392,10 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     // so drop cached permissions before the task is re-fetched and re-checked
     this.permissionService.invalidateResource(TASK_DETAIL_PERMISSION_RESOURCE.task, taskId);
 
-    return this.taskService.getTask(taskId).pipe(
+    // a 403 or 404 means the user can no longer view the task; these are expected
+    // outcomes here, so they are skipped to avoid a global error toast
+    return this.taskService.getTask(taskId, ['403', '404']).pipe(
       catchError(error => {
-        // a 403 or 404 means the user can no longer view the task
         if (error?.status === 403 || error?.status === 404) {
           return of(null);
         }

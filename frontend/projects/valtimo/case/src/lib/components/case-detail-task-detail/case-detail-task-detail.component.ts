@@ -117,7 +117,9 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     this.canAssignUserToTask$,
   ]).pipe(
     switchMap(([task, canAssign]) =>
-      canAssign ? this.taskService.getCandidateUsers(task.id) : of([])
+      canAssign
+        ? this.taskService.getCandidateUsers(task.id).pipe(catchError(() => of([])))
+        : of([])
     ),
     shareReplay(1)
   );
@@ -128,7 +130,10 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
   ]).pipe(
     switchMap(([task, canAssign]) =>
       canAssign
-        ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content))
+        ? this.taskService.getCandidateTeams(task.id).pipe(
+            map(page => page.content),
+            catchError(() => of([]))
+          )
         : of([])
     ),
     shareReplay(1)
@@ -203,8 +208,9 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     // so drop cached permissions before the task is re-fetched and re-checked
     this.permissionService.invalidateResource(TASK_DETAIL_PERMISSION_RESOURCE.task, taskId);
 
-    return this.taskService.getTask(taskId).pipe(
-      // a 403 or 404 means the user can no longer view the task
+    // a 403 or 404 means the user can no longer view the task; these are expected
+    // outcomes here, so they are skipped to avoid a global error toast
+    return this.taskService.getTask(taskId, ['403', '404']).pipe(
       catchError(error => (error?.status === 403 || error?.status === 404 ? of(null) : EMPTY))
     );
   }

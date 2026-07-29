@@ -94,8 +94,11 @@
   attempt was only rejected by the backend. Permissions for the task are now re-evaluated after every
   assignment change (including changes made by other users): the assign control is deactivated when the
   `assign` permission is lost, and the dialog closes automatically when the `view` permission is lost.
-  For custom components, `PermissionService` now offers a public `invalidateResource(resource, identifier?)`
-  method to clear cached permission results.
+  Re-evaluating permissions this way no longer surfaces a spurious "access denied" error notification
+  for the expected `403`/`404` responses (on the task re-fetch when the `view` permission is lost, or on
+  the candidate user/team lookup when the `assign` permission is lost). For custom components,
+  `PermissionService` now offers a public `invalidateResource(resource, identifier?)` method to clear
+  cached permission results.
 
 * **Closing a dialog with the Esc key now works reliably**
 

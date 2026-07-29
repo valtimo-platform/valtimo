@@ -128,6 +128,26 @@ describe('TaskDetailModalComponent', () => {
     expect(assignmentOfTaskChangedSpy).toHaveBeenCalled();
   }));
 
+  it('falls back to an empty candidate list when the candidate request is denied after an assignment change', fakeAsync(() => {
+    // Right after an assignment change the task is re-emitted while the assign permission still
+    // reads as allowed, firing a candidate request that the backend now denies with a 403. The
+    // stream must recover with an empty list instead of erroring (and no error toast is shown).
+    taskService.getCandidateUsers.and.returnValue(throwError(() => ({status: 403})));
+    taskService.getCandidateTeams.and.returnValue(throwError(() => ({status: 403})));
+
+    const userEmissions: any[] = [];
+    const teamEmissions: any[] = [];
+    component.candidateUsers$.subscribe(users => userEmissions.push(users));
+    component.candidateTeams$.subscribe(teams => teamEmissions.push(teams));
+
+    component.openTaskDetails(task);
+    tick();
+
+    expect(userEmissions[userEmissions.length - 1]).toEqual([]);
+    expect(teamEmissions[teamEmissions.length - 1]).toEqual([]);
+    flush();
+  }));
+
   it('closes the modal when the view permission is lost after an assignment change', fakeAsync(() => {
     component.openTaskDetails(task);
     tick();
@@ -153,6 +173,8 @@ describe('TaskDetailModalComponent', () => {
 
     component.onAssignmentChanged({userId: 'other-user'});
 
+    // the re-fetch skips 403/404 so no global error toast is shown for the expected access loss
+    expect(taskService.getTask).toHaveBeenCalledWith(task.id, ['403', '404']);
     expect(component.modalOpen$.getValue()).toBeFalse();
     expect(assignmentOfTaskChangedSpy).toHaveBeenCalled();
     flush();
@@ -170,6 +192,8 @@ describe('TaskDetailModalComponent', () => {
       TASK_DETAIL_PERMISSION_RESOURCE.task,
       task.id
     );
+    // the re-fetch skips 403/404 so no global error toast is shown for the expected access loss
+    expect(taskService.getTask).toHaveBeenCalledWith(task.id, ['403', '404']);
     expect(component.modalOpen$.getValue()).toBeFalse();
     flush();
   }));
