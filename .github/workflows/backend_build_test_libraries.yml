@@ -123,12 +123,9 @@ jobs:
               echo "$line" | cut -d ' ' -f 1 >> $SECURITY_TESTS_FILE
             fi
           done <<< "$DRY_RUN"
-          cat $UNIT_TESTS_FILE | jq -R -s -c 'split("
-")[:-1]' > $UNIT_TESTS_MATRIX
-          cat $INTEGRATION_TESTS_FILE | jq -R -s -c 'split("
-")[:-1]' > $INTEGRATION_TESTS_MATRIX
-          cat $SECURITY_TESTS_FILE | jq -R -s -c 'split("
-")[:-1]' > $SECURITY_TESTS_MATRIX
+          cat $UNIT_TESTS_FILE | jq -R -s -c 'split("\n")[:-1]' > $UNIT_TESTS_MATRIX
+          cat $INTEGRATION_TESTS_FILE | jq -R -s -c 'split("\n")[:-1]' > $INTEGRATION_TESTS_MATRIX
+          cat $SECURITY_TESTS_FILE | jq -R -s -c 'split("\n")[:-1]' > $SECURITY_TESTS_MATRIX
       - name: Set test matrices
         id: set_test_matrices
         run: |

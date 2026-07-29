@@ -69,8 +69,7 @@ jobs:
           fi
 
           echo "🔎 Subfolders in '$PROJECTS_DIR' verzamelen…"
-          mapfile -t NAMES < <(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f
-' | grep -v '^\.' || true)
+          mapfile -t NAMES < <(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | grep -v '^\.' || true)
 
           if [ "${#NAMES[@]}" -eq 0 ]; then
             echo "ℹ️  Geen subfolders gevonden; niets te doen."; exit 0

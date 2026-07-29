@@ -53,10 +53,8 @@ jobs:
 
           comment_id=$(jq -r '.test_env_comment_id' "$payload")
           {
-            printf 'message_body=%s
-' "$msg"
-            printf 'comment_id=%s
-' "$comment_id"
+            printf 'message_body=%s\n' "$msg"
+            printf 'comment_id=%s\n' "$comment_id"
           } >> "$GITHUB_OUTPUT"
 
       # - name: Generate token as GitHub App
