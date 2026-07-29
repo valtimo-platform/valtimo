@@ -542,11 +542,13 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
-    this.downloadService.downloadFile(
-      `${this.valtimoEndpointUri}v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
-      relatedFile.bestandsnaam ?? '',
-      forceDownload
-    );
+    this.documentId$.pipe(take(1)).subscribe(documentId => {
+      this.downloadService.downloadFile(
+        `${this.valtimoEndpointUri}v1/zaken-api/${relatedFile.pluginConfigurationId}/case-document/${documentId}/files/${relatedFile.fileId}/download`,
+        relatedFile.bestandsnaam ?? '',
+        forceDownload
+      );
+    });
   }
 
   private openQueryParamsSubscription(): void {

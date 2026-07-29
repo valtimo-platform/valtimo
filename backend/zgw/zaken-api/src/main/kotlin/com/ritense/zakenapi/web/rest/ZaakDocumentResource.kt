@@ -21,16 +21,22 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiDocumentDto
 import com.ritense.logging.LoggableResource
+import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.service.ZaakDocumentService
+import org.springframework.core.io.InputStreamResource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.net.URLConnection
 import java.util.UUID
 
 @RestController
@@ -61,5 +67,30 @@ class ZaakDocumentResource(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
     ): ZaakResponse? {
         return zaakDocumentService.getZaakByDocumentId(documentId)
+    }
+
+    @GetMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download")
+    fun downloadDocument(
+        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
+        @PathVariable(name = "documentId") documentId: String,
+    ): ResponseEntity<InputStreamResource> {
+
+        val documentMetadata = zaakDocumentService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+        val documentInputStream = zaakDocumentService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+
+        val responseHeaders = HttpHeaders()
+        responseHeaders.set("Content-Disposition", "attachment; filename=\"${documentMetadata.bestandsnaam}\"")
+
+        val documentMediaType = try {
+            MediaType.valueOf(URLConnection.guessContentTypeFromName(documentMetadata.bestandsnaam))
+        } catch (exception: RuntimeException) {
+            MediaType.APPLICATION_OCTET_STREAM
+        }
+        return ResponseEntity
+            .ok()
+            .headers(responseHeaders)
+            .contentType(documentMediaType)
+            .body(InputStreamResource(documentInputStream))
     }
 }

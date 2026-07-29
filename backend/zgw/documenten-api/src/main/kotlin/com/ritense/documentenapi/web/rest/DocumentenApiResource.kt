@@ -47,6 +47,7 @@ class DocumentenApiResource(
     private val documentenApiService: DocumentenApiService,
     private val documentenApiVersionService: DocumentenApiVersionService
 ) {
+    @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.downloadDocument(pluginConfigurationId, caseDocumentId, documentId)"))
     @GetMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}/download")
     fun downloadDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
