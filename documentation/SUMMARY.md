@@ -222,6 +222,7 @@
   * [12.5.0](release-notes/12.x.x/12.5.0.md)
   * [12.4.0](release-notes/12.x.x/12.4.0.md)
     * [12.4.1](release-notes/12.x.x/12.4.0/12.4.1.md)
+    * [12.4.3](release-notes/12.x.x/12.4.0/12.4.3.md)
   * [12.3.0](release-notes/12.x.x/12.3.0/README.md)
     * [12.3.1](release-notes/12.x.x/12.3.0/12.3.1.md)
   * [12.2.0](release-notes/12.x.x/12.2.0.md)
