@@ -55,10 +55,13 @@ import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
+import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
 import java.net.URI
@@ -93,7 +96,7 @@ class ZaakDocumentService(
         val (viewPermissions, modifyPermissions, deletePermissions) = prefetchDocumentPermissions()
 
         return zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUri)
-            .map { getRelatedFiles(it, viewPermissions, modifyPermissions, deletePermissions) }
+            .mapNotNull { getRelatedFiles(it, viewPermissions, modifyPermissions, deletePermissions) }
     }
 
     fun getInformatieObjectenAsRelatedFilesPage(
@@ -142,7 +145,7 @@ class ZaakDocumentService(
         } else {
             val zakenApiPlugin = getZakenApiPlugin(zaakUri)
             val documenten = zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUri)
-                .map { mapDocumentenApiDocument(it, version, viewPermissions, modifyPermissions, deletePermissions) }
+                .mapNotNull { mapDocumentenApiDocument(it, version, viewPermissions, modifyPermissions, deletePermissions) }
             toPage(documenten, pageable)
         }
     }
@@ -164,10 +167,24 @@ class ZaakDocumentService(
                     zaakInformatieobject.informatieobject
                 ).size == 1
             ) {
-                documentenApiService.deleteInformatieObject(
-                    zaakInformatieobject.informatieobject,
-                    caseDocumentId
-                )
+                try {
+                    // Call the plugin directly instead of DocumentenApiService: an exception that
+                    // crossed the service's @Transactional proxy would have marked the transaction
+                    // rollback-only, so catching it here would no longer save the case deletion.
+                    val pluginConfiguration =
+                        getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieobject.informatieobject)
+                    val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
+                    plugin.deleteInformatieObject(caseDocumentId, zaakInformatieobject.informatieobject)
+                } catch (e: HttpClientErrorException) {
+                    if (e.statusCode == HttpStatus.NOT_FOUND) {
+                        logger.warn(e) {
+                            "Skipping deletion of informatieobject '${zaakInformatieobject.informatieobject}' " +
+                                "of case '$caseDocumentId': it was not found in the Documenten API"
+                        }
+                    } else {
+                        throw e
+                    }
+                }
             } else {
                 zakenApiPlugin.deleteZaakInformatieobject(zaakInformatieobject.url, caseDocumentId)
             }
@@ -184,7 +201,9 @@ class ZaakDocumentService(
     }
 
     private fun <T> toPage(list: List<T>, pageable: Pageable): Page<T> {
-        val startIndex = pageable.offset.toInt()
+        // The offset can point past the end of the list, e.g. when documents that are missing
+        // in the Documenten API were filtered out. Clamp to avoid an out-of-bounds subList.
+        val startIndex = min(pageable.offset.toInt(), list.size)
         val endIndex = min(startIndex + pageable.pageSize, list.size)
         return PageImpl(list.subList(startIndex, endIndex), pageable, list.size.toLong())
     }
@@ -194,11 +213,11 @@ class ZaakDocumentService(
         viewPermissions: List<Permission>,
         modifyPermissions: List<Permission>,
         deletePermissions: List<Permission>,
-    ): RelatedFileDto {
+    ): RelatedFileDto? {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
         val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
         val caseDocumentId = extractUuidFromUri(zaakInformatieObject.zaak) ?: throw IllegalStateException("Could not extract caseDocumentId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
-        val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseDocumentId)
+        val informatieObject = getInformatieObjectOrNull(plugin, zaakInformatieObject, caseDocumentId) ?: return null
         return mapRelatedFile(informatieObject, pluginConfiguration, caseDocumentId, viewPermissions, modifyPermissions, deletePermissions)
     }
 
@@ -287,11 +306,11 @@ class ZaakDocumentService(
         viewPermissions: List<Permission>,
         modifyPermissions: List<Permission>,
         deletePermissions: List<Permission>,
-    ): DocumentenApiDocumentDto {
+    ): DocumentenApiDocumentDto? {
         val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(zaakInformatieObject.informatieobject)
         val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
         val caseDocumentId = extractUuidFromUri(zaakInformatieObject.zaak) ?: throw IllegalStateException("Could not extract caseDocumentId from zaakInformatieObject.zaak: ${zaakInformatieObject.zaak}")
-        val informatieObject = plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseDocumentId)
+        val informatieObject = getInformatieObjectOrNull(plugin, zaakInformatieObject, caseDocumentId) ?: return null
         val trefwoorden = if (version.supportsTrefwoorden) {
             informatieObject.trefwoorden
         } else {
@@ -323,6 +342,26 @@ class ZaakDocumentService(
             canModify = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.MODIFY, modifyPermissions),
             canDelete = evaluatePermission(zgwDocument, ZgwDocumentActionProvider.DELETE, deletePermissions),
         )
+    }
+
+    private fun getInformatieObjectOrNull(
+        plugin: DocumentenApiPlugin,
+        zaakInformatieObject: ZaakInformatieObject,
+        caseDocumentId: UUID,
+    ): DocumentInformatieObject? {
+        return try {
+            plugin.getInformatieObject(zaakInformatieObject.informatieobject, caseDocumentId)
+        } catch (e: HttpClientErrorException) {
+            if (e.statusCode == HttpStatus.NOT_FOUND) {
+                logger.warn(e) {
+                    "Skipping zaakinformatieobject '${zaakInformatieObject.url}' of case '$caseDocumentId': " +
+                        "informatieobject '${zaakInformatieObject.informatieobject}' was not found in the Documenten API"
+                }
+                null
+            } else {
+                throw e
+            }
+        }
     }
 
     private fun prefetchDocumentPermissions(): Triple<List<Permission>, List<Permission>, List<Permission>> {
@@ -475,5 +514,9 @@ class ZaakDocumentService(
     fun getInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String): DocumentInformatieObject {
         getVerifiedInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
         return documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
