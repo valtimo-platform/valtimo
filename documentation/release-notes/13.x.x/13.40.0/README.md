@@ -13,3 +13,18 @@
   The building-block process link stores its mappings in a secondary table, which Hibernate wrote with a
   `MERGE` (upsert) that mis-typed the JSONB columns. The secondary row is now written with a plain
   insert/update, so these imports succeed again.
+## New Features
+
+* **New feature title**
+
+  New feature explanation.
+
+## Enhancements
+
+* **New enhancement title**
+
+  New enhancement explanation.
+
+## Bugfixes
+
+* New bugfix.
