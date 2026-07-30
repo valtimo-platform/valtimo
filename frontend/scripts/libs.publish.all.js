@@ -1,0 +1,123 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* Example usage:
+ * npm run libs-publish-all -- ritense-nexus <npmtoken>
+ * npm run libs-publish-all -- npmjs <npmtoken>
+ * npm run libs-publish-all -- s3 <aws_access_key_id> <aws_secret_acces_key> 4.15.2
+ *
+ * The s3 target works against any S3-compatible store. It defaults to AWS; to target a
+ * non-AWS store (e.g. OVHcloud) set S3_ENDPOINT and S3_REGION in the environment:
+ *   S3_ENDPOINT=https://s3.eu-west-par.io.cloud.ovh.net S3_REGION=eu-west-par npm run libs-publish-all -- ...
+ */
+
+const fs = require('fs');
+const exec = require('child_process');
+const path = require('path');
+
+const destinationArg = process.argv.slice(2)[0];
+if (!destinationArg) throw 'Invalid publish destination';
+
+const accessKeyIdOrNpmToken = process.argv.slice(2)[1];
+const secretAccessKey = process.argv.slice(2)[2];
+const packageVersion = process.argv.slice(2)[3];
+
+let destinationRegistry = 'localhost';
+let accessModifier = '';
+let bucketName = '';
+switch (destinationArg) {
+  case 'snapshot':
+    destinationRegistry = 's3';
+    if (!accessKeyIdOrNpmToken) throw 'Access key id must be set';
+    if (!secretAccessKey) throw 'Secret access key must be set';
+    if (!packageVersion) throw 'Package version must be set';
+    bucketName = 'valtimo-snapshots/npm';
+    break;
+  case 'release-candidate':
+    destinationRegistry = 's3';
+    if (!accessKeyIdOrNpmToken) throw 'Access key id must be set';
+    if (!secretAccessKey) throw 'Secret access key must be set';
+    if (!packageVersion) throw 'Package version must be set';
+    bucketName = 'valtimo-releases';
+    break;
+  case 'release':
+    destinationRegistry = 'registry.npmjs.org/';
+    if (!accessKeyIdOrNpmToken) throw 'Invalid npm token';
+    accessModifier = ' --access public';
+    break;
+  default:
+    console.error(`Invalid publishing option ${destinationArg}`);
+    exit(1);
+}
+
+const distDir = './dist/valtimo';
+fs.readdirSync(distDir).forEach(dir => {
+  let cwd = process.cwd();
+  process.chdir(path.resolve(`${distDir}/${dir}`));
+  if (destinationRegistry === 'registry.npmjs.org/') {
+    fs.writeFileSync(
+      '.npmrc',
+      `@valtimo:registry=https://${destinationRegistry}\n` +
+      `//${destinationRegistry}:_authToken=${accessKeyIdOrNpmToken}\n`
+    );
+
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    let alreadyPublished = false;
+
+    try {
+      const publishedVersion = exec
+        .execSync(`npm view ${pkg.name}@${pkg.version} version --quiet`, {
+          stdio: ['pipe', 'pipe', 'ignore'],
+        })
+        .toString()
+        .trim();
+
+      if (publishedVersion === pkg.version) {
+        alreadyPublished = true;
+      }
+    } catch (e) {
+      // If `npm view` fails, it likely means the package or version doesn't exist.
+      // Assume it is not published yet.
+    }
+
+    if (alreadyPublished) {
+      console.warn(`::warning ::Skipping ${pkg.name}@${pkg.version} as it is already published.`);
+    } else {
+      exec.execSync('npm publish' + accessModifier);
+    }
+  }
+  if (destinationRegistry === 's3') {
+    let envCopy = {};
+    for (e in process.env) envCopy[e] = process.env[e];
+    envCopy.AWS_ACCESS_KEY_ID = accessKeyIdOrNpmToken;
+    envCopy.AWS_SECRET_ACCESS_KEY = secretAccessKey;
+    envCopy.AWS_DEFAULT_REGION = process.env.S3_REGION || 'eu-central-1';
+
+    // A custom S3_ENDPOINT targets a non-AWS S3-compatible store such as OVHcloud;
+    // leave it unset for native AWS S3.
+    const endpointArg = process.env.S3_ENDPOINT ? ` --endpoint-url "${process.env.S3_ENDPOINT}"` : '';
+
+    exec.execSync('npm pack');
+    exec.execSync(
+      `aws s3 cp${endpointArg} --recursive --exclude \"*\" --include \"*.tgz\" . s3://${bucketName}/snapshots/${packageVersion}/`,
+      {env: envCopy}
+    );
+  }
+
+  process.chdir(cwd);
+});
+
+console.log('Published all libraries');

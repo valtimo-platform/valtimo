@@ -30,6 +30,8 @@
     "libs-test-all-cicd": "WATCH_TESTS=false SOURCE_MAPS=false TEST_BROWSER=ChromeHeadless npm-run-all -p -l --max-parallel 8 libs:test:*",
     "libs-lint-all": "npm-run-all libs:lint:*",
     "libs-lint-all-cicd": "npm-run-all -p -l --max-parallel 8 libs:lint:*",
+    "libs-increment-all": "node scripts/libs.increment.all.js",
+    "libs-publish-all": "node scripts/libs.publish.all.js",
     "libs:watch:config": "ng build @valtimo/config --watch",
     "libs:watch:access-control": "ng build @valtimo/access-control --watch",
     "libs:watch:security": "ng build @valtimo/security --watch",
