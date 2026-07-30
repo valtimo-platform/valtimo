@@ -19,6 +19,11 @@ on:
         description: Project version, equal to the inputs.project_version if supplied, otherwise computed from branch name
         value: ${{ jobs.determine_project_version.outputs.project_version }}
 
+env:
+  # The default Node on ubuntu-latest runners (currently 22.x) is outside the
+  # engines range (>=18.13.0 <21.0.0) and breaks `npm install`. Pin to 20.x.
+  NODE_VERSION: "20.x"
+
 defaults:
   run:
     working-directory: frontend
@@ -64,6 +69,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Check whether NPM packages are already cached
         uses: actions/cache/restore@v4
@@ -124,6 +134,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - name: Get node_modules from cache
         uses: actions/cache/restore@v4
         id: restore_node_modules_cache
@@ -170,6 +185,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Get node_modules from cache
         uses: actions/cache/restore@v4
