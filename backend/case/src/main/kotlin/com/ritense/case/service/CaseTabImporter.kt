@@ -24,12 +24,12 @@ import com.ritense.case.domain.CaseTabId
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case_.domain.tab.CaseExternalPluginTab
-import com.ritense.case_.service.event.CaseTabUpdatedEvent
+import com.ritense.case_.service.event.CaseTabCreatedEvent
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_TAB
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -39,6 +39,7 @@ class CaseTabImporter(
     private val objectMapper: ObjectMapper,
     private val caseTabRepository: CaseTabRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver> = emptyList(),
 ) : Importer {
     override fun type() = CASE_TAB
 
@@ -48,6 +49,16 @@ class CaseTabImporter(
 
     override fun import(request: ImportRequest) {
         deploy(request)
+    }
+
+    /**
+     * A case tab is not a process link, so it gets no detection from the process-link importer.
+     * Trigger an in-transaction recheck here — for external-plugin tabs this is what raises the
+     * configuration issue when the tab references a plugin configuration missing in this environment.
+     */
+    override fun afterImport(request: ImportRequest) {
+        val caseDefinitionId = request.caseDefinitionId ?: return
+        pluginConfigurationMappingResolvers.forEach { it.recheckIssuesForCaseDefinition(caseDefinitionId) }
     }
 
     private fun deploy(request: ImportRequest) {
@@ -66,7 +77,7 @@ class CaseTabImporter(
                 tab.contentKey
             }
 
-            caseTabRepository.save(
+            val saved = caseTabRepository.save(
                 CaseTab(
                     id = CaseTabId(caseDefinitionId, tab.key),
                     name = tab.name,
@@ -76,12 +87,19 @@ class CaseTabImporter(
                     showTasks = tab.showTasks
                 )
             )
+            saved to tab
         }
 
-        // Import is an upsert: publish an update event for every tab so type-specific side tables
-        // stay in sync — including dropping a stale `case_external_plugin_tab` row when a
-        // re-imported tab changed to a non-EXTERNAL_PLUGIN type.
-        savedTabs.forEach { applicationEventPublisher.publishEvent(CaseTabUpdatedEvent(it)) }
+        // Carry the export's plugin identity onto the event so the EXTERNAL_PLUGIN side row can
+        // persist it — this is what keeps a tab dangling on import (its configuration missing here)
+        // identifiable in the repair panel afterwards.
+        savedTabs
+            .filter { (saved, _) -> saved.type == CaseTabType.EXTERNAL_PLUGIN }
+            .forEach { (saved, dto) ->
+                applicationEventPublisher.publishEvent(
+                    CaseTabCreatedEvent(saved, dto.pluginDefinitionKey, dto.pluginVersion)
+                )
+            }
     }
 
     /**

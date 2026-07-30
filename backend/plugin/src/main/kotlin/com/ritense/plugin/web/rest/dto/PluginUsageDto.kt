@@ -34,12 +34,19 @@ enum class PluginUsageParentType {
  * One usage of a plugin configuration that blocks its deletion. Used by the "configuration in use"
  * and "host in use" guards on both the embedded and external plugin paths.
  *
- * Two shapes share this DTO:
+ * Several shapes share this DTO:
  * - **Process-link usage** (embedded + external): the BPMN-activity fields are populated and
  *   [tabKey] is null.
  * - **External-plugin case-tab usage**: [tabKey]/[tabName] are populated, [parentType] is `CASE`,
  *   and the process-link fields are null. (A `case-tab` of an external plugin references the
  *   configuration but has no process link.)
+ * - **Building-block mapping usage**: a building block's `pluginConfigurationMappings` reference
+ *   the configuration; [buildingBlockKey] names the building block. On a call-activity link the
+ *   process-link fields are populated too; on a case-definition ↔ BB link only [parentKey]/
+ *   [parentVersionTag] (the case) are.
+ * - **Definition-reference usage** (host deletion only): a `BUILDING_BLOCK`-reference process link
+ *   pins a plugin *definition* rather than a configuration — [configurationId] then carries the
+ *   definition id and [configurationTitle] the pinned `pluginId@version` pair.
  */
 data class PluginUsageDto(
     val configurationId: UUID,
@@ -55,4 +62,5 @@ data class PluginUsageDto(
     val processLinkId: UUID? = null,
     val tabKey: String? = null,
     val tabName: String? = null,
+    val buildingBlockKey: String? = null,
 )

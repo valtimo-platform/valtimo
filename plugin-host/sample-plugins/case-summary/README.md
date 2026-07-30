@@ -16,8 +16,10 @@ Registers a single `case-summary` action that:
   action declares these keys in `manifest.json` (`actions[].outputs`), which is what makes the
   dedicated "Output mapping" step appear in the process-link stepper at all — its source field is a
   dropdown of the declared keys (`summary`, `title`, `amount`, `currency`), not a free-text JSON
-  pointer. This demonstrates the action-result write-back feature end-to-end; see "Manual Test Path"
-  below.
+  pointer. Declaring `outputs` is a runtime contract: every declared key must be present on the
+  returned `result` (the host and GZAC both reject a result with missing keys), but a key's value
+  may be `null` — which the mapping writes through to the target. This demonstrates the
+  action-result write-back feature end-to-end; see "Manual Test Path" below.
 
 This is the second sample plugin alongside `say-hello`. Where `say-hello` only uses static configuration and BPMN action properties, `case-summary` exercises the end-to-end host-function callback path.
 

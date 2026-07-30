@@ -34,9 +34,15 @@
 
 .plugin-configuration-select {
   &__warning {
-    margin-top: var(--cds-spacing-02);
-    color: var(--cds-support-warning);
-    font-size: var(--cds-label-01-font-size);
+    display: flex;
+    width: 100%;
+    margin-top: var(--cds-spacing-03);
+
+    ::ng-deep cds-inline-notification {
+      width: 100%;
+      max-inline-size: unset;
+      margin: 0;
+    }
   }
 }
 

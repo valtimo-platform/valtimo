@@ -17,6 +17,8 @@
 package com.ritense.externalplugin.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.case.repository.CaseTabRepository
+import com.ritense.case_.repository.CaseExternalPluginTabRepository
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.compatibility.DefaultGzacVersionProvider
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
@@ -67,8 +69,6 @@ import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenIntrospectionResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
-import com.ritense.case.repository.CaseTabRepository
-import com.ritense.case_.repository.CaseExternalPluginTabRepository
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginActionResultHandler
@@ -141,6 +141,7 @@ class ExternalPluginAutoConfiguration {
         taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
         processDefinitionUsageMetaResolver: ProcessDefinitionUsageMetaResolver,
         caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
+        buildingBlockMappingUsageFinder: java.util.Optional<com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder>,
     ) = ExternalPluginHostUsageResolver(
         definitionRepository,
         configurationRepository,
@@ -148,6 +149,7 @@ class ExternalPluginAutoConfiguration {
         taskFormProcessLinkRepository,
         processDefinitionUsageMetaResolver,
         caseExternalPluginTabService,
+        buildingBlockMappingUsageFinder,
     )
 
     @Bean
@@ -190,7 +192,9 @@ class ExternalPluginAutoConfiguration {
     @ConditionalOnMissingBean(ExternalPluginCaseTabResolverImpl::class)
     fun externalPluginCaseTabResolver(
         bundleUrlResolver: ExternalPluginBundleUrlResolver,
-    ) = ExternalPluginCaseTabResolverImpl(bundleUrlResolver)
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+    ) = ExternalPluginCaseTabResolverImpl(bundleUrlResolver, configurationRepository, definitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginMenuPageService::class)
@@ -538,7 +542,9 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginImportPreviewContributor(
         objectMapper: ObjectMapper,
         configurationRepository: ExternalPluginConfigurationRepository,
-    ): ImportPreviewContributor = ExternalPluginImportPreviewContributor(objectMapper, configurationRepository)
+        definitionRepository: ExternalPluginDefinitionRepository,
+    ): ImportPreviewContributor =
+        ExternalPluginImportPreviewContributor(objectMapper, configurationRepository, definitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginConfigurationMappingResolver::class)

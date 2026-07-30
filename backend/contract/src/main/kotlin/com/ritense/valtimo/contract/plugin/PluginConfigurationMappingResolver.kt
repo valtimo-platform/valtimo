@@ -35,4 +35,13 @@ interface PluginConfigurationMappingResolver {
     fun resolve(caseDefinitionId: CaseDefinitionId, mappings: Map<UUID, UUID>)
     fun getDanglingPluginConfigurations(caseDefinitionId: CaseDefinitionId): List<DanglingPluginConfigurationDto>
     fun recheckIssuesForProcessDefinition(processDefinitionId: String)
+
+    /**
+     * Re-evaluates and (re)publishes this resolver's configuration issues for a whole case
+     * definition, independent of any process-link change. Lets surfaces that are not process links —
+     * e.g. external-plugin case tabs — get reliable, in-transaction issue detection at import time
+     * (triggered from their own importer) rather than depending on an incidental process-link event.
+     * Default no-op for resolvers with nothing to recheck at case-definition granularity.
+     */
+    fun recheckIssuesForCaseDefinition(caseDefinitionId: CaseDefinitionId) {}
 }

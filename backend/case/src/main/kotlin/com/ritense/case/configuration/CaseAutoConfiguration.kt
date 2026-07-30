@@ -27,9 +27,9 @@ import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
+import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.QuickSearchRepository
 import com.ritense.case.repository.StartableItemRepository
-import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionCheckerImpl
@@ -48,9 +48,9 @@ import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
+import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
 import com.ritense.case.service.StartableItemExporter
 import com.ritense.case.service.StartableItemImporter
-import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
 import com.ritense.case.service.StartableItemManagementService
 import com.ritense.case.service.StartableItemProvider
 import com.ritense.case.service.StartableItemService
@@ -67,6 +67,7 @@ import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.HiddenCaseListColumnRepository
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.case_.service.ExternalPluginCaseTabResolver
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
@@ -96,6 +97,7 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import java.util.Optional
 
 @AutoConfiguration
 @EnableJpaRepositories(
@@ -331,9 +333,11 @@ class CaseAutoConfiguration {
     fun caseTabExporter(
         objectMapper: ObjectMapper,
         caseTabService: CaseTabService,
+        externalPluginCaseTabResolver: Optional<ExternalPluginCaseTabResolver>,
     ) = CaseTabExporter(
         objectMapper,
-        caseTabService
+        caseTabService,
+        externalPluginCaseTabResolver
     )
 
     @Bean
@@ -359,8 +363,9 @@ class CaseAutoConfiguration {
     fun caseTabImporter(
         objectMapper: ObjectMapper,
         caseTabRepository: CaseTabRepository,
-        applicationEventPublisher: ApplicationEventPublisher
-    ) = CaseTabImporter(objectMapper, caseTabRepository, applicationEventPublisher)
+        applicationEventPublisher: ApplicationEventPublisher,
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>
+    ) = CaseTabImporter(objectMapper, caseTabRepository, applicationEventPublisher, pluginConfigurationMappingResolvers)
 
     @Bean
     @ConditionalOnMissingBean(CaseTaskListExporter::class)

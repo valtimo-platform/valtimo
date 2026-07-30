@@ -94,7 +94,10 @@ dependencies {
     testImplementation project(":backend:zgw:documenten-api-preview")
     testImplementation project(":backend:exact-plugin")
     testImplementation project(":backend:keycloak-iam")
-    testImplementation project(":backend:aws:s3-resource")
+    // Supplies the ResourceService that DocumentAutoConfiguration (pulled in via :backend:case)
+    // requires in the full IT context; external-plugin never touches file storage, so the local
+    // impl is used rather than s3-resource (which would force AWS/S3 config for no functional reason).
+    testImplementation project(":backend:resource:local-resource")
     testImplementation project(":backend:case-opensearch")
 
     jar {
