@@ -118,14 +118,65 @@
       margin: 0 0 8px;
     }
 
+    // Carbon's reset applies `font: inherit` to every element and then restores `strong` and `em`
+    // globally. Relying on that restore means relying on where Carbon lands among the stylesheets
+    // the application loads, so the emphasis of the rendered markdown is pinned here instead. 600
+    // is the weight Carbon uses for bold text, and the one the headings above use.
+    strong,
+    b {
+      font-weight: 600;
+    }
+
+    em,
+    i {
+      font-style: italic;
+    }
+
+    // Not produced by markdown itself, but reachable through the raw html the sanitizer allows.
+    // `vertical-align: baseline` from the reset flattens both onto the text line.
+    sub {
+      vertical-align: sub;
+      font-size: 12px;
+    }
+
+    sup {
+      vertical-align: super;
+      font-size: 12px;
+    }
+
     ul,
     ol {
       margin: 0 0 8px;
       padding-left: 20px;
     }
 
+    // Carbon's reset sets `list-style: none` on every list in the application, so the markers have
+    // to be put back here. The nested levels are spelled out because that reset flattens the
+    // browser default of varying the marker per depth as well.
+    ul {
+      list-style: disc;
+    }
+
+    ul ul {
+      list-style: circle;
+    }
+
+    ul ul ul {
+      list-style: square;
+    }
+
+    ol {
+      list-style: decimal;
+    }
+
     li {
       margin-bottom: 4px;
+    }
+
+    // A GFM task list ("- [ ] todo") renders as a list item holding a checkbox, which would
+    // otherwise get a bullet next to the box.
+    li:has(> input[type='checkbox']) {
+      list-style: none;
     }
 
     a {
@@ -174,6 +225,12 @@
         padding: 4px 8px;
         border: 1px solid var(--cds-border-subtle-01);
         text-align: left;
+      }
+
+      // Carbon's reset applies `font: inherit` to every element, which drops the bold a header
+      // cell normally gets from the browser.
+      th {
+        font-weight: 600;
       }
     }
 

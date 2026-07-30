@@ -1508,7 +1508,7 @@
         "content": "Text",
         "contentTooltip": "The text shown in the widget. Markdown is supported.",
         "contentPlaceholder": "## Heading\n\nSome explanation, with a [link](https://example.org) and a list:\n\n- first item\n- second item",
-        "contentHelper": "Formatting with markdown is supported: # for headings, - for a bulleted list, **bold**, *italic* and [link text](https://example.org). Links open in a new tab.",
+        "contentHelper": "Formatting with markdown is supported: # for headings, - for a bulleted list, **bold**, *italic* and [link text](https://example.org). Asterisks must sit directly against the text: **bold** works, ** bold ** does not. Links open in a new tab.",
         "accentColor": "Accent color"
       }
     },

@@ -48,7 +48,6 @@ import com.ritense.case_.widget.collection.CollectionCaseWidgetMapper
 import com.ritense.case_.widget.custom.CustomCaseWidgetDataProvider
 import com.ritense.case_.widget.custom.CustomCaseWidgetMapper
 import com.ritense.case_.widget.divider.DividerCaseWidgetMapper
-import com.ritense.case_.widget.text.TextCaseWidgetMapper
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.highlight.HighlightCaseWidgetDataProvider
@@ -66,6 +65,7 @@ import com.ritense.case_.widget.metroline.MetrolineCaseWidgetMapper
 import com.ritense.case_.widget.metroline.ZaakMetrolineDataService
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
+import com.ritense.case_.widget.text.TextCaseWidgetMapper
 import com.ritense.document.repository.InternalCaseStatusHistoryRepository
 import com.ritense.document.service.CaseTagService
 import com.ritense.document.service.DocumentService

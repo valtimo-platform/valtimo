@@ -621,6 +621,14 @@ supported and styled by the widget:
 A single newline is rendered as a line break, so the text appears the way it is typed in the editor — an empty
 line is not needed to break a line.
 
+{% hint style="warning" %}
+**Asterisks must sit directly against the text**
+
+`**bold**` and `*italic*` only work without spaces between the asterisks and the text. `** bold **` is shown as
+plain text including the asterisks, and a line starting with `* ` is read as a list item rather than as italic
+text. This is standard markdown behaviour.
+{% endhint %}
+
 {% hint style="info" %}
 **Links open in a new tab**
 
