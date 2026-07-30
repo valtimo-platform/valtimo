@@ -77,6 +77,8 @@ The following widget types are currently supported:
   _Compact widget that highlights a single value or the count of items in a collection._
 * **Image**\
   _Display image files stored on the case, either in a grid or as a carousel._
+* **Text**\
+  _Show a fixed explanatory text, authored in markdown. The text is part of the widget configuration and is the same for every case._
 
 <figure><img src="../../../../.gitbook/assets/image (21).png" alt=""><figcaption><p>Choosing widget type</p></figcaption></figure>
 {% endstep %}
@@ -578,6 +580,80 @@ Each step in the rendered metroline is in one of the following states:
 {% hint style="info" %}
 The metroline widget does not use the **Appearance** (color) or **Density** (compact) options from the widget creation wizard. Those steps are still shown but do not affect the metroline rendering.
 {% endhint %}
+
+</details>
+
+<details>
+
+<summary>Text widget</summary>
+
+The text widget shows a fixed block of explanatory text on a widget tab. Unlike the other widget types it does
+not read anything from the case document: the text is part of the widget configuration and is therefore
+identical for every case of that case definition. Use it to explain what is expected of a case handler, to point
+to a work instruction, or to introduce the widgets around it.
+
+**Configuration**
+
+* **Widget title**\
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+* **Widget icon** _(optional)_\
+  _&#x41;n MDI icon shown next to the widget title._
+* **Text**\
+  _&#x54;he content of the widget, authored as markdown. See the supported markdown below._
+* **Accent color**\
+  _&#x54;he color palette that is also available for the other widgets. For the text widget the color is chosen in the content step itself, because the separate **Appearance** step of the wizard is not shown for this type._
+
+The widget width can be set to 1 up to 4 columns like any other widget. The **Density** (compact) step of the
+wizard is not shown for text widgets, as there is no data density to vary.
+
+**Supported markdown**
+
+The content is rendered as [GitHub Flavored Markdown](https://github.github.com/gfm/). The following is
+supported and styled by the widget:
+
+* Headings (`#`, `##`, `###`, `####`)
+* Bulleted (`-`) and numbered (`1.`) lists
+* `**bold**` and `*italic*` text
+* Links: `[link text](https://example.org)`
+* Inline `code` and fenced code blocks
+* Block quotes (`>`), tables, images and horizontal rules (`---`)
+
+A single newline is rendered as a line break, so the text appears the way it is typed in the editor — an empty
+line is not needed to break a line.
+
+{% hint style="info" %}
+**Links open in a new tab**
+
+Every link in a text widget opens in a new browser tab, because the target is typically outside the case (an
+intranet page or a work instruction, for example). Relative links (`/handbook`), fragments (`#top`), `mailto:`
+and `tel:` links are supported as well.
+
+The text widget resolves no case data, so a value resolver path (for example `doc:/customer/name`) placed in the
+content or in the URL of an action button is **not** substituted — it is shown as-is.
+{% endhint %}
+
+{% hint style="warning" %}
+**Sanitization**
+
+The rendered markdown is sanitized before it is displayed. Scripts, event handler attributes and links with a
+dangerous scheme (such as `javascript:` or `data:`) are removed. Raw HTML in the content is therefore not a way
+to work around the widget: anything the sanitizer considers unsafe is stripped, and the surrounding text stays
+visible.
+{% endhint %}
+
+**Example**
+
+```markdown
+## What is expected of you
+
+Check the submitted documents before the case is assigned:
+
+- verify the identity of the applicant
+- check whether all attachments are present
+- consult the [work instruction](https://intranet.example.org/work-instruction) when in doubt
+
+Questions? Mail [the back office](mailto:backoffice@example.org).
+```
 
 </details>
 
