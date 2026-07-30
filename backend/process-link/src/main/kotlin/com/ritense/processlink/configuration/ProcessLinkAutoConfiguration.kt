@@ -19,10 +19,14 @@ package com.ritense.processlink.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.DocumentService
+import com.ritense.exporter.ExportService
+import com.ritense.importer.ImportService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
+import com.ritense.processlink.exporter.GlobalProcessLinkExporter
 import com.ritense.processlink.exporter.ProcessLinkExporter
+import com.ritense.processlink.service.ProcessDefinitionImportPreviewService
 import com.ritense.processlink.importer.GlobalProcessLinkImporter
 import com.ritense.processlink.importer.ProcessLinkImporter
 import com.ritense.processlink.listener.ProcessDefinitionDeletedEventListener
@@ -42,6 +46,7 @@ import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService
@@ -144,7 +149,11 @@ class ProcessLinkAutoConfiguration {
         repositoryService: RepositoryService,
         processDeploymentService: ProcessDeploymentService,
         processDefinitionValidator: ProcessDefinitionValidator,
-        processPropertyService: ProcessPropertyService
+        processPropertyService: ProcessPropertyService,
+        exportService: ExportService,
+        importService: ImportService,
+        processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService,
+        objectMapper: ObjectMapper,
     ): ProcessLinkResource {
         return ProcessLinkResource(
             processLinkService,
@@ -154,7 +163,11 @@ class ProcessLinkAutoConfiguration {
             repositoryService,
             processDeploymentService,
             processDefinitionValidator,
-            processPropertyService
+            processPropertyService,
+            exportService,
+            importService,
+            processDefinitionImportPreviewService,
+            objectMapper,
         )
     }
 
@@ -183,6 +196,34 @@ class ProcessLinkAutoConfiguration {
         processLinkService,
         repositoryService,
         buildingBlockMapper,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionImportPreviewService::class)
+    fun processDefinitionImportPreviewService(
+        objectMapper: ObjectMapper,
+        importPreviewContributors: List<ImportPreviewContributor>,
+        processLinkService: ProcessLinkService,
+        repositoryService: OperatonRepositoryService,
+        processPropertyService: ProcessPropertyService,
+    ) = ProcessDefinitionImportPreviewService(
+        objectMapper,
+        importPreviewContributors,
+        processLinkService,
+        repositoryService,
+        processPropertyService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(GlobalProcessLinkExporter::class)
+    fun globalProcessLinkExporter(
+        objectMapper: ObjectMapper,
+        processLinkService: ProcessLinkService,
+        repositoryService: OperatonRepositoryService,
+    ) = GlobalProcessLinkExporter(
+        objectMapper,
+        processLinkService,
+        repositoryService,
     )
 
     @Bean

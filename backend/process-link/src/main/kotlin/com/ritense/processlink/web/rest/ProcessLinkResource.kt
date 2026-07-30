@@ -16,7 +16,13 @@
 
 package com.ritense.processlink.web.rest
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.exporter.ExportService
+import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
+import com.ritense.importer.ImportService
+import com.ritense.importer.exception.ImportServiceException
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.domain.ProcessDefinitionId
@@ -24,9 +30,12 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.domain.ProcessLinkType
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.service.ProcessDefinitionImportPreviewService
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.dto.CaseProcessDefinitionResponseDto
+import com.ritense.processlink.web.rest.dto.ProcessDefinitionImportPreviewResponseDto
+import com.ritense.processlink.web.rest.dto.ProcessDefinitionImportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateRequestDto
@@ -43,6 +52,7 @@ import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.ProcessPropertyService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
@@ -63,6 +73,8 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.stream.Collectors
 
@@ -77,7 +89,11 @@ class ProcessLinkResource(
     private val repositoryService: RepositoryService,
     private val processDeploymentService: ProcessDeploymentService,
     private val processDefinitionValidator: ProcessDefinitionValidator,
-    private val processPropertyService: ProcessPropertyService
+    private val processPropertyService: ProcessPropertyService,
+    private val exportService: ExportService,
+    private val importService: ImportService,
+    private val processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService,
+    private val objectMapper: ObjectMapper,
 ) {
 
     @GetMapping("/v1/process-link")
@@ -484,6 +500,69 @@ class ProcessLinkResource(
             ?: throw IllegalStateException("No ProcessLinkMapper found for processLinkType $processLinkType")
     }
 
+    @GetMapping(
+        value = ["/management/v1/process-definition/{processDefinitionId}/export"],
+        produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
+    )
+    fun exportProcessDefinition(
+        @LoggableResource(resourceType = OperatonProcessDefinition::class) @PathVariable processDefinitionId: String
+    ): ResponseEntity<ByteArray> {
+        return runWithoutAuthorization {
+            val processDefinition = operatonProcessService.getProcessDefinitionById(processDefinitionId)
+            val outputStream = exportService.export(GlobalProcessDefinitionExportRequest(processDefinitionId))
+            val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))
+            val fileName = "${processDefinition.key}_v${processDefinition.version}_$timestamp.process.zip"
+
+            ResponseEntity
+                .ok()
+                .header("Content-Disposition", "attachment;filename=$fileName")
+                .body(outputStream.toByteArray())
+        }
+    }
+
+    @PostMapping("/management/v1/process-definition/import/preview")
+    fun previewProcessDefinitionImport(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<ProcessDefinitionImportPreviewResponseDto> {
+        return try {
+            ResponseEntity.ok(processDefinitionImportPreviewService.preview(file.inputStream))
+        } catch (exception: ImportServiceException) {
+            logger.info(exception) { "Process definition import preview failed" }
+            ResponseEntity.badRequest().build()
+        }
+    }
+
+    @PostMapping("/management/v1/process-definition/import")
+    fun importProcessDefinition(
+        @RequestParam("file") file: MultipartFile,
+        @RequestPart("pluginConfigurationMappings", required = false) pluginConfigurationMappingsJson: String?,
+    ): ResponseEntity<ProcessDefinitionImportResponseDto> {
+        return try {
+            val preview = processDefinitionImportPreviewService.preview(file.inputStream)
+            val response = ProcessDefinitionImportResponseDto(
+                processDefinitionKeys = preview.processDefinitionKeys,
+                missingReferences = preview.missingReferences,
+            )
+
+            // Importing would either fail or overwrite a process that is managed by configuration
+            if (!preview.canImport) {
+                return ResponseEntity.badRequest().body(response)
+            }
+
+            val pluginConfigurationMappings: Map<UUID, UUID?>? = pluginConfigurationMappingsJson?.let {
+                objectMapper.readValue<Map<UUID, UUID?>>(it)
+            }
+            runWithoutAuthorization {
+                importService.importGlobal(file.inputStream, pluginConfigurationMappings)
+            }
+
+            ResponseEntity.ok(response)
+        } catch (exception: ImportServiceException) {
+            logger.info(exception) { "Process definition import failed" }
+            ResponseEntity.badRequest().build()
+        }
+    }
+
     private fun getBpmnXml(definition: OperatonProcessDefinition): String {
         val xml = String(
             IoUtil.readInputStream(
@@ -495,5 +574,9 @@ class ProcessLinkResource(
             return xml.replace("isExecutable=\"true\"", "isExecutable=\"false\"")
         }
         return xml
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

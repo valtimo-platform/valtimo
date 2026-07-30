@@ -20,6 +20,7 @@ import com.ritense.exporter.manifest.ArtifactDependency
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
+import com.ritense.processlink.web.rest.dto.MissingReferenceDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
@@ -32,7 +33,10 @@ import java.util.UUID
 interface ProcessLinkMapper {
     fun supportsProcessLinkType(processLinkType: String): Boolean
     fun toProcessLinkResponseDto(processLink: ProcessLink): ProcessLinkResponseDto
-    fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ProcessLinkCreateRequestDto
+    fun toProcessLinkCreateRequestDto(
+        deployDto: ProcessLinkDeployDto,
+        blueprintId: BlueprintId?
+    ): ProcessLinkCreateRequestDto
     fun toProcessLinkUpdateRequestDto(
         deployDto: ProcessLinkDeployDto,
         existingProcessLinkId: UUID,
@@ -53,7 +57,8 @@ interface ProcessLinkMapper {
      * @param processLink The processLink to create related export requests for
      * @param caseDefinitionId The caseDefinitionId of the case the processLink is part of
      */
-    fun createRelatedExportRequests(processLink: ProcessLink, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> = setOf()
+    fun createRelatedExportRequests(processLink: ProcessLink, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> =
+        setOf()
 
     /**
      * Used by the export service to build the export manifest.
@@ -63,6 +68,15 @@ interface ProcessLinkMapper {
     fun toManifestDependencies(processLink: ProcessLink): Set<ArtifactDependency> = setOf()
 
     fun getImporterType(): String? = null
+
+    /**
+     * Used when previewing an import.
+     * Should return the definition this process link points at when it is not available, so the user
+     * can be told what is missing before the import is attempted.
+     * @param deployDto The process link as present in the import
+     * @param blueprintId The case or building block the process link will be imported for, if any
+     */
+    fun getMissingReference(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): MissingReferenceDto? = null
 
     /**
      * Called after all imports for a case definition are complete.

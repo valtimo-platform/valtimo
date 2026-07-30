@@ -1826,7 +1826,7 @@
     "upload": {
       "modalTitle": "Upload process definition",
       "title": "Upload file",
-      "description": "Only BPMN files are supported.",
+      "description": "BPMN files and exported process packages (.zip) are supported.",
       "buttonText": "Select file",
       "success": "Deployment successful",
       "failure": "Deployment failed",
@@ -1834,8 +1834,37 @@
       "replaceTitle": "Replace existing process?",
       "replaceContent": "A process with the same key already exists. Do you want to replace it?",
       "replaceContentWithDuplicates": "A process with the same key already exists: {{duplicates}}. Do you want to replace it?",
-      "replaceConfirm": "Replace"
+      "replaceConfirm": "Replace",
+      "invalidZip": {
+        "title": "Invalid file",
+        "text": "This file is not a valid process package."
+      },
+      "pluginsDescription": "For each plugin configuration in the package, choose the configuration of this environment.",
+      "summaryDescription": "The following items the process refers to are missing on this environment. Import them separately.",
+      "missingReference": {
+        "SUB_PROCESS": {
+          "title": "Missing sub-processes",
+          "message": "These processes are called, but do not exist on this environment:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Missing decision tables",
+          "message": "These decision tables are used, but do not exist on this environment:"
+        },
+        "FORM": {
+          "title": "Missing forms",
+          "message": "Import these forms first:"
+        },
+        "FORM_FLOW": {
+          "title": "Form flows are not supported",
+          "message": "Form flows cannot be linked to a process outside a case definition:"
+        },
+        "READ_ONLY_SYSTEM_PROCESS": {
+          "title": "Process is managed by configuration",
+          "message": "This process cannot be overwritten because it is managed by the application configuration:"
+        }
+      }
     },
+    "exportWithProcessLinks": "Export with process links",
     "canInitializeDocument": "Starts case",
     "startableByUser": "Startable by user",
     "expressionErrors": {
@@ -2184,6 +2213,18 @@
     "noConfigurationComponent": "No configuration component is available.",
     "configurationId": "Configuration ID",
     "configurationIdTooltip": "The plugin will be saved under this ID. The ID must be in the format of a UUID"
+  },
+  "pluginConfigurationMapping": {
+    "unknownPlugin": "Unknown plugin",
+    "source": "From the package",
+    "target": "On this environment",
+    "selectPlaceholder": "Select a configuration",
+    "notInstalled": "Plugin not installed",
+    "noConfigurations": "No configurations available",
+    "unidentifiable": {
+      "title": "Plugin configurations unknown",
+      "message": "For some plugin configurations it cannot be determined which plugin they belong to. Those links have to be set manually after importing."
+    }
   },
   "pluginManagement": {
     "tableItemsText": "plugin configurations",

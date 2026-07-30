@@ -32,6 +32,8 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.web.rest.dto.MissingReferenceDto
+import com.ritense.processlink.web.rest.dto.MissingReferenceType
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
@@ -192,6 +194,26 @@ class FormFlowProcessLinkMapper(
     }
 
     override fun getImporterType() = "formflow"
+
+    override fun getMissingReference(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): MissingReferenceDto? {
+        deployDto as FormFlowProcessLinkDeployDto
+        val definition = when (blueprintId) {
+            is CaseDefinitionId -> formFlowService.findDefinitionOrNull(deployDto.formFlowDefinitionKey, blueprintId)
+            is BuildingBlockDefinitionId -> formFlowService.findDefinitionOrNull(deployDto.formFlowDefinitionKey, blueprintId)
+            // A form flow definition only exists for a case or building block, so a form flow process
+            // link can never be created without one. See assertFormFlowDefinitionExists.
+            else -> null
+        }
+        return if (definition != null) {
+            null
+        } else {
+            MissingReferenceDto(
+                type = MissingReferenceType.FORM_FLOW,
+                reference = deployDto.formFlowDefinitionKey,
+                activityId = deployDto.activityId,
+            )
+        }
+    }
 
     companion object {
         const val PROCESS_LINK_TYPE_FORM_FLOW = "form-flow"

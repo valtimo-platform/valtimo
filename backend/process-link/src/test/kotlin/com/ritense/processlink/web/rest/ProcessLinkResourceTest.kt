@@ -17,6 +17,10 @@
 package com.ritense.processlink.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.exporter.ExportService
+import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
+import com.ritense.importer.ImportService
+import com.ritense.importer.exception.ImportServiceException
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.TestProcessLink
@@ -24,22 +28,29 @@ import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
 import com.ritense.processlink.domain.TestProcessLinkMapper
 import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.service.ProcessDefinitionImportPreviewService
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.processlink.web.rest.dto.MissingReferenceDto
+import com.ritense.processlink.web.rest.dto.MissingReferenceType
+import com.ritense.processlink.web.rest.dto.ProcessDefinitionImportPreviewResponseDto
 import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.ProcessPropertyService
 import org.operaton.bpm.engine.RepositoryService
+import org.hamcrest.Matchers.matchesRegex
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
+import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.http.HttpMethod
@@ -50,9 +61,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multi
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
@@ -69,6 +82,9 @@ internal class ProcessLinkResourceTest {
     lateinit var processDeploymentService: ProcessDeploymentService
     lateinit var processDefinitionValidator: ProcessDefinitionValidator
     lateinit var processPropertyService: ProcessPropertyService
+    lateinit var exportService: ExportService
+    lateinit var importService: ImportService
+    lateinit var processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService
 
     @BeforeEach
     fun init() {
@@ -80,6 +96,9 @@ internal class ProcessLinkResourceTest {
         processDeploymentService = mock()
         processDefinitionValidator = mock()
         processPropertyService = mock()
+        exportService = mock()
+        importService = mock()
+        processDefinitionImportPreviewService = mock()
         processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
         processLinkResource = ProcessLinkResource(
             processLinkService,
@@ -89,7 +108,11 @@ internal class ProcessLinkResourceTest {
             repositoryService,
             processDeploymentService,
             processDefinitionValidator,
-            processPropertyService
+            processPropertyService,
+            exportService,
+            importService,
+            processDefinitionImportPreviewService,
+            objectMapper,
         )
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
@@ -97,7 +120,8 @@ internal class ProcessLinkResourceTest {
 
         mockMvc = MockMvcBuilders
             .standaloneSetup(processLinkResource)
-            .setMessageConverters(mappingJackson2HttpMessageConverter)
+            // The export endpoint responds with a zip, which needs the byte array converter
+            .setMessageConverters(mappingJackson2HttpMessageConverter, ByteArrayHttpMessageConverter())
             .build()
     }
 
@@ -302,6 +326,93 @@ internal class ProcessLinkResourceTest {
             .andExpect(status().isNoContent)
 
         verify(processDeploymentService).deployProcessDefinitionAndProcessLinks(anyOrNull(), anyOrNull(), any(), anyOrNull())
+    }
+
+    @Test
+    fun `should export a process definition as a zip`() {
+        whenever(camdunaProcessService.getProcessDefinitionById("pid"))
+            .thenReturn(operatonProcessDefinition("pid", "my-process", "My process"))
+        whenever(exportService.export(GlobalProcessDefinitionExportRequest("pid")))
+            .thenReturn(ByteArrayOutputStream().apply { write("zip-content".toByteArray()) })
+
+        mockMvc.perform(get("/api/management/v1/process-definition/pid/export"))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(
+                header().string(
+                    "Content-Disposition",
+                    matchesRegex("attachment;filename=my-process_v1_.*\\.process\\.zip")
+                )
+            )
+    }
+
+    @Test
+    fun `should preview a process definition import`() {
+        whenever(processDefinitionImportPreviewService.preview(any()))
+            .thenReturn(ProcessDefinitionImportPreviewResponseDto(processDefinitionKeys = listOf("my-process")))
+
+        mockMvc.perform(
+            multipart("/api/management/v1/process-definition/import/preview")
+                .file(MockMultipartFile("file", "my-process.process.zip", null, "zip".toByteArray()))
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.processDefinitionKeys.[0]").value("my-process"))
+            .andExpect(jsonPath("$.canImport").value(true))
+    }
+
+    @Test
+    fun `should return a bad request when the import preview fails`() {
+        whenever(processDefinitionImportPreviewService.preview(any()))
+            .thenThrow(ImportServiceException("Archive was empty or not a zip"))
+
+        mockMvc.perform(
+            multipart("/api/management/v1/process-definition/import/preview")
+                .file(MockMultipartFile("file", "invalid.zip", null, "invalid".toByteArray()))
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should import a process definition`() {
+        whenever(processDefinitionImportPreviewService.preview(any()))
+            .thenReturn(ProcessDefinitionImportPreviewResponseDto(processDefinitionKeys = listOf("my-process")))
+
+        mockMvc.perform(
+            multipart("/api/management/v1/process-definition/import")
+                .file(MockMultipartFile("file", "my-process.process.zip", null, "zip".toByteArray()))
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.processDefinitionKeys.[0]").value("my-process"))
+
+        verify(importService).importGlobal(any(), anyOrNull())
+    }
+
+    @Test
+    fun `should refuse to import when a reference blocks the import`() {
+        val missingReference = MissingReferenceDto(
+            type = MissingReferenceType.READ_ONLY_SYSTEM_PROCESS,
+            reference = "my-process",
+        )
+        whenever(processDefinitionImportPreviewService.preview(any())).thenReturn(
+            ProcessDefinitionImportPreviewResponseDto(
+                processDefinitionKeys = listOf("my-process"),
+                missingReferences = listOf(missingReference),
+            )
+        )
+
+        mockMvc.perform(
+            multipart("/api/management/v1/process-definition/import")
+                .file(MockMultipartFile("file", "my-process.process.zip", null, "zip".toByteArray()))
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.missingReferences.[0].type").value("READ_ONLY_SYSTEM_PROCESS"))
+            .andExpect(jsonPath("$.missingReferences.[0].reference").value("my-process"))
+
+        verify(importService, never()).importGlobal(any(), anyOrNull())
     }
 
     private fun operatonProcessDefinition(id: String, key: String, name: String?) = OperatonProcessDefinition(

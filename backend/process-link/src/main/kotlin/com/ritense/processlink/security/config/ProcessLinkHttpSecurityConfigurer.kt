@@ -126,6 +126,24 @@ class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
                             "/api/management/v1/process-definition/validate"
                         )
                     ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            GET,
+                            "/api/management/v1/process-definition/{processDefinitionId}/export"
+                        )
+                    ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            POST,
+                            "/api/management/v1/process-definition/import/preview"
+                        )
+                    ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            POST,
+                            "/api/management/v1/process-definition/import"
+                        )
+                    ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

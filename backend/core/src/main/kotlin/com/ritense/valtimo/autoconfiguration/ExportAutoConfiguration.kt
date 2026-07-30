@@ -19,6 +19,7 @@ package com.ritense.valtimo.autoconfiguration
 
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.exporter.DecisionDefinitionExporter
+import com.ritense.valtimo.exporter.GlobalProcessDefinitionExporter
 import com.ritense.valtimo.exporter.ProcessDefinitionExporter
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -34,6 +35,13 @@ class ExportAutoConfiguration {
         operatonRepositoryService: OperatonRepositoryService,
         repositoryService: RepositoryService
     ) = ProcessDefinitionExporter(operatonRepositoryService, repositoryService)
+
+    @Bean
+    @ConditionalOnMissingBean(GlobalProcessDefinitionExporter::class)
+    fun globalProcessDefinitionExporter(
+        operatonRepositoryService: OperatonRepositoryService,
+        repositoryService: RepositoryService
+    ) = GlobalProcessDefinitionExporter(operatonRepositoryService, repositoryService)
 
     @Bean
     @ConditionalOnMissingBean(DecisionDefinitionExporter::class)

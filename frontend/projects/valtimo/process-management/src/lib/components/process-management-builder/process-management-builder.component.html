@@ -236,6 +236,14 @@
             (selected)="export(actionsObs.isReadOnlyProcess)"
             >{{ 'interface.export' | translate }}
           </v-overflow-menu-option>
+
+          <v-overflow-menu-option
+            *ngIf="actionsObs.context !== 'case'"
+            [disabled]="actionsObs.loading"
+            [attr.data-test-id]="testIds.exportWithProcessLinksOption"
+            (selected)="exportWithProcessLinks()"
+            >{{ 'processManagement.exportWithProcessLinks' | translate }}
+          </v-overflow-menu-option>
         </v-overflow-menu>
 
         <button

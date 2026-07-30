@@ -32,6 +32,8 @@ import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.web.rest.dto.MissingReferenceDto
+import com.ritense.processlink.web.rest.dto.MissingReferenceType
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
@@ -170,6 +172,24 @@ class FormProcessLinkMapper(
     }
 
     override fun getImporterType() = "form"
+
+    override fun getMissingReference(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): MissingReferenceDto? {
+        deployDto as FormProcessLinkDeployDto
+        val formDefinition = if (blueprintId != null) {
+            formDefinitionService.getFormDefinitionByName(deployDto.formDefinitionName, blueprintId)
+        } else {
+            formDefinitionService.getFormDefinitionByName(deployDto.formDefinitionName)
+        }
+        return if (formDefinition.isPresent) {
+            null
+        } else {
+            MissingReferenceDto(
+                type = MissingReferenceType.FORM,
+                reference = deployDto.formDefinitionName,
+                activityId = deployDto.activityId,
+            )
+        }
+    }
 
     private fun resolveFormDefinition(formName: String, blueprintId: BlueprintId?): FormIoFormDefinition {
         val result = if (blueprintId != null) {

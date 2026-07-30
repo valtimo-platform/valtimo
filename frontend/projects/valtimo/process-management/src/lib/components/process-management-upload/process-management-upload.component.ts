@@ -15,7 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -25,15 +25,25 @@ import {
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
+import {PluginConfigurationMappingComponent} from '@valtimo/plugin';
 import {ProcessDefinitionConflictResponse, ProcessLinkService} from '@valtimo/process-link';
 import {
   ButtonModule,
+  FileItem,
   FileUploaderModule,
   LayerModule,
   ModalModule,
+  NotificationModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, from, map, startWith, switchMap} from 'rxjs';
+import {BehaviorSubject, from, map, startWith, switchMap, take} from 'rxjs';
+import {MissingReference, MissingReferenceType, ProcessDefinitionImportPreview} from '../../models';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
+
+enum UPLOAD_STEP {
+  FILE_SELECT = 'fileSelect',
+  REVIEW = 'review',
+  SUMMARY = 'summary',
+}
 
 @Component({
   selector: 'valtimo-process-management-upload',
@@ -52,6 +62,8 @@ import {ProcessManagementService, ProcessManagementStateService} from '../../ser
     ConfirmationModalModule,
     RenderInBodyComponent,
     ValtimoCdsModalDirective,
+    NotificationModule,
+    PluginConfigurationMappingComponent,
   ],
 })
 export class ProcessManagementUploadComponent {
@@ -61,16 +73,41 @@ export class ProcessManagementUploadComponent {
 
   private _conflictingProcessDefinitionId: string | null = null;
 
-  public readonly ACCEPTED_FILES: string[] = ['bpmn'];
+  // Extensions need a leading dot: the file dialog only filters on valid accept tokens, and Carbon
+  // matches a dropped file on its dot-prefixed extension
+  public readonly ACCEPTED_FILES: string[] = ['.bpmn', '.zip'];
+
+  public readonly UPLOAD_STEP = UPLOAD_STEP;
 
   public readonly form = this.formBuilder.group({
     file: this.formBuilder.control(new Set<any>(), [Validators.required]),
   });
 
+  // The current control value is read instead of the emitted one, so this also reports the selection
+  // correctly when the footer is re-created after going back to the file select step
   public readonly fileSelected$ = this.form.get('file')?.valueChanges.pipe(
     startWith(null),
-    map(value => !!(value instanceof Set && value.size > 0))
+    map(() => {
+      const value = this.form.get('file')?.value;
+      return !!(value instanceof Set && value.size > 0);
+    })
   );
+
+  public readonly activeStep$ = new BehaviorSubject<UPLOAD_STEP>(UPLOAD_STEP.FILE_SELECT);
+  public readonly preview$ = new BehaviorSubject<ProcessDefinitionImportPreview | null>(null);
+  public readonly missingReferences$ = new BehaviorSubject<MissingReference[]>([]);
+  public readonly importing$ = new BehaviorSubject<boolean>(false);
+
+  @ViewChild(PluginConfigurationMappingComponent)
+  private _pluginConfigurationMapping?: PluginConfigurationMappingComponent;
+
+  /**
+   * Leaving the file select step destroys cds-file-uploader, which empties the form control: every
+   * cds-file emits (remove) from its own ngOnDestroy. So the selection is kept here to import it
+   * afterwards, and to restore it when the user goes back.
+   */
+  private _selectedFile: File | null = null;
+  private _selectedFileItems: Set<FileItem> | null = null;
 
   constructor(
     private readonly formBuilder: FormBuilder,
@@ -78,7 +115,8 @@ export class ProcessManagementUploadComponent {
     private readonly processManagementService: ProcessManagementService,
     private readonly processManagementStateService: ProcessManagementStateService,
     private readonly processLinkService: ProcessLinkService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
 
   public closeModal(): void {
@@ -86,25 +124,174 @@ export class ProcessManagementUploadComponent {
 
     setTimeout(() => {
       this.form.reset();
+      this.activeStep$.next(UPLOAD_STEP.FILE_SELECT);
+      this.preview$.next(null);
+      this.missingReferences$.next([]);
+      this.importing$.next(false);
+      this._selectedFile = null;
+      this._selectedFileItems = null;
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
   public uploadProcessBpmn(): void {
-    const bpmnFile = this.form.value?.file?.values()?.next()?.value?.file;
+    const file = this.form.value?.file?.values()?.next()?.value?.file;
 
-    if (!bpmnFile) return;
+    if (!file) return;
+
+    if (this.isZip(file)) {
+      this.previewProcessPackage(file);
+      return;
+    }
 
     if (this.processManagementService.$context() === 'case') {
-      this.uploadForCase(bpmnFile);
+      this.uploadForCase(file);
     } else {
-      this.uploadIndependent(bpmnFile);
+      this.uploadIndependent(file);
     }
+  }
+
+  public importProcessPackage(): void {
+    const existingProcessDefinitionKeys = this.preview$.value?.existingProcessDefinitionKeys ?? [];
+
+    // Ask before replacing, the same way uploading a single bpmn file does
+    if (existingProcessDefinitionKeys.length > 0) {
+      this.showReplaceConfirmation(
+        this.translateService.instant('processManagement.upload.replaceContentWithDuplicates', {
+          duplicates: existingProcessDefinitionKeys.join(', '),
+        })
+      );
+      return;
+    }
+
+    this.executeImportProcessPackage();
+  }
+
+  private showReplaceConfirmation(content: string): void {
+    this.replaceModalContent = content;
+    // The content is bound from a plain field, so this OnPush component has to be checked again.
+    // The bpmn flow sets it from an http error callback, which does not mark this view dirty itself.
+    this.changeDetectorRef.markForCheck();
+    this.showReplaceConfirmationModal$.next(true);
+  }
+
+  private executeImportProcessPackage(): void {
+    const file = this._selectedFile;
+    if (!file) return;
+
+    this.importing$.next(true);
+    this.processManagementService
+      .importProcessDefinition(
+        this.toFormData(file),
+        this._pluginConfigurationMapping?.getMappings()
+      )
+      .pipe(take(1))
+      .subscribe({
+        next: result => {
+          this.importing$.next(false);
+          this.processManagementStateService.reloadDefinitions();
+
+          if (result.missingReferences.length > 0) {
+            // Keep the summary on screen: a toast disappears before it can be read
+            this.missingReferences$.next(result.missingReferences);
+            this.activeStep$.next(UPLOAD_STEP.SUMMARY);
+            return;
+          }
+
+          this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant('processManagement.upload.success'),
+          });
+          this.closeModal();
+        },
+        error: () => {
+          this.importing$.next(false);
+          this.notificationService.showNotification({
+            type: 'error',
+            title: this.translateService.instant('processManagement.upload.failure'),
+          });
+        },
+      });
+  }
+
+  public onBackClick(): void {
+    this.activeStep$.next(UPLOAD_STEP.FILE_SELECT);
+    // Restore the selection the file uploader dropped when it was destroyed
+    if (this._selectedFileItems) {
+      this.form.get('file')?.setValue(this._selectedFileItems);
+    }
+  }
+
+  public getMissingReferenceGroups(
+    missingReferences: MissingReference[]
+  ): {type: MissingReferenceType; references: string[]}[] {
+    return missingReferences.reduce(
+      (groups, missingReference) => {
+        const group = groups.find(({type}) => type === missingReference.type);
+        if (group) {
+          group.references = [...new Set([...group.references, missingReference.reference])];
+          return groups;
+        }
+        return [...groups, {type: missingReference.type, references: [missingReference.reference]}];
+      },
+      [] as {type: MissingReferenceType; references: string[]}[]
+    );
+  }
+
+  private previewProcessPackage(file: File): void {
+    const fileItem: FileItem | undefined = this.form.value?.file?.values()?.next()?.value;
+
+    this.processManagementService
+      .previewProcessDefinitionImport(this.toFormData(file))
+      .pipe(take(1))
+      .subscribe({
+        next: preview => {
+          this._selectedFile = file;
+          this._selectedFileItems = this.form.value?.file ?? null;
+          this.preview$.next(preview);
+          this.missingReferences$.next(preview.missingReferences);
+
+          // Nothing to review, so the package can be imported straight away
+          if (preview.pluginConfigurations.length === 0 && preview.missingReferences.length === 0) {
+            this.importProcessPackage();
+            return;
+          }
+
+          this.activeStep$.next(UPLOAD_STEP.REVIEW);
+        },
+        error: () => {
+          if (fileItem) {
+            fileItem.invalid = true;
+            fileItem.invalidTitle = this.translateService.instant(
+              'processManagement.upload.invalidZip.title'
+            );
+            fileItem.invalidText = this.translateService.instant(
+              'processManagement.upload.invalidZip.text'
+            );
+          }
+        },
+      });
+  }
+
+  private isZip(file: File): boolean {
+    return file.name.toLowerCase().endsWith('.zip');
+  }
+
+  private toFormData(file: File): FormData {
+    const formData = new FormData();
+    formData.append('file', new Blob([file], {type: file.type}), file.name);
+    return formData;
   }
 
   public confirmReplace(): void {
     const processDefinitionId = this._conflictingProcessDefinitionId;
     this.replaceModalContent = '';
     this._conflictingProcessDefinitionId = null;
+
+    // A selected package is only set while importing a zip, which replaces through the import itself
+    if (this._selectedFile) {
+      this.executeImportProcessPackage();
+      return;
+    }
 
     if (!processDefinitionId) {
       this.notificationService.showNotification({
@@ -179,11 +366,9 @@ export class ProcessManagementUploadComponent {
         error: (error: unknown) => {
           const isConflict = error instanceof HttpErrorResponse && error.status === 409;
           if (isConflict) {
-            const body = (error as HttpErrorResponse)
-              .error as ProcessDefinitionConflictResponse;
+            const body = (error as HttpErrorResponse).error as ProcessDefinitionConflictResponse;
             this._conflictingProcessDefinitionId = body?.processDefinitionId ?? null;
-            this.replaceModalContent = this.buildReplaceModalContent(body);
-            this.showReplaceConfirmationModal$.next(true);
+            this.showReplaceConfirmation(this.buildReplaceModalContent(body));
             return;
           }
 
@@ -210,11 +395,9 @@ export class ProcessManagementUploadComponent {
         error: (error: unknown) => {
           const isConflict = error instanceof HttpErrorResponse && error.status === 409;
           if (isConflict) {
-            const body = (error as HttpErrorResponse)
-              .error as ProcessDefinitionConflictResponse;
+            const body = (error as HttpErrorResponse).error as ProcessDefinitionConflictResponse;
             this._conflictingProcessDefinitionId = body?.processDefinitionId ?? null;
-            this.replaceModalContent = this.buildReplaceModalContent(body);
-            this.showReplaceConfirmationModal$.next(true);
+            this.showReplaceConfirmation(this.buildReplaceModalContent(body));
             return;
           }
 

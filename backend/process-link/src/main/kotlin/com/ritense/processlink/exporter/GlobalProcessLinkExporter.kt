@@ -1,0 +1,76 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.processlink.exporter
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.exporter.ExportFile
+import com.ritense.exporter.ExportPrettyPrinter
+import com.ritense.exporter.ExportResult
+import com.ritense.exporter.Exporter
+import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
+import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+
+/**
+ * Exports the process links of a process definition that is not part of a case definition.
+ *
+ * Unlike [ProcessLinkExporter] this exporter does not create related export requests for the
+ * definitions a process link points at (forms, form flows). Those can be shared with other
+ * processes and are exported and imported separately.
+ */
+class GlobalProcessLinkExporter(
+    private val objectMapper: ObjectMapper,
+    private val processLinkService: ProcessLinkService,
+    private val repositoryService: OperatonRepositoryService,
+) : Exporter<GlobalProcessDefinitionExportRequest> {
+
+    override fun supports(): Class<GlobalProcessDefinitionExportRequest> =
+        GlobalProcessDefinitionExportRequest::class.java
+
+    override fun export(request: GlobalProcessDefinitionExportRequest): ExportResult {
+        val processLinks = processLinkService.getProcessLinks(request.processDefinitionId)
+
+        if (processLinks.isEmpty()) {
+            return ExportResult()
+        }
+
+        val exportDtos = processLinks.map { processLink ->
+            processLinkService.getProcessLinkMapper(processLink.processLinkType)
+                .toProcessLinkExportResponseDto(processLink)
+        }
+
+        return ExportResult(
+            ExportFile(
+                PATH.format(getProcessDefinitionKey(request.processDefinitionId)),
+                objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(exportDtos)
+            )
+        )
+    }
+
+    private fun getProcessDefinitionKey(processDefinitionId: String): String {
+        return requireNotNull(
+            repositoryService.findProcessDefinition(
+                OperatonProcessDefinitionSpecificationHelper.byId(processDefinitionId)
+            )
+        ).key
+    }
+
+    companion object {
+        private const val PATH = "config/global/process-link/%s.process-link.json"
+    }
+}

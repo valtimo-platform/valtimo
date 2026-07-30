@@ -1854,7 +1854,7 @@
     "upload": {
       "modalTitle": "Upload procesdefinitie",
       "title": "Upload bestand",
-      "description": "Alleen BPMN-bestanden worden ondersteund.",
+      "description": "BPMN-bestanden en geëxporteerde procespakketten (.zip) worden ondersteund.",
       "buttonText": "Selecteer bestand",
       "success": "Deployment succesvol",
       "failure": "Deployment mislukt",
@@ -1862,8 +1862,37 @@
       "replaceTitle": "Bestaand proces vervangen?",
       "replaceContent": "Er bestaat al een proces met dezelfde sleutel. Wilt u dit vervangen?",
       "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel: {{duplicates}}. Wilt u dit vervangen?",
-      "replaceConfirm": "Vervangen"
+      "replaceConfirm": "Vervangen",
+      "invalidZip": {
+        "title": "Ongeldig bestand",
+        "text": "Dit bestand is geen geldig procespakket."
+      },
+      "pluginsDescription": "Kies per pluginconfiguratie uit het pakket de configuratie van deze omgeving.",
+      "summaryDescription": "De volgende onderdelen waarnaar het proces verwijst, ontbreken op deze omgeving. Importeer deze apart.",
+      "missingReference": {
+        "SUB_PROCESS": {
+          "title": "Ontbrekende subprocessen",
+          "message": "Deze processen worden aangeroepen, maar bestaan niet op deze omgeving:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Ontbrekende beslistabellen",
+          "message": "Deze beslistabellen worden gebruikt, maar bestaan niet op deze omgeving:"
+        },
+        "FORM": {
+          "title": "Ontbrekende formulieren",
+          "message": "Importeer deze formulieren eerst:"
+        },
+        "FORM_FLOW": {
+          "title": "Formulierstromen niet ondersteund",
+          "message": "Formulierstromen kunnen niet worden gekoppeld aan een proces buiten een dossierdefinitie:"
+        },
+        "READ_ONLY_SYSTEM_PROCESS": {
+          "title": "Proces wordt beheerd via configuratie",
+          "message": "Dit proces kan niet worden overschreven, omdat het via de applicatieconfiguratie wordt beheerd:"
+        }
+      }
     },
+    "exportWithProcessLinks": "Exporteren met proceskoppelingen",
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten",
     "expressionErrors": {
@@ -2211,6 +2240,18 @@
     "noConfigurationComponent": "Er is geen configuratie-component beschikbaar.",
     "configurationId": "Configuratie ID",
     "configurationIdTooltip": "Onder deze ID zal de plugin worden opgeslagen. Het ID moet het format van een UUID hebben"
+  },
+  "pluginConfigurationMapping": {
+    "unknownPlugin": "Onbekende plugin",
+    "source": "Uit het pakket",
+    "target": "Op deze omgeving",
+    "selectPlaceholder": "Selecteer een configuratie",
+    "notInstalled": "Plugin niet geïnstalleerd",
+    "noConfigurations": "Geen configuraties beschikbaar",
+    "unidentifiable": {
+      "title": "Pluginconfiguraties onbekend",
+      "message": "Van sommige pluginconfiguraties kan niet worden vastgesteld om welke plugin het gaat. Deze koppelingen moeten na het importeren handmatig worden ingesteld."
+    }
   },
   "pluginManagement": {
     "tableItemsText": "plugin-configuraties",
