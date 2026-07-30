@@ -1,0 +1,68 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+def sonatypeCentralStagingDir = "staging-deploy"
+
+// The set of publishable modules is derived from the presence of a per-module
+// gradle/publishing.gradle (the same file that configures each library's POM).
+// The application module opts into that mechanism but disables its publish tasks,
+// so its staging dir stays empty — exclude it from the JReleaser upload set.
+def nonDeployableProjects = [':app:gzac']
+
+if(System.getenv('SONATYPE_USERNAME') &&
+    System.getenv('SONATYPE_PASSWORD')
+) {
+    apply plugin: 'org.jreleaser'
+}
+
+def projectsToDeploy = subprojects.findAll { subproject ->
+    file("${subproject.projectDir}/gradle/publishing.gradle").exists() &&
+        !nonDeployableProjects.contains(subproject.path)
+}.collect { subproject ->
+    subproject.layout.buildDirectory.dir(sonatypeCentralStagingDir).get().asFile.path
+}
+
+println "Projects to deploy: ${projectsToDeploy.join(', ')}"
+
+jreleaser {
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = 'RELEASE'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    applyMavenCentralRules = false
+                    snapshotSupported = false
+                    sign = false
+                    stagingRepositories = projectsToDeploy
+                    username = System.getenv('SONATYPE_USERNAME')
+                    password = System.getenv('SONATYPE_PASSWORD')
+                    retryDelay = 60
+                }
+            }
+            nexus2 {
+                sonatypeSnapshots {
+                    active = 'SNAPSHOT'
+                    snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+                    snapshotSupported = true
+                    stagingRepositories = projectsToDeploy
+                    username = System.getenv('SONATYPE_USERNAME')
+                    password = System.getenv('SONATYPE_PASSWORD')
+                }
+            }
+        }
+    }
+}

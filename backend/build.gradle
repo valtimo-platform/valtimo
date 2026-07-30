@@ -38,6 +38,7 @@ plugins {
     id "com.github.jk1.dependency-license-report" version "${dependencyLicenseReportVersion}"
     id "project-report"
     id "org.owasp.dependencycheck" version "8.4.0"
+    id "org.jreleaser" version "${jreleaserPluginVersion}"
 }
 
 jacoco {
@@ -211,7 +212,22 @@ subprojects { subproject ->
             }
         }
     }
+
+    // Apply the shared publishing config (Sonatype Central staging repo, groupId,
+    // POM url/license/scm, component wiring and signing) to exactly the modules that
+    // opt into publishing through their own gradle/publishing.gradle. This is what
+    // creates the per-module publishAllPublicationsToSonatypeRepository task. It runs
+    // before the module's own gradle/publishing.gradle, which then layers on the
+    // per-module POM name/description (or, for the app, disables the publish tasks).
+    if (file("${subproject.projectDir}/gradle/publishing.gradle").exists()) {
+        apply from: "${rootProject.projectDir}/gradle/publishing-module.gradle"
+    }
 }
+
+// JReleaser deploy config: uploads each module's build/staging-deploy to the
+// Sonatype Central Portal. Applied after the subprojects block so it can enumerate
+// the modules to deploy.
+apply from: "gradle/publishing.gradle"
 
 tasks.withType(PublishToMavenRepository) {
     enabled = false
