@@ -21,13 +21,16 @@
   } as obs"
 >
   <header class="valtimo-widget-text__header">
-    <p class="valtimo-widget-text__title" [attr.title]="obs.widgetConfiguration?.title">
-      {{ obs.widgetConfiguration?.title }}
-    </p>
+    <div class="valtimo-widget-text__title-container">
+      <valtimo-mdi-icon-viewer
+        *ngIf="obs.widgetConfiguration?.icon"
+        [mdiIcon]="obs.widgetConfiguration.icon"
+      ></valtimo-mdi-icon-viewer>
 
-    <span *ngIf="obs.widgetConfiguration?.icon" class="valtimo-widget-text__icon">
-      <valtimo-mdi-icon-viewer [mdiIcon]="obs.widgetConfiguration.icon"></valtimo-mdi-icon-viewer>
-    </span>
+      <p class="valtimo-widget-text__title" [attr.title]="obs.widgetConfiguration?.title">
+        {{ obs.widgetConfiguration?.title }}
+      </p>
+    </div>
   </header>
 
   <!-- Plain [innerHTML] on purpose: Angular's DomSanitizer cleans the rendered markdown. -->

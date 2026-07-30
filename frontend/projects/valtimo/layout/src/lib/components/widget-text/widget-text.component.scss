@@ -22,7 +22,6 @@
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  background-color: var(--cds-layer-01);
   color: var(--widget-text-color, var(--cds-text-primary));
   border-left: 3px solid var(--widget-accent-color, var(--cds-border-subtle-01));
   overflow: auto;
@@ -34,28 +33,28 @@
     gap: 8px;
   }
 
+  &__title-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    color: var(--widget-text-color, var(--cds-text-primary));
+
+    .mdi-icon-preview {
+      color: var(--widget-text-color, var(--cds-text-primary)) !important;
+    }
+  }
+
   &__title {
     margin: 0;
     padding: 0;
-    color: #525252;
+    color: var(--widget-text-color, var(--cds-text-primary));
     font-weight: 600;
-    font-size: 13px;
+    font-size: 16px;
     line-height: 24px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  &__icon {
-    display: inline-flex;
-    align-items: center;
-    color: var(--widget-accent-color, var(--cds-icon-primary));
-
-    .mdi-icon-preview {
-      color: inherit !important;
-      font-size: 18px;
-      line-height: 18px;
-    }
   }
 
   &__actions {
@@ -137,7 +136,7 @@
 
     code {
       padding: 2px 4px;
-      background-color: var(--cds-layer-02);
+      background-color: var(--widget-layer-color, var(--cds-layer-02));
       border-radius: 2px;
       font-family: var(--cds-code-01-font-family, monospace);
       font-size: 12px;
@@ -146,7 +145,7 @@
     pre {
       margin: 0 0 8px;
       padding: 8px;
-      background-color: var(--cds-layer-02);
+      background-color: var(--widget-layer-color, var(--cds-layer-02));
       border-radius: 2px;
       overflow-x: auto;
 

@@ -58,9 +58,26 @@
   }
 
   textarea.cds--text-area {
+    // Carbon renders the textarea as a non-growing flex child, so without this it falls back to the
+    // browser default `cols` width instead of filling the panel.
+    width: 100%;
     background: var(--cds-layer-01);
     font-family: var(--cds-code-01-font-family, monospace);
     resize: vertical;
+  }
+
+  // Carbon lays each option out as a 40px block with `padding: 11px 0` around a 16px line box, so a
+  // 24px tag overflows the content box and renders baseline-aligned instead of centred (and gets
+  // clipped by the option's `overflow: hidden`). Centring the option as a flex row fixes both. The
+  // class sits on `cds-dropdown-list` on purpose: Carbon may move the menu out to the body, and this
+  // keeps the override travelling with it instead of leaking to every dropdown in the application.
+  // `:focus` is included because Carbon re-applies `padding: 11px 16px` in that state.
+  &__color-list .cds--list-box__menu-item__option,
+  &__color-list .cds--list-box__menu-item__option:focus {
+    display: flex;
+    align-items: center;
+    padding-block: 0;
+    overflow: visible;
   }
 
   &__color-tag {
