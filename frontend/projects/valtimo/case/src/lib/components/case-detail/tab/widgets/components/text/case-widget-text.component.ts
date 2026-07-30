@@ -16,29 +16,45 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {TextWidget, WidgetLayoutService, WidgetTextComponent} from '@valtimo/layout';
+import {PermissionService} from '@valtimo/access-control';
+import {DocumentService} from '@valtimo/document';
+import {TextWidget, WidgetAction, WidgetLayoutService, WidgetTextComponent} from '@valtimo/layout';
+import {ButtonModule} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
+
+import {WidgetsService} from '../../widgets.service';
+import {WidgetProcess} from '../widget-process/widget-process';
 
 @Component({
   selector: 'valtimo-case-widget-text',
   templateUrl: './case-widget-text.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, WidgetTextComponent],
+  imports: [ButtonModule, CommonModule, TranslateModule, WidgetTextComponent],
 })
-export class CaseWidgetTextComponent implements OnInit {
-  @Input({required: true}) public documentId: string;
+export class CaseWidgetTextComponent extends WidgetProcess implements OnInit {
+  @Input({required: true}) public set documentId(value: string) {
+    this.baseDocumentId = value;
+  }
 
   @Input() public set widgetConfiguration(value: TextWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
+    this.baseWidgetConfiguration = value;
   }
 
   @Input() public readonly widgetUuid: string;
 
   public readonly widgetConfiguration$ = new BehaviorSubject<TextWidget | null>(null);
 
-  constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
+  constructor(
+    protected readonly documentService: DocumentService,
+    protected readonly permissionService: PermissionService,
+    private readonly widgetsService: WidgetsService,
+    private readonly widgetLayoutService: WidgetLayoutService
+  ) {
+    super(documentService, permissionService);
+  }
 
   /**
    * The content of a text widget is part of its configuration, so there is no data to fetch.
@@ -48,5 +64,10 @@ export class CaseWidgetTextComponent implements OnInit {
    */
   public ngOnInit(): void {
     this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+  }
+
+  public onProcessStartClick(process: WidgetAction): void {
+    if (!process.processDefinitionKey) return;
+    this.widgetsService.startProcess(process.processDefinitionKey);
   }
 }

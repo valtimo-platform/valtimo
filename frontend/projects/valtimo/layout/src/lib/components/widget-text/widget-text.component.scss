@@ -57,10 +57,13 @@
     text-overflow: ellipsis;
   }
 
+  // Sits opposite the title in the header, which is why it must not shrink: the title truncates
+  // instead when the two together do not fit.
   &__actions {
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    flex-shrink: 0;
 
     &:empty {
       display: none;

@@ -31,19 +31,25 @@
         {{ obs.widgetConfiguration?.title }}
       </p>
     </div>
+
+    <div class="valtimo-widget-text__actions">
+      <!--
+        A process action can only be started where the document id is known, so the button for it is
+        projected in by the consumer (the case detail wrapper) rather than rendered here.
+      -->
+      <ng-content></ng-content>
+
+      <!--
+        No [resolvedData]: a text widget resolves no values, and the action button falls back to the
+        configured url as-is when it has no resolved data. Placeholders in that url are therefore not
+        supported here.
+      -->
+      <valtimo-widget-action-button
+        [widgetConfiguration]="obs.widgetConfiguration"
+      ></valtimo-widget-action-button>
+    </div>
   </header>
 
   <!-- Plain [innerHTML] on purpose: Angular's DomSanitizer cleans the rendered markdown. -->
   <div class="valtimo-widget-text__content" [innerHTML]="obs.html"></div>
-
-  <!--
-    No [resolvedData]: a text widget resolves no values, and the action button falls back to the
-    configured url as-is when it has no resolved data. Placeholders in that url are therefore not
-    supported here.
-  -->
-  <div class="valtimo-widget-text__actions">
-    <valtimo-widget-action-button
-      [widgetConfiguration]="obs.widgetConfiguration"
-    ></valtimo-widget-action-button>
-  </div>
 </ng-container>

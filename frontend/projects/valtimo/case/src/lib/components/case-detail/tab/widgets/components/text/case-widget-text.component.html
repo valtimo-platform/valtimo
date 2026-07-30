@@ -14,4 +14,17 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-text [widgetConfiguration]="widgetConfiguration$ | async"></valtimo-widget-text>
+<valtimo-widget-text
+  *ngIf="{widgetConfiguration: widgetConfiguration$ | async} as obs"
+  [widgetConfiguration]="obs.widgetConfiguration"
+>
+  @if (
+    obs.widgetConfiguration?.actions?.length === 1 &&
+    obs.widgetConfiguration.actions[0]?.processDefinitionKey &&
+    (canCreateCamundaExecution$ | async)
+  ) {
+    <button cdsButton="ghost" (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])">
+      {{ obs.widgetConfiguration.actions[0].name }}
+    </button>
+  }
+</valtimo-widget-text>
