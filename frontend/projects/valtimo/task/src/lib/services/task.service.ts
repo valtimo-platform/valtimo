@@ -107,18 +107,33 @@ export class TaskService extends BaseApiService {
     return this.httpClient.get<Task[]>(this.getApiUrl('/v1/task?filter=all'));
   }
 
-  public getTask(id: string): Observable<any> {
-    return this.httpClient.get(this.getApiUrl(`/v1/task/${id}`));
+  public getTask(id: string, skipStatusCodes?: string[]): Observable<any> {
+    // Skipping status codes prevents the global HttpErrorInterceptor from showing an error toast
+    // for those responses, so callers that expect and handle a status (e.g. a 403/404 after a
+    // task assignment change removes the user's access) can do so silently.
+    const options =
+      skipStatusCodes && skipStatusCodes.length > 0
+        ? {headers: new HttpHeaders().set(InterceptorSkip, skipStatusCodes.join(','))}
+        : {};
+
+    return this.httpClient.get(this.getApiUrl(`/v1/task/${id}`), options);
   }
 
   public getCandidateUsers(id: string): Observable<NamedUser[]> {
-    return this.httpClient.get<NamedUser[]>(this.getApiUrl(`/v2/task/${id}/candidate-user`));
+    // The endpoint requires the assign permission. Right after an assignment change the task can be
+    // re-fetched while the (soon to be invalidated) assign permission still reads as allowed, which
+    // triggers this request and a 403. That 403 is expected, so it is skipped to avoid an error
+    // toast; callers fall back to an empty candidate list.
+    return this.httpClient.get<NamedUser[]>(this.getApiUrl(`/v2/task/${id}/candidate-user`), {
+      headers: new HttpHeaders().set(InterceptorSkip, '403'),
+    });
   }
 
   public getCandidateTeams(id: string): Observable<Page<TeamResponseDto>> {
+    // See getCandidateUsers: a 403 is expected right after an assignment change and is skipped.
     return this.httpClient.get<Page<TeamResponseDto>>(
       this.getApiUrl(`/v1/task/${id}/candidate-team`),
-      {params: {size: '1000'}}
+      {params: {size: '1000'}, headers: new HttpHeaders().set(InterceptorSkip, '403')}
     );
   }
 
