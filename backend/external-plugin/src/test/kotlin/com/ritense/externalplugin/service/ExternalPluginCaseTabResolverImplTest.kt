@@ -35,7 +35,9 @@ class ExternalPluginCaseTabResolverImplTest {
     private val configurationRepository = mock<ExternalPluginConfigurationRepository>()
     private val definitionRepository = mock<ExternalPluginDefinitionRepository>()
     private val resolver = ExternalPluginCaseTabResolverImpl(
-        ExternalPluginBundleUrlResolver(configurationRepository, definitionRepository)
+        ExternalPluginBundleUrlResolver(configurationRepository, definitionRepository),
+        configurationRepository,
+        definitionRepository,
     )
 
     @Test
@@ -75,6 +77,25 @@ class ExternalPluginCaseTabResolverImplTest {
         whenever(configurationRepository.findById(configId)).thenReturn(Optional.empty())
 
         assertThat(resolver.resolveBundleUrl(configId, null)).isNull()
+    }
+
+    @Test
+    fun `resolvePluginDefinition returns the plugin id and version of the configuration's definition`() {
+        val (configId, _) = stub("""[ { "type":"case-tab", "key":"summary", "path":"/bundles/case-tab.html" } ]""")
+
+        val definition = resolver.resolvePluginDefinition(configId)
+
+        assertThat(definition).isNotNull
+        assertThat(definition!!.pluginDefinitionKey).isEqualTo("case-summary")
+        assertThat(definition.pluginDefinitionVersion).isEqualTo("0.1.0")
+    }
+
+    @Test
+    fun `resolvePluginDefinition returns null when the configuration is unknown`() {
+        val configId = UUID.randomUUID()
+        whenever(configurationRepository.findById(configId)).thenReturn(Optional.empty())
+
+        assertThat(resolver.resolvePluginDefinition(configId)).isNull()
     }
 
     private fun stub(bundlesJson: String): Pair<UUID, UUID> {

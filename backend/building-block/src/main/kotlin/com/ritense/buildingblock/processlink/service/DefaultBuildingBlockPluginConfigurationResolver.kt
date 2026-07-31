@@ -38,16 +38,29 @@ class DefaultBuildingBlockPluginConfigurationResolver(
     private val documentService: DocumentService,
 ) : BuildingBlockPluginConfigurationResolver {
 
-    override fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID? {
-        val instance = findInstance(execution) ?: return null
-        val root = findRootInstance(instance)
-
-        return findCallActivityMapping(root, pluginDefinitionKey)
-            ?: findCaseLinkMapping(root, pluginDefinitionKey)
-    }
+    override fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID? =
+        resolveMapping(execution) { it[pluginDefinitionKey] }
 
     override fun resolve(task: DelegateTask, pluginDefinitionKey: String): UUID? {
         return resolve(task.execution, pluginDefinitionKey)
+    }
+
+    override fun resolveByKeyPrefix(execution: DelegateExecution, keyPrefix: String): UUID? =
+        resolveMapping(execution) { mappings ->
+            mappings.entries.firstOrNull { it.key.startsWith(keyPrefix) }?.value
+        }
+
+    /**
+     * Selects a configuration id from the call-activity process link's mappings first, then the
+     * case-definition ↔ building-block link's mappings — the original resolution order — returning
+     * the first non-null.
+     */
+    private fun resolveMapping(execution: DelegateExecution, select: (Map<String, UUID>) -> UUID?): UUID? {
+        val instance = findInstance(execution) ?: return null
+        val root = findRootInstance(instance)
+
+        return callActivityMappings(root)?.let(select)
+            ?: caseLinkMappings(root)?.let(select)
     }
 
     /**
@@ -78,10 +91,10 @@ class DefaultBuildingBlockPluginConfigurationResolver(
     }
 
     /**
-     * Resolves plugin configuration from the BuildingBlockProcessLink on the call activity
-     * that started the root building block.
+     * The plugin configuration mappings from the BuildingBlockProcessLink on the call activity that
+     * started the root building block.
      */
-    private fun findCallActivityMapping(instance: BuildingBlockInstance, pluginDefinitionKey: String): UUID? {
+    private fun callActivityMappings(instance: BuildingBlockInstance): Map<String, UUID>? {
         val activityId = instance.activityId ?: return null
         val callerProcessDefinitionId = instance.callerProcessDefinitionId ?: return null
 
@@ -89,19 +102,16 @@ class DefaultBuildingBlockPluginConfigurationResolver(
             .filterIsInstance<BuildingBlockProcessLink>()
             .firstOrNull()
             ?.pluginConfigurationMappings
-            ?.get(pluginDefinitionKey)
     }
 
-    private fun findCaseLinkMapping(instance: BuildingBlockInstance, pluginDefinitionKey: String): UUID? {
+    private fun caseLinkMappings(instance: BuildingBlockInstance): Map<String, UUID>? {
         val caseDocumentId = instance.caseDocumentId ?: return null
         val caseDocument = documentService.get(caseDocumentId.toString())
         val caseDefinitionId = caseDocument.definitionId().caseDefinitionId()
 
-        val link = linkRepository.findByCaseDefinitionIdAndBuildingBlockDefinitionId(
+        return linkRepository.findByCaseDefinitionIdAndBuildingBlockDefinitionId(
             caseDefinitionId,
             instance.definition.id
-        ) ?: return null
-
-        return link.pluginConfigurationMappings[pluginDefinitionKey]
+        )?.pluginConfigurationMappings
     }
 }

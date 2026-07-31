@@ -28,6 +28,12 @@ import java.util.UUID
  * the tab and (optionally) which `case-tab` bundle to render when the plugin ships more than one.
  * Shares the `case_tab` composite key and is removed `ON DELETE CASCADE` when the parent tab is
  * deleted (mirrors [CaseWidgetTab]).
+ *
+ * [pluginDefinitionKey]/[pluginDefinitionVersion] are design-time plugin identity — the same
+ * metadata `process_link` persists for a plugin process link. They let the "missing plugin
+ * configurations" repair panel identify the plugin even when [externalPluginConfigurationId] no
+ * longer resolves in this environment (the panel reads the database, not the export). `null` for
+ * rows where the plugin could not be resolved/carried at creation.
  */
 @Entity
 @Table(name = "case_external_plugin_tab")
@@ -40,6 +46,12 @@ data class CaseExternalPluginTab(
 
     @Column(name = "bundle_key")
     val bundleKey: String? = null,
+
+    @Column(name = "plugin_definition_key")
+    val pluginDefinitionKey: String? = null,
+
+    @Column(name = "plugin_definition_version")
+    val pluginDefinitionVersion: String? = null,
 ) {
 
     companion object {

@@ -27,6 +27,8 @@ import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.service.BuildingBlockPluginMappingUsage
+import com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder
 import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -64,6 +66,8 @@ class ExternalPluginHostUsageResolverTest {
         taskFormProcessLinkRepository = mock()
         operatonRepositoryService = mock()
         bpmnRepositoryService = mock()
+        whenever(processLinkRepository.findAllByReferenceTypeAndPluginDefinitionKeyIn(any(), any()))
+            .thenReturn(emptyList())
         resolver = ExternalPluginHostUsageResolver(
             definitionRepository,
             configurationRepository,
@@ -117,10 +121,13 @@ class ExternalPluginHostUsageResolverTest {
 
     /**
      * A `BUILDING_BLOCK`-reference `ExternalPluginProcessLink` carries a `null`
-     * `externalPluginConfigurationId` (Phase 2) — it must never block deletion of a configuration,
-     * mirroring the embedded system's `PluginConfigurationUsageResolver` (`BUILDING_BLOCK`
-     * references there are likewise ignored by the delete guard). The repository query itself
-     * (`IN (...)` over non-null ids) already excludes such rows; this exercises the resolver's own
+     * `externalPluginConfigurationId` (Phase 2) — it never counts as a *configuration* usage (the
+     * link pins no configuration; the mapping does, covered by
+     * [BuildingBlockPluginMappingUsageFinder][com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder]).
+     * It blocks *host* deletion only through the definition-reference guard, which matches on the
+     * pinned `pluginId@version` — here the link pins `plugin`, not the host's `test-plugin`, so no
+     * definition usage surfaces either. The repository query itself (`IN (...)` over non-null ids)
+     * already excludes such rows from configuration usage; this exercises the resolver's own
      * `mapNotNull` defense so the guarantee holds even if a caller ever passes a broader result set.
      */
     @Test
@@ -486,6 +493,168 @@ class ExternalPluginHostUsageResolverTest {
             .containsExactlyInAnyOrder("SendLetter", "ReviewTask")
     }
 
+    @Test
+    fun `configuration referenced only by building-block mappings still blocks deletion`() {
+        val configuration = configuration(definitionId = UUID.randomUUID(), title = "Mapped CRM")
+        val mappingUsageFinder = mock<BuildingBlockPluginMappingUsageFinder>()
+        val resolverWithFinder = resolverWith(mappingUsageFinder)
+        val processDefId = "bezwaar:3:abc"
+
+        whenever(configurationRepository.findById(configuration.id))
+            .thenReturn(java.util.Optional.of(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(mappingUsageFinder.findUsages(configuration.id)).thenReturn(
+            listOf(
+                BuildingBlockPluginMappingUsage(
+                    mappingKey = "external-plugin:test-plugin@1.0.0",
+                    buildingBlockDefinitionKey = "send-notification",
+                    processLinkId = UUID.randomUUID(),
+                    processDefinitionId = processDefId,
+                    activityId = "CallSendNotification",
+                ),
+                BuildingBlockPluginMappingUsage(
+                    mappingKey = "external-plugin:test-plugin@1.0.0",
+                    buildingBlockDefinitionKey = "send-notification",
+                    caseDefinitionKey = "bezwaar",
+                    caseDefinitionVersionTag = "1.0.1",
+                ),
+            )
+        )
+        whenever(operatonRepositoryService.findProcessDefinitionById(processDefId)).thenReturn(
+            operatonProcessDefinition(
+                id = processDefId,
+                key = "bezwaar",
+                name = "Bezwaarprocedure",
+                versionTag = "CD:bezwaar:1.0.1",
+            )
+        )
+        whenever(bpmnRepositoryService.getBpmnModelInstance(processDefId)).thenReturn(mock<BpmnModelInstance>())
+
+        val usages = resolverWithFinder.findUsagesForConfiguration(configuration.id)
+
+        assertThat(usages).hasSize(2)
+        val processLinkUsage = usages.single { it.processDefinitionId != null }
+        assertThat(processLinkUsage.parentType).isEqualTo(PluginUsageParentType.CASE)
+        assertThat(processLinkUsage.activityId).isEqualTo("CallSendNotification")
+        val caseLinkUsage = usages.single { it.processDefinitionId == null }
+        assertThat(caseLinkUsage.parentType).isEqualTo(PluginUsageParentType.CASE)
+        assertThat(caseLinkUsage.parentKey).isEqualTo("bezwaar")
+        assertThat(caseLinkUsage.parentVersionTag).isEqualTo("1.0.1")
+        assertThat(usages).allSatisfy {
+            assertThat(it.configurationId).isEqualTo(configuration.id)
+            assertThat(it.configurationTitle).isEqualTo("Mapped CRM")
+            assertThat(it.buildingBlockKey).isEqualTo("send-notification")
+        }
+    }
+
+    @Test
+    fun `host deletion is blocked by a BUILDING_BLOCK reference pinning one of its definitions`() {
+        val hostId = UUID.randomUUID()
+        val definition = definition(hostId = hostId) // test-plugin@1.0.0
+        val processDefId = "send-notification:2:bb-hash"
+        val referenceLink = buildingBlockReferenceProcessLink(
+            processDefinitionId = processDefId,
+            activityId = "PostMessage",
+            pluginDefinitionKey = definition.pluginId,
+            pluginVersion = definition.version,
+        )
+
+        whenever(definitionRepository.findAllByHostId(hostId)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+        whenever(
+            processLinkRepository.findAllByReferenceTypeAndPluginDefinitionKeyIn(
+                PluginConfigurationReferenceType.BUILDING_BLOCK,
+                setOf(definition.pluginId),
+            )
+        ).thenReturn(listOf(referenceLink))
+        whenever(operatonRepositoryService.findProcessDefinitionById(processDefId)).thenReturn(
+            operatonProcessDefinition(
+                id = processDefId,
+                key = "send-notification",
+                name = "Send notification",
+                versionTag = "BB:send-notification:2.0.0",
+            )
+        )
+        whenever(bpmnRepositoryService.getBpmnModelInstance(processDefId)).thenReturn(mock<BpmnModelInstance>())
+
+        val usages = resolver.findUsagesForHost(hostId)
+
+        assertThat(usages).hasSize(1)
+        val usage = usages[0]
+        assertThat(usage.configurationId).isEqualTo(definition.id)
+        assertThat(usage.configurationTitle).isEqualTo("test-plugin@1.0.0")
+        assertThat(usage.parentType).isEqualTo(PluginUsageParentType.BUILDING_BLOCK)
+        assertThat(usage.parentKey).isEqualTo("send-notification")
+        assertThat(usage.processLinkId).isEqualTo(referenceLink.id)
+    }
+
+    @Test
+    fun `a BUILDING_BLOCK reference pinned to a version the host does not serve does not block it`() {
+        val hostId = UUID.randomUUID()
+        val definition = definition(hostId = hostId) // test-plugin@1.0.0
+        val referenceLink = buildingBlockReferenceProcessLink(
+            processDefinitionId = "send-notification:2:bb-hash",
+            activityId = "PostMessage",
+            pluginDefinitionKey = definition.pluginId,
+            pluginVersion = "9.9.9",
+        )
+
+        whenever(definitionRepository.findAllByHostId(hostId)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+        whenever(
+            processLinkRepository.findAllByReferenceTypeAndPluginDefinitionKeyIn(
+                PluginConfigurationReferenceType.BUILDING_BLOCK,
+                setOf(definition.pluginId),
+            )
+        ).thenReturn(listOf(referenceLink))
+
+        val usages = resolver.findUsagesForHost(hostId)
+
+        assertThat(usages).isEmpty()
+    }
+
+    @Test
+    fun `host deletion is blocked by building-block mappings referencing its configurations`() {
+        val hostId = UUID.randomUUID()
+        val definition = definition(hostId = hostId)
+        val configuration = configuration(definitionId = definition.id, title = "Mapped CRM")
+        val mappingUsageFinder = mock<BuildingBlockPluginMappingUsageFinder>()
+        val resolverWithFinder = resolverWith(mappingUsageFinder)
+
+        whenever(definitionRepository.findAllByHostId(hostId)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(mappingUsageFinder.findUsages(configuration.id)).thenReturn(
+            listOf(
+                BuildingBlockPluginMappingUsage(
+                    mappingKey = "external-plugin:test-plugin@1.0.0",
+                    buildingBlockDefinitionKey = "send-notification",
+                    caseDefinitionKey = "bezwaar",
+                    caseDefinitionVersionTag = "1.0.1",
+                ),
+            )
+        )
+
+        val usages = resolverWithFinder.findUsagesForHost(hostId)
+
+        assertThat(usages).hasSize(1)
+        assertThat(usages[0].configurationId).isEqualTo(configuration.id)
+        assertThat(usages[0].parentKey).isEqualTo("bezwaar")
+    }
+
+    private fun resolverWith(finder: BuildingBlockPluginMappingUsageFinder): ExternalPluginHostUsageResolver =
+        ExternalPluginHostUsageResolver(
+            definitionRepository,
+            configurationRepository,
+            processLinkRepository,
+            taskFormProcessLinkRepository,
+            ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
+            java.util.Optional.empty(),
+            java.util.Optional.of(finder),
+        )
+
     private fun definition(hostId: UUID): ExternalPluginDefinition = ExternalPluginDefinition(
         id = UUID.randomUUID(),
         pluginId = "test-plugin",
@@ -523,6 +692,8 @@ class ExternalPluginHostUsageResolverTest {
     private fun buildingBlockReferenceProcessLink(
         processDefinitionId: String,
         activityId: String,
+        pluginDefinitionKey: String = "plugin",
+        pluginVersion: String = "1.0.0",
     ): ExternalPluginProcessLink = ExternalPluginProcessLink(
         id = UUID.randomUUID(),
         processDefinitionId = processDefinitionId,
@@ -532,8 +703,8 @@ class ExternalPluginHostUsageResolverTest {
         actionKey = "action",
         pluginConfigurationReference = PluginConfigurationReference(
             type = PluginConfigurationReferenceType.BUILDING_BLOCK,
-            pluginDefinitionKey = "plugin",
-            pluginDefinitionVersion = "1.0.0",
+            pluginDefinitionKey = pluginDefinitionKey,
+            pluginDefinitionVersion = pluginVersion,
         ),
     )
 

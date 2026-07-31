@@ -70,7 +70,7 @@ class CaseExternalPluginTabService(
     @EventListener(CaseTabCreatedEvent::class)
     fun handleCaseTabCreatedEvent(event: CaseTabCreatedEvent) {
         if (event.tab.type != CaseTabType.EXTERNAL_PLUGIN) return
-        upsertSideRow(event.tab)
+        upsertSideRow(event.tab, event.pluginDefinitionKey, event.pluginDefinitionVersion)
     }
 
     /**
@@ -95,7 +95,11 @@ class CaseExternalPluginTabService(
      * arbitrary content. A malformed key must not abort the surrounding transaction, so it is
      * logged and skipped instead.
      */
-    private fun upsertSideRow(tab: CaseTab) {
+    private fun upsertSideRow(
+        tab: CaseTab,
+        importedPluginDefinitionKey: String? = null,
+        importedPluginDefinitionVersion: String? = null,
+    ) {
         val parsedContentKey = CaseExternalPluginTab.parseContentKeyOrNull(tab.contentKey)
         if (parsedContentKey == null) {
             logger.warn {
@@ -105,11 +109,14 @@ class CaseExternalPluginTabService(
             return
         }
         val (configurationId, bundleKey) = parsedContentKey
+        val resolved = resolver.orElse(null)?.resolvePluginDefinition(configurationId)
         caseExternalPluginTabRepository.save(
             CaseExternalPluginTab(
                 id = tab.id,
                 externalPluginConfigurationId = configurationId,
                 bundleKey = bundleKey,
+                pluginDefinitionKey = resolved?.pluginDefinitionKey ?: importedPluginDefinitionKey,
+                pluginDefinitionVersion = resolved?.pluginDefinitionVersion ?: importedPluginDefinitionVersion,
             )
         )
     }

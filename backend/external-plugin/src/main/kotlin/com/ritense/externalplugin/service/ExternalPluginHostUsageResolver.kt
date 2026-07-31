@@ -18,10 +18,13 @@ package com.ritense.externalplugin.service
 
 import com.ritense.case_.service.CaseExternalPluginTabService
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
+import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
+import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder
 import com.ritense.plugin.service.ProcessDefinitionUsageMeta
 import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
@@ -47,17 +50,29 @@ class ExternalPluginHostUsageResolver(
      * normal GZAC deployment it is always present (external-plugin depends on case).
      */
     private val caseExternalPluginTabService: Optional<CaseExternalPluginTabService>,
+    /**
+     * Optional for the same reason: implemented by the building-block module, which external-plugin
+     * cannot depend on directly (the SPI lives in `:backend:plugin`). Without it, building-block
+     * mapping usages simply don't block deletion — matching a deployment without building blocks.
+     */
+    private val buildingBlockMappingUsageFinder: Optional<BuildingBlockPluginMappingUsageFinder> = Optional.empty(),
 ) {
 
     fun findUsagesForHost(hostId: UUID): List<PluginUsageDto> {
-        val configurations = collectConfigurationsForHost(hostId)
-        return buildUsageDtos(configurations) + buildCaseTabUsageDtos(configurations)
+        val definitions = definitionRepository.findAllByHostId(hostId)
+        val configurations = collectConfigurations(definitions)
+        return buildUsageDtos(configurations) +
+            buildCaseTabUsageDtos(configurations) +
+            buildBuildingBlockMappingUsageDtos(configurations) +
+            buildDefinitionReferenceUsageDtos(definitions)
     }
 
     fun findUsagesForConfiguration(configurationId: UUID): List<PluginUsageDto> {
         val configuration = configurationRepository.findById(configurationId).orElse(null)
             ?: return emptyList()
-        return buildUsageDtos(listOf(configuration)) + buildCaseTabUsageDtos(listOf(configuration))
+        return buildUsageDtos(listOf(configuration)) +
+            buildCaseTabUsageDtos(listOf(configuration)) +
+            buildBuildingBlockMappingUsageDtos(listOf(configuration))
     }
 
     /**
@@ -114,6 +129,101 @@ class ExternalPluginHostUsageResolver(
         }
     }
 
+    /**
+     * A building block references a configuration through its `pluginConfigurationMappings` (on the
+     * call-activity process link or the case-definition ↔ BB link) rather than through a process
+     * link's own configuration id, so those mappings must equally block deletion — otherwise the
+     * mapping would silently dangle and every run of the building block would fail to resolve its
+     * plugin.
+     */
+    private fun buildBuildingBlockMappingUsageDtos(
+        configurations: List<ExternalPluginConfiguration>,
+    ): List<PluginUsageDto> {
+        val finder = buildingBlockMappingUsageFinder.orElse(null) ?: return emptyList()
+        if (configurations.isEmpty()) return emptyList()
+
+        val metaCache = mutableMapOf<String, ProcessDefinitionUsageMeta>()
+        return configurations.flatMap { configuration ->
+            finder.findUsages(configuration.id).map { usage ->
+                val processDefinitionId = usage.processDefinitionId
+                if (processDefinitionId != null) {
+                    val meta = metaCache.getOrPut(processDefinitionId) {
+                        processDefinitionUsageMetaResolver.resolveMeta(processDefinitionId)
+                    }
+                    PluginUsageDto(
+                        configurationId = configuration.id,
+                        configurationTitle = configuration.title,
+                        parentType = meta.parentType,
+                        parentKey = meta.parentKey,
+                        parentVersionTag = meta.parentVersionTag,
+                        processDefinitionId = processDefinitionId,
+                        processDefinitionKey = meta.processDefinitionKey,
+                        processDefinitionName = meta.processDefinitionName,
+                        activityId = usage.activityId,
+                        activityName = usage.activityId?.let { processDefinitionUsageMetaResolver.resolveActivityName(meta, it) },
+                        processLinkId = usage.processLinkId,
+                        buildingBlockKey = usage.buildingBlockDefinitionKey,
+                    )
+                } else {
+                    PluginUsageDto(
+                        configurationId = configuration.id,
+                        configurationTitle = configuration.title,
+                        parentType = PluginUsageParentType.CASE,
+                        parentKey = usage.caseDefinitionKey,
+                        parentVersionTag = usage.caseDefinitionVersionTag,
+                        buildingBlockKey = usage.buildingBlockDefinitionKey,
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * A `BUILDING_BLOCK`-reference process link pins a plugin *definition* (`pluginId@version`),
+     * not a configuration — it never blocks deleting an individual configuration, but it must block
+     * deleting the host that serves the definition: without the host, the reference can never
+     * resolve again, even when no case definition uses the building block yet. The shared
+     * [PluginUsageDto] requires a configuration identity, so the definition stands in:
+     * `configurationId` carries the definition id and `configurationTitle` the `pluginId@version`
+     * pair the link is pinned to.
+     */
+    private fun buildDefinitionReferenceUsageDtos(
+        definitions: List<ExternalPluginDefinition>,
+    ): List<PluginUsageDto> {
+        if (definitions.isEmpty()) return emptyList()
+
+        val links = processLinkRepository.findAllByReferenceTypeAndPluginDefinitionKeyIn(
+            PluginConfigurationReferenceType.BUILDING_BLOCK,
+            definitions.map { it.pluginId }.toSet(),
+        )
+        if (links.isEmpty()) return emptyList()
+
+        val definitionByKeyAndVersion = definitions.associateBy { it.pluginId to it.version }
+        val metaCache = mutableMapOf<String, ProcessDefinitionUsageMeta>()
+
+        return links.mapNotNull { link ->
+            val reference = link.pluginConfigurationReference
+            val definition = definitionByKeyAndVersion[reference.pluginDefinitionKey to reference.pluginDefinitionVersion]
+                ?: return@mapNotNull null
+            val meta = metaCache.getOrPut(link.processDefinitionId) {
+                processDefinitionUsageMetaResolver.resolveMeta(link.processDefinitionId)
+            }
+            PluginUsageDto(
+                configurationId = definition.id,
+                configurationTitle = "${definition.pluginId}@${definition.version}",
+                parentType = meta.parentType,
+                parentKey = meta.parentKey,
+                parentVersionTag = meta.parentVersionTag,
+                processDefinitionId = link.processDefinitionId,
+                processDefinitionKey = meta.processDefinitionKey,
+                processDefinitionName = meta.processDefinitionName,
+                activityId = link.activityId,
+                activityName = processDefinitionUsageMetaResolver.resolveActivityName(meta, link.activityId),
+                processLinkId = link.id,
+            )
+        }
+    }
+
     private fun collectUsageLinks(configurationIds: Collection<UUID>): List<UsageLink> {
         // externalPluginConfigurationId is nullable on the entity (BUILDING_BLOCK references, Phase
         // 2, carry no fixed config id) but findAllByExternalPluginConfigurationIdIn only ever
@@ -128,8 +238,7 @@ class ExternalPluginHostUsageResolver(
         return actionLinks + taskFormLinks
     }
 
-    private fun collectConfigurationsForHost(hostId: UUID): List<ExternalPluginConfiguration> {
-        val definitions = definitionRepository.findAllByHostId(hostId)
+    private fun collectConfigurations(definitions: List<ExternalPluginDefinition>): List<ExternalPluginConfiguration> {
         if (definitions.isEmpty()) return emptyList()
         return definitions.flatMap { configurationRepository.findAllByDefinitionId(it.id) }
     }

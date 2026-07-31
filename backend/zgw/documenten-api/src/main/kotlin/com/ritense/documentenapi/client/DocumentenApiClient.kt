@@ -157,6 +157,12 @@ class DocumentenApiClient(
         caseDocumentId: UUID?,
         objectUrl: URI
     ): DocumentInformatieObject {
+        // TEMPORARY TEST HACK - REMOVE BEFORE MERGE: simulate a document missing (404) in the
+        // Documenten API to exercise the skip-missing-documents handling of PR #857.
+        if (objectUrl.equals(URI("http://localhost:8001/documenten/api/v1/enkelvoudiginformatieobjecten/a6d93673-01ad-4812-b292-74361c13f91f"))) {
+            logger.warn { "TEST HACK: faking 404 for informatieobject $objectUrl" }
+            throw org.springframework.web.client.HttpClientErrorException(org.springframework.http.HttpStatus.NOT_FOUND)
+        }
         val result = restClient(authentication)
             .get()
             .uri(objectUrl)

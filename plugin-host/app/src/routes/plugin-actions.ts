@@ -165,6 +165,37 @@ export async function pluginActionRoutes(
           return;
         }
 
+        // Enforce the manifest's result contract: every key the action declares under `outputs`
+        // must be present on the result object. JSON null is a valid value — only an absent key
+        // is a violation (typically a value dropped during serialization, e.g. `undefined` in a
+        // JS plugin), which GZAC would otherwise skip silently when applying result mappings.
+        const declaredOutputs = actionDef.outputs ?? [];
+        if (declaredOutputs.length > 0) {
+          const resultValue = result.result;
+          const resultObject =
+            resultValue && typeof resultValue === "object" && !Array.isArray(resultValue)
+              ? (resultValue as Record<string, unknown>)
+              : undefined;
+          const missing = resultObject
+            ? declaredOutputs.filter((key) => !(key in resultObject))
+            : declaredOutputs;
+          if (missing.length > 0) {
+            request.log.error(
+              { pluginId, version, actionKey, declaredOutputs, missing },
+              "Action result violates the manifest outputs contract"
+            );
+            reply.code(500).send({
+              status: "error",
+              errorCode: "RESULT_CONTRACT_VIOLATION",
+              errorMessage:
+                `Action '${actionKey}' declares outputs [${declaredOutputs.join(", ")}] in its ` +
+                `manifest, but its result is missing: [${missing.join(", ")}]. Every declared ` +
+                `output must be returned; returning null for a key is allowed.`,
+            });
+            return;
+          }
+        }
+
         reply.code(200).send(result);
       } catch (err) {
         request.log.error(

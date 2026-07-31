@@ -57,13 +57,25 @@
       >
         <cds-list-column nowrap="true">
           <div class="plugin-usage-modal__cell-main">
-            {{ usage.activityName || usage.activityId || usage.tabName || usage.tabKey }}
+            {{
+              usage.activityName ||
+                usage.activityId ||
+                usage.tabName ||
+                usage.tabKey ||
+                usage.buildingBlockKey
+            }}
           </div>
           <div *ngIf="usage.activityName" class="plugin-usage-modal__cell-sub">
             <code class="cds--snippet--inline">{{ usage.activityId }}</code>
           </div>
           <div *ngIf="usage.tabKey && !usage.activityId" class="plugin-usage-modal__cell-sub">
             {{ 'pluginManagement.usageModal.caseTab' | translate }}
+          </div>
+          <div
+            *ngIf="usage.buildingBlockKey && !usage.activityId && !usage.tabKey"
+            class="plugin-usage-modal__cell-sub"
+          >
+            {{ 'pluginManagement.usageModal.buildingBlockMapping' | translate }}
           </div>
         </cds-list-column>
 

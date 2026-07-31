@@ -2343,12 +2343,12 @@
     "hostInUseModal": {
       "title": "Plugin host is in use",
       "thisHost": "this plugin host",
-      "description": "{{ entityName }} cannot be deleted because the following BPMN activities still use a configuration from this host. Remove these process links first."
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs or building blocks still use a plugin or configuration from this host. Remove these usages first."
     },
     "configurationInUseModal": {
       "title": "Plugin configuration is in use",
       "thisConfiguration": "this plugin configuration",
-      "description": "{{ entityName }} cannot be deleted because the following BPMN activities still reference it. Remove these process links first."
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs or building blocks still reference it. Remove these usages first."
     },
     "usageModal": {
       "headers": {
@@ -2363,7 +2363,8 @@
         "BUILDING_BLOCK": "Building block",
         "GLOBAL": "Global"
       },
-      "caseTab": "Case tab"
+      "caseTab": "Case tab",
+      "buildingBlockMapping": "Building block plugin mapping"
     },
     "compatibility": {
       "incompatibleTag": "Incompatible",

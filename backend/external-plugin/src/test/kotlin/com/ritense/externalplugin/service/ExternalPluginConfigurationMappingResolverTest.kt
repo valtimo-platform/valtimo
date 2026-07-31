@@ -20,10 +20,10 @@ import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
+import com.ritense.case_.domain.tab.CaseExternalPluginTab
 import com.ritense.case_.repository.CaseExternalPluginTabRepository
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
-import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
@@ -44,8 +44,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
-import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.Mockito.lenient
+import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
@@ -54,6 +54,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.jpa.domain.Specification
+import java.util.Optional
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -112,7 +113,11 @@ class ExternalPluginConfigurationMappingResolverTest {
 
         verify(caseDefinitionChecker).assertCanUpdateCaseDefinitionConfiguration(
             caseDefinitionId,
-            ExternalPluginProcessLinkMapper.ISSUE_TYPE,
+            listOf(
+                ExternalPluginConfigurationMappingResolver.PROCESS_LINK_ISSUE_TYPE,
+                ExternalPluginConfigurationMappingResolver.TASK_FORM_ISSUE_TYPE,
+                ExternalPluginConfigurationMappingResolver.CASE_TAB_ISSUE_TYPE,
+            ),
         )
     }
 
@@ -162,7 +167,6 @@ class ExternalPluginConfigurationMappingResolverTest {
         )
         stubProcessDefinitions()
         whenever(caseTabRepository.findAll(any<Specification<CaseTab>>())).thenReturn(listOf(tab))
-        whenever(configurationRepository.existsById(any())).thenReturn(true)
 
         resolver.resolve(caseDefinitionId, mapOf(sourceId to targetId))
 
@@ -170,8 +174,9 @@ class ExternalPluginConfigurationMappingResolverTest {
         verify(caseTabRepository).save(tabCaptor.capture())
         assertThat(tabCaptor.firstValue.contentKey).isEqualTo("$targetId:bundle-key")
 
+        // No prior side row is stubbed, so the preserved plugin identity is null here.
         verify(caseExternalPluginTabRepository).save(
-            com.ritense.case_.domain.tab.CaseExternalPluginTab(
+            CaseExternalPluginTab(
                 id = tab.id,
                 externalPluginConfigurationId = targetId,
                 bundleKey = "bundle-key",
@@ -201,11 +206,15 @@ class ExternalPluginConfigurationMappingResolverTest {
 
         resolver.resolve(caseDefinitionId, mapOf(sourceId to targetId))
 
-        verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
+        // Each surface is judged independently now; the process-link surface is clean.
+        verify(applicationEventPublisher).publishEvent(
+            CaseConfigurationIssueResolvedEvent(caseDefinitionId, ExternalPluginConfigurationMappingResolver.PROCESS_LINK_ISSUE_TYPE)
+        )
+        verify(applicationEventPublisher, never()).publishEvent(any<CaseConfigurationIssueDetectedEvent>())
     }
 
     @Test
-    fun `resolve emits detected event when dangling links remain`() {
+    fun `resolve emits detected event for the process-link surface when a dangling link remains`() {
         val danglingLink = processLink(externalPluginConfigurationId = UUID.randomUUID())
         stubProcessDefinitions("pd-1")
         whenever(processLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(danglingLink))
@@ -213,8 +222,14 @@ class ExternalPluginConfigurationMappingResolverTest {
 
         resolver.resolve(caseDefinitionId, emptyMap())
 
-        verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueDetectedEvent>())
-        verify(applicationEventPublisher, never()).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
+        // The dangling service-task link raises the process-link issue; the clean task-form and tab
+        // surfaces are resolved independently (no cross-surface clobber).
+        verify(applicationEventPublisher).publishEvent(
+            CaseConfigurationIssueDetectedEvent(caseDefinitionId, ExternalPluginConfigurationMappingResolver.PROCESS_LINK_ISSUE_TYPE)
+        )
+        verify(applicationEventPublisher).publishEvent(
+            CaseConfigurationIssueResolvedEvent(caseDefinitionId, ExternalPluginConfigurationMappingResolver.TASK_FORM_ISSUE_TYPE)
+        )
     }
 
     @Test
@@ -269,6 +284,17 @@ class ExternalPluginConfigurationMappingResolverTest {
         stubProcessDefinitions("pd-1")
         whenever(processLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
         whenever(caseTabRepository.findAll(any<Specification<CaseTab>>())).thenReturn(listOf(tab))
+        whenever(caseExternalPluginTabRepository.findById(tab.id)).thenReturn(
+            Optional.of(
+                CaseExternalPluginTab(
+                    id = tab.id,
+                    externalPluginConfigurationId = danglingConfigId,
+                    bundleKey = null,
+                    pluginDefinitionKey = "case-summary",
+                    pluginDefinitionVersion = "0.1.0",
+                )
+            )
+        )
         whenever(configurationRepository.existsById(danglingConfigId)).thenReturn(false)
 
         val result = resolver.getDanglingPluginConfigurations(caseDefinitionId)
@@ -276,6 +302,9 @@ class ExternalPluginConfigurationMappingResolverTest {
         assertThat(result).hasSize(1)
         assertThat(result.single().sourcePluginConfigurationIds).containsExactly(danglingConfigId)
         assertThat(result.single().source).isEqualTo(SOURCE_EXTERNAL)
+        // The persisted plugin identity now makes the dangling tab identifiable (not key-less).
+        assertThat(result.single().pluginDefinitionKey).isEqualTo("case-summary")
+        assertThat(result.single().pluginDefinitionVersion).isEqualTo("0.1.0")
     }
 
     @Test
@@ -289,7 +318,42 @@ class ExternalPluginConfigurationMappingResolverTest {
 
         resolver.recheckIssuesForProcessDefinition("pd-1")
 
-        verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
+        verify(applicationEventPublisher).publishEvent(
+            CaseConfigurationIssueResolvedEvent(caseDefinitionId, ExternalPluginConfigurationMappingResolver.PROCESS_LINK_ISSUE_TYPE)
+        )
+    }
+
+    @Test
+    fun `recheckIssuesForCaseDefinition emits detected event for the case-tab surface when a tab is dangling`() {
+        val danglingConfigId = UUID.randomUUID()
+        val tab = CaseTab(
+            id = CaseTabId(caseDefinitionId, "summary"),
+            name = "Summary",
+            tabOrder = 0,
+            type = CaseTabType.EXTERNAL_PLUGIN,
+            contentKey = "$danglingConfigId:summary",
+        )
+        stubProcessDefinitions("pd-1")
+        whenever(processLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
+        whenever(caseTabRepository.findAll(any<Specification<CaseTab>>())).thenReturn(listOf(tab))
+        whenever(caseExternalPluginTabRepository.findById(tab.id)).thenReturn(
+            Optional.of(
+                CaseExternalPluginTab(
+                    id = tab.id,
+                    externalPluginConfigurationId = danglingConfigId,
+                    bundleKey = "summary",
+                    pluginDefinitionKey = "case-summary",
+                    pluginDefinitionVersion = "0.1.0",
+                )
+            )
+        )
+        whenever(configurationRepository.existsById(danglingConfigId)).thenReturn(false)
+
+        resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
+
+        verify(applicationEventPublisher).publishEvent(
+            CaseConfigurationIssueDetectedEvent(caseDefinitionId, ExternalPluginConfigurationMappingResolver.CASE_TAB_ISSUE_TYPE)
+        )
     }
 
     private fun stubProcessDefinitions(vararg processDefinitionIds: String) {

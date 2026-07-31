@@ -38,4 +38,23 @@ interface ExternalPluginCaseTabResolver {
      *   selects the sole `case-tab` bundle
      */
     fun resolveBundleUrl(configurationId: UUID, bundleKey: String?): String?
+
+    /**
+     * Resolves the plugin definition (`pluginId` + version) backing the configuration, or `null`
+     * when the configuration/definition can no longer be found. Used at export time so a `case-tab`
+     * export is self-describing: unlike a process link (whose export already carries its plugin
+     * key/version), a tab's `contentKey` holds only the configuration id. Embedding the resolved
+     * definition lets the import preview identify the plugin even when the referenced configuration
+     * was deleted in the target environment (otherwise the tab is an unidentifiable, unmappable row).
+     */
+    fun resolvePluginDefinition(configurationId: UUID): ExternalPluginTabDefinition?
 }
+
+/**
+ * Design-time plugin identity of an `EXTERNAL_PLUGIN` case tab, embedded in the tab export so the
+ * import preview can identify the plugin without resolving the (possibly-deleted) configuration.
+ */
+data class ExternalPluginTabDefinition(
+    val pluginDefinitionKey: String,
+    val pluginDefinitionVersion: String,
+)

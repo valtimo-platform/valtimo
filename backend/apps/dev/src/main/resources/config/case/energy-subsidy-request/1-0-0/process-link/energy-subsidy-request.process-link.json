@@ -74,12 +74,12 @@
                 "syncTiming": "END"
             },
             {
-                "source": "/reviewerRemarks",
+                "source": "/submission/reviewerRemarks",
                 "target": "doc:/reviewerRemarks",
                 "syncTiming": "END"
             },
             {
-                "source": "/approvalDecision",
+                "source": "/submission/approvalDecision",
                 "target": "doc:/approvalDecision",
                 "syncTiming": "END"
             }

@@ -271,6 +271,9 @@ interface ExternalPluginHostUsage {
   // Populated only for an external-plugin case-tab usage.
   tabKey?: string | null;
   tabName?: string | null;
+  // Populated only for a building-block mapping usage (the BB's pluginConfigurationMappings
+  // reference the configuration); names the building block holding the mapping.
+  buildingBlockKey?: string | null;
 }
 
 const EXTERNAL_PLUGIN_KEY_PREFIX = 'external:';

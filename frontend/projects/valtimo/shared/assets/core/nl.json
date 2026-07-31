@@ -2370,12 +2370,12 @@
     "hostInUseModal": {
       "title": "Plugin-host is in gebruik",
       "thisHost": "deze plugin-host",
-      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten nog gebruikmaken van een configuratie van deze host. Verwijder eerst deze proceskoppelingen."
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, zaaktabbladen of bouwblokken nog gebruikmaken van een plugin of configuratie van deze host. Verwijder eerst deze verwijzingen."
     },
     "configurationInUseModal": {
       "title": "Plugin-configuratie is in gebruik",
       "thisConfiguration": "deze plugin-configuratie",
-      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende BPMN-activiteiten er nog naar verwijzen. Verwijder eerst deze proceskoppelingen."
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, zaaktabbladen of bouwblokken er nog naar verwijzen. Verwijder eerst deze verwijzingen."
     },
     "usageModal": {
       "headers": {
@@ -2390,7 +2390,8 @@
         "BUILDING_BLOCK": "Bouwblok",
         "GLOBAL": "Globaal"
       },
-      "caseTab": "Zaaktabblad"
+      "caseTab": "Zaaktabblad",
+      "buildingBlockMapping": "Plugin-koppeling van bouwblok"
     },
     "compatibility": {
       "incompatibleTag": "Incompatibel",

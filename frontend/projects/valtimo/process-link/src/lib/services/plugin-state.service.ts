@@ -19,6 +19,7 @@ import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap} from
 import {catchError, map, take} from 'rxjs/operators';
 import {
   ExternalPluginService,
+  getExternalPluginDisplayName,
   PluginConfiguration,
   PluginDefinition,
   PluginFunction,
@@ -26,6 +27,7 @@ import {
   PluginService,
   toExternalPluginKey,
 } from '@valtimo/plugin';
+import {TranslateService} from '@ngx-translate/core';
 import {ProcessLink} from '../models';
 
 @Injectable({
@@ -43,7 +45,8 @@ export class PluginStateService {
   constructor(
     private readonly pluginManagementService: PluginManagementService,
     private readonly pluginService: PluginService,
-    private readonly externalPluginService: ExternalPluginService
+    private readonly externalPluginService: ExternalPluginService,
+    private readonly translateService: TranslateService
   ) {}
 
   get selectedPluginDefinition$(): Observable<PluginDefinition> {
@@ -222,35 +225,46 @@ export class PluginStateService {
               (!processLink.pluginVersion || d.version === processLink.pluginVersion)
           );
           if (definition) {
+            // The manifest-translated display name rides along on the synthetic definition so the
+            // stepper can label the step — external plugins have no plugin-translation bundle.
             this._selectedPluginDefinition$.next({
               key: toExternalPluginKey(definition.id),
+              title: getExternalPluginDisplayName(definition, this.translateService.currentLang),
             } as PluginDefinition);
           }
         });
       return;
     }
 
-    // Fetch all external configurations to find the one matching this process link
-    this.externalPluginService
-      .getConfigurations()
-      .pipe(
-        take(1),
-        catchError(() => of([]))
-      )
-      .subscribe(configs => {
+    // Fetch all external configurations and definitions to find the ones matching this process link
+    combineLatest([
+      this.externalPluginService.getConfigurations().pipe(catchError(() => of([]))),
+      this.externalPluginService.getDefinitions().pipe(catchError(() => of([]))),
+    ])
+      .pipe(take(1))
+      .subscribe(([configs, definitions]) => {
         const config = configs.find(c => c.id === configId);
         if (!config) return;
 
         const definitionId = config.definitionId;
         const externalKey = toExternalPluginKey(definitionId);
+        const definition = definitions.find(d => d.id === definitionId);
+        const definitionTitle = definition
+          ? getExternalPluginDisplayName(definition, this.translateService.currentLang)
+          : undefined;
 
-        // Set synthetic plugin definition with the external: prefix key
-        this._selectedPluginDefinition$.next({key: externalKey} as PluginDefinition);
+        // Set synthetic plugin definition with the external: prefix key; the manifest-translated
+        // display name rides along so the stepper can label the step without a translation bundle.
+        this._selectedPluginDefinition$.next({
+          key: externalKey,
+          title: definitionTitle,
+        } as PluginDefinition);
 
         // Set synthetic plugin configuration with the external config ID
         this._selectedPluginConfiguration$.next({
           id: configId,
-          pluginDefinition: {key: externalKey},
+          title: config.title,
+          pluginDefinition: {key: externalKey, title: definitionTitle},
         } as PluginConfiguration);
       });
   }

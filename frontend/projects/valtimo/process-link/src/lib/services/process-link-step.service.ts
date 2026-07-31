@@ -134,8 +134,7 @@ export class ProcessLinkStepService {
   }
 
   public setChoosePluginConfigurationSteps(): void {
-    const selectionLabel =
-      this._context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
+    const selectionLabel = this.selectionStepLabel;
     this._steps$.next([
       {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.plugin'},
       {label: selectionLabel},
@@ -146,8 +145,7 @@ export class ProcessLinkStepService {
   }
 
   public setSingleChoosePluginConfigurationSteps(): void {
-    const selectionLabel =
-      this._context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
+    const selectionLabel = this.selectionStepLabel;
     this._steps$.next([
       {label: selectionLabel},
       {label: 'choosePluginAction', disabled: true},
@@ -164,10 +162,7 @@ export class ProcessLinkStepService {
     ])
       .pipe(take(1))
       .subscribe(([hasOneType, selectedConfiguration, selectedDefinition]) => {
-        const selectionLabel =
-          this._context === 'buildingBlock'
-            ? 'choosePluginDefinition'
-            : 'choosePluginConfiguration';
+        const selectionLabel = this.selectionStepLabel;
         const selectedPluginLabel = this.getSelectedPluginLabel(
           selectedConfiguration,
           selectedDefinition
@@ -220,10 +215,7 @@ export class ProcessLinkStepService {
           : pluginKey
             ? this.pluginTranslateService.instant(selectedFunction.key, pluginKey)
             : selectedFunction.key;
-        const selectionLabel =
-          this._context === 'buildingBlock'
-            ? 'choosePluginDefinition'
-            : 'choosePluginConfiguration';
+        const selectionLabel = this.selectionStepLabel;
         const selectedPluginLabel = this.getSelectedPluginLabel(
           selectedConfiguration,
           selectedDefinition
@@ -283,10 +275,7 @@ export class ProcessLinkStepService {
           : pluginKey
             ? this.pluginTranslateService.instant(selectedFunction.key, pluginKey)
             : selectedFunction.key;
-        const selectionLabel =
-          this._context === 'buildingBlock'
-            ? 'choosePluginDefinition'
-            : 'choosePluginConfiguration';
+        const selectionLabel = this.selectionStepLabel;
         const selectedPluginLabel = this.getSelectedPluginLabel(
           selectedConfiguration,
           selectedDefinition
@@ -515,12 +504,29 @@ export class ProcessLinkStepService {
     this._currentStepIndex$.next(0);
   }
 
+  /**
+   * Step label for the plugin selection step. In the building-block context the admin picks a
+   * plugin *definition* (the configuration is resolved at runtime from the BB's mappings), so the
+   * step must be titled accordingly — everywhere else a concrete configuration is chosen.
+   */
+  private get selectionStepLabel(): string {
+    return this._context === 'buildingBlock'
+      ? 'choosePluginDefinition'
+      : 'choosePluginConfiguration';
+  }
+
   private getSelectedPluginLabel(
     selectedConfiguration: PluginConfiguration | undefined,
     selectedDefinition: PluginDefinition | undefined
   ): string {
     if (this._context === 'buildingBlock') {
       const definitionKey = selectedDefinition?.key || selectedConfiguration?.pluginDefinition?.key;
+      // External definitions have no plugin-translation bundle — looking one up would render the
+      // raw `external:<uuid>.title` key. Their localized display name comes from the manifest and
+      // is carried on the (synthetic) definition's title.
+      if (isExternalPluginKey(definitionKey)) {
+        return selectedDefinition?.title || selectedConfiguration?.pluginDefinition?.title || '';
+      }
       return definitionKey ? this.pluginTranslateService.instant('title', definitionKey) : '';
     }
     return selectedConfiguration?.title || '';
@@ -552,13 +558,9 @@ export class ProcessLinkStepService {
         this._currentStepIndex$.next(0);
         break;
       case 'plugin': {
-        const selectionLabel =
-          this._context === 'buildingBlock'
-            ? 'choosePluginDefinition'
-            : 'choosePluginConfiguration';
         // Plugin has 3 config steps: select config, select action, configure action
         this._steps$.next([
-          {label: selectionLabel},
+          {label: this.selectionStepLabel},
           {label: 'choosePluginAction'},
           {label: 'configurePluginAction'},
         ]);
@@ -582,7 +584,7 @@ export class ProcessLinkStepService {
         // configure. A task-form's configure step has nothing to fill in (see the action-config
         // component), but the flow and step layout are identical.
         this._steps$.next([
-          {label: 'choosePluginConfiguration'},
+          {label: this.selectionStepLabel},
           {label: 'choosePluginAction'},
           {label: 'configurePluginAction'},
         ]);
@@ -609,7 +611,7 @@ export class ProcessLinkStepService {
    */
   public initializeEditModeResultMappingsSteps(): void {
     this._steps$.next([
-      {label: 'choosePluginConfiguration'},
+      {label: this.selectionStepLabel},
       {label: 'choosePluginAction'},
       {label: 'configurePluginAction'},
       {label: 'configurePluginActionResultMappings'},
