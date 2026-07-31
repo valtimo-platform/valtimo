@@ -25,7 +25,9 @@ export function createWidgetTestData() {
     tabKey: `e2e-widget-tab-${id}`,
     widgetTitle: `E2e Test Widget ${id}`,
     fieldTitle: 'Test Field',
-    valuePath: 'case:definitionId.name',
+    // `case:definitionId.name` no longer exists: the case definition id is exposed as
+    // key + versionTag since case definition versioning was introduced.
+    valuePath: 'case:definitionId.key',
   };
 }
 
