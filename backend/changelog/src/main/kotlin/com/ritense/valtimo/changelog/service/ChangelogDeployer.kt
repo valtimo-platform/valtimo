@@ -87,8 +87,10 @@ class ChangelogDeployer(
             .map { it.groupValues }
             .forEach { (placeholder, placeholderValue) ->
                 try {
-                    val resolvedValue = environment.getProperty(placeholderValue)
-                    if (!resolvedValue.isNullOrBlank()) {
+                    val name = placeholderValue.substringBefore(':')
+                    val default = placeholderValue.substringAfter(':', missingDelimiterValue = "").takeIf { ':' in placeholderValue }
+                    val resolvedValue = environment.getProperty(name)?.takeIf { it.isNotBlank() } ?: default
+                    if (resolvedValue != null) {
                         resolvedContent = resolvedContent.replace(placeholder, resolvedValue)
                     }
                 } catch (e: Exception) {

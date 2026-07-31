@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {DocumentenApiColumnModalTypeCloseEvent} from '../../models';
 import {BehaviorSubject, Subscription} from 'rxjs';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {
   ButtonModule,
@@ -56,6 +56,7 @@ import {ZGW_KEYWORDS_TEST_IDS} from '../../../../constants';
     DropdownModule,
     ToggleModule,
     LayerModule,
+    ValtimoCdsModalDirective,
   ],
 })
 export class DocumentenApiTagModalComponent implements OnDestroy {
