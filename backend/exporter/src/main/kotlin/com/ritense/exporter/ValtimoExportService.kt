@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,37 @@
 
 package com.ritense.exporter
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.exporter.manifest.ArtifactDependency
+import com.ritense.exporter.manifest.ArtifactManifestEntry
+import com.ritense.exporter.manifest.ExportManifest
+import com.ritense.exporter.manifest.RefValue
+import com.ritense.exporter.manifest.ResolvableValue
+import com.ritense.exporter.manifest.StringValue
+import com.ritense.exporter.manifest.ValtimoVersionResolver
 import com.ritense.exporter.request.ExportRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-class ValtimoExportService (
-    private val exporters: List<Exporter<ExportRequest>>
+class ValtimoExportService(
+    private val exporters: List<Exporter<ExportRequest>>,
+    private val objectMapper: ObjectMapper,
+    private val valtimoVersionResolver: ValtimoVersionResolver,
 ) : ExportService {
 
     override fun export(request: ExportRequest): ByteArrayOutputStream {
-        val exportList: Set<ExportFile> = collectExportFiles(request)
+        val artifacts = mutableSetOf<ArtifactManifestEntry>()
+        val dependencies = mutableSetOf<ArtifactDependency>()
+        val exportList: MutableSet<ExportFile> = collectExportFiles(
+            request = request,
+            artifacts = artifacts,
+            dependencies = dependencies,
+            isRoot = true,
+        ).toMutableSet()
+
+        createManifestFile(artifacts, dependencies)?.let { exportList.add(it) }
 
         val outputStream = ByteArrayOutputStream()
         ZipOutputStream(outputStream).use { zos ->
@@ -41,7 +60,13 @@ class ValtimoExportService (
         return outputStream
     }
 
-    private fun collectExportFiles(request: ExportRequest, history: MutableSet<ExportRequest> = mutableSetOf()): Set<ExportFile> {
+    private fun collectExportFiles(
+        request: ExportRequest,
+        history: MutableSet<ExportRequest> = mutableSetOf(),
+        artifacts: MutableSet<ArtifactManifestEntry>,
+        dependencies: MutableSet<ArtifactDependency>,
+        isRoot: Boolean,
+    ): Set<ExportFile> {
         //This history prevents stack-overflows
         if (history.contains(request)) {
             return setOf()
@@ -57,8 +82,13 @@ class ValtimoExportService (
         }.mapNotNull { exporter ->
             try {
                 val result = exporter.export(request)
+                if (isRoot) {
+                    result.manifestArtifact?.let { artifacts.add(it) }
+                } else {
+                    dependencies.addAll(result.manifestDependencies)
+                }
                 result.exportFiles + result.relatedRequests.flatMap {
-                    collectExportFiles(it, history)
+                    collectExportFiles(it, history, artifacts, dependencies, isRoot = false)
                 }
             } catch (e: NoSuchElementException) {
                 if (!request.required) {
@@ -70,7 +100,41 @@ class ValtimoExportService (
         }.flatten().toSet()
     }
 
+    private fun createManifestFile(
+        artifacts: Set<ArtifactManifestEntry>,
+        dependencies: Set<ArtifactDependency>,
+    ): ExportFile? {
+        if (artifacts.isEmpty()) {
+            return null
+        }
+        val valtimoVersion = valtimoVersionResolver.getValtimoVersion()
+        val sortedDependencies = dependencies.sortedWith(dependencyComparator)
+        val manifest = ExportManifest(
+            artifacts.map { artifact ->
+                artifact.copy(
+                    valtimoVersion = valtimoVersion,
+                    dependencies = sortedDependencies,
+                )
+            }
+        )
+        return ExportFile(
+            ExportManifest.MANIFEST_FILE_NAME,
+            objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(manifest)
+        )
+    }
+
     companion object {
         val logger = KotlinLogging.logger {}
+
+        private fun ResolvableValue.sortKey(): String = when (this) {
+            is StringValue -> value
+            is RefValue -> ref
+        }
+
+        private val dependencyComparator: Comparator<ArtifactDependency> = compareBy(
+            { it.type },
+            { it.key.sortKey() },
+            { it.title.sortKey() },
+        )
     }
 }
