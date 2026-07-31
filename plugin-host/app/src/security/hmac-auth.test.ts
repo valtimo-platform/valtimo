@@ -15,11 +15,20 @@
  */
 
 import type {FastifyReply, FastifyRequest} from "fastify";
-import {describe, expect, it, vi} from "vitest";
+import {beforeEach, describe, expect, it, vi} from "vitest";
 import {computeBodyHash, computeSignature} from "./hmac";
-import {createHmacAuthHook, verifyDeferredHmac, verifyHmacRequest} from "./hmac-auth";
+import {
+  createHmacAuthHook,
+  resetReplayCacheForTests,
+  verifyDeferredHmac,
+  verifyHmacRequest,
+} from "./hmac-auth";
 
 const SECRET = "hook-secret";
+
+// The seen-signature cache is process-wide; clear it so specs that legitimately re-send the same
+// signed request don't trip the replay guard from a previous test.
+beforeEach(() => resetReplayCacheForTests());
 
 function signedHeaders(method: string, path: string, body: Buffer, secret = SECRET) {
   const timestamp = new Date().toISOString();
@@ -103,6 +112,34 @@ describe("createHmacAuthHook", () => {
     expect(reply.code).not.toHaveBeenCalled();
   });
 
+  it("rejects a replayed side-effecting request: the same signature is accepted only once", async () => {
+    const body = Buffer.from('{"a":1}', "utf8");
+    const headers = signedHeaders("POST", "/api/host/configurations/x", body);
+    const makeRequest = () =>
+      fakeRequest({ method: "POST", url: "/api/host/configurations/x", headers, rawBody: body });
+    const hook = createHmacAuthHook(SECRET);
+
+    const firstReply = fakeReply();
+    await hook(makeRequest(), firstReply, () => {});
+    expect(firstReply.code).not.toHaveBeenCalled();
+
+    // Byte-for-byte identical request (captured and resent) → refused.
+    const secondReply = fakeReply();
+    await hook(makeRequest(), secondReply, () => {});
+    expect(secondReply.code).toHaveBeenCalledWith(401);
+  });
+
+  it("does not replay-guard reads: the same signed GET may repeat", async () => {
+    const headers = signedHeaders("GET", "/api/host/plugins", Buffer.alloc(0));
+    const hook = createHmacAuthHook(SECRET);
+
+    for (let i = 0; i < 2; i++) {
+      const reply = fakeReply();
+      await hook(fakeRequest({ method: "GET", url: "/api/host/plugins", headers }), reply, () => {});
+      expect(reply.code).not.toHaveBeenCalled();
+    }
+  });
+
   it("skips verification entirely for a deferHmac route", async () => {
     // No signature headers at all, yet the hook must not reject — the route verifies itself later.
     const request = fakeRequest({ method: "POST", url: "/api/host/plugins", deferHmac: true });
@@ -150,6 +187,19 @@ describe("verifyDeferredHmac", () => {
     const reply = fakeReply();
 
     expect(verifyDeferredHmac(request, reply, SECRET, Buffer.from("tampered"))).toBe(false);
+    expect(reply.code).toHaveBeenCalledWith(401);
+  });
+
+  it("rejects a replayed upload: the same file-bound signature is accepted only once", () => {
+    const fileBytes = Buffer.from("PK-zip-bytes");
+    const headers = signedHeaders("POST", "/api/host/plugins", fileBytes);
+    const makeRequest = () =>
+      fakeRequest({ method: "POST", url: "/api/host/plugins", headers });
+
+    expect(verifyDeferredHmac(makeRequest(), fakeReply(), SECRET, fileBytes)).toBe(true);
+
+    const reply = fakeReply();
+    expect(verifyDeferredHmac(makeRequest(), reply, SECRET, fileBytes)).toBe(false);
     expect(reply.code).toHaveBeenCalledWith(401);
   });
 });

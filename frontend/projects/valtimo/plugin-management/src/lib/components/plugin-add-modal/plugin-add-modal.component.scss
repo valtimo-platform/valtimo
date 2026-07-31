@@ -17,20 +17,21 @@
 .plugin-add-modal__progress {
   width: 100%;
   display: block;
-  padding-bottom: 8px;
+  padding-bottom: var(--cds-spacing-03);
 }
 
 .add-plugin-modal-header {
-  margin-bottom: 16px;
+  margin-bottom: var(--cds-spacing-05);
 }
 
-.cds--modal-content {
+// Scoped to :host so the Carbon modal content override cannot leak to other modals.
+:host .cds--modal-content {
   overflow-x: hidden;
 }
 
 .plugin-add-modal__compatibility-warning {
   display: block;
-  margin-bottom: 16px;
+  margin-bottom: var(--cds-spacing-05);
 }
 
 // Carbon caps inline notifications at a narrow max-width; stretch it to fill the modal so the full

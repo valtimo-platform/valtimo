@@ -78,31 +78,32 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     properties: new FormControl('{}'),
   });
 
-  public readonly _$loading = signal(false);
-  public readonly _$propertiesInvalid = signal(false);
-  public readonly _$configurationSchema = signal<unknown | null>(null);
-  public readonly _$configBundleUrl = signal<string | null>(null);
-  public readonly _$prefillConfiguration = signal<{
+  public readonly $loading = signal(false);
+  public readonly $propertiesInvalid = signal(false);
+  public readonly $configBundleUrl = signal<string | null>(null);
+  public readonly $prefillConfiguration = signal<{
     title: string;
     configuration: Record<string, unknown>;
   } | null>(null);
-  public readonly _$iframeValid = signal(false);
 
-  public readonly _$endpoints = signal<Array<ExternalPluginEndpoint>>([]);
-  public readonly _$eventSubscriptions = signal<Array<string>>([]);
-  public readonly _$capabilities = signal<Array<string>>([]);
-  public readonly _$permissionsValid = signal(false);
-  public readonly _$hasPermissionsStep = signal(false);
-  public readonly _$definitionName = signal<string>('');
+  public readonly $endpoints = signal<Array<ExternalPluginEndpoint>>([]);
+  public readonly $eventSubscriptions = signal<Array<string>>([]);
+  public readonly $capabilities = signal<Array<string>>([]);
+  public readonly $permissionsValid = signal(false);
+  public readonly $hasPermissionsStep = signal(false);
+  public readonly $definitionName = signal<string>('');
 
   public currentStepIndex = 0;
   public progressSteps: Array<{label: string}> = [];
 
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
+  private readonly _$configurationSchema = signal<unknown | null>(null);
+  private readonly _$iframeValid = signal(false);
   private readonly _$definition = signal<ExternalPluginDefinition | null>(null);
 
   private readonly _subscriptions = new Subscription();
+  private _propertiesValueSubscription: Subscription | null = null;
 
   constructor(
     private readonly _externalPluginService: ExternalPluginService,
@@ -119,6 +120,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this._propertiesValueSubscription?.unsubscribe();
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -136,22 +138,22 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   public onSave(): void {
     if (!this.configuration?.id) return;
 
-    if (this._$configBundleUrl()) {
+    if (this.$configBundleUrl()) {
       this._saveFromIframe();
       return;
     }
 
-    if (this._form.invalid || this._$propertiesInvalid()) return;
+    if (this._form.invalid || this.$propertiesInvalid()) return;
 
     let properties: Record<string, unknown>;
     try {
       properties = JSON.parse(this._form.value.properties ?? '{}');
     } catch {
-      this._$propertiesInvalid.set(true);
+      this.$propertiesInvalid.set(true);
       return;
     }
 
-    this._$loading.set(true);
+    this.$loading.set(true);
 
     // Permissions are accepted at activation and are immutable afterwards, so they are not sent
     // on update — the backend leaves the granted endpoints unchanged when they are omitted.
@@ -162,11 +164,11 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       })
       .subscribe({
         next: () => {
-          this._$loading.set(false);
+          this.$loading.set(false);
           this.savedEvent.emit();
         },
         error: () => {
-          this._$loading.set(false);
+          this.$loading.set(false);
         },
       });
   }
@@ -194,24 +196,24 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   }
 
   public onPermissionsValid(valid: boolean): void {
-    this._$permissionsValid.set(valid);
+    this.$permissionsValid.set(valid);
   }
 
   public get configValid(): boolean {
-    if (this._$configBundleUrl()) {
+    if (this.$configBundleUrl()) {
       return this._$iframeValid();
     }
-    return this._form.valid && !this._$propertiesInvalid();
+    return this._form.valid && !this.$propertiesInvalid();
   }
 
   private _saveFromIframe(): void {
     if (!this.configuration?.id) return;
 
-    const prefill = this._$prefillConfiguration();
+    const prefill = this.$prefillConfiguration();
     const title = this._iframeConfigTitle || prefill?.title || this.configuration.title;
     const properties = this._iframeConfigData ?? prefill?.configuration ?? {};
 
-    this._$loading.set(true);
+    this.$loading.set(true);
 
     this._externalPluginService
       .updateConfiguration(this.configuration.id, {
@@ -220,11 +222,11 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       })
       .subscribe({
         next: () => {
-          this._$loading.set(false);
+          this.$loading.set(false);
           this.savedEvent.emit();
         },
         error: () => {
-          this._$loading.set(false);
+          this.$loading.set(false);
         },
       });
   }
@@ -235,25 +237,26 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       title: this.configuration?.title ?? '',
       properties: '{}',
     });
-    this._$propertiesInvalid.set(false);
+    this.$propertiesInvalid.set(false);
     this._$configurationSchema.set(null);
-    this._$configBundleUrl.set(null);
-    this._$prefillConfiguration.set(null);
+    this.$configBundleUrl.set(null);
+    this.$prefillConfiguration.set(null);
     this._$iframeValid.set(false);
+    this._iframeConfigTitle = '';
     this._iframeConfigData = null;
-    this._$endpoints.set([]);
-    this._$eventSubscriptions.set([]);
-    this._$capabilities.set([]);
-    this._$permissionsValid.set(false);
-    this._$hasPermissionsStep.set(false);
+    this.$endpoints.set([]);
+    this.$eventSubscriptions.set([]);
+    this.$capabilities.set([]);
+    this.$permissionsValid.set(false);
+    this.$hasPermissionsStep.set(false);
     this._$definition.set(null);
-    this._$definitionName.set('');
+    this.$definitionName.set('');
 
     const configId = this.configuration?.id;
     const definitionId = this.configuration?.externalDefinitionId;
 
     if (configId && definitionId) {
-      this._$loading.set(true);
+      this.$loading.set(true);
       forkJoin([
         this._externalPluginService.getConfiguration(configId),
         this._externalPluginService.getDefinition(definitionId),
@@ -263,8 +266,8 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this._$configurationSchema.set(definition.configurationSchema);
           this._resolveConfigBundleUrl(definition);
 
-          if (this._$configBundleUrl()) {
-            this._$prefillConfiguration.set({
+          if (this.$configBundleUrl()) {
+            this.$prefillConfiguration.set({
               title: configDetail.title,
               configuration: configDetail.properties ?? {},
             });
@@ -278,21 +281,23 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           const endpoints = definition.manifest?.permissions?.endpoints ?? [];
           const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
           const capabilities = definition.manifest?.permissions?.capabilities ?? [];
-          this._$endpoints.set(endpoints);
-          this._$eventSubscriptions.set(eventSubscriptions);
-          this._$capabilities.set(capabilities);
-          this._$hasPermissionsStep.set(endpoints.length > 0 || eventSubscriptions.length > 0 || capabilities.length > 0);
-          this._$permissionsValid.set(true);
+          this.$endpoints.set(endpoints);
+          this.$eventSubscriptions.set(eventSubscriptions);
+          this.$capabilities.set(capabilities);
+          this.$hasPermissionsStep.set(
+            endpoints.length > 0 || eventSubscriptions.length > 0 || capabilities.length > 0
+          );
+          this.$permissionsValid.set(true);
 
           this._buildProgressSteps();
-          this._$loading.set(false);
+          this.$loading.set(false);
         },
         error: () => {
-          this._$loading.set(false);
+          this.$loading.set(false);
         },
       });
     } else if (definitionId) {
-      this._$loading.set(true);
+      this.$loading.set(true);
       this._externalPluginService.getDefinition(definitionId).subscribe({
         next: definition => {
           this._setDefinition(definition);
@@ -302,31 +307,37 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           const endpoints = definition.manifest?.permissions?.endpoints ?? [];
           const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
           const capabilities = definition.manifest?.permissions?.capabilities ?? [];
-          this._$endpoints.set(endpoints);
-          this._$eventSubscriptions.set(eventSubscriptions);
-          this._$capabilities.set(capabilities);
-          this._$hasPermissionsStep.set(endpoints.length > 0 || eventSubscriptions.length > 0 || capabilities.length > 0);
-          this._$permissionsValid.set(true);
+          this.$endpoints.set(endpoints);
+          this.$eventSubscriptions.set(eventSubscriptions);
+          this.$capabilities.set(capabilities);
+          this.$hasPermissionsStep.set(
+            endpoints.length > 0 || eventSubscriptions.length > 0 || capabilities.length > 0
+          );
+          this.$permissionsValid.set(true);
 
           this._buildProgressSteps();
-          this._$loading.set(false);
+          this.$loading.set(false);
         },
         error: () => {
-          this._$loading.set(false);
+          this.$loading.set(false);
         },
       });
     } else {
       this._buildProgressSteps();
     }
 
-    this._form.get('properties')?.valueChanges.subscribe(value => {
-      try {
-        JSON.parse(value ?? '{}');
-        this._$propertiesInvalid.set(false);
-      } catch {
-        this._$propertiesInvalid.set(true);
-      }
-    });
+    // `_initForm` runs on every modal open: tear down the previous subscription first so they do
+    // not accumulate over repeated opens.
+    this._propertiesValueSubscription?.unsubscribe();
+    this._propertiesValueSubscription =
+      this._form.get('properties')?.valueChanges.subscribe(value => {
+        try {
+          JSON.parse(value ?? '{}');
+          this.$propertiesInvalid.set(false);
+        } catch {
+          this.$propertiesInvalid.set(true);
+        }
+      }) ?? null;
   }
 
   private _setDefinition(definition: ExternalPluginDefinition): void {
@@ -336,7 +347,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
   private _updateDefinitionName(): void {
     const definition = this._$definition();
-    this._$definitionName.set(
+    this.$definitionName.set(
       definition ? getExternalPluginDisplayName(definition, this._translateService.currentLang) : ''
     );
   }
@@ -344,18 +355,14 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   private _resolveConfigBundleUrl(definition: ExternalPluginDefinition): void {
     const configBundle = definition.manifest?.frontendBundles?.find(b => b.type === 'config');
     if (configBundle) {
-      this._$configBundleUrl.set(
-        `${definition.baseUrl}/${definition.version}${configBundle.path}`
-      );
+      this.$configBundleUrl.set(`${definition.baseUrl}/${definition.version}${configBundle.path}`);
     }
   }
 
   private _buildProgressSteps(): void {
-    const steps = [
-      {label: this._translateService.instant('pluginManagement.editSteps.step0')},
-    ];
+    const steps = [{label: this._translateService.instant('pluginManagement.editSteps.step0')}];
 
-    if (this._$hasPermissionsStep()) {
+    if (this.$hasPermissionsStep()) {
       steps.push({
         label: this._translateService.instant('pluginManagement.editSteps.step1'),
       });
@@ -367,19 +374,20 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   private _resetForm(): void {
     this.currentStepIndex = 0;
     this._form.reset({title: '', properties: '{}'});
-    this._$propertiesInvalid.set(false);
+    this.$propertiesInvalid.set(false);
     this._$configurationSchema.set(null);
-    this._$configBundleUrl.set(null);
-    this._$prefillConfiguration.set(null);
+    this.$configBundleUrl.set(null);
+    this.$prefillConfiguration.set(null);
     this._$iframeValid.set(false);
+    this._iframeConfigTitle = '';
     this._iframeConfigData = null;
-    this._$endpoints.set([]);
-    this._$eventSubscriptions.set([]);
-    this._$capabilities.set([]);
-    this._$permissionsValid.set(false);
-    this._$hasPermissionsStep.set(false);
+    this.$endpoints.set([]);
+    this.$eventSubscriptions.set([]);
+    this.$capabilities.set([]);
+    this.$permissionsValid.set(false);
+    this.$hasPermissionsStep.set(false);
     this._$definition.set(null);
-    this._$definitionName.set('');
+    this.$definitionName.set('');
     this._buildProgressSteps();
   }
 }

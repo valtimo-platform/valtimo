@@ -16,8 +16,6 @@
 
 package com.ritense.externalplugin.security
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.springframework.stereotype.Component
 import java.util.HexFormat
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -28,9 +26,9 @@ import javax.crypto.spec.SecretKeySpec
  *
  * The plugin host is expected to validate the same construction. Compromise scope is limited to
  * an attacker who can also obtain the shared secret.
+ *
+ * Not a Spring bean: instances are constructed directly per request with the host's secret.
  */
-@Component
-@SkipComponentScan
 class ExternalPluginHmacSigner(
     private val secret: String,
 ) {

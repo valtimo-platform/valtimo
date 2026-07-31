@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { Endpoint } from "./plugin-manifest.js";
+
 /**
  * Connection details for the event broker of the GZAC instance that owns a configuration. Pushed by
  * GZAC alongside the configuration — the host never configures a broker itself, because a single
@@ -71,6 +73,15 @@ export interface PluginConfiguration {
    * host function.
    */
   grantedCapabilities?: string[];
+  /**
+   * GZAC endpoints the admin granted at activation (Ant-style `{method, pattern}` entries — `*`
+   * matches one path segment, `**` any). The `gzac_api` host function refuses callbacks outside
+   * this list before they leave the host; GZAC's own allowlist filter remains the authoritative
+   * server-side gate. `undefined` means the owning GZAC instance predates endpoint pushing —
+   * the host then logs a warning and allows the call (backward compatibility), relying on the
+   * server-side filter alone.
+   */
+  grantedEndpoints?: Endpoint[];
   /**
    * Event broker of the owning GZAC instance. Absent when the instance has no broker configured —
    * the configuration then receives no platform events (actions still work).

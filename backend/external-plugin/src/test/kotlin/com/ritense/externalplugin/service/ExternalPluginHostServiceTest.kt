@@ -18,6 +18,7 @@ package com.ritense.externalplugin.service
 
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.EventQueueMode
+import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
@@ -284,7 +285,7 @@ class ExternalPluginHostServiceTest {
 
         assertThatThrownBy {
             service.updateEventQueue(missingId, EventQueueMode.LIVE, null)
-        }.isInstanceOf(IllegalArgumentException::class.java)
+        }.isInstanceOf(ExternalPluginNotFoundException::class.java)
             .hasMessageContaining("not found")
     }
 

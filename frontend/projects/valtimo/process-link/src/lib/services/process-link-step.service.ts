@@ -389,19 +389,6 @@ export class ProcessLinkStepService {
     this._currentStepIndex$.next(0);
   }
 
-  public setExternalPluginSteps(): void {
-    this._steps$.next([
-      {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.external_plugin'},
-      {label: 'configureExternalPlugin'},
-    ]);
-    this._currentStepIndex$.next(1);
-  }
-
-  public setSingleExternalPluginStep(): void {
-    this._steps$.next([{label: 'configureExternalPlugin'}]);
-    this._currentStepIndex$.next(0);
-  }
-
   public disableSteps(): void {
     this._disableSteps$.next(true);
   }
@@ -465,16 +452,6 @@ export class ProcessLinkStepService {
       case 'ui-component':
         this.setUIComponentStep();
         this.buttonService.showBackButton();
-        this.buttonService.showSaveButton();
-        break;
-      case 'external_plugin':
-        if (hasOneOption) {
-          this.setSingleExternalPluginStep();
-          this.buttonService.hideBackButton();
-        } else {
-          this.setExternalPluginSteps();
-          this.buttonService.showBackButton();
-        }
         this.buttonService.showSaveButton();
         break;
     }

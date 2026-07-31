@@ -41,6 +41,7 @@ function config(overrides: Partial<PluginConfiguration> = {}): PluginConfigurati
     serviceToken: "svc-token",
     gzacBaseUrl: "http://gzac:8080",
     eventSubscriptions: ["com.ritense.valtimo.document.created"],
+    grantedCapabilities: [],
     eventBroker: {
       amqpUrl: "amqp://broker",
       exchange: "valtimo-events",
@@ -87,6 +88,25 @@ describe("ConfigRepository against real Postgres", () => {
     const got = await repo.get("cfg-1");
 
     expect(got).toEqual(config()); // properties, eventSubscriptions and eventBroker rehydrate from JSONB
+  });
+
+  it("round-trips granted capabilities and endpoints; an absent endpoint list stays absent", async () => {
+    await repo.set("cfg-1", config({
+      grantedCapabilities: ["gzac_api", "frontend_data"],
+      grantedEndpoints: [{ method: "GET", pattern: "/api/v1/document/*" }],
+    }));
+    const got = await repo.get("cfg-1");
+    expect(got?.grantedCapabilities).toEqual(["gzac_api", "frontend_data"]);
+    expect(got?.grantedEndpoints).toEqual([{ method: "GET", pattern: "/api/v1/document/*" }]);
+
+    // No grantedEndpoints pushed (older GZAC) → SQL NULL → undefined, NOT [] — the host relies on
+    // this distinction: undefined = "no allowlist pushed, warn+allow", [] = "deny everything".
+    await repo.set("cfg-2", config({ configurationId: "cfg-2" }));
+    expect((await repo.get("cfg-2"))?.grantedEndpoints).toBeUndefined();
+
+    // An empty pushed list round-trips as an empty list (deny all).
+    await repo.set("cfg-3", config({ configurationId: "cfg-3", grantedEndpoints: [] }));
+    expect((await repo.get("cfg-3"))?.grantedEndpoints).toEqual([]);
   });
 
   it("returns undefined for a missing configuration", async () => {

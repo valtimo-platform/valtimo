@@ -125,8 +125,12 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
                 )
               : of(undefined),
             this._pluginService.availablePluginIds$,
-            this._externalPluginService.getConfigurations().pipe(catchError(() => of([] as ExternalPluginConfiguration[]))),
-            this._externalPluginService.getDefinitions().pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
+            this._externalPluginService
+              .getConfigurations()
+              .pipe(catchError(() => of([] as ExternalPluginConfiguration[]))),
+            this._externalPluginService
+              .getDefinitions()
+              .pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
             this._translateService.stream('key'),
           ]).pipe(
             map(([configs, availablePluginIds, externalConfigs, externalDefinitions]) => {
@@ -153,7 +157,9 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
                 return {
                   id: extConfig.id,
                   title: extConfig.title,
-                  description: def ? getExternalPluginDisplayName(def, lang) : 'External plugin',
+                  description: def
+                    ? getExternalPluginDisplayName(def, lang)
+                    : this._translateService.instant('processLinkConfiguration.externalPlugin'),
                   logo: def?.logoUrl ?? null,
                   payload: {
                     id: extConfig.id,
@@ -194,7 +200,8 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
     )
   );
 
-  public readonly selectedPluginConfiguration$ = this._pluginStateService.selectedPluginConfiguration$;
+  public readonly selectedPluginConfiguration$ =
+    this._pluginStateService.selectedPluginConfiguration$;
   public readonly selectedPluginDefinition$ = this._pluginStateService.selectedPluginDefinition$;
 
   private readonly _subscriptions = new Subscription();

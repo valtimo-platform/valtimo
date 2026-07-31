@@ -22,38 +22,46 @@ import {LoadingModule} from 'carbon-components-angular';
 import {map, Subscription, switchMap, tap, throwError} from 'rxjs';
 import {ExternalPluginIframeComponent} from '../external-plugin-iframe/external-plugin-iframe.component';
 import {FitPageDirective} from '@valtimo/components';
-import {ExternalPluginPageService} from '../../services';
-import {ExternalPluginMenuPage, ExternalPluginUserTokenResponse} from '../../models';
+import {ExternalPluginPageService, ExternalPluginSessionService} from '../../services';
+import {ExternalPluginMenuPage} from '../../models';
+import {derivePluginDataUrl} from '../../utils';
 
 type PageState = 'loading' | 'ready' | 'error';
 
 /**
  * Renders an external-plugin `page` bundle as a routed full page. Mirrors the case-tab spine:
- * resolves the page descriptor for the route's `configurationId`/`bundleKey`, mints a downscoped
- * user token (with a re-mint timer), derives the plugin data URL, and hosts the shared iframe. The
- * iframe is at an opaque origin and never receives the token (parent-proxy only).
+ * resolves the page descriptor for the route's `configurationId`/`bundleKey`, starts the
+ * downscoped user-token session (mint + re-mint with retry, owned by the page-scoped
+ * {@link ExternalPluginSessionService}), derives the plugin data URL, and hosts the shared iframe.
+ * The iframe is at an opaque origin and never receives the token (parent-proxy only).
  */
 @Component({
   templateUrl: './external-plugin-page.component.html',
   styleUrls: ['./external-plugin-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, LoadingModule, TranslateModule, ExternalPluginIframeComponent, FitPageDirective],
+  providers: [ExternalPluginSessionService],
+  imports: [
+    CommonModule,
+    LoadingModule,
+    TranslateModule,
+    ExternalPluginIframeComponent,
+    FitPageDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExternalPluginPageComponent implements OnInit, OnDestroy {
   public readonly $state = signal<PageState>('loading');
   public readonly $page = signal<ExternalPluginMenuPage | null>(null);
-  public readonly $userToken = signal<string | null>(null);
   public readonly $pluginDataUrl = signal<string | null>(null);
   public readonly $context = signal<Record<string, unknown>>({});
   public readonly $iframeReady = signal<boolean>(false);
 
   private readonly _subscriptions = new Subscription();
-  private _reMintHandle: number | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly pageService: ExternalPluginPageService
+    private readonly pageService: ExternalPluginPageService,
+    protected readonly sessionService: ExternalPluginSessionService
   ) {}
 
   public ngOnInit(): void {
@@ -76,23 +84,20 @@ export class ExternalPluginPageComponent implements OnInit, OnDestroy {
               map(pages => this._matchPage(pages, configurationId, bundleKey)),
               switchMap(page =>
                 page?.bundleUrl
-                  ? this.pageService
-                      .mintUserToken(page.configurationId)
-                      .pipe(map(token => ({page, token})))
+                  ? this.sessionService.startSession(page.configurationId).pipe(map(() => page))
                   : throwError(() => new Error('plugin-page-unavailable'))
               )
             )
           )
         )
         .subscribe({
-          next: ({page, token}) => this.onLoaded(page, token),
+          next: page => this.onLoaded(page),
           error: () => this.$state.set('error'),
         })
     );
   }
 
   public ngOnDestroy(): void {
-    this._clearReMint();
     this._subscriptions.unsubscribe();
   }
 
@@ -112,47 +117,10 @@ export class ExternalPluginPageComponent implements OnInit, OnDestroy {
     return forConfiguration[0] ?? null;
   }
 
-  private onLoaded(page: ExternalPluginMenuPage, token: ExternalPluginUserTokenResponse): void {
+  private onLoaded(page: ExternalPluginMenuPage): void {
     this.$page.set(page);
     this.$context.set({configurationId: page.configurationId});
-    this.$userToken.set(token.userToken);
-    this.$pluginDataUrl.set(this._derivePluginDataUrl(page.bundleUrl));
+    this.$pluginDataUrl.set(derivePluginDataUrl(page.bundleUrl));
     this.$state.set('ready');
-    this._scheduleReMint(page.configurationId, token.expiresAt);
-  }
-
-  /**
-   * Derives the plugin host data route (`{base}/data`) from the bundle URL
-   * (`{base}/bundles/page.html`). Returns null when the URL doesn't follow the bundle layout.
-   */
-  private _derivePluginDataUrl(bundleUrl: string | null): string | null {
-    if (!bundleUrl) return null;
-    const idx = bundleUrl.indexOf('/bundles/');
-    return idx >= 0 ? `${bundleUrl.substring(0, idx)}/data` : null;
-  }
-
-  /**
-   * Re-mints the downscoped user token shortly before its (≤15-min) expiry and pushes the fresh
-   * token into the iframe component input. Purely a parent-side concern — the iframe holds no token.
-   */
-  private _scheduleReMint(configurationId: string, expiresAt: string): void {
-    this._clearReMint();
-    const expiry = new Date(expiresAt).getTime();
-    const delay = Math.max(expiry - Date.now() - 60_000, 30_000);
-    this._reMintHandle = window.setTimeout(() => {
-      this._subscriptions.add(
-        this.pageService.mintUserToken(configurationId).subscribe(token => {
-          this.$userToken.set(token.userToken);
-          this._scheduleReMint(configurationId, token.expiresAt);
-        })
-      );
-    }, delay);
-  }
-
-  private _clearReMint(): void {
-    if (this._reMintHandle !== null) {
-      window.clearTimeout(this._reMintHandle);
-      this._reMintHandle = null;
-    }
   }
 }

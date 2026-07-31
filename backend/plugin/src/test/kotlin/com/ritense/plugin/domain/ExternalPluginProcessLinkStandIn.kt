@@ -27,13 +27,13 @@ import java.util.UUID
  * Test-only stand-in for `ExternalPluginProcessLink`: an STI sibling of [PluginProcessLink] that
  * also embeds [PluginConfigurationReference] on the same shared columns (`reference_type`,
  * `plugin_definition_key`, `plugin_definition_version`). Exists solely so
- * [PluginConfigurationReferenceStiSpikeTest] can build Hibernate metadata for two siblings sharing
+ * [PluginConfigurationReferenceSharedStiColumnsTest] can build Hibernate metadata for two siblings sharing
  * the embeddable without this module depending on the real
  * `com.ritense.externalplugin.domain.ExternalPluginProcessLink` in `:backend:external-plugin`.
  */
 @Entity
-@DiscriminatorValue("_sti_spike_external_plugin")
-class StiSpikeExternalPluginProcessLink(
+@DiscriminatorValue("_test_external_plugin_stand_in")
+class ExternalPluginProcessLinkStandIn(
     id: UUID,
     processDefinitionId: String,
     activityId: String,
@@ -46,9 +46,9 @@ class StiSpikeExternalPluginProcessLink(
     processDefinitionId,
     activityId,
     activityType,
-    "_sti_spike_external_plugin",
+    "_test_external_plugin_stand_in",
 ) {
-    override fun copy(id: UUID, processDefinitionId: String) = StiSpikeExternalPluginProcessLink(
+    override fun copy(id: UUID, processDefinitionId: String) = ExternalPluginProcessLinkStandIn(
         id = id,
         processDefinitionId = processDefinitionId,
         activityId = activityId,

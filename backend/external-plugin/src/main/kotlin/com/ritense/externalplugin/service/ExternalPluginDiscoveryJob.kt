@@ -17,15 +17,29 @@
 package com.ritense.externalplugin.service
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled
 
+// `open` (class and [poll]) because ShedLock's @SchedulerLock interceptor subclasses the bean with
+// CGLIB; this class is registered via @Bean, so the kotlin-spring allopen plugin does not open it.
 @SkipComponentScan
-class ExternalPluginDiscoveryJob(
+open class ExternalPluginDiscoveryJob(
     private val discoveryService: ExternalPluginDiscoveryService,
 ) {
 
+    /**
+     * ShedLock keeps the discovery cycle single-node in a multi-node deployment: without it, every
+     * node would concurrently health-check, upsert definitions and re-push configurations for the
+     * same hosts. `lockAtMostFor` caps a crashed holder's lock at 10 minutes (a slow cycle over
+     * many hosts can legitimately take a while now that each host gets HTTP timeouts).
+     */
     @Scheduled(fixedRateString = "\${valtimo.external-plugin.polling.rate:PT60S}")
-    fun poll() {
+    @SchedulerLock(
+        name = "ExternalPluginDiscoveryJob_poll",
+        lockAtLeastFor = "PT10S",
+        lockAtMostFor = "PT10M",
+    )
+    open fun poll() {
         discoveryService.discoverAll()
     }
 }

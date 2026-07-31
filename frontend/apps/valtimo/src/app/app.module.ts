@@ -1,7 +1,12 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {HttpBackend, HttpClient, provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
+import {
+  HttpBackend,
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
@@ -68,6 +73,7 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
+  ExternalPluginPageRoutingModule,
   ObjectenApiPluginModule,
   objectenApiPluginSpecification,
   ObjectTokenAuthenticationPluginModule,
@@ -90,14 +96,12 @@ export function tabsFactory() {
     [DefaultTabs.progress, CaseDetailTabProgressComponent],
     [DefaultTabs.audit, CaseDetailTabAuditComponent],
     [DefaultTabs.documents, CaseDetailTabDocumentsComponent],
-    [DefaultTabs.notes, CaseDetailTabNotesComponent]
+    [DefaultTabs.notes, CaseDetailTabNotesComponent],
   ]);
 }
 
 @NgModule({
-  declarations: [
-    AppComponent
-  ],
+  declarations: [AppComponent],
   bootstrap: [AppComponent],
   imports: [
     AccessControlManagementModule,
@@ -124,6 +128,7 @@ export function tabsFactory() {
     DecisionModule,
     DisplayWidgetTypesModule,
     DocumentModule,
+    ExternalPluginPageRoutingModule,
     FormFlowManagementModule,
     FormManagementModule,
     FormModule,
@@ -159,7 +164,7 @@ export function tabsFactory() {
         provide: TranslateLoader,
         useFactory: CustomMultiTranslateHttpLoaderFactory,
         deps: [HttpBackend, HttpClient, ConfigService, LocalizationService],
-      }
+      },
     }),
   ],
   providers: [
@@ -168,11 +173,11 @@ export function tabsFactory() {
       useValue: [
         objectenApiPluginSpecification,
         objecttypenApiPluginSpecification,
-        objectTokenAuthenticationPluginSpecification
-      ]
+        objectTokenAuthenticationPluginSpecification,
+      ],
     },
-    provideHttpClient(withInterceptorsFromDi())
-  ]
+    provideHttpClient(withInterceptorsFromDi()),
+  ],
 })
 export class AppModule {
   constructor(injector: Injector) {

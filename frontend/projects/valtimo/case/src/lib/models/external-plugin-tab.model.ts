@@ -28,16 +28,6 @@ interface ExternalPluginTabContent {
   context: ExternalPluginTabContext;
 }
 
-interface ExternalPluginUserTokenResponse {
-  userToken: string;
-  expiresAt: string;
-}
-
 type ExternalPluginTabState = 'loading' | 'ready' | 'error';
 
-export {
-  ExternalPluginTabContext,
-  ExternalPluginTabContent,
-  ExternalPluginTabState,
-  ExternalPluginUserTokenResponse,
-};
+export {ExternalPluginTabContext, ExternalPluginTabContent, ExternalPluginTabState};

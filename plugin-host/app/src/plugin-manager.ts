@@ -19,14 +19,13 @@ import createPlugin from "@extism/extism";
 import {mkdir, readdir, readFile, rm, writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {existsSync} from "node:fs";
-import type {HostLogger, PluginManifest} from "./models/index.js";
+import type {HostLogger, PluginConfiguration, PluginManifest} from "./models/index.js";
 import {createGzacApiHostFunction, type GzacApiCallContext} from "./host-functions/gzac-api.js";
 import type {KvRepository} from "./db/kv-repository.js";
 import type {LogRepository} from "./db/log-repository.js";
 import {createKvHostFunction} from "./host-functions/kv.js";
 import {createLogHostFunction} from "./host-functions/log.js";
 import {createHttpRequestHostFunction} from "./host-functions/http-request.js";
-import type {ConfigRepository} from "./db/config-repository.js";
 
 interface LoadedPlugin {
   pluginId: string;
@@ -38,8 +37,45 @@ interface LoadedPlugin {
    * Serializes access to {@link extismPlugin}. Extism instances are not reentrant — a second
    * `plugin.call` (or a concurrent instance creation) while one is in flight throws "plugin is not
    * reentrant". Calls chain through this promise so only one runs at a time per loaded plugin.
+   * Unload/remove and idle eviction chain through the same promise, so an instance is never closed
+   * mid-execution.
    */
   lock: Promise<unknown>;
+  /** When the instance last finished a call — drives idle eviction. */
+  lastUsedAt: number;
+}
+
+/**
+ * The subset of the configuration store the manager needs: per-call grant lookups. Satisfied by
+ * both `ConfigRegistry` (cached — what production wires in) and a bare `ConfigRepository`.
+ */
+export interface ConfigProvider {
+  get(configurationId: string): Promise<PluginConfiguration | undefined>;
+}
+
+export interface PluginManagerOptions {
+  /** Allow plain-http targets in `http_request` (dev only). */
+  allowHttp?: boolean;
+  /** Allow private/loopback targets in `http_request` (dev only). */
+  allowPrivateNetwork?: boolean;
+  /** Hard wall-clock limit per Wasm call; Extism cancels the call when exceeded. */
+  wasmTimeoutMs?: number;
+  /** Cap on the module's linear memory in 64 KiB pages; 0 disables the cap. */
+  wasmMaxMemoryPages?: number;
+  /** Timeout for the `gzac_api` callback fetch. */
+  gzacApiTimeoutMs?: number;
+  /** Idle Extism instances are closed after this long without a call; 0 disables eviction. */
+  instanceIdleTtlMs?: number;
+}
+
+const DEFAULT_WASM_TIMEOUT_MS = 30_000;
+const DEFAULT_WASM_MAX_MEMORY_PAGES = 4096; // 64 KiB/page → 256 MiB
+const DEFAULT_GZAC_API_TIMEOUT_MS = 60_000;
+const DEFAULT_INSTANCE_IDLE_TTL_MS = 10 * 60 * 1000;
+
+/** Extism cancels a timed-out call with "EXTISM: call canceled due to timeout". */
+function isWasmTimeoutError(err: unknown): boolean {
+  return err instanceof Error && /canceled due to timeout/i.test(err.message);
 }
 
 /**
@@ -52,28 +88,45 @@ export class PluginManager {
   private plugins = new Map<string, LoadedPlugin>();
   private logger: HostLogger;
   private storageDir: string;
-  private configRepository: ConfigRepository;
+  private configProvider: ConfigProvider;
   private kvRepository: KvRepository;
   private logRepository: LogRepository;
-  private allowHttp: boolean;
-  private allowPrivateNetwork: boolean;
+  private readonly allowHttp: boolean;
+  private readonly allowPrivateNetwork: boolean;
+  private readonly wasmTimeoutMs: number;
+  private readonly wasmMaxMemoryPages: number;
+  private readonly gzacApiTimeoutMs: number;
+  private readonly instanceIdleTtlMs: number;
+  private evictionTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     storageDir: string,
     logger: HostLogger,
-    configRepository: ConfigRepository,
+    configProvider: ConfigProvider,
     kvRepository: KvRepository,
     logRepository: LogRepository,
-    allowHttp: boolean = false,
-    allowPrivateNetwork: boolean = false
+    options: PluginManagerOptions = {}
   ) {
     this.storageDir = storageDir;
     this.logger = logger.child({ component: "PluginManager" });
-    this.configRepository = configRepository;
+    this.configProvider = configProvider;
     this.kvRepository = kvRepository;
     this.logRepository = logRepository;
-    this.allowHttp = allowHttp;
-    this.allowPrivateNetwork = allowPrivateNetwork;
+    this.allowHttp = options.allowHttp ?? false;
+    this.allowPrivateNetwork = options.allowPrivateNetwork ?? false;
+    this.wasmTimeoutMs = options.wasmTimeoutMs ?? DEFAULT_WASM_TIMEOUT_MS;
+    this.wasmMaxMemoryPages = options.wasmMaxMemoryPages ?? DEFAULT_WASM_MAX_MEMORY_PAGES;
+    this.gzacApiTimeoutMs = options.gzacApiTimeoutMs ?? DEFAULT_GZAC_API_TIMEOUT_MS;
+    this.instanceIdleTtlMs = options.instanceIdleTtlMs ?? DEFAULT_INSTANCE_IDLE_TTL_MS;
+
+    if (this.instanceIdleTtlMs > 0) {
+      // Periodic sweep closing instances that have been idle longer than the TTL. Cached Extism
+      // instances each hold a worker thread + Wasm memory, so a burst of activity would otherwise
+      // pin that footprint forever. `unref()` keeps the timer from holding the process open.
+      const sweepEvery = Math.min(this.instanceIdleTtlMs, 60_000);
+      this.evictionTimer = setInterval(() => this.evictIdleInstances(), sweepEvery);
+      this.evictionTimer.unref?.();
+    }
   }
 
   private key(pluginId: string, version: string): string {
@@ -121,6 +174,7 @@ export class PluginManager {
       wasmPath,
       extismPlugin: null,
       lock: Promise.resolve(),
+      lastUsedAt: Date.now(),
     });
 
     this.logger.info({ pluginId, version }, "Plugin loaded");
@@ -128,21 +182,28 @@ export class PluginManager {
 
   /**
    * Unload a plugin version, freeing its Wasm instance.
+   *
+   * The entry is removed from the map first (new calls fail fast with "Plugin not found"), then
+   * the instance is closed through the same per-plugin lock every call runs on — so an in-flight
+   * call finishes before its instance is closed rather than being killed mid-execution.
    */
   async unloadPlugin(pluginId: string, version: string): Promise<void> {
     const k = this.key(pluginId, version);
     const loaded = this.plugins.get(k);
     if (!loaded) return;
 
-    if (loaded.extismPlugin) {
-      try {
-        await loaded.extismPlugin.close();
-      } catch {
-        // Ignore close errors
-      }
-    }
-
     this.plugins.delete(k);
+    await this.runExclusive(loaded, async () => {
+      if (loaded.extismPlugin) {
+        try {
+          await loaded.extismPlugin.close();
+        } catch {
+          // Ignore close errors
+        }
+        loaded.extismPlugin = null;
+      }
+    });
+
     this.logger.info({ pluginId, version }, "Plugin unloaded");
   }
 
@@ -192,7 +253,8 @@ export class PluginManager {
   }
 
   /**
-   * Remove a plugin version from disk and memory.
+   * Remove a plugin version from disk and memory. Waits for an in-flight call to finish (via
+   * {@link unloadPlugin}'s lock) before the instance is closed and the files are deleted.
    */
   async removePlugin(pluginId: string, version: string): Promise<void> {
     await this.unloadPlugin(pluginId, version);
@@ -219,7 +281,8 @@ export class PluginManager {
    *
    * `runInWorker: true` is required so that async host functions (e.g. `gzac_api`, which fetches
    * from GZAC) can suspend the Wasm call until the JS promise resolves. Without this, async host
-   * functions only work on Node 23+ via JSPI.
+   * functions only work on Node 23+ via JSPI. It is also what makes `timeoutMs` enforceable —
+   * Extism cancels a call that exceeds it by terminating and restarting the worker.
    */
   private async getOrCreateExtismPlugin(
     loaded: LoadedPlugin
@@ -232,9 +295,18 @@ export class PluginManager {
       useWasi: true,
       enableWasiOutput: true,
       runInWorker: true,
+      // Execution limits: a plugin stuck in an infinite loop is cancelled after wasmTimeoutMs
+      // (surfacing as a HOST_ERROR to the caller), and its linear memory cannot grow beyond
+      // wasmMaxMemoryPages (0 = uncapped).
+      timeoutMs: this.wasmTimeoutMs,
+      ...(this.wasmMaxMemoryPages > 0
+        ? { memory: { maxPages: this.wasmMaxMemoryPages } }
+        : {}),
       functions: {
         "extism:host/user": {
-          gzac_api: createGzacApiHostFunction(this.logger),
+          gzac_api: createGzacApiHostFunction(this.logger, {
+            timeoutMs: this.gzacApiTimeoutMs,
+          }),
           kv: createKvHostFunction(this.logger, this.kvRepository),
           log: createLogHostFunction(this.logger, this.logRepository),
           http_request: createHttpRequestHostFunction(
@@ -267,6 +339,126 @@ export class PluginManager {
     return run;
   }
 
+  /** Closes cached instances that haven't served a call for {@link instanceIdleTtlMs}. */
+  private evictIdleInstances(): void {
+    const now = Date.now();
+    for (const loaded of this.plugins.values()) {
+      if (!loaded.extismPlugin || now - loaded.lastUsedAt < this.instanceIdleTtlMs) continue;
+      // Through the lock, so an instance is never closed while a call is executing. Re-check
+      // idleness inside: a call may have queued between the sweep and the lock being free.
+      void this.runExclusive(loaded, async () => {
+        if (!loaded.extismPlugin || Date.now() - loaded.lastUsedAt < this.instanceIdleTtlMs) {
+          return;
+        }
+        try {
+          await loaded.extismPlugin.close();
+        } catch {
+          // Ignore close errors
+        }
+        loaded.extismPlugin = null;
+        this.logger.info(
+          { pluginId: loaded.pluginId, version: loaded.version },
+          "Evicted idle plugin instance"
+        );
+      });
+    }
+  }
+
+  /** Stops the idle-eviction sweep and closes every cached instance. Call on shutdown. */
+  async close(): Promise<void> {
+    if (this.evictionTimer) {
+      clearInterval(this.evictionTimer);
+      this.evictionTimer = null;
+    }
+    await Promise.all(
+      Array.from(this.plugins.values()).map((loaded) =>
+        this.runExclusive(loaded, async () => {
+          if (loaded.extismPlugin) {
+            try {
+              await loaded.extismPlugin.close();
+            } catch {
+              // Ignore close errors
+            }
+            loaded.extismPlugin = null;
+          }
+        })
+      )
+    );
+  }
+
+  /**
+   * Resolves the grants (capabilities + gzac_api endpoint allowlist) the admin gave a
+   * configuration. Read per call so a re-push takes effect immediately.
+   */
+  private async resolveGrants(
+    configurationId: string | undefined
+  ): Promise<Pick<GzacApiCallContext, "grantedCapabilities" | "grantedEndpoints">> {
+    if (!configurationId) {
+      return { grantedCapabilities: [] };
+    }
+    const config = await this.configProvider.get(configurationId);
+    return {
+      grantedCapabilities: config?.grantedCapabilities ?? [],
+      grantedEndpoints: config?.grantedEndpoints,
+    };
+  }
+
+  /**
+   * Invokes one exported plugin function with exclusive access to the Extism instance and parses
+   * its JSON reply. All four exports (`handle_action` / `handle_event` / `handle_request` /
+   * `handle_submit`) funnel through here; the public wrappers only shape their input/host-context.
+   *
+   * A call cancelled by the Wasm timeout is rethrown with a clear message — the routes map any
+   * thrown error to a 5xx `HOST_ERROR` result — and the cached instance is dropped so the next
+   * call starts from a fresh one.
+   */
+  private async callExport<T extends { status?: unknown }>(
+    pluginId: string,
+    version: string,
+    exportName: string,
+    wasmInput: string,
+    hostCtx: GzacApiCallContext,
+    logContext: Record<string, unknown>
+  ): Promise<T> {
+    const k = this.key(pluginId, version);
+    const loaded = this.plugins.get(k);
+
+    if (!loaded) {
+      throw new Error(`Plugin not found: ${pluginId}@${version}`);
+    }
+
+    this.logger.debug({ pluginId, version, ...logContext }, `Calling ${exportName}`);
+
+    const output = await this.runExclusive(loaded, async () => {
+      const plugin = await this.getOrCreateExtismPlugin(loaded);
+      try {
+        const result = await plugin.call(exportName, wasmInput, hostCtx);
+        if (!result) {
+          throw new Error(`${exportName} returned null for ${pluginId}@${version}`);
+        }
+        return JSON.parse(result.text()) as T;
+      } catch (err) {
+        if (isWasmTimeoutError(err)) {
+          loaded.extismPlugin = null;
+          void plugin.close().catch(() => {});
+          throw new Error(
+            `Plugin execution timed out after ${this.wasmTimeoutMs}ms (${pluginId}@${version} ${exportName})`
+          );
+        }
+        throw err;
+      } finally {
+        loaded.lastUsedAt = Date.now();
+      }
+    });
+
+    this.logger.debug(
+      { pluginId, version, ...logContext, status: output.status },
+      `${exportName} completed`
+    );
+
+    return output;
+  }
+
   /**
    * Call the handle_action exported function on a plugin.
    *
@@ -274,11 +466,6 @@ export class PluginManager {
    * never serialized into the Wasm input. Host functions (e.g. `gzac_api`) read them via
    * `callContext.hostContext()`.
    */
-  private async resolveCapabilities(configurationId: string): Promise<string[]> {
-    const config = await this.configRepository.get(configurationId);
-    return config?.grantedCapabilities ?? [];
-  }
-
   async callAction(
     pluginId: string,
     version: string,
@@ -300,13 +487,6 @@ export class PluginManager {
     errorCode?: string;
     errorMessage?: string;
   }> {
-    const k = this.key(pluginId, version);
-    const loaded = this.plugins.get(k);
-
-    if (!loaded) {
-      throw new Error(`Plugin not found: ${pluginId}@${version}`);
-    }
-
     const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
     const wasmInput = JSON.stringify({
       actionKey,
@@ -319,29 +499,10 @@ export class PluginManager {
       pluginVersion: version,
       serviceToken,
       gzacBaseUrl,
-      grantedCapabilities: await this.resolveCapabilities(input.configurationId),
+      ...(await this.resolveGrants(input.configurationId)),
     };
 
-    this.logger.debug(
-      { pluginId, version, actionKey },
-      "Calling handle_action"
-    );
-
-    const output = await this.runExclusive(loaded, async () => {
-      const plugin = await this.getOrCreateExtismPlugin(loaded);
-      const result = await plugin.call("handle_action", wasmInput, hostCtx);
-      if (!result) {
-        throw new Error(`handle_action returned null for ${pluginId}@${version}`);
-      }
-      return JSON.parse(result.text());
-    });
-
-    this.logger.debug(
-      { pluginId, version, actionKey, status: output.status },
-      "handle_action completed"
-    );
-
-    return output;
+    return this.callExport(pluginId, version, "handle_action", wasmInput, hostCtx, { actionKey });
   }
 
   /**
@@ -362,13 +523,6 @@ export class PluginManager {
       gzacBaseUrl: string;
     }
   ): Promise<{ status: string; errorCode?: string; errorMessage?: string }> {
-    const k = this.key(pluginId, version);
-    const loaded = this.plugins.get(k);
-
-    if (!loaded) {
-      throw new Error(`Plugin not found: ${pluginId}@${version}`);
-    }
-
     // The Wasm input is the EventInput shape: the event envelope/payload plus the configuration.
     const wasmInput = JSON.stringify({
       ...input.event,
@@ -381,27 +535,11 @@ export class PluginManager {
       pluginVersion: version,
       serviceToken: input.serviceToken,
       gzacBaseUrl: input.gzacBaseUrl,
-      grantedCapabilities: await this.resolveCapabilities(input.configurationId),
+      ...(await this.resolveGrants(input.configurationId)),
     };
 
     const eventType = (input.event as { type?: string }).type;
-    this.logger.debug({ pluginId, version, eventType }, "Calling handle_event");
-
-    const output = await this.runExclusive(loaded, async () => {
-      const plugin = await this.getOrCreateExtismPlugin(loaded);
-      const result = await plugin.call("handle_event", wasmInput, hostCtx);
-      if (!result) {
-        throw new Error(`handle_event returned null for ${pluginId}@${version}`);
-      }
-      return JSON.parse(result.text());
-    });
-
-    this.logger.debug(
-      { pluginId, version, eventType, status: output.status },
-      "handle_event completed"
-    );
-
-    return output;
+    return this.callExport(pluginId, version, "handle_event", wasmInput, hostCtx, { eventType });
   }
 
   /**
@@ -428,13 +566,6 @@ export class PluginManager {
       userToken?: string;
     }
   ): Promise<{ status: number; headers?: Record<string, string>; body?: unknown }> {
-    const k = this.key(pluginId, version);
-    const loaded = this.plugins.get(k);
-
-    if (!loaded) {
-      throw new Error(`Plugin not found: ${pluginId}@${version}`);
-    }
-
     // serviceToken / gzacBaseUrl / userToken are host-only — destructured out so they are never
     // serialized into the Wasm input the plugin sees. They reach GZAC only via the gzac_api host
     // function, which reads them from the per-call host context below.
@@ -451,31 +582,13 @@ export class PluginManager {
       serviceToken: serviceToken ?? "",
       gzacBaseUrl: gzacBaseUrl ?? "",
       userToken: userToken,
-      grantedCapabilities: input.configurationId
-        ? await this.resolveCapabilities(input.configurationId)
-        : [],
+      ...(await this.resolveGrants(input.configurationId)),
     };
 
-    this.logger.debug(
-      { pluginId, version, method: input.method, path: input.path },
-      "Calling handle_request"
-    );
-
-    const output = await this.runExclusive(loaded, async () => {
-      const plugin = await this.getOrCreateExtismPlugin(loaded);
-      const result = await plugin.call("handle_request", wasmInput, hostCtx);
-      if (!result) {
-        throw new Error(`handle_request returned null for ${pluginId}@${version}`);
-      }
-      return JSON.parse(result.text());
+    return this.callExport(pluginId, version, "handle_request", wasmInput, hostCtx, {
+      method: input.method,
+      path: input.path,
     });
-
-    this.logger.debug(
-      { pluginId, version, path: input.path, status: output.status },
-      "handle_request completed"
-    );
-
-    return output;
   }
 
   /**
@@ -507,13 +620,6 @@ export class PluginManager {
     errorMessage?: string;
     fieldErrors?: Record<string, string>;
   }> {
-    const k = this.key(pluginId, version);
-    const loaded = this.plugins.get(k);
-
-    if (!loaded) {
-      throw new Error(`Plugin not found: ${pluginId}@${version}`);
-    }
-
     // Wasm input excludes serviceToken / gzacBaseUrl — they're host-only.
     const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
     const wasmInput = JSON.stringify({
@@ -527,26 +633,10 @@ export class PluginManager {
       pluginVersion: version,
       serviceToken,
       gzacBaseUrl,
-      grantedCapabilities: await this.resolveCapabilities(input.configurationId),
+      ...(await this.resolveGrants(input.configurationId)),
     };
 
-    this.logger.debug({ pluginId, version, submitKey }, "Calling handle_submit");
-
-    const output = await this.runExclusive(loaded, async () => {
-      const plugin = await this.getOrCreateExtismPlugin(loaded);
-      const result = await plugin.call("handle_submit", wasmInput, hostCtx);
-      if (!result) {
-        throw new Error(`handle_submit returned null for ${pluginId}@${version}`);
-      }
-      return JSON.parse(result.text());
-    });
-
-    this.logger.debug(
-      { pluginId, version, submitKey, status: output.status },
-      "handle_submit completed"
-    );
-
-    return output;
+    return this.callExport(pluginId, version, "handle_submit", wasmInput, hostCtx, { submitKey });
   }
 
   /**

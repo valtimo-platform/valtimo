@@ -19,7 +19,7 @@ import {ConfigRegistry} from "../config-registry.js";
 import {PluginManager} from "../plugin-manager.js";
 import {AppConfig} from "../config.js";
 import {EventConsumerManager} from "../rabbitmq/event-consumer.js";
-import type {EventBrokerConfig} from "../models/index.js";
+import type {Endpoint, EventBrokerConfig} from "../models/index.js";
 import {createHmacAuthHook} from "../security/hmac-auth.js";
 
 const EXCHANGE_TYPES = ["fanout", "topic", "direct"] as const;
@@ -68,6 +68,27 @@ function normalizeStringArray(input: unknown): string[] {
 }
 
 /**
+ * Normalizes the `grantedEndpoints` list from a GZAC push body. Returns `undefined` when the push
+ * carries no array at all — an older GZAC instance that doesn't send granted endpoints — which the
+ * host treats as "no host-side allowlist" (warn + allow; GZAC still enforces server-side). A pushed
+ * array is filtered down to well-formed `{method, pattern}` entries; an empty result denies all.
+ */
+function normalizeEndpoints(input: unknown): Endpoint[] | undefined {
+  if (!Array.isArray(input)) return undefined;
+  return input
+    .filter(
+      (x): x is Endpoint =>
+        typeof x === "object" &&
+        x !== null &&
+        typeof (x as Endpoint).method === "string" &&
+        (x as Endpoint).method.length > 0 &&
+        typeof (x as Endpoint).pattern === "string" &&
+        (x as Endpoint).pattern.length > 0
+    )
+    .map((x) => ({ method: x.method, pattern: x.pattern }));
+}
+
+/**
  * Configuration push endpoints.
  *
  * GZAC pushes decrypted configuration here on activation.
@@ -106,6 +127,7 @@ export async function hostConfigurationRoutes(
       gzacBaseUrl: string;
       eventSubscriptions?: unknown;
       grantedCapabilities?: unknown;
+      grantedEndpoints?: unknown;
       eventBroker?: unknown;
     };
   }>("/api/host/configurations/:configId", { config: { rawBody: true } }, async (request, reply) => {
@@ -138,6 +160,7 @@ export async function hostConfigurationRoutes(
     const eventBroker = normalizeEventBroker(request.body.eventBroker);
     const eventSubscriptions = normalizeStringArray(request.body.eventSubscriptions);
     const grantedCapabilities = normalizeStringArray(request.body.grantedCapabilities);
+    const grantedEndpoints = normalizeEndpoints(request.body.grantedEndpoints);
 
     await configRegistry.set(configId, {
       configurationId: configId,
@@ -148,6 +171,7 @@ export async function hostConfigurationRoutes(
       gzacBaseUrl,
       eventSubscriptions,
       grantedCapabilities,
+      grantedEndpoints,
       eventBroker,
     });
     await eventConsumerManager.sync();
@@ -176,6 +200,7 @@ export async function hostConfigurationRoutes(
       serviceToken?: string;
       gzacBaseUrl?: string;
       eventSubscriptions?: unknown;
+      grantedEndpoints?: unknown;
       eventBroker?: unknown;
     };
   }>("/api/host/configurations/:configId", { config: { rawBody: true } }, async (request, reply) => {
@@ -197,6 +222,11 @@ export async function hostConfigurationRoutes(
       "eventSubscriptions" in request.body
         ? normalizeStringArray(request.body.eventSubscriptions)
         : existing.eventSubscriptions;
+    // And the granted endpoint allowlist — only replace when supplied.
+    const grantedEndpoints =
+      "grantedEndpoints" in request.body
+        ? normalizeEndpoints(request.body.grantedEndpoints)
+        : existing.grantedEndpoints;
 
     await configRegistry.set(configId, {
       ...existing,
@@ -204,6 +234,7 @@ export async function hostConfigurationRoutes(
       serviceToken: request.body.serviceToken ?? existing.serviceToken,
       gzacBaseUrl: request.body.gzacBaseUrl ?? existing.gzacBaseUrl,
       eventSubscriptions,
+      grantedEndpoints,
       eventBroker,
     });
     await eventConsumerManager.sync();

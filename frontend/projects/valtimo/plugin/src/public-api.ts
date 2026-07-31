@@ -22,6 +22,7 @@ export * from './lib/services';
 export * from './lib/models';
 export * from './lib/pipes';
 export * from './lib/constants';
+export * from './lib/utils';
 /* plugin configuration container */
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.component';
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.module';

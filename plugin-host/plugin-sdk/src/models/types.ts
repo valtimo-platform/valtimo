@@ -161,7 +161,13 @@ export interface Endpoint {
   pattern: string;
 }
 
-export const HOST_CAPABILITIES = ["gzac_api", "http_request", "kv", "log"] as const;
+/**
+ * Capabilities an admin can grant a configuration at activation. The first four gate the host
+ * functions of the same name; `frontend_data` gates the host's public
+ * `POST /plugins/:id/:version/data` route (the plugin iframe's `handle_request` channel) — without
+ * it the host refuses to execute `handle_request` for that configuration.
+ */
+export const HOST_CAPABILITIES = ["gzac_api", "http_request", "kv", "log", "frontend_data"] as const;
 export type HostCapability = (typeof HOST_CAPABILITIES)[number];
 
 /**
@@ -215,6 +221,12 @@ export interface PluginManifest {
   pluginId: string;
   version: string;
   provider?: string;
+  /**
+   * Version of `@valtimo/plugin-sdk` the plugin was packed with. Written automatically by the
+   * pack tool (`valtimo-plugin-pack`); plugin authors don't set it by hand. The host records it
+   * on upload so operators can tell which SDK/ABI a stored plugin targets.
+   */
+  sdkVersion?: string;
   compatibility?: {
     minGzacVersion?: string;
     maxGzacVersion?: string;

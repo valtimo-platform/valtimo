@@ -29,7 +29,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry
  * Verifies that Hibernate accepts the shared [PluginConfigurationReference] embeddable — mapping
  * columns `reference_type` / `plugin_definition_key` / `plugin_definition_version` — being embedded
  * by *two* single-table-inheritance siblings of `process_link`: [PluginProcessLink] (existing) and a
- * stand-in for the planned `ExternalPluginProcessLink` rework ([StiSpikeExternalPluginProcessLink]
+ * stand-in for the planned `ExternalPluginProcessLink` rework ([ExternalPluginProcessLinkStandIn]
  * below, a minimal local copy so this test does not depend on the not-yet-changed real entity).
  *
  * `buildSessionFactory()` (not just `buildMetadata()`) is exercised — no DataSource/connection is
@@ -57,7 +57,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry
  * Conclusion: the shared-column design in D1 is safe to implement as specified. The plan's fallback
  * (distinct external column names, e.g. `external_plugin_reference_type`) is **not needed**.
  */
-class PluginConfigurationReferenceStiSpikeTest {
+class PluginConfigurationReferenceSharedStiColumnsTest {
 
     private var registry: StandardServiceRegistry? = null
 
@@ -78,7 +78,7 @@ class PluginConfigurationReferenceStiSpikeTest {
         val metadataSources = MetadataSources(registry)
             .addAnnotatedClass(com.ritense.processlink.domain.ProcessLink::class.java)
             .addAnnotatedClass(PluginProcessLink::class.java)
-            .addAnnotatedClass(StiSpikeExternalPluginProcessLink::class.java)
+            .addAnnotatedClass(ExternalPluginProcessLinkStandIn::class.java)
 
         val metadata = metadataSources.buildMetadata()
         // buildSessionFactory (not just buildMetadata) triggers the persister/mapping-model build,
@@ -93,6 +93,6 @@ class PluginConfigurationReferenceStiSpikeTest {
         // Both siblings' persistent classes exist and Hibernate could resolve the shared columns
         // without throwing — the true assertion is that buildSessionFactory() above did not raise.
         assertThat(metadata.getEntityBinding(PluginProcessLink::class.java.name)).isNotNull
-        assertThat(metadata.getEntityBinding(StiSpikeExternalPluginProcessLink::class.java.name)).isNotNull
+        assertThat(metadata.getEntityBinding(ExternalPluginProcessLinkStandIn::class.java.name)).isNotNull
     }
 }

@@ -164,6 +164,12 @@ interface ExternalPluginConfiguration {
 interface ExternalPluginUserTokenResponse {
   userToken: string;
   expiresAt: string;
+  /**
+   * The configuration's granted endpoints, so the iframe host can precheck proxied GZAC calls
+   * client-side (audit-C1). An empty array means the configuration grants nothing (deny-all in the
+   * precheck); the server-side allowlist remains authoritative either way.
+   */
+  grantedEndpoints: Array<ExternalPluginEndpoint>;
 }
 
 /**

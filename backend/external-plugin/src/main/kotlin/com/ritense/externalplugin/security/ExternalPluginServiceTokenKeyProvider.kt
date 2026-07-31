@@ -16,40 +16,20 @@
 
 package com.ritense.externalplugin.security
 
-import com.ritense.valtimo.contract.security.jwt.provider.SecretKeyProvider
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.SignatureAlgorithm
-import io.jsonwebtoken.security.Keys
-import java.security.Key
-import java.security.MessageDigest
-import javax.crypto.SecretKey
-
 /**
- * JWT signing key for external-plugin service tokens. Derived from `valtimo.plugin.encryption-secret`
- * via SHA-256 so the same configuration works regardless of the secret's raw length (AES-128 uses
- * 16 bytes; HMAC-SHA256 needs 32). The hash gives us domain separation as a side effect — if a
- * service token is exfiltrated, the AES key can't be recovered from it.
+ * JWT signing key for external-plugin **service** tokens. Derived from
+ * `valtimo.plugin.encryption-secret` with the `service` domain suffix (see
+ * [ExternalPluginTokenKeyProvider]) so a service token can never validate as a user token or
+ * vice versa.
  */
-class ExternalPluginServiceTokenKeyProvider(secret: String) : SecretKeyProvider {
+class ExternalPluginServiceTokenKeyProvider(secret: String) :
+    ExternalPluginTokenKeyProvider(secret, DOMAIN) {
 
-    init {
-        require(secret.isNotBlank()) { "valtimo.plugin.encryption-secret must not be blank" }
-    }
-
-    val signingKey: SecretKey = Keys.hmacShaKeyFor(
-        MessageDigest.getInstance("SHA-256").digest(secret.toByteArray(Charsets.UTF_8))
-    )
-
-    @Suppress("DEPRECATION")
-    override fun supports(algorithm: SignatureAlgorithm, claims: Claims): Boolean =
-        algorithm == SignatureAlgorithm.HS256 && TOKEN_TYPE == claims[TYPE_CLAIM]
-
-    @Suppress("DEPRECATION")
-    override fun getKey(algorithm: SignatureAlgorithm): Key? =
-        if (algorithm == SignatureAlgorithm.HS256) signingKey else null
+    override val tokenType: String = TOKEN_TYPE
 
     companion object {
-        const val TYPE_CLAIM = "type"
+        const val TYPE_CLAIM = ExternalPluginTokenKeyProvider.TYPE_CLAIM
         const val TOKEN_TYPE = "external_plugin_service"
+        private const val DOMAIN = "service"
     }
 }

@@ -16,43 +16,25 @@
 
 package com.ritense.externalplugin.security
 
-import com.ritense.valtimo.contract.security.jwt.provider.SecretKeyProvider
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.SignatureAlgorithm
-import io.jsonwebtoken.security.Keys
-import java.security.Key
-import java.security.MessageDigest
-import javax.crypto.SecretKey
-
 /**
- * JWT signing key for external-plugin **user** tokens. Derived from `valtimo.plugin.encryption-secret`
- * via SHA-256, exactly like [ExternalPluginServiceTokenKeyProvider] — the `type` claim is what tells
- * the two token kinds apart, not the key.
+ * JWT signing key for external-plugin **user** tokens. Derived from
+ * `valtimo.plugin.encryption-secret` with the `user` domain suffix (see
+ * [ExternalPluginTokenKeyProvider]), giving user tokens a key of their own — distinct from the
+ * service-token key — so the two token kinds are cryptographically separated, not merely
+ * separated by the `type` claim.
  *
  * Unlike the service token, a user token is **not** a system credential: it carries the logged-in
  * user's login and roles so GZAC runs normal PBAC against them. Endpoint reach is further intersected
  * with the plugin configuration's granted-endpoint allowlist (see [ExternalPluginEndpointAllowlistFilter]).
  */
-class ExternalPluginUserTokenKeyProvider(secret: String) : SecretKeyProvider {
+class ExternalPluginUserTokenKeyProvider(secret: String) :
+    ExternalPluginTokenKeyProvider(secret, DOMAIN) {
 
-    init {
-        require(secret.isNotBlank()) { "valtimo.plugin.encryption-secret must not be blank" }
-    }
-
-    val signingKey: SecretKey = Keys.hmacShaKeyFor(
-        MessageDigest.getInstance("SHA-256").digest(secret.toByteArray(Charsets.UTF_8))
-    )
-
-    @Suppress("DEPRECATION")
-    override fun supports(algorithm: SignatureAlgorithm, claims: Claims): Boolean =
-        algorithm == SignatureAlgorithm.HS256 && TOKEN_TYPE == claims[TYPE_CLAIM]
-
-    @Suppress("DEPRECATION")
-    override fun getKey(algorithm: SignatureAlgorithm): Key? =
-        if (algorithm == SignatureAlgorithm.HS256) signingKey else null
+    override val tokenType: String = TOKEN_TYPE
 
     companion object {
-        const val TYPE_CLAIM = "type"
+        const val TYPE_CLAIM = ExternalPluginTokenKeyProvider.TYPE_CLAIM
         const val TOKEN_TYPE = "external_plugin_user"
+        private const val DOMAIN = "user"
     }
 }

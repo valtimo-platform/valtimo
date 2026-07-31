@@ -153,7 +153,8 @@
                                  baseColumnNames="configuration_id"
                                  referencedTableName="external_plugin_configuration"
                                  referencedColumnNames="id"
-                                 constraintName="ext_plugin_granted_ep_config_id_fk"/>
+                                 constraintName="ext_plugin_granted_ep_config_id_fk"
+                                 onDelete="CASCADE"/>
     </changeSet>
 
     <changeSet author="Ritense" id="6">
@@ -180,7 +181,8 @@
                                  baseColumnNames="configuration_id"
                                  referencedTableName="external_plugin_configuration"
                                  referencedColumnNames="id"
-                                 constraintName="ext_plugin_granted_evt_config_id_fk"/>
+                                 constraintName="ext_plugin_granted_evt_config_id_fk"
+                                 onDelete="CASCADE"/>
     </changeSet>
 
 </databaseChangeLog>

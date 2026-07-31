@@ -17,7 +17,7 @@
 import type { CallContext } from "@extism/extism";
 import type { HostLogger } from "../models/index.js";
 import type { KvRepository } from "../db/kv-repository.js";
-import type { GzacApiCallContext } from "./gzac-api.js";
+import { guardHostCall } from "./guard.js";
 
 interface KvRequest {
   op: string;
@@ -33,26 +33,11 @@ export function createKvHostFunction(
   const log = logger.child({ component: "kv" });
 
   return async (callContext: CallContext, addr: bigint): Promise<bigint> => {
-    const ctx = callContext.hostContext<GzacApiCallContext | undefined>();
-    if (!ctx) {
-      return callContext.store(JSON.stringify({ status: 500, error: "No active invocation context" }));
+    const guard = guardHostCall<KvRequest>(callContext, addr, "kv");
+    if (!guard.ok) {
+      return callContext.store(JSON.stringify({ status: guard.status, error: guard.message }));
     }
-
-    if (!ctx.grantedCapabilities?.includes("kv")) {
-      return callContext.store(
-        JSON.stringify({ status: 403, error: "Capability 'kv' not granted for this configuration" })
-      );
-    }
-
-    const inputJson = callContext.read(addr)?.string() ?? "{}";
-    let req: KvRequest;
-    try {
-      req = JSON.parse(inputJson) as KvRequest;
-    } catch (err) {
-      return callContext.store(
-        JSON.stringify({ status: 400, error: `Invalid kv request JSON: ${(err as Error).message}` })
-      );
-    }
+    const { ctx, req } = guard;
 
     try {
       switch (req.op) {

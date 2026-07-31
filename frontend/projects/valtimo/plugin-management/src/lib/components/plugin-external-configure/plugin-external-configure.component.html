@@ -14,10 +14,10 @@
   ~ limitations under the License.
   -->
 
-<cds-loading *ngIf="_$loading()" [isActive]="true" size="sm"></cds-loading>
+<cds-loading *ngIf="$loading()" [isActive]="true" size="sm"></cds-loading>
 
-<ng-container *ngIf="!_$loading()">
-  <ng-container *ngIf="_$configBundleUrl() as bundleUrl; else jsonFallback">
+<ng-container *ngIf="!$loading()">
+  <ng-container *ngIf="$configBundleUrl() as bundleUrl; else jsonFallback">
     <valtimo-external-plugin-iframe
       [bundleUrl]="bundleUrl"
       (configurationChangedEvent)="onIframeConfigurationChanged($event)"
@@ -27,7 +27,9 @@
   <ng-template #jsonFallback>
     <form [formGroup]="_form">
       <div class="cds--form-item">
-        <label class="cds--label">{{ 'pluginManagement.labels.configurationName' | translate }}</label>
+        <label class="cds--label">{{
+          'pluginManagement.labels.configurationName' | translate
+        }}</label>
         <input class="cds--text-input" formControlName="title" />
       </div>
 

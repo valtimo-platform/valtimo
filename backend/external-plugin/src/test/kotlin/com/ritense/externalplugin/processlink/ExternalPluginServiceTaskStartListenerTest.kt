@@ -39,6 +39,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -431,6 +432,51 @@ class ExternalPluginServiceTaskStartListenerTest {
         assertThatThrownBy { listenerWithResolver.notify(OperatonExecutionEvent(execution, "start")) }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessageContaining("external-plugin:case-summary@0.1.0")
+    }
+
+    /**
+     * A literal action property that merely contains a colon (`https://…`) must reach the plugin
+     * untouched: only values whose prefix an actual resolver factory supports go through the
+     * value-resolver service.
+     */
+    @Test
+    fun `literal action property with a colon is passed through while resolver-supported values are resolved`() {
+        val actionProperties = objectMapper.readTree(
+            """{"callbackUrl":"https://example.com/callback","userName":"pv:userName"}""",
+        ) as com.fasterxml.jackson.databind.node.ObjectNode
+        val processLink = ExternalPluginProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "process-def-id",
+            activityId = "ServiceTask_ExternalPlugin",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            externalPluginConfigurationId = configurationId,
+            actionKey = "case-summary",
+            pluginConfigurationReference = PluginConfigurationReference(
+                type = PluginConfigurationReferenceType.FIXED,
+                pluginDefinitionKey = "case-summary",
+                pluginDefinitionVersion = "0.1.0",
+            ),
+            actionProperties = actionProperties,
+        )
+        val execution = executionFor(processLink)
+
+        whenever(valueResolverService.supportsValue("https://example.com/callback")).thenReturn(false)
+        whenever(valueResolverService.supportsValue("pv:userName")).thenReturn(true)
+        whenever(valueResolverService.resolveValues(eq("process-instance-id"), eq(execution), eq(listOf("pv:userName"))))
+            .thenReturn(mapOf("pv:userName" to "Alice"))
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listener.notify(OperatonExecutionEvent(execution, "start"))
+
+        val payloadCaptor = argumentCaptor<com.fasterxml.jackson.databind.node.ObjectNode>()
+        verify(hostClient).invokeAction(any(), any(), any(), any(), payloadCaptor.capture(), any())
+        val properties = payloadCaptor.firstValue.get("properties")
+        assertThat(properties.get("callbackUrl").asText()).isEqualTo("https://example.com/callback")
+        assertThat(properties.get("userName").asText()).isEqualTo("Alice")
+        // The literal was never sent through the resolver.
+        verify(valueResolverService).resolveValues(eq("process-instance-id"), eq(execution), eq(listOf("pv:userName")))
     }
 
     private fun buildingBlockProcessLink(pluginId: String, version: String): ExternalPluginProcessLink =

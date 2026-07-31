@@ -47,6 +47,14 @@ action("boom", () => {
   throw new Error("intentional boom");
 });
 
+// Spins forever — used by the L3 timeout test to prove the host's Wasm execution timeout
+// (`wasmTimeoutMs`) really cancels a stuck call instead of hanging the host.
+action("spin", () => {
+  for (;;) {
+    // burn CPU until the host cancels the call
+  }
+});
+
 // Calls back into GZAC via the service token — exercises the gzac_api host function + host context.
 action("call-gzac", () => {
   const res = gzacApi.get("/api/v1/echo");

@@ -23,6 +23,7 @@ import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
+import com.ritense.case_.domain.tab.CaseExternalPluginTab
 import com.ritense.case_.service.event.CaseTabCreatedEvent
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
@@ -111,17 +112,12 @@ class CaseTabImporter(
             return contentKey
         }
 
-        val configPart = contentKey.substringBefore(':')
-        val bundlePart = contentKey.substringAfter(':', "")
-        val originalConfigId = try {
-            UUID.fromString(configPart)
-        } catch (_: IllegalArgumentException) {
-            null
-        } ?: return contentKey
+        val (originalConfigId, bundleKey) = CaseExternalPluginTab.parseContentKeyOrNull(contentKey)
+            ?: return contentKey
 
         val mappedConfigId = mappings[originalConfigId] ?: return contentKey
 
-        return if (bundlePart.isEmpty()) mappedConfigId.toString() else "$mappedConfigId:$bundlePart"
+        return CaseExternalPluginTab.formatContentKey(mappedConfigId, bundleKey)
     }
 
     private companion object {

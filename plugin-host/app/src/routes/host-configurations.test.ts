@@ -17,6 +17,7 @@
 import type {FastifyInstance} from "fastify";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {buildTestApp, signHeaders, testConfig} from "../test-support/harness";
+import {resetReplayCacheForTests} from "../security/hmac-auth";
 import {hostConfigurationRoutes} from "./host-configurations";
 
 describe("host-configurations routes", () => {
@@ -31,6 +32,7 @@ describe("host-configurations routes", () => {
   let eventConsumerManager: { sync: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    resetReplayCacheForTests();
     configRegistry = {
       set: vi.fn(async () => {}),
       get: vi.fn(async () => undefined),

@@ -71,8 +71,8 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   @Output() public eventSubscriptionsResolved = new EventEmitter<Array<string>>();
   @Output() public capabilitiesResolved = new EventEmitter<Array<string>>();
 
-  public readonly _$configBundleUrl = signal<string | null>(null);
-  public readonly _$loading = signal(true);
+  public readonly $configBundleUrl = signal<string | null>(null);
+  public readonly $loading = signal(true);
 
   public readonly _form = new FormGroup({
     title: new FormControl('', Validators.required),
@@ -99,8 +99,8 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
           switchMap(def => {
             if (!def?.key || !isExternalPluginKey(def.key)) {
               this._definitionId = null;
-              this._$configBundleUrl.set(null);
-              this._$loading.set(false);
+              this.$configBundleUrl.set(null);
+              this.$loading.set(false);
               this.endpointsResolved.emit([]);
               this.eventSubscriptionsResolved.emit([]);
               this.capabilitiesResolved.emit([]);
@@ -108,7 +108,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
             }
 
             this._definitionId = extractExternalDefinitionId(def.key);
-            this._$loading.set(true);
+            this.$loading.set(true);
 
             return this._externalPluginService.getDefinition(this._definitionId).pipe(
               map((definition: ExternalPluginDefinition) => {
@@ -117,11 +117,11 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 );
 
                 if (configBundle) {
-                  this._$configBundleUrl.set(
+                  this.$configBundleUrl.set(
                     `${definition.baseUrl}/${definition.version}${configBundle.path}`
                   );
                 } else {
-                  this._$configBundleUrl.set(null);
+                  this.$configBundleUrl.set(null);
                 }
 
                 const endpoints = definition.manifest?.permissions?.endpoints ?? [];
@@ -131,7 +131,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 const capabilities = definition.manifest?.permissions?.capabilities ?? [];
                 this.capabilitiesResolved.emit(capabilities);
 
-                this._$loading.set(false);
+                this.$loading.set(false);
               })
             );
           })
@@ -139,13 +139,9 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
         .subscribe()
     );
 
-    this._subscriptions.add(
-      this._form.valueChanges.subscribe(() => this._validateForm())
-    );
+    this._subscriptions.add(this._form.valueChanges.subscribe(() => this._validateForm()));
 
-    this._subscriptions.add(
-      this._stateService.save$.subscribe(() => this._onSaveTriggered())
-    );
+    this._subscriptions.add(this._stateService.save$.subscribe(() => this._onSaveTriggered()));
   }
 
   public ngOnDestroy(): void {
@@ -175,7 +171,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   }
 
   private _validateForm(): void {
-    if (this._$configBundleUrl()) return;
+    if (this.$configBundleUrl()) return;
 
     const titleValid = !!this._form.value.title?.trim();
     let jsonValid = true;

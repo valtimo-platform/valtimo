@@ -51,6 +51,41 @@ function startGzacStub(): Promise<{ server: Server; baseUrl: string; lastAuth: (
   });
 }
 
+/**
+ * Stubs for the manager's persistence collaborators. The config provider grants every capability
+ * (and no endpoint list — "older push", so gzac_api is not allowlist-restricted) so the fixture's
+ * handlers can exercise the host functions.
+ */
+const configProviderStub = {
+  get: async (configurationId: string) => ({
+    configurationId,
+    pluginId: FIXTURE_PLUGIN_ID,
+    pluginVersion: FIXTURE_VERSION,
+    properties: {},
+    serviceToken: "svc-token-123",
+    gzacBaseUrl: "http://gzac.invalid",
+    eventSubscriptions: [],
+    grantedCapabilities: ["gzac_api", "http_request", "kv", "log"],
+  }),
+};
+
+const kvStore = new Map<string, unknown>();
+const kvRepositoryStub = {
+  get: async (configId: string, key: string) => {
+    const found = kvStore.has(`${configId}:${key}`);
+    return { found, value: found ? kvStore.get(`${configId}:${key}`) : undefined };
+  },
+  set: async (configId: string, key: string, value: unknown) => {
+    kvStore.set(`${configId}:${key}`, value);
+  },
+  delete: async (configId: string, key: string) => kvStore.delete(`${configId}:${key}`),
+  list: async () => [] as string[],
+};
+
+const logRepositoryStub = {
+  insert: async () => {},
+};
+
 // Extism `runInWorker: true` (which PluginManager hardcodes for async host functions) needs Node 22.
 describe.skipIf(NODE_MAJOR < 22)("PluginManager on compiled Wasm (runInWorker)", () => {
   let storageDir: string;
@@ -63,12 +98,19 @@ describe.skipIf(NODE_MAJOR < 22)("PluginManager on compiled Wasm (runInWorker)",
     cpSync(FIXTURE_WASM, join(pluginDir, "plugin.wasm"));
     cpSync(FIXTURE_MANIFEST, join(pluginDir, "manifest.json"));
 
-    manager = new PluginManager(storageDir, noopLogger());
+    manager = new PluginManager(
+      storageDir,
+      noopLogger(),
+      configProviderStub as never,
+      kvRepositoryStub as never,
+      logRepositoryStub as never
+    );
     await manager.loadPlugin(FIXTURE_PLUGIN_ID, FIXTURE_VERSION);
   });
 
   afterAll(async () => {
     await manager?.unloadPlugin(FIXTURE_PLUGIN_ID, FIXTURE_VERSION);
+    await manager?.close();
     if (storageDir) rmSync(storageDir, { recursive: true, force: true });
   });
 
@@ -159,4 +201,27 @@ describe.skipIf(NODE_MAJOR < 22)("PluginManager on compiled Wasm (runInWorker)",
   it("throws for an unknown plugin/version", async () => {
     await expect(manager.callAction("ghost", "9.9.9", "echo", actionCall())).rejects.toThrow(/not found/i);
   });
+
+  it("cancels a stuck plugin call at wasmTimeoutMs and recovers on the next call", async () => {
+    // A dedicated manager with a short timeout so the spinning fixture handler is cancelled fast.
+    const timeoutManager = new PluginManager(
+      storageDir,
+      noopLogger(),
+      configProviderStub as never,
+      kvRepositoryStub as never,
+      logRepositoryStub as never,
+      { wasmTimeoutMs: 1_000 }
+    );
+    try {
+      await timeoutManager.loadPlugin(FIXTURE_PLUGIN_ID, FIXTURE_VERSION);
+      await expect(
+        timeoutManager.callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "spin", actionCall())
+      ).rejects.toThrow(/timed out after 1000ms/);
+      // The stale instance was dropped; a fresh call works again.
+      const out = await timeoutManager.callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "echo", actionCall());
+      expect(out.status).toBe("completed");
+    } finally {
+      await timeoutManager.close();
+    }
+  }, 30_000);
 });

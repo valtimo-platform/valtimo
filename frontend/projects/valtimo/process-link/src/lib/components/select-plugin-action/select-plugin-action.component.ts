@@ -24,6 +24,7 @@ import {
   PluginManagementService,
   PluginService,
 } from '@valtimo/plugin';
+import {TranslateService} from '@ngx-translate/core';
 import {combineLatest, forkJoin, Observable, of, Subscription} from 'rxjs';
 import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
 
@@ -80,7 +81,12 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
                 .filter(bundle => bundle.type === 'task-form')
                 .map(bundle => ({
                   key: bundle.key ?? '',
-                  title: bundle.title ?? bundle.key ?? 'Form',
+                  title:
+                    bundle.title ??
+                    bundle.key ??
+                    this._translateService.instant(
+                      'processLinkConfiguration.externalPluginTaskForm.defaultTitle'
+                    ),
                   description: '',
                 }));
             }
@@ -142,7 +148,8 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
     private readonly _stateService: PluginStateService,
     private readonly _stepService: ProcessLinkStepService,
     private readonly _processLinkStateService: ProcessLinkStateService,
-    private readonly _externalPluginService: ExternalPluginService
+    private readonly _externalPluginService: ExternalPluginService,
+    private readonly _translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {

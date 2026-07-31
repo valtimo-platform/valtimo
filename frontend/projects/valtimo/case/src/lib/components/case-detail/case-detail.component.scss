@@ -35,6 +35,12 @@
 
   &:has(> .tab--no-min-height) {
     min-height: unset;
+  }
+
+  // Height/overflow clamping only applies to the external-plugin tab (which sizes its own iframe
+  // via fitPage). Other tabs sharing .tab--no-min-height (widgets, documents) keep the default
+  // scroll behaviour and must not be clipped.
+  &:has(> .tab--external-plugin) {
     height: auto;
     overflow: hidden;
   }
@@ -50,7 +56,8 @@
   overflow: auto;
   margin-bottom: 16px;
 
-  &:has(.tab--no-min-height) {
+  // Scoped to the external-plugin tab only — see the note on .tab--external-plugin above.
+  &:has(.tab--external-plugin) {
     margin-bottom: 0;
     max-height: none !important;
   }

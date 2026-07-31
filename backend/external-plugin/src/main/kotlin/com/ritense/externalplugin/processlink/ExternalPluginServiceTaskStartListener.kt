@@ -251,7 +251,12 @@ class ExternalPluginServiceTaskStartListener(
         val rawProperties = processLink.actionProperties ?: objectMapper.createObjectNode()
         val keysToResolve = mutableListOf<String>()
         rawProperties.fields().forEachRemaining { (_, value) ->
-            if (value.isTextual) keysToResolve += value.asText()
+            // Only send values through the resolver when a resolver factory actually supports the
+            // prefix. A literal that merely contains a colon (e.g. "https://example.com") is passed
+            // through untouched instead of tripping the resolver on an unknown prefix.
+            if (value.isTextual && valueResolverService.supportsValue(value.asText())) {
+                keysToResolve += value.asText()
+            }
         }
         val resolved = if (keysToResolve.isEmpty()) {
             emptyMap()

@@ -86,6 +86,14 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `DB_NAME` | no | `pluginhost` | PostgreSQL database name |
 | `DB_USER` | no | `pluginhost` | PostgreSQL username |
 | `DB_PASSWORD` | no | `pluginhost` | PostgreSQL password |
+| `WASM_TIMEOUT_MS` | no | `30000` | Hard wall-clock limit per Wasm plugin call; Extism cancels the call when exceeded and the route reports a `HOST_ERROR`. |
+| `WASM_MAX_MEMORY_PAGES` | no | `4096` | Cap on a plugin's linear memory in 64 KiB pages (default 256 MiB). `0` removes the cap. |
+| `WASM_INSTANCE_IDLE_TTL_MS` | no | `600000` | Idle Extism instances are closed after this long without a call (freed worker + memory; next call re-instantiates). `0` disables eviction. |
+| `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` callback fetch into GZAC. |
+| `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | no | `10000` | Timeout on the user-token introspection call the `/plugins/:id/:version/data` route makes against GZAC before executing Wasm. GZAC not answering within it fails the request with a 503 (fail closed). |
+| `UPLOAD_MAX_BYTES` | no | `26214400` | Maximum plugin package (.zip) upload size (25 MiB), enforced before the file is buffered for the HMAC check. |
+| `DATA_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-configuration request budget for the public `/plugins/:id/:version/data` route. `0` disables the limit. |
+| `CONFIG_CACHE_TTL_MS` | no | `10000` | How long configurations are served from the in-memory cache before re-reading Postgres. Writes through this host invalidate immediately. `0` disables caching. |
 | `TLS_CERT_PATH` | no | — | PEM certificate. Set **together with** `TLS_KEY_PATH` to make the host serve HTTPS (see [Transport security](#transport-security)). |
 | `TLS_KEY_PATH` | no | — | PEM private key. Set together with `TLS_CERT_PATH`. |
 | `TLS_CA_PATH` | no | — | PEM CA / intermediate chain, when the certificate file is not self-contained. |
@@ -248,7 +256,11 @@ with the `ADMIN_TOKEN`, where:
 - `bodyHash` is `SHA-256(body)` hex — the empty string for GET/DELETE, and the **uploaded file
   bytes** (not the multipart envelope) for the plugin upload;
 - `timestamp` is an ISO-8601 instant; the host rejects anything more than **±5 minutes** from its
-  own clock (replay protection).
+  own clock. On side-effecting routes (POST/PUT/DELETE) each accepted signature is additionally
+  **single-use** within that window — the host keeps an in-memory seen-signature cache, so a
+  captured request replayed verbatim is refused with 401. (Two *distinct* legitimate requests are
+  never identical: any change to method, path, timestamp or body changes the signature — just use
+  millisecond-precision timestamps when scripting rapid identical calls.)
 
 It is sent as two headers: `X-Valtimo-Signature` (the hex HMAC) and `X-Valtimo-Timestamp`. In
 production GZAC's `ExternalPluginHostClient` signs every call automatically. To call the host by
@@ -320,8 +332,17 @@ curl -sS http://localhost:8090/api/host/configurations \
 ### `POST /api/host/configurations/:configId` — push configuration
 
 `serviceToken` and `gzacBaseUrl` are required — the host uses them to authenticate and route the
-plugin's API callbacks. For local testing any non-empty string works for `serviceToken`. Write the
-body to a file so the signed bytes and the sent bytes match exactly (`--data-binary @file`):
+plugin's API callbacks. For local testing any non-empty string works for `serviceToken`.
+
+Optional grant fields: `grantedCapabilities` (array of `gzac_api` / `http_request` / `kv` / `log` /
+`frontend_data`) gates the host functions and the public data route; `grantedEndpoints` (array of
+`{"method","pattern"}` Ant-style entries — `*` matches one path segment, `**` any) restricts which
+GZAC endpoints `gzac_api` may call. When `grantedEndpoints` is omitted entirely (older GZAC
+versions) the host logs a warning and skips its side of the allowlist check — GZAC still enforces
+the allowlist server-side; an empty array denies every endpoint.
+
+Write the body to a file so the signed bytes and the sent bytes match exactly
+(`--data-binary @file`):
 
 ```bash
 cat > /tmp/config.json <<'JSON'

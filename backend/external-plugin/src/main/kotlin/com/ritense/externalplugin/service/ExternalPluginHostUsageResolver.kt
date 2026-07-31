@@ -25,16 +25,11 @@ import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder
+import com.ritense.plugin.service.ProcessDefinitionUsageMeta
+import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.model.bpmn.BpmnModelInstance
-import org.operaton.bpm.model.bpmn.instance.FlowElement
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.Optional
@@ -48,8 +43,8 @@ class ExternalPluginHostUsageResolver(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val processLinkRepository: ExternalPluginProcessLinkRepository,
     private val taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
-    private val operatonRepositoryService: OperatonRepositoryService,
-    private val bpmnRepositoryService: RepositoryService,
+    /** Shared with the embedded plugin module — resolves process-definition/parent/activity meta. */
+    private val processDefinitionUsageMetaResolver: ProcessDefinitionUsageMetaResolver,
     /**
      * Optional so the module still wires up if the case module's tab service is unavailable; in a
      * normal GZAC deployment it is always present (external-plugin depends on case).
@@ -111,11 +106,11 @@ class ExternalPluginHostUsageResolver(
         val links = collectUsageLinks(configById.keys)
         if (links.isEmpty()) return emptyList()
 
-        val metaCache = mutableMapOf<String, ProcessDefinitionMeta>()
+        val metaCache = mutableMapOf<String, ProcessDefinitionUsageMeta>()
 
         return links.map { link ->
             val meta = metaCache.getOrPut(link.processDefinitionId) {
-                resolveProcessDefinitionMeta(link.processDefinitionId)
+                processDefinitionUsageMetaResolver.resolveMeta(link.processDefinitionId)
             }
             val configuration = configById.getValue(link.configurationId)
             PluginUsageDto(
@@ -128,29 +123,10 @@ class ExternalPluginHostUsageResolver(
                 processDefinitionKey = meta.processDefinitionKey,
                 processDefinitionName = meta.processDefinitionName,
                 activityId = link.activityId,
-                activityName = resolveActivityName(link.activityId, meta),
+                activityName = processDefinitionUsageMetaResolver.resolveActivityName(meta, link.activityId),
                 processLinkId = link.id,
             )
         }
-    }
-
-    private fun collectUsageLinks(configurationIds: Collection<UUID>): List<UsageLink> {
-        // externalPluginConfigurationId is nullable on the entity (BUILDING_BLOCK references, Phase
-        // 2, carry no fixed config id) but findAllByExternalPluginConfigurationIdIn only ever
-        // returns rows whose id is one of the (non-null) ids queried for — the mapNotNull is a type
-        //-level formality, not an expected filter.
-        val actionLinks = processLinkRepository.findAllByExternalPluginConfigurationIdIn(configurationIds)
-            .mapNotNull { link ->
-                link.externalPluginConfigurationId?.let { UsageLink(link.id, link.processDefinitionId, link.activityId, it) }
-            }
-        val taskFormLinks = taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(configurationIds)
-            .map { UsageLink(it.id, it.processDefinitionId, it.activityId, it.externalPluginConfigurationId) }
-        return actionLinks + taskFormLinks
-    }
-
-    private fun collectConfigurations(definitions: List<ExternalPluginDefinition>): List<ExternalPluginConfiguration> {
-        if (definitions.isEmpty()) return emptyList()
-        return definitions.flatMap { configurationRepository.findAllByDefinitionId(it.id) }
     }
 
     /**
@@ -166,13 +142,13 @@ class ExternalPluginHostUsageResolver(
         val finder = buildingBlockMappingUsageFinder.orElse(null) ?: return emptyList()
         if (configurations.isEmpty()) return emptyList()
 
-        val metaCache = mutableMapOf<String, ProcessDefinitionMeta>()
+        val metaCache = mutableMapOf<String, ProcessDefinitionUsageMeta>()
         return configurations.flatMap { configuration ->
             finder.findUsages(configuration.id).map { usage ->
                 val processDefinitionId = usage.processDefinitionId
                 if (processDefinitionId != null) {
                     val meta = metaCache.getOrPut(processDefinitionId) {
-                        resolveProcessDefinitionMeta(processDefinitionId)
+                        processDefinitionUsageMetaResolver.resolveMeta(processDefinitionId)
                     }
                     PluginUsageDto(
                         configurationId = configuration.id,
@@ -184,7 +160,7 @@ class ExternalPluginHostUsageResolver(
                         processDefinitionKey = meta.processDefinitionKey,
                         processDefinitionName = meta.processDefinitionName,
                         activityId = usage.activityId,
-                        activityName = usage.activityId?.let { resolveActivityName(it, meta) },
+                        activityName = usage.activityId?.let { processDefinitionUsageMetaResolver.resolveActivityName(meta, it) },
                         processLinkId = usage.processLinkId,
                         buildingBlockKey = usage.buildingBlockDefinitionKey,
                     )
@@ -223,14 +199,14 @@ class ExternalPluginHostUsageResolver(
         if (links.isEmpty()) return emptyList()
 
         val definitionByKeyAndVersion = definitions.associateBy { it.pluginId to it.version }
-        val metaCache = mutableMapOf<String, ProcessDefinitionMeta>()
+        val metaCache = mutableMapOf<String, ProcessDefinitionUsageMeta>()
 
         return links.mapNotNull { link ->
             val reference = link.pluginConfigurationReference
             val definition = definitionByKeyAndVersion[reference.pluginDefinitionKey to reference.pluginDefinitionVersion]
                 ?: return@mapNotNull null
             val meta = metaCache.getOrPut(link.processDefinitionId) {
-                resolveProcessDefinitionMeta(link.processDefinitionId)
+                processDefinitionUsageMetaResolver.resolveMeta(link.processDefinitionId)
             }
             PluginUsageDto(
                 configurationId = definition.id,
@@ -242,65 +218,29 @@ class ExternalPluginHostUsageResolver(
                 processDefinitionKey = meta.processDefinitionKey,
                 processDefinitionName = meta.processDefinitionName,
                 activityId = link.activityId,
-                activityName = resolveActivityName(link.activityId, meta),
+                activityName = processDefinitionUsageMetaResolver.resolveActivityName(meta, link.activityId),
                 processLinkId = link.id,
             )
         }
     }
 
-    private fun resolveProcessDefinitionMeta(processDefinitionId: String): ProcessDefinitionMeta {
-        val processDefinition: OperatonProcessDefinition? = runCatching {
-            operatonRepositoryService.findProcessDefinitionById(processDefinitionId)
-        }.getOrNull()
-
-        val parent = classifyParent(processDefinition)
-
-        return ProcessDefinitionMeta(
-            processDefinitionKey = processDefinition?.key,
-            processDefinitionName = processDefinition?.name,
-            parentType = parent.type,
-            parentKey = parent.key,
-            parentVersionTag = parent.versionTag,
-            bpmnModelLoader = {
-                runCatching { bpmnRepositoryService.getBpmnModelInstance(processDefinitionId) }.getOrNull()
-            },
-        )
+    private fun collectUsageLinks(configurationIds: Collection<UUID>): List<UsageLink> {
+        // externalPluginConfigurationId is nullable on the entity (BUILDING_BLOCK references, Phase
+        // 2, carry no fixed config id) but findAllByExternalPluginConfigurationIdIn only ever
+        // returns rows whose id is one of the (non-null) ids queried for — the mapNotNull is a type
+        //-level formality, not an expected filter.
+        val actionLinks = processLinkRepository.findAllByExternalPluginConfigurationIdIn(configurationIds)
+            .mapNotNull { link ->
+                link.externalPluginConfigurationId?.let { UsageLink(link.id, link.processDefinitionId, link.activityId, it) }
+            }
+        val taskFormLinks = taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(configurationIds)
+            .map { UsageLink(it.id, it.processDefinitionId, it.activityId, it.externalPluginConfigurationId) }
+        return actionLinks + taskFormLinks
     }
 
-    /**
-     * Operaton stores the owning case-definition or building-block in the `versionTag` of the
-     * process definition (encoded with the `CD:` or `BB:` prefix — see [CaseDefinitionId] /
-     * [BuildingBlockDefinitionId]). `OperatonProcessDefinition.getBlueprintId` already does the
-     * parsing; we just need to widen the result into the public-facing enum.
-     */
-    private fun classifyParent(processDefinition: OperatonProcessDefinition?): ParentClassification {
-        return when (val blueprint = processDefinition?.getBlueprintId()) {
-            is CaseDefinitionId -> ParentClassification(
-                type = PluginUsageParentType.CASE,
-                key = blueprint.key,
-                versionTag = blueprint.versionTag.toString(),
-            )
-            is BuildingBlockDefinitionId -> ParentClassification(
-                type = PluginUsageParentType.BUILDING_BLOCK,
-                key = blueprint.key,
-                versionTag = blueprint.versionTag.toString(),
-            )
-            else -> ParentClassification(
-                type = PluginUsageParentType.GLOBAL,
-                key = null,
-                versionTag = null,
-            )
-        }
-    }
-
-    private fun resolveActivityName(
-        activityId: String,
-        meta: ProcessDefinitionMeta,
-    ): String? {
-        val model = meta.bpmnModel ?: return null
-        return runCatching {
-            model.getModelElementById<FlowElement>(activityId)?.name
-        }.getOrNull()
+    private fun collectConfigurations(definitions: List<ExternalPluginDefinition>): List<ExternalPluginConfiguration> {
+        if (definitions.isEmpty()) return emptyList()
+        return definitions.flatMap { configurationRepository.findAllByDefinitionId(it.id) }
     }
 
     /**
@@ -313,21 +253,4 @@ class ExternalPluginHostUsageResolver(
         val activityId: String,
         val configurationId: UUID,
     )
-
-    private data class ParentClassification(
-        val type: PluginUsageParentType,
-        val key: String?,
-        val versionTag: String?,
-    )
-
-    private class ProcessDefinitionMeta(
-        val processDefinitionKey: String?,
-        val processDefinitionName: String?,
-        val parentType: PluginUsageParentType,
-        val parentKey: String?,
-        val parentVersionTag: String?,
-        bpmnModelLoader: () -> BpmnModelInstance?,
-    ) {
-        val bpmnModel: BpmnModelInstance? by lazy(bpmnModelLoader)
-    }
 }

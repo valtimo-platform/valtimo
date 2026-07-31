@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {existsSync} from "node:fs";
 import {rm} from "node:fs/promises";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -21,6 +22,7 @@ import type {FastifyInstance} from "fastify";
 import AdmZip from "adm-zip";
 import {afterAll, afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {buildTestApp, signHeaders, testConfig} from "../test-support/harness";
+import {resetReplayCacheForTests} from "../security/hmac-auth";
 import {hostManagementRoutes} from "./host-management";
 
 const PLUGINS_PATH = "/api/host/plugins";
@@ -66,6 +68,7 @@ describe("host-management routes", () => {
   let configRegistry: { listByPlugin: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    resetReplayCacheForTests();
     pluginManager = {
       listPlugins: vi.fn(() => [{ pluginId: "case-summary", version: "0.1.0" }]),
       listVersions: vi.fn(() => [{ version: "0.1.0" }]),
@@ -152,6 +155,27 @@ describe("host-management routes", () => {
       const res = await uploadZip(makeZip(validManifest), "attacker-secret");
       expect(res.statusCode).toBe(401);
       expect(pluginManager.storeAndLoad).not.toHaveBeenCalled();
+    });
+
+    it("rejects a package with a zip-slip entry (../ traversal) with 400 and never loads it", async () => {
+      // adm-zip's *writer* sanitizes entry names, so craft the hostile name by byte-patching the
+      // finished archive (same length; filename bytes are not CRC-protected) — exactly what an
+      // attacker's own zip tool would produce and what adm-zip's *reader* preserves verbatim.
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", Buffer.from(JSON.stringify(validManifest)));
+      zip.addFile("plugin.wasm", Buffer.from([0x00, 0x61, 0x73, 0x6d]));
+      zip.addFile("AA/evil.txt", Buffer.from("escaped the extraction dir"));
+      let raw = zip.toBuffer();
+      raw = Buffer.from(raw.toString("latin1").replaceAll("AA/evil.txt", "../evil.txt"), "latin1");
+      expect(new AdmZip(raw).getEntries().map((e) => e.entryName)).toContain("../evil.txt");
+      const res = await uploadZip(raw);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json()).toMatchObject({ error: "Invalid plugin package" });
+      expect(pluginManager.storeAndLoad).not.toHaveBeenCalled();
+      // Nothing may have been written outside the temp extraction dir.
+      const escaped = join(TMP_BASE, "evil.txt");
+      expect(existsSync(escaped)).toBe(false);
     });
 
     it("returns 400 when no file part is present", async () => {

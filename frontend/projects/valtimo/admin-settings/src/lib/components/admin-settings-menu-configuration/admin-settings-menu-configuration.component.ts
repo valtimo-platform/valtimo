@@ -23,7 +23,14 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import {ScrollingModule} from '@angular/cdk/scrolling';
-import {ChangeDetectionStrategy, Component, computed, OnInit, signal} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {takeUntilDestroyed, toObservable, toSignal} from '@angular/core/rxjs-interop';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -41,6 +48,7 @@ import {
   MenuConfiguration,
   MenuConfigurationItem,
   MenuItemPlacement,
+  serializeIncludeFunction,
   TooltipModule,
 } from '@valtimo/components';
 import {ConfigService, IncludeFunction} from '@valtimo/shared';
@@ -89,7 +97,7 @@ import {BuilderNode, PaletteGroup, PaletteItem} from '../../models';
     TagModule,
   ],
 })
-export class AdminSettingsMenuConfigurationComponent implements OnInit {
+export class AdminSettingsMenuConfigurationComponent implements OnInit, OnDestroy {
   protected readonly testIds = MENU_CONFIGURATION_TEST_IDS;
 
   public readonly $loading = signal<boolean>(true);
@@ -115,10 +123,10 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
    * imperatively via `translateService.instant` inside computeds — recompute once translations arrive
    * (a plain computed would otherwise keep the raw keys captured on first, pre-load evaluation).
    */
-  private readonly $translationTick = signal<number>(0);
+  private readonly _$translationTick = signal<number>(0);
 
   public readonly $paletteGroups = computed<PaletteGroup[]>(() => {
-    this.$translationTick();
+    this._$translationTick();
     return this._buildPaletteGroups();
   });
 
@@ -154,7 +162,7 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
 
   /** Sections an item can be placed in via the editor: top level + each container present in the tree. */
   public readonly $sectionOptions = computed<Array<{value: string; label: string}>>(() => {
-    this.$translationTick();
+    this._$translationTick();
     const options = [
       {
         value: 'root',
@@ -180,7 +188,7 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
   );
 
   /** Tracks the editor's currently selected section so the icon field can react to placement changes. */
-  private readonly $editorSection = toSignal(this.editorForm.controls.section.valueChanges, {
+  private readonly _$editorSection = toSignal(this.editorForm.controls.section.valueChanges, {
     initialValue: this.editorForm.controls.section.value,
   });
 
@@ -189,7 +197,7 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
    * field for section headers and for any item placed inside a section (a sub-menu item).
    */
   public readonly $editorShowIcon = computed<boolean>(
-    () => this.$editorKind() !== 'section-header' && this.$editorSection() === 'root'
+    () => this.$editorKind() !== 'section-header' && this._$editorSection() === 'root'
   );
 
   private _editingUid: string | null = null;
@@ -257,11 +265,17 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
       this.translateService.onTranslationChange
     )
       .pipe(takeUntilDestroyed())
-      .subscribe(() => this.$translationTick.update(tick => tick + 1));
+      .subscribe(() => this._$translationTick.update(tick => tick + 1));
   }
 
   public ngOnInit(): void {
     this.load();
+  }
+
+  public ngOnDestroy(): void {
+    // A drag can still be in progress when the component is destroyed (route change mid-drag), in
+    // which case onDragEnded never fires — always detach the document-level pointer listeners.
+    this._removePointerListeners();
   }
 
   // ----- Loading & seeding -----
@@ -298,6 +312,10 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
 
   public onDragEnded(): void {
     this.$dragging.set(false);
+    this._removePointerListeners();
+  }
+
+  private _removePointerListeners(): void {
     document.removeEventListener('pointermove', this._trackPointer, true);
     document.removeEventListener('touchmove', this._trackPointer, true);
   }
@@ -354,10 +372,11 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
       link: node.kind === 'custom-link' ? node.link : this._displayRoute(node),
       icon: this._mdiKeyFromIconClass(this._displayIconClass(node)),
       // Empty string (not null) so the "Geen" option (value="") is selected on open when the item
-      // carries no include function — a null value would leave the native select blank.
+      // carries no include function — a null value would leave the native select blank. The stored
+      // value is the enum name (or a legacy numeric ordinal); the select works with names.
       includeFunction:
-        node.kind === 'catalog' && !this.isRequired(node) && node.includeFunction !== undefined
-          ? IncludeFunction[node.includeFunction]
+        node.kind === 'catalog' && !this.isRequired(node)
+          ? (serializeIncludeFunction(node.includeFunction) ?? '')
           : '',
       section: this._findSectionOf(node._uid),
     });
@@ -422,10 +441,11 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit {
     }
     if (node.kind === 'catalog') {
       // Required items must never carry an include function (it could hide them at runtime).
+      // Persisted as the enum member *name* so the stored config survives enum reorders.
       node.includeFunction =
         this.isRequired(node) || !value.includeFunction
           ? undefined
-          : IncludeFunction[value.includeFunction as keyof typeof IncludeFunction];
+          : serializeIncludeFunction(value.includeFunction);
       if (node.includeFunction === undefined) delete node.includeFunction;
     }
 

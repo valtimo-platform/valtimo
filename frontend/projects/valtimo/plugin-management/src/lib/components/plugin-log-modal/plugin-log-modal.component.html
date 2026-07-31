@@ -43,11 +43,14 @@
     </div>
 
     <div class="plugin-log-modal__layout">
-      <div class="plugin-log-modal__list" [class.plugin-log-modal__list--with-detail]="_$selectedRow()">
+      <div
+        class="plugin-log-modal__list"
+        [class.plugin-log-modal__list--with-detail]="$selectedRow()"
+      >
         <valtimo-carbon-list
-          [items]="_$rows()"
+          [items]="$rows()"
           [fields]="fields"
-          [loading]="_$loading()"
+          [loading]="$loading()"
           [pagination]="pagination"
           [header]="false"
           [hideToolbar]="true"
@@ -63,7 +66,7 @@
         </valtimo-carbon-list>
       </div>
 
-      @if (_$selectedRow(); as row) {
+      @if ($selectedRow(); as row) {
         <aside class="plugin-log-modal__detail" cdsLayer="2">
           <div class="plugin-log-modal__detail-header">
             <cds-tag size="sm" [type]="levelTagType(row.level)">{{ row.level }}</cds-tag>

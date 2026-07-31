@@ -90,6 +90,9 @@ class ExternalPluginTaskFormSubmissionService(
         documentId: String?,
         taskInstanceId: String?,
     ): ExternalPluginTaskFormSubmissionResult {
+        // Validate up front: without a task there is nothing to complete and — crucially — no task
+        // to check the COMPLETE permission on, so no hook may run either.
+        requireNotNull(taskInstanceId) { "A task-form submission requires a taskInstanceId" }
         val processLink = processLinkService.getProcessLink(
             processLinkId,
             ExternalPluginTaskFormProcessLink::class.java,
@@ -115,8 +118,7 @@ class ExternalPluginTaskFormSubmissionService(
      * Loads the task and asserts the caller may complete it. Mirrors the URL/form submission services
      * so a plugin task-form is governed by exactly the same COMPLETE permission as any other form.
      */
-    private fun requireCompleteTaskPermission(taskInstanceId: String?): OperatonTask? {
-        if (taskInstanceId == null) return null
+    private fun requireCompleteTaskPermission(taskInstanceId: String): OperatonTask {
         val task = operatonTaskService.findTaskById(taskInstanceId)
         authorizationService.requirePermission(
             EntityAuthorizationRequest(

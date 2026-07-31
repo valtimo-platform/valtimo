@@ -321,9 +321,22 @@ function normaliseMenuLink(link: string | null | undefined): string {
   return normalised === '' ? '/' : normalised;
 }
 
-/** Joins a `MenuItem.link` array into the single route string the config stores. */
+/**
+ * Joins a `MenuItem.link` array into the single route string the config stores. Multi-segment
+ * links (e.g. `['/plugin-pages', 'id', 'key']`) are joined with `/`; surplus slashes on segment
+ * boundaries are stripped so a segment that already starts with `/` never produces `//`. A single
+ * segment (`['/tasks']`, `['/']`) passes through unchanged.
+ */
 function menuLinkToString(link: string[] | null | undefined): string {
-  return Array.isArray(link) ? link.join('') : '';
+  if (!Array.isArray(link) || link.length === 0) return '';
+  if (link.length === 1) return link[0] ?? '';
+  const [first, ...rest] = link;
+  return [
+    (first ?? '').replace(/\/+$/, ''),
+    ...rest
+      .map(segment => (segment ?? '').replace(/^\/+|\/+$/g, ''))
+      .filter(segment => segment !== ''),
+  ].join('/');
 }
 
 const _catalogById = new Map(MENU_ITEM_CATALOG.map(entry => [entry.itemId, entry]));

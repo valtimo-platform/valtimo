@@ -74,7 +74,6 @@ type ProcessLinkConfigurationStep =
   | 'selectBuildingBlock'
   | 'configureBuildingBlockPlugins'
   | 'configureBuildingBlockMappings'
-  | 'configureExternalPlugin'
   | 'empty';
 
 type PluginConfigurationReferenceType = 'FIXED' | 'BUILDING_BLOCK';

@@ -52,7 +52,6 @@ import java.util.UUID
  */
 @Service
 @SkipComponentScan
-@Transactional(readOnly = false)
 class CaseExternalPluginTabService(
     private val documentService: DocumentService,
     private val caseExternalPluginTabRepository: CaseExternalPluginTabRepository,
@@ -67,6 +66,7 @@ class CaseExternalPluginTabService(
      * (Phase 2.7) — this keeps the generic create path untouched, exactly as WIDGETS needs no extra
      * create fields.
      */
+    @Transactional
     @EventListener(CaseTabCreatedEvent::class)
     fun handleCaseTabCreatedEvent(event: CaseTabCreatedEvent) {
         if (event.tab.type != CaseTabType.EXTERNAL_PLUGIN) return
@@ -78,6 +78,7 @@ class CaseExternalPluginTabService(
      * `contentKey`. `save` merges by the composite id, so it covers both an unchanged and a changed
      * `contentKey`. If the tab's type changed away from `EXTERNAL_PLUGIN`, drop any stale side row.
      */
+    @Transactional
     @EventListener(CaseTabUpdatedEvent::class)
     fun handleCaseTabUpdatedEvent(event: CaseTabUpdatedEvent) {
         if (event.tab.type == CaseTabType.EXTERNAL_PLUGIN) {
@@ -89,18 +90,25 @@ class CaseExternalPluginTabService(
     }
 
     /**
-     * Persists the side row, capturing the tab's plugin identity. Prefers resolving it from the
-     * (present) configuration — authoritative, and how the management-API create/update path works —
-     * and falls back to the [importedPluginDefinitionKey]/[importedPluginDefinitionVersion] carried
-     * from the export when the configuration is missing here (a dangling import). Without either, the
-     * key stays `null` and the repair panel can't identify the plugin (unchanged legacy behaviour).
+     * Tolerant by design: create/update through [com.ritense.case.service.CaseTabService] validates
+     * the `contentKey` shape up front, but tabs can also arrive through deployment/import with
+     * arbitrary content. A malformed key must not abort the surrounding transaction, so it is
+     * logged and skipped instead.
      */
     private fun upsertSideRow(
         tab: CaseTab,
         importedPluginDefinitionKey: String? = null,
         importedPluginDefinitionVersion: String? = null,
     ) {
-        val (configurationId, bundleKey) = parseContentKey(tab.contentKey)
+        val parsedContentKey = CaseExternalPluginTab.parseContentKeyOrNull(tab.contentKey)
+        if (parsedContentKey == null) {
+            logger.warn {
+                "Skipping external-plugin side row for case tab '${tab.id.key}' of case definition " +
+                    "'${tab.id.caseDefinitionId}': contentKey does not match '<configurationId>[:<bundleKey>]'"
+            }
+            return
+        }
+        val (configurationId, bundleKey) = parsedContentKey
         val resolved = resolver.orElse(null)?.resolvePluginDefinition(configurationId)
         caseExternalPluginTabRepository.save(
             CaseExternalPluginTab(
@@ -171,12 +179,6 @@ class CaseExternalPluginTabService(
                 )
             )
         }
-    }
-
-    private fun parseContentKey(contentKey: String): Pair<UUID, String?> {
-        val configPart = contentKey.substringBefore(':')
-        val bundlePart = contentKey.substringAfter(':', "").takeIf { it.isNotBlank() }
-        return UUID.fromString(configPart) to bundlePart
     }
 
     companion object {

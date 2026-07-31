@@ -22,7 +22,7 @@
   (a script can already POST via fetch), and does not weaken origin isolation.
 -->
 <iframe
-  *ngIf="_$trustedUrl() as url"
+  *ngIf="$trustedUrl() as url"
   #pluginIframe
   [src]="url"
   (load)="onIframeLoad()"

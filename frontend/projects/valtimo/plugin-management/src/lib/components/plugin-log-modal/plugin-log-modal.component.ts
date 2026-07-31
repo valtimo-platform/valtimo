@@ -29,7 +29,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {CommonModule, DatePipe} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ButtonModule,
   DropdownModule,
@@ -84,10 +84,10 @@ export class PluginLogModalComponent implements OnChanges {
   @ViewChild('levelTpl', {static: true}) public levelTpl!: TemplateRef<any>;
   @ViewChild('sourceTpl', {static: true}) public sourceTpl!: TemplateRef<any>;
 
-  public readonly _$loading = signal(false);
-  public readonly _$rows = signal<PluginLogEntry[]>([]);
-  public readonly _$selectedRow = signal<PluginLogEntry | null>(null);
-  public readonly _$totalElements = signal(0);
+  public readonly $loading = signal(false);
+  public readonly $rows = signal<PluginLogEntry[]>([]);
+  public readonly $selectedRow = signal<PluginLogEntry | null>(null);
+  private readonly _$totalElements = signal(0);
 
   public fields: ColumnConfig[] = [];
   public page = 1;
@@ -107,6 +107,7 @@ export class PluginLogModalComponent implements OnChanges {
   private readonly _externalPluginService = inject(ExternalPluginService);
   private readonly _iconService = inject(IconService);
   private readonly _cdr = inject(ChangeDetectorRef);
+  private readonly _translateService = inject(TranslateService);
 
   constructor() {
     this._iconService.register(Close16);
@@ -124,7 +125,7 @@ export class PluginLogModalComponent implements OnChanges {
     if (changes['open'] && this.open && this.configurationId) {
       this._initFields();
       this._resetFilters();
-      this._$selectedRow.set(null);
+      this.$selectedRow.set(null);
       this._loadLogs();
     }
   }
@@ -139,7 +140,7 @@ export class PluginLogModalComponent implements OnChanges {
   }
 
   public onRowClicked(row: PluginLogEntry): void {
-    this._$selectedRow.set(row);
+    this.$selectedRow.set(row);
     this._cdr.markForCheck();
   }
 
@@ -156,25 +157,34 @@ export class PluginLogModalComponent implements OnChanges {
   }
 
   public closeDetail(): void {
-    this._$selectedRow.set(null);
+    this.$selectedRow.set(null);
   }
 
   public levelTagType(level: string): string {
     switch (level) {
-      case 'info': return 'blue';
-      case 'warn': return 'warm-gray';
-      case 'error': return 'red';
-      case 'debug': return 'cool-gray';
-      default: return 'warm-gray';
+      case 'info':
+        return 'blue';
+      case 'warn':
+        return 'warm-gray';
+      case 'error':
+        return 'red';
+      case 'debug':
+        return 'cool-gray';
+      default:
+        return 'warm-gray';
     }
   }
 
   public sourceTagType(source: string): string {
     switch (source) {
-      case 'plugin': return 'purple';
-      case 'gzac_api': return 'teal';
-      case 'http_request': return 'cyan';
-      default: return 'warm-gray';
+      case 'plugin':
+        return 'purple';
+      case 'gzac_api':
+        return 'teal';
+      case 'http_request':
+        return 'cyan';
+      default:
+        return 'warm-gray';
     }
   }
 
@@ -189,34 +199,87 @@ export class PluginLogModalComponent implements OnChanges {
     this.page = 1;
     this.pageSize = DEFAULT_PAGE_SIZE;
 
+    // Built with `instant` since the items are rebuilt on every modal open, mirroring how other
+    // list items in this library are translated.
     this.levelItems = [
-      {content: 'All', selected: true, value: ''},
-      {content: 'Info', selected: false, value: 'info'},
-      {content: 'Warn', selected: false, value: 'warn'},
-      {content: 'Error', selected: false, value: 'error'},
-      {content: 'Debug', selected: false, value: 'debug'},
+      {
+        content: this._translateService.instant('pluginManagement.logs.filterAll'),
+        selected: true,
+        value: '',
+      },
+      {
+        content: this._translateService.instant('pluginManagement.logs.levels.info'),
+        selected: false,
+        value: 'info',
+      },
+      {
+        content: this._translateService.instant('pluginManagement.logs.levels.warn'),
+        selected: false,
+        value: 'warn',
+      },
+      {
+        content: this._translateService.instant('pluginManagement.logs.levels.error'),
+        selected: false,
+        value: 'error',
+      },
+      {
+        content: this._translateService.instant('pluginManagement.logs.levels.debug'),
+        selected: false,
+        value: 'debug',
+      },
     ];
 
     this.sourceItems = [
-      {content: 'All', selected: true, value: ''},
-      {content: 'Plugin', selected: false, value: 'plugin'},
-      {content: 'GZAC API', selected: false, value: 'gzac_api'},
-      {content: 'HTTP Request', selected: false, value: 'http_request'},
+      {
+        content: this._translateService.instant('pluginManagement.logs.filterAll'),
+        selected: true,
+        value: '',
+      },
+      {
+        content: this._translateService.instant('pluginManagement.logs.sources.plugin'),
+        selected: false,
+        value: 'plugin',
+      },
+      {
+        content: this._translateService.instant('pluginManagement.logs.sources.gzacApi'),
+        selected: false,
+        value: 'gzac_api',
+      },
+      {
+        content: this._translateService.instant('pluginManagement.logs.sources.httpRequest'),
+        selected: false,
+        value: 'http_request',
+      },
     ];
   }
 
   private _initFields(): void {
     this.fields = [
-      {key: 'createdAt', label: 'pluginManagement.logs.columns.timestamp', viewType: ViewType.TEMPLATE, template: this.timestampTpl},
-      {key: 'level', label: 'pluginManagement.logs.columns.level', viewType: ViewType.TEMPLATE, template: this.levelTpl},
-      {key: 'source', label: 'pluginManagement.logs.columns.source', viewType: ViewType.TEMPLATE, template: this.sourceTpl},
+      {
+        key: 'createdAt',
+        label: 'pluginManagement.logs.columns.timestamp',
+        viewType: ViewType.TEMPLATE,
+        template: this.timestampTpl,
+      },
+      {
+        key: 'level',
+        label: 'pluginManagement.logs.columns.level',
+        viewType: ViewType.TEMPLATE,
+        template: this.levelTpl,
+      },
+      {
+        key: 'source',
+        label: 'pluginManagement.logs.columns.source',
+        viewType: ViewType.TEMPLATE,
+        template: this.sourceTpl,
+      },
       {key: 'message', label: 'pluginManagement.logs.columns.message', viewType: ViewType.TEXT},
     ];
   }
 
   private _loadLogs(): void {
     if (!this.configurationId) return;
-    this._$loading.set(true);
+    this.$loading.set(true);
     this._externalPluginService
       .getConfigurationLogs(this.configurationId, {
         page: this.page - 1,
@@ -226,14 +289,14 @@ export class PluginLogModalComponent implements OnChanges {
       })
       .subscribe({
         next: result => {
-          this._$rows.set(result.content);
+          this.$rows.set(result.content);
           this._$totalElements.set(result.totalElements);
-          this._$loading.set(false);
+          this.$loading.set(false);
         },
         error: () => {
-          this._$rows.set([]);
+          this.$rows.set([]);
           this._$totalElements.set(0);
-          this._$loading.set(false);
+          this.$loading.set(false);
         },
       });
   }

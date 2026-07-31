@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.service
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.networknt.schema.JsonSchemaFactory
@@ -29,6 +30,7 @@ import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.exception.ExternalPluginConfigurationInUseException
+import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
@@ -43,12 +45,18 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.time.Instant
 import java.util.UUID
 
+/**
+ * Transaction boundaries are deliberately per-method (no class-level `@Transactional`): all host
+ * HTTP I/O (config pushes/deletes) happens **after** the local transaction commits — see
+ * [runAfterCommit] — so a slow or unreachable host can never pin a database transaction open.
+ */
 @Service
 @SkipComponentScan
-@Transactional
 class ExternalPluginConfigurationService(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val definitionRepository: ExternalPluginDefinitionRepository,
@@ -84,8 +92,9 @@ class ExternalPluginConfigurationService(
 
     @Transactional(readOnly = true)
     fun get(id: UUID): ExternalPluginConfiguration = configurationRepository.findById(id)
-        .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
+        .orElseThrow { ExternalPluginNotFoundException("External plugin configuration", id) }
 
+    @Transactional
     fun create(
         definitionId: UUID,
         title: String,
@@ -120,23 +129,60 @@ class ExternalPluginConfigurationService(
         saveGrantedEvents(saved.id, grantedEvents)
         saveGrantedCapabilities(saved.id, capabilities)
 
-        // Push decrypted config to the plugin host
-        try {
-            val host = hostRepository.findById(definition.hostId).orElse(null)
-            if (host != null) {
-                pushToHost(saved, definition, host)
-            }
-        } catch (e: Exception) {
-            logger.warn(e) { "Failed to push configuration ${saved.id} to plugin host (will be synced on next discovery)" }
-        }
+        // Push the decrypted config to the plugin host once the transaction has committed, so the
+        // HTTP call never runs inside the database transaction.
+        pushToHostAfterCommit(saved, definition)
 
         return saved
+    }
+
+    /**
+     * Registers an after-commit push of [configuration] to its host. Failures are surfaced as
+     * warnings only: the discovery service re-pushes every configuration on its next cycle, so a
+     * failed push self-heals.
+     */
+    private fun pushToHostAfterCommit(configuration: ExternalPluginConfiguration, definition: ExternalPluginDefinition) {
+        runAfterCommit {
+            try {
+                val host = hostRepository.findById(definition.hostId).orElse(null)
+                if (host != null) {
+                    val pushed = pushToHost(configuration, definition, host)
+                    if (!pushed) {
+                        logger.warn {
+                            "Failed to push configuration ${configuration.id} to plugin host ${host.id} " +
+                                "(will be synced on next discovery)"
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                logger.warn(e) {
+                    "Failed to push configuration ${configuration.id} to plugin host (will be synced on next discovery)"
+                }
+            }
+        }
+    }
+
+    /**
+     * Runs [action] after the surrounding transaction commits, or immediately when no transaction
+     * is active (e.g. direct calls from the discovery service, which manages its own boundaries).
+     */
+    private fun runAfterCommit(action: () -> Unit) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+                override fun afterCommit() = action()
+            })
+        } else {
+            action()
+        }
     }
 
     /**
      * Pushes a configuration to its plugin host along with a freshly-issued service token and the
      * GZAC base URL the host should call back on. Used both for new configurations and for the
      * discovery service's periodic re-sync.
+     *
+     * Deliberately **not** transactional: this performs HTTP I/O and must never run inside a
+     * database transaction. Callers invoke it after their own transaction has committed.
      */
     fun pushToHost(
         configuration: ExternalPluginConfiguration,
@@ -153,6 +199,10 @@ class ExternalPluginConfigurationService(
             .map { it.eventType }
         val grantedCaps = grantedCapabilityRepository.findAllByConfigurationId(configuration.id)
             .map { it.capability.value }
+        // The granted endpoint list travels with the push so the host enforces it on every
+        // `gzac_api` call, independent of GZAC-side token scoping.
+        val grantedEndpointPairs = grantedEndpointRepository.findAllByConfigurationId(configuration.id)
+            .map { it.httpMethod to it.endpointPattern }
         val pushed = hostClient.pushConfiguration(
             baseUrl = host.baseUrl,
             adminToken = adminToken,
@@ -164,6 +214,7 @@ class ExternalPluginConfigurationService(
             gzacBaseUrl = host.gzacCallbackBaseUrl ?: fallbackGzacBaseUrl,
             eventSubscriptions = grantedEventTypes,
             grantedCapabilities = grantedCaps,
+            grantedEndpoints = grantedEndpointPairs,
             eventBrokerUrl = host.eventBrokerAmqpUrl,
             eventBrokerExchange = host.eventBrokerExchange ?: defaultEventBrokerExchange,
             eventBrokerExchangeType = "fanout",
@@ -176,6 +227,7 @@ class ExternalPluginConfigurationService(
         return pushed
     }
 
+    @Transactional
     fun update(
         id: UUID,
         title: String,
@@ -183,11 +235,28 @@ class ExternalPluginConfigurationService(
         grantedEndpoints: List<GrantedEndpointEntry>? = null,
     ): ExternalPluginConfiguration {
         val config = configurationRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
+            .orElseThrow { ExternalPluginNotFoundException("External plugin configuration", id) }
         val definition = definitionRepository.findById(config.definitionId)
-            .orElseThrow { IllegalArgumentException("External plugin definition ${config.definitionId} not found") }
+            .orElseThrow { ExternalPluginNotFoundException("External plugin definition", config.definitionId) }
 
-        validateAgainstSchema(properties, definition.configSchema)
+        // GET responses omit `x-secret` properties (see maskedProperties), so an absent or blank
+        // secret in the update payload means "unchanged": the stored ciphertext is kept as-is and
+        // the stored plaintext is substituted for schema validation.
+        val secretFields = propertyEncryptor.secretFieldNames(definition.configSchema)
+        val unchangedSecretFields = secretFields.filter { field ->
+            val incoming = properties.get(field)
+            val omitted = incoming == null || incoming.isNull || (incoming.isTextual && incoming.asText().isEmpty())
+            omitted && config.properties?.get(field)?.isTextual == true
+        }
+
+        val validationCopy = properties.deepCopy()
+        unchangedSecretFields.forEach { field ->
+            val storedCiphertext = config.properties!!.get(field).asText()
+            if (storedCiphertext.isNotEmpty()) {
+                validationCopy.put(field, encryptionService.decrypt(storedCiphertext))
+            }
+        }
+        validateAgainstSchema(validationCopy, definition.configSchema)
 
         if (grantedEndpoints != null) {
             validateGrantedEndpointsCoverManifest(grantedEndpoints, definition)
@@ -200,20 +269,18 @@ class ExternalPluginConfigurationService(
         }
 
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
+        // Keep the existing ciphertext for untouched secrets instead of encrypting the empty/absent
+        // placeholder the browser sent back.
+        unchangedSecretFields.forEach { field ->
+            encrypted.set<JsonNode>(field, config.properties!!.get(field))
+        }
 
         config.title = title
         config.properties = encrypted
         val saved = configurationRepository.save(config)
 
-        // Push updated decrypted config to the plugin host
-        try {
-            val host = hostRepository.findById(definition.hostId).orElse(null)
-            if (host != null) {
-                pushToHost(saved, definition, host)
-            }
-        } catch (e: Exception) {
-            logger.warn(e) { "Failed to push updated configuration ${saved.id} to plugin host (will be synced on next discovery)" }
-        }
+        // Push the updated decrypted config to the plugin host after commit (never inside the tx).
+        pushToHostAfterCommit(saved, definition)
 
         return saved
     }
@@ -229,9 +296,10 @@ class ExternalPluginConfigurationService(
     fun findUsages(configurationId: UUID): List<PluginUsageDto> =
         hostUsageResolver.findUsagesForConfiguration(configurationId)
 
+    @Transactional
     fun delete(id: UUID) {
         val config = configurationRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("External plugin configuration $id not found") }
+            .orElseThrow { ExternalPluginNotFoundException("External plugin configuration", id) }
 
         val usages = hostUsageResolver.findUsagesForConfiguration(id)
         if (usages.isNotEmpty()) {
@@ -239,23 +307,28 @@ class ExternalPluginConfigurationService(
         }
 
         val definition = definitionRepository.findById(config.definitionId).orElse(null)
+        val host = definition?.let { hostRepository.findById(it.hostId).orElse(null) }
 
         grantedEndpointRepository.deleteAllByConfigurationId(id)
         grantedEventRepository.deleteAllByConfigurationId(id)
         grantedCapabilityRepository.deleteAllByConfigurationId(id)
         configurationRepository.delete(config)
 
-        // Remove config from the plugin host
-        if (definition != null) {
-            try {
-                val host = hostRepository.findById(definition.hostId).orElse(null)
-                if (host != null) {
+        // Remove the config from the plugin host after the local delete has committed, so the HTTP
+        // call never runs inside the database transaction.
+        if (host != null) {
+            runAfterCommit {
+                try {
                     val adminToken = encryptionService.decrypt(host.secret)
-                    hostClient.deleteConfiguration(host.baseUrl, adminToken, id.toString())
-                    logger.info { "Deleted configuration $id from host ${host.id}" }
+                    val deleted = hostClient.deleteConfiguration(host.baseUrl, adminToken, id.toString())
+                    if (deleted) {
+                        logger.info { "Deleted configuration $id from host ${host.id}" }
+                    } else {
+                        logger.warn { "Failed to delete configuration $id from plugin host ${host.id}" }
+                    }
+                } catch (e: Exception) {
+                    logger.warn(e) { "Failed to delete configuration $id from plugin host" }
                 }
-            } catch (e: Exception) {
-                logger.warn(e) { "Failed to delete configuration $id from plugin host" }
             }
         }
     }
@@ -272,12 +345,30 @@ class ExternalPluginConfigurationService(
     fun getGrantedCapabilities(configurationId: UUID): List<ExternalPluginGrantedCapability> =
         grantedCapabilityRepository.findAllByConfigurationId(configurationId)
 
+    /**
+     * Decrypted properties for **server-side use only** (the host push). Never expose the result
+     * over REST — [maskedProperties] is the read-model for API responses.
+     */
     @Transactional(readOnly = true)
     fun decryptedProperties(configuration: ExternalPluginConfiguration): ObjectNode {
         val definition = definitionRepository.findById(configuration.definitionId)
-            .orElseThrow { IllegalArgumentException("External plugin definition ${configuration.definitionId} not found") }
+            .orElseThrow { ExternalPluginNotFoundException("External plugin definition", configuration.definitionId) }
         val source = configuration.properties ?: objectMapper.createObjectNode()
         return propertyEncryptor.decryptSecretFields(source.deepCopy(), definition.configSchema)
+    }
+
+    /**
+     * Properties safe to return to the browser: `x-secret` fields are omitted entirely (mirroring
+     * the embedded plugin module's `PluginConfigurationDto`). On update, an absent/blank secret
+     * field is treated as "unchanged" — see [update].
+     */
+    @Transactional(readOnly = true)
+    fun maskedProperties(configuration: ExternalPluginConfiguration): ObjectNode {
+        val definition = definitionRepository.findById(configuration.definitionId)
+            .orElseThrow { ExternalPluginNotFoundException("External plugin definition", configuration.definitionId) }
+        val masked = (configuration.properties ?: objectMapper.createObjectNode()).deepCopy()
+        propertyEncryptor.secretFieldNames(definition.configSchema).forEach { masked.remove(it) }
+        return masked
     }
 
     private fun saveGrantedEndpoints(configurationId: UUID, endpoints: List<GrantedEndpointEntry>) {
@@ -314,19 +405,16 @@ class ExternalPluginConfigurationService(
         definition: ExternalPluginDefinition,
     ) {
         val manifest = definition.manifestJson ?: return
-        val declared = manifest.get("eventSubscriptions") ?: return
-        if (!declared.isArray || declared.isEmpty) return
+        val declared = manifest.get("eventSubscriptions")
 
         val grantedTypes = grantedEvents.map { it.eventType }.toSet()
-        val requiredTypes = declared.mapNotNull { it.asText().takeIf { s -> s.isNotBlank() } }.toSet()
-
-        val missing = requiredTypes - grantedTypes
-        if (missing.isNotEmpty()) {
-            throw IllegalArgumentException(
-                "All event subscriptions declared in the plugin manifest must be granted. " +
-                    "Missing: ${missing.joinToString(", ")}"
-            )
+        val requiredTypes = if (declared != null && declared.isArray) {
+            declared.mapNotNull { it.asText().takeIf { s -> s.isNotBlank() } }.toSet()
+        } else {
+            emptySet()
         }
+
+        requireExactGrantMatch("event subscriptions", requiredTypes, grantedTypes)
     }
 
     private fun saveGrantedCapabilities(configurationId: UUID, capabilities: List<ExternalPluginCapability>) {
@@ -346,20 +434,16 @@ class ExternalPluginConfigurationService(
         definition: ExternalPluginDefinition,
     ) {
         val manifest = definition.manifestJson ?: return
-        val permissions = manifest.get("permissions") ?: return
-        val declaredCapabilities = permissions.get("capabilities") ?: return
-        if (!declaredCapabilities.isArray) return
+        val declaredCapabilities = manifest.get("permissions")?.get("capabilities")
 
         val grantedSet = grantedCapabilities.map { it.value }.toSet()
-        val requiredSet = declaredCapabilities.mapNotNull { it.asText().takeIf { s -> s.isNotBlank() } }.toSet()
-
-        val missing = requiredSet - grantedSet
-        if (missing.isNotEmpty()) {
-            throw IllegalArgumentException(
-                "All capabilities declared in the plugin manifest must be granted. " +
-                    "Missing: ${missing.joinToString(", ")}"
-            )
+        val requiredSet = if (declaredCapabilities != null && declaredCapabilities.isArray) {
+            declaredCapabilities.mapNotNull { it.asText().takeIf { s -> s.isNotBlank() } }.toSet()
+        } else {
+            emptySet()
         }
+
+        requireExactGrantMatch("capabilities", requiredSet, grantedSet)
     }
 
     private fun validateGrantedEndpointsCoverManifest(
@@ -367,22 +451,40 @@ class ExternalPluginConfigurationService(
         definition: ExternalPluginDefinition,
     ) {
         val manifest = definition.manifestJson ?: return
-        val permissions = manifest.get("permissions") ?: return
-        val declaredEndpoints = permissions.get("endpoints") ?: return
-        if (!declaredEndpoints.isArray) return
+        val declaredEndpoints = manifest.get("permissions")?.get("endpoints")
 
         val grantedKeys = grantedEndpoints.map { "${it.method.uppercase()}:${it.pattern}" }.toSet()
-        val requiredKeys = declaredEndpoints.mapNotNull { ep ->
-            val method = ep.get("method")?.asText() ?: return@mapNotNull null
-            val pattern = ep.get("pattern")?.asText() ?: return@mapNotNull null
-            "${method.uppercase()}:$pattern"
-        }.toSet()
+        val requiredKeys = if (declaredEndpoints != null && declaredEndpoints.isArray) {
+            declaredEndpoints.mapNotNull { ep ->
+                val method = ep.get("method")?.asText() ?: return@mapNotNull null
+                val pattern = ep.get("pattern")?.asText() ?: return@mapNotNull null
+                "${method.uppercase()}:$pattern"
+            }.toSet()
+        } else {
+            emptySet()
+        }
 
-        val missing = requiredKeys - grantedKeys
+        requireExactGrantMatch("endpoints", requiredKeys, grantedKeys)
+    }
+
+    /**
+     * Grants must match the manifest declaration exactly: everything declared has to be granted
+     * (the admin explicitly acknowledges the plugin's full footprint) and nothing beyond the
+     * declaration can be granted (a grant the plugin never asked for is always a mistake).
+     */
+    private fun requireExactGrantMatch(subject: String, required: Set<String>, granted: Set<String>) {
+        val missing = required - granted
         if (missing.isNotEmpty()) {
             throw IllegalArgumentException(
-                "All endpoints declared in the plugin manifest must be granted. " +
+                "All $subject declared in the plugin manifest must be granted. " +
                     "Missing: ${missing.joinToString(", ")}"
+            )
+        }
+        val undeclared = granted - required
+        if (undeclared.isNotEmpty()) {
+            throw IllegalArgumentException(
+                "Granted $subject must be declared in the plugin manifest. " +
+                    "Not declared: ${undeclared.joinToString(", ")}"
             )
         }
     }

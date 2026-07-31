@@ -18,7 +18,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
-import {ExternalPluginTabContent, ExternalPluginUserTokenResponse} from '../models';
+import {ExternalPluginTabContent} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -37,18 +37,6 @@ export class CaseExternalPluginTabApiService extends BaseApiService {
   ): Observable<ExternalPluginTabContent> {
     return this.httpClient.get<ExternalPluginTabContent>(
       this.getApiUrl(`v1/document/${documentId}/external-plugin-tab/${tabKey}`)
-    );
-  }
-
-  /**
-   * Mints a short-lived, downscoped user token for the configuration backing this tab. Uses
-   * `HttpClient` so the Keycloak bearer interceptor authenticates the mint call as the current
-   * user — the result is bounded by PBAC ∩ the plugin's granted-endpoint allowlist.
-   */
-  public mintUserToken(configurationId: string): Observable<ExternalPluginUserTokenResponse> {
-    return this.httpClient.post<ExternalPluginUserTokenResponse>(
-      this.getApiUrl(`v1/external-plugin/configuration/${configurationId}/user-token`),
-      {}
     );
   }
 }

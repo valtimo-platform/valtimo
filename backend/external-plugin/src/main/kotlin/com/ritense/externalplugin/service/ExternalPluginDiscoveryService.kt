@@ -29,13 +29,20 @@ import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.Instant
 import java.util.UUID
 
+/**
+ * Polls every registered host: health check, manifest discovery and configuration re-push.
+ *
+ * Transaction discipline: HTTP calls to the host (health, plugin listing, config pushes) run
+ * **outside** any database transaction; database writes happen in short per-host transactions via
+ * [transactionTemplate]. A slow or hanging host therefore never pins a database connection or
+ * transaction open, and one host's failure never rolls back another host's bookkeeping.
+ */
 @Service
 @SkipComponentScan
-@Transactional
 class ExternalPluginDiscoveryService(
     private val hostRepository: ExternalPluginHostRepository,
     private val definitionRepository: ExternalPluginDefinitionRepository,
@@ -43,6 +50,7 @@ class ExternalPluginDiscoveryService(
     private val configurationService: ExternalPluginConfigurationService,
     private val hostService: ExternalPluginHostService,
     private val hostClient: ExternalPluginHostClient,
+    private val transactionTemplate: TransactionTemplate,
     private val failureThreshold: Int,
 ) {
 
@@ -73,34 +81,46 @@ class ExternalPluginDiscoveryService(
     }
 
     private fun pollHost(host: ExternalPluginHost) {
+        // HTTP health probe outside any transaction.
         val healthy = hostClient.health(host.baseUrl)
-        host.lastHealthCheck = Instant.now()
 
-        if (!healthy) {
+        // Short transaction: record the health-check outcome and status flip.
+        transactionTemplate.executeWithoutResult { recordHealthCheck(host.id, healthy) }
+        if (!healthy) return
+
+        val adminToken = hostService.decryptedSecret(host)
+        // HTTP manifest listing outside any transaction.
+        val plugins = hostClient.listPlugins(host.baseUrl, adminToken)
+
+        // Short transaction: upsert discovered definitions and mark missing ones.
+        transactionTemplate.executeWithoutResult {
+            val seenDefinitionIds = mutableSetOf<UUID>()
+            plugins.forEach { manifest ->
+                val pluginId = manifest.get("pluginId")?.asText()
+                if (pluginId.isNullOrBlank()) return@forEach
+                val defId = upsertDefinition(host, pluginId, manifest)
+                if (defId != null) seenDefinitionIds += defId
+            }
+            markMissingDefinitions(host, seenDefinitionIds)
+        }
+
+        // Config pushes are HTTP calls again — outside any transaction.
+        syncConfigurations(host)
+    }
+
+    private fun recordHealthCheck(hostId: UUID, healthy: Boolean) {
+        val host = hostRepository.findById(hostId).orElse(null) ?: return
+        host.lastHealthCheck = Instant.now()
+        if (healthy) {
+            host.consecutiveFailures = 0
+            host.status = ExternalPluginHostStatus.CONNECTED
+        } else {
             host.consecutiveFailures += 1
             if (host.consecutiveFailures >= failureThreshold) {
                 host.status = ExternalPluginHostStatus.UNREACHABLE
             }
-            hostRepository.save(host)
-            return
         }
-
-        host.consecutiveFailures = 0
-        host.status = ExternalPluginHostStatus.CONNECTED
         hostRepository.save(host)
-
-        val adminToken = hostService.decryptedSecret(host)
-        val plugins = hostClient.listPlugins(host.baseUrl, adminToken)
-        val seenDefinitionIds = mutableSetOf<UUID>()
-        plugins.forEach { manifest ->
-            val pluginId = manifest.get("pluginId")?.asText()
-            if (pluginId.isNullOrBlank()) return@forEach
-            val defId = upsertDefinition(host, pluginId, manifest)
-            if (defId != null) seenDefinitionIds += defId
-        }
-
-        markMissingDefinitions(host, seenDefinitionIds)
-        syncConfigurations(host)
     }
 
     private fun syncConfigurations(host: ExternalPluginHost) {
@@ -146,12 +166,15 @@ class ExternalPluginDiscoveryService(
             status = ExternalPluginDefinitionStatus.AVAILABLE,
         )
 
+        val newConfigSchema = manifest.get("configurationSchema") as? ObjectNode
+        warnOnDroppedSecretFlags(definition, newConfigSchema)
+
         definition.name = localizedManifestValue(manifest, "name") ?: definition.name
         definition.description = localizedManifestValue(manifest, "description") ?: definition.description
         definition.provider = manifest.get("provider")?.asText() ?: definition.provider
         definition.minGzacVersion = manifest.path("compatibility").get("minGzacVersion")?.asText() ?: definition.minGzacVersion
         definition.maxGzacVersion = manifest.path("compatibility").get("maxGzacVersion")?.asText() ?: definition.maxGzacVersion
-        definition.configSchema = manifest.get("configurationSchema") as? ObjectNode
+        definition.configSchema = newConfigSchema
         definition.manifestJson = if (manifest is ObjectNode) manifest.deepCopy() else null
         definition.baseUrl = "${host.baseUrl}/plugins/$pluginId"
         definition.status = ExternalPluginDefinitionStatus.AVAILABLE
@@ -159,6 +182,33 @@ class ExternalPluginDiscoveryService(
 
         definitionRepository.save(definition)
         return definition.id
+    }
+
+    /**
+     * A property that loses its `x-secret: true` flag between manifest versions silently changes
+     * from "encrypted at rest, masked in the API" to plain text on the next save. That is almost
+     * always a plugin-author mistake, so surface it loudly for the operator.
+     */
+    private fun warnOnDroppedSecretFlags(definition: ExternalPluginDefinition, newConfigSchema: ObjectNode?) {
+        val previousSecrets = secretFieldNames(definition.configSchema)
+        if (previousSecrets.isEmpty()) return
+        val droppedSecrets = previousSecrets - secretFieldNames(newConfigSchema)
+        if (droppedSecrets.isNotEmpty()) {
+            logger.warn {
+                "Plugin '${definition.pluginId}@${definition.version}' dropped the x-secret flag from " +
+                    "previously secret propert${if (droppedSecrets.size == 1) "y" else "ies"} " +
+                    "${droppedSecrets.joinToString(", ")} in its new configuration schema — these values " +
+                    "will no longer be encrypted or masked"
+            }
+        }
+    }
+
+    private fun secretFieldNames(schema: JsonNode?): Set<String> {
+        val schemaProperties = schema?.get("properties") ?: return emptySet()
+        return schemaProperties.fields().asSequence()
+            .filter { (_, fieldSchema) -> fieldSchema.get("x-secret")?.asBoolean(false) == true }
+            .map { (field, _) -> field }
+            .toSet()
     }
 
     private fun markMissingDefinitions(host: ExternalPluginHost, seenDefinitionIds: Set<UUID>) {

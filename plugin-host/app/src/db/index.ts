@@ -135,6 +135,17 @@ export async function runMigrations(pool: DbPool, logger: HostLogger): Promise<v
         CREATE INDEX IF NOT EXISTS idx_plugin_logs_level ON plugin_logs (configuration_id, level, created_at DESC);
       `,
     },
+    {
+      version: 5,
+      name: "add_granted_endpoints_to_plugin_configurations",
+      up: `
+        -- NULL (default) means "not pushed" — older GZAC instances don't send granted endpoints,
+        -- and the host then skips its side of the gzac_api allowlist check (GZAC still enforces
+        -- it server-side). A pushed empty list ('[]') denies every endpoint.
+        ALTER TABLE plugin_configurations
+          ADD COLUMN IF NOT EXISTS granted_endpoints JSONB;
+      `,
+    },
   ];
 
   for (const migration of migrations) {

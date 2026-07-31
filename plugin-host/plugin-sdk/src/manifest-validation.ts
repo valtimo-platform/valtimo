@@ -48,6 +48,10 @@ export function validatePluginManifest(manifest: unknown): string[] {
   if (typeof m.version !== "string" || m.version.trim() === "") {
     errors.push("manifest.json must contain a non-empty 'version'");
   }
+  // Written by the pack tool; optional so hand-rolled/older manifests stay valid.
+  if (m.sdkVersion !== undefined && (typeof m.sdkVersion !== "string" || m.sdkVersion.trim() === "")) {
+    errors.push("manifest.json 'sdkVersion' must be a non-empty string when present");
+  }
 
   const translations = m.translations;
   if (typeof translations !== "object" || translations === null || Array.isArray(translations)) {

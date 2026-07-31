@@ -19,7 +19,7 @@ import type { Response } from "undici";
 import type { CallContext } from "@extism/extism";
 import type { HostLogger } from "../models/index.js";
 import type { LogRepository } from "../db/log-repository.js";
-import type { GzacApiCallContext } from "./gzac-api.js";
+import { guardHostCall } from "./guard.js";
 import {
   createGuardedAgent,
   findBlockedIpLiteral,
@@ -39,6 +39,20 @@ interface HttpRequestOutput {
   status: number;
   headers: Record<string, string>;
   body: unknown;
+}
+
+/**
+ * Strips credentials from a URL before it is logged or persisted: userinfo and the query string
+ * (and fragment) routinely carry secrets (`user:pass@`, `?token=…`), so only scheme+host+path are
+ * recorded.
+ */
+export function redactUrl(raw: string): string {
+  try {
+    const url = new URL(raw);
+    return `${url.protocol}//${url.host}${url.pathname}`;
+  } catch {
+    return raw.split(/[?#]/)[0];
+  }
 }
 
 const MAX_TIMEOUT_MS = 60_000;
@@ -94,26 +108,11 @@ export function createHttpRequestHostFunction(
   };
 
   return async (callContext: CallContext, addr: bigint): Promise<bigint> => {
-    const ctx = callContext.hostContext<GzacApiCallContext | undefined>();
-    if (!ctx) {
-      return callContext.store(JSON.stringify(errorReply(500, "No active invocation context")));
+    const guard = guardHostCall<HttpRequestInput>(callContext, addr, "http_request");
+    if (!guard.ok) {
+      return callContext.store(JSON.stringify(errorReply(guard.status, guard.message)));
     }
-
-    if (!ctx.grantedCapabilities?.includes("http_request")) {
-      return callContext.store(
-        JSON.stringify(errorReply(403, "Capability 'http_request' not granted for this configuration"))
-      );
-    }
-
-    const inputJson = callContext.read(addr)?.string() ?? "{}";
-    let req: HttpRequestInput;
-    try {
-      req = JSON.parse(inputJson) as HttpRequestInput;
-    } catch (err) {
-      return callContext.store(
-        JSON.stringify(errorReply(400, `Invalid http_request JSON: ${(err as Error).message}`))
-      );
-    }
+    const { ctx, req } = guard;
 
     if (!req.method || typeof req.method !== "string") {
       return callContext.store(JSON.stringify(errorReply(400, "Missing 'method'")));
@@ -153,8 +152,10 @@ export function createHttpRequestHostFunction(
     }
 
     const start = Date.now();
+    // Logged/persisted URLs are redacted (no userinfo, no query string) — see redactUrl.
+    const safeUrl = redactUrl(req.url);
     log.info(
-      { configurationId: ctx.configurationId, method: req.method, url: req.url },
+      { configurationId: ctx.configurationId, method: req.method, url: safeUrl },
       "http_request call"
     );
 
@@ -238,7 +239,7 @@ export function createHttpRequestHostFunction(
         body,
       };
 
-      log.info({ method: req.method, url: req.url, status: res.status, durationMs }, "http_request response");
+      log.info({ method: req.method, url: safeUrl, status: res.status, durationMs }, "http_request response");
 
       logRepository
         .insert({
@@ -246,8 +247,8 @@ export function createHttpRequestHostFunction(
           pluginId: ctx.pluginId,
           pluginVersion: ctx.pluginVersion,
           level: "info",
-          message: `${req.method.toUpperCase()} ${req.url} → ${res.status}`,
-          data: { method: req.method, url: req.url, status: res.status, durationMs },
+          message: `${req.method.toUpperCase()} ${safeUrl} → ${res.status}`,
+          data: { method: req.method, url: safeUrl, status: res.status, durationMs },
           source: "http_request",
         })
         .catch((e) => log.warn({ error: (e as Error).message }, "Failed to persist http_request log"));
@@ -257,7 +258,7 @@ export function createHttpRequestHostFunction(
       const durationMs = Date.now() - start;
       // undici wraps connection failures in a generic "fetch failed" — report the real reason.
       const errMsg = rootCauseMessage(err);
-      log.warn({ method: req.method, url: req.url, error: errMsg, durationMs }, "http_request error");
+      log.warn({ method: req.method, url: safeUrl, error: errMsg, durationMs }, "http_request error");
 
       logRepository
         .insert({
@@ -265,8 +266,8 @@ export function createHttpRequestHostFunction(
           pluginId: ctx.pluginId,
           pluginVersion: ctx.pluginVersion,
           level: "error",
-          message: `${req.method.toUpperCase()} ${req.url} → error: ${errMsg}`,
-          data: { method: req.method, url: req.url, error: errMsg, durationMs },
+          message: `${req.method.toUpperCase()} ${safeUrl} → error: ${errMsg}`,
+          data: { method: req.method, url: safeUrl, error: errMsg, durationMs },
           source: "http_request",
         })
         .catch((e) => log.warn({ error: (e as Error).message }, "Failed to persist http_request log"));

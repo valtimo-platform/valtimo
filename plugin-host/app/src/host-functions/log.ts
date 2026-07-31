@@ -17,7 +17,7 @@
 import type { CallContext } from "@extism/extism";
 import type { HostLogger } from "../models/index.js";
 import type { LogRepository } from "../db/log-repository.js";
-import type { GzacApiCallContext } from "./gzac-api.js";
+import { guardHostCall } from "./guard.js";
 
 interface LogRequest {
   level: string;
@@ -32,24 +32,11 @@ export function createLogHostFunction(
   const hostLog = logger.child({ component: "plugin_log" });
 
   return async (callContext: CallContext, addr: bigint): Promise<bigint> => {
-    const ctx = callContext.hostContext<GzacApiCallContext | undefined>();
-    if (!ctx) {
-      return callContext.store(JSON.stringify({ status: 500 }));
+    const guard = guardHostCall<LogRequest>(callContext, addr, "log");
+    if (!guard.ok) {
+      return callContext.store(JSON.stringify({ status: guard.status, error: guard.message }));
     }
-
-    if (!ctx.grantedCapabilities?.includes("log")) {
-      return callContext.store(
-        JSON.stringify({ status: 403, error: "Capability 'log' not granted for this configuration" })
-      );
-    }
-
-    const inputJson = callContext.read(addr)?.string() ?? "{}";
-    let req: LogRequest;
-    try {
-      req = JSON.parse(inputJson) as LogRequest;
-    } catch {
-      return callContext.store(JSON.stringify({ status: 400 }));
-    }
+    const { ctx, req } = guard;
 
     const level = ["info", "warn", "error", "debug"].includes(req.level) ? req.level : "info";
     const message = (req.message ?? "").slice(0, 4096);
