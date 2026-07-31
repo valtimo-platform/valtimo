@@ -19,12 +19,13 @@ import {Type} from '@angular/core';
 import {
   WidgetManagementCollectionComponent,
   WidgetManagementCustomComponent,
+  WidgetManagementExternalPluginComponent,
   WidgetManagementFieldsComponent,
   WidgetManagementHighlightComponent,
   WidgetManagementImageComponent,
   WidgetManagementMapComponent,
-  WidgetManagementPersonCardComponent,
   WidgetManagementMetrolineComponent,
+  WidgetManagementPersonCardComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
@@ -159,6 +160,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/image.svg',
     type: WidgetType.IMAGE,
     component: WidgetManagementImageComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.externalPlugin.title',
+    descriptionKey: 'widgetTabManagement.type.externalPlugin.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/angular.svg',
+    type: WidgetType.EXTERNAL_PLUGIN,
+    component: WidgetManagementExternalPluginComponent,
   },
 ];
 

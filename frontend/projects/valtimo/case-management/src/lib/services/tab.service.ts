@@ -24,6 +24,7 @@ import {
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
+import {ExternalPluginWidgetConfigOption} from '@valtimo/layout';
 import {ExternalPluginService, getExternalPluginDisplayName} from '@valtimo/plugin';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, catchError, combineLatest, map, Observable, of, switchMap} from 'rxjs';
@@ -200,6 +201,48 @@ export class TabService {
         }, []);
       }),
       catchError(() => of([] as ExternalPluginTabConfigOption[]))
+    );
+  }
+
+  /**
+   * Activated external-plugin configurations that expose ≥1 `case-widget` bundle, grouped so the
+   * widget config editor can offer two combo boxes (configuration, then widget bundle). The widget
+   * `case-widget` counterpart of {@link getExternalPluginConfigs}. Degrades to an empty list when the
+   * external-plugin endpoints are unavailable (module absent).
+   */
+  public getExternalPluginWidgetConfigs(): Observable<ExternalPluginWidgetConfigOption[]> {
+    return combineLatest([
+      this.externalPluginService.getDefinitions(),
+      this.externalPluginService.getConfigurations(),
+    ]).pipe(
+      map(([definitions, configurations]) => {
+        const lang = this.translateService.currentLang;
+        const definitionById = new Map(definitions.map(definition => [definition.id, definition]));
+
+        return configurations.reduce<ExternalPluginWidgetConfigOption[]>(
+          (options, configuration) => {
+            const definition = definitionById.get(configuration.definitionId);
+            if (!definition || definition.status !== 'AVAILABLE') return options;
+
+            const caseWidgetBundles = (definition.manifest?.frontendBundles ?? []).filter(
+              bundle => bundle.type === 'case-widget'
+            );
+            if (!caseWidgetBundles.length) return options;
+
+            options.push({
+              configId: configuration.id,
+              label: `${configuration.title} (${getExternalPluginDisplayName(definition, lang)})`,
+              bundles: caseWidgetBundles.map(bundle => ({
+                key: bundle.key ?? null,
+                title: bundle.title ?? bundle.key ?? 'case-widget',
+              })),
+            });
+            return options;
+          },
+          []
+        );
+      }),
+      catchError(() => of([] as ExternalPluginWidgetConfigOption[]))
     );
   }
 

@@ -53,6 +53,7 @@ import com.ritense.externalplugin.security.ExternalPluginUserTokenKeyProvider
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.ExternalPluginBundleUrlResolver
 import com.ritense.externalplugin.service.ExternalPluginCaseTabResolverImpl
+import com.ritense.externalplugin.service.ExternalPluginCaseWidgetResolverImpl
 import com.ritense.externalplugin.service.ExternalPluginConfigurationMappingResolver
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
@@ -141,6 +142,7 @@ class ExternalPluginAutoConfiguration {
         taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
         processDefinitionUsageMetaResolver: ProcessDefinitionUsageMetaResolver,
         caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
+        caseExternalPluginWidgetService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginWidgetService>,
         buildingBlockMappingUsageFinder: java.util.Optional<com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder>,
     ) = ExternalPluginHostUsageResolver(
         definitionRepository,
@@ -149,6 +151,7 @@ class ExternalPluginAutoConfiguration {
         taskFormProcessLinkRepository,
         processDefinitionUsageMetaResolver,
         caseExternalPluginTabService,
+        caseExternalPluginWidgetService,
         buildingBlockMappingUsageFinder,
     )
 
@@ -195,6 +198,14 @@ class ExternalPluginAutoConfiguration {
         configurationRepository: ExternalPluginConfigurationRepository,
         definitionRepository: ExternalPluginDefinitionRepository,
     ) = ExternalPluginCaseTabResolverImpl(bundleUrlResolver, configurationRepository, definitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginCaseWidgetResolverImpl::class)
+    fun externalPluginCaseWidgetResolver(
+        bundleUrlResolver: ExternalPluginBundleUrlResolver,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+    ) = ExternalPluginCaseWidgetResolverImpl(bundleUrlResolver, configurationRepository, definitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginMenuPageService::class)
@@ -554,6 +565,7 @@ class ExternalPluginAutoConfiguration {
         configurationRepository: ExternalPluginConfigurationRepository,
         caseExternalPluginTabRepository: CaseExternalPluginTabRepository,
         caseTabRepository: CaseTabRepository,
+        caseExternalPluginWidgetService: com.ritense.case_.service.CaseExternalPluginWidgetService,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         caseDefinitionChecker: CaseDefinitionChecker,
         applicationEventPublisher: ApplicationEventPublisher,
@@ -563,6 +575,7 @@ class ExternalPluginAutoConfiguration {
         configurationRepository,
         caseExternalPluginTabRepository,
         caseTabRepository,
+        caseExternalPluginWidgetService,
         processDefinitionCaseDefinitionService,
         caseDefinitionChecker,
         applicationEventPublisher,

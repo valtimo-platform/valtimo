@@ -1010,7 +1010,8 @@
         "invisible": "Not visible"
       },
       "externalPlugin": {
-        "loadError": "Could not load the external plugin tab. The plugin host may be unreachable or the bundle is unavailable."
+        "loadError": "Could not load the external plugin tab. The plugin host may be unreachable or the bundle is unavailable.",
+        "unavailable": "This plugin widget is unavailable. Its configuration may be missing or the bundle could not be resolved."
       },
       "titles": {
         "custom": "Create new tab with custom component",
@@ -1313,6 +1314,10 @@
         "title": "Image",
         "description": "Show an uploaded image"
       },
+      "externalPlugin": {
+        "title": "External plugin",
+        "description": "Render a card from an external plugin's case-widget bundle"
+      },
       "generic": {
         "title": "Generic widgets",
         "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
@@ -1362,6 +1367,14 @@
       "widgetTitleTooltip": "Title that displays at the top of the widget",
       "hideWhenEmpty": "Hide when empty",
       "column": "Column {{number}}",
+      "externalPlugin": {
+        "configLabel": "Plugin configuration",
+        "configPlaceholder": "Choose a plugin configuration",
+        "bundleLabel": "Widget",
+        "bundlePlaceholder": "Choose a widget",
+        "unavailableTitle": "External plugins unavailable",
+        "unavailableMessage": "No external plugin exposing a case-widget bundle is available."
+      },
       "fields": {
         "add": "Add field",
         "addEnum": "Add enum value",

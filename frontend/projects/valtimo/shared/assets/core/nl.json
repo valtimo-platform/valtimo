@@ -1017,7 +1017,8 @@
         "invisible": "Niet zichtbaar"
       },
       "externalPlugin": {
-        "loadError": "Het externe plugin-tabblad kon niet worden geladen. De plugin-host is mogelijk onbereikbaar of de bundle is niet beschikbaar."
+        "loadError": "Het externe plugin-tabblad kon niet worden geladen. De plugin-host is mogelijk onbereikbaar of de bundle is niet beschikbaar.",
+        "unavailable": "Deze pluginwidget is niet beschikbaar. Mogelijk ontbreekt de configuratie of kon de bundle niet worden gevonden."
       },
       "titles": {
         "custom": "Nieuw tabblad aanmaken met aangepaste component",
@@ -1332,6 +1333,10 @@
         "title": "Afbeelding",
         "description": "Toon een geüploade afbeelding"
       },
+      "externalPlugin": {
+        "title": "Externe plugin",
+        "description": "Toon een kaart uit de case-widget-bundle van een externe plugin"
+      },
       "generic": {
         "title": "Generieke widgets",
         "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
@@ -1384,6 +1389,14 @@
       "widgetTitleTooltip": "Titel die bovenaan de widget wordt weergegeven",
       "hideWhenEmpty": "Verbergen indien leeg",
       "column": "Kolom {{number}}",
+      "externalPlugin": {
+        "configLabel": "Pluginconfiguratie",
+        "configPlaceholder": "Kies een pluginconfiguratie",
+        "bundleLabel": "Widget",
+        "bundlePlaceholder": "Kies een widget",
+        "unavailableTitle": "Externe plugins niet beschikbaar",
+        "unavailableMessage": "Er is geen externe plugin met een case-widget-bundle beschikbaar."
+      },
       "fields": {
         "add": "Veld toevoegen",
         "addEnum": "Enum-waarde toevoegen",

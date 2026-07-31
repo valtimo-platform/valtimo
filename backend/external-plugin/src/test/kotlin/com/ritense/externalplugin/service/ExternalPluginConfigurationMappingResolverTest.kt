@@ -22,6 +22,8 @@ import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case_.domain.tab.CaseExternalPluginTab
 import com.ritense.case_.repository.CaseExternalPluginTabRepository
+import com.ritense.case_.service.CaseExternalPluginWidgetRef
+import com.ritense.case_.service.CaseExternalPluginWidgetService
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
@@ -76,6 +78,9 @@ class ExternalPluginConfigurationMappingResolverTest {
     lateinit var caseTabRepository: CaseTabRepository
 
     @Mock
+    lateinit var caseExternalPluginWidgetService: CaseExternalPluginWidgetService
+
+    @Mock
     lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
 
     @Mock
@@ -96,12 +101,14 @@ class ExternalPluginConfigurationMappingResolverTest {
             configurationRepository,
             caseExternalPluginTabRepository,
             caseTabRepository,
+            caseExternalPluginWidgetService,
             processDefinitionCaseDefinitionService,
             caseDefinitionChecker,
             applicationEventPublisher,
         )
         lenient().whenever(taskFormProcessLinkRepository.findByProcessDefinitionId(any())).thenReturn(emptyList())
         lenient().whenever(caseTabRepository.findAll(any<Specification<CaseTab>>())).thenReturn(emptyList())
+        lenient().whenever(caseExternalPluginWidgetService.findExternalPluginWidgets(any())).thenReturn(emptyList())
     }
 
     @Test
@@ -117,6 +124,7 @@ class ExternalPluginConfigurationMappingResolverTest {
                 ExternalPluginConfigurationMappingResolver.PROCESS_LINK_ISSUE_TYPE,
                 ExternalPluginConfigurationMappingResolver.TASK_FORM_ISSUE_TYPE,
                 ExternalPluginConfigurationMappingResolver.CASE_TAB_ISSUE_TYPE,
+                ExternalPluginConfigurationMappingResolver.CASE_WIDGET_ISSUE_TYPE,
             ),
         )
     }
@@ -308,6 +316,60 @@ class ExternalPluginConfigurationMappingResolverTest {
     }
 
     @Test
+    fun `resolve remaps external-plugin widgets through the widget service`() {
+        val sourceId = UUID.randomUUID()
+        val targetId = UUID.randomUUID()
+        stubProcessDefinitions()
+
+        resolver.resolve(caseDefinitionId, mapOf(sourceId to targetId))
+
+        verify(caseExternalPluginWidgetService).remapConfiguration(caseDefinitionId, mapOf(sourceId to targetId))
+    }
+
+    @Test
+    fun `getDanglingPluginConfigurations includes dangling external-plugin widgets grouped by plugin identity`() {
+        val danglingConfigId1 = UUID.randomUUID()
+        val danglingConfigId2 = UUID.randomUUID()
+        val existingConfigId = UUID.randomUUID()
+        stubProcessDefinitions("pd-1")
+        whenever(processLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
+        whenever(caseExternalPluginWidgetService.findExternalPluginWidgets(caseDefinitionId)).thenReturn(
+            listOf(
+                widgetRef(danglingConfigId1, "case-summary", "0.1.0"),
+                widgetRef(danglingConfigId2, "case-summary", "0.1.0"),
+                widgetRef(existingConfigId, "other-plugin", "1.0.0"),
+            )
+        )
+        whenever(configurationRepository.existsById(any())).thenAnswer { it.arguments[0] == existingConfigId }
+
+        val result = resolver.getDanglingPluginConfigurations(caseDefinitionId)
+
+        assertThat(result).hasSize(1)
+        val entry = result.single()
+        assertThat(entry.pluginDefinitionKey).isEqualTo("case-summary")
+        assertThat(entry.pluginDefinitionVersion).isEqualTo("0.1.0")
+        assertThat(entry.sourcePluginConfigurationIds).containsExactlyInAnyOrder(danglingConfigId1, danglingConfigId2)
+        assertThat(entry.source).isEqualTo(SOURCE_EXTERNAL)
+    }
+
+    @Test
+    fun `recheckIssuesForCaseDefinition emits detected event for the case-widget surface when a widget is dangling`() {
+        val danglingConfigId = UUID.randomUUID()
+        stubProcessDefinitions("pd-1")
+        whenever(processLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
+        whenever(caseExternalPluginWidgetService.findExternalPluginWidgets(caseDefinitionId)).thenReturn(
+            listOf(widgetRef(danglingConfigId, "case-summary", "0.1.0"))
+        )
+        whenever(configurationRepository.existsById(danglingConfigId)).thenReturn(false)
+
+        resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
+
+        verify(applicationEventPublisher).publishEvent(
+            CaseConfigurationIssueDetectedEvent(caseDefinitionId, ExternalPluginConfigurationMappingResolver.CASE_WIDGET_ISSUE_TYPE)
+        )
+    }
+
+    @Test
     fun `recheckIssuesForProcessDefinition emits resolved event when all links are valid`() {
         val pdId = ProcessDefinitionId.of("pd-1")
         val link = processDefinitionCaseDefinition("pd-1")
@@ -361,6 +423,19 @@ class ExternalPluginConfigurationMappingResolverTest {
         whenever(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(eq(caseDefinitionId)))
             .thenReturn(links)
     }
+
+    private fun widgetRef(
+        configurationId: UUID?,
+        pluginDefinitionKey: String?,
+        pluginDefinitionVersion: String?,
+    ) = CaseExternalPluginWidgetRef(
+        caseDefinitionId = caseDefinitionId,
+        tabKey = "summary",
+        widgetKey = "summary-widget",
+        configurationId = configurationId,
+        pluginDefinitionKey = pluginDefinitionKey,
+        pluginDefinitionVersion = pluginDefinitionVersion,
+    )
 
     private fun processDefinitionCaseDefinition(processDefinitionId: String) =
         ProcessDefinitionCaseDefinition(

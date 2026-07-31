@@ -260,6 +260,129 @@ class ExternalPluginImportPreviewContributorTest {
     }
 
     @Test
+    fun `contributes an entry for an external-plugin case widget with the resolved plugin key and version`() {
+        val configId = UUID.randomUUID()
+        val definitionId = UUID.randomUUID()
+        whenever(configurationRepository.findById(configId)).thenReturn(
+            Optional.of(
+                ExternalPluginConfiguration(
+                    id = configId,
+                    definitionId = definitionId,
+                    title = "Config",
+                    createdAt = Instant.now(),
+                )
+            )
+        )
+        whenever(definitionRepository.findById(definitionId)).thenReturn(
+            Optional.of(
+                ExternalPluginDefinition(
+                    id = definitionId,
+                    pluginId = "case-summary",
+                    version = "0.1.0",
+                    hostId = UUID.randomUUID(),
+                    baseUrl = "http://localhost:1234",
+                    status = ExternalPluginDefinitionStatus.AVAILABLE,
+                )
+            )
+        )
+
+        val json = """
+            [
+              {
+                "key": "widgets-tab",
+                "widgets": [
+                  { "type": "fields", "key": "some-fields" },
+                  {
+                    "type": "external-plugin",
+                    "key": "summary-widget",
+                    "title": "Summary",
+                    "width": 2,
+                    "highContrast": false,
+                    "properties": { "configurationId": "$configId", "bundleKey": "summary-widget" }
+                  }
+                ]
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("config/case/my-doc/1-0-0/case/widget-tab/my-doc.case-widget-tab.json" to json.toByteArray())
+        )
+
+        assertThat(result).hasSize(1)
+        val entry = result.single()
+        assertThat(entry.pluginConfigurationId).isEqualTo(configId)
+        assertThat(entry.pluginActionDefinitionKey).isEqualTo("case-widget")
+        assertThat(entry.pluginDefinitionKey).isEqualTo("case-summary")
+        assertThat(entry.pluginDefinitionVersion).isEqualTo("0.1.0")
+        assertThat(entry.activityId).isEqualTo("widgets-tab/summary-widget")
+        assertThat(entry.source).isEqualTo(SOURCE_EXTERNAL)
+        assertThat(entry.existsInTargetEnvironment).isTrue()
+    }
+
+    @Test
+    fun `a self-describing external-plugin case widget stays identifiable when its configuration was deleted`() {
+        val configId = UUID.randomUUID()
+        whenever(configurationRepository.findById(configId)).thenReturn(Optional.empty())
+
+        val json = """
+            [
+              {
+                "key": "widgets-tab",
+                "widgets": [
+                  {
+                    "type": "external-plugin",
+                    "key": "summary-widget",
+                    "title": "Summary",
+                    "width": 2,
+                    "highContrast": false,
+                    "properties": {
+                      "configurationId": "$configId",
+                      "bundleKey": "summary-widget",
+                      "pluginDefinitionKey": "case-summary",
+                      "pluginDefinitionVersion": "0.1.0"
+                    }
+                  }
+                ]
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("config/case/my-doc/1-0-0/case/widget-tab/my-doc.case-widget-tab.json" to json.toByteArray())
+        )
+
+        assertThat(result).hasSize(1)
+        val entry = result.single()
+        assertThat(entry.pluginConfigurationId).isEqualTo(configId)
+        assertThat(entry.pluginDefinitionKey).isEqualTo("case-summary")
+        assertThat(entry.pluginDefinitionVersion).isEqualTo("0.1.0")
+        assertThat(entry.existsInTargetEnvironment).isFalse()
+        assertThat(entry.source).isEqualTo(SOURCE_EXTERNAL)
+    }
+
+    @Test
+    fun `ignores non-external-plugin widgets in a case widget tab`() {
+        val json = """
+            [
+              {
+                "key": "widgets-tab",
+                "widgets": [
+                  { "type": "fields", "key": "some-fields" },
+                  { "type": "custom", "key": "some-custom", "properties": { "componentKey": "x" } }
+                ]
+              }
+            ]
+        """.trimIndent()
+
+        val result = contributor.contributePreview(
+            mapOf("config/case/my-doc/1-0-0/case/widget-tab/my-doc.case-widget-tab.json" to json.toByteArray())
+        )
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
     fun `ignores non-EXTERNAL_PLUGIN case tabs`() {
         val json = """
             [

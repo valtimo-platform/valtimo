@@ -35,6 +35,7 @@ const WidgetTypeTags: Record<WidgetType, TagType> = {
   [WidgetType.METROLINE]: 'light-green' as TagType,
   [WidgetType.PERSON_CARD]: 'yellow' as TagType,
   [WidgetType.HIGHLIGHT]: 'periwinkle' as TagType,
+  [WidgetType.EXTERNAL_PLUGIN]: 'cool-gray' as TagType,
 };
 
 export {WidgetManagementTab, WidgetTypeTags};

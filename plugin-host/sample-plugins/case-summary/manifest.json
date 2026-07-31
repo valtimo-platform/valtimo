@@ -85,7 +85,20 @@
       "caseTab.external.todoTitle": "Todo",
       "caseTab.external.todoCompleted": "Completed",
       "caseTab.external.error": "Could not load external data.",
-      "caseTab.viewCount": "Tab views"
+      "caseTab.viewCount": "Tab views",
+      "caseWidget.title": "Case summary",
+      "caseWidget.hello": "This card is rendered by the case-summary plugin's case-widget bundle.",
+      "caseWidget.loading": "Loading…",
+      "caseWidget.definition": "Case definition",
+      "caseWidget.viewCount": "Tab views",
+      "caseWidget.error": "Could not load widget data.",
+      "caseMetricsWidget.title": "Case metrics",
+      "caseMetricsWidget.hello": "A second case-widget bundle from the same plugin, selected by its bundle key.",
+      "caseMetricsWidget.loading": "Loading…",
+      "caseMetricsWidget.viewCount": "Tab views",
+      "caseMetricsWidget.currency": "Currency",
+      "caseMetricsWidget.documentId": "Document id",
+      "caseMetricsWidget.error": "Could not load metrics data."
     },
     "nl": {
       "name": "Zaaksamenvatting",
@@ -165,7 +178,20 @@
       "caseTab.external.todoTitle": "Todo",
       "caseTab.external.todoCompleted": "Voltooid",
       "caseTab.external.error": "Kon externe gegevens niet laden.",
-      "caseTab.viewCount": "Tabbladweergaven"
+      "caseTab.viewCount": "Tabbladweergaven",
+      "caseWidget.title": "Zaaksamenvatting",
+      "caseWidget.hello": "Deze kaart wordt weergegeven door de case-widget-bundle van de case-summary plugin.",
+      "caseWidget.loading": "Laden…",
+      "caseWidget.definition": "Zaaktype",
+      "caseWidget.viewCount": "Tabbladweergaven",
+      "caseWidget.error": "Kon widgetgegevens niet laden.",
+      "caseMetricsWidget.title": "Zaakmetrieken",
+      "caseMetricsWidget.hello": "Een tweede case-widget-bundle van dezelfde plugin, geselecteerd op zijn bundle-sleutel.",
+      "caseMetricsWidget.loading": "Laden…",
+      "caseMetricsWidget.viewCount": "Tabbladweergaven",
+      "caseMetricsWidget.currency": "Valuta",
+      "caseMetricsWidget.documentId": "Document-id",
+      "caseMetricsWidget.error": "Kon metriekgegevens niet laden."
     }
   },
   "configurationSchema": {
@@ -211,6 +237,18 @@
       "key": "details",
       "title": "Case Details",
       "path": "/bundles/case-tab-details.html"
+    },
+    {
+      "type": "case-widget",
+      "key": "summary-widget",
+      "title": "Case Summary Widget",
+      "path": "/bundles/case-widget.html"
+    },
+    {
+      "type": "case-widget",
+      "key": "metrics-widget",
+      "title": "Case Metrics Widget",
+      "path": "/bundles/case-widget-metrics.html"
     },
     {
       "type": "task-form",

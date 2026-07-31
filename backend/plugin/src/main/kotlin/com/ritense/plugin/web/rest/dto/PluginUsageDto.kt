@@ -40,6 +40,9 @@ enum class PluginUsageParentType {
  * - **External-plugin case-tab usage**: [tabKey]/[tabName] are populated, [parentType] is `CASE`,
  *   and the process-link fields are null. (A `case-tab` of an external plugin references the
  *   configuration but has no process link.)
+ * - **External-plugin case-widget usage**: like the case-tab usage — [tabKey]/[tabName] identify the
+ *   owning WIDGETS tab and [widgetKey] the widget within it. (An `external-plugin` widget references
+ *   the configuration but has no process link.)
  * - **Building-block mapping usage**: a building block's `pluginConfigurationMappings` reference
  *   the configuration; [buildingBlockKey] names the building block. On a call-activity link the
  *   process-link fields are populated too; on a case-definition ↔ BB link only [parentKey]/
@@ -63,4 +66,5 @@ data class PluginUsageDto(
     val tabKey: String? = null,
     val tabName: String? = null,
     val buildingBlockKey: String? = null,
+    val widgetKey: String? = null,
 )

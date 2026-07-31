@@ -19,18 +19,22 @@ package com.ritense.case_.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.service.CaseTabService
+import com.ritense.case_.rest.dto.CaseWidgetTabDto
+import com.ritense.case_.widget.externalplugin.ExternalPluginCaseWidgetDto
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import org.springframework.transaction.annotation.Transactional
+import java.util.Optional
 
 @Transactional(readOnly = true)
 class CaseWidgetTabExporter(
     private val objectMapper: ObjectMapper,
     private val caseTabService: CaseTabService,
-    private val caseWidgetService: CaseWidgetService
+    private val caseWidgetService: CaseWidgetService,
+    private val externalPluginCaseWidgetResolver: Optional<ExternalPluginCaseWidgetResolver> = Optional.empty(),
 ) : Exporter<DocumentDefinitionExportRequest> {
 
     override fun supports() = DocumentDefinitionExportRequest::class.java
@@ -53,11 +57,45 @@ class CaseWidgetTabExporter(
                 caseTabs
                     .filter { it.type == CaseTabType.WIDGETS }
                     .map { caseWidgetService.getWidgetTab(it.id.caseDefinitionId, it.id.key)!! }
+                    .map(::enrichExternalPluginWidgets)
             )
         )
 
         return ExportResult(
             caseWidgetTabExport
+        )
+    }
+
+    /**
+     * Stamps each `external-plugin` widget with its plugin definition (`pluginId`/version) so the
+     * export is self-describing — the widget stores only the configuration id, so the import preview
+     * can then identify the plugin even when the referenced configuration was deleted in the target.
+     * Mirrors `CaseTabExporter.toExportDto`. Widgets whose configuration can no longer be resolved
+     * (or when external-plugin isn't on the classpath) export unchanged, so unaffected case
+     * definitions round-trip byte-for-byte.
+     */
+    private fun enrichExternalPluginWidgets(tab: CaseWidgetTabDto): CaseWidgetTabDto {
+        val resolver = externalPluginCaseWidgetResolver.orElse(null) ?: return tab
+        if (tab.widgets.none { it is ExternalPluginCaseWidgetDto }) return tab
+        return tab.copy(
+            widgets = tab.widgets.map { widget ->
+                if (widget !is ExternalPluginCaseWidgetDto) {
+                    widget
+                } else {
+                    val configurationId = widget.properties.configurationId
+                    val definition = configurationId?.let { resolver.resolvePluginDefinition(it) }
+                    if (definition == null) {
+                        widget
+                    } else {
+                        widget.copy(
+                            properties = widget.properties.copy(
+                                pluginDefinitionKey = definition.pluginDefinitionKey,
+                                pluginDefinitionVersion = definition.pluginDefinitionVersion,
+                            )
+                        )
+                    }
+                }
+            }
         )
     }
 

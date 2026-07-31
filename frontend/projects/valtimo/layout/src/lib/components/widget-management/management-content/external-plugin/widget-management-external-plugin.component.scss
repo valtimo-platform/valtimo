@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,16 +14,27 @@
  * limitations under the License.
  */
 
-export * from './candidate-user.model';
-export * from './case-detail-tab.model';
-export * from './case-parameters.model';
-export * from './search.model';
-export * from './tab-api.model';
-export * from './tabs.model';
-export * from './case-detail-layout.model';
-export * from './case-sse-event.model';
-export * from './case-list-quick-search.model';
-export * from './case-widget.model';
-export * from './case-inspection.models';
-export * from './external-plugin-tab.model';
-export * from './external-plugin-widget.model';
+.valtimo-widget-management-external-plugin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-05);
+
+  ::ng-deep .cds--text-input,
+  ::ng-deep .cds--list-box,
+  ::ng-deep .cds--list-box__field {
+    background-color: var(--cds-layer-02);
+  }
+
+  &__title-container {
+    display: flex;
+    gap: var(--cds-spacing-05);
+  }
+
+  &__title-input {
+    max-width: 300px;
+  }
+
+  &__unavailable {
+    color: var(--cds-text-secondary);
+  }
+}
