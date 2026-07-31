@@ -33,12 +33,6 @@
   Successful changes are logged at `INFO` level and failures at `WARN`/`ERROR` level including the
   reason, making it easier to trace subscription problems. When subscription registration is turned
   off (`valtimo.zgw.register-abonnementen=false`), this is now logged instead of happening silently.
-* **Zaaktype dropdown now shows the begin and end date**
-
-  The 'Gekoppeld zaak type' dropdown in the case type link configuration now shows the start and end
-  date of each zaaktype between parentheses, next to its description. This makes it possible to tell
-  apart different versions of zaaktypes that share the same description, preventing configuration
-  mistakes.
 
 * **Case detail keeps the status and assignee up to date automatically**
 
@@ -46,10 +40,6 @@
   change, so you no longer have to switch tabs or reload the page to see the current situation. This
   happens for example when a status changes automatically because a task is completed or a timer
   expires, and when a case is assigned to — or unassigned from — a colleague or a team.
-* **Option to keep the form.io token out of localStorage**
-
-  A new `disableFormioTokenInLocalStorage` feature toggle keeps the form.io token in memory only
-  instead of persisting it to localStorage. It is disabled by default.
 
 ## Bugfixes
 
