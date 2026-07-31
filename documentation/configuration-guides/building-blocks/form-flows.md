@@ -85,7 +85,9 @@ Confirm the deletion in the dialog
 {% endstep %}
 {% endstepper %}
 
+{% hint style="info" %}
 Form flows marked as read-only cannot be deleted.
+{% endhint %}
 
 ## Form flow scope
 
