@@ -38,6 +38,10 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -45,6 +49,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.net.URI
+import java.time.LocalDate
 import java.nio.charset.StandardCharsets
 import java.util.Optional
 import java.util.UUID
@@ -69,8 +74,15 @@ internal class CatalogiResourceTest : BaseTest() {
         catalogiResource =
             CatalogiResource(catalogiService, activeCaseDefinitionService, caseDefinitionService, documentService)
 
+        // Match the production Jackson configuration (Spring Boot disables WRITE_DATES_AS_TIMESTAMPS),
+        // so LocalDate is serialized as an ISO string instead of a timestamp array.
+        val objectMapper = ObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+
         mockMvc = MockMvcBuilders
             .standaloneSetup(catalogiResource)
+            .setMessageConverters(MappingJackson2HttpMessageConverter(objectMapper))
             .build()
     }
 
@@ -306,12 +318,20 @@ internal class CatalogiResourceTest : BaseTest() {
     @Test
     fun `should get zaaktypen`() {
 
-        val zaaktypen = IntRange(1, 2).map { n ->
+        val zaaktypen = listOf(
             newZaaktype(
-                URI("http://example.com/$n"),
-                "Zaaktype $n"
+                URI("http://example.com/1"),
+                "Zaaktype 1",
+                beginGeldigheid = LocalDate.parse("2021-01-01"),
+                eindeGeldigheid = LocalDate.parse("2021-12-31")
+            ),
+            newZaaktype(
+                URI("http://example.com/2"),
+                "Zaaktype 2",
+                beginGeldigheid = LocalDate.parse("2022-01-01"),
+                eindeGeldigheid = null
             )
-        }
+        )
 
         whenever(catalogiService.getZaakTypen()).thenReturn(zaaktypen)
 
@@ -328,8 +348,12 @@ internal class CatalogiResourceTest : BaseTest() {
             .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
             .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://example.com/1"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.[0].omschrijving").value("Zaaktype 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].beginGeldigheid").value("2021-01-01"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].eindeGeldigheid").value("2021-12-31"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://example.com/2"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.[1].omschrijving").value("Zaaktype 2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].beginGeldigheid").value("2022-01-01"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].eindeGeldigheid").isEmpty)
     }
 
     @Test

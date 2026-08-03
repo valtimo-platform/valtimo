@@ -1919,6 +1919,7 @@
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",
     "selectZaakTypeForCase": "Kies zaaktype voor dossier",
     "selectZaakType": "Kies zaaktype",
+    "present": "heden",
     "selectZakenApiPluginForCase": "Kies Zaken Api plugin voor aanmaken zaak",
     "selectZakenApiPlugin": "Kies Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
@@ -3255,6 +3256,10 @@
       "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
       "refreshNow": "Nu vernieuwen",
       "toggles": {
+        "disableFormioTokenInLocalStorage": {
+          "title": "Form.io-token alleen in geheugen bewaren",
+          "description": "Houd het form.io-token in het geheugen in plaats van in localStorage. Schakel dit alleen in als formulieren uitsluitend het Keycloak-token gebruiken."
+        },
         "allowUserThemeSwitching": {
           "title": "Thema wisselen toestaan",
           "description": "Gebruikers laten schakelen tussen lichte en donkere modus via de bovenbalk."
