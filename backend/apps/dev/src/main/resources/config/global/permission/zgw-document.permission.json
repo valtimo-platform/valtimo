@@ -1,0 +1,40 @@
+[
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "actions": [
+            "view_list",
+            "view",
+            "create",
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "actions": [
+            "view_list",
+            "view",
+            "create",
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "container",
+                "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+                "conditions": [
+                    {
+                        "type": "field",
+                        "field": "documentDefinitionId.caseDefinitionId.key",
+                        "operator": "in",
+                        "value": [
+                            "bezwaar"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

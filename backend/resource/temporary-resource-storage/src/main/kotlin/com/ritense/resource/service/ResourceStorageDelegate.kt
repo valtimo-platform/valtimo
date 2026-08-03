@@ -39,4 +39,9 @@ class ResourceStorageDelegate(
     fun deleteResource(resourceStorageFileId: String): Boolean {
         return service.deleteResource(resourceStorageFileId)
     }
+
+    fun storeContent(content: String) : String {
+        return service.storeContent(content)
+    }
+
 }

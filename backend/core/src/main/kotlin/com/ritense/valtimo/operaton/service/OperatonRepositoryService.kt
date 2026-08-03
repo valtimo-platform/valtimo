@@ -89,6 +89,14 @@ class OperatonRepositoryService(
     }
 
     @Transactional(readOnly = true)
+    fun findDecisionDefinitions(
+        specification: Specification<OperatonDecisionDefinition>
+    ): List<OperatonDecisionDefinition> {
+        denyAuthorization()
+        return operatonDecisionDefinitionRepository.findAll(specification)
+    }
+
+    @Transactional(readOnly = true)
     fun countProcessDefinitions(specification: Specification<OperatonProcessDefinition>): Long {
         denyAuthorization()
         return operatonProcessDefinitionRepository.count(specification)

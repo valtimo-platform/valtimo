@@ -32,9 +32,16 @@ To configure process links, admin privileges are required.
 
 #### Creating a form process link
 
-A form process link can be added to user-tasks. When the process reaches the user-task, a user will be presented with the configured form when opening it.
+A form process link can be added to user-tasks and start events. When the process reaches the user-task, a user will be presented with the configured form when opening it. For start events, the form is shown when a user starts a case or supporting process.
 
 More information about forms can be found in the [forms documentation](../case/forms/).
+
+##### Display options for start event forms
+
+When linking a form to a start event, additional display options are available:
+
+* **Display type** — Choose **Modal** (default) to open the form in a popup dialog, or **Panel** to open it in the case detail panel (the same way user task forms can). The panel option is only available when starting a supporting process from a case detail tab that exposes a panel. If no panel is available, the form falls back to opening in a modal. Forms using view models or custom UI components always open in the modal.
+* **Modal size** — When using the modal display type, you can configure the modal size: Extra small, Small (default), Medium, or Large.
 
 #### Creating a form-flow process link
 

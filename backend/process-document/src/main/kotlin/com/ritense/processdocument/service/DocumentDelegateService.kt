@@ -25,7 +25,7 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -43,7 +43,6 @@ import kotlin.jvm.optionals.getOrNull
 @Service
 @SkipComponentScan
 class DocumentDelegateService(
-    private val processDocumentService: ProcessDocumentService,
     private val documentService: DocumentService,
     private val jsonSchemaDocumentService: JsonSchemaDocumentService,
     private val userManagementService: UserManagementService,
@@ -89,8 +88,7 @@ class DocumentDelegateService(
 
     @ProcessBeanMethod(description = "Gets the full case document object")
     fun getDocument(execution: DelegateExecution): Document {
-        val documentId =
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(execution.processInstanceId), execution)
+        val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
         return jsonSchemaDocumentService.getDocumentBy(documentId)
     }
 
@@ -165,14 +163,13 @@ class DocumentDelegateService(
     }
 
     private fun getCaseDocumentId(execution: DelegateExecution): UUID {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
-        return caseDocumentResolver.resolveCaseDocumentId(documentId.id)
+        val documentId = execution.getJsonSchemaDocumentId()
+        return caseDocumentResolver.resolveCaseDocumentId(documentId)
     }
 
     private fun findOptionalValueByJsonPointer(jsonPointer: String?, execution: DelegateExecution): Optional<Any> {
-        val jsonSchemaDocumentId = JsonSchemaDocumentId.existingId(UUID.fromString(execution.processBusinessKey))
-        logger.debug("Retrieving value for key {} from documentId {}", jsonPointer, execution.processBusinessKey)
+        val jsonSchemaDocumentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
+        logger.debug { "Retrieving value for key $jsonPointer from documentId $jsonSchemaDocumentId" }
 
         return documentService.findBy(jsonSchemaDocumentId)
             .flatMap { jsonSchemaDocument ->

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,6 +151,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.searchService.search(searchFieldValues);
   }
 
+  public onGlobalSearchFilterChange(value: string): void {
+    this.searchService.setGlobalSearchFilter(value);
+  }
+
   // --- Row click ---
 
   public rowClick(item: any): void {
@@ -298,6 +302,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.parameterService.setSearchFieldValues(
           this.parameterService.getSearchObject(queryParams['search']) as SearchFieldValues
         );
+        this.searchService.setGlobalSearchFilter(null);
       });
   }
 

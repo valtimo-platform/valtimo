@@ -18,6 +18,7 @@
  * Public API Surface of shared
  */
 
+export * from './lib/components/carousel/carousel.component';
 export * from './lib/components/global-notification.component';
 export * from './lib/config.module';
 export * from './lib/constants';
@@ -28,4 +29,5 @@ export * from './lib/testing';
 export * from './lib/translation';
 export * from './lib/utils';
 export * from './lib/zgw';
+export * from './lib/guards';
 export * from './lib/generated'

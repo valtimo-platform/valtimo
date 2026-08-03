@@ -39,8 +39,7 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
 import com.ritense.portaaltaak.exception.CompleteTaakProcessVariableNotFoundException
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valtimo.service.OperatonTaskService
@@ -70,7 +69,6 @@ class PortaaltaakPlugin(
     private val objectManagementService: ObjectManagementService,
     private val pluginService: PluginService,
     private val valueResolverService: ValueResolverService,
-    private val processDocumentService: ProcessDocumentService,
     private val zaakInstanceLinkService: ZaakInstanceLinkService,
     private val taskService: OperatonTaskService
 ) : NotificatiesApiListener {
@@ -106,16 +104,16 @@ class PortaaltaakPlugin(
         withLoggingContext(DelegateTask::class.java.canonicalName to delegateTask.id) {
             logger.debug { "Creating portaaltaak for task with id '${delegateTask.id}'" }
 
-            val objectManagement = objectManagementService.getById(objectManagementConfigurationId)
-                ?: throw IllegalStateException("Object management not found for portaaltaak")
+            val objectManagement = runWithoutAuthorization {
+                objectManagementService.getById(objectManagementConfigurationId)
+            } ?: throw IllegalStateException("Object management not found for portaaltaak")
 
             val objectenApiPlugin = pluginService.createInstance(
                 PluginConfigurationId
                     .existingId(objectManagement.objectenApiPluginConfigurationId)
             ) as ObjectenApiPlugin
 
-            val processInstanceId = OperatonProcessInstanceId(delegateTask.processInstanceId)
-            val documentId = processDocumentService.getDocumentId(processInstanceId, delegateTask).id
+            val documentId = delegateTask.getJsonSchemaDocumentId()
 
             val zaakUrl = try {
                 zaakInstanceLinkService.getByDocumentId(documentId).zaakInstanceUrl
@@ -223,10 +221,9 @@ class PortaaltaakPlugin(
     }
 
     internal fun getZaakinitiator(delegateTask: DelegateTask): TaakIdentificatie {
-        val processInstanceId = OperatonProcessInstanceId(delegateTask.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, delegateTask)
+        val documentId = delegateTask.getJsonSchemaDocumentId()
 
-        val zaakUrl = zaakInstanceLinkService.getByDocumentId(documentId.id).zaakInstanceUrl
+        val zaakUrl = zaakInstanceLinkService.getByDocumentId(documentId).zaakInstanceUrl
         val zakenPlugin = requireNotNull(
             pluginService.createInstance(ZakenApiPlugin::class.java, ZakenApiPlugin.findConfigurationByUrl(zaakUrl))
         ) { "No plugin configuration was found for zaak with URL $zaakUrl" }
@@ -348,8 +345,9 @@ class PortaaltaakPlugin(
     }
 
     override fun getKanaalFilters(): List<Abonnement.Kanaal> {
-        val objectManagement = objectManagementService.getById(objectManagementConfigurationId)
-            ?: throw IllegalStateException("Object management not found for portaaltaak")
+        val objectManagement = runWithoutAuthorization {
+            objectManagementService.getById(objectManagementConfigurationId)
+        } ?: throw IllegalStateException("Object management not found for portaaltaak")
 
         val objecttypenApiPlugin = pluginService.createInstance(
             PluginConfigurationId

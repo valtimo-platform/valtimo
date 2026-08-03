@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "access-control-permissions.json",
+    "$comment": "This schema is HAND-MAINTAINED, not generated. When actions, resource types, condition fields, or container relationships change in the backend, update this file by hand to match. Keep the per-resourceType 'action'/'actions' enums in sync with the corresponding ResourceActionProvider (e.g. JsonSchemaDocumentActionProvider), and the 'condList.*' field enums in sync with the entity's authorizable fields. It is served by PermissionSchemaResource at GET /api/management/v1/permissions/schema and consumed only by the frontend access-control JSON editor (autocomplete + validation); it is NOT used for backend/deploy-time validation of *.permission.json files.",
     "type": "array",
     "title": "Role permissions",
     "description": "Permissions for the selected role. Each entry in the list grants the role one or more actions on a particular kind of resource in Valtimo (for example: 'view cases of type loans', or 'complete tasks where you are the assignee'). Multiple entries are combined with OR — the user is allowed to perform an action if ANY entry permits it.",
@@ -68,6 +69,11 @@
                         "const": "com.ritense.note.domain.Note",
                         "title": "Case note",
                         "description": "A free-text note attached to a case, used for collaboration between case workers. Grant access here to control who can read, create, edit, or delete notes."
+                    },
+                    {
+                        "const": "com.ritense.objectmanagement.domain.ObjectManagement",
+                        "title": "Object Management",
+                        "description": "An Object Management configuration linking Valtimo to an Objecten API object type. Grant access here to control which configurations a role can view and list (data menu, object lists, form.io object selector)."
                     },
                     {
                         "const": "com.ritense.objectenapi.security.Object",
@@ -344,6 +350,8 @@
                                 "create",
                                 "delete",
                                 "export",
+                                "inspect",
+                                "inspect_modify",
                                 "modify",
                                 "view",
                                 "view_list"
@@ -360,6 +368,8 @@
                                     "create",
                                     "delete",
                                     "export",
+                                    "inspect",
+                                    "inspect_modify",
                                     "modify",
                                     "view",
                                     "view_list"
@@ -663,6 +673,49 @@
                             "enum": [
                                 "com.ritense.authorization.NoContext",
                                 "com.ritense.document.domain.impl.JsonSchemaDocument"
+                            ]
+                        },
+                        "contextConditions": {
+                            "$ref": "#/definitions/conditions"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "required": [
+                        "resourceType"
+                    ],
+                    "properties": {
+                        "resourceType": {
+                            "const": "com.ritense.objectmanagement.domain.ObjectManagement"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": [
+                                "view_list"
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "view_list"
+                                ]
+                            }
+                        },
+                        "conditions": {
+                            "$ref": "#/definitions/condList.com.ritense.objectmanagement.domain.ObjectManagement"
+                        },
+                        "contextResourceType": {
+                            "type": "string",
+                            "enum": [
+                                "com.ritense.authorization.NoContext"
                             ]
                         },
                         "contextConditions": {
@@ -2062,6 +2115,65 @@
                                 "$ref": "#/definitions/condList.com.ritense.document.domain.impl.JsonSchemaDocument"
                             }
                         }
+                    }
+                ]
+            }
+        },
+        "condList.com.ritense.objectmanagement.domain.ObjectManagement": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/fieldCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "id",
+                                            "title",
+                                            "objecttypeId",
+                                            "objecttypeVersion",
+                                            "objecttypenApiPluginConfigurationId",
+                                            "objectenApiPluginConfigurationId",
+                                            "showInDataMenu",
+                                            "suppressOutbox",
+                                            "formDefinitionView",
+                                            "formDefinitionEdit"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/expressionCondition"
+                            },
+                            {
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "id",
+                                            "title",
+                                            "objecttypeId",
+                                            "objecttypeVersion",
+                                            "objecttypenApiPluginConfigurationId",
+                                            "objectenApiPluginConfigurationId",
+                                            "showInDataMenu",
+                                            "suppressOutbox",
+                                            "formDefinitionView",
+                                            "formDefinitionEdit"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
                     }
                 ]
             }

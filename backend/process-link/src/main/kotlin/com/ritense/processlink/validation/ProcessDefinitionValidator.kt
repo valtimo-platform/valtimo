@@ -1,5 +1,6 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.ritense.processlink.validation
@@ -19,6 +21,7 @@ package com.ritense.processlink.validation
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import org.operaton.bpm.impl.juel.Builder
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
+import org.operaton.bpm.model.bpmn.instance.BoundaryEvent
 import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask
 import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.operaton.bpm.model.bpmn.instance.ConditionalEventDefinition
@@ -39,6 +42,7 @@ import org.operaton.bpm.model.bpmn.instance.SequenceFlow
 import org.operaton.bpm.model.bpmn.instance.ServiceTask
 import org.operaton.bpm.model.bpmn.instance.SignalEventDefinition
 import org.operaton.bpm.model.bpmn.instance.StartEvent
+import org.operaton.bpm.model.bpmn.instance.SubProcess
 import org.operaton.bpm.model.bpmn.instance.TerminateEventDefinition
 import org.operaton.bpm.model.bpmn.instance.TimerEventDefinition
 import org.operaton.bpm.model.bpmn.instance.UserTask
@@ -143,6 +147,9 @@ class ProcessDefinitionValidator(
         process: Process,
         errors: MutableList<ProcessDefinitionValidationError>
     ) {
+        val boundaryEvents = process.getChildElementsByType(BoundaryEvent::class.java)
+        val activitiesWithBoundaryEvents = boundaryEvents.mapNotNull { it.attachedTo?.id }.toSet()
+
         process.getChildElementsByType(FlowNode::class.java).forEach { node ->
             if (node is StartEvent) {
                 if (node.getOutgoing().isEmpty()) {
@@ -166,6 +173,21 @@ class ProcessDefinitionValidator(
                         )
                     )
                 }
+            } else if (node is BoundaryEvent) {
+                // Boundary events attach to activities, so they don't need incoming flows
+                if (node.getOutgoing().isEmpty()) {
+                    errors.add(
+                        ProcessDefinitionValidationError(
+                            elementId = node.id,
+                            elementType = node.elementType.typeName,
+                            elementName = node.name,
+                            reason = "Boundary event has no outgoing flow",
+                        )
+                    )
+                }
+            } else if (node is SubProcess && node.triggeredByEvent()) {
+                // Event sub-processes are triggered by events, not sequence flows
+                return@forEach
             } else {
                 if (node.getIncoming().isEmpty()) {
                     errors.add(
@@ -177,7 +199,8 @@ class ProcessDefinitionValidator(
                         )
                     )
                 }
-                if (node.getOutgoing().isEmpty()) {
+                // Activities with boundary events don't need outgoing flows
+                if (node.getOutgoing().isEmpty() && node.id !in activitiesWithBoundaryEvents) {
                     errors.add(
                         ProcessDefinitionValidationError(
                             elementId = node.id,
@@ -197,6 +220,8 @@ class ProcessDefinitionValidator(
     ) {
         val allFlowNodes = process.getChildElementsByType(FlowNode::class.java)
         val startEvents = process.getChildElementsByType(StartEvent::class.java)
+        val boundaryEventsByActivity = process.getChildElementsByType(BoundaryEvent::class.java)
+            .groupBy { it.attachedTo?.id }
 
         val visited = mutableSetOf<String>()
         val queue = ArrayDeque<FlowNode>()
@@ -206,14 +231,17 @@ class ProcessDefinitionValidator(
         while (queue.isNotEmpty()) {
             val current = queue.removeFirst()
             if (!visited.add(current.id)) continue
-            current.getOutgoing().forEach { flow ->
-                if (!visited.contains(flow.target.id)) {
-                    queue.add(flow.target)
+            getSuccessors(current, boundaryEventsByActivity).forEach { successor ->
+                if (!visited.contains(successor.id)) {
+                    queue.add(successor)
                 }
             }
         }
 
         allFlowNodes.forEach { node ->
+            // Event sub-processes are triggered by events, not sequence flows
+            if (node is SubProcess && node.triggeredByEvent()) return@forEach
+
             if (!visited.contains(node.id)) {
                 errors.add(
                     ProcessDefinitionValidationError(
@@ -226,6 +254,18 @@ class ProcessDefinitionValidator(
                 )
             }
         }
+    }
+
+    private fun getSuccessors(
+        node: FlowNode,
+        boundaryEventsByActivity: Map<String?, List<BoundaryEvent>>
+    ): List<FlowNode> {
+        val successors = mutableListOf<FlowNode>()
+        // Regular outgoing sequence flows
+        node.getOutgoing().forEach { successors.add(it.target) }
+        // Boundary events attached to this activity
+        boundaryEventsByActivity[node.id]?.forEach { successors.add(it) }
+        return successors
     }
 
     private fun validateSingleNoneStartEvent(
@@ -258,6 +298,9 @@ class ProcessDefinitionValidator(
         }
         if (hasTerminateEndEvent) return
 
+        val boundaryEventsByActivity = process.getChildElementsByType(BoundaryEvent::class.java)
+            .groupBy { it.attachedTo?.id }
+
         val startEvents = process.getChildElementsByType(StartEvent::class.java)
         for (startEvent in startEvents) {
             val visited = mutableSetOf<String>()
@@ -272,9 +315,9 @@ class ProcessDefinitionValidator(
                     reachesEndEvent = true
                     break
                 }
-                current.getOutgoing().forEach { flow ->
-                    if (!visited.contains(flow.target.id)) {
-                        queue.add(flow.target)
+                getSuccessors(current, boundaryEventsByActivity).forEach { successor ->
+                    if (!visited.contains(successor.id)) {
+                        queue.add(successor)
                     }
                 }
             }
@@ -714,8 +757,11 @@ class ProcessDefinitionValidator(
         val beanNameMatch = beanNameRegex.find(expression)
         val beanName = beanNameMatch?.groupValues?.get(1) ?: return
 
-        // Skip JUEL built-ins and common keywords
-        if (beanName in listOf("true", "false", "null", "empty", "not")) return
+        // Skip JUEL built-ins and Operaton runtime variables
+        val alwaysAvailable = setOf("true", "false", "null", "empty", "not",
+            "execution", "authenticatedUserId", "variableContext")
+        if (beanName in alwaysAvailable) return
+        if (elementType == "UserTask" && beanName == "task") return
 
         if (!processBeans.containsKey(beanName)) {
             errors.add(
@@ -723,9 +769,10 @@ class ProcessDefinitionValidator(
                     elementId = elementId,
                     elementType = elementType,
                     elementName = elementName,
-                    reason = "Bean '$beanName' not found in process beans",
+                    reason = "No bean named '$beanName' found. If using a process variable, ensure it exists at runtime.",
                     errorCode = ExpressionValidationErrorCode.BEAN_NOT_FOUND.name,
-                    expression = expression
+                    expression = expression,
+                    severity = ValidationSeverity.WARNING
                 )
             )
         }

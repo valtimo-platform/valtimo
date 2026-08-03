@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,7 +150,7 @@ export class MenuService implements OnDestroy {
     this.menuConfig.menuItems.forEach(menuItem => {
       if (menuItem.includeFunction !== undefined) {
         this.includeFunctionObservables[menuItem.title] =
-          this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);
+          this.menuIncludeService.getIncludeFunctionObservable(menuItem.includeFunction);
       }
 
       menuItem.show = true;
@@ -159,6 +159,14 @@ export class MenuService implements OnDestroy {
         const filteredChildren = menuItem.children?.filter(
           child => !child.roles || child.roles.some(role => userRoles.includes(role))
         );
+
+        filteredChildren?.forEach(child => {
+          if (child.includeFunction !== undefined) {
+            this.includeFunctionObservables[child.title] =
+              this.menuIncludeService.getIncludeFunctionObservable(child.includeFunction);
+          }
+        });
+
         menuItems.push({...menuItem, ...(filteredChildren && {children: filteredChildren})});
       }
     });

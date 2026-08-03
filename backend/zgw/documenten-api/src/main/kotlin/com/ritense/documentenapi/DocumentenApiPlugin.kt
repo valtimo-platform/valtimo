@@ -46,12 +46,14 @@ import com.ritense.plugin.domain.EventType
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.service.VirusScanService
 import com.ritense.resource.domain.VirusScanStatus
 import com.ritense.temporaryresource.domain.StorageMetadataKeys
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.upload.VirusDetectedException
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
@@ -86,7 +88,8 @@ class DocumentenApiPlugin(
     private val pluginService: PluginService,
     private val runtimeService: OperatonRuntimeService,
     private val virusScanService: VirusScanService,
-    private val virusScanEnabledForDocumentenApiPlugin: Boolean
+    private val virusScanEnabledForDocumentenApiPlugin: Boolean,
+    private val caseDocumentResolver: CaseDocumentResolver,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -218,13 +221,9 @@ class DocumentenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty processVariableName: String? = null
     ): String {
-        val documentUrlString = execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?
-            ?: throw IllegalStateException("Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
-        check(documentUrlString.startsWith(url.toASCIIString())) { "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'." }
-        val documentUrl = URI(documentUrlString)
-        val caseDocumentId = UUID.fromString(execution.businessKey)
-            ?: throw IllegalStateException("Failed to store document. Business key is null.")
-
+        val documentUrl = resolveDownloadDocumentUrl(execution)
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
         val metaData = client.getInformatieObject(
             authenticationPluginConfiguration,
             caseDocumentId,
@@ -237,7 +236,7 @@ class DocumentenApiPlugin(
         )
 
         val metaDataMap = objectMapper.convertValue<MutableMap<String, Any>>(metaData)
-        metaDataMap[MetadataType.DOCUMENT_ID.key] = execution.businessKey
+        metaDataMap[MetadataType.DOCUMENT_ID.key] = caseDocumentId.toString()
         metaDataMap["title"] = metaData.titel
         metaData.beschrijving?.let { metaDataMap["description"] = it }
         metaData.bestandsnaam?.let { metaDataMap[MetadataType.FILE_NAME.key] = it }
@@ -267,11 +266,7 @@ class DocumentenApiPlugin(
             "Failed to get audit trail for document with url '$documentUrl'. Document isn't part of Documenten API with url '$url'."
         }
 
-        requireNotNull(execution.businessKey) {
-            "Failed to get audit trail. Business key is null."
-        }
-
-        getAuditTrail(documentUrl, UUID.fromString(execution.businessKey))
+        getAuditTrail(documentUrl, execution.getJsonSchemaDocumentId())
             .let {
                 execution.setVariable(processVariableName, objectMapper.writeValueAsString(it))
             }
@@ -294,16 +289,16 @@ class DocumentenApiPlugin(
     }
 
     fun getInformatieObjecten(
-        documentId: UUID,
+        caseDocumentId: UUID,
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable
     ): Page<DocumentInformatieObject> {
         return client.getInformatieObjecten(
-            authenticationPluginConfiguration,
-            documentId,
-            url,
-            pageable,
-            documentSearchRequest
+            authentication = authenticationPluginConfiguration,
+            caseDocumentId = caseDocumentId,
+            baseUrl = url,
+            pageable = pageable,
+            documentSearchRequest = documentSearchRequest
         )
     }
 
@@ -362,8 +357,8 @@ class DocumentenApiPlugin(
         @PluginActionProperty objectType: String,
     ): ObjectInformatieObject {
         requireObjectInformatieObjectenSupport()
-        val caseDocumentId = UUID.fromString(execution.businessKey
-            ?: throw IllegalStateException("Failed to link document. Business key is null."))
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
         val documentUrl = execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?
             ?: throw IllegalStateException("Failed to link document. No process variable '$DOCUMENT_URL_PROCESS_VAR' found.")
 
@@ -402,8 +397,8 @@ class DocumentenApiPlugin(
         @PluginActionProperty objectInformatieObjectUrl: String,
     ) {
         requireObjectInformatieObjectenSupport()
-        val caseDocumentId = UUID.fromString(execution.businessKey
-            ?: throw IllegalStateException("Failed to delete document link. Business key is null."))
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
 
         withLoggingContext(
             "OBJECT_INFORMATIE_OBJECT" to objectInformatieObjectUrl
@@ -439,6 +434,25 @@ class DocumentenApiPlugin(
         if (apiVersion != null && !documentenApiVersionService.isValidVersion(apiVersion!!)) {
             throw ValidationException("Unknown API version '$apiVersion'.")
         }
+    }
+
+    private fun resolveDownloadDocumentUrl(execution: DelegateExecution): URI {
+        val documentUrlString = (execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?)
+            ?.takeIf { it.isNotBlank() }
+        if (documentUrlString != null) {
+            check(documentUrlString.startsWith(url.toASCIIString())) {
+                "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'."
+            }
+            return URI(documentUrlString)
+        }
+        val documentId = (execution.getVariable(DOCUMENT_ID_PROCESS_VAR) as String?)
+            ?.takeIf { it.isNotBlank() }
+        if (documentId != null) {
+            return createInformatieObjectUrl(documentId)
+        }
+        throw IllegalStateException(
+            "Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' or '$DOCUMENT_ID_PROCESS_VAR' found."
+        )
     }
 
     private fun getResourceId(
@@ -484,8 +498,8 @@ class DocumentenApiPlugin(
             }
         } ?: (inhoudAsInputStream to metadata)
 
-        val caseDocumentId = execution.businessKey?.let { UUID.fromString(it) }
-            ?: throw IllegalStateException("Failed to store document. Business key is null.")
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
 
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
             vertrouwelijkheidaanduiding ?: getUploadField(
@@ -536,12 +550,12 @@ class DocumentenApiPlugin(
         )
         applicationEventPublisher.publishEvent(event)
         execution.setVariable(storedDocumentKey, documentCreateResult.url)
-        val documentId = documentCreateResult.url.substringAfterLast('/')
-        execution.setVariable(DOCUMENT_ID_PROCESS_VAR, documentId)
+        val documentApiDocumentId = documentCreateResult.url.substringAfterLast('/')
+        execution.setVariable(DOCUMENT_ID_PROCESS_VAR, documentApiDocumentId)
         try {
             val test = URI.create(documentCreateResult.url)
             val pluginConfiguration = getDocumentenApiPluginByInformatieobjectUrl(test)
-            execution.setVariable(DOWNLOAD_URL_PROCESS_VAR, createDownloadUrl(pluginConfiguration.id.id, documentId))
+            execution.setVariable(DOWNLOAD_URL_PROCESS_VAR, createDownloadUrl(pluginConfiguration.id.id, documentApiDocumentId))
         } catch (e: Exception) {
             throw IllegalStateException(
                 "Failed to set the $DOWNLOAD_URL_PROCESS_VAR variable in the DelegateExecution", e

@@ -1,0 +1,21 @@
+spring:
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3368/case-opensearch-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
+            data-source-properties:
+                serverTimezone: UTC
+    jpa:
+        database-platform: org.hibernate.dialect.MySQL8Dialect
+        database: mysql
+    elasticsearch:
+        uris: http://localhost:39201
+
+opensearch:
+    uris: http://localhost:39201
+
+valtimo:
+    database: mysql

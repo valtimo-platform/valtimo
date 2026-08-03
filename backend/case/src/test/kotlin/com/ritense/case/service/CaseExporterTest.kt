@@ -18,6 +18,9 @@ package com.ritense.case.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.BaseTest
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.AuthorizationSupportedHelper
+import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.domain.CaseListColumnId
 import com.ritense.case.domain.ColumnDefaultSort
@@ -30,7 +33,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.search.SearchWithConfigRequest
-import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
+import com.ritense.document.service.DocumentSearchService
 import com.ritense.outbox.OutboxService
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
@@ -38,6 +41,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.kotlin.any
@@ -50,6 +54,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -58,10 +63,11 @@ import kotlin.text.Charsets.UTF_8
 
 class CaseExporterTest : BaseTest() {
     private lateinit var caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository
-    private lateinit var documentSearchService: JsonSchemaDocumentSearchService
+    private lateinit var documentSearchService: DocumentSearchService
     private lateinit var outboxService: OutboxService
     private lateinit var mapper: ObjectMapper
     private lateinit var caseListRowMapper: CaseListRowMapper
+    private lateinit var authorizationService: AuthorizationService
     private lateinit var exporter: CaseExporter
 
     @BeforeEach
@@ -71,13 +77,20 @@ class CaseExporterTest : BaseTest() {
         outboxService = mock()
         mapper = ObjectMapper()
         caseListRowMapper = mock()
+        authorizationService = mock()
         exporter = CaseExporter(
             caseDefinitionListColumnRepository,
             documentSearchService,
             outboxService,
             mapper,
             caseListRowMapper,
+            authorizationService,
         )
+
+        val applicationContext: org.springframework.context.ApplicationContext = mock()
+        whenever(applicationContext.getBeanNamesForType(any<org.springframework.core.ResolvableType>()))
+            .thenReturn(arrayOf("testBean"))
+        AuthorizationSupportedHelper.setApplicationContext(applicationContext)
 
         whenever(DOCUMENT.id()).thenReturn(JsonSchemaDocumentId.newId(UUID.randomUUID()))
 
@@ -200,6 +213,28 @@ class CaseExporterTest : BaseTest() {
             exception.message
         )
 
+        verify(outboxService, never()).send(any())
+    }
+
+    @Test
+    fun `should deny export when user lacks export permission for the case definition`() {
+        val searchRequest = SearchWithConfigRequest()
+        val pageable = PageRequest.of(0, 25, Sort.by("created-on").descending())
+
+        doThrow(AccessDeniedException("Unauthorized"))
+            .whenever(authorizationService)
+            .requirePermission(any<AuthorizationRequest<Any>>())
+
+        assertThrows<AccessDeniedException> {
+            exporter.exportCases(CASE_DEFINITION_NAME, searchRequest, pageable)
+        }
+
+        verify(documentSearchService, never()).searchForExport(
+            any<String>(),
+            any<BlueprintType>(),
+            any<SearchWithConfigRequest>(),
+            any<Pageable>()
+        )
         verify(outboxService, never()).send(any())
     }
 

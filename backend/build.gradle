@@ -182,6 +182,20 @@ allprojects {
                 // CVE override: httpclient 4.5.3 pulled in transitively by lutung has a known
                 // vulnerability. Force upgrade to the latest 4.5.x release.
                 dependency "org.apache.httpcomponents:httpclient:${apacheHttpclientVersion}"
+
+                // CVE override: Spring Boot 3.5.16 ships httpcore5 5.3.6 which is affected by
+                // CVE-2026-54399 (HTTP/1.1 header exhaustion DoS) and CVE-2026-54428 (HTTP/2
+                // HPACK header-bomb DoS). Fixed in 5.4.3. Override until a Spring Boot patch
+                // includes the fix.
+                dependency "org.apache.httpcomponents.core5:httpcore5:${httpcore5Version}"
+                dependency "org.apache.httpcomponents.core5:httpcore5-h2:${httpcore5Version}"
+
+                // CVE override: Spring Boot 3.5.16 ships logback 1.5.34 which is affected by
+                // CVE-2026-13006 (arbitrary code execution via unicode-escape bypass in Janino
+                // <if> conditions). Fixed in 1.5.37. Override until a Spring Boot patch includes
+                // the fix.
+                dependency "ch.qos.logback:logback-core:${logbackVersion}"
+                dependency "ch.qos.logback:logback-classic:${logbackVersion}"
             }
         }
 
@@ -287,7 +301,7 @@ subprojects { subproject ->
             }
         }
     }
-    if(project.name != "app" && project.name != "gradle" && project.name != "dependencies") {
+    if(project.name != "apps" && project.name != "gradle" && project.name != "dependencies") {
         apply from: "${rootProject.projectDir}/backend/gradle/publishing-module.gradle"
     }
 }

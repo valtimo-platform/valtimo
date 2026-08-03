@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.autoconfigure;
 
+import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +31,7 @@ import com.ritense.valtimo.contract.authentication.CurrentUserRepository;
 import com.ritense.valtimo.contract.authentication.CurrentUserService;
 import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.helper.ActivityHelper;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
@@ -67,6 +69,7 @@ import com.ritense.valtimo.task.listener.TaskTeamChangedListener;
 import com.ritense.valtimo.task.repository.TaskTeamRepository;
 import com.ritense.valtimo.task.repository.UserTaskOpenedStatusRepository;
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
+import com.ritense.valtimo.web.health.BootstrapHealthIndicator;
 import com.ritense.valtimo.web.rest.AccountResource;
 import com.ritense.valtimo.web.rest.PingResource;
 import com.ritense.valtimo.web.rest.ProcessInstanceResource;
@@ -89,6 +92,7 @@ import org.operaton.bpm.engine.RuntimeService;
 import org.operaton.bpm.engine.TaskService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -394,17 +398,27 @@ public class ValtimoAutoConfiguration {
         return new ValtimoApplicationReadyEventListener(timeZone);
     }
 
+    @Order(HIGHEST_PRECEDENCE)
+    @Bean("bootstrap")
+    @ConditionalOnClass(name = "org.springframework.boot.actuate.health.AbstractHealthIndicator")
+    @ConditionalOnMissingBean(name = "bootstrap")
+    public BootstrapHealthIndicator bootstrapHealthIndicator(final BootstrapState bootstrapState) {
+        return new BootstrapHealthIndicator(bootstrapState);
+    }
+
     @Bean
     @ConditionalOnMissingBean(ProcessDefinitionPropertyListener.class)
     public ProcessDefinitionPropertyListener processDefinitionPropertyListener(
         final ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository,
         final RepositoryService repositoryService,
-        final OperatonRepositoryService operatonRepositoryService
+        final OperatonRepositoryService operatonRepositoryService,
+        final ValtimoProperties valtimoProperties
     ) {
         return new ProcessDefinitionPropertyListener(
             processDefinitionPropertiesRepository,
             repositoryService,
-            operatonRepositoryService
+            operatonRepositoryService,
+            valtimoProperties.getBootstrap().isEnabled()
         );
     }
 

@@ -39,8 +39,7 @@ export class CaseDetailsManagementWidgetsPage {
   // ─── Navigation ───────────────────────────────────────────────────
 
   async goToCaseManagement(caseIdentifier: string) {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
   }

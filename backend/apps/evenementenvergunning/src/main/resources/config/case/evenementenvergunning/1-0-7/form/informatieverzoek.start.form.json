@@ -1,0 +1,24 @@
+{
+  "display": "form",
+  "components": [
+    {
+      "key": "vraag",
+      "type": "textfield",
+      "input": true,
+      "label": "Vraag",
+      "tableView": true,
+      "applyMaskOn": "change",
+      "attributes": {
+        "data-testid": "informatieverzoek.start-vraag"
+      }
+    },
+    {
+      "key": "submit",
+      "type": "button",
+      "input": true,
+      "label": "Submit",
+      "tableView": false,
+      "disableOnInvalid": true
+    }
+  ]
+}

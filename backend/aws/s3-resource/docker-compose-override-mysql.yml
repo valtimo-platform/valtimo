@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3311:3306"
+        environment:
+            - MYSQL_DATABASE=s3-resource-test

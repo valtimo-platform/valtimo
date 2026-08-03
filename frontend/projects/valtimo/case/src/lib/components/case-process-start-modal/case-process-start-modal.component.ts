@@ -179,6 +179,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
               this.isFormViewModel = false;
+              this.setModalSize(startProcessResult.properties.formSize);
               this.openCdsModal();
               break;
             case 'form-view-model':
@@ -244,6 +245,8 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this._pendingProcessDefinitionCaseDefinition = null;
+    this.showDraftConfirmation$.next(false);
     this.proceedWithOpenModal(processDefinitionCaseDefinition);
   }
 

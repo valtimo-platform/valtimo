@@ -21,6 +21,7 @@ import com.ritense.valtimo.config.CustomFormTypesProcessEnginePlugin;
 import com.ritense.valtimo.config.OperatonConfiguration;
 import com.ritense.valtimo.contract.annotation.ProcessBean;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import com.ritense.valtimo.contract.config.LiquibaseRunner;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.contract.mail.MailSender;
@@ -99,8 +100,16 @@ public class OperatonAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ValtimoSchemaOperationsCommand.class)
-    public ValtimoSchemaOperationsCommand valtimoSchemaOperationsCommand(final LiquibaseRunner liquibaseRunner) {
-        return new ValtimoSchemaOperationsCommand(liquibaseRunner);
+    public ValtimoSchemaOperationsCommand valtimoSchemaOperationsCommand(
+        final LiquibaseRunner liquibaseRunner,
+        final ValtimoProperties valtimoProperties,
+        final BootstrapState bootstrapState
+    ) {
+        return new ValtimoSchemaOperationsCommand(
+            liquibaseRunner,
+            valtimoProperties.getBootstrap().isEnabled(),
+            bootstrapState
+        );
     }
 
     @Primary

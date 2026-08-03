@@ -30,9 +30,9 @@ export default defineConfig({
     },
     baseURL: process.env.qa_url ?? 'http://localhost:4200',
     screenshot: process.env.CI ? 'only-on-failure' : 'on',
-    video: 'on',
+    video: process.env.CI ? 'on' : 'on-first-retry',
     trace: {
-      mode: process.env.CI ? 'retain-on-failure' : 'on',
+      mode: process.env.CI ? 'retain-on-failure' : 'on-first-retry',
       snapshots: true,
       screenshots: true,
     },

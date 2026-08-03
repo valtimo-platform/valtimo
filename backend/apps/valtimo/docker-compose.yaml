@@ -1,0 +1,10 @@
+services:
+    # LocalStack (AWS services emulation) - used by the s3-upload-test showcase
+    localstack:
+        image: localstack/localstack:3.7
+        container_name: gzac-docker-compose-localstack
+        ports:
+            - "4566:4566"
+        environment:
+            SERVICES: s3
+            AWS_DEFAULT_REGION: eu-west-1

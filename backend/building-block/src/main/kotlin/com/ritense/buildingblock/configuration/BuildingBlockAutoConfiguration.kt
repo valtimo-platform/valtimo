@@ -101,7 +101,6 @@ import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.BuildingBlockProcessLookup
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
-import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ProcessLinkRepository
@@ -122,6 +121,7 @@ import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
@@ -404,6 +404,7 @@ class BuildingBlockAutoConfiguration {
 
     @Bean
     @DependsOn("importService") // TODO: Figure out why this is needed
+    @ConditionalOnProperty(prefix = "valtimo.bootstrap", name = ["enabled"], havingValue = "true", matchIfMissing = true)
     fun buildingBlockDefinitionDeploymentService(
         resourceLoader: ResourceLoader,
         valtimoImportService: ValtimoImportService,
@@ -533,7 +534,6 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockStartEventListener::class)
     fun buildingBlockStartEventListener(
         buildingBlockInstanceService: BuildingBlockInstanceService,
-        processDocumentService: ProcessDocumentService,
         operatonRepositoryService: OperatonRepositoryService,
         caseDocumentResolver: CaseDocumentResolver,
         objectMapper: ObjectMapper,
@@ -544,7 +544,6 @@ class BuildingBlockAutoConfiguration {
         jdbcTemplate: JdbcTemplate,
     ) = BuildingBlockStartEventListener(
         buildingBlockInstanceService,
-        processDocumentService,
         operatonRepositoryService,
         caseDocumentResolver,
         objectMapper,
@@ -560,13 +559,11 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockEndEventListener(
         buildingBlockInstanceService: BuildingBlockInstanceService,
         caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
-        processDocumentService: ProcessDocumentService,
         documentService: DocumentService,
         valueResolverService: ValueResolverService,
     ) = BuildingBlockEndEventListener(
         buildingBlockInstanceService,
         caseDefinitionBuildingBlockLinkService,
-        processDocumentService,
         documentService,
         valueResolverService,
     )
@@ -817,11 +814,11 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockFormFlowManagementResource::class)
     fun buildingBlockFormFlowManagementResource(
         buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService,
-        buildingBlockFormFlowDefinitionImporter: BuildingBlockFormFlowDefinitionImporter,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
     ): BuildingBlockFormFlowManagementResource {
         return BuildingBlockFormFlowManagementResource(
             buildingBlockFormFlowDefinitionService,
-            buildingBlockFormFlowDefinitionImporter
+            buildingBlockDefinitionChecker
         )
     }
 

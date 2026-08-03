@@ -19,37 +19,54 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListModule,
   ConfirmationModalModule,
+  FitPageDirective,
   OverflowMenuComponent,
   OverflowMenuOptionComponent,
   OverflowMenuTriggerComponent,
   RenderInPageHeaderDirective,
+  SelectModule,
+  TooltipIconModule,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {AccessControlManagementRoutingModule} from './access-control-management-routing.module';
 import {AccessControlOverviewComponent} from './components/overview/access-control-overview.component';
 import {RoleMetadataModalComponent} from './components/role-metadata-modal/role-metadata-modal.component';
 import {
+  AccordionModule,
   ButtonModule,
+  CheckboxModule,
+  ContentSwitcherModule,
   IconModule,
   InputModule,
+  LayerModule,
   LoadingModule,
   ModalModule,
   NotificationModule,
   TabsModule,
+  TagModule,
+  ToggleModule,
 } from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AccessControlEditorComponent} from './components/editor/access-control-editor.component';
+import {AccessControlFormEditorTabComponent} from './components/access-control-form-editor-tab/access-control-form-editor-tab.component';
 import {AccessControlJsonEditorTabComponent} from './components/access-control-json-editor-tab/access-control-json-editor-tab.component';
 import {AccessControlOverviewTabComponent} from './components/access-control-overview-tab/access-control-overview-tab.component';
+import {ConditionTreeComponent} from './components/condition-tree/condition-tree.component';
 import {DeleteRoleModalComponent} from './components/delete-role-modal/delete-role-modal.component';
 import {ExportRoleModalComponent} from './components/export-role-modal/export-role-modal.component';
+import {PermissionFormComponent} from './components/permission-form/permission-form.component';
+import {ActionDescriptionPipe, ActionLabelPipe, ActionTagTypePipe} from './pipes';
 
 @NgModule({
   declarations: [
     AccessControlOverviewComponent,
     RoleMetadataModalComponent,
     AccessControlEditorComponent,
+    AccessControlFormEditorTabComponent,
+    ConditionTreeComponent,
     DeleteRoleModalComponent,
     ExportRoleModalComponent,
+    PermissionFormComponent,
   ],
   imports: [
     CommonModule,
@@ -59,10 +76,12 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     ModalModule,
     TranslateModule,
     ReactiveFormsModule,
+    ValtimoCdsModalDirective,
     InputModule,
     IconModule,
     ConfirmationModalModule,
     RenderInPageHeaderDirective,
+    FitPageDirective,
     LoadingModule,
     IconModule,
     OverflowMenuComponent,
@@ -70,9 +89,20 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     OverflowMenuTriggerComponent,
     NotificationModule,
     CarbonListModule,
+    SelectModule,
+    TooltipIconModule,
     TabsModule,
+    ToggleModule,
+    ContentSwitcherModule,
+    AccordionModule,
+    CheckboxModule,
+    LayerModule,
+    TagModule,
     AccessControlJsonEditorTabComponent,
     AccessControlOverviewTabComponent,
+    ActionLabelPipe,
+    ActionDescriptionPipe,
+    ActionTagTypePipe,
   ],
 })
 export class AccessControlManagementModule {}

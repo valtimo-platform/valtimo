@@ -1,0 +1,3 @@
+com.ritense.aws.autoconfigure.AwsAutoConfiguration
+com.ritense.aws.autoconfigure.SnsAutoConfiguration
+com.ritense.aws.autoconfigure.SqsAutoConfiguration

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -603,11 +603,16 @@ public class JsonSchemaDocumentService implements DocumentService {
             });
             documentRepository.saveAll(documents);
             documentRepository.deleteAll(documents);
-            documents.forEach(document -> outboxService.send(() ->
-                new DocumentDeleted(
-                    document.id().toString()
-                )
-            ));
+            documents.forEach(document -> {
+                // Per-document Spring event so bulk deletes are handled identically to single deletes
+                // (durable pending index deletion + best-effort live delete). Fires inside this transaction.
+                applicationEventPublisher.publishEvent(new DocumentDeletedEvent(document.id().getId()));
+                outboxService.send(() ->
+                    new DocumentDeleted(
+                        document.id().toString()
+                    )
+                );
+            });
             documentSequenceGeneratorService.deleteSequenceRecordBy(documentDefinitionName);
         }
     }
@@ -839,7 +844,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         publishDocumentAssigneeChangedEvent(documentId, null, null, teamTitle, formerAssigneeId, formerTeamKey);
 
         outboxService.send(() ->
-            new DocumentUpdated(
+            new DocumentAssigned(
                 document.id().toString(),
                 objectMapper.valueToTree(document)
             )
@@ -890,7 +895,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             );
 
             outboxService.send(() ->
-                new DocumentUpdated(
+                new DocumentAssigned(
                     document.id().toString(),
                     objectMapper.valueToTree(document)
                 )
@@ -932,7 +937,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         );
 
         outboxService.send(() ->
-            new DocumentUpdated(
+            new DocumentUnassigned(
                 document.id().toString(),
                 objectMapper.valueToTree(document)
             )

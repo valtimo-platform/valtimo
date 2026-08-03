@@ -75,7 +75,6 @@ export class AccessControlJsonEditorTabComponent implements OnInit, OnChanges, O
   public readonly isFilterActive$: Observable<boolean> = this._filter$.pipe(
     map(({resourceType, action}) => !!resourceType || !!action)
   );
-
   public readonly resourceTypeItems$: Observable<ListItem[]> = combineLatest([
     this._sourceModel$,
     this._filter$,

@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3326:3306"
+        environment:
+            - MYSQL_DATABASE=catalogi-api-test

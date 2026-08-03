@@ -39,6 +39,7 @@ import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchActionModalComponent} from './search-action-modal/search-action-modal.component';
 import {GlobalNotificationService, ModalMode} from '@valtimo/shared';
 import {HttpResponse} from '@angular/common/http';
+import {IKO_SEARCH_ACTIONS_TEST_IDS} from '../../../../constants/iko.test-ids';
 
 @Component({
   standalone: true,
@@ -56,6 +57,8 @@ import {HttpResponse} from '@angular/common/http';
   ],
 })
 export class IkoManagementSearchActionsComponent {
+  public readonly testIds = IKO_SEARCH_ACTIONS_TEST_IDS;
+
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
 

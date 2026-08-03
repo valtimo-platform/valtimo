@@ -1,0 +1,85 @@
+{
+    "display": "form",
+    "settings": {
+        "pdf": {
+            "id": "1ec0f8ee-6685-5d98-a847-26f67b67d6f0",
+            "src": "https://files.form.io/pdf/5692b91fd1028f01000407e3/file/1ec0f8ee-6685-5d98-a847-26f67b67d6f0"
+        }
+    },
+    "components": [
+        {
+            "label": "Zaaknummer",
+            "tableView": true,
+            "key": "zaaknummer",
+            "defaultValue": "A12345",
+            "type": "textfield",
+            "input": true,
+            "disabled": true
+        },
+        {
+            "label": "Burgerservicenummer",
+            "tableView": true,
+            "defaultValue": "999993653",
+            "key": "bsn",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "label": "Trigger redraw",
+            "description": "Typing here changes the form data, which redraws the file upload below (redrawOn: data). The uploaded file must remain visible and the submit button must stay enabled after the redraw.",
+            "tableView": true,
+            "key": "redrawTrigger",
+            "type": "textfield",
+            "input": true,
+            "attributes": {
+                "data-testid": "validate-request-redraw-trigger"
+            }
+        },
+        {
+            "key": "pv.bezwaarDocumenten",
+            "type": "documenten-api-file",
+            "input": true,
+            "label": "Upload bezwaar document",
+            "tableView": false,
+            "redrawOn": "data",
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "validate-request-pv.bezwaarDocumenten"
+            },
+            "customOptions": {
+                "title": "",
+                "author": "",
+                "camera": false,
+                "status": "definitief",
+                "filename": "",
+                "language": "nld",
+                "subtitle": "",
+                "hideTitle": false,
+                "description": "Bezwaar",
+                "maxFileSize": 1,
+                "documentType": "test",
+                "disableAuthor": false,
+                "disableStatus": false,
+                "documentTitle": "Bezwaar",
+                "disableFilename": false,
+                "disableLanguage": false,
+                "hideMaxFileSize": false,
+                "disableDescription": false,
+                "disableDocumentType": false,
+                "confidentialityLevel": "zaakvertrouwelijk",
+                "disableDocumentTitle": false,
+                "disableConfidentialityLevel": false
+            }
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}

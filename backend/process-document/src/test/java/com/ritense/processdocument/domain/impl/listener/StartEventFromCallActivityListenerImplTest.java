@@ -16,16 +16,7 @@
 
 package com.ritense.processdocument.domain.impl.listener;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.ritense.document.domain.Document;
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
-import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.valtimo.event.OperatonExecutionEvent;
 import java.lang.reflect.Proxy;
 import java.util.UUID;
@@ -35,38 +26,35 @@ import org.operaton.bpm.engine.delegate.DelegateExecution;
 import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 class StartEventFromCallActivityListenerImplTest {
 
     private static final String PROCESS_NAME = "call-activity-start";
 
     private ProcessDocumentAssociationService processDocumentAssociationService;
-    private ProcessDocumentService processDocumentService;
     private StartEventFromCallActivityListenerImpl listener;
 
     @BeforeEach
     void setUp() {
         processDocumentAssociationService = mock(ProcessDocumentAssociationService.class);
-        processDocumentService = mock(ProcessDocumentService.class);
         listener = new StartEventFromCallActivityListenerImpl(
-            processDocumentAssociationService,
-            processDocumentService
+            processDocumentAssociationService
         );
     }
 
     @Test
     void notifyShouldAssociateDocumentWhenDocumentIsFound() {
         String processInstanceId = UUID.randomUUID().toString();
-        DelegateExecution execution = execution(processInstanceId);
-
         UUID documentUuid = UUID.randomUUID();
-        Document.Id documentId = documentId(documentUuid);
-        OperatonProcessInstanceId expectedProcessId = new OperatonProcessInstanceId(processInstanceId);
-
-        when(processDocumentService.getDocumentId(expectedProcessId, execution)).thenReturn(documentId);
+        // The document id is resolved from the process business key.
+        DelegateExecution execution = execution(processInstanceId, documentUuid.toString());
 
         listener.notify(new OperatonExecutionEvent(execution, "start"));
 
-        verify(processDocumentService).getDocumentId(expectedProcessId, execution);
         verify(processDocumentAssociationService).createProcessDocumentInstance(
             processInstanceId,
             documentUuid,
@@ -77,15 +65,11 @@ class StartEventFromCallActivityListenerImplTest {
     @Test
     void notifyShouldNotAssociateDocumentWhenDocumentIsNotFound() {
         String processInstanceId = UUID.randomUUID().toString();
-        DelegateExecution execution = execution(processInstanceId);
-
-        OperatonProcessInstanceId expectedProcessId = new OperatonProcessInstanceId(processInstanceId);
-
-        when(processDocumentService.getDocumentId(expectedProcessId, execution)).thenReturn(null);
+        // No business key -> no document id can be resolved.
+        DelegateExecution execution = execution(processInstanceId, null);
 
         listener.notify(new OperatonExecutionEvent(execution, "start"));
 
-        verify(processDocumentService).getDocumentId(expectedProcessId, execution);
         verify(processDocumentAssociationService, never()).createProcessDocumentInstance(
             eq(processInstanceId),
             eq(null),
@@ -93,12 +77,13 @@ class StartEventFromCallActivityListenerImplTest {
         );
     }
 
-    private DelegateExecution execution(String processInstanceId) {
+    private DelegateExecution execution(String processInstanceId, String businessKey) {
         return (DelegateExecution) Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class[] {DelegateExecution.class},
             (proxy, method, args) -> switch (method.getName()) {
                 case "getProcessInstanceId" -> processInstanceId;
+                case "getBusinessKey", "getProcessBusinessKey" -> businessKey;
                 case "getBpmnModelInstance" -> bpmnModelInstance();
                 default -> null;
             }
@@ -110,11 +95,5 @@ class StartEventFromCallActivityListenerImplTest {
             .name(PROCESS_NAME)
             .startEvent("start")
             .done();
-    }
-
-    private Document.Id documentId(UUID id) {
-        Document.Id documentId = mock(Document.Id.class);
-        when(documentId.getId()).thenReturn(id);
-        return documentId;
     }
 }

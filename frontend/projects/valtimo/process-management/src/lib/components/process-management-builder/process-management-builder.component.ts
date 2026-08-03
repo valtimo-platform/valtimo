@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,9 @@
 
 import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  ElementRef,
-  OnDestroy,
-  Signal,
-  ViewChild,
-} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Code16, Deploy16, ListChecked16, Return16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
@@ -108,6 +99,7 @@ import {EMPTY_BPMN, PROCESS_MANAGEMENT_BUILDER_TEST_IDS} from '../../constants';
 import {
   OpenProcessLinkModalEvent,
   ProcessDefinitionResult,
+  ProcessDefinitionValidationError,
   ProcessManagementWindow,
   UpdateProcessDefinitionCaseDefinitionRequest,
 } from '../../models';
@@ -143,11 +135,9 @@ import {ProcessBeanService} from '../../services';
     TranslateModule,
     TagModule,
     ProcessLinkModule,
-    ProcessLinkModule,
     ToggleModule,
     TooltipModule,
     ConfirmationModalModule,
-    OverflowMenuModule,
   ],
   providers: [
     ProcessManagementEditorService,
@@ -173,6 +163,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private _validationErrorElementIds: string[] = [];
   private _validationHoverHandler: ((event: any) => void) | null = null;
   private _validationOutHandler: ((event: any) => void) | null = null;
+  private _expressionAutocomplete: ExpressionAutocomplete | null = null;
 
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public readonly isSystemProcess$ = new BehaviorSubject<boolean>(false);
@@ -199,7 +190,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.cleanUpListenersOnModeler();
         this._bpmnModeler?.importXML(result.bpmn20Xml);
         this._bpmnViewer?.importXML(result.bpmn20Xml);
-        this.draft$.next(!result.bpmn20Xml.includes('isExecutable="true"'));
         this.isReadOnlyProcess$.next(result.readOnly);
         this.isSystemProcess$.next(result.systemProcess);
         this.loading$.next(false);
@@ -283,16 +273,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   public readonly creatingNewProcess$ = new BehaviorSubject<boolean>(false);
 
-  public readonly $spaceAdjustment: Signal<number> = computed(() =>
-    this.processManagementService.$context() === 'case' ? 0 : 0
-  );
-
   public readonly updatingProcessDefinitionCaseDefinition$ = new BehaviorSubject<boolean>(false);
 
   public readonly showWarningConfirmationModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showErrorConfirmationModal$ = new BehaviorSubject<boolean>(false);
   private _pendingDeployAction: (() => void) | null = null;
-  private _expressionAutocomplete: ExpressionAutocomplete | null = null;
 
   private readonly _subscriptions = new Subscription();
 
@@ -317,12 +301,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService,
     private readonly processBeanService: ProcessBeanService
   ) {
-    this.iconService.registerAll([Code16, Deploy16, ListChecked16, Return16]);
     this.setProcessManagementWindow();
   }
 
   public ngAfterViewInit(): void {
     this.pageTitleService.disableReset();
+    this.pageHeaderService.enableTitleAsBreadcrumb();
     this.openParamsAndContextSubscription();
     this.initModeler();
     this.initViewer();
@@ -334,10 +318,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   public ngOnDestroy(): void {
+    this.clearValidationErrors();
     this._bpmnModeler?.destroy();
     this._bpmnViewer?.destroy();
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
+    this.pageHeaderService.disableTitleAsBreadcrumb();
     this.pageTitleService.clearPageActionsViewContainerRef();
     this.breadcrumbService.clearThirdBreadcrumb();
     this.breadcrumbService.clearFourthBreadcrumb();
@@ -481,9 +467,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
           switch (context) {
             case 'independent':
-              return this.processLinkService.createProcessDefinition(
-                mappedProcessLinks,
-                xml
+              return this.processLinkService.createProcessDefinition(mappedProcessLinks, xml
               );
             case 'buildingBlock':
               const buildingBlockParams = params as BuildingBlockManagementParams;
@@ -546,21 +530,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.showNotification(notification);
   }
 
-  public onValidationErrorClick(elementId: string): void {
-    const modeler = this.isReadOnlyProcess$.getValue()
-      ? this._bpmnViewer
-      : this._bpmnModeler;
-    const elementRegistry = modeler.get('elementRegistry') as any;
-    const selection = modeler.get('selection') as any;
-    const canvas = modeler.get('canvas') as any;
-
-    const element = elementRegistry.get(elementId);
-    if (element) {
-      selection.select(element);
-      canvas.scrollToElement(element);
-    }
-  }
-
   public onProcessToggleChange(
     field: keyof UpdateProcessDefinitionCaseDefinitionRequest | 'draft',
     value: boolean
@@ -571,19 +540,22 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.changesPending$.next(true);
   }
 
-  public onConfirmationConfirm(): void {
+  public onWarningConfirmationConfirm(): void {
     if (this._pendingDeployAction) {
       this._pendingDeployAction();
       this._pendingDeployAction = null;
     }
   }
 
-  public onConfirmationCancel(): void {
+  public onWarningConfirmationCancel(): void {
     this._pendingDeployAction = null;
   }
 
   private validateAndDeploy(isReadOnlyProcess: boolean, deployAction: () => void): void {
-    const isDraft = this.draft$.getValue();
+    if (this.draft$.getValue()) {
+      deployAction();
+      return;
+    }
 
     combineLatest([
       from(isReadOnlyProcess ? this._bpmnViewer.saveXML() : this._bpmnModeler.saveXML()),
@@ -604,30 +576,17 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       )
       .subscribe({
         next: validationResult => {
-          if (isDraft) {
-            // For drafts: show confirmation on errors, ignore warnings
-            if (!validationResult.isValid) {
-              this.highlightValidationErrors(validationResult.errors);
-              this._pendingDeployAction = deployAction;
-              this.showErrorConfirmationModal$.next(true);
-            } else {
-              deployAction();
-            }
+          if (!validationResult.isValid) {
+            this.highlightValidationErrors(validationResult.errors);
+          } else if (validationResult.hasWarnings) {
+            this.highlightValidationErrors(validationResult.errors);
+            this._pendingDeployAction = deployAction;
+            this.showWarningConfirmationModal$.next(true);
           } else {
-            // For non-drafts: block on errors, confirm on warnings
-            if (!validationResult.isValid) {
-              this.highlightValidationErrors(validationResult.errors);
-            } else if (validationResult.hasWarnings) {
-              this.highlightValidationErrors(validationResult.errors);
-              this._pendingDeployAction = deployAction;
-              this.showWarningConfirmationModal$.next(true);
-            } else {
-              deployAction();
-            }
+            deployAction();
           }
         },
         error: () => {
-          // Validation endpoint failed - proceed with deployment anyway (server will validate again)
           deployAction();
         },
       });
@@ -644,17 +603,28 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private showNotification(
-    notification: null | 'success' | 'error' | 'alreadyExists' | 'validationError' | 'validationWarning' | 'validationSuccess'
+    notification:
+      | null
+      | 'success'
+      | 'error'
+      | 'alreadyExists'
+      | 'validationError'
+      | 'validationWarning'
+      | 'validationSuccess'
   ): void {
-    let type: 'success' | 'error' | 'warning' | null = null;
-    if (notification === 'alreadyExists' || notification === 'validationError') {
+    if (!notification) return;
+
+    let type: 'success' | 'error' | 'warning';
+    if (
+      notification === 'alreadyExists' ||
+      notification === 'validationError' ||
+      notification === 'error'
+    ) {
       type = 'error';
     } else if (notification === 'validationWarning') {
       type = 'warning';
-    } else if (notification === 'success' || notification === 'validationSuccess') {
-      type = 'success';
     } else {
-      type = notification;
+      type = 'success';
     }
     this.notificationService.showToast({
       caption: this.translateService.instant(`processManagement.${notification}Notification`),
@@ -668,15 +638,39 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     const body = error.error;
     if ((body as ProcessDefinitionConflictResponse)?.processDefinitionId) return true;
     const bbBody = body as BuildingBlockProcessDefinitionConflictResponse;
-    return Array.isArray(bbBody?.duplicateProcessDefinitions) && bbBody.duplicateProcessDefinitions.length > 0;
+    return (
+      Array.isArray(bbBody?.duplicateProcessDefinitions) &&
+      bbBody.duplicateProcessDefinitions.length > 0
+    );
   }
 
   private applyDraftState(xml: string | null | undefined): string | null {
     if (!xml) return null;
-    if (this.draft$.getValue()) {
-      return xml.replace(/isExecutable="true"/g, 'isExecutable="false"');
+
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    if (doc.getElementsByTagName('parsererror').length > 0) return xml;
+
+    const executableValue = this.draft$.getValue() ? 'false' : 'true';
+    const processes = doc.getElementsByTagNameNS('*', 'process');
+    for (let i = 0; i < processes.length; i++) {
+      processes[i].setAttribute('isExecutable', executableValue);
     }
-    return xml.replace(/isExecutable="false"/g, 'isExecutable="true"');
+    return new XMLSerializer().serializeToString(doc);
+  }
+
+  private parseDraftFromXml(xml: string | null | undefined): boolean {
+    if (!xml) return false;
+
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    if (doc.getElementsByTagName('parsererror').length > 0) return false;
+
+    const processes = doc.getElementsByTagNameNS('*', 'process');
+    if (processes.length === 0) return false;
+
+    for (let i = 0; i < processes.length; i++) {
+      if (processes[i].getAttribute('isExecutable') === 'true') return false;
+    }
+    return true;
   }
 
   private isValidationError(error: unknown): boolean {
@@ -687,23 +681,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     );
   }
 
-  private highlightValidationErrors(
-    errors: Array<{elementId: string; elementType: string; elementName?: string; reason: string; errorCode?: string; expression?: string; severity?: 'ERROR' | 'WARNING'}>
-  ): void {
+  private highlightValidationErrors(errors: ProcessDefinitionValidationError[]): void {
     this.clearValidationErrors();
     this.processManagementEditorService.setValidationErrors(errors);
 
-    const modeler = this.isReadOnlyProcess$.getValue()
-      ? this._bpmnViewer
-      : this._bpmnModeler;
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
     const canvas = modeler.get('canvas') as any;
     const overlays = modeler.get('overlays') as any;
 
     const errorElementIds = new Set<string>();
 
-    // Group by elementId and determine if element has any errors (not just warnings)
     const elementHasError = new Map<string, boolean>();
-    const elementFirstIssue = new Map<string, typeof errors[0]>();
+    const elementFirstIssue = new Map<string, ProcessDefinitionValidationError>();
 
     for (const error of errors) {
       if (error.elementType === 'Process') continue;
@@ -714,7 +703,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       if (!elementFirstIssue.has(error.elementId)) {
         elementFirstIssue.set(error.elementId, error);
       } else if (isError && !hasErrorAlready) {
-        // Replace warning with error as the displayed issue
         elementFirstIssue.set(error.elementId, error);
       }
 
@@ -725,7 +713,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       }
     }
 
-    // Add markers and overlays - one per element, error takes precedence
     for (const [elementId, issue] of elementFirstIssue) {
       try {
         const hasError = elementHasError.get(elementId) ?? false;
@@ -739,11 +726,13 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         const position =
           issue.elementType === 'Participant' ? {top: 5, left: 5} : {top: -12, left: -12};
 
-        const errorMessage = this.getValidationErrorMessage(issue);
-
         overlays.add(elementId, 'validation-error', {
           position,
-          html: `<div class="${overlayClass}" data-element-id="${elementId}"><span class="${overlayClass}__icon">!</span><span class="${overlayClass}__text">${errorMessage}</span></div>`,
+          html: this.buildOverlayElement(
+            overlayClass,
+            elementId,
+            this.getValidationErrorMessage(issue)
+          ),
         });
       } catch (e) {
         // Element may not exist on the canvas
@@ -754,8 +743,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._validationHoverHandler = (event: any) => {
       const id = event.element?.id;
       if (id && errorElementIds.has(id)) {
-        const errorOverlay = document.querySelector(`.validation-error-overlay[data-element-id="${id}"]`);
-        const warningOverlay = document.querySelector(`.validation-warning-overlay[data-element-id="${id}"]`);
+        const errorOverlay = document.querySelector(
+          `.validation-error-overlay[data-element-id="${id}"]`
+        );
+        const warningOverlay = document.querySelector(
+          `.validation-warning-overlay[data-element-id="${id}"]`
+        );
         errorOverlay?.classList.add('validation-error-overlay--active');
         warningOverlay?.classList.add('validation-warning-overlay--active');
       }
@@ -763,8 +756,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._validationOutHandler = (event: any) => {
       const id = event.element?.id;
       if (id && errorElementIds.has(id)) {
-        const errorOverlay = document.querySelector(`.validation-error-overlay[data-element-id="${id}"]`);
-        const warningOverlay = document.querySelector(`.validation-warning-overlay[data-element-id="${id}"]`);
+        const errorOverlay = document.querySelector(
+          `.validation-error-overlay[data-element-id="${id}"]`
+        );
+        const warningOverlay = document.querySelector(
+          `.validation-warning-overlay[data-element-id="${id}"]`
+        );
         errorOverlay?.classList.remove('validation-error-overlay--active');
         warningOverlay?.classList.remove('validation-warning-overlay--active');
       }
@@ -782,9 +779,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private clearValidationErrors(): void {
-    const modeler = this.isReadOnlyProcess$.getValue()
-      ? this._bpmnViewer
-      : this._bpmnModeler;
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
 
     if (!modeler) return;
 
@@ -1074,9 +1069,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml);
           this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml);
 
-          this.draft$.next(
-            !processDefinitionResult.bpmn20Xml.includes('isExecutable="true"')
-          );
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
           );
@@ -1211,16 +1203,42 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     clearBuildingBlockCalledElement(editor, activityId);
   }
 
-  public getValidationErrorMessage(error: {reason: string; errorCode?: string; expression?: string}): string {
+  public getValidationErrorMessage(error: {
+    reason: string;
+    errorCode?: string;
+    expression?: string;
+  }): string {
     if (error.errorCode) {
       const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
-      const translated = this.translateService.instant(translationKey);
+      const translated = this.translateService.instant(translationKey, {
+        expression: error.expression ? `'${error.expression}'` : '',
+      });
       if (translated !== translationKey) {
-        return error.expression
-          ? `${translated}: '${error.expression}'`
-          : translated;
+        return translated;
       }
     }
     return error.reason;
+  }
+
+  private buildOverlayElement(
+    overlayClass: string,
+    elementId: string,
+    message: string
+  ): HTMLElement {
+    const container = document.createElement('div');
+    container.className = overlayClass;
+    container.dataset.elementId = elementId;
+
+    const icon = document.createElement('span');
+    icon.className = `${overlayClass}__icon`;
+    icon.textContent = '!';
+    container.appendChild(icon);
+
+    const text = document.createElement('span');
+    text.className = `${overlayClass}__text`;
+    text.textContent = message;
+    container.appendChild(text);
+
+    return container;
   }
 }
