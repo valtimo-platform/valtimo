@@ -21,9 +21,17 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Zaaktype dropdown now shows the begin and end date**
 
-  New enhancement explanation.
+  The 'Gekoppeld zaak type' dropdown in the case type link configuration now shows the start and end
+  date of each zaaktype between parentheses, next to its description. This makes it possible to tell
+  apart different versions of zaaktypes that share the same description, preventing configuration
+  mistakes.
+
+* **Option to keep the form.io token out of localStorage**
+
+  A new `disableFormioTokenInLocalStorage` feature toggle keeps the form.io token in memory only
+  instead of persisting it to localStorage. It is disabled by default.
 
 ## Bugfixes
 

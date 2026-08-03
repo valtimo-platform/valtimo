@@ -1891,6 +1891,7 @@
     "autoCreateForCase": "Automatically create for each case",
     "selectZaakTypeForCase": "Select zaak type for case",
     "selectZaakType": "Select zaak type",
+    "present": "present",
     "selectZakenApiPluginForCase": "Select Zaken Api plugin for case",
     "selectZakenApiPlugin": "Select Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
@@ -3222,6 +3223,10 @@
       "refreshModalText": "This setting requires a page refresh to take effect. Do you want to refresh now?",
       "refreshNow": "Refresh now",
       "toggles": {
+        "disableFormioTokenInLocalStorage": {
+          "title": "Store form.io token in memory only",
+          "description": "Keep the form.io token in memory instead of localStorage. Enable this only when forms rely solely on the Keycloak token."
+        },
         "allowUserThemeSwitching": {
           "title": "Allow user theme switching",
           "description": "Let users switch between light and dark mode from the top bar."
