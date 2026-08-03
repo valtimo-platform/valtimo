@@ -34,6 +34,12 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   @Input() public readonly minContentHeight = 0;
 
   private _mutationObserver: MutationObserver;
+  // Content elements that already received the min-height style. The MutationObserver below
+  // observes attribute changes in the same subtree that setStyle writes to, so styling must be
+  // skipped for elements that were already styled — re-applying the style queues a new mutation
+  // record, whose callback re-applies the style again, locking the page in an endless
+  // MutationObserver microtask loop (the browser tab freezes).
+  private readonly _styledContentElements = new WeakSet<Element>();
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -170,6 +176,11 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
     const contentElements = this.elementRef.nativeElement.querySelectorAll('.cds--modal-content');
 
     for (const element of contentElements) {
+      if (this._styledContentElements.has(element)) {
+        continue;
+      }
+
+      this._styledContentElements.add(element);
       this.renderer.setStyle(
         element,
         'min-height',
