@@ -10,12 +10,11 @@
 
 ## New Features
 
-* **Skip a waiting timer from the case Progress tab**
+* **Exports now include a manifest describing their contents**
 
-  When a process is waiting on a timer, users can now skip that timer directly from the **Progress** tab of a case. A
-  skip button appears on the waiting timer in the process diagram; after confirming, the process continues immediately
-  as if the timer had elapsed. The option is only available to users who have the `complete` permission on the timer
-  (`OperatonTimer`) through Access Control (PBAC), and every skip is recorded in the case's audit trail.
+  Exporting a case definition or building block now adds a manifest file to the export. It summarizes what the
+  export contains and what is needed to import it, such as the title, version, and the plugins and building blocks
+  it depends on.
 
 ## Enhancements
 
@@ -50,6 +49,14 @@
   before producing a file. A user without an applicable `export` permission for the case definition now receives a
   403 (Forbidden) response instead of an empty CSV.
 
+* **Documents tab no longer fails when a linked document is missing in the Documenten API**
+
+  Documents that are still linked to the zaak but no longer exist in the Documenten API are
+  now skipped (with a warning in the log), so the remaining documents of the case are still
+  shown instead of an error. Pagination of the documents tab also no longer fails when
+  skipped documents leave a page beyond the end of the result set, and deleting a case no
+  longer fails when one of its linked documents is missing in the Documenten API.
+
 * **Tooltips no longer stay on screen when the hovered element is removed**
 
   A tooltip shown for an element that was removed or re-rendered while hovered (for example on pages that
@@ -80,6 +87,25 @@
   removed, its subscription is now updated reliably. Previously the remote subscription could end up
   out of sync with the saved configuration, and failures went unnoticed.
 
+* **Task permissions are re-evaluated after changing a task assignment**
+
+  Permission checks in the task detail dialog were cached, so after assigning a task to another user the
+  "Assign user" control stayed active even when the user no longer had the `assign` permission, and a second
+  attempt was only rejected by the backend. Permissions for the task are now re-evaluated after every
+  assignment change (including changes made by other users): the assign control is deactivated when the
+  `assign` permission is lost, and the dialog closes automatically when the `view` permission is lost.
+  Re-evaluating permissions this way no longer surfaces a spurious "access denied" error notification
+  for the expected `403`/`404` responses (on the task re-fetch when the `view` permission is lost, or on
+  the candidate user/team lookup when the `assign` permission is lost). For custom components,
+  `PermissionService` now offers a public `invalidateResource(resource, identifier?)` method to clear
+  cached permission results.
+
+* **No spurious error notification when document types cannot be viewed in a task form**
+
+  Opening a task whose form contains a document upload field no longer shows an "access denied" error
+  notification when the user is allowed to open the task but not to view the case's document types. The
+  document type lookup now treats a `403` as an expected outcome and falls back to an empty list.
+
 * **Closing a dialog with the Esc key now works reliably**
 
   Pressing Esc now reliably closes the open dialog, even when you first clicked somewhere inside it
@@ -92,19 +118,3 @@
   Angular alerts (hydration DOM clobbering, `HttpTransferCache` cache-key handling, and `formatDate` denial of
   service) were reviewed as non-exploitable in Valtimo's browser-only SPA and remain tracked for the next major
   Angular upgrade.
-
-## For developers
-
-* A new Access Control resource `com.ritense.valtimo.operaton.domain.OperatonTimer` was added, with the `complete`
-  action. Grant `complete` on `OperatonTimer` to a role to expose the skip-timer option on the Progress tab. Timers are
-  a resource of their own so that permissions on them stay independent of permissions on the process execution. See
-  [Access control - configurable elements](../../../features/access-control/configurable-elements.md).
-* A container condition mapper from `OperatonTimer` to `OperatonExecution` is available, so timer permissions can be
-  scoped through the execution to the case definition or the case document. See
-  [Access control - container conditions](../../../features/access-control/container-conditions.md).
-* Two new endpoints were added in the `process-document` module, both requiring the `complete` permission on the timer:
-  * `GET /api/v1/process-document/case/{caseId}/process-instance/{processInstanceId}/timers` — lists the active timer
-    jobs of a process instance that belongs to the case, restricted to the timers the user may complete.
-  * `POST /api/v1/process-document/case/{caseId}/process-instance/{processInstanceId}/timer/{jobId}/skip` — skips
-    (fires) the given timer job so the process continues past it.
-* Skipping a timer publishes a `ProcessTimerSkippedEvent` audit event, which appears in the case audit trail.

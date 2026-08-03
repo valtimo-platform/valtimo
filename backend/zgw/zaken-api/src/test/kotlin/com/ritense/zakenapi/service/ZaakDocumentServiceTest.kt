@@ -43,6 +43,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -51,6 +52,8 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
+import org.springframework.web.client.HttpClientErrorException
 import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.LocalDate
@@ -124,6 +127,127 @@ class ZaakDocumentServiceTest {
             assertEquals(documentenApiPluginConfiguration.id.id, relatedFile.pluginConfigurationId)
             assertEquals("http://localhost/informatieobjecttype", relatedFile.informatieobjecttype)
         }
+    }
+
+    @Test
+    fun `should skip informatieobjecten that no longer exist in the Documenten API`() {
+        val caseId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/$caseId")
+        whenever(zaakUrlProvider.getZaakUrl(caseId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+
+        val zaakInformatieObjects = createZaakInformatieObjecten(zaakUrl)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakUrl)).thenReturn(
+            zaakInformatieObjects
+        )
+
+        val documentenApiPluginConfiguration = mock<PluginConfiguration>()
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.findPluginConfiguration(eq(DocumentenApiPlugin::class.java), any()))
+            .doReturn(documentenApiPluginConfiguration)
+        whenever(documentenApiPluginConfiguration.id)
+            .doReturn(PluginConfigurationId(UUID.randomUUID()))
+        whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
+            .doReturn(documentenApiPlugin)
+        val missingInformatieobjectUrl = zaakInformatieObjects[2].informatieobject
+        whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any())).doAnswer { answer ->
+            val uri = answer.getArgument(0) as URI
+            if (uri == missingInformatieobjectUrl) {
+                throw HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found")
+            }
+            createDocumentInformatieObject(uri)
+        }
+
+        val relatedFiles = service.getInformatieObjectenAsRelatedFiles(caseId)
+
+        assertEquals(4, relatedFiles.size)
+    }
+
+    @Test
+    fun `should throw when the Documenten API fails with an error other than not found`() {
+        val caseId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/$caseId")
+        whenever(zaakUrlProvider.getZaakUrl(caseId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+
+        val zaakInformatieObjects = createZaakInformatieObjecten(zaakUrl)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakUrl)).thenReturn(
+            zaakInformatieObjects
+        )
+
+        val documentenApiPluginConfiguration = mock<PluginConfiguration>()
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.findPluginConfiguration(eq(DocumentenApiPlugin::class.java), any()))
+            .doReturn(documentenApiPluginConfiguration)
+        whenever(documentenApiPluginConfiguration.id)
+            .doReturn(PluginConfigurationId(UUID.randomUUID()))
+        whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
+            .doReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any()))
+            .doAnswer { throw HttpClientErrorException(HttpStatus.FORBIDDEN, "Forbidden") }
+
+        assertThrows<HttpClientErrorException> {
+            service.getInformatieObjectenAsRelatedFiles(caseId)
+        }
+    }
+
+    @Test
+    fun `should page correctly when missing documents shrink the result set below the page offset`() {
+        val caseId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/$caseId")
+        whenever(zaakUrlProvider.getZaakUrl(caseId)).thenReturn(zaakUrl)
+        whenever(documentenApiVersionService.getVersionByDocumentId(caseId)).thenReturn(MINIMUM_VERSION)
+        whenever(authorizationService.hasPermission<Any>(any())).thenReturn(true)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+
+        val zaakInformatieObjects = createZaakInformatieObjecten(zaakUrl, count = 10)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakUrl)).thenReturn(
+            zaakInformatieObjects
+        )
+
+        val documentenApiPluginConfiguration = mock<PluginConfiguration>()
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.findPluginConfiguration(eq(DocumentenApiPlugin::class.java), any()))
+            .doReturn(documentenApiPluginConfiguration)
+        whenever(documentenApiPluginConfiguration.id)
+            .doReturn(PluginConfigurationId(UUID.randomUUID()))
+        whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
+            .doReturn(documentenApiPlugin)
+        val missingInformatieobjectUrl = zaakInformatieObjects[2].informatieobject
+        whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any())).doAnswer { answer ->
+            val uri = answer.getArgument(0) as URI
+            if (uri == missingInformatieobjectUrl) {
+                throw HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found")
+            }
+            createDocumentInformatieObject(uri)
+        }
+
+        val firstPage = service.getInformatieObjectenAsRelatedFilesPage(
+            caseId,
+            DocumentSearchRequest(),
+            PageRequest.of(0, 10)
+        )
+        assertEquals(9, firstPage.content.size)
+        assertEquals(9, firstPage.totalElements)
+
+        // 10 zaakinformatieobjecten with 1 missing document leaves 9 results, so the offset of
+        // page 2 (10) points past the result set. This used to throw an IllegalArgumentException.
+        val secondPage = service.getInformatieObjectenAsRelatedFilesPage(
+            caseId,
+            DocumentSearchRequest(),
+            PageRequest.of(1, 10)
+        )
+        assertEquals(0, secondPage.content.size)
+        assertEquals(9, secondPage.totalElements)
     }
 
     @Test
@@ -263,10 +387,12 @@ class ZaakDocumentServiceTest {
         whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(caseDocumentId, URI("http://localhost/doc/2")))
             .thenReturn(listOf(doc2))
 
+        val documentenApiPlugin = mockDocumentenApiPlugin()
+
         service.deleteRelatedInformatieObjecten(caseDocumentId, documentUrl)
 
         val zaakDocumentCaptor = argumentCaptor<URI>()
-        verify(documentenApiService, times(2)).deleteInformatieObject(zaakDocumentCaptor.capture(), any())
+        verify(documentenApiPlugin, times(2)).deleteInformatieObject(eq(caseDocumentId), zaakDocumentCaptor.capture())
 
         assertEquals(URI("http://localhost/doc/1"), zaakDocumentCaptor.firstValue)
         assertEquals(URI("http://localhost/doc/2"), zaakDocumentCaptor.secondValue)
@@ -297,6 +423,73 @@ class ZaakDocumentServiceTest {
 
         verify(documentenApiService, times(0)).deleteInformatieObject(any(), any())
         verify(zaakApiPlugin).deleteZaakInformatieobject(relationUrl, caseDocumentId)
+    }
+
+    @Test
+    fun `should continue deleting when an informatieobject no longer exists in the Documenten API`() {
+        val caseDocumentId = UUID.randomUUID()
+        val documentUrl = URI("http://localhost/zaak/$caseDocumentId")
+        val zaakApiPlugin = mock<ZakenApiPlugin>()
+
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zaakApiPlugin)
+        val doc1 = mock<ZaakInformatieObject>()
+        val doc2 = mock<ZaakInformatieObject>()
+
+        whenever(zaakApiPlugin.getZaakInformatieObjecten(caseDocumentId, documentUrl)).thenReturn(listOf(doc1, doc2))
+
+        whenever(doc1.informatieobject).thenReturn(URI("http://localhost/doc/1"))
+        whenever(doc2.informatieobject).thenReturn(URI("http://localhost/doc/2"))
+
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(caseDocumentId, URI("http://localhost/doc/1")))
+            .thenReturn(listOf(doc1))
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(caseDocumentId, URI("http://localhost/doc/2")))
+            .thenReturn(listOf(doc2))
+
+        val documentenApiPlugin = mockDocumentenApiPlugin()
+        doThrow(HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"))
+            .whenever(documentenApiPlugin).deleteInformatieObject(caseDocumentId, URI("http://localhost/doc/1"))
+
+        service.deleteRelatedInformatieObjecten(caseDocumentId, documentUrl)
+
+        verify(documentenApiPlugin).deleteInformatieObject(caseDocumentId, URI("http://localhost/doc/1"))
+        verify(documentenApiPlugin).deleteInformatieObject(caseDocumentId, URI("http://localhost/doc/2"))
+    }
+
+    @Test
+    fun `should throw when deleting an informatieobject fails with an error other than not found`() {
+        val caseDocumentId = UUID.randomUUID()
+        val documentUrl = URI("http://localhost/zaak/$caseDocumentId")
+        val zaakApiPlugin = mock<ZakenApiPlugin>()
+
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zaakApiPlugin)
+        val doc1 = mock<ZaakInformatieObject>()
+
+        whenever(zaakApiPlugin.getZaakInformatieObjecten(caseDocumentId, documentUrl)).thenReturn(listOf(doc1))
+
+        whenever(doc1.informatieobject).thenReturn(URI("http://localhost/doc/1"))
+
+        whenever(zaakApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(caseDocumentId, URI("http://localhost/doc/1")))
+            .thenReturn(listOf(doc1))
+
+        val documentenApiPlugin = mockDocumentenApiPlugin()
+        doThrow(HttpClientErrorException(HttpStatus.FORBIDDEN, "Forbidden"))
+            .whenever(documentenApiPlugin).deleteInformatieObject(caseDocumentId, URI("http://localhost/doc/1"))
+
+        assertThrows<HttpClientErrorException> {
+            service.deleteRelatedInformatieObjecten(caseDocumentId, documentUrl)
+        }
+    }
+
+    private fun mockDocumentenApiPlugin(): DocumentenApiPlugin {
+        val documentenApiPluginConfiguration = mock<PluginConfiguration>()
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.findPluginConfiguration(eq(DocumentenApiPlugin::class.java), any()))
+            .doReturn(documentenApiPluginConfiguration)
+        whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
+            .doReturn(documentenApiPlugin)
+        return documentenApiPlugin
     }
 
     private fun createZaakInformatieObjecten(zaakUrl: URI, count: Int = 5): List<ZaakInformatieObject> {
