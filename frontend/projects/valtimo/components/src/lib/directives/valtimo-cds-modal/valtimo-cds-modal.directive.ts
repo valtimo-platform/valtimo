@@ -26,12 +26,16 @@ import {
   RendererStyleFlags2,
 } from '@angular/core';
 
+const OPEN_ATTRIBUTE_NAME = 'ng-reflect-open';
+
 @Directive({
   selector: '[valtimoCdsModal]',
   standalone: true,
 })
 export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
-  @Input() public readonly minContentHeight = 0;
+  // Not `readonly`: Angular assigns inputs, and template type checking reports every binding to
+  // a read-only property as TS2540 "Cannot assign to ... because it is a read-only property".
+  @Input() public minContentHeight = 0;
 
   private _mutationObserver: MutationObserver;
   // Content elements that already received the min-height style. The MutationObserver below
@@ -52,14 +56,21 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       this.handleMutations(mutations);
     });
 
+    // Only the open/close attribute is of interest. Observing *every* attribute would include the
+    // min-height this directive writes on the modal content below: that write mutates the observed
+    // subtree, so it would schedule another callback, which writes again — a microtask loop that
+    // starves the main thread and freezes the page. (It stayed dormant while the value was a plain
+    // `<n>px`, which the CSSOM stores verbatim, so re-writing it was a no-op that recorded no
+    // mutation. A value the browser re-serializes, such as `min(...)`, never compares equal to what
+    // was set, so every write does record one.)
     this._mutationObserver.observe(this.elementRef.nativeElement, {
       attributes: true,
+      attributeFilter: [OPEN_ATTRIBUTE_NAME],
       childList: true,
       subtree: true,
-      characterData: true,
     });
 
-    const open = this.elementRef.nativeElement.getAttribute('ng-reflect-open');
+    const open = this.elementRef.nativeElement.getAttribute(OPEN_ATTRIBUTE_NAME);
     if (open === 'true') {
       this.applyDocumentOverflowHidden();
     }
@@ -138,8 +149,6 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   };
 
   private handleMutations(mutations: MutationRecord[]): void {
-    const OPEN_ATTRIBUTE_NAME = 'ng-reflect-open';
-
     for (const mutation of mutations) {
       if (mutation.type === 'attributes' && mutation.attributeName === OPEN_ATTRIBUTE_NAME) {
         const open = this.elementRef.nativeElement.getAttribute(OPEN_ATTRIBUTE_NAME);
