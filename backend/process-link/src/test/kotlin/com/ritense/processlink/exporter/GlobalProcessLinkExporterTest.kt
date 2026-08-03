@@ -16,6 +16,9 @@
 
 package com.ritense.processlink.exporter
 
+import com.ritense.exporter.manifest.ArtifactDependency
+import com.ritense.exporter.manifest.DependencyType
+import com.ritense.exporter.manifest.ResolvableValue
 import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
@@ -103,6 +106,32 @@ class GlobalProcessLinkExporterTest {
         assertThat(exportFile.path).isEqualTo("config/global/process-link/my-process.process-link.json")
         assertThat(exportFile.content.toString(Charsets.UTF_8)).isEqualTo("[]")
         assertThat(result.relatedRequests).isEmpty()
+    }
+
+    /**
+     * The manifest of the export tells what the target environment needs, which for a process link is
+     * the plugin it uses.
+     */
+    @Test
+    fun `should contribute the manifest dependencies of the process links`() {
+        val processLink = mock<ProcessLink>()
+        val mapper = mapperReturning()
+        val dependency = ArtifactDependency(
+            type = DependencyType.PLUGIN,
+            key = ResolvableValue.of("documentenapi"),
+            title = ResolvableValue.of("Documenten API"),
+        )
+        whenever(mapper.toManifestDependencies(processLink)).thenReturn(setOf(dependency))
+        whenever(processLink.processLinkType).thenReturn("test-type")
+        whenever(processLinkService.getProcessLinks(PROCESS_DEFINITION_ID)).thenReturn(listOf(processLink))
+        whenever(processLinkService.getProcessLinkMapper("test-type")).thenReturn(mapper)
+        mockProcessDefinition()
+
+        val result = exporter.export(GlobalProcessDefinitionExportRequest(PROCESS_DEFINITION_ID))
+
+        assertThat(result.manifestDependencies).containsExactly(dependency)
+        // The process definition of the request is the artifact of the export
+        assertThat(result.manifestArtifact).isNull()
     }
 
     @Test

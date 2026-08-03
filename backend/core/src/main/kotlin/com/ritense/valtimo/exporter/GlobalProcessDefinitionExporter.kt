@@ -19,7 +19,11 @@ package com.ritense.valtimo.exporter
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.manifest.ArtifactManifestEntry
+import com.ritense.exporter.manifest.ArtifactType
+import com.ritense.exporter.manifest.ResolvableValue
 import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
@@ -59,8 +63,30 @@ class GlobalProcessDefinitionExporter(
             )
         }
 
-        return ExportResult(exportFile)
+        return ExportResult(
+            exportFiles = setOf(exportFile),
+            relatedRequests = emptySet(),
+            manifestArtifact = ArtifactManifestEntry(
+                artifactVersionTag = ResolvableValue.of(getArtifactVersionTag(processDefinition)),
+                title = ResolvableValue.of(processDefinition.name ?: processDefinition.key),
+                type = ArtifactType.PROCESS_DEFINITION,
+                // Filled in by the export service
+                valtimoVersion = "",
+                dependencies = emptyList(),
+            ),
+            manifestDependencies = emptySet(),
+        )
     }
+
+    /**
+     * A BPMN file has no field the manifest can reference, so the version is written as a literal
+     * value. The version tag of the model is preferred over the version of the deployment: the latter
+     * differs per environment. A version tag that encodes a case or building block definition is not
+     * a version of the process itself and is therefore ignored.
+     */
+    private fun getArtifactVersionTag(processDefinition: OperatonProcessDefinition): String =
+        processDefinition.takeIf { it.getBlueprintId() == null }?.versionTag
+            ?: processDefinition.version.toString()
 
     companion object {
         private const val PATH = "config/global/bpmn/%s.bpmn"

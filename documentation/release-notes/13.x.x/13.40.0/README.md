@@ -22,6 +22,13 @@
 
 ## Enhancements
 
+* **An exported process describes itself**
+
+  The package of an exported process now contains a manifest, just like an exported case definition or
+  building block already did. It names the process, its version, and the plugins its process links
+  need, so it is clear what a package contains and what the receiving environment has to offer before
+  it is imported.
+
 * **An import summary shows what is still missing**
 
   After importing, a summary shows which items the process refers to that are not present on this

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.exporter.ExportService
+import com.ritense.exporter.manifest.ExportManifest
 import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
@@ -51,6 +52,7 @@ class GlobalProcessLinkExporterIntTest @Autowired constructor(
             assertThat(entries.keys).containsExactlyInAnyOrder(
                 "config/global/bpmn/$PROCESS_DEFINITION_KEY.bpmn",
                 "config/global/process-link/$PROCESS_DEFINITION_KEY.process-link.json",
+                ExportManifest.MANIFEST_FILE_NAME,
             )
         }
 

@@ -21,6 +21,7 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.manifest.ArtifactDependency
 import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
@@ -50,16 +51,26 @@ class GlobalProcessLinkExporter(
     override fun export(request: GlobalProcessDefinitionExportRequest): ExportResult {
         val processLinks = processLinkService.getProcessLinks(request.processDefinitionId)
 
+        val manifestDependencies = mutableSetOf<ArtifactDependency>()
         val exportDtos = processLinks.map { processLink ->
-            processLinkService.getProcessLinkMapper(processLink.processLinkType)
-                .toProcessLinkExportResponseDto(processLink)
+            val mapper = processLinkService.getProcessLinkMapper(processLink.processLinkType)
+
+            manifestDependencies.addAll(mapper.toManifestDependencies(processLink))
+
+            mapper.toProcessLinkExportResponseDto(processLink)
         }
 
         return ExportResult(
-            ExportFile(
-                PATH.format(getProcessDefinitionKey(request.processDefinitionId)),
-                objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(exportDtos)
-            )
+            exportFiles = setOf(
+                ExportFile(
+                    PATH.format(getProcessDefinitionKey(request.processDefinitionId)),
+                    objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(exportDtos)
+                )
+            ),
+            relatedRequests = emptySet(),
+            // The process definition of the request is the artifact of this export
+            manifestArtifact = null,
+            manifestDependencies = manifestDependencies,
         )
     }
 
