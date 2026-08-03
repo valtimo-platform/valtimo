@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, DestroyRef} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ActivatedRoute, ParamMap} from '@angular/router';
 import {DocumentService, LoadedValue, ProcessDocumentInstance} from '@valtimo/document';
 import {SkippableTimer} from '@valtimo/process';
@@ -35,12 +36,7 @@ import {
 } from 'rxjs';
 import {ListItem} from 'carbon-components-angular/dropdown';
 import {CaseProcessTimerService} from '../../../../services';
-
-interface PendingSkip {
-  timer: SkippableTimer;
-  documentId: string;
-  processInstanceId: string;
-}
+import {PendingSkip} from '../../../../models/pending-skip.model';
 
 @Component({
   standalone: false,
@@ -55,6 +51,8 @@ export class CaseDetailTabProgressComponent {
   );
 
   private readonly _reloadProcessInstances$ = new BehaviorSubject<void>(undefined);
+
+  public readonly selectedProcessInstanceId$ = new BehaviorSubject<string | null>(null);
 
   private readonly processDocumentInstances$: Observable<Array<ProcessDocumentInstance>> =
     combineLatest([this.route.paramMap, this._reloadProcessInstances$]).pipe(
@@ -89,24 +87,24 @@ export class CaseDetailTabProgressComponent {
       })
     );
 
-  public readonly processInstanceItems$: Observable<LoadedValue<Array<ListItem>>> =
-    this.processDocumentInstances$.pipe(
-      map(processDocumentInstances =>
-        processDocumentInstances.map(processDocumentInstance => ({
-          processInstanceId: processDocumentInstance.id.processInstanceId,
-          content: processDocumentInstance.processName || '-',
-          selected:
-            processDocumentInstance.id.processInstanceId === this.selectedProcessInstanceId$.value,
-        }))
-      ),
-      map(processInstanceItems => ({
-        value: processInstanceItems,
-        isLoading: false,
-      })),
-      startWith({isLoading: true})
-    );
+  public readonly processInstanceItems$: Observable<LoadedValue<Array<ListItem>>> = combineLatest([
+    this.processDocumentInstances$,
+    this.selectedProcessInstanceId$,
+  ]).pipe(
+    map(([processDocumentInstances, selectedProcessInstanceId]) =>
+      processDocumentInstances.map(processDocumentInstance => ({
+        processInstanceId: processDocumentInstance.id.processInstanceId,
+        content: processDocumentInstance.processName || '-',
+        selected: processDocumentInstance.id.processInstanceId === selectedProcessInstanceId,
+      }))
+    ),
+    map(processInstanceItems => ({
+      value: processInstanceItems,
+      isLoading: false,
+    })),
+    startWith({isLoading: true})
+  );
 
-  public readonly selectedProcessInstanceId$ = new BehaviorSubject<string | null>(null);
   public readonly selectedProcessInstance$: Observable<LoadedValue<ProcessDocumentInstance>> =
     combineLatest([this.processDocumentInstances$, this.selectedProcessInstanceId$]).pipe(
       map(([processDocumentInstances, selectedProcessInstanceId]) =>
@@ -160,7 +158,8 @@ export class CaseDetailTabProgressComponent {
     private readonly documentService: DocumentService,
     private readonly caseProcessTimerService: CaseProcessTimerService,
     private readonly notificationService: GlobalNotificationService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly destroyRef: DestroyRef
   ) {}
 
   public loadProcessInstance(processInstanceId: string): void {
@@ -177,7 +176,7 @@ export class CaseDetailTabProgressComponent {
   public onRequestSkipTimer(timer: SkippableTimer): void {
     const processInstanceId = this.selectedProcessInstanceId$.value;
 
-    this._documentId$.pipe(take(1)).subscribe(documentId => {
+    this._documentId$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe(documentId => {
       if (!documentId || !processInstanceId) {
         return;
       }
@@ -195,25 +194,25 @@ export class CaseDetailTabProgressComponent {
       return;
     }
 
+    /*
+    The pending skip is cleared before the request is sent, so a repeated confirm cannot submit the
+    same timer twice and a completing request cannot clear a newer pending skip.
+    */
+    this._pendingSkip$.next(null);
+
     this.caseProcessTimerService
       .skipTimer(pendingSkip.documentId, pendingSkip.processInstanceId, pendingSkip.timer.jobId)
-      .subscribe({
-        next: () => {
-          this.notificationService.showToast({
-            type: 'success',
-            title: this.translateService.instant('progress.skipTimer.successToast'),
-            message: '',
-          });
-          this._pendingSkip$.next(null);
-          // Skipping a timer can complete the process, so the process instance data is stale too.
-          this._reloadProcessInstances$.next();
-          this._reloadTimers$.next();
-          this.diagramReloadToken$.next(this.diagramReloadToken$.value + 1);
-        },
-        // HTTP failures are surfaced globally by HttpErrorInterceptor; only reset local state here.
-        error: () => {
-          this._pendingSkip$.next(null);
-        },
+      // HTTP failures are surfaced globally by HttpErrorInterceptor, so only success is handled here.
+      .subscribe(() => {
+        this.notificationService.showToast({
+          type: 'success',
+          title: this.translateService.instant('progress.skipTimer.successToast'),
+          message: '',
+        });
+        // Skipping a timer can complete the process, so the process instance data is stale too.
+        this._reloadProcessInstances$.next();
+        this._reloadTimers$.next();
+        this.diagramReloadToken$.next(this.diagramReloadToken$.value + 1);
       });
   }
 

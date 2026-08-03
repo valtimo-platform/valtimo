@@ -124,7 +124,7 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  public ngOnChanges(changes: SimpleChanges): void {
     if (changes['processDefinitionKey'] && this.processDefinitionKey) {
       this.loadProcessDefinitionFromKey(this.processDefinitionKey);
     } else if (changes['processInstanceId'] && this.processInstanceId) {
@@ -142,7 +142,7 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy() {
     if (this.bpmnViewer) {
       this.bpmnViewer.destroy();
     }

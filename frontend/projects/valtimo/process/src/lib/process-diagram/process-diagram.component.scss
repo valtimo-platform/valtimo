@@ -58,11 +58,11 @@
 
 .valtimo-skip-timer-overlay {
   align-items: center;
-  background-color: #0f62fe;
+  background-color: var(--cds-button-primary);
   border: none;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  color: #ffffff;
+  box-shadow: 0 1px 3px var(--cds-shadow, rgba(0, 0, 0, 0.3));
+  color: var(--cds-text-on-color);
   cursor: pointer;
   display: inline-flex;
   height: 24px;
@@ -71,11 +71,11 @@
   width: 24px;
 
   &:hover {
-    background-color: #0353e9;
+    background-color: var(--cds-button-primary-hover);
   }
 
   &:focus {
-    outline: 2px solid #0f62fe;
+    outline: 2px solid var(--cds-focus);
     outline-offset: 1px;
   }
 }
