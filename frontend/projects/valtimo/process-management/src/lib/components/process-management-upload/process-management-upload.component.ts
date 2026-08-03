@@ -138,6 +138,10 @@ export class ProcessManagementUploadComponent {
 
     if (!file) return;
 
+    // A package of an earlier selection must not be imported when another file is uploaded
+    this._selectedFile = null;
+    this._selectedFileItems = null;
+
     if (this.isZip(file)) {
       this.previewProcessPackage(file);
       return;
@@ -278,7 +282,7 @@ export class ProcessManagementUploadComponent {
 
   private toFormData(file: File): FormData {
     const formData = new FormData();
-    formData.append('file', new Blob([file], {type: file.type}), file.name);
+    formData.append('file', file, file.name);
     return formData;
   }
 

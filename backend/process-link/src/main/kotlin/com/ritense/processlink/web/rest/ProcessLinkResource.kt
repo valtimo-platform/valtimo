@@ -16,6 +16,7 @@
 
 package com.ritense.processlink.web.rest
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
@@ -549,8 +550,11 @@ class ProcessLinkResource(
                 return ResponseEntity.badRequest().body(response)
             }
 
-            val pluginConfigurationMappings: Map<UUID, UUID?>? = pluginConfigurationMappingsJson?.let {
-                objectMapper.readValue<Map<UUID, UUID?>>(it)
+            val pluginConfigurationMappings: Map<UUID, UUID?>? = try {
+                pluginConfigurationMappingsJson?.let { objectMapper.readValue<Map<UUID, UUID?>>(it) }
+            } catch (exception: JsonProcessingException) {
+                logger.info(exception) { "Could not read the plugin configuration mappings" }
+                return ResponseEntity.badRequest().build()
             }
             runWithoutAuthorization {
                 importService.importGlobal(file.inputStream, pluginConfigurationMappings)

@@ -230,6 +230,41 @@ describe('ProcessManagementUploadComponent', () => {
     expect(processManagementService.previewProcessDefinitionImport).not.toHaveBeenCalled();
   });
 
+  /**
+   * A package that was previewed before the user changed their mind must not be imported when they
+   * confirm replacing the bpmn file they selected instead.
+   */
+  it('should forget a previewed package when a bpmn file is uploaded afterwards', () => {
+    const processLinkService = jasmine.createSpyObj('ProcessLinkService', [
+      'createProcessDefinition',
+    ]);
+    processLinkService.createProcessDefinition.and.returnValue(of({}));
+    component = new ProcessManagementUploadComponent(
+      new FormBuilder(),
+      notificationService,
+      processManagementService,
+      processManagementStateService,
+      processLinkService,
+      {
+        instant: (key: string, params?: Record<string, string>) =>
+          params ? `${key} ${Object.values(params).join(', ')}` : key,
+      } as any,
+      {markForCheck: () => {}} as any
+    );
+    processManagementService.previewProcessDefinitionImport.and.returnValue(
+      of(PREVIEW_WITH_PLUGINS)
+    );
+    selectFile(zipFile());
+    component.uploadProcessBpmn();
+    component.onBackClick();
+
+    selectFile(new File(['<bpmn/>'], 'my-process.bpmn', {type: 'text/xml'}));
+    component.uploadProcessBpmn();
+    component.confirmReplace();
+
+    expect(processManagementService.importProcessDefinition).not.toHaveBeenCalled();
+  });
+
   it('should group missing references by type', () => {
     const groups = component.getMissingReferenceGroups([
       {

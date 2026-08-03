@@ -88,13 +88,20 @@ class GlobalProcessLinkExporterTest {
         assertThat(result.relatedRequests).isEmpty()
     }
 
+    /**
+     * The importer only removes process links of a process it receives a file for, so a process
+     * without process links has to export an empty file instead of no file at all.
+     */
     @Test
-    fun `should export nothing when the process has no process links`() {
+    fun `should export an empty process link file when the process has no process links`() {
         whenever(processLinkService.getProcessLinks(PROCESS_DEFINITION_ID)).thenReturn(emptyList())
+        mockProcessDefinition()
 
         val result = exporter.export(GlobalProcessDefinitionExportRequest(PROCESS_DEFINITION_ID))
 
-        assertThat(result.exportFiles).isEmpty()
+        val exportFile = result.exportFiles.single()
+        assertThat(exportFile.path).isEqualTo("config/global/process-link/my-process.process-link.json")
+        assertThat(exportFile.content.toString(Charsets.UTF_8)).isEqualTo("[]")
         assertThat(result.relatedRequests).isEmpty()
     }
 

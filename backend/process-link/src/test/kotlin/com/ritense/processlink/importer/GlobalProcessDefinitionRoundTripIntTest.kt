@@ -84,6 +84,31 @@ class GlobalProcessDefinitionRoundTripIntTest @Autowired constructor(
         assertThat(processLinks.single().activityId).isEqualTo("test-user-task")
     }
 
+    /**
+     * A process without process links exports an empty process link file, so importing it removes the
+     * process links of the target environment as well.
+     */
+    @Test
+    fun `should remove the process links of a package that has none`(): Unit = runWithoutAuthorization {
+        processLinkService.deleteProcessLink(processLinkService.getProcessLinks(processDefinitionId()).single().id)
+        val exported = export()
+
+        processLinkService.createProcessLink(
+            TestProcessLinkCreateRequestDto(
+                processDefinitionId = processDefinitionId(),
+                activityId = "test-user-task",
+                activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
+                someValue = "only on this environment",
+            ),
+            null,
+        )
+        assertThat(processLinkService.getProcessLinks(processDefinitionId())).hasSize(1)
+
+        importService.importGlobal(ByteArrayInputStream(exported))
+
+        assertThat(processLinkService.getProcessLinks(processDefinitionId())).isEmpty()
+    }
+
     private fun export(): ByteArray =
         exportService.export(GlobalProcessDefinitionExportRequest(processDefinitionId())).toByteArray()
 

@@ -42,12 +42,13 @@ class GlobalProcessLinkExporter(
     override fun supports(): Class<GlobalProcessDefinitionExportRequest> =
         GlobalProcessDefinitionExportRequest::class.java
 
+    /**
+     * The exported file is always written, also when the process has no process links: it is the
+     * complete set of process links for the process, and an importer only removes process links of a
+     * process it receives a file for.
+     */
     override fun export(request: GlobalProcessDefinitionExportRequest): ExportResult {
         val processLinks = processLinkService.getProcessLinks(request.processDefinitionId)
-
-        if (processLinks.isEmpty()) {
-            return ExportResult()
-        }
 
         val exportDtos = processLinks.map { processLink ->
             processLinkService.getProcessLinkMapper(processLink.processLinkType)

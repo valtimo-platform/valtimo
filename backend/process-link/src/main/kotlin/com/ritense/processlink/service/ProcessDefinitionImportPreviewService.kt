@@ -224,7 +224,7 @@ class ProcessDefinitionImportPreviewService(
                 }
             }
         } catch (e: Exception) {
-            throw ImportServiceException("Archive could not be read: ${e.message}")
+            throw ImportServiceException("Archive could not be read: ${e.message}").apply { initCause(e) }
         }
 
         if (entries.isEmpty()) {

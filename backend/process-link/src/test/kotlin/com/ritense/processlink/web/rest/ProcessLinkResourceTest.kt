@@ -51,6 +51,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import org.springframework.http.converter.ByteArrayHttpMessageConverter
+import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.http.HttpMethod
@@ -121,7 +122,12 @@ internal class ProcessLinkResourceTest {
         mockMvc = MockMvcBuilders
             .standaloneSetup(processLinkResource)
             // The export endpoint responds with a zip, which needs the byte array converter
-            .setMessageConverters(mappingJackson2HttpMessageConverter, ByteArrayHttpMessageConverter())
+            .setMessageConverters(
+                mappingJackson2HttpMessageConverter,
+                ByteArrayHttpMessageConverter(),
+                // Multipart parts that are bound to a String, such as pluginConfigurationMappings
+                StringHttpMessageConverter(),
+            )
             .build()
     }
 
@@ -388,6 +394,31 @@ internal class ProcessLinkResourceTest {
             .andExpect(jsonPath("$.processDefinitionKeys.[0]").value("my-process"))
 
         verify(importService).importGlobal(any(), anyOrNull())
+    }
+
+    @Test
+    fun `should return a bad request when the plugin configuration mappings cannot be read`() {
+        whenever(processDefinitionImportPreviewService.preview(any()))
+            .thenReturn(ProcessDefinitionImportPreviewResponseDto(processDefinitionKeys = listOf("my-process")))
+
+        mockMvc.perform(
+            multipart("/api/management/v1/process-definition/import")
+                .file(MockMultipartFile("file", "my-process.process.zip", null, "zip".toByteArray()))
+                .file(
+                    MockMultipartFile(
+                        "pluginConfigurationMappings",
+                        "mappings.json",
+                        MediaType.TEXT_PLAIN_VALUE,
+                        "not json".toByteArray()
+                    )
+                )
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+
+        // The method was entered, so the bad request comes from the unreadable mappings
+        verify(processDefinitionImportPreviewService).preview(any())
+        verify(importService, never()).importGlobal(any(), anyOrNull())
     }
 
     @Test
