@@ -20,7 +20,10 @@ import com.ritense.objectmanagement.BaseIntegrationTest
 import com.ritense.objectmanagement.service.ObjectManagementService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
@@ -37,5 +40,54 @@ internal class ObjectManagementDefinitionDeploymentServiceIntTest: BaseIntegrati
         assertThat(objectManagement).isNotNull
         assertThat(objectManagement?.title).isEqualTo("My Object Management")
         assertThat(objectManagement?.id).isEqualTo(UUID.fromString("4f35c270-21f4-4e99-a8a1-6c4f9d5a6c5c"))
+    }
+
+    @Test
+    fun `should use default value when placeholder is not resolvable`() {
+        val service = deploymentService(mock())
+
+        val result = service.invokeResolvePlaceholder("${'$'}{SOME_UNSET_PROPERTY:https://default.example.com}")
+
+        assertThat(result).isEqualTo("https://default.example.com")
+    }
+
+    @Test
+    fun `should prefer resolved value over default`() {
+        val environment = mock<Environment>()
+        whenever(environment.getProperty("MY_OBJECT_PROP")).thenReturn("https://actual.example.com")
+        val service = deploymentService(environment)
+
+        val result = service.invokeResolvePlaceholder("${'$'}{MY_OBJECT_PROP:https://default.example.com}")
+
+        assertThat(result).isEqualTo("https://actual.example.com")
+    }
+
+    @Test
+    fun `should resolve empty default to empty string`() {
+        val service = deploymentService(mock())
+
+        val result = service.invokeResolvePlaceholder("${'$'}{SOME_UNSET_PROPERTY:}")
+
+        assertThat(result).isEqualTo("")
+    }
+
+    @Test
+    fun `should return original value when placeholder not resolvable and no default`() {
+        val service = deploymentService(mock())
+
+        val result = service.invokeResolvePlaceholder("${'$'}{SOME_UNSET_PROPERTY}")
+
+        assertThat(result).isEqualTo("${'$'}{SOME_UNSET_PROPERTY}")
+    }
+
+    private fun deploymentService(environment: Environment) = ObjectManagementDefinitionDeploymentService(
+        mock(), mock(), mock(), mock(), mock(), environment
+    )
+
+    private fun ObjectManagementDefinitionDeploymentService.invokeResolvePlaceholder(value: String): String {
+        val method = ObjectManagementDefinitionDeploymentService::class.java
+            .getDeclaredMethod("getEnvVariableOrYamlPropertyOrDirectValue", String::class.java)
+        method.isAccessible = true
+        return method.invoke(this, value) as String
     }
 }

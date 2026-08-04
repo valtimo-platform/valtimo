@@ -16,22 +16,37 @@
 
 package com.ritense.exporter.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.ValtimoExportService
+import com.ritense.exporter.manifest.DefaultValtimoVersionResolver
+import com.ritense.exporter.manifest.ValtimoVersionResolver
 import com.ritense.exporter.request.ExportRequest
+import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
-import org.springframework.boot.autoconfigure.AutoConfiguration
 
 @AutoConfiguration
 class ExportAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ExportService::class)
-    fun exportService(exporters: List<Exporter<*>>): ExportService {
+    fun exportService(
+        exporters: List<Exporter<*>>,
+        objectMapper: ObjectMapper,
+        valtimoVersionResolver: ValtimoVersionResolver,
+    ): ExportService {
         return ValtimoExportService(
-            exporters as List<Exporter<ExportRequest>>
+            exporters as List<Exporter<ExportRequest>>,
+            objectMapper,
+            valtimoVersionResolver,
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ValtimoVersionResolver::class)
+    fun valtimoVersionResolver(): ValtimoVersionResolver {
+        return DefaultValtimoVersionResolver()
     }
 }

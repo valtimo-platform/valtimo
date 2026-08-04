@@ -121,10 +121,8 @@ export class CaseDetailsManagementWidgetsPage {
   async selectValuePath(pathText: string) {
     const selector = this.page.getByTestId(WIDGET_CONTENT_FIELDS_TEST_IDS.valuePathSelector);
     await selector.getByRole('combobox').click();
-    // Target the listbox option by exact accessible name. getByText() matched any
-    // element containing the string, so a path that the value-resolver no longer
-    // advertises just hung until the 30s test timeout instead of failing clearly —
-    // and a shorter path would ambiguously match a longer one.
+    // Match the option exactly: several paths share a prefix (e.g. `case:definitionId.key`
+    // and `case:definitionId.versionTag`), so a substring match is ambiguous.
     await this.page.getByRole('option', {name: pathText, exact: true}).click();
   }
 
@@ -200,7 +198,7 @@ export class CaseDetailsManagementWidgetsPage {
     // Select the path via the value-path-selector combobox (scoped to first row)
     const conditionRow = this.page.getByTestId('multiInputValuePathSelectorDropdownValue-0');
     await conditionRow.getByRole('combobox').click();
-    await this.page.getByRole('option', {name: opts.path, exact: true}).click();
+    await this.page.getByText(opts.path).click();
 
     // Select the operator from the dropdown
     // Use force:true because the modal header can overlap the dropdown options

@@ -59,17 +59,18 @@ export class AccessControlPage {
     return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add new role'});
   }
 
-  // Role metadata modal. The modal defaults to a "Choose from list" v-select of
-  // existing role keys; creating a brand-new role needs the manual-entry text
-  // input, revealed by the "Enter manually" toggle (see `enterRoleNameManually`).
-  // In manual mode the modal contains exactly one textbox.
+  // Role metadata modal: plain <input formControlName="key">, no data-test-ids.
+  // It is only rendered in manual mode — see openAddRoleModal().
   get roleNameInput() {
-    return this.page.locator('cds-modal').getByRole('textbox');
+    return this.page.locator('cds-modal input[formcontrolname="key"]');
   }
 
-  // Older builds show the input directly; newer ones hide it behind the
-  // "Enter manually" toggle. Present only in the newer modal.
-  get roleNameManualToggle() {
+  /**
+   * The modal defaults to a "choose from list" v-select of existing role keys; the free
+   * text input only appears after switching to manual mode. The same button switches back
+   * ("Choose from list"), so only click it while it still offers manual entry.
+   */
+  get manualEntryButton() {
     return this.page.locator('cds-modal').getByRole('button', {name: 'Enter manually'});
   }
 
@@ -91,18 +92,16 @@ export class AccessControlPage {
 
   // ─── Actions ──────────────────────────────────────────────────────
 
-  // Switch the modal to manual name entry when the toggle is present, so a new
-  // role key can be typed. No-op against the older input-only modal.
-  async enterRoleNameManually() {
-    if (await this.roleNameManualToggle.isVisible().catch(() => false)) {
-      await this.roleNameManualToggle.click();
-    }
+  /** Opens the add-role modal and switches it to manual key entry. */
+  async openAddRoleModal() {
+    await this.addRoleButton.click();
+    await expect(this.manualEntryButton).toBeVisible();
+    await this.manualEntryButton.click();
     await expect(this.roleNameInput).toBeVisible();
   }
 
   async addRole(roleKey: string) {
-    await this.addRoleButton.click();
-    await this.enterRoleNameManually();
+    await this.openAddRoleModal();
     await this.roleNameInput.fill(roleKey);
     await this.createRoleButton.click();
   }

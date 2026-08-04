@@ -19,6 +19,8 @@ import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.ut
 import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 import * as ApiUtils from '../../utils/api.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
+import {fillValuePathManually} from '../../utils/value-path-selector.utils';
+import {fillStable} from '../../utils/ui.utils';
 
 export class CaseDetailsManagementTasksPage {
   constructor(
@@ -72,12 +74,13 @@ export class CaseDetailsManagementTasksPage {
   // No data-test-ids in column modal — use cds-label + hasText
 
   get addColumnButton() {
-    // Label comes from listColumn.addButtonText ("Create column").
-    // Two of these exist when the list is empty: toolbar + no-results panel.
+    // Two "Create column" buttons exist when list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
+    // Label was renamed "Add column" → "Create column"; accept both so the test does not
+    // break while a target environment still runs an older frontend build.
     return this.page
       .getByLabel('Table action bar')
-      .getByRole('button', {name: 'Create column', exact: true});
+      .getByRole('button', {name: /^(Create|Add) column$/i});
   }
 
   get columnTitleInput() {
@@ -88,22 +91,14 @@ export class CaseDetailsManagementTasksPage {
     return this.page.locator('cds-modal').locator('cds-label').filter({hasText: 'Key'}).locator('input');
   }
 
-  // Path uses valtimo-value-path-selector, which defaults to dropdown mode.
-  // The manual text input (where an arbitrary path can be typed) only renders
-  // after toggling to manual mode.
-  get columnPathToggle() {
-    return this.page
-      .locator('cds-modal')
-      .locator('valtimo-value-path-selector')
-      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle)
-      .locator('.cds--toggle__switch');
+  // Path uses valtimo-value-path-selector. Whether it starts in dropdown or manual
+  // mode depends on the configuration, so use the shared helper to force manual mode.
+  get columnPathSelector() {
+    return this.page.locator('cds-modal').locator('valtimo-value-path-selector');
   }
 
   get columnPathInput() {
-    return this.page
-      .locator('cds-modal')
-      .locator('valtimo-value-path-selector')
-      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
+    return this.columnPathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   get columnDisplayTypeDropdown() {
@@ -114,25 +109,23 @@ export class CaseDetailsManagementTasksPage {
       .locator('cds-dropdown');
   }
 
-  // The column modal's primary button is label-switched on mode:
-  // add -> interface.create ("Create"), edit -> listColumn.save ("Save column").
-  // Only the add flow is exercised here.
   get columnSaveButton() {
+    // The primary button reads "Create" while adding and "Save column" while editing.
     return this.page
       .locator('cds-modal-footer')
-      .getByRole('button', {name: 'Create', exact: true});
+      .getByRole('button', {name: /^(Create|Save column)$/i});
   }
 
   // ─── Search Field Modal Elements ──────────────────────────────────
   // Search field modal uses data-testid attributes
 
   get addSearchFieldButton() {
-    // Label comes from searchFieldsOverview.add ("Create search field").
-    // Two of these exist when the list is empty: toolbar + no-results panel.
+    // Two "Create search field" buttons exist when list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
+    // Label was renamed "Add search field" → "Create search field"; accept both.
     return this.page
       .getByLabel('Table action bar')
-      .getByRole('button', {name: 'Create search field', exact: true});
+      .getByRole('button', {name: /^(Create|Add) search field$/i});
   }
 
   get searchFieldKeyInput() {
@@ -164,40 +157,6 @@ export class CaseDetailsManagementTasksPage {
     await expect(dropdownLocator).toContainText(itemText);
   }
 
-  // The value-path-selector toggles to manual mode and runs a setTimeout(detectChanges, 1)
-  // before the manual <input> is wired to the parent form. Filling immediately can land the
-  // value before the CVA subscription is active, so the required `path` control never commits
-  // and the Save button stays disabled. Re-fill until the input actually holds the value.
-  private async fillValuePathManually(toggle: Locator, input: Locator, path: string) {
-    await toggle.click();
-    await expect(input).toBeVisible();
-    await expect(async () => {
-      await input.fill(path);
-      await input.blur();
-      await expect(input).toHaveValue(path);
-    }).toPass({timeout: 10_000});
-  }
-
-  // Both task-management modals schedule a deferred wipe of their reactive form:
-  //   task-management-column-modal:        set show(false) -> setTimeout(resetForm, 240ms)
-  //   task-management-search-fields-modal: resetForm()     -> setTimeout(form.reset(), 240ms)
-  // (240ms = CARBON_CONSTANTS.modalAnimationMs). When the modal is reopened before
-  // that timer fires, the pending reset lands mid-fill and nulls whatever has already
-  // been typed — leaving the required control empty and the submit button disabled.
-  // Re-fill only what does not already hold the expected value, until everything sticks.
-  private async fillTextFields(fields: Array<{input: Locator; value: string}>) {
-    await expect(async () => {
-      for (const {input, value} of fields) {
-        if ((await input.inputValue()) !== value) {
-          await input.fill(value);
-        }
-      }
-      for (const {input, value} of fields) {
-        await expect(input).toHaveValue(value);
-      }
-    }).toPass({timeout: 10_000});
-  }
-
   // ─── Cleanup ───────────────────────────────────────────────────────
 
   async cleanupStaleColumns() {
@@ -221,48 +180,31 @@ export class CaseDetailsManagementTasksPage {
     await this.addColumnButton.click();
     await expect(this.columnKeyInput).toBeVisible();
 
-    const textFields = [
-      ...(column.title ? [{input: this.columnTitleInput, value: column.title}] : []),
-      {input: this.columnKeyInput, value: column.key},
-    ];
-
-    await this.fillTextFields(textFields);
-    await this.fillValuePathManually(this.columnPathToggle, this.columnPathInput, column.path);
+    // The modal resets its form shortly after opening, so fill until the values stick.
+    if (column.title) {
+      await fillStable(this.columnTitleInput, column.title);
+    }
+    await fillStable(this.columnKeyInput, column.key);
+    await fillValuePathManually(this.columnPathSelector, column.path);
     await this.selectDropdownItem(this.columnDisplayTypeDropdown, column.displayType);
-    // A reset that lands after the first fill would have cleared these again, so
-    // re-verify (and re-fill) right before relying on the form being valid.
-    await this.fillTextFields(textFields);
     await expect(this.columnSaveButton).toBeEnabled();
     await this.columnSaveButton.click();
   }
 
-  get searchFieldPathToggle() {
-    return this.page
-      .locator('valtimo-value-path-selector')
-      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle)
-      .locator('.cds--toggle__switch');
+  get searchFieldPathSelector() {
+    return this.page.locator('valtimo-value-path-selector');
   }
 
   get searchFieldPathInput() {
-    return this.page
-      .locator('valtimo-value-path-selector')
-      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
+    return this.searchFieldPathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   async addSearchField(field: {title: string; key: string; path: string; dataType: string; matchType?: string; fieldType: string}) {
     await this.addSearchFieldButton.click();
     await expect(this.searchFieldKeyInput).toBeVisible();
-
-    const textFields = [
-      {
-        input: this.page.locator('[data-testid="task-management-search-title"]'),
-        value: field.title,
-      },
-      {input: this.searchFieldKeyInput, value: field.key},
-    ];
-
-    await this.fillTextFields(textFields);
-    await this.fillValuePathManually(this.searchFieldPathToggle, this.searchFieldPathInput, field.path);
+    await this.page.locator('[data-testid="task-management-search-title"]').fill(field.title);
+    await this.searchFieldKeyInput.fill(field.key);
+    await fillValuePathManually(this.searchFieldPathSelector, field.path);
     await this.selectDropdownItem(this.searchFieldDataTypeDropdown, field.dataType);
     if (field.matchType) {
       const matchTypeVisible = await this.searchFieldMatchTypeDropdown.isVisible();
@@ -271,7 +213,6 @@ export class CaseDetailsManagementTasksPage {
       }
     }
     await this.selectDropdownItem(this.searchFieldFieldTypeDropdown, field.fieldType);
-    await this.fillTextFields(textFields);
     await expect(this.searchFieldSaveButton).toBeEnabled();
     await this.searchFieldSaveButton.click();
   }

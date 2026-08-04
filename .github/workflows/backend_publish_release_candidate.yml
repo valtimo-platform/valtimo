@@ -77,13 +77,31 @@ jobs:
             fi
           fi
 
+      # Sonatype sunset guard: stop dual-publishing to Sonatype from 10 Aug 2026.
+      # After the cutoff only the S3 publish runs. Adjust CUTOFF to move the boundary.
+      - name: Determine whether Sonatype publishing is still open
+        id: sonatype_window
+        run: |
+          set -euo pipefail
+          CUTOFF="2026-08-10"
+          TODAY="$(date -u +%F)"
+          if [[ "$TODAY" < "$CUTOFF" ]]; then
+            echo "open=true" >> "$GITHUB_OUTPUT"
+            echo "Before Sonatype cutoff ($CUTOFF) — dual-publishing to Sonatype + S3."
+          else
+            echo "open=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Past Sonatype cutoff ($CUTOFF) — publishing to S3 only."
+          fi
+
       - name: Publish to Sonatype staging
+        if: ${{ steps.sonatype_window.outputs.open == 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
         run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_rc }}"
 
       - name: Deploy with JReleaser to Maven Central
+        if: ${{ steps.sonatype_window.outputs.open == 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
@@ -95,3 +113,19 @@ jobs:
         with:
           name: build-reports
           path: backend/build/reports
+
+  # Second leg of the dual publish: push the same RC artifacts to the OVHcloud S3 bucket
+  # (RCs share the valtimo-releases bucket with releases).
+  publish_s3:
+    name: Publish to S3
+    needs:
+      - build_run_tests
+    if: ${{ startsWith(github.ref_name, 'rc/') }}
+    uses: ./.github/workflows/backend_publish_to_s3.yml
+    with:
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+      s3_bucket: valtimo-releases
+      build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+    secrets:
+      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_ID }}
+      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_SECRET }}

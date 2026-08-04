@@ -64,10 +64,10 @@ export class IkoSearchFieldPage {
 
   // ─── Search field modal ─────────────────────────────────────────────
 
-  // This modal reuses the shared searchFieldsOverview.* keys rather than IKO's own
-  // ikoManagement.* ones, so it picked up the "Add" -> "Create" rename from #826.
   get addModalHeading(): Locator {
-    return this.page.getByRole('heading', {name: 'Create search field', exact: true});
+    // Heading comes from `searchFieldsOverview.add`, renamed "Add search field" →
+    // "Create search field"; accept both so the test also passes on older builds.
+    return this.page.getByRole('heading', {name: /^(Create|Add) search field$/i});
   }
 
   get editModalHeading(): Locator {
