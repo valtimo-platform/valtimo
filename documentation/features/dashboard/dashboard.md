@@ -20,6 +20,57 @@ Returns the number of cases of a specific type that match the criteria have been
 
 <table><thead><tr><th valign="top">Name</th><th valign="top">Description</th></tr></thead><tbody><tr><td valign="top"><code>queryPath</code></td><td valign="top">The path of the variable that the condition uses to filter the count.</td></tr><tr><td valign="top"><code>queryOperator</code></td><td valign="top">The operator that the condition uses to filter the count. Available values are <code>!=</code>, <code>==</code>, <code>></code>, <code>>=</code>, <code>&#x3C;</code> and <code>&#x3C;=</code>.</td></tr><tr><td valign="top"><code>queryValue</code></td><td valign="top">The value which the queryPath variable is checked against.</td></tr></tbody></table>
 
+## Task count <a href="#task-count" id="task-count"></a>
+
+Key: `task-count`
+
+Front-end module: `TaskCountDataSourceModule`
+
+Returns the number of tasks that are visible to the user and match the criteria set in the configuration.
+
+### Properties
+
+<table><thead><tr><th valign="top">Name</th><th valign="top">Description</th></tr></thead><tbody><tr><td valign="top"><code>caseDefinitionName</code></td><td valign="top">Optional. When set, only tasks that belong to a case of this case definition are counted. When omitted, tasks of all case definitions (and standalone tasks) are counted.</td></tr><tr><td valign="top"><code>conditions</code></td><td valign="top">Optional. An array of condition nodes that a task needs to match in order to be included in the count. A node is either a single condition or an <code>and</code>/<code>or</code> group (see below). The nodes at the top level are combined with <code>AND</code>.</td></tr></tbody></table>
+
+### Condition node
+
+A condition node is one of:
+
+* **A single condition** — the same object used by the `case-count` data source, with `path`, `operator` and `value`. The legacy aliases `queryPath`, `queryOperator` and `queryValue` remain valid.
+* **An `and` group** — `{ "and": [ ...nodes ] }`. All child nodes must match.
+* **An `or` group** — `{ "or": [ ...nodes ] }`. At least one child node must match.
+
+Groups may be nested to arbitrary depth in configuration files. The admin UI supports a flat list of `AND` conditions plus one level of `OR` groups; deeper trees (and `in` conditions) authored in configuration files are preserved when the widget is edited in the UI, but can only be changed through the configuration file.
+
+### Operators
+
+In addition to the operators available for `case-count` (`!=`, `==`, `>`, `>=`, `<`, `<=`), the `task-count` conditions support:
+
+<table><thead><tr><th valign="top">Operator</th><th valign="top">Description</th></tr></thead><tbody><tr><td valign="top"><code>in</code></td><td valign="top">Matches when the field value is one of the values in the provided array, e.g. <code>{ "path": "task:name", "operator": "in", "value": ["A", "B"] }</code>. This is a compact alternative to an <code>or</code> group of <code>==</code> conditions.</td></tr></tbody></table>
+
+### Example
+
+```json
+{
+  "dataSourceKey": "task-count",
+  "dataSourceProperties": {
+    "caseDefinitionName": "leerlingzaken",
+    "conditions": [
+      { "path": "task:assignee", "operator": "!=", "value": "${null}" },
+      { "or": [
+          { "path": "task:name", "operator": "==", "value": "Beoordeel aanvraag" },
+          { "path": "task:name", "operator": "==", "value": "Controleer documenten" }
+      ]},
+      { "path": "task:name", "operator": "in", "value": ["A", "B"] }
+    ]
+  }
+}
+```
+
+{% hint style="info" %}
+**Backwards compatible.** Existing `task-count` configurations keep working without migration: the legacy `queryConditions` property, the `queryPath`/`queryOperator`/`queryValue` aliases, and a flat list of conditions (implicitly combined with `AND`) are all still valid.
+{% endhint %}
+
 ## Multiple case counts <a href="#multiple-case-counts" id="multiple-case-counts"></a>
 
 Key: `case-counts`

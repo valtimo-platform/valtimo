@@ -34,4 +34,16 @@ interface QueryCondition {
   queryValue: string;
 }
 
-export {DataSourceSpecification, QueryCondition};
+interface ConditionLeaf {
+  path: string;
+  operator: string;
+  value: string;
+}
+
+interface OrConditionGroup {
+  or: ConditionNode[];
+}
+
+type ConditionNode = ConditionLeaf | OrConditionGroup;
+
+export {DataSourceSpecification, QueryCondition, ConditionLeaf, OrConditionGroup, ConditionNode};

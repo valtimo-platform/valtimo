@@ -19,20 +19,31 @@ import {CommonModule} from '@angular/common';
 import {DATA_SOURCE_TOKEN} from '../../constants';
 import {taskCountSpecification} from './task-count.specification';
 import {TaskCountConfigurationComponent} from './components';
-import {ReactiveFormsModule} from '@angular/forms';
 import {WidgetTranslatePipeModule} from '../../pipes';
-import {DropdownModule, InputModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  DropdownModule,
+  IconModule,
+  InputModule,
+  LayerModule,
+  NotificationModule,
+  TilesModule,
+} from 'carbon-components-angular';
 import {CarbonMultiInputModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [TaskCountConfigurationComponent],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     WidgetTranslatePipeModule,
     InputModule,
     DropdownModule,
     CarbonMultiInputModule,
+    ButtonModule,
+    IconModule,
+    LayerModule,
+    NotificationModule,
+    TilesModule,
   ],
   exports: [TaskCountConfigurationComponent],
   providers: [{provide: DATA_SOURCE_TOKEN, useValue: taskCountSpecification, multi: true}],

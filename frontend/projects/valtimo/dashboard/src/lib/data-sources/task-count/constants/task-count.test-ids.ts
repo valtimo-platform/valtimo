@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import {ConditionNode} from '../../../models';
-
-interface TaskCountConfiguration {
-  caseDefinitionName?: string;
-  conditions: ConditionNode[];
-}
-
-export {TaskCountConfiguration};
+export const TASK_COUNT_TEST_IDS = {
+  caseDefinitionDropdown: 'taskCountCaseDefinitionDropdown',
+  addOrGroupButton: 'taskCountAddOrGroupButton',
+  deleteOrGroupButton: 'taskCountDeleteOrGroupButton',
+} as const;

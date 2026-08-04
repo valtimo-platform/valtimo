@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,11 +14,28 @@
   ~ limitations under the License.
   -->
 
-<form
-  class="task-count-configuration-form"
-  *ngIf="{operatorItems: operatorItems$} as obs"
-  [formGroup]="form"
->
+<div class="task-count-configuration-form">
+  <div class="form__element">
+    <cds-dropdown
+      [appendInline]="true"
+      [attr.data-test-id]="testIds.caseDefinitionDropdown"
+      [disabled]="$disabled()"
+      [helperText]="'caseDefinitionNameHelperText' | widgetTranslate: dataSourceKey | async"
+      [label]="'caseDefinitionName' | widgetTranslate: dataSourceKey | async"
+      (selected)="caseDefinitionSelected($event)"
+    >
+      <cds-dropdown-list [items]="(caseDefinitionItems$ | async) || []"></cds-dropdown-list>
+    </cds-dropdown>
+  </div>
+
+  @if ($hasUnsupportedConditions()) {
+    <div class="form__element">
+      <cds-inline-notification
+        [notificationObj]="unsupportedConditionsNotification$ | async"
+      ></cds-inline-notification>
+    </div>
+  }
+
   <div class="form__element conditions-multi-input">
     <cds-label
       [helperText]="'conditionsHelperText' | widgetTranslate: dataSourceKey | async"
@@ -28,6 +45,7 @@
     <valtimo-carbon-multi-input
       [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
       [defaultValues]="defaultConditionValues$ | async"
+      [disabled]="$disabled()"
       [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
       [dropdownItems]="operatorItems$ | async"
       [fullWidth]="true"
@@ -36,8 +54,60 @@
       [minimumAmountOfRows]="0"
       [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
       type="keyDropdownValue"
-      (allValuesValidEvent)="onAllConditionsValid($event)"
-      (valueChange)="conditionsValueChange($event)"
+      (valueChange)="flatConditionsValueChange($event)"
     ></valtimo-carbon-multi-input>
   </div>
-</form>
+
+  <cds-label class="or-groups__label">{{
+    'orGroupTitle' | widgetTranslate: dataSourceKey | async
+  }}</cds-label>
+
+  <p class="or-groups__helper-text cds--form__helper-text">
+    {{ 'orGroupHelperText' | widgetTranslate: dataSourceKey | async }}
+  </p>
+
+  @for (group of $orGroups(); track $index; let i = $index) {
+    <cds-tile class="or-group-tile" [cdsLayer]="1">
+      <div class="or-group-tile__input" [cdsLayer]="0">
+        <valtimo-carbon-multi-input
+          [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
+          [defaultValues]="group.rows"
+          [disabled]="$disabled()"
+          [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
+          [dropdownItems]="operatorItems$ | async"
+          [fullWidth]="true"
+          [initialAmountOfRows]="1"
+          [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
+          [minimumAmountOfRows]="1"
+          [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+          type="keyDropdownValue"
+          (valueChange)="groupConditionsValueChange(i, $event)"
+        ></valtimo-carbon-multi-input>
+      </div>
+
+      <div class="or-group-tile__delete-button">
+        <cds-icon-button
+          [attr.data-test-id]="testIds.deleteOrGroupButton"
+          [disabled]="$disabled()"
+          (click)="deleteOrGroup(i)"
+          kind="danger"
+          size="sm"
+        >
+          <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+        </cds-icon-button>
+      </div>
+    </cds-tile>
+  }
+
+  <button
+    class="add-or-group-button"
+    cdsButton="primary"
+    [attr.data-test-id]="testIds.addOrGroupButton"
+    [disabled]="$disabled()"
+    (click)="addOrGroup()"
+  >
+    {{ 'addOrGroup' | widgetTranslate: dataSourceKey | async }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</div>

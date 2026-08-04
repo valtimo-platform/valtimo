@@ -42,9 +42,9 @@ data class Condition<T : Comparable<T>>(
     @JsonAlias("queryValue")
     @JsonDeserialize(using = ComparableDeserializer::class)
     val value: T
-) {
+) : ConditionNode {
 
-    fun isValid(
+    override fun isValid(
         expressionResolver: (String) -> Any?
     ): Boolean {
         val fieldValue = expressionResolver.invoke(path)
@@ -52,7 +52,7 @@ data class Condition<T : Comparable<T>>(
         return operator.evaluate(fieldValue, resolvedValue)
     }
 
-    fun toPredicate(
+    override fun toPredicate(
         root: Root<*>,
         criteriaBuilder: CriteriaBuilder,
         pathExpressionFunction: (Class<Any>, String, Root<*>, CriteriaBuilder) -> Expression<Any>
@@ -60,10 +60,13 @@ data class Condition<T : Comparable<T>>(
         pathExpressionFunction as (Class<T>, String, Root<*>, CriteriaBuilder) -> Expression<T>
 
         val resolvedValue = resolveValue(value)
-        val valueClass = if (resolvedValue != null) {
-            resolvedValue::class.java as Class<T>
-        } else {
-            Any::class.java as Class<T>
+        // For collection values (e.g. the 'in' operator) the path expression must be cast to the
+        // element type, not to the collection type itself.
+        val valueClass = when {
+            resolvedValue is Collection<*> ->
+                (resolvedValue.firstOrNull()?.let { it::class.java } ?: Any::class.java) as Class<T>
+            resolvedValue != null -> resolvedValue::class.java as Class<T>
+            else -> Any::class.java as Class<T>
         }
 
         val expression = pathExpressionFunction(valueClass, path, root, criteriaBuilder)

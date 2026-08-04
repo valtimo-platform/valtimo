@@ -12,6 +12,13 @@
 
 ## Enhancements
 
+* **Dashboard: task count widget improvements**
+
+  The `task-count` dashboard widget data source has been improved:
+  * An optional filter on the case definition type.
+  * `and`/`or` condition groups, so multiple task types (or any other conditions) can be combined
+    in a single widget (for example `assignee != null AND (name == A OR name == B)`).
+
 * **Zaaktype dropdown now shows the begin and end date**
 
   The 'Gekoppeld zaak type' dropdown in the case type link configuration now shows the start and end

@@ -46,6 +46,7 @@ import com.ritense.processdocument.repository.TaskQuickSearchRepository
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
+import com.ritense.processdocument.service.DocumentTaskCaseDefinitionSpecificationFactory
 import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DefaultProcessDefinitionCaseDefinitionLinker
 import com.ritense.processdocument.service.DocumentDelegateService
@@ -80,6 +81,7 @@ import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
 import com.ritense.valtimo.service.TaskBusinessKeyResolver
+import com.ritense.valtimo.service.TaskCaseDefinitionSpecificationFactory
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
@@ -331,6 +333,15 @@ class ProcessDocumentsAutoConfiguration {
             taskBusinessKeyResolvers,
             teamManagementService.orElse(null)
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(TaskCaseDefinitionSpecificationFactory::class)
+    fun documentTaskCaseDefinitionSpecificationFactory(
+        queryDialectHelper: QueryDialectHelper,
+        taskBusinessKeyResolvers: List<TaskBusinessKeyResolver>
+    ): DocumentTaskCaseDefinitionSpecificationFactory {
+        return DocumentTaskCaseDefinitionSpecificationFactory(queryDialectHelper, taskBusinessKeyResolvers)
     }
 
     @Bean
