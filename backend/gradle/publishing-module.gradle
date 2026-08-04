@@ -15,7 +15,7 @@
  */
 
 def publishToS3 = project.hasProperty('publishToS3') && project.property('publishToS3') == 'true'
-// Bucket per pipeline: valtimo-releases for release/RC, valtimo-snapshots for snapshots.
+// Bucket per pipeline: valtimo-release-artifacts for release/RC, valtimo-snapshots for snapshots.
 def s3Bucket = project.findProperty('s3Bucket') ?: 'valtimo-snapshots'
 // The region has to be part of the host for AWS: Gradle's S3 transport has no region property
 // (it reads only org.gradle.s3.endpoint and org.gradle.s3.maxErrorRetry) and its client ignores
