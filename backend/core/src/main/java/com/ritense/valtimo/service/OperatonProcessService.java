@@ -115,6 +115,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 public class OperatonProcessService {
@@ -268,22 +269,62 @@ public class OperatonProcessService {
     ) {
         final OperatonProcessDefinition processDefinition = AuthorizationContext
             .runWithoutAuthorization(() -> {
-                var pd = operatonRepositoryService.findProcessDefinition(
-                    // TODO: FIX THIS NOW
-                    byKey(processDefinitionKey).and(byBlueprintId(blueprintId))
-                );
-                if (pd != null) {
-                    return pd;
-                } else {
-                    // Needed by the VerzoekPlugin:
-                    return operatonRepositoryService.findProcessDefinition(
-                        byKey(processDefinitionKey).and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(byNotLinkedToCaseDefinition()))
+                if (blueprintId != null) {
+                    var pd = operatonRepositoryService.findProcessDefinition(
+                        byKey(processDefinitionKey).and(byBlueprintId(blueprintId))
                     );
+                    if (pd != null) {
+                        return pd;
+                    }
                 }
+                // Needed by the VerzoekPlugin:
+                return operatonRepositoryService.findProcessDefinition(byKeyOfUnlinkedProcess(processDefinitionKey));
             });
         if (processDefinition == null) {
-            throw new IllegalStateException("No process definition found with key: '" + processDefinitionKey + "' and blueprintId: '" + blueprintId + "'");
+            throw new IllegalStateException(
+                "No process definition found with key: '" + processDefinitionKey + "' and blueprintId: '" + blueprintId
+                    + "'" + deployedVersionTagsSuffixFor(processDefinitionKey)
+            );
         }
+
+        return startProcessInstance(processDefinition, businessKey, variables);
+    }
+
+    /**
+     * Starts the exact process definition identified by {@code processDefinitionId}. Prefer this over
+     * {@link #startProcess(String, String, BlueprintId, Map)} whenever the caller already knows which
+     * version has to be started - for example because it came from a process link - since resolving a
+     * process definition from its key alone cannot tell versions apart.
+     */
+    public ProcessInstanceWithDefinition startProcessById(
+        String processDefinitionId,
+        String businessKey,
+        Map<String, Object> variables
+    ) {
+        final OperatonProcessDefinition processDefinition = AuthorizationContext
+            .runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitionById(processDefinitionId));
+        if (processDefinition == null) {
+            throw new ProcessDefinitionNotFoundException("definition with id: '" + processDefinitionId + "'");
+        }
+        // Resolving by key never returned a detached definition. Starting by id bypasses that filter, so
+        // guard explicitly: a detached definition has been superseded by a newer deployment and starting
+        // it would run a process that no longer belongs to any blueprint version.
+        if (processDefinition.getVersionTag() != null
+            && processDefinition.getVersionTag().startsWith(DETACHED_PROCESS_DEFINITION_PREFIX)) {
+            throw new IllegalStateException(
+                "Process definition '" + processDefinitionId + "' has been superseded by a newer deployment"
+                    + " and can no longer be started. Reload the case and try again."
+            );
+        }
+
+        return startProcessInstance(processDefinition, businessKey, variables);
+    }
+
+    private ProcessInstanceWithDefinition startProcessInstance(
+        OperatonProcessDefinition processDefinition,
+        String businessKey,
+        Map<String, Object> variables
+    ) {
         businessKey = businessKey.equals(UNDEFINED_BUSINESS_KEY) ? null : businessKey;
 
         authorizationService.requirePermission(
@@ -311,6 +352,34 @@ public class OperatonProcessService {
                 repositoryService.suspendProcessDefinitionById(processDefinition.getId());
             }
         }
+    }
+
+    /**
+     * Matches the latest version of a process key that does not belong to a case definition or a
+     * building block. Definitions owned by a blueprint must be resolved by their version tag, never by
+     * key, because every blueprint version redeploys the same key under a new engine version.
+     */
+    private static Specification<OperatonProcessDefinition> byKeyOfUnlinkedProcess(String processDefinitionKey) {
+        Specification<OperatonProcessDefinition> unlinked =
+            byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock());
+        return byKey(processDefinitionKey)
+            .and(unlinked)
+            .and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(unlinked));
+    }
+
+    /**
+     * Lists the version tags deployed under a process key, to explain why a lookup missed. A blueprint's
+     * process can only be found by its version tag, so seeing the tags that do exist is what tells the
+     * reader whether the key is unknown or the blueprint version is.
+     */
+    private String deployedVersionTagsSuffixFor(String processDefinitionKey) {
+        String versionTags = AuthorizationContext.runWithoutAuthorization(() ->
+            operatonRepositoryService.findProcessDefinitions(byKey(processDefinitionKey)).stream()
+                .map(definition -> definition.getVersionTag() == null ? "<none>" : definition.getVersionTag())
+                .distinct()
+                .collect(Collectors.joining(", "))
+        );
+        return versionTags.isEmpty() ? "" : ". Version tags deployed for this key: " + versionTags;
     }
 
     /**

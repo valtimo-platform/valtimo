@@ -49,6 +49,7 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -61,6 +62,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.isA
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -132,6 +134,7 @@ class DefaultFormSubmissionServiceTest {
         formProcessLink = formProcessLink()
 
         processDefinition = mock<OperatonProcessDefinition>()
+        whenever(processDefinition.id).thenReturn(PROCESS_DEFINITION_ID)
         whenever(processDefinition.key).thenReturn("myProcessDefinitionKey")
         whenever(processDefinition.getBlueprintId()).thenReturn(CaseDefinitionId("test", "1.0.0"))
         whenever(repositoryService.findProcessDefinitionById(formProcessLink.processDefinitionId))
@@ -334,6 +337,74 @@ class DefaultFormSubmissionServiceTest {
         assertThat(documentNotFoundException.errors()).isNotEmpty()
     }
 
+    @Test
+    fun `should pass the process link's process definition id when starting a process for a new document`() {
+        val formData = formData()
+        val document = createDocument(JsonDocumentContent.build(formData), caseDefinitionId)
+        whenever(processDocumentService.dispatch(any()))
+            .thenReturn(ModifyDocumentAndCompleteTaskResultSucceeded(document))
+
+        defaultFormSubmissionService.handleSubmission(
+            processLinkId = formProcessLink(START_EVENT_START).id,
+            formData = formData,
+            documentId = null,
+            taskInstanceId = null,
+            documentDefinitionName = "aName"
+        )
+
+        val captor = argumentCaptor<NewDocumentAndStartProcessRequest>()
+        verify(processDocumentService).dispatch(captor.capture())
+        assertThat(captor.firstValue.processDefinitionId()).isEqualTo(PROCESS_DEFINITION_ID)
+    }
+
+    @Test
+    fun `should pass the process link's process definition id when starting a process for an existing document`() {
+        val documentId = UUID.randomUUID().toString()
+        val formData = formData()
+        val document = createDocument(JsonDocumentContent.build(formData), caseDefinitionId)
+        whenever(documentService.get(documentId)).thenReturn(document)
+        whenever(processDocumentService.dispatch(any()))
+            .thenReturn(ModifyDocumentAndCompleteTaskResultSucceeded(document))
+
+        defaultFormSubmissionService.handleSubmission(
+            processLinkId = formProcessLink(START_EVENT_START).id,
+            formData = formData,
+            documentId = documentId,
+            taskInstanceId = null,
+            documentDefinitionName = null
+        )
+
+        val captor = argumentCaptor<ModifyDocumentAndStartProcessRequest>()
+        verify(processDocumentService).dispatch(captor.capture())
+        assertThat(captor.firstValue.processDefinitionId()).isEqualTo(PROCESS_DEFINITION_ID)
+    }
+
+    @Test
+    fun `should pass the process definition id for a building block process started from a case document`() {
+        val documentId = UUID.randomUUID().toString()
+        val formData = formData()
+        val document = createDocument(JsonDocumentContent.build(formData), caseDefinitionId)
+        whenever(documentService.get(documentId)).thenReturn(document)
+        // A building block's main process is started from the case document, so the blueprint on the
+        // process definition is a building block id while the document belongs to a case definition.
+        whenever(processDefinition.getBlueprintId())
+            .thenReturn(BuildingBlockDefinitionId.of("bezwaar", "1.0.0"))
+        whenever(processDocumentService.dispatch(any()))
+            .thenReturn(ModifyDocumentAndCompleteTaskResultSucceeded(document))
+
+        defaultFormSubmissionService.handleSubmission(
+            processLinkId = formProcessLink(START_EVENT_START).id,
+            formData = formData,
+            documentId = documentId,
+            taskInstanceId = null,
+            documentDefinitionName = null
+        )
+
+        val captor = argumentCaptor<ModifyDocumentAndStartProcessRequest>()
+        verify(processDocumentService).dispatch(captor.capture())
+        assertThat(captor.firstValue.processDefinitionId()).isEqualTo(PROCESS_DEFINITION_ID)
+    }
+
     private fun formProcessLink(activityType: ActivityTypeWithEventName = USER_TASK_CREATE): FormProcessLink {
         val formProcessLink = FormProcessLink(
             id = UUID.randomUUID(),
@@ -443,5 +514,6 @@ class DefaultFormSubmissionServiceTest {
     companion object {
         private const val USERNAME = "test@test.com"
         private const val PROCESS_DEFINITION_KEY = "formlink-one-task-process"
+        private const val PROCESS_DEFINITION_ID = "myProcessDefinitionKey:1:33333333-3333-3333-3333-333333333333"
     }
 }
