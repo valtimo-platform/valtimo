@@ -18,28 +18,16 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ComboBoxModule, LayerModule, ListItem, NotificationModule} from 'carbon-components-angular';
+import {ComboBoxModule, LayerModule, NotificationModule} from 'carbon-components-angular';
 import {BehaviorSubject, forkJoin, Observable, take} from 'rxjs';
-import {PluginConfiguration} from '../../models';
+import {
+  PluginConfiguration,
+  PluginConfigurationPreview,
+  PluginMappingRow,
+  PluginMappingStatus,
+} from '../../models';
 import {PluginManagementService} from '../../services/plugin-management.service';
 import {PluginTranslationService} from '../../services/plugin-translation.service';
-
-type PluginMappingStatus = 'available' | 'no-configurations' | 'not-installed';
-
-interface PluginConfigurationPreview {
-  pluginConfigurationId: string;
-  pluginDefinitionKey: string | null;
-  existsInTargetEnvironment: boolean;
-}
-
-interface PluginMappingRow {
-  pluginDefinitionKey: string | null;
-  pluginDefinitionTitle: string;
-  sourcePluginConfigurationId: string;
-  existsInTargetEnvironment: boolean;
-  listItems: ListItem[];
-  status: PluginMappingStatus;
-}
 
 /**
  * Lets the user point each plugin configuration referenced by an import at a configuration of this
