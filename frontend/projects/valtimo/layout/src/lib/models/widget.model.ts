@@ -27,6 +27,7 @@ import {
   WidgetPersonCardContent,
   WidgetMetrolineContent,
   WidgetTableContent,
+  WidgetTextContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
 
@@ -43,6 +44,7 @@ enum WidgetType {
   HIGHLIGHT = 'highlight',
   PERSON_CARD = 'person-card',
   IMAGE = 'image',
+  TEXT = 'text',
 }
 
 enum WidgetColor {
@@ -174,6 +176,11 @@ interface ImageWidget extends BasicWidget {
   properties: WidgetImageContent;
 }
 
+interface TextWidget extends BasicWidget {
+  type: WidgetType.TEXT;
+  properties: WidgetTextContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -186,7 +193,8 @@ type Widget =
   | MapWidget
   | MetrolineWidget
   | HighlightWidget
-  | ImageWidget;
+  | ImageWidget
+  | TextWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -258,7 +266,8 @@ type OptionalWidgets =
   | WidgetType.PERSON_CARD
   | WidgetType.METROLINE
   | WidgetType.HIGHLIGHT
-  | WidgetType.IMAGE;
+  | WidgetType.IMAGE
+  | WidgetType.TEXT;
 
 type WidgetComponentMap =
   Record<Exclude<WidgetType, WidgetType.DIVIDER | OptionalWidgets>, Type<any>> &
@@ -294,6 +303,7 @@ export {
   PersonCardWidget,
   HighlightWidget,
   ImageWidget,
+  TextWidget,
   MetrolineWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,

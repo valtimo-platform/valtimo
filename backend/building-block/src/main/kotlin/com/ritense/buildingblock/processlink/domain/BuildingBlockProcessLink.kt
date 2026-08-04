@@ -30,6 +30,7 @@ import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.SecondaryTable
+import org.hibernate.annotations.SecondaryRow
 import org.hibernate.annotations.Type
 import java.util.UUID
 
@@ -38,6 +39,12 @@ import java.util.UUID
     name = SECONDARY_TABLE_NAME,
     pkJoinColumns = [PrimaryKeyJoinColumn(name = "process_link_id")]
 )
+// Mark the secondary row as non-optional. It always exists (it holds the non-null
+// building_block_definition_key/version_tag), so Hibernate must write it with a plain INSERT/UPDATE.
+// Without this, Hibernate treats the secondary table as optional and, on PostgreSQL 15+, writes it
+// with a native MERGE (upsert) that renders the JSONB columns as `cast(? as integer)`, failing with
+// "column ... is of type jsonb but expression is of type integer".
+@SecondaryRow(table = SECONDARY_TABLE_NAME, optional = false)
 @DiscriminatorValue(PROCESS_LINK_TYPE)
 class BuildingBlockProcessLink(
     id: UUID,
