@@ -48,6 +48,7 @@
     "tslib",
     "csp-header",
     "lodash",
+    "marked",
     "ol"
   ]
 }

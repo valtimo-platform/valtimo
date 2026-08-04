@@ -1303,6 +1303,10 @@
         "title": "Image",
         "description": "Show an uploaded image"
       },
+      "text": {
+        "title": "Text",
+        "description": "Show a fixed explanatory text"
+      },
       "generic": {
         "title": "Generic widgets",
         "description": "Broadly applicable — wire them up to any data structure (fields, tables, collections). More configuration, but no limits on what they can show."
@@ -1498,6 +1502,14 @@
         "valuePlaceholder": "Select or type a path",
         "valueHelper": "Shows the image stored at this path. The path must resolve to an uploaded file resource.",
         "displayAsCarousel": "Display as carousel"
+      },
+      "text": {
+        "description": "",
+        "content": "Text",
+        "contentTooltip": "The text shown in the widget. Markdown is supported.",
+        "contentPlaceholder": "## Heading\n\nSome explanation, with a [link](https://example.org) and a list:\n\n- first item\n- second item",
+        "contentHelper": "Formatting with markdown is supported: # for headings, - for a bulleted list, **bold**, *italic* and [link text](https://example.org). Asterisks must sit directly against the text: **bold** works, ** bold ** does not. Links open in a new tab.",
+        "accentColor": "Accent color"
       }
     },
     "filters": {
