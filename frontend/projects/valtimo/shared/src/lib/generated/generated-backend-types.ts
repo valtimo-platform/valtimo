@@ -1,6 +1,33 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2026-04-28 11:17:58.
+// Generated using typescript-generator version 3.2.1263 on 2026-08-04 09:22:13.
+
+export interface AccentColorsDto {
+    colors: { [index: string]: string };
+}
+
+export interface AdminSettingsLogoDto {
+    logoType: string;
+    imageBase64: string;
+}
+
+export interface AdminSettingsLogosDto {
+    logo: AdminSettingsLogoDto | null;
+    logoDarkMode: AdminSettingsLogoDto | null;
+}
+
+export interface CreateAdminSettingsLogoDto {
+    imageBase64: string;
+}
+
+export interface FeatureToggleOverridesDto {
+    overrides: { [index: string]: boolean };
+}
+
+export interface UpdateFeatureToggleDto {
+    key: string;
+    enabled: boolean;
+}
 
 export interface PbacConditionFieldDto {
     name: string;
@@ -43,20 +70,6 @@ export interface PbacResourceDto {
     containerTargets: string[];
 }
 
-export interface AdminSettingsLogoDto {
-    logoType: string;
-    imageBase64: string;
-}
-
-export interface AdminSettingsLogosDto {
-    logo: AdminSettingsLogoDto | null;
-    logoDarkMode: AdminSettingsLogoDto | null;
-}
-
-export interface CreateAdminSettingsLogoDto {
-    imageBase64: string;
-}
-
 export interface BuildingBlockDefinitionArtworkDto {
     key: string;
     versionTag: string;
@@ -80,6 +93,19 @@ export interface BuildingBlockFormDefinitionDto {
     name: string;
     formDefinition: any;
     readOnly: boolean;
+}
+
+export interface BuildingBlockInstanceDto {
+    id: string;
+    documentId: string;
+    caseDocumentId: string | null;
+    definitionKey: string;
+    definitionVersionTag: string;
+    activityId: string | null;
+    callerProcessDefinitionId: string | null;
+    processInstanceId: string | null;
+    parentBuildingBlockInstanceId: string | null;
+    rootBuildingBlockInstanceId: string | null;
 }
 
 export interface BuildingBlockProcessDefinitionDto {
@@ -189,6 +215,7 @@ export interface CaseDefinitionImportPreviewResponse {
     key: string;
     name: string;
     versionTag: string;
+    pluginConfigurations: PluginConfigurationPreviewDto[];
     final: boolean;
 }
 
@@ -310,6 +337,10 @@ export interface HiddenCaseListColumnDto {
     columnKey: string;
 }
 
+export interface HiddenTaskListColumnDto {
+    columnKey: string;
+}
+
 export interface ManagementStartableItemDto {
     type: StartableItemType;
     name: string | null;
@@ -319,12 +350,22 @@ export interface ManagementStartableItemDto {
     sortOrder: number | null;
 }
 
+export interface PluginConfigurationPreviewDto {
+    pluginConfigurationId: string;
+    pluginDefinitionKey: string | null;
+    pluginActionDefinitionKey: string;
+    processDefinitionKey: string;
+    activityId: string;
+    existsInTargetEnvironment: boolean;
+}
+
 export interface StartableItemDto {
     type: StartableItemType;
     name: string | null;
     key: string;
     versionTag: string | null;
     processDefinitionId: string | null;
+    draft: boolean;
 }
 
 export interface StartableItemOrderEntry {
@@ -360,12 +401,13 @@ export interface AdminWidgetConfigurationResponseDto {
     displayType: string;
     dataSourceProperties: ObjectNode;
     displayTypeProperties: ObjectNode;
-    url: URI | null;
+    url: string | null;
 }
 
 export interface DashboardCreateRequestDto {
     title: string;
     description: string;
+    widgetLayout: DashboardWidgetLayout | null;
 }
 
 export interface DashboardResponseDto {
@@ -374,12 +416,14 @@ export interface DashboardResponseDto {
     description: string;
     createdBy: string;
     createdOn: DateAsString;
+    widgetLayout: DashboardWidgetLayout | null;
 }
 
 export interface DashboardUpdateRequestDto {
     key: string;
     title: string;
     description: string;
+    widgetLayout: DashboardWidgetLayout | null;
 }
 
 export interface DashboardWidgetDataResultDto {
@@ -391,6 +435,7 @@ export interface DashboardWithWidgetsResponseDto {
     key: string;
     title: string;
     widgets: WidgetConfigurationResponseDto[];
+    widgetLayout: DashboardWidgetLayout | null;
 }
 
 export interface SingleWidgetConfigurationUpdateRequestDto {
@@ -399,7 +444,7 @@ export interface SingleWidgetConfigurationUpdateRequestDto {
     displayType: string;
     dataSourceProperties: ObjectNode;
     displayTypeProperties: ObjectNode;
-    url: URI | null;
+    url: string | null;
 }
 
 export interface WidgetConfigurationCreateRequestDto {
@@ -408,7 +453,7 @@ export interface WidgetConfigurationCreateRequestDto {
     displayType: string;
     dataSourceProperties: ObjectNode;
     displayTypeProperties: ObjectNode;
-    url: URI | null;
+    url: string | null;
 }
 
 export interface WidgetConfigurationResponseDto {
@@ -416,7 +461,7 @@ export interface WidgetConfigurationResponseDto {
     title: string;
     displayType: string;
     displayTypeProperties: ObjectNode;
-    url: URI | null;
+    url: string | null;
 }
 
 export interface WidgetConfigurationUpdateRequestDto {
@@ -426,7 +471,7 @@ export interface WidgetConfigurationUpdateRequestDto {
     displayType: string;
     dataSourceProperties: ObjectNode;
     displayTypeProperties: ObjectNode;
-    url: URI | null;
+    url: string | null;
 }
 
 export interface CaseTagCreateRequestDto {
@@ -450,12 +495,32 @@ export interface CaseTagUpdateRequestDto {
     color: CaseTagColor;
 }
 
+export interface DocumentInspectionDto {
+    id: string;
+    definitionId: DocumentDefinitionId;
+    createdOn: DateAsString;
+    modifiedOn: DateAsString;
+    createdBy: string;
+    sequence: number;
+    version: number;
+    assigneeId: string;
+    assigneeFullName: string;
+    assignedTeamKey: string;
+    assignedTeamTitle: string;
+    internalStatus: string;
+    caseTags: CaseTagResponseDto[];
+    relations: DocumentRelation[];
+    relatedFiles: RelatedFile[];
+    content: any;
+}
+
 export interface InternalCaseStatusCreateRequestDto {
     key: string;
     title: string;
     visibleInCaseListByDefault: boolean;
     retentionPeriodInDays: number;
     color: InternalCaseStatusColor;
+    label: string | null;
 }
 
 export interface InternalCaseStatusResponseDto {
@@ -466,6 +531,7 @@ export interface InternalCaseStatusResponseDto {
     retentionPeriodInDays: number;
     order: number;
     color: InternalCaseStatusColor;
+    label: string | null;
 }
 
 export interface InternalCaseStatusUpdateOrderRequestDto {
@@ -474,6 +540,7 @@ export interface InternalCaseStatusUpdateOrderRequestDto {
     visibleInCaseListByDefault: boolean;
     retentionPeriodInDays: number;
     color: InternalCaseStatusColor;
+    label: string | null;
 }
 
 export interface InternalCaseStatusUpdateRequestDto {
@@ -482,6 +549,7 @@ export interface InternalCaseStatusUpdateRequestDto {
     visibleInCaseListByDefault: boolean;
     retentionPeriodInDays: number;
     color: InternalCaseStatusColor;
+    label: string | null;
 }
 
 export interface ColumnKeyResponse {
@@ -659,8 +727,8 @@ export interface FormProcessLinkUpdateRequestDto extends ProcessLinkUpdateReques
 }
 
 export interface FormSubmissionResult {
-    documentId: string | null;
     errors: OperationError[];
+    documentId: string | null;
 }
 
 export interface FormSubmissionResultFailed extends FormSubmissionResult, TransactionalResult {
@@ -699,6 +767,22 @@ export interface FormFlowBreadcrumbsResponse {
     breadcrumbs: FormFlowBreadcrumbResponse[];
 }
 
+export interface FormFlowExpressionBeanDto {
+    name: string;
+    methods: FormFlowExpressionMethodDto[];
+}
+
+export interface FormFlowExpressionMethodDto {
+    name: string;
+    parameters: FormFlowExpressionParameterDto[];
+    returnType: string;
+}
+
+export interface FormFlowExpressionParameterDto {
+    name: string;
+    type: string;
+}
+
 export interface FormFlowProcessLinkCreateRequestDto extends ProcessLinkCreateRequestDto {
     formFlowDefinitionKey: string;
     formDisplayType: FormDisplayType | null;
@@ -725,6 +809,21 @@ export interface FormFlowProcessLinkUpdateRequestDto extends ProcessLinkUpdateRe
     formDisplayType: FormDisplayType | null;
     formSize: FormSizes | null;
     subtitles: string[] | null;
+}
+
+export interface FormFlowRegistryDto {
+    stepTypes: FormFlowStepTypeDto[];
+    expressionBeans: FormFlowExpressionBeanDto[];
+}
+
+export interface FormFlowStepTypeDto {
+    name: string;
+    properties: FormFlowStepTypePropertyDto[];
+}
+
+export interface FormFlowStepTypePropertyDto {
+    name: string;
+    type: string;
 }
 
 export interface MultipleFormErrors {
@@ -788,6 +887,53 @@ export interface NoteUpdateRequestDto {
     content: string;
 }
 
+export interface JobInspectionDto {
+    id: string;
+    jobDefinitionId: string | null;
+    executionId: string | null;
+    activityId: string | null;
+    jobType: JobType;
+    retries: number;
+    exceptionMessage: string | null;
+    dueDate: DateAsString | null;
+    suspended: boolean;
+}
+
+export interface LogInspectionSearchRequest {
+    level: string | null;
+    likeFormattedMessage: string | null;
+    afterTimestamp: DateAsString | null;
+    beforeTimestamp: DateAsString | null;
+    additionalProperties: LoggingEventPropertyDto[];
+}
+
+export interface ProcessInstanceInspectionDto {
+    processInstanceId: string;
+    processDefinitionId: string | null;
+    processDefinitionKey: string | null;
+    processName: string | null;
+    version: number;
+    latestVersion: number;
+    active: boolean;
+    startedBy: string | null;
+    startedByUserId: string | null;
+    startedOn: DateAsString | null;
+    incidents: IncidentDto[];
+    tasks: TaskInspectionDto[];
+    variables: ProcessVariableDto[];
+    jobs: JobInspectionDto[];
+    buildingBlock: BuildingBlockProcessReference | null;
+}
+
+export interface TaskInspectionDto {
+    id: string;
+    name: string | null;
+    assignee: string | null;
+    created: DateAsString | null;
+    dueDate: DateAsString | null;
+    taskDefinitionKey: string | null;
+}
+
 export interface URLProcessLinkCreateRequestDto extends ProcessLinkCreateRequestDto {
     url: string;
 }
@@ -826,10 +972,28 @@ export interface CaseProcessDefinitionResponseDto {
     draft: boolean;
 }
 
+export interface ProcessDefinitionConflictResponseDto {
+    processDefinitionKey: string;
+    processDefinitionId: string;
+    processDefinitionName: string | null;
+}
+
 export interface ProcessDefinitionResponseDto {
     processDefinition: ProcessDefinitionWithPropertiesDto;
     processLinks: ProcessLinkResponseDto[];
     bpmn20Xml: string;
+    draft: boolean;
+}
+
+export interface ProcessDefinitionValidateRequestDto {
+    bpmnXml: string;
+    processLinks: ProcessLinkCreateRequestDto[];
+}
+
+export interface ProcessDefinitionValidateResponseDto {
+    hasWarnings: boolean;
+    errors: ProcessDefinitionValidationError[];
+    valid: boolean;
 }
 
 export interface ProcessLinkActivityResult<T> {
@@ -859,16 +1023,16 @@ export interface ProcessLinkExportResponseDto {
 }
 
 export interface ProcessLinkResponseDto {
+    id: string;
     activityId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
     processDefinitionId: string;
-    id: string;
 }
 
 export interface ProcessLinkUpdateRequestDto {
-    processLinkType: string;
     id: string;
+    processLinkType: string;
 }
 
 export interface SearchFieldV2Dto {
@@ -891,6 +1055,7 @@ export interface TabDto {
     title: string | null;
     type: string;
     properties: { [index: string]: any | null } | null;
+    widgetLayout: TabWidgetLayout | null;
 }
 
 export interface TeamCreateRequestDto {
@@ -982,6 +1147,21 @@ export interface CustomTaskDto {
     businessKey: string;
 }
 
+export interface DecisionDefinitionResponseDto {
+    id: string;
+    key: string;
+    category: string | null;
+    name: string | null;
+    version: number;
+    resource: string | null;
+    deploymentId: string | null;
+    tenantId: string | null;
+    decisionRequirementsDefinitionId: string | null;
+    decisionRequirementsDefinitionKey: string | null;
+    versionTag: string | null;
+    historyTimeToLive: number | null;
+}
+
 export interface DefinitionDeploymentResponseDto {
     identifier: string;
 }
@@ -1003,6 +1183,22 @@ export interface HeatmapTaskDTO {
     name: string;
     count: number;
     totalCount: number;
+}
+
+export interface IncidentDto {
+    id: string;
+    processInstanceId: string;
+    processDefinitionId: string;
+    executionId: string;
+    activityId: string;
+    incidentType: string;
+    incidentMessage: string;
+    incidentTimestamp: DateAsString;
+    causeIncidentId: string;
+    rootCauseIncidentId: string;
+    configuration: string;
+    tenantId: string;
+    jobDefinitionId: string;
 }
 
 export interface KeyAndPasswordDTO {
@@ -1042,6 +1238,18 @@ export interface ProcessInstanceStatisticsDTO {
     processName: string;
 }
 
+export interface ProcessVariableDto {
+    name: string;
+    type: string;
+    value: any;
+}
+
+export interface ProcessVariableMutationRequest {
+    name: string;
+    type: ProcessVariableType;
+    value: any;
+}
+
 export interface StartFormDto {
     formLocation: string;
     formFields: FormField[];
@@ -1057,33 +1265,192 @@ export interface UserTeamDto {
     key: string;
 }
 
+export interface TemplatePreviewRequest {
+    fileName: string;
+    content: string;
+}
+
+export interface CreateTemplateRequest {
+    key: string;
+    caseDefinitionKey: string | null;
+    caseDefinitionVersionTag: string | null;
+    buildingBlockDefinitionKey: string | null;
+    buildingBlockDefinitionVersionTag: string | null;
+    type: string;
+    metadata: { [index: string]: any | null };
+}
+
+export interface DeleteTemplateRequest {
+    caseDefinitionKey: string | null;
+    caseDefinitionVersionTag: string | null;
+    buildingBlockDefinitionKey: string | null;
+    buildingBlockDefinitionVersionTag: string | null;
+    templates: TemplateKeyType[];
+}
+
+export interface TemplateKeyType {
+    key: string;
+    type: string;
+}
+
+export interface TemplateListItemResponse {
+    key: string;
+    type: string;
+}
+
+export interface TemplateResponse {
+    key: string;
+    caseDefinitionKey: string | null;
+    caseDefinitionVersionTag: string | null;
+    buildingBlockDefinitionKey: string | null;
+    buildingBlockDefinitionVersionTag: string | null;
+    type: string;
+    metadata: { [index: string]: any | null };
+    content: string;
+}
+
+export interface UpdateTemplateRequest {
+    key: string;
+    caseDefinitionKey: string | null;
+    caseDefinitionVersionTag: string | null;
+    buildingBlockDefinitionKey: string | null;
+    buildingBlockDefinitionVersionTag: string | null;
+    type: string;
+    metadata: { [index: string]: any | null };
+    content: string;
+}
+
 export interface WidgetDto {
     type: string;
-    title: string;
-    compact: boolean | null;
-    color: WidgetColor | null;
-    icon: string | null;
-    width: number;
-    displayConditions: Condition<any>[] | null;
-    highContrast: boolean;
     key: string;
     actions: WidgetAction[];
+    displayConditions: Condition<any>[] | null;
+    highContrast: boolean;
+    title: string;
+    icon: string | null;
+    color: WidgetColor | null;
+    compact: boolean | null;
+    width: number;
+}
+
+export interface CaseZaakdetailsInspectionDto {
+    syncConfig: ZaakdetailsSyncConfigDto | null;
+    zaakdetailsObject: ZaakdetailsObjectDto | null;
+}
+
+export interface ZaakdetailsObjectContentDto {
+    resolved: boolean;
+    record: any | null;
+    message: string | null;
+    objectUrl: string | null;
+}
+
+export interface ZaakdetailsObjectDto {
+    documentId: string;
+    objectUrl: string;
+    linkedToZaak: boolean;
+}
+
+export interface ZaakdetailsSyncConfigDto {
+    caseDefinitionKey: string;
+    caseDefinitionVersionTag: string;
+    objectManagementConfigurationId: string | null;
+    objectManagementTitle: string | null;
+    enabled: boolean;
+}
+
+export interface CaseZgwInspectionDto {
+    zaakInstanceLink: ZaakInstanceLinkDto | null;
+    zaak: any | null;
+    eigenschappen: ZaakEigenschapDto[];
+    rollen: ZaakRolDto[];
+    statusHistory: ZaakStatusDto[];
+    resultaat: ZaakResultaatDto | null;
+    zaakObjecten: ZaakObjectDto[];
+    zaakInformatieObjecten: ZaakInformatieObjectDto[];
+    besluiten: ZaakBesluitDto[];
+    warnings: string[];
+}
+
+export interface ZaakBesluitDto {
+    url: string;
+    besluit: string;
+}
+
+export interface ZaakEigenschapDto {
+    url: string;
+    eigenschap: string;
+    naam: string | null;
+    waarde: string;
+}
+
+export interface ZaakInformatieObjectDto {
+    url: string;
+    informatieobject: string;
+    titel: string | null;
+    registratiedatum: DateAsString;
+}
+
+export interface ZaakInstanceLinkDto {
+    zaakInstanceUrl: string;
+    zaakInstanceId: string;
+    zaakTypeUrl: string;
+}
+
+export interface ZaakObjectDto {
+    url: string;
+    objectUrl: string;
+    objectType: string;
+    objectTypeOverige: string | null;
+    relatieomschrijving: string | null;
+}
+
+export interface ZaakResultaatDto {
+    url: string;
+    resultaattype: string;
+    toelichting: string | null;
+}
+
+export interface ZaakRolDto {
+    url: string | null;
+    betrokkeneType: string;
+    roltype: string;
+    omschrijving: string | null;
+    omschrijvingGeneriek: string | null;
+    indicatieMachtiging: string | null;
+    betrokkeneIdentificatie: any | null;
+}
+
+export interface ZaakStatusDto {
+    url: string;
+    statustype: string;
+    datumStatusGezet: DateAsString;
+    statustoelichting: string | null;
+}
+
+export interface ZaakobjectResolveResultDto {
+    resolved: boolean;
+    record: any | null;
+    message: string | null;
+    objectUrl: string;
 }
 
 export interface BuildingBlockInputMapping {
     source: string;
     target: string;
+    prefixedTarget: string;
 }
 
 export interface BuildingBlockOutputMapping {
     source: string;
     target: string;
     syncTiming: BuildingBlockSyncTiming;
+    prefixedSource: string;
 }
 
 export interface CaseDefinitionId extends AbstractId<CaseDefinitionId>, BlueprintId {
     key: string;
-    versionTag: Semver;
+    versionTag: string;
 }
 
 export interface CaseListItemDto {
@@ -1094,15 +1461,23 @@ export interface CaseListItemDto {
 export interface ObjectNode extends ContainerNode<ObjectNode>, Serializable {
 }
 
-export interface URI extends Comparable<URI>, Serializable {
+export interface DocumentDefinitionId {
+    name: string;
+    buildingBlockDefinitionId: BuildingBlockDefinitionId;
+    caseDefinitionId: CaseDefinitionId;
+}
+
+export interface DocumentRelation {
+    id: string;
+    relationType: DocumentRelationType;
 }
 
 export interface RelatedFile {
-    createdOn: DateAsString;
-    fileId: string;
-    sizeInBytes: number;
-    createdBy: string;
     fileName: string;
+    fileId: string;
+    createdOn: DateAsString;
+    createdBy: string;
+    sizeInBytes: number;
 }
 
 export interface OperationError {
@@ -1114,6 +1489,13 @@ export interface TransactionalResult {
 export interface ComponentError {
     component: string | null;
     message: string;
+}
+
+export interface BuildingBlockProcessReference {
+    instanceId: string;
+    definitionKey: string;
+    definitionVersionTag: string;
+    documentId: string;
 }
 
 export interface ProcessLinkDeployDto {
@@ -1129,6 +1511,17 @@ export interface ProcessDefinitionCaseDefinition {
     startableByUser: boolean;
     processDefinitionName: string | null;
     processDefinitionKey: string | null;
+    draft: boolean;
+}
+
+export interface ProcessDefinitionValidationError {
+    elementId: string;
+    elementType: string;
+    elementName: string | null;
+    reason: string;
+    errorCode: string | null;
+    expression: string | null;
+    severity: ValidationSeverity;
 }
 
 export interface TaskInstanceWithIdentityLink {
@@ -1198,9 +1591,6 @@ export interface OperatonTaskDto {
 }
 
 export interface FormField {
-    businessKey: boolean;
-    label: string;
-    validationConstraints: FormFieldValidationConstraint[];
     value: TypedValue;
     typeName: string;
     properties: { [index: string]: string };
@@ -1210,6 +1600,9 @@ export interface FormField {
      * @deprecated since 1.0
      */
     defaultValue: any;
+    businessKey: boolean;
+    validationConstraints: FormFieldValidationConstraint[];
+    label: string;
 }
 
 export interface ProcessDefinitionDto {
@@ -1230,32 +1623,35 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-    executionId: string;
+    id: string;
+    rootProcessInstanceId: string;
     canceled: boolean;
     removalTime: DateAsString;
-    activityId: string;
-    assignee: string;
-    tenantId: string;
-    startTime: DateAsString;
-    endTime: DateAsString;
-    taskId: string;
-    activityType: string;
-    processDefinitionId: string;
-    processDefinitionKey: string;
-    rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
-    processInstanceId: string;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
-    id: string;
+    activityId: string;
+    processInstanceId: string;
+    activityType: string;
+    executionId: string;
+    assignee: string;
+    tenantId: string;
+    processDefinitionKey: string;
+    processDefinitionId: string;
+    taskId: string;
+    startTime: DateAsString;
+    endTime: DateAsString;
 }
 
 export interface ProcessVariableDTOV2 {
     "@type": "string" | "date" | "boolean" | "enum" | "long" | "fileUpload";
     name: string;
+}
+
+export interface WidgetAction {
 }
 
 export interface Condition<T> {
@@ -1264,25 +1660,17 @@ export interface Condition<T> {
     value: T;
 }
 
-export interface WidgetAction {
-}
-
-export interface Semver extends Comparable<Semver> {
-    major: number;
-    minor: number;
-    patch: number;
-    preRelease: string[];
-    build: string[];
-    version: string;
-    stable: boolean;
-}
-
 export interface BlueprintId {
     tagPrefix: string;
     idKey: string;
 }
 
 export interface Serializable {
+}
+
+export interface BuildingBlockDefinitionId extends AbstractId<BuildingBlockDefinitionId>, BlueprintId {
+    key: string;
+    versionTag: string;
 }
 
 export interface ProcessDefinitionCaseDefinitionId extends AbstractId<ProcessDefinitionCaseDefinitionId> {
@@ -1315,11 +1703,6 @@ export interface AssigneeDto {
     fullName: string;
 }
 
-export interface FormFieldValidationConstraint {
-    configuration: any;
-    name: string;
-}
-
 export interface TypedValue extends Serializable {
     value: any;
     type: ValueType;
@@ -1328,6 +1711,11 @@ export interface TypedValue extends Serializable {
 
 export interface FormType {
     name: string;
+}
+
+export interface FormFieldValidationConstraint {
+    name: string;
+    configuration: any;
 }
 
 export interface StringProcessVariableDTOV2 extends ProcessVariableDTOV2 {
@@ -1366,23 +1754,20 @@ export interface AbstractId<SELF> extends Identity, Serializable {
 export interface ContainerNode<T> extends BaseJsonNode, JsonNodeCreator {
 }
 
-export interface Comparable<T> {
-}
-
 export interface ProcessDefinitionId {
     id: string;
 }
 
 export interface Team {
-    title: string;
     key: string;
+    title: string;
 }
 
 export interface ValueType extends Serializable {
-    primitiveValueType: boolean;
     name: string;
     parent: ValueType;
     abstract: boolean;
+    primitiveValueType: boolean;
 }
 
 export interface DateRange {
@@ -1403,9 +1788,15 @@ export type DateAsString = string;
 
 export type StartableItemType = "PROCESS" | "BUILDING_BLOCK";
 
+export type JobType = "TIMER" | "ASYNC_CONTINUATION" | "MESSAGE" | "BATCH" | "OTHER";
+
+export type ProcessVariableType = "STRING" | "INTEGER" | "LONG" | "DOUBLE" | "BOOLEAN" | "JSON";
+
 export type ColumnDefaultSort = "ASC" | "DESC";
 
 export type CaseTabType = "standard" | "formio" | "custom" | "widgets";
+
+export type DashboardWidgetLayout = "MUURI_GAP_FREE" | "MUURI" | "BEAUTIFUL";
 
 export type CaseTagColor = "WARMGRAY" | "RED" | "MAGENTA" | "PURPLE" | "BLUE" | "CYAN" | "TEAL" | "GREEN" | "GRAY" | "COOLGRAY" | "HIGHCONTRAST" | "OUTLINE";
 
@@ -1425,9 +1816,15 @@ export type FieldType = "text_contains" | "single" | "range" | "single-select-dr
 
 export type SearchFieldMatchType = "like" | "exact";
 
+export type TabWidgetLayout = "MUURI_GAP_FREE" | "MUURI" | "BEAUTIFUL";
+
 export type WidgetColor = "YELLOW" | "ORANGE" | "RED" | "BROWN" | "GREEN" | "TURQOISE" | "PURPLE" | "PERIWINKLE" | "BLUE" | "HIGHCONTRAST" | "WHITE";
 
 export type BuildingBlockSyncTiming = "CONTINUOUS" | "END";
+
+export type DocumentRelationType = "PREVIOUS" | "NEXT" | "SUPPORTING";
+
+export type ValidationSeverity = "ERROR" | "WARNING";
 
 export type ExpressionOperator = "!=" | "==" | ">" | ">=" | "<" | "<=" | "list_contains" | "in";
 
