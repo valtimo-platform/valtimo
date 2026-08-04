@@ -41,9 +41,14 @@
   and a horizontal scroll bar. The menu pane is rendered at document level so surrounding layout (scroll containers,
   modals) can no longer displace or clip it, and when the trigger is scrolled out of view while the menu is open, the
   menu is hidden instead of floating detached over unrelated content.
-  
+
 * **Case list and task list no longer freeze the browser tab in certain browser versions**
 
   Opening a case list or the task list could freeze the browser tab completely in certain
   Chromium-based browser versions (reported on Microsoft Edge 148, reproduced on Chromium 141;
   the latest Chrome 151 and Edge 150 releases are not affected, nor are Firefox and Safari).
+  
+* **Importing a case definition with building-block process links no longer fails**
+
+  Importing (or overwriting) a case definition that contains a building-block process link could fail on
+  certain databases. This issue has now been resolved.
