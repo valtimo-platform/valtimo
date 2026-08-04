@@ -66,3 +66,8 @@
   and a horizontal scroll bar. The menu pane is rendered at document level so surrounding layout (scroll containers,
   modals) can no longer displace or clip it, and when the trigger is scrolled out of view while the menu is open, the
   menu is hidden instead of floating detached over unrelated content.
+  
+* **Importing a case definition with building-block process links no longer fails**
+
+  Importing (or overwriting) a case definition that contains a building-block process link could fail on
+  certain databases. This issue has now been resolved.
