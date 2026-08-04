@@ -131,6 +131,12 @@ export class CaseDetailsManagementFormFlowsPage {
     return this.page.locator('.monaco-editor').first();
   }
 
+  // The editor page opens on the visual editor tab; the JSON (Monaco) editor lives in its own tab.
+  async openJsonEditorTab() {
+    await this.page.getByRole('tab', {name: 'JSON editor'}).click();
+    await expect(this.monacoEditor).toBeVisible();
+  }
+
   // ─── Save Actions ─────────────────────────────────────────────────
 
   async editFormFlowJson(json: object) {
@@ -174,6 +180,10 @@ export class CaseDetailsManagementFormFlowsPage {
 
   async assertEditorVisible() {
     await expect(this.page.locator('valtimo-editor')).toBeVisible();
+  }
+
+  async assertEditorPageVisible() {
+    await expect(this.page.getByRole('tab', {name: 'JSON editor'})).toBeVisible();
   }
 
   // ─── API Cleanup ──────────────────────────────────────────────────

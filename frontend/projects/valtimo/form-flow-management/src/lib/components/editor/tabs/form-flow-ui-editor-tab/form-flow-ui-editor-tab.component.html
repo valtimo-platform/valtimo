@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="registry$ | async as registry; else loading">
+  @if ($definition(); as definition) {
+    <div class="form-flow-ui-editor">
+      <div class="form-flow-ui-editor__header">
+        <h4>{{ 'formFlow.uiEditor.stepsTitle' | translate }}</h4>
+
+        <cds-tag type="green" size="sm"
+          >{{ 'formFlow.uiEditor.startStep' | translate }}: {{ definition.startStep }}</cds-tag
+        >
+      </div>
+
+      @if (definition.steps?.length) {
+        <cds-structured-list [attr.data-test-id]="testIds.stepList">
+          <cds-list-header>
+            <cds-list-column>{{ 'formFlow.key' | translate }}</cds-list-column>
+
+            <cds-list-column>{{ 'formFlow.uiEditor.stepType' | translate }}</cds-list-column>
+
+            <cds-list-column>{{ 'formFlow.uiEditor.stepTypeDetail' | translate }}</cds-list-column>
+
+            <cds-list-column>{{ 'formFlow.uiEditor.transitions' | translate }}</cds-list-column>
+
+            <cds-list-column>{{ 'formFlow.uiEditor.expressions' | translate }}</cds-list-column>
+          </cds-list-header>
+
+          @for (step of definition.steps; track step.key) {
+            <cds-list-row [attr.data-test-id]="testIds.stepListItem">
+              <cds-list-column>{{ step.key }}</cds-list-column>
+
+              <cds-list-column>
+                <cds-tag [type]="isKnownStepType(step, registry) ? 'blue' : 'gray'" size="sm">{{
+                  step.type?.name
+                }}</cds-tag>
+              </cds-list-column>
+
+              <cds-list-column>{{ getStepTypeDetail(step) }}</cds-list-column>
+
+              <cds-list-column>{{ step.nextSteps?.length ?? 0 }}</cds-list-column>
+
+              <cds-list-column>{{ getExpressionCount(step) }}</cds-list-column>
+            </cds-list-row>
+          }
+        </cds-structured-list>
+      } @else {
+        <p class="form-flow-ui-editor__empty">{{ 'formFlow.uiEditor.noSteps' | translate }}</p>
+      }
+    </div>
+  }
+</ng-container>
+
+<ng-template #loading>
+  <div class="form-flow-ui-editor__loading">
+    <cds-loading></cds-loading>
+  </div>
+</ng-template>

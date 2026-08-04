@@ -17,6 +17,7 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
+import {pendingChangesGuard} from '@valtimo/components';
 import {AuthGuardService} from '@valtimo/security';
 import {ROLE_ADMIN} from '@valtimo/shared';
 import {BuildingBlockManagementListComponent} from './components/building-block-management-list/building-block-management-list.component';
@@ -84,6 +85,19 @@ const routes: Routes = [
     path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.FORM_FLOWS}/:formFlowDefinitionKey`,
     component: FormFlowEditorComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
+    data: {
+      title: 'formFlow.title',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'buildingBlock',
+    },
+  },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.FORM_FLOWS}/:formFlowDefinitionKey/json-editor`,
+    component: FormFlowEditorComponent,
+    canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'formFlow.title',
       roles: [ROLE_ADMIN],

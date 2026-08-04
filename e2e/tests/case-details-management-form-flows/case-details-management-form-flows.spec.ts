@@ -65,7 +65,7 @@ test.describe('Case details management — Form Flows', () => {
         await formFlowsPage.createFormFlow(formFlowTestData.key);
 
         // Assert — creation navigates directly to the form flow editor
-        await formFlowsPage.assertEditorVisible();
+        await formFlowsPage.assertEditorPageVisible();
       });
     });
   });
@@ -77,8 +77,9 @@ test.describe('Case details management — Form Flows', () => {
       // Navigate back to list first (creation left us on the editor)
       await formFlowsPage.navigateBackToFormFlowsList();
 
-      // Act
+      // Act — open the form flow and switch to the JSON editor tab
       await formFlowsPage.openFormFlow(formFlowTestData.key);
+      await formFlowsPage.openJsonEditorTab();
 
       // Assert — Monaco editor is rendered
       await formFlowsPage.assertEditorVisible();

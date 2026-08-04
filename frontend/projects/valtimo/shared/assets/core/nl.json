@@ -1217,7 +1217,9 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit dossiertype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen status aangemaakt voor dit dossiertype."
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -3109,6 +3111,19 @@
     "noResults": {
       "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
       "title": "Geen form flows toegevoegd"
+    },
+    "tabs": {
+      "editor": "Editor",
+      "jsonEditor": "JSON-editor"
+    },
+    "uiEditor": {
+      "stepsTitle": "Stappen",
+      "startStep": "Startstap",
+      "stepType": "Type",
+      "stepTypeDetail": "Formulier of component",
+      "transitions": "Overgangen",
+      "expressions": "Expressies",
+      "noSteps": "Deze form flow bevat nog geen stappen. Gebruik de JSON-editor om stappen toe te voegen."
     }
   },
   "taskManagement": {

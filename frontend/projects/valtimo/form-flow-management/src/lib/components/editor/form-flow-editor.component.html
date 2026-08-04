@@ -14,21 +14,48 @@
   ~ limitations under the License.
   -->
 
-@if ({model: model$ | async, schema: formFlowSchemaJson$ | async}; as obs) {
-  @if (obs.model && obs.schema) {
-    <valtimo-editor
-      [disabled]="(loading$ | async) === false && readOnly$ | async"
-      [editorOptions]="editorOptions"
-      [model]="obs.model"
-      [jsonSchema]="obs.schema"
-      (validEvent)="onValid($event)"
-      (valueChangeEvent)="onValueChange($event)"
-      [fitPage]="true"
-    ></valtimo-editor>
-  } @else {
-    <cds-loading></cds-loading>
-  }
-}
+<ng-container *ngIf="model$ | async as model; else loading">
+  <!-- The headers only switch the active tab; the tab content is rendered below (gated by the
+       active-tab signal) instead of inside the Carbon tab panes. Carbon removes a pane's content
+       as soon as another header is clicked, which would destroy the editor's unsaved form before
+       the leave-page confirmation is resolved. -->
+  <cds-tabs type="contained">
+    <cds-tab
+      [active]="$activeTab() === FormFlowEditorTab.EDITOR"
+      [heading]="'formFlow.tabs.editor' | translate"
+      (selected)="setActiveTab(FormFlowEditorTab.EDITOR)"
+    ></cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === FormFlowEditorTab.JSON_EDITOR"
+      [heading]="'formFlow.tabs.jsonEditor' | translate"
+      (selected)="setActiveTab(FormFlowEditorTab.JSON_EDITOR)"
+    ></cds-tab>
+  </cds-tabs>
+
+  <!-- White surface for the tab content. The Carbon tab pane used to provide this; since the
+       content is rendered outside the panes, the wrapper supplies the layer background. -->
+  <div class="form-flow-editor__content">
+    @if ($activeTab() === FormFlowEditorTab.EDITOR) {
+      <valtimo-form-flow-ui-editor-tab
+        [model]="model"
+        [readOnly]="readOnly$ | async"
+        (validEvent)="onValid($event)"
+        (valueChangeEvent)="onValueChange($event)"
+      ></valtimo-form-flow-ui-editor-tab>
+    }
+
+    @if ($activeTab() === FormFlowEditorTab.JSON_EDITOR) {
+      <valtimo-form-flow-json-editor-tab
+        [disabled]="(loading$ | async) === false && (readOnly$ | async)"
+        [model]="model"
+        [schema]="formFlowSchemaJson$ | async"
+        (validEvent)="onValid($event)"
+        (valueChangeEvent)="onValueChange($event)"
+      ></valtimo-form-flow-json-editor-tab>
+    }
+  </div>
+</ng-container>
 
 <ng-container renderInPageHeader>
   <ng-template>
@@ -57,7 +84,12 @@
         </v-overflow-menu-option>
       </v-overflow-menu>
 
-      <button cdsButton="secondary" [size]="obs.compactMode ? 'sm' : 'md'" (click)="navigateBack()">
+      <button
+        cdsButton="secondary"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        [attr.data-test-id]="testIds.backButton"
+        (click)="navigateBack()"
+      >
         {{ 'interface.back' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
@@ -67,6 +99,7 @@
         [disabled]="!obs.valid || obs.readOnly"
         cdsButton="primary"
         [size]="obs.compactMode ? 'sm' : 'md'"
+        [attr.data-test-id]="testIds.saveButton"
         (click)="updateFormFlowDefinition()"
       >
         {{ 'interface.save' | translate }}
@@ -85,3 +118,9 @@
   titleTranslationKey="interface.delete"
   (confirmEvent)="onDelete()"
 ></valtimo-confirmation-modal>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <cds-loading></cds-loading>
+  </div>
+</ng-template>

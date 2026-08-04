@@ -16,8 +16,8 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService, Page, BaseApiService} from '@valtimo/shared';
-import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
+import {ConfigService, FormFlowRegistryDto, Page, BaseApiService} from '@valtimo/shared';
+import {BehaviorSubject, catchError, Observable, of, shareReplay, switchMap, take, tap} from 'rxjs';
 import {FormFlowDefinition, FormFlowDefinitionId, ListFormFlowDefinition} from '../models';
 
 @Injectable({
@@ -31,8 +31,23 @@ export class FormFlowService extends BaseApiService {
     super(httpClient, configService);
   }
 
+  private _registry$?: Observable<FormFlowRegistryDto>;
+
   public getFormFlowDefinitionSchema(): Observable<object> {
     return this.httpClient.get<object>(this.getApiUrl('management/v1/form-flow-definition/schema'));
+  }
+
+  // The registry describes what can be used in a form flow definition (step types and expression
+  // beans). It is derived from the backend classpath and does not change at runtime, so the first
+  // response is cached and replayed to later subscribers.
+  public getFormFlowRegistry(): Observable<FormFlowRegistryDto> {
+    if (!this._registry$) {
+      this._registry$ = this.httpClient
+        .get<FormFlowRegistryDto>(this.getApiUrl('management/v1/form-flow/registry'))
+        .pipe(shareReplay(1));
+    }
+
+    return this._registry$;
   }
 
   public getFormFlowDefinitions(

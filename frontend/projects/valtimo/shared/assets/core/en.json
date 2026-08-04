@@ -3076,6 +3076,19 @@
     "noResults": {
       "description": "Click <strong>Add new form flow</strong> to start designing your form flow",
       "title": "No form flows added"
+    },
+    "tabs": {
+      "editor": "Editor",
+      "jsonEditor": "JSON editor"
+    },
+    "uiEditor": {
+      "stepsTitle": "Steps",
+      "startStep": "Start step",
+      "stepType": "Type",
+      "stepTypeDetail": "Form or component",
+      "transitions": "Transitions",
+      "expressions": "Expressions",
+      "noSteps": "This form flow does not contain any steps yet. Use the JSON editor to add steps."
     }
   },
   "taskManagement": {

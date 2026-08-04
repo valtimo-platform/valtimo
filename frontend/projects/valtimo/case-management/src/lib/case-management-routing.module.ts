@@ -162,6 +162,14 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.FORM_FLOWS}/:formFlowDefinitionKey`,
     component: FormFlowEditorComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
+    data: {title: 'Form flow details', roles: [ROLE_ADMIN], customPageTitle: true},
+  },
+  {
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.FORM_FLOWS}/:formFlowDefinitionKey/json-editor`,
+    component: FormFlowEditorComponent,
+    canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {title: 'Form flow details', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];
