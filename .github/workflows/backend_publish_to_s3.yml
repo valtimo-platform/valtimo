@@ -1,11 +1,13 @@
-name: Backend - Publish to S3 (OVHcloud)
+name: Backend - Publish to S3
 
 permissions:
   contents: read
 
-# Publishes the already-built backend libraries to the Valtimo OVHcloud S3 bucket
-# (valtimo-releases, region eu-west-par). Reused by the release and release-candidate
-# pipelines; they differ only in the version string — the bucket is the same.
+# Publishes the already-built backend libraries to the Valtimo release artifacts bucket
+# (valtimo-release-artifacts in eu-west-1). Reused by the release and release-candidate
+# pipelines; they differ only in the version string. Bucket, region, key prefix and endpoint are
+# inputs: leaving s3_region set targets AWS, while passing s3_endpoint with an empty s3_region
+# targets an S3-compatible store instead.
 on:
   workflow_call:
     inputs:
@@ -14,8 +16,23 @@ on:
         required: true
         type: string
       s3_bucket:
-        description: "Target bucket (valtimo-releases)"
+        description: "Target bucket (valtimo-release-artifacts)"
         required: true
+        type: string
+      s3_region:
+        description: "AWS region of the bucket; empty for a non-AWS store, which is addressed by s3_endpoint instead"
+        required: false
+        default: eu-west-1
+        type: string
+      s3_endpoint:
+        description: "Endpoint URL of an S3-compatible store; empty targets native AWS S3"
+        required: false
+        default: ""
+        type: string
+      s3_prefix:
+        description: "Key prefix for the Maven layout inside the bucket; empty publishes to the bucket root"
+        required: false
+        default: maven
         type: string
       build_artifact_name:
         description: Name of the backend build artifact to download with 'download-artifact'
@@ -23,21 +40,25 @@ on:
         type: string
     secrets:
       s3_access_key_id:
-        description: OVHcloud S3 bucket access key ID
+        description: Access key ID for the target bucket
         required: true
       s3_secret_access_key:
-        description: OVHcloud S3 bucket secret access key
+        description: Secret access key for the target bucket
         required: true
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      # Gradle's `AwsCredentials` reads these standard AWS env var names. The backend
-      # publishes to the OVHcloud S3 bucket, so map the OVH release credentials into them.
+      # Gradle's `AwsCredentials` reads these standard AWS env var names, so map the target
+      # bucket's credentials into them.
       AWS_ACCESS_KEY_ID: ${{ secrets.s3_access_key_id }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_secret_access_key }}
-      AWS_REGION: eu-west-par
+      # Deliberately no AWS_REGION: Gradle's S3 transport builds a legacy AWS SDK client that
+      # ignores it (it would sign for us-east-1 regardless). The region travels in the
+      # repository URL instead — see backend/gradle/publishing-module.gradle.
+      S3_REGION: ${{ inputs.s3_region }}
+      S3_ENDPOINT: ${{ inputs.s3_endpoint }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,14 +80,22 @@ jobs:
           name: ${{ inputs.build_artifact_name }}
           path: .
 
-      - name: Publish backend libraries to S3 (OVHcloud)
+      - name: Publish backend libraries to S3
         env:
           PROJECT_VERSION: ${{ inputs.project_version }}
           S3_BUCKET: ${{ inputs.s3_bucket }}
+          S3_PREFIX: ${{ inputs.s3_prefix }}
         run: |
-          ./gradlew --no-parallel publishAllPublicationsToS3Repository \
-            -PpublishToS3=true \
-            -Ps3Bucket="${S3_BUCKET}" \
-            -PprojectVersion="${PROJECT_VERSION}" \
-            -Dorg.gradle.s3.endpoint=https://s3.eu-west-par.io.cloud.ovh.net \
-            -Dorg.gradle.s3.region=eu-west-par
+          set -euo pipefail
+          args=(--no-parallel
+            publishAllPublicationsToS3Repository
+            -PpublishToS3=true
+            -Ps3Bucket="${S3_BUCKET}"
+            -Ps3Region="${S3_REGION}"
+            -Ps3Prefix="${S3_PREFIX}"
+            -PprojectVersion="${PROJECT_VERSION}")
+          # An empty value is rejected by Gradle, so omit the flag entirely to target AWS S3.
+          if [ -n "${S3_ENDPOINT}" ]; then
+            args+=("-Dorg.gradle.s3.endpoint=${S3_ENDPOINT}")
+          fi
+          ./gradlew "${args[@]}"

@@ -208,9 +208,10 @@ jobs:
           name: build-reports
           path: backend/build/reports
 
-  # Second leg of the dual publish: push the same release artifacts to the OVHcloud S3
-  # bucket. Runs unconditionally (no Sonatype sunset guard) so it becomes the sole publish
-  # target once Sonatype is switched off.
+  # Second leg of the dual publish: push the same release artifacts to the S3 bucket. Runs
+  # unconditionally (no Sonatype sunset guard) so it becomes the sole publish target once
+  # Sonatype is switched off. The target is spelled out here rather than inherited from the
+  # called workflow's defaults, so changing those cannot silently move a release.
   publish_s3:
     name: Publish to S3
     needs:
@@ -218,8 +219,12 @@ jobs:
     uses: ./.github/workflows/backend_publish_to_s3.yml
     with:
       project_version: ${{ inputs.project_version || github.event.inputs.project_version }}.RELEASE
-      s3_bucket: valtimo-releases
+      s3_bucket: valtimo-release-artifacts
+      s3_region: eu-west-1
+      s3_prefix: maven
+      # Native AWS S3, so no S3-compatible store endpoint.
+      s3_endpoint: ""
       build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
     secrets:
-      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_OVHCLOUD_S3_BUCKET_ACCESS_KEY_ID }}
-      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_OVHCLOUD_S3_BUCKET_ACCESS_KEY_SECRET }}
+      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_ID }}
+      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_SECRET }}

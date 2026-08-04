@@ -6,6 +6,12 @@ releases published after that date are available only from S3 (versions already 
 Central stay there). To keep resolving Valtimo
 dependencies, update your Gradle build before then:
 
+{% hint style="warning" %}
+The bucket below is being decommissioned. From 13.40.0 the libraries are published to a different
+bucket — follow the [13.40.0 backend migration](../13.40.0/back-end-migration.md) instead. 13.39.0
+itself also remains available from Maven Central.
+{% endhint %}
+
 1. In your `build.gradle.kts`, add the S3 release bucket to the `repositories { }` block:
 
    ```kotlin
