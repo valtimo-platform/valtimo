@@ -15,11 +15,14 @@
  */
 
 def publishToS3 = project.hasProperty('publishToS3') && project.property('publishToS3') == 'true'
-// The S3 region (and, if needed, endpoint) is supplied at invocation time via
-// -Dorg.gradle.s3.region / -Dorg.gradle.s3.endpoint, so the build works against any
-// S3-compatible store without hardcoding the host. Releases publish to AWS S3.
 // Bucket per pipeline: valtimo-releases for release/RC, valtimo-snapshots for snapshots.
 def s3Bucket = project.findProperty('s3Bucket') ?: 'valtimo-snapshots'
+// The region has to be part of the host for AWS: Gradle's S3 transport has no region property
+// and its client ignores AWS_REGION, so a bare s3://<bucket> URL is signed for us-east-1 and
+// rejected by buckets elsewhere. Leave s3Region empty for a non-AWS S3-compatible store, which
+// is addressed with -Dorg.gradle.s3.endpoint at invocation time instead.
+def s3Region = project.findProperty('s3Region') ?: ''
+def s3Host = s3Region ? "${s3Bucket}.s3.${s3Region}.amazonaws.com" : s3Bucket
 def sonatypeCentralStagingDir = uri("build/staging-deploy")
 def signingConfigSet = false
 if(System.getenv('SIGNING_KEY_BASE64') &&
@@ -51,7 +54,7 @@ publishing {
                     accessKey System.getenv('AWS_ACCESS_KEY_ID')
                     secretKey System.getenv('AWS_SECRET_ACCESS_KEY')
                 }
-                url = uri("s3://${s3Bucket}")
+                url = uri("s3://${s3Host}")
             }
         }
     }

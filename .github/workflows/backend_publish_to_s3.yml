@@ -37,7 +37,6 @@ jobs:
       # release credentials into them.
       AWS_ACCESS_KEY_ID: ${{ secrets.s3_access_key_id }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_secret_access_key }}
-      AWS_REGION: eu-central-1
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,5 +66,5 @@ jobs:
           ./gradlew --no-parallel publishAllPublicationsToS3Repository \
             -PpublishToS3=true \
             -Ps3Bucket="${S3_BUCKET}" \
-            -PprojectVersion="${PROJECT_VERSION}" \
-            -Dorg.gradle.s3.region=eu-central-1
+            -Ps3Region=eu-central-1 \
+            -PprojectVersion="${PROJECT_VERSION}"
