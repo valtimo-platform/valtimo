@@ -78,7 +78,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
   public get taskMappingLength() {
     return Object.keys(this.taskMapping).length;
   }
-  
+
   public sourceDefinitionItems: ListItem[] = [];
   public targetDefinitionItems: ListItem[] = [];
   public sourceVersionItems: ListItem[] = [];
@@ -120,7 +120,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
       });
   }
 
-  onDefinitionSelected(selection: ListItem | ListItem[], type: string) {
+  public onDefinitionSelected(selection: ListItem | ListItem[], type: string) {
     const item = Array.isArray(selection) ? selection[0] : selection;
     const key = item?.key ?? null;
     this.loadProcessDefinitionVersions(key, type);
@@ -129,12 +129,12 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
     }
   }
 
-  onVersionSelected(selection: ListItem | ListItem[], type: string) {
+  public onVersionSelected(selection: ListItem | ListItem[], type: string) {
     const item = Array.isArray(selection) ? selection[0] : selection;
     this.loadProcess(item?.id ?? null, type);
   }
 
-  onTaskMappingSelected(selection: ListItem | ListItem[], nodeId: string) {
+  public onTaskMappingSelected(selection: ListItem | ListItem[], nodeId: string) {
     const item = Array.isArray(selection) ? selection[0] : selection;
     this.taskMapping[nodeId] = item?.id ?? null;
   }
@@ -149,6 +149,9 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
       this.processService
         .getProcessDefinitionVersions(key)
         .subscribe((processDefinitionVersions: ProcessDefinition[]) => {
+          if (this.fields[type].definition !== key) {
+            return;
+          }
           this.selectedVersions[type] = processDefinitionVersions;
           this.refreshVersionItems(type);
         });
@@ -214,7 +217,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
     });
   }
 
-  getFilteredTargetFlowNodeMapItems(node): ListItem[] {
+  public getFilteredTargetFlowNodeMapItems(node): ListItem[] {
     if (!this.targetFlowNodeItemsMap.has(node.id)) {
       this.targetFlowNodeItemsMap.set(
         node.id,
