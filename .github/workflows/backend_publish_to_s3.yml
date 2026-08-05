@@ -1,10 +1,10 @@
-name: Backend - Publish to S3 (OVHcloud)
+name: Backend - Publish to S3 (AWS)
 
 permissions:
   contents: read
 
-# Publishes the already-built backend libraries to the Valtimo OVHcloud S3 bucket
-# (valtimo-releases, region eu-west-par). Reused by the release and release-candidate
+# Publishes the already-built backend libraries to the Valtimo AWS S3 bucket
+# (valtimo-releases, region eu-central-1). Reused by the release and release-candidate
 # pipelines; they differ only in the version string — the bucket is the same.
 on:
   workflow_call:
@@ -23,21 +23,20 @@ on:
         type: string
     secrets:
       s3_access_key_id:
-        description: OVHcloud S3 bucket access key ID
+        description: AWS S3 bucket access key ID
         required: true
       s3_secret_access_key:
-        description: OVHcloud S3 bucket secret access key
+        description: AWS S3 bucket secret access key
         required: true
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      # Gradle's `AwsCredentials` reads these standard AWS env var names. The backend
-      # publishes to the OVHcloud S3 bucket, so map the OVH release credentials into them.
+      # Gradle's `AwsCredentials` reads these standard AWS env var names, so map the
+      # release credentials into them.
       AWS_ACCESS_KEY_ID: ${{ secrets.s3_access_key_id }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_secret_access_key }}
-      AWS_REGION: eu-west-par
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,7 +58,7 @@ jobs:
           name: ${{ inputs.build_artifact_name }}
           path: .
 
-      - name: Publish backend libraries to S3 (OVHcloud)
+      - name: Publish backend libraries to S3 (AWS)
         env:
           PROJECT_VERSION: ${{ inputs.project_version }}
           S3_BUCKET: ${{ inputs.s3_bucket }}
@@ -67,6 +66,5 @@ jobs:
           ./gradlew --no-parallel publishAllPublicationsToS3Repository \
             -PpublishToS3=true \
             -Ps3Bucket="${S3_BUCKET}" \
-            -PprojectVersion="${PROJECT_VERSION}" \
-            -Dorg.gradle.s3.endpoint=https://s3.eu-west-par.io.cloud.ovh.net \
-            -Dorg.gradle.s3.region=eu-west-par
+            -Ps3Region=eu-central-1 \
+            -PprojectVersion="${PROJECT_VERSION}"
