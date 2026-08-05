@@ -22,7 +22,8 @@
             "attributes": {
                 "data-testid": "start-form-woninginspectie-naam"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
         },
         {
             "key": "adres",
@@ -33,7 +34,8 @@
             "attributes": {
                 "data-testid": "start-form-woninginspectie-adres"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Dorpsstraat 1, 1234 AB Testdorp"
         },
         {
             "key": "aantalKamers",
@@ -43,7 +45,8 @@
             "tableView": true,
             "attributes": {
                 "data-testid": "start-form-woninginspectie-aantal-kamers"
-            }
+            },
+            "defaultValue": 3
         },
         {
             "key": "status",

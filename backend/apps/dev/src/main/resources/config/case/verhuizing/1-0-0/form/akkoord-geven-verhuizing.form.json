@@ -20,7 +20,8 @@
             "attributes": {
                 "data-testid": "akkoord-geven-verhuizing-naam"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
         },
         {
             "key": "status",
@@ -46,7 +47,8 @@
                     }
                 ]
             },
-            "dataSrc": "values"
+            "dataSrc": "values",
+            "defaultValue": "akkoord"
         },
         {
             "key": "submit",

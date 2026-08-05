@@ -20,7 +20,8 @@
             "attributes": {
                 "data-testid": "beoordelen-verhuizing-naam"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
         },
         {
             "key": "nieuwAdres",
@@ -32,7 +33,8 @@
             "attributes": {
                 "data-testid": "beoordelen-verhuizing-nieuw-adres"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Dorpsstraat 1, 1234 AB Testdorp"
         },
         {
             "key": "status",
@@ -58,7 +60,8 @@
                     }
                 ]
             },
-            "dataSrc": "values"
+            "dataSrc": "values",
+            "defaultValue": "Goedgekeurd"
         },
         {
             "key": "submit",

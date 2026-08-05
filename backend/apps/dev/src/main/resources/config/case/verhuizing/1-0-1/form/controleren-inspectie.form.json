@@ -20,7 +20,8 @@
             "attributes": {
                 "data-testid": "controleren-inspectie-naam"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
         },
         {
             "key": "inspectieStatus",
@@ -46,7 +47,8 @@
                     }
                 ]
             },
-            "dataSrc": "values"
+            "dataSrc": "values",
+            "defaultValue": "goedgekeurd"
         },
         {
             "key": "submit",

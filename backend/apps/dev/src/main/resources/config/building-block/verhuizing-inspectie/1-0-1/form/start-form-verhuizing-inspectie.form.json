@@ -19,7 +19,8 @@
             "attributes": {
                 "data-testid": "start-form-verhuizing-inspectie-aanvrager-naam"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
         },
         {
             "key": "nieuwAdres",
@@ -30,7 +31,8 @@
             "attributes": {
                 "data-testid": "start-form-verhuizing-inspectie-nieuw-adres"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Dorpsstraat 1, 1234 AB Testdorp"
         },
         {
             "key": "inspecteur",
@@ -41,7 +43,8 @@
             "attributes": {
                 "data-testid": "start-form-verhuizing-inspectie-inspecteur"
             },
-            "applyMaskOn": "change"
+            "applyMaskOn": "change",
+            "defaultValue": "Piet Pietersen"
         },
         {
             "key": "submit",
