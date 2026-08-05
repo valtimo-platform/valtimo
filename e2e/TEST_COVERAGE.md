@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
+| User Features (ROLE_USER)   | 5        | 24        | 17         | 7              |
 | Admin Features (ROLE_ADMIN) | 15       | 345       | 278        | 67             |
-| **Total**                   | **20**   | **366**   | **290**    | **76**         |
+| **Total**                   | **20**   | **369**   | **295**    | **74**         |
 
-**Coverage:** `290 / 366` — `79.2%`
+**Coverage:** `295 / 369` — `79.9%`
 
 ---
 
@@ -29,11 +29,14 @@
 
 ### Feature 1 — Dashboard
 
-| #   | Function                        | Test Scenarios                                                 | Coverage | Notes                                           |
-|:----|:--------------------------------|:---------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 1.1 | Display widget-based dashboard  | Load dashboard with multiple widgets · Display empty dashboard |    ❌    |                                                 |
-| 1.2 | Configure widgets per user/role | Add widget to dashboard · Remove widget from dashboard         |    ❌    |                                                 |
-| 1.3 | Real-time data updates (SSE)    | Receive SSE update and refresh widget                          |    ❌    |                                                 |
+| #   | Function                             | Test Scenarios                                                                                       | Coverage | Notes                                                                                                                                                                    |
+|:----|:-------------------------------------|:-----------------------------------------------------------------------------------------------------|:--------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1 | Display widget-based dashboard       | Load dashboard with multiple widgets · Render each widget's display title · Display empty dashboard   |    ✅    | user-dashboard.spec.ts                                                                                                                                                   |
+| 1.2 | Configure widgets per user/role      | Add widget to dashboard · Remove widget from dashboard · Dashboard without a view permission is hidden |    ✅    | user-dashboard.spec.ts (dashboard visibility is role-scoped by an access-control permission on the dashboard key)                                                          |
+| 1.3 | Real-time data updates (SSE)         | Receive SSE update and refresh widget                                                                |   `N/A`  | The widget dashboard does not subscribe to SSE — `@valtimo/dashboard` has no SSE usage, and `/api/v1/dashboard/{key}/data` is verified not to be re-requested after a case is created. Refresh is covered by 1.4 |
+| 1.4 | Refresh widget data on open          | Widget data is re-fetched on open and reflects newly created cases                                   |    ✅    | user-dashboard.spec.ts                                                                                                                                                   |
+| 1.5 | Navigate from widget to linked route | Clicking a widget with a configured URL navigates to that route                                      |    ✅    | user-dashboard.spec.ts                                                                                                                                                   |
+| 1.6 | Skip unsupported widget display type | Widget with an unregistered display type is skipped and the dashboard still renders                  |    ✅    | user-dashboard.spec.ts (failure scenario)                                                                                                                                |
 
 ---
 
@@ -736,9 +739,9 @@
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   366   |
-| ✅ Covered by Playwright |   290   |
-| ❌ Not covered           |   76    |
+| Total Functions          |   369   |
+| ✅ Covered by Playwright |   295   |
+| ❌ Not covered           |   74    |
 | ⏳ In progress           |    1    |
-| `N/A` Not applicable     |    2    |
-| **Coverage %**           | **79.2%** |
+| `N/A` Not applicable     |    3    |
+| **Coverage %**           | **79.9%** |
