@@ -23,9 +23,14 @@ import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.manifest.ArtifactDependency
+import com.ritense.exporter.manifest.ArtifactManifestEntry
+import com.ritense.exporter.manifest.ArtifactType
+import com.ritense.exporter.manifest.DependencyType
+import com.ritense.exporter.manifest.ResolvableValue
+import com.ritense.exporter.request.BuildingBlockDecisionDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
-import com.ritense.exporter.request.BuildingBlockDecisionDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockFormDefinitionExportRequest
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.MigrationPlanExportRequest
@@ -52,8 +57,9 @@ class BuildingBlockDefinitionExporter(
             "${it.major}-${it.minor}-${it.patch}"
         }
 
+        val definitionPath = PATH.format(definition.id.key, formattedVersion, definition.id.key)
         val definitionExport = ExportFile(
-            PATH.format(definition.id.key, formattedVersion, definition.id.key),
+            definitionPath,
             objectMapper
                 .writer(ExportPrettyPrinter())
                 .writeValueAsBytes(
@@ -76,7 +82,27 @@ class BuildingBlockDefinitionExporter(
         relatedExportRequests.addAll(createDecisionDefinitionExportRequests(definition.id))
         relatedExportRequests.add(MigrationPlanExportRequest(definition.id))
 
-        return ExportResult(definitionExport, relatedExportRequests)
+        return ExportResult(
+            exportFiles = setOf(definitionExport),
+            relatedRequests = relatedExportRequests,
+            // Used when this building block is the root of the export.
+            manifestArtifact = ArtifactManifestEntry(
+                artifactVersionTag = ResolvableValue.ref(definitionPath, "/versionTag"),
+                title = ResolvableValue.ref(definitionPath, "/name"),
+                type = ArtifactType.BUILDING_BLOCK,
+                valtimoVersion = "",
+                dependencies = emptyList(),
+            ),
+            // Used when this building block is pulled in as a (transitive) dependency of another artifact.
+            manifestDependencies = setOf(
+                ArtifactDependency(
+                    type = DependencyType.BUILDING_BLOCK,
+                    key = ResolvableValue.ref(definitionPath, "/key"),
+                    title = ResolvableValue.ref(definitionPath, "/name"),
+                    versionTag = ResolvableValue.ref(definitionPath, "/versionTag"),
+                )
+            ),
+        )
     }
 
     private fun createDocumentDefinitionExportRequest(buildingBlockDefinitionId: BuildingBlockDefinitionId): Set<BuildingBlockDocumentDefinitionExportRequest> {

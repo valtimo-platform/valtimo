@@ -23,3 +23,4 @@ export * from './person-card/widget-management-person-card.component';
 export * from './metroline/widget-management-metroline.component';
 export * from './highlight/widget-management-highlight.component';
 export * from './image/widget-management-image.component';
+export * from './text/widget-management-text.component';

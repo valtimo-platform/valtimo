@@ -1,0 +1,70 @@
+name: Backend - Publish to S3 (AWS)
+
+permissions:
+  contents: read
+
+# Publishes the already-built backend libraries to the Valtimo AWS S3 bucket
+# (valtimo-releases, region eu-central-1). Reused by the release and release-candidate
+# pipelines; they differ only in the version string — the bucket is the same.
+on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Full version string to publish (e.g. 13.6.0.RELEASE, 13.6.0-1)"
+        required: true
+        type: string
+      s3_bucket:
+        description: "Target bucket (valtimo-releases)"
+        required: true
+        type: string
+      build_artifact_name:
+        description: Name of the backend build artifact to download with 'download-artifact'
+        required: true
+        type: string
+    secrets:
+      s3_access_key_id:
+        description: AWS S3 bucket access key ID
+        required: true
+      s3_secret_access_key:
+        description: AWS S3 bucket secret access key
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      # Gradle's `AwsCredentials` reads these standard AWS env var names, so map the
+      # release credentials into them.
+      AWS_ACCESS_KEY_ID: ${{ secrets.s3_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.s3_secret_access_key }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Only a plain checkout is needed before Java/S3 publishing; don't leave a
+          # git token behind for Gradle, plugins, or download-artifact to pick up.
+          persist-credentials: false
+
+      - name: Set up Temurin 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.build_artifact_name }}
+          path: .
+
+      - name: Publish backend libraries to S3 (AWS)
+        env:
+          PROJECT_VERSION: ${{ inputs.project_version }}
+          S3_BUCKET: ${{ inputs.s3_bucket }}
+        run: |
+          ./gradlew --no-parallel publishAllPublicationsToS3Repository \
+            -PpublishToS3=true \
+            -Ps3Bucket="${S3_BUCKET}" \
+            -Ps3Region=eu-central-1 \
+            -PprojectVersion="${PROJECT_VERSION}"

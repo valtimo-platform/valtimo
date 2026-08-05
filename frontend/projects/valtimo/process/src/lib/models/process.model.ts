@@ -165,6 +165,11 @@ interface FlowNodeMigration {
   uniqueFlowNodeMap: {[activityId: string]: string};
 }
 
+interface SkippableTimer {
+  jobId: string;
+  activityId: string | null;
+}
+
 export {
   ProcessStart,
   Process,
@@ -180,4 +185,5 @@ export {
   IdentityLink,
   ProcessDefinitionXml,
   FlowNodeMigration,
+  SkippableTimer,
 };

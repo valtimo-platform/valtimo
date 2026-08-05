@@ -14,9 +14,25 @@
  * limitations under the License.
  */
 
-import {Page} from '@playwright/test';
+import {expect, Page} from '@playwright/test';
 
 const VERSION_DROPDOWN_TEST_ID = 'caseVersionSelectDropdown';
+
+/**
+ * Waits until the URL stops changing.
+ *
+ * Selecting a version triggers a navigation that the app follows up with a redirect to the
+ * `/general` tab. That redirect can land well after the click, so a caller that only waits for
+ * "the URL changed" may navigate somewhere else and then be thrown back to `/general` on the
+ * previously selected version — mid-test, in another test of the same describe.
+ */
+async function waitForUrlToSettle(page: Page, quietMs = 750): Promise<void> {
+  await expect(async () => {
+    const before = page.url();
+    await page.waitForTimeout(quietMs);
+    expect(page.url()).toBe(before);
+  }).toPass({timeout: 20_000});
+}
 
 async function getDropdownText(page: Page): Promise<string> {
   const dropdown = page.getByTestId(VERSION_DROPDOWN_TEST_ID);
@@ -38,18 +54,24 @@ async function getDropdownText(page: Page): Promise<string> {
  */
 export async function ensureDraftVersionSelected(page: Page): Promise<string> {
   const dropdown = page.getByTestId(VERSION_DROPDOWN_TEST_ID);
-  const selectedText = await getDropdownText(page);
 
-  if (!selectedText.includes('DRAFT')) {
-    const currentUrl = page.url();
-    await dropdown.click();
-    const draftOption = page
-      .getByRole('listbox')
-      .locator('[data-test-id^="caseVersion"]:has-text("DRAFT")')
-      .first();
-    await draftOption.click();
-    await page.waitForURL(url => url.toString() !== currentUrl);
-  }
+  await expect(async () => {
+    if (!(await getDropdownText(page)).includes('DRAFT')) {
+      const currentUrl = page.url();
+      await dropdown.click();
+      const draftOption = page
+        .getByRole('listbox')
+        .locator('[data-test-id^="caseVersion"]:has-text("DRAFT")')
+        .first();
+      await draftOption.click();
+      await page.waitForURL(url => url.toString() !== currentUrl);
+    }
+
+    // Only trust the selection once the navigation it triggers has finished: the app can still
+    // redirect afterwards, which would otherwise strand the caller on the previous version.
+    await waitForUrlToSettle(page);
+    expect(await getDropdownText(page)).toContain('DRAFT');
+  }).toPass({timeout: 60_000});
 
   return getVersionFromUrl(page);
 }
@@ -61,18 +83,22 @@ export async function ensureDraftVersionSelected(page: Page): Promise<string> {
  */
 export async function ensureFinalVersionSelected(page: Page): Promise<string> {
   const dropdown = page.getByTestId(VERSION_DROPDOWN_TEST_ID);
-  const selectedText = await getDropdownText(page);
 
-  if (selectedText.includes('DRAFT')) {
-    const currentUrl = page.url();
-    await dropdown.click();
-    const finalOption = page
-      .getByRole('listbox')
-      .locator('[data-test-id^="caseVersion"]:not(:has-text("DRAFT"))')
-      .first();
-    await finalOption.click();
-    await page.waitForURL(url => url.toString() !== currentUrl);
-  }
+  await expect(async () => {
+    if ((await getDropdownText(page)).includes('DRAFT')) {
+      const currentUrl = page.url();
+      await dropdown.click();
+      const finalOption = page
+        .getByRole('listbox')
+        .locator('[data-test-id^="caseVersion"]:not(:has-text("DRAFT"))')
+        .first();
+      await finalOption.click();
+      await page.waitForURL(url => url.toString() !== currentUrl);
+    }
+
+    await waitForUrlToSettle(page);
+    expect(await getDropdownText(page)).not.toContain('DRAFT');
+  }).toPass({timeout: 60_000});
 
   return getVersionFromUrl(page);
 }

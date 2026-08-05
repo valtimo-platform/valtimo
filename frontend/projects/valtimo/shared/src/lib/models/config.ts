@@ -103,6 +103,12 @@ interface ValtimoConfigFeatureToggles {
    */
   experimentalDmnEditing?: boolean;
   enableZgwFeatures?: boolean;
+  /**
+   * When enabled, the form.io token is kept in memory only and is no longer persisted to
+   * localStorage. Enable this when your forms rely solely on the Keycloak token (attached
+   * via the HTTP interceptor) and do not depend on form.io's own token-authenticated requests.
+   */
+  disableFormioTokenInLocalStorage?: boolean;
 }
 
 interface ValtimoConfig {

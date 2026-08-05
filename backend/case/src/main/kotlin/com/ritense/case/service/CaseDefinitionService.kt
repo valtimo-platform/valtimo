@@ -123,6 +123,7 @@ class CaseDefinitionService(
             }
             basedOnCaseDefinition.copy(
                 id = caseDefinitionId,
+                name = request.name ?: basedOnCaseDefinition.name,
                 description = request.description ?: basedOnCaseDefinition.description,
                 final = false,
                 createdBy = SecurityUtils.getCurrentUserLogin(),
