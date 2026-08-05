@@ -159,6 +159,11 @@ interface ProcessDefinitionXml {
   systemProcess: boolean;
 }
 
+interface SkippableTimer {
+  jobId: string;
+  activityId: string | null;
+}
+
 export {
   ProcessStart,
   Process,
@@ -173,4 +178,5 @@ export {
   ProcessInstanceTaskAssignee,
   IdentityLink,
   ProcessDefinitionXml,
+  SkippableTimer,
 };

@@ -103,7 +103,7 @@ jobs:
       packages: read
     uses: ./.github/workflows/backend_smoke_and_promote.yml
     with:
-      image_name: gzac-evenementenvergunning-backend
+      image_name: gzac-evenementenvergunning-demo-backend
       release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
@@ -169,15 +169,15 @@ jobs:
             echo "Not on Maven Central yet (HTTP ${code}) — proceeding with publish."
           fi
 
-      # Sonatype sunset guard: from 10 Aug 2026 Sonatype enforces new publishing
-      # limits, so we stop dual-publishing to it on that
-      # date. After the cutoff only the S3 publish runs — no manual edit
+      # Sonatype sunset guard: Sonatype enforces new publishing limits from 1 Oct 2026,
+      # so we stop dual-publishing to it a day early (30 Sep 2026) to be safe.
+      # After the cutoff only the S3 publish runs — no manual edit
       # needed, the guard flips on the date. Adjust CUTOFF to move the boundary.
       - name: Determine whether Sonatype publishing is still open
         id: sonatype_window
         run: |
           set -euo pipefail
-          CUTOFF="2026-08-10"
+          CUTOFF="2026-09-30"
           TODAY="$(date -u +%F)"
           if [[ "$TODAY" < "$CUTOFF" ]]; then
             echo "open=true" >> "$GITHUB_OUTPUT"
@@ -208,7 +208,7 @@ jobs:
           name: build-reports
           path: backend/build/reports
 
-  # Second leg of the dual publish: push the same release artifacts to the OVHcloud S3
+  # Second leg of the dual publish: push the same release artifacts to the AWS S3
   # bucket. Runs unconditionally (no Sonatype sunset guard) so it becomes the sole publish
   # target once Sonatype is switched off.
   publish_s3:
@@ -221,5 +221,5 @@ jobs:
       s3_bucket: valtimo-releases
       build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
     secrets:
-      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_OVHCLOUD_S3_BUCKET_ACCESS_KEY_ID }}
-      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_OVHCLOUD_S3_BUCKET_ACCESS_KEY_SECRET }}
+      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_ID }}
+      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_SECRET }}

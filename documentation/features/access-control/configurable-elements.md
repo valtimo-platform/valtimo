@@ -78,18 +78,6 @@ define what can be configured for that element.
 			<td valign="top">Notes</td>
 		</tr>
 		<tr>
-			<td valign="top">
-				<a href="../objecten-management/access-control.md">
-					<strong>Object Management</strong>
-				</a>
-			</td>
-			<td valign="top"></td>
-			<td valign="top">
-				<code>com.ritense.objectmanagement.domain.ObjectManagement</code>
-			</td>
-			<td valign="top">Object management</td>
-		</tr>
-		<tr>
 			<td valign="top"></td>
 			<td valign="top">
 				<a href="../case/case-list/search-fields.md#access-control">Search fields</a>
@@ -150,6 +138,16 @@ define what can be configured for that element.
 			</td>
 			<td valign="top">
 				<code>com.ritense.valtimo.operaton.domain.OperatonProcessDefinition</code>
+			</td>
+			<td valign="top">Core</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../process/#access-control">Timer</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.valtimo.operaton.domain.OperatonTimer</code>
 			</td>
 			<td valign="top">Core</td>
 		</tr>

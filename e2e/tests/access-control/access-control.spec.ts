@@ -50,9 +50,8 @@ test.describe('Access Control Management', () => {
     // Keep open-modal → fill → submit in one test: the beforeEach re-navigates to
     // the list before every test, so a split modal would be lost between blocks.
     test('Add a new role', async () => {
-      // Act
-      await accessControlPage.addRoleButton.click();
-      await expect(accessControlPage.roleNameInput).toBeVisible();
+      // Act — the modal opens in "choose from list" mode; switch it to manual entry first
+      await accessControlPage.openAddRoleModal();
       await accessControlPage.roleNameInput.fill(roleTestData.key);
       await accessControlPage.createRoleButton.click();
 
