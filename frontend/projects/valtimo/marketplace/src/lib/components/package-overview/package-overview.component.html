@@ -1,0 +1,88 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="package-list" *ngIf="{packages: packages$ | async} as obs">
+  @if (!obs.packages) {
+    <ng-container *ngTemplateOutlet="loadingPackagesTemplate"></ng-container>
+  } @else if (obs.packages?.length === 0) {
+    <ng-container *ngTemplateOutlet="noPackagesTemplate"></ng-container>
+  } @else {
+    <div class="package-list__packages-container" cdsLayer="1">
+      @for (pkg of obs.packages; track pkg.id) {
+        <ng-container
+          *ngTemplateOutlet="packageTemplate; context: {pkg: pkg}"
+        ></ng-container>
+      }
+    </div>
+  }
+</div>
+
+<ng-template #packageTemplate let-pkg="pkg">
+  <cds-tile>
+    <div class="package">
+      <div class="package-header">
+        @if (pkg.logo) {
+          <img class="package-logo" [src]="pkg.logo"/>
+        }
+        <div class="package-content">
+          <span class="package__title">{{ pkg.name }}</span>
+          <div class="package__description">
+            {{ pkg.description }}
+          </div>
+          @if (pkg.installedVersion) {
+            <span class="package__version">
+              {{ 'packageManagement.installedVersion' | translate }}
+              <i>{{ pkg.installedVersion }}</i>
+            </span>
+          }
+        </div>
+      </div>
+      <div class="package-footer">
+        @if (pkg.installedVersion) {
+          <button cdsButton="danger" (click)="uninstall(pkg.id)">
+            {{ 'packageManagement.uninstall' | translate }}
+          </button>
+          <button
+            cdsButton="primary"
+            [disabled]="!pkg.nextVersion"
+            (click)="onClickUpdate(pkg)"
+          >
+            {{ 'packageManagement.update' | translate }}
+          </button>
+        } @else {
+          <button cdsButton="primary" (click)="onClickInstall(pkg)">
+            {{ 'packageManagement.install' | translate }}
+          </button>
+        }
+      </div>
+    </div>
+  </cds-tile>
+</ng-template>
+
+<ng-template #noPackagesTemplate>
+  <valtimo-no-results
+    [alwaysRenderVertically]="true"
+    illustration="valtimo-layout/img/emptystate-success.svg"
+    [description]="'packageManagement.noResults' | translate"
+    [smallPadding]="true"
+  ></valtimo-no-results>
+</ng-template>
+
+<ng-template #loadingPackagesTemplate>
+  <div class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>

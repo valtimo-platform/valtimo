@@ -55,6 +55,44 @@ open class PluginDeploymentListener(
         deployPluginDefinitions()
     }
 
+    /**
+     * Deploy plugin definitions for an explicit set of `@Plugin` classes, rather
+     * than the ones discovered by the startup classpath scan. Used to register a
+     * plugin that arrives at runtime in its own classloader (a marketplace package
+     * jar), which the ClassGraph scan in [PluginDefinitionResolver] cannot see.
+     *
+     * Idempotent: definitions/actions are upserted by key, so re-deploying an
+     * already-known plugin is a no-op. Any `@PluginCategory` the plugin declares
+     * is registered first so category links resolve.
+     */
+    @Transactional
+    open fun deployPluginDefinitions(pluginClasses: Map<Class<*>, Plugin>) {
+        pluginClasses.keys.forEach { deployCategoriesDeclaredBy(it) }
+        pluginClasses.forEach { (clazz, pluginAnnotation) ->
+            try {
+                val deployedPluginDefinition = createPluginDefinition(clazz, pluginAnnotation)
+                createActionDefinition(deployedPluginDefinition, clazz)
+                logger.info { "Deployed runtime plugin '${pluginAnnotation.key}' (${clazz.name})" }
+            } catch (e: Exception) {
+                throw PluginDefinitionNotDeployedException(pluginAnnotation.key, clazz.name, e)
+            }
+        }
+    }
+
+    /** Register any @PluginCategory declared on the class or its super types. */
+    private fun deployCategoriesDeclaredBy(clazz: Class<*>) {
+        if (clazz.isAnnotationPresent(PluginCategory::class.java)) {
+            val category = clazz.getAnnotation(PluginCategory::class.java)
+            if (pluginCategoryRepository.findById(category.key).isEmpty) {
+                pluginCategoryRepository.save(
+                    com.ritense.plugin.domain.PluginCategory(category.key, clazz.name)
+                )
+            }
+        }
+        clazz.superclass?.let { deployCategoriesDeclaredBy(it) }
+        clazz.interfaces.forEach { deployCategoriesDeclaredBy(it) }
+    }
+
     private fun deployPluginCategories() {
         logger.info { "Deploying plugin categories" }
 

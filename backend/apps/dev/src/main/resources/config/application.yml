@@ -203,6 +203,16 @@ valtimo:
     plugin:
         encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
 
+    marketplace:
+        # Package repositories the marketplace browses for installable plugin jars.
+        # Each entry is id -> base URL of a directory holding a `packages.json`
+        # manifest plus the sibling jars it references. The trailing slash is
+        # required: the manifest and each release jar are resolved relative to
+        # this URL. This is in addition to the built-in ~/.valtimo_packages
+        # repository. Local package-store build output:
+        repositories:
+            local-dist: file:///Users/klaasschuijtemaker/Projects/extension-store/dist/
+
     notificaties-api:
         processing:
             batch-size: 50
@@ -311,15 +321,6 @@ scheduling:
         cron:
             cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
             taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
-# The openklant:2.5.0 plugin (wired into the Native Federation frontend test set) eagerly
-# creates its OpenKlantValueResolverFactory bean at startup and injects these two properties
-# via @Value with no default, so the app fails to boot unless they resolve. They are only used
-# when the plugin is actually invoked; dev dummies are fine. An env var of the same name still
-# takes precedence over these (systemEnvironment ranks above application config), so real
-# deployments can override without touching this file.
-AUTODEPLOYMENT_PLUGINCONFIG_OPENKLANT_KLANTINTERACTIES_URL: http://localhost:8013/klantinteracties/api/v1
-AUTODEPLOYMENT_PLUGINCONFIG_OPENKLANT_AUTHORIZATION_TOKEN: dummy-token
-
 operaton:
     bpm:
         database:

@@ -36,12 +36,12 @@ dependencies {
     implementation(platform(project(":backend:dependencies:valtimo-dependency-versions")))
 
     implementation(project(":backend:dependencies:valtimo-gzac-dependencies"))
-    // Direct dependency on the local exchange (runtime plugin/extension) module.
+    // Direct dependency on the local marketplace (runtime plugin/package) module.
     // The core valtimo modules reach this app via the published 13.x BOM that the
-    // external plugins drag in, so the local `exchange` project — which has no
+    // external plugins drag in, so the local `marketplace` project — which has no
     // published artifact — would otherwise be resolved away and its
     // auto-configuration never loads. Declaring it directly pins the local project.
-    implementation(project(":backend:exchange"))
+    implementation(project(":backend:marketplace"))
     implementation(project(":backend:mail:local-mail"))
     implementation(project(":backend:document-generation:smartdocuments"))
     implementation(project(":backend:zgw:portaaltaak"))
@@ -49,8 +49,8 @@ dependencies {
     implementation(project(":backend:process-link-url"))
 
     // Plugins are NOT hardcoded as compile-time dependencies. They are loaded at
-    // runtime from jars dropped into the exchange plugins directory
-    // (src/main/resources/config/extensions), built by the extension-store
+    // runtime from jars dropped into the marketplace plugins directory
+    // (src/main/resources/config/packages), built by the extension-store
     // pipeline. Drop e.g. freemarker-<version>.jar there and it is loaded on
     // startup — no dependency here, no rebuild.
 

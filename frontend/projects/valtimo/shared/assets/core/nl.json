@@ -549,8 +549,8 @@
     "noResultsOtherTasks": "Er zijn geen taken beschikbaar voor andere gebruikers.",
     "taskIsAssigned": "Taak is toegewezen"
   },
-  "extensionManagement": {
-    "noResults": "Geen extensions beschikbaar",
+  "packageManagement": {
+    "noResults": "Geen pakketten beschikbaar",
     "installedVersion": "Geïnstalleerde versie",
     "install": "Installeren",
     "update": "Updaten",

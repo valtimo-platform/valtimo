@@ -102,7 +102,7 @@ export const environment: ValtimoConfig = {
           {link: ['/access-control'], title: 'Access Control', sequence: 6},
           {link: ['/translation-management'], title: 'Translations', sequence: 7},
           {link: ['/choice-fields'], title: 'Choice fields', sequence: 8},
-          {link: ['/extension-management'], title: 'Extensions', sequence: 9},
+          {link: ['/marketplace'], title: 'Marketplace', sequence: 9},
 
           {
             title: 'Object management',

@@ -52,7 +52,7 @@ include(
     ":backend:document-generation:smartdocuments",
     ":backend:exact-plugin",
     ":backend:exporter",
-    ":backend:exchange",
+    ":backend:marketplace",
     ":backend:form",
     ":backend:form-flow",
     ":backend:form-view-model",

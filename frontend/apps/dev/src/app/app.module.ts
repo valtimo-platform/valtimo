@@ -37,7 +37,7 @@ import {AdminSettingsModule} from '@valtimo/admin-settings';
 import {AnalyseModule} from '@valtimo/analyse';
 import {BootstrapModule} from '@valtimo/bootstrap';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
-import {ExtensionManagementModule} from '@valtimo/exchange';
+import {PackageManagementModule} from '@valtimo/marketplace';
 import {
   CaseDetailTabAuditComponent,
   CaseDetailTabDocumentsComponent,
@@ -209,7 +209,7 @@ export function tabsFactory() {
     // admin / building blocks / teams
     AdminSettingsModule,
     BuildingBlockManagementModule,
-    ExtensionManagementModule,
+    PackageManagementModule,
     TeamsModule,
     // plugin modules used by every variant
     BesluitenApiPluginModule,

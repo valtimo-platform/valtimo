@@ -2611,21 +2611,21 @@
         }
       }
     },
-    "@valtimo/exchange": {
-      "root": "projects/valtimo/exchange",
-      "sourceRoot": "projects/valtimo/exchange/src",
+    "@valtimo/marketplace": {
+      "root": "projects/valtimo/marketplace",
+      "sourceRoot": "projects/valtimo/marketplace/src",
       "projectType": "library",
       "prefix": "valtimo",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/exchange/tsconfig.lib.json",
-            "project": "projects/valtimo/exchange/ng-package.json"
+            "tsConfig": "projects/valtimo/marketplace/tsconfig.lib.json",
+            "project": "projects/valtimo/marketplace/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/exchange/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/marketplace/tsconfig.lib.prod.json"
             }
           }
         },
@@ -2633,16 +2633,16 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "apps/dev/src/test.ts",
-            "tsConfig": "projects/valtimo/exchange/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/exchange/karma.conf.js"
+            "tsConfig": "projects/valtimo/marketplace/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/marketplace/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/exchange/src/**/*.ts",
-              "projects/valtimo/exchange/src/**/*.html"
+              "projects/valtimo/marketplace/src/**/*.ts",
+              "projects/valtimo/marketplace/src/**/*.html"
             ]
           }
         }

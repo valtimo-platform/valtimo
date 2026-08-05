@@ -1,0 +1,101 @@
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.package-list {
+  width: 100%;
+  background-color: var(--cds-layer);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__title {
+    font-size: 24px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+
+  &__subtitle {
+    font-size: 16px;
+    line-height: 16px;
+    font-weight: 600;
+  }
+
+  &__packages-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+.package-logo {
+  object-fit: contain;
+  height: 60px;
+}
+
+.package-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 32px;
+}
+
+.package-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.package-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.package {
+  width: 600px;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+
+  &__title,
+  &__description,
+  &__version {
+    font-size: 14px;
+    font-style: normal;
+    line-height: 20px;
+    letter-spacing: 0.16px;
+  }
+
+  &__title {
+    font-weight: 600;
+  }
+
+  &__description,
+  &__version {
+    font-weight: 400;
+  }
+}
+
+.loading-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}

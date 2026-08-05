@@ -129,7 +129,7 @@ export const environment: ValtimoConfig = {
           {link: ['/access-control'], title: 'Access Control'},
           {link: ['/translation-management'], title: 'Translations'},
           {link: ['/choice-fields'], title: 'Choice fields'},
-          {link: ['/extension-management'], title: 'Extensions'},
+          {link: ['/marketplace'], title: 'Marketplace'},
           {title: 'Object management', textClass: 'text-dark font-weight-bold c-default', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
           {link: ['/object-management'], title: 'Objects', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
           {link: ['/form-management'], title: 'Forms'},

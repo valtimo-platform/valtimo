@@ -546,8 +546,8 @@
     "noResultsOtherTasks": "No tasks available to other users.",
     "taskIsAssigned": "Task is assigned"
   },
-  "extensionManagement": {
-    "noResults": "No extensions available",
+  "packageManagement": {
+    "noResults": "No packages available",
     "installedVersion": "Installed version",
     "install": "Install",
     "update": "Update",

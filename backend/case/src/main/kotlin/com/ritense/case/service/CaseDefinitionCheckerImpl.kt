@@ -49,6 +49,11 @@ class CaseDefinitionCheckerImpl(
         ) != null
     }
 
+    override fun getInstalledCaseDefinitionVersion(caseDefinitionKey: String): String? {
+        return caseDefinitionRepository.findFirstByIdKeyOrderByIdVersionTagDesc(caseDefinitionKey)
+            ?.id?.versionTag?.toString()
+    }
+
     override fun canUpdateCaseDefinition(caseDefinitionId: CaseDefinitionId): Boolean {
         if (!canUpdateGlobalConfiguration()) {
             return false

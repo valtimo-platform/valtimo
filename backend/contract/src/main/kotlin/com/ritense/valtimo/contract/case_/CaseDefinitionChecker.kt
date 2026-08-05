@@ -22,6 +22,13 @@ interface CaseDefinitionChecker {
 
     fun existsCaseDefinition(caseDefinitionKey: String): Boolean = false
 
+    /**
+     * The highest installed version tag for the given case definition key, or null
+     * when no case definition with that key is installed. Used e.g. by the
+     * marketplace to show a case package's installed version.
+     */
+    fun getInstalledCaseDefinitionVersion(caseDefinitionKey: String): String? = null
+
     fun canUpdateCaseDefinition(caseDefinitionId: CaseDefinitionId): Boolean = false
 
     fun canUpdateGlobalConfiguration(): Boolean = false

@@ -43,6 +43,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.validation.Validator
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -121,7 +122,7 @@ class PluginAutoConfiguration {
         pluginConfigurationRepository: PluginConfigurationRepository,
         pluginActionDefinitionRepository: PluginActionDefinitionRepository,
         pluginProcessLinkRepository: PluginProcessLinkRepository,
-        @Lazy pluginFactories: List<PluginFactory<*>>,
+        pluginFactories: ObjectProvider<PluginFactory<*>>,
         objectMapper: ObjectMapper,
         valueResolverService: ValueResolverService,
         pluginConfigurationSearchRepository: PluginConfigurationSearchRepository,

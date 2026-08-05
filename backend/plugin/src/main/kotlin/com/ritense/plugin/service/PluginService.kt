@@ -72,6 +72,7 @@ import jakarta.validation.ValidationException
 import jakarta.validation.Validator
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.env.Environment
 import org.springframework.data.repository.findByIdOrNull
@@ -91,7 +92,10 @@ class PluginService(
     private val pluginConfigurationRepository: PluginConfigurationRepository,
     private val pluginActionDefinitionRepository: PluginActionDefinitionRepository,
     private val pluginProcessLinkRepository: PluginProcessLinkRepository,
-    private val pluginFactories: List<PluginFactory<*>>,
+    // ObjectProvider (not a snapshot List): resolved fresh on each access so that
+    // PluginFactory beans registered AFTER startup — e.g. a plugin jar deployed at
+    // runtime through the marketplace — are discovered too.
+    private val pluginFactories: ObjectProvider<PluginFactory<*>>,
     private val objectMapper: ObjectMapper,
     private val valueResolverService: ValueResolverService,
     private val pluginConfigurationSearchRepository: PluginConfigurationSearchRepository,
@@ -738,7 +742,7 @@ class PluginService(
 
     fun createInstance(pluginConfiguration: PluginConfiguration): Any {
         return withLoggingContext(PluginConfiguration::class, pluginConfiguration.id) {
-            val factory = pluginFactories.firstOrNull { it.canCreate(pluginConfiguration) }
+            val factory = pluginFactories.stream().filter { it.canCreate(pluginConfiguration) }.findFirst().orElse(null)
                 ?: error("No PluginFactory found for '${pluginConfiguration.pluginDefinition.fullyQualifiedClassName}'")
             factory.create(pluginConfiguration)
         }
