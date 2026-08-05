@@ -61,12 +61,6 @@
   An expanded menu group such as *Cases* now stays open when the menu refreshes its contents, for example after
   uploading a case definition. Previously the group collapsed.
   
-* **Start form of a building block now opens in the panel**
-
-  Starting a building block from the 'Start' menu of a case did nothing when the start form of its
-  main process is configured to be shown in a panel. The panel now opens right away. Previously it
-  only appeared after first opening the start form of a regular process in the panel.
-
 * **Case list and task list no longer freeze the browser tab in certain browser versions**
 
   Opening a case list or the task list could freeze the browser tab completely in certain
