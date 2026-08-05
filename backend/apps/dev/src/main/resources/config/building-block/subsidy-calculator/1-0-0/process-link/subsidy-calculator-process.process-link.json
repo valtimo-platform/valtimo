@@ -12,6 +12,12 @@
         "formFlowDefinitionKey": "review-subsidy-calculation"
     },
     {
+        "activityId": "ConfirmDispatchTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "confirm-dispatch-subsidy-calculator"
+    },
+    {
         "activityId": "PatchZaakCalculationStartTask",
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",

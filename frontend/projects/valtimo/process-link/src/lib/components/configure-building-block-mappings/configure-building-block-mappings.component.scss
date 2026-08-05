@@ -34,11 +34,11 @@
   }
 
   &.output {
-    grid-template-columns: 5fr 6fr 58px;
+    grid-template-columns: 5fr 6fr 3fr;
   }
 }
 
-.mapping-header .output .sync-options {
+.mapping-header.output .sync-options {
   padding-left: 10px;
   display: flex;
 }
