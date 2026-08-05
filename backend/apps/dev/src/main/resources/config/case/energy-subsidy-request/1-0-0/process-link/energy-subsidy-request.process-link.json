@@ -82,6 +82,11 @@
                 "source": "/approvalDecision",
                 "target": "doc:/approvalDecision",
                 "syncTiming": "CONTINUOUS"
+            },
+            {
+                "source": "/bubbleNote",
+                "target": "doc:/bubbleNote",
+                "syncTiming": "CONTINUOUS"
             }
         ]
     }
