@@ -28,17 +28,19 @@
       [title]="'processManagement.upload.title' | translate"
       buttonType="primary"
       formControlName="file"
+      [attr.data-test-id]="testIds.fileUploader"
     >
     </cds-file-uploader>
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="closeModal()">
+    <button cdsButton="secondary" [attr.data-test-id]="testIds.cancelButton" (click)="closeModal()">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
       cdsButton="primary"
+      [attr.data-test-id]="testIds.submitButton"
       [disabled]="(fileSelected$ | async) === false"
       (click)="uploadProcessBpmn()"
     >

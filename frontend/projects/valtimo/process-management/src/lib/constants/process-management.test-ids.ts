@@ -19,9 +19,22 @@ export const PROCESS_MANAGEMENT_LIST_TEST_IDS = {
   createProcessButton: 'processManagementCreateProcessButton',
 } as const;
 
+export const PROCESS_MANAGEMENT_UPLOAD_TEST_IDS = {
+  fileUploader: 'processManagementUploadFileUploader',
+  cancelButton: 'processManagementUploadCancelButton',
+  submitButton: 'processManagementUploadSubmitButton',
+} as const;
+
 export const PROCESS_MANAGEMENT_BUILDER_TEST_IDS = {
   draftToggle: 'processManagementBuilderDraftToggle',
   startsCaseToggle: 'processManagementBuilderStartsCaseToggle',
   startableByUserToggle: 'processManagementBuilderStartableByUserToggle',
   deployButton: 'processManagementBuilderDeployButton',
+  versionDropdown: 'processManagementBuilderVersionDropdown',
+  validateButton: 'processManagementBuilderValidateButton',
+  moreButton: 'processManagementBuilderMoreButton',
+  exportButton: 'processManagementBuilderExportButton',
+  readOnlyTag: 'processManagementBuilderReadOnlyTag',
+  systemProcessTag: 'processManagementBuilderSystemProcessTag',
+  validationErrors: 'processManagementBuilderValidationErrors',
 } as const;

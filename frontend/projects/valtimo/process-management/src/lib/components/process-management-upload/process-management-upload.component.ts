@@ -33,6 +33,7 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, from, map, startWith, switchMap} from 'rxjs';
+import {PROCESS_MANAGEMENT_UPLOAD_TEST_IDS} from '../../constants';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
 
 @Component({
@@ -62,6 +63,8 @@ export class ProcessManagementUploadComponent {
   private _conflictingProcessDefinitionId: string | null = null;
 
   public readonly ACCEPTED_FILES: string[] = ['bpmn'];
+
+  public readonly testIds = PROCESS_MANAGEMENT_UPLOAD_TEST_IDS;
 
   public readonly form = this.formBuilder.group({
     file: this.formBuilder.control(new Set<any>(), [Validators.required]),

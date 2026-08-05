@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 24        | 17         | 7              |
-| Admin Features (ROLE_ADMIN) | 15       | 345       | 278        | 67             |
-| **Total**                   | **20**   | **369**   | **295**    | **74**         |
+| Admin Features (ROLE_ADMIN) | 15       | 349       | 287        | 62             |
+| **Total**                   | **20**   | **373**   | **304**    | **69**         |
 
-**Coverage:** `295 / 369` — `79.9%`
+**Coverage:** `304 / 373` — `81.5%`
 
 ---
 
@@ -302,13 +302,19 @@
 
 ### Feature 7 — Process Management
 
-| #   | Function                | Test Scenarios                | Coverage | Notes                                           |
-|:----|:------------------------|:------------------------------|:--------:|:------------------------------------------------|
-| 7.1 | View process overview   | Display process overview list |    ❌    |                                                 |
-| 7.2 | Create new process      | Create new BPMN process       |    ❌    |                                                 |
-| 7.3 | Edit BPMN process       | Edit existing BPMN process    |    ❌    |                                                 |
-| 7.4 | Deploy process          | Deploy process definition     |    ❌    |                                                 |
-| 7.5 | Manage process versions | Manage process versions       |    ❌    |                                                 |
+Covers the standalone `/processes` admin page (the *independent* process context — process definitions not linked to a case). The case-scoped equivalent is Feature 6B.
+
+| #    | Function                     | Test Scenarios                                                                     | Coverage | Notes                                                                        |
+|:-----|:-----------------------------|:-----------------------------------------------------------------------------------|:--------:|:-----------------------------------------------------------------------------|
+| 7.1  | View process overview        | Display process overview list · Name/Key/Status columns · List matches the API     |    ✅    | process-management.spec.ts                                                   |
+| 7.2  | Create new process           | Create new BPMN process from the empty diagram and deploy it                       |    ✅    | process-management.spec.ts                                                   |
+| 7.3  | Edit BPMN process            | Edit existing BPMN process in the modeler (append element)                         |    ✅    | process-management.spec.ts                                                   |
+| 7.4  | Deploy process               | Deploy via BPMN upload · Save an edit as a new version · Deploy a new definition   |    ✅    | process-management.spec.ts                                                   |
+| 7.5  | Manage process versions      | View all versions · Switch version · Disabled while only one version exists        |    ✅    | process-management.spec.ts                                                   |
+| 7.6  | Delete process               | Delete process definition after confirming                                         |    ✅    | process-management.spec.ts                                                   |
+| 7.6a | Reject upload without file   | Upload stays disabled until a BPMN file is selected                                |    ✅    | process-management.spec.ts (failure scenario)                                |
+| 7.6b | Handle duplicate process key | Re-upload of the same key returns 409 and offers replace · cancel deploys nothing  |    ✅    | process-management.spec.ts (failure scenario)                                |
+| 7.6c | Block invalid process deploy | Non-draft deploy is validated first; errors are highlighted and nothing deploys    |    ✅    | process-management.spec.ts (failure scenario)                                |
 
 ---
 
@@ -739,9 +745,9 @@
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   369   |
-| ✅ Covered by Playwright |   295   |
-| ❌ Not covered           |   74    |
+| Total Functions          |   373   |
+| ✅ Covered by Playwright |   304   |
+| ❌ Not covered           |   69    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    3    |
-| **Coverage %**           | **79.9%** |
+| **Coverage %**           | **81.5%** |
