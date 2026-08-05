@@ -106,6 +106,8 @@ export class WidgetManagementEditorComponent implements OnDestroy {
               key: 'title',
               label: 'interface.title',
               viewType: ViewType.TEXT,
+              // a divider widget can be configured without a title, which should stay empty in the list
+              emptyPlaceholder: '',
             },
           ]
         : []),

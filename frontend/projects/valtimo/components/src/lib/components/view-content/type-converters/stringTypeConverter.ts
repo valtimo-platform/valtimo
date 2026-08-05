@@ -25,8 +25,8 @@ export class StringTypeConverter implements TypeConverter {
     return false;
   }
 
-  public convert(value: any): string {
-    if (!value) return '-';
+  public convert(value: any, definition?: any): string {
+    if (!value) return definition?.emptyPlaceholder ?? '-';
 
     if (Array.isArray(value) && typeof value[0] === 'string')
       return value.reduce(
