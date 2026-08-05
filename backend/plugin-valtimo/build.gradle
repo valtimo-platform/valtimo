@@ -37,6 +37,7 @@ dependencies {
     api project(":backend:plugin")
     implementation project(":backend:contract")
     implementation project(":backend:core")
+    implementation project(":backend:exporter")
     implementation project(":backend:logging")
     implementation project(":backend:process-document")
 

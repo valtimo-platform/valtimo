@@ -28,6 +28,7 @@ import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
+import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case.web.rest.dto.HiddenCaseListColumnDto
@@ -659,6 +660,46 @@ class CaseDefinitionServiceTest : BaseTest() {
         verify(caseDefinitionRepository).save(captor.capture())
         assertEquals(id1, captor.firstValue.id)
         assertTrue(captor.firstValue.active)
+    }
+
+    @Test
+    fun `should create case definition draft with the name from the request`() {
+        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"), name = "Layout Test")
+        val request = CaseDefinitionDraftCreateRequest(
+            caseDefinitionKey = "key",
+            caseDefinitionVersion = "2.0.0",
+            name = "Layout Test - EDIT",
+            basedOnCaseDefinitionVersion = "1.0.0"
+        )
+
+        whenever(caseDefinitionRepository.findById(basedOnCaseDefinition.id))
+            .thenReturn(Optional.of(basedOnCaseDefinition))
+        whenever(caseDefinitionRepository.save(any())).thenAnswer { it.arguments[0] as CaseDefinition }
+
+        val draft = service.createCaseDefinitionDraft(request)
+
+        assertEquals("Layout Test - EDIT", draft.name)
+        assertEquals(basedOnCaseDefinition.description, draft.description)
+        assertFalse(draft.final)
+    }
+
+    @Test
+    fun `should create case definition draft with the name of the based on version when no name is requested`() {
+        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"), name = "Layout Test")
+        val request = CaseDefinitionDraftCreateRequest(
+            caseDefinitionKey = "key",
+            caseDefinitionVersion = "2.0.0",
+            name = null,
+            basedOnCaseDefinitionVersion = "1.0.0"
+        )
+
+        whenever(caseDefinitionRepository.findById(basedOnCaseDefinition.id))
+            .thenReturn(Optional.of(basedOnCaseDefinition))
+        whenever(caseDefinitionRepository.save(any())).thenAnswer { it.arguments[0] as CaseDefinition }
+
+        val draft = service.createCaseDefinitionDraft(request)
+
+        assertEquals("Layout Test", draft.name)
     }
 
     private fun getListColumnDtoLastName(displayType: DisplayType): CaseListColumnDto {

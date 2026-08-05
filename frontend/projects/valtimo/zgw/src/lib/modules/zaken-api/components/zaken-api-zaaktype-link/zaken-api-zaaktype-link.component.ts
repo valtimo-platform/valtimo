@@ -19,7 +19,7 @@ import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16, TrashCan16, WarningFilled16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {RenderInBodyComponent, SpinnerModule} from '@valtimo/components';
+import {RenderInBodyComponent, SpinnerModule, ValtimoCdsModalDirective} from '@valtimo/components';
 import {PluginConfiguration} from '@valtimo/plugin';
 import {
   CreateZaakTypeLinkRequest,
@@ -71,6 +71,7 @@ import {ZGW_CASE_TYPE_LINK_TEST_IDS} from '../../../../constants';
     InputModule,
     ToggleModule,
     RenderInBodyComponent,
+    ValtimoCdsModalDirective,
   ],
 })
 export class ZakenApiZaaktypeLinkComponent implements OnInit {

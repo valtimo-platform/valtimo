@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,7 +174,8 @@ class CaseInstanceService(
 
     private fun mutatePageable(caseListColumns: Collection<CaseListColumn>, pageable: Pageable): PageRequest {
         val newSortOrders = pageable.sort.map { sortOrder ->
-            val caseListColumn = caseListColumns.find { caseListColumn -> caseListColumn.id.key == sortOrder.property }
+            val sortKey = sortOrder.property.removePrefix("$.")
+            val caseListColumn = caseListColumns.find { caseListColumn -> caseListColumn.id.key == sortKey }
             val sortingProperty = caseListColumn?.path ?: sortOrder.property
             Sort.Order(sortOrder.direction, sortingProperty, sortOrder.nullHandling)
         }
@@ -208,5 +209,4 @@ class CaseInstanceService(
 
         override fun invoke() = value
     }
-
 }

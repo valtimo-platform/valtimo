@@ -17,6 +17,9 @@
 package com.ritense.valtimo.processlink.mapper
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.exporter.manifest.ArtifactDependency
+import com.ritense.exporter.manifest.DependencyType
+import com.ritense.exporter.manifest.ResolvableValue
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.domain.PluginConfigurationId
@@ -24,6 +27,7 @@ import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginConfigurationRepository
+import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
@@ -49,6 +53,7 @@ class PluginProcessLinkMapper(
     objectMapper: ObjectMapper,
     private val pluginConfigurationRepository: PluginConfigurationRepository,
     private val pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
+    private val pluginDefinitionRepository: PluginDefinitionRepository,
 ) : ProcessLinkMapper {
 
     init {
@@ -127,6 +132,31 @@ class PluginProcessLinkMapper(
                 actionProperties = processLink.actionProperties,
                 referenceType = processLink.pluginConfigurationReference.type,
                 pluginDefinitionKey = definitionKey,
+            )
+        }
+    }
+
+    override fun toManifestDependencies(processLink: ProcessLink): Set<ArtifactDependency> {
+        return withLoggingContext(ProcessLink::class, processLink.id) {
+            processLink as PluginProcessLink
+            val definitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey
+                ?: processLink.pluginConfigurationId?.let { configId ->
+                    pluginConfigurationRepository.findById(configId)
+                        .map { it.pluginDefinition.key }
+                        .orElse(null)
+                }
+                ?: return@withLoggingContext setOf()
+
+            val title = pluginDefinitionRepository.findById(definitionKey)
+                .map { it.title }
+                .orElse(definitionKey)
+
+            setOf(
+                ArtifactDependency(
+                    type = DependencyType.PLUGIN,
+                    key = ResolvableValue.of(definitionKey),
+                    title = ResolvableValue.of(title),
+                )
             )
         }
     }

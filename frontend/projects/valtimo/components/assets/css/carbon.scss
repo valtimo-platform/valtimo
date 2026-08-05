@@ -111,15 +111,93 @@ $darkThemeOverwriteVariables: (
 @use '@carbon/grid';
 @include grid.flex-grid();
 
+/* Extended tag colours, beyond the ten colours Carbon ships for tags. They follow Carbon's own tag
+   recipe: in a light theme a tag uses the `20` step of a colour family as background and the `70`
+   step as text; in a dark theme the two are swapped. Carbon leaves orange and yellow out of the tag
+   component even though both are part of its colour palette, and it has no periwinkle or brown
+   family at all — those two therefore reuse the case-widget palette, which is built on the same
+   principle.
+
+   Each entry is emitted as a pair of `--vcds-tag-*` custom properties per theme, the way Carbon
+   emits its own `--cds-tag-*` tokens, so the classname stays theme-agnostic. */
+$extendedTagColors: (
+  'orange': (
+    light: (
+      background: colors.$orange-20,
+      text: colors.$orange-70,
+    ),
+    dark: (
+      background: colors.$orange-70,
+      text: colors.$orange-20,
+    ),
+  ),
+  'yellow': (
+    light: (
+      background: colors.$yellow-20,
+      text: colors.$yellow-70,
+    ),
+    dark: (
+      background: colors.$yellow-70,
+      text: colors.$yellow-20,
+    ),
+  ),
+  // A paler tint of the same family as `green`, so that the two stay recognisably related while
+  // remaining distinguishable side by side.
+  'light-green':
+    (
+      light: (
+        background: colors.$green-10,
+        text: colors.$green-70,
+      ),
+      dark: (
+        background: colors.$green-80,
+        text: colors.$green-30,
+      ),
+    ),
+  // Periwinkle and brown have no Carbon colour family; these are the case-widget tones.
+  'periwinkle':
+    (
+      light: (
+        background: #d5d3f0,
+        text: #1a146a,
+      ),
+      dark: (
+        background: #1a146a,
+        text: #d5d3f0,
+      ),
+    ),
+  'brown': (
+    light: (
+      background: #ece4d7,
+      text: #6e5326,
+    ),
+    dark: (
+      background: #6e5326,
+      text: #ece4d7,
+    ),
+  ),
+);
+
+@mixin extended-tag-tokens($variant) {
+  @each $tagName, $variants in $extendedTagColors {
+    $tokens: map.get($variants, $variant);
+
+    --vcds-tag-background-#{$tagName}: #{map.get($tokens, background)};
+    --vcds-tag-color-#{$tagName}: #{map.get($tokens, text)};
+  }
+}
+
 @each $name, $variable in $lightThemeVariables {
   [data-carbon-theme='#{$name}'] {
     @include theme.theme($variable, $lightThemeOverwriteVariables);
+    @include extended-tag-tokens(light);
   }
 }
 
 @each $name, $variable in $darkThemeVariables {
   [data-carbon-theme='#{$name}'] {
     @include theme.theme($variable, $darkThemeOverwriteVariables);
+    @include extended-tag-tokens(dark);
   }
 }
 
@@ -140,33 +218,12 @@ $darkThemeOverwriteVariables: (
   --vcds-color-10: #e9f6fd;
 }
 
-/* Extended tag colours, beyond Carbon's built-in tag types, matching the case-widget colour
-   palette. Registered globally so `<cds-tag [type]="'orange'">` (and periwinkle, yellow, light-green,
-   brown) can be used anywhere by classname. The light-background / dark-text pairing follows
-   Carbon's own tag styling. */
-.cds--tag--orange {
-  background-color: colors.$orange-20;
-  color: colors.$orange-70;
-}
-
-.cds--tag--yellow {
-  background-color: colors.$yellow-20;
-  color: colors.$yellow-70;
-}
-
-.cds--tag--light-green {
-  background-color: colors.$green-20;
-  color: colors.$green-70;
-}
-
-.cds--tag--periwinkle {
-  background-color: colors.$purple-20;
-  color: colors.$purple-70;
-}
-
-/* Brown has no Carbon colour family; use the case-widget "brown" colour so the extended palette has
-   a warm, gray-free option. */
-.cds--tag--brown {
-  background-color: #ece4d7;
-  color: #6e5326;
+/* Registered globally so `<cds-tag [type]="'orange'">` (and yellow, light-green, periwinkle, brown)
+   can be used anywhere by classname. The colours themselves are defined per theme further up, as
+   `--vcds-tag-*` custom properties. */
+@each $tagName, $variants in $extendedTagColors {
+  .cds--tag--#{$tagName} {
+    background-color: var(--vcds-tag-background-#{$tagName});
+    color: var(--vcds-tag-color-#{$tagName});
+  }
 }
