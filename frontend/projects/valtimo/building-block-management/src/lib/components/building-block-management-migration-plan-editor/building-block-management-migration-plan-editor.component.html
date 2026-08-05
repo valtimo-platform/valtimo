@@ -90,7 +90,7 @@
         cdsButton="primary"
         [size]="obs.compactMode ? 'sm' : 'md'"
         [attr.data-test-id]="testIds.saveButton"
-        [disabled]="!$valid() || $saving()"
+        [disabled]="!$canSave()"
         (click)="onSave()"
       >
         {{ 'interface.save' | translate }}

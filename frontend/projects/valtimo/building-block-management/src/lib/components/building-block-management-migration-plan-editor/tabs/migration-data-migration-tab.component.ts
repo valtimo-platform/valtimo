@@ -148,13 +148,16 @@ export class BbMigrationDataMigrationTabComponent implements OnInit, OnDestroy {
     return group;
   }
 
-  /** Derive the edit mode from a stored patch: a source copy, an explicit null, or a literal value. */
+  /**
+   * Derive the edit mode from a stored patch: a source copy, a literal value, or null. A patch with
+   * no source and no value (e.g. a target-only suggestion `{target: 'doc:/x'}`) clears the target, so
+   * it is 'null' — only a brand-new, empty patch defaults to 'path'.
+   */
   private modeOf(patch?: DataMigrationPatch): PatchMode {
     if (!patch) return 'path';
     if (patch.source) return 'path';
-    if (patch.value === null) return 'null';
-    if (patch.value !== undefined) return 'value';
-    return 'path';
+    if (patch.value !== undefined && patch.value !== null) return 'value';
+    return 'null';
   }
 
   private emit(): void {
