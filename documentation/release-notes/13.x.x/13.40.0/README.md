@@ -6,59 +6,75 @@
 
 ## New Features
 
-* **Exporting and importing a process with its process links**
+* **Skip a waiting timer from the case Progress tab**
 
-  A process that is not part of a case can now be exported together with its process links, and
-  imported on another environment. Use *Export with process links* in the menu of the process to
-  download a package, and upload that package on the target environment. Changes that were built and
-  tested on one environment therefore no longer have to be reconnected by hand elsewhere.
+  When a process is waiting on a timer, users can now skip that timer directly from the **Progress** tab of a case. A
+  skip button appears on the waiting timer in the process diagram; after confirming, the process continues immediately
+  as if the timer had elapsed. The option is only available to users who have the `complete` permission on the timer
+  (`OperatonTimer`) through Access Control (PBAC), and every skip is recorded in the case's audit trail.
+  
+* **New widget type: Text**
 
-  During the import you can point every plugin link in the package at the plugin configuration of
-  the target environment, so links keep working on an environment that uses different
-  configurations. When the process already exists on the environment, the import asks for
-  confirmation before replacing it, just like uploading a single BPMN file does.
-
-  Uploading a single BPMN file keeps working as before.
+  A new **Text** widget is available on case widget tabs. It shows a fixed explanatory text — for example a
+  work instruction, or a short introduction to the widgets around it — instead of data from the case. The
+  content is authored in markdown (headings, lists, bold/italic, links, code, quotes and tables) and is part of
+  the widget configuration, so it is the same for every case of that case definition. A title, an icon, an
+  accent color, a width and an optional action button can be configured like on the other widgets. Links in the
+  content open in a new tab, and the rendered content is sanitized so unsafe HTML and link schemes are removed.
+  See the [widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the configuration
+  details.
 
 ## Enhancements
 
-* **An exported process describes itself**
+* **Zaaktype dropdown now shows the begin and end date**
 
-  The package of an exported process now contains a manifest, just like an exported case definition or
-  building block already did. It names the process, its version, and the plugins its process links
-  need, so it is clear what a package contains and what the receiving environment has to offer before
-  it is imported.
+  The 'Gekoppeld zaak type' dropdown in the case type link configuration now shows the start and end
+  date of each zaaktype between parentheses, next to its description. This makes it possible to tell
+  apart different versions of zaaktypes that share the same description, preventing configuration
+  mistakes.
 
-* **An import summary shows what is still missing**
+* **Option to keep the form.io token out of localStorage**
 
-  After importing, a summary shows which items the process refers to that are not present on this
-  environment: forms, form flow definitions, decision tables and called sub-processes. Those items
-  are deliberately not part of the package, because they can be shared with other processes, and are
-  imported separately. Only references that could be determined are shown.
-
-  When the process refers to a form that does not exist on this environment, the import is refused
-  beforehand and the missing form is named, so no half-imported process is left behind.
-
-* **A process that is managed by configuration cannot be overwritten by an import**
-
-  Importing a package for a process that exists on this environment as a system process that may not
-  be changed is refused, with an explanation. Such a process can still be exported.
-
-* **Process links from the application configuration are leading**
-
-  Process links that are supplied with the application configuration are now leading: a link that is
-  not in that configuration is removed when the application starts. This keeps environments that are
-  managed through configuration identical to that configuration.
+  A new `disableFormioTokenInLocalStorage` feature toggle keeps the form.io token in memory only
+  instead of persisting it to localStorage. It is disabled by default.
 
 ## Bugfixes
 
-* **The exported file is named after the process**
+* **Case definition name entered when creating a draft version is now saved**
 
-  Exporting a process definition from the process editor produced a file named `diagram.bpmn`. The
-  file is now named after the process, so it is clear which process was exported.
+  The *Case definition name* filled in when creating a draft version based on an existing version is now saved on
+  the new draft. Previously it was discarded and the draft kept the name of the version it was based on.
 
-* **Selecting a file to upload a process definition filters on the supported file types again**
+* **Case management screens now show the name of the selected version**
 
-  The file dialog offered every file type instead of only the supported ones, and dragging a file
-  onto the upload area did nothing. Both work again, for BPMN files as well as exported process
-  packages.
+  The page title and breadcrumb now show the case definition name of the version you have selected. Previously the
+  title used the title from the document definition and the breadcrumb the name of the globally active version, so a
+  changed name was not visible. The breadcrumb also no longer stays behind after leaving version management.
+
+* **Case menu and version indicator now update when a version is made globally active**
+
+  Making a version globally active now updates the case menu and the *set as globally active* action immediately.
+  Previously the menu kept showing the previously active version and its name until the page was reloaded.
+
+* **Expanded menu groups stay open when the menu refreshes**
+
+  An expanded menu group such as *Cases* now stays open when the menu refreshes its contents, for example after
+  uploading a case definition. Previously the group collapsed.
+  
+* **Case list and task list no longer freeze the browser tab in certain browser versions**
+
+  Opening a case list or the task list could freeze the browser tab completely in certain
+  Chromium-based browser versions (reported on Microsoft Edge 148, reproduced on Chromium 141;
+  the latest Chrome 151 and Edge 150 releases are not affected, nor are Firefox and Safari).
+
+* **List action menus no longer detach from their trigger in scrolled lists**
+
+  The row action menu (⋮) of lists now always opens directly below its trigger, also when the list has many columns
+  and a horizontal scroll bar. The menu pane is rendered at document level so surrounding layout (scroll containers,
+  modals) can no longer displace or clip it, and when the trigger is scrolled out of view while the menu is open, the
+  menu is hidden instead of floating detached over unrelated content.
+  
+* **Importing a case definition with building-block process links no longer fails**
+
+  Importing (or overwriting) a case definition that contains a building-block process link could fail on
+  certain databases. This issue has now been resolved.

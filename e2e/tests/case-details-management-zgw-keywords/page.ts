@@ -82,6 +82,10 @@ export class CaseDetailsManagementZgwKeywordsPage {
 
   async openKeywordsTab() {
     await this.zgwTab.click();
+    // The ZGW sub-tabs render only once the ZGW section has loaded, which can lag on a
+    // slower environment. Wait for the sub-tab explicitly so the click cannot block until
+    // the hook times out.
+    await expect(this.keywordsTab).toBeVisible({timeout: 20_000});
     await this.keywordsTab.click();
     await this.list.waitForLoaded();
   }

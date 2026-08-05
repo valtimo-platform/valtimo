@@ -98,6 +98,15 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     this._menuCollapsedByDefaultSubscription?.unsubscribe();
   }
 
+  /**
+   * Keeps menu item views stable across menu reloads, so that the expanded state of
+   * `cds-sidenav-menu` (which is internal to the Carbon component) survives a reload.
+   * Keyed on the link, since titles are not guaranteed to be unique.
+   */
+  public trackByMenuItem(_index: number, menuItem: MenuItem): string {
+    return Array.isArray(menuItem.link) ? menuItem.link.join('/') : menuItem.title;
+  }
+
   public navigateToRoute(route: Array<string>, event: MouseEvent): void {
     event.preventDefault();
     this.overflowMenuSequence$.next('');
