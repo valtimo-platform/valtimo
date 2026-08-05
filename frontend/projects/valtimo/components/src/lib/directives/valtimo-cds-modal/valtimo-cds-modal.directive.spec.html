@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal valtimoCdsModal>
+  <div class="cds--modal is-visible">
+    <button class="cds--modal-close outer-close" type="button"></button>
+    @if (showExpandedDropdown) {
+    <cds-combo-box>
+      <div class="cds--list-box cds--list-box--expanded">
+        <input class="combo-input" aria-expanded="true" />
+      </div>
+    </cds-combo-box>
+    } @if (showNested) {
+    <cds-modal>
+      <div class="cds--modal is-visible">
+        <button class="cds--modal-close nested-close" type="button"></button>
+      </div>
+    </cds-modal>
+    }
+  </div>
+</cds-modal>
+
+<!-- Separate host for the min-height behaviour: it needs a `.cds--modal-content` to write to, but
+     not a `cds-modal` element (the ESC handling above is what depends on the real tag). -->
+<div class="min-height-host" valtimoCdsModal [minContentHeight]="600">
+  <div class="cds--modal-content"></div>
+</div>

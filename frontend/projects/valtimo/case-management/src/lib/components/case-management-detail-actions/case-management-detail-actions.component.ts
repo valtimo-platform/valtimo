@@ -28,7 +28,7 @@ import {
 import {ActivatedRoute, Router} from '@angular/router';
 import {Deploy16, Version16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {PageHeaderService} from '@valtimo/components';
+import {MenuService, PageHeaderService} from '@valtimo/components';
 import {
   ConfigurationIssueService,
   getCaseManagementRouteParams,
@@ -75,6 +75,7 @@ export class CaseManagementDetailActionsComponent {
   public readonly exporting$ = new BehaviorSubject<boolean>(false);
   public readonly selectedVersionNumber$ = this.caseDetailService.selectedCaseDefinitionVersionTag$;
   public readonly selectedVersion$ = new BehaviorSubject<string>('');
+  private readonly _refreshGlobalActiveCase$ = new BehaviorSubject<null>(null);
 
   public readonly params$ = getCaseManagementRouteParams(this.route).pipe(
     tap(({caseDefinitionVersionTag}) => this.selectedVersion$.next(caseDefinitionVersionTag))
@@ -86,8 +87,11 @@ export class CaseManagementDetailActionsComponent {
     map(params => params.caseDefinitionVersionTag || '')
   );
 
-  public readonly globalActiveVersion$: Observable<string | null> = this.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
+  public readonly globalActiveVersion$: Observable<string | null> = combineLatest([
+    this.caseDefinitionKey$,
+    this._refreshGlobalActiveCase$,
+  ]).pipe(
+    switchMap(([caseDefinitionKey]) =>
       this.caseManagementService.getGlobalActiveCase(caseDefinitionKey).pipe(
         map(result => result.caseDefinitionVersionTag),
         catchError(() => of(null))
@@ -113,8 +117,11 @@ export class CaseManagementDetailActionsComponent {
   public readonly showGlobalVersionModal$ = new BehaviorSubject<boolean>(false);
   public readonly showGlobalVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
-  public readonly _globalActiveCase$: Observable<any | null> = this.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
+  public readonly _globalActiveCase$: Observable<any | null> = combineLatest([
+    this.caseDefinitionKey$,
+    this._refreshGlobalActiveCase$,
+  ]).pipe(
+    switchMap(([caseDefinitionKey]) =>
       this.caseManagementService
         .getGlobalActiveCase(caseDefinitionKey)
         .pipe(catchError(() => of(null)))
@@ -207,6 +214,7 @@ export class CaseManagementDetailActionsComponent {
     private readonly caseDetailService: CaseDetailService,
     private readonly notificationService: GlobalNotificationService,
     private readonly iconService: IconService,
+    private readonly menuService: MenuService,
     private readonly pageHeaderService: PageHeaderService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -322,6 +330,8 @@ export class CaseManagementDetailActionsComponent {
       .subscribe({
         next: response => {
           this.closeCurrentNotification();
+          this._refreshGlobalActiveCase$.next(null);
+          this.menuService.reload();
           this._currentNotification = this.notificationService.showNotification({
             type: 'success',
             title: this.translateService.instant(

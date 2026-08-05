@@ -74,7 +74,7 @@ jobs:
               echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             evenementenvergunning)
-              echo "image_name=gzac-evenementenvergunning-frontend" >> "$GITHUB_OUTPUT"
+              echo "image_name=gzac-evenementenvergunning-demo-frontend" >> "$GITHUB_OUTPUT"
               echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             *)
