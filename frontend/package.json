@@ -274,6 +274,7 @@
     "keycloak-angular": "19.0.2",
     "keycloak-js": "26.1.5",
     "lodash": "4.18.1",
+    "marked": "15.0.7",
     "moment": "2.30.1",
     "monaco-editor": "0.50.0",
     "muuri": "0.9.5",

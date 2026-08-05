@@ -6,9 +6,23 @@
 
 ## New Features
 
-* **New feature title**
+* **Skip a waiting timer from the case Progress tab**
 
-  New feature explanation.
+  When a process is waiting on a timer, users can now skip that timer directly from the **Progress** tab of a case. A
+  skip button appears on the waiting timer in the process diagram; after confirming, the process continues immediately
+  as if the timer had elapsed. The option is only available to users who have the `complete` permission on the timer
+  (`OperatonTimer`) through Access Control (PBAC), and every skip is recorded in the case's audit trail.
+  
+* **New widget type: Text**
+
+  A new **Text** widget is available on case widget tabs. It shows a fixed explanatory text — for example a
+  work instruction, or a short introduction to the widgets around it — instead of data from the case. The
+  content is authored in markdown (headings, lists, bold/italic, links, code, quotes and tables) and is part of
+  the widget configuration, so it is the same for every case of that case definition. A title, an icon, an
+  accent color, a width and an optional action button can be configured like on the other widgets. Links in the
+  content open in a new tab, and the rendered content is sanitized so unsafe HTML and link schemes are removed.
+  See the [widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the configuration
+  details.
 
 ## Enhancements
 
@@ -65,3 +79,8 @@
   and a horizontal scroll bar. The menu pane is rendered at document level so surrounding layout (scroll containers,
   modals) can no longer displace or clip it, and when the trigger is scrolled out of view while the menu is open, the
   menu is hidden instead of floating detached over unrelated content.
+  
+* **Importing a case definition with building-block process links no longer fails**
+
+  Importing (or overwriting) a case definition that contains a building-block process link could fail on
+  certain databases. This issue has now been resolved.
