@@ -75,8 +75,6 @@ interface MigrationPlanManagement {
   source: string;
   target: string;
   triggers: MigrationTriggers;
-  conditions: MigrationCondition[];
-  components: string[];
   status: MigrationExecutionStatus;
   dryRun: DryRunStatus;
 }
