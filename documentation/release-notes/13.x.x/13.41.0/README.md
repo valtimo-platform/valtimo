@@ -27,9 +27,9 @@
 
 * **A divider widget can be duplicated again**
 
-  Duplicating a divider was impossible because it opened the duplication modal with an empty (invalid) key
-  and no way to edit this key. This resulted in a disabled *Duplicate* button. The divider key is now always
-  filled with a default unique value, and it is possible to edit the key before duplicating it.
+  Fixed an issue where duplicating a divider opened the duplication dialog with an empty, invalid key that 
+  could not be edited, leaving the Duplicate button disabled. The dialog now pre-populates the divider key 
+  with a unique default value and allows it to be edited before duplicating.
   
 * **Start form of a building block now opens in the panel**
 
