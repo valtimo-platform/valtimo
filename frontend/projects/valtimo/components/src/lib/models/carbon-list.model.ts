@@ -75,7 +75,7 @@ interface ColumnConfig extends ListField {
   currencyCode?: string;
   digitsInfo?: string;
   display?: string;
-  // value rendered when the resolved value is empty, defaults to '-'
+  // value rendered when the resolved value is empty, defaults to '-' when omitted
   emptyPlaceholder?: string;
   enum?: Array<string> | {[key: string]: string};
   format?: string;
