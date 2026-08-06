@@ -251,9 +251,7 @@ export class WidgetManagementEditorComponent implements OnDestroy {
 
   public editWidget(widget: Widget): void {
     if (widget.type === WidgetType.DIVIDER) {
-      this.dividerDefinition$.next(widget);
-      this.$dividerModalMode.set('edit');
-      this.$isDividerModalOpen.set(true);
+      this.openDividerModal(widget, 'edit');
       return;
     }
     this.widgetWizardService.$widgetTitle.set(widget.title);
@@ -291,9 +289,21 @@ export class WidgetManagementEditorComponent implements OnDestroy {
   }
 
   public duplicateWidget(tabWidget: Widget): void {
+    if (tabWidget.type === WidgetType.DIVIDER) {
+      // the key is kept, so the modal can generate a new one from it when there is no title
+      this.openDividerModal(cloneDeep(tabWidget), 'duplicate');
+      return;
+    }
+
     const tabWidgetClone = cloneDeep(tabWidget);
     tabWidgetClone.key = '';
     this.editWidget(tabWidgetClone);
+  }
+
+  private openDividerModal(widget: Widget, mode: ModalMode): void {
+    this.dividerDefinition$.next(widget);
+    this.$dividerModalMode.set(mode);
+    this.$isDividerModalOpen.set(true);
   }
 
   public openAddModal(): void {
