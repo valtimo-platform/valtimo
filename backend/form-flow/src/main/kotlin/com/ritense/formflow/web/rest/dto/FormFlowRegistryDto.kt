@@ -19,6 +19,18 @@ package com.ritense.formflow.web.rest.dto
 data class FormFlowRegistryDto(
     val stepTypes: List<FormFlowStepTypeDto>,
     val expressionBeans: List<FormFlowExpressionBeanDto>,
+    val additionalProperties: List<FormFlowAdditionalPropertyDto>,
+)
+
+/**
+ * Describes one entry of the `additionalProperties` map that form flow expressions can access.
+ * [context] tells how the form flow must be linked for the property to exist (`userTask` or
+ * `startEvent`) and [alwaysPresent] whether it is guaranteed within that context.
+ */
+data class FormFlowAdditionalPropertyDto(
+    val name: String,
+    val context: String,
+    val alwaysPresent: Boolean,
 )
 
 data class FormFlowStepTypeDto(

@@ -14,5 +14,24 @@
  * limitations under the License.
  */
 
-export * from './form-flow-editor.test-ids';
-export * from './injection-tokens';
+import {EventEmitter, Type} from '@angular/core';
+import {FormioSubmission} from '@valtimo/components';
+
+interface ChangeEvent {
+  data: object;
+}
+
+interface FormFlowCustomComponent {
+  formFlowInstanceId: string;
+  componentId?: string;
+  disabled: boolean;
+  changeEvent: EventEmitter<ChangeEvent>;
+  submitEvent: EventEmitter<FormioSubmission>;
+}
+
+interface FormFlowCustomComponentDefinition {
+  id: string;
+  component: Type<FormFlowCustomComponent>;
+}
+
+export {ChangeEvent, FormFlowCustomComponent, FormFlowCustomComponentDefinition};

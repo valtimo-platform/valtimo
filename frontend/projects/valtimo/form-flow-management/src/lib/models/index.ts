@@ -15,4 +15,5 @@
  */
 
 export * from './form-flow.model';
+export * from './form-flow-custom-component.model';
 export * from './form-flow-editor.model';

@@ -14,58 +14,77 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="registry$ | async as registry; else loading">
-  @if ($definition(); as definition) {
-    <div class="form-flow-ui-editor">
-      <div class="form-flow-ui-editor__header">
-        <h4>{{ 'formFlow.uiEditor.stepsTitle' | translate }}</h4>
-
-        <cds-tag type="green" size="sm"
-          >{{ 'formFlow.uiEditor.startStep' | translate }}: {{ definition.startStep }}</cds-tag
-        >
+@if ($parseFailed()) {
+  <div class="ui-editor__notification">
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'warning',
+        title: 'formFlow.uiEditor.parseFailedTitle' | translate,
+        message: 'formFlow.uiEditor.parseFailedMessage' | translate,
+        showClose: false,
+        lowContrast: true,
+      }"
+    ></cds-inline-notification>
+  </div>
+} @else if (form && registry) {
+  <div [formGroup]="form">
+    @if ($definitionErrors().length) {
+      <div class="ui-editor__notification">
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'error',
+            title: 'formFlow.uiEditor.errors.title' | translate,
+            message: $definitionErrors().join(' '),
+            showClose: false,
+            lowContrast: true,
+          }"
+        ></cds-inline-notification>
       </div>
+    }
 
-      @if (definition.steps?.length) {
-        <cds-structured-list [attr.data-test-id]="testIds.stepList">
-          <cds-list-header>
-            <cds-list-column>{{ 'formFlow.key' | translate }}</cds-list-column>
+    <!-- fitPage sizes this container to the viewport so the sidebar and panel each scroll on
+         their own. -->
+    <div class="ui-editor" fitPage>
+      <aside class="ui-editor__sidebar">
+        <valtimo-form-flow-step-list
+          [readOnly]="readOnly"
+          [selectedIndex]="$selectedIndex()"
+          [steps]="$stepListItems()"
+          (addEvent)="onAddStep()"
+          (selectEvent)="onSelectStep($event)"
+        ></valtimo-form-flow-step-list>
+      </aside>
 
-            <cds-list-column>{{ 'formFlow.uiEditor.stepType' | translate }}</cds-list-column>
+      <div class="ui-editor__panel">
+        @if (selectedStepGroup; as stepGroup) {
+          <valtimo-form-flow-step-detail
+            [componentOptions]="$componentOptions()"
+            [duplicateKey]="isSelectedKeyDuplicate()"
+            [formOptions]="$formOptions()"
+            [isStartStep]="isSelectedStepStart()"
+            [readOnly]="readOnly"
+            [registry]="registry"
+            [stepGroup]="stepGroup"
+            [stepKeys]="$stepKeys()"
+            (deleteStepEvent)="onDeleteStep()"
+            (makeStartEvent)="onMakeStartStep()"
+          ></valtimo-form-flow-step-detail>
+        } @else {
+          <div class="ui-editor__empty">
+            <h5 class="ui-editor__empty-title">
+              {{ 'formFlow.uiEditor.noStepsTitle' | translate }}
+            </h5>
 
-            <cds-list-column>{{ 'formFlow.uiEditor.stepTypeDetail' | translate }}</cds-list-column>
-
-            <cds-list-column>{{ 'formFlow.uiEditor.transitions' | translate }}</cds-list-column>
-
-            <cds-list-column>{{ 'formFlow.uiEditor.expressions' | translate }}</cds-list-column>
-          </cds-list-header>
-
-          @for (step of definition.steps; track step.key) {
-            <cds-list-row [attr.data-test-id]="testIds.stepListItem">
-              <cds-list-column>{{ step.key }}</cds-list-column>
-
-              <cds-list-column>
-                <cds-tag [type]="isKnownStepType(step, registry) ? 'blue' : 'gray'" size="sm">{{
-                  step.type?.name
-                }}</cds-tag>
-              </cds-list-column>
-
-              <cds-list-column>{{ getStepTypeDetail(step) }}</cds-list-column>
-
-              <cds-list-column>{{ step.nextSteps?.length ?? 0 }}</cds-list-column>
-
-              <cds-list-column>{{ getExpressionCount(step) }}</cds-list-column>
-            </cds-list-row>
-          }
-        </cds-structured-list>
-      } @else {
-        <p class="form-flow-ui-editor__empty">{{ 'formFlow.uiEditor.noSteps' | translate }}</p>
-      }
+            <p class="ui-editor__empty-message">
+              {{ 'formFlow.uiEditor.noStepsDescription' | translate }}
+            </p>
+          </div>
+        }
+      </div>
     </div>
-  }
-</ng-container>
-
-<ng-template #loading>
-  <div class="form-flow-ui-editor__loading">
+  </div>
+} @else {
+  <div class="ui-editor__loading">
     <cds-loading></cds-loading>
   </div>
-</ng-template>
+}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {APIRequestContext, expect, Page} from '@playwright/test';
+import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
 import {ensureDraftVersionSelected, getVersionFromUrl} from '../../utils/version.utils';
@@ -63,7 +63,11 @@ export class CaseDetailsManagementFormFlowsPage {
 
   // Create modal: only a key field, no data-test-ids
   get formFlowKeyInput() {
-    return this.page.locator('cds-modal').locator('cds-label').filter({hasText: 'Key'}).locator('input');
+    return this.page
+      .locator('cds-modal')
+      .locator('cds-label')
+      .filter({hasText: 'Key'})
+      .locator('input');
   }
 
   get createFormFlowButton() {
@@ -137,6 +141,85 @@ export class CaseDetailsManagementFormFlowsPage {
     await expect(this.monacoEditor).toBeVisible();
   }
 
+  // ─── Visual Editor Elements ────────────────────────────────────────
+
+  get visualStepList() {
+    return this.page.locator('[data-test-id="formFlowEditorStepList"]');
+  }
+
+  get visualStepListItems() {
+    return this.page.locator('[data-test-id="formFlowEditorStepListItem"]');
+  }
+
+  get visualAddStepButton() {
+    return this.page.locator('[data-test-id="formFlowEditorAddStepButton"]');
+  }
+
+  get visualStepKeyInput() {
+    return this.page.locator('[data-test-id="formFlowEditorStepKeyInput"]');
+  }
+
+  get visualStepTitleInput() {
+    return this.page.locator('[data-test-id="formFlowEditorStepTitleInput"]');
+  }
+
+  get visualStepPropertyInput() {
+    return this.page.locator('[data-test-id="formFlowEditorStepPropertyInput"]');
+  }
+
+  get visualFormDefinitionDropdown() {
+    return this.page.locator('[data-test-id="formFlowEditorStepPropertyDropdown"]');
+  }
+
+  get visualMakeStartStepButton() {
+    return this.page.locator('[data-test-id="formFlowEditorMakeStartStepButton"]');
+  }
+
+  get visualAddTransitionButton() {
+    return this.page.locator('[data-test-id="formFlowEditorAddTransitionButton"]');
+  }
+
+  get visualTransitionRow() {
+    return this.page.locator('[data-test-id="formFlowEditorTransitionRow"]');
+  }
+
+  // ─── Visual Editor Actions ─────────────────────────────────────────
+
+  async openVisualEditorTab() {
+    await this.page.getByRole('tab', {name: 'Editor', exact: true}).click();
+    await expect(this.visualStepList).toBeVisible();
+  }
+
+  async selectVisualStep(index: number) {
+    await this.visualStepListItems.nth(index).click();
+  }
+
+  async addVisualStep() {
+    await this.visualAddStepButton.click();
+    await expect(this.visualStepKeyInput).toBeVisible();
+  }
+
+  async selectVisualTransitionTarget(rowIndex: number, targetStepKey: string) {
+    await this.selectCarbonDropdownOption(this.visualTransitionRow.nth(rowIndex), targetStepKey);
+  }
+
+  // Picks the first available form of the case definition and returns its name.
+  async selectFirstVisualFormDefinition(): Promise<string> {
+    return this.selectCarbonDropdownOption(this.visualFormDefinitionDropdown);
+  }
+
+  // Opens the Carbon dropdown inside `root` and picks the named option, or the first option when
+  // no name is given. Returns the picked option's text.
+  private async selectCarbonDropdownOption(root: Locator, optionName?: string): Promise<string> {
+    await root.locator('cds-dropdown button').first().click();
+    const option = optionName
+      ? this.page.getByRole('option', {name: optionName})
+      : this.page.getByRole('option').first();
+    const name = (await option.textContent())?.trim() ?? '';
+    await option.click();
+    return name;
+  }
+
   // ─── Save Actions ─────────────────────────────────────────────────
 
   async editFormFlowJson(json: object) {
@@ -163,9 +246,9 @@ export class CaseDetailsManagementFormFlowsPage {
   }
 
   async assertSaveSuccessNotification(key: string) {
-    await expect(
-      this.page.getByText(`${key} was saved successfully`).first()
-    ).toBeVisible({timeout: 15_000});
+    await expect(this.page.getByText(`${key} was saved successfully`).first()).toBeVisible({
+      timeout: 15_000,
+    });
   }
 
   // ─── Assertions ───────────────────────────────────────────────────

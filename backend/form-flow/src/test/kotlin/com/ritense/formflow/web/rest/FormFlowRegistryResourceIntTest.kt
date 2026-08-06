@@ -19,6 +19,7 @@ package com.ritense.formflow.web.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.formflow.BaseIntegrationTest
+import com.ritense.formflow.service.FormFlowRegistryService
 import com.ritense.formflow.web.rest.dto.FormFlowRegistryDto
 import com.ritense.formflow.web.rest.dto.FormFlowStepTypePropertyDto
 import org.assertj.core.api.Assertions.assertThat
@@ -39,6 +40,9 @@ class FormFlowRegistryResourceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
+
+    @Autowired
+    lateinit var formFlowRegistryService: FormFlowRegistryService
 
     lateinit var mockMvc: MockMvc
 
@@ -85,6 +89,32 @@ class FormFlowRegistryResourceIntTest : BaseIntegrationTest() {
             .containsExactly("additionalProperties", "submissionData", "submissionSavePath")
         assertThat(completeTask.parameters.map { it.type })
             .containsExactly("Map", "JsonNode", "Map")
+    }
+
+    @Test
+    fun `should have built the registry during application startup`() {
+        // Proves the ApplicationReadyEvent listener is wired by Spring: the cache is populated by
+        // the startup warm-up, before this test calls the service or the endpoint. (When other
+        // tests in the shared context ran first, the cache is populated either way; a fresh
+        // context is the case that would expose a broken listener.)
+        val cachedRegistry = FormFlowRegistryService::class.java
+            .getDeclaredField("cachedRegistry")
+            .apply { isAccessible = true }
+            .get(formFlowRegistryService)
+
+        assertThat(cachedRegistry).isNotNull
+    }
+
+    @Test
+    fun `should return the additional properties available to expressions`() {
+        val registry = getRegistry()
+
+        assertThat(registry.additionalProperties.map { it.name }).contains(
+            "processInstanceId",
+            "taskInstanceId",
+            "documentId",
+            "processDefinitionKey",
+        )
     }
 
     private fun getRegistry(): FormFlowRegistryDto {

@@ -1,0 +1,273 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="step-detail" [cdsLayer]="1" [formGroup]="stepGroup">
+  <div class="step-detail__header">
+    <div class="step-detail__heading">
+      <h5>{{ 'formFlow.uiEditor.stepDetails' | translate }}</h5>
+
+      @if (isStartStep) {
+        <cds-tag type="green" size="sm">{{ 'formFlow.uiEditor.startStep' | translate }}</cds-tag>
+      }
+    </div>
+
+    @if (!readOnly) {
+      <div class="step-detail__header-actions">
+        @if (!isStartStep) {
+          <button
+            cdsButton="tertiary"
+            size="sm"
+            [attr.data-test-id]="testIds.makeStartStepButton"
+            (click)="makeStartEvent.emit()"
+          >
+            {{ 'formFlow.uiEditor.makeStartStep' | translate }}
+
+            <svg class="cds--btn__icon" cdsIcon="flag" size="16"></svg>
+          </button>
+        }
+
+        <button
+          cdsButton="danger--ghost"
+          size="sm"
+          [attr.data-test-id]="testIds.deleteStepButton"
+          (click)="deleteStepEvent.emit()"
+        >
+          {{ 'formFlow.uiEditor.deleteStep' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="step-detail__grid">
+    <cds-label
+      [invalid]="isControlInvalid('key') || duplicateKey"
+      [invalidText]="
+        duplicateKey
+          ? ('formFlow.uiEditor.duplicateKey' | translate)
+          : ('formFlow.uiEditor.required' | translate)
+      "
+    >
+      <span class="step-detail__label">
+        {{ 'formFlow.key' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'formFlow.uiEditor.fieldTooltips.key' | translate"
+        ></v-tooltip-icon>
+      </span>
+
+      <input
+        cdsText
+        formControlName="key"
+        [invalid]="isControlInvalid('key') || duplicateKey"
+        [attr.data-test-id]="testIds.stepKeyInput"
+        placeholder="{{ 'formFlow.uiEditor.keyPlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <cds-label>
+      <span class="step-detail__label">
+        {{ 'formFlow.uiEditor.title' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'formFlow.uiEditor.fieldTooltips.title' | translate"
+        ></v-tooltip-icon>
+      </span>
+
+      <input
+        cdsText
+        formControlName="title"
+        [attr.data-test-id]="testIds.stepTitleInput"
+        placeholder="{{ 'formFlow.uiEditor.titlePlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <div [attr.data-test-id]="testIds.stepTypeDropdown">
+      <cds-dropdown formControlName="typeName" itemValueKey="id" [label]="stepTypeLabelTemplate">
+        <cds-dropdown-list [items]="stepTypeItems"></cds-dropdown-list>
+      </cds-dropdown>
+
+      <ng-template #stepTypeLabelTemplate>
+        <span class="step-detail__label">
+          {{ 'formFlow.uiEditor.stepType' | translate }}
+
+          <v-tooltip-icon [tooltip]="getTypeTooltip()"></v-tooltip-icon>
+        </span>
+      </ng-template>
+    </div>
+
+    <ng-container formGroupName="properties">
+      @for (propertyName of propertyNames; track propertyName) {
+        @if (isFormDefinitionProperty(propertyName)) {
+          <div [attr.data-test-id]="testIds.stepPropertyDropdown">
+            <cds-dropdown
+              formControlName="definition"
+              itemValueKey="id"
+              [invalid]="
+                propertiesGroup.get('definition')?.invalid &&
+                propertiesGroup.get('definition')?.touched
+              "
+              [label]="formDefinitionLabelTemplate"
+              [placeholder]="'formFlow.uiEditor.selectForm' | translate"
+            >
+              <cds-dropdown-list [items]="getFormDefinitionItems()"></cds-dropdown-list>
+            </cds-dropdown>
+
+            <ng-template #formDefinitionLabelTemplate>
+              <span class="step-detail__label">
+                {{ getPropertyLabel(propertyName) }}
+
+                <v-tooltip-icon
+                  [tooltip]="'formFlow.uiEditor.fieldTooltips.definition' | translate"
+                ></v-tooltip-icon>
+              </span>
+            </ng-template>
+          </div>
+        } @else if (isCustomComponentProperty(propertyName)) {
+          <div [attr.data-test-id]="testIds.stepPropertyDropdown">
+            <cds-dropdown
+              formControlName="componentId"
+              itemValueKey="id"
+              [invalid]="
+                propertiesGroup.get('componentId')?.invalid &&
+                propertiesGroup.get('componentId')?.touched
+              "
+              [label]="componentIdLabelTemplate"
+              [placeholder]="'formFlow.uiEditor.selectComponent' | translate"
+            >
+              <cds-dropdown-list [items]="getCustomComponentItems()"></cds-dropdown-list>
+            </cds-dropdown>
+
+            <ng-template #componentIdLabelTemplate>
+              <span class="step-detail__label">
+                {{ getPropertyLabel(propertyName) }}
+
+                <v-tooltip-icon
+                  [tooltip]="'formFlow.uiEditor.fieldTooltips.componentId' | translate"
+                ></v-tooltip-icon>
+              </span>
+            </ng-template>
+          </div>
+        } @else {
+          <cds-label
+            [invalid]="
+              propertiesGroup.get(propertyName)?.invalid &&
+              propertiesGroup.get(propertyName)?.touched
+            "
+            [invalidText]="'formFlow.uiEditor.required' | translate"
+          >
+            {{ getPropertyLabel(propertyName) }}
+
+            <input
+              cdsText
+              [formControlName]="propertyName"
+              [invalid]="
+                propertiesGroup.get(propertyName)?.invalid &&
+                propertiesGroup.get(propertyName)?.touched
+              "
+              [attr.data-test-id]="testIds.stepPropertyInput"
+            />
+          </cds-label>
+        }
+      }
+    </ng-container>
+  </div>
+
+  <hr class="step-detail__divider" />
+
+  <section class="step-detail__section">
+    <div class="step-detail__section-header">
+      <h5>{{ 'formFlow.uiEditor.navigation' | translate }}</h5>
+
+      <p class="step-detail__section-description">
+        {{ 'formFlow.uiEditor.navigationDescription' | translate }}
+      </p>
+    </div>
+
+    <valtimo-form-flow-transition-list
+      [readOnly]="readOnly"
+      [stepKeys]="stepKeys"
+      [transitions]="transitions"
+    ></valtimo-form-flow-transition-list>
+
+    <cds-actionable-notification
+      class="step-detail__help-notification"
+      [notificationObj]="{
+        type: 'info',
+        lowContrast: true,
+        showClose: false,
+        title: 'formFlow.uiEditor.help.conditionsInlineTitle' | translate,
+        message: 'formFlow.uiEditor.help.conditionsInlineMessage' | translate,
+        actions: helpActions,
+      }"
+    ></cds-actionable-notification>
+  </section>
+
+  <hr class="step-detail__divider" />
+
+  <section class="step-detail__section">
+    <div class="step-detail__section-header">
+      <h5>{{ 'formFlow.uiEditor.actions' | translate }}</h5>
+
+      <p class="step-detail__section-description">
+        {{ 'formFlow.uiEditor.actionsDescription' | translate }}
+      </p>
+    </div>
+
+    <cds-actionable-notification
+      class="step-detail__help-notification"
+      [notificationObj]="{
+        type: 'info',
+        lowContrast: true,
+        showClose: false,
+        title: 'formFlow.uiEditor.help.actionsInlineTitle' | translate,
+        message: 'formFlow.uiEditor.help.actionsInlineMessage' | translate,
+        actions: helpActions,
+      }"
+    ></cds-actionable-notification>
+
+    <valtimo-form-flow-expression-list
+      [description]="'formFlow.uiEditor.onOpenDescription' | translate"
+      [expressions]="getExpressions('onOpen')"
+      [label]="'formFlow.uiEditor.onOpen' | translate"
+      [readOnly]="readOnly"
+      [registry]="registry"
+    ></valtimo-form-flow-expression-list>
+
+    <valtimo-form-flow-expression-list
+      [description]="'formFlow.uiEditor.onCompleteDescription' | translate"
+      [expressions]="getExpressions('onComplete')"
+      [label]="'formFlow.uiEditor.onComplete' | translate"
+      [readOnly]="readOnly"
+      [registry]="registry"
+    ></valtimo-form-flow-expression-list>
+
+    <valtimo-form-flow-expression-list
+      [description]="'formFlow.uiEditor.onBackDescription' | translate"
+      [expressions]="getExpressions('onBack')"
+      [label]="'formFlow.uiEditor.onBack' | translate"
+      [readOnly]="readOnly"
+      [registry]="registry"
+    ></valtimo-form-flow-expression-list>
+  </section>
+
+  <valtimo-form-flow-expression-help-modal
+    [open]="$showHelpModal()"
+    [registry]="registry"
+    (closeEvent)="$showHelpModal.set(false)"
+  ></valtimo-form-flow-expression-help-modal>
+</div>

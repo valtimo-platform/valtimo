@@ -149,6 +149,58 @@ test.describe('Case details management — Form Flows', () => {
     });
   });
 
+  // ─── 6.62 Visual editor ───────────────────────────────────────────
+
+  test.describe('6.62 — Visual editor', () => {
+    test('Visual editor shows the saved steps', async () => {
+      // Act — switch from the JSON tab to the visual editor tab
+      await formFlowsPage.openVisualEditorTab();
+
+      // Assert — the step saved through the JSON editor is listed and selected; its form key is
+      // preserved in the form dropdown even though no form with that name exists
+      await expect(formFlowsPage.visualStepListItems).toHaveCount(1);
+      await expect(formFlowsPage.visualStepListItems.first()).toContainText('step1');
+      await expect(formFlowsPage.visualStepKeyInput).toHaveValue('step1');
+      await expect(formFlowsPage.visualFormDefinitionDropdown).toContainText('test-form');
+    });
+
+    test('Edit a step title in the visual editor and save', async () => {
+      // Act
+      await formFlowsPage.visualStepTitleInput.fill('First step');
+      await expect(formFlowsPage.saveButton).toBeEnabled();
+      const response = await formFlowsPage.saveFormFlow(formFlowTestData.key, CASE_IDENTIFIER);
+
+      // Assert
+      expect(response.ok()).toBeTruthy();
+      await formFlowsPage.assertSaveSuccessNotification(formFlowTestData.key);
+    });
+
+    test('Add a step with a transition in the visual editor and save', async () => {
+      // Act — add a second step and pick the first available form of the case definition
+      await formFlowsPage.addVisualStep();
+      await expect(formFlowsPage.visualStepKeyInput).toHaveValue('step-2');
+      // The new step is not the start step, so it offers the make-start action
+      await expect(formFlowsPage.visualMakeStartStepButton).toBeVisible();
+      await formFlowsPage.selectFirstVisualFormDefinition();
+
+      // Act — connect the first step to the new step
+      await formFlowsPage.selectVisualStep(0);
+      await formFlowsPage.visualAddTransitionButton.click();
+      await formFlowsPage.selectVisualTransitionTarget(0, 'step-2');
+
+      await expect(formFlowsPage.saveButton).toBeEnabled();
+      const response = await formFlowsPage.saveFormFlow(formFlowTestData.key, CASE_IDENTIFIER);
+
+      // Assert
+      expect(response.ok()).toBeTruthy();
+      await formFlowsPage.assertSaveSuccessNotification(formFlowTestData.key);
+
+      // Assert — the transition is part of the persisted definition shown in the JSON editor
+      await formFlowsPage.openJsonEditorTab();
+      await expect(formFlowsPage.monacoEditor).toContainText('step-2');
+    });
+  });
+
   // ─── Delete form flow (cleanup) ───────────────────────────────────
 
   test.describe('Delete form flow', () => {

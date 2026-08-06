@@ -67,20 +67,19 @@ import {FormFlowDownloadService} from '../../services/form-flow-download.service
   styleUrls: ['./form-flow-editor.component.scss'],
 })
 export class FormFlowEditorComponent extends PendingChangesComponent implements OnDestroy {
+  // The Carbon tab headers, used to restore the highlighted header when a leave-page prompt is
+  // cancelled (Carbon highlights the clicked header immediately, before the guard resolves).
+  @ViewChildren(Tab) private _tabs!: QueryList<Tab>;
+
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly valid$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
-  public readonly CARBON_THEME = 'g10';
 
   public readonly $activeTab = signal<FormFlowEditorTab>(FormFlowEditorTab.EDITOR);
 
   protected readonly FormFlowEditorTab = FormFlowEditorTab;
   protected readonly testIds = FORM_FLOW_EDITOR_TEST_IDS;
-
-  // The Carbon tab headers, used to restore the highlighted header when a leave-page prompt is
-  // cancelled (Carbon highlights the clicked header immediately, before the guard resolves).
-  @ViewChildren(Tab) private _tabs!: QueryList<Tab>;
 
   private readonly _context$: Observable<ManagementContext | null> = getContextObservable(
     this.route

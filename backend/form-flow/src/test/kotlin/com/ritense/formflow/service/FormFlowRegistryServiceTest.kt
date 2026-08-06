@@ -114,6 +114,32 @@ internal class FormFlowRegistryServiceTest {
         verify(applicationContext, times(1)).getBeansWithAnnotation(FormFlowBean::class.java)
     }
 
+    @Test
+    fun `should return the additional properties available to expressions`() {
+        val registry = formFlowRegistryService.getRegistry()
+
+        assertThat(registry.additionalProperties).isNotEmpty
+        assertThat(registry.additionalProperties.map { it.name }).contains(
+            "processInstanceId",
+            "processInstanceBusinessKey",
+            "taskInstanceId",
+            "documentId",
+            "processDefinitionKey",
+            "documentDefinitionName",
+        )
+        assertThat(registry.additionalProperties.map { it.context }.distinct())
+            .containsExactlyInAnyOrder("userTask", "startEvent")
+    }
+
+    @Test
+    fun `should build registry on warm up so requests reuse the cached registry`() {
+        formFlowRegistryService.warmUp()
+
+        formFlowRegistryService.getRegistry()
+
+        verify(applicationContext, times(1)).getBeansWithAnnotation(FormFlowBean::class.java)
+    }
+
     private fun stepTypeHandler(type: String): FormFlowStepTypeHandler {
         val handler = mock<FormFlowStepTypeHandler>()
         whenever(handler.getType()).thenReturn(type)

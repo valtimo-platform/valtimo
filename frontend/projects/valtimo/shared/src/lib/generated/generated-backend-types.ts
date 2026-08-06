@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2026-08-04 09:22:13.
+// Generated using typescript-generator version 3.2.1263 on 2026-08-04 15:02:17.
 
 export interface AccentColorsDto {
     colors: { [index: string]: string };
@@ -207,8 +207,8 @@ export interface CaseDefinitionDraftCreateRequest {
     name: string | null;
     description: string | null;
     basedOnCaseDefinitionVersion: string | null;
-    caseDefinitionId: CaseDefinitionId;
     basedOnCaseDefinitionId: CaseDefinitionId | null;
+    caseDefinitionId: CaseDefinitionId;
 }
 
 export interface CaseDefinitionImportPreviewResponse {
@@ -727,8 +727,8 @@ export interface FormProcessLinkUpdateRequestDto extends ProcessLinkUpdateReques
 }
 
 export interface FormSubmissionResult {
-    errors: OperationError[];
     documentId: string | null;
+    errors: OperationError[];
 }
 
 export interface FormSubmissionResultFailed extends FormSubmissionResult, TransactionalResult {
@@ -753,6 +753,12 @@ export interface IntermediateSubmission {
 }
 
 export interface IntermediateSubmissionKt {
+}
+
+export interface FormFlowAdditionalPropertyDto {
+    name: string;
+    context: string;
+    alwaysPresent: boolean;
 }
 
 export interface FormFlowBreadcrumbResponse {
@@ -814,6 +820,7 @@ export interface FormFlowProcessLinkUpdateRequestDto extends ProcessLinkUpdateRe
 export interface FormFlowRegistryDto {
     stepTypes: FormFlowStepTypeDto[];
     expressionBeans: FormFlowExpressionBeanDto[];
+    additionalProperties: FormFlowAdditionalPropertyDto[];
 }
 
 export interface FormFlowStepTypeDto {
@@ -1011,9 +1018,9 @@ export interface ProcessLinkActivityResultWithTask {
 
 export interface ProcessLinkCreateRequestDto {
     activityId: string;
+    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
-    processDefinitionId: string;
 }
 
 export interface ProcessLinkExportResponseDto {
@@ -1023,16 +1030,16 @@ export interface ProcessLinkExportResponseDto {
 }
 
 export interface ProcessLinkResponseDto {
-    id: string;
     activityId: string;
+    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
-    processDefinitionId: string;
+    id: string;
 }
 
 export interface ProcessLinkUpdateRequestDto {
-    id: string;
     processLinkType: string;
+    id: string;
 }
 
 export interface SearchFieldV2Dto {
@@ -1322,15 +1329,15 @@ export interface UpdateTemplateRequest {
 
 export interface WidgetDto {
     type: string;
+    color: WidgetColor | null;
+    width: number;
+    icon: string | null;
+    compact: boolean | null;
+    title: string;
+    highContrast: boolean;
+    displayConditions: Condition<any>[] | null;
     key: string;
     actions: WidgetAction[];
-    displayConditions: Condition<any>[] | null;
-    highContrast: boolean;
-    title: string;
-    icon: string | null;
-    color: WidgetColor | null;
-    compact: boolean | null;
-    width: number;
 }
 
 export interface CaseZaakdetailsInspectionDto {
@@ -1462,22 +1469,22 @@ export interface ObjectNode extends ContainerNode<ObjectNode>, Serializable {
 }
 
 export interface DocumentDefinitionId {
-    name: string;
     buildingBlockDefinitionId: BuildingBlockDefinitionId;
     caseDefinitionId: CaseDefinitionId;
+    name: string;
 }
 
 export interface DocumentRelation {
-    id: string;
     relationType: DocumentRelationType;
+    id: string;
 }
 
 export interface RelatedFile {
-    fileName: string;
-    fileId: string;
-    createdOn: DateAsString;
     createdBy: string;
+    createdOn: DateAsString;
     sizeInBytes: number;
+    fileId: string;
+    fileName: string;
 }
 
 export interface OperationError {
@@ -1501,8 +1508,8 @@ export interface BuildingBlockProcessReference {
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
     activityId: string;
-    activityType: ActivityTypeWithEventName;
     processDefinitionId: string;
+    activityType: ActivityTypeWithEventName;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -1591,6 +1598,9 @@ export interface OperatonTaskDto {
 }
 
 export interface FormField {
+    validationConstraints: FormFieldValidationConstraint[];
+    label: string;
+    businessKey: boolean;
     value: TypedValue;
     typeName: string;
     properties: { [index: string]: string };
@@ -1600,9 +1610,6 @@ export interface FormField {
      * @deprecated since 1.0
      */
     defaultValue: any;
-    businessKey: boolean;
-    validationConstraints: FormFieldValidationConstraint[];
-    label: string;
 }
 
 export interface ProcessDefinitionDto {
@@ -1623,27 +1630,27 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-    id: string;
     rootProcessInstanceId: string;
-    canceled: boolean;
-    removalTime: DateAsString;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
-    activityName: string;
-    durationInMillis: number;
-    completeScope: boolean;
-    activityId: string;
-    processInstanceId: string;
-    activityType: string;
-    executionId: string;
-    assignee: string;
-    tenantId: string;
     processDefinitionKey: string;
-    processDefinitionId: string;
     taskId: string;
     startTime: DateAsString;
     endTime: DateAsString;
+    activityId: string;
+    executionId: string;
+    processInstanceId: string;
+    processDefinitionId: string;
+    activityType: string;
+    assignee: string;
+    tenantId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
+    activityName: string;
+    durationInMillis: number;
+    completeScope: boolean;
+    id: string;
 }
 
 export interface ProcessVariableDTOV2 {
@@ -1651,13 +1658,13 @@ export interface ProcessVariableDTOV2 {
     name: string;
 }
 
-export interface WidgetAction {
-}
-
 export interface Condition<T> {
     path: string;
     operator: ExpressionOperator;
     value: T;
+}
+
+export interface WidgetAction {
 }
 
 export interface BlueprintId {
@@ -1703,6 +1710,11 @@ export interface AssigneeDto {
     fullName: string;
 }
 
+export interface FormFieldValidationConstraint {
+    configuration: any;
+    name: string;
+}
+
 export interface TypedValue extends Serializable {
     value: any;
     type: ValueType;
@@ -1711,11 +1723,6 @@ export interface TypedValue extends Serializable {
 
 export interface FormType {
     name: string;
-}
-
-export interface FormFieldValidationConstraint {
-    name: string;
-    configuration: any;
 }
 
 export interface StringProcessVariableDTOV2 extends ProcessVariableDTOV2 {
@@ -1759,15 +1766,15 @@ export interface ProcessDefinitionId {
 }
 
 export interface Team {
-    key: string;
     title: string;
+    key: string;
 }
 
 export interface ValueType extends Serializable {
+    primitiveValueType: boolean;
     name: string;
     parent: ValueType;
     abstract: boolean;
-    primitiveValueType: boolean;
 }
 
 export interface DateRange {

@@ -14,5 +14,18 @@
  * limitations under the License.
  */
 
-export * from './form-flow-editor.test-ids';
-export * from './injection-tokens';
+import {TranslateService} from '@ngx-translate/core';
+
+/**
+ * Translates a key and falls back to the given value when no translation exists (ngx-translate
+ * returns the key itself in that case). Used for registry-driven labels where only the well-known
+ * entries have translations.
+ */
+export function translateWithFallback(
+  translateService: TranslateService,
+  key: string,
+  fallback: string
+): string {
+  const translation = translateService.instant(key);
+  return translation === key ? fallback : translation;
+}
