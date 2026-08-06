@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
-export * from './access-control-editor.test-ids';
-export * from './access-control-roles.test-ids';
-export * from './access-control-labels';
+import {generateId} from '../../utils/dataGenerator';
+
+/**
+ * A decision table that ships with the dev app and is never modified by these tests — used as the
+ * subject for the read-only and "open in modeler" scenarios.
+ */
+export const SEEDED_DECISION_KEY = 'betrokkene-type-mapping';
+
+export function createDecisionTestData() {
+  const id = generateId();
+  return {
+    name: `E2e Decision Table ${id}`,
+    inputVariable: 'e2eInputVariable',
+    inputVariableLabel: 'E2e input variable',
+  };
+}

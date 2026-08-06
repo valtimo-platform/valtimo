@@ -179,7 +179,7 @@
         size="md"
         [disabled]="(addRowEnabled$ | async) === false || $disabled()"
         (click)="addRow()"
-        [attr.data-test-id]="'multiInputAddButton-' + i"
+        [attr.data-test-id]="name ? 'multiInputAddButton-' + name : 'multiInputAddButton'"
       >
         {{ vars.addRowText }}
 

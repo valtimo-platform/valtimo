@@ -43,6 +43,7 @@ import {
 import flatpickr from 'flatpickr';
 import {debounceTime, map, Observable, Subscription} from 'rxjs';
 import {
+import {LOG_SEARCH_TEST_IDS} from '../../constants';
   LoggingEventProperty,
   LoggingEventSearchFormValue,
   LoggingEventSearchRequest,
@@ -69,6 +70,7 @@ import {
   ],
 })
 export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
+  public readonly testIds = LOG_SEARCH_TEST_IDS;
   @ViewChild('afterTimestamp') private readonly _afterTimestampDatePicker: DatePicker;
   @ViewChild('beforeTimestamp') private readonly _beforeTimestampDatePicker: DatePicker;
 

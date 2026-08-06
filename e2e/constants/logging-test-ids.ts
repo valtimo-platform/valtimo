@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-export * from './access-control-editor.test-ids';
-export * from './access-control-roles.test-ids';
-export * from './access-control-labels';
+// Import directly from the constants file — importing from public_api pulls in Angular
+// component code that Node cannot parse at test runtime.
+export {
+  LOGGING_LIST_TEST_IDS,
+  LOG_SEARCH_TEST_IDS,
+  LOG_DETAILS_TEST_IDS,
+} from '../../frontend/projects/valtimo/logging/src/lib/constants/logging.test-ids';

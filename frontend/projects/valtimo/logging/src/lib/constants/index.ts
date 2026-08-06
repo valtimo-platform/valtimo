@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-export * from './access-control-editor.test-ids';
-export * from './access-control-roles.test-ids';
-export * from './access-control-labels';
+export * from './logging.test-ids';

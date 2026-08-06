@@ -16,4 +16,5 @@ export {
   VERZOEK_CONFIGURATION_TEST_IDS,
   ZAKEN_API_CONFIGURATION_TEST_IDS,
   PLUGIN_CATALOG_TEST_IDS,
+  PLUGIN_EDIT_MODAL_TEST_IDS,
 } from '../../frontend/projects/valtimo/plugin/src/lib/constants/plugin.test-ids';

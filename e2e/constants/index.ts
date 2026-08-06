@@ -1,3 +1,4 @@
+export * from './access-control-test-ids';
 export * from './building-block-management-test-ids';
 export * from './case-management-test-ids';
 export * from './dashboard-management-test-ids';
@@ -7,6 +8,7 @@ export * from './decision-test-ids';
 export * from './form-management-test-ids';
 export * from './iko-test-ids';
 export * from './layout-test-ids';
+export * from './logging-test-ids';
 export * from './plugin-test-ids';
 export * from './process-link-test-ids';
 export * from './process-management-test-ids';

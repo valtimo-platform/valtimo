@@ -106,6 +106,11 @@ export const ZAKEN_API_CONFIGURATION_TEST_IDS = {
   authenticationPluginConfiguration: 'zakenApiAuthenticationPluginConfiguration',
 } as const;
 
+export const PLUGIN_EDIT_MODAL_TEST_IDS = {
+  saveButton: 'pluginEditModalSaveButton',
+  deleteButton: 'pluginEditModalDeleteButton',
+} as const;
+
 export const PLUGIN_CATALOG_TEST_IDS = {
   tileGrid: 'pluginCatalogTileGrid',
   tileLogo: 'pluginCatalogTileLogo',

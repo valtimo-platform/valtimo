@@ -24,6 +24,8 @@ export const WIDGET_WIZARD_TEST_IDS = {
   saveButton: 'widgetWizardSaveButton',
   cancelButton: 'widgetWizardCancelButton',
   backButton: 'widgetWizardBackButton',
+  /** Reads "Create widget" or "Edit widget" — lets tests tell the two modes apart. */
+  heading: 'widgetWizardHeading',
 } as const;
 
 export const WIDGET_WIZARD_TYPE_TEST_IDS = {

@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 24        | 17         | 7              |
-| Admin Features (ROLE_ADMIN) | 15       | 349       | 287        | 62             |
-| **Total**                   | **20**   | **373**   | **304**    | **69**         |
+| Admin Features (ROLE_ADMIN) | 15       | 355       | 313        | 42             |
+| **Total**                   | **20**   | **379**   | **330**    | **49**         |
 
-**Coverage:** `304 / 373` — `81.5%`
+**Coverage:** `330 / 379` — `87.1%`
 
 ---
 
@@ -202,7 +202,7 @@
 | 6.64 | Rearrange task list columns | Rearrange task list columns          |    ✅    | case-details-management-tasks.spec.ts           |
 | 6.65 | View task search fields     | View task list search fields         |    ✅    | case-details-management-tasks.spec.ts           |
 | 6.66 | Add task search field       | Add task list search field           |    ✅    | case-details-management-tasks.spec.ts           |
-| 6.67 | Toggle JSON/table view      | Toggle task list JSON/table view     |    ❌    |                                                 |
+| 6.67 | Toggle JSON/table view      | Toggle task list JSON/table view     |   `N/A`  | The Tasks tab has no JSON view — neither `valtimo-task-management-columns` nor `-search-fields` renders a switch-view control or JSON editor. Only the Case list and Search fields tabs offer one |
 
 #### 6J · Case List
 
@@ -259,7 +259,8 @@
 | 6.91 | Set widget density       | Set widget density                                                        |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.92 | Set widget style         | Set widget style                                                          |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.93 | Configure widget content | Configure widget content                                                  |    ✅    | case-details-management-widgets.spec.ts         |
-| 6.94 | Set widget conditions    | Set widget display conditions                                             |    ❌    |                                                 |
+| 6.94 | Set widget conditions    | Add a display condition in the wizard's last step · Condition round-trips when reopened |    ✅    | case-details-management-widgets.spec.ts (path entered in manual mode; the "Equal to" label is stored as `==`) |
+| 6.94a | Reject incomplete condition | Save disabled while a condition row is empty; removing the row re-enables it |    ✅    | case-details-management-widgets.spec.ts (failure scenario) |
 | 6.95 | Add widget separator     | Add widget separator                                                      |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ✅    | case-details-management-widgets.spec.ts         |
@@ -322,10 +323,13 @@ Covers the standalone `/processes` admin page (the *independent* process context
 
 | #   | Function                      | Test Scenarios                        | Coverage | Notes                                           |
 |:----|:------------------------------|:--------------------------------------|:--------:|:------------------------------------------------|
-| 8.1 | View decision tables overview | Display decision tables overview list |    ❌    |                                                 |
-| 8.2 | Create decision table         | Create new decision table             |    ❌    |                                                 |
-| 8.3 | Edit decision table           | Edit decision table in DMN modeler    |    ❌    |                                                 |
-| 8.4 | Test decision table           | Test decision table execution         |    ❌    |                                                 |
+| 8.1 | View decision tables overview | Overview list visible · Key/Name/Version columns · List matches the API (latest version per key) |    ✅    | decision-table-management.spec.ts               |
+| 8.2 | Create decision table         | Name + input variables, then land in the DMN modeler |    ✅    | decision-table-management.spec.ts — deliberately stops short of Deploy: a deployed standalone table cannot be removed again (see 8.4c), so deploying would leak state on every run. Deployment is covered case-scoped in 6.40 |
+| 8.3 | Edit decision table           | Open an existing table in the DMN modeler (editable, content loaded) |    ✅    | decision-table-management.spec.ts               |
+| 8.4 | Test decision table           | Test decision table execution         |   `N/A`  | No evaluate/test UI exists — the DMN modeler route has no such control or copy |
+| 8.4a | Reject unnamed decision table | Create submit stays disabled while the name is empty |    ✅    | decision-table-management.spec.ts (failure scenario) |
+| 8.4b | Reject upload without file    | Upload submit stays disabled until a DMN file is chosen |    ✅    | decision-table-management.spec.ts (failure scenario) |
+| 8.4c | Delete unavailable standalone | Delete row action is present but **disabled** outside a case context |    ✅    | decision-table-management.spec.ts (failure scenario) — delete is only implemented for case-scoped tables |
 
 ---
 
@@ -351,27 +355,29 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | 9.9  | Configure plugin (2-step wizard) | Complete 2-step wizard flow                                                                                       |    ✅    | plugin.spec.ts                                  |
 | 9.10 | Choose plugin type from catalog  | Select plugin type in step 1                                                                                      |    ✅    | plugin.spec.ts                                  |
 | 9.11 | Enter plugin data (step 2)       | Fill in all required fields in step 2                                                                             |    ✅    | plugin.spec.ts                                  |
-| 9.12 | Auto-generate configuration ID   | Verify UUID is auto-generated                                                                                     |    ❌    |                                                 |
+| 9.12 | Auto-generate configuration ID   | Configuration ID is optional with a UUID placeholder · Saving it blank generates a UUID                            |    ✅    | plugin.spec.ts (the field is not prefilled; the backend assigns the UUID on save) |
 | 9.13 | Enter configuration name         | Enter and validate required configuration name · Cannot save without configuration name                           |    ✅    | plugin.spec.ts                                  |
 | 9.14 | Enter RSIN                       | Enter RSIN for plugins that require it                                                                            |    ✅    | plugin.spec.ts                                  |
 | 9.15 | Enter plugin API URL             | Enter and validate required API URL · Cannot save without API URL · Show validation error for invalid URL format  |    ✅    | plugin.spec.ts                                  |
 | 9.16 | Select authentication plugin     | Select required authentication plugin configuration · Cannot save without authentication plugin                   |    ✅    | plugin.spec.ts                                  |
-| 9.17 | View authentication options      | View available authentication options in dropdown                                                                 |    ❌    |                                                 |
+| 9.17 | View authentication options      | Dropdown lists every compatible authentication configuration, labelled `<title> - <plugin>`                       |    ✅    | plugin.spec.ts (creates a second OpenZaak auth config so the dropdown has more than one option) |
 | 9.18 | Save plugin configuration        | Successfully save new plugin configuration · Show success message after save · Redirect to plugin list after save |    ✅    | plugin.spec.ts                                  |
-| 9.19 | Cancel plugin configuration      | Cancel wizard without saving · Show confirmation dialog before canceling                                          |    ❌    |                                                 |
+| 9.19 | Cancel plugin configuration      | Cancel wizard without saving (closes immediately, nothing persisted)                                              |    ✅    | plugin.spec.ts — there is no "discard changes?" confirmation dialog, so that sub-scenario is `N/A` |
 
 #### 9C · Edit Plugin Config
 
 | #    | Function                           | Test Scenarios                                                                                                             | Coverage | Notes                                           |
 |:-----|:-----------------------------------|:---------------------------------------------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
 | 9.20 | Open existing plugin configuration | Open plugin configuration for editing                                                                                      |    ✅    | plugin.spec.ts                                  |
-| 9.21 | View configuration ID              | Verify read-only UUID is displayed                                                                                         |    ❌    |                                                 |
+| 9.21 | View configuration ID              | Edit modal shows the assigned UUID                                                                                         |    ✅    | plugin.spec.ts — the field is **editable**, not read-only, so the test asserts the value only |
 | 9.22 | Edit configuration name            | Update configuration name                                                                                                  |    ✅    | plugin.spec.ts                                  |
-| 9.23 | Edit RSIN                          | Update RSIN value                                                                                                          |    ❌    |                                                 |
-| 9.24 | Edit API URL                       | Update plugin API URL                                                                                                      |    ❌    |                                                 |
-| 9.25 | Change authentication plugin       | Change selected authentication plugin                                                                                      |    ❌    |                                                 |
+| 9.23 | Edit RSIN                          | Update RSIN value (persisted value verified via the API)                                                                   |    ✅    | plugin.spec.ts                                  |
+| 9.24 | Edit API URL                       | Update plugin API URL (persisted value verified via the API)                                                               |    ✅    | plugin.spec.ts                                  |
+| 9.25 | Change authentication plugin       | Switch to a different authentication configuration (stored UUID verified via the API)                                      |    ✅    | plugin.spec.ts                                  |
 | 9.26 | Save configuration changes         | Successfully save changes to existing configuration                                                                        |    ✅    | plugin.spec.ts                                  |
 | 9.27 | Delete plugin configuration        | Delete plugin configuration with confirmation · Show confirmation dialog before delete · Show success message after delete |    ✅    | plugin.spec.ts                                  |
+| 9.27a | Reject invalid RSIN on edit       | Update with an invalid RSIN returns 500 and the modal stays open                                                            |    ✅    | plugin.spec.ts (failure scenario) — no error toast is shown and the invalid value is still persisted; neither is asserted so a fix won't break the test |
+| 9.27b | Reject edit without a name        | Save stays disabled while the configuration name is empty                                                                  |    ✅    | plugin.spec.ts (failure scenario)               |
 
 ---
 
@@ -445,19 +451,19 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | 11.3 | Enter role name           | Enter role name              |    ✅    | access-control.spec.ts                          |
 | 11.4 | Create role               | Create role                  |    ✅    | access-control.spec.ts                          |
 | 11.5 | View role details         | Select and view role details |    ✅    | access-control.spec.ts                          |
-| 11.6 | Edit role metadata        | Edit role metadata           |    ❌    |                                                 |
-| 11.7 | Export role configuration | Export role configuration    |    ❌    |                                                 |
+| 11.6 | Edit role metadata        | Rename the role via the detail page's "Edit metadata" modal, then rename it back |    ✅    | access-control.spec.ts (a role's only metadata is its name; the detail route is keyed on it) |
+| 11.7 | Export role configuration | Export selected role as one JSON file (`combined.permission.json`) · Confirm disabled until an export type is chosen |    ✅    | access-control.spec.ts                          |
 | 11.8 | Delete role               | Delete role                  |    ✅    | access-control.spec.ts                          |
 
 #### 11B · Permissions
 
 | #     | Function                       | Test Scenarios                               | Coverage | Notes                                           |
 |:------|:-------------------------------|:---------------------------------------------|:--------:|:------------------------------------------------|
-| 11.9  | View role permissions          | View role permissions (JSON / visual toggle) |    ❌    |                                                 |
-| 11.10 | Edit permissions JSON          | Edit permissions in JSON format              |    ❌    |                                                 |
-| 11.11 | Configure resource permissions | Configure resource-level permissions         |    ❌    |                                                 |
-| 11.12 | Set permission conditions      | Set permission conditions                    |    ❌    |                                                 |
-| 11.13 | Save role permissions          | Save role permissions                        |    ❌    |                                                 |
+| 11.9  | View role permissions          | Editor / Summary / JSON editor tabs · toggle to Monaco and back |    ✅    | access-control.spec.ts                          |
+| 11.10 | Edit permissions JSON          | Write a permission array in the JSON editor and save it |    ✅    | access-control.spec.ts                          |
+| 11.11 | Configure resource permissions | Pick a resource type and tick an allowed action |    ✅    | access-control.spec.ts (actions are a checkbox grid, not a dropdown) |
+| 11.12 | Set permission conditions      | Add a field/operator/value condition to a permission |    ✅    | access-control.spec.ts (the "equals" label is stored as `==`) |
+| 11.13 | Save role permissions          | Save from both the JSON editor and the form editor; verified via the API |    ✅    | access-control.spec.ts                          |
 
 ---
 
@@ -717,8 +723,8 @@ Covers the standalone `/processes` admin page (the *independent* process context
 
 | #    | Function              | Test Scenarios         | Coverage | Notes                                           |
 |:-----|:----------------------|:-----------------------|:--------:|:------------------------------------------------|
-| 18.1 | View application logs | View application logs  |    ❌    |                                                 |
-| 18.2 | Filter/search logs    | Filter and search logs |    ❌    |                                                 |
+| 18.1 | View application logs | View application logs  |    ❌    | `tests/logging/` is written (list, columns, pagination, details modal) but **not yet verified**: the dev server is serving a stale build of `@valtimo/logging`, so the new `data-test-id`s never reach the DOM. Needs a frontend dev-server restart |
+| 18.2 | Filter/search logs    | Filter and search logs |    ❌    | Same blocker as 18.1 — filter-by-message, filter-by-level, clear, and a no-results failure case are written but unverified |
 
 ---
 
@@ -745,9 +751,9 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   373   |
-| ✅ Covered by Playwright |   304   |
-| ❌ Not covered           |   69    |
+| Total Functions          |   379   |
+| ✅ Covered by Playwright |   330   |
+| ❌ Not covered           |   49    |
 | ⏳ In progress           |    1    |
-| `N/A` Not applicable     |    3    |
-| **Coverage %**           | **81.5%** |
+| `N/A` Not applicable     |    5    |
+| **Coverage %**           | **87.1%** |
