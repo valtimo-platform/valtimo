@@ -27,10 +27,10 @@
 
 * **A divider widget can be duplicated again**
 
-  Duplicating a divider widget opened the divider dialog in edit mode, which left the key empty without a
-  way to fill it in, so the *Duplicate* button stayed disabled. The dialog now opens in duplicate mode and
-  suggests a new key, based on the title of the divider or — when it has no title — on the key of the
-  divider that is being duplicated.
+  Duplicating a divider was impossible because it opened the duplication modal with an empty (invalid) key
+  and no way to edit this key. This resulted in a disabled *Duplicate* button. The divider key is now always
+  filled with a default unique value, and it is possible to edit the key before duplicating it.
+  
 * **Start form of a building block now opens in the panel**
 
   Starting a building block from the 'Start' menu of a case did nothing when the start form of its
