@@ -166,6 +166,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private _validationErrorElementIds: string[] = [];
   private _validationHoverHandler: ((event: any) => void) | null = null;
   private _validationOutHandler: ((event: any) => void) | null = null;
+  private _selectionChangedHandler: ((event: any) => void) | null = null;
+  private _fieldInputCleanupFns: (() => void)[] = [];
   private _expressionAutocomplete: ExpressionAutocomplete | null = null;
   private _activityMarkerElementIds: string[] = [];
   private _activityMarkerUpdateTimeout: any = null;
@@ -782,6 +784,11 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     eventBus.on('element.hover', this._validationHoverHandler);
     eventBus.on('element.out', this._validationOutHandler);
 
+    this._selectionChangedHandler = (event: any) => {
+      this.highlightInvalidFieldsInPropertiesPanel(event.newSelection, errors);
+    };
+    eventBus.on('selection.changed', this._selectionChangedHandler);
+
     const selection = modeler.get('selection') as any;
     const selected = selection.get();
     if (selected?.length > 0) {
@@ -789,6 +796,104 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       selection.deselect(current);
       selection.select(current);
     }
+  }
+
+  private highlightInvalidFieldsInPropertiesPanel(
+    newSelection: any[],
+    errors: ProcessDefinitionValidationError[]
+  ): void {
+    document.querySelectorAll('.validation-error-field').forEach(el => {
+      el.classList.remove('validation-error-field');
+    });
+    document.querySelectorAll('.validation-error-param').forEach(el => {
+      el.classList.remove('validation-error-param');
+    });
+
+    if (!newSelection?.length) return;
+
+    const selectedId = newSelection[0]?.id;
+    if (!selectedId) return;
+
+    const elementErrors = errors.filter(e => e.elementId === selectedId);
+
+    setTimeout(() => {
+      for (const error of elementErrors) {
+        const listenerEntryId =
+          error.listenerType != null && error.listenerIndex != null
+            ? `${selectedId}-${error.listenerType}-${error.listenerIndex}`
+            : null;
+
+        if (error.invalidFields) {
+          for (const fieldId of error.invalidFields) {
+            let entry: Element | null = null;
+
+            if (listenerEntryId) {
+              const listenerEntry = document.querySelector(
+                `[data-entry-id="${listenerEntryId}"]`
+              );
+              if (listenerEntry) {
+                entry = listenerEntry.querySelector(`[data-entry-id="${fieldId}"]`);
+              }
+            }
+
+            if (!entry) {
+              entry = document.querySelector(`[data-entry-id="${fieldId}"]`);
+            }
+
+            if (entry) {
+              entry.classList.add('validation-error-field');
+              const input = entry.querySelector('input, textarea, select');
+              if (input) {
+                const handler = (): void => {
+                  entry!.classList.remove('validation-error-field');
+                  input.removeEventListener('input', handler);
+                  input.removeEventListener('change', handler);
+                };
+                input.addEventListener('input', handler);
+                input.addEventListener('change', handler);
+                this._fieldInputCleanupFns.push(() => {
+                  input.removeEventListener('input', handler);
+                  input.removeEventListener('change', handler);
+                });
+              }
+            }
+          }
+        }
+
+        if (error.invalidArguments && error.invalidArguments.length > 0) {
+          let scopeElement: Element | null = null;
+
+          if (listenerEntryId) {
+            scopeElement = document.querySelector(`[data-entry-id="${listenerEntryId}"]`);
+          }
+
+          const wrapper = scopeElement
+            ? scopeElement.querySelector('.expression-editor-wrapper') as HTMLElement
+            : document.querySelector('.expression-editor-wrapper') as HTMLElement;
+          if (wrapper) {
+            wrapper.dataset.invalidArgs = JSON.stringify(error.invalidArguments);
+          }
+
+          for (const idx of error.invalidArguments) {
+            const paramInput = scopeElement
+              ? scopeElement.querySelector(`.expression-editor-param input[data-param-index="${idx}"]`)
+              : document.querySelector(`.expression-editor-param input[data-param-index="${idx}"]`);
+
+            if (paramInput) {
+              paramInput.classList.add('validation-error-param');
+              const handler = (): void => {
+                paramInput!.classList.remove('validation-error-param');
+                paramInput!.removeEventListener('input', handler);
+              };
+              paramInput.addEventListener('input', handler);
+              this._fieldInputCleanupFns.push(() => {
+                paramInput!.removeEventListener('input', handler);
+              });
+            }
+          }
+        }
+      }
+    }, 50);
   }
 
   private clearValidationErrors(): void {
@@ -810,6 +915,23 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       eventBus.off('element.out', this._validationOutHandler);
       this._validationOutHandler = null;
     }
+    if (this._selectionChangedHandler) {
+      eventBus.off('selection.changed', this._selectionChangedHandler);
+      this._selectionChangedHandler = null;
+    }
+
+    this._fieldInputCleanupFns.forEach(fn => fn());
+    this._fieldInputCleanupFns = [];
+
+    document.querySelectorAll('.validation-error-field').forEach(el => {
+      el.classList.remove('validation-error-field');
+    });
+    document.querySelectorAll('.validation-error-param').forEach(el => {
+      el.classList.remove('validation-error-param');
+    });
+    document.querySelectorAll('.expression-editor-wrapper[data-invalid-args]').forEach(el => {
+      delete (el as HTMLElement).dataset.invalidArgs;
+    });
 
     for (const elementId of this._validationErrorElementIds) {
       try {
@@ -1358,6 +1480,19 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     }
 
     clearBuildingBlockCalledElement(editor, activityId);
+  }
+
+  public onValidationErrorClick(elementId: string): void {
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const canvas = modeler.get('canvas') as any;
+    const selection = modeler.get('selection') as any;
+    const elementRegistry = modeler.get('elementRegistry') as any;
+
+    const element = elementRegistry.get(elementId);
+    if (!element) return;
+
+    canvas.scrollToElement(element, {top: 100, bottom: 100, left: 100, right: 100});
+    selection.select(element);
   }
 
   public getValidationErrorMessage(error: {

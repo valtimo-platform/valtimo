@@ -21,6 +21,10 @@ package com.ritense.processlink.validation
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
+import com.ritense.valtimo.processbean.ProcessBeanService
+import com.ritense.valtimo.processbean.dto.ProcessBeanDto
+import com.ritense.valtimo.processbean.dto.ProcessBeanMethodDto
+import com.ritense.valtimo.processbean.dto.ProcessBeanMethodParameterDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -1531,7 +1535,7 @@ class ProcessDefinitionValidatorTest {
 
     @Test
     fun `should report bean not found when bean does not exist in process beans`() {
-        val validatorWithBeans = ProcessDefinitionValidator { mapOf("existingBean" to Object()) }
+        val validatorWithBeans = ProcessDefinitionValidator(processBeansSupplier = { mapOf("existingBean" to Object()) })
 
         val model = Bpmn.createExecutableProcess("test-process")
             .startEvent()
@@ -1551,7 +1555,7 @@ class ProcessDefinitionValidatorTest {
 
     @Test
     fun `should not report bean error when bean exists in process beans`() {
-        val validatorWithBeans = ProcessDefinitionValidator { mapOf("myBean" to Object()) }
+        val validatorWithBeans = ProcessDefinitionValidator(processBeansSupplier = { mapOf("myBean" to Object()) })
 
         val model = Bpmn.createExecutableProcess("test-process")
             .startEvent()
@@ -1582,7 +1586,7 @@ class ProcessDefinitionValidatorTest {
 
     @Test
     fun `should allow execution variable in any element`() {
-        val validatorWithBeans = ProcessDefinitionValidator { mapOf("someBean" to Object()) }
+        val validatorWithBeans = ProcessDefinitionValidator(processBeansSupplier = { mapOf("someBean" to Object()) })
 
         val model = Bpmn.createExecutableProcess("test-process")
             .startEvent()
@@ -1598,7 +1602,7 @@ class ProcessDefinitionValidatorTest {
 
     @Test
     fun `should allow task variable in user task`() {
-        val validatorWithBeans = ProcessDefinitionValidator { mapOf("someBean" to Object()) }
+        val validatorWithBeans = ProcessDefinitionValidator(processBeansSupplier = { mapOf("someBean" to Object()) })
 
         val model = Bpmn.createExecutableProcess("test-process")
             .startEvent()
@@ -1613,7 +1617,7 @@ class ProcessDefinitionValidatorTest {
 
     @Test
     fun `should report task variable in non-user-task element`() {
-        val validatorWithBeans = ProcessDefinitionValidator { mapOf("someBean" to Object()) }
+        val validatorWithBeans = ProcessDefinitionValidator(processBeansSupplier = { mapOf("someBean" to Object()) })
 
         val model = Bpmn.createExecutableProcess("test-process")
             .startEvent()
@@ -1627,6 +1631,311 @@ class ProcessDefinitionValidatorTest {
         val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "EXPRESSION_BEAN_NOT_FOUND" }
         assertThat(error).isNotNull
         assertThat(error!!.reason).contains("task")
+    }
+
+    @Test
+    fun `should report method not found when method does not exist on bean`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("existingMethod" to 0)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.nonExistentMethod()}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "EXPRESSION_METHOD_NOT_FOUND" }
+        assertThat(error).isNotNull
+        assertThat(error!!.reason).contains("Method 'nonExistentMethod' not found on bean 'myBean'")
+        assertThat(error.severity).isEqualTo(ValidationSeverity.WARNING)
+        assertThat(error.invalidFields).containsExactly("operaton:expression", "operaton:delegateExpression")
+    }
+
+    @Test
+    fun `should report argument count mismatch when too few arguments`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("methodWithTwoArgs" to 2)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.methodWithTwoArgs(onlyOneArg)}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "EXPRESSION_EMPTY_ARGUMENTS" }
+        assertThat(error).isNotNull
+        assertThat(error!!.reason).contains("Empty argument(s): param1")
+        assertThat(error.severity).isEqualTo(ValidationSeverity.ERROR)
+        assertThat(error.invalidFields).containsExactly("operaton:expression", "operaton:delegateExpression")
+        assertThat(error.invalidArguments).containsExactly(1)
+    }
+
+    @Test
+    fun `should report argument count mismatch when too many arguments`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("methodWithOneArg" to 1)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.methodWithOneArg(arg1, arg2, arg3)}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "EXPRESSION_ARGUMENT_COUNT_MISMATCH" }
+        assertThat(error).isNotNull
+        assertThat(error!!.reason).contains("expects 1 argument(s) but got 3")
+    }
+
+    @Test
+    fun `should pass when argument count matches`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("methodWithTwoArgs" to 2)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.methodWithTwoArgs(arg1, arg2)}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        assertThat(result.errors.filter { it.errorCode == "EXPRESSION_ARGUMENT_COUNT_MISMATCH" }).isEmpty()
+        assertThat(result.errors.filter { it.errorCode == "EXPRESSION_METHOD_NOT_FOUND" }).isEmpty()
+    }
+
+    @Test
+    fun `should handle overloaded methods correctly`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("overloadedMethod" to 1, "overloadedMethod" to 2)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.overloadedMethod(arg1, arg2)}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        assertThat(result.errors.filter { it.errorCode == "EXPRESSION_ARGUMENT_COUNT_MISMATCH" }).isEmpty()
+    }
+
+    @Test
+    fun `should report when no overload matches`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("overloadedMethod" to 1, "overloadedMethod" to 2)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.overloadedMethod(arg1, arg2, arg3)}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val error = result.errors.find { it.errorCode == "EXPRESSION_ARGUMENT_COUNT_MISMATCH" }
+        assertThat(error).isNotNull
+        assertThat(error!!.reason).contains("expects 1 or 2 argument(s) but got 3")
+    }
+
+    @Test
+    fun `should handle nested method calls in arguments`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("methodWithOneArg" to 1)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.methodWithOneArg(execution.getVariable('test'))}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        assertThat(result.errors.filter { it.errorCode == "EXPRESSION_ARGUMENT_COUNT_MISMATCH" }).isEmpty()
+    }
+
+    @Test
+    fun `should report argument count mismatch for fewer empty arguments than expected`() {
+        // Method expects 5 args but expression has 3 empty args (, , )
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("methodWithFiveArgs" to 5)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.methodWithFiveArgs(, , )}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        // Should get empty arguments error with all indices (3 provided empty + 2 missing)
+        val argError = result.errors.find { it.errorCode == "EXPRESSION_EMPTY_ARGUMENTS" }
+        assertThat(argError).isNotNull
+        assertThat(argError!!.reason).contains("All arguments are empty")
+        assertThat(argError.invalidArguments).containsExactly(0, 1, 2, 3, 4)
+        // Should NOT have syntax error since we gave a more specific error
+        val syntaxErrors = result.errors.filter { it.errorCode?.startsWith("EXPRESSION_") == true &&
+            it.errorCode != "EXPRESSION_EMPTY_ARGUMENTS" }
+        assertThat(syntaxErrors).isEmpty()
+    }
+
+    @Test
+    fun `should report empty arguments when all argument slots are empty`() {
+        // Method expects 3 args and expression has 3 empty args (, , )
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("methodWithThreeArgs" to 3)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.methodWithThreeArgs(, , )}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val emptyError = result.errors.find { it.errorCode == "EXPRESSION_EMPTY_ARGUMENTS" }
+        assertThat(emptyError).isNotNull
+        assertThat(emptyError!!.reason).contains("All arguments are empty")
+        assertThat(emptyError.severity).isEqualTo(ValidationSeverity.ERROR)
+        assertThat(emptyError.invalidArguments).containsExactly(0, 1, 2)
+    }
+
+    @Test
+    fun `should report empty arguments when some argument slots are empty`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("methodWithThreeArgs" to 3)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.methodWithThreeArgs(arg1, , arg3)}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val emptyError = result.errors.find { it.errorCode == "EXPRESSION_EMPTY_ARGUMENTS" }
+        assertThat(emptyError).isNotNull
+        assertThat(emptyError!!.reason).contains("Empty argument(s)")
+        assertThat(emptyError.invalidArguments).containsExactly(1)
+    }
+
+    @Test
+    fun `should report argument mismatch for no arguments when method requires some`() {
+        val processBeanService = createMockProcessBeanService(
+            "myBean" to listOf("methodWithThreeArgs" to 3)
+        )
+        val validatorWithBeans = ProcessDefinitionValidator(
+            processBeansSupplier = { mapOf("myBean" to Object()) },
+            processBeanService = processBeanService
+        )
+
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent()
+            .serviceTask("my-task")
+            .operatonExpression("\${myBean.methodWithThreeArgs()}")
+            .endEvent()
+            .done()
+
+        val result = validatorWithBeans.validate(model, emptyList())
+
+        val error = result.errors.find { it.errorCode == "EXPRESSION_EMPTY_ARGUMENTS" }
+        assertThat(error).isNotNull
+        assertThat(error!!.reason).contains("All arguments are empty")
+        assertThat(error.invalidArguments).containsExactly(0, 1, 2)
+    }
+
+    private fun createMockProcessBeanService(vararg beanMethods: Pair<String, List<Pair<String, Int>>>): ProcessBeanService {
+        return object : ProcessBeanService {
+            override fun getProcessBeans(): List<ProcessBeanDto> {
+                return beanMethods.map { (beanName, methods) ->
+                    ProcessBeanDto(
+                        name = beanName,
+                        className = "com.example.$beanName",
+                        description = null,
+                        methods = methods.map { (methodName, paramCount) ->
+                            ProcessBeanMethodDto(
+                                name = methodName,
+                                description = null,
+                                example = null,
+                                returnType = "void",
+                                parameters = (0 until paramCount).map { i ->
+                                    ProcessBeanMethodParameterDto(name = "param$i", type = "String")
+                                }
+                            )
+                        }
+                    )
+                }
+            }
+
+            override fun getProcessBean(beanName: String): ProcessBeanDto? {
+                return getProcessBeans().find { it.name == beanName }
+            }
+        }
     }
 
     private fun createModelWithServiceTask(id: String): BpmnModelInstance {

@@ -1887,7 +1887,10 @@
       "EXPRESSION_MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
       "EXPRESSION_INCOMPLETE": "Expression {{expression}} is incomplete",
       "EXPRESSION_INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
-      "EXPRESSION_BEAN_NOT_FOUND": "No bean '{{expression}}' found. If using a process variable, ensure it exists at runtime"
+      "EXPRESSION_BEAN_NOT_FOUND": "No bean '{{expression}}' found. If using a process variable, ensure it exists at runtime",
+      "EXPRESSION_METHOD_NOT_FOUND": "Method not found on bean. Check the expression {{expression}}",
+      "EXPRESSION_ARGUMENT_COUNT_MISMATCH": "Wrong number of arguments in expression",
+      "EXPRESSION_EMPTY_ARGUMENTS": "One or more arguments are empty in expression"
     },
     "warningConfirmation": {
       "title": "Process has warnings",

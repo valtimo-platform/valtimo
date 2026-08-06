@@ -50,6 +50,10 @@ interface ProcessDefinitionValidationError {
   errorCode?: string;
   expression?: string;
   severity?: 'ERROR' | 'WARNING';
+  invalidFields?: string[];
+  invalidArguments?: number[];
+  listenerType?: string;
+  listenerIndex?: number;
 }
 
 interface ProcessDefinitionValidationResult {

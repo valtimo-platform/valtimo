@@ -19,6 +19,7 @@
 package com.ritense.processlink.validation
 
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
+import com.ritense.valtimo.processbean.ProcessBeanService
 import org.operaton.bpm.impl.juel.Builder
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.instance.BoundaryEvent
@@ -47,6 +48,7 @@ import org.operaton.bpm.model.bpmn.instance.TerminateEventDefinition
 import org.operaton.bpm.model.bpmn.instance.TimerEventDefinition
 import org.operaton.bpm.model.bpmn.instance.UserTask
 import org.operaton.bpm.model.bpmn.instance.operaton.OperatonExecutionListener
+import org.operaton.bpm.model.bpmn.instance.operaton.OperatonTaskListener
 import java.util.function.Supplier
 
 data class ProcessDefinitionValidationOptions(
@@ -55,10 +57,12 @@ data class ProcessDefinitionValidationOptions(
 )
 
 class ProcessDefinitionValidator(
-    private val processBeansSupplier: Supplier<Map<String, Any>> = Supplier { emptyMap() }
+    private val processBeansSupplier: Supplier<Map<String, Any>> = Supplier { emptyMap() },
+    private val processBeanService: ProcessBeanService? = null
 ) {
     private val treeBuilder = Builder(Builder.Feature.METHOD_INVOCATIONS)
     private val beanNameRegex = Regex("""[\$#]\{(\w+)[\.\(\}]""")
+    private val methodCallRegex = Regex("""[\$#]\{(\w+)\.(\w+)\(([^)]*)\)?""")
 
     fun validate(
         bpmnModel: BpmnModelInstance,
@@ -85,6 +89,7 @@ class ProcessDefinitionValidator(
         validateTimerIntermediateCatchEvents(bpmnModel, errors)
         validateStartEventDefinitions(bpmnModel, processLinkActivityIds, errors)
         validateNoneStartEvents(bpmnModel, processLinkActivityIds, options, errors)
+        validateListenerExpressions(bpmnModel, errors)
 
         return ProcessDefinitionValidationResult(
             isExecutable = isExecutable,
@@ -715,6 +720,63 @@ class ProcessDefinitionValidator(
         }
     }
 
+    private fun validateListenerExpressions(
+        bpmnModel: BpmnModelInstance,
+        errors: MutableList<ProcessDefinitionValidationError>
+    ) {
+        bpmnModel.getModelElementsByType(FlowNode::class.java).forEach { element ->
+            val extensionElements = element.extensionElements ?: return@forEach
+
+            extensionElements.elementsQuery
+                .filterByType(OperatonExecutionListener::class.java)
+                .list()
+                .forEachIndexed { index, listener ->
+                    validateExpression(
+                        listener.operatonExpression,
+                        element.id,
+                        element.elementType.typeName,
+                        element.name,
+                        errors,
+                        "executionListener",
+                        index
+                    )
+                    validateExpression(
+                        listener.operatonDelegateExpression,
+                        element.id,
+                        element.elementType.typeName,
+                        element.name,
+                        errors,
+                        "executionListener",
+                        index
+                    )
+                }
+
+            extensionElements.elementsQuery
+                .filterByType(OperatonTaskListener::class.java)
+                .list()
+                .forEachIndexed { index, listener ->
+                    validateExpression(
+                        listener.operatonExpression,
+                        element.id,
+                        element.elementType.typeName,
+                        element.name,
+                        errors,
+                        "taskListener",
+                        index
+                    )
+                    validateExpression(
+                        listener.operatonDelegateExpression,
+                        element.id,
+                        element.elementType.typeName,
+                        element.name,
+                        errors,
+                        "taskListener",
+                        index
+                    )
+                }
+        }
+    }
+
     private fun hasImplementation(task: ServiceTask): Boolean {
         return task.operatonType != null
             || task.operatonClass != null
@@ -742,7 +804,9 @@ class ProcessDefinitionValidator(
         elementId: String,
         elementType: String,
         elementName: String?,
-        errors: MutableList<ProcessDefinitionValidationError>
+        errors: MutableList<ProcessDefinitionValidationError>,
+        listenerType: String? = null,
+        listenerIndex: Int? = null
     ) {
         if (expression.isNullOrBlank()) return
 
@@ -754,33 +818,44 @@ class ProcessDefinitionValidator(
                     elementName = elementName,
                     reason = "Expression must use \${...} or #{...} syntax",
                     errorCode = ProcessDefinitionValidationErrorCode.EXPRESSION_MISSING_EL_MARKERS.name,
-                    expression = expression
+                    expression = expression,
+                    listenerType = listenerType,
+                    listenerIndex = listenerIndex
                 )
             )
             return
         }
 
+        var syntaxError: Exception? = null
         try {
             treeBuilder.build(expression)
         } catch (e: Exception) {
-            val errorCode = mapExceptionToExpressionErrorCode(e.message)
+            syntaxError = e
+        }
+
+        // Try semantic validation - it may give a more helpful error or confirm the expression is valid
+        val processBeans = processBeansSupplier.get()
+        val methodValidationRan = if (processBeans.isNotEmpty()) {
+            validateExpressionSemantics(processBeans, expression, elementId, elementType, elementName, errors, listenerType, listenerIndex)
+        } else {
+            false
+        }
+
+        // Only report syntax error if method validation didn't run (can't confirm method is valid)
+        if (syntaxError != null && !methodValidationRan) {
+            val errorCode = mapExceptionToExpressionErrorCode(syntaxError.message)
             errors.add(
                 ProcessDefinitionValidationError(
                     elementId = elementId,
                     elementType = elementType,
                     elementName = elementName,
-                    reason = "Invalid expression syntax: ${e.message}",
+                    reason = "Invalid expression syntax: ${syntaxError.message}",
                     errorCode = errorCode.name,
-                    expression = expression
+                    expression = expression,
+                    listenerType = listenerType,
+                    listenerIndex = listenerIndex
                 )
             )
-            return
-        }
-
-        // Semantic validation - check bean exists
-        val processBeans = processBeansSupplier.get()
-        if (processBeans.isNotEmpty()) {
-            validateExpressionSemantics(processBeans, expression, elementId, elementType, elementName, errors)
         }
     }
 
@@ -790,16 +865,18 @@ class ProcessDefinitionValidator(
         elementId: String,
         elementType: String,
         elementName: String?,
-        errors: MutableList<ProcessDefinitionValidationError>
-    ) {
+        errors: MutableList<ProcessDefinitionValidationError>,
+        listenerType: String? = null,
+        listenerIndex: Int? = null
+    ): Boolean {
         val beanNameMatch = beanNameRegex.find(expression)
-        val beanName = beanNameMatch?.groupValues?.get(1) ?: return
+        val beanName = beanNameMatch?.groupValues?.get(1) ?: return false
 
         // Skip JUEL built-ins and Operaton runtime variables
         val alwaysAvailable = setOf("true", "false", "null", "empty", "not",
             "execution", "authenticatedUserId", "variableContext")
-        if (beanName in alwaysAvailable) return
-        if (elementType == "UserTask" && beanName == "task") return
+        if (beanName in alwaysAvailable) return false
+        if (elementType == "UserTask" && beanName == "task") return false
 
         if (!processBeans.containsKey(beanName)) {
             errors.add(
@@ -810,10 +887,182 @@ class ProcessDefinitionValidator(
                     reason = "No bean named '$beanName' found. If using a process variable, ensure it exists at runtime.",
                     errorCode = ProcessDefinitionValidationErrorCode.EXPRESSION_BEAN_NOT_FOUND.name,
                     expression = expression,
-                    severity = ValidationSeverity.WARNING
+                    severity = ValidationSeverity.WARNING,
+                    listenerType = listenerType,
+                    listenerIndex = listenerIndex
+                )
+            )
+            return false
+        }
+
+        // Validate method existence and argument count if ProcessBeanService is available
+        if (processBeanService != null) {
+            return validateMethodCall(processBeanService, beanName, expression, elementId, elementType, elementName, errors, listenerType, listenerIndex)
+        }
+        return false
+    }
+
+    private fun validateMethodCall(
+        processBeanService: ProcessBeanService,
+        beanName: String,
+        expression: String,
+        elementId: String,
+        elementType: String,
+        elementName: String?,
+        errors: MutableList<ProcessDefinitionValidationError>,
+        listenerType: String? = null,
+        listenerIndex: Int? = null
+    ): Boolean {
+        val methodMatch = methodCallRegex.find(expression) ?: return false
+        val methodName = methodMatch.groupValues[2]
+        val argsString = methodMatch.groupValues[3].trim()
+
+        val beanDto = processBeanService.getProcessBean(beanName) ?: return false
+
+        val matchingMethods = beanDto.methods.filter { it.name == methodName }
+
+        if (matchingMethods.isEmpty()) {
+            errors.add(
+                ProcessDefinitionValidationError(
+                    elementId = elementId,
+                    elementType = elementType,
+                    elementName = elementName,
+                    reason = "Method '$methodName' not found on bean '$beanName'.",
+                    errorCode = ProcessDefinitionValidationErrorCode.EXPRESSION_METHOD_NOT_FOUND.name,
+                    expression = expression,
+                    severity = ValidationSeverity.WARNING,
+                    invalidFields = listOf("operaton:expression", "operaton:delegateExpression"),
+                    listenerType = listenerType,
+                    listenerIndex = listenerIndex
+                )
+            )
+            return true
+        }
+
+        val (actualArgCount, emptyArgIndices) = countArgumentsWithEmptyCheck(argsString)
+        val matchingOverload = matchingMethods.find { it.parameters.size == actualArgCount }
+
+        if (matchingOverload == null) {
+            val minExpected = matchingMethods.minOf { it.parameters.size }
+            if (actualArgCount < minExpected) {
+                val targetOverload = matchingMethods.minByOrNull { it.parameters.size }!!
+                val missingIndices = (actualArgCount until targetOverload.parameters.size).toList()
+                val allEmptyIndices = (emptyArgIndices + missingIndices).distinct().sorted()
+                val emptyNames = allEmptyIndices.map { targetOverload.parameters[it].name }
+                val emptyText = if (allEmptyIndices.size == targetOverload.parameters.size) {
+                    "All arguments are empty"
+                } else {
+                    "Empty argument(s): ${emptyNames.joinToString(", ")}"
+                }
+                errors.add(
+                    ProcessDefinitionValidationError(
+                        elementId = elementId,
+                        elementType = elementType,
+                        elementName = elementName,
+                        reason = "$emptyText for method '$methodName' on bean '$beanName'.",
+                        errorCode = ProcessDefinitionValidationErrorCode.EXPRESSION_EMPTY_ARGUMENTS.name,
+                        expression = expression,
+                        severity = ValidationSeverity.ERROR,
+                        invalidFields = listOf("operaton:expression", "operaton:delegateExpression"),
+                        invalidArguments = allEmptyIndices,
+                        listenerType = listenerType,
+                        listenerIndex = listenerIndex
+                    )
+                )
+            } else {
+                val expectedCounts = matchingMethods.map { it.parameters.size }.distinct().sorted()
+                val expectedText = if (expectedCounts.size == 1) {
+                    "${expectedCounts[0]}"
+                } else {
+                    expectedCounts.joinToString(" or ")
+                }
+                errors.add(
+                    ProcessDefinitionValidationError(
+                        elementId = elementId,
+                        elementType = elementType,
+                        elementName = elementName,
+                        reason = "Method '$methodName' on bean '$beanName' expects $expectedText argument(s) but got $actualArgCount.",
+                        errorCode = ProcessDefinitionValidationErrorCode.EXPRESSION_ARGUMENT_COUNT_MISMATCH.name,
+                        expression = expression,
+                        severity = ValidationSeverity.ERROR,
+                        invalidFields = listOf("operaton:expression", "operaton:delegateExpression"),
+                        listenerType = listenerType,
+                        listenerIndex = listenerIndex
+                    )
+                )
+            }
+        } else if (emptyArgIndices.isNotEmpty()) {
+            val params = matchingOverload.parameters
+            val emptyParamNames = emptyArgIndices.map { idx ->
+                if (idx < params.size) params[idx].name else "argument ${idx + 1}"
+            }
+            val emptyText = if (emptyParamNames.size == actualArgCount) {
+                "All arguments are empty"
+            } else {
+                "Empty argument(s): ${emptyParamNames.joinToString(", ")}"
+            }
+            errors.add(
+                ProcessDefinitionValidationError(
+                    elementId = elementId,
+                    elementType = elementType,
+                    elementName = elementName,
+                    reason = "$emptyText for method '$methodName' on bean '$beanName'.",
+                    errorCode = ProcessDefinitionValidationErrorCode.EXPRESSION_EMPTY_ARGUMENTS.name,
+                    expression = expression,
+                    severity = ValidationSeverity.ERROR,
+                    invalidFields = listOf("operaton:expression", "operaton:delegateExpression"),
+                    invalidArguments = emptyArgIndices,
+                    listenerType = listenerType,
+                    listenerIndex = listenerIndex
                 )
             )
         }
+        // Return true to indicate method validation ran (suppress generic syntax error)
+        return true
+    }
+
+    private fun countArgumentsWithEmptyCheck(argsString: String): Pair<Int, List<Int>> {
+        if (argsString.isEmpty()) return Pair(0, emptyList())
+
+        val arguments = mutableListOf<String>()
+        var currentArg = StringBuilder()
+        var depth = 0
+        var inString = false
+        var stringChar = ' '
+
+        for (char in argsString) {
+            when {
+                !inString && (char == '"' || char == '\'') -> {
+                    inString = true
+                    stringChar = char
+                    currentArg.append(char)
+                }
+                inString && char == stringChar -> {
+                    inString = false
+                    currentArg.append(char)
+                }
+                !inString && char == '(' -> {
+                    depth++
+                    currentArg.append(char)
+                }
+                !inString && char == ')' -> {
+                    depth--
+                    currentArg.append(char)
+                }
+                !inString && char == ',' && depth == 0 -> {
+                    arguments.add(currentArg.toString())
+                    currentArg = StringBuilder()
+                }
+                else -> currentArg.append(char)
+            }
+        }
+        arguments.add(currentArg.toString())
+
+        val emptyIndices = arguments.mapIndexedNotNull { index, arg ->
+            if (arg.trim().isEmpty()) index else null
+        }
+
+        return Pair(arguments.size, emptyIndices)
     }
 
     private fun mapExceptionToExpressionErrorCode(message: String?): ProcessDefinitionValidationErrorCode {

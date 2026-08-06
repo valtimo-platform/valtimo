@@ -187,13 +187,32 @@ class ExpressionAutocomplete {
     const technicalContainer = wrapper.querySelector('.expression-editor-technical') as HTMLElement;
     const simpleContainer = wrapper.querySelector('.expression-editor-simple') as HTMLElement;
 
+    const invalidArgsStr = wrapper.dataset.invalidArgs;
+    const invalidArgs: number[] = invalidArgsStr ? JSON.parse(invalidArgsStr) : [];
+
     if (mode === 'simple') {
       technicalContainer.style.display = 'none';
       simpleContainer.style.display = 'block';
+      input.classList.remove('validation-error-param');
       this.renderSimpleMode(simpleContainer, input);
+      if (invalidArgs.length > 0) {
+        setTimeout(() => {
+          for (const idx of invalidArgs) {
+            const paramInput = simpleContainer.querySelector(
+              `.expression-editor-param input[data-param-index="${idx}"]`
+            );
+            if (paramInput) {
+              paramInput.classList.add('validation-error-param');
+            }
+          }
+        }, 0);
+      }
     } else {
       technicalContainer.style.display = 'block';
       simpleContainer.style.display = 'none';
+      if (invalidArgs.length > 0) {
+        input.classList.add('validation-error-param');
+      }
       setTimeout(() => input.blur(), 0);
     }
   }

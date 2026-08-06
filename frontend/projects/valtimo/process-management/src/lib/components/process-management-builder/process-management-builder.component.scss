@@ -475,6 +475,24 @@
   }
 }
 
+::ng-deep .bio-properties-panel-entry.validation-error-field {
+  .bio-properties-panel-input,
+  .bio-properties-panel-textfield,
+  .bio-properties-panel-feel-editor-container {
+    border: 2px solid var(--cds-support-error, #da1e28) !important;
+    background-color: var(--cds-notification-error-background, #fff1f1) !important;
+  }
+}
+
+::ng-deep .expression-editor-param input.validation-error-param,
+::ng-deep input.expression-editor-input.validation-error-param,
+::ng-deep .expression-editor-technical input.validation-error-param,
+::ng-deep .expression-editor-technical textarea.validation-error-param {
+  border: 2px solid #da1e28 !important;
+  background-color: #fff1f1 !important;
+  border-color: #da1e28 !important;
+}
+
 ::ng-deep .process-link-properties-panel {
   padding: 8px 12px 16px 12px;
   width: 100%;

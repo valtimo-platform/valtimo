@@ -1915,7 +1915,10 @@
       "EXPRESSION_MISMATCHED_DELIMITER": "Expression {{expression}} heeft niet-overeenkomende haakjes of accolades",
       "EXPRESSION_INCOMPLETE": "Expression {{expression}} is onvolledig",
       "EXPRESSION_INVALID_SYNTAX": "Expression {{expression}} heeft ongeldige syntax",
-      "EXPRESSION_BEAN_NOT_FOUND": "Geen bean '{{expression}}' gevonden. Als u een process variable gebruikt, zorg dat deze tijdens runtime bestaat"
+      "EXPRESSION_BEAN_NOT_FOUND": "Geen bean '{{expression}}' gevonden. Als u een process variable gebruikt, zorg dat deze tijdens runtime bestaat",
+      "EXPRESSION_METHOD_NOT_FOUND": "Methode niet gevonden op bean. Controleer de expression {{expression}}",
+      "EXPRESSION_ARGUMENT_COUNT_MISMATCH": "Verkeerd aantal argumenten in expression",
+      "EXPRESSION_EMPTY_ARGUMENTS": "Een of meer argumenten zijn leeg in expression"
     },
     "warningConfirmation": {
       "title": "Proces bevat waarschuwingen",
