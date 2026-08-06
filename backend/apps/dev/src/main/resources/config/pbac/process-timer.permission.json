@@ -1,0 +1,10 @@
+{
+    "changesetId": "process-timer-admin-v1",
+    "permissions": [
+        {
+            "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTimer",
+            "action": "complete",
+            "roleKey": "ROLE_ADMIN"
+        }
+    ]
+}

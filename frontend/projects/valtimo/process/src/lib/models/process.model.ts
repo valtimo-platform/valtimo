@@ -135,3 +135,8 @@ export interface IdentityLink {
   groupId: string;
   type: string;
 }
+
+export interface SkippableTimer {
+  jobId: string;
+  activityId: string | null;
+}
