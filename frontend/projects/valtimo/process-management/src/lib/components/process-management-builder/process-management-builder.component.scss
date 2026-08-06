@@ -1,17 +1,19 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 :host {
@@ -340,6 +342,89 @@
   &:hover &__text,
   &--active &__text {
     display: block;
+  }
+}
+
+::ng-deep .djs-overlay-activity-marker {
+  overflow: visible !important;
+  pointer-events: all !important;
+}
+
+::ng-deep .activity-marker-overlay {
+  display: flex;
+  gap: 2px;
+}
+
+::ng-deep .activity-marker-badge {
+  position: relative;
+  cursor: pointer;
+  pointer-events: all;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 0;
+  }
+
+  &__text {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    white-space: nowrap;
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 10;
+  }
+
+  &:hover &__text,
+  &--active &__text {
+    display: block;
+  }
+
+  &--process-link &__icon {
+    background-color: var(--cds-support-info, #0043ce);
+    color: var(--cds-text-on-color, #ffffff);
+  }
+
+  &--process-link &__text {
+    border: 1px solid var(--cds-support-info, #0043ce);
+    color: var(--cds-support-info, #0043ce);
+    background-color: var(--cds-layer, #ffffff);
+  }
+
+  &--execution-listener &__icon {
+    background-color: var(--cds-purple-60, #8a3ffc);
+    color: var(--cds-text-on-color, #ffffff);
+  }
+
+  &--execution-listener &__text {
+    border: 1px solid var(--cds-purple-60, #8a3ffc);
+    color: var(--cds-purple-60, #8a3ffc);
+    background-color: var(--cds-layer, #ffffff);
+  }
+
+  &--task-listener &__icon {
+    background-color: var(--cds-teal-50, #009d9a);
+    color: var(--cds-text-on-color, #ffffff);
+  }
+
+  &--task-listener &__text {
+    border: 1px solid var(--cds-teal-50, #009d9a);
+    color: var(--cds-teal-50, #009d9a);
+    background-color: var(--cds-layer, #ffffff);
   }
 }
 

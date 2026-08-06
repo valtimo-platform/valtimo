@@ -1,17 +1,19 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package com.ritense.processlink.validation
@@ -100,6 +102,7 @@ class ProcessDefinitionValidatorTest {
         val serviceTaskErrors = result.errors.filter { it.elementType == "ServiceTask" }
         assertThat(serviceTaskErrors).hasSize(1)
         assertThat(serviceTaskErrors[0].elementId).isEqualTo("my-service-task")
+        assertThat(serviceTaskErrors[0].errorCode).isEqualTo("SERVICE_TASK_NO_IMPLEMENTATION")
     }
 
     @Test
@@ -181,6 +184,7 @@ class ProcessDefinitionValidatorTest {
         val userTaskErrors = result.errors.filter { it.elementType == "UserTask" }
         assertThat(userTaskErrors).hasSize(1)
         assertThat(userTaskErrors[0].elementId).isEqualTo("my-user-task")
+        assertThat(userTaskErrors[0].errorCode).isEqualTo("USER_TASK_NO_FORM")
     }
 
     @Test
@@ -223,6 +227,7 @@ class ProcessDefinitionValidatorTest {
         val sendTaskErrors = result.errors.filter { it.elementType == "SendTask" }
         assertThat(sendTaskErrors).hasSize(1)
         assertThat(sendTaskErrors[0].elementId).isEqualTo("my-send-task")
+        assertThat(sendTaskErrors[0].errorCode).isEqualTo("SEND_TASK_NO_IMPLEMENTATION")
     }
 
     @Test
@@ -265,6 +270,7 @@ class ProcessDefinitionValidatorTest {
         val receiveTaskErrors = result.errors.filter { it.elementType == "ReceiveTask" }
         assertThat(receiveTaskErrors).hasSize(1)
         assertThat(receiveTaskErrors[0].elementId).isEqualTo("my-receive-task")
+        assertThat(receiveTaskErrors[0].errorCode).isEqualTo("RECEIVE_TASK_NO_MESSAGE")
     }
 
     @Test
@@ -307,6 +313,7 @@ class ProcessDefinitionValidatorTest {
         val ruleTaskErrors = result.errors.filter { it.elementType == "BusinessRuleTask" }
         assertThat(ruleTaskErrors).hasSize(1)
         assertThat(ruleTaskErrors[0].elementId).isEqualTo("my-rule-task")
+        assertThat(ruleTaskErrors[0].errorCode).isEqualTo("BUSINESS_RULE_TASK_NO_IMPLEMENTATION")
     }
 
     @Test
@@ -335,6 +342,7 @@ class ProcessDefinitionValidatorTest {
         val callActivityErrors = result.errors.filter { it.elementType == "CallActivity" }
         assertThat(callActivityErrors).hasSize(1)
         assertThat(callActivityErrors[0].elementId).isEqualTo("my-call-activity")
+        assertThat(callActivityErrors[0].errorCode).isEqualTo("CALL_ACTIVITY_NO_CALLED_ELEMENT")
     }
 
     @Test
@@ -378,7 +386,9 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors.filter { it.elementType == "SequenceFlow" }).hasSize(2)
+        val flowErrors = result.errors.filter { it.elementType == "SequenceFlow" }
+        assertThat(flowErrors).hasSize(2)
+        assertThat(flowErrors).allMatch { it.errorCode == "SEQUENCE_FLOW_NO_CONDITION" }
     }
 
     @Test
@@ -439,6 +449,7 @@ class ProcessDefinitionValidatorTest {
         val catchEventErrors = result.errors.filter { it.elementType == "MessageIntermediateCatchEvent" }
         assertThat(catchEventErrors).hasSize(1)
         assertThat(catchEventErrors[0].elementId).isEqualTo("my-catch-event")
+        assertThat(catchEventErrors[0].errorCode).isEqualTo("MESSAGE_EVENT_NO_MESSAGE")
     }
 
     @Test
@@ -497,6 +508,7 @@ class ProcessDefinitionValidatorTest {
         val throwEventErrors = result.errors.filter { it.elementType == "MessageIntermediateThrowEvent" }
         assertThat(throwEventErrors).hasSize(1)
         assertThat(throwEventErrors[0].elementId).isEqualTo("my-throw-event")
+        assertThat(throwEventErrors[0].errorCode).isEqualTo("MESSAGE_EVENT_NO_MESSAGE")
     }
 
     @Test
@@ -537,6 +549,7 @@ class ProcessDefinitionValidatorTest {
         val timerEventErrors = result.errors.filter { it.elementType == "TimerIntermediateCatchEvent" }
         assertThat(timerEventErrors).hasSize(1)
         assertThat(timerEventErrors[0].elementId).isEqualTo("my-timer-event")
+        assertThat(timerEventErrors[0].errorCode).isEqualTo("TIMER_EVENT_NO_CONFIG")
     }
 
     @Test
@@ -606,7 +619,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "test-process" && it.reason == "Process has no start event"
+            it.elementId == "test-process" && it.errorCode == "NO_START_EVENT"
         }
     }
 
@@ -621,7 +634,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "test-process" && it.reason == "Process has no end event"
+            it.elementId == "test-process" && it.errorCode == "NO_END_EVENT"
         }
     }
 
@@ -641,7 +654,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "start" && it.reason == "Start event has no outgoing flow"
+            it.elementId == "start" && it.errorCode == "NO_OUTGOING_FLOW"
         }
     }
 
@@ -661,7 +674,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "end" && it.reason == "End event has no incoming flow"
+            it.elementId == "end" && it.errorCode == "NO_INCOMING_FLOW"
         }
     }
 
@@ -691,7 +704,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "orphan-task" && it.reason == "Element has no incoming flow"
+            it.elementId == "orphan-task" && it.errorCode == "NO_INCOMING_FLOW"
         }
     }
 
@@ -719,7 +732,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "dead-end-task" && it.reason == "Element has no outgoing flow"
+            it.elementId == "dead-end-task" && it.errorCode == "NO_OUTGOING_FLOW"
         }
     }
 
@@ -765,7 +778,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "orphan-boundary" && it.reason == "Boundary event has no outgoing flow"
+            it.elementId == "orphan-boundary" && it.errorCode == "NO_OUTGOING_FLOW"
         }
     }
 
@@ -852,10 +865,10 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "isolated-task" && it.reason == "Element is not reachable from any start event"
+            it.elementId == "isolated-task" && it.errorCode == "UNREACHABLE_ELEMENT"
         }
         assertThat(result.errors).anyMatch {
-            it.elementId == "isolated-end" && it.reason == "Element is not reachable from any start event"
+            it.elementId == "isolated-end" && it.errorCode == "UNREACHABLE_ELEMENT"
         }
     }
 
@@ -997,7 +1010,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "test-process" && it.reason == "Process has multiple none start events"
+            it.elementId == "test-process" && it.errorCode == "MULTIPLE_NONE_START_EVENTS"
         }
     }
 
@@ -1013,7 +1026,7 @@ class ProcessDefinitionValidatorTest {
         assertThat(result.errors).anyMatch {
             it.elementId == "start" &&
                 it.elementType == "StartEvent" &&
-                it.reason == "None start event has no process link or form" &&
+                it.errorCode == "START_EVENT_NO_FORM" &&
                 it.severity == ValidationSeverity.WARNING
         }
     }
@@ -1043,6 +1056,60 @@ class ProcessDefinitionValidatorTest {
 
         assertThat(result.errors).noneMatch {
             it.elementId == "start" && it.reason == "None start event has no process link or form"
+        }
+    }
+
+    @Test
+    fun `should not report none start event without form when process cannot start case and is not user startable`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .endEvent()
+            .done()
+
+        val options = ProcessDefinitionValidationOptions(
+            canInitializeDocument = false,
+            startableByUser = false
+        )
+        val result = validator.validate(model, emptyList(), options)
+
+        assertThat(result.errors).noneMatch {
+            it.elementId == "start" && it.errorCode == "START_EVENT_NO_FORM"
+        }
+    }
+
+    @Test
+    fun `should report none start event without form when process can start case`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .endEvent()
+            .done()
+
+        val options = ProcessDefinitionValidationOptions(
+            canInitializeDocument = true,
+            startableByUser = false
+        )
+        val result = validator.validate(model, emptyList(), options)
+
+        assertThat(result.errors).anyMatch {
+            it.elementId == "start" && it.errorCode == "START_EVENT_NO_FORM"
+        }
+    }
+
+    @Test
+    fun `should report none start event without form when process is user startable`() {
+        val model = Bpmn.createExecutableProcess("test-process")
+            .startEvent("start")
+            .endEvent()
+            .done()
+
+        val options = ProcessDefinitionValidationOptions(
+            canInitializeDocument = false,
+            startableByUser = true
+        )
+        val result = validator.validate(model, emptyList(), options)
+
+        assertThat(result.errors).anyMatch {
+            it.elementId == "start" && it.errorCode == "START_EVENT_NO_FORM"
         }
     }
 
@@ -1098,7 +1165,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "start" && it.reason == "Start event has no path to an end event"
+            it.elementId == "start" && it.errorCode == "NO_PATH_TO_END_EVENT"
         }
     }
 
@@ -1155,7 +1222,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "msg-start" && it.elementType == "MessageStartEvent"
+            it.elementId == "msg-start" && it.errorCode == "MESSAGE_EVENT_NO_MESSAGE"
         }
     }
 
@@ -1209,7 +1276,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "timer-start" && it.elementType == "TimerStartEvent"
+            it.elementId == "timer-start" && it.errorCode == "TIMER_EVENT_NO_CONFIG"
         }
     }
 
@@ -1246,7 +1313,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "signal-start" && it.elementType == "SignalStartEvent"
+            it.elementId == "signal-start" && it.errorCode == "SIGNAL_EVENT_NO_SIGNAL"
         }
     }
 
@@ -1284,7 +1351,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "cond-start" && it.elementType == "ConditionalStartEvent"
+            it.elementId == "cond-start" && it.errorCode == "CONDITIONAL_EVENT_NO_CONDITION"
         }
     }
 
@@ -1321,7 +1388,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "error-start" && it.elementType == "ErrorStartEvent"
+            it.elementId == "error-start" && it.errorCode == "ERROR_EVENT_NO_ERROR"
         }
     }
 
@@ -1359,7 +1426,7 @@ class ProcessDefinitionValidatorTest {
         val result = validator.validate(model, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.elementId == "esc-start" && it.elementType == "EscalationStartEvent"
+            it.elementId == "esc-start" && it.errorCode == "ESCALATION_EVENT_NO_ESCALATION"
         }
     }
 
@@ -1403,7 +1470,7 @@ class ProcessDefinitionValidatorTest {
 
         val error = result.errors.find { it.elementId == "flow-a" && it.reason.contains("Invalid expression syntax") }
         assertThat(error).isNotNull
-        assertThat(error!!.errorCode).isEqualTo("UNCLOSED_PARENTHESIS")
+        assertThat(error!!.errorCode).isEqualTo("EXPRESSION_UNCLOSED_PARENTHESIS")
         assertThat(error.expression).isEqualTo("\${broken(")
     }
 
@@ -1441,7 +1508,7 @@ class ProcessDefinitionValidatorTest {
 
         val error = result.errors.find { it.elementId == "my-task" && it.reason.contains("Invalid expression syntax") }
         assertThat(error).isNotNull
-        assertThat(error!!.errorCode).isEqualTo("UNCLOSED_BRACE")
+        assertThat(error!!.errorCode).isEqualTo("EXPRESSION_UNCLOSED_BRACE")
         assertThat(error.expression).isEqualTo("\${broken]")
     }
 
@@ -1458,7 +1525,7 @@ class ProcessDefinitionValidatorTest {
 
         val error = result.errors.find { it.elementId == "my-task" && it.reason.contains("\${...} or #{...}") }
         assertThat(error).isNotNull
-        assertThat(error!!.errorCode).isEqualTo("MISSING_EL_MARKERS")
+        assertThat(error!!.errorCode).isEqualTo("EXPRESSION_MISSING_EL_MARKERS")
         assertThat(error.expression).isEqualTo("plainTextWithoutMarkers")
     }
 
@@ -1475,7 +1542,7 @@ class ProcessDefinitionValidatorTest {
 
         val result = validatorWithBeans.validate(model, emptyList())
 
-        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "BEAN_NOT_FOUND" }
+        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "EXPRESSION_BEAN_NOT_FOUND" }
         assertThat(error).isNotNull
         assertThat(error!!.reason).contains("No bean named 'nonExistentBean' found")
         assertThat(error.expression).isEqualTo("\${nonExistentBean.doSomething()}")
@@ -1495,7 +1562,7 @@ class ProcessDefinitionValidatorTest {
 
         val result = validatorWithBeans.validate(model, emptyList())
 
-        assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
+        assertThat(result.errors.filter { it.errorCode == "EXPRESSION_BEAN_NOT_FOUND" }).isEmpty()
     }
 
     @Test
@@ -1510,7 +1577,7 @@ class ProcessDefinitionValidatorTest {
 
         val result = validator.validate(model, emptyList())
 
-        assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
+        assertThat(result.errors.filter { it.errorCode == "EXPRESSION_BEAN_NOT_FOUND" }).isEmpty()
     }
 
     @Test
@@ -1526,7 +1593,7 @@ class ProcessDefinitionValidatorTest {
 
         val result = validatorWithBeans.validate(model, emptyList())
 
-        assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
+        assertThat(result.errors.filter { it.errorCode == "EXPRESSION_BEAN_NOT_FOUND" }).isEmpty()
     }
 
     @Test
@@ -1541,7 +1608,7 @@ class ProcessDefinitionValidatorTest {
 
         val result = validatorWithBeans.validate(model, emptyList())
 
-        assertThat(result.errors.filter { it.errorCode == "BEAN_NOT_FOUND" }).isEmpty()
+        assertThat(result.errors.filter { it.errorCode == "EXPRESSION_BEAN_NOT_FOUND" }).isEmpty()
     }
 
     @Test
@@ -1557,7 +1624,7 @@ class ProcessDefinitionValidatorTest {
 
         val result = validatorWithBeans.validate(model, emptyList())
 
-        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "BEAN_NOT_FOUND" }
+        val error = result.errors.find { it.elementId == "my-task" && it.errorCode == "EXPRESSION_BEAN_NOT_FOUND" }
         assertThat(error).isNotNull
         assertThat(error!!.reason).contains("task")
     }

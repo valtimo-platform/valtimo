@@ -1,17 +1,19 @@
 /*
- * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 import {CommonModule} from '@angular/common';
@@ -97,6 +99,7 @@ import {
 import {distinctUntilChanged} from 'rxjs/operators';
 import {EMPTY_BPMN, PROCESS_MANAGEMENT_BUILDER_TEST_IDS} from '../../constants';
 import {
+  ActivityMarkerInfo,
   OpenProcessLinkModalEvent,
   ProcessDefinitionResult,
   ProcessDefinitionValidationError,
@@ -164,6 +167,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private _validationHoverHandler: ((event: any) => void) | null = null;
   private _validationOutHandler: ((event: any) => void) | null = null;
   private _expressionAutocomplete: ExpressionAutocomplete | null = null;
+  private _activityMarkerElementIds: string[] = [];
+  private _activityMarkerUpdateTimeout: any = null;
 
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public readonly isSystemProcess$ = new BehaviorSubject<boolean>(false);
@@ -319,6 +324,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
   public ngOnDestroy(): void {
     this.clearValidationErrors();
+    this.clearActivityMarkers();
+    if (this._activityMarkerUpdateTimeout) {
+      clearTimeout(this._activityMarkerUpdateTimeout);
+    }
     this._bpmnModeler?.destroy();
     this._bpmnViewer?.destroy();
     this._subscriptions.unsubscribe();
@@ -358,6 +367,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
               ...link,
               processDefinitionId: '-',
             })),
+            canInitializeDocument: this.canInitializeDocument$.getValue(),
+            startableByUser: this.startableByUser$.getValue(),
           });
         })
       )
@@ -571,6 +582,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
               ...link,
               processDefinitionId: '-',
             })),
+            canInitializeDocument: this.canInitializeDocument$.getValue(),
+            startableByUser: this.startableByUser$.getValue(),
           });
         })
       )
@@ -815,6 +828,145 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     }
   }
 
+  private getElementListeners(element: any): {
+    hasExecutionListener: boolean;
+    hasTaskListener: boolean;
+    executionListenerCount: number;
+    taskListenerCount: number;
+  } {
+    const extensionElements = element?.businessObject?.extensionElements;
+    const values = extensionElements?.values || [];
+
+    const executionListeners = values.filter(
+      (v: any) => v.$type === 'camunda:ExecutionListener'
+    );
+    const taskListeners = values.filter((v: any) => v.$type === 'camunda:TaskListener');
+
+    return {
+      hasExecutionListener: executionListeners.length > 0,
+      hasTaskListener: taskListeners.length > 0,
+      executionListenerCount: executionListeners.length,
+      taskListenerCount: taskListeners.length,
+    };
+  }
+
+  private updateActivityMarkers(): void {
+    this.clearActivityMarkers();
+
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+    const elementRegistry = modeler.get('elementRegistry') as any;
+
+    const processLinks = this.processManagementEditorService.processLinksForSelectedDefinition;
+    const processLinkActivityIds = new Set(processLinks.map(pl => pl.activityId));
+
+    const elementMarkers = new Map<string, ActivityMarkerInfo>();
+
+    elementRegistry.forEach((element: any) => {
+      if (!element.id || element.type === 'label') return;
+
+      const listeners = this.getElementListeners(element);
+      const hasProcessLink = processLinkActivityIds.has(element.id);
+
+      if (listeners.hasExecutionListener || listeners.hasTaskListener || hasProcessLink) {
+        elementMarkers.set(element.id, {
+          hasExecutionListener: listeners.hasExecutionListener,
+          hasTaskListener: listeners.hasTaskListener,
+          hasProcessLink,
+          executionListenerCount: listeners.executionListenerCount,
+          taskListenerCount: listeners.taskListenerCount,
+        });
+      }
+    });
+
+    for (const [elementId, info] of elementMarkers) {
+      this._activityMarkerElementIds.push(elementId);
+
+      const badges = this.buildActivityMarkerBadges(info, elementId);
+      if (badges) {
+        try {
+          overlays.add(elementId, 'activity-marker', {
+            position: {top: -12, right: 12},
+            html: badges,
+          });
+        } catch (e) {
+          // Element may not exist on canvas
+        }
+      }
+    }
+  }
+
+  private buildActivityMarkerBadges(info: ActivityMarkerInfo, elementId: string): HTMLElement | null {
+    const container = document.createElement('div');
+    container.className = 'activity-marker-overlay';
+    container.dataset.elementId = elementId;
+
+    if (info.hasProcessLink) {
+      const tooltip = this.translateService.instant('processManagement.markers.processLink');
+      container.appendChild(this.buildMarkerBadge('process-link', 'P', tooltip));
+    }
+    if (info.hasExecutionListener) {
+      const countSuffix = info.executionListenerCount > 1 ? ` (${info.executionListenerCount})` : '';
+      const tooltip =
+        this.translateService.instant('processManagement.markers.executionListener') + countSuffix;
+      container.appendChild(this.buildMarkerBadge('execution-listener', 'E', tooltip));
+    }
+    if (info.hasTaskListener) {
+      const countSuffix = info.taskListenerCount > 1 ? ` (${info.taskListenerCount})` : '';
+      const tooltip =
+        this.translateService.instant('processManagement.markers.taskListener') + countSuffix;
+      container.appendChild(this.buildMarkerBadge('task-listener', 'T', tooltip));
+    }
+
+    if (container.children.length === 0) return null;
+
+    return container;
+  }
+
+  private buildMarkerBadge(type: string, label: string, tooltip: string): HTMLElement {
+    const badge = document.createElement('div');
+    badge.className = `activity-marker-badge activity-marker-badge--${type}`;
+
+    const icon = document.createElement('span');
+    icon.className = 'activity-marker-badge__icon';
+    icon.textContent = label;
+    badge.appendChild(icon);
+
+    const text = document.createElement('span');
+    text.className = 'activity-marker-badge__text';
+    text.textContent = tooltip;
+    badge.appendChild(text);
+
+    return badge;
+  }
+
+  private clearActivityMarkers(): void {
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+
+    this._activityMarkerElementIds = [];
+
+    try {
+      overlays.remove({type: 'activity-marker'});
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  private scheduleActivityMarkerUpdate(): void {
+    if (this._activityMarkerUpdateTimeout) {
+      clearTimeout(this._activityMarkerUpdateTimeout);
+    }
+    this._activityMarkerUpdateTimeout = setTimeout(() => {
+      this.updateActivityMarkers();
+      this._activityMarkerUpdateTimeout = null;
+    }, 300);
+  }
+
   private setSelectedProcessDefinitionToLatest(
     processDefinitions: ProcessDefinitionWithPropertiesDto[]
   ): void {
@@ -865,6 +1017,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
       this.processManagementEditorService.setActivityIdBusinessIdMap(idMap);
       this.listenToActivityChangesOnModeler();
+      this.updateActivityMarkers();
     });
   }
 
@@ -898,6 +1051,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     this._bpmnViewer.on('import.done', () => {
       disableCommands(this._bpmnViewer);
+      this.updateActivityMarkers();
     });
   }
 
@@ -966,6 +1120,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.processManagementEditorService.createProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+        this.updateActivityMarkers();
 
         const buildingBlockProcessLinkCreateDto = event as BuildingBlockProcessLinkCreateDto;
 
@@ -992,6 +1147,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.processManagementEditorService.deleteProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+        this.updateActivityMarkers();
 
         this.unsetCalledElementForBuildingBlockProcessLink(event.activityId);
       })
@@ -1031,6 +1187,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     if (!activityId || !businessId) return;
 
     this.processManagementEditorService.updateProcessLinksOnIdChange(activityId, businessId);
+    this.scheduleActivityMarkerUpdate();
   };
 
   private listenToActivityChangesOnModeler(): void {
@@ -1209,9 +1366,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     expression?: string;
   }): string {
     if (error.errorCode) {
-      const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
+      const translationKey = `processManagement.validationErrorCodes.${error.errorCode}`;
       const translated = this.translateService.instant(translationKey, {
-        expression: error.expression ? `'${error.expression}'` : '',
+        expression: error.expression ?? '',
       });
       if (translated !== translationKey) {
         return translated;

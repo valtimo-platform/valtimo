@@ -1,18 +1,18 @@
 /*
  *
- * Copyright 2015-2026 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
  */
 
@@ -49,6 +49,11 @@ import org.operaton.bpm.model.bpmn.instance.UserTask
 import org.operaton.bpm.model.bpmn.instance.operaton.OperatonExecutionListener
 import java.util.function.Supplier
 
+data class ProcessDefinitionValidationOptions(
+    val canInitializeDocument: Boolean = true,
+    val startableByUser: Boolean = true
+)
+
 class ProcessDefinitionValidator(
     private val processBeansSupplier: Supplier<Map<String, Any>> = Supplier { emptyMap() }
 ) {
@@ -57,7 +62,8 @@ class ProcessDefinitionValidator(
 
     fun validate(
         bpmnModel: BpmnModelInstance,
-        processLinks: List<ProcessLinkCreateRequestDto>
+        processLinks: List<ProcessLinkCreateRequestDto>,
+        options: ProcessDefinitionValidationOptions = ProcessDefinitionValidationOptions()
     ): ProcessDefinitionValidationResult {
         val processLinkActivityIds = processLinks.map { it.activityId }.toSet()
         val errors = mutableListOf<ProcessDefinitionValidationError>()
@@ -78,7 +84,7 @@ class ProcessDefinitionValidator(
         validateMessageIntermediateThrowEvents(bpmnModel, processLinkActivityIds, errors)
         validateTimerIntermediateCatchEvents(bpmnModel, errors)
         validateStartEventDefinitions(bpmnModel, processLinkActivityIds, errors)
-        validateNoneStartEvents(bpmnModel, processLinkActivityIds, errors)
+        validateNoneStartEvents(bpmnModel, processLinkActivityIds, options, errors)
 
         return ProcessDefinitionValidationResult(
             isExecutable = isExecutable,
@@ -125,7 +131,8 @@ class ProcessDefinitionValidator(
                     elementId = processElementId(process, participant),
                     elementType = processElementType(participant),
                     elementName = processElementName(process, participant),
-                    reason = "Process has no start event"
+                    reason = "Process has no start event",
+                    errorCode = ProcessDefinitionValidationErrorCode.NO_START_EVENT.name
                 )
             )
         }
@@ -137,7 +144,8 @@ class ProcessDefinitionValidator(
                     elementId = processElementId(process, participant),
                     elementType = processElementType(participant),
                     elementName = processElementName(process, participant),
-                    reason = "Process has no end event"
+                    reason = "Process has no end event",
+                    errorCode = ProcessDefinitionValidationErrorCode.NO_END_EVENT.name
                 )
             )
         }
@@ -158,7 +166,8 @@ class ProcessDefinitionValidator(
                             elementId = node.id,
                             elementType = node.elementType.typeName,
                             elementName = node.name,
-                            reason = "Start event has no outgoing flow"
+                            reason = "Start event has no outgoing flow",
+                            errorCode = ProcessDefinitionValidationErrorCode.NO_OUTGOING_FLOW.name
                         )
                     )
                 }
@@ -169,7 +178,8 @@ class ProcessDefinitionValidator(
                             elementId = node.id,
                             elementType = node.elementType.typeName,
                             elementName = node.name,
-                            reason = "End event has no incoming flow"
+                            reason = "End event has no incoming flow",
+                            errorCode = ProcessDefinitionValidationErrorCode.NO_INCOMING_FLOW.name
                         )
                     )
                 }
@@ -182,6 +192,7 @@ class ProcessDefinitionValidator(
                             elementType = node.elementType.typeName,
                             elementName = node.name,
                             reason = "Boundary event has no outgoing flow",
+                            errorCode = ProcessDefinitionValidationErrorCode.NO_OUTGOING_FLOW.name
                         )
                     )
                 }
@@ -196,6 +207,7 @@ class ProcessDefinitionValidator(
                             elementType = node.elementType.typeName,
                             elementName = node.name,
                             reason = "Element has no incoming flow",
+                            errorCode = ProcessDefinitionValidationErrorCode.NO_INCOMING_FLOW.name
                         )
                     )
                 }
@@ -207,6 +219,7 @@ class ProcessDefinitionValidator(
                             elementType = node.elementType.typeName,
                             elementName = node.name,
                             reason = "Element has no outgoing flow",
+                            errorCode = ProcessDefinitionValidationErrorCode.NO_OUTGOING_FLOW.name
                         )
                     )
                 }
@@ -249,6 +262,7 @@ class ProcessDefinitionValidator(
                         elementType = node.elementType.typeName,
                         elementName = node.name,
                         reason = "Element is not reachable from any start event",
+                        errorCode = ProcessDefinitionValidationErrorCode.UNREACHABLE_ELEMENT.name,
                         severity = ValidationSeverity.WARNING
                     )
                 )
@@ -283,6 +297,7 @@ class ProcessDefinitionValidator(
                     elementType = processElementType(participant),
                     elementName = processElementName(process, participant),
                     reason = "Process has multiple none start events",
+                    errorCode = ProcessDefinitionValidationErrorCode.MULTIPLE_NONE_START_EVENTS.name
                 )
             )
         }
@@ -328,7 +343,8 @@ class ProcessDefinitionValidator(
                         elementId = startEvent.id,
                         elementType = startEvent.elementType.typeName,
                         elementName = startEvent.name,
-                        reason = "Start event has no path to an end event"
+                        reason = "Start event has no path to an end event",
+                        errorCode = ProcessDefinitionValidationErrorCode.NO_PATH_TO_END_EVENT.name
                     )
                 )
             }
@@ -355,6 +371,7 @@ class ProcessDefinitionValidator(
                     elementType = "ServiceTask",
                     elementName = task.name,
                     reason = "Service task has no process link, implementation, or execution listener",
+                    errorCode = ProcessDefinitionValidationErrorCode.SERVICE_TASK_NO_IMPLEMENTATION.name,
                     severity = ValidationSeverity.WARNING
                 )
             )
@@ -376,6 +393,7 @@ class ProcessDefinitionValidator(
                     elementType = "UserTask",
                     elementName = task.name,
                     reason = "User task has no process link or form",
+                    errorCode = ProcessDefinitionValidationErrorCode.USER_TASK_NO_FORM.name,
                     severity = ValidationSeverity.WARNING
                 )
             )
@@ -401,6 +419,7 @@ class ProcessDefinitionValidator(
                     elementType = "SendTask",
                     elementName = task.name,
                     reason = "Send task has no process link or implementation",
+                    errorCode = ProcessDefinitionValidationErrorCode.SEND_TASK_NO_IMPLEMENTATION.name,
                     severity = ValidationSeverity.WARNING
                 )
             )
@@ -422,6 +441,7 @@ class ProcessDefinitionValidator(
                     elementType = "ReceiveTask",
                     elementName = task.name,
                     reason = "Receive task has no process link or message",
+                    errorCode = ProcessDefinitionValidationErrorCode.RECEIVE_TASK_NO_MESSAGE.name,
                     severity = ValidationSeverity.WARNING
                 )
             )
@@ -441,6 +461,7 @@ class ProcessDefinitionValidator(
                     elementType = "BusinessRuleTask",
                     elementName = task.name,
                     reason = "Business rule task has no implementation",
+                    errorCode = ProcessDefinitionValidationErrorCode.BUSINESS_RULE_TASK_NO_IMPLEMENTATION.name,
                     severity = ValidationSeverity.WARNING
                 )
             )
@@ -462,6 +483,7 @@ class ProcessDefinitionValidator(
                     elementType = "CallActivity",
                     elementName = callActivity.name,
                     reason = "Call activity has no process link or called element",
+                    errorCode = ProcessDefinitionValidationErrorCode.CALL_ACTIVITY_NO_CALLED_ELEMENT.name,
                     severity = ValidationSeverity.WARNING
                 )
             )
@@ -492,7 +514,8 @@ class ProcessDefinitionValidator(
                     elementId = flow.id,
                     elementType = "SequenceFlow",
                     elementName = flow.name,
-                    reason = "Sequence flow from exclusive gateway has no condition"
+                    reason = "Sequence flow from exclusive gateway has no condition",
+                    errorCode = ProcessDefinitionValidationErrorCode.SEQUENCE_FLOW_NO_CONDITION.name
                 )
             )
         }
@@ -517,6 +540,7 @@ class ProcessDefinitionValidator(
                         elementType = "MessageIntermediateCatchEvent",
                         elementName = event.name,
                         reason = "Message intermediate catch event has no process link or message",
+                        errorCode = ProcessDefinitionValidationErrorCode.MESSAGE_EVENT_NO_MESSAGE.name,
                         severity = ValidationSeverity.WARNING
                     )
                 )
@@ -542,6 +566,7 @@ class ProcessDefinitionValidator(
                         elementType = "MessageIntermediateThrowEvent",
                         elementName = event.name,
                         reason = "Message intermediate throw event has no process link or message",
+                        errorCode = ProcessDefinitionValidationErrorCode.MESSAGE_EVENT_NO_MESSAGE.name,
                         severity = ValidationSeverity.WARNING
                     )
                 )
@@ -564,7 +589,8 @@ class ProcessDefinitionValidator(
                         elementId = event.id,
                         elementType = "TimerIntermediateCatchEvent",
                         elementName = event.name,
-                        reason = "Timer intermediate catch event has no timer configuration"
+                        reason = "Timer intermediate catch event has no timer configuration",
+                        errorCode = ProcessDefinitionValidationErrorCode.TIMER_EVENT_NO_CONFIG.name
                     )
                 )
             }
@@ -573,8 +599,13 @@ class ProcessDefinitionValidator(
     private fun validateNoneStartEvents(
         bpmnModel: BpmnModelInstance,
         processLinkActivityIds: Set<String>,
+        options: ProcessDefinitionValidationOptions,
         errors: MutableList<ProcessDefinitionValidationError>
     ) {
+        if (!options.canInitializeDocument && !options.startableByUser) {
+            return
+        }
+
         bpmnModel.getModelElementsByType(StartEvent::class.java)
             .filter { it.getChildElementsByType(EventDefinition::class.java).isEmpty() }
             .forEach { startEvent ->
@@ -587,6 +618,7 @@ class ProcessDefinitionValidator(
                         elementType = "StartEvent",
                         elementName = startEvent.name,
                         reason = "None start event has no process link or form",
+                        errorCode = ProcessDefinitionValidationErrorCode.START_EVENT_NO_FORM.name,
                         severity = ValidationSeverity.WARNING
                     )
                 )
@@ -613,6 +645,7 @@ class ProcessDefinitionValidator(
                                 elementType = "MessageStartEvent",
                                 elementName = startEvent.name,
                                 reason = "Message start event has no process link or message",
+                                errorCode = ProcessDefinitionValidationErrorCode.MESSAGE_EVENT_NO_MESSAGE.name,
                                 severity = ValidationSeverity.WARNING
                             )
                         )
@@ -624,7 +657,8 @@ class ProcessDefinitionValidator(
                                 elementId = startEvent.id,
                                 elementType = "TimerStartEvent",
                                 elementName = startEvent.name,
-                                reason = "Timer start event has no timer configuration"
+                                reason = "Timer start event has no timer configuration",
+                                errorCode = ProcessDefinitionValidationErrorCode.TIMER_EVENT_NO_CONFIG.name
                             )
                         )
                     }
@@ -635,7 +669,8 @@ class ProcessDefinitionValidator(
                                 elementId = startEvent.id,
                                 elementType = "SignalStartEvent",
                                 elementName = startEvent.name,
-                                reason = "Signal start event has no signal reference"
+                                reason = "Signal start event has no signal reference",
+                                errorCode = ProcessDefinitionValidationErrorCode.SIGNAL_EVENT_NO_SIGNAL.name
                             )
                         )
                     }
@@ -646,7 +681,8 @@ class ProcessDefinitionValidator(
                                 elementId = startEvent.id,
                                 elementType = "ConditionalStartEvent",
                                 elementName = startEvent.name,
-                                reason = "Conditional start event has no condition"
+                                reason = "Conditional start event has no condition",
+                                errorCode = ProcessDefinitionValidationErrorCode.CONDITIONAL_EVENT_NO_CONDITION.name
                             )
                         )
                     }
@@ -657,7 +693,8 @@ class ProcessDefinitionValidator(
                                 elementId = startEvent.id,
                                 elementType = "ErrorStartEvent",
                                 elementName = startEvent.name,
-                                reason = "Error start event has no error reference"
+                                reason = "Error start event has no error reference",
+                                errorCode = ProcessDefinitionValidationErrorCode.ERROR_EVENT_NO_ERROR.name
                             )
                         )
                     }
@@ -668,7 +705,8 @@ class ProcessDefinitionValidator(
                                 elementId = startEvent.id,
                                 elementType = "EscalationStartEvent",
                                 elementName = startEvent.name,
-                                reason = "Escalation start event has no escalation reference"
+                                reason = "Escalation start event has no escalation reference",
+                                errorCode = ProcessDefinitionValidationErrorCode.ESCALATION_EVENT_NO_ESCALATION.name
                             )
                         )
                     }
@@ -715,7 +753,7 @@ class ProcessDefinitionValidator(
                     elementType = elementType,
                     elementName = elementName,
                     reason = "Expression must use \${...} or #{...} syntax",
-                    errorCode = ExpressionValidationErrorCode.MISSING_EL_MARKERS.name,
+                    errorCode = ProcessDefinitionValidationErrorCode.EXPRESSION_MISSING_EL_MARKERS.name,
                     expression = expression
                 )
             )
@@ -725,7 +763,7 @@ class ProcessDefinitionValidator(
         try {
             treeBuilder.build(expression)
         } catch (e: Exception) {
-            val errorCode = mapExceptionToErrorCode(e.message)
+            val errorCode = mapExceptionToExpressionErrorCode(e.message)
             errors.add(
                 ProcessDefinitionValidationError(
                     elementId = elementId,
@@ -770,7 +808,7 @@ class ProcessDefinitionValidator(
                     elementType = elementType,
                     elementName = elementName,
                     reason = "No bean named '$beanName' found. If using a process variable, ensure it exists at runtime.",
-                    errorCode = ExpressionValidationErrorCode.BEAN_NOT_FOUND.name,
+                    errorCode = ProcessDefinitionValidationErrorCode.EXPRESSION_BEAN_NOT_FOUND.name,
                     expression = expression,
                     severity = ValidationSeverity.WARNING
                 )
@@ -778,16 +816,16 @@ class ProcessDefinitionValidator(
         }
     }
 
-    private fun mapExceptionToErrorCode(message: String?): ExpressionValidationErrorCode {
+    private fun mapExceptionToExpressionErrorCode(message: String?): ProcessDefinitionValidationErrorCode {
         return when {
-            message == null -> ExpressionValidationErrorCode.INVALID_SYNTAX
-            message.contains("expected ')'") -> ExpressionValidationErrorCode.UNCLOSED_PARENTHESIS
-            message.contains("expected '}'") -> ExpressionValidationErrorCode.UNCLOSED_BRACE
-            message.contains("expected ']'") -> ExpressionValidationErrorCode.UNCLOSED_BRACKET
-            message.contains("<EOF>") -> ExpressionValidationErrorCode.INCOMPLETE_EXPRESSION
+            message == null -> ProcessDefinitionValidationErrorCode.EXPRESSION_INVALID_SYNTAX
+            message.contains("expected ')'") -> ProcessDefinitionValidationErrorCode.EXPRESSION_UNCLOSED_PARENTHESIS
+            message.contains("expected '}'") -> ProcessDefinitionValidationErrorCode.EXPRESSION_UNCLOSED_BRACE
+            message.contains("expected ']'") -> ProcessDefinitionValidationErrorCode.EXPRESSION_UNCLOSED_BRACKET
+            message.contains("<EOF>") -> ProcessDefinitionValidationErrorCode.EXPRESSION_INCOMPLETE
             message.contains("encountered '}'") || message.contains("encountered ')'") ||
-                message.contains("encountered ']'") -> ExpressionValidationErrorCode.MISMATCHED_DELIMITER
-            else -> ExpressionValidationErrorCode.INVALID_SYNTAX
+                message.contains("encountered ']'") -> ProcessDefinitionValidationErrorCode.EXPRESSION_MISMATCHED_DELIMITER
+            else -> ProcessDefinitionValidationErrorCode.EXPRESSION_INVALID_SYNTAX
         }
     }
 }
