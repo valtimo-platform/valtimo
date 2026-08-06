@@ -18,17 +18,22 @@ package com.ritense.catalogiapi.web.rest.result
 
 import com.ritense.catalogiapi.domain.Zaaktype
 import java.net.URI
+import java.time.LocalDate
 
 class ZaaktypeDto(
     val url: URI,
     val omschrijving: String,
     val omschrijvingGeneriek: String?,
+    val beginGeldigheid: LocalDate,
+    val eindeGeldigheid: LocalDate?,
 ) {
     companion object {
         fun of(zaaktype: Zaaktype): ZaaktypeDto = ZaaktypeDto(
             url = zaaktype.url,
             omschrijving = zaaktype.omschrijving,
             omschrijvingGeneriek = zaaktype.omschrijvingGeneriek,
+            beginGeldigheid = zaaktype.beginGeldigheid,
+            eindeGeldigheid = zaaktype.eindeGeldigheid,
         )
     }
 }

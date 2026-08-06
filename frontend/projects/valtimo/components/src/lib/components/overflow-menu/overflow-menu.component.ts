@@ -33,7 +33,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import {autoUpdate, computePosition, flip, offset, Placement, shift} from '@floating-ui/dom';
+import {autoUpdate, computePosition, flip, hide, offset, Placement, shift} from '@floating-ui/dom';
 import {merge, Subject, takeUntil} from 'rxjs';
 import {OverflowMenuOptionComponent} from './overflow-menu-option/overflow-menu-option.component';
 
@@ -190,6 +190,10 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
 
     if (!reference || !menu) return;
 
+    // Keep the pane invisible until the first position has been computed, so
+    // it never flashes at an unpositioned location.
+    menu.style.visibility = 'hidden';
+
     this._cleanupAutoUpdate = autoUpdate(reference, menu, () => {
       computePosition(reference, menu, {
         // The pane is rendered with `position: fixed`, so positions must be
@@ -201,11 +205,16 @@ export class OverflowMenuComponent implements OnInit, AfterContentInit, OnChange
           offset({mainAxis: this.offsetY, crossAxis: this.offsetX}),
           flip(),
           shift({padding: 8}),
+          hide(),
         ],
-      }).then(({x, y}) => {
+      }).then(({x, y, middlewareData}) => {
         Object.assign(menu.style, {
           left: `${x}px`,
           top: `${y}px`,
+          // When the trigger is scrolled out of its clipping container (e.g. a
+          // horizontally scrolled table), hide the pane instead of leaving it
+          // floating detached over unrelated content.
+          visibility: middlewareData.hide?.referenceHidden ? 'hidden' : 'visible',
         });
       });
     });

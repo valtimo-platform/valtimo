@@ -127,6 +127,7 @@
   <v-overflow-menu
     *ngIf="showActionItems"
     [open]="currentOpenActionId === data.item"
+    [portalToBody]="true"
     (openChange)="handleActionOpenChange(data.item, $event)"
     placement="bottom-end"
     [portalToBody]="true"

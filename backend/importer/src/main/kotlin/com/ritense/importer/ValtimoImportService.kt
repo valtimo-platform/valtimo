@@ -525,11 +525,15 @@ class ValtimoImportService(
             .map { it.groupValues }
             .forEach { (placeholder, placeholderValue) ->
                 try {
-                    whitelistedEnvironmentProperties.firstOrNull { it.matches(placeholderValue) }?.let {
-                        val resolvedValue = environment.getProperty(placeholderValue)
-                        if (!resolvedValue.isNullOrBlank()) {
-                            resolvedContent = resolvedContent.replace(placeholder, resolvedValue)
-                        }
+                    val name = placeholderValue.substringBefore(':')
+                    val default = placeholderValue.substringAfter(':', missingDelimiterValue = "").takeIf { ':' in placeholderValue }
+                    val resolvedValue = if (whitelistedEnvironmentProperties.any { it.matches(name) }) {
+                        environment.getProperty(name)?.takeIf { it.isNotBlank() } ?: default
+                    } else {
+                        default
+                    }
+                    if (resolvedValue != null) {
+                        resolvedContent = resolvedContent.replace(placeholder, resolvedValue)
                     }
                 } catch (e: Exception) {
                     // ignored

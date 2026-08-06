@@ -23,7 +23,11 @@ import {
 } from '@angular/forms';
 import {WarningFilled16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, runAfterCarbonModalClosed} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  runAfterCarbonModalClosed,
+  ValtimoCdsModalDirective,
+} from '@valtimo/components';
 import {
   ButtonModule,
   CheckboxModule,
@@ -59,6 +63,7 @@ import {toObservable} from '@angular/core/rxjs-interop';
     CheckboxModule,
     BuildingBlockManagementUploadStepComponent,
     ReactiveFormsModule,
+    ValtimoCdsModalDirective,
   ],
 })
 export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDestroy {

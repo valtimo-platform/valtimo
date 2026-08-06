@@ -29,7 +29,7 @@ import {
   STATUS_ITEMS,
 } from '../../models';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subscription, switchMap} from 'rxjs';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {
   ButtonModule,
@@ -67,6 +67,7 @@ import {ZGW_UPLOAD_FIELDS_TEST_IDS} from '../../../../constants/zgw.test-ids';
     CheckboxModule,
     ComboBoxModule,
     LayerModule,
+    ValtimoCdsModalDirective,
   ],
 })
 export class DocumentenApiUploadFieldModalComponent implements OnDestroy {

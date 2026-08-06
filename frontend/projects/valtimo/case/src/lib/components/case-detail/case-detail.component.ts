@@ -79,7 +79,14 @@ import {
   CASE_DETAIL_GUTTER_SIZE,
   CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
 } from '../../constants';
-import {DocumentUpdatedSseEvent, TabImpl, TabLoaderImpl} from '../../models';
+import {
+  CaseAssignedSseEvent,
+  CaseStatusUpdatedSseEvent,
+  CaseUnassignedSseEvent,
+  DocumentUpdatedSseEvent,
+  TabImpl,
+  TabLoaderImpl,
+} from '../../models';
 import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
@@ -386,6 +393,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.openWidgetProcessSubscription();
     this.openSmallTitleSubscription();
     this.openStartableItemsSseSubscription();
+    this.openCaseStateSseSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -432,6 +440,27 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
           debounceTime(300)
         )
         .subscribe(() => this.reloadStartableItems())
+    );
+  }
+
+  /**
+   * Keeps the internal status tag and the assignee widget in sync with the current case state.
+   * The status can change without user interaction (e.g. a task completes or a timer expires) and
+   * the assignee can be (un)set from elsewhere. Refresh the document whenever an SSE event signals
+   * such a change for this case, so both re-derive from `document$` without a page reload.
+   */
+  private openCaseStateSseSubscription(): void {
+    this._subscriptions.add(
+      merge(
+        this.sseService.getSseEventObservable<CaseAssignedSseEvent>('CASE_ASSIGNED'),
+        this.sseService.getSseEventObservable<CaseUnassignedSseEvent>('CASE_UNASSIGNED'),
+        this.sseService.getSseEventObservable<CaseStatusUpdatedSseEvent>('CASE_STATUS_UPDATED')
+      )
+        .pipe(
+          filter(event => event?.documentId === this.documentId),
+          debounceTime(300)
+        )
+        .subscribe(() => this.caseService.refresh())
     );
   }
 

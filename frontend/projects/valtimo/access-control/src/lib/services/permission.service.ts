@@ -38,6 +38,7 @@ export class PermissionService {
   private readonly QUEUE_COLLECTION_PERIOD_MS = 15;
   private _cachedResolvedPermissions: CachedResolvedPermissions = {};
   private _pendingPermissions: PendingPermissions = {};
+  private _permissionRequestsByKey: {[permissionRequestKey: string]: PermissionRequest} = {};
   private _permissionRequestQueue: PermissionRequestQueue = [];
   private _permissionQueueSubscription!: Subscription;
   private _clearCacheSubscription!: Subscription;
@@ -74,12 +75,54 @@ export class PermissionService {
     }
 
     this._pendingPermissions[permissionRequestKey] = new Subject<boolean>();
+    this._permissionRequestsByKey[permissionRequestKey] = permissionRequestWithContext;
 
     this.queuePermission(permissionRequestWithContext);
 
     this.logger.debug('Permissions: return new pending', permissionRequestKey);
 
     return this._pendingPermissions[permissionRequestKey].asObservable();
+  }
+
+  /**
+   * Invalidates cached and in-flight permission results for the provided resource, so that
+   * subsequent permission requests are re-evaluated by the backend. Call this after an action
+   * that can change the outcome of permission checks (e.g. changing a task assignment).
+   *
+   * @param resource the resource type to invalidate, e.g.
+   * `com.ritense.valtimo.operaton.domain.OperatonTask`
+   * @param identifier when provided, only permissions requested with a context for this specific
+   * resource instance (or without an instance context) are invalidated; otherwise all permissions
+   * for the resource are invalidated
+   */
+  public invalidateResource(resource: string, identifier?: string): void {
+    Object.entries(this._permissionRequestsByKey).forEach(
+      ([permissionRequestKey, permissionRequest]) => {
+        if (!this.permissionRequestMatchesResource(permissionRequest, resource, identifier)) {
+          return;
+        }
+
+        this.logger.debug('Permissions: invalidate permission request', permissionRequestKey);
+
+        delete this._cachedResolvedPermissions[permissionRequestKey];
+        delete this._pendingPermissions[permissionRequestKey];
+        delete this._permissionRequestsByKey[permissionRequestKey];
+      }
+    );
+  }
+
+  private permissionRequestMatchesResource(
+    permissionRequest: PermissionRequest,
+    resource: string,
+    identifier?: string
+  ): boolean {
+    const context = permissionRequest.context;
+
+    if (context?.resource === resource) {
+      return !identifier || context.identifier === identifier;
+    }
+
+    return permissionRequest.resource === resource;
   }
 
   private queuePermission(permissionRequest: PermissionRequest): void {
@@ -106,17 +149,29 @@ export class PermissionService {
         .resolvePermissionRequestQueue(queueCopy)
         .pipe(take(1))
         .subscribe(resolvedPermissions => {
+          const resolvedPendingPermissions: ResolvedPermissions = {};
+
           Object.keys(resolvedPermissions).forEach(permissionRequestKey => {
-            this._pendingPermissions[permissionRequestKey].next(
-              resolvedPermissions[permissionRequestKey]
-            );
+            const pendingPermission = this._pendingPermissions[permissionRequestKey];
+
+            // requests invalidated while in flight no longer have a pending permission
+            // and their results are discarded to prevent caching a stale value
+            if (!pendingPermission) return;
+
+            pendingPermission.next(resolvedPermissions[permissionRequestKey]);
+            pendingPermission.complete();
+            delete this._pendingPermissions[permissionRequestKey];
+
+            resolvedPendingPermissions[permissionRequestKey] =
+              resolvedPermissions[permissionRequestKey];
+
             this.logger.debug(
               `Permissions: resolved pending permission request ${permissionRequestKey}`,
               resolvedPermissions[permissionRequestKey]
             );
           });
 
-          this.cacheResolvedPermissions(resolvedPermissions);
+          this.cacheResolvedPermissions(resolvedPendingPermissions);
         });
     });
   }
@@ -146,6 +201,7 @@ export class PermissionService {
       .subscribe(() => {
         this.clearPending();
         this.clearCache();
+        this.clearPermissionRequests();
       });
   }
 
@@ -162,5 +218,10 @@ export class PermissionService {
   private clearPending(): void {
     this.logger.debug('Permissions: clear pending');
     this._pendingPermissions = {};
+  }
+
+  private clearPermissionRequests(): void {
+    this.logger.debug('Permissions: clear permission requests');
+    this._permissionRequestsByKey = {};
   }
 }

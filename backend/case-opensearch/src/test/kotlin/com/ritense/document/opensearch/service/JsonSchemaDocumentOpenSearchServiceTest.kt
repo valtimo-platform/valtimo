@@ -53,7 +53,8 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.SearchHits
-import org.springframework.data.elasticsearch.core.query.StringQuery
+import org.opensearch.data.client.orhlc.NativeSearchQuery
+import org.springframework.data.elasticsearch.core.query.Query
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -114,7 +115,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(any<StringQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
         whenever(jpaRepository.findAllById(any())).thenReturn(emptyList())
     }
 
@@ -125,7 +126,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
 
     @Test
     fun `search with globalSearchFilter and no search fields returns match none`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -135,13 +136,13 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("must_not")
-        assertThat(capturedQuery.source).contains("match_all")
+        assertThat(capturedQuery.query.toString()).contains("must_not")
+        assertThat(capturedQuery.query.toString()).contains("match_all")
     }
 
     @Test
     fun `search without globalSearchFilter does not include contentText in query`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -151,12 +152,12 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).doesNotContain("contentText")
+        assertThat(capturedQuery.query.toString()).doesNotContain("contentText")
     }
 
     @Test
     fun `search with empty globalSearchFilter does not include contentText in query`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -166,7 +167,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).doesNotContain("contentText")
+        assertThat(capturedQuery.query.toString()).doesNotContain("contentText")
     }
 
     @Test
@@ -174,7 +175,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val searchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(searchHits.searchHits).thenReturn(emptyList())
         whenever(searchHits.totalHits).thenReturn(5L)
-        whenever(elasticsearchOperations.search(any<StringQuery>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(searchHits)
+        whenever(elasticsearchOperations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(searchHits)
 
         val request = AdvancedSearchRequest().globalSearchFilter("test")
         val page = service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
@@ -184,7 +185,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
 
     @Test
     fun `search with field-qualified term targets specific field`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -197,13 +198,13 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("content.city")
-        assertThat(capturedQuery.source).contains("amsterdam")
+        assertThat(capturedQuery.query.toString()).contains("content.city")
+        assertThat(capturedQuery.query.toString()).contains("amsterdam")
     }
 
     @Test
     fun `search with EXACT match type field does not add wildcards`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -216,13 +217,13 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("content.status:active")
-        assertThat(capturedQuery.source).doesNotContain("*active*")
+        assertThat(capturedQuery.query.toString()).contains("content.status:active")
+        assertThat(capturedQuery.query.toString()).doesNotContain("*active*")
     }
 
     @Test
     fun `search with LIKE match type field adds wildcards`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -235,12 +236,12 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("content.name:*john*")
+        assertThat(capturedQuery.query.toString()).contains("content.name:*john*")
     }
 
     @Test
     fun `search with quoted field value does not add wildcards even for LIKE fields`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -253,8 +254,8 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("""content.address:\"Main Street 123\"""")
-        assertThat(capturedQuery.source).doesNotContain("*Main Street 123*")
+        assertThat(capturedQuery.query.toString()).contains("""content.address:\"Main Street 123\"""")
+        assertThat(capturedQuery.query.toString()).doesNotContain("*Main Street 123*")
     }
 
     @Test
@@ -275,7 +276,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
 
     @Test
     fun `search with mixed qualified and unqualified terms`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -288,13 +289,13 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("content.city:*amsterdam*")
-        assertThat(capturedQuery.source).contains("*urgent*")
+        assertThat(capturedQuery.query.toString()).contains("content.city:*amsterdam*")
+        assertThat(capturedQuery.query.toString()).contains("*urgent*")
     }
 
     @Test
     fun `unqualified global search on case field with LIKE matchType uses wildcard`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -307,14 +308,14 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("wildcard")
-        assertThat(capturedQuery.source).contains("assigneeFullName")
-        assertThat(capturedQuery.source).contains("*john*")
+        assertThat(capturedQuery.query.toString()).contains("wildcard")
+        assertThat(capturedQuery.query.toString()).contains("assigneeFullName")
+        assertThat(capturedQuery.query.toString()).contains("*john*")
     }
 
     @Test
     fun `unqualified global search on case field with EXACT matchType uses term query`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -327,14 +328,14 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("term")
-        assertThat(capturedQuery.source).contains("internalStatus")
-        assertThat(capturedQuery.source).doesNotContain("*active*")
+        assertThat(capturedQuery.query.toString()).contains("term")
+        assertThat(capturedQuery.query.toString()).contains("internalStatus")
+        assertThat(capturedQuery.query.toString()).doesNotContain("*active*")
     }
 
     @Test
     fun `unqualified global search with mixed LIKE and EXACT case fields uses appropriate queries`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -348,16 +349,16 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("wildcard")
-        assertThat(capturedQuery.source).contains("assigneeFullName")
-        assertThat(capturedQuery.source).contains("*test*")
-        assertThat(capturedQuery.source).contains("term")
-        assertThat(capturedQuery.source).contains("internalStatus")
+        assertThat(capturedQuery.query.toString()).contains("wildcard")
+        assertThat(capturedQuery.query.toString()).contains("assigneeFullName")
+        assertThat(capturedQuery.query.toString()).contains("*test*")
+        assertThat(capturedQuery.query.toString()).contains("term")
+        assertThat(capturedQuery.query.toString()).contains("internalStatus")
     }
 
     @Test
     fun `unqualified global search on doc field with LIKE matchType uses wildcards`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -370,13 +371,13 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("*john*")
-        assertThat(capturedQuery.source).contains("content.name")
+        assertThat(capturedQuery.query.toString()).contains("*john*")
+        assertThat(capturedQuery.query.toString()).contains("content.name")
     }
 
     @Test
     fun `unqualified global search on doc field with EXACT matchType does not use wildcards`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -389,13 +390,13 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("content.status")
-        assertThat(capturedQuery.source).doesNotContain("*active*")
+        assertThat(capturedQuery.query.toString()).contains("content.status")
+        assertThat(capturedQuery.query.toString()).doesNotContain("*active*")
     }
 
     @Test
     fun `unqualified global search with mixed LIKE and EXACT doc fields uses appropriate queries`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -409,14 +410,14 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("content.name")
-        assertThat(capturedQuery.source).contains("*test*")
-        assertThat(capturedQuery.source).contains("content.status")
+        assertThat(capturedQuery.query.toString()).contains("content.name")
+        assertThat(capturedQuery.query.toString()).contains("*test*")
+        assertThat(capturedQuery.query.toString()).contains("content.status")
     }
 
     @Test
     fun `multiple search terms with multiple fields respects matchType for each`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -431,16 +432,16 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("*john*")
-        assertThat(capturedQuery.source).contains("*active*")
-        assertThat(capturedQuery.source).contains("content.name")
-        assertThat(capturedQuery.source).contains("content.status")
-        assertThat(capturedQuery.source).contains("assigneeFullName")
+        assertThat(capturedQuery.query.toString()).contains("*john*")
+        assertThat(capturedQuery.query.toString()).contains("*active*")
+        assertThat(capturedQuery.query.toString()).contains("content.name")
+        assertThat(capturedQuery.query.toString()).contains("content.status")
+        assertThat(capturedQuery.query.toString()).contains("assigneeFullName")
     }
 
     @Test
     fun `global search without definition name builds per-definition scoped query`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -469,16 +470,16 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search(request, BlueprintType.CASE, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("definitionId.name")
-        assertThat(capturedQuery.source).contains("house")
-        assertThat(capturedQuery.source).contains("car")
-        assertThat(capturedQuery.source).contains("content.city")
-        assertThat(capturedQuery.source).contains("content.brand")
+        assertThat(capturedQuery.query.toString()).contains("definitionId.name")
+        assertThat(capturedQuery.query.toString()).contains("house")
+        assertThat(capturedQuery.query.toString()).contains("car")
+        assertThat(capturedQuery.query.toString()).contains("content.city")
+        assertThat(capturedQuery.query.toString()).contains("content.brand")
     }
 
     @Test
     fun `global search without definition name and no accessible definitions adds matchNone query`() {
-        val queryCaptor = argumentCaptor<StringQuery>()
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
@@ -491,8 +492,8 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         service.search(request, BlueprintType.CASE, PageRequest.of(0, 10))
 
         val capturedQuery = queryCaptor.firstValue
-        assertThat(capturedQuery.source).contains("must_not")
-        assertThat(capturedQuery.source).contains("match_all")
+        assertThat(capturedQuery.query.toString()).contains("must_not")
+        assertThat(capturedQuery.query.toString()).contains("match_all")
     }
 
     companion object {

@@ -69,6 +69,7 @@ import com.ritense.case_.widget.personcard.PersonCardCaseWidgetDataProvider
 import com.ritense.case_.widget.personcard.PersonCardCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
+import com.ritense.case_.widget.text.TextCaseWidgetMapper
 import com.ritense.document.repository.InternalCaseStatusHistoryRepository
 import com.ritense.document.service.CaseTagService
 import com.ritense.document.service.DocumentService
@@ -281,6 +282,10 @@ class CaseWidgetAutoConfiguration {
     @ConditionalOnMissingBean(DividerCaseWidgetMapper::class)
     @Bean
     fun dividerCaseWidgetMapper() = DividerCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(TextCaseWidgetMapper::class)
+    @Bean
+    fun textCaseWidgetMapper() = TextCaseWidgetMapper()
 
     @ConditionalOnMissingBean(ActiveCaseDefinitionService::class)
     @Bean
