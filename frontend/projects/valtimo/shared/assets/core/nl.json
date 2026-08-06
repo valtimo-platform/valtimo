@@ -15,7 +15,8 @@
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
-    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
+    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}",
+    "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "case": {
     "allCases": "Alle dossiers",
@@ -555,7 +556,14 @@
     "startedBy": "Gestart door",
     "startedOn": "Gestart op",
     "system": "Systeem",
-    "of": "van"
+    "of": "van",
+    "skipTimer": {
+      "action": "Timer overslaan",
+      "confirmTitle": "Timer overslaan",
+      "confirmContent": "Weet je zeker dat je deze timer wilt overslaan? Het proces gaat verder alsof de timer is verlopen. Dit kan niet ongedaan worden gemaakt.",
+      "confirmButton": "Overslaan",
+      "successToast": "Timer overgeslagen"
+    }
   },
   "dashboard": {
     "openTasks": {"title": "Alle taken"},
@@ -1322,6 +1330,10 @@
         "title": "Afbeelding",
         "description": "Toon een geüploade afbeelding"
       },
+      "text": {
+        "title": "Tekst",
+        "description": "Toon een vaste toelichting"
+      },
       "generic": {
         "title": "Generieke widgets",
         "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
@@ -1523,6 +1535,14 @@
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource.",
         "displayAsCarousel": "Weergeven als carrousel"
+      },
+      "text": {
+        "description": "",
+        "content": "Tekst",
+        "contentTooltip": "De tekst die in de widget wordt getoond. Markdown wordt ondersteund.",
+        "contentPlaceholder": "## Kop\n\nEen toelichting, met een [link](https://example.org) en een lijst:\n\n- eerste item\n- tweede item",
+        "contentHelper": "Opmaak met markdown wordt ondersteund: # voor koppen, - voor een lijst met opsommingstekens, **vet**, *cursief* en [linktekst](https://example.org). Sterretjes moeten direct tegen de tekst staan: **vet** werkt, ** vet ** niet. Links openen in een nieuw tabblad.",
+        "accentColor": "Accentkleur"
       }
     },
     "filters": {
@@ -1945,6 +1965,7 @@
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",
     "selectZaakTypeForCase": "Kies zaaktype voor dossier",
     "selectZaakType": "Kies zaaktype",
+    "present": "heden",
     "selectZakenApiPluginForCase": "Kies Zaken Api plugin voor aanmaken zaak",
     "selectZakenApiPlugin": "Kies Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
@@ -3281,6 +3302,10 @@
       "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
       "refreshNow": "Nu vernieuwen",
       "toggles": {
+        "disableFormioTokenInLocalStorage": {
+          "title": "Form.io-token alleen in geheugen bewaren",
+          "description": "Houd het form.io-token in het geheugen in plaats van in localStorage. Schakel dit alleen in als formulieren uitsluitend het Keycloak-token gebruiken."
+        },
         "allowUserThemeSwitching": {
           "title": "Thema wisselen toestaan",
           "description": "Gebruikers laten schakelen tussen lichte en donkere modus via de bovenbalk."

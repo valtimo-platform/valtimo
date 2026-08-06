@@ -232,6 +232,7 @@ The following table lists all container relationships available out of the box. 
 | `OperatonProcessDefinition`    | `CaseDefinition`               | Scope process definition permissions to a case definition      |
 | `OperatonTask`                 | `JsonSchemaDocument`           | Scope task permissions to document properties                  |
 | `OperatonTask`                 | `OperatonIdentityLink`         | Scope task permissions to identity link properties             |
+| `OperatonTimer`                | `OperatonExecution`            | Scope timer permissions to the process instance                |
 | `Note`                         | `JsonSchemaDocument`           | Scope note permissions to document properties                  |
 | `CaseTab`                      | `JsonSchemaDocumentDefinition` | Scope case tab permissions to a document definition            |
 
