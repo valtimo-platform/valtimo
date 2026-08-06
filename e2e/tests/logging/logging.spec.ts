@@ -116,20 +116,21 @@ test.describe('Logging', () => {
       expect(await loggingPage.rows.count()).toBeGreaterThan(0);
     });
 
-    test('Filter by log level narrows the list to that level', async () => {
+    test('Filter by log level narrows the list to that level and above', async () => {
       test.setTimeout(60_000);
 
-      // Arrange — use a level that is actually present
-      const level = (await loggingPage.levelCells())[0];
-      expect(level).toBeTruthy();
+      // Arrange — WARN sits in the middle of the severity scale, so filtering on it has to drop
+      // something (INFO/DEBUG/TRACE) while keeping ERROR
+      const unfiltered = await loggingPage.getLogsViaApi(1, 0);
 
       // Act
-      await loggingPage.selectLevel(level);
+      await loggingPage.selectLevel('WARN');
 
-      // Assert
-      const levels = await loggingPage.levelCells();
-      expect(levels.length).toBeGreaterThan(0);
-      for (const value of levels) expect(value).toBe(level);
+      // Assert — the dropdown is a *minimum* level, so WARN and ERROR both belong in the result
+      await loggingPage.assertAllLevelsAreAtLeast('WARN');
+
+      const filtered = await loggingPage.getLogsViaApi(1, 0, {level: 'WARN'});
+      expect(filtered.totalElements).toBeLessThan(unfiltered.totalElements);
 
       await loggingPage.clearSearch();
     });
@@ -144,9 +145,9 @@ test.describe('Logging', () => {
       // Act — a message no log line can contain
       await loggingPage.filterByMessage('zzz-no-log-line-matches-this-zzz');
 
-      // Assert — the list is empty and the no-results panel offers to clear the search
+      // Assert — no data rows are left and the empty-state row takes their place
       await expect(loggingPage.rows).toHaveCount(0);
-      await expect(page.locator('valtimo-no-results')).toBeVisible();
+      await expect(loggingPage.noResultsRow).toBeVisible();
 
       await loggingPage.clearSearch();
       expect(await loggingPage.rows.count()).toBeGreaterThan(0);

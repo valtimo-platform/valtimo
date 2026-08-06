@@ -42,8 +42,8 @@ import {
 } from 'carbon-components-angular';
 import flatpickr from 'flatpickr';
 import {debounceTime, map, Observable, Subscription} from 'rxjs';
-import {
 import {LOG_SEARCH_TEST_IDS} from '../../constants';
+import {
   LoggingEventProperty,
   LoggingEventSearchFormValue,
   LoggingEventSearchRequest,

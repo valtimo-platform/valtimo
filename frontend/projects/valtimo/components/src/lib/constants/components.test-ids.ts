@@ -15,6 +15,8 @@
  */
 
 export const CONFIRMATION_MODAL_TEST_IDS = {
+  heading: 'confirmationModalHeading',
+  content: 'confirmationModalContent',
   closeButton: 'confirmationModalClose',
   optionalButton: 'confirmationModalOptional',
   confirmButton: 'confirmationModalConfirm',
@@ -54,8 +56,21 @@ export const JSON_EDITOR_TEST_IDS = {
   cancelConfirmationModal: 'jsonEditorCancelConfirmationModal',
 } as const;
 
+export const MULTI_INPUT_TEST_IDS = {
+  /** The add button is suffixed with the multi-input's `name`, when one is set. */
+  addButton: 'multiInputAddButton',
+  addButtonNamed: (name: string) => `multiInputAddButton-${name}`,
+  deleteButtonAt: (row: number) => `multiInputDeleteButton-${row}`,
+} as const;
+
 export const ARBITRARY_AMOUNT_VALUE_TEST_IDS = {
   input: 'arbitraryAmountInput',
+  /**
+   * Every cell of an `arbitraryAmount` multi-input renders the same kind of text input, so the
+   * bare `input` id matches every cell of every row. Scope it by row and column to address a
+   * single cell — `row` is the multi-input row index, `column` the arbitrary value index.
+   */
+  inputAt: (row: number, column: number) => `arbitraryAmountInput-${row}-${column}`,
 } as const;
 
 export const VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS = {

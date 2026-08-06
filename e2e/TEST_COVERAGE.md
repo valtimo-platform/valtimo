@@ -4,11 +4,13 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 24        | 17         | 7              |
-| Admin Features (ROLE_ADMIN) | 15       | 355       | 313        | 42             |
-| **Total**                   | **20**   | **379**   | **330**    | **49**         |
+| User Features (ROLE_USER)   | 5        | 24        | 17         | 6              |
+| Admin Features (ROLE_ADMIN) | 15       | 358       | 328        | 25             |
+| **Total**                   | **20**   | **382**   | **345**    | **31**         |
 
-**Coverage:** `330 / 379` — `87.1%`
+**Coverage:** `345 / 382` — `90.3%`
+
+> Counts are one per numbered row. The remainder of each category is `N/A` (5) or `⏳` (1).
 
 ---
 
@@ -566,23 +568,25 @@ Covers the standalone `/processes` admin page (the *independent* process context
 
 | #    | Function                  | Test Scenarios                              | Coverage | Notes                                           |
 |:-----|:--------------------------|:--------------------------------------------|:--------:|:------------------------------------------------|
-| 14.1 | View translations table   | View translations table                     |    ❌    |                                                 |
-| 14.2 | View translation keys     | View translation keys column                |    ❌    |                                                 |
-| 14.3 | View language columns     | View language columns (English, Nederlands) |    ❌    |                                                 |
-| 14.4 | Add translation row       | Add translation row                         |    ❌    |                                                 |
-| 14.5 | Enter translation key     | Enter translation key                       |    ❌    |                                                 |
-| 14.6 | Enter English translation | Enter English translation                   |    ❌    |                                                 |
-| 14.7 | Enter Dutch translation   | Enter Dutch (Nederlands) translation        |    ❌    |                                                 |
-| 14.8 | Delete translation row    | Delete translation row                      |    ❌    |                                                 |
+| 14.1 | View translations table   | Table lists the configured translations     |    ✅    | translation-management.spec.ts — the dev app seeds **no** localizations, so `beforeAll` merges its own keys in via the API and `afterAll` writes the captured content back |
+| 14.2 | View translation keys     | View translation keys column                |    ✅    | translation-management.spec.ts — row order follows the stored JSON object's key order, so rows are resolved by key, never by index |
+| 14.3 | View language columns     | View language columns (English, Nederlands) |    ✅    | translation-management.spec.ts — titles render as `cds-label`s on the first row only |
+| 14.4 | Add translation row       | Add translation row                         |    ✅    | translation-management.spec.ts                  |
+| 14.5 | Enter translation key     | Enter translation key                       |    ✅    | translation-management.spec.ts                  |
+| 14.6 | Enter English translation | Enter English translation                   |    ✅    | translation-management.spec.ts                  |
+| 14.7 | Enter Dutch translation   | Enter Dutch (Nederlands) translation        |    ✅    | translation-management.spec.ts                  |
+| 14.8 | Delete translation row    | Delete a row, then save to remove the translation |    ✅    | translation-management.spec.ts — deleting only removes the row from the form; the removal is persisted by the following save |
 
 #### 14B · Save
 
-| #     | Function               | Test Scenarios                | Coverage | Notes                                           |
-|:------|:-----------------------|:------------------------------|:--------:|:------------------------------------------------|
-| 14.9  | Save translations      | Save translations             |    ❌    |                                                 |
-| 14.10 | Save and reload app    | Save and reload application   |    ❌    |                                                 |
-| 14.11 | View save confirmation | View save confirmation dialog |    ❌    |                                                 |
-| 14.12 | Cancel save operation  | Cancel save operation         |    ❌    |                                                 |
+| #      | Function                    | Test Scenarios                                                          | Coverage | Notes                                           |
+|:-------|:----------------------------|:--------------------------------------------------------------------------|:--------:|:------------------------------------------------|
+| 14.9   | Save translations           | Save without reloading; persisted value verified via the API               |    ✅    | translation-management.spec.ts — the modal's *optional* button is "Save" |
+| 14.10  | Save and reload app         | Save and reload; the value survives the reload and is re-rendered          |    ✅    | translation-management.spec.ts — the modal's *confirm* button is "Save and reload"; the component calls `location.reload()` once the request resolves |
+| 14.11  | View save confirmation      | Dialog shows its heading, body, and all three actions                      |    ✅    | translation-management.spec.ts                  |
+| 14.12  | Cancel save operation       | Cancel dismisses the dialog, keeps the edit in the form, persists nothing   |    ✅    | translation-management.spec.ts                  |
+| 14.12a | Reject unchanged save       | Save stays disabled while the table is pristine                            |    ✅    | translation-management.spec.ts (failure scenario) |
+| 14.12b | Reject incomplete row       | Save stays disabled until *every* column of a row is filled                |    ✅    | translation-management.spec.ts (failure scenario) — the multi-input only counts a row as valid when no cell is empty |
 
 ---
 
@@ -721,10 +725,11 @@ Covers the standalone `/processes` admin page (the *independent* process context
 
 ### Feature 18 — Logs
 
-| #    | Function              | Test Scenarios         | Coverage | Notes                                           |
-|:-----|:----------------------|:-----------------------|:--------:|:------------------------------------------------|
-| 18.1 | View application logs | View application logs  |    ❌    | `tests/logging/` is written (list, columns, pagination, details modal) but **not yet verified**: the dev server is serving a stale build of `@valtimo/logging`, so the new `data-test-id`s never reach the DOM. Needs a frontend dev-server restart |
-| 18.2 | Filter/search logs    | Filter and search logs |    ❌    | Same blocker as 18.1 — filter-by-message, filter-by-level, clear, and a no-results failure case are written but unverified |
+| #     | Function              | Test Scenarios                                                                                   | Coverage | Notes                                           |
+|:------|:----------------------|:--------------------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
+| 18.1  | View application logs | List visible with entries · Timestamp/Log level/Message columns · Paginated · Row count matches the API · Open a row to see the details modal |    ✅    | logging.spec.ts — the page is read-only, so there is nothing to clean up. `/api/management/v1/logging` is a **POST** (only POST is granted to ADMIN); a GET on the same path returns 403 |
+| 18.2  | Filter/search logs    | Filter by message text · Filter by log level · Clear restores the unfiltered list                  |    ✅    | logging.spec.ts — the panel has no submit button; it re-queries on change (debounced 500ms), so the page object waits on the response and the assertions poll. The level dropdown is a **minimum** level, not an exact match (`LoggingEventService` uses `byMinimumLevel`), so selecting WARN legitimately still lists ERROR rows |
+| 18.2a | Handle no matches     | A filter matching nothing empties the list and shows the no-results state, which clears back       |    ✅    | logging.spec.ts (failure scenario) — the empty state is a `<tr data-test-id="carbonListNoResults">` inside the same `tbody`, so use `CarbonList.rows`, which excludes it |
 
 ---
 
@@ -751,9 +756,9 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   379   |
-| ✅ Covered by Playwright |   330   |
-| ❌ Not covered           |   49    |
+| Total Functions          |   382   |
+| ✅ Covered by Playwright |   345   |
+| ❌ Not covered           |   31    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    5    |
-| **Coverage %**           | **87.1%** |
+| **Coverage %**           | **90.3%** |

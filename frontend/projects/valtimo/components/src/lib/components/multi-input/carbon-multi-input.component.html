@@ -166,7 +166,7 @@
         size="md"
         (click)="deleteRow(value.uuid)"
         [title]="vars.deleteRowText"
-        [attr.data-test-id]="'multiInputDeleteButton-' + i"
+        [attr.data-test-id]="testIds.deleteButtonAt(i)"
       >
         <svg cdsIcon="trash-can" size="16"></svg>
       </button>
@@ -179,7 +179,7 @@
         size="md"
         [disabled]="(addRowEnabled$ | async) === false || $disabled()"
         (click)="addRow()"
-        [attr.data-test-id]="name ? 'multiInputAddButton-' + name : 'multiInputAddButton'"
+        [attr.data-test-id]="name ? testIds.addButtonNamed(name) : testIds.addButton"
       >
         {{ vars.addRowText }}
 

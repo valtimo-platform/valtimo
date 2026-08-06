@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+export const TRANSLATION_MANAGEMENT_TEST_IDS = {
+  /** Rendered into the page header, not into the component's own template. */
+  saveButton: 'translationManagementSaveButton',
+} as const;
+
 export const WIDGET_EDITOR_TEST_IDS = {
   addWidgetButton: 'widgetEditorAddWidgetButton',
   addDividerButton: 'widgetEditorAddDividerButton',
