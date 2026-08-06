@@ -29,8 +29,8 @@
         <cds-combo-box
           [dropUp]="false"
           [appendInline]="true"
-          [label]="'Source Definition'"
-          [placeholder]="'- Source Definition -'"
+          [label]="'Source Definition' | translate"
+          [placeholder]="'- ' + ('Source Definition' | translate) + ' -'"
           [items]="sourceDefinitionItems"
           (selected)="onDefinitionSelected($event, 'source')"
         >
@@ -41,8 +41,8 @@
         <cds-combo-box
           [dropUp]="false"
           [appendInline]="true"
-          [label]="'Source Version'"
-          [placeholder]="'- Source Version -'"
+          [label]="'Source Definition' | translate"
+          [placeholder]="'- ' + ('Source Version' | translate) + ' -'"
           [items]="sourceVersionItems"
           (selected)="onVersionSelected($event, 'source')"
         >
@@ -53,8 +53,8 @@
         <cds-combo-box
           [dropUp]="false"
           [appendInline]="true"
-          [label]="'Target Definition'"
-          [placeholder]="'- Target Definition -'"
+          [label]="'Target Definition' | translate"
+          [placeholder]="'- ' + ('Target Definition' | translate) + ' -'"
           [items]="targetDefinitionItems"
           (selected)="onDefinitionSelected($event, 'target')"
         >
@@ -65,8 +65,8 @@
         <cds-combo-box
           [dropUp]="false"
           [appendInline]="true"
-          [label]="'Target Version'"
-          [placeholder]="'- Target Version -'"
+          [label]="'Target Definition' | translate"
+          [placeholder]="'- ' + ('Target Version' | translate) + ' -'"
           [items]="targetVersionItems"
           (selected)="onVersionSelected($event, 'target')"
         >
@@ -98,7 +98,7 @@
           <cds-combo-box
             [dropUp]="false"
             [appendInline]="true"
-            [placeholder]="'- Choose Target -'"
+            [placeholder]="'- ' + ('Choose Target' | translate) + ' -'"
             [items]="getFilteredTargetFlowNodeMapItems(node)"
             (selected)="onTaskMappingSelected($event, node.id)"
           >
