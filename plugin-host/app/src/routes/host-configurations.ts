@@ -125,6 +125,7 @@ export async function hostConfigurationRoutes(
       properties: Record<string, unknown>;
       serviceToken: string;
       gzacBaseUrl: string;
+      expectedContentHash?: unknown;
       eventSubscriptions?: unknown;
       grantedCapabilities?: unknown;
       grantedEndpoints?: unknown;
@@ -155,6 +156,27 @@ export async function hostConfigurationRoutes(
         error: `Plugin not loaded: ${pluginId}@${pluginVersion}`,
       });
       return;
+    }
+
+    // GZAC pins the package content hash it discovered and sends it with every push. Refusing a
+    // mismatch here means a config (and its fresh service token) can never be handed to plugin
+    // code that differs from what the admin accepted — even in the window between GZAC's
+    // discovery cycle and this push.
+    const expectedContentHash = request.body.expectedContentHash;
+    if (typeof expectedContentHash === "string" && expectedContentHash.length > 0) {
+      const actualContentHash = pluginManager.getContentHash(pluginId, pluginVersion);
+      if (actualContentHash !== expectedContentHash) {
+        request.log.warn(
+          { configId, pluginId, pluginVersion, expectedContentHash, actualContentHash },
+          "Configuration push refused: package content hash mismatch"
+        );
+        reply.code(409).send({
+          error: `Package content hash mismatch for ${pluginId}@${pluginVersion}`,
+          expectedContentHash,
+          actualContentHash,
+        });
+        return;
+      }
     }
 
     const eventBroker = normalizeEventBroker(request.body.eventBroker);

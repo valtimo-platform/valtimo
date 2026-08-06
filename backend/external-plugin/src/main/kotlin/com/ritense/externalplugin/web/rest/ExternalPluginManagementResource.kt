@@ -30,6 +30,7 @@ import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.externalplugin.web.rest.dto.AcceptContentRequest
 import com.ritense.externalplugin.web.rest.dto.ConfigurationCreateRequest
 import com.ritense.externalplugin.web.rest.dto.ConfigurationDetailResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationResponse
@@ -287,6 +288,27 @@ class ExternalPluginManagementResource(
     fun getDefinition(@PathVariable definitionId: UUID): ResponseEntity<DefinitionResponse> =
         ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
 
+    /**
+     * Re-accepts a definition whose package content changed on its host after the original
+     * acceptance (see `requiresReacceptance` on the definition response). The request echoes the
+     * pending hash the admin reviewed; on success the new hash is pinned and an immediate
+     * re-discovery refreshes the frozen manifest data and resumes configuration pushes.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Accept changed plugin package content",
+        nl = "Gewijzigde plugininhoud accepteren",
+    )
+    @PostMapping("/definition/{definitionId}/accept-content")
+    fun acceptDefinitionContent(
+        @PathVariable definitionId: UUID,
+        @RequestBody request: AcceptContentRequest,
+    ): ResponseEntity<DefinitionResponse> {
+        val definition = definitionService.acceptContent(definitionId, request.contentHash)
+        runCatching { discoveryService.discoverHost(definition.hostId) }
+        return ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
+    }
+
     @RunWithoutAuthorization
     @EndpointDescription(
         en = "List external plugin configurations",
@@ -418,6 +440,24 @@ class ExternalPluginManagementResource(
         configurationService.delete(configurationId)
         return ResponseEntity.noContent().build()
     }
+
+    /**
+     * Incident off-switch: instantly invalidates every service and user token minted for this
+     * configuration (they carry a generation counter that must match the configuration's current
+     * one). The configuration itself keeps existing — unlike deletion, which the in-use guards
+     * rightly resist — and a fresh token of the new generation is pushed to the host right after,
+     * so a legitimate host recovers without waiting for the next discovery cycle.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Revoke all tokens of an external plugin configuration",
+        nl = "Alle tokens van een externe-pluginconfiguratie intrekken",
+    )
+    @PostMapping("/configuration/{configurationId}/revoke-tokens")
+    fun revokeConfigurationTokens(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<ConfigurationResponse> =
+        ResponseEntity.ok(ConfigurationResponse.from(configurationService.revokeTokens(configurationId)))
 
     @RunWithoutAuthorization
     @EndpointDescription(

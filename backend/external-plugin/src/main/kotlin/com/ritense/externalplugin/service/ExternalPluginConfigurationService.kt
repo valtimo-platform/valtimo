@@ -189,6 +189,16 @@ class ExternalPluginConfigurationService(
         definition: ExternalPluginDefinition,
         host: ExternalPluginHost,
     ): Boolean {
+        if (definition.requiresReacceptance) {
+            // Central guard — every push path (create, update, discovery re-sync, token revocation)
+            // funnels through here. No push means no fresh service token for plugin code that
+            // differs from what the admin accepted.
+            logger.warn {
+                "Refusing to push configuration ${configuration.id}: plugin " +
+                    "'${definition.pluginId}@${definition.version}' changed on its host and awaits re-acceptance"
+            }
+            return false
+        }
         val adminToken = encryptionService.decrypt(host.secret)
         val decrypted = decryptedProperties(configuration)
         val serviceToken = serviceTokenService.issue(configuration, definition)
@@ -212,6 +222,9 @@ class ExternalPluginConfigurationService(
             properties = decrypted,
             serviceToken = serviceToken,
             gzacBaseUrl = host.gzacCallbackBaseUrl ?: fallbackGzacBaseUrl,
+            // The pinned package hash rides along; the host refuses the push (409) if the package
+            // on disk no longer matches, closing the window between discovery and this push.
+            expectedContentHash = definition.contentHash,
             eventSubscriptions = grantedEventTypes,
             grantedCapabilities = grantedCaps,
             grantedEndpoints = grantedEndpointPairs,
@@ -282,6 +295,33 @@ class ExternalPluginConfigurationService(
         // Push the updated decrypted config to the plugin host after commit (never inside the tx).
         pushToHostAfterCommit(saved, definition)
 
+        return saved
+    }
+
+    /**
+     * Revokes every outstanding token (service *and* user) minted for this configuration by
+     * bumping its generation counter: tokens carry the generation they were minted under and only
+     * validate while it matches. After the bump commits, a fresh push hands the host a new token of
+     * the new generation, so a *legitimate* host recovers instantly while every leaked or hoarded
+     * token is dead. If the push cannot happen (host down, or the definition awaits content
+     * re-acceptance) the discovery cycle re-pushes on its next tick — or withholds, which is then
+     * exactly the intent.
+     */
+    @Transactional
+    fun revokeTokens(id: UUID): ExternalPluginConfiguration {
+        val config = configurationRepository.findById(id)
+            .orElseThrow { ExternalPluginNotFoundException("External plugin configuration", id) }
+        val definition = definitionRepository.findById(config.definitionId)
+            .orElseThrow { ExternalPluginNotFoundException("External plugin definition", config.definitionId) }
+
+        config.tokenGeneration += 1
+        val saved = configurationRepository.save(config)
+        logger.info {
+            "Revoked all tokens for external plugin configuration $id " +
+                "(new token generation ${saved.tokenGeneration})"
+        }
+
+        pushToHostAfterCommit(saved, definition)
         return saved
     }
 

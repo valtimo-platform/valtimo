@@ -34,11 +34,49 @@ const MIME_TYPES: Record<string, string> = {
 };
 
 /**
+ * CSP for everything served out of a plugin package. The iframe sandbox already stops privilege
+ * escalation (opaque origin — no GZAC session or token); this policy closes the *exfiltration*
+ * channels a hostile bundle would otherwise have: `connect-src 'self'` kills fetch/XHR/beacon to
+ * third parties, `script-src 'self'` kills remote script loading, `img-src`/`font-src` kill
+ * pixel-beacon exfil, and `form-action 'self'` kills native form posts to external endpoints. An
+ * honest plugin loses nothing — all of its GZAC traffic flows through the parent-proxy postMessage
+ * transport, and its own assets all live under the same bundle path.
+ *
+ * The `sandbox` directive mirrors the embedding iframe's `sandbox="allow-scripts allow-forms"`
+ * attribute so a bundle opened directly in a top-level tab is *also* confined to an opaque origin
+ * instead of running same-origin with the host.
+ */
+const BUNDLE_CSP = [
+  "default-src 'none'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "media-src 'self'",
+  "form-action 'self'",
+  "base-uri 'none'",
+  "object-src 'none'",
+  "sandbox allow-scripts allow-forms",
+].join("; ");
+
+/** Shared hardening headers for plugin-authored content (bundles and the logo). */
+function pluginContentHeaders(reply: import("fastify").FastifyReply, contentType: string) {
+  return reply
+    .header("Content-Type", contentType)
+    .header("Cache-Control", "public, max-age=3600")
+    .header("Access-Control-Allow-Origin", "*")
+    .header("Content-Security-Policy", BUNDLE_CSP)
+    .header("X-Content-Type-Options", "nosniff")
+    .header("Referrer-Policy", "no-referrer");
+}
+
+/**
  * Public routes serving frontend bundles from plugin packages.
  *
  * GET /plugins/:pluginId/:version/bundles/* — serves static files from the
  * plugin's frontend/ directory. No authentication — these are public assets
- * loaded in iframes.
+ * loaded in iframes. Every response carries the strict {@link BUNDLE_CSP}.
  */
 export async function pluginBundleRoutes(
   fastify: FastifyInstance,
@@ -83,11 +121,7 @@ export async function pluginBundleRoutes(
       const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
       const content = await readFile(fullPath);
 
-      reply
-        .header("Content-Type", contentType)
-        .header("Cache-Control", "public, max-age=3600")
-        .header("Access-Control-Allow-Origin", "*")
-        .send(content);
+      pluginContentHeaders(reply, contentType).send(content);
     }
   );
 
@@ -123,11 +157,9 @@ export async function pluginBundleRoutes(
       const ext = extname(logoPath);
       const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
       const content = await readFile(logoPath);
-      reply
-        .header("Content-Type", contentType)
-        .header("Cache-Control", "public, max-age=3600")
-        .header("Access-Control-Allow-Origin", "*")
-        .send(content);
+      // Same policy as the bundles: a logo is plugin-authored content too (an SVG can carry
+      // script, which the CSP neutralises when the file is opened directly).
+      pluginContentHeaders(reply, contentType).send(content);
     }
   );
 }

@@ -34,7 +34,7 @@ class ExternalPluginUserTokenServiceTest {
         val configId = UUID.randomUUID()
         val service = ExternalPluginUserTokenService(keyProvider)
 
-        val issued = service.issue("john.doe", listOf("ROLE_USER", "ROLE_ADMIN"), configId)
+        val issued = service.issue("john.doe", listOf("ROLE_USER", "ROLE_ADMIN"), configId, tokenGeneration = 7)
         val claims = parse(issued.token)
 
         assertThat(claims.subject).isEqualTo("john.doe")
@@ -45,11 +45,14 @@ class ExternalPluginUserTokenServiceTest {
         @Suppress("UNCHECKED_CAST")
         assertThat(claims[ExternalPluginUserTokenService.ROLES_CLAIM] as List<String>)
             .containsExactly("ROLE_USER", "ROLE_ADMIN")
+        assertThat((claims[ExternalPluginUserTokenService.TOKEN_GENERATION_CLAIM] as Number).toLong())
+            .isEqualTo(7L)
     }
 
     @Test
     fun `defaults to a 15 minute lifetime`() {
-        val claims = parse(ExternalPluginUserTokenService(keyProvider).issue("u", emptyList(), UUID.randomUUID()).token)
+        val claims =
+            parse(ExternalPluginUserTokenService(keyProvider).issue("u", emptyList(), UUID.randomUUID(), 0).token)
 
         assertThat(Duration.between(claims.issuedAt.toInstant(), claims.expiration.toInstant()))
             .isEqualTo(Duration.ofMinutes(15))
@@ -59,7 +62,7 @@ class ExternalPluginUserTokenServiceTest {
     fun `caps an over-long configured lifetime at 15 minutes`() {
         val service = ExternalPluginUserTokenService(keyProvider, Duration.ofHours(24))
 
-        val claims = parse(service.issue("u", emptyList(), UUID.randomUUID()).token)
+        val claims = parse(service.issue("u", emptyList(), UUID.randomUUID(), 0).token)
 
         assertThat(Duration.between(claims.issuedAt.toInstant(), claims.expiration.toInstant()))
             .isEqualTo(Duration.ofMinutes(15))

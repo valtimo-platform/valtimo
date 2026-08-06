@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.service
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
@@ -220,6 +221,110 @@ class ExternalPluginDiscoveryServiceTest {
         verify(definitionRepository).save(definition)
     }
 
+    @Test
+    fun `pins the package content hash on first discovery`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:aaa"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(null)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        val captor = argumentCaptor<ExternalPluginDefinition>()
+        verify(definitionRepository).save(captor.capture())
+        assertThat(captor.firstValue.contentHash).isEqualTo("sha256:aaa")
+        assertThat(captor.firstValue.pendingContentHash).isNull()
+    }
+
+    @Test
+    fun `backfills the content hash for a definition discovered before hashing existed`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        val definition = definition(hostId = host.id, contentHash = null)
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:aaa"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        assertThat(definition.contentHash).isEqualTo("sha256:aaa")
+        assertThat(definition.pendingContentHash).isNull()
+    }
+
+    @Test
+    fun `flags a changed package for re-acceptance and freezes the accepted manifest data`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        val definition = definition(hostId = host.id, contentHash = "sha256:aaa").apply { name = "Accepted name" }
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:bbb", name = "Tampered name"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        assertThat(definition.contentHash).isEqualTo("sha256:aaa")
+        assertThat(definition.pendingContentHash).isEqualTo("sha256:bbb")
+        // The stored manifest data reflects what the admin accepted, not the changed package.
+        assertThat(definition.name).isEqualTo("Accepted name")
+        assertThat(definition.status).isEqualTo(ExternalPluginDefinitionStatus.AVAILABLE)
+    }
+
+    @Test
+    fun `withholds configuration pushes for a definition awaiting re-acceptance`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        val definition = definition(hostId = host.id, contentHash = "sha256:aaa", pendingContentHash = "sha256:bbb")
+        val configuration = ExternalPluginConfiguration(UUID.randomUUID(), definition.id, "Primary")
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:bbb"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+
+        service.discoverAll()
+
+        verify(configurationService, never()).pushToHost(any(), any(), any())
+    }
+
+    @Test
+    fun `clears the re-acceptance flag when the host serves the pinned content again`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        val definition = definition(hostId = host.id, contentHash = "sha256:aaa", pendingContentHash = "sha256:bbb")
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:aaa"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        assertThat(definition.contentHash).isEqualTo("sha256:aaa")
+        assertThat(definition.pendingContentHash).isNull()
+    }
+
+    private fun givenPluginListing(host: ExternalPluginHost, vararg entries: JsonNode) {
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(entries.toList())
+    }
+
+    private fun pluginEntry(contentHash: String, name: String = "Case summary") = objectMapper.readTree(
+        """
+        {
+          "pluginId": "case-summary",
+          "version": "1.0.0",
+          "contentHash": "$contentHash",
+          "manifest": {
+            "pluginId": "case-summary",
+            "version": "1.0.0",
+            "translations": {"en": {"name": "$name", "description": "Summarises a case"}}
+          }
+        }
+        """.trimIndent(),
+    )
+
     private fun givenHost(host: ExternalPluginHost) {
         whenever(hostRepository.findAll()).thenReturn(listOf(host))
         whenever(hostRepository.findById(eq(host.id))).thenReturn(Optional.of(host))
@@ -240,6 +345,8 @@ class ExternalPluginDiscoveryServiceTest {
     private fun definition(
         hostId: UUID,
         consecutiveMisses: Int = 0,
+        contentHash: String? = null,
+        pendingContentHash: String? = null,
     ): ExternalPluginDefinition = ExternalPluginDefinition(
         id = UUID.randomUUID(),
         pluginId = "case-summary",
@@ -248,5 +355,7 @@ class ExternalPluginDiscoveryServiceTest {
         baseUrl = "https://plugin-host.example.com/plugins/case-summary",
         status = ExternalPluginDefinitionStatus.AVAILABLE,
         consecutiveMisses = consecutiveMisses,
+        contentHash = contentHash,
+        pendingContentHash = pendingContentHash,
     )
 }

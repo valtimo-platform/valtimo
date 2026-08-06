@@ -156,6 +156,20 @@ export async function hostManagementRoutes(
         return;
       }
 
+      // Versions are immutable: what an admin approved for pluginId@version must stay the exact
+      // bytes that keep running. Re-uploading the same version would silently hot-reload different
+      // code under an already-accepted identity (a time-of-check/time-of-use gap), so it is
+      // refused outright. Publishing a change requires a new version; removing a version first
+      // requires the delete route, which refuses while configurations still reference it.
+      if (pluginManager.hasVersion(manifest.pluginId, manifest.version)) {
+        reply.code(409).send({
+          error: `Plugin version already exists: ${manifest.pluginId}@${manifest.version}`,
+          message:
+            "Plugin versions are immutable. Publish the change under a new version number.",
+        });
+        return;
+      }
+
       // Read wasm
       const wasmPath = join(extractDir, "plugin.wasm");
       const wasmBuffer = await readFile(wasmPath);
@@ -180,6 +194,7 @@ export async function hostManagementRoutes(
       reply.code(201).send({
         pluginId: manifest.pluginId,
         version: manifest.version,
+        contentHash: pluginManager.getContentHash(manifest.pluginId, manifest.version),
         manifest: result,
       });
     } catch (err) {

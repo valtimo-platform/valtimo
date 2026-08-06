@@ -111,24 +111,29 @@ callbacks.
 
 **3.2 Token (`service/ExternalPluginServiceTokenService.kt`)** — HS256 JWT:
 `sub=external-plugin:{pluginId}:{configId}`, `type=external_plugin_service`, `plugin_config_id`,
-`plugin_id`, `plugin_version`, `iss=valtimo-gzac`, `exp=now+ttl`. **No roles.** Signed with
+`plugin_id`, `plugin_version`, `token_generation` (the configuration's revocation counter —
+§3.6), `iss=valtimo-gzac`, `exp=now+ttl`. **No roles.** Signed with
 `SHA-256(valtimo.plugin.encryption-secret + "|service")` — the shared
 `security/ExternalPluginTokenKeyProvider.kt` base derives a **domain-separated** key per token
 kind (`|service` here, `|user` for the iframe token, §13.3), so a token of one kind can never
 validate against the other kind's parser — the `type` claim is a routing hint, not the security
 boundary. See `security/ExternalPluginServiceTokenKeyProvider.kt`.
 The lifetime `ttl` is the `valtimo.external-plugin.service-token.ttl` property — a Spring duration
-(ISO-8601 `PT24H` or the `24h` shorthand), defaulting to 24h — parsed in the autoconfiguration
-(`DurationStyle.detectAndParse`) and handed to the service; the service itself falls back to 24h
-when constructed without one.
+(ISO-8601 `PT10M` or the `10m` shorthand), defaulting to **10 minutes** — parsed in the
+autoconfiguration (`DurationStyle.detectAndParse`) and handed to the service; the service itself
+falls back to 10 minutes when constructed without one. The short default costs nothing because the
+discovery poll (default 60s) re-pushes a fresh token every cycle (§3.6); it only caps how long a
+*leaked* token stays usable.
 
 **3.3 Recognition (`security/ExternalPluginServiceTokenFilter.kt`)** — registered **before**
 `BearerTokenAuthenticationFilter` (`security/ExternalPluginCallbackHttpSecurityConfigurer.kt`,
 `@Order(450)`): parses the bearer JWT with the service-token signing key; passes through if
-signature or `type` claim don't match (Keycloak tokens untouched); on match sets an
-`ExternalPluginServicePrincipal`, **strips the `Authorization` header**, and runs the rest of the
-chain inside `AuthorizationContext.runWithoutAuthorization` (PBAC is intentionally bypassed for
-service tokens — the allowlist is the sole gate). The service- and user-token filters share the
+signature or `type` claim don't match (Keycloak tokens untouched); on match the authenticator
+first checks the token's `token_generation` claim against the configuration's current counter
+(§3.6) — a mismatch, a missing claim, or a configuration that no longer exists rejects the token —
+then sets an `ExternalPluginServicePrincipal`, **strips the `Authorization` header**, and runs the
+rest of the chain inside `AuthorizationContext.runWithoutAuthorization` (PBAC is intentionally
+bypassed for service tokens — the allowlist is the sole gate). The service- and user-token filters share the
 `AbstractExternalPluginTokenFilter` base, and all three plugin filters are excluded from servlet
 auto-registration (disabled `FilterRegistrationBean`s in the autoconfiguration) so they run only
 inside the Spring Security chain, never a second time as bare servlet filters.
@@ -170,7 +175,7 @@ reported as a 504-shaped reply, with a 502-shaped reply for a failed fetch), so 
 endpoint cannot pin the plugin call and its per-plugin lock indefinitely.
 
 **3.6 Token lifecycle** — operator-tunable TTL (`valtimo.external-plugin.service-token.ttl`,
-default 24h, §3.2), **no separate refresh loop**. Each healthy discovery poll re-pushes every
+default 10m, §3.2), **no separate refresh loop**. Each healthy discovery poll re-pushes every
 configuration with a freshly issued token
 (`service/ExternalPluginDiscoveryService.syncConfigurations()`), continuously replacing tokens
 well inside their lifetime. That poll *is* the refresh mechanism (default 60s,
@@ -182,6 +187,18 @@ the same hosts. Discovery keeps a strict transaction discipline: all host HTTP I
 plugin listing, config re-pushes) runs **outside** any database transaction, with the bookkeeping
 writes in short per-host transactions (`TransactionTemplate`) — a slow or hanging host never pins
 a database connection, and one host's failure never rolls back another host's bookkeeping.
+
+**Revocation.** Every configuration carries a revocation counter
+(`external_plugin_configuration.token_generation`); every token minted for it — service (§3.2)
+*and* user (§13.3) — is stamped with that counter as its `token_generation` claim, and both token
+authenticators accept a token only while its claim equals the configuration's current value (a
+missing claim or a deleted configuration also rejects). `POST
+/api/management/v1/external-plugin/configuration/{id}/revoke-tokens` (ADMIN) bumps the counter and
+immediately re-pushes the configuration, handing the host a fresh token of the new generation: a
+leaked or hoarded token dies on its next use while a legitimate host keeps working without waiting
+for the next poll. Because the host's user-token introspection route authenticates with the token
+under introspection (§13.3), a revoked user token also stops validating for the host's `/data`
+path. Deleting the configuration is the other, heavier kill switch (§12).
 
 **3.7 Caveat** — service tokens bypass PBAC, so the allowlist is the entire authorization surface;
 an over-broad grant (`/api/v1/**`) gives broad role-free access. Hence the activation-time
@@ -315,13 +332,17 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
   `host_id`, `base_url`, `status`, plus `name`, `description`, `provider`, `min_gzac_version` /
   `max_gzac_version` (populated at discovery from the manifest's `compatibility` block, compared
   against the running GZAC version to surface a non-blocking compatibility warning — §11),
-  `consecutive_misses`. The
+  `consecutive_misses`, **plus** `content_hash` / `pending_content_hash` (changeset
+  `13-32-0/20260806-external-plugin-security-hardening.xml`): the package content hash pinned at
+  discovery, and — when the host serves different bytes under the same `pluginId@version` — the
+  hash it serves instead, which flags the definition for admin re-acceptance (§11). The
   manifest's declared `eventSubscriptions` live here (inside
   `manifest_json`), discovered from the host — but the authoritative subscription list for any
   given activated configuration is `external_plugin_granted_event` (next paragraph), not the
   manifest copy.
 - `external_plugin_configuration` — `definition_id`, `title`, `properties` (encrypted on schema
-  `x-secret` fields), `created_at`. API responses never carry secret values:
+  `x-secret` fields), `created_at`, and `token_generation` (bigint, the revocation counter every
+  minted token is validated against — §3.6). API responses never carry secret values:
   `GET .../configuration/{id}` returns **masked** properties with the `x-secret` fields omitted
   entirely (mirroring the embedded module's `PluginConfigurationDto`), and an update whose payload
   leaves a secret field absent or blank means "unchanged" — the stored ciphertext is kept and the
@@ -403,14 +424,19 @@ immediately instead of waiting for the next polling tick.
 
 ## 7. Plugin host 🟡 (`plugin-host/app/`, Node + Fastify + Extism)
 
-Routes: `GET /health`; `*/api/host/plugins[...]` (HMAC-signed §3.9; POST upload, GET list,
-DELETE); `POST|PUT|DELETE|GET /api/host/configurations/:configId` (HMAC-signed §3.9; push body
+Routes: `GET /health`; `*/api/host/plugins[...]` (HMAC-signed §3.9; POST upload, GET list —
+each listing entry carries the package `contentHash` GZAC pins at discovery, §11 — and DELETE);
+`POST|PUT|DELETE|GET /api/host/configurations/:configId` (HMAC-signed §3.9; push body
 carries `pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl, eventSubscriptions,
-grantedCapabilities, grantedEndpoints` and optionally `eventBroker` — only `serviceToken`/
-`gzacBaseUrl` are actually validated, `pluginId`/`pluginVersion` are not null-checked beyond the
-plugin having to be loaded); `POST /plugins/:id/:version/actions/:key`
+grantedCapabilities, grantedEndpoints` and optionally `eventBroker` and `expectedContentHash` —
+only `serviceToken`/`gzacBaseUrl` are actually validated, `pluginId`/`pluginVersion` are not
+null-checked beyond the plugin having to be loaded, and a push whose `expectedContentHash` does
+not match the loaded package's hash is refused with 409 (§11) so a config and its fresh service
+token can never reach package bytes other than the pinned ones); `POST
+/plugins/:id/:version/actions/:key`
 (HMAC-signed §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
-`…/bundles/**`, and `POST …/data` (the `handle_request` RPC route, §13.4/§13.5 — browser-facing
+`…/bundles/**` (bundles and logo are served with the strict plugin-content CSP — see below), and
+`POST …/data` (the `handle_request` RPC route, §13.4/§13.5 — browser-facing
 with CORS `*` + `OPTIONS` preflight, so it carries no HMAC, but executing Wasm is gated on a
 chain of checks: the request must name a `configurationId` whose pushed configuration exists,
 targets this plugin version, **and was granted the `frontend_data` capability** — otherwise 403
@@ -437,8 +463,8 @@ plugin-delete guard's `listByPlugin` reads uncached (staleness there would risk 
 a just-pushed configuration references). The plugin manager serialises calls per plugin (a `lock`
 promise chain to avoid Extism reentrancy — unload, delete, and idle eviction chain through the
 **same** lock, so an instance is never closed mid-execution), sets `prefetch` on the broker
-channel, and hot-reloads a plugin (unload + reload) when a newer upload of the same
-`pluginId@version` arrives. Every Wasm call is bounded by a hard wall-clock limit
+channel, and computes each loaded package's `contentHash` at load time (§11). Every Wasm call is
+bounded by a hard wall-clock limit
 (`WASM_TIMEOUT_MS`, default 30 s): Extism cancels a timed-out call, the cached instance is
 dropped and the next call starts from a fresh one. The module's linear memory is capped
 (`WASM_MAX_MEMORY_PAGES`, default 4096 pages = 256 MiB; 0 uncaps), and idle instances — each
@@ -479,7 +505,26 @@ funnel through one generic `callExport`; the public `callAction`/`callEvent`/`ca
   directory — a crafted `../`, absolute, or drive-letter entry name rejects the whole package with
   400 — and only the files a plugin package may legitimately carry are extracted (root-level
   `manifest.json`, `plugin.wasm`, the logo, and `frontend/**`), so a hostile zip cannot plant
-  anything else even inside the temp dir.
+  anything else even inside the temp dir. **Versions are immutable**: an upload whose manifest
+  names a `pluginId@version` that already exists — loaded in memory *or* present on disk
+  (`hasVersion`) — is refused with 409; publishing a change requires a new version number, and
+  freeing a version first goes through the delete route with its configuration guard above. The
+  201 response carries the stored package's `contentHash` (§11).
+- **Plugin-content CSP** (`routes/plugin-bundles.ts`): every response serving plugin-authored
+  content — `…/bundles/**` **and** the logo (an SVG can carry script) — carries
+  `Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'
+  'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self';
+  form-action 'self'; base-uri 'none'; object-src 'none'; sandbox allow-scripts allow-forms`,
+  plus `X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer`. The iframe sandbox
+  (§13.2) stops *escalation*; this policy closes the *exfiltration* channels a hostile bundle
+  would otherwise have — `connect-src 'self'` kills fetch/XHR/beacon to third parties (opaque-
+  origin requests go out with `Origin: null`, which plenty of endpoints accept), `script-src
+  'self'` kills remote script loading, `img-src`/`font-src` kill pixel-beacon exfil, and
+  `form-action 'self'` kills native form posts to external endpoints. An honest plugin loses
+  nothing: its GZAC traffic flows through the parent-proxy postMessage transport and its own
+  assets live under the bundle path. The CSP `sandbox` directive mirrors the embedding iframe's
+  attribute, so a bundle opened directly in a top-level tab is confined to an opaque origin too,
+  instead of running same-origin with the host.
 
 Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required — the shared secret used as the
 HMAC key for every GZAC→host route, §3.9), `PORT` (8090),
@@ -546,7 +591,10 @@ hosts can serve one instance.
 inside a database transaction. Activation and update register the push as an after-commit action
 (`runAfterCommit`), so a slow or unreachable host can never pin a database transaction open; a
 failed push is a warning only, self-healed by the next discovery re-sync. Configuration deletes
-remove the config from the host through the same after-commit mechanism.
+remove the config from the host through the same after-commit mechanism. `pushToHost` refuses to
+push at all — every caller funnels through it — while the definition's package content awaits
+re-acceptance (§11): no push means no fresh service token for package bytes the admin has not
+accepted.
 
 Push body shape (relevant fields):
 
@@ -557,6 +605,7 @@ Push body shape (relevant fields):
   "properties": { },
   "serviceToken": "eyJ…",
   "gzacBaseUrl": "http://gzac:8080",
+  "expectedContentHash": "sha256:…",
   "eventSubscriptions": ["com.ritense.valtimo.document.created", "com.ritense.valtimo.task.completed"],
   "grantedCapabilities": ["gzac_api", "log"],
   "grantedEndpoints": [{"method": "GET", "pattern": "/api/v1/document/*"}],
@@ -569,6 +618,10 @@ Push body shape (relevant fields):
   }
 }
 ```
+
+`expectedContentHash` is the definition's pinned package hash (§11; omitted while none is pinned).
+The host verifies its loaded package still matches before accepting the push and answers 409
+otherwise, closing the window between GZAC's discovery cycle and the push itself.
 
 Every push carries the configuration's granted endpoint list as a `grantedEndpoints` array
 (`{method, pattern}` entries), persisted in the host's `granted_endpoints` column (`NULL` when a
@@ -787,7 +840,7 @@ the origins, and it returns only the distinct `scheme://host[:port]` origins of 
 hosts — no admin tokens, broker URLs or configuration data) and passes the origins into the
 initializer before the meta tag is inserted (the CSP meta is immutable once parsed).
 
-## 11. Multi-version support & compatibility 🟡 (coexistence ✅, compatibility check ✅, in-place upgrade ⛔)
+## 11. Multi-version support, compatibility & content integrity ✅ (side-by-side versions, compatibility check, immutable + pinned packages)
 
 **Why coexistence matters.** Once a case definition becomes *final*, its BPMN — including any
 service tasks bound to an external-plugin action — is immutable. A process link cannot then be
@@ -819,6 +872,33 @@ versions of the same plugin must run side-by-side indefinitely**: there is no pa
    use.
 4. New BPMNs / case definitions bind their service tasks to the v2 configuration; existing final
    case definitions continue to reference their v1 configuration.
+
+**Version immutability & content pinning ✅.** A published version is the exact bytes the admin's
+acceptance covers — enforced end to end:
+
+- *Host — immutable versions.* Every loaded package has a `contentHash`: `sha256:` over every file
+  in the version directory (`manifest.json`, `plugin.wasm`, the logo, `frontend/**`), each record
+  bound to its relative path and byte length so files cannot be renamed or shuffled without
+  changing the hash. The hash is exposed in the plugin listing and the upload response, and an
+  upload naming an existing `pluginId@version` — loaded *or* on disk — is refused with 409 (§7):
+  publishing a change means publishing a new version.
+- *GZAC — pinning at discovery.* The definition stores the hash the host served when the plugin
+  was first discovered (`content_hash` — trust on first use, the same moment the definition
+  becomes configurable). Every later poll compares the discovered hash against the pinned one; a
+  difference sets `pending_content_hash` (surfaced as `requiresReacceptance` on the definition
+  DTO) and leaves the stored manifest/schema **frozen at the accepted state**.
+- *While flagged, the plugin is dark on every surface:* configuration pushes are withheld
+  (`pushToHost` refuses — §8.2 — so the host's last service token expires within its 10-minute
+  TTL), process-link actions fail with `EXTERNAL_PLUGIN_CONTENT_CHANGED`, task-form submissions
+  are refused with a user-visible error, and user tokens are not minted (409 — §13.3). Every push
+  additionally carries `expectedContentHash`, which the host verifies against its loaded package
+  (409 on mismatch), closing the window between GZAC's discovery cycle and the push.
+- *Re-acceptance.* `POST /api/management/v1/external-plugin/definition/{id}/accept-content`
+  (ADMIN) re-pins: the request echoes the exact pending hash the admin reviewed — acceptance of a
+  *specific* package, so a stale echo is rejected when the host has changed yet again — and an
+  immediate re-discovery then refreshes the manifest data and resumes pushes. A host serving the
+  pinned bytes again (a rollback) clears the flag automatically on the next poll. A host whose
+  listing carries no hash is simply not pinned.
 
 **✅ Version visibility in the UI.** The version appears in brackets after the localised plugin
 name (`Name (X.Y.Z)`) wherever that name is rendered, via `getExternalPluginDisplayName` (§10), so
@@ -888,8 +968,9 @@ The frontend surfaces incompatibility as a **non-blocking** warning, localised v
   toast by the `X-Skip-Interceptor: 409` request header) into an "Upload an incompatible plugin?"
   confirmation that re-issues the upload with `force=true`.
 
-**⛔ Other gaps.** Schema migration for an in-place v1 → v2 configuration "upgrade" is not
-implemented and arguably unnecessary given the side-by-side model. Permission-diff prompts and a
+**⛔ Other gaps.** Schema migration for moving a configuration from v1 to v2 is not implemented
+and arguably unnecessary given the side-by-side model (the package bytes of a published version
+are immutable in any case — see content pinning above). Permission-diff prompts and a
 `LATEST/STABLE/DEPRECATED` channel status are open. The compatibility range is a warning rather than
 an activation gate — only upload is a confirm-gate; an admin can still activate a configuration for
 an incompatible definition.
@@ -1071,6 +1152,13 @@ credential:
   the GZAC app's session / full Keycloak token and escalate beyond the allowlist. The opaque origin
   forecloses that, and is the reason the parent-proxy is used even when token *confidentiality*
   is not a concern.
+- **The sandbox stops escalation; the bundle CSP stops exfiltration.** The host serves every
+  bundle (and the logo) with a strict `Content-Security-Policy` — `default-src 'none'`,
+  `script-src 'self'`, `connect-src 'self'`, `form-action 'self'`, … (§7) — so a hostile bundle
+  cannot ship the data it legitimately receives through the parent-proxy off to a third party via
+  `fetch` (opaque-origin requests go out as `Origin: null`, which many endpoints accept), remote
+  script, pixel beacons or native form posts. The two mechanisms are complementary halves of the
+  iframe containment story.
 
 ### 13.3 Downscoped user token ✅
 
@@ -1078,11 +1166,13 @@ credential:
   deliberately **non-management** and **not ADMIN-gated** (any authenticated user; the result is
   always bounded by PBAC ∩ allowlist). Explicitly whitelisted `.authenticated()` in
   `ExternalPluginHttpSecurityConfigurer`. Reads the current user via
-  `SecurityUtils.getCurrentUserLogin()/getCurrentUserRoles()`, verifies the configuration exists, and
-  returns `{ userToken, expiresAt, grantedEndpoints }` — the configuration's granted endpoints ride
-  along so the iframe parent can seed its client-side allowlist precheck (§13.2) without a second
-  call. (Plugin tokens themselves can never call this endpoint — it sits on the hard denylist,
-  §3.4.)
+  `SecurityUtils.getCurrentUserLogin()/getCurrentUserRoles()`, loads the configuration (404 when
+  unknown; **409 while the definition's package content awaits re-acceptance — §11 — so the iframe
+  surface stays dark for a changed plugin**), stamps the configuration's current
+  `token_generation` into the token, and returns `{ userToken, expiresAt, grantedEndpoints }` —
+  the configuration's granted endpoints ride along so the iframe parent can seed its client-side
+  allowlist precheck (§13.2) without a second call. (Plugin tokens themselves can never call this
+  endpoint — it sits on the hard denylist, §3.4.)
 - **Introspection endpoint** `GET /api/v1/external-plugin/user-token/introspect`
   (`ExternalPluginUserTokenIntrospectionResource`) — the plugin host's validation counterpart:
   the host presents a user token as the bearer credential and receives the token's own claims,
@@ -1092,9 +1182,12 @@ credential:
   `ExternalPluginHttpSecurityConfigurer` and reachable for user-token principals through the
   narrow denylist carve-out (§3.4). The host calls it before executing Wasm for `/data` (§13.5).
 - **Token** (`ExternalPluginUserTokenService`): HS256, `sub=userLogin`, custom `roles` claim,
-  `plugin_config_id`, `type=external_plugin_user`, `iss=valtimo-gzac`, `iat`, `exp`. TTL from
-  `valtimo.external-plugin.user-token.ttl`, **hard-capped at 15 minutes**. Signed with its **own**
-  domain-separated key, `SHA-256(valtimo.plugin.encryption-secret + "|user")`
+  `plugin_config_id`, `token_generation` (the configuration's revocation counter — the user-token
+  authenticator applies the same generation check as the service-token path, §3.6, so revoking a
+  configuration's tokens kills its outstanding user tokens too, including their use against the
+  introspection endpoint below), `type=external_plugin_user`, `iss=valtimo-gzac`, `iat`, `exp`.
+  TTL from `valtimo.external-plugin.user-token.ttl`, **hard-capped at 15 minutes**. Signed with
+  its **own** domain-separated key, `SHA-256(valtimo.plugin.encryption-secret + "|user")`
   (`ExternalPluginUserTokenKeyProvider`, on the shared key-provider base — §3.2): a user token can
   never validate against the service-token parser or vice versa, so the `type` claim is a routing
   hint, not the security boundary.
@@ -1293,6 +1386,12 @@ Structure:
   and **menu pages** (§13) are done).
 - DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
   queue and its contents).
+- Publisher **package signing** — content pinning (§11) is hash-based trust-on-first-use, tied to
+  whoever can reach the upload endpoint, not to a verified publisher identity.
+- Admin-UI surfaces for content re-acceptance and token revocation — both are API-complete
+  (`accept-content`, `revoke-tokens`; the definition DTO exposes `requiresReacceptance` /
+  `pendingContentHash`, the configuration DTO `tokenGeneration`) but have no dedicated screens
+  yet.
 
 ## 15. Roadmap (priority order)
 
@@ -1363,7 +1462,27 @@ Structure:
   `exception/ExternalPluginHostInUseExceptionTest` (pins the 409 problem-body shape: title,
   `CONFLICT` status, `hostId`, and the `PluginUsageDto` fields). The service-token suite
   (`service/ExternalPluginServiceTokenServiceTest`) asserts the issued JWT's `exp − iat` equals the
-  configured TTL and falls back to 24h when none is set.
+  configured TTL, falls back to 10 minutes when none is set, and stamps the configuration's
+  `token_generation` claim (§3.2).
+- Content-integrity and revocation suites, all green: `service/ExternalPluginDiscoveryServiceTest`
+  (hash pinned on first discovery, backfilled for pre-hash definitions, change flags
+  `pendingContentHash` + freezes the stored manifest + withholds pushes, rollback clears the
+  flag), `service/ExternalPluginConfigurationServicePushTest` (push carries
+  `expectedContentHash`, refuses while re-acceptance is pending, `revokeTokens` bumps the
+  generation and re-pushes a fresh token), `service/ExternalPluginDefinitionServiceTest`
+  (`acceptContent` re-pins, rejects a stale or absent pending hash),
+  `security/ExternalPluginServiceTokenFilterTest` / `security/ExternalPluginUserTokenFilterTest`
+  (tokens of a previous generation, without the claim, or for a deleted configuration are
+  rejected), `processlink/ExternalPluginServiceTaskStartListenerTest` /
+  `processlink/ExternalPluginTaskFormSubmissionServiceTest` (invocations and submissions refused
+  while re-acceptance is pending), and `web/rest/ExternalPluginUserTokenResourceTest` (mint 409
+  while pending; minted token bound to the current generation). Host-side (vitest):
+  `plugin-manager.test.ts` (stable content hash, changes with any packaged file, `hasVersion` on
+  disk and in memory), `routes/host-management.test.ts` (duplicate-version upload → 409),
+  `routes/host-configurations.test.ts` (push hash mismatch → 409), `routes/plugin-bundles.test.ts`
+  (strict CSP + `nosniff` + referrer policy on bundles and logo). PostgreSQL integration tests
+  green — the `20260806-external-plugin-security-hardening.xml` changeset applies and matches the
+  entities.
 - Backend `:backend:plugin:test` (`service/PluginServiceTest`): BUILD SUCCESSFUL — embedded
   `deletePluginConfiguration` proceeds when no fixed process link references the configuration,
   throws `PluginConfigurationInUseException` with the `usages` payload when one does, and a

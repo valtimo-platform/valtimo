@@ -31,12 +31,18 @@ import java.util.Date
  * into GZAC on behalf of a specific external plugin configuration.
  *
  * The token carries no roles. Endpoint access is gated by [com.ritense.externalplugin.security.ExternalPluginEndpointAllowlistFilter].
+ *
+ * The default TTL is deliberately a small multiple of the discovery polling rate (60s): the poll
+ * re-pushes a fresh token to the host on every cycle, so a leaked token is only usable for minutes
+ * rather than a day. Each token also carries the configuration's [ExternalPluginConfiguration
+ * .tokenGeneration]; bumping that counter (the revoke-tokens management endpoint) invalidates every
+ * outstanding token at once — see [com.ritense.externalplugin.security.ExternalPluginServiceTokenAuthenticator].
  */
 @Service
 @SkipComponentScan
 class ExternalPluginServiceTokenService(
     private val keyProvider: ExternalPluginServiceTokenKeyProvider,
-    private val tokenTtl: Duration = Duration.ofHours(24),
+    private val tokenTtl: Duration = DEFAULT_TTL,
 ) {
 
     fun issue(configuration: ExternalPluginConfiguration, definition: ExternalPluginDefinition): String {
@@ -48,6 +54,7 @@ class ExternalPluginServiceTokenService(
             .claim(PLUGIN_CONFIG_ID_CLAIM, configuration.id.toString())
             .claim(PLUGIN_ID_CLAIM, definition.pluginId)
             .claim(PLUGIN_VERSION_CLAIM, definition.version)
+            .claim(TOKEN_GENERATION_CLAIM, configuration.tokenGeneration)
             .issuer(ISSUER)
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plus(tokenTtl)))
@@ -59,6 +66,9 @@ class ExternalPluginServiceTokenService(
         const val PLUGIN_CONFIG_ID_CLAIM = "plugin_config_id"
         const val PLUGIN_ID_CLAIM = "plugin_id"
         const val PLUGIN_VERSION_CLAIM = "plugin_version"
+        const val TOKEN_GENERATION_CLAIM = "token_generation"
         const val ISSUER = "valtimo-gzac"
+
+        val DEFAULT_TTL: Duration = Duration.ofMinutes(10)
     }
 }

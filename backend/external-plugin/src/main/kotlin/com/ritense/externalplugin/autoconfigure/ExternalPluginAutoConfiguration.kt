@@ -222,16 +222,20 @@ class ExternalPluginAutoConfiguration {
         @Value("\${valtimo.plugin.encryption-secret}") secret: String,
     ) = ExternalPluginServiceTokenKeyProvider(secret)
 
+    // 10-minute default: the discovery poll (60s) re-pushes a fresh token every cycle, so a short
+    // TTL costs nothing operationally while capping how long a leaked token stays usable.
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenService::class)
     fun externalPluginServiceTokenService(
         keyProvider: ExternalPluginServiceTokenKeyProvider,
-        @Value("\${valtimo.external-plugin.service-token.ttl:PT24H}") tokenTtl: String,
+        @Value("\${valtimo.external-plugin.service-token.ttl:PT10M}") tokenTtl: String,
     ) = ExternalPluginServiceTokenService(keyProvider, DurationStyle.detectAndParse(tokenTtl))
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenAuthenticator::class)
-    fun externalPluginServiceTokenAuthenticator() = ExternalPluginServiceTokenAuthenticator()
+    fun externalPluginServiceTokenAuthenticator(
+        configurationRepository: ExternalPluginConfigurationRepository,
+    ) = ExternalPluginServiceTokenAuthenticator(configurationRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginEndpointAllowlistFilter::class)
@@ -261,7 +265,9 @@ class ExternalPluginAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginUserTokenAuthenticator::class)
-    fun externalPluginUserTokenAuthenticator() = ExternalPluginUserTokenAuthenticator()
+    fun externalPluginUserTokenAuthenticator(
+        configurationRepository: ExternalPluginConfigurationRepository,
+    ) = ExternalPluginUserTokenAuthenticator(configurationRepository)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginUserTokenFilter::class)
@@ -299,9 +305,15 @@ class ExternalPluginAutoConfiguration {
     @ConditionalOnMissingBean(ExternalPluginUserTokenResource::class)
     fun externalPluginUserTokenResource(
         configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
         grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         userTokenService: ExternalPluginUserTokenService,
-    ) = ExternalPluginUserTokenResource(configurationRepository, grantedEndpointRepository, userTokenService)
+    ) = ExternalPluginUserTokenResource(
+        configurationRepository,
+        definitionRepository,
+        grantedEndpointRepository,
+        userTokenService,
+    )
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginUserTokenIntrospectionResource::class)

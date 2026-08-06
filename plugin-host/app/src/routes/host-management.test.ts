@@ -62,6 +62,8 @@ describe("host-management routes", () => {
     listPlugins: ReturnType<typeof vi.fn>;
     listVersions: ReturnType<typeof vi.fn>;
     getManifest: ReturnType<typeof vi.fn>;
+    getContentHash: ReturnType<typeof vi.fn>;
+    hasVersion: ReturnType<typeof vi.fn>;
     storeAndLoad: ReturnType<typeof vi.fn>;
     removePlugin: ReturnType<typeof vi.fn>;
   };
@@ -73,6 +75,8 @@ describe("host-management routes", () => {
       listPlugins: vi.fn(() => [{ pluginId: "case-summary", version: "0.1.0" }]),
       listVersions: vi.fn(() => [{ version: "0.1.0" }]),
       getManifest: vi.fn(() => ({ pluginId: "case-summary", version: "0.1.0" })),
+      getContentHash: vi.fn(() => "sha256:abc123"),
+      hasVersion: vi.fn(() => false),
       storeAndLoad: vi.fn(async () => validManifest),
       removePlugin: vi.fn(async () => {}),
     };
@@ -132,7 +136,11 @@ describe("host-management routes", () => {
     it("stores and loads a valid package (file-byte-bound HMAC) → 201", async () => {
       const res = await uploadZip(makeZip(validManifest));
       expect(res.statusCode).toBe(201);
-      expect(res.json()).toMatchObject({ pluginId: "case-summary", version: "0.1.0" });
+      expect(res.json()).toMatchObject({
+        pluginId: "case-summary",
+        version: "0.1.0",
+        contentHash: "sha256:abc123",
+      });
       expect(pluginManager.storeAndLoad).toHaveBeenCalledWith(
         "case-summary",
         "0.1.0",
@@ -141,6 +149,16 @@ describe("host-management routes", () => {
         expect.any(String),
         undefined // no logo declared
       );
+    });
+
+    it("refuses to replace an existing version with 409 (versions are immutable)", async () => {
+      pluginManager.hasVersion.mockReturnValueOnce(true);
+      const res = await uploadZip(makeZip(validManifest));
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toMatchObject({
+        error: "Plugin version already exists: case-summary@0.1.0",
+      });
+      expect(pluginManager.storeAndLoad).not.toHaveBeenCalled();
     });
 
     it("rejects an invalid manifest with 400 and validation details", async () => {

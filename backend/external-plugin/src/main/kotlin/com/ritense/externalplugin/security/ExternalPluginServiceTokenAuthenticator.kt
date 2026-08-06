@@ -16,16 +16,20 @@
 
 package com.ritense.externalplugin.security
 
+import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.PLUGIN_CONFIG_ID_CLAIM
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.PLUGIN_ID_CLAIM
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.PLUGIN_VERSION_CLAIM
+import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.TOKEN_GENERATION_CLAIM
 import com.ritense.valtimo.contract.security.jwt.TokenAuthenticator
 import io.jsonwebtoken.Claims
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import java.util.UUID
 
-class ExternalPluginServiceTokenAuthenticator : TokenAuthenticator {
+class ExternalPluginServiceTokenAuthenticator(
+    private val configurationRepository: ExternalPluginConfigurationRepository,
+) : TokenAuthenticator {
 
     override fun supports(claims: Claims): Boolean =
         claims[ExternalPluginServiceTokenKeyProvider.TYPE_CLAIM] ==
@@ -39,11 +43,39 @@ class ExternalPluginServiceTokenAuthenticator : TokenAuthenticator {
         val pluginVersion = claims.get(PLUGIN_VERSION_CLAIM, String::class.java)
             ?: error("$PLUGIN_VERSION_CLAIM claim missing on external plugin service token")
 
+        requireCurrentTokenGeneration(configurationRepository, claims, UUID.fromString(configId))
+
         val principal = ExternalPluginServicePrincipal(
             pluginConfigId = UUID.fromString(configId),
             pluginId = pluginId,
             pluginVersion = pluginVersion,
         )
         return UsernamePasswordAuthenticationToken(principal, jwt, emptyList())
+    }
+
+    companion object {
+
+        /**
+         * Rejects a token whose generation is not the configuration's *current* one. This is the
+         * revocation mechanism: signature and expiry alone would keep a leaked token alive for its
+         * full TTL, whereas bumping the configuration's generation kills every outstanding token on
+         * the next use. A token for a configuration that no longer exists is rejected on the same
+         * grounds, and so is a token without the claim (pre-hardening tokens die at upgrade; the
+         * discovery cycle re-pushes fresh ones within a polling tick).
+         */
+        fun requireCurrentTokenGeneration(
+            configurationRepository: ExternalPluginConfigurationRepository,
+            claims: Claims,
+            configId: UUID,
+        ) {
+            val tokenGeneration = (claims[TOKEN_GENERATION_CLAIM] as? Number)?.toLong()
+                ?: error("$TOKEN_GENERATION_CLAIM claim missing on external plugin token")
+            val configuration = configurationRepository.findById(configId).orElse(null)
+                ?: error("external plugin configuration $configId no longer exists")
+            check(tokenGeneration == configuration.tokenGeneration) {
+                "external plugin token for configuration $configId was revoked " +
+                    "(token generation $tokenGeneration, current ${configuration.tokenGeneration})"
+            }
+        }
     }
 }

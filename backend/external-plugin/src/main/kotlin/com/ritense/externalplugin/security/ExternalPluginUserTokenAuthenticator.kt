@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.security
 
+import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService.Companion.PLUGIN_CONFIG_ID_CLAIM
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService.Companion.ROLES_CLAIM
 import com.ritense.valtimo.contract.security.jwt.TokenAuthenticator
@@ -29,8 +30,16 @@ import java.util.UUID
  * Rebuilds a *real user* [Authentication] from an external-plugin user token. The authorities are the
  * roles frozen into the token, so `SecurityUtils.getCurrentUserRoles()` (and therefore PBAC) sees the
  * user's actual roles — no Keycloak round-trip required for the (≤15 min) lifetime of the token.
+ *
+ * Like the service-token path, the token's generation claim must match the configuration's current
+ * [com.ritense.externalplugin.domain.ExternalPluginConfiguration.tokenGeneration] — revoking a
+ * configuration's tokens kills outstanding user tokens too, including their use against the host's
+ * `/data` route (the introspection endpoint authenticates with the token under introspection, so a
+ * revoked token no longer introspects successfully either).
  */
-class ExternalPluginUserTokenAuthenticator : TokenAuthenticator {
+class ExternalPluginUserTokenAuthenticator(
+    private val configurationRepository: ExternalPluginConfigurationRepository,
+) : TokenAuthenticator {
 
     override fun supports(claims: Claims): Boolean =
         claims[ExternalPluginUserTokenKeyProvider.TYPE_CLAIM] ==
@@ -41,6 +50,12 @@ class ExternalPluginUserTokenAuthenticator : TokenAuthenticator {
             ?: error("subject claim missing on external plugin user token")
         val configId = claims.get(PLUGIN_CONFIG_ID_CLAIM, String::class.java)
             ?: error("$PLUGIN_CONFIG_ID_CLAIM claim missing on external plugin user token")
+
+        ExternalPluginServiceTokenAuthenticator.requireCurrentTokenGeneration(
+            configurationRepository,
+            claims,
+            UUID.fromString(configId),
+        )
 
         @Suppress("UNCHECKED_CAST")
         val roles = (claims[ROLES_CLAIM] as? List<String>) ?: emptyList()

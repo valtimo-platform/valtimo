@@ -17,8 +17,11 @@
 package com.ritense.externalplugin.security
 
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.externalplugin.domain.ExternalPluginConfiguration
+import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService.Companion.PLUGIN_CONFIG_ID_CLAIM
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService.Companion.ROLES_CLAIM
+import com.ritense.externalplugin.service.ExternalPluginUserTokenService.Companion.TOKEN_GENERATION_CLAIM
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import jakarta.servlet.FilterChain
@@ -26,10 +29,14 @@ import jakarta.servlet.http.HttpServletRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.springframework.mock.web.MockFilterChain
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.core.context.SecurityContextHolder
+import java.util.Optional
 import java.util.UUID
 import javax.crypto.SecretKey
 
@@ -37,7 +44,20 @@ class ExternalPluginUserTokenFilterTest {
 
     private val secret = "test-secret-test-secret-test-secret-1234"
     private val keyProvider = ExternalPluginUserTokenKeyProvider(secret)
-    private val authenticator = ExternalPluginUserTokenAuthenticator()
+    private val configurationRepository: ExternalPluginConfigurationRepository = mock<ExternalPluginConfigurationRepository>().also {
+        // Every stubbed configuration is at generation 0, matching the default claim in [token].
+        whenever(it.findById(any())).thenAnswer { invocation ->
+            Optional.of(
+                ExternalPluginConfiguration(
+                    id = invocation.getArgument(0),
+                    definitionId = UUID.randomUUID(),
+                    title = "Config",
+                    tokenGeneration = 0,
+                )
+            )
+        }
+    }
+    private val authenticator = ExternalPluginUserTokenAuthenticator(configurationRepository)
     private val filter = ExternalPluginUserTokenFilter(keyProvider, authenticator)
 
     @AfterEach
@@ -119,10 +139,22 @@ class ExternalPluginUserTokenFilterTest {
         assertThat(ignoreAuthorizationDuringChain).isFalse()
     }
 
+    @Test
+    fun `rejects a user token minted under a previous generation (revoked)`() {
+        val request = MockHttpServletRequest("GET", "/api/v1/document/1")
+        request.addHeader("Authorization", "Bearer ${token(tokenGeneration = 1)}") // config is at 0
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, MockHttpServletResponse(), chain)
+
+        assertThat(SecurityContextHolder.getContext().authentication).isNull()
+    }
+
     private fun token(
         type: String = ExternalPluginUserTokenKeyProvider.TOKEN_TYPE,
         configId: String = UUID.randomUUID().toString(),
         roles: List<String> = listOf("ROLE_USER"),
+        tokenGeneration: Long = 0,
         key: SecretKey = keyProvider.signingKey,
     ): String =
         Jwts.builder()
@@ -130,6 +162,7 @@ class ExternalPluginUserTokenFilterTest {
             .claim(ExternalPluginUserTokenKeyProvider.TYPE_CLAIM, type)
             .claim(PLUGIN_CONFIG_ID_CLAIM, configId)
             .claim(ROLES_CLAIM, roles)
+            .claim(TOKEN_GENERATION_CLAIM, tokenGeneration)
             .signWith(key, Jwts.SIG.HS256)
             .compact()
 }

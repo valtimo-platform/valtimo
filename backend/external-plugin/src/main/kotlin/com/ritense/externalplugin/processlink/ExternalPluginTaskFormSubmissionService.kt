@@ -99,6 +99,26 @@ class ExternalPluginTaskFormSubmissionService(
         )
         val task = requireCompleteTaskPermission(taskInstanceId)
 
+        // The host serves the bundle (and would run the submit hook) from its *current* package —
+        // when that package no longer matches the accepted content, nothing of this plugin may
+        // execute, so the submission is refused rather than the hook silently skipped.
+        val definition = definitionService.get(
+            configurationService.get(processLink.externalPluginConfigurationId).definitionId
+        )
+        if (definition.requiresReacceptance) {
+            logger.warn {
+                "Refusing task-form submission for external plugin " +
+                    "'${definition.pluginId}@${definition.version}': the plugin package changed on its " +
+                    "host and awaits re-acceptance"
+            }
+            return ExternalPluginTaskFormSubmissionResult(
+                errors = listOf(
+                    "The plugin '${definition.pluginId}@${definition.version}' changed on its host and " +
+                        "awaits re-acceptance by an administrator"
+                )
+            )
+        }
+
         // Level 1 — hand the raw submission to the plugin to validate/transform first, if declared.
         val effectiveSubmission = when (val hook = resolveSubmitHook(processLink)) {
             null -> submission

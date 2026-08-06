@@ -79,6 +79,12 @@ class ExternalPluginHostClient(
         properties: ObjectNode,
         serviceToken: String,
         gzacBaseUrl: String,
+        /**
+         * The package content hash GZAC pinned at discovery. The host verifies its loaded package
+         * still matches before accepting the push (409 otherwise), so a config and its fresh
+         * service token can never reach plugin code that differs from what the admin accepted.
+         */
+        expectedContentHash: String? = null,
         /** The CloudEvent types the admin granted. The host uses this list — not the manifest. */
         eventSubscriptions: List<String>,
         grantedCapabilities: List<String> = emptyList(),
@@ -104,6 +110,7 @@ class ExternalPluginHostClient(
             set<ObjectNode>("properties", properties)
             put("serviceToken", serviceToken)
             put("gzacBaseUrl", gzacBaseUrl)
+            if (!expectedContentHash.isNullOrBlank()) put("expectedContentHash", expectedContentHash)
             // Authoritative subscription list — replaces whatever the manifest declares.
             set<ObjectNode>("eventSubscriptions", objectMapper.createArrayNode().apply {
                 eventSubscriptions.forEach { add(it) }

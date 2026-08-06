@@ -38,4 +38,27 @@ class ExternalPluginDefinitionService(
 
     fun getAllByPluginId(pluginId: String): List<ExternalPluginDefinition> =
         definitionRepository.findAllByPluginId(pluginId)
+
+    /**
+     * Re-pins a definition whose host package changed after acceptance. The caller must echo the
+     * exact pending hash it reviewed: this is acceptance of a *specific* package, not of "whatever
+     * the host happens to serve by now" — if the host changed again since the admin looked, the
+     * echoed hash no longer matches and the request is rejected until the newest state is reviewed.
+     */
+    @Transactional
+    fun acceptContent(id: UUID, contentHash: String): ExternalPluginDefinition {
+        val definition = get(id)
+        val pending = definition.pendingContentHash
+            ?: throw IllegalStateException(
+                "External plugin definition ${definition.pluginId}@${definition.version} " +
+                    "has no pending content change to accept"
+            )
+        require(contentHash == pending) {
+            "The accepted content hash does not match the pending one — the plugin package " +
+                "changed again on the host; review the current state before accepting"
+        }
+        definition.contentHash = pending
+        definition.pendingContentHash = null
+        return definitionRepository.save(definition)
+    }
 }

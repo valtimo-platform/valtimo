@@ -22,6 +22,11 @@ import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import java.util.UUID
 
+/** Echoes the pending content hash the admin reviewed — see `acceptDefinitionContent`. */
+data class AcceptContentRequest(
+    val contentHash: String,
+)
+
 data class DefinitionResponse(
     val id: UUID,
     val pluginId: String,
@@ -51,6 +56,15 @@ data class DefinitionResponse(
      * `baseUrl` with the version so the management UI can use it directly in `<img src>`.
      */
     val logoUrl: String?,
+    /**
+     * The package content hash pinned at discovery, the hash the host serves *now* when it
+     * differs, and whether an admin must re-accept before the plugin runs again. The UI passes
+     * [pendingContentHash] back on `POST /definition/{id}/accept-content` to confirm which package
+     * it reviewed.
+     */
+    val contentHash: String?,
+    val pendingContentHash: String?,
+    val requiresReacceptance: Boolean,
 ) {
     companion object {
         fun from(definition: ExternalPluginDefinition, compatibility: CompatibilityResult): DefinitionResponse {
@@ -72,6 +86,9 @@ data class DefinitionResponse(
                 currentGzacVersion = compatibility.currentGzacVersion,
                 compatible = compatibility.compatible,
                 logoUrl = if (hasLogo) "${definition.baseUrl}/${definition.version}/logo" else null,
+                contentHash = definition.contentHash,
+                pendingContentHash = definition.pendingContentHash,
+                requiresReacceptance = definition.requiresReacceptance,
             )
         }
     }

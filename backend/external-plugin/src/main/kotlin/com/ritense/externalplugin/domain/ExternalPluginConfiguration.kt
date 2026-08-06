@@ -46,4 +46,13 @@ class ExternalPluginConfiguration(
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
+
+    /**
+     * Revocation counter for the tokens minted for this configuration. Every issued service/user
+     * token carries the generation it was minted under; a token only validates while its generation
+     * matches this value. Bumping the counter therefore kills every outstanding token instantly —
+     * the discovery cycle re-pushes a fresh token of the new generation to the host.
+     */
+    @Column(name = "token_generation", nullable = false)
+    var tokenGeneration: Long = 0,
 )
