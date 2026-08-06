@@ -30,3 +30,9 @@
   by process definition key alone - for example from a custom plugin or a `startProcessByProcessDefinitionKey`
   expression outside of a building block - now reports a clear error instead of silently running whichever
   version happened to be deployed last.
+
+* **A form flow can now be used as the start form of a building block**
+
+  Starting a building block from the actions of a case now opens its form flow start form, and submitting that
+  form starts the building block version that is linked to the case. Previously the start form did not open at
+  all and the building block could not be started this way, while the same setup with a regular form did work.
