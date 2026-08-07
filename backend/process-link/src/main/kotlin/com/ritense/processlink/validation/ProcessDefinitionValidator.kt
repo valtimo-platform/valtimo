@@ -18,6 +18,7 @@
 
 package com.ritense.processlink.validation
 
+import com.ritense.processlink.service.BpmnInvisibleOrphanCleaner
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.processbean.ProcessBeanService
 import org.operaton.bpm.impl.juel.Builder
@@ -58,7 +59,8 @@ data class ProcessDefinitionValidationOptions(
 
 class ProcessDefinitionValidator(
     private val processBeansSupplier: Supplier<Map<String, Any>> = Supplier { emptyMap() },
-    private val processBeanService: ProcessBeanService? = null
+    private val processBeanService: ProcessBeanService? = null,
+    private val bpmnInvisibleOrphanCleaner: BpmnInvisibleOrphanCleaner = BpmnInvisibleOrphanCleaner()
 ) {
     private val treeBuilder = Builder(Builder.Feature.METHOD_INVOCATIONS)
     private val beanNameRegex = Regex("""[\$#]\{(\w+)[\.\(\}]""")
@@ -69,6 +71,8 @@ class ProcessDefinitionValidator(
         processLinks: List<ProcessLinkCreateRequestDto>,
         options: ProcessDefinitionValidationOptions = ProcessDefinitionValidationOptions()
     ): ProcessDefinitionValidationResult {
+        bpmnInvisibleOrphanCleaner.clean(bpmnModel)
+
         val processLinkActivityIds = processLinks.map { it.activityId }.toSet()
         val errors = mutableListOf<ProcessDefinitionValidationError>()
 

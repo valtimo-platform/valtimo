@@ -62,6 +62,9 @@ import org.operaton.bpm.model.bpmn.instance.TerminateEventDefinition
 import org.operaton.bpm.model.bpmn.instance.TimeDuration
 import org.operaton.bpm.model.bpmn.instance.TimerEventDefinition
 import org.operaton.bpm.model.bpmn.instance.UserTask
+import org.operaton.bpm.model.bpmn.instance.bpmndi.BpmnPlane
+import org.operaton.bpm.model.bpmn.instance.bpmndi.BpmnShape
+import org.operaton.bpm.model.bpmn.instance.dc.Bounds
 import org.operaton.bpm.model.bpmn.instance.operaton.OperatonExecutionListener
 
 class ProcessDefinitionValidatorTest {
@@ -619,6 +622,7 @@ class ProcessDefinitionValidatorTest {
         val endEvent = model.newInstance(EndEvent::class.java)
         endEvent.id = "end"
         process.addChildElement(endEvent)
+        model.addShape(endEvent)
 
         val result = validator.validate(model, emptyList())
 
@@ -634,6 +638,7 @@ class ProcessDefinitionValidatorTest {
         val startEvent = model.newInstance(StartEvent::class.java)
         startEvent.id = "start"
         process.addChildElement(startEvent)
+        model.addShape(startEvent)
 
         val result = validator.validate(model, emptyList())
 
@@ -650,10 +655,12 @@ class ProcessDefinitionValidatorTest {
         val startEvent = model.newInstance(StartEvent::class.java)
         startEvent.id = "start"
         process.addChildElement(startEvent)
+        model.addShape(startEvent)
 
         val endEvent = model.newInstance(EndEvent::class.java)
         endEvent.id = "end"
         process.addChildElement(endEvent)
+        model.addShape(endEvent)
 
         val result = validator.validate(model, emptyList())
 
@@ -670,10 +677,12 @@ class ProcessDefinitionValidatorTest {
         val startEvent = model.newInstance(StartEvent::class.java)
         startEvent.id = "start"
         process.addChildElement(startEvent)
+        model.addShape(startEvent)
 
         val endEvent = model.newInstance(EndEvent::class.java)
         endEvent.id = "end"
         process.addChildElement(endEvent)
+        model.addShape(endEvent)
 
         val result = validator.validate(model, emptyList())
 
@@ -694,10 +703,12 @@ class ProcessDefinitionValidatorTest {
         serviceTask.id = "orphan-task"
         serviceTask.operatonExpression = "\${true}"
         process.addChildElement(serviceTask)
+        model.addShape(serviceTask)
 
         val endEvent2 = model.newInstance(EndEvent::class.java)
         endEvent2.id = "end2"
         process.addChildElement(endEvent2)
+        model.addShape(endEvent2)
 
         val flow = model.newInstance(SequenceFlow::class.java)
         flow.id = "flow-orphan-to-end"
@@ -725,6 +736,7 @@ class ProcessDefinitionValidatorTest {
         extraTask.id = "dead-end-task"
         extraTask.operatonExpression = "\${true}"
         process.addChildElement(extraTask)
+        model.addShape(extraTask)
 
         val flow = model.newInstance(SequenceFlow::class.java)
         flow.id = "flow-start-to-deadend"
@@ -778,6 +790,7 @@ class ProcessDefinitionValidatorTest {
         timerDef.timeDuration = timeDuration
         boundaryEvent.eventDefinitions.add(timerDef)
         process.addChildElement(boundaryEvent)
+        model.addShape(boundaryEvent)
 
         val result = validator.validate(model, emptyList())
 
@@ -805,10 +818,12 @@ class ProcessDefinitionValidatorTest {
         timerDef.timeDuration = timeDuration
         boundaryEvent.eventDefinitions.add(timerDef)
         process.addChildElement(boundaryEvent)
+        model.addShape(boundaryEvent)
 
         val endEvent = model.newInstance(EndEvent::class.java)
         endEvent.id = "end"
         process.addChildElement(endEvent)
+        model.addShape(endEvent)
 
         val flow = model.newInstance(SequenceFlow::class.java)
         flow.id = "boundary-to-end"
@@ -855,10 +870,12 @@ class ProcessDefinitionValidatorTest {
         isolatedTask.id = "isolated-task"
         isolatedTask.operatonExpression = "\${true}"
         process.addChildElement(isolatedTask)
+        model.addShape(isolatedTask)
 
         val isolatedEnd = model.newInstance(EndEvent::class.java)
         isolatedEnd.id = "isolated-end"
         process.addChildElement(isolatedEnd)
+        model.addShape(isolatedEnd)
 
         val flow = model.newInstance(SequenceFlow::class.java)
         flow.id = "isolated-flow"
@@ -889,16 +906,19 @@ class ProcessDefinitionValidatorTest {
         eventSubProcess.id = "error-handler"
         eventSubProcess.setTriggeredByEvent(true)
         process.addChildElement(eventSubProcess)
+        model.addShape(eventSubProcess)
 
         val errorStartEvent = model.newInstance(StartEvent::class.java)
         errorStartEvent.id = "error-start"
         val errorDef = model.newInstance(ErrorEventDefinition::class.java)
         errorStartEvent.eventDefinitions.add(errorDef)
         eventSubProcess.addChildElement(errorStartEvent)
+        model.addShape(errorStartEvent)
 
         val errorEndEvent = model.newInstance(EndEvent::class.java)
         errorEndEvent.id = "error-end"
         eventSubProcess.addChildElement(errorEndEvent)
+        model.addShape(errorEndEvent)
 
         val flow = model.newInstance(SequenceFlow::class.java)
         flow.id = "error-flow"
@@ -957,10 +977,12 @@ class ProcessDefinitionValidatorTest {
         val startEvent = model.newInstance(StartEvent::class.java)
         startEvent.id = "start"
         process.addChildElement(startEvent)
+        model.addShape(startEvent)
 
         val serviceTask = model.newInstance(ServiceTask::class.java)
         serviceTask.id = "unconfigured-task"
         process.addChildElement(serviceTask)
+        model.addShape(serviceTask)
 
         val flow = model.newInstance(SequenceFlow::class.java)
         flow.id = "flow1"
@@ -1004,6 +1026,7 @@ class ProcessDefinitionValidatorTest {
         val start2 = model.newInstance(StartEvent::class.java)
         start2.id = "start2"
         process.addChildElement(start2)
+        model.addShape(start2)
 
         val flow = model.newInstance(SequenceFlow::class.java)
         flow.id = "flow-start2"
@@ -1129,6 +1152,7 @@ class ProcessDefinitionValidatorTest {
         val msgStart = model.newInstance(StartEvent::class.java)
         msgStart.id = "msg-start"
         process.addChildElement(msgStart)
+        model.addShape(msgStart)
 
         val message = model.newInstance(Message::class.java)
         message.id = "msg-1"
@@ -1165,6 +1189,7 @@ class ProcessDefinitionValidatorTest {
         val endEvent = model.newInstance(EndEvent::class.java)
         endEvent.id = "end"
         process.addChildElement(endEvent)
+        model.addShape(endEvent)
 
         val result = validator.validate(model, emptyList())
 
@@ -1199,6 +1224,7 @@ class ProcessDefinitionValidatorTest {
         val endEvent = model.newInstance(EndEvent::class.java)
         endEvent.id = "terminate-end"
         process.addChildElement(endEvent)
+        model.addShape(endEvent)
 
         val terminateDef = model.newInstance(TerminateEventDefinition::class.java)
         endEvent.addChildElement(terminateDef)
@@ -1952,5 +1978,18 @@ class ProcessDefinitionValidatorTest {
             activityId = activityId,
             activityType = ActivityTypeWithEventName.SERVICE_TASK_START
         )
+    }
+
+    private fun BpmnModelInstance.addShape(flowNode: FlowNode) {
+        val plane = getModelElementsByType(BpmnPlane::class.java).first()
+        val shape = newInstance(BpmnShape::class.java)
+        shape.bpmnElement = flowNode
+        val bounds = newInstance(Bounds::class.java)
+        bounds.setX(100.0)
+        bounds.setY(100.0)
+        bounds.setWidth(100.0)
+        bounds.setHeight(80.0)
+        shape.bounds = bounds
+        plane.addChildElement(shape)
     }
 }

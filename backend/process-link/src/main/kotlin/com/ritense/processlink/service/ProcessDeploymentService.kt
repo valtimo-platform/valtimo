@@ -135,12 +135,14 @@ class ProcessDeploymentService(
                 throw ProcessDefinitionValidationException(validationResult.errors)
             }
 
+            val cleanedBpmnBytes = Bpmn.convertToString(bpmnModel).toByteArray()
+
             try {
                 val deployment = runWithoutAuthorization {
                     operatonProcessService.deploy(
                         blueprintId,
                         bpmn.originalFilename,
-                        ByteArrayInputStream(bpmn.bytes),
+                        ByteArrayInputStream(cleanedBpmnBytes),
                         true,
                         false
                     )
@@ -149,9 +151,8 @@ class ProcessDeploymentService(
                 // If the deployment is null, the same xml was deployed before
                 if (deployment == null) {
                     runWithoutAuthorization {
-                        val model = Bpmn.readModelFromStream(bpmn!!.inputStream)
                         val previouslyDeployProcess =
-                            operatonProcessService.getExistingProcessForFile(blueprintId, model)
+                            operatonProcessService.getExistingProcessForFile(blueprintId, bpmnModel)
                         processLinkService.deleteProcessLinksForProcessDefinition(previouslyDeployProcess.id)
                         createProcessLinks(processLinks = processLinks, blueprintId = blueprintId)
                         updateSuspensionState(previouslyDeployProcess.id, validationResult.isExecutable)
