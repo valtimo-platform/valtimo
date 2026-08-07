@@ -17,6 +17,7 @@
 import {useService} from 'bpmn-js-properties-panel';
 import {html} from 'htm/preact';
 import {is} from 'bpmn-js/lib/util/ModelUtil';
+import {PROCESS_LINK_PANEL_TEST_IDS} from '../../../constants';
 import {ProcessManagementEditorService} from '../../../services';
 import {
   BpmnElement,
@@ -218,6 +219,7 @@ const CustomRootElement = (props: {
       <div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.unlinkButton}
           onClick=${handleUnlinkClick}
         >
           ${unlinkText}
@@ -225,6 +227,7 @@ const CustomRootElement = (props: {
 
         <button
           class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
           onClick=${handleEditClick}
         >
           ${editProcessLinkText}
@@ -253,6 +256,7 @@ const CustomRootElement = (props: {
       <div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.unlinkButton}
           onClick=${handleUnlinkClick}
         >
           ${unlinkText}
@@ -260,6 +264,7 @@ const CustomRootElement = (props: {
 
         <button
           class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
           onClick=${handleEditClick}
         >
           ${editProcessLinkText}
@@ -289,6 +294,7 @@ const CustomRootElement = (props: {
       <div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.unlinkButton}
           onClick=${handleUnlinkClick}
         >
           ${unlinkText}
@@ -296,6 +302,7 @@ const CustomRootElement = (props: {
 
         <button
           class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
           onClick=${handleEditClick}
         >
           ${editProcessLinkText}
@@ -330,6 +337,7 @@ const CustomRootElement = (props: {
       <div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.unlinkButton}
           onClick=${handleUnlinkClick}
         >
           ${unlinkText}
@@ -337,6 +345,7 @@ const CustomRootElement = (props: {
 
         <button
           class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
           onClick=${handleEditClick}
         >
           ${editProcessLinkText}
@@ -363,6 +372,7 @@ const CustomRootElement = (props: {
       <div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.unlinkButton}
           onClick=${handleUnlinkClick}
         >
           ${unlinkText}
@@ -370,6 +380,7 @@ const CustomRootElement = (props: {
 
         <button
           class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
           onClick=${handleEditClick}
         >
           ${editProcessLinkText}
@@ -382,6 +393,7 @@ const CustomRootElement = (props: {
     <div class="process-link-properties-panel__buttons">
       <button
         class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+        data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.unlinkButton}
         onClick=${handleUnlinkClick}
       >
         ${unlinkText}
@@ -389,6 +401,7 @@ const CustomRootElement = (props: {
 
       <button
         class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+        data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
         onClick=${handleEditClick}
       >
         ${editProcessLinkText}
@@ -400,6 +413,7 @@ const CustomRootElement = (props: {
     <div class="process-link-properties-panel__buttons">
       <button
         class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+        data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.createButton}
         onClick=${handleCreateClick}
       >
         ${createText}

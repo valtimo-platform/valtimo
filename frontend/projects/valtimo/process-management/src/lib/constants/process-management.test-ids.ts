@@ -25,6 +25,17 @@ export const PROCESS_MANAGEMENT_UPLOAD_TEST_IDS = {
   submitButton: 'processManagementUploadSubmitButton',
 } as const;
 
+/**
+ * The "Process link" group the Valtimo properties provider adds to the bpmn-js
+ * properties panel. The surrounding panel is rendered by bpmn-js itself and
+ * cannot carry test ids — only this group is ours.
+ */
+export const PROCESS_LINK_PANEL_TEST_IDS = {
+  createButton: 'processLinkPanelCreateButton',
+  editButton: 'processLinkPanelEditButton',
+  unlinkButton: 'processLinkPanelUnlinkButton',
+} as const;
+
 export const PROCESS_MANAGEMENT_BUILDER_TEST_IDS = {
   draftToggle: 'processManagementBuilderDraftToggle',
   startsCaseToggle: 'processManagementBuilderStartsCaseToggle',

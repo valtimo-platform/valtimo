@@ -29,6 +29,7 @@
     >
       <ng-container *ngIf="availableProcessLinkType.processLinkType as processLinkTypeId">
         <button
+          [attr.data-test-id]="testIdPrefix + processLinkTypeId"
           (click)="selectProcessLinkType(processLinkTypeId)"
           cdsButton="secondary"
           size="xl"

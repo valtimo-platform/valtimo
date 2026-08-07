@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 24        | 17         | 6              |
-| Admin Features (ROLE_ADMIN) | 15       | 358       | 328        | 25             |
-| **Total**                   | **20**   | **382**   | **345**    | **31**         |
+| Admin Features (ROLE_ADMIN) | 15       | 361       | 340        | 16             |
+| **Total**                   | **20**   | **385**   | **357**    | **22**         |
 
-**Coverage:** `345 / 382` — `90.3%`
+**Coverage:** `357 / 385` — `92.7%`
 
 > Counts are one per numbered row. The remainder of each category is `N/A` (5) or `⏳` (1).
 
@@ -536,17 +536,20 @@ Covers the standalone `/processes` admin page (the *independent* process context
 
 #### 13D · BB Processes
 
-| #     | Function                   | Test Scenarios                               | Coverage | Notes                                           |
-|:------|:---------------------------|:---------------------------------------------|:--------:|:------------------------------------------------|
-| 13.30 | View processes list        | View processes list in building block        |    ❌    |                                                 |
-| 13.31 | View process metadata      | View process name and key                    |    ❌    |                                                 |
-| 13.32 | Manage process definitions | Manage process definitions                   |    ❌    |                                                 |
-| 13.33 | View process diagram       | View process diagram/modeler                 |    ❌    |                                                 |
-| 13.34 | Select process step        | Select process step in diagram               |    ❌    |                                                 |
-| 13.35 | View step properties       | View step properties panel                   |    ❌    |                                                 |
-| 13.36 | Configure step settings    | Configure step-specific settings             |    ❌    |                                                 |
-| 13.37 | Link steps to actions      | Link process steps to building block actions |    ❌    |                                                 |
-| 13.38 | Save process config        | Save process configuration                   |    ❌    |                                                 |
+| #      | Function                     | Test Scenarios                                                                                | Coverage | Notes                                                                                                                                                                                                            |
+|:-------|:-----------------------------|:----------------------------------------------------------------------------------------------|:--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 13.30  | View processes list          | Name/Key/Status columns · List matches the API                                                 |    ✅    | building-block-processes.spec.ts                                                                                                                                                                                 |
+| 13.31  | View process metadata        | View process name and key · Main-process and Draft status tags                                 |    ✅    | building-block-processes.spec.ts — creating a building block generates a main process definition whose key *and* name are those of the building block itself                                                        |
+| 13.32  | Manage process definitions   | Upload a BPMN · Mark a process as main · Delete a process after confirming · Create from the empty diagram |    ✅    | building-block-processes.spec.ts — a process created from the empty diagram always lands under the fixed key `Process_1` with an empty Name cell, so rows are located by key                                        |
+| 13.33  | View process diagram         | Row click opens the process in the BPMN modeler                                                |    ✅    | building-block-processes.spec.ts — the row navigates to `.../process-definition/{processDefinitionId}`; the building-block context omits the version dropdown and the Back button the case context shows            |
+| 13.34  | Select process step          | Clicking a shape switches the properties panel to that element                                 |    ✅    | building-block-processes.spec.ts — selection is confirmed through the panel's ID entry; the panel *header* renders the element name and falls back to the id only while it is unnamed                              |
+| 13.35  | View step properties         | Panel offers General / Process link / Documentation · ID and Name entries                      |    ✅    | building-block-processes.spec.ts — panel groups start collapsed and keep their entries in the DOM but hidden, so they must be expanded before they can be read                                                     |
+| 13.36  | Configure step settings      | Rename a step through the properties panel                                                     |    ✅    | building-block-processes.spec.ts                                                                                                                                                                                 |
+| 13.37  | Link steps to actions        | Panel's "Create process link" opens the wizard, which offers the available link types           |    ✅    | building-block-processes.spec.ts — inside a building block a start event may be linked to **Form / FormFlow / UI Component**; there is deliberately no "Building block" link type. Panel buttons carry `PROCESS_LINK_PANEL_TEST_IDS` |
+| 13.38  | Save process config          | Saving deploys a new version of the definition, and the change survives a reload                |    ✅    | building-block-processes.spec.ts — saved as a *draft*: a non-draft save is validated first and, because the seeded diagram has an unlinked start event, waits on a "Process has warnings" confirmation instead of deploying |
+| 13.38a | Reject upload without file   | Upload stays disabled until a BPMN file is selected; cancelling persists nothing                |    ✅    | building-block-processes.spec.ts (failure scenario)                                                                                                                                                              |
+| 13.38b | Protect the only process     | Delete and "Make main process" are both disabled while one definition exists                    |    ✅    | building-block-processes.spec.ts (failure scenario) — a building block must keep exactly one main process                                                                                                          |
+| 13.38c | Block edits on final version | Upload and Create are disabled on a finalized version                                          |    ✅    | building-block-processes.spec.ts (failure scenario) — uses a second, finalized building block so the shared one stays a draft and its processes can still be cleaned up                                             |
 
 #### 13E · BB Plugin Integration
 
@@ -756,9 +759,9 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   382   |
-| ✅ Covered by Playwright |   345   |
-| ❌ Not covered           |   31    |
+| Total Functions          |   385   |
+| ✅ Covered by Playwright |   357   |
+| ❌ Not covered           |   22    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    5    |
-| **Coverage %**           | **90.3%** |
+| **Coverage %**           | **92.7%** |

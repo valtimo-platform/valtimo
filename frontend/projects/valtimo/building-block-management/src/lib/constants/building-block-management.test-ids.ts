@@ -42,6 +42,17 @@ export const BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS = {
   tabs: 'buildingBlockTabs',
 } as const;
 
+export const BUILDING_BLOCK_MANAGEMENT_PROCESSES_TEST_IDS = {
+  uploadButton: 'buildingBlockProcessesUploadButton',
+  createButton: 'buildingBlockProcessesCreateButton',
+} as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_PROCESS_UPLOAD_TEST_IDS = {
+  fileUploader: 'buildingBlockProcessUploadFileUploader',
+  cancelButton: 'buildingBlockProcessUploadCancelButton',
+  submitButton: 'buildingBlockProcessUploadSubmitButton',
+} as const;
+
 export const BUILDING_BLOCK_MANAGEMENT_METADATA_TEST_IDS = {
   nameInput: 'buildingBlockMetadataNameInput',
   keyInput: 'buildingBlockMetadataKeyInput',
