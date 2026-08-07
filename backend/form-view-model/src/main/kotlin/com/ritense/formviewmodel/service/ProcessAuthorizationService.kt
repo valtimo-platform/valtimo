@@ -12,9 +12,7 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byBlueprintId
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byNotLinkedToBuildingBlock
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byNotLinkedToCaseDefinition
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.maxVersionOf
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKeyOfUnlinkedProcess
 import org.springframework.stereotype.Service
 
 @Service
@@ -32,15 +30,9 @@ class ProcessAuthorizationService(
         // mirrors how OperatonProcessService resolves one: by version tag when the document belongs to a
         // blueprint, and otherwise the latest version of the key among processes without a blueprint.
         val processDefinition = runWithoutAuthorization {
-            val blueprintId = document?.definitionId()?.asBlueprintId()
-            val unlinked = byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock())
-            blueprintId?.let {
+            document?.definitionId()?.asBlueprintId()?.let {
                 operatonRepositoryService.findProcessDefinition(byKey(processDefinitionKey).and(byBlueprintId(it)))
-            } ?: operatonRepositoryService.findProcessDefinition(
-                byKey(processDefinitionKey)
-                    .and(unlinked)
-                    .and(maxVersionOf(unlinked))
-            )
+            } ?: operatonRepositoryService.findProcessDefinition(byKeyOfUnlinkedProcess(processDefinitionKey))
         }
         require(processDefinition != null)
 

@@ -1,6 +1,7 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKeyOfUnlinkedProcess
 import org.assertj.core.api.Assertions
 import org.operaton.bpm.engine.RepositoryService
 import org.junit.jupiter.api.Test
@@ -144,20 +145,6 @@ class OperatonProcessDefinitionSpecificationHelperIntTest @Autowired constructor
 
         Assertions.assertThat(resultIds).isEmpty()
     }
-
-    /**
-     * Mirrors the specification OperatonProcessService uses to resolve a process definition from its key
-     * alone. Blueprint-owned definitions must never match, because every blueprint version redeploys the
-     * same key under a new engine version and so cannot be told apart by key.
-     */
-    private fun byKeyOfUnlinkedProcess(processDefinitionKey: String) =
-        OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition()
-            .and(OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock())
-            .let { unlinked ->
-                OperatonProcessDefinitionSpecificationHelper.byKey(processDefinitionKey)
-                    .and(unlinked)
-                    .and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(unlinked))
-            }
 
     companion object {
         const val USER_TASK_PROCESS = "user-task-process"

@@ -25,6 +25,7 @@ import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionS
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byActive;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byBlueprintId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKeyOfUnlinkedProcess;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersion;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition;
@@ -115,7 +116,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 public class OperatonProcessService {
@@ -352,19 +352,6 @@ public class OperatonProcessService {
                 repositoryService.suspendProcessDefinitionById(processDefinition.getId());
             }
         }
-    }
-
-    /**
-     * Matches the latest version of a process key that does not belong to a case definition or a
-     * building block. Definitions owned by a blueprint must be resolved by their version tag, never by
-     * key, because every blueprint version redeploys the same key under a new engine version.
-     */
-    private static Specification<OperatonProcessDefinition> byKeyOfUnlinkedProcess(String processDefinitionKey) {
-        Specification<OperatonProcessDefinition> unlinked =
-            byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock());
-        return byKey(processDefinitionKey)
-            .and(unlinked)
-            .and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(unlinked));
     }
 
     /**
