@@ -1011,6 +1011,7 @@
       },
       "externalPlugin": {
         "loadError": "Could not load the external plugin tab. The plugin host may be unreachable or the bundle is unavailable.",
+        "widgetLoadError": "Could not load the external plugin widget. The plugin host may be unreachable or the bundle is unavailable.",
         "unavailable": "This plugin widget is unavailable. Its configuration may be missing or the bundle could not be resolved."
       },
       "titles": {
@@ -1314,7 +1315,7 @@
         "title": "Image",
         "description": "Show an uploaded image"
       },
-      "externalPlugin": {
+      "external-plugin": {
         "title": "External plugin",
         "description": "Render a card from an external plugin's case-widget bundle"
       },
@@ -2377,6 +2378,7 @@
         "GLOBAL": "Global"
       },
       "caseTab": "Case tab",
+      "caseWidget": "Case widget",
       "buildingBlockMapping": "Building block plugin mapping"
     },
     "compatibility": {

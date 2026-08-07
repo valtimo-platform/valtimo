@@ -162,8 +162,8 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     component: WidgetManagementImageComponent,
   },
   {
-    titleKey: 'widgetTabManagement.type.externalPlugin.title',
-    descriptionKey: 'widgetTabManagement.type.externalPlugin.description',
+    titleKey: 'widgetTabManagement.type.external-plugin.title',
+    descriptionKey: 'widgetTabManagement.type.external-plugin.description',
     illustrationUrl: 'valtimo-layout/img/widget-management/types/angular.svg',
     type: WidgetType.EXTERNAL_PLUGIN,
     component: WidgetManagementExternalPluginComponent,

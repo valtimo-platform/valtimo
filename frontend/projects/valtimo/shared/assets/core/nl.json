@@ -1018,6 +1018,7 @@
       },
       "externalPlugin": {
         "loadError": "Het externe plugin-tabblad kon niet worden geladen. De plugin-host is mogelijk onbereikbaar of de bundle is niet beschikbaar.",
+        "widgetLoadError": "De externe pluginwidget kon niet worden geladen. De plugin-host is mogelijk onbereikbaar of de bundle is niet beschikbaar.",
         "unavailable": "Deze pluginwidget is niet beschikbaar. Mogelijk ontbreekt de configuratie of kon de bundle niet worden gevonden."
       },
       "titles": {
@@ -1333,7 +1334,7 @@
         "title": "Afbeelding",
         "description": "Toon een geüploade afbeelding"
       },
-      "externalPlugin": {
+      "external-plugin": {
         "title": "Externe plugin",
         "description": "Toon een kaart uit de case-widget-bundle van een externe plugin"
       },
@@ -2404,6 +2405,7 @@
         "GLOBAL": "Globaal"
       },
       "caseTab": "Zaaktabblad",
+      "caseWidget": "Zaakwidget",
       "buildingBlockMapping": "Plugin-koppeling van bouwblok"
     },
     "compatibility": {

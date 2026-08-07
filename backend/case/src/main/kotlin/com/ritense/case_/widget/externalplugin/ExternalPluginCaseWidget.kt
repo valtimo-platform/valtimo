@@ -34,9 +34,10 @@ import java.util.UUID
  * guard and dangling-repair panel can find widgets by configuration id portably across the
  * Postgres/MySQL dual database support.
  *
- * [externalPluginConfigurationId] is `null` for a widget that imported dangling (its configuration
- * missing in this environment); [pluginDefinitionKey]/[pluginDefinitionVersion] then keep it
- * identifiable in the repair panel.
+ * A widget that imported dangling (its configuration missing in this environment) keeps the
+ * original, now-unresolvable [externalPluginConfigurationId] rather than being nulled, so one repair
+ * mapping can re-point every widget that shared the source id;
+ * [pluginDefinitionKey]/[pluginDefinitionVersion] keep it identifiable in the repair panel.
  */
 @AllOpen
 @Entity

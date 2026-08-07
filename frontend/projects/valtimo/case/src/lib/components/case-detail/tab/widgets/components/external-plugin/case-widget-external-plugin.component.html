@@ -14,35 +14,70 @@
   ~ limitations under the License.
   -->
 
-<div class="case-widget-external-plugin" [ngSwitch]="$state()">
-  <div *ngSwitchCase="'loading'" class="case-widget-external-plugin__status">
-    <cds-loading [isActive]="true" [overlay]="false" size="normal"></cds-loading>
-  </div>
+<div
+  class="case-widget-external-plugin"
+  [class.case-widget-external-plugin--compact]="$widget()?.isCompact"
+>
+  @if ($widget(); as widget) {
+    <section class="case-widget-external-plugin__header">
+      <div class="case-widget-external-plugin__title-container">
+        <valtimo-mdi-icon-viewer
+          *ngIf="widget.icon"
+          [mdiIcon]="widget.icon"
+        ></valtimo-mdi-icon-viewer>
 
-  <div
-    *ngSwitchCase="'error'"
-    class="case-widget-external-plugin__status case-widget-external-plugin__status--error"
-  >
-    {{ 'caseManagement.tabManagement.externalPlugin.loadError' | translate }}
-  </div>
+        <span class="case-widget-external-plugin__title" [attr.title]="widget.title">
+          {{ widget.title }}
+        </span>
+      </div>
 
-  <div *ngSwitchCase="'unavailable'" class="case-widget-external-plugin__status">
-    {{ 'caseManagement.tabManagement.externalPlugin.unavailable' | translate }}
-  </div>
+      @if (
+        widget.actions?.length === 1 &&
+        widget.actions[0]?.processDefinitionKey &&
+        (canCreateCamundaExecution$ | async)
+      ) {
+        <button cdsButton="ghost" (click)="onProcessStartClick(widget.actions[0])">
+          {{ widget.actions[0].name }}
+        </button>
+      }
 
-  <ng-container *ngSwitchCase="'ready'">
-    <div *ngIf="!$iframeReady()" class="case-widget-external-plugin__status">
+      <valtimo-widget-action-button
+        [widgetConfiguration]="widget"
+        [resolvedData]="$content()"
+      ></valtimo-widget-action-button>
+    </section>
+  }
+
+  <div class="case-widget-external-plugin__body" [ngSwitch]="$state()">
+    <div *ngSwitchCase="'loading'" class="case-widget-external-plugin__status">
       <cds-loading [isActive]="true" [overlay]="false" size="normal"></cds-loading>
     </div>
 
-    <valtimo-external-plugin-iframe
-      [allowedEndpoints]="sessionService.$allowedEndpoints()"
-      [bundleUrl]="$content()!.bundleUrl!"
-      [configurationId]="$content()!.configurationId"
-      [context]="$content()!.context"
-      [pluginDataUrl]="$pluginDataUrl()"
-      [userToken]="sessionService.$userToken()"
-      (readyEvent)="onIframeReady()"
-    ></valtimo-external-plugin-iframe>
-  </ng-container>
+    <div
+      *ngSwitchCase="'error'"
+      class="case-widget-external-plugin__status case-widget-external-plugin__status--error"
+    >
+      {{ 'caseManagement.tabManagement.externalPlugin.widgetLoadError' | translate }}
+    </div>
+
+    <div *ngSwitchCase="'unavailable'" class="case-widget-external-plugin__status">
+      {{ 'caseManagement.tabManagement.externalPlugin.unavailable' | translate }}
+    </div>
+
+    <ng-container *ngSwitchCase="'ready'">
+      <div *ngIf="!$iframeReady()" class="case-widget-external-plugin__status">
+        <cds-loading [isActive]="true" [overlay]="false" size="normal"></cds-loading>
+      </div>
+
+      <valtimo-external-plugin-iframe
+        [allowedEndpoints]="sessionService.$allowedEndpoints()"
+        [bundleUrl]="$content()!.bundleUrl!"
+        [configurationId]="$content()!.configurationId"
+        [context]="$content()!.context"
+        [pluginDataUrl]="$pluginDataUrl()"
+        [userToken]="sessionService.$userToken()"
+        (readyEvent)="onIframeReady()"
+      ></valtimo-external-plugin-iframe>
+    </ng-container>
+  </div>
 </div>

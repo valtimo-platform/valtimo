@@ -37,6 +37,8 @@
     ></valtimo-mdi-icon-selector>
   </div>
 
+  <ng-content></ng-content>
+
   <ng-container *ngIf="$tokenAvailable(); else pluginUnavailable">
     <cds-combo-box
       [cdsLayer]="1"

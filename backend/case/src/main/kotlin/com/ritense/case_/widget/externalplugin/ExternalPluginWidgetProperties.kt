@@ -24,8 +24,9 @@ import java.util.UUID
  * `custom` widget) for frontend consistency; the mapper unpacks it into the dedicated,
  * queryable columns on `case_widget_tab_widget`.
  *
- * [configurationId] is the external-plugin configuration backing the widget (`null` for a widget
- * that imported dangling — its configuration missing in this environment). [bundleKey] selects the
+ * [configurationId] is the external-plugin configuration backing the widget. A widget that imported
+ * dangling — its configuration missing in this environment — keeps the original, now-unresolvable id
+ * rather than being nulled. [bundleKey] selects the
  * `case-widget` bundle when the plugin ships more than one; `null` selects the sole bundle.
  * [pluginDefinitionKey]/[pluginDefinitionVersion] are design-time plugin identity stamped on export
  * so the import preview can identify the plugin without resolving the configuration.

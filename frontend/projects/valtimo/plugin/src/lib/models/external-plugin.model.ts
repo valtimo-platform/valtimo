@@ -268,9 +268,12 @@ interface ExternalPluginHostUsage {
   activityId: string | null;
   activityName: string | null;
   processLinkId: string | null;
-  // Populated only for an external-plugin case-tab usage.
+  // Populated for an external-plugin case-tab usage, and for an external-plugin case-widget usage
+  // (where they identify the owning WIDGETS tab).
   tabKey?: string | null;
   tabName?: string | null;
+  // Populated only for an external-plugin case-widget usage; names the widget within the tab.
+  widgetKey?: string | null;
   // Populated only for a building-block mapping usage (the BB's pluginConfigurationMappings
   // reference the configuration); names the building block holding the mapping.
   buildingBlockKey?: string | null;

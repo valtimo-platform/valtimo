@@ -17,13 +17,21 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {ExternalPluginWidget, WidgetLayoutService} from '@valtimo/layout';
+import {PermissionService} from '@valtimo/access-control';
+import {MdiIconViewerComponent} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {
+  ExternalPluginWidget,
+  WidgetAction,
+  WidgetActionButtonComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {
   derivePluginDataUrl,
   ExternalPluginIframeComponent,
   ExternalPluginSessionService,
 } from '@valtimo/plugin';
-import {LoadingModule} from 'carbon-components-angular';
+import {ButtonModule, LoadingModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -36,6 +44,8 @@ import {
 } from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {ExternalPluginWidgetContent, ExternalPluginWidgetState} from '../../../../../../models';
+import {WidgetsService} from '../../widgets.service';
+import {WidgetProcess} from '../widget-process/widget-process';
 
 @Component({
   selector: 'valtimo-case-widget-external-plugin',
@@ -43,21 +53,33 @@ import {ExternalPluginWidgetContent, ExternalPluginWidgetState} from '../../../.
   styleUrls: ['./case-widget-external-plugin.component.scss'],
   standalone: true,
   providers: [ExternalPluginSessionService],
-  imports: [CommonModule, LoadingModule, TranslateModule, ExternalPluginIframeComponent],
+  imports: [
+    ButtonModule,
+    CommonModule,
+    LoadingModule,
+    TranslateModule,
+    ExternalPluginIframeComponent,
+    MdiIconViewerComponent,
+    WidgetActionButtonComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseWidgetExternalPluginComponent implements OnInit, OnDestroy {
+export class CaseWidgetExternalPluginComponent extends WidgetProcess implements OnInit, OnDestroy {
   @Input({required: true}) public set documentId(value: string) {
+    this.baseDocumentId = value;
     this._documentId$.next(value);
   }
 
   @Input() public set widgetConfiguration(value: ExternalPluginWidget) {
     if (!value) return;
+    this.$widget.set(value);
+    this.baseWidgetConfiguration = value;
     this._widgetConfiguration$.next(value);
   }
 
   @Input() public readonly widgetUuid: string;
 
+  public readonly $widget = signal<ExternalPluginWidget | null>(null);
   public readonly $state = signal<ExternalPluginWidgetState>('loading');
   public readonly $content = signal<ExternalPluginWidgetContent | null>(null);
   public readonly $pluginDataUrl = signal<string | null>(null);
@@ -70,11 +92,16 @@ export class CaseWidgetExternalPluginComponent implements OnInit, OnDestroy {
   private readonly _subscriptions = new Subscription();
 
   constructor(
+    protected readonly documentService: DocumentService,
+    protected readonly permissionService: PermissionService,
     private readonly caseTabService: CaseTabService,
     private readonly caseWidgetsApiService: CaseWidgetsApiService,
     private readonly widgetLayoutService: WidgetLayoutService,
+    private readonly widgetsService: WidgetsService,
     protected readonly sessionService: ExternalPluginSessionService
-  ) {}
+  ) {
+    super(documentService, permissionService);
+  }
 
   public ngOnInit(): void {
     this._subscriptions.add(
@@ -106,8 +133,7 @@ export class CaseWidgetExternalPluginComponent implements OnInit, OnDestroy {
         )
         .subscribe({
           next: content => this.onLoaded(content),
-          error: error =>
-            this.$state.set(error?.message === 'bundle-unavailable' ? 'unavailable' : 'error'),
+          error: error => this.onFailed(error),
         })
     );
   }
@@ -118,12 +144,29 @@ export class CaseWidgetExternalPluginComponent implements OnInit, OnDestroy {
 
   public onIframeReady(): void {
     this.$iframeReady.set(true);
-    if (this.widgetUuid) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+    this.markDataLoaded();
+  }
+
+  public onProcessStartClick(process: WidgetAction): void {
+    if (!process.processDefinitionKey) return;
+    this.widgetsService.startProcess(process.processDefinitionKey);
   }
 
   private onLoaded(content: ExternalPluginWidgetContent): void {
     this.$content.set(content);
     this.$pluginDataUrl.set(derivePluginDataUrl(content.bundleUrl));
     this.$state.set('ready');
+  }
+
+  private onFailed(error: Error | null): void {
+    this.$state.set(error?.message === 'bundle-unavailable' ? 'unavailable' : 'error');
+    // The widget will never reach iframe-ready, so release the container's loading state here —
+    // otherwise a tab (or divider group) holding only failed external-plugin widgets spins forever
+    // and keeps the error/unavailable message hidden. Mirrors what first-party widgets do on a 404.
+    this.markDataLoaded();
+  }
+
+  private markDataLoaded(): void {
+    if (this.widgetUuid) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
   }
 }

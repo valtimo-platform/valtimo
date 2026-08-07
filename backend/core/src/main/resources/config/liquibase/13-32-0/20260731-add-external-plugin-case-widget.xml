@@ -23,8 +23,9 @@
     <!--
       Dedicated, queryable columns for the `external-plugin` case-widget subtype on the
       single-table-inheritance widget table. Only populated for rows with case_widget_type =
-      'external-plugin'; null for every other widget subtype and for a widget that imported dangling
-      (its configuration missing in this environment).
+      'external-plugin'; null for every other widget subtype. A widget that imported dangling (its
+      configuration missing in this environment) keeps the original, now-unresolvable configuration
+      id rather than being nulled.
 
       external_plugin_configuration_id is a real column (not JSON-extracted) so the delete guard and
       the "missing plugin configurations" panel can query it portably across the Postgres/MySQL dual

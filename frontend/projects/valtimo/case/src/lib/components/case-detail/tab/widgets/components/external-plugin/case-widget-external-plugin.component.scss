@@ -18,9 +18,48 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  // The iframe has no intrinsic height (no host-side resize handling), so the card gets a sensible
-  // default. A one-off fixed box — no Carbon spacing token maps to a widget content height.
-  height: 320px;
+  padding: 24px;
+  box-sizing: border-box;
+  color: var(--widget-text-color, var(--cds-text-primary));
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 auto;
+  }
+
+  &__title-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+
+    valtimo-mdi-icon-viewer .mdi-icon-preview {
+      color: var(--widget-text-color, var(--cds-text-primary));
+    }
+  }
+
+  &__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--widget-text-color, var(--cds-text-primary));
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    margin-top: 16px;
+    // The iframe has no intrinsic height (no host-side resize handling), so the plugin canvas gets a
+    // sensible default. A one-off fixed box — no Carbon spacing token maps to a widget content
+    // height. The card itself is sized from measured content, so the header adds on top of this.
+    height: 320px;
+  }
 
   &__status {
     display: flex;
@@ -40,5 +79,22 @@
     flex: 1 1 auto;
     width: 100%;
     height: 100%;
+  }
+
+  &--compact {
+    padding: 12px;
+
+    .case-widget-external-plugin__title {
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .case-widget-external-plugin__body {
+      margin-top: 8px;
+    }
+
+    .case-widget-external-plugin__status {
+      padding: var(--cds-spacing-03);
+    }
   }
 }
