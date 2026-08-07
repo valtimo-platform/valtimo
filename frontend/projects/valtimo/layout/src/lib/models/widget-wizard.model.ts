@@ -27,6 +27,7 @@ import {
   WidgetManagementMetrolineComponent,
   WidgetManagementPersonCardComponent,
   WidgetManagementTableComponent,
+  WidgetManagementTextComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
 import {BasicWidget, WidgetColor, WidgetType} from './widget.model';
@@ -167,6 +168,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/angular.svg',
     type: WidgetType.EXTERNAL_PLUGIN,
     component: WidgetManagementExternalPluginComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.text.title',
+    descriptionKey: 'widgetTabManagement.type.text.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/text.svg',
+    type: WidgetType.TEXT,
+    component: WidgetManagementTextComponent,
   },
 ];
 

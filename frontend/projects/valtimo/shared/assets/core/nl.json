@@ -15,7 +15,8 @@
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
-    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
+    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}",
+    "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "case": {
     "allCases": "Alle dossiers",
@@ -160,7 +161,7 @@
       "removeSuccessful": "Document succesvol uit het dossier verwijderd",
       "removeFailed": "Het verwijderen van het document uit het dossier is mislukt"
     },
-    "caseUpdated": "Zaak aangepast",
+    "caseUpdated": "Dossier aangepast",
     "startSubProcess": "Start",
     "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
     "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
@@ -555,7 +556,14 @@
     "startedBy": "Gestart door",
     "startedOn": "Gestart op",
     "system": "Systeem",
-    "of": "van"
+    "of": "van",
+    "skipTimer": {
+      "action": "Timer overslaan",
+      "confirmTitle": "Timer overslaan",
+      "confirmContent": "Weet je zeker dat je deze timer wilt overslaan? Het proces gaat verder alsof de timer is verlopen. Dit kan niet ongedaan worden gemaakt.",
+      "confirmButton": "Overslaan",
+      "successToast": "Timer overgeslagen"
+    }
   },
   "dashboard": {
     "openTasks": {"title": "Alle taken"},
@@ -1208,7 +1216,7 @@
       "columns": {
         "title": "Statusnaam",
         "retentionPeriod": "Bewaartermijn in dagen",
-        "retentionPeriodTooltip": "0 of hoger: retentie is actief, de zaak wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, de zaak wordt niet automatisch verwijderd.",
+        "retentionPeriodTooltip": "0 of hoger: retentie is actief, het dossier wordt na het opgegeven aantal dagen verwijderd. -1: er is geen retentieperiode ingesteld, het dossier wordt niet automatisch verwijderd.",
         "deletedImmediately": "Wordt direct verwijderd",
         "key": "Status-key",
         "label": "Label (Optioneel)",
@@ -1219,7 +1227,7 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit dossiertype."}
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -1240,7 +1248,7 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit dossiertype."}
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
@@ -1324,7 +1332,7 @@
       },
       "metroline": {
         "title": "Metrolijn",
-        "description": "Toon de voortgang van een zaak als een metrolijn"
+        "description": "Toon de voortgang van een dossier als een metrolijn"
       },
       "highlight": {
         "title": "Markering",
@@ -1337,6 +1345,10 @@
       "external-plugin": {
         "title": "Externe plugin",
         "description": "Toon een kaart uit de case-widget-bundle van een externe plugin"
+      },
+      "text": {
+        "title": "Tekst",
+        "description": "Toon een vaste toelichting"
       },
       "generic": {
         "title": "Generieke widgets",
@@ -1547,6 +1559,14 @@
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource.",
         "displayAsCarousel": "Weergeven als carrousel"
+      },
+      "text": {
+        "description": "",
+        "content": "Tekst",
+        "contentTooltip": "De tekst die in de widget wordt getoond. Markdown wordt ondersteund.",
+        "contentPlaceholder": "## Kop\n\nEen toelichting, met een [link](https://example.org) en een lijst:\n\n- eerste item\n- tweede item",
+        "contentHelper": "Opmaak met markdown wordt ondersteund: # voor koppen, - voor een lijst met opsommingstekens, **vet**, *cursief* en [linktekst](https://example.org). Sterretjes moeten direct tegen de tekst staan: **vet** werkt, ** vet ** niet. Links openen in een nieuw tabblad.",
+        "accentColor": "Accentkleur"
       }
     },
     "filters": {
@@ -1943,6 +1963,7 @@
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",
     "selectZaakTypeForCase": "Kies zaaktype voor dossier",
     "selectZaakType": "Kies zaaktype",
+    "present": "heden",
     "selectZakenApiPluginForCase": "Kies Zaken Api plugin voor aanmaken zaak",
     "selectZakenApiPlugin": "Kies Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
@@ -2978,7 +2999,7 @@
         "message": "Voeg een permissie toe om deze rol toegang tot resources te geven."
       },
       "tooltips": {
-        "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een zaakdefinitie, document of taak.",
+        "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een dossierdefinitie, document of taak.",
         "actions": "Wat deze rol met de resource mag doen. Bijvoorbeeld: bekijken, wijzigen of verwijderen. Er moet minstens één geselecteerd zijn.",
         "conditionType": "Veld vergelijkt een eigenschap van de resource. JSON-veld leest een waarde op een JSON-pad in de JSON-inhoud van het veld. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een zaak).",
         "field": "Een eigenschap van de resource om te controleren. Bijvoorbeeld: name, createdBy of active.",
@@ -3419,7 +3440,7 @@
     "addTab": "Tab toevoegen",
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",
-    "canStartCase": "Kan zaak starten",
+    "canStartCase": "Kan dossier starten",
     "collectionPathTooltip": "Een pad dat leidt naar de verzameling van waarden die je wilt weergeven. Voor het tonen van eigenschappen in IKO's, volg dit voorbeeld: 'iko:/pad/naar/eigenschap'.",
     "tabTypes": {
       "widgets": "Widgets"
@@ -3547,8 +3568,8 @@
     "featureToggles": {
       "searchEngine": {
         "useOpenSearch": {
-          "title": "Gebruik OpenSearch voor zaakzoekopdrachten",
-          "description": "Indien ingeschakeld worden zaakzoekopdrachten uitgevoerd met OpenSearch voor betere prestaties. Indien uitgeschakeld wordt PostgreSQL gebruikt.",
+          "title": "Gebruik OpenSearch voor dossierzoekopdrachten",
+          "description": "Indien ingeschakeld worden dossierzoekopdrachten uitgevoerd met OpenSearch voor betere prestaties. Indien uitgeschakeld wordt PostgreSQL gebruikt.",
           "unavailable": "OpenSearch is niet geconfigureerd voor deze applicatie."
         }
       },
@@ -3556,6 +3577,10 @@
       "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
       "refreshNow": "Nu vernieuwen",
       "toggles": {
+        "disableFormioTokenInLocalStorage": {
+          "title": "Form.io-token alleen in geheugen bewaren",
+          "description": "Houd het form.io-token in het geheugen in plaats van in localStorage. Schakel dit alleen in als formulieren uitsluitend het Keycloak-token gebruiken."
+        },
         "allowUserThemeSwitching": {
           "title": "Thema wisselen toestaan",
           "description": "Gebruikers laten schakelen tussen lichte en donkere modus via de bovenbalk."
@@ -3645,8 +3670,8 @@
           "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
         },
         "enableGenericCaseList": {
-          "title": "Generieke zaaklijst inschakelen",
-          "description": "Toon één zaaklijstweergave met een dropdown om tussen zaakdefinities te wisselen."
+          "title": "Generieke dossierlijst inschakelen",
+          "description": "Toon één dossierlijstweergave met een dropdown om tussen dossierdefinities te wisselen."
         }
       }
     },

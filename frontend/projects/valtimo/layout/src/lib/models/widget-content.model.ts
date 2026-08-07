@@ -192,6 +192,11 @@ interface WidgetImageContent {
   displayAsCarousel?: boolean;
 }
 
+/** Free-form content of a text widget, authored as markdown. */
+interface WidgetTextContent {
+  content: string;
+}
+
 interface WidgetImageItem {
   resourceId: string;
   fileName?: string;
@@ -226,7 +231,8 @@ type WidgetContentProperties =
   | WidgetIkoMetrolineContent
   | WidgetPersonCardContent
   | WidgetHighlightContent
-  | WidgetImageContent;
+  | WidgetImageContent
+  | WidgetTextContent;
 
 export {
   WidgetContentProperties,
@@ -252,6 +258,7 @@ export {
   WidgetImageItem,
   WidgetImageData,
   WidgetImageResolved,
+  WidgetTextContent,
   WidgetPersonCardContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,

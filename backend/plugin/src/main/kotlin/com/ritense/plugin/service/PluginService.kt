@@ -40,8 +40,10 @@ import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.domain.PluginProperty
+import com.ritense.plugin.events.PluginConfigurationCreatedEvent
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationIdUpdatedEvent
+import com.ritense.plugin.events.PluginConfigurationUpdatedEvent
 import com.ritense.plugin.exception.PluginConfigurationInUseException
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.exception.PluginPropertyParseException
@@ -65,7 +67,6 @@ import com.ritense.processlink.event.ProcessLinkDeletedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
-import com.ritense.valtimo.contract.event.PluginsDeployedEvent
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ConstraintViolationException
@@ -152,25 +153,23 @@ class PluginService(
         }
 
         val pluginConfigurationToBeSaved = PluginConfiguration(
-            id,
-            title,
-            properties,
-            pluginDefinition,
-            encryptionService,
-            objectMapper
+            id = id,
+            title = title,
+            properties = properties,
+            pluginDefinition = pluginDefinition,
+            encryptionService = encryptionService,
+            objectMapper = objectMapper
         )
 
         val pluginConfiguration = pluginConfigurationRepository.save(pluginConfigurationToBeSaved)
 
         try {
             pluginConfiguration.runAllPluginEvents(EventType.CREATE)
-
         } catch (e: Exception) {
             pluginConfigurationRepository.deleteById(pluginConfiguration.id)
             throw PluginEventInvocationException(pluginConfiguration, e)
         }
-
-        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
+        applicationEventPublisher.publishEvent(PluginConfigurationCreatedEvent(pluginConfiguration))
 
         return pluginConfiguration
     }
@@ -191,19 +190,20 @@ class PluginService(
             validateProperties(resolvedProperties, pluginDefinition)
 
             deploymentDto.id?.let {
-                oldConfiguration = pluginConfigurationRepository.findByIdOrNull(PluginConfigurationId.existingId(deploymentDto.id))
+                oldConfiguration =
+                    pluginConfigurationRepository.findByIdOrNull(PluginConfigurationId.existingId(deploymentDto.id))
                 if (oldConfiguration != null) {
                     action = EventType.UPDATE
                 }
             }
 
             pluginConfiguration = PluginConfiguration(
-                deploymentDto.id?.let { PluginConfigurationId.existingId(it) } ?: PluginConfigurationId.newId(),
-                deploymentDto.title,
-                resolvedProperties,
-                pluginDefinition,
-                encryptionService,
-                objectMapper
+                id = deploymentDto.id?.let { PluginConfigurationId.existingId(it) } ?: PluginConfigurationId.newId(),
+                title = deploymentDto.title,
+                properties = resolvedProperties,
+                pluginDefinition = pluginDefinition,
+                encryptionService = encryptionService,
+                objectMapper = objectMapper
             )
 
             pluginConfigurationRepository.saveAndFlush(pluginConfiguration)
@@ -240,10 +240,13 @@ class PluginService(
                 Regex("\\$\\{([^\\}]+)\\}").findAll(value)
                     .map { it.groupValues }
                     .forEach { (placeholder, placeholderValue) ->
-                        val resolvedValue = environment.getProperty(placeholderValue)
-                            ?: System.getenv(placeholderValue)
-                            ?: System.getProperty(placeholderValue)
-                            ?: throw IllegalStateException("Failed to find environment variable: '$placeholderValue'")
+                        val name = placeholderValue.substringBefore(':')
+                        val default = placeholderValue.substringAfter(':', missingDelimiterValue = "").takeIf { ':' in placeholderValue }
+                        val resolvedValue = environment.getProperty(name)
+                            ?: System.getenv(name)
+                            ?: System.getProperty(name)
+                            ?: default
+                            ?: throw IllegalStateException("Failed to find environment variable: '$name'")
                         value = value.replace(placeholder, resolvedValue)
                     }
                 return TextNode(value)
@@ -280,7 +283,8 @@ class PluginService(
         }
 
         val savedPluginConfiguration = pluginConfigurationRepository.save(pluginConfiguration)
-        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
+        applicationEventPublisher.publishEvent(PluginConfigurationUpdatedEvent(savedPluginConfiguration))
+
         return savedPluginConfiguration
     }
 
@@ -305,7 +309,7 @@ class PluginService(
 
         try {
             configuration.runAllPluginEvents(EventType.DELETE)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             logger.warn { "Failed to run events on plugin ${configuration.title} with id ${configuration.id.id}" }
         }
 
@@ -327,9 +331,9 @@ class PluginService(
 
         return actions.map {
             PluginActionDefinitionDto(
-                it.id.key,
-                it.title,
-                it.description
+                key = it.id.key,
+                title = it.title,
+                description = it.description
             )
         }
     }
@@ -342,9 +346,9 @@ class PluginService(
     ): Boolean {
         return pluginProcessLinkRepository
             .findByPluginConfigurationIdAndActivityIdAndActivityType(
-                pluginConfigurationId,
-                activityId,
-                activityType
+                pluginConfigurationId = pluginConfigurationId,
+                activityId = activityId,
+                activityType = activityType
             ).size == 1
     }
 
@@ -390,7 +394,12 @@ class PluginService(
             activityType = processLink.activityType
         )
         pluginProcessLinkRepository.save(newProcessLink).also {
-            applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(PROCESS_LINK_TYPE_PLUGIN, it.processDefinitionId))
+            applicationEventPublisher.publishEvent(
+                ProcessLinkCreatedEvent(
+                    processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                    processDefinitionId = it.processDefinitionId
+                )
+            )
         }
     }
 
@@ -411,7 +420,12 @@ class PluginService(
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey
             )
             pluginProcessLinkRepository.save(link).also {
-                applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(PROCESS_LINK_TYPE_PLUGIN, it.processDefinitionId))
+                applicationEventPublisher.publishEvent(
+                    ProcessLinkUpdatedEvent(
+                        processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                        processDefinitionId = it.processDefinitionId
+                    )
+                )
             }
         }
     }
@@ -422,10 +436,19 @@ class PluginService(
     ) {
         caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
         val pluginProcessLinkId = PluginProcessLinkId.existingId(id)
-        val processLink = try { pluginProcessLinkRepository. getById(pluginProcessLinkId) } catch (_: Exception) { null }
+        val processLink = try {
+            pluginProcessLinkRepository.getById(pluginProcessLinkId)
+        } catch (_: Exception) {
+            null
+        }
         pluginProcessLinkRepository.deleteById(pluginProcessLinkId)
         if (processLink != null) {
-            applicationEventPublisher.publishEvent(ProcessLinkDeletedEvent(PROCESS_LINK_TYPE_PLUGIN, processLink.processDefinitionId))
+            applicationEventPublisher.publishEvent(
+                ProcessLinkDeletedEvent(
+                    processLinkType = PROCESS_LINK_TYPE_PLUGIN,
+                    processDefinitionId = processLink.processDefinitionId
+                )
+            )
         }
     }
 
@@ -566,19 +589,19 @@ class PluginService(
         pluginConfigurationRepository.deleteById(oldPluginConfigurationId)
         val newPluginConfiguration = pluginConfigurationRepository.save(
             PluginConfiguration(
-                newPluginConfigurationId,
-                oldPluginConfiguration.title,
-                oldPluginConfiguration.properties,
-                oldPluginConfiguration.pluginDefinition,
-                encryptionService,
-                objectMapper
+                id = newPluginConfigurationId,
+                title = oldPluginConfiguration.title,
+                properties = oldPluginConfiguration.properties,
+                pluginDefinition = oldPluginConfiguration.pluginDefinition,
+                encryptionService = encryptionService,
+                objectMapper = objectMapper
             )
         )
 
         val event = PluginConfigurationIdUpdatedEvent(
-            newPluginConfigurationId.id,
-            oldPluginConfigurationId.id,
-            newPluginConfiguration
+            newId = newPluginConfigurationId.id,
+            oldId = oldPluginConfigurationId.id,
+            pluginConfiguration = newPluginConfiguration
         )
 
         applicationEventPublisher.publishEvent(event)
@@ -654,7 +677,11 @@ class PluginService(
                 it.value.textValue()
             }.run {
                 // Resolve all string values, which might or might not be placeholders.
-                valueResolverService.resolveValues(execution.processInstanceId, execution, values.toList())
+                valueResolverService.resolveValues(
+                    processInstanceId = execution.processInstanceId,
+                    variableScope = execution,
+                    requestedValues = values.toList()
+                )
             }
 
         return mapActionParamValues(paramValues, resolvedValueMap)
@@ -691,9 +718,9 @@ class PluginService(
                 }.run {
                     // Resolve all string values, which might or might not be placeholders.
                     valueResolverService.resolveValues(
-                        task.execution.processInstanceId,
-                        task.execution,
-                        values.toList()
+                        processInstanceId = task.execution.processInstanceId,
+                        variableScope = task.execution,
+                        requestedValues = values.toList()
                     )
                 }
 
@@ -826,19 +853,20 @@ class PluginService(
     }
 
     fun <T> findPluginConfiguration(clazz: Class<T>, configurationFilter: (JsonNode) -> Boolean): PluginConfiguration? {
-        return findPluginConfigurations(clazz, configurationFilter)
-            .firstOrNull()
+        return findPluginConfigurations(clazz, configurationFilter).firstOrNull()
     }
 
     fun findPluginConfiguration(
         @LoggableResource(resourceType = PluginDefinition::class) pluginDefinitionKey: String,
         filter: (JsonNode) -> Boolean
     ): PluginConfiguration? {
-        return findPluginConfigurations(pluginDefinitionKey, filter)
-            .firstOrNull()
+        return findPluginConfigurations(pluginDefinitionKey, filter).firstOrNull()
     }
 
-    fun <T> findPluginConfigurations(clazz: Class<T>, filter: (JsonNode) -> Boolean = { true }): List<PluginConfiguration> {
+    fun <T> findPluginConfigurations(
+        clazz: Class<T>,
+        filter: (JsonNode) -> Boolean = { true }
+    ): List<PluginConfiguration> {
         val annotation = clazz.getAnnotation(Plugin::class.java)
             ?: throw IllegalArgumentException("Requested plugin for class ${clazz.name}, but class is not annotated as plugin")
 
@@ -881,7 +909,7 @@ class PluginService(
     }
 
     companion object {
-        val logger = KotlinLogging.logger {}
+        private val logger = KotlinLogging.logger {}
 
         const val PROCESS_LINK_TYPE_PLUGIN = "plugin"
     }

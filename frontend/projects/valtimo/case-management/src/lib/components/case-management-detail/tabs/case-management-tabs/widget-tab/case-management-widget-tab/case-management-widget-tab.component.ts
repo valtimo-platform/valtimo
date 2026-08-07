@@ -169,6 +169,7 @@ export class CaseManagementWidgetTabComponent
     WidgetType.METROLINE,
     WidgetType.HIGHLIGHT,
     WidgetType.IMAGE,
+    WidgetType.TEXT,
   ];
 
   /**

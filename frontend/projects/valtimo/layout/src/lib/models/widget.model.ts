@@ -28,6 +28,7 @@ import {
   WidgetMetrolineContent,
   WidgetPersonCardContent,
   WidgetTableContent,
+  WidgetTextContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
 
@@ -45,6 +46,7 @@ enum WidgetType {
   PERSON_CARD = 'person-card',
   IMAGE = 'image',
   EXTERNAL_PLUGIN = 'external-plugin',
+  TEXT = 'text',
 }
 
 enum WidgetColor {
@@ -181,6 +183,11 @@ interface ExternalPluginWidget extends BasicWidget {
   properties: WidgetExternalPluginContent;
 }
 
+interface TextWidget extends BasicWidget {
+  type: WidgetType.TEXT;
+  properties: WidgetTextContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -194,7 +201,8 @@ type Widget =
   | MetrolineWidget
   | HighlightWidget
   | ImageWidget
-  | ExternalPluginWidget;
+  | ExternalPluginWidget
+  | TextWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -269,7 +277,8 @@ type OptionalWidgets =
   | WidgetType.IMAGE
   // Only the case surface renders this (as a sandboxed iframe); other surfaces (iko, the layout
   // default) omit it, so it must be optional in the component map.
-  | WidgetType.EXTERNAL_PLUGIN;
+  | WidgetType.EXTERNAL_PLUGIN
+  | WidgetType.TEXT;
 
 type WidgetComponentMap = Record<
   Exclude<WidgetType, WidgetType.DIVIDER | OptionalWidgets>,
@@ -308,6 +317,7 @@ export {
   PersonCardWidget,
   HighlightWidget,
   ImageWidget,
+  TextWidget,
   MetrolineWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,

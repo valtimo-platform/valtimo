@@ -39,11 +39,11 @@ import java.util.UUID
     name = SECONDARY_TABLE_NAME,
     pkJoinColumns = [PrimaryKeyJoinColumn(name = "process_link_id")]
 )
-// A building-block process link ALWAYS has its secondary row. Declaring it non-optional stops
-// Hibernate from writing the row through the optional-secondary-table upsert `MERGE`, which on
-// Hibernate 6.6 mis-binds the `jsonb` mapping columns as `integer`
-// ("column input_mappings is of type jsonb but expression is of type integer") — a plain
-// INSERT/UPDATE binds them correctly through the JsonType binder.
+// Mark the secondary row as non-optional. It always exists (it holds the non-null
+// building_block_definition_key/version_tag), so Hibernate must write it with a plain INSERT/UPDATE.
+// Without this, Hibernate treats the secondary table as optional and, on PostgreSQL 15+, writes it
+// with a native MERGE (upsert) that renders the JSONB columns as `cast(? as integer)`, failing with
+// "column ... is of type jsonb but expression is of type integer".
 @SecondaryRow(table = SECONDARY_TABLE_NAME, optional = false)
 @DiscriminatorValue(PROCESS_LINK_TYPE)
 class BuildingBlockProcessLink(

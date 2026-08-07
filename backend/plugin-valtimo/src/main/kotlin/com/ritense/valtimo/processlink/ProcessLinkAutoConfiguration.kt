@@ -19,6 +19,7 @@ package com.ritense.valtimo.processlink
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.repository.PluginConfigurationRepository
+import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
@@ -147,8 +148,14 @@ class ProcessLinkAutoConfiguration {
         objectMapper: ObjectMapper,
         pluginConfigurationRepository: PluginConfigurationRepository,
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
+        pluginDefinitionRepository: PluginDefinitionRepository,
     ): PluginProcessLinkMapper {
-        return PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository)
+        return PluginProcessLinkMapper(
+            objectMapper,
+            pluginConfigurationRepository,
+            pluginProcessLinkRepository,
+            pluginDefinitionRepository,
+        )
     }
 
     @Bean

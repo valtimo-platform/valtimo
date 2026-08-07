@@ -461,6 +461,69 @@ internal class PluginServiceIT : BaseIntegrationTest() {
 
     @Test
     @Transactional
+    fun `should deploy plugin using default value for optional placeholder`() {
+        val pluginConfigurationId = UUID.randomUUID()
+        // MY_OPTIONAL_URL / MY_OPTIONAL_SUFFIX are deliberately never set, so the
+        // ${'$'}{NAME:default} default must be used instead of failing the deployment.
+        val properties = """
+            {
+                "property1": "${'$'}{MY_OPTIONAL_URL:https://default.example.com/}api/v1",
+                "property2": true,
+                "property3": 3,
+                "property4": [
+                    {
+                        "innerProperty": "value=${'$'}{MY_OPTIONAL_SUFFIX:}"
+                    }
+                ]
+            }"""
+
+        pluginService.deployPluginConfigurations(
+            PluginAutoDeploymentDto(
+                id = pluginConfigurationId,
+                title = "My optional-default plugin",
+                pluginDefinitionKey = "auto-deployment-test-plugin",
+                properties = objectMapper.readTree(properties) as ObjectNode
+            )
+        )
+
+        val pluginConfiguration = pluginService.createInstance<AutoDeploymentTestPlugin>(pluginConfigurationId)
+        assertEquals(URI("https://default.example.com/api/v1"), pluginConfiguration.property1)
+        // An empty default resolves to an empty string, keeping the variable optional and non-fatal.
+        assertEquals("value=", pluginConfiguration.property4.single().innerProperty)
+    }
+
+    @Test
+    @Transactional
+    fun `should prefer set variable over placeholder default`() {
+        val pluginConfigurationId = UUID.randomUUID()
+        System.setProperty("MY_SET_URL", "https://set.example.com/")
+        val properties = """
+            {
+                "property1": "${'$'}{MY_SET_URL:https://default.example.com/}api/v1",
+                "property2": true,
+                "property3": 3,
+                "property4": [
+                    {
+                        "innerProperty": "x"
+                    }
+                ]
+            }"""
+
+        pluginService.deployPluginConfigurations(
+            PluginAutoDeploymentDto(
+                id = pluginConfigurationId,
+                title = "My set-over-default plugin",
+                pluginDefinitionKey = "auto-deployment-test-plugin",
+                properties = objectMapper.readTree(properties) as ObjectNode
+            )
+        )
+
+        val pluginConfiguration = pluginService.createInstance<AutoDeploymentTestPlugin>(pluginConfigurationId)
+        assertEquals(URI("https://set.example.com/api/v1"), pluginConfiguration.property1)
+    }
+
+    @Test
+    @Transactional
     fun `should update plugin configuration id`() {
         val pluginProperties = objectMapper.readTree("""{ "property1": "updated" }""") as ObjectNode
         val newPluginConfigurationId = PluginConfigurationId(UUID.fromString("ec9c12f3-5617-4184-88cc-e314dd9f4de2"))

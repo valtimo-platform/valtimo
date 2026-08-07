@@ -22,15 +22,7 @@ import {LoadingModule} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, shareReplay, startWith, switchMap} from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
 import {CaseWidgetsRes, DocumentUpdatedSseEvent} from '../../../../models';
-import {
-  BasicWidget,
-  DividerWidget,
-  Widget,
-  WidgetComponentMap,
-  WidgetContainerComponent,
-  WidgetGroup,
-  WidgetType,
-} from '@valtimo/layout';
+import {BasicWidget, DividerWidget, Widget, WidgetComponentMap, WidgetContainerComponent, WidgetGroup, WidgetType,} from '@valtimo/layout';
 import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
 import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.component';
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
@@ -42,6 +34,7 @@ import {CaseWidgetMetrolineComponent} from './components/metroline/case-widget-m
 import {CaseWidgetHighlightComponent} from './components/highlight/case-widget-highlight.component';
 import {CaseWidgetImageComponent} from './components/image/case-widget-image.component';
 import {CaseWidgetExternalPluginComponent} from './components/external-plugin/case-widget-external-plugin.component';
+import {CaseWidgetTextComponent} from './components/text/case-widget-text.component';
 import {SseService} from '@valtimo/sse';
 import {WidgetsService} from './widgets.service';
 import {isEqual} from 'lodash-es';
@@ -116,6 +109,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     [WidgetType.HIGHLIGHT]: CaseWidgetHighlightComponent,
     [WidgetType.IMAGE]: CaseWidgetImageComponent,
     [WidgetType.EXTERNAL_PLUGIN]: CaseWidgetExternalPluginComponent,
+    [WidgetType.TEXT]: CaseWidgetTextComponent,
   };
 
   constructor(

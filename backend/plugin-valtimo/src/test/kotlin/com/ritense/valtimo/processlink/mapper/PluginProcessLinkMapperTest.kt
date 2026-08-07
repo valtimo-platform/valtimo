@@ -17,6 +17,8 @@
 package com.ritense.valtimo.processlink.mapper
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.ritense.exporter.manifest.DependencyType
+import com.ritense.exporter.manifest.StringValue
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
@@ -24,6 +26,7 @@ import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginConfigurationRepository
+import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
@@ -57,6 +60,9 @@ class PluginProcessLinkMapperTest {
     lateinit var pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository
 
     @Mock
+    lateinit var pluginDefinitionRepository: PluginDefinitionRepository
+
+    @Mock
     lateinit var applicationEventPublisher: ApplicationEventPublisher
 
     private lateinit var mapper: PluginProcessLinkMapper
@@ -69,6 +75,7 @@ class PluginProcessLinkMapperTest {
             jacksonObjectMapper(),
             pluginConfigurationRepository,
             pluginProcessLinkRepository,
+            pluginDefinitionRepository,
         )
     }
 
@@ -252,6 +259,79 @@ class PluginProcessLinkMapperTest {
         val dto = mapper.toProcessLinkExportResponseDto(link)
 
         assertThat(dto.pluginDefinitionKey).isNull()
+    }
+
+    @Test
+    fun `toManifestDependencies resolves plugin from reference key and looks up title`() {
+        val pluginDefinition = mock<PluginDefinition>()
+        whenever(pluginDefinition.title).thenReturn("Zaken API Plugin")
+        whenever(pluginDefinitionRepository.findById("zaken-api")).thenReturn(Optional.of(pluginDefinition))
+
+        val link = pluginLink(
+            pluginConfigurationId = PluginConfigurationId.existingId(UUID.randomUUID()),
+            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
+        )
+
+        val dependencies = mapper.toManifestDependencies(link)
+
+        assertThat(dependencies).hasSize(1)
+        val dependency = dependencies.single()
+        assertThat(dependency.type).isEqualTo(DependencyType.PLUGIN)
+        assertThat(dependency.key).isEqualTo(StringValue("zaken-api"))
+        assertThat(dependency.title).isEqualTo(StringValue("Zaken API Plugin"))
+        assertThat(dependency.versionTag).isNull()
+    }
+
+    @Test
+    fun `toManifestDependencies falls back to configuration lookup for the plugin key`() {
+        val configId = PluginConfigurationId.existingId(UUID.randomUUID())
+        val pluginDefinition = mock<PluginDefinition>()
+        whenever(pluginDefinition.key).thenReturn("resolved-key")
+        val pluginConfiguration = mock<PluginConfiguration>()
+        whenever(pluginConfiguration.pluginDefinition).thenReturn(pluginDefinition)
+        whenever(pluginConfigurationRepository.findById(eq(configId))).thenReturn(Optional.of(pluginConfiguration))
+        val titleDefinition = mock<PluginDefinition>()
+        whenever(titleDefinition.title).thenReturn("Resolved Plugin")
+        whenever(pluginDefinitionRepository.findById("resolved-key")).thenReturn(Optional.of(titleDefinition))
+
+        val link = pluginLink(
+            pluginConfigurationId = configId,
+            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, null),
+        )
+
+        val dependencies = mapper.toManifestDependencies(link)
+
+        val dependency = dependencies.single()
+        assertThat(dependency.key).isEqualTo(StringValue("resolved-key"))
+        assertThat(dependency.title).isEqualTo(StringValue("Resolved Plugin"))
+    }
+
+    @Test
+    fun `toManifestDependencies falls back to the key as title when definition is missing`() {
+        whenever(pluginDefinitionRepository.findById("zaken-api")).thenReturn(Optional.empty())
+
+        val link = pluginLink(
+            pluginConfigurationId = null,
+            reference = PluginConfigurationReference(PluginConfigurationReferenceType.BUILDING_BLOCK, "zaken-api"),
+        )
+
+        val dependency = mapper.toManifestDependencies(link).single()
+
+        assertThat(dependency.key).isEqualTo(StringValue("zaken-api"))
+        assertThat(dependency.title).isEqualTo(StringValue("zaken-api"))
+    }
+
+    @Test
+    fun `toManifestDependencies returns empty when no plugin key can be resolved`() {
+        val configId = PluginConfigurationId.existingId(UUID.randomUUID())
+        whenever(pluginConfigurationRepository.findById(eq(configId))).thenReturn(Optional.empty())
+
+        val link = pluginLink(
+            pluginConfigurationId = configId,
+            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, null),
+        )
+
+        assertThat(mapper.toManifestDependencies(link)).isEmpty()
     }
 
     private fun pluginLink(
