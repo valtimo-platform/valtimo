@@ -40,6 +40,11 @@ import {TranslateService} from '@ngx-translate/core';
   selector: 'valtimo-case-migration',
   templateUrl: './case-migration.component.html',
 })
+/**
+ * @deprecated The 'Case migration (beta)' admin screen has been removed from the admin menu and is
+ * replaced by the case migration feature in `@valtimo/case-management`. This component will be
+ * removed in a future release.
+ */
 export class CaseMigrationComponent {
   public readonly sourceCaseDefinitionKeySelected$ = new BehaviorSubject<string | null>(null);
   public readonly sourceCaseDefinitionVersionTagSelected$ = new BehaviorSubject<string | null>(

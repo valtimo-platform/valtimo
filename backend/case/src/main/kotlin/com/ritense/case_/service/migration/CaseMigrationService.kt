@@ -26,24 +26,18 @@ import com.ritense.case_.domain.migration.CaseMigrationDryRunCase
 import com.ritense.case_.domain.migration.CaseMigrationStatus
 import com.ritense.case_.domain.migration.DryRunCaseStatus
 import com.ritense.case_.domain.migration.MigrationExecutionError
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.repository.CaseMigrationDryRunCaseRepository
 import com.ritense.case_.repository.CaseMigrationDryRunRepository
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
-import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
@@ -79,10 +73,10 @@ class CaseMigrationService(
     private val caseMigrationCaseRepository: CaseMigrationCaseRepository,
     private val dryRunRepository: CaseMigrationDryRunRepository,
     private val dryRunCaseRepository: CaseMigrationDryRunCaseRepository,
-    private val documentRepository: JsonSchemaDocumentRepository,
+    private val planApplier: MigrationPlanApplier,
     private val conditionEvaluator: MigrationConditionEvaluator,
     private val candidateProviders: List<MigrationCandidateProvider>,
-    private val componentExecutors: List<MigrationComponentExecutor>,
+    private val versionLineages: List<BlueprintVersionLineage>,
     private val componentDeployers: List<MigrationComponentDeployer>,
     private val transactionTemplate: TransactionTemplate,
     private val applicationEventPublisher: ApplicationEventPublisher,
@@ -112,18 +106,20 @@ class CaseMigrationService(
             .map { plan ->
                 val target = resolveTarget(plan.id)
                 val source = resolveSource(target)
+                val isBuildingBlockPlan = plan.id.blueprintType == BlueprintType.BUILDING_BLOCK
                 MigrationPlanManagementDto(
                     migrationKey = plan.id.migrationKey,
                     title = plan.title,
                     source = formatBlueprintVersion(source),
                     target = formatBlueprintVersion(target),
-                    triggers = plan.migrationTriggers,
-                    conditions = plan.conditions,
                     components = componentDeployers
                         .filter { it.getComponentToExport(plan.id) != null }
                         .map { it.componentKey() },
                     status = getStatus(plan.id),
-                    dryRun = getDryRunStatus(plan.id),
+                    // A building block plan has no triggers, no conditions and no dry run of its own.
+                    triggers = plan.migrationTriggers.takeUnless { isBuildingBlockPlan },
+                    conditions = plan.conditions.takeUnless { isBuildingBlockPlan },
+                    dryRun = if (isBuildingBlockPlan) null else getDryRunStatus(plan.id),
                 )
             }
     }
@@ -134,6 +130,7 @@ class CaseMigrationService(
      * and stops cleanly if this node is fenced by a takeover mid-run.
      */
     fun startMigration(migrationId: BlueprintMigrationId): CaseDefinitionMigrationExecution {
+        assertNotBuildingBlockPlan(migrationId)
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
             NoSuchElementException("No migration plan found for '$migrationId'")
         }
@@ -158,16 +155,25 @@ class CaseMigrationService(
 
     /** Assemble the current migration status (counts and errors come from the per-case table). */
     fun getStatus(migrationId: BlueprintMigrationId): MigrationExecutionStatusDto {
+        if (migrationId.blueprintType == BlueprintType.BUILDING_BLOCK) {
+            return buildingBlockPlanStatus(migrationId)
+        }
         val execution = executionRepository.findById(migrationId).orElse(null)
             ?: return notStartedStatus(migrationId)
         val casesMigrated = caseMigrationCaseRepository
             .countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.MIGRATED).toInt()
         val failedCases = caseMigrationCaseRepository
             .findByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.FAILED)
-        val casesTotal = execution.casesToMigrate
-        // Cases still needing migration = the run's matched slice minus those already migrated or failed.
-        // Reaches 0 once every matching case has been processed.
-        val casesToMigrate = (casesTotal - casesMigrated - failedCases.size).coerceAtLeast(0)
+        // casesMigrated and the failed rows are *lifetime* counts: one row per instance the plan has
+        // touched, kept across runs so a re-run skips what it already migrated. execution.casesToMigrate
+        // is only the **current** run's matched slice, and a plan run twice over successive batches
+        // matches fewer cases the second time than it has already migrated in total. Using it directly
+        // as the denominator then reports "6 of 3", so the total is floored at what the plan has
+        // already accounted for.
+        val casesAccountedFor = casesMigrated + failedCases.size
+        val casesTotal = maxOf(execution.casesToMigrate, casesAccountedFor)
+        // Cases still needing migration; reaches 0 once every matching case has been processed.
+        val casesToMigrate = casesTotal - casesAccountedFor
         return MigrationExecutionStatusDto(
             status = execution.status,
             casesToMigrate = casesToMigrate,
@@ -192,6 +198,7 @@ class CaseMigrationService(
      * run is already in progress elsewhere (a live lease), and stops cleanly if fenced by a takeover.
      */
     fun startDryRun(migrationId: BlueprintMigrationId): DryRunStatusDto {
+        assertNotBuildingBlockPlan(migrationId)
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
             NoSuchElementException("No migration plan found for '$migrationId'")
         }
@@ -247,6 +254,32 @@ class CaseMigrationService(
                 caseDefinitionMigrationRepository.save(fresh)
             }
         }
+    }
+
+    /**
+     * The status of a **building block** plan, which owns no run of its own: it has no execution row,
+     * no lease and no fencing token, because it is never started — it is applied, instance by instance,
+     * by whichever case migrations move a building block onto its version. So its status is derived
+     * purely from the rows those applications left behind.
+     *
+     * [MigrationExecutionStatusDto.casesMigrated] is therefore the number of building block *instances*
+     * this plan has been applied to so far. There is no "still to migrate" figure — how many instances
+     * will ever reach this version depends on which cases migrate — and no error count: an instance
+     * that fails rolls back its whole case, and is recorded as a failure against the *case* plan.
+     */
+    private fun buildingBlockPlanStatus(migrationId: BlueprintMigrationId): MigrationExecutionStatusDto {
+        val instancesMigrated = caseMigrationCaseRepository
+            .countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.MIGRATED).toInt()
+        return MigrationExecutionStatusDto(
+            status = if (instancesMigrated == 0) CaseMigrationStatus.NOT_STARTED else CaseMigrationStatus.COMPLETED,
+            casesToMigrate = 0,
+            casesTotal = instancesMigrated,
+            casesMigrated = instancesMigrated,
+            casesWithErrors = 0,
+            errors = emptyList(),
+            startedOn = null,
+            finishedOn = null,
+        )
     }
 
     private fun notStartedStatus(migrationId: BlueprintMigrationId): MigrationExecutionStatusDto {
@@ -458,12 +491,7 @@ class CaseMigrationService(
      * re-home (for the audit trail). The real run commits this; the dry run rolls it back.
      */
     private fun applyMigration(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID): String {
-        val fromVersionTag = attachToTarget(caseId, target)
-        // Spring injects componentExecutors already sorted by each executor's @Order, so they run in
-        // a dependency-correct order without the orchestrator knowing which executors exist or what
-        // their component keys are.
-        componentExecutors.forEach { it.execute(migrationId, target, caseId) }
-        return fromVersionTag
+        return planApplier.apply(migrationId, target, caseId)
     }
 
     /**
@@ -657,37 +685,28 @@ class CaseMigrationService(
         }
     }
 
+    /** The provider that enumerates candidate instances for a blueprint type, if any. */
     /**
-     * Detach the case document [caseId] from its source blueprint version and attach it to the
-     * [target] version: keep the document-definition name but point the `documentDefinitionId` at
-     * the target blueprint (case definition or building block definition), then persist it. Runs for
-     * every migrated case, independent of which plan components are configured.
-     *
-     * Returns the version tag the document was on *before* the re-home (the source version), so the
-     * caller can record an accurate from → to on the case's audit trail.
+     * A building block plan has no run of its own (R1): it is applied by
+     * `BuildingBlockVersionAlignmentExecutor` while its *owner* migrates, to exactly the instances the
+     * owner's new version links. Starting one directly is refused rather than quietly doing nothing —
+     * which is what it would otherwise do, since there is no building block
+     * [MigrationCandidateProvider] to enumerate instances with.
      */
-    private fun attachToTarget(caseId: UUID, target: BlueprintId): String {
-        return runWithoutAuthorization {
-            val document = documentRepository.findById(JsonSchemaDocumentId.existingId(caseId)).orElseThrow {
-                NoSuchElementException("No document found for case '$caseId' to migrate to the target blueprint")
-            }
-            val definitionId = document.definitionId() as JsonSchemaDocumentDefinitionId
-            val name = definitionId.name()
-            val fromVersionTag = definitionId.blueprintId().blueprintVersionTag().toString()
-            val targetDefinitionId = when (target) {
-                is CaseDefinitionId -> JsonSchemaDocumentDefinitionId.forCase(name, target)
-                is BuildingBlockDefinitionId -> JsonSchemaDocumentDefinitionId.forBuildingBlock(name, target)
-                else -> throw IllegalArgumentException("Unsupported target blueprint '$target' for migration")
-            }
-            document.setDefinitionId(targetDefinitionId)
-            documentRepository.save(document)
-            fromVersionTag
+    private fun assertNotBuildingBlockPlan(migrationId: BlueprintMigrationId) {
+        require(migrationId.blueprintType != BlueprintType.BUILDING_BLOCK) {
+            "Building block migration plan '$migrationId' cannot be started on its own. A building " +
+                "block migrates because its owner migrated: run the case migration whose target " +
+                "version links this building block, and it will be applied as part of that."
         }
     }
 
-    /** The provider that enumerates candidate instances for a blueprint type, if any. */
     private fun candidateProvider(blueprintType: BlueprintType): MigrationCandidateProvider? {
         return candidateProviders.firstOrNull { it.supports(blueprintType) }
+    }
+
+    private fun versionLineage(blueprintType: BlueprintType): BlueprintVersionLineage? {
+        return versionLineages.firstOrNull { it.supports(blueprintType) }
     }
 
     /**
@@ -707,7 +726,9 @@ class CaseMigrationService(
      * version itself when there is no recorded predecessor).
      */
     private fun resolveSource(target: BlueprintId): BlueprintId {
-        val sourceVersion = candidateProvider(target.blueprintType())?.basedOnVersionTag(target)
+        // Lineage, not the candidate provider: every blueprint type has a source version to resolve
+        // and render, including building blocks, which have no candidate provider by design.
+        val sourceVersion = versionLineage(target.blueprintType())?.basedOnVersionTag(target)
             ?: target.blueprintVersionTag()
         return BlueprintMigrationId.blueprintIdOf(target.blueprintType(), target.getIdKey(), sourceVersion)
     }

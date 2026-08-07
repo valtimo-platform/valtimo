@@ -16,6 +16,7 @@
 
 package com.ritense.case_.service.migration
 
+import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.domain.migration.CaseDefinitionMigration
 import com.ritense.case_.domain.migration.CaseDefinitionMigrationExecution
 import com.ritense.case_.domain.migration.CaseMigrationCase
@@ -32,15 +33,16 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.repository.CaseMigrationDryRunCaseRepository
 import com.ritense.case_.repository.CaseMigrationDryRunRepository
-import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
-import com.ritense.document.service.DocumentDefinitionService
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -58,6 +60,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
+import org.semver4j.Semver
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.domain.PageImpl
@@ -78,7 +81,6 @@ class CaseMigrationServiceTest(
     @Mock private val dryRunRepository: CaseMigrationDryRunRepository,
     @Mock private val dryRunCaseRepository: CaseMigrationDryRunCaseRepository,
     @Mock private val documentRepository: JsonSchemaDocumentRepository,
-    @Mock private val documentDefinitionService: DocumentDefinitionService,
     @Mock private val caseDefinitionRepository: CaseDefinitionRepository,
     @Mock private val conditionEvaluator: MigrationConditionEvaluator,
     @Mock private val executor: MigrationComponentExecutor,
@@ -101,16 +103,18 @@ class CaseMigrationServiceTest(
         whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
         val transactionTemplate = TransactionTemplate(transactionManager)
 
+        // One bean satisfies both roles for cases: candidate enumeration and version lineage.
+        val candidateProvider = CaseMigrationCandidateProvider(documentRepository, caseDefinitionRepository)
         service = CaseMigrationService(
             migrationRepository,
             executionRepository,
             caseRepository,
             dryRunRepository,
             dryRunCaseRepository,
-            documentRepository,
+            MigrationPlanApplier(documentRepository, listOf(executor)),
             conditionEvaluator,
-            listOf(CaseMigrationCandidateProvider(documentRepository, documentDefinitionService, caseDefinitionRepository)),
-            listOf(executor),
+            listOf(candidateProvider),
+            listOf(candidateProvider),
             emptyList(),
             transactionTemplate,
             applicationEventPublisher,
@@ -145,10 +149,8 @@ class CaseMigrationServiceTest(
     private fun caseRecordId(caseId: UUID) = CaseMigrationCaseId(migrationId, caseId.toString())
 
     private fun stubCandidates(vararg caseIds: UUID) {
-        val documentDefinition = mock<DocumentDefinition>(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
-        whenever(documentDefinition.id().name()).thenReturn("bezwaar")
-        whenever(documentDefinitionService.findByBlueprintId(caseDefinitionId)).thenReturn(Optional.of(documentDefinition))
-        whenever(documentRepository.findCaseIdsByDocumentDefinitionName(any(), any())).thenReturn(PageImpl(caseIds.toList()))
+        whenever(documentRepository.findCaseIdsByBlueprintVersion(any(), any(), any(), any()))
+            .thenReturn(PageImpl(caseIds.toList()))
     }
 
     @Test
@@ -165,6 +167,28 @@ class CaseMigrationServiceTest(
         assertThat(result.casesToMigrate).isEqualTo(2)
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
         assertThat(result.finishedOn).isNotNull()
+    }
+
+    @Test
+    fun `should select candidates on the source version only, not on every version of the case`() {
+        whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(
+            Optional.of(
+                CaseDefinition(
+                    id = caseDefinitionId,
+                    name = "bezwaar",
+                    createdDate = null,
+                    basedOnVersionTag = Semver("1.0.0"),
+                )
+            )
+        )
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        service.startMigration(migrationId)
+
+        verify(documentRepository).findCaseIdsByBlueprintVersion(
+            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("1.0.0")), any()
+        )
     }
 
     @Test
@@ -257,7 +281,7 @@ class CaseMigrationServiceTest(
 
         service.startMigration(migrationId)
 
-        verify(documentDefinitionService, never()).findByBlueprintId(any())
+        verify(documentRepository, never()).findCaseIdsByBlueprintVersion(any(), any(), any(), any())
         verify(executor, never()).execute(any(), any(), any())
     }
 
@@ -267,7 +291,7 @@ class CaseMigrationServiceTest(
 
         service.startMigration(migrationId)
 
-        verify(documentDefinitionService, never()).findByBlueprintId(any())
+        verify(documentRepository, never()).findCaseIdsByBlueprintVersion(any(), any(), any(), any())
         verify(executor, never()).execute(any(), any(), any())
     }
 
@@ -328,6 +352,24 @@ class CaseMigrationServiceTest(
         assertThat(status.casesTotal).isEqualTo(1)
         assertThat(status.casesMigrated).isEqualTo(1)
         assertThat(status.casesToMigrate).isEqualTo(0)
+    }
+
+    @Test
+    fun `getStatus should never report more migrated than total when a plan is run over successive batches`() {
+        // Run 1 migrated 3 cases; run 2 matched the 3 that arrived since. The MIGRATED rows are
+        // lifetime (they are what makes a re-run skip a case), so the numerator is 6 while the run's
+        // own matched slice is 3 — the denominator has to account for both, or the UI reads "6 of 3".
+        execution.status = CaseMigrationStatus.COMPLETED
+        execution.casesToMigrate = 3 // this run's matched slice only
+        whenever(caseRepository.countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.MIGRATED))
+            .thenReturn(6L)
+
+        val status = service.getStatus(migrationId)
+
+        assertThat(status.casesMigrated).isEqualTo(6)
+        assertThat(status.casesTotal).isEqualTo(6)
+        assertThat(status.casesToMigrate).isEqualTo(0)
+        assertThat(status.casesMigrated).isLessThanOrEqualTo(status.casesTotal)
     }
 
     @Test
@@ -451,7 +493,35 @@ class CaseMigrationServiceTest(
 
         service.startDryRun(migrationId)
 
-        verify(documentDefinitionService, never()).findByBlueprintId(any())
+        verify(documentRepository, never()).findCaseIdsByBlueprintVersion(any(), any(), any(), any())
+        verify(executor, never()).execute(any(), any(), any())
+    }
+
+    @Test
+    fun `should refuse to start a building block plan on its own`() {
+        val buildingBlockPlanId = BlueprintMigrationId.from(
+            BuildingBlockDefinitionId.of("verhuizing-inspectie", "1.0.4"), "fotodossier"
+        )
+
+        assertThatThrownBy { service.startMigration(buildingBlockPlanId) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("cannot be started on its own")
+            .hasMessageContaining("because its owner migrated")
+        // Refused before anything is claimed, so no lease and no run row are left behind.
+        verify(executionRepository, never()).save(any())
+        verify(executor, never()).execute(any(), any(), any())
+    }
+
+    @Test
+    fun `should refuse to dry run a building block plan on its own`() {
+        val buildingBlockPlanId = BlueprintMigrationId.from(
+            BuildingBlockDefinitionId.of("verhuizing-inspectie", "1.0.4"), "fotodossier"
+        )
+
+        assertThatThrownBy { service.startDryRun(buildingBlockPlanId) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("cannot be started on its own")
+        verify(dryRunRepository, never()).save(any())
         verify(executor, never()).execute(any(), any(), any())
     }
 }

@@ -82,6 +82,7 @@ import com.ritense.case_.service.migration.DataMigrationComponentSuggester
 import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.case_.service.migration.MigrationConditionEvaluator
 import com.ritense.case_.service.migration.MigrationPlanExporter
+import com.ritense.case_.service.migration.MigrationPlanApplier
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.case_.service.migration.MigrationTriggerScheduler
@@ -97,6 +98,7 @@ import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
@@ -616,14 +618,14 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(MigrationSuggestionService::class)
     fun migrationSuggestionService(
         objectMapper: ObjectMapper,
-        migrationCandidateProviders: List<MigrationCandidateProvider>,
+        blueprintVersionLineages: List<BlueprintVersionLineage>,
         migrationComponentSuggesters: List<MigrationComponentSuggester>,
         activityMappingSuggesters: List<ActivityMappingSuggester>,
         activityMappingValidators: List<ActivityMappingValidator>,
         migrationComponentValidators: List<MigrationComponentValidator>,
     ) = MigrationSuggestionService(
         objectMapper,
-        migrationCandidateProviders,
+        blueprintVersionLineages,
         migrationComponentSuggesters,
         activityMappingSuggesters,
         activityMappingValidators,
@@ -640,9 +642,15 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseMigrationCandidateProvider::class)
     fun caseMigrationCandidateProvider(
         documentRepository: JsonSchemaDocumentRepository,
-        documentDefinitionService: DocumentDefinitionService,
         caseDefinitionRepository: CaseDefinitionRepository,
-    ) = CaseMigrationCandidateProvider(documentRepository, documentDefinitionService, caseDefinitionRepository)
+    ) = CaseMigrationCandidateProvider(documentRepository, caseDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(MigrationPlanApplier::class)
+    fun migrationPlanApplier(
+        documentRepository: JsonSchemaDocumentRepository,
+        migrationComponentExecutors: List<MigrationComponentExecutor>,
+    ) = MigrationPlanApplier(documentRepository, migrationComponentExecutors)
 
     @Bean
     @ConditionalOnMissingBean(CaseMigrationService::class)
@@ -652,10 +660,10 @@ class CaseAutoConfiguration {
         caseMigrationCaseRepository: CaseMigrationCaseRepository,
         caseMigrationDryRunRepository: CaseMigrationDryRunRepository,
         caseMigrationDryRunCaseRepository: CaseMigrationDryRunCaseRepository,
-        documentRepository: JsonSchemaDocumentRepository,
+        migrationPlanApplier: MigrationPlanApplier,
         migrationConditionEvaluator: MigrationConditionEvaluator,
         migrationCandidateProviders: List<MigrationCandidateProvider>,
-        migrationComponentExecutors: List<MigrationComponentExecutor>,
+        blueprintVersionLineages: List<BlueprintVersionLineage>,
         migrationComponentDeployers: List<MigrationComponentDeployer>,
         transactionTemplate: TransactionTemplate,
         applicationEventPublisher: ApplicationEventPublisher,
@@ -666,10 +674,10 @@ class CaseAutoConfiguration {
         caseMigrationCaseRepository,
         caseMigrationDryRunRepository,
         caseMigrationDryRunCaseRepository,
-        documentRepository,
+        migrationPlanApplier,
         migrationConditionEvaluator,
         migrationCandidateProviders,
-        migrationComponentExecutors,
+        blueprintVersionLineages,
         migrationComponentDeployers,
         transactionTemplate,
         applicationEventPublisher,

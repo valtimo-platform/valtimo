@@ -22,6 +22,10 @@ import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 
+@Deprecated(
+    "Secures the endpoints of the 'Case migration (beta)' admin screen, which has been replaced " +
+        "by the case definition migration feature. Will be removed in a future release."
+)
 class DocumentMigrationHttpSecurityConfigurer : AuthorizeRequestsHttpSecurityConfigurer() {
 
     override fun authorizeHttpRequests(requests: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {

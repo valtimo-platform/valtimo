@@ -25,7 +25,7 @@ import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingSuggester
 import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingValidator
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
-import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 
@@ -36,7 +36,7 @@ import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValida
  */
 class MigrationSuggestionService(
     private val objectMapper: ObjectMapper,
-    private val candidateProviders: List<MigrationCandidateProvider>,
+    private val versionLineages: List<BlueprintVersionLineage>,
     private val componentSuggesters: List<MigrationComponentSuggester>,
     private val activityMappingSuggesters: List<ActivityMappingSuggester>,
     private val activityMappingValidators: List<ActivityMappingValidator>,
@@ -91,7 +91,7 @@ class MigrationSuggestionService(
 
     /** The predecessor blueprint of [target] (its `basedOnVersionTag`), or null when there is none. */
     private fun resolveSource(target: BlueprintId): BlueprintId? =
-        candidateProviders
+        versionLineages
             .firstOrNull { it.supports(target.blueprintType()) }
             ?.basedOnVersionTag(target)
             ?.let { BlueprintMigrationId.blueprintIdOf(target.blueprintType(), target.getIdKey(), it) }

@@ -19,7 +19,6 @@ package com.ritense.buildingblock.web.rest
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case_.service.migration.CaseMigrationService
-import com.ritense.case_.service.migration.DryRunStatusDto
 import com.ritense.case_.service.migration.MigrationExecutionStatusDto
 import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
@@ -158,18 +157,13 @@ class BuildingBlockMigrationManagementResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
-    @RunWithoutAuthorization
-    @PostMapping("/{migrationKey}/start")
-    fun startMigration(
-        @PathVariable key: String,
-        @PathVariable versionTag: String,
-        @PathVariable migrationKey: String,
-    ): ResponseEntity<MigrationExecutionStatusDto> {
-        val migrationId = migrationId(key, versionTag, migrationKey)
-        caseMigrationService.startMigration(migrationId)
-        return ResponseEntity.ok(caseMigrationService.getStatus(migrationId))
-    }
-
+    /**
+     * How far this plan has got: the number of building block instances it has been applied to.
+     *
+     * There is deliberately no `start` and no `dry-run` counterpart. A building block plan is not run:
+     * it is applied to an instance when a case migration moves that instance's building block onto this
+     * version, and it is simulated as part of that case migration's dry run.
+     */
     @RunWithoutAuthorization
     @GetMapping("/{migrationKey}/status")
     fun getMigrationStatus(
@@ -179,29 +173,6 @@ class BuildingBlockMigrationManagementResource(
     ): ResponseEntity<MigrationExecutionStatusDto> {
         val migrationId = migrationId(key, versionTag, migrationKey)
         return ResponseEntity.ok(caseMigrationService.getStatus(migrationId))
-    }
-
-    /** Manual (button) trigger: dry-run the migration plan now — simulate it without migrating any instance. */
-    @RunWithoutAuthorization
-    @PostMapping("/{migrationKey}/dry-run")
-    fun startDryRun(
-        @PathVariable key: String,
-        @PathVariable versionTag: String,
-        @PathVariable migrationKey: String,
-    ): ResponseEntity<DryRunStatusDto> {
-        val migrationId = migrationId(key, versionTag, migrationKey)
-        return ResponseEntity.ok(caseMigrationService.startDryRun(migrationId))
-    }
-
-    @RunWithoutAuthorization
-    @GetMapping("/{migrationKey}/dry-run/status")
-    fun getDryRunStatus(
-        @PathVariable key: String,
-        @PathVariable versionTag: String,
-        @PathVariable migrationKey: String,
-    ): ResponseEntity<DryRunStatusDto> {
-        val migrationId = migrationId(key, versionTag, migrationKey)
-        return ResponseEntity.ok(caseMigrationService.getDryRunStatus(migrationId))
     }
 
     private fun migrationId(key: String, versionTag: String, migrationKey: String) =

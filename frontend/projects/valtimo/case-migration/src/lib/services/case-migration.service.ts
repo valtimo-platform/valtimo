@@ -23,6 +23,12 @@ import {DocumentMigrationConflictRequest, DocumentMigrationConflictResponse} fro
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * @deprecated The 'Case migration (beta)' admin screen has been removed from the admin menu and is
+ * replaced by the case migration feature in `@valtimo/case-management`. The backing
+ * `/api/management/v1/document-definition/migrate(/conflicts)` endpoints are deprecated as well.
+ * This service will be removed in a future release.
+ */
 export class CaseMigrationService {
   private readonly valtimoEndpointUri!: string;
 

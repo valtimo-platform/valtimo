@@ -1,0 +1,182 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.buildingblock.service.migration
+
+import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
+import com.ritense.case_.domain.migration.CaseMigrationCase
+import com.ritense.case_.domain.migration.CaseMigrationCaseId
+import com.ritense.case_.domain.migration.CaseMigrationCaseStatus
+import com.ritense.case_.repository.CaseDefinitionMigrationRepository
+import com.ritense.case_.repository.CaseMigrationCaseRepository
+import com.ritense.case_.service.migration.MigrationPlanApplier
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.semver4j.Semver
+import org.springframework.beans.factory.ObjectProvider
+import org.springframework.core.annotation.Order
+import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
+
+/**
+ * Brings a migrated instance's building blocks onto the versions its new blueprint version links.
+ *
+ * This is what makes a building block migrate at all. A building block has no lifecycle of its own —
+ * it exists inside a case — so it does not get its own triggers, conditions or run. Instead, when a
+ * case migrates, the *target* case definition version is asked which building block versions it links
+ * ([LinkedBuildingBlockVersionResolver]); any of the case's blocks sitting on an older version are
+ * brought up to the linked one by applying that building block's own migration plans.
+ *
+ * The linked version may be several versions ahead (a case jumping straight to `3.0.0` while its block
+ * is still on `1.0.0`), so the upgrade runs as a chain: [BuildingBlockMigrationPathResolver] works out
+ * the versions in between and each one's plans are applied in turn. Every version in that chain needs a
+ * plan, including one that changes nothing: a version the block only travels through still deploys its
+ * own BPMN and its own document schema, and moving a running instance onto those is a plan's job, not
+ * something to be inferred. A version without one fails the migration.
+ *
+ * Because a building block's own new version may in turn link different versions of the blocks *it*
+ * owns, the same treatment is applied to nested blocks, descending the tree one level at a time.
+ *
+ * Everything happens in the migrating case's transaction, so a building block that cannot migrate
+ * fails its case rather than leaving the case half-migrated.
+ */
+// Order 500 — last. Blocks the plan dissolves (removeBuildingBlock, order 400) are gone by now and are
+// correctly never upgraded; blocks the plan just added (order 300) are already on their linked version
+// and fall through as a no-op.
+@Order(500)
+@Transactional
+class BuildingBlockVersionAlignmentExecutor(
+    private val buildingBlockOwnershipResolver: BuildingBlockOwnershipResolver,
+    private val linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    private val buildingBlockMigrationPathResolver: BuildingBlockMigrationPathResolver,
+    private val buildingBlockProcessVersionChecker: BuildingBlockProcessVersionChecker,
+    private val caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
+    private val caseMigrationCaseRepository: CaseMigrationCaseRepository,
+    // Lazy: the applier owns the list of component executors, of which this is one. Resolving it up
+    // front would be a circular bean dependency.
+    private val migrationPlanApplier: ObjectProvider<MigrationPlanApplier>,
+) : MigrationComponentExecutor {
+
+    override fun componentKey() = COMPONENT_KEY
+
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
+        alignChildrenOf(target, caseId)
+    }
+
+    /** Align every building block [ownerDocumentId] owns *directly* against the owner's [ownerTarget] version. */
+    private fun alignChildrenOf(ownerTarget: BlueprintId, ownerDocumentId: UUID) {
+        buildingBlockOwnershipResolver.directChildrenOf(ownerDocumentId)
+            .forEach { child -> align(ownerTarget, child) }
+    }
+
+    private fun align(ownerTarget: BlueprintId, instance: BuildingBlockInstance) {
+        val key = instance.definition.id.key
+        val current = instance.definition.id.versionTag
+        val linked = linkedBuildingBlockVersionResolver.resolveTargetVersion(ownerTarget, instance)
+
+        if (linked == null) {
+            // The owner's new version no longer links this building block. Leaving it alone is
+            // deliberate: dissolving a running block is what a plan's `removeBuildingBlock` is for.
+            logger.debug {
+                "Building block '$key:$current' (instance '${instance.id}') is not linked by '$ownerTarget'; leaving it as is"
+            }
+            return
+        }
+        if (linked == current) {
+            return
+        }
+        if (linked.isLowerThan(current)) {
+            logger.warn {
+                "'$ownerTarget' links building block '$key:$linked', which is older than the '$current' " +
+                    "that instance '${instance.id}' is on; not downgrading"
+            }
+            return
+        }
+
+        logger.debug { "Migrating building block instance '${instance.id}' from '$key:$current' to '$key:$linked'" }
+        buildingBlockMigrationPathResolver.resolvePath(key, current, linked).forEach { version ->
+            applyStep(BuildingBlockDefinitionId(key, version), instance.documentId)
+        }
+
+        // Descend. Applying the last step's plan already ran this executor for the block itself, so this
+        // re-walk normally just re-confirms each child is on its linked version — a cheap resolve and
+        // version compare. It is kept because that is not something to depend on silently: it also
+        // catches a child the last plan's own components moved or added.
+        alignChildrenOf(BuildingBlockDefinitionId(key, linked), instance.documentId)
+    }
+
+    /**
+     * Move one building block document onto [stepTarget], applying every migration plan deployed on
+     * that version. Several plans on one version are unusual — a building block version is expected to
+     * carry at most one — but they are all applied, in a fixed order, rather than silently picking one.
+     *
+     * A version with **no** plan is an error, not a free pass. A version the block merely travels
+     * through on its way somewhere else still has its own document schema and its own BPMN deployment,
+     * and moving a live instance onto those is what a plan is for; there is nothing here that could
+     * stand in for one without guessing.
+     */
+    private fun applyStep(stepTarget: BuildingBlockDefinitionId, documentId: UUID) {
+        val plans = caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
+            BlueprintType.BUILDING_BLOCK, stepTarget.key, stepTarget.versionTag
+        ).sortedBy { it.id.migrationKey }
+
+        if (plans.isEmpty()) {
+            throw IllegalStateException(
+                "No migration plan is deployed for building block version '$stepTarget', which building " +
+                    "block document '$documentId' has to travel through to reach the version its owner " +
+                    "links. Every version in an upgrade chain needs one, including a version that changes " +
+                    "nothing: it deploys its own BPMN under its own version tag, so a running process has " +
+                    "to be migrated onto it explicitly. Deploy a '*.building-block-migration.json' on " +
+                    "'$stepTarget'."
+            )
+        }
+        if (plans.size > 1) {
+            logger.warn {
+                "Building block version '$stepTarget' has ${plans.size} migration plans " +
+                    "(${plans.joinToString { it.id.migrationKey }}); applying all of them in key order"
+            }
+        }
+        plans.forEach { plan ->
+            migrationPlanApplier.getObject().apply(plan.id, stepTarget, documentId)
+            recordApplied(plan.id, documentId)
+        }
+
+        // The plans have run; hold them to having moved the process too, rather than leaving the block
+        // claiming a version whose BPMN it is not executing.
+        buildingBlockProcessVersionChecker.assertProcessOnVersion(documentId, stepTarget)
+    }
+
+    /**
+     * Record that [planId] was applied to [documentId]. A building block plan has no run to report on,
+     * so these rows are the only account of what it has done; they are written in the migrating case's
+     * transaction, so a block that ends up rolled back leaves no trace of having migrated.
+     */
+    private fun recordApplied(planId: BlueprintMigrationId, documentId: UUID) {
+        caseMigrationCaseRepository.save(
+            CaseMigrationCase(CaseMigrationCaseId(planId, documentId.toString()), CaseMigrationCaseStatus.MIGRATED)
+        )
+    }
+
+    companion object {
+        const val COMPONENT_KEY = "buildingBlockVersionAlignment"
+
+        private val logger = KotlinLogging.logger {}
+    }
+}

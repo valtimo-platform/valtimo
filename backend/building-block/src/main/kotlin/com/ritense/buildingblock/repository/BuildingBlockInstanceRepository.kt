@@ -17,12 +17,7 @@
 package com.ritense.buildingblock.repository
 
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 import java.util.UUID
 
 interface BuildingBlockInstanceRepository :
@@ -32,17 +27,17 @@ interface BuildingBlockInstanceRepository :
     fun findAllByCaseDocumentId(caseDocumentId: UUID): List<BuildingBlockInstance>
 
     /**
-     * The (BB-own) document ids of every instance of a specific building block definition version
-     * (key + version), paged in a stable order. Used by the migration engine to enumerate the
-     * instances a building block migration plan should consider; the plan's conditions do the
-     * further filtering.
+     * The building blocks a *case* owns directly — its top-level blocks only. Nested blocks carry the
+     * same `caseDocumentId` (they inherit the case they ultimately belong to), so they must be excluded
+     * by their parent link; they are reached from their own parent via
+     * [findAllByParentBuildingBlockInstanceId] instead.
      */
-    @Query(
-        "SELECT b.documentId FROM BuildingBlockInstance b " +
-            "WHERE b.definition.id = :definitionId ORDER BY b.documentId"
-    )
-    fun findDocumentIdsByDefinitionId(
-        @Param("definitionId") definitionId: BuildingBlockDefinitionId,
-        pageable: Pageable,
-    ): Slice<UUID>
+    fun findAllByCaseDocumentIdAndParentBuildingBlockInstanceIdIsNull(
+        caseDocumentId: UUID,
+    ): List<BuildingBlockInstance>
+
+    /** The building blocks a *parent building block* owns directly. */
+    fun findAllByParentBuildingBlockInstanceId(
+        parentBuildingBlockInstanceId: UUID,
+    ): List<BuildingBlockInstance>
 }

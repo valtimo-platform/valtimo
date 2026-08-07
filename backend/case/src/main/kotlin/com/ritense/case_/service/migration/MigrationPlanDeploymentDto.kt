@@ -17,7 +17,7 @@
 package com.ritense.case_.service.migration
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.ritense.case_.domain.migration.MigrationCondition
+import com.ritense.case_.domain.migration.MigrationConditionNode
 import com.ritense.case_.domain.migration.MigrationTriggers
 
 /**
@@ -34,5 +34,5 @@ data class MigrationPlanDeploymentDto(
     val key: String,
     val title: String? = null,
     val migrationTriggers: MigrationTriggers = MigrationTriggers(),
-    val conditions: List<MigrationCondition> = emptyList(),
+    val conditions: List<MigrationConditionNode> = emptyList(),
 )

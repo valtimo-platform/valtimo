@@ -93,6 +93,7 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   addPatchButton: 'caseMigrationAddPatchButton',
   addInstructionButton: 'caseMigrationAddInstructionButton',
   addConditionButton: 'caseMigrationAddConditionButton',
+  addConditionGroupButton: 'caseMigrationAddConditionGroupButton',
   addBuildingBlockButton: 'caseMigrationAddBuildingBlockButton',
   removeBuildingBlockButton: 'caseMigrationRemoveBuildingBlockButton',
 } as const;

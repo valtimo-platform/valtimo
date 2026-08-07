@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {ValueConditionNode} from '@valtimo/components';
+
 type CaseMigrationStatus = 'NOT_STARTED' | 'RUNNING' | 'COMPLETED' | 'COMPLETED_WITH_ERRORS';
 
 interface MigrationTriggers {
@@ -22,11 +24,11 @@ interface MigrationTriggers {
   runAfter: string | null;
 }
 
-interface MigrationCondition {
-  path: string;
-  operator: string;
-  value: unknown;
-}
+/**
+ * A gating condition, or a group of them combined with AND (`allOf`) / OR (`anyOf`). Shared with the
+ * condition tree editor, which owns the mapping to and from the form.
+ */
+type MigrationConditionNode = ValueConditionNode;
 
 interface MigrationExecutionError {
   caseId: string;
@@ -161,7 +163,7 @@ interface MigrationPlan {
   title?: string;
   key?: string;
   migrationTriggers?: MigrationTriggers;
-  conditions?: MigrationCondition[];
+  conditions?: MigrationConditionNode[];
   dataMigration?: DataMigrationPatch[];
   processMigration?: ProcessMigrationInstruction[];
   addBuildingBlock?: AddBuildingBlockInstruction[];
@@ -172,7 +174,7 @@ interface MigrationPlan {
 export {
   CaseMigrationStatus,
   MigrationTriggers,
-  MigrationCondition,
+  MigrationConditionNode,
   MigrationExecutionError,
   MigrationExecutionStatus,
   DryRunStatus,

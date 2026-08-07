@@ -161,6 +161,8 @@ export * from './lib/components/editor/editor.component';
 export * from './lib/components/status-selector/status-selector.component';
 // value path selector
 export * from './lib/components/value-path-selector/value-path-selector.component';
+// value condition tree
+export * from './lib/components/value-condition-tree/value-condition-tree.component';
 // formio value resolver selector
 export * from './lib/components/form-io/components/formio-value-resolver-selector/formio-value-resolver-selector.formio';
 export * from './lib/components/form-io/components/formio-value-resolver-selector/formio-value-resolver-selector.component';

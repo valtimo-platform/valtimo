@@ -17,37 +17,32 @@
 package com.ritense.buildingblock.service.migration
 
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
-import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
-import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
-import java.util.UUID
 
 /**
- * Enumerates the candidate instances for a building block migration plan: the building block
- * instances of the given source building block definition version (key + version), paged by their
- * own document id. That document id is what the `dataMigration` executor operates on, and what the
- * building block `processMigration` executor uses to find the instance's running process.
+ * Resolves which building block definition version a version was derived from, so a building block
+ * migration plan knows — and can display — the version it migrates instances *from*.
+ *
+ * Lineage is all the `building-block` module contributes to the migration engine. It deliberately
+ * does **not** implement
+ * [com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider]: enumerating every
+ * instance of a building block version is how a plan run picks its work, and a building block plan has
+ * no run of its own. Its instances are chosen by [BuildingBlockVersionAlignmentExecutor] from the links
+ * on the *owner's* new version, one migrating owner at a time. A global scan would migrate blocks under
+ * cases that have not migrated and may never migrate — the model this design replaced.
  */
-class BuildingBlockMigrationCandidateProvider(
-    private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+class BuildingBlockVersionLineage(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-) : MigrationCandidateProvider {
+) : BlueprintVersionLineage {
 
     override fun supports(blueprintType: BlueprintType) = blueprintType == BlueprintType.BUILDING_BLOCK
 
     override fun basedOnVersionTag(blueprintId: BlueprintId): Semver? {
         return buildingBlockDefinitionRepository.findById(blueprintId as BuildingBlockDefinitionId)
             .orElse(null)?.basedOnVersionTag
-    }
-
-    override fun findCandidateIds(source: BlueprintId, pageable: Pageable): Slice<UUID> {
-        return buildingBlockInstanceRepository.findDocumentIdsByDefinitionId(
-            source as BuildingBlockDefinitionId, pageable
-        )
     }
 }

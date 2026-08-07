@@ -55,4 +55,9 @@ import {
     NotificationModule,
   ],
 })
+/**
+ * @deprecated The 'Case migration (beta)' admin screen has been removed from the admin menu and is
+ * replaced by the case migration feature in `@valtimo/case-management`. This module will be removed
+ * in a future release.
+ */
 export class CaseMigrationModule {}

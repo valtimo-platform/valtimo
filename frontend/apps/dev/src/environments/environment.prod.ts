@@ -136,8 +136,6 @@ export const environment: ValtimoConfig = {
           {link: ['/decision-tables'], title: 'Decision tables'},
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default'},
           {link: ['/logging'], title: 'Logs'},
-          {link: ['/case-migration'], title: 'Case migration (beta)'},
-          {link: ['/process-migration'], title: 'Process migration'},
           {link: ['/task-management'], title: 'Tasks (legacy)'},
           {title: 'Valtimo test tools', textClass: 'text-dark font-weight-bold c-default'},
           {link: ['/notification-test'], title: 'Send notification'},

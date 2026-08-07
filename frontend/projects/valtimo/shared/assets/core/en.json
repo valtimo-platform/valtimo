@@ -814,12 +814,8 @@
           "runAfterPlaceholder": "Select a migration plan",
           "runAfterEmpty": "No other migration plans in this version",
           "conditions": "Conditions",
-          "conditionsHint": "The plan only migrates cases that match all conditions. Leave empty to apply to every case.",
-          "conditionPath": "Field",
-          "conditionOperator": "Operator",
-          "conditionValue": "Value",
-          "noConditions": "No conditions — applies to all cases.",
-          "addCondition": "Add condition"
+          "conditionsHint": "The plan only migrates cases that match all conditions. Leave empty to apply to every case. Add a group to combine conditions with 'any of' (OR) or 'all of' (AND); groups may be nested. With 'in', enter the values separated by commas. With 'exists', leave the value empty — or enter 'false' to require the field to be empty.",
+          "noConditions": "No conditions — applies to all cases."
         },
         "dataMigration": {
           "description": "Reshape case data during migration. Every row writes one target field (on the right) from a source (on the left): copy an existing field's value ('Path'), set a fixed 'Value', or clear it ('Null'). The source reads a value out of the case document; the target is the field that value is written into. The target field is always required.",
@@ -3146,6 +3142,17 @@
     "manual": "Manual",
     "selectCaseDefPlaceholder": "Select a case"
   },
+  "valueConditionTree": {
+    "path": "Field",
+    "operator": "Operator",
+    "value": "Value",
+    "addCondition": "Add condition",
+    "addGroup": "Add group",
+    "groupMode": "The group holds when",
+    "anyOf": "Any of these hold",
+    "allOf": "All of these hold",
+    "emptyGroup": "Empty group — add a condition, or remove the group."
+  },
   "logging": {
     "columns": {"timestamp": "Timestamp", "formattedMessage": "Message", "level": "Log level"},
     "search": {
@@ -3611,8 +3618,6 @@
     "migration": {
       "addPlan": "Add migration plan",
       "addPlanDisabledHint": "This version has no predecessor to migrate from, so a migration plan cannot be created for it.",
-      "startNow": "Start migration now",
-      "errorCount": "{{count}} errors",
       "duplicateSuffix": "copy",
       "editor": {
         "createTitle": "New migration plan",
@@ -3628,20 +3633,9 @@
           "titlePlaceholder": "Migrate building blocks with status 'aanvraag-ontvangen'",
           "key": "Key",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
-          "triggers": "Triggers",
-          "triggersHint": "Decide when this plan runs: manually from the UI button, at a scheduled moment, or after another plan finishes.",
-          "triggeredByButton": "Run manually from the UI button",
-          "scheduledAtDate": "Scheduled at",
-          "runAfter": "Run after plan",
-          "runAfterPlaceholder": "Select a migration plan",
-          "runAfterEmpty": "No other migration plans in this version",
-          "conditions": "Conditions",
-          "conditionsHint": "The plan only migrates building blocks that match all conditions. Leave empty to apply to every building block.",
-          "conditionPath": "Field",
-          "conditionOperator": "Operator",
-          "conditionValue": "Value",
-          "noConditions": "No conditions — applies to all building blocks.",
-          "addCondition": "Add condition"
+          "whenItRuns": "When this plan runs",
+          "whenItRunsHint": "This plan has no trigger and no conditions of its own. It runs automatically when a case migrates to a case definition version that links {{key}} at version {{versionTag}}, and it is applied to every building block instance that case migration brings onto this version. It is simulated as part of that case migration’s dry run.",
+          "everyVersionNeedsAPlanHint": "Every version between the one a building block is on and the one a case links it at needs a migration plan, including a version that changes nothing: each version of {{key}} publishes its own process model, so a running building block has to be moved onto it explicitly. A version in between without a plan makes the case migration fail. Run the case migration as a dry run to check the whole chain before starting it."
         },
         "dataMigration": {
           "description": "Move or set building block data during migration. Each patch either copies a value from a source location to the target location, sets a fixed value on the target, or sets the target to null. The target field is required.",
@@ -3690,28 +3684,12 @@
         "title": "Delete migration plan",
         "content": "Are you sure you want to delete this migration plan? This cannot be undone."
       },
-      "startModal": {
-        "title": "Start migration",
-        "content": "Are you sure you want to start this migration now? Matching building blocks will be migrated."
-      },
-      "dryRun": "Dry run",
-      "dryRunModal": {
-        "title": "Start dry run",
-        "content": "Simulate this migration plan for all matching building blocks without migrating any of them? Nothing is changed; you get a report of which building blocks would migrate and which would fail."
-      },
-      "dryRunResults": {
-        "heading": "Latest dry run",
-        "casesChecked": "Building blocks checked",
-        "casesWouldMigrate": "Would migrate",
-        "casesWouldFail": "Would fail",
-        "errorsHeading": "Building blocks that would fail"
-      },
       "columns": {
         "plan": "Migration plan",
         "source": "Source",
         "target": "Target",
         "status": "Status",
-        "progress": "Progress"
+        "instancesMigrated": "Instances migrated"
       },
       "noResults": {
         "title": "No migration plans",
@@ -3725,21 +3703,9 @@
       },
       "fields": {
         "status": "Migration status",
-        "casesToMigrate": "Building blocks to migrate",
-        "casesMigrated": "Building blocks migrated",
-        "casesWithErrors": "Building blocks with errors",
-        "startedOn": "Started on",
-        "finishedOn": "Finished on"
+        "instancesMigrated": "Instances migrated"
       },
-      "errors": {
-        "heading": "Building blocks with errors",
-        "caseId": "Building block",
-        "message": "Error",
-        "copyFullError": "Copy full stacktrace",
-        "copied": "Stacktrace copied to clipboard",
-        "showStacktrace": "Show full stacktrace",
-        "hideStacktrace": "Hide stacktrace"
-      }
+      "detailHint": "Applied to a building block instance whenever a case migration moves it from {{source}} to {{target}}."
     },
     "formDefinition": {
       "name": "Name"

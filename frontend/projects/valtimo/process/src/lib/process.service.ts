@@ -208,6 +208,11 @@ export class ProcessService {
     return this.http.post(`${this.valtimoEndpointUri}v1/process/definition/deployment`, formData);
   }
 
+  /**
+   * @deprecated Only used by the 'Process migration' admin screen (`@valtimo/migration`), which has
+   * been removed from the admin menu and is replaced by the case migration feature in
+   * `@valtimo/case-management`. Will be removed in a future release.
+   */
   migrateProcess(
     processDefinition1Id: string,
     processDefinition2Id: string,

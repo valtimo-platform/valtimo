@@ -1,0 +1,20 @@
+{
+    "title": "Nieuwe versie van het fotoblok aanroepen",
+    "key": "verhuizing-inspectie-nieuwe-fotoversie",
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing-inspectie-process",
+            "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:inspectieGemigreerdVan",
+                    "value": "1.0.3",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

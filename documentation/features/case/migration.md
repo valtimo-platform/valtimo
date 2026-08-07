@@ -50,8 +50,8 @@ covering one part of the plan:
 
 * **General** — the plan's **title**, **when it runs** (its trigger, see below), and **which cases**
   it applies to. The conditions decide which cases this plan touches (for example, only cases with a
-  certain status or a certain value in their data). Cases that don't match are left for other plans;
-  leave the conditions empty to apply the plan to all cases.
+  certain status or a certain value in their data — see [Conditions](#conditions)). Cases that don't
+  match are left for other plans; leave the conditions empty to apply the plan to all cases.
 * **Data migration** — what happens to the case data (see [Source and target](#source-and-target)).
   Each row writes one **target** field from a **source**: copy an existing field's value, set a
   fixed value, or clear it. Each change can optionally be given a type (text, number, yes/no, and so
@@ -67,6 +67,51 @@ covering one part of the plan:
 
 Everything is configured in the UI and saved with the case definition, so the same plan behaves
 identically in every environment (test, acceptance, production).
+
+## Conditions
+
+A condition consists of a **field** (a value on the case, for example its status or a field in its
+data), an **operator** and a **value**. A case is migrated only when all conditions hold; a case
+whose value cannot be read does not match.
+
+| Operator             | Matches when                                                                                                                          |
+|----------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `==`, `!=`           | The field is (not) equal to the value.                                                                                                |
+| `>`, `>=`, `<`, `<=` | The field is greater/smaller than the value. Numbers are compared as numbers, anything else alphabetically.                            |
+| `in`                 | The field equals one of several values. Enter the values separated by commas, for example `in-behandeling,wacht-op-klant`.             |
+| `contains`           | The field contains the value: one of the entries when the field holds a list, part of the text when it holds a single value.           |
+| `exists`             | The field has a value at all. Leave the value empty; enter `false` instead to match only cases where the field is empty or missing.    |
+
+### Combining conditions with groups
+
+Conditions listed one after another must **all** hold. To express an "either / or", select **Add
+group**: a group holds when **any of** the conditions inside it hold (OR) or when **all of** them do
+(AND) — you choose which per group. A group can contain other groups, so conditions can be combined
+to any shape, for example:
+
+> status is `in-behandeling`, **and** either the case is marked urgent **or** (the amount is at least
+> 1000 **and** a file number is present)
+
+In the plan JSON that reads:
+
+```json
+"conditions": [
+  {"path": "case:internalStatus", "operator": "==", "value": "in-behandeling"},
+  {
+    "anyOf": [
+      {"path": "doc:/spoed", "operator": "==", "value": true},
+      {
+        "allOf": [
+          {"path": "doc:/bedrag", "operator": ">=", "value": 1000},
+          {"path": "doc:/dossier", "operator": "exists"}
+        ]
+      }
+    ]
+  }
+]
+```
+
+A group must contain at least one condition, and groups may be nested up to ten levels deep.
 
 ## Source and target
 

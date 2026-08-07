@@ -19,7 +19,6 @@ package com.ritense.buildingblock.service.migration
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.domain.migration.RemoveBuildingBlockInstruction
-import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.RemoveBuildingBlockConfigurationRepository
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
@@ -43,9 +42,10 @@ import java.util.UUID
 
 /**
  * Executes the `removeBuildingBlock` component for a single migrating instance (its owner — a case,
- * or a parent building block, identified by [caseId] = the owner document id). For each entry, the
- * building block(s) of `buildingBlockKey` **directly linked** to the owner are dissolved, in this
- * fixed order (so nothing is lost before it is transferred back):
+ * or a parent building block, identified by `ownerDocumentId`). For each entry, the building block(s)
+ * of `buildingBlockKey` **directly owned** by that owner (see [BuildingBlockOwnershipResolver], which
+ * handles both owner kinds) are dissolved, in this fixed order (so nothing is lost before it is
+ * transferred back):
  *
  * 1. **hand back** the building block's process(es) to the owner: migrate them (Operaton) to the
  *    owner's target process definition, and set the process business key back to the owner document
@@ -62,7 +62,7 @@ import java.util.UUID
 class RemoveBuildingBlockMigrationComponentExecutor(
     private val removeBuildingBlockConfigurationRepository: RemoveBuildingBlockConfigurationRepository,
     private val buildingBlockInstanceService: BuildingBlockInstanceService,
-    private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+    private val buildingBlockOwnershipResolver: BuildingBlockOwnershipResolver,
     private val processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
     private val documentService: DocumentService,
@@ -82,7 +82,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
             return
         }
 
-        val directlyLinked = buildingBlockInstanceRepository.findAllByCaseDocumentId(ownerDocumentId)
+        val directlyLinked = buildingBlockOwnershipResolver.directChildrenOf(ownerDocumentId)
         instructions.forEach { instruction ->
             directlyLinked
                 .filter { it.definition.id.key == instruction.buildingBlockKey }

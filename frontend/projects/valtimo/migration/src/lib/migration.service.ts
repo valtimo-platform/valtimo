@@ -19,6 +19,11 @@ import {Injectable} from '@angular/core';
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * @deprecated The 'Process migration' admin screen has been removed from the admin menu and is
+ * replaced by the case migration feature in `@valtimo/case-management`. This service will be
+ * removed in a future release.
+ */
 export class MigrationService {
   constructor() {}
 }

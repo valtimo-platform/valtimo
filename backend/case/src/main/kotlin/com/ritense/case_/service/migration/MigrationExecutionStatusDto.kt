@@ -25,15 +25,20 @@ data class MigrationExecutionStatusDto(
     val status: CaseMigrationStatus,
     /**
      * Cases that still need migrating: before a run, the (approximate) estimate of matching cases;
-     * during/after a run, the ones matched by the run that have not yet been migrated or failed. Drops
-     * to 0 once the run has migrated every matching case.
+     * during/after a run, [casesTotal] minus everything the plan has migrated or failed on. Drops to 0
+     * once every matching case has been processed.
      */
     val casesToMigrate: Int,
     /**
-     * Total cases the run is migrating (its matched slice) — the denominator of the "migrated of total"
-     * progress. Before a run, the same estimate as [casesToMigrate].
+     * The denominator of the "migrated of total" progress: the current run's matched slice, floored at
+     * the number of cases the plan has already migrated or failed on. The floor matters because
+     * [casesMigrated] and [casesWithErrors] count every case the plan has *ever* touched — those rows
+     * are what make a re-run skip them — while the run's matched slice covers only the batch in front
+     * of it. A plan run twice over successive batches would otherwise report more migrated than total.
+     * Before a run, the same estimate as [casesToMigrate].
      */
     val casesTotal: Int,
+    /** Cases this plan has migrated, across every run of it. */
     val casesMigrated: Int,
     val casesWithErrors: Int,
     val errors: List<MigrationExecutionError>,

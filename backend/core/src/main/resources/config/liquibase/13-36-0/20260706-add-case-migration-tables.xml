@@ -143,7 +143,14 @@
     </changeSet>
 
     <!-- Per-instance migration result: one row per (plan, instance), so progress is O(1) per
-         instance instead of a growing collection on the execution row. -->
+         instance instead of a growing collection on the execution row.
+
+         error_message stays `clob` — it is the only portable type that yields `text` on PostgreSQL and
+         `LONGTEXT` on MySQL, and a single stack trace runs to ~25 KB, so MySQL `TEXT` (64 KB) would be
+         uncomfortably close. Note that `clob` here does NOT mean the entity should be mapped `@Lob`:
+         on PostgreSQL that binds a String as a JDBC CLOB, which the driver stores as a *large object*
+         and leaves only its OID in this column. The entity uses `@JdbcTypeCode(SqlTypes.LONGVARCHAR)`
+         instead, which keeps this column readable with a plain `select`. -->
     <changeSet id="5" author="Ritense">
         <createTable tableName="blueprint_migration_case">
             <column name="blueprint_type" type="VARCHAR(20)">

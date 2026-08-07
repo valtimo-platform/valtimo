@@ -54,7 +54,7 @@ class MigrationTriggerSchedulerTest(
     fun setUp() {
         scheduler = MigrationTriggerScheduler(migrationRepository, executionRepository, caseMigrationService)
         whenever(executionRepository.findReclaimable(any())).thenReturn(emptyList())
-        whenever(migrationRepository.findAllWithoutExecution()).thenReturn(emptyList())
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any())).thenReturn(emptyList())
     }
 
     private fun migrationId(key: String) = BlueprintMigrationId.from(caseDefinitionId, key)
@@ -74,7 +74,7 @@ class MigrationTriggerSchedulerTest(
 
     @Test
     fun `should start a scheduled plan once its date has passed`() {
-        whenever(migrationRepository.findAllWithoutExecution())
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
             .thenReturn(listOf(plan("scheduled", MigrationTriggers(scheduledAtDate = LocalDateTime.of(2020, 1, 1, 0, 0)))))
 
         scheduler.checkTriggers()
@@ -84,7 +84,7 @@ class MigrationTriggerSchedulerTest(
 
     @Test
     fun `should not start a scheduled plan before its date`() {
-        whenever(migrationRepository.findAllWithoutExecution())
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
             .thenReturn(listOf(plan("later", MigrationTriggers(scheduledAtDate = LocalDateTime.now().plusDays(1)))))
 
         scheduler.checkTriggers()
@@ -94,7 +94,7 @@ class MigrationTriggerSchedulerTest(
 
     @Test
     fun `should start a runAfter plan once its predecessor has finished`() {
-        whenever(migrationRepository.findAllWithoutExecution())
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
             .thenReturn(listOf(plan("successor", MigrationTriggers(runAfter = "predecessor"))))
         whenever(executionRepository.findById(migrationId("predecessor")))
             .thenReturn(Optional.of(CaseDefinitionMigrationExecution(migrationId("predecessor"), CaseMigrationStatus.COMPLETED)))
@@ -106,7 +106,7 @@ class MigrationTriggerSchedulerTest(
 
     @Test
     fun `should not start a runAfter plan while its predecessor is unfinished`() {
-        whenever(migrationRepository.findAllWithoutExecution())
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
             .thenReturn(listOf(plan("successor", MigrationTriggers(runAfter = "predecessor"))))
         whenever(executionRepository.findById(migrationId("predecessor")))
             .thenReturn(Optional.of(CaseDefinitionMigrationExecution(migrationId("predecessor"), CaseMigrationStatus.RUNNING)))
@@ -118,7 +118,7 @@ class MigrationTriggerSchedulerTest(
 
     @Test
     fun `should refresh the case-count estimate for a plan that is not due to run`() {
-        whenever(migrationRepository.findAllWithoutExecution())
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
             .thenReturn(listOf(plan("manual", MigrationTriggers(triggeredByButton = true))))
 
         scheduler.checkTriggers()
@@ -129,7 +129,7 @@ class MigrationTriggerSchedulerTest(
 
     @Test
     fun `should not refresh the estimate for a plan that is being triggered`() {
-        whenever(migrationRepository.findAllWithoutExecution())
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
             .thenReturn(listOf(plan("scheduled", MigrationTriggers(scheduledAtDate = LocalDateTime.of(2020, 1, 1, 0, 0)))))
 
         scheduler.checkTriggers()

@@ -22,7 +22,9 @@
       <input
         cdsText
         formControlName="title"
-        [placeholder]="'buildingBlockManagement.migration.editor.general.titlePlaceholder' | translate"
+        [placeholder]="
+          'buildingBlockManagement.migration.editor.general.titlePlaceholder' | translate
+        "
       />
     </cds-text-label>
 
@@ -31,97 +33,33 @@
       <input
         cdsText
         formControlName="key"
-        [placeholder]="'buildingBlockManagement.migration.editor.general.keyPlaceholder' | translate"
+        [placeholder]="
+          'buildingBlockManagement.migration.editor.general.keyPlaceholder' | translate
+        "
       />
     </cds-text-label>
   </div>
 
-  <!-- Triggers -->
+  <!-- When this plan runs -->
   <h5 class="migration-tab__subheading">
-    {{ 'buildingBlockManagement.migration.editor.general.triggers' | translate }}
+    {{ 'buildingBlockManagement.migration.editor.general.whenItRuns' | translate }}
   </h5>
+
   <p class="migration-tab__hint">
-    {{ 'buildingBlockManagement.migration.editor.general.triggersHint' | translate }}
+    {{
+      'buildingBlockManagement.migration.editor.general.whenItRunsHint'
+        | translate
+          : {
+              key: buildingBlockDefinitionKey,
+              versionTag: buildingBlockDefinitionVersionTag
+            }
+    }}
   </p>
 
-  <cds-checkbox formControlName="triggeredByButton">
-    {{ 'buildingBlockManagement.migration.editor.general.triggeredByButton' | translate }}
-  </cds-checkbox>
-
-  <div class="migration-tab__grid">
-    <cds-text-label>
-      {{ 'buildingBlockManagement.migration.editor.general.scheduledAtDate' | translate }}
-      <input cdsText formControlName="scheduledAtDate" type="datetime-local" />
-    </cds-text-label>
-
-    <v-select
-      formControlName="runAfter"
-      [items]="runAfterOptions"
-      [titleTranslationKey]="'buildingBlockManagement.migration.editor.general.runAfter'"
-      [placeholder]="'buildingBlockManagement.migration.editor.general.runAfterPlaceholder' | translate"
-      [notFoundText]="'buildingBlockManagement.migration.editor.general.runAfterEmpty' | translate"
-      [clearable]="true"
-    ></v-select>
-  </div>
-
-  <!-- Conditions -->
-  <h5 class="migration-tab__subheading">
-    {{ 'buildingBlockManagement.migration.editor.general.conditions' | translate }}
-  </h5>
   <p class="migration-tab__hint">
-    {{ 'buildingBlockManagement.migration.editor.general.conditionsHint' | translate }}
+    {{
+      'buildingBlockManagement.migration.editor.general.everyVersionNeedsAPlanHint'
+        | translate: {key: buildingBlockDefinitionKey}
+    }}
   </p>
-
-  <div class="migration-tab__mapping" formArrayName="conditions">
-    @for (condition of conditionsArray.controls; track condition) {
-      <div class="migration-tab__condition-row" [formGroupName]="$index">
-        <valtimo-value-path-selector
-          formControlName="path"
-          [buildingBlockDefinitionKey]="buildingBlockDefinitionKey"
-          [buildingBlockDefinitionVersionTag]="buildingBlockDefinitionVersionTag"
-          [label]="'buildingBlockManagement.migration.editor.general.conditionPath' | translate"
-          [prefixes]="CONDITION_PATH_PREFIXES"
-          [notation]="'slashes'"
-        ></valtimo-value-path-selector>
-
-        <cds-select
-          formControlName="operator"
-          [label]="'buildingBlockManagement.migration.editor.general.conditionOperator' | translate"
-        >
-          @for (operator of OPERATORS; track operator) {
-            <option [value]="operator">{{ operator }}</option>
-          }
-        </cds-select>
-
-        <cds-text-label>
-          {{ 'buildingBlockManagement.migration.editor.general.conditionValue' | translate }}
-          <input cdsText formControlName="value" />
-        </cds-text-label>
-
-        <button
-          cdsButton="danger--ghost"
-          size="sm"
-          [iconOnly]="true"
-          [title]="'interface.delete' | translate"
-          (click)="removeCondition($index)"
-        >
-          <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
-        </button>
-      </div>
-    } @empty {
-      <p class="migration-tab__empty">
-        {{ 'buildingBlockManagement.migration.editor.general.noConditions' | translate }}
-      </p>
-    }
-  </div>
-
-  <button
-    cdsButton="tertiary"
-    size="sm"
-    [attr.data-test-id]="testIds.addConditionButton"
-    (click)="addCondition()"
-  >
-    {{ 'buildingBlockManagement.migration.editor.general.addCondition' | translate }}
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-  </button>
 </div>

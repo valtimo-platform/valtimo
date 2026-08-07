@@ -15,9 +15,6 @@
  */
 
 export const BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS = {
-  startButton: 'buildingBlockMigrationStartButton',
-  dryRunButton: 'buildingBlockMigrationDryRunButton',
-  dryRunResults: 'buildingBlockMigrationDryRunResults',
   addButton: 'buildingBlockMigrationAddButton',
   saveButton: 'buildingBlockMigrationSaveButton',
   cancelButton: 'buildingBlockMigrationCancelButton',
@@ -27,5 +24,4 @@ export const BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS = {
   jsonEditorTab: 'buildingBlockMigrationJsonEditorTab',
   addPatchButton: 'buildingBlockMigrationAddPatchButton',
   addInstructionButton: 'buildingBlockMigrationAddInstructionButton',
-  addConditionButton: 'buildingBlockMigrationAddConditionButton',
 } as const;

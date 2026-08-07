@@ -90,10 +90,14 @@
             "tableView": true,
             "enableTime": false,
             "format": "yyyy-MM-dd",
+            "customOptions": {
+                "saveAs": "text",
+                "dateFormat": "yyyy-MM-dd"
+            },
             "attributes": {
                 "data-testid": "start-form-verhuizing-verhuisdatum"
             },
-            "defaultValue": "2026-09-01T00:00:00"
+            "defaultValue": "2026-09-01"
         },
         {
             "key": "status",

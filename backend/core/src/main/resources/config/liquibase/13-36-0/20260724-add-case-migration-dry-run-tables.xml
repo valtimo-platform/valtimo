@@ -57,7 +57,9 @@
                        columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
     </changeSet>
 
-    <!-- Per-instance dry-run result: one row per (plan, instance) with the simulated outcome. -->
+    <!-- Per-instance dry-run result: one row per (plan, instance) with the simulated outcome.
+         On error_message's `clob` type, and why the entity must not be `@Lob`, see the note above the
+         matching changeSet in 20260706-add-case-migration-tables.xml. -->
     <changeSet id="2" author="Ritense">
         <createTable tableName="blueprint_migration_dry_run_case">
             <column name="blueprint_type" type="VARCHAR(20)">

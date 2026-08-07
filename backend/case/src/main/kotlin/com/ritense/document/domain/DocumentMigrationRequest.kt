@@ -20,6 +20,11 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.validation.constraints.Size
 
+@Deprecated(
+    "Part of the 'Case migration (beta)' admin screen, which has been replaced by the case " +
+        "definition migration feature. Will be removed in a future release."
+)
+@Suppress("DEPRECATION")
 data class DocumentMigrationRequest(
     @field:Size(max = 50)
     val documentDefinitionNameSource: String,

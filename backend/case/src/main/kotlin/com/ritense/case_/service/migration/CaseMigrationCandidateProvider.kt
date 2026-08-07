@@ -19,27 +19,28 @@ package com.ritense.case_.service.migration
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
-import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import org.semver4j.Semver
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 import java.util.UUID
 
 /**
- * Enumerates the candidate cases for a case-definition migration plan: the documents belonging to
- * the given source case-definition version (resolved by document-definition name), paged by
- * document id.
+ * Enumerates the candidate cases for a case-definition migration plan: the documents currently homed
+ * on the given source case-definition version (key **and** version tag), paged by document id.
+ *
+ * The version tag is part of the selection: a plan deployed on `1.0.3` migrates the cases sitting on
+ * its predecessor version only. Cases on older versions are reached by the plans in between, one hop
+ * at a time — they are not re-homed straight onto the newest version.
  */
 class CaseMigrationCandidateProvider(
     private val documentRepository: JsonSchemaDocumentRepository,
-    private val documentDefinitionService: DocumentDefinitionService,
     private val caseDefinitionRepository: CaseDefinitionRepository,
-) : MigrationCandidateProvider {
+) : MigrationCandidateProvider, BlueprintVersionLineage {
 
     override fun supports(blueprintType: BlueprintType) = blueprintType == BlueprintType.CASE
 
@@ -50,12 +51,13 @@ class CaseMigrationCandidateProvider(
     }
 
     override fun findCandidateIds(source: BlueprintId, pageable: Pageable): Slice<UUID> {
-        val documentDefinitionName = runWithoutAuthorization {
-            documentDefinitionService.findByBlueprintId(source).orElse(null)?.id()?.name()
-        } ?: return SliceImpl(emptyList(), pageable, false)
-
         return runWithoutAuthorization {
-            documentRepository.findCaseIdsByDocumentDefinitionName(documentDefinitionName, pageable)
+            documentRepository.findCaseIdsByBlueprintVersion(
+                source.blueprintType(),
+                source.getIdKey(),
+                source.blueprintVersionTag(),
+                pageable,
+            )
         }
     }
 }

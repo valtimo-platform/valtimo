@@ -21,8 +21,9 @@ import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.Lob
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 /**
  * The simulated outcome of migrating a single case under a migration plan's **dry run**. One row per
@@ -41,7 +42,12 @@ data class CaseMigrationDryRunCase(
     @Column(name = "status", nullable = false)
     val status: DryRunCaseStatus,
 
-    @Lob
+    // LONGVARCHAR, not @Lob: on PostgreSQL a @Lob String is bound as a JDBC CLOB, which the driver
+    // implements as a *large object* — it writes the text into pg_largeobject and stores only the OID
+    // in the column, so `select error_message` returns a number instead of the trace, and deleting the
+    // row orphans the object. LONGVARCHAR keeps the same `text` / `LONGTEXT` column but binds it as
+    // ordinary character data, which is what makes a failure readable in SQL.
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "error_message")
     val errorMessage: String? = null,
 )

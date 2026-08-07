@@ -30,6 +30,12 @@ import org.hibernate.annotations.Type
  * The actual migration actions live in separate components owned by their respective modules
  * (e.g. `dataMigration`, `processMigration`) and are deployed through
  * [com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer].
+ *
+ * [migrationTriggers] and [conditions] apply to **case** plans only, and a building block plan is
+ * refused at deploy time if it declares either. A building block does not migrate on its own schedule
+ * and does not select its own instances: it migrates because a case migration moved it onto this
+ * version, and it applies to exactly the instances that migration brought with it. See
+ * `BuildingBlockVersionAlignmentExecutor`.
  */
 @Entity
 @Table(name = "blueprint_migration")
@@ -47,7 +53,7 @@ data class CaseDefinitionMigration(
 
     @Type(JsonType::class)
     @Column(name = "conditions", nullable = false)
-    val conditions: List<MigrationCondition> = emptyList(),
+    val conditions: List<MigrationConditionNode> = emptyList(),
 
     /**
      * Cached, approximate count of cases matching this plan's [conditions], refreshed by the hourly

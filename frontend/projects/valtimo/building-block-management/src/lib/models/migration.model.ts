@@ -25,48 +25,22 @@ interface BuildingBlockMigrationParams {
   buildingBlockDefinitionVersionTag: string;
 }
 
-interface MigrationTriggers {
-  triggeredByButton: boolean;
-  scheduledAtDate: string | null;
-  runAfter: string | null;
-}
-
-interface MigrationCondition {
-  path: string;
-  operator: string;
-  value: unknown;
-}
-
 interface MigrationExecutionError {
   caseId: string;
   message: string | null;
 }
 
+/**
+ * How far a plan has got. A building block plan has no run of its own — it is applied to an instance
+ * when a case migration moves that instance's building block onto this version — so the only
+ * meaningful figure is how many instances it has been applied to so far. There is no "still to
+ * migrate": that depends on which cases migrate in future. Failures are reported on the case that
+ * failed, because a building block that cannot migrate rolls its whole case back.
+ */
 interface MigrationExecutionStatus {
   status: BuildingBlockMigrationStatus;
-  /** Cases still needing migration; drops to 0 once the run has migrated its whole matching slice. */
-  casesToMigrate: number;
-  /** Total cases the run is migrating (its matched slice) — the denominator of the progress display. */
-  casesTotal: number;
+  /** Building block instances this plan has been applied to. */
   casesMigrated: number;
-  casesWithErrors: number;
-  errors: MigrationExecutionError[];
-  startedOn: string | null;
-  finishedOn: string | null;
-}
-
-/**
- * The result of a plan's latest dry run: a simulation that migrates nothing, reporting how many
- * matching building blocks would migrate, how many would fail, and — per failing one — the reason.
- */
-interface DryRunStatus {
-  status: BuildingBlockMigrationStatus;
-  casesChecked: number;
-  casesWouldMigrate: number;
-  casesWouldFail: number;
-  errors: MigrationExecutionError[];
-  startedOn: string | null;
-  finishedOn: string | null;
 }
 
 interface MigrationPlanManagement {
@@ -74,9 +48,8 @@ interface MigrationPlanManagement {
   title: string | null;
   source: string;
   target: string;
-  triggers: MigrationTriggers;
+  components: string[];
   status: MigrationExecutionStatus;
-  dryRun: DryRunStatus;
 }
 
 type DataMigrationTargetType = 'string' | 'integer' | 'long' | 'number' | 'double' | 'boolean';
@@ -114,8 +87,6 @@ interface ProcessMigrationInstruction {
 interface MigrationPlan {
   title?: string;
   key?: string;
-  migrationTriggers?: MigrationTriggers;
-  conditions?: MigrationCondition[];
   dataMigration?: DataMigrationPatch[];
   processMigration?: ProcessMigrationInstruction[];
   [key: string]: unknown;
@@ -124,11 +95,8 @@ interface MigrationPlan {
 export {
   BuildingBlockMigrationStatus,
   BuildingBlockMigrationParams,
-  MigrationTriggers,
-  MigrationCondition,
   MigrationExecutionError,
   MigrationExecutionStatus,
-  DryRunStatus,
   MigrationPlanManagement,
   DataMigrationTargetType,
   DataMigrationPatch,

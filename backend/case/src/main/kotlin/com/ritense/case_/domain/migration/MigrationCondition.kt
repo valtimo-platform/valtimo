@@ -16,16 +16,25 @@
 
 package com.ritense.case_.domain.migration
 
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+
 /**
- * A condition that gates whether a migration plan may run for a given case. A triggered plan
- * waits until all of its conditions hold.
+ * A single condition that gates whether a migration plan may run for a given case. A triggered plan
+ * waits until its conditions hold. Conditions can be combined with AND/OR groups — see
+ * [MigrationConditionNode].
  *
  * @param path a value-resolver path evaluated against the case, e.g. `case:internalStatus`.
- * @param operator the comparison operator, e.g. `==`.
- * @param value the value to compare against.
+ * @param operator the comparison operator: `==`, `!=`, `>`, `>=`, `<`, `<=`, `in`, `contains` or
+ * `exists`. See `MigrationConditionEvaluator` for their semantics.
+ * @param value the value to compare against. A list (or comma-separated string) for `in`, optional
+ * for `exists`.
  */
+// The inherited @JsonDeserialize is switched off, otherwise deserializing this type would loop back
+// into the deserializer that produced it.
+@JsonDeserialize(using = JsonDeserializer.None::class)
 data class MigrationCondition(
     val path: String,
     val operator: String,
     val value: Any? = null,
-)
+) : MigrationConditionNode

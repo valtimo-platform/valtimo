@@ -20,7 +20,6 @@ import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   BuildingBlockMigrationParams,
-  DryRunStatus,
   MigrationExecutionStatus,
   MigrationPlanManagement,
 } from '../models';
@@ -44,33 +43,17 @@ export class BuildingBlockMigrationApiService extends BaseApiService {
     return this.httpClient.get<MigrationPlanManagement[]>(this.getMigrationUrl(params));
   }
 
-  public startMigration(
+  /**
+   * How far a plan has got. There is no `start` and no dry run: a building block plan is applied by
+   * the case migration that moves a building block onto its version, and simulated by that case
+   * migration's dry run.
+   */
+  public getStatus(
     params: BuildingBlockMigrationParams,
     migrationKey: string
   ): Observable<MigrationExecutionStatus> {
-    return this.httpClient.post<MigrationExecutionStatus>(
-      `${this.getMigrationUrl(params)}/${migrationKey}/start`,
-      {}
-    );
-  }
-
-  /** Start a dry run: simulate the plan for all matching building blocks without migrating any. */
-  public startDryRun(
-    params: BuildingBlockMigrationParams,
-    migrationKey: string
-  ): Observable<DryRunStatus> {
-    return this.httpClient.post<DryRunStatus>(
-      `${this.getMigrationUrl(params)}/${migrationKey}/dry-run`,
-      {}
-    );
-  }
-
-  public getDryRunStatus(
-    params: BuildingBlockMigrationParams,
-    migrationKey: string
-  ): Observable<DryRunStatus> {
-    return this.httpClient.get<DryRunStatus>(
-      `${this.getMigrationUrl(params)}/${migrationKey}/dry-run/status`
+    return this.httpClient.get<MigrationExecutionStatus>(
+      `${this.getMigrationUrl(params)}/${migrationKey}/status`
     );
   }
 

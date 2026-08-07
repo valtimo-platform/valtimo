@@ -21,8 +21,9 @@ import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.Lob
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 /**
  * The outcome of migrating a single case under a migration plan. One row per (plan, case), so
@@ -41,7 +42,9 @@ data class CaseMigrationCase(
     @Column(name = "status", nullable = false)
     val status: CaseMigrationCaseStatus,
 
-    @Lob
+    // LONGVARCHAR, not @Lob — see the note on CaseMigrationDryRunCase.errorMessage: @Lob would store
+    // a pg_largeobject OID here instead of the trace itself.
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "error_message")
     val errorMessage: String? = null,
 )

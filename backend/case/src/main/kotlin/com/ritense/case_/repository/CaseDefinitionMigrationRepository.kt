@@ -40,4 +40,17 @@ interface CaseDefinitionMigrationRepository :
             "WHERE NOT EXISTS (SELECT 1 FROM CaseDefinitionMigrationExecution e WHERE e.id = m.id)"
     )
     fun findAllWithoutExecution(): List<CaseDefinitionMigration>
+
+    /**
+     * As [findAllWithoutExecution], but only for plans of the given blueprint type. The trigger
+     * scheduler uses this to sweep case plans alone: a building block plan has no trigger of its own —
+     * it runs when a case migration moves its building block onto the plan's version — so it must never
+     * be auto-started.
+     */
+    @Query(
+        "SELECT m FROM CaseDefinitionMigration m " +
+            "WHERE m.id.blueprintType = :blueprintType " +
+            "AND NOT EXISTS (SELECT 1 FROM CaseDefinitionMigrationExecution e WHERE e.id = m.id)"
+    )
+    fun findAllWithoutExecutionByBlueprintType(blueprintType: BlueprintType): List<CaseDefinitionMigration>
 }

@@ -244,7 +244,9 @@ class CaseDocumentJsonValueResolverFactory(
         val emptyDocumentContent = objectMapper.createObjectNode()
         // Resolve the schema so 'null' values are written according to what the definition allows. When the
         // definition can't be found we fall back to the legacy behavior of always writing JSON null.
-        val definition = documentDefinitionService.findActiveByName(documentDefinitionName).orElse(null)
+        val definition = AuthorizationContext.runWithoutAuthorization {
+            documentDefinitionService.findActiveByName(documentDefinitionName).orElse(null)
+        }
         buildJsonPatch(emptyDocumentContent, values) { definition?.schema?.schema }
         return emptyDocumentContent
     }

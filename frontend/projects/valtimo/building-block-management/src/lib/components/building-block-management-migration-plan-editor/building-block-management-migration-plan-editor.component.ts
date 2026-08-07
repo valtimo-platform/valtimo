@@ -25,7 +25,6 @@ import {
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
-  SelectItem,
 } from '@valtimo/components';
 import {ButtonModule, TabsModule} from 'carbon-components-angular';
 import {map, Observable, Subscription, take} from 'rxjs';
@@ -94,7 +93,6 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
       ? [sourceVersion]
       : [];
   });
-  public readonly $runAfterOptions = signal<SelectItem[]>([]);
   // `key -> processDefinitionId` maps that scope the processMigration pickers AND drive the activity
   // lookups. A plan migrates FROM its predecessor (basedOnVersionTag) TO its own version, so the
   // source map holds the predecessor version's linked processes and the target map holds this one's.
@@ -116,8 +114,6 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     {
       title: '',
       key: '',
-      migrationTriggers: {triggeredByButton: true},
-      conditions: [],
       dataMigration: [],
       processMigration: [],
     },
@@ -149,7 +145,6 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     this._migrationKey = params['migrationKey'] ?? null;
 
     this.initBreadcrumbs();
-    this.loadRunAfterOptions();
     this.loadProcessKeys();
 
     if (this._migrationKey) {
@@ -287,20 +282,6 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     } catch {
       return null;
     }
-  }
-
-  /** Load the other migration plans of this building block definition version, so they can gate `runAfter`. */
-  private loadRunAfterOptions(): void {
-    this.buildingBlockMigrationApiService
-      .getPlans(this._params)
-      .pipe(take(1))
-      .subscribe(plans =>
-        this.$runAfterOptions.set(
-          plans
-            .filter(plan => plan.migrationKey !== this._migrationKey)
-            .map(plan => ({id: plan.migrationKey, text: plan.title || plan.migrationKey}))
-        )
-      );
   }
 
   /**

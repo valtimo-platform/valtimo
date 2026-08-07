@@ -18,9 +18,11 @@ package com.ritense.document.repository.impl;
 
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.repository.DocumentRepository;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import java.util.UUID;
+import org.semver4j.Semver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -38,12 +40,26 @@ public interface JsonSchemaDocumentRepository extends DocumentRepository<JsonSch
     Page<JsonSchemaDocument> findAllByDocumentDefinitionIdName(Pageable pageable, String definitionName);
 
     /**
-     * Projects only the document (case) ids for a document definition name, ordered stably so it can
-     * be paged. Callers such as case migration enumerate large numbers of cases page-by-page without
-     * ever hydrating the full documents.
+     * Projects only the document (case) ids homed on <em>one specific</em> blueprint version (type +
+     * key + version tag), ordered stably so it can be paged. Callers such as case migration enumerate
+     * large numbers of cases page-by-page without ever hydrating the full documents.
+     *
+     * <p>The version tag is part of the filter on purpose: a migration plan migrates the instances of
+     * its <em>source</em> version only. Selecting by document definition name alone would sweep up
+     * documents on every version of the case and re-home them straight onto the plan's target,
+     * skipping the plans in between.
      */
-    @Query("SELECT d.id.id FROM JsonSchemaDocument d WHERE d.documentDefinitionId.name = :definitionName ORDER BY d.id.id")
-    Slice<UUID> findCaseIdsByDocumentDefinitionName(@Param("definitionName") String definitionName, Pageable pageable);
+    @Query("SELECT d.id.id FROM JsonSchemaDocument d "
+        + "WHERE d.documentDefinitionId.blueprintId.blueprintType = :blueprintType "
+        + "AND d.documentDefinitionId.blueprintId.blueprintKey = :blueprintKey "
+        + "AND d.documentDefinitionId.blueprintId.blueprintVersionTag = :versionTag "
+        + "ORDER BY d.id.id")
+    Slice<UUID> findCaseIdsByBlueprintVersion(
+        @Param("blueprintType") BlueprintType blueprintType,
+        @Param("blueprintKey") String blueprintKey,
+        @Param("versionTag") Semver versionTag,
+        Pageable pageable
+    );
 
     @Query(" SELECT  doc " +
         "    FROM    JsonSchemaDocument doc " +

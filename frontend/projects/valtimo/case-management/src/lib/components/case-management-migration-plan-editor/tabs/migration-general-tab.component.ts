@@ -26,30 +26,23 @@ import {
 } from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  ButtonModule,
-  CheckboxModule,
-  IconModule,
-  IconService,
-  InputModule,
-  SelectModule,
-} from 'carbon-components-angular';
-import {Add16, TrashCan16} from '@carbon/icons';
+import {CheckboxModule, InputModule} from 'carbon-components-angular';
 import {
   SelectItem,
   SelectModule as ValtimoSelectModule,
-  ValuePathSelectorComponent,
+  ValueConditionTreeComponent,
+  ValueConditionTreeService,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
-import {MigrationCondition, MigrationPlan, MigrationTriggers} from '../../../models';
+import {MigrationConditionNode, MigrationPlan, MigrationTriggers} from '../../../models';
 
 interface GeneralValue {
   title: string;
   key: string;
   migrationTriggers: MigrationTriggers;
-  conditions: MigrationCondition[];
+  conditions: MigrationConditionNode[];
 }
 
 @Component({
@@ -62,13 +55,10 @@ interface GeneralValue {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
-    ButtonModule,
     CheckboxModule,
-    IconModule,
     InputModule,
-    SelectModule,
     ValtimoSelectModule,
-    ValuePathSelectorComponent,
+    ValueConditionTreeComponent,
   ],
 })
 export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
@@ -97,8 +87,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     ValuePathSelectorPrefix.CASE,
   ];
 
-  public readonly OPERATORS: string[] = ['==', '!=', '>', '>=', '<', '<='];
-
   public readonly form = this.fb.group({
     title: this.fb.control(''),
     key: this.fb.control(''),
@@ -117,10 +105,8 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly iconService: IconService
-  ) {
-    this.iconService.registerAll([Add16, TrashCan16]);
-  }
+    private readonly conditionTreeService: ValueConditionTreeService
+  ) {}
 
   public ngOnInit(): void {
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
@@ -128,22 +114,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-  }
-
-  public addCondition(): void {
-    this.conditionsArray.push(this.createConditionGroup());
-  }
-
-  public removeCondition(index: number): void {
-    this.conditionsArray.removeAt(index);
-  }
-
-  private createConditionGroup(condition?: MigrationCondition): FormGroup {
-    return this.fb.group({
-      path: this.fb.control(condition?.path ?? ''),
-      operator: this.fb.control(condition?.operator ?? '=='),
-      value: this.fb.control(condition?.value != null ? String(condition.value) : ''),
-    });
   }
 
   private emit(): void {
@@ -155,13 +125,7 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   private serialize(): Partial<MigrationPlan> {
     const {title, key, triggeredByButton, scheduledAtDate, runAfter} = this.form.getRawValue();
 
-    const conditions: MigrationCondition[] = this.conditionsArray.controls
-      .map(control => ({
-        path: control.get('path')?.value ?? '',
-        operator: control.get('operator')?.value ?? '==',
-        value: control.get('value')?.value ?? '',
-      }))
-      .filter(condition => !!condition.path);
+    const conditions = this.conditionTreeService.serialize(this.conditionsArray);
 
     return {
       title: title ?? '',
@@ -203,7 +167,9 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
     this.conditionsArray.clear({emitEvent: false});
     incoming.conditions.forEach(condition =>
-      this.conditionsArray.push(this.createConditionGroup(condition), {emitEvent: false})
+      this.conditionsArray.push(this.conditionTreeService.createNodeGroup(condition), {
+        emitEvent: false,
+      })
     );
 
     this._lastEmitted = JSON.stringify(this.serialize());

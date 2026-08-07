@@ -16,13 +16,20 @@
 
 package com.ritense.case_.service.migration
 
-import com.ritense.case_.domain.migration.MigrationCondition
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.ritense.case_.domain.migration.MigrationConditionNode
 import com.ritense.case_.domain.migration.MigrationTriggers
 
 /**
- * A migration plan and its current run status, for the case migration admin UI. Combines the plan
+ * A migration plan and its current run status, for the migration admin UI. Combines the plan
  * configuration (triggers, conditions, which components it carries) with its live execution status.
+ *
+ * [triggers], [conditions] and [dryRun] are **case-plan only** and are omitted for a building block
+ * plan, which has none of them: it runs when a case migration moves its building block onto this
+ * version, is covered by that case's dry run, and applies to exactly the instances the case migration
+ * brings with it.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class MigrationPlanManagementDto(
     val migrationKey: String,
     val title: String?,
@@ -30,10 +37,10 @@ data class MigrationPlanManagementDto(
     val source: String,
     /** Resolved blueprint version the plan migrates TO, formatted as `<key>:<versionTag>`. */
     val target: String,
-    val triggers: MigrationTriggers,
-    val conditions: List<MigrationCondition>,
     val components: List<String>,
     val status: MigrationExecutionStatusDto,
+    val triggers: MigrationTriggers? = null,
+    val conditions: List<MigrationConditionNode>? = null,
     /** The result of the plan's latest dry run (a simulation that migrates nothing), if it has run. */
-    val dryRun: DryRunStatusDto,
+    val dryRun: DryRunStatusDto? = null,
 )

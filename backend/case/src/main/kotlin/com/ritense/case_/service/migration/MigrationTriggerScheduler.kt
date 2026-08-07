@@ -21,6 +21,7 @@ import com.ritense.case_.domain.migration.CaseDefinitionMigration
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -42,6 +43,10 @@ import org.springframework.stereotype.Component
  *
  * A plan migrates its matching cases in a single run and then finishes, so there is nothing to
  * "resume" for a plan that completed normally — only crashed runs are reclaimed.
+ *
+ * Only *case* plans are swept. A building block plan has no trigger of its own: it runs when a case
+ * migration moves its building block onto the plan's version, so auto-starting one would migrate
+ * building blocks whose cases have not migrated (and may never).
  */
 @SkipComponentScan
 @Component
@@ -58,21 +63,22 @@ class MigrationTriggerScheduler(
             val now = LocalDateTime.now()
 
             // Resume runs abandoned by a crashed node (RUNNING with an expired lease).
-            executionRepository.findReclaimable(now).forEach { execution ->
-                runTrigger(execution.id)
-            }
+            executionRepository.findReclaimable(now)
+                .filter { it.id.blueprintType == BlueprintType.CASE }
+                .forEach { execution -> runTrigger(execution.id) }
 
             // Auto-start never-run plans whose scheduled date has passed or runAfter is satisfied.
             // Only never-triggered plans are loaded (started/finished plans have an execution row).
             // Plans that are not (yet) due get their cached "cases to migrate" estimate refreshed so
             // the UI can show it before the run starts; due plans compute the live count as they run.
-            caseDefinitionMigrationRepository.findAllWithoutExecution().forEach { plan ->
-                if (isScheduledDue(plan, now) || isRunAfterSatisfied(plan)) {
-                    runTrigger(plan.id)
-                } else {
-                    refreshEstimate(plan.id)
+            caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
+                .forEach { plan ->
+                    if (isScheduledDue(plan, now) || isRunAfterSatisfied(plan)) {
+                        runTrigger(plan.id)
+                    } else {
+                        refreshEstimate(plan.id)
+                    }
                 }
-            }
         }
     }
 
@@ -80,11 +86,12 @@ class MigrationTriggerScheduler(
     fun refresh() {
         runWithoutAuthorization {
             val now = LocalDateTime.now()
-            caseDefinitionMigrationRepository.findAllWithoutExecution().forEach { plan ->
-                if (!isScheduledDue(plan, now) && !isRunAfterSatisfied(plan)) {
-                    refreshEstimate(plan.id)
+            caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
+                .forEach { plan ->
+                    if (!isScheduledDue(plan, now) && !isRunAfterSatisfied(plan)) {
+                        refreshEstimate(plan.id)
+                    }
                 }
-            }
         }
     }
 

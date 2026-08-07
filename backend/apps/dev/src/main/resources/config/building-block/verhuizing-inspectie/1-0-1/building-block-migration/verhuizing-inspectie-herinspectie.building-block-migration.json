@@ -1,21 +1,6 @@
 {
-    "title": "Herinspectie plannen (afgekeurde inspecties)",
+    "title": "Herinspectie plannen",
     "key": "verhuizing-inspectie-herinspectie",
-    "migrationTriggers": {
-        "triggeredByButton": true
-    },
-    "conditions": [
-        {
-            "path": "doc:/inspectieStatus",
-            "operator": "==",
-            "value": "afgekeurd"
-        },
-        {
-            "path": "doc:/geschatteWaarde",
-            "operator": ">=",
-            "value": 0
-        }
-    ],
     "dataMigration": [
         {
             "value": "herinspectie",

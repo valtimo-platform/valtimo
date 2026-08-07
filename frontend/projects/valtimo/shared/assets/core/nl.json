@@ -821,12 +821,8 @@
           "runAfterPlaceholder": "Kies een migratieplan",
           "runAfterEmpty": "Geen andere migratieplannen in deze versie",
           "conditions": "Condities",
-          "conditionsHint": "Het plan migreert alleen dossiers die aan alle condities voldoen. Laat leeg om op alle dossiers toe te passen.",
-          "conditionPath": "Veld",
-          "conditionOperator": "Operator",
-          "conditionValue": "Waarde",
-          "noConditions": "Geen condities — van toepassing op alle dossiers.",
-          "addCondition": "Conditie toevoegen"
+          "conditionsHint": "Het plan migreert alleen dossiers die aan alle condities voldoen. Laat leeg om op alle dossiers toe te passen. Voeg een groep toe om condities te combineren met 'één van' (OR) of 'alle van' (AND); groepen mogen genest worden. Voer bij 'in' de waarden gescheiden door komma's in. Laat bij 'exists' de waarde leeg — of vul 'false' in om te eisen dat het veld leeg is.",
+          "noConditions": "Geen condities — van toepassing op alle dossiers."
         },
         "dataMigration": {
           "description": "Herstructureer dossiergegevens tijdens de migratie. Elke regel vult één doelveld (rechts) vanuit een bron (links): kopieer de waarde van een bestaand veld ('Pad'), zet een vaste 'Waarde', of maak het leeg ('Null'). De bron leest een waarde uit het zaakdocument; het doel is het veld waar die waarde naartoe wordt geschreven. Het doelveld is altijd verplicht.",
@@ -3179,6 +3175,17 @@
     "manual": "Handmatig",
     "selectCaseDefPlaceholder": "Kies een dossier"
   },
+  "valueConditionTree": {
+    "path": "Veld",
+    "operator": "Operator",
+    "value": "Waarde",
+    "addCondition": "Conditie toevoegen",
+    "addGroup": "Groep toevoegen",
+    "groupMode": "De groep geldt wanneer",
+    "anyOf": "Aan één van deze wordt voldaan",
+    "allOf": "Aan alle van deze wordt voldaan",
+    "emptyGroup": "Lege groep — voeg een conditie toe of verwijder de groep."
+  },
   "logging": {
     "columns": {"timestamp": "Tijd", "formattedMessage": "Bericht", "level": "Log-niveau"},
     "search": {
@@ -3644,8 +3651,6 @@
     "migration": {
       "addPlan": "Migratieplan toevoegen",
       "addPlanDisabledHint": "Deze versie heeft geen voorganger om vanaf te migreren, dus er kan geen migratieplan voor worden aangemaakt.",
-      "startNow": "Migratie nu starten",
-      "errorCount": "{{count}} fouten",
       "duplicateSuffix": "kopie",
       "editor": {
         "createTitle": "Nieuw migratieplan",
@@ -3661,20 +3666,9 @@
           "titlePlaceholder": "Migreer bouwblokken met status 'aanvraag-ontvangen'",
           "key": "Sleutel",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
-          "triggers": "Triggers",
-          "triggersHint": "Bepaal wanneer dit plan draait: handmatig via de UI-knop, op een ingepland moment, of nadat een ander plan is voltooid.",
-          "triggeredByButton": "Handmatig starten via de UI-knop",
-          "scheduledAtDate": "Ingepland op",
-          "runAfter": "Draai na plan",
-          "runAfterPlaceholder": "Kies een migratieplan",
-          "runAfterEmpty": "Geen andere migratieplannen in deze versie",
-          "conditions": "Condities",
-          "conditionsHint": "Het plan migreert alleen bouwblokken die aan alle condities voldoen. Laat leeg om op alle bouwblokken toe te passen.",
-          "conditionPath": "Veld",
-          "conditionOperator": "Operator",
-          "conditionValue": "Waarde",
-          "noConditions": "Geen condities — van toepassing op alle bouwblokken.",
-          "addCondition": "Conditie toevoegen"
+          "whenItRuns": "Wanneer dit plan draait",
+          "whenItRunsHint": "Dit plan heeft geen eigen trigger en geen eigen condities. Het draait automatisch wanneer een zaak migreert naar een zaakdefinitieversie die {{key}} op versie {{versionTag}} koppelt, en wordt toegepast op elke bouwblokinstantie die die zaakmigratie naar deze versie brengt. Het wordt gesimuleerd als onderdeel van de dry run van die zaakmigratie.",
+          "everyVersionNeedsAPlanHint": "Elke versie tussen de versie waarop een bouwblok staat en de versie die een zaak koppelt heeft een migratieplan nodig, ook een versie die niets wijzigt: elke versie van {{key}} publiceert zijn eigen procesmodel, dus een lopend bouwblok moet er expliciet naartoe worden verplaatst. Een versie daartussen zonder plan laat de zaakmigratie mislukken. Draai de zaakmigratie eerst als dry run om de hele keten te controleren."
         },
         "dataMigration": {
           "description": "Verplaats of stel bouwblokgegevens in tijdens de migratie. Elke patch kopieert een waarde van een bronlocatie naar de doellocatie, zet een vaste waarde op het doel, of zet het doel op null. Het doelveld is verplicht.",
@@ -3723,28 +3717,12 @@
         "title": "Migratieplan verwijderen",
         "content": "Weet je zeker dat je dit migratieplan wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
       },
-      "startModal": {
-        "title": "Migratie starten",
-        "content": "Weet je zeker dat je deze migratie nu wilt starten? De overeenkomende bouwblokken worden gemigreerd."
-      },
-      "dryRun": "Testrun",
-      "dryRunModal": {
-        "title": "Testrun starten",
-        "content": "Simuleer dit migratieplan voor alle overeenkomende bouwblokken zonder er ook maar één te migreren? Er wordt niets gewijzigd; je krijgt een overzicht van welke bouwblokken zouden migreren en welke zouden mislukken."
-      },
-      "dryRunResults": {
-        "heading": "Laatste testrun",
-        "casesChecked": "Gecontroleerde bouwblokken",
-        "casesWouldMigrate": "Zouden migreren",
-        "casesWouldFail": "Zouden mislukken",
-        "errorsHeading": "Bouwblokken die zouden mislukken"
-      },
       "columns": {
         "plan": "Migratieplan",
         "source": "Bron",
         "target": "Doel",
         "status": "Status",
-        "progress": "Voortgang"
+        "instancesMigrated": "Instanties gemigreerd"
       },
       "noResults": {
         "title": "Geen migratieplannen",
@@ -3758,21 +3736,10 @@
       },
       "fields": {
         "status": "Migratiestatus",
-        "casesToMigrate": "Te migreren bouwblokken",
-        "casesMigrated": "Gemigreerde bouwblokken",
-        "casesWithErrors": "Bouwblokken met fouten",
-        "startedOn": "Gestart op",
-        "finishedOn": "Voltooid op"
+        "instancesMigrated": "Instanties gemigreerd"
       },
-      "errors": {
-        "heading": "Bouwblokken met fouten",
-        "caseId": "Bouwblok",
-        "message": "Fout",
-        "copyFullError": "Volledige stacktrace kopiëren",
-        "copied": "Stacktrace gekopieerd naar klembord",
-        "showStacktrace": "Volledige stacktrace tonen",
-        "hideStacktrace": "Stacktrace verbergen"
-      }
+      "intro": "Migratieplannen voor bouwblokken worden niet handmatig gestart. Een plan draait automatisch wanneer een zaak migreert naar een zaakdefinitieversie die dit bouwblok op deze versie koppelt, en geldt precies voor de bouwblokken die die zaakmigratie meeneemt. Een zaak die nooit migreert houdt zijn bouwblokken op de versie waarop ze staan — bouwblokken verplaatsen zichzelf nooit.",
+      "detailHint": "Wordt toegepast op een bouwblokinstantie zodra een zaakmigratie deze van {{source}} naar {{target}} verplaatst."
     },
     "formDefinition": {
       "name": "Naam"

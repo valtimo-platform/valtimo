@@ -72,56 +72,18 @@
     {{ 'caseManagement.migration.editor.general.conditionsHint' | translate }}
   </p>
 
-  <div class="migration-tab__mapping" formArrayName="conditions">
-    @for (condition of conditionsArray.controls; track condition) {
-      <div class="migration-tab__condition-row" [formGroupName]="$index">
-        <valtimo-value-path-selector
-          formControlName="path"
-          [caseDefinitionKey]="caseDefinitionKey"
-          [caseDefinitionVersionTag]="caseDefinitionVersionTag"
-          [label]="'caseManagement.migration.editor.general.conditionPath' | translate"
-          [prefixes]="CONDITION_PATH_PREFIXES"
-          [notation]="'slashes'"
-        ></valtimo-value-path-selector>
+  @if (!conditionsArray.length) {
+    <p class="migration-tab__empty">
+      {{ 'caseManagement.migration.editor.general.noConditions' | translate }}
+    </p>
+  }
 
-        <cds-select
-          formControlName="operator"
-          [label]="'caseManagement.migration.editor.general.conditionOperator' | translate"
-        >
-          @for (operator of OPERATORS; track operator) {
-            <option [value]="operator">{{ operator }}</option>
-          }
-        </cds-select>
-
-        <cds-text-label>
-          {{ 'caseManagement.migration.editor.general.conditionValue' | translate }}
-          <input cdsText formControlName="value" />
-        </cds-text-label>
-
-        <button
-          cdsButton="danger--ghost"
-          size="sm"
-          [iconOnly]="true"
-          [title]="'interface.delete' | translate"
-          (click)="removeCondition($index)"
-        >
-          <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
-        </button>
-      </div>
-    } @empty {
-      <p class="migration-tab__empty">
-        {{ 'caseManagement.migration.editor.general.noConditions' | translate }}
-      </p>
-    }
-  </div>
-
-  <button
-    cdsButton="tertiary"
-    size="sm"
-    [attr.data-test-id]="testIds.addConditionButton"
-    (click)="addCondition()"
-  >
-    {{ 'caseManagement.migration.editor.general.addCondition' | translate }}
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-  </button>
+  <valtimo-value-condition-tree
+    [addConditionTestId]="testIds.addConditionButton"
+    [addGroupTestId]="testIds.addConditionGroupButton"
+    [caseDefinitionKey]="caseDefinitionKey"
+    [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+    [conditions]="conditionsArray"
+    [prefixes]="CONDITION_PATH_PREFIXES"
+  ></valtimo-value-condition-tree>
 </div>

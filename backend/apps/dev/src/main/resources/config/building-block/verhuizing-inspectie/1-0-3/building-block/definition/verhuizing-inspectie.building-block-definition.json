@@ -1,0 +1,8 @@
+{
+    "key": "verhuizing-inspectie",
+    "name": "Verhuizing inspectie",
+    "description": "Tussenversie met een eigen migratieplan. Wordt overgeslagen als een zaak direct naar 1.0.4 koppelt, en is dan de planstap in de keten.",
+    "versionTag": "1.0.3",
+    "basedOnVersionTag": "1.0.2",
+    "final": false
+}

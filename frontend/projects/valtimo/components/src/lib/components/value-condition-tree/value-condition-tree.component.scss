@@ -1,0 +1,83 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.value-condition-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  &--nested {
+    border-left: 2px solid var(--cds-border-subtle, #c6c6c6);
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+  }
+
+  // A row is laid out in two columns: the controls fill the left, the remove button takes a
+  // full-height column on the right.
+  &__row {
+    align-items: stretch;
+    background-color: var(--cds-layer);
+    border: 1px solid var(--cds-border-subtle);
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+
+  &__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  // A condition's three controls sit side by side on a wide screen and stack on a narrow one.
+  &__fields {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr);
+
+    @media (max-width: 800px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__mode {
+    max-width: 12rem;
+  }
+
+  &__nested {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__remove {
+    align-items: flex-start;
+    align-self: stretch;
+  }
+
+  &__empty {
+    color: var(--cds-text-secondary);
+    font-size: 0.75rem;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+}
