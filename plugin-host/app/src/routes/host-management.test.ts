@@ -98,14 +98,15 @@ describe("host-management routes", () => {
     await rm(TMP_BASE, { recursive: true, force: true }).catch(() => {});
   });
 
-  function uploadZip(zipBuffer: Buffer, secret?: string) {
+  function uploadZip(zipBuffer: Buffer, secret?: string, query = "") {
     const boundary = "----vitestboundary";
     return app.inject({
       method: "POST",
-      url: PLUGINS_PATH,
+      url: `${PLUGINS_PATH}${query}`,
       headers: {
         "content-type": `multipart/form-data; boundary=${boundary}`,
         // The signature binds the raw file bytes (not the multipart envelope) — see deferHmac.
+        // The query string is deliberately not signature-bound (hmac-auth strips it).
         ...signHeaders("POST", PLUGINS_PATH, zipBuffer, secret),
       },
       payload: multipartBody(boundary, zipBuffer),
@@ -151,14 +152,34 @@ describe("host-management routes", () => {
       );
     });
 
-    it("refuses to replace an existing version with 409 (versions are immutable)", async () => {
+    it("refuses to replace an existing version with 409 carrying both content hashes", async () => {
       pluginManager.hasVersion.mockReturnValueOnce(true);
       const res = await uploadZip(makeZip(validManifest));
       expect(res.statusCode).toBe(409);
-      expect(res.json()).toMatchObject({
+      const body = res.json() as Record<string, string>;
+      expect(body).toMatchObject({
+        code: "PLUGIN_VERSION_EXISTS",
         error: "Plugin version already exists: case-summary@0.1.0",
+        currentContentHash: "sha256:abc123", // the loaded package's hash (mocked)
       });
+      // The would-be hash of the uploaded package, so callers can tell an identical re-upload
+      // apart from different content.
+      expect(body.uploadedContentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
       expect(pluginManager.storeAndLoad).not.toHaveBeenCalled();
+    });
+
+    it("replaces an existing version when the caller explicitly overwrites", async () => {
+      pluginManager.hasVersion.mockReturnValueOnce(true);
+      const res = await uploadZip(makeZip(validManifest), undefined, "?overwrite=true");
+      expect(res.statusCode).toBe(201);
+      expect(pluginManager.storeAndLoad).toHaveBeenCalledWith(
+        "case-summary",
+        "0.1.0",
+        expect.any(String),
+        expect.any(Buffer),
+        expect.any(String),
+        undefined
+      );
     });
 
     it("rejects an invalid manifest with 400 and validation details", async () => {

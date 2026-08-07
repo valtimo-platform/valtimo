@@ -37,6 +37,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -58,6 +59,9 @@ class ExternalPluginConfigurationServicePushTest {
     private lateinit var configurationRepository: ExternalPluginConfigurationRepository
     private lateinit var definitionRepository: ExternalPluginDefinitionRepository
     private lateinit var hostRepository: ExternalPluginHostRepository
+    private lateinit var grantedEndpointRepository: ExternalPluginGrantedEndpointRepository
+    private lateinit var grantedEventRepository: ExternalPluginGrantedEventRepository
+    private lateinit var grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository
     private lateinit var hostClient: ExternalPluginHostClient
     private lateinit var encryptionService: EncryptionService
     private lateinit var propertyEncryptor: PluginPropertyEncryptor
@@ -93,6 +97,9 @@ class ExternalPluginConfigurationServicePushTest {
         configurationRepository = mock()
         definitionRepository = mock()
         hostRepository = mock()
+        grantedEndpointRepository = mock()
+        grantedEventRepository = mock()
+        grantedCapabilityRepository = mock()
         hostClient = mock()
         encryptionService = mock()
         propertyEncryptor = mock()
@@ -108,9 +115,9 @@ class ExternalPluginConfigurationServicePushTest {
             configurationRepository,
             definitionRepository,
             hostRepository,
-            mock<ExternalPluginGrantedEndpointRepository>(),
-            mock<ExternalPluginGrantedEventRepository>(),
-            mock<ExternalPluginGrantedCapabilityRepository>(),
+            grantedEndpointRepository,
+            grantedEventRepository,
+            grantedCapabilityRepository,
             hostClient,
             propertyEncryptor,
             encryptionService,
@@ -197,5 +204,56 @@ class ExternalPluginConfigurationServicePushTest {
         assertThatThrownBy { service.revokeTokens(unknownId) }
             .isInstanceOf(ExternalPluginNotFoundException::class.java)
         verify(configurationRepository, never()).save(any())
+    }
+
+    @Test
+    fun `applyApprovedOverwrite pins the new hash and re-grants every configuration to the new manifest`() {
+        definition.pendingContentHash = "sha256:stale-flag"
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        val manifest = objectMapper.readTree(
+            """
+            {
+              "eventSubscriptions": ["com.ritense.valtimo.document.created"],
+              "permissions": {
+                "endpoints": [{"method": "get", "pattern": "/api/v1/document/*"}],
+                "capabilities": ["gzac_api", "not-a-real-capability"]
+              }
+            }
+            """.trimIndent()
+        )
+
+        service.applyApprovedOverwrite("case-summary", "1.0.0", "sha256:new", manifest)
+
+        assertThat(definition.contentHash).isEqualTo("sha256:new")
+        assertThat(definition.pendingContentHash).isNull()
+        verify(definitionRepository).save(definition)
+
+        // Old grants are replaced by exactly the new declared sets.
+        verify(grantedEndpointRepository).deleteAllByConfigurationId(configuration.id)
+        verify(grantedEventRepository).deleteAllByConfigurationId(configuration.id)
+        verify(grantedCapabilityRepository).deleteAllByConfigurationId(configuration.id)
+        val endpointCaptor = argumentCaptor<com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint>()
+        verify(grantedEndpointRepository).save(endpointCaptor.capture())
+        assertThat(endpointCaptor.firstValue.httpMethod).isEqualTo("GET")
+        assertThat(endpointCaptor.firstValue.endpointPattern).isEqualTo("/api/v1/document/*")
+        val eventCaptor = argumentCaptor<com.ritense.externalplugin.domain.ExternalPluginGrantedEvent>()
+        verify(grantedEventRepository).save(eventCaptor.capture())
+        assertThat(eventCaptor.firstValue.eventType).isEqualTo("com.ritense.valtimo.document.created")
+        // The unknown capability is skipped instead of failing after the host already replaced
+        // the package.
+        val capabilityCaptor = argumentCaptor<com.ritense.externalplugin.domain.ExternalPluginGrantedCapability>()
+        verify(grantedCapabilityRepository).save(capabilityCaptor.capture())
+        assertThat(capabilityCaptor.firstValue.capability.value).isEqualTo("gzac_api")
+    }
+
+    @Test
+    fun `applyApprovedOverwrite is a no-op for a definition GZAC never discovered`() {
+        whenever(definitionRepository.findByPluginIdAndVersion("unknown", "9.9.9")).thenReturn(null)
+
+        service.applyApprovedOverwrite("unknown", "9.9.9", "sha256:new", objectMapper.createObjectNode())
+
+        verify(definitionRepository, never()).save(any())
+        verify(grantedEndpointRepository, never()).deleteAllByConfigurationId(any())
     }
 }

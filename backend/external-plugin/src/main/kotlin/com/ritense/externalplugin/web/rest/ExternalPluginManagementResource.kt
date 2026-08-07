@@ -233,6 +233,13 @@ class ExternalPluginManagementResource(
      * the version details, unless `force=true`. The operator confirms the warning in the UI, which
      * re-issues the request with `force=true` to proceed regardless. A compatible (or
      * undeterminable) plugin uploads straight through.
+     *
+     * A package whose `pluginId@version` already exists on the host is refused with `409 Conflict`
+     * carrying `code=PLUGIN_VERSION_EXISTS`, both content hashes and the uploaded manifest's
+     * requested permissions — the UI shows those for re-review and re-issues the request with
+     * `overwrite=true` once the admin confirms. After a confirmed overwrite the new content hash
+     * is pinned and every configuration of the definition is re-granted to exactly the new
+     * declared permission sets ([ExternalPluginConfigurationService.applyApprovedOverwrite]).
      */
     @RunWithoutAuthorization
     @EndpointDescription(
@@ -244,6 +251,7 @@ class ExternalPluginManagementResource(
         @PathVariable hostId: UUID,
         @RequestParam("file") file: MultipartFile,
         @RequestParam(name = "force", required = false, defaultValue = "false") force: Boolean,
+        @RequestParam(name = "overwrite", required = false, defaultValue = "false") overwrite: Boolean = false,
     ): ResponseEntity<JsonNode> {
         val fileBytes = file.bytes
         if (!force) {
@@ -256,15 +264,33 @@ class ExternalPluginManagementResource(
             }
         }
         val result = try {
-            hostService.uploadPlugin(hostId, file.originalFilename ?: "plugin.zip", fileBytes)
+            hostService.uploadPlugin(hostId, file.originalFilename ?: "plugin.zip", fileBytes, overwrite)
         } catch (e: HttpStatusCodeException) {
-            // The host rejected the upload (bad package, duplicate version, …) or failed on it —
-            // relay its status and error body instead of surfacing a raw 500.
+            val hostBody = parseJsonOrNull(e.responseBodyAsString)
+            if (e.statusCode == HttpStatus.CONFLICT && hostBody?.get("code")?.asText() == PLUGIN_VERSION_EXISTS_CODE) {
+                // Enrich with the uploaded manifest's requested permissions so the UI can render
+                // the re-review screen without parsing the zip client-side.
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(versionExistsBody(hostBody, fileBytes))
+            }
+            // Any other rejection (bad package, …) or failure — relay the host's status and error
+            // body instead of surfacing a raw 500.
             return ResponseEntity.status(e.statusCode)
                 .body(uploadErrorBody("Plugin host rejected the upload", e.responseBodyAsString))
         } catch (e: ResourceAccessException) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .body(uploadErrorBody("Plugin host is unreachable", e.message))
+        }
+        if (overwrite) {
+            val pluginId = result.get("pluginId")?.asText()
+            val version = result.get("version")?.asText()
+            if (pluginId != null && version != null) {
+                configurationService.applyApprovedOverwrite(
+                    pluginId,
+                    version,
+                    result.get("contentHash")?.asText()?.takeIf { it.isNotBlank() },
+                    pluginPackageInspector.readManifest(fileBytes),
+                )
+            }
         }
         discoveryService.discoverAll()
         return ResponseEntity.status(HttpStatus.CREATED).body(result)
@@ -485,9 +511,68 @@ class ExternalPluginManagementResource(
             put("maxGzacVersion", compatibility.maxGzacVersion)
         }
 
+    /**
+     * The 409 body for an upload targeting an existing pluginId@version: the host's hashes (so the
+     * UI can tell an identical re-upload apart from different content) plus the uploaded
+     * manifest's requested endpoint/event/capability sets for the permission re-review screen.
+     */
+    private fun versionExistsBody(hostBody: JsonNode, fileBytes: ByteArray): JsonNode {
+        val manifest = pluginPackageInspector.readManifest(fileBytes)
+        return objectMapper.createObjectNode().apply {
+            put("code", PLUGIN_VERSION_EXISTS_CODE)
+            put("error", hostBody.get("error")?.asText() ?: "Plugin version already exists")
+            hostBody.get("message")?.asText()?.let { put("message", it) }
+            hostBody.get("currentContentHash")?.takeIf { it.isTextual }
+                ?.let { put("currentContentHash", it.asText()) }
+            hostBody.get("uploadedContentHash")?.takeIf { it.isTextual }
+                ?.let { put("uploadedContentHash", it.asText()) }
+            manifest?.get("pluginId")?.asText()?.let { put("pluginId", it) }
+            manifest?.get("version")?.asText()?.let { put("version", it) }
+            set<JsonNode>(
+                "requestedEndpoints",
+                objectMapper.createArrayNode().apply {
+                    manifest?.get("permissions")?.get("endpoints")?.takeIf { it.isArray }?.forEach { endpoint ->
+                        val method = endpoint.get("method")?.asText()?.takeIf { it.isNotBlank() }
+                        val pattern = endpoint.get("pattern")?.asText()?.takeIf { it.isNotBlank() }
+                        if (method != null && pattern != null) {
+                            addObject().put("method", method).put("pattern", pattern)
+                        }
+                    }
+                },
+            )
+            set<JsonNode>(
+                "requestedEventSubscriptions",
+                objectMapper.createArrayNode().apply {
+                    manifest?.get("eventSubscriptions")?.takeIf { it.isArray }?.forEach { event ->
+                        event.asText().takeIf { it.isNotBlank() }?.let { add(it) }
+                    }
+                },
+            )
+            set<JsonNode>(
+                "requestedCapabilities",
+                objectMapper.createArrayNode().apply {
+                    manifest?.get("permissions")?.get("capabilities")?.takeIf { it.isArray }?.forEach { capability ->
+                        capability.asText().takeIf { it.isNotBlank() }?.let { add(it) }
+                    }
+                },
+            )
+        }
+    }
+
+    private fun parseJsonOrNull(body: String?): JsonNode? = if (body.isNullOrBlank()) null else try {
+        objectMapper.readTree(body)
+    } catch (_: Exception) {
+        null
+    }
+
     private fun uploadErrorBody(message: String, detail: String?): JsonNode =
         objectMapper.createObjectNode().apply {
             put("error", message)
             if (!detail.isNullOrBlank()) put("detail", detail)
         }
+
+    companion object {
+        /** Host 409 code for an upload naming an already-existing pluginId@version. */
+        const val PLUGIN_VERSION_EXISTS_CODE = "PLUGIN_VERSION_EXISTS"
+    }
 }

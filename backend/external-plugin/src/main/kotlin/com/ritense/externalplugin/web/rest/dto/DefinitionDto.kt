@@ -58,7 +58,8 @@ data class DefinitionResponse(
     val logoUrl: String?,
     /**
      * The package content hash pinned at discovery, the hash the host serves *now* when it
-     * differs, and whether an admin must re-accept before the plugin runs again. The UI passes
+     * differs, and whether an admin must re-accept before the plugin runs again. Re-acceptance is
+     * a deliberately API-only recovery act (no management-UI flow): the caller passes
      * [pendingContentHash] back on `POST /definition/{id}/accept-content` to confirm which package
      * it reviewed.
      */

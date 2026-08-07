@@ -233,9 +233,16 @@ class ExternalPluginHostClient(
         adminToken: String,
         fileName: String,
         fileBytes: ByteArray,
+        /**
+         * Replace an existing pluginId@version. Only sent after an admin explicitly confirmed the
+         * overwrite (permission re-review, §11); without it the host refuses a duplicate with 409.
+         */
+        overwrite: Boolean = false,
     ): JsonNode {
         val path = "/api/host/plugins"
-        val uri = buildUri(baseUrl, path)
+        // The query string is deliberately not signature-bound — the host strips it before HMAC
+        // verification (same convention as getConfigurationLogs).
+        val uri = buildUri(baseUrl, if (overwrite) "$path?overwrite=true" else path)
         val resource = object : ByteArrayResource(fileBytes) {
             override fun getFilename(): String = fileName
         }

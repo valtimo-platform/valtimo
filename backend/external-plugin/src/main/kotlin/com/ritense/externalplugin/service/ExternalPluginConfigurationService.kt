@@ -326,6 +326,84 @@ class ExternalPluginConfigurationService(
     }
 
     /**
+     * Applies an admin-confirmed overwrite of an existing plugin version (§11): the admin
+     * re-reviewed the uploaded package's requested permissions in the upload flow, so the new
+     * package hash is pinned as the accepted content and every configuration of the definition is
+     * re-granted to **exactly** the new manifest's declared endpoint/event/capability sets — the
+     * same all-or-nothing footprint the activation screen grants. The subsequent discovery cycle
+     * refreshes the stored manifest (the hash now matches the pin) and pushes the new grants.
+     *
+     * A definition GZAC never discovered is a no-op: discovery will pin the uploaded content on
+     * first sight and there are no configurations to re-grant.
+     */
+    @Transactional
+    fun applyApprovedOverwrite(pluginId: String, version: String, contentHash: String?, manifest: JsonNode?) {
+        val definition = definitionRepository.findByPluginIdAndVersion(pluginId, version) ?: return
+
+        if (contentHash != null) {
+            definition.contentHash = contentHash
+            definition.pendingContentHash = null
+            definitionRepository.save(definition)
+        }
+        if (manifest == null) return
+
+        val declaredEndpoints = declaredEndpoints(manifest)
+        val declaredEvents = declaredEvents(manifest)
+        val declaredCapabilities = declaredCapabilities(manifest)
+
+        configurationRepository.findAllByDefinitionId(definition.id).forEach { configuration ->
+            grantedEndpointRepository.deleteAllByConfigurationId(configuration.id)
+            grantedEventRepository.deleteAllByConfigurationId(configuration.id)
+            grantedCapabilityRepository.deleteAllByConfigurationId(configuration.id)
+            // Flush the deletes before re-inserting — same unique-constraint ordering concern as
+            // in [update].
+            grantedEndpointRepository.flush()
+            grantedEventRepository.flush()
+            grantedCapabilityRepository.flush()
+            saveGrantedEndpoints(configuration.id, declaredEndpoints)
+            saveGrantedEvents(configuration.id, declaredEvents)
+            saveGrantedCapabilities(configuration.id, declaredCapabilities)
+            logger.info {
+                "Re-granted configuration ${configuration.id} to the overwritten manifest of " +
+                    "'$pluginId@$version' (${declaredEndpoints.size} endpoints, " +
+                    "${declaredEvents.size} events, ${declaredCapabilities.size} capabilities)"
+            }
+        }
+    }
+
+    private fun declaredEndpoints(manifest: JsonNode): List<GrantedEndpointEntry> {
+        val declared = manifest.get("permissions")?.get("endpoints") ?: return emptyList()
+        if (!declared.isArray) return emptyList()
+        return declared.mapNotNull { endpoint ->
+            val method = endpoint.get("method")?.asText()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val pattern = endpoint.get("pattern")?.asText()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            GrantedEndpointEntry(method, pattern)
+        }
+    }
+
+    private fun declaredEvents(manifest: JsonNode): List<GrantedEventEntry> {
+        val declared = manifest.get("eventSubscriptions") ?: return emptyList()
+        if (!declared.isArray) return emptyList()
+        return declared.mapNotNull { it.asText().takeIf { s -> s.isNotBlank() } }.map(::GrantedEventEntry)
+    }
+
+    private fun declaredCapabilities(manifest: JsonNode): List<ExternalPluginCapability> {
+        val declared = manifest.get("permissions")?.get("capabilities") ?: return emptyList()
+        if (!declared.isArray) return emptyList()
+        return declared.mapNotNull { capability ->
+            val value = capability.asText().takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            try {
+                ExternalPluginCapability.fromValue(value)
+            } catch (e: IllegalArgumentException) {
+                // Unknown to this GZAC version — grant what is known rather than failing after the
+                // host has already replaced the package; the host-side guard denies the rest anyway.
+                logger.warn { "Skipping unknown capability '$value' while re-granting after overwrite: ${e.message}" }
+                null
+            }
+        }
+    }
+
+    /**
      * Mirrors [ExternalPluginHostService.findUsages] but scoped to a single configuration. Used
      * by the management UI to disable the delete control proactively; the server-side guard in
      * [delete] still enforces the same invariant, so an empty list here does not authorise

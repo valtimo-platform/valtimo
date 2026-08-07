@@ -106,8 +106,11 @@ callbacks.
   `external_plugin_granted_capability` (`configuration_id`, `capability`);
   `update()` with non-null `grantedEndpoints` replaces the endpoint grants, null leaves them
   unchanged. `update()` has **no** `grantedEvents` or `grantedCapabilities` parameter — event
-  and capability grants cannot change after activation. Granted capabilities are pushed to the
-  host alongside the configuration (§18.3) so the host can enforce the allowlist at call time.
+  and capability grants cannot change through the edit flow after activation; the one path that
+  resets them is an admin-confirmed version overwrite, which re-grants every configuration to
+  exactly the newly declared sets after the admin re-reviewed them (§11). Granted capabilities
+  are pushed to the host alongside the configuration (§18.3) so the host can enforce the
+  allowlist at call time.
 
 **3.2 Token (`service/ExternalPluginServiceTokenService.kt`)** — HS256 JWT:
 `sub=external-plugin:{pluginId}:{configId}`, `type=external_plugin_service`, `plugin_config_id`,
@@ -310,11 +313,12 @@ not declare (§3.1).
   `POST .../configuration` `{definitionId, title, properties, grantedEndpoints, grantedEvents,
   grantedCapabilities}`.
 - **Edit**: same component with `[readonlyMode]="true"`; the UI update sends `{title, properties}`
-  only. Granted **events** and **capabilities** are truly immutable post-activation (service-layer
-  `update()` has no `grantedEvents` or `grantedCapabilities` parameter). Granted **endpoints** are
-  immutable *in the UI*, but the backend `update()` will replace them if a non-null
-  `grantedEndpoints` is supplied (§3.1) — the immutability of endpoint grants is a UI guarantee,
-  not a service-layer one.
+  only. Granted **events** and **capabilities** cannot change through the edit flow (service-layer
+  `update()` has no `grantedEvents` or `grantedCapabilities` parameter); the one path that resets
+  them is the admin-confirmed version overwrite, which re-grants to the newly reviewed declared
+  sets (§11). Granted **endpoints** are immutable *in the UI*, but the backend `update()` will
+  replace them if a non-null `grantedEndpoints` is supplied (§3.1) — the immutability of endpoint
+  grants is a UI guarantee, not a service-layer one.
 
 ## 5. Data model ✅
 
@@ -505,11 +509,14 @@ funnel through one generic `callExport`; the public `callAction`/`callEvent`/`ca
   directory — a crafted `../`, absolute, or drive-letter entry name rejects the whole package with
   400 — and only the files a plugin package may legitimately carry are extracted (root-level
   `manifest.json`, `plugin.wasm`, the logo, and `frontend/**`), so a hostile zip cannot plant
-  anything else even inside the temp dir. **Versions are immutable**: an upload whose manifest
-  names a `pluginId@version` that already exists — loaded in memory *or* present on disk
-  (`hasVersion`) — is refused with 409; publishing a change requires a new version number, and
-  freeing a version first goes through the delete route with its configuration guard above. The
-  201 response carries the stored package's `contentHash` (§11).
+  anything else even inside the temp dir. **A version is never replaced silently**: an upload
+  whose manifest names a `pluginId@version` that already exists — loaded in memory *or* present
+  on disk (`hasVersion`) — is refused with 409 carrying `code: PLUGIN_VERSION_EXISTS` and both
+  content hashes (the loaded package's and the uploaded package's, so callers can tell an
+  identical re-upload apart from different content). Only `?overwrite=true` — which GZAC sends
+  after an admin explicitly confirmed the overwrite and re-reviewed the requested permissions
+  (§11) — replaces the package (hot-reload; logged as a warn for audit). The 201 response
+  carries the stored package's `contentHash` (§11).
 - **Plugin-content CSP** (`routes/plugin-bundles.ts`): every response serving plugin-authored
   content — `…/bundles/**` **and** the logo (an SVG can carry script) — carries
   `Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'
@@ -840,7 +847,7 @@ the origins, and it returns only the distinct `scheme://host[:port]` origins of 
 hosts — no admin tokens, broker URLs or configuration data) and passes the origins into the
 initializer before the meta tag is inserted (the CSP meta is immutable once parsed).
 
-## 11. Multi-version support, compatibility & content integrity ✅ (side-by-side versions, compatibility check, immutable + pinned packages)
+## 11. Multi-version support, compatibility & content integrity ✅ (side-by-side versions, compatibility check, pinned packages & confirmed overwrites)
 
 **Why coexistence matters.** Once a case definition becomes *final*, its BPMN — including any
 service tasks bound to an external-plugin action — is immutable. A process link cannot then be
@@ -873,15 +880,34 @@ versions of the same plugin must run side-by-side indefinitely**: there is no pa
 4. New BPMNs / case definitions bind their service tasks to the v2 configuration; existing final
    case definitions continue to reference their v1 configuration.
 
-**Version immutability & content pinning ✅.** A published version is the exact bytes the admin's
-acceptance covers — enforced end to end:
+**Content pinning & confirmed overwrites ✅.** A published version is the exact bytes the admin's
+acceptance covers, and a version is **never replaced silently**: a re-upload of an already-known
+`pluginId@version` is refused by default, an identical re-upload is a friendly no-op, and
+replacing a version with *different* content requires the admin to re-review the package's
+requested permissions and explicitly confirm the overwrite. Content-change detection on the
+discovery side exists to catch tampering and out-of-band modification of a host's package — a
+change that arrives without the confirmed-overwrite flow is treated as an incident:
 
-- *Host — immutable versions.* Every loaded package has a `contentHash`: `sha256:` over every file
-  in the version directory (`manifest.json`, `plugin.wasm`, the logo, `frontend/**`), each record
-  bound to its relative path and byte length so files cannot be renamed or shuffled without
-  changing the hash. The hash is exposed in the plugin listing and the upload response, and an
-  upload naming an existing `pluginId@version` — loaded *or* on disk — is refused with 409 (§7):
-  publishing a change means publishing a new version.
+- *Host — no silent replacement.* Every loaded package has a `contentHash`: `sha256:` over every
+  file in the version directory (`manifest.json`, `plugin.wasm`, the logo, `frontend/**`), each
+  record bound to its relative path and byte length so files cannot be renamed or shuffled
+  without changing the hash. The hash is exposed in the plugin listing and the upload response.
+  An upload naming an existing `pluginId@version` — loaded *or* on disk — is refused with 409
+  (§7) carrying `code: PLUGIN_VERSION_EXISTS` plus the loaded and uploaded packages' hashes;
+  only an explicit `overwrite=true` replaces the package.
+- *Confirmed overwrite — permission re-review, re-pin, re-grant.* GZAC enriches the
+  version-exists 409 with the uploaded manifest's requested endpoint/event/capability sets
+  (parsed server-side from the zip by `PluginPackageInspector.readManifest`). The upload modal
+  branches on the hashes: identical content shows an "already up to date" info; different
+  content opens a review dialog — a warning that the overwrite can lead to unexpected behavior
+  for anything already using the version, the full requested-permission list (the same
+  `plugin-external-permissions` acceptance component used at activation, including its
+  acknowledgement checkbox) and a danger-styled confirm. Confirming re-issues the upload with
+  `overwrite=true`; on the host's 201, GZAC pins the new content hash (clearing any pending
+  flag) and re-grants **every configuration of the definition to exactly the new declared
+  sets** (`ExternalPluginConfigurationService.applyApprovedOverwrite`) — the same all-or-nothing
+  footprint activation grants — after which the immediate re-discovery refreshes the stored
+  manifest and pushes the new grants and a fresh token.
 - *GZAC — pinning at discovery.* The definition stores the hash the host served when the plugin
   was first discovered (`content_hash` — trust on first use, the same moment the definition
   becomes configurable). Every later poll compares the discovered hash against the pinned one; a
@@ -893,10 +919,15 @@ acceptance covers — enforced end to end:
   are refused with a user-visible error, and user tokens are not minted (409 — §13.3). Every push
   additionally carries `expectedContentHash`, which the host verifies against its loaded package
   (409 on mismatch), closing the window between GZAC's discovery cycle and the push.
-- *Re-acceptance.* `POST /api/management/v1/external-plugin/definition/{id}/accept-content`
-  (ADMIN) re-pins: the request echoes the exact pending hash the admin reviewed — acceptance of a
-  *specific* package, so a stale echo is rejected when the host has changed yet again — and an
-  immediate re-discovery then refreshes the manifest data and resumes pushes. A host serving the
+- *Recovery is a deliberate, API-only administrative act.* `POST
+  /api/management/v1/external-plugin/definition/{id}/accept-content` (ADMIN) re-pins after an
+  operator has investigated the change: the request echoes the exact pending hash under review —
+  acceptance of a *specific* package, so a stale echo is rejected when the host has changed yet
+  again — and an immediate re-discovery then refreshes the manifest data and resumes pushes.
+  There is **no management-UI flow for this by design**: a changed package under a pinned version
+  that did *not* come through the confirmed-overwrite flow is an incident-recovery path, not a
+  routine operation (the routine paths for changed content are a new version or the confirmed
+  overwrite above), so it stays a conscious API call rather than a button. A host serving the
   pinned bytes again (a rollback) clears the flag automatically on the next poll. A host whose
   listing carries no hash is simply not pinned.
 
@@ -964,13 +995,20 @@ The frontend surfaces incompatibility as a **non-blocking** warning, localised v
   info-tooltip on each external row whose definition is incompatible;
 - the configure step (`plugin-add-modal.component`) shows `incompatibleWarning$` for an incompatible
   selection, recomputed on language change;
-- the upload modal (`plugin-upload-modal.component`) turns the `409` (kept off the global error
-  toast by the `X-Skip-Interceptor: 409` request header) into an "Upload an incompatible plugin?"
-  confirmation that re-issues the upload with `force=true`.
+- the upload modal (`plugin-upload-modal.component`) handles every `409` itself (kept off the
+  global error toast by the `X-Skip-Interceptor: 409` request header), branching on the response
+  body: a compatibility rejection (`incompatible: true`) becomes an "Upload an incompatible
+  plugin?" confirmation that re-issues the upload with `force=true`; `code:
+  PLUGIN_VERSION_EXISTS` opens the overwrite-review dialog (or the identical-content info — see
+  the content-pinning section above); any other rejection relayed from the host becomes a
+  localised inline error in the modal with the host's own detail. The overwrite confirm retries
+  with `force=true` as well, because compatibility was already checked (or explicitly forced) on
+  the attempt that produced the version-exists 409.
 
 **⛔ Other gaps.** Schema migration for moving a configuration from v1 to v2 is not implemented
-and arguably unnecessary given the side-by-side model (the package bytes of a published version
-are immutable in any case — see content pinning above). Permission-diff prompts and a
+and arguably unnecessary given the side-by-side model (a published version's bytes never change
+without an explicit admin-confirmed overwrite — see content pinning above). Permission-diff
+prompts and a
 `LATEST/STABLE/DEPRECATED` channel status are open. The compatibility range is a warning rather than
 an activation gate — only upload is a confirm-gate; an admin can still activate a configuration for
 an incompatible definition.
@@ -1388,10 +1426,9 @@ Structure:
   queue and its contents).
 - Publisher **package signing** — content pinning (§11) is hash-based trust-on-first-use, tied to
   whoever can reach the upload endpoint, not to a verified publisher identity.
-- Admin-UI surfaces for content re-acceptance and token revocation — both are API-complete
-  (`accept-content`, `revoke-tokens`; the definition DTO exposes `requiresReacceptance` /
-  `pendingContentHash`, the configuration DTO `tokenGeneration`) but have no dedicated screens
-  yet.
+- Admin-UI surface for token revocation — API-complete (`revoke-tokens`; the configuration DTO
+  exposes `tokenGeneration`) but has no dedicated screen. (Content re-acceptance, by contrast, is
+  **API-only by design** — §11.)
 
 ## 15. Roadmap (priority order)
 
@@ -1469,7 +1506,11 @@ Structure:
   `pendingContentHash` + freezes the stored manifest + withholds pushes, rollback clears the
   flag), `service/ExternalPluginConfigurationServicePushTest` (push carries
   `expectedContentHash`, refuses while re-acceptance is pending, `revokeTokens` bumps the
-  generation and re-pushes a fresh token), `service/ExternalPluginDefinitionServiceTest`
+  generation and re-pushes a fresh token, `applyApprovedOverwrite` pins the new hash and
+  re-grants configurations to the new declared sets while skipping unknown capabilities),
+  `web/rest/ExternalPluginUploadOverwriteTest` (version-exists 409 enriched with hashes and
+  requested permissions; confirmed overwrite applies pin + re-grant before discovery; other host
+  409s stay relayed), `service/ExternalPluginDefinitionServiceTest`
   (`acceptContent` re-pins, rejects a stale or absent pending hash),
   `security/ExternalPluginServiceTokenFilterTest` / `security/ExternalPluginUserTokenFilterTest`
   (tokens of a previous generation, without the claim, or for a deleted configuration are
@@ -1478,7 +1519,8 @@ Structure:
   while re-acceptance is pending), and `web/rest/ExternalPluginUserTokenResourceTest` (mint 409
   while pending; minted token bound to the current generation). Host-side (vitest):
   `plugin-manager.test.ts` (stable content hash, changes with any packaged file, `hasVersion` on
-  disk and in memory), `routes/host-management.test.ts` (duplicate-version upload → 409),
+  disk and in memory), `routes/host-management.test.ts` (duplicate-version upload → 409 with both
+  content hashes; explicit `overwrite=true` replaces),
   `routes/host-configurations.test.ts` (push hash mismatch → 409), `routes/plugin-bundles.test.ts`
   (strict CSP + `nosniff` + referrer policy on bundles and logo). PostgreSQL integration tests
   green — the `20260806-external-plugin-security-hardening.xml` changeset applies and matches the
@@ -1660,8 +1702,9 @@ name is rejected up front), and runs `validateGrantedCapabilitiesCoverManifest()
 exact-match gate as endpoints and events (§3.1): every capability declared in the manifest must be
 granted, and nothing undeclared may be.
 The granted capabilities are persisted and pushed to the host alongside the configuration (§18.3).
-`update()` does not accept `grantedCapabilities` — capability grants are immutable after
-activation (same semantics as event grants).
+`update()` does not accept `grantedCapabilities` — capability grants cannot change through the
+edit flow (same semantics as event grants); only the admin-confirmed version overwrite resets
+them to the newly reviewed declared set (§11).
 
 **Kotlin domain** `ExternalPluginGrantedCapability` (entity),
 `ExternalPluginGrantedCapabilityRepository` (Spring Data JPA), `ExternalPluginCapability` (enum

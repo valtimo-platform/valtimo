@@ -61,7 +61,7 @@ class ExternalPluginUploadCompatibilityTest {
         hostService = mock()
         discoveryService = mock()
         objectMapper = ObjectMapper()
-        whenever(hostService.uploadPlugin(any(), any(), any()))
+        whenever(hostService.uploadPlugin(any(), any(), any(), any()))
             .thenReturn(objectMapper.createObjectNode().put("pluginId", "x") as JsonNode)
 
         resource = ExternalPluginManagementResource(
@@ -88,7 +88,7 @@ class ExternalPluginUploadCompatibilityTest {
         assertThat(response.body!!.get("incompatible").asBoolean()).isTrue()
         assertThat(response.body!!.get("currentGzacVersion").asText()).isEqualTo("13.1.3")
         assertThat(response.body!!.get("minGzacVersion").asText()).isEqualTo("14.0.0")
-        verify(hostService, never()).uploadPlugin(any(), any(), any())
+        verify(hostService, never()).uploadPlugin(any(), any(), any(), any())
         verify(discoveryService, never()).discoverAll()
     }
 
@@ -101,7 +101,7 @@ class ExternalPluginUploadCompatibilityTest {
         assertThat(response.statusCode).isEqualTo(HttpStatus.CONFLICT)
         assertThat(response.body!!.get("incompatible").asBoolean()).isTrue()
         assertThat(response.body!!.get("maxGzacVersion").asText()).isEqualTo("12.1.0")
-        verify(hostService, never()).uploadPlugin(any(), any(), any())
+        verify(hostService, never()).uploadPlugin(any(), any(), any(), any())
     }
 
     @Test
@@ -111,7 +111,7 @@ class ExternalPluginUploadCompatibilityTest {
         val response = resource.uploadPlugin(hostId, file, force = true)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
-        verify(hostService).uploadPlugin(any(), any(), any())
+        verify(hostService).uploadPlugin(any(), any(), any(), any())
         verify(discoveryService).discoverAll()
     }
 
@@ -122,7 +122,7 @@ class ExternalPluginUploadCompatibilityTest {
         val response = resource.uploadPlugin(hostId, file, force = false)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
-        verify(hostService).uploadPlugin(any(), any(), any())
+        verify(hostService).uploadPlugin(any(), any(), any(), any())
     }
 
     @Test
@@ -132,7 +132,7 @@ class ExternalPluginUploadCompatibilityTest {
         val response = resource.uploadPlugin(hostId, file, force = false)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
-        verify(hostService).uploadPlugin(any(), any(), any())
+        verify(hostService).uploadPlugin(any(), any(), any(), any())
     }
 
     private fun pluginZip(manifestJson: String): MockMultipartFile {

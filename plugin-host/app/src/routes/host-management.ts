@@ -15,7 +15,7 @@
  */
 
 import { FastifyInstance } from "fastify";
-import { PluginManager } from "../plugin-manager.js";
+import { computeContentHash, PluginManager } from "../plugin-manager.js";
 import { ConfigRegistry } from "../config-registry.js";
 import { AppConfig } from "../config.js";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -98,6 +98,10 @@ export async function hostManagementRoutes(
    * The .zip must contain manifest.json and plugin.wasm at the root level.
    * pluginId and version are extracted from the manifest.
    *
+   * An upload whose pluginId@version already exists is refused with 409 unless the caller sends
+   * `?overwrite=true` — GZAC only does so after an admin explicitly confirmed the overwrite and
+   * re-reviewed the package's requested permissions, so a version is never replaced silently.
+   *
    * HMAC body binding: the signature covers the uploaded file bytes (the .zip), not the multipart
    * envelope — the backend signs the raw file bytes it sends, which the host reproduces below from
    * the parsed file stream. `deferHmac` skips the shared raw-body hook so verification can run once
@@ -156,18 +160,31 @@ export async function hostManagementRoutes(
         return;
       }
 
-      // Versions are immutable: what an admin approved for pluginId@version must stay the exact
-      // bytes that keep running. Re-uploading the same version would silently hot-reload different
-      // code under an already-accepted identity (a time-of-check/time-of-use gap), so it is
-      // refused outright. Publishing a change requires a new version; removing a version first
-      // requires the delete route, which refuses while configurations still reference it.
-      if (pluginManager.hasVersion(manifest.pluginId, manifest.version)) {
+      // A version is never replaced *silently*: re-uploading an existing pluginId@version without
+      // the explicit overwrite flag is refused, because different code would hot-reload under an
+      // already-accepted identity (a time-of-check/time-of-use gap). GZAC sends `?overwrite=true`
+      // only after an admin confirmed the overwrite and re-reviewed the package's requested
+      // permissions. The 409 carries both content hashes so the caller can tell an identical
+      // re-upload (nothing to do) apart from genuinely different content (review required).
+      const overwrite = (request.query as {overwrite?: string}).overwrite === "true";
+      const versionExists = pluginManager.hasVersion(manifest.pluginId, manifest.version);
+      if (versionExists && !overwrite) {
         reply.code(409).send({
+          // Machine-readable so GZAC's upload UI can branch without string-matching English text.
+          code: "PLUGIN_VERSION_EXISTS",
           error: `Plugin version already exists: ${manifest.pluginId}@${manifest.version}`,
           message:
-            "Plugin versions are immutable. Publish the change under a new version number.",
+            "This version already exists on the host. Overwriting requires explicit admin confirmation.",
+          currentContentHash: pluginManager.getContentHash(manifest.pluginId, manifest.version),
+          uploadedContentHash: await computeContentHash(extractDir),
         });
         return;
+      }
+      if (versionExists) {
+        request.log.warn(
+          { pluginId: manifest.pluginId, version: manifest.version },
+          "Overwriting existing plugin version (admin-confirmed)"
+        );
       }
 
       // Read wasm

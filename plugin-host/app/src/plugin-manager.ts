@@ -87,8 +87,11 @@ function isWasmTimeoutError(err: unknown): boolean {
  * byte length so files cannot be renamed or shuffled without changing the hash. GZAC pins this
  * value at discovery and flags the definition for re-acceptance when it changes — the on-disk
  * package is tamper-evident even though the host itself is only semi-trusted.
+ *
+ * Exported so the upload route can hash an extracted-but-not-yet-stored package and tell an
+ * identical re-upload apart from one with different content.
  */
-async function computeContentHash(pluginDir: string): Promise<string> {
+export async function computeContentHash(pluginDir: string): Promise<string> {
   const files: string[] = [];
   const walk = async (dir: string, prefix: string): Promise<void> => {
     for (const entry of await readdir(dir, { withFileTypes: true })) {

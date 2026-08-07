@@ -2234,7 +2234,15 @@
     "upload": {
       "title": "Plugin bundle",
       "buttonText": "Choose file",
-      "description": "Only .zip files are accepted"
+      "description": "Only .zip files are accepted",
+      "failedTitle": "Upload failed",
+      "rejected": "The plugin host rejected the upload.",
+      "identicalTitle": "Already up to date",
+      "identicalMessage": "This exact package already exists on the host — the content is identical, so there is nothing to overwrite.",
+      "overwriteTitle": "Overwrite existing plugin version?",
+      "overwriteWarningTitle": "This will overwrite the current plugin version",
+      "overwriteWarning": "Version {{version}} of '{{pluginId}}' already exists on the host with different content. Overwriting it can lead to unexpected behavior for configurations and processes that already use this version. Since the content differs, review the permissions the uploaded package requests below and confirm to proceed — all existing configurations of this version will be reset to exactly these permissions.",
+      "overwriteConfirm": "Overwrite version"
     },
     "noDefinitions": "No plugin definitions found.",
     "noHosts": "No plugin hosts configured.",
