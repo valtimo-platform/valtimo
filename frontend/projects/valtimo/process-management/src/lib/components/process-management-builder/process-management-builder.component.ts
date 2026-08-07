@@ -141,6 +141,7 @@ import {ProcessBeanService} from '../../services';
     ToggleModule,
     TooltipModule,
     ConfirmationModalModule,
+    OverflowMenuModule,
   ],
   providers: [
     ProcessManagementEditorService,
