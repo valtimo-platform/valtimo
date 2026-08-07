@@ -126,7 +126,7 @@ class ValtimoPropertiesProvider {
       processLink,
       element,
       component: CustomRootElement,
-      isEdited: () => false,
+      isEdited: (node: HTMLInputElement) => node && !!node.value,
     };
   }
 }
@@ -204,8 +204,11 @@ const CustomRootElement = (props: {
     option => option.id === processLinkFormDefinitionId
   )?.name;
 
+  const hiddenInput = html`<input type="hidden" class="bio-properties-panel-input" value=${processLink ? 'configured' : ''} />`;
+  const wrapEntry = (content: any) => html`<div data-entry-id=${props.id}>${hiddenInput}${content}</div>`;
+
   if (processLinkFormDefinitionName) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
 
@@ -232,13 +235,13 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const processLinkFormFlowDefinitionKey = processLink?.formFlowDefinitionKey;
 
   if (processLinkFormFlowDefinitionKey) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title"
           >${processLinkFormFlowDefinitionKey}</span
@@ -267,14 +270,14 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const buildingBlockDefinitionKey = processLink?.buildingBlockDefinitionKey;
   const buildingBlockDefinitionVersion = processLink?.buildingBlockDefinitionVersionTag;
 
   if (buildingBlockDefinitionKey) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title"
           >${buildingBlockDefinitionKey} (${buildingBlockDefinitionVersion})</span
@@ -303,7 +306,7 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const pluginActionKey = processLink?.pluginActionDefinitionKey;
@@ -313,7 +316,7 @@ const CustomRootElement = (props: {
     pluginTranslationService.instantPluginTitleByPluginActionKey(pluginActionKey);
 
   if (pluginActionKey) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title-container">
           <span class="process-link-properties-panel__title">${pluginTitleTranslation}</span>
@@ -344,13 +347,13 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const uiComponentKey = processLink?.componentKey;
 
   if (uiComponentKey) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title">${uiComponentKey}</span>
 
@@ -377,7 +380,7 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const genericLinkedPanel = html`<div class="process-link-properties-panel">
@@ -409,7 +412,7 @@ const CustomRootElement = (props: {
     </div>
   </div>`;
 
-  return processLink ? genericLinkedPanel : genericCreatePanel;
+  return wrapEntry(processLink ? genericLinkedPanel : genericCreatePanel);
 };
 
 const ValidationErrorsElement = (props: {
