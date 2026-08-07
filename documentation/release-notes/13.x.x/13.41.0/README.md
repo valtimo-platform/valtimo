@@ -6,9 +6,19 @@
 
 ## New Features
 
-* **New feature title**
+* **Send a message to a case and its building blocks**
 
-  New feature explanation.
+  Processes can now send a message to a whole case: the case's own processes and all of its building blocks receive
+  it. This makes it possible to let a building block react to something that happens elsewhere in the case, and to let
+  building blocks signal each other. Messages can also be sent to another case, for example a related one. See
+  [Send a message to a case](../../../features/building-blocks/README.md#send-a-message-to-a-case).
+
+* **Start a building block with a message**
+
+  A building block can now be started by sending a message to the case, instead of only from a call activity or from
+  the case's **Start** menu. See
+  [Start a building block by message](../../../features/building-blocks/README.md#start-a-building-block-by-message).
+
 
 ## Enhancements
 

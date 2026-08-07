@@ -1,0 +1,7 @@
+{
+    "key": "case-notification",
+    "name": "Case notification",
+    "description": "Started by the 'case-notification-requested' message start event. Demonstrates caseCorrelationService.sendStartMessageToCase: this building block has no start form and cannot be started from the case Start menu.",
+    "versionTag": "1.0.0",
+    "final": false
+}

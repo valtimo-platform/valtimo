@@ -1,0 +1,33 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "HTML",
+            "content": "This building block waits for the <strong>review-approved</strong> message. Start it, then run the <strong>Send review-approved message</strong> action on the case to let it continue.",
+            "refreshOnChange": false,
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Reviewer",
+            "placeholder": "Who is going to review this?",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "key": "reviewer",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Start review",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}

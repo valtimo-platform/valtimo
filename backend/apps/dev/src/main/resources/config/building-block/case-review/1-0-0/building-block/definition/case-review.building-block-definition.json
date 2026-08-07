@@ -1,0 +1,7 @@
+{
+    "key": "case-review",
+    "name": "Case review",
+    "description": "Waits for the 'review-approved' message. Demonstrates that a message sent to the case with caseCorrelationService.sendCatchEventMessageToCase reaches a running building block.",
+    "versionTag": "1.0.0",
+    "final": false
+}
