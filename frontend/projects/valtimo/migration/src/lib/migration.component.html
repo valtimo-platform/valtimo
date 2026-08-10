@@ -33,12 +33,14 @@
           [placeholder]="'- ' + ('Source Definition' | translate) + ' -'"
           [items]="sourceDefinitionItems"
           (selected)="onDefinitionSelected($event, 'source')"
+          (clear)="onSourceDefinitionClear($event)"
         >
           <cds-dropdown-list></cds-dropdown-list>
         </cds-combo-box>
       </div>
       <div class="col-2">
         <cds-combo-box
+                #sourceVersionCombobox
           [dropUp]="false"
           [appendInline]="true"
           [label]="'Source Definition' | translate"
@@ -51,6 +53,7 @@
       </div>
       <div class="col-4">
         <cds-combo-box
+                #targetDefinitionComboBox
           [dropUp]="false"
           [appendInline]="true"
           [label]="'Target Definition' | translate"
@@ -63,9 +66,10 @@
       </div>
       <div class="col-2">
         <cds-combo-box
+                #targetVersionCombobox
           [dropUp]="false"
           [appendInline]="true"
-          [label]="'Target Definition' | translate"
+          [label]="'Target Version' | translate"
           [placeholder]="'- ' + ('Target Version' | translate) + ' -'"
           [items]="targetVersionItems"
           (selected)="onVersionSelected($event, 'target')"
