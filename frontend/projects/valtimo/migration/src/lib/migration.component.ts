@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, viewChild, ViewChild} from '@angular/core';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {NGXLogger} from 'ngx-logger';
 import {AlertService} from '@valtimo/components';
-import {ListItem} from 'carbon-components-angular';
+import {ComboBox, ListItem} from 'carbon-components-angular';
 
 @Component({
   standalone: false,
@@ -58,7 +58,9 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
 
   @ViewChild('sourceDiagram') sourceDiagram: MigrationProcessDiagramComponent;
   @ViewChild('targetDiagram') targetDiagram: MigrationProcessDiagramComponent;
-
+  @ViewChild('sourceVersionCombobox') sourceVersionCombobox: ComboBox;
+  @ViewChild('targetDefinitionComboBox') targetDefinitionComboBox: ComboBox;
+  @ViewChild('targetVersionCombobox') targetVersionCombobox: ComboBox;
   public diagram: any = null;
 
   constructor(
@@ -123,6 +125,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
   public onDefinitionSelected(selection: ListItem | ListItem[], type: string) {
     const item = Array.isArray(selection) ? selection[0] : selection;
     const key = item?.key ?? null;
+
     this.loadProcessDefinitionVersions(key, type);
     if (type === 'source') {
       this.loadProcessDefinitionVersions(key, 'target');
@@ -132,6 +135,12 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
   public onVersionSelected(selection: ListItem | ListItem[], type: string) {
     const item = Array.isArray(selection) ? selection[0] : selection;
     this.loadProcess(item?.id ?? null, type);
+  }
+
+  public onSourceDefinitionClear(event: Event): void {
+    this.sourceVersionCombobox.clearInput(event);
+    this.targetDefinitionComboBox.clearInput(event);
+    this.targetVersionCombobox.clearInput(event);
   }
 
   public onTaskMappingSelected(selection: ListItem | ListItem[], nodeId: string) {
