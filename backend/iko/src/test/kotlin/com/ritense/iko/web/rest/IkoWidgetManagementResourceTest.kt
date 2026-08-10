@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.iko.service.IkoWidgetService
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.widget.divider.DividerWidget
+import com.ritense.widget.divider.DividerWidgetDto
 import com.ritense.widget.fields.FieldsWidget
 import com.ritense.widget.fields.FieldsWidgetDto
 import com.ritense.widget.fields.FieldsWidgetProperties
@@ -56,6 +58,8 @@ internal class IkoWidgetManagementResourceTest {
         objectMapper = MapperSingleton.get().copy().apply {
             this.registerSubtypes(FieldsWidget::class.java)
             this.registerSubtypes(FieldsWidgetDto::class.java)
+            this.registerSubtypes(DividerWidget::class.java)
+            this.registerSubtypes(DividerWidgetDto::class.java)
         }
 
         service = mock()
@@ -229,6 +233,28 @@ internal class IkoWidgetManagementResourceTest {
     }
 
     @Test
+    fun `should create iko divider widget without a title`() {
+        val divider = dividerWidget()
+        whenever(service.create(eq("klant"), eq("general"), any())).thenReturn(divider)
+
+        mockMvc.perform(
+            post(
+                "/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}",
+                "klant",
+                "general",
+                "my-divider"
+            )
+                .content(objectMapper.writeValueAsString(divider.toDto()))
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.type").value("divider"))
+            .andExpect(jsonPath("$.key").value("my-divider"))
+            .andExpect(jsonPath("$.title").value(""))
+    }
+
+    @Test
     fun `should delete iko widget`() {
         mockMvc.perform(
             delete(
@@ -241,6 +267,15 @@ internal class IkoWidgetManagementResourceTest {
             .andDo(print())
             .andExpect(status().isNoContent())
     }
+
+    private fun dividerWidget() = DividerWidget(
+        key = "my-divider",
+        title = "",
+        order = 1,
+        width = 4,
+        highContrast = false,
+        isCompact = false,
+    )
 
     private fun widget() = FieldsWidget(
         key = "partner",
