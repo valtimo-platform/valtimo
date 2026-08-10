@@ -63,6 +63,7 @@ export const LINKED_PLUGIN = {
   actionWithoutRequiredProperties: {
     key: 'link-uploaded-document-to-zaak',
     label: 'Link uploaded document to zaak',
+    configurationMessage: 'Linking an uploaded document to a zaak requires no configuration.',
   },
   /** Has two required properties, so Complete stays disabled until they are filled. */
   actionWithRequiredProperties: {
@@ -71,10 +72,23 @@ export const LINKED_PLUGIN = {
     description:
       'This action creates a zaak in the Zaken API and links the new zaak with the case.',
     requiredPropertyLabels: ['RSIN (required)', 'Zaaktype URL (required)'],
+    /**
+     * Values the required properties are filled with. Never executed — the link
+     * only has to be *configurable*, so the zaaktype URL need not resolve.
+     */
+    values: {
+      rsin: '002564440',
+      zaaktypeUrl: 'http://localhost:8001/catalogi/api/v1/zaaktypen/e2e-building-block',
+    },
   },
 } as const;
 
-/** A second plugin definition, used to assert the list is not a single row. */
+/**
+ * A second plugin definition, used to assert the list is not a single row.
+ *
+ * Both plugins are picked for a *service task*: the definitions on offer are
+ * filtered by activity type, and a user task is only offered `portaaltaak`.
+ */
 export const OTHER_PLUGIN = {
   definitionKey: 'documentenapi',
   title: 'Documenten API',
@@ -84,12 +98,28 @@ export const BUILDING_BLOCK_PLUGIN_TEXTS = {
   /** Steps of the plugin branch of the wizard, in order. */
   wizardSteps: ['Select plugin definition', 'Choose your action', 'Configure your action'],
   modalHeading: (stepName: string) => `Process step: ${stepName}`,
-  /** Link types offered by a user task inside a building block. */
-  userTaskLinkTypes: ['form', 'form-flow', 'plugin'],
-  /** Disabled inside a building block — see UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK. */
+  /** Description of the plugin selection step, which names *definitions*. */
+  selectPluginDescription: 'Choose the plugin definition you want to link to the process step.',
+  /**
+   * Columns of the plugin selection list. The first one holds the logo and has no
+   * header text.
+   */
+  selectPluginColumns: ['', 'Plugin name', 'Plugin description'],
+  /**
+   * Link types a user task offers. `ui-component` is listed too but rendered
+   * disabled — see `UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK`.
+   */
+  userTaskLinkTypes: ['form', 'form-flow', 'plugin', 'ui-component'],
+  userTaskEnabledLinkTypes: ['form', 'form-flow', 'plugin'],
   unsupportedLinkType: 'ui-component',
   /** A call activity is the only step type that may point at another building block. */
   callActivityLinkTypes: ['plugin', 'building-block'],
+  /**
+   * Header of the wizard while an existing plugin link is being edited. Inside a
+   * building block the link points at a plugin *definition*, so there is no
+   * configuration title to show and the placeholder is rendered instead.
+   */
+  noPluginConfigurationLabel: 'Plugin configuration: -',
 } as const;
 
 export const BUILDING_BLOCK_PLUGIN_API = {

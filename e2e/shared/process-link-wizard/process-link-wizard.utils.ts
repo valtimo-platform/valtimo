@@ -53,6 +53,15 @@ export class ProcessLinkWizard {
     return this.page.getByTestId(PROCESS_LINK_MODAL_TEST_IDS.progressIndicator);
   }
 
+  /**
+   * Shown while editing an existing link. Inside a building block it reads
+   * `Plugin configuration: -`: the link points at a plugin *definition*, so no
+   * configuration is bound to it yet.
+   */
+  get pluginConfigurationLabel(): Locator {
+    return this.page.getByTestId(PROCESS_LINK_MODAL_TEST_IDS.pluginConfigurationLabel);
+  }
+
   get cancelButton(): Locator {
     return this.page.getByTestId(PROCESS_LINK_MODAL_TEST_IDS.cancelButton);
   }

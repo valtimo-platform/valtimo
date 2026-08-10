@@ -4,13 +4,13 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 24        | 17         | 6              |
-| Admin Features (ROLE_ADMIN) | 15       | 361       | 340        | 16             |
-| **Total**                   | **20**   | **385**   | **357**    | **22**         |
+| User Features (ROLE_USER)   | 5        | 25        | 20         | 4              |
+| Admin Features (ROLE_ADMIN) | 15       | 365       | 352        | 7              |
+| **Total**                   | **20**   | **390**   | **372**    | **11**         |
 
-**Coverage:** `357 / 385` — `92.7%`
+**Coverage:** `372 / 390` — `95.4%`
 
-> Counts are one per numbered row. The remainder of each category is `N/A` (5) or `⏳` (1).
+> Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (1).
 
 ---
 
@@ -70,11 +70,12 @@
 
 ### Feature 4 — Objects
 
-| #   | Function              | Test Scenarios                                            | Coverage | Notes                                           |
-|:----|:----------------------|:----------------------------------------------------------|:--------:|:------------------------------------------------|
-| 4.1 | View objects per type | Display objects filtered by type                          |    ❌    |                                                 |
-| 4.2 | View object details   | Open and view object details                              |    ❌    |                                                 |
-| 4.3 | Search/filter objects | Search objects by criteria · Filter objects using filters |    ❌    |                                                 |
+| #    | Function              | Test Scenarios                                                                          | Coverage | Notes                                                                                                                                                                                                                          |
+|:-----|:----------------------|:-----------------------------------------------------------------------------------------|:--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1  | View objects per type | Lists the objects of one type · Columns match the API · List is scoped to the type        |    ✅    | user-objects.spec.ts — read-only against the seeded type. With no list columns configured the component falls back to `Record index` / `Object URL`; while loading it renders a **second** `valtimo-carbon-list`, so waits must be for that placeholder to go |
+| 4.2  | View object details   | Row click opens the object · Direct URL works · Summary form with edit/delete actions     |    ✅    | user-objects.spec.ts — the row navigates on the plain object id, not the full Objecten API URL                                                                                                                                  |
+| 4.2a | Handle unknown object | An unknown object id renders no summary form                                              |    ✅    | user-objects.spec.ts (failure scenario)                                                                                                                                                                                        |
+| 4.3  | Search/filter objects | Search objects by criteria · Filter objects using filters                                 |    ❌    | **Blocked.** The search panel is only wired when the type has *list columns* configured (`columnType === CUSTOM`); otherwise the component issues a GET that ignores the filters. With a list column configured, `POST /api/v1/object-management/configuration/{id}/object` returns **400 with an empty body** — even for an empty `{}` filter body — and `catchError` turns it into an empty list, so the UI silently shows "no results". Needs a backend look before it can be tested |
 
 ---
 
@@ -471,10 +472,12 @@ Covers the standalone `/processes` admin page (the *independent* process context
 
 ### Feature 12 — Object Management
 
-| #    | Function                       | Test Scenarios                 | Coverage | Notes                                           |
-|:-----|:-------------------------------|:-------------------------------|:--------:|:------------------------------------------------|
-| 12.1 | Manage object types            | Manage object types            |    ❌    |                                                 |
-| 12.2 | Edit object type configuration | Edit object type configuration |    ❌    |                                                 |
+| #     | Function                       | Test Scenarios                                                                              | Coverage | Notes                                                                                                                                                                                                              |
+|:------|:-------------------------------|:----------------------------------------------------------------------------------------------|:--------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 12.1  | Manage object types            | Overview lists every configuration · Create one through the modal · It is persisted             |    ✅    | object-management.spec.ts — `objecttype_id` is **unique** across configurations, so each run generates its own id rather than reusing a seeded one                                                                   |
+| 12.2  | Edit object type configuration | Detail page with its tabs and actions · Edit the configuration · The change survives a reload   |    ✅    | object-management.spec.ts — the List tab renders even without list columns (its `*ngIf` gets an empty array, which is truthy). "Show in menu" is a Carbon checkbox: the real input is hidden, so its label is clicked |
+| 12.1a | Reject incomplete object type  | Save stays disabled until every required field is filled, and again when one is cleared         |    ✅    | object-management.spec.ts (failure scenario)                                                                                                                                                                       |
+| 12.1b | Reject duplicate objecttype ID | A taken objecttype ID returns 500, the modal stays open, nothing is created                     |    ✅    | object-management.spec.ts (failure scenario) — no error is surfaced to the user today; that is deliberately not asserted, so a fix adding one will not break the test                                                |
 
 ---
 
@@ -553,15 +556,17 @@ Covers the standalone `/processes` admin page (the *independent* process context
 
 #### 13E · BB Plugin Integration
 
-| #     | Function                       | Test Scenarios                             | Coverage | Notes                                           |
-|:------|:-------------------------------|:-------------------------------------------|:--------:|:------------------------------------------------|
-| 13.39 | View available plugins         | View available process plugins             |    ❌    |                                                 |
-| 13.40 | Select plugin for step         | Select plugin for process step             |    ❌    |                                                 |
-| 13.41 | Configure plugin properties    | Configure plugin-specific properties       |    ❌    |                                                 |
-| 13.42 | View plugin requirements       | View plugin requirements and descriptions  |    ❌    |                                                 |
-| 13.43 | Link action to plugin          | Link action to plugin definition           |    ❌    |                                                 |
-| 13.44 | Configure execution properties | Configure execution properties for plugins |    ❌    |                                                 |
-| 13.45 | View plugin warnings           | View plugin configuration warnings         |    ❌    |                                                 |
+| #      | Function                       | Test Scenarios                                                                                     | Coverage | Notes                                                                                                                                                                                                                    |
+|:-------|:-------------------------------|:----------------------------------------------------------------------------------------------------|:--------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 13.39  | View available plugins         | Service task lists the plugin definitions it can be linked to · List is a subset of the API          |    ✅    | building-block-plugins.spec.ts — a service task can only carry a plugin link, so the wizard skips the link type chooser. The UI drops definitions without a frontend plugin specification, so it lists 8 of the API's 12    |
+| 13.40  | Select plugin for step         | Picking a plugin enables Next and reveals its actions · A call activity reaches it via the chooser   |    ✅    | building-block-plugins.spec.ts — the definitions offered are filtered by activity type: a service task gets 8, a user task only `portaaltaak`                                                                              |
+| 13.41  | Configure plugin properties    | Action without properties is completable at once · Action with properties renders its form           |    ✅    | building-block-plugins.spec.ts                                                                                                                                                                                            |
+| 13.42  | View plugin requirements       | Logo / name / description columns · Wizard step titles · Action description and required labels      |    ✅    | building-block-plugins.spec.ts — the step names plugin **definitions**, so the column reads "Plugin name" rather than "Configuration name"                                                                                 |
+| 13.43  | Link action to plugin          | Complete swaps the panel to Edit/Unlink · Save persists the link · Reopening shows the stored action |    ✅    | building-block-plugins.spec.ts — the link lives in the modeler until the diagram is saved, and saving deploys a **new** definition, so the persisted link must be read with the id the save produced                        |
+| 13.44  | Configure execution properties | Properties are filled, stored on the link, and prefilled when reopened                              |    ✅    | building-block-plugins.spec.ts — stored as `actionProperties`; the link carries `pluginConfigurationId: null` and `referenceType: BUILDING_BLOCK`, because the configuration is only bound when a case links the block      |
+| 13.45  | View plugin warnings           | View plugin configuration warnings                                                                  |   `N/A`  | No warning UI exists inside a building block — the plugin dependency warning is raised on the **case** side, in the wizard's building block plugins step, and is covered by 6.33                                             |
+| 13.45a | Reject incomplete action config | Complete stays disabled until *every* required property is filled, and again when one is cleared     |    ✅    | building-block-plugins.spec.ts (failure scenario)                                                                                                                                                                         |
+| 13.45b | Block unsupported link type    | A user task offers `ui-component` but renders it disabled                                           |    ✅    | building-block-plugins.spec.ts (failure scenario) — see `UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK`                                                                                                                 |
 
 ---
 
@@ -759,9 +764,9 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   385   |
-| ✅ Covered by Playwright |   357   |
-| ❌ Not covered           |   22    |
+| Total Functions          |   390   |
+| ✅ Covered by Playwright |   372   |
+| ❌ Not covered           |   11    |
 | ⏳ In progress           |    1    |
-| `N/A` Not applicable     |    5    |
-| **Coverage %**           | **92.7%** |
+| `N/A` Not applicable     |    6    |
+| **Coverage %**           | **95.4%** |

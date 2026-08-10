@@ -28,6 +28,7 @@ import {
   CONFIRMATION_MODAL_TEST_IDS,
   PROCESS_LINK_PANEL_TEST_IDS,
   PROCESS_MANAGEMENT_BUILDER_TEST_IDS,
+  ZAKEN_API_CREATE_ZAAK_ACTION_TEST_IDS,
 } from '../../constants';
 import {BpmnModeler} from '../../shared/bpmn-modeler/bpmn-modeler.utils';
 import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.utils';
@@ -48,6 +49,25 @@ export interface BuildingBlockProcessDefinition {
   versionTag: string;
   main: boolean;
   draft: boolean;
+}
+
+/**
+ * A stored process link. Inside a building block the link points at a plugin
+ * *definition* — `pluginConfigurationId` stays null and `referenceType` is
+ * `BUILDING_BLOCK`, because the configuration is only bound later, when a case
+ * links to the building block.
+ */
+export interface ProcessLink {
+  id: string;
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  pluginConfigurationId: string | null;
+  referenceType: string;
+  pluginDefinitionKey: string;
+  pluginActionDefinitionKey: string;
+  actionProperties: Record<string, unknown>;
 }
 
 export function escapeForRegExp(value: string): string {
@@ -379,6 +399,64 @@ export class BuildingBlockProcessesPage {
         name: BUILDING_BLOCK_PROCESS_TEXTS.processLinkModalHeading,
       })
     ).not.toBeVisible();
+  }
+
+  /**
+   * Select a step and open the link wizard for it in one go — every plugin test
+   * starts this way.
+   */
+  async openLinkWizardForStep(
+    key: string,
+    versionTag: string,
+    processDefinitionId: string,
+    elementId: string
+  ) {
+    await this.goToProcessBuilder(key, versionTag, processDefinitionId);
+    await this.modeler.selectElement(elementId);
+    await this.openProcessLinkModalFromPanel();
+  }
+
+  // ─── Plugin action configuration ──────────────────────────────────
+
+  /**
+   * A required property of the "Create zaak" action. The test id sits on the
+   * `v-input` host, so the field itself is one level down — the inner `<input>`
+   * carries no `name` attribute of its own.
+   */
+  private createZaakInput(testId: string): Locator {
+    return this.page.getByTestId(testId).locator('input');
+  }
+
+  get createZaakRsinInput(): Locator {
+    return this.createZaakInput(ZAKEN_API_CREATE_ZAAK_ACTION_TEST_IDS.rsin);
+  }
+
+  get createZaakZaaktypeUrlInput(): Locator {
+    return this.createZaakInput(ZAKEN_API_CREATE_ZAAK_ACTION_TEST_IDS.zaaktypeUrl);
+  }
+
+  /** Fill both required properties of the "Create zaak" action. */
+  async fillCreateZaakProperties(values: {rsin: string; zaaktypeUrl: string}) {
+    await this.createZaakRsinInput.fill(values.rsin);
+    await this.createZaakZaaktypeUrlInput.fill(values.zaaktypeUrl);
+  }
+
+  // ─── Process link API ─────────────────────────────────────────────
+
+  /**
+   * Process links stored for a process definition.
+   *
+   * A link made in the modeler only lives in memory until the diagram is saved,
+   * and saving deploys a *new* definition — so this is always read with the id
+   * the save produced, never the one the wizard was opened on.
+   */
+  async getProcessLinksViaApi(processDefinitionId: string): Promise<ProcessLink[]> {
+    return apiGet<ProcessLink[]>(BUILDING_BLOCK_PLUGIN_API.processLinks(processDefinitionId));
+  }
+
+  /** Plugin definitions the backend offers for an activity type. */
+  async getPluginDefinitionsViaApi(activityType: string): Promise<{key: string}[]> {
+    return apiGet<{key: string}[]>(BUILDING_BLOCK_PLUGIN_API.pluginDefinitions(activityType));
   }
 
   // ─── API helpers ──────────────────────────────────────────────────

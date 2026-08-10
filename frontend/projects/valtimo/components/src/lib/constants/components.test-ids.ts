@@ -117,3 +117,26 @@ export const COLOR_PICKER_TEST_IDS = {
   container: 'colorPickerContainer',
   trigger: 'colorPickerTrigger',
 } as const;
+
+/**
+ * The shared `valtimo-search-fields` panel, used by the case list, the object
+ * list and the IKO views.
+ *
+ * The component already carries a few `data-testid` attributes (no dash), which
+ * do not match the `data-test-id` attribute Playwright is configured with, so
+ * these are bound alongside them rather than replacing them.
+ */
+export const SEARCH_FIELDS_TEST_IDS = {
+  accordionItem: 'searchFieldsAccordionItem',
+  clearButton: 'searchFieldsClearButton',
+  saveButton: 'searchFieldsSaveButton',
+  searchButton: 'searchFieldsSearchButton',
+  noFieldsMessage: 'searchFieldsNoFieldsMessage',
+} as const;
+
+/**
+ * Prefix for one search field of the panel. The full test id is
+ * `searchField-<searchFieldKey>`, and it sits on the field *wrapper* — the input
+ * itself is one level down.
+ */
+export const SEARCH_FIELD_TEST_ID_PREFIX = 'searchField-';
