@@ -74,3 +74,12 @@
 * **Exporting case definitions**
 
   Case definitions that had a process definition removed via the database were unable to be exported.
+
+## Security
+
+* **Permission checks only accept known resource types**
+
+  When Valtimo was asked whether a user may perform an action, the resource type in that question was taken at
+  face value, which allowed any signed-in user to make the server load arbitrary internal parts of the
+  application. Only the resource types that can be selected under **Access control** are accepted now, and
+  anything else is answered as "not permitted", so normal use is unaffected.
