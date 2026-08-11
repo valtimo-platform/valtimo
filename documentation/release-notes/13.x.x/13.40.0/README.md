@@ -33,6 +33,15 @@
   See the [widget documentation](../../../features/case/case-detail/tabs/widgets.md) for the configuration
   details.
 
+* **Continuous sync of building block output mappings**
+
+  Each building block output mapping can now be configured to sync either at the **End** of the building block
+  (the existing behaviour, and still the default) or **Continuously**. A continuous mapping is written back to the
+  parent context on every saved change to the building block data, while the building block is still running,
+  instead of only when it completes. This works for building blocks linked to a call activity, started ad-hoc as a
+  case action, and used in independent processes (writing to process variables via the `pv:` prefix). See the
+  [building block documentation](../../../features/building-blocks/README.md) for the configuration details.
+
 ## Enhancements
 
 * **Zaaktype dropdown now shows the begin and end date**

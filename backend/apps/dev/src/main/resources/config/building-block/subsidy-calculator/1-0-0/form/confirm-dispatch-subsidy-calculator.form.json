@@ -1,0 +1,57 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "HTML",
+            "tag": "h3",
+            "content": "Bevestig Afhandeling",
+            "refreshOnChange": false,
+            "key": "html-title",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "HTML",
+            "content": "De berekening is klaar, maar de building block loopt nog. Open nu de zaak: de velden met continue synchronisatie (Berekening Resultaten en Beoordeling) staan er al op, terwijl de velden die pas aan het einde synchroniseren (Zaak Eigenschappen en ZGW Samenvatting) nog leeg zijn. Bevestig hieronder om de building block af te ronden; daarna verschijnen ook de resterende velden op de zaak.",
+            "refreshOnChange": false,
+            "key": "html-description",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Definitief subsidiebedrag (EUR)",
+            "tableView": true,
+            "key": "finalSubsidyAmount",
+            "type": "number",
+            "input": true,
+            "disabled": true
+        },
+        {
+            "label": "Besluit beoordelaar",
+            "tableView": true,
+            "key": "approvalDecision",
+            "type": "textfield",
+            "input": true,
+            "disabled": true
+        },
+        {
+            "label": "Opmerkingen beoordelaar",
+            "tableView": true,
+            "key": "reviewerRemarks",
+            "type": "textarea",
+            "input": true,
+            "rows": 2,
+            "disabled": true
+        },
+        {
+            "type": "button",
+            "label": "Bevestig en Rond Af",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}
