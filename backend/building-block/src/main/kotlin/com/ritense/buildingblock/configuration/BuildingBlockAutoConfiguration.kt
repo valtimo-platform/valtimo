@@ -19,6 +19,7 @@ package com.ritense.buildingblock.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
+import com.ritense.buildingblock.listener.BuildingBlockContinuousSyncListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
@@ -604,6 +605,24 @@ class BuildingBlockAutoConfiguration {
         caseDefinitionBuildingBlockLinkService,
         documentService,
         valueResolverService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockContinuousSyncListener::class)
+    fun buildingBlockContinuousSyncListener(
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        processLinkService: ProcessLinkService,
+        caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
+        documentService: DocumentService,
+        valueResolverService: ValueResolverService,
+        runtimeService: RuntimeService,
+    ) = BuildingBlockContinuousSyncListener(
+        buildingBlockInstanceService,
+        processLinkService,
+        caseDefinitionBuildingBlockLinkService,
+        documentService,
+        valueResolverService,
+        runtimeService,
     )
 
     @Bean
