@@ -142,6 +142,14 @@ import {
 
 import {devDeclarations, devImports, devProviders, devTabs} from './dev-tools';
 import {pluginImports, pluginSpecifications} from './app-plugins';
+import {
+  DocumentGeneratorPluginModule,
+  documentGeneratorPluginSpecification,
+  MailTemplatePluginModule,
+  mailTemplatePluginSpecification,
+  TextTemplatePluginModule,
+  textTemplatePluginSpecification,
+} from '@valtimo-plugins/freemarker';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -244,6 +252,9 @@ export function tabsFactory() {
     KlantinteractiesApiPluginModule,
     OpenKlantTokenAuthenticationPluginModule,
     ...pluginImports,
+    DocumentGeneratorPluginModule,
+    MailTemplatePluginModule,
+    TextTemplatePluginModule,
     ...(environment.production ? [] : devImports),
   ],
   providers: [
@@ -284,6 +295,7 @@ export class AppModule {
     registerFormioCurrentUserComponent(injector);
     registerFormioFileSelectorComponent(injector);
     registerFormioUploadComponent(injector);
+    registerFormioMailPreviewComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
     registerFormioIbanComponent(injector);
     registerDocumentenApiFormioUploadComponent(injector);
