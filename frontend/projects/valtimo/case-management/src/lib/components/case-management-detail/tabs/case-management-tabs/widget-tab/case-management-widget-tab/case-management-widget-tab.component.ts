@@ -236,7 +236,10 @@ export class CaseManagementWidgetTabComponent
   }
 
   private initBreadcrumbs(): void {
-    this.caseManagementRouteParams$.subscribe(params => {
+    combineLatest([
+      this.caseManagementRouteParams$,
+      this.translateService.stream('caseManagement.tabs.caseDetailsTab.title'),
+    ]).subscribe(([params, caseDetailsTitle]) => {
       const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
 
       this.breadcrumbService.setThirdBreadcrumb({
@@ -247,7 +250,7 @@ export class CaseManagementWidgetTabComponent
 
       this.breadcrumbService.setFourthBreadcrumb({
         route: [`${route}/case-details`],
-        content: this.translateService.instant('caseManagement.tabs.caseDetailsTab.title'),
+        content: caseDetailsTitle,
         href: `${route}/case-details`,
       });
     });

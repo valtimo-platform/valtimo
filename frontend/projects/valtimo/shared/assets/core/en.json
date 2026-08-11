@@ -1198,7 +1198,7 @@
       "keyDuplicated": "This key is already in use. Please change to a unique key.",
       "colorPlaceholder": "Choose a color",
       "showRetentionPeriod": "Set retention period",
-      "retentionPeriodExistingCasesWarning": "The retention period for existing cases cases with this status will not be updated automatically.",
+      "retentionPeriodExistingCasesWarning": "The retention period for existing cases with this status will not be updated automatically.",
       "columns": {
         "title": "Status name",
         "retentionPeriod": "Retention period in days",
@@ -1590,9 +1590,9 @@
     "actionButtonLabel": "Action button type",
     "externalLink": {
       "linkLabel": "Target URL (with placeholders)",
-      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "linkPlaceholder": "https://ritense.nl/case/${doc:/case/id}",
       "buttonTextLabel": "Button label",
-      "buttonTextPlaceholder": "'Go to zaak'",
+      "buttonTextPlaceholder": "'Go to case'",
       "openInNewTabLabel": "Open in new tab"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
@@ -2378,12 +2378,12 @@
     "hostInUseModal": {
       "title": "Plugin host is in use",
       "thisHost": "this plugin host",
-      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs or building blocks still use a plugin or configuration from this host. Remove these usages first."
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs, case widgets or building blocks still use a plugin or configuration from this host. Remove these usages first."
     },
     "configurationInUseModal": {
       "title": "Plugin configuration is in use",
       "thisConfiguration": "this plugin configuration",
-      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs or building blocks still reference it. Remove these usages first."
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs, case widgets or building blocks still reference it. Remove these usages first."
     },
     "usageModal": {
       "headers": {

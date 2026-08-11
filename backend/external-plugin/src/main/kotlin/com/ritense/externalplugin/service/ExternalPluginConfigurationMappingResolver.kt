@@ -132,8 +132,10 @@ open class ExternalPluginConfigurationMappingResolver(
      * and `CaseWidgetTabImporter.afterImport` so a dangling `EXTERNAL_PLUGIN` case tab or
      * `external-plugin` case widget is detected reliably at import time. (Neither surface has a
      * process link, so they would otherwise depend on an incidental process-link recheck, which fires
-     * only AFTER_COMMIT and does not persist during import.) Re-publishes all four per-surface
-     * verdicts; idempotent when a surface is already correct.
+     * only AFTER_COMMIT and does not persist during import.) Also triggered from
+     * `CaseWidgetService.updateWidgetTab` so a widget saved over management REST with an unresolvable
+     * configuration id raises its issue immediately. Re-publishes all four per-surface verdicts;
+     * idempotent when a surface is already correct.
      */
     override fun recheckIssuesForCaseDefinition(caseDefinitionId: CaseDefinitionId) {
         checkForRemainingIssues(caseDefinitionId, processDefinitionIdsFor(caseDefinitionId))

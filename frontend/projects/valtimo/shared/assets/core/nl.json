@@ -1019,7 +1019,7 @@
         "invalidKeyError": "De key voor deze tab mag alleen letters, nummers en dashes bevatten.",
         "widgetsComponent": "Widgets component",
         "externalPlugin": "Plugin",
-        "externalPluginDisabled": "Er zijn geen geactiveerde plugins met een zaaktabblad, of ze zijn allemaal al toegevoegd.",
+        "externalPluginDisabled": "Er zijn geen geactiveerde plugins met een dossiertabblad, of ze zijn allemaal al toegevoegd.",
         "visibleTitle": "Takenlijst zichtbaar op tabblad",
         "visible": "Zichtbaar",
         "invisible": "Niet zichtbaar"
@@ -1212,7 +1212,7 @@
       "keyDuplicated": "Deze sleutel is al in gebruik. Kies een unieke sleutel.",
       "colorPlaceholder": "Kies een kleur",
       "showRetentionPeriod": "Bewaartermijn instellen",
-      "retentionPeriodExistingCasesWarning": "Reeds aangemaakte zaken met deze status worden niet automatisch bijgewerkt met een nieuwe bewaartermijn.",
+      "retentionPeriodExistingCasesWarning": "Reeds aangemaakte dossiers met deze status worden niet automatisch bijgewerkt met een nieuwe bewaartermijn.",
       "columns": {
         "title": "Statusnaam",
         "retentionPeriod": "Bewaartermijn in dagen",
@@ -1615,9 +1615,9 @@
     "actionButtonLabel": "Type actieknop",
     "externalLink": {
       "linkLabel": "Link-URL (met variabelen)",
-      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "linkPlaceholder": "https://ritense.nl/dossier/${doc:/dossier/id}",
       "buttonTextLabel": "Knoptekst",
-      "buttonTextPlaceholder": "'Ga naar zaak'",
+      "buttonTextPlaceholder": "'Ga naar dossier'",
       "openInNewTabLabel": "Open in nieuw tabblad"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
@@ -2350,7 +2350,7 @@
       "capabilitiesHeading": "Hostcapaciteiten",
       "capabilityHeading": "Capaciteit",
       "capability": {
-        "gzac_api": "Geauthenticeerde API-aanroepen doen naar de GZAC-instantie (zaakgegevens, taken, documenten lezen en schrijven, enz.)",
+        "gzac_api": "Geauthenticeerde API-aanroepen doen naar de GZAC-instantie (dossiergegevens, taken, documenten lezen en schrijven, enz.)",
         "http_request": "Uitgaande HTTP-verzoeken doen naar externe diensten",
         "kv": "Persistente sleutel-waardeparen opslaan en ophalen, beperkt tot deze configuratie",
         "log": "Gestructureerde logboekregels schrijven die zichtbaar zijn voor beheerders",
@@ -2405,12 +2405,12 @@
     "hostInUseModal": {
       "title": "Plugin-host is in gebruik",
       "thisHost": "deze plugin-host",
-      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, zaaktabbladen of bouwblokken nog gebruikmaken van een plugin of configuratie van deze host. Verwijder eerst deze verwijzingen."
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, dossiertabbladen, dossierwidgets of bouwblokken nog gebruikmaken van een plugin of configuratie van deze host. Verwijder eerst deze verwijzingen."
     },
     "configurationInUseModal": {
       "title": "Plugin-configuratie is in gebruik",
       "thisConfiguration": "deze plugin-configuratie",
-      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, zaaktabbladen of bouwblokken er nog naar verwijzen. Verwijder eerst deze verwijzingen."
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, dossiertabbladen, dossierwidgets of bouwblokken er nog naar verwijzen. Verwijder eerst deze verwijzingen."
     },
     "usageModal": {
       "headers": {
@@ -2425,8 +2425,8 @@
         "BUILDING_BLOCK": "Bouwblok",
         "GLOBAL": "Globaal"
       },
-      "caseTab": "Zaaktabblad",
-      "caseWidget": "Zaakwidget",
+      "caseTab": "Dossiertabblad",
+      "caseWidget": "Dossierwidget",
       "buildingBlockMapping": "Plugin-koppeling van bouwblok"
     },
     "compatibility": {
@@ -2885,10 +2885,10 @@
       }
     },
     "resourceTypes": {
-      "caseDefinition": "Zaakdossier-definitie",
-      "caseTab": "Zaakdossier-tab",
-      "caseWidget": "Zaakdossier-widget",
-      "caseWidgetTabWidget": "Zaakdossier-tab-widget",
+      "caseDefinition": "Dossierdefinitie",
+      "caseTab": "Dossiertabblad",
+      "caseWidget": "Dossierwidget",
+      "caseWidgetTabWidget": "Dossiertabblad-widget",
       "dashboard": "Dashboard",
       "jsonSchemaDocument": "Document",
       "jsonSchemaDocumentDefinition": "Documentdefinitie",
@@ -3001,14 +3001,14 @@
       "tooltips": {
         "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een dossierdefinitie, document of taak.",
         "actions": "Wat deze rol met de resource mag doen. Bijvoorbeeld: bekijken, wijzigen of verwijderen. Er moet minstens één geselecteerd zijn.",
-        "conditionType": "Veld vergelijkt een eigenschap van de resource. JSON-veld leest een waarde op een JSON-pad in de JSON-inhoud van het veld. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een zaak).",
+        "conditionType": "Veld vergelijkt een eigenschap van de resource. JSON-veld leest een waarde op een JSON-pad in de JSON-inhoud van het veld. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een dossier).",
         "field": "Een eigenschap van de resource om te controleren. Bijvoorbeeld: name, createdBy of active.",
         "operator": "Hoe het veld met de waarde wordt vergeleken. Bijvoorbeeld: is gelijk aan, is een van, of bevat.",
         "value": "De waarde om mee te vergelijken — bijv. tekst zoals OPEN, een getal zoals 42, true/false, of een van de ondersteunde placeholders: ${currentUserId}, ${currentUsername}, ${currentUserEmail}, ${currentUserRoles}, ${currentUserTeams}. Voor de operatoren 'is een van' en 'bevat' voer je een JSON-array in, zoals [\"OPEN\", \"CLOSED\"]. Typ null voor geen waarde — het veld mag niet leeg zijn.",
         "path": "Een JSON-pad in de inhoud van het veld dat is gekozen bij 'Veld om uit te lezen'. Bijvoorbeeld: /root/status of /aanvrager/bsn.",
         "clazz": "Het volledige Java-type van de waarde. Bijvoorbeeld: java.lang.String of java.lang.Boolean.",
-        "relatedResource": "De gekoppelde resource waartegen de geneste voorwaarden worden geëvalueerd. Bijvoorbeeld: het document dat aan een zaak hangt.",
-        "contextResourceType": "Verleen deze permissie alleen wanneer de resource binnen een andere resource wordt benaderd. Bijvoorbeeld: documenten binnen een specifieke zaakdefinitie."
+        "relatedResource": "De gekoppelde resource waartegen de geneste voorwaarden worden geëvalueerd. Bijvoorbeeld: het document dat aan een dossier hangt.",
+        "contextResourceType": "Verleen deze permissie alleen wanneer de resource binnen een andere resource wordt benaderd. Bijvoorbeeld: documenten binnen een specifieke dossierdefinitie."
       }
     },
     "overview": {
@@ -3052,9 +3052,9 @@
       },
       "fields": {
         "caseDefinition": {
-          "idKey": "zaakdossier-definitie-sleutel",
-          "idVersionTag": "zaakdossier-definitie-versie",
-          "name": "zaakdossier-definitie-naam",
+          "idKey": "dossierdefinitie-sleutel",
+          "idVersionTag": "dossierdefinitie-versie",
+          "name": "dossierdefinitie-naam",
           "description": "omschrijving",
           "basedOnVersionTag": "gebaseerd op versie",
           "final": "is definitief",
@@ -3071,8 +3071,8 @@
           "createdDate": "aanmaakdatum"
         },
         "caseTab": {
-          "idCaseDefinitionIdKey": "zaakdossier-definitie-sleutel",
-          "idCaseDefinitionIdVersionTag": "zaakdossier-definitie-versie",
+          "idCaseDefinitionIdKey": "dossierdefinitie-sleutel",
+          "idCaseDefinitionIdVersionTag": "dossierdefinitie-versie",
           "idKey": "tab-sleutel",
           "name": "tab-naam",
           "tabOrder": "tab-volgorde",
@@ -3108,8 +3108,8 @@
           "assignedTeamTitle": "toegewezen team-titel",
           "documentDefinitionIdName": "documentdefinitie-naam",
           "documentDefinitionIdVersion": "documentdefinitie-versie",
-          "documentDefinitionIdCaseDefinitionIdKey": "zaakdossier-definitie-sleutel (via documentdefinitie)",
-          "documentDefinitionIdCaseDefinitionIdVersionTag": "zaakdossier-definitie-versie (via documentdefinitie)",
+          "documentDefinitionIdCaseDefinitionIdKey": "dossierdefinitie-sleutel (via documentdefinitie)",
+          "documentDefinitionIdCaseDefinitionIdVersionTag": "dossierdefinitie-versie (via documentdefinitie)",
           "version": "versie",
           "createdOn": "aangemaakt op",
           "modifiedOn": "gewijzigd op",
@@ -3138,7 +3138,7 @@
           "order": "volgorde"
         },
         "zgwDocument": {
-          "caseDocumentId": "zaakdocument-ID",
+          "caseDocumentId": "dossierdocument-ID",
           "vertrouwelijkheidaanduiding": "vertrouwelijkheidaanduiding",
           "status": "status",
           "informatieobjecttypeUrl": "informatieobjecttype-URL",
@@ -3170,7 +3170,7 @@
           "activityId": "huidige activiteit",
           "activityInstanceId": "activiteit-instantie-ID",
           "active": "is actief",
-          "caseInstanceId": "zaakinstantie-ID",
+          "caseInstanceId": "dossierinstantie-ID",
           "processInstanceId": "procesinstantie-ID",
           "processDefinitionId": "procesdefinitie-ID",
           "processDefinitionKey": "procesdefinitie-sleutel",
@@ -3207,8 +3207,8 @@
           "lastUpdated": "laatst bijgewerkt",
           "dueDate": "vervaldatum",
           "followUpDate": "opvolgdatum",
-          "caseInstanceId": "zaakinstantie-ID",
-          "caseDefinitionId": "zaakdefinitie-ID",
+          "caseInstanceId": "dossierinstantie-ID",
+          "caseDefinitionId": "dossierdefinitie-ID",
           "processInstanceId": "procesinstantie-ID",
           "processDefinitionId": "procesdefinitie-ID",
           "processDefinitionKey": "procesdefinitie-sleutel",
@@ -3498,7 +3498,7 @@
       },
       "required": "Vereist",
       "runtimeSubmenu": "Dynamisch submenu",
-      "runtimeSubmenuNote": "Het submenu van dit item wordt tijdens runtime gevuld (bijvoorbeeld vastgezette zaken) en kan hier niet worden bewerkt.",
+      "runtimeSubmenuNote": "Het submenu van dit item wordt tijdens runtime gevuld (bijvoorbeeld vastgezette dossiers) en kan hier niet worden bewerkt.",
       "allPlaced": "Alle items staan al in het menu.",
       "emptyStructure": "Sleep items hierheen om het menu samen te stellen.",
       "emptySection": "Sleep items hierheen",
