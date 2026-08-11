@@ -6,9 +6,20 @@
 
 ## New Features
 
-* **New feature title**
+* **Send a message to a case and its building blocks**
 
-  New feature explanation.
+  Processes can now send a message to a whole case: the case's own processes and all of its building blocks receive
+  it. This makes it possible to let a building block react to something that happens elsewhere in the case, and to let
+  building blocks signal each other. Messages can also be sent to another case, for example a related one. The new
+  methods sit on the existing `correlationService`, next to the other correlation methods — see
+  [correlating messages](../../../features/process/correlation-service.md#correlating-to-a-whole-case-including-its-building-blocks).
+
+* **Start a building block with a message**
+
+  A building block can now be started by sending a message to the case, instead of only from a call activity or from
+  the case's **Start** menu. See
+  [Start a building block by message](../../../features/building-blocks/README.md#start-a-building-block-by-message).
+
 
 ## Enhancements
 
@@ -59,6 +70,10 @@
   Starting a building block from the 'Start' menu of a case did nothing when the start form of its
   main process is configured to be shown in a panel. The panel now opens right away. Previously it
   only appeared after first opening the start form of a regular process in the panel.
+
+* **Exporting case definitions**
+
+  Case definitions that had a process definition removed via the database were unable to be exported.
 
 ## Security
 
