@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.service
 
 import com.ritense.case_.service.CaseExternalPluginTabService
+import com.ritense.case_.service.CaseExternalPluginWidgetService
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
@@ -51,6 +52,11 @@ class ExternalPluginHostUsageResolver(
      */
     private val caseExternalPluginTabService: Optional<CaseExternalPluginTabService>,
     /**
+     * Optional for the same reason as the tab service: an `external-plugin` case widget references a
+     * configuration without a process link, so it too must block deletion.
+     */
+    private val caseExternalPluginWidgetService: Optional<CaseExternalPluginWidgetService>,
+    /**
      * Optional for the same reason: implemented by the building-block module, which external-plugin
      * cannot depend on directly (the SPI lives in `:backend:plugin`). Without it, building-block
      * mapping usages simply don't block deletion — matching a deployment without building blocks.
@@ -63,6 +69,7 @@ class ExternalPluginHostUsageResolver(
         val configurations = collectConfigurations(definitions)
         return buildUsageDtos(configurations) +
             buildCaseTabUsageDtos(configurations) +
+            buildCaseWidgetUsageDtos(configurations) +
             buildBuildingBlockMappingUsageDtos(configurations) +
             buildDefinitionReferenceUsageDtos(definitions)
     }
@@ -72,6 +79,7 @@ class ExternalPluginHostUsageResolver(
             ?: return emptyList()
         return buildUsageDtos(listOf(configuration)) +
             buildCaseTabUsageDtos(listOf(configuration)) +
+            buildCaseWidgetUsageDtos(listOf(configuration)) +
             buildBuildingBlockMappingUsageDtos(listOf(configuration))
     }
 
@@ -92,6 +100,30 @@ class ExternalPluginHostUsageResolver(
                     parentVersionTag = usage.caseDefinitionVersionTag,
                     tabKey = usage.tabKey,
                     tabName = usage.tabName,
+                )
+            }
+        }
+    }
+
+    /**
+     * An `external-plugin` case widget references the configuration without a process link, so it
+     * counts as a usage that blocks deletion (system-plan §12) — the widget sibling of
+     * [buildCaseTabUsageDtos].
+     */
+    private fun buildCaseWidgetUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {
+        val widgetService = caseExternalPluginWidgetService.orElse(null) ?: return emptyList()
+        if (configurations.isEmpty()) return emptyList()
+        return configurations.flatMap { configuration ->
+            widgetService.findUsagesForConfiguration(configuration.id).map { usage ->
+                PluginUsageDto(
+                    configurationId = configuration.id,
+                    configurationTitle = configuration.title,
+                    parentType = PluginUsageParentType.CASE,
+                    parentKey = usage.caseDefinitionKey,
+                    parentVersionTag = usage.caseDefinitionVersionTag,
+                    tabKey = usage.tabKey,
+                    tabName = usage.tabName,
+                    widgetKey = usage.widgetKey,
                 )
             }
         }

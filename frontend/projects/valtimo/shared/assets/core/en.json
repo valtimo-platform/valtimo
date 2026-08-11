@@ -1018,7 +1018,9 @@
         "invisible": "Not visible"
       },
       "externalPlugin": {
-        "loadError": "Could not load the external plugin tab. The plugin host may be unreachable or the bundle is unavailable."
+        "loadError": "Could not load the external plugin tab. The plugin host may be unreachable or the bundle is unavailable.",
+        "widgetLoadError": "Could not load the external plugin widget. The plugin host may be unreachable or the bundle is unavailable.",
+        "unavailable": "This plugin widget is unavailable. Its configuration may be missing or the bundle could not be resolved."
       },
       "titles": {
         "custom": "Create new tab with custom component",
@@ -1196,7 +1198,7 @@
       "keyDuplicated": "This key is already in use. Please change to a unique key.",
       "colorPlaceholder": "Choose a color",
       "showRetentionPeriod": "Set retention period",
-      "retentionPeriodExistingCasesWarning": "The retention period for existing cases cases with this status will not be updated automatically.",
+      "retentionPeriodExistingCasesWarning": "The retention period for existing cases with this status will not be updated automatically.",
       "columns": {
         "title": "Status name",
         "retentionPeriod": "Retention period in days",
@@ -1321,6 +1323,10 @@
         "title": "Image",
         "description": "Show an uploaded image"
       },
+      "external-plugin": {
+        "title": "External plugin",
+        "description": "Render a card from an external plugin's case-widget bundle"
+      },
       "text": {
         "title": "Text",
         "description": "Show a fixed explanatory text"
@@ -1374,6 +1380,14 @@
       "widgetTitleTooltip": "Title that displays at the top of the widget",
       "hideWhenEmpty": "Hide when empty",
       "column": "Column {{number}}",
+      "externalPlugin": {
+        "configLabel": "Plugin configuration",
+        "configPlaceholder": "Choose a plugin configuration",
+        "bundleLabel": "Widget",
+        "bundlePlaceholder": "Choose a widget",
+        "unavailableTitle": "External plugins unavailable",
+        "unavailableMessage": "No external plugin exposing a case-widget bundle is available."
+      },
       "fields": {
         "add": "Add field",
         "addEnum": "Add enum value",
@@ -1576,9 +1590,9 @@
     "actionButtonLabel": "Action button type",
     "externalLink": {
       "linkLabel": "Target URL (with placeholders)",
-      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "linkPlaceholder": "https://ritense.nl/case/${doc:/case/id}",
       "buttonTextLabel": "Button label",
-      "buttonTextPlaceholder": "'Go to zaak'",
+      "buttonTextPlaceholder": "'Go to case'",
       "openInNewTabLabel": "Open in new tab"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
@@ -2364,12 +2378,12 @@
     "hostInUseModal": {
       "title": "Plugin host is in use",
       "thisHost": "this plugin host",
-      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs or building blocks still use a plugin or configuration from this host. Remove these usages first."
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs, case widgets or building blocks still use a plugin or configuration from this host. Remove these usages first."
     },
     "configurationInUseModal": {
       "title": "Plugin configuration is in use",
       "thisConfiguration": "this plugin configuration",
-      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs or building blocks still reference it. Remove these usages first."
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs, case widgets or building blocks still reference it. Remove these usages first."
     },
     "usageModal": {
       "headers": {
@@ -2385,6 +2399,7 @@
         "GLOBAL": "Global"
       },
       "caseTab": "Case tab",
+      "caseWidget": "Case widget",
       "buildingBlockMapping": "Building block plugin mapping"
     },
     "compatibility": {

@@ -909,7 +909,7 @@ there is no force override on any path.
 | Entity | Blocked when… | Surface |
 |--------|---------------|---------|
 | **ProcessLink** | never (BPMN authoring is the source of truth — the case definition is the gate) | — |
-| **Configuration** (external) | any *fixed* `ProcessLink` (a `BUILDING_BLOCK` reference carries no configuration id and never blocks, §19) **or** any `EXTERNAL_PLUGIN` case tab references it | Server-side guard in `ExternalPluginConfigurationService.delete` throws `ExternalPluginConfigurationInUseException` (HTTP 409, `usages` payload). `ExternalPluginHostUsageResolver` folds in process-link usages **and** case-tab usages (via the case module's `CaseExternalPluginTabService.findUsagesForConfiguration`, §13.1). UI runs the pre-check and shows the read-only `PluginUsageModalComponent`, which renders both row kinds. No override. |
+| **Configuration** (external) | any *fixed* `ProcessLink` (a `BUILDING_BLOCK` reference carries no configuration id and never blocks, §19), any `EXTERNAL_PLUGIN` case tab, **or** any `external-plugin` case widget references it | Server-side guard in `ExternalPluginConfigurationService.delete` throws `ExternalPluginConfigurationInUseException` (HTTP 409, `usages` payload). `ExternalPluginHostUsageResolver` folds in process-link usages, case-tab usages (via `CaseExternalPluginTabService.findUsagesForConfiguration`, §13.1) **and** case-widget usages (via `CaseExternalPluginWidgetService.findUsagesForConfiguration`, §13.7). UI runs the pre-check and shows the read-only `PluginUsageModalComponent`, which renders all row kinds. No override. |
 | **Configuration** (embedded) | any *fixed* `PluginProcessLink` references it | Server-side guard in `PluginService.deletePluginConfiguration` throws `PluginConfigurationInUseException` (HTTP 409, `usages` payload). Same UI flow and modal. |
 | **Definition** | any `Configuration` exists for it | Not directly user-deletable; cleared by the discovery cycle when the upstream host no longer lists the version **and** no configurations remain. |
 | **Host** | any `Configuration` under any definition on this host has at least one *fixed* `ProcessLink` referencing it | Server-side guard in `ExternalPluginHostService.delete` throws `ExternalPluginHostInUseException` (HTTP 409, `usages` payload). Host delete in the UI shows the same `PluginUsageModalComponent`. Deletion of an entire host with active configurations remains blocked: removing the host would orphan service tokens, push paths, and broker bindings for live configurations. |
@@ -987,7 +987,7 @@ in one place (matching the external edit modal). `PluginUsageModalComponent` is 
 translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
 configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
-## 13. Iframe surfaces & user-scoped access ✅ (case tab, task form, menu page)
+## 13. Iframe surfaces & user-scoped access ✅ (case tab, task form, menu page, case widget)
 
 A plugin's iframe surfaces need to call GZAC **on behalf of the logged-in user** (respect what the
 user can see/do), and the plugin **backend** may call GZAC either as the user or as the system.
@@ -1286,18 +1286,84 @@ Structure:
   `/submit-task` `request()` handler completing via `gzacApi.asUser`, with `permissions.endpoints`
   granting `{ "method": "POST", "pattern": "/api/v1/task/*/complete" }`, the only bundle that needs it).
 
+### 13.7 Case-widget surface (`external-plugin` case-widget subtype) ✅
+
+Unlike the case *tab* (§13.1, a whole tab rendered as one iframe), a case *widget* is a **card inside
+a `WIDGETS` tab's grid**, alongside the first-party widgets (fields, table, map, …). It is a new
+**widget subtype** in the existing case-widget system — not a new tab type — rendered as the same
+sandboxed `<valtimo-external-plugin-iframe>` and reusing the identical security model (parent-proxy,
+downscoped user token, opaque origin) as the case tab. The bundle uses the same SDK surface:
+`sdk.callValtimo`, `sdk.getPluginData`, `sdk.t`. No SDK / pack tool / host changes were needed
+(`case-widget` was already a member of `FRONTEND_BUNDLE_TYPES` and the generic
+`ExternalPluginBundleUrlResolver` already resolves it).
+
+Structure:
+
+- **Widget subtype.** `ExternalPluginCaseWidget` (`@DiscriminatorValue("external-plugin")`) extends
+  `CaseWidgetTabWidget` on the single-table-inheritance `case_widget_tab_widget` table. Unlike the
+  `custom` widget (a JSON `properties` column) the config maps to **dedicated, queryable columns**
+  (`external_plugin_configuration_id`, `bundle_key`, `plugin_definition_key`,
+  `plugin_definition_version`; changelog `13-32-0/20260731-add-external-plugin-case-widget.xml`) so the
+  delete guard and dangling-repair panel can find widgets by configuration id portably across the
+  Postgres/MySQL dual database support. The DTO nests these under `properties` (frontend-consistent,
+  like `custom`); `ExternalPluginCaseWidgetMapper` bridges the two.
+- **Render descriptor.** Rendering + data reuse the existing widget endpoints — no new REST endpoint.
+  `GET .../widget-tab/{tabKey}` returns the widget DTO; `GET .../widget-tab/{tabKey}/widget/{widgetKey}`
+  runs the matching `CaseWidgetDataProvider`. `ExternalPluginCaseWidgetDataProvider` returns an
+  `ExternalPluginWidgetContentDto { bundleUrl, configurationId, bundleKey, context }` (context =
+  `{ documentId, caseDefinitionKey, caseDefinitionVersionTag, pluginConfigurationId }`). Resolving the
+  bundle URL lives in the data provider (not the mapper's `toDto`) because only it has the `documentId`
+  to build the context, and it reuses the endpoint's per-widget PBAC check (`CaseWidgetTabWidget` VIEW
+  with document context). `bundleUrl` is `null` when the resolver is absent or the configuration is
+  dangling — the frontend then shows an unavailable state, matching the tab.
+- **Resolver SPI.** `ExternalPluginCaseWidgetResolver` (declared in `case`, implemented in
+  `external-plugin` as `ExternalPluginCaseWidgetResolverImpl`) delegates to the shared
+  `ExternalPluginBundleUrlResolver.resolve(configId, "case-widget", bundleKey)` and reuses the
+  `ExternalPluginTabDefinition` data shape — the widget sibling of `ExternalPluginCaseTabResolver`
+  (Optional, so `case` runs without external-plugin on the classpath).
+- **Admin UX** (`@valtimo/layout` + `@valtimo/case-management`). A new `external-plugin` entry in the
+  widget wizard's `AVAILABLE_WIDGETS`, with a CONTENT-step editor (`WidgetManagementExternalPluginComponent`)
+  that offers two combo boxes — configuration, then `case-widget` bundle (auto-selected when the plugin
+  ships exactly one) — and writes `properties: { configurationId, bundleKey }`. Layout reads its config
+  options from an injected `EXTERNAL_PLUGIN_WIDGET_CONFIG_TOKEN` (like `CUSTOM_WIDGET_TOKEN`), so
+  `@valtimo/layout` keeps **no dependency on `@valtimo/plugin`**; case-management provides the token
+  (reusing the `getExternalPluginConfigs` pattern filtered to `case-widget`). The type appears in the
+  "add widget" picker only when at least one activated configuration exposes a `case-widget` bundle. The
+  generic WIDTH / DENSITY / APPEARANCE / DISPLAY_CONDITIONS wizard steps apply for full parity.
+- **Runtime** (`@valtimo/case`). The case `widgetComponentMap` maps `external-plugin` →
+  `CaseWidgetExternalPluginComponent` (merged over the layout default; no layout registry change). It
+  provides a page-scoped `ExternalPluginSessionService`, fetches the descriptor via the widget-data
+  endpoint, mints the downscoped user token, and renders `<valtimo-external-plugin-iframe>` — the same
+  wiring as `CaseDetailExternalPluginTabComponent`.
+- **Import / export parity + dangling repair.** See §20. The exporter stamps the plugin id/version on
+  each `external-plugin` widget (self-describing export); the importer remaps `configurationId` via
+  `pluginConfigurationMappings` (keeping the original, now-dangling id when a mapping is left unset,
+  like the tab) and triggers an in-transaction issue recheck. A dedicated issue type
+  `external-plugin-case-widget` flows through the existing dangling/mapping endpoints and repair UI
+  (`source: external`). `CaseExternalPluginWidgetService` (in `case`) backs the queries/mutations,
+  mirroring `CaseExternalPluginTabService`.
+- **Delete guard.** `ExternalPluginHostUsageResolver` folds widget usages
+  (`CaseExternalPluginWidgetService.findUsagesForConfiguration`) into `findUsagesForConfiguration`/
+  `findUsagesForHost`, so a configuration referenced by any widget blocks configuration/host deletion
+  (§12), surfaced in the read-only in-use modal (`PluginUsageDto` gains an optional `widgetKey`).
+- **Sample** (`case-summary`). Ships **two** `case-widget` bundles — `summary-widget`
+  (`frontend/case-widget.tsx`, a compact card using `sdk.getPluginData` + `sdk.callValtimo` + `sdk.t`)
+  and `metrics-widget` (`frontend/case-widget-metrics.tsx`, a tiles card) — so the admin editor's second
+  combo box (the bundle picker) is exercised when a configuration exposes more than one bundle.
+
 ## 14. Not yet implemented ⛔
 
 - HTMX `render_page` (only the RPC-style `handle_request` for JSON data is implemented).
-- Case **widgets** (the remaining iframe surface — the case **tab** (§13.1), **task form** (§13.6),
-  and **menu pages** (§13) are done).
 - DLQ for nacked or expired messages (today `nack(false,false)` drops, `x-expires` deletes the
   queue and its contents).
 
+All iframe surfaces are now implemented: case **tab** (§13.1), **task form** (§13.6),
+**menu pages** (§13) and case **widgets** (§13.7).
+
 ## 15. Roadmap (priority order)
 
-1. Remaining iframe surfaces: HTMX pages, case widgets (case **tab** §13.1, **task form** §13.6,
-   and **menu pages** §13 done).
+1. Remaining iframe surfaces: HTMX pages (case **tab** §13.1, **task form** §13.6,
+   **menu pages** §13 and case **widgets** §13.7 done).
 2. Cleanup: align async-vs-sync SDK docs.
 
 ## 16. Verification status
@@ -2064,8 +2130,9 @@ later.
   `externalPluginConfigurationId`). One user-facing `Map<sourceUUID, targetUUID?>` covers both
   plugin systems — source UUIDs are unambiguous across them.
 - **Preview.** `ExternalPluginImportPreviewContributor` (`backend/external-plugin/preview/`) scans
-  `*.process-link.json` for `external_plugin` / `external_plugin_task_form` links **and**
-  `*.case-tab.json` for `EXTERNAL_PLUGIN` tabs, emitting entries with `source: external`,
+  `*.process-link.json` for `external_plugin` / `external_plugin_task_form` links,
+  `*.case-tab.json` for `EXTERNAL_PLUGIN` tabs, **and** `*.case-widget-tab.json` for `external-plugin`
+  widgets (`pluginActionDefinitionKey: "case-widget"`), emitting entries with `source: external`,
   pluginId, version, and an existence check. `PluginConfigurationPreviewDto` carries the
   `source: embedded|external` discriminator (default `embedded`).
 - **Dangling handling.** An unmapped external link imports with a null configuration id; both
@@ -2078,6 +2145,14 @@ later.
   the `case_external_plugin_tab` side row for imported tabs (the REST-driven create path derives
   the side row from `CaseTabCreatedEvent`, which a repository-level import does not fire — the
   importer therefore materialises it itself).
+- **`external-plugin` case-widget import.** `CaseWidgetTabImporter` remaps each widget's
+  `properties.configurationId` through the same mappings (keeping the original, now-dangling id when
+  a mapping is left unset — like the tab, so the repair panel can offer a chooser from that source
+  id), and its `afterImport` triggers `recheckIssuesForCaseDefinition` on the mapping resolvers so a
+  dangling widget raises the `external-plugin-case-widget` issue at import time (widgets aren't
+  process links). The exporter stamps each widget's `pluginDefinitionKey`/version so the export is
+  self-describing. `CaseExternalPluginWidgetService` (in `case`) backs the resolver's dangling
+  detection + remap and the delete guard's usage lookup, mirroring `CaseExternalPluginTabService`.
 - **Wizard & repair UI** (`@valtimo/case-management`). The upload wizard's PLUGINS step and the
   missing-plugin-configurations repair component render external rows with options from
   `ExternalPluginService.getConfigurations()`, exact-version matches by default and

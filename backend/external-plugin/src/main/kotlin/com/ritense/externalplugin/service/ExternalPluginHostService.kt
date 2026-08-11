@@ -137,10 +137,11 @@ class ExternalPluginHostService(
     }
 
     /**
-     * Exposes what BPMN process links currently reference any configuration under this host.
+     * Exposes what currently references any configuration under this host — BPMN process links,
+     * external-plugin case tabs and case widgets, and building-block mappings.
      * The UI uses this to disable the delete control proactively; the server-side guard in
      * [delete] still enforces the same invariant, so an empty list here does not authorise
-     * deletion — concurrent process-link creation between this call and the delete call would
+     * deletion — a concurrently created reference between this call and the delete call would
      * still surface as an [ExternalPluginHostInUseException].
      */
     @Transactional(readOnly = true)

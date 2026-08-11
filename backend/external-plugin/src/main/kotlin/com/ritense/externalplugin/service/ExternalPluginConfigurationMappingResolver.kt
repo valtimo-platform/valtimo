@@ -22,6 +22,7 @@ import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationHelper
 import com.ritense.case_.domain.tab.CaseExternalPluginTab
 import com.ritense.case_.repository.CaseExternalPluginTabRepository
+import com.ritense.case_.service.CaseExternalPluginWidgetService
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.processlink.ExternalPluginProcessLinkMapper
@@ -59,6 +60,7 @@ open class ExternalPluginConfigurationMappingResolver(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val caseExternalPluginTabRepository: CaseExternalPluginTabRepository,
     private val caseTabRepository: CaseTabRepository,
+    private val caseExternalPluginWidgetService: CaseExternalPluginWidgetService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val applicationEventPublisher: ApplicationEventPublisher,
@@ -72,6 +74,7 @@ open class ExternalPluginConfigurationMappingResolver(
         resolveProcessLinks(processDefinitionIds, mappings)
         resolveTaskFormProcessLinks(processDefinitionIds, mappings)
         resolveCaseTabs(caseDefinitionId, mappings)
+        caseExternalPluginWidgetService.remapConfiguration(caseDefinitionId, mappings)
 
         checkForRemainingIssues(caseDefinitionId, processDefinitionIds)
     }
@@ -110,8 +113,9 @@ open class ExternalPluginConfigurationMappingResolver(
             }
 
         val danglingTabConfigurations = danglingTabsFor(caseDefinitionId)
+        val danglingWidgetConfigurations = danglingWidgetsFor(caseDefinitionId)
 
-        return danglingLinks + danglingTaskFormLinks + danglingTabConfigurations
+        return danglingLinks + danglingTaskFormLinks + danglingTabConfigurations + danglingWidgetConfigurations
     }
 
     override fun recheckIssuesForProcessDefinition(processDefinitionId: String) {
@@ -125,10 +129,13 @@ open class ExternalPluginConfigurationMappingResolver(
 
     /**
      * In-transaction recheck for a whole case definition, triggered from `CaseTabImporter.afterImport`
-     * so a dangling `EXTERNAL_PLUGIN` case tab is detected reliably at import time. (The tab surface
-     * has no process link, so it would otherwise depend on an incidental process-link recheck, which
-     * fires only AFTER_COMMIT and does not persist during import.) Re-publishes all three per-surface
-     * verdicts; idempotent when a surface is already correct.
+     * and `CaseWidgetTabImporter.afterImport` so a dangling `EXTERNAL_PLUGIN` case tab or
+     * `external-plugin` case widget is detected reliably at import time. (Neither surface has a
+     * process link, so they would otherwise depend on an incidental process-link recheck, which fires
+     * only AFTER_COMMIT and does not persist during import.) Also triggered from
+     * `CaseWidgetService.updateWidgetTab` so a widget saved over management REST with an unresolvable
+     * configuration id raises its issue immediately. Re-publishes all four per-surface verdicts;
+     * idempotent when a surface is already correct.
      */
     override fun recheckIssuesForCaseDefinition(caseDefinitionId: CaseDefinitionId) {
         checkForRemainingIssues(caseDefinitionId, processDefinitionIdsFor(caseDefinitionId))
@@ -222,6 +229,32 @@ open class ExternalPluginConfigurationMappingResolver(
     }
 
     /**
+     * Dangling = external-plugin widgets whose referenced configuration cannot be resolved in this
+     * environment, grouped by the design-time plugin identity carried from a self-describing import
+     * (so the repair panel can offer a per-plugin chooser, exactly like a dangling tab). The source
+     * ids are the widgets' current (unresolvable) configuration ids — the same ids the repair maps
+     * from.
+     */
+    private fun danglingWidgetsFor(caseDefinitionId: CaseDefinitionId): List<DanglingPluginConfigurationDto> {
+        val danglingWidgets = caseExternalPluginWidgetService.findExternalPluginWidgets(caseDefinitionId)
+            .filter { it.configurationId != null && !configurationRepository.existsById(it.configurationId) }
+
+        if (danglingWidgets.isEmpty()) return emptyList()
+
+        return danglingWidgets
+            .groupBy { it.pluginDefinitionKey to it.pluginDefinitionVersion }
+            .map { (keyAndVersion, widgets) ->
+                val (pluginDefinitionKey, pluginDefinitionVersion) = keyAndVersion
+                DanglingPluginConfigurationDto(
+                    pluginDefinitionKey = pluginDefinitionKey,
+                    sourcePluginConfigurationIds = widgets.mapNotNull { it.configurationId }.toSet(),
+                    source = SOURCE_EXTERNAL,
+                    pluginDefinitionVersion = pluginDefinitionVersion,
+                )
+            }
+    }
+
+    /**
      * Each external surface owns its own issue type and is judged independently, so one surface being
      * clean can never clear another surface's issue (the cross-surface clobber that a single shared
      * type suffered). Mirrors the per-surface `afterImport` detection on the mappers.
@@ -230,6 +263,7 @@ open class ExternalPluginConfigurationMappingResolver(
         publishIssue(caseDefinitionId, PROCESS_LINK_ISSUE_TYPE, hasProcessLinkIssue(processDefinitionIds))
         publishIssue(caseDefinitionId, TASK_FORM_ISSUE_TYPE, hasTaskFormIssue(processDefinitionIds))
         publishIssue(caseDefinitionId, CASE_TAB_ISSUE_TYPE, danglingTabsFor(caseDefinitionId).isNotEmpty())
+        publishIssue(caseDefinitionId, CASE_WIDGET_ISSUE_TYPE, danglingWidgetsFor(caseDefinitionId).isNotEmpty())
     }
 
     private fun hasProcessLinkIssue(processDefinitionIds: List<String>) =
@@ -276,7 +310,13 @@ open class ExternalPluginConfigurationMappingResolver(
         val PROCESS_LINK_ISSUE_TYPE = ExternalPluginProcessLinkMapper.ISSUE_TYPE
         val TASK_FORM_ISSUE_TYPE = ExternalPluginTaskFormProcessLinkMapper.ISSUE_TYPE
         const val CASE_TAB_ISSUE_TYPE = "external-plugin-case-tab"
+        const val CASE_WIDGET_ISSUE_TYPE = "external-plugin-case-widget"
 
-        private val ALL_ISSUE_TYPES = listOf(PROCESS_LINK_ISSUE_TYPE, TASK_FORM_ISSUE_TYPE, CASE_TAB_ISSUE_TYPE)
+        private val ALL_ISSUE_TYPES = listOf(
+            PROCESS_LINK_ISSUE_TYPE,
+            TASK_FORM_ISSUE_TYPE,
+            CASE_TAB_ISSUE_TYPE,
+            CASE_WIDGET_ISSUE_TYPE,
+        )
     }
 }
