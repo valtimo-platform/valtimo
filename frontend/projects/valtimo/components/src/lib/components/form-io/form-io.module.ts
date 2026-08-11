@@ -35,6 +35,7 @@ import {FormioValueResolverSelectorComponent} from './components/formio-value-re
 import {FormioDummyComponent} from './components/form-io-dummy/dummy.component';
 import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
+import {FormIoMailPreviewComponent} from './components/form-io-mail-preview/mail-preview.component';
 import {applyDataGridPatch} from './patches/patched-datagrid';
 
 // Apply FormIO patches before any form renders
@@ -61,6 +62,7 @@ applyDataGridPatch();
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
     FormIoCurrencyComponent,
+    FormIoMailPreviewComponent,
     FormioDummyComponent,
   ],
   exports: [
@@ -70,6 +72,7 @@ applyDataGridPatch();
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
     FormIoCurrencyComponent,
+    FormIoMailPreviewComponent,
     FormioDummyComponent,
   ],
   providers: [

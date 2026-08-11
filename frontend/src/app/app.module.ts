@@ -38,6 +38,7 @@ import {
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
+  registerFormioMailPreviewComponent,
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   UploaderModule,
@@ -128,6 +129,14 @@ import {AdminSettingsModule} from '@valtimo/admin-settings';
 import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
 import {TeamsModule} from '@valtimo/teams';
 import {registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
+import {
+  DocumentGeneratorPluginModule,
+  documentGeneratorPluginSpecification,
+  MailTemplatePluginModule,
+  mailTemplatePluginSpecification,
+  TextTemplatePluginModule,
+  textTemplatePluginSpecification,
+} from '@valtimo-plugins/freemarker';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -216,6 +225,9 @@ export function tabsFactory() {
     AdminSettingsModule,
     BuildingBlockManagementModule,
     TeamsModule,
+    DocumentGeneratorPluginModule,
+    MailTemplatePluginModule,
+    TextTemplatePluginModule,
     ...(environment.production ? [] : devImports),
   ],
   providers: [
@@ -239,6 +251,9 @@ export function tabsFactory() {
         smartDocumentsPluginSpecification,
         zakenApiPluginSpecification,
         verzoekPluginSpecification,
+        documentGeneratorPluginSpecification,
+        mailTemplatePluginSpecification,
+        textTemplatePluginSpecification,
       ],
     },
     ...(environment.production ? [] : devProviders),
@@ -253,6 +268,7 @@ export class AppModule {
     registerDocumentenApiFormioUploadComponent(injector);
     registerFormioIbanComponent(injector);
     registerFormioCurrencyComponent(injector);
+    registerFormioMailPreviewComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
     registerIkoSearchFormioComponent(injector);
   }

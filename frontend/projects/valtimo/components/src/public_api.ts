@@ -120,6 +120,9 @@ export * from './lib/components/form-io/components/form-io-iban/iban.formio';
 export * from './lib/components/form-io/components/form-io-currency/currency.component';
 export * from './lib/components/form-io/components/form-io-currency/currency.formio';
 
+export * from './lib/components/form-io/components/form-io-mail-preview/mail-preview.component';
+export * from './lib/components/form-io/components/form-io-mail-preview/mail-preview.formio';
+
 export * from './lib/components/form-io/components/form-io-resource-selector/form-io-resource-selector.formio';
 
 export * from './lib/components/form-io/services/form-io-state.service';
