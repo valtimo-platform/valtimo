@@ -3,6 +3,24 @@
         "key": "results",
         "widgets": [
             {
+                "key": "multi-level-bubble",
+                "type": "fields",
+                "title": "Multi-level Bubble (BB3 → BB2 → BB1 → Zaak)",
+                "width": 2,
+                "highContrast": true,
+                "properties": {
+                    "columns": [
+                        [
+                            {
+                                "key": "bubbleNote",
+                                "title": "Bubbel-notitie ingevoerd in BB3",
+                                "value": "doc:bubbleNote"
+                            }
+                        ]
+                    ]
+                }
+            },
+            {
                 "key": "aanvraag-gegevens",
                 "type": "fields",
                 "title": "Aanvraag Gegevens",

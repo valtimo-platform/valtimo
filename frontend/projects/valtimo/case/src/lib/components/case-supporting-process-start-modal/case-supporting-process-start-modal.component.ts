@@ -52,6 +52,7 @@ import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
 import {CaseDetailLayoutService} from '../../services';
+import {resolveStartableItemTitle} from '../../utils';
 
 const DEFAULT_START_MODAL_SIZE: CarbonModalSize = 'sm';
 
@@ -92,6 +93,9 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
   >({});
+  // Key of the startable item that is being started, used to resolve its display title. Unlike
+  // processDefinitionKey$ this is also set for building blocks, which have no process definition key.
+  private readonly _startableItemKey$ = new BehaviorSubject<string>('');
   private _caseDefinitionVersionTag: string;
   private _buildingBlockDefinitionKey: string | null = null;
   private _buildingBlockDefinitionVersionTag: string | null = null;
@@ -108,12 +112,13 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   } | null = null;
 
   public readonly modalTitle$ = combineLatest([
-    this.processDefinitionKey$,
+    this._startableItemKey$,
     this.processName$,
+    // Re-emit once translations are (re)loaded, so the title picks up a translation override.
     this.translateService.stream('key'),
   ]).pipe(
-    map(([processDefinitionKey, processName]) =>
-      this.resolveProcessTitle(processDefinitionKey, processName)
+    map(([startableItemKey, processName]) =>
+      resolveStartableItemTitle(this.translateService, startableItemKey, processName)
     )
   );
 
@@ -202,10 +207,14 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   private openStartForm(displayType: FormDisplayType | undefined, formSize: FormSize): void {
     if (this._panelAvailable && displayType === 'panel') {
       this._displayInPanel = true;
-      combineLatest([this.processDefinitionKey$, this.processName$])
+      combineLatest([this._startableItemKey$, this.processName$])
         .pipe(take(1))
-        .subscribe(([processDefinitionKey, processName]) => {
-          const title = this.resolveProcessTitle(processDefinitionKey, processName);
+        .subscribe(([startableItemKey, processName]) => {
+          const title = resolveStartableItemTitle(
+            this.translateService,
+            startableItemKey,
+            processName
+          );
           this.caseDetailLayoutService.openStartFormPanel(
             {template: this.startFormTemplate, title},
             formSize
@@ -222,14 +231,6 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this.modalSize$.next(
       formSize ? formSizeToCarbonModalSizeMap[formSize] : DEFAULT_START_MODAL_SIZE
     );
-  }
-
-  // The key doubles as an optional translation key; before it is set, translating the empty
-  // string would throw and permanently break the title stream.
-  private resolveProcessTitle(processDefinitionKey: string, processName: string): string {
-    if (!processDefinitionKey) return processName;
-    const translated = this.translateService.instant(processDefinitionKey);
-    return translated !== processDefinitionKey ? translated : processName;
   }
 
   public openModalForStartableItem(
@@ -299,10 +300,14 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this._caseDefinitionVersionTag = caseDefinitionVersionTag;
     this.processDefinitionId$.next(item.processDefinitionId);
     this.processName$.next(item.name || item.key);
+    this._startableItemKey$.next(item.key);
 
     if (item.type === 'BUILDING_BLOCK') {
       this._buildingBlockDefinitionKey = item.key;
       this._buildingBlockDefinitionVersionTag = item.versionTag;
+      // A building block has no process definition key: clear it so a previously started process
+      // cannot leak its key into the start form that is about to be rendered.
+      this.processDefinitionKey$.next('');
     } else {
       this._buildingBlockDefinitionKey = null;
       this._buildingBlockDefinitionVersionTag = null;

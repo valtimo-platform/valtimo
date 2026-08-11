@@ -96,6 +96,7 @@ import {
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {CaseDetailLayoutService, CaseService, CaseTabService} from '../../services';
+import {resolveStartableItemTitle} from '../../utils';
 import {CaseSupportingProcessStartModalComponent} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {WidgetsService} from './tab/widgets/widgets.service';
 
@@ -796,10 +797,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   private mapStartableItems(items: StartableItem[]): (StartableItem & {displayName: string})[] {
     return items.map(item => ({
       ...item,
-      displayName:
-        this.translateService.instant(item.key) !== item.key
-          ? this.translateService.instant(item.key)
-          : item.name || item.key,
+      displayName: resolveStartableItemTitle(this.translateService, item.key, item.name),
     }));
   }
 
