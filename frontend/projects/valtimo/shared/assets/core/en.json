@@ -547,11 +547,185 @@
     "taskIsAssigned": "Task is assigned"
   },
   "packageManagement": {
-    "noResults": "No packages available",
-    "installedVersion": "Installed version",
+    "title": "Marketplace",
+    "subtitle": "Browse, install and update packages from the configured package stores.",
+    "tabs": {
+      "discover": "Discover",
+      "installed": "Installed",
+      "updates": "Updates",
+      "activity": "Activity",
+      "stores": "Stores"
+    },
+    "searchPlaceholder": "Search packages",
+    "filters": {
+      "type": "Type",
+      "clear": "Clear filters"
+    },
+    "sort": {
+      "label": "Sort",
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "updatedDesc": "Recently updated"
+    },
+    "type": {
+      "plugin": "Plugin",
+      "case": "Case",
+      "building-block": "Building block"
+    },
+    "columns": {
+      "name": "Name",
+      "type": "Type",
+      "provider": "Publisher",
+      "installedVersion": "Installed",
+      "latestVersion": "Latest",
+      "availableVersion": "Available",
+      "newVersion": "New version",
+      "when": "When",
+      "operation": "Action",
+      "version": "Version",
+      "outcome": "Outcome",
+      "by": "By",
+      "error": "Details"
+    },
     "install": "Install",
     "update": "Update",
-    "uninstall": "Uninstall"
+    "updateTo": "Update to {{version}}",
+    "updateAll": "Update all ({{count}})",
+    "uninstall": "Uninstall",
+    "refresh": "Refresh",
+    "lastRefreshed": "Updated {{date}}",
+    "installed": "Installed",
+    "installedVersion": "Installed version",
+    "latestVersion": "Latest version",
+    "updateAvailable": "Update available",
+    "upToDate": "Up to date",
+    "incompatible": "Incompatible",
+    "requiresVersion": "Requires Valtimo {{requires}}.",
+    "source": "Source",
+    "noDescription": "No description provided.",
+    "configPackageInstalled": "Imported. Config packages cannot be uninstalled.",
+    "noResults": "No packages found",
+    "noResultsDescription": "No package matches your search and filters.",
+    "noneInstalled": "No packages installed",
+    "noneInstalledDescription": "Install a package from the Discover tab to get started.",
+    "noUpdates": "Everything is up to date",
+    "noUpdatesDescription": "All installed packages are running their latest compatible version.",
+    "notification": {
+      "installed": "Installed {{name}} {{version}}",
+      "installFailed": "Could not install {{name}}",
+      "updated": "Updated {{name}} to {{version}}",
+      "updateFailed": "Could not update {{name}}",
+      "uninstalled": "Uninstalled {{name}}",
+      "uninstallFailed": "Could not uninstall {{name}}",
+      "frontendLoadFailed": "{{name}} is installed, but its screens could not be loaded. Reload the page to finish.",
+      "uploaded": "Installed {{name}} from file",
+      "uploadFailed": "Could not install {{name}} from file"
+    },
+    "details": "Details",
+    "store": "Store",
+    "backToDiscover": "Back to Marketplace",
+    "packageNotFound": "This package is no longer available in any configured store.",
+    "trust": {
+      "label": "Origin",
+      "VERIFIED": "Verified",
+      "COMMUNITY": "Community",
+      "UNKNOWN": "Unknown origin",
+      "VERIFIEDExplanation": "Built from a repository owned by a trusted Valtimo organisation.",
+      "COMMUNITYExplanation": "Published outside the trusted Valtimo organisations. Review the source repository before installing.",
+      "UNKNOWNExplanation": "This package declares no source repository, so its origin cannot be established."
+    },
+    "status": {
+      "PENDING": "Queued",
+      "RUNNING": "In progress",
+      "SUCCEEDED": "Succeeded",
+      "FAILED": "Failed"
+    },
+    "operationLabel": {
+      "INSTALL": "Installed",
+      "UPDATE": "Updated",
+      "UNINSTALL": "Removed",
+      "UPLOAD": "Uploaded"
+    },
+    "stage": {
+      "queued": "Queued…",
+      "DOWNLOADING": "Downloading package…",
+      "DEPLOYING": "Loading package into Valtimo…",
+      "IMPORTING": "Importing configuration…",
+      "REMOVING": "Removing package…",
+      "COMPLETED": "Finishing up…"
+    },
+    "operation": {
+      "version": "Version",
+      "requires": "Requires",
+      "download": "Download",
+      "reversible": "Reversible",
+      "reversibleYes": "Yes, it can be uninstalled again",
+      "reversibleNo": "No, this cannot be undone",
+      "blockers": "Cannot continue",
+      "warnings": "Before you continue",
+      "safeToLeave": "This runs in the background. You can close this dialog and come back to it in Activity.",
+      "preflightFailed": "Could not check this package. Try again, or refresh the catalogue first.",
+      "INSTALL": {
+        "title": "Install package",
+        "confirm": "Install",
+        "success": "{{name}} {{version}} has been installed.",
+        "failed": "{{name}} could not be installed."
+      },
+      "UPDATE": {
+        "title": "Update package",
+        "confirm": "Update",
+        "success": "{{name}} has been updated to {{version}}.",
+        "failed": "{{name}} could not be updated."
+      },
+      "UNINSTALL": {
+        "title": "Remove package",
+        "confirm": "Remove",
+        "body": "{{name}} will be stopped and removed from this environment.",
+        "success": "{{name}} has been removed.",
+        "failed": "{{name}} could not be removed."
+      },
+      "UPLOAD": {
+        "title": "Upload package",
+        "confirm": "Upload",
+        "success": "{{name}} has been installed.",
+        "failed": "{{name}} could not be installed."
+      }
+    },
+    "detailTabs": {
+      "overview": "Overview",
+      "versions": "Versions",
+      "requirements": "Requirements",
+      "trust": "Origin"
+    },
+    "detail": {
+      "identifier": "Identifier",
+      "issues": "Report an issue",
+      "version": "Version",
+      "released": "Released",
+      "switchToVersion": "Switch to this version",
+      "compatibility": "Runs on this Valtimo",
+      "compatibleYes": "Yes",
+      "compatibleNo": "No compatible release available",
+      "latestRequires": "Newest release requires",
+      "reversible": "Can be uninstalled",
+      "history": "History",
+      "owner": "Repository owner",
+      "noRichMetadata": "This store does not publish a description, screenshots or a capability list yet.",
+      "noDependencyData": "This store does not publish dependency information yet.",
+      "noSignatureData": "Packages are not signed yet; origin is derived from the source repository."
+    },
+    "stores": {
+      "configured": "Configured stores",
+      "configuredHint": "Stores are configured on the server under valtimo.marketplace.repositories.",
+      "packageCount": "{{count}} packages",
+      "reachable": "Reachable",
+      "unreachable": "No packages found",
+      "none": "No package stores are configured.",
+      "upload": "Install from file",
+      "uploadHint": "For environments without access to a package store. Accepts a plugin .jar or a configuration .zip."
+    },
+    "noActivity": "No activity yet",
+    "noActivityDescription": "Installs, updates and removals appear here."
   },
   "progress": {
     "noProcessDocumentInstances": "There is no process started yet",

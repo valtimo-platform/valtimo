@@ -1,0 +1,155 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="discover"
+  *ngIf="{
+    filters: filters$ | async,
+    loading: loading$ | async,
+    packages: pagedPackages$ | async,
+    pagination: paginationModel$ | async,
+    pending: pending$ | async,
+    tableActionItems: tableActionItems$ | async,
+    tableRows: tableRows$ | async,
+    typeCounts: typeCounts$ | async,
+    viewType: viewType$ | async,
+  } as obs"
+>
+  <aside class="discover__filters">
+    <fieldset class="discover__filter-group">
+      <legend class="discover__filter-legend">
+        {{ 'packageManagement.filters.type' | translate }}
+      </legend>
+
+      <cds-checkbox
+        *ngFor="let type of TYPE_OPTIONS"
+        [attr.data-test-id]="testIds.typeFilter + '-' + type"
+        [checked]="obs.filters?.types?.includes(type) ?? false"
+        (checkedChange)="onToggleType(type)"
+      >
+        {{ 'packageManagement.type.' + type | translate }}
+        ({{ obs.typeCounts?.[type] ?? 0 }})
+      </cds-checkbox>
+    </fieldset>
+
+    <button
+      cdsButton="ghost"
+      size="sm"
+      [attr.data-test-id]="testIds.clearFiltersButton"
+      (click)="onClearFilters()"
+    >
+      {{ 'packageManagement.filters.clear' | translate }}
+    </button>
+  </aside>
+
+  <section class="discover__results">
+    <div class="discover__toolbar">
+      <cds-search
+        class="discover__search"
+        size="sm"
+        [attr.data-test-id]="testIds.searchInput"
+        [formControl]="searchControl"
+        [label]="'packageManagement.searchPlaceholder' | translate"
+        [placeholder]="'packageManagement.searchPlaceholder' | translate"
+      ></cds-search>
+
+      <div class="discover__toolbar-right">
+        <label class="discover__sort-label" for="marketplace-sort">
+          {{ 'packageManagement.sort.label' | translate }}
+        </label>
+
+        <select
+          class="discover__sort"
+          id="marketplace-sort"
+          [attr.data-test-id]="testIds.sortSelect"
+          [value]="obs.filters?.sort"
+          (change)="onSortChange($any($event.target).value)"
+        >
+          <option *ngFor="let sort of SORT_OPTIONS" [value]="sort">
+            {{ 'packageManagement.sort.' + sort | translate }}
+          </option>
+        </select>
+
+        <button
+          cdsButton="ghost"
+          size="sm"
+          [attr.data-test-id]="testIds.gridViewButton"
+          [class.discover__view-button--active]="obs.viewType === PackageViewType.GRID"
+          [iconOnly]="true"
+          (click)="onViewTypeChange(PackageViewType.GRID)"
+        >
+          <svg cdsIcon="grid" size="16" class="cds--btn__icon"></svg>
+        </button>
+
+        <button
+          cdsButton="ghost"
+          size="sm"
+          [attr.data-test-id]="testIds.tableViewButton"
+          [class.discover__view-button--active]="obs.viewType === PackageViewType.TABLE"
+          [iconOnly]="true"
+          (click)="onViewTypeChange(PackageViewType.TABLE)"
+        >
+          <svg cdsIcon="list" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="obs.loading" class="discover__loading">
+      <cds-loading size="sm"></cds-loading>
+    </div>
+
+    <ng-container *ngIf="!obs.loading">
+      <valtimo-no-results
+        *ngIf="!obs.packages?.length"
+        [alwaysRenderVertically]="true"
+        [description]="'packageManagement.noResultsDescription' | translate"
+        [smallPadding]="true"
+        [title]="'packageManagement.noResults' | translate"
+        illustration="valtimo-layout/img/emptystate-search.svg"
+      ></valtimo-no-results>
+
+      <div
+        *ngIf="obs.packages?.length && obs.viewType === PackageViewType.GRID"
+        class="discover__grid"
+      >
+        <valtimo-package-card
+          *ngFor="let pkg of obs.packages; trackBy: trackByPackage"
+          [package]="pkg"
+          [pending]="obs.pending?.has(pkg.id) ?? false"
+          (detailEvent)="onOpenDetail($event)"
+          (installEvent)="onInstall($event)"
+          (uninstallEvent)="onUninstall($event)"
+          (updateEvent)="onUpdate($event)"
+        ></valtimo-package-card>
+      </div>
+
+      <valtimo-carbon-list
+        *ngIf="obs.packages?.length && obs.viewType === PackageViewType.TABLE"
+        [actionItems]="obs.tableActionItems ?? []"
+        [fields]="tableFields"
+        [items]="obs.tableRows ?? []"
+        [pagination]="false"
+      ></valtimo-carbon-list>
+
+      <cds-pagination
+        *ngIf="obs.packages?.length && obs.pagination"
+        [attr.data-test-id]="testIds.pagination"
+        [model]="obs.pagination"
+        (selectPage)="onSelectPage($event)"
+      ></cds-pagination>
+    </ng-container>
+  </section>
+</div>

@@ -212,6 +212,10 @@ valtimo:
         # repository. Local package-store build output:
         repositories:
             local-dist: file:///Users/klaasschuijtemaker/Projects/extension-store/dist/
+        # Valtimo version used to evaluate each release's `requires` constraint. Must be
+        # set explicitly when running from source: there is no jar manifest to read it
+        # from, and without it compatibility checking is skipped entirely.
+        systemVersion: 13.41.0
 
     notificaties-api:
         processing:

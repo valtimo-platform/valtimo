@@ -23,6 +23,24 @@ import java.net.URL
 data class MarketplaceProperties(
     val repositories: Map<String, URL> = emptyMap(),
     val multiInstanceCron: String = "0 0 * * * ?",
+    // How often the merged catalogue is re-read from the configured repositories.
+    // The catalogue is served from cache in between, so this is what determines how
+    // quickly a newly published package shows up (an explicit refresh from the UI
+    // always works). Default: every 30 minutes.
+    val catalogueRefreshCron: String = "0 */30 * * * ?",
+    // Valtimo version used to decide whether a release's `requires` constraint is
+    // satisfied. Leave unset in a packaged deployment: it is then read from the
+    // marketplace jar's Implementation-Version. It has to be set explicitly when
+    // running from source (bootRun/tests), where no jar manifest exists — otherwise
+    // the version resolves to "0.0.0" and pf4j skips compatibility checking
+    // altogether, letting a package that needs a newer Valtimo install and then
+    // fail at load.
+    val systemVersion: String? = null,
+    // Source-repository owners whose packages are presented as "verified". Trust is
+    // decided here rather than read from the manifest on purpose: a store could
+    // otherwise declare itself trustworthy. Anything with a known source outside this
+    // list is "community"; anything without a source repository is "unknown".
+    val trustedOrganizations: List<String> = DEFAULT_TRUSTED_ORGANIZATIONS,
     // Security is out of scope for the marketplace mechanism, so by default the
     // whitelists are NOT enforced: a package may autowire any bean and use
     // any interface/annotation. Set valtimo.marketplace.enforceWhitelist=true to
@@ -37,6 +55,12 @@ data class MarketplaceProperties(
     fun getPackageRepositories() = repositories.map { PackageUpdateRepository(it.key, it.value) }
 
     companion object {
+
+        // GitHub organisations whose packages are trusted out of the box.
+        val DEFAULT_TRUSTED_ORGANIZATIONS = listOf(
+            "valtimo-platform",
+            "generiekzaakafhandelcomponent",
+        )
 
         // A package can autowire only these Spring Beans:
         val DEFAULT_AUTOWIRE_WHITELIST = listOf(

@@ -550,11 +550,185 @@
     "taskIsAssigned": "Taak is toegewezen"
   },
   "packageManagement": {
-    "noResults": "Geen pakketten beschikbaar",
-    "installedVersion": "Geïnstalleerde versie",
+    "title": "Marketplace",
+    "subtitle": "Pakketten zoeken, installeren en bijwerken uit de ingestelde pakketbronnen.",
+    "tabs": {
+      "discover": "Ontdekken",
+      "installed": "Geïnstalleerd",
+      "updates": "Updates",
+      "activity": "Activiteit",
+      "stores": "Bronnen"
+    },
+    "searchPlaceholder": "Zoek pakketten",
+    "filters": {
+      "type": "Soort",
+      "clear": "Filters wissen"
+    },
+    "sort": {
+      "label": "Sorteren",
+      "nameAsc": "Naam (A-Z)",
+      "nameDesc": "Naam (Z-A)",
+      "updatedDesc": "Recent bijgewerkt"
+    },
+    "type": {
+      "plugin": "Plug-in",
+      "case": "Zaak",
+      "building-block": "Bouwblok"
+    },
+    "columns": {
+      "name": "Naam",
+      "type": "Soort",
+      "provider": "Uitgever",
+      "installedVersion": "Geïnstalleerd",
+      "latestVersion": "Nieuwste",
+      "availableVersion": "Beschikbaar",
+      "newVersion": "Nieuwe versie",
+      "when": "Wanneer",
+      "operation": "Actie",
+      "version": "Versie",
+      "outcome": "Resultaat",
+      "by": "Door",
+      "error": "Details"
+    },
     "install": "Installeren",
     "update": "Updaten",
-    "uninstall": "Deïnstalleren"
+    "updateTo": "Updaten naar {{version}}",
+    "updateAll": "Alles updaten ({{count}})",
+    "uninstall": "Deïnstalleren",
+    "refresh": "Verversen",
+    "lastRefreshed": "Bijgewerkt {{date}}",
+    "installed": "Geïnstalleerd",
+    "installedVersion": "Geïnstalleerde versie",
+    "latestVersion": "Nieuwste versie",
+    "updateAvailable": "Update beschikbaar",
+    "upToDate": "Actueel",
+    "incompatible": "Niet compatibel",
+    "requiresVersion": "Vereist Valtimo {{requires}}.",
+    "source": "Broncode",
+    "noDescription": "Geen beschrijving beschikbaar.",
+    "configPackageInstalled": "Geïmporteerd. Configuratiepakketten kunnen niet worden gedeïnstalleerd.",
+    "noResults": "Geen pakketten gevonden",
+    "noResultsDescription": "Geen pakket komt overeen met je zoekopdracht en filters.",
+    "noneInstalled": "Geen pakketten geïnstalleerd",
+    "noneInstalledDescription": "Installeer een pakket via het tabblad Ontdekken om te beginnen.",
+    "noUpdates": "Alles is actueel",
+    "noUpdatesDescription": "Alle geïnstalleerde pakketten draaien de nieuwste compatibele versie.",
+    "notification": {
+      "installed": "{{name}} {{version}} geïnstalleerd",
+      "installFailed": "{{name}} kon niet worden geïnstalleerd",
+      "updated": "{{name}} bijgewerkt naar {{version}}",
+      "updateFailed": "{{name}} kon niet worden bijgewerkt",
+      "uninstalled": "{{name}} gedeïnstalleerd",
+      "uninstallFailed": "{{name}} kon niet worden gedeïnstalleerd",
+      "frontendLoadFailed": "{{name}} is geïnstalleerd, maar de schermen konden niet worden geladen. Herlaad de pagina om af te ronden.",
+      "uploaded": "{{name}} geïnstalleerd vanaf bestand",
+      "uploadFailed": "{{name}} kon niet vanaf bestand worden geïnstalleerd"
+    },
+    "details": "Details",
+    "store": "Bron",
+    "backToDiscover": "Terug naar Marketplace",
+    "packageNotFound": "Dit pakket is niet meer beschikbaar in een van de ingestelde bronnen.",
+    "trust": {
+      "label": "Herkomst",
+      "VERIFIED": "Geverifieerd",
+      "COMMUNITY": "Community",
+      "UNKNOWN": "Herkomst onbekend",
+      "VERIFIEDExplanation": "Gebouwd vanuit een repository van een vertrouwde Valtimo-organisatie.",
+      "COMMUNITYExplanation": "Gepubliceerd buiten de vertrouwde Valtimo-organisaties. Bekijk de broncode voordat je installeert.",
+      "UNKNOWNExplanation": "Dit pakket vermeldt geen broncode-repository, waardoor de herkomst niet vast te stellen is."
+    },
+    "status": {
+      "PENDING": "In wachtrij",
+      "RUNNING": "Bezig",
+      "SUCCEEDED": "Gelukt",
+      "FAILED": "Mislukt"
+    },
+    "operationLabel": {
+      "INSTALL": "Geïnstalleerd",
+      "UPDATE": "Bijgewerkt",
+      "UNINSTALL": "Verwijderd",
+      "UPLOAD": "Geüpload"
+    },
+    "stage": {
+      "queued": "In wachtrij…",
+      "DOWNLOADING": "Pakket downloaden…",
+      "DEPLOYING": "Pakket in Valtimo laden…",
+      "IMPORTING": "Configuratie importeren…",
+      "REMOVING": "Pakket verwijderen…",
+      "COMPLETED": "Afronden…"
+    },
+    "operation": {
+      "version": "Versie",
+      "requires": "Vereist",
+      "download": "Download",
+      "reversible": "Omkeerbaar",
+      "reversibleYes": "Ja, kan weer worden gedeïnstalleerd",
+      "reversibleNo": "Nee, dit kan niet worden teruggedraaid",
+      "blockers": "Kan niet doorgaan",
+      "warnings": "Voordat je doorgaat",
+      "safeToLeave": "Dit gaat op de achtergrond verder. Je kunt dit venster sluiten en later kijken bij Activiteit.",
+      "preflightFailed": "Dit pakket kon niet worden gecontroleerd. Probeer het opnieuw of ververs eerst de catalogus.",
+      "INSTALL": {
+        "title": "Pakket installeren",
+        "confirm": "Installeren",
+        "success": "{{name}} {{version}} is geïnstalleerd.",
+        "failed": "{{name}} kon niet worden geïnstalleerd."
+      },
+      "UPDATE": {
+        "title": "Pakket updaten",
+        "confirm": "Updaten",
+        "success": "{{name}} is bijgewerkt naar {{version}}.",
+        "failed": "{{name}} kon niet worden bijgewerkt."
+      },
+      "UNINSTALL": {
+        "title": "Pakket verwijderen",
+        "confirm": "Verwijderen",
+        "body": "{{name}} wordt gestopt en uit deze omgeving verwijderd.",
+        "success": "{{name}} is verwijderd.",
+        "failed": "{{name}} kon niet worden verwijderd."
+      },
+      "UPLOAD": {
+        "title": "Pakket uploaden",
+        "confirm": "Uploaden",
+        "success": "{{name}} is geïnstalleerd.",
+        "failed": "{{name}} kon niet worden geïnstalleerd."
+      }
+    },
+    "detailTabs": {
+      "overview": "Overzicht",
+      "versions": "Versies",
+      "requirements": "Vereisten",
+      "trust": "Herkomst"
+    },
+    "detail": {
+      "identifier": "Identificatie",
+      "issues": "Probleem melden",
+      "version": "Versie",
+      "released": "Uitgebracht",
+      "switchToVersion": "Naar deze versie",
+      "compatibility": "Werkt op deze Valtimo",
+      "compatibleYes": "Ja",
+      "compatibleNo": "Geen compatibele versie beschikbaar",
+      "latestRequires": "Nieuwste versie vereist",
+      "reversible": "Kan worden gedeïnstalleerd",
+      "history": "Geschiedenis",
+      "owner": "Eigenaar repository",
+      "noRichMetadata": "Deze bron publiceert nog geen beschrijving, schermafbeeldingen of overzicht van functionaliteit.",
+      "noDependencyData": "Deze bron publiceert nog geen informatie over afhankelijkheden.",
+      "noSignatureData": "Pakketten zijn nog niet ondertekend; de herkomst wordt afgeleid uit de broncode-repository."
+    },
+    "stores": {
+      "configured": "Ingestelde bronnen",
+      "configuredHint": "Bronnen worden op de server ingesteld onder valtimo.marketplace.repositories.",
+      "packageCount": "{{count}} pakketten",
+      "reachable": "Bereikbaar",
+      "unreachable": "Geen pakketten gevonden",
+      "none": "Er zijn geen pakketbronnen ingesteld.",
+      "upload": "Installeren vanaf bestand",
+      "uploadHint": "Voor omgevingen zonder toegang tot een pakketbron. Accepteert een plug-in .jar of een configuratie .zip."
+    },
+    "noActivity": "Nog geen activiteit",
+    "noActivityDescription": "Installaties, updates en verwijderingen verschijnen hier."
   },
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart",
@@ -1222,7 +1396,9 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit dossiertype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen status aangemaakt voor dit dossiertype."
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",

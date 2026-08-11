@@ -1,0 +1,152 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-tile class="package-card" [attr.data-test-id]="testIds.packageCard">
+  <div class="package-card__header">
+    <img
+      *ngIf="package.logo"
+      class="package-card__logo"
+      [alt]="package.name || package.id"
+      [src]="package.logo"
+    />
+
+    <div *ngIf="!package.logo" class="package-card__logo package-card__logo--placeholder">
+      {{ (package.name || package.id).charAt(0).toUpperCase() }}
+    </div>
+
+    <div class="package-card__heading">
+      <span class="package-card__title">{{ package.name || package.id }}</span>
+
+      <div class="package-card__tags">
+        <cds-tag *ngIf="package.type" type="cool-gray" size="sm">
+          {{ 'packageManagement.type.' + package.type | translate }}
+        </cds-tag>
+
+        <cds-tag *ngIf="package.installedVersion" type="green" size="sm">
+          {{ 'packageManagement.installed' | translate }}
+        </cds-tag>
+
+        <cds-tag *ngIf="package.installedVersion && package.nextVersion" type="blue" size="sm">
+          {{ 'packageManagement.updateAvailable' | translate }}
+        </cds-tag>
+
+        <cds-tag *ngIf="!package.compatible" type="red" size="sm">
+          {{ 'packageManagement.incompatible' | translate }}
+        </cds-tag>
+
+        <!-- Trust is graded and always shown: hiding it is what made the old UI unable to
+             tell a Ritense package from an unvetted one. -->
+        <cds-tag size="sm" [type]="package.trust === PackageTrust.VERIFIED ? 'green' : 'gray'">
+          {{ 'packageManagement.trust.' + package.trust | translate }}
+        </cds-tag>
+      </div>
+    </div>
+  </div>
+
+  <p class="package-card__description">
+    {{ package.description || ('packageManagement.noDescription' | translate) }}
+  </p>
+
+  <div class="package-card__meta">
+    <span *ngIf="package.provider">{{ package.provider }}</span>
+
+    <span *ngIf="package.installedVersion">
+      {{ 'packageManagement.installedVersion' | translate }}: <b>{{ package.installedVersion }}</b>
+    </span>
+
+    <span *ngIf="!package.installedVersion && package.latestVersion">
+      {{ 'packageManagement.latestVersion' | translate }}: <b>{{ package.latestVersion }}</b>
+    </span>
+
+    <a
+      *ngIf="package.projectUrl"
+      class="package-card__link"
+      rel="noopener noreferrer"
+      target="_blank"
+      [href]="package.projectUrl"
+    >
+      {{ 'packageManagement.source' | translate }}
+      <svg cdsIcon="launch" size="16"></svg>
+    </a>
+  </div>
+
+  <!--
+    The reason a package cannot be installed is shown inline rather than hiding the
+    package: a silently missing package reads as a broken catalogue.
+  -->
+  <p *ngIf="package.incompatibleReason" class="package-card__warning">
+    {{ 'packageManagement.requiresVersion' | translate: {requires: package.incompatibleReason} }}
+  </p>
+
+  <div class="package-card__footer">
+    <button
+      cdsButton="ghost"
+      size="sm"
+      [attr.data-test-id]="testIds.detailButton"
+      (click)="onDetail()"
+    >
+      {{ 'packageManagement.details' | translate }}
+    </button>
+
+    <button
+      *ngIf="package.capabilities.installable"
+      cdsButton="primary"
+      size="sm"
+      [attr.data-test-id]="testIds.installButton"
+      [disabled]="pending"
+      (click)="onInstall()"
+    >
+      {{ 'packageManagement.install' | translate }}
+    </button>
+
+    <button
+      *ngIf="package.capabilities.updatable"
+      cdsButton="primary"
+      size="sm"
+      [attr.data-test-id]="testIds.updateButton"
+      [disabled]="pending"
+      (click)="onUpdate()"
+    >
+      {{ 'packageManagement.updateTo' | translate: {version: package.nextVersion} }}
+    </button>
+
+    <button
+      *ngIf="package.capabilities.uninstallable"
+      cdsButton="danger--tertiary"
+      size="sm"
+      [attr.data-test-id]="testIds.uninstallButton"
+      [disabled]="pending"
+      (click)="onUninstall()"
+    >
+      {{ 'packageManagement.uninstall' | translate }}
+    </button>
+
+    <!--
+      An installed config package (case / building block) has no action left: it cannot
+      be uninstalled, and it is already up to date. Say so instead of showing nothing.
+    -->
+    <span
+      *ngIf="
+        package.installedVersion &&
+        !package.capabilities.updatable &&
+        !package.capabilities.uninstallable
+      "
+      class="package-card__note"
+    >
+      {{ 'packageManagement.configPackageInstalled' | translate }}
+    </span>
+  </div>
+</cds-tile>

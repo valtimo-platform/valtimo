@@ -1,0 +1,138 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="marketplace"
+  *ngIf="{
+    activeTab: activeTab$ | async,
+    installedPackages: installedPackages$ | async,
+    lastRefreshed: lastRefreshed$ | async,
+    refreshing: refreshing$ | async,
+    systemVersion: systemVersion$ | async,
+    updatesAvailable: updatesAvailable$ | async,
+  } as obs"
+>
+  <header class="marketplace__header">
+    <div class="marketplace__heading">
+      <h2 class="marketplace__title">{{ 'packageManagement.title' | translate }}</h2>
+
+      <p class="marketplace__subtitle">
+        {{ 'packageManagement.subtitle' | translate }}
+      </p>
+    </div>
+
+    <div class="marketplace__header-actions">
+      <!--
+        The catalogue is served from the backend's cache, so the age of the data is
+        shown next to the way to renew it.
+      -->
+      <span *ngIf="obs.lastRefreshed" class="marketplace__stamp">
+        {{
+          'packageManagement.lastRefreshed' | translate: {date: obs.lastRefreshed | date: 'short'}
+        }}
+      </span>
+
+      <button
+        cdsButton="tertiary"
+        size="sm"
+        [attr.data-test-id]="testIds.refreshButton"
+        [disabled]="obs.refreshing ?? false"
+        (click)="onRefresh()"
+      >
+        {{ 'packageManagement.refresh' | translate }}
+        <svg cdsIcon="renew" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav class="marketplace__tabs">
+    <button
+      class="marketplace__tab"
+      [attr.data-test-id]="testIds.discoverTab"
+      [class.marketplace__tab--active]="obs.activeTab === MarketplaceTab.DISCOVER"
+      (click)="onTabSelected(MarketplaceTab.DISCOVER)"
+    >
+      {{ 'packageManagement.tabs.discover' | translate }}
+    </button>
+
+    <button
+      class="marketplace__tab"
+      [attr.data-test-id]="testIds.installedTab"
+      [class.marketplace__tab--active]="obs.activeTab === MarketplaceTab.INSTALLED"
+      (click)="onTabSelected(MarketplaceTab.INSTALLED)"
+    >
+      {{ 'packageManagement.tabs.installed' | translate }}
+      <cds-tag *ngIf="obs.installedPackages?.length" type="cool-gray" size="sm">
+        {{ obs.installedPackages?.length }}
+      </cds-tag>
+    </button>
+
+    <button
+      class="marketplace__tab"
+      [attr.data-test-id]="testIds.updatesTab"
+      [class.marketplace__tab--active]="obs.activeTab === MarketplaceTab.UPDATES"
+      (click)="onTabSelected(MarketplaceTab.UPDATES)"
+    >
+      {{ 'packageManagement.tabs.updates' | translate }}
+      <cds-tag *ngIf="obs.updatesAvailable" type="blue" size="sm">
+        {{ obs.updatesAvailable }}
+      </cds-tag>
+    </button>
+
+    <button
+      class="marketplace__tab"
+      [attr.data-test-id]="testIds.activityTab"
+      [class.marketplace__tab--active]="obs.activeTab === MarketplaceTab.ACTIVITY"
+      (click)="onTabSelected(MarketplaceTab.ACTIVITY)"
+    >
+      {{ 'packageManagement.tabs.activity' | translate }}
+    </button>
+
+    <button
+      class="marketplace__tab"
+      [attr.data-test-id]="testIds.storesTab"
+      [class.marketplace__tab--active]="obs.activeTab === MarketplaceTab.STORES"
+      (click)="onTabSelected(MarketplaceTab.STORES)"
+    >
+      {{ 'packageManagement.tabs.stores' | translate }}
+    </button>
+  </nav>
+
+  <div class="marketplace__content">
+    <valtimo-package-discover
+      *ngIf="obs.activeTab === MarketplaceTab.DISCOVER"
+    ></valtimo-package-discover>
+
+    <valtimo-package-installed
+      *ngIf="obs.activeTab === MarketplaceTab.INSTALLED"
+    ></valtimo-package-installed>
+
+    <valtimo-package-updates
+      *ngIf="obs.activeTab === MarketplaceTab.UPDATES"
+    ></valtimo-package-updates>
+
+    <valtimo-package-activity
+      *ngIf="obs.activeTab === MarketplaceTab.ACTIVITY"
+    ></valtimo-package-activity>
+
+    <valtimo-package-stores
+      *ngIf="obs.activeTab === MarketplaceTab.STORES"
+    ></valtimo-package-stores>
+  </div>
+
+  <!-- One modal for the whole page: the operation service holds which package it is for. -->
+  <valtimo-package-operation-modal></valtimo-package-operation-modal>
+</div>

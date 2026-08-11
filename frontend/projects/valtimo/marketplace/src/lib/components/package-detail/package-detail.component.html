@@ -1,0 +1,298 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="detail"
+  *ngIf="{
+    activeTab: activeTab$ | async,
+    jobs: jobs$ | async,
+    loading: loading$ | async,
+    notFound: notFound$ | async,
+    package: package$ | async,
+  } as obs"
+>
+  <button cdsButton="ghost" size="sm" class="detail__back" (click)="onBack()">
+    <svg cdsIcon="arrow--left" size="16" class="cds--btn__icon"></svg>
+    {{ 'packageManagement.backToDiscover' | translate }}
+  </button>
+
+  <div *ngIf="obs.loading" class="detail__loading">
+    <cds-loading size="sm"></cds-loading>
+  </div>
+
+  <p *ngIf="obs.notFound" class="detail__not-found">
+    {{ 'packageManagement.packageNotFound' | translate }}
+  </p>
+
+  <ng-container *ngIf="obs.package as pkg">
+    <header class="detail__header">
+      <img *ngIf="pkg.logo" class="detail__logo" [alt]="pkg.name || pkg.id" [src]="pkg.logo" />
+
+      <div class="detail__heading">
+        <h2 class="detail__title">{{ pkg.name || pkg.id }}</h2>
+
+        <p class="detail__summary">
+          {{ pkg.description || ('packageManagement.noDescription' | translate) }}
+        </p>
+
+        <div class="detail__tags">
+          <cds-tag size="sm" type="cool-gray">
+            {{ 'packageManagement.type.' + (pkg.type || 'plugin') | translate }}
+          </cds-tag>
+
+          <cds-tag size="sm" [type]="pkg.trust === PackageTrust.VERIFIED ? 'green' : 'gray'">
+            {{ 'packageManagement.trust.' + pkg.trust | translate }}
+          </cds-tag>
+
+          <cds-tag *ngIf="pkg.installedVersion" size="sm" type="green">
+            {{ 'packageManagement.installedVersion' | translate }} {{ pkg.installedVersion }}
+          </cds-tag>
+
+          <cds-tag *ngIf="!pkg.compatible" size="sm" type="red">
+            {{ 'packageManagement.incompatible' | translate }}
+          </cds-tag>
+        </div>
+      </div>
+
+      <div class="detail__actions">
+        <button
+          *ngIf="pkg.capabilities.installable"
+          cdsButton="primary"
+          [attr.data-test-id]="testIds.installButton"
+          (click)="onInstall()"
+        >
+          {{ 'packageManagement.install' | translate }}
+        </button>
+
+        <button
+          *ngIf="pkg.capabilities.updatable"
+          cdsButton="primary"
+          [attr.data-test-id]="testIds.updateButton"
+          (click)="onUpdate()"
+        >
+          {{ 'packageManagement.updateTo' | translate: {version: pkg.nextVersion} }}
+        </button>
+
+        <button
+          *ngIf="pkg.capabilities.uninstallable"
+          cdsButton="danger--tertiary"
+          [attr.data-test-id]="testIds.uninstallButton"
+          (click)="onUninstall()"
+        >
+          {{ 'packageManagement.uninstall' | translate }}
+        </button>
+      </div>
+    </header>
+
+    <nav class="detail__tabs">
+      <button
+        *ngFor="
+          let tab of [
+            PackageDetailTab.OVERVIEW,
+            PackageDetailTab.VERSIONS,
+            PackageDetailTab.REQUIREMENTS,
+            PackageDetailTab.TRUST,
+          ]
+        "
+        class="detail__tab"
+        [class.detail__tab--active]="obs.activeTab === tab"
+        (click)="onSelectTab(tab)"
+      >
+        {{ 'packageManagement.detailTabs.' + tab | translate }}
+      </button>
+    </nav>
+
+    <section class="detail__content">
+      <!-- Overview -->
+      <ng-container *ngIf="obs.activeTab === PackageDetailTab.OVERVIEW">
+        <dl class="detail__facts">
+          <dt>{{ 'packageManagement.columns.provider' | translate }}</dt>
+          <dd>{{ pkg.provider || pkg.owner || '—' }}</dd>
+
+          <dt>{{ 'packageManagement.columns.latestVersion' | translate }}</dt>
+          <dd>{{ pkg.latestVersion || '—' }}</dd>
+
+          <dt>{{ 'packageManagement.store' | translate }}</dt>
+          <dd>{{ pkg.repositoryId || '—' }}</dd>
+
+          <dt>{{ 'packageManagement.detail.identifier' | translate }}</dt>
+          <dd>
+            <code>{{ pkg.id }}</code>
+          </dd>
+        </dl>
+
+        <!--
+          The store does not publish a README or a capability inventory yet, so the
+          overview says so rather than showing an empty panel that reads as broken.
+          See marketplace-store-metadata-audit.md.
+        -->
+        <p class="detail__placeholder">
+          {{ 'packageManagement.detail.noRichMetadata' | translate }}
+        </p>
+
+        <div class="detail__links">
+          <a
+            *ngIf="pkg.projectUrl"
+            rel="noopener noreferrer"
+            target="_blank"
+            [href]="pkg.projectUrl"
+          >
+            {{ 'packageManagement.source' | translate }}
+            <svg cdsIcon="launch" size="16"></svg>
+          </a>
+
+          <a *ngIf="pkg.issuesUrl" rel="noopener noreferrer" target="_blank" [href]="pkg.issuesUrl">
+            {{ 'packageManagement.detail.issues' | translate }}
+            <svg cdsIcon="launch" size="16"></svg>
+          </a>
+        </div>
+      </ng-container>
+
+      <!-- Versions: the full release history, each row installable on its own. -->
+      <ng-container *ngIf="obs.activeTab === PackageDetailTab.VERSIONS">
+        <table class="detail__table">
+          <thead>
+            <tr>
+              <th>{{ 'packageManagement.detail.version' | translate }}</th>
+              <th>{{ 'packageManagement.detail.released' | translate }}</th>
+              <th>{{ 'packageManagement.operation.requires' | translate }}</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let release of pkg.releases">
+              <td>
+                <b>{{ release.version }}</b>
+                <cds-tag *ngIf="release.version === pkg.installedVersion" size="sm" type="green">
+                  {{ 'packageManagement.installed' | translate }}
+                </cds-tag>
+              </td>
+
+              <td>{{ release.date ? (release.date | date: 'mediumDate') : '—' }}</td>
+
+              <td>
+                {{ release.requires || '*' }}
+                <cds-tag *ngIf="!release.compatible" size="sm" type="red">
+                  {{ 'packageManagement.incompatible' | translate }}
+                </cds-tag>
+              </td>
+
+              <td class="detail__table-actions">
+                <button
+                  *ngIf="releaseAction(pkg, release) === 'install'"
+                  cdsButton="tertiary"
+                  size="sm"
+                  (click)="onInstall(release.version)"
+                >
+                  {{ 'packageManagement.install' | translate }}
+                </button>
+
+                <button
+                  *ngIf="releaseAction(pkg, release) === 'switch'"
+                  cdsButton="tertiary"
+                  size="sm"
+                  (click)="onUpdate(release.version)"
+                >
+                  {{ 'packageManagement.detail.switchToVersion' | translate }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+
+      <!-- Requirements -->
+      <ng-container *ngIf="obs.activeTab === PackageDetailTab.REQUIREMENTS">
+        <dl class="detail__facts">
+          <dt>{{ 'packageManagement.detail.compatibility' | translate }}</dt>
+          <dd>
+            {{
+              (pkg.compatible
+                ? 'packageManagement.detail.compatibleYes'
+                : 'packageManagement.detail.compatibleNo'
+              ) | translate
+            }}
+          </dd>
+
+          <ng-container *ngIf="pkg.incompatibleReason">
+            <dt>{{ 'packageManagement.detail.latestRequires' | translate }}</dt>
+            <dd>{{ pkg.incompatibleReason }}</dd>
+          </ng-container>
+
+          <dt>{{ 'packageManagement.detail.reversible' | translate }}</dt>
+          <dd>
+            {{
+              (pkg.capabilities.uninstallable || pkg.type === 'plugin' || !pkg.type
+                ? 'packageManagement.operation.reversibleYes'
+                : 'packageManagement.operation.reversibleNo'
+              ) | translate
+            }}
+          </dd>
+        </dl>
+
+        <p class="detail__placeholder">
+          {{ 'packageManagement.detail.noDependencyData' | translate }}
+        </p>
+      </ng-container>
+
+      <!-- Trust -->
+      <ng-container *ngIf="obs.activeTab === PackageDetailTab.TRUST">
+        <dl class="detail__facts">
+          <dt>{{ 'packageManagement.trust.label' | translate }}</dt>
+          <dd>
+            <cds-tag size="sm" [type]="pkg.trust === PackageTrust.VERIFIED ? 'green' : 'gray'">
+              {{ 'packageManagement.trust.' + pkg.trust | translate }}
+            </cds-tag>
+          </dd>
+
+          <dt>{{ 'packageManagement.detail.owner' | translate }}</dt>
+          <dd>{{ pkg.owner || '—' }}</dd>
+
+          <dt>{{ 'packageManagement.store' | translate }}</dt>
+          <dd>{{ pkg.repositoryId || '—' }}</dd>
+        </dl>
+
+        <p class="detail__trust-explanation">
+          {{ 'packageManagement.trust.' + pkg.trust + 'Explanation' | translate }}
+        </p>
+
+        <p class="detail__placeholder">
+          {{ 'packageManagement.detail.noSignatureData' | translate }}
+        </p>
+      </ng-container>
+    </section>
+
+    <!-- History for this package: who changed it, when, and how it ended. -->
+    <section *ngIf="obs.jobs?.length" class="detail__history">
+      <h3 class="detail__history-title">{{ 'packageManagement.detail.history' | translate }}</h3>
+
+      <ul class="detail__history-list">
+        <li *ngFor="let job of obs.jobs">
+          <span class="detail__history-when">{{ job.createdOn | date: 'short' }}</span>
+          <span>{{ 'packageManagement.operationLabel.' + job.operation | translate }}</span>
+          <span *ngIf="job.toVersion">{{ job.toVersion }}</span>
+          <span class="detail__history-status">
+            {{ 'packageManagement.status.' + job.status | translate }}
+          </span>
+          <span *ngIf="job.createdBy" class="detail__history-actor">{{ job.createdBy }}</span>
+        </li>
+      </ul>
+    </section>
+  </ng-container>
+
+  <valtimo-package-operation-modal></valtimo-package-operation-modal>
+</div>

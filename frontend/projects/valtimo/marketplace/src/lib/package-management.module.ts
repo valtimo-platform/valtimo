@@ -15,39 +15,13 @@
  */
 
 import {APP_INITIALIZER, NgModule} from '@angular/core';
-import {PackageOverviewComponent} from './components/package-overview/package-overview.component';
 import {PackageService} from './services/package.service';
-import {AsyncPipe, NgIf, NgTemplateOutlet} from '@angular/common';
-import {
-  ButtonModule,
-  LayerModule,
-  LoadingModule,
-  ModalModule,
-  TagModule,
-  TilesModule,
-} from 'carbon-components-angular';
-import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule} from '@valtimo/components';
 import {PackageManagementRoutingModule} from './package-management-routing.module';
-import {PluginTranslatePipeModule} from "@valtimo/plugin";
 
 @NgModule({
-  declarations: [PackageOverviewComponent],
-  imports: [
-    PackageManagementRoutingModule,
-    AsyncPipe,
-    NgIf,
-    LayerModule,
-    NgTemplateOutlet,
-    TranslateModule,
-    CarbonListModule,
-    TagModule,
-    TilesModule,
-    LoadingModule,
-    ButtonModule,
-    ModalModule,
-    PluginTranslatePipeModule,
-  ],
+  // The marketplace screens are standalone components reached through the routing
+  // module; this module only contributes the app-start package loading.
+  imports: [PackageManagementRoutingModule],
   providers: [
     // Load every STARTED backend package's frontend bundle at app start.
     // The backend (PackagePublicResource) serves each package's Native

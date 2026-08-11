@@ -32,7 +32,19 @@ class PackageSecurityConfigurer : HttpSecurityConfigurer {
             http.authorizeHttpRequests { requests ->
                 requests
                     // management
+                    // The literal sub-paths (store/job/refresh/upload) are declared BEFORE
+                    // the {id} patterns: matchers are evaluated in order, and "/package/store"
+                    // would otherwise be matched by "/package/{id}" with id="store".
                     .requestMatchers(antMatcher(GET, "/api/management/v1/package")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/package/store")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/package/job")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/package/job/{jobId}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/package/refresh")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/package/upload")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/package/{id}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/package/{id}/job")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/package/{id}/preflight"))
+                    .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/package/{id}/install/{version}"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/package/{id}/update/{version}"))

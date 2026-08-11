@@ -1,0 +1,101 @@
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.operation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 20px;
+
+  &__facts {
+    display: grid;
+    grid-template-columns: minmax(120px, auto) 1fr;
+    gap: 4px 16px;
+    margin: 0;
+
+    dt {
+      color: var(--cds-text-secondary);
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+
+  &__section-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  &__blockers,
+  &__warnings {
+    padding: 12px;
+    border-left: 3px solid var(--cds-border-strong);
+    background-color: var(--cds-layer-accent);
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+  }
+
+  &__blockers {
+    border-left-color: var(--cds-support-error);
+  }
+
+  &__warnings {
+    border-left-color: var(--cds-support-warning);
+  }
+
+  &__loading,
+  &__progress {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__hint {
+    color: var(--cds-text-secondary);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  &__success {
+    color: var(--cds-support-success);
+  }
+
+  &__error {
+    color: var(--cds-text-error);
+  }
+
+  &__log {
+    // The root-cause chain from an arbitrary package: kept selectable and scrollable
+    // rather than truncated, so it can be pasted into a bug report.
+    max-height: 160px;
+    overflow: auto;
+    padding: 8px;
+    margin: 0;
+    background-color: var(--cds-layer-accent);
+    font-family: var(--cds-code-01-font-family, monospace);
+    font-size: 12px;
+    line-height: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: text;
+  }
+}

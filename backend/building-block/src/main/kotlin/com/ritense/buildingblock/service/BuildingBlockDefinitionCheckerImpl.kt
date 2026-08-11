@@ -40,6 +40,12 @@ class BuildingBlockDefinitionCheckerImpl(
         ) != null
     }
 
+    override fun getInstalledBuildingBlockDefinitionVersion(buildingBlockDefinitionKey: String): String? {
+        // Ordered ascending by version tag, so the last entry is the highest installed version.
+        return repository.findAllByIdKeyOrderByIdVersionTag(buildingBlockDefinitionKey)
+            .lastOrNull()?.id?.versionTag?.toString()
+    }
+
     override fun canUpdateBuildingBlockDefinition(buildingBlockDefinitionId: BuildingBlockDefinitionId): Boolean {
         return if (!canUpdateGlobalConfiguration()) {
             false

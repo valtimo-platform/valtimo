@@ -18,6 +18,7 @@
  * Public API Surface of marketplace
  */
 
+export * from './lib/constants';
 export * from './lib/models';
 export * from './lib/services';
 export * from './lib/package-management.module';

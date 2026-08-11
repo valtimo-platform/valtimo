@@ -19,14 +19,21 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {ROLE_ADMIN} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
-import {PackageOverviewComponent} from './components/package-overview/package-overview.component';
+import {PackageDetailComponent} from './components/package-detail/package-detail.component';
+import {PackageManagementComponent} from './components/package-management/package-management.component';
 
 const routes: Routes = [
   {
     path: 'marketplace',
-    component: PackageOverviewComponent,
+    component: PackageManagementComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Marketplace', packages: [ROLE_ADMIN]},
+    data: {title: 'Marketplace', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'marketplace/:id',
+    component: PackageDetailComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Marketplace', roles: [ROLE_ADMIN]},
   },
 ];
 

@@ -45,7 +45,36 @@ class PackageManager(
 ) : SpringPluginManager(pluginsRoots) {
 
     init {
-        systemVersion = javaClass.getPackage().implementationVersion ?: "0.0.0"
+        systemVersion = resolveSystemVersion()
+    }
+
+    /**
+     * The Valtimo version that release `requires` constraints are evaluated against.
+     *
+     * pf4j treats the sentinel "0.0.0" as "no version known" and then skips constraint
+     * checking entirely (see `UpdateManager.getLastPluginRelease`), so landing on the
+     * fallback silently disables compatibility enforcement. That is exactly what
+     * happens when running from source: there is no jar, so no
+     * `Implementation-Version`. Hence the explicit
+     * `valtimo.marketplace.systemVersion` override, and the warning when neither is
+     * available.
+     *
+     * The version is normalised to bare `major.minor.patch` because Valtimo releases
+     * carry a fourth qualifier segment (e.g. `13.41.0.RELEASE`) that is not valid
+     * semver and would make every constraint comparison fail.
+     */
+    private fun resolveSystemVersion(): String {
+        val configured = marketplaceProperties.systemVersion?.takeIf { it.isNotBlank() }
+        val resolved = configured ?: javaClass.getPackage()?.implementationVersion
+        if (resolved == null) {
+            logger.warn {
+                "No Valtimo version available to the marketplace (no jar Implementation-Version " +
+                    "and no valtimo.marketplace.systemVersion set). Package compatibility " +
+                    "constraints will NOT be enforced."
+            }
+            return UNKNOWN_SYSTEM_VERSION
+        }
+        return toSemver(resolved)
     }
 
     @PostConstruct
@@ -154,5 +183,22 @@ class PackageManager(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+
+        /** pf4j's "version unknown" sentinel; makes it skip all constraint checks. */
+        const val UNKNOWN_SYSTEM_VERSION = "0.0.0"
+
+        private val SEMVER_PREFIX = Regex("""^(\d+)\.(\d+)(?:\.(\d+))?""")
+
+        /**
+         * Reduce a Valtimo version to bare semver: `13.41.0.RELEASE` -> `13.41.0`,
+         * `13.41` -> `13.41.0`. Returns [UNKNOWN_SYSTEM_VERSION] for anything that does
+         * not start with a recognisable major.minor, which keeps a surprising version
+         * string from making every compatibility comparison throw.
+         */
+        fun toSemver(version: String): String {
+            val match = SEMVER_PREFIX.find(version.trim()) ?: return UNKNOWN_SYSTEM_VERSION
+            val (major, minor, patch) = match.destructured
+            return "$major.$minor.${patch.ifEmpty { "0" }}"
+        }
     }
 }

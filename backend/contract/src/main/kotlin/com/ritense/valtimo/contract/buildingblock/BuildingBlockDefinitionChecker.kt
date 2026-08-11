@@ -22,6 +22,13 @@ interface BuildingBlockDefinitionChecker {
 
     fun existsBuildingBlockDefinition(buildingBlockDefinitionKey: String): Boolean = false
 
+    /**
+     * The highest installed version tag for the given building block definition key, or
+     * null when no building block definition with that key is installed. Used e.g. by
+     * the marketplace to show a building-block package's installed version.
+     */
+    fun getInstalledBuildingBlockDefinitionVersion(buildingBlockDefinitionKey: String): String? = null
+
     fun canUpdateBuildingBlockDefinition(buildingBlockDefinitionId: BuildingBlockDefinitionId): Boolean = false
 
     fun canUpdateGlobalConfiguration(): Boolean = false

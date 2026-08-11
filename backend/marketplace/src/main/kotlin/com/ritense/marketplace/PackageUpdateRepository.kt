@@ -31,14 +31,24 @@ class PackageUpdateRepository(
 ) : DefaultUpdateRepository(id, url, "packages.json") {
 
     private val packages: MutableMap<String, PackageInfo> = mutableMapOf()
-    private var refresh: Boolean = true
+
+    // Whether the next getPlugins() must go to the network. Set false once the
+    // manifest has been read so the cached map is reused: getPlugins() is called
+    // for every repository on every catalogue read, and re-fetching packages.json
+    // each time made listing packages an O(repositories) network round trip.
+    // refresh() (pf4j's "look for new updates" hook) flips it back on.
+    private var stale: Boolean = true
 
     override fun getPlugins(): Map<String, PluginInfo> {
-        if (refresh) {
+        if (stale) {
             initPackages()
         }
 
         return packages
+    }
+
+    override fun refresh() {
+        stale = true
     }
 
     fun getRepositories(): List<PackageUpdateRepository> {
@@ -52,6 +62,11 @@ class PackageUpdateRepository(
     }
 
     private fun initPackages() {
+        // Mark fresh up front, whether or not the read succeeds: an unreachable
+        // repository (e.g. a not-yet-created local package dir) must not make every
+        // subsequent catalogue read retry it. Recovery happens on the next
+        // scheduled or explicit refresh.
+        stale = false
         val items = try {
             val packagesUrl = URL(url, pluginsJsonFileName)
             logger.debug { "Read packages of '$id' repository from '$packagesUrl'" }
@@ -61,10 +76,13 @@ class PackageUpdateRepository(
             return
         }
 
+        // Replace rather than merge, so a package removed from the manifest also
+        // disappears from the cached map on refresh.
+        packages.clear()
         items.forEach { item ->
+            item.repositoryId = getId()
+            packages[item.id] = item
             item.releases.forEach { release ->
-                item.repositoryId = getId()
-                packages[item.id] = item
                 try {
                     release.url = URL(url, release.url).toString()
                     if (release.date.time == 0L) {

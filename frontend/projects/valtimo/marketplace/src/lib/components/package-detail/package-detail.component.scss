@@ -1,0 +1,238 @@
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.detail {
+  width: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: var(--cds-layer);
+
+  &__back {
+    align-self: flex-start;
+  }
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    padding: 48px 0;
+  }
+
+  &__not-found {
+    color: var(--cds-text-secondary);
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  &__logo {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    object-fit: contain;
+  }
+
+  &__heading {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 28px;
+  }
+
+  &__summary {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--cds-text-secondary);
+  }
+
+  &__tags {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__tabs {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid var(--cds-border-subtle);
+  }
+
+  &__tab {
+    padding: 12px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--cds-text-secondary);
+    font-size: 14px;
+    line-height: 18px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--cds-layer-hover);
+    }
+
+    &--active {
+      border-bottom-color: var(--cds-border-interactive);
+      color: var(--cds-text-primary);
+      font-weight: 600;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  &__facts {
+    display: grid;
+    grid-template-columns: minmax(160px, auto) 1fr;
+    gap: 4px 16px;
+    margin: 0;
+
+    dt {
+      color: var(--cds-text-secondary);
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+
+  &__placeholder {
+    // Says what is not available rather than leaving an empty panel that reads as broken.
+    padding: 12px;
+    margin: 0;
+    background-color: var(--cds-layer-accent);
+    color: var(--cds-text-secondary);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  &__links {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--cds-link-primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--cds-border-subtle);
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cds-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.32px;
+    }
+  }
+
+  &__table-actions {
+    text-align: right;
+  }
+
+  &__trust-explanation {
+    margin: 0;
+    color: var(--cds-text-secondary);
+  }
+
+  &__history {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--cds-border-subtle);
+  }
+
+  &__history-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  &__history-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    li {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 12px;
+      line-height: 16px;
+    }
+  }
+
+  &__history-when,
+  &__history-actor {
+    color: var(--cds-text-secondary);
+  }
+
+  &__history-status {
+    font-weight: 600;
+  }
+}

@@ -17,9 +17,16 @@
 import {HttpClient} from '@angular/common/http';
 import {createNgModule, EnvironmentInjector, Injectable, Type} from '@angular/core';
 import {Route, ROUTES, Router} from '@angular/router';
-import {CASE_MANAGEMENT_TAB_TOKEN, ConfigService} from '@valtimo/shared';
-import {defer, from, Observable} from 'rxjs';
-import {PackageListItem} from '../models';
+import {CASE_MANAGEMENT_TAB_TOKEN, ConfigService, Page} from '@valtimo/shared';
+import {defer, from, Observable, switchMap, takeWhile, timer} from 'rxjs';
+import {
+  PackageCatalogue,
+  PackageJob,
+  PackageJobStatus,
+  PackageListItem,
+  PackagePreflight,
+  PackageStore,
+} from '../models';
 import {PLUGINS_TOKEN, PluginService, PluginSpecification} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
 import {TabService} from '@valtimo/case-management';
@@ -44,6 +51,12 @@ interface NativeFederationGlobal {
 
 const REMOTE_ENTRY_FILE = 'remoteEntry.json';
 const REMOTE_STYLES_FILE = 'styles.css';
+
+/** Job statuses after which there is nothing left to poll for. */
+const TERMINAL_JOB_STATUSES: PackageJobStatus[] = [
+  PackageJobStatus.SUCCEEDED,
+  PackageJobStatus.FAILED,
+];
 
 @Injectable({providedIn: 'root'})
 export class PackageService {
@@ -263,29 +276,105 @@ export class PackageService {
     return value ? [value as T] : [];
   }
 
-  public getPackages(): Observable<Array<PackageListItem>> {
-    return this.http.get<Array<PackageListItem>>(
-      `${this.valtimoEndpointUri}management/v1/package`
-    );
+  /**
+   * The catalogue as the backend currently has it cached. Cheap: no store is contacted.
+   * Use {@link refreshCatalogue} to force the backend to re-read its repositories.
+   */
+  public getCatalogue(): Observable<PackageCatalogue> {
+    return this.http.get<PackageCatalogue>(`${this.valtimoEndpointUri}management/v1/package`);
   }
 
-  public installPackage(packageId: string, version: string): Observable<void> {
-    return this.http.post<void>(
-      `${this.valtimoEndpointUri}management/v1/package/${packageId}/install/${version}`,
+  public refreshCatalogue(): Observable<PackageCatalogue> {
+    return this.http.post<PackageCatalogue>(
+      `${this.valtimoEndpointUri}management/v1/package/refresh`,
       null
     );
   }
 
-  public updatePackage(packageId: string, toVersion: string): Observable<void> {
-    return this.http.post<void>(
-      `${this.valtimoEndpointUri}management/v1/package/${packageId}/update/${toVersion}`,
+  public getPackage(packageId: string): Observable<PackageListItem> {
+    return this.http.get<PackageListItem>(
+      `${this.valtimoEndpointUri}management/v1/package/${encodeURIComponent(packageId)}`
+    );
+  }
+
+  public getStores(): Observable<PackageStore[]> {
+    return this.http.get<PackageStore[]>(`${this.valtimoEndpointUri}management/v1/package/store`);
+  }
+
+  /**
+   * What would happen if this version were applied. Read-only; the install flow shows it
+   * as a review step and refuses to continue while `blockers` is non-empty.
+   */
+  public preflight(packageId: string, version?: string): Observable<PackagePreflight> {
+    return this.http.post<PackagePreflight>(
+      `${this.valtimoEndpointUri}management/v1/package/${encodeURIComponent(packageId)}/preflight`,
+      {version: version ?? null}
+    );
+  }
+
+  // Install / update / uninstall return the job that was queued, not a completed
+  // operation: the work runs in the background and is followed with getJob().
+
+  public installPackage(packageId: string, version: string): Observable<PackageJob> {
+    return this.http.post<PackageJob>(
+      `${this.valtimoEndpointUri}management/v1/package/${encodeURIComponent(packageId)}/install/${version}`,
       null
     );
   }
 
-  public uninstallPackage(packageId: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.valtimoEndpointUri}management/v1/package/${packageId}`
+  public updatePackage(packageId: string, toVersion: string): Observable<PackageJob> {
+    return this.http.post<PackageJob>(
+      `${this.valtimoEndpointUri}management/v1/package/${encodeURIComponent(packageId)}/update/${toVersion}`,
+      null
+    );
+  }
+
+  public uninstallPackage(packageId: string): Observable<PackageJob> {
+    return this.http.delete<PackageJob>(
+      `${this.valtimoEndpointUri}management/v1/package/${encodeURIComponent(packageId)}`
+    );
+  }
+
+  public getJob(jobId: string): Observable<PackageJob> {
+    return this.http.get<PackageJob>(
+      `${this.valtimoEndpointUri}management/v1/package/job/${jobId}`
+    );
+  }
+
+  /**
+   * Follow a job until it finishes, emitting every poll so the UI can show the stage.
+   *
+   * Polling rather than a push channel: an install is a handful of seconds to a couple of
+   * minutes, and a poll survives the page being reopened later — which a socket tied to
+   * the original request would not.
+   */
+  public pollJob(jobId: string, intervalMs = 1500): Observable<PackageJob> {
+    return timer(0, intervalMs).pipe(
+      switchMap(() => this.getJob(jobId)),
+      // Inclusive, so the terminal state is emitted before completing.
+      takeWhile(job => !TERMINAL_JOB_STATUSES.includes(job.status), true)
+    );
+  }
+
+  public getJobs(page = 0, size = 20): Observable<Page<PackageJob>> {
+    return this.http.get<Page<PackageJob>>(
+      `${this.valtimoEndpointUri}management/v1/package/job?page=${page}&size=${size}`
+    );
+  }
+
+  public getPackageJobs(packageId: string, page = 0, size = 20): Observable<Page<PackageJob>> {
+    return this.http.get<Page<PackageJob>>(
+      `${this.valtimoEndpointUri}management/v1/package/${encodeURIComponent(packageId)}/job?page=${page}&size=${size}`
+    );
+  }
+
+  /** Install a package from a file instead of a store, for air-gapped environments. */
+  public uploadPackage(file: File): Observable<PackageJob> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<PackageJob>(
+      `${this.valtimoEndpointUri}management/v1/package/upload`,
+      formData
     );
   }
 

@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="stores"
+  *ngIf="{loading: loading$ | async, stores: stores$ | async, uploading: uploading$ | async} as obs"
+>
+  <section class="stores__section">
+    <h3 class="stores__title">{{ 'packageManagement.stores.configured' | translate }}</h3>
+
+    <p class="stores__hint">{{ 'packageManagement.stores.configuredHint' | translate }}</p>
+
+    <div *ngIf="obs.loading" class="stores__loading">
+      <cds-loading size="sm"></cds-loading>
+    </div>
+
+    <ul *ngIf="!obs.loading" class="stores__list">
+      <li *ngFor="let store of obs.stores" class="stores__item">
+        <div class="stores__item-main">
+          <span class="stores__item-id">{{ store.id }}</span>
+          <code class="stores__item-url">{{ store.url }}</code>
+        </div>
+
+        <div class="stores__item-meta">
+          <span>
+            {{ 'packageManagement.stores.packageCount' | translate: {count: store.packageCount} }}
+          </span>
+
+          <!--
+            An empty store is almost always a wrong URL rather than a genuinely empty one,
+            and that is what an admin needs to see; the catalogue read itself stays silent
+            about failure so one bad store cannot break the others.
+          -->
+          <cds-tag size="sm" [type]="store.reachable ? 'green' : 'red'">
+            {{
+              (store.reachable
+                ? 'packageManagement.stores.reachable'
+                : 'packageManagement.stores.unreachable'
+              ) | translate
+            }}
+          </cds-tag>
+        </div>
+      </li>
+    </ul>
+
+    <p *ngIf="!obs.loading && !obs.stores?.length" class="stores__hint">
+      {{ 'packageManagement.stores.none' | translate }}
+    </p>
+  </section>
+
+  <section class="stores__section">
+    <h3 class="stores__title">{{ 'packageManagement.stores.upload' | translate }}</h3>
+
+    <p class="stores__hint">{{ 'packageManagement.stores.uploadHint' | translate }}</p>
+
+    <div class="stores__upload">
+      <!--
+        A plain file input rather than the dropzone component: this is a single admin-only
+        file, and the input keeps the accepted extensions declared in one place.
+      -->
+      <input
+        class="stores__file-input"
+        type="file"
+        [accept]="ACCEPTED_EXTENSIONS"
+        [attr.data-test-id]="testIds.uploadInput"
+        [disabled]="obs.uploading ?? false"
+        (change)="onFileSelected($event)"
+      />
+
+      <cds-loading *ngIf="obs.uploading" size="sm"></cds-loading>
+    </div>
+  </section>
+</div>

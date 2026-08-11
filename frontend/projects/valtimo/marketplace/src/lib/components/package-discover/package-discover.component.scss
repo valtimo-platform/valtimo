@@ -1,0 +1,112 @@
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.discover {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: flex-start;
+
+  &__filters {
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+  }
+
+  &__filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__filter-legend {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.32px;
+    color: var(--cds-text-secondary);
+    margin-bottom: 4px;
+  }
+
+  &__results {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__toolbar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__search {
+    flex: 1 1 280px;
+    max-width: 420px;
+  }
+
+  &__toolbar-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__sort-label {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--cds-text-secondary);
+  }
+
+  &__sort {
+    height: 32px;
+    padding: 0 8px;
+    border: none;
+    border-bottom: 1px solid var(--cds-border-strong);
+    background-color: var(--cds-field);
+    color: var(--cds-text-primary);
+    font-size: 14px;
+  }
+
+  &__view-button--active {
+    background-color: var(--cds-layer-selected);
+  }
+
+  &__grid {
+    display: grid;
+    // Cards stay readable rather than stretching on a wide screen.
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    padding: 48px 0;
+  }
+}

@@ -1,0 +1,191 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    job: job$ | async,
+    operation: operation$ | async,
+    package: package$ | async,
+    preflight: preflight$ | async,
+    preflightError: preflightError$ | async,
+    preflightLoading: preflightLoading$ | async,
+    step: step$ | async,
+    visible: visible$ | async,
+  } as obs"
+>
+  <cds-modal *ngIf="obs.visible" size="md" [open]="true" (overlaySelected)="onClose()">
+    <cds-modal-header (closeSelect)="onClose()">
+      <h3 cdsModalHeaderHeading>
+        {{ 'packageManagement.operation.' + obs.operation + '.title' | translate }}
+      </h3>
+
+      <p cdsModalHeaderLabel>{{ obs.package?.name || obs.package?.id }}</p>
+    </cds-modal-header>
+
+    <section cdsModalContent class="operation">
+      <!-- Step 1: review. Nothing has happened yet. -->
+      <ng-container *ngIf="obs.step === InstallFlowStep.REVIEW">
+        <div *ngIf="obs.preflightLoading" class="operation__loading">
+          <cds-loading size="sm"></cds-loading>
+        </div>
+
+        <p *ngIf="obs.preflightError" class="operation__error">
+          {{ 'packageManagement.operation.preflightFailed' | translate }}
+        </p>
+
+        <ng-container *ngIf="obs.operation === PackageOperation.UNINSTALL">
+          <p>
+            {{
+              'packageManagement.operation.UNINSTALL.body'
+                | translate: {name: obs.package?.name || obs.package?.id}
+            }}
+          </p>
+        </ng-container>
+
+        <ng-container *ngIf="obs.preflight as preflight">
+          <dl class="operation__facts">
+            <dt>{{ 'packageManagement.operation.version' | translate }}</dt>
+            <dd>
+              <span *ngIf="preflight.installedVersion"
+                >{{ preflight.installedVersion }} &rarr;
+              </span>
+              <b>{{ preflight.targetVersion }}</b>
+            </dd>
+
+            <dt>{{ 'packageManagement.columns.type' | translate }}</dt>
+            <dd>{{ 'packageManagement.type.' + (preflight.type || 'plugin') | translate }}</dd>
+
+            <dt>{{ 'packageManagement.trust.label' | translate }}</dt>
+            <dd>
+              <cds-tag
+                size="sm"
+                [type]="preflight.trust === PackageTrust.VERIFIED ? 'green' : 'gray'"
+              >
+                {{ 'packageManagement.trust.' + preflight.trust | translate }}
+              </cds-tag>
+            </dd>
+
+            <ng-container *ngIf="preflight.requires">
+              <dt>{{ 'packageManagement.operation.requires' | translate }}</dt>
+              <dd>{{ preflight.requires }}</dd>
+            </ng-container>
+
+            <ng-container *ngIf="formatSize(preflight.downloadSizeBytes) as size">
+              <dt>{{ 'packageManagement.operation.download' | translate }}</dt>
+              <dd>{{ size }}</dd>
+            </ng-container>
+
+            <dt>{{ 'packageManagement.operation.reversible' | translate }}</dt>
+            <dd>
+              {{
+                (preflight.reversible
+                  ? 'packageManagement.operation.reversibleYes'
+                  : 'packageManagement.operation.reversibleNo'
+                ) | translate
+              }}
+            </dd>
+          </dl>
+
+          <!-- A blocker means the backend would refuse; confirmation stays disabled. -->
+          <div *ngIf="preflight.blockers.length" class="operation__blockers">
+            <p class="operation__section-title">
+              {{ 'packageManagement.operation.blockers' | translate }}
+            </p>
+
+            <ul>
+              <li *ngFor="let blocker of preflight.blockers">{{ blocker }}</li>
+            </ul>
+          </div>
+
+          <div *ngIf="preflight.warnings.length" class="operation__warnings">
+            <p class="operation__section-title">
+              {{ 'packageManagement.operation.warnings' | translate }}
+            </p>
+
+            <ul>
+              <li *ngFor="let warning of preflight.warnings">{{ warning }}</li>
+            </ul>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <!-- Step 2: progress. Driven by the job the backend queued. -->
+      <ng-container *ngIf="obs.step === InstallFlowStep.PROGRESS">
+        <div class="operation__progress">
+          <cds-loading size="sm"></cds-loading>
+
+          <p>
+            {{
+              obs.job?.stage
+                ? ('packageManagement.stage.' + obs.job?.stage | translate)
+                : ('packageManagement.stage.queued' | translate)
+            }}
+          </p>
+        </div>
+
+        <p class="operation__hint">{{ 'packageManagement.operation.safeToLeave' | translate }}</p>
+      </ng-container>
+
+      <!-- Step 3: outcome. A failure keeps its message on screen instead of a toast. -->
+      <ng-container *ngIf="obs.step === InstallFlowStep.RESULT">
+        <ng-container *ngIf="obs.job?.status === PackageJobStatus.SUCCEEDED">
+          <p class="operation__success">
+            {{
+              'packageManagement.operation.' + obs.operation + '.success'
+                | translate
+                  : {name: obs.package?.name || obs.package?.id, version: obs.job?.toVersion}
+            }}
+          </p>
+        </ng-container>
+
+        <ng-container *ngIf="obs.job?.status !== PackageJobStatus.SUCCEEDED">
+          <p class="operation__error">
+            {{
+              'packageManagement.operation.' + obs.operation + '.failed'
+                | translate: {name: obs.package?.name || obs.package?.id}
+            }}
+          </p>
+
+          <pre *ngIf="obs.job?.errorMessage" class="operation__log">{{
+            obs.job?.errorMessage
+          }}</pre>
+        </ng-container>
+      </ng-container>
+    </section>
+
+    <cds-modal-footer>
+      <button
+        cdsButton="secondary"
+        [attr.data-test-id]="testIds.operationCancelButton"
+        (click)="onClose()"
+      >
+        {{
+          (obs.step === InstallFlowStep.REVIEW ? 'interface.cancel' : 'interface.close') | translate
+        }}
+      </button>
+
+      <button
+        *ngIf="obs.step === InstallFlowStep.REVIEW"
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.operationConfirmButton"
+        [disabled]="!canConfirm(obs.operation, obs.preflight) || obs.preflightLoading"
+        (click)="onConfirm()"
+      >
+        {{ 'packageManagement.operation.' + obs.operation + '.confirm' | translate }}
+      </button>
+    </cds-modal-footer>
+  </cds-modal>
+</ng-container>
