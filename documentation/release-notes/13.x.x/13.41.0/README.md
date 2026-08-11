@@ -31,6 +31,13 @@
   could not be edited, leaving the Duplicate button disabled. The dialog now pre-populates the divider key 
   with a unique default value and allows it to be edited before duplicating.
   
+* **Breadcrumbs of a DMN decision table no longer stay behind on other screens**
+
+  After opening a decision table of a case and then navigating to another screen through the menu, the
+  breadcrumbs, page title and page header buttons of the decision table could stay visible on that screen
+  until the page was reloaded. The decision table screen now always cleans up its breadcrumbs and title,
+  even when the DMN editor fails to shut down.
+
 * **Start form of a building block now opens in the panel**
 
   Starting a building block from the 'Start' menu of a case did nothing when the start form of its
