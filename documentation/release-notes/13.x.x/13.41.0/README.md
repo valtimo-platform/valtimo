@@ -6,61 +6,46 @@
 
 ## New Features
 
-* **A migration plan now chooses the version it migrates from**
+* **New feature title**
 
-  Every migration plan declares a **source**: the blueprint version whose instances it migrates onto the
-  version the plan belongs to. Previously the source was implied — always the target's immediately
-  preceding version, always under the same key — which limited a plan to a single version hop and made a
-  key change impossible. Two things follow from making it explicit.
-
-  A plan may now name **any earlier version**, so cases several versions behind can be brought forward in
-  one step instead of needing a plan on every version in between. And it may name a **different key**, so
-  the cases of a renamed or replaced case definition — and the running instances of a replaced building
-  block — can be carried onto their successor. For building blocks this changes how an upgrade chain is
-  worked out: it is now read off the deployed plans themselves rather than from each version's
-  `basedOnVersionTag`, and a chain may collapse into one plan or cross from one building block to another.
-  If nothing connects the two versions, or if more than one chain of plans does, the migration fails and
-  says so rather than guessing — a dry run of the case migration reports either problem up front.
-
-  The source is picked on the **General** tab of the plan editor and is pre-filled with the preceding
-  version, so the ordinary version bump is unchanged. In a `*.migration.json` it is the required `source`
-  field:
-
-  ```json
-  {
-    "key": "verhuizing-versiesprong",
-    "source": {"key": "verhuizing", "versionTag": "1.0.1"}
-  }
-  ```
-
-  `key` may be omitted to mean "the same key as the target". Note that a plan with no `source` at all no
-  longer deploys, and that a version *without* a predecessor can now carry a plan — the **New migration
-  plan** button is no longer disabled for it.
-
-  {% hint style="warning" %}
-  Migrating instances from a **different** key also moves them onto the target's document definition,
-  which has a different name. Anything keyed on the old document definition name — saved searches,
-  permissions scoped to it, external integrations — is not rewritten and needs checking.
-  {% endhint %}
+  New feature explanation.
 
 ## Enhancements
 
-* **Building blocks can be added to and removed from a building block during migration**
+* **New enhancement title**
 
-  A building block can contain other building blocks, and a **building block** migration plan can now
-  create or dissolve them. The **Migration** tab of a building block version has gained the same **Add
-  building block** and **Remove building block** sections the case plan editor has; the only difference
-  is the owner. Adding creates a block nested inside the migrating building block, filled from the
-  owning block's document and taking over one of its processes; removing dissolves a nested block after
-  handing its data and process back to the block that owned it. As in the case editor, each entry's data
-  and process migration is pre-filled for the building block you pick.
-
-  The engine already supported this — the `addBuildingBlock` and `removeBuildingBlock` plan components
-  have always applied to whichever instance is migrating — so plans written by hand as
-  `*.building-block-migration.json` are unchanged; they are simply configurable in the UI now.
+  New enhancement explanation.
 
 ## Bugfixes
 
-* Starting a **new migration plan** for a building block version pre-filled trigger and condition
-  fields that a building block plan is not allowed to carry, so saving the suggested plan failed with a
-  validation error. These fields are no longer suggested for building block plans.
+* **Actions now respect the linked building block version**
+
+  Starting a building block from the actions of a case now always runs the version of that building block
+  that is linked to the case. Previously a newer version of the same building block took over: after
+  creating a new version and changing its process, starting the action still ran the newer version, which
+  led to an error when that version wrote to fields the linked version does not have. Changes to other
+  versions of a building block no longer affect the version that is linked.
+
+  A process that belongs to a building block can now only be started for a specific version. Starting one
+  by process definition key alone - for example from a custom plugin or a `startProcessByProcessDefinitionKey`
+  expression outside of a building block - now reports a clear error instead of silently running whichever
+  version happened to be deployed last.
+
+* **A divider widget without a title no longer shows a dash**
+
+  A divider widget that is configured without a title now stays empty, both in the widget list on the
+  widget management page and on the widget tab of a case. Previously a `-` was shown in both places as a
+  placeholder for the missing title. In addition, saving a divider without a title on an IKO view no longer
+  fails: the back end required a non-blank title for every widget, while a divider does not need one.
+
+* **A divider widget can be duplicated again**
+
+  Fixed an issue where duplicating a divider opened the duplication dialog with an empty, invalid key that 
+  could not be edited, leaving the Duplicate button disabled. The dialog now pre-populates the divider key 
+  with a unique default value and allows it to be edited before duplicating.
+
+* **Start form of a building block now opens in the panel**
+
+  Starting a building block from the 'Start' menu of a case did nothing when the start form of its
+  main process is configured to be shown in a panel. The panel now opens right away. Previously it
+  only appeared after first opening the start form of a regular process in the panel.

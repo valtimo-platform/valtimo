@@ -140,6 +140,7 @@ class DefaultFormSubmissionService(
                 document,
                 taskInstanceId,
                 documentDefinitionNameToUse,
+                processDefinition.id,
                 processDefinition.key,
                 processDefinition.getBlueprintId(),
                 categorizedKeyValues.createDocumentWithContent,
@@ -400,6 +401,7 @@ class DefaultFormSubmissionService(
         document: Document?,
         taskInstanceId: String?,
         documentDefinitionName: String,
+        processDefinitionId: String,
         processDefinitionKey: String,
         blueprintId: BlueprintId?,
         documentContent: JsonNode,
@@ -414,6 +416,7 @@ class DefaultFormSubmissionService(
             if (document == null) {
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
+                    processDefinitionId,
                     processDefinitionKey,
                     blueprintId,
                     documentContent,
@@ -422,6 +425,7 @@ class DefaultFormSubmissionService(
             } else {
                 modifyDocumentAndStartProcessRequest(
                     document,
+                    processDefinitionId,
                     processDefinitionKey,
                     documentContent,
                     withProcessVars,
@@ -446,6 +450,7 @@ class DefaultFormSubmissionService(
 
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
+        processDefinitionId: String,
         processDefinitionKey: String,
         blueprintId: BlueprintId?,
         documentContent: JsonNode,
@@ -489,11 +494,12 @@ class DefaultFormSubmissionService(
                     )
                 ).withProcessVars(withProcessVars)
             }
-        }
+        }.withProcessDefinitionId(processDefinitionId)
     }
 
     private fun modifyDocumentAndStartProcessRequest(
         document: Document,
+        processDefinitionId: String,
         processDefinitionKey: String,
         documentContent: JsonNode,
         withProcessVars: Map<String, Any>,
@@ -506,6 +512,7 @@ class DefaultFormSubmissionService(
                 documentContent
             ).withJsonPatch(withJsonPatch)
         ).withProcessVars(withProcessVars)
+            .withProcessDefinitionId(processDefinitionId)
     }
 
     private fun modifyDocumentAndCompleteTaskRequest(

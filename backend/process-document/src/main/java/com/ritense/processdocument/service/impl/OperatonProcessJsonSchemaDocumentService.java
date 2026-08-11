@@ -140,6 +140,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             );
 
             final var processInstanceWithDefinition = startProcess(
+                request.processDefinitionId(),
                 document,
                 processDefinitionKey,
                 request.getProcessVars()
@@ -297,7 +298,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             //Part 2 process start
             final var processDefinitionKey = request.processDefinitionKey();
             final var processInstanceWithDefinition = startProcess(
-                document, processDefinitionKey, request.getProcessVars());
+                request.processDefinitionId(), document, processDefinitionKey, request.getProcessVars());
             final var operatonProcessInstanceId = new OperatonProcessInstanceId(
                 processInstanceWithDefinition.getProcessInstanceDto().getId()
             );
@@ -342,7 +343,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             //Part 2 process start
             final var processDefinitionKey = request.getProcessDefinitionKey();
             final var processInstanceWithDefinition = startProcess(
-                document, processDefinitionKey, request.getProcessVars());
+                request.getProcessDefinitionId(), document, processDefinitionKey, request.getProcessVars());
             final var operatonProcessInstanceId = new OperatonProcessInstanceId(
                 processInstanceWithDefinition.getProcessInstanceDto().getId()
             );
@@ -445,17 +446,33 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         return documentService.getDocumentBy(caseDocumentId);
     }
 
+    /**
+     * Starts the process for a document. When the caller knows the exact process definition version -
+     * for instance because the request originated from a process link - that version is started
+     * directly. Otherwise the definition is resolved from its key and the document's blueprint, which
+     * cannot tell versions of a blueprint-owned process apart.
+     */
     private ProcessInstanceWithDefinition startProcess(
+        @Nullable String processDefinitionId,
         Document document,
         String processDefinitionKey,
         Map<String, Object> processVars
     ) {
-        return runWithoutAuthorization(() -> operatonProcessService.startProcess(
-            processDefinitionKey,
-            document.id().toString(),
-            document.definitionId().caseDefinitionId(),
-            processVars
-        ));
+        return runWithoutAuthorization(() -> {
+            if (processDefinitionId != null) {
+                return operatonProcessService.startProcessById(
+                    processDefinitionId,
+                    document.id().toString(),
+                    processVars
+                );
+            }
+            return operatonProcessService.startProcess(
+                processDefinitionKey,
+                document.id().toString(),
+                document.definitionId().asBlueprintId(),
+                processVars
+            );
+        });
     }
 
     private FunctionResult<OperatonTask, OperationError> findTaskById(String taskId) {

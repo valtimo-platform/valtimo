@@ -162,7 +162,10 @@ export class CaseDetailTabProgressComponent {
     private readonly destroyRef: DestroyRef
   ) {}
 
-  public loadProcessInstance(processInstanceId: string): void {
+  public loadProcessInstance(selection: ListItem | Array<ListItem>): void {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    const processInstanceId = item?.processInstanceId;
+
     if (!!processInstanceId) {
       this.selectedProcessInstanceId$.next(processInstanceId);
     }
