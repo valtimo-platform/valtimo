@@ -1,6 +1,10 @@
 {
     "title": "Alle activiteittypes migreren",
     "key": "verhuizing-alle-activiteittypes",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.2"
+    },
     "migrationTriggers": {
         "triggeredByButton": true
     },

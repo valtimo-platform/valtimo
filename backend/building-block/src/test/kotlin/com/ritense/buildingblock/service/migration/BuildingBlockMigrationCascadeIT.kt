@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.service.migration
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.BaseIntegrationTest
@@ -38,6 +39,7 @@ import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.service.migration.CaseMigrationService
+import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationTriggerScheduler
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
@@ -55,6 +57,7 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
@@ -73,6 +76,8 @@ import java.util.UUID
  *   afterwards still migrates everything, rather than skipping a case the simulation "already did".
  * - **R1, no independent trigger.** The hourly sweep never starts a building block plan, even one
  *   carrying a due `scheduledAtDate`.
+ * - **Nesting.** A building block plan owns the blocks nested inside it exactly as a case plan owns
+ *   its own, so `removeBuildingBlock` on a building block plan dissolves a nested block.
  *
  * Each test builds its own fixture under keys unique to it, so the tests neither see nor disturb
  * each other's rows (nothing here runs in a test transaction — the engine's own commits and
@@ -96,6 +101,8 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
     private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val documentRepository: JsonSchemaDocumentRepository,
     private val documentService: DocumentService,
+    private val migrationPlanImporter: MigrationPlanImporter,
+    private val objectMapper: ObjectMapper,
     private val transactionTemplate: TransactionTemplate,
 ) : BaseIntegrationTest() {
 
@@ -142,7 +149,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         val failure = status.errors.single()
         assertThat(failure.caseId).isEqualTo(fixture.caseDocumentId.toString())
         assertThat(failure.message)
-            .contains("No migration plan is deployed for building block version")
+            .contains("No migration plan connects building block version")
             .contains("${fixture.innerKey}:$V2")
 
         // Nothing survived: not the case's own re-home, and not the outer block the cascade had
@@ -208,7 +215,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         val failure = dryRun.errors.single()
         assertThat(failure.caseId).isEqualTo(fixture.caseDocumentId.toString())
         assertThat(failure.message)
-            .contains("No migration plan is deployed for building block version")
+            .contains("No migration plan connects building block version")
             .contains("${fixture.innerKey}:$V2")
 
         // A dry run that found a problem still persists nothing.
@@ -216,6 +223,80 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         assertThat(documentVersionOf(fixture.outerDocumentId)).isEqualTo(V1)
         assertThat(migratedCount(fixture.casePlanId)).isZero()
         assertThat(migratedCount(fixture.outerPlanId)).isZero()
+    }
+
+    @Test
+    fun `a case migration moves a nested block onto a different building block key`() {
+        // The outer block's new version points the very call activity the inner block was started from
+        // at an entirely different building block, and a plan declares that other block's source to be
+        // the version the instance is on. Nothing in either definition's lineage connects the two keys —
+        // the plan is the only thing that does.
+        val fixture = createCascadeFixture(innerTargetKeySuffix = "replacement")
+
+        caseMigrationService.startMigration(fixture.casePlanId)
+
+        assertThat(caseMigrationService.getStatus(fixture.casePlanId).status)
+            .isEqualTo(CaseMigrationStatus.COMPLETED)
+
+        // The inner instance is now a different building block altogether — document and instance both.
+        val replacement = fixture.innerV2
+        assertThat(definitionIdOf(fixture.innerDocumentId)).isEqualTo(replacement)
+        assertThat(documentBlueprintOf(fixture.innerDocumentId)).isEqualTo("${replacement.key}:${replacement.versionTag}")
+        assertThat(migratedCount(fixture.innerPlanId)).isEqualTo(1)
+
+        // And the levels above it moved as usual.
+        assertThat(documentVersionOf(fixture.caseDocumentId)).isEqualTo(V2)
+        assertThat(definitionIdOf(fixture.outerDocumentId)).isEqualTo(fixture.outerV2)
+    }
+
+    @Test
+    fun `a second chain of plans to the same version fails the case rather than picking one`() {
+        val fixture = createCascadeFixture()
+
+        // A shortcut plan alongside the existing one: both lead the inner block from V1 to V2, so which
+        // transformations a running instance goes through is no longer decided by the configuration.
+        deployPlan(BlueprintMigrationId.from(fixture.innerV2, "cascade-inner-shortcut"))
+
+        caseMigrationService.startMigration(fixture.casePlanId)
+
+        val status = caseMigrationService.getStatus(fixture.casePlanId)
+        assertThat(status.status).isEqualTo(CaseMigrationStatus.COMPLETED_WITH_ERRORS)
+        assertThat(status.casesMigrated).isZero()
+        assertThat(status.errors.single().message)
+            .contains("more than one chain of migration plans")
+            .contains("cascade-inner-plan")
+            .contains("cascade-inner-shortcut")
+
+        // And the refusal rolled the whole cascade back, exactly as a missing chain does.
+        assertThat(documentVersionOf(fixture.caseDocumentId)).isEqualTo(V1)
+        assertThat(documentVersionOf(fixture.outerDocumentId)).isEqualTo(V1)
+        assertThat(migratedCount(fixture.outerPlanId)).isZero()
+    }
+
+    @Test
+    fun `a building block plan removes a building block nested inside the migrating block`() {
+        // A building block owns other building blocks exactly as a case does, so its plan may dissolve
+        // one — the nested block's data is handed back to the owner and the block itself disappears.
+        val fixture = createCascadeFixture(innerValue = NESTED_VALUE)
+        deployRemoveNestedBlockPlan(fixture)
+
+        caseMigrationService.startMigration(fixture.casePlanId)
+
+        assertThat(caseMigrationService.getStatus(fixture.casePlanId).status)
+            .isEqualTo(CaseMigrationStatus.COMPLETED)
+
+        // The nested block is gone — instance and document both — and its data lives on in its owner.
+        assertThat(instanceOf(fixture.innerDocumentId)).isNull()
+        assertThat(documentExists(fixture.innerDocumentId)).isFalse()
+        assertThat(documentValueOf(fixture.outerDocumentId)).isEqualTo(NESTED_VALUE)
+
+        // The case and the owner still migrated as usual, and the nested block's own plan was never
+        // applied: version alignment (@500) runs after the removal (@400), so there is nothing left to
+        // align by the time it looks.
+        assertThat(documentVersionOf(fixture.caseDocumentId)).isEqualTo(V2)
+        assertThat(definitionIdOf(fixture.outerDocumentId)).isEqualTo(fixture.outerV2)
+        assertThat(migratedCount(fixture.outerPlanId)).isEqualTo(1)
+        assertThat(migratedCount(fixture.innerPlanId)).isZero()
     }
 
     @Test
@@ -276,9 +357,15 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
      *
      * Both link kinds are exercised: the case links its block as a startable item, the block links
      * its own as a call activity (the only mechanism available one level down).
+     *
+     * With [innerTargetKeySuffix] set, the inner block's destination is a **different building block**
+     * of that name rather than a new version of the one the instance is on — the cross-key case. The
+     * link and the plan both name it; nothing else connects the two keys.
      */
     private fun createCascadeFixture(
         deployInnerPlan: Boolean = true,
+        innerTargetKeySuffix: String? = null,
+        innerValue: String = "before-migration",
     ): Fixture {
         val uid = uniqueSuffix()
 
@@ -294,14 +381,24 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
 
         val innerKey = "cascade-inner-$uid"
         val innerV1 = BuildingBlockDefinitionId.of(innerKey, V1)
-        val innerV2 = BuildingBlockDefinitionId.of(innerKey, V2)
-        deployBuildingBlockDefinitions(innerKey, innerV1, innerV2)
+        val innerV2 = if (innerTargetKeySuffix == null) {
+            BuildingBlockDefinitionId.of(innerKey, V2)
+        } else {
+            // A separate building block, deployed with no basedOnVersionTag at all, so the only thing
+            // that can carry an instance across is a plan that says so.
+            BuildingBlockDefinitionId.of("cascade-$innerTargetKeySuffix-$uid", V1)
+        }
+        deployBuildingBlockDefinitions(innerKey, innerV1, BuildingBlockDefinitionId.of(innerKey, V2))
+        if (innerTargetKeySuffix != null) {
+            deployBuildingBlockDefinition(innerV2, basedOnVersionTag = null)
+        }
 
         // The case's new version offers the outer block as a startable item, at its new version.
         caseDefinitionBuildingBlockLinkRepository.save(
             CaseDefinitionBuildingBlockLink(caseDefinitionId = caseV2, buildingBlockDefinitionId = outerV2)
         )
-        // The outer block's new version call-activities into the inner block's new version.
+        // The outer block's new version call-activities into whatever the inner block should become —
+        // the same activity id, so the instance still matches its own link.
         linkAsCallActivity(owner = outerV2, activityId = NESTED_ACTIVITY_ID, target = innerV2)
 
         val caseDocumentId = createCaseDocument(caseKey, caseV1)
@@ -316,7 +413,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
             )
         )
 
-        val innerDocumentId = createBuildingBlockDocument(innerKey, innerV1)
+        val innerDocumentId = createBuildingBlockDocument(innerKey, innerV1, innerValue)
         buildingBlockInstanceRepository.save(
             BuildingBlockInstance(
                 documentId = innerDocumentId,
@@ -331,7 +428,9 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         val outerPlanId = deployPlan(BlueprintMigrationId.from(outerV2, "cascade-outer-plan"))
         val innerPlanId = BlueprintMigrationId.from(innerV2, "cascade-inner-plan")
         if (deployInnerPlan) {
-            deployPlan(innerPlanId)
+            // The plan's source is where the instance actually is — the same key on the ordinary path,
+            // the *other* key when the inner block is being replaced rather than upgraded.
+            deployPlan(innerPlanId, sourceKey = innerKey, sourceVersionTag = V1)
         }
 
         return Fixture(
@@ -371,32 +470,31 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         v1: BuildingBlockDefinitionId,
         v2: BuildingBlockDefinitionId,
     ) {
+        deployBuildingBlockDefinition(v1, basedOnVersionTag = null)
+        deployBuildingBlockDefinition(v2, basedOnVersionTag = v1.versionTag)
+    }
+
+    /**
+     * Deploy one building block definition version and the document definition that goes with it. Each
+     * version's document definition is named after the building block's own key, so re-homing a document
+     * across keys has to look the name up rather than carry it over.
+     */
+    private fun deployBuildingBlockDefinition(id: BuildingBlockDefinitionId, basedOnVersionTag: Semver?) {
         buildingBlockDefinitionRepository.saveAndFlush(
             BuildingBlockDefinition(
-                id = v1,
-                name = key,
+                id = id,
+                name = id.key,
                 createdBy = "tester",
                 createdDate = LocalDateTime.now(),
-                basedOnVersionTag = null,
+                basedOnVersionTag = basedOnVersionTag,
             )
         )
-        buildingBlockDefinitionRepository.saveAndFlush(
-            BuildingBlockDefinition(
-                id = v2,
-                name = key,
-                createdBy = "tester",
-                createdDate = LocalDateTime.now(),
-                basedOnVersionTag = v1.versionTag,
+        documentDefinitionRepository.saveAndFlush(
+            JsonSchemaDocumentDefinition(
+                JsonSchemaDocumentDefinitionId.forBuildingBlock(id.key, id),
+                JsonSchema.fromString(schemaFor(id.key))
             )
         )
-        listOf(v1, v2).forEach { buildingBlockDefinitionId ->
-            documentDefinitionRepository.saveAndFlush(
-                JsonSchemaDocumentDefinition(
-                    JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockDefinitionId),
-                    JsonSchema.fromString(schemaFor(key))
-                )
-            )
-        }
     }
 
     /** Give [owner] a process definition whose [activityId] call activity starts [target]. */
@@ -421,15 +519,53 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         )
     }
 
-    private fun deployPlan(id: BlueprintMigrationId, scheduledAtDate: LocalDateTime? = null): BlueprintMigrationId {
+    /**
+     * Deploy a plan on [id]'s blueprint version, migrating instances from [sourceKey]:[sourceVersionTag]
+     * — by default the [V1] of the plan's own key, which is the ordinary version bump these fixtures use.
+     */
+    private fun deployPlan(
+        id: BlueprintMigrationId,
+        scheduledAtDate: LocalDateTime? = null,
+        sourceKey: String = id.key,
+        sourceVersionTag: String = V1,
+    ): BlueprintMigrationId {
         caseDefinitionMigrationRepository.saveAndFlush(
             CaseDefinitionMigration(
                 id = id,
+                sourceKey = sourceKey,
+                sourceVersionTag = Semver(sourceVersionTag),
                 title = id.migrationKey,
                 migrationTriggers = MigrationTriggers(scheduledAtDate = scheduledAtDate),
             )
         )
         return id
+    }
+
+    /**
+     * Re-deploy the outer building block's plan — through the importer, the very path the management
+     * UI saves on — with a `removeBuildingBlock` component dissolving the nested block and handing its
+     * `value` back to the owner. Same plan key, so this replaces the skeleton the fixture wrote.
+     *
+     * Only `removeBuildingBlock` can be shown here: `addBuildingBlock` skips an owner with no
+     * hijackable process, and these fixtures deliberately carry no running process (see the class doc).
+     */
+    private fun deployRemoveNestedBlockPlan(fixture: Fixture) {
+        val plan = objectMapper.readTree(
+            """
+            {
+              "key": "${fixture.outerPlanId.migrationKey}",
+              "source": {"key": "${fixture.outerV1.key}", "versionTag": "$V1"},
+              "removeBuildingBlock": [
+                {
+                  "buildingBlockKey": "${fixture.innerKey}",
+                  "dataMigration": [{"target": "doc:/value", "source": "doc:/value"}],
+                  "processMigration": []
+                }
+              ]
+            }
+            """.trimIndent()
+        )
+        migrationPlanImporter.deploy(fixture.outerV2, plan)
     }
 
     private fun createCaseDocument(documentDefinitionName: String, caseDefinitionId: CaseDefinitionId): UUID {
@@ -446,6 +582,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
     private fun createBuildingBlockDocument(
         documentDefinitionName: String,
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        value: String = "before-migration",
     ): UUID {
         return createDocument(
             NewDocumentRequest(
@@ -454,7 +591,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
                 null,
                 buildingBlockDefinitionId.key,
                 buildingBlockDefinitionId.versionTag.toString(),
-                JsonNodeFactory.instance.objectNode().put("value", "before-migration"),
+                JsonNodeFactory.instance.objectNode().put("value", value),
             )
         )
     }
@@ -474,6 +611,31 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
     private fun documentVersionOf(documentId: UUID): String = runWithoutAuthorization {
         val document = documentRepository.findById(JsonSchemaDocumentId.existingId(documentId)).orElseThrow()
         (document.definitionId() as JsonSchemaDocumentDefinitionId).blueprintId().blueprintVersionTag().toString()
+    }
+
+    /** The `value` field of a document's content — how data handed back by a removal is observed. */
+    private fun documentValueOf(documentId: UUID): String? = runWithoutAuthorization {
+        documentRepository.findById(JsonSchemaDocumentId.existingId(documentId)).orElseThrow()
+            .content().asJson().get("value")?.asText()
+    }
+
+    private fun documentExists(documentId: UUID): Boolean = runWithoutAuthorization {
+        documentRepository.findById(JsonSchemaDocumentId.existingId(documentId)).isPresent
+    }
+
+    /** The building block instance homed on a document, or null when it no longer exists. */
+    private fun instanceOf(documentId: UUID): BuildingBlockInstance? = transactionTemplate.execute {
+        buildingBlockInstanceRepository.findByDocumentId(documentId)
+    }
+
+    /**
+     * The whole blueprint the document is homed on, `key:version` — needed where the *key* is what
+     * changed, which the version alone cannot show.
+     */
+    private fun documentBlueprintOf(documentId: UUID): String = runWithoutAuthorization {
+        val document = documentRepository.findById(JsonSchemaDocumentId.existingId(documentId)).orElseThrow()
+        val blueprintId = (document.definitionId() as JsonSchemaDocumentDefinitionId).blueprintId()
+        "${blueprintId.blueprintKey()}:${blueprintId.blueprintVersionTag()}"
     }
 
     /**
@@ -519,5 +681,6 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         const val V1 = "1.0.0"
         const val V2 = "1.0.1"
         const val NESTED_ACTIVITY_ID = "callInner"
+        const val NESTED_VALUE = "from-nested-block"
     }
 }

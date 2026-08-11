@@ -36,6 +36,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.semver4j.Semver
@@ -47,6 +48,7 @@ class LinkedBuildingBlockVersionResolverTest {
     private lateinit var processDefCaseDefRepository: ProcessDefinitionCaseDefinitionRepository
     private lateinit var processDefBbDefRepository: ProcessDefinitionBuildingBlockDefinitionRepository
     private lateinit var processLinkRepository: ProcessLinkRepository
+    private lateinit var pathResolver: BuildingBlockMigrationPathResolver
     private lateinit var resolver: LinkedBuildingBlockVersionResolver
 
     private val caseDefinitionId = CaseDefinitionId("verhuizing", "1.0.2")
@@ -59,12 +61,17 @@ class LinkedBuildingBlockVersionResolverTest {
         processDefCaseDefRepository = mock()
         processDefBbDefRepository = mock()
         processLinkRepository = mock()
+        pathResolver = mock()
         resolver = LinkedBuildingBlockVersionResolver(
             caseLinkRepository,
             processDefCaseDefRepository,
             processDefBbDefRepository,
             processLinkRepository,
+            pathResolver,
         )
+        // Unless a test says otherwise, every version an owner links is reachable through the plans, so
+        // reachability never silently narrows the candidates a test set up.
+        whenever(pathResolver.isReachable(any(), any())).thenReturn(true)
         whenever(caseLinkRepository.findAllByCaseDefinitionId(caseDefinitionId)).thenReturn(emptyList())
         whenever(processDefCaseDefRepository.findByIdCaseDefinitionId(caseDefinitionId)).thenReturn(emptyList())
         whenever(processLinkRepository.findByProcessDefinitionId(processDefinitionId)).thenReturn(emptyList())
@@ -74,18 +81,18 @@ class LinkedBuildingBlockVersionResolverTest {
     fun `should resolve a version linked as a startable item`() {
         startableItemLink("1.0.1")
 
-        val version = resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0"))
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0"))
 
-        assertThat(version).isEqualTo(Semver("1.0.1"))
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "1.0.1"))
     }
 
     @Test
     fun `should resolve a version linked from a call activity`() {
         callActivityLink("inspectie_uitvoeren", "1.0.1")
 
-        val version = resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0", activityId = "inspectie_uitvoeren"))
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0", activityId = "inspectie_uitvoeren"))
 
-        assertThat(version).isEqualTo(Semver("1.0.1"))
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "1.0.1"))
     }
 
     @Test
@@ -94,9 +101,9 @@ class LinkedBuildingBlockVersionResolverTest {
         callActivityLink("inspectie_uitvoeren", "1.0.1")
         callActivityLink("herinspectie_uitvoeren", "2.0.0")
 
-        val version = resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0", activityId = "herinspectie_uitvoeren"))
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0", activityId = "herinspectie_uitvoeren"))
 
-        assertThat(version).isEqualTo(Semver("2.0.0"))
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "2.0.0"))
     }
 
     @Test
@@ -104,9 +111,9 @@ class LinkedBuildingBlockVersionResolverTest {
         startableItemLink("1.0.1")
         callActivityLink("inspectie_uitvoeren", "2.0.0")
 
-        val version = resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0"))
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0"))
 
-        assertThat(version).isEqualTo(Semver("1.0.1"))
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "1.0.1"))
     }
 
     @Test
@@ -116,9 +123,9 @@ class LinkedBuildingBlockVersionResolverTest {
         callActivityLink("inspectie_uitvoeren_v2", "1.0.1")
         callActivityLink("herinspectie_uitvoeren", "1.0.1")
 
-        val version = resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0", activityId = "inspectie_uitvoeren"))
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0", activityId = "inspectie_uitvoeren"))
 
-        assertThat(version).isEqualTo(Semver("1.0.1"))
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "1.0.1"))
     }
 
     @Test
@@ -127,7 +134,7 @@ class LinkedBuildingBlockVersionResolverTest {
         callActivityLink("herinspectie_uitvoeren", "2.0.0")
 
         assertThatThrownBy {
-            resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0", activityId = "inspectie_uitvoeren"))
+            resolver.resolveTarget(caseDefinitionId, instance("1.0.0", activityId = "inspectie_uitvoeren"))
         }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessageContaining("1.0.1")
@@ -140,7 +147,7 @@ class LinkedBuildingBlockVersionResolverTest {
         callActivityLink("inspectie_uitvoeren", "1.0.1")
         callActivityLink("herinspectie_uitvoeren", "2.0.0")
 
-        assertThatThrownBy { resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0")) }
+        assertThatThrownBy { resolver.resolveTarget(caseDefinitionId, instance("1.0.0")) }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessageContaining("startable item")
     }
@@ -152,18 +159,72 @@ class LinkedBuildingBlockVersionResolverTest {
         callActivityLink("inspectie_uitvoeren", "1.0.1")
         callActivityLink("herinspectie_uitvoeren", "2.0.0")
 
-        val version = resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0", activityId = "inspectie_uitvoeren"))
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0", activityId = "inspectie_uitvoeren"))
 
-        assertThat(version).isEqualTo(Semver("1.0.1"))
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "1.0.1"))
     }
 
     @Test
-    fun `should resolve nothing when the target version does not link the building block at all`() {
+    fun `should resolve nothing when nothing the target version links can be reached from this block`() {
+        // The owner links an unrelated building block, and no plan leads from this one to it. That is
+        // the honest reading of "this block is no longer linked": leave it where it is.
         callActivityLink("andere_activiteit", "1.0.0", key = "income-check")
+        whenever(pathResolver.isReachable(any(), any())).thenReturn(false)
 
-        val version = resolver.resolveTargetVersion(caseDefinitionId, instance("1.0.0"))
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0"))
 
-        assertThat(version).isNull()
+        assertThat(target).isNull()
+    }
+
+    @Test
+    fun `should follow the link of a different building block key when the instance's own activity names it`() {
+        // The owner's new version points the very activity this block was started from at another
+        // building block. Nothing is in doubt, so the key change is followed without consulting the plans.
+        callActivityLink("foto_maken", "1.0.0", key = "inspectie-dossier")
+
+        val target = resolver.resolveTarget(
+            caseDefinitionId,
+            instance("1.0.1", key = "inspectie-fotos", activityId = "foto_maken"),
+        )
+
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of("inspectie-dossier", "1.0.0"))
+    }
+
+    @Test
+    fun `should pick the only linked block a migration plan can reach when no link matches the origin`() {
+        // The activity was renamed past what the remap could follow. Two blocks are linked, but only one
+        // of them is somewhere this instance can be migrated to, so which link governs it is moot.
+        callActivityLink("dossier_vaststellen", "1.0.0", key = "inspectie-dossier")
+        callActivityLink("inkomen_toetsen", "1.0.0", key = "income-check")
+        val instance = instance("1.0.1", key = "inspectie-fotos", activityId = "foto_maken")
+        whenever(pathResolver.isReachable(any(), any())).thenReturn(false)
+        whenever(
+            pathResolver.isReachable(
+                BuildingBlockDefinitionId.of("inspectie-fotos", "1.0.1"),
+                BuildingBlockDefinitionId.of("inspectie-dossier", "1.0.0"),
+            )
+        ).thenReturn(true)
+
+        val target = resolver.resolveTarget(caseDefinitionId, instance)
+
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of("inspectie-dossier", "1.0.0"))
+    }
+
+    @Test
+    fun `should refuse when several linked blocks are reachable and none matches the origin`() {
+        callActivityLink("dossier_vaststellen", "1.0.0", key = "inspectie-dossier")
+        callActivityLink("archief_vullen", "1.0.0", key = "inspectie-archief")
+
+        assertThatThrownBy {
+            resolver.resolveTarget(
+                caseDefinitionId,
+                instance("1.0.1", key = "inspectie-fotos", activityId = "foto_maken"),
+            )
+        }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("inspectie-dossier:1.0.0")
+            .hasMessageContaining("inspectie-archief:1.0.0")
+            .hasMessageContaining("foto_maken")
     }
 
     @Test
@@ -181,12 +242,12 @@ class LinkedBuildingBlockVersionResolverTest {
             listOf(buildingBlockProcessLink(bbProcessDefinitionId, "foto_maken", "photo-upload", "1.0.1"))
         )
 
-        val version = resolver.resolveTargetVersion(
+        val target = resolver.resolveTarget(
             ownerId,
             instance("1.0.0", key = "photo-upload", activityId = "foto_maken"),
         )
 
-        assertThat(version).isEqualTo(Semver("1.0.1"))
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of("photo-upload", "1.0.1"))
     }
 
     private fun startableItemLink(versionTag: String, key: String = bbKey) {

@@ -72,7 +72,7 @@ import {
   MigrationExecutionError,
   MigrationPlanManagement,
 } from '../../../../models';
-import {CaseManagementService, CaseMigrationApiService} from '../../../../services';
+import {CaseMigrationApiService} from '../../../../services';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../constants';
 
 type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
@@ -215,23 +215,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     })
   );
 
-  // A plan migrates FROM this version's predecessor (basedOnVersionTag) TO this version, so a version
-  // with no predecessor has nothing to migrate from — adding a plan is disabled for it.
-  public readonly canAddPlan$: Observable<boolean> = this._params$.pipe(
-    switchMap(params =>
-      !params
-        ? of(false)
-        : this.caseManagementService
-            .getCaseDefinition(params.caseDefinitionKey, params.caseDefinitionVersionTag)
-            .pipe(
-              map(definition => !!definition?.basedOnVersionTag),
-              catchError(() => of(false))
-            )
-    ),
-    startWith(false),
-    shareReplay(1)
-  );
-
   private _params: CaseManagementParams | undefined;
   private readonly _subscriptions = new Subscription();
 
@@ -240,7 +223,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly caseMigrationApiService: CaseMigrationApiService,
-    private readonly caseManagementService: CaseManagementService,
     private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
     private readonly translateService: TranslateService

@@ -61,7 +61,8 @@ covering one part of the plan:
   [Source and target](#source-and-target)). You can optionally set process variables during the
   migration.
 * **Add building block** / **Remove building block** — optionally create or dissolve building blocks
-  on each migrated case (see [Adding and removing building blocks](#adding-and-removing-building-blocks)).
+  on each migrated case, or nested inside each migrated building block (see
+  [Adding and removing building blocks](#adding-and-removing-building-blocks)).
 * **JSON editor** — a raw view of the whole plan for advanced users who prefer to read or tweak the
   configuration directly. Everything here is also editable through the guided tabs above.
 
@@ -118,10 +119,28 @@ A group must contain at least one condition, and groups may be nested up to ten 
 The words **source** and **target** appear throughout the editor. They always mean the same thing:
 the **source** is where something is read _from_, the **target** is where it is written _to_.
 
-At the level of the whole plan this is fixed and you don't choose it: a plan always migrates cases
-**from the previous version** (the source — the version the cases are currently on) **into the
-version the plan belongs to** (the target). That is why you create the plan under the version you
-want cases to end up on.
+At the level of the whole plan, the **target** is fixed and the **source** is yours to choose. The
+target is always the version the plan belongs to — that is why you create the plan under the version
+you want cases to end up on. The source is the version whose cases the plan migrates, and you pick it
+on the **General** tab:
+
+* **The previous version** — the ordinary case, and what the editor pre-fills for a new plan.
+* **An older version** — the plan then migrates those cases here in a *single step*, instead of
+  needing a plan on every version in between. Useful when the intermediate versions have nothing to
+  say about the data or the process.
+* **A different case definition** — the plan then migrates the cases of *that* case definition onto
+  this one, which is how a case definition that has been renamed or replaced brings its running cases
+  along.
+
+A plan only ever touches the cases sitting on exactly the version it names. Cases on any other
+version are left to the plans that claim them, so several plans may target the same version from
+different sources without interfering.
+
+{% hint style="warning" %}
+Migrating cases from a **different** case definition also moves them onto the target's document
+definition, which has a different name. Anything keyed on the old document definition name — saved
+searches, permissions scoped to it, external integrations — is not rewritten and needs checking.
+{% endhint %}
 
 ## Adding and removing building blocks
 
@@ -138,6 +157,41 @@ split into **building blocks**. A migration plan can do this too, as part of the
 
 Both use the same **source and target** idea as the rest of the editor — the only difference is
 which document is being read from and written to, which the editor explains inline for each.
+
+A building block can itself contain building blocks, so a **building block** plan has the same two
+sections. There the owner is the migrating building block instead of a case: **Add building block**
+creates a block nested inside it and moves one of its processes into that block, and **Remove building
+block** dissolves a nested block, handing its data and process back to the block that owned it.
+
+## How building blocks follow a case
+
+A building block has no life of its own — it lives inside a case — so a building block plan is never
+started by hand. It runs when a case migration moves a building block onto the plan's version, and it
+applies to exactly the building blocks that case migration brings with it. A case that never migrates
+keeps its building blocks where they are.
+
+Which building block a case's existing block should become is read off the case's **new** version: the
+building blocks it offers as startable items and the ones its processes call. If that is a newer
+version of the block the case already has, the block is brought up to it. If it is a **different**
+building block, the block is carried over to that one instead — which is how one building block
+replaces another without abandoning the instances already running.
+
+Getting there needs a **chain of migration plans** leading from the version the block is on to the
+version the case links, and the plans' own sources are what form that chain. One plan may cover the
+whole jump, or there may be one plan per step — including a step that changes nothing, because every
+building block version publishes its own process model and a running block has to be moved onto it
+explicitly.
+
+Two situations stop the migration rather than guess, and both fail the whole case (nothing is
+half-migrated):
+
+* **Nothing connects them.** No chain of plans leads from where the block is to where the case wants
+  it. Add the missing plan.
+* **More than one chain connects them.** Which transformations a running block goes through would then
+  be arbitrary. Remove or re-source one of the plans so a single chain remains.
+
+Dry-running the *case* migration walks the identical chain, so it reports either problem before a real
+run does.
 
 ## Managing plans
 

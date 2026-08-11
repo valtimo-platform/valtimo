@@ -24,16 +24,18 @@ import org.semver4j.Semver
  * Answers "which version was this blueprint version derived from?", for one kind of
  * [blueprint][BlueprintType].
  *
- * A migration plan is deployed under its *target* version and migrates instances of the version that
- * target was based on, so the source version is never written in the plan — it is read back from the
- * blueprint here. The migration engine lives in the `case` module and cannot reach the runtime of
- * every blueprint type (it must not depend on `building-block`, for one), so each owning module
- * contributes an implementation as a Spring bean and the engine picks the one that [supports] the
- * type it is looking at.
+ * This is **not** where a migration plan's source comes from: a plan declares its own source, which is
+ * what lets it span several versions or name a different key. Lineage answers a narrower question, for
+ * the admin UI — "which version would an author most likely want to migrate from?", to pre-fill a new
+ * plan's source with the target's predecessor — and "is this version deployed at all?", to reject a
+ * plan naming a source nobody deployed. The migration engine lives in the `case` module and cannot
+ * reach the runtime of every blueprint type (it must not depend on `building-block`, for one), so each
+ * owning module contributes an implementation as a Spring bean and the engine picks the one that
+ * [supports] the type it is looking at.
  *
  * Deliberately separate from [MigrationCandidateProvider]. Lineage is needed for **every** blueprint
- * type — a building block plan still has to render "1.0.3 → 1.0.4" and still has to know its own
- * source version — whereas enumerating instances to run a plan over is only meaningful for a
+ * type — a building block plan is authored in the same editor, and gets the same pre-filled source and
+ * the same check on it — whereas enumerating instances to run a plan over is only meaningful for a
  * blueprint type whose plans can be started on their own, which building blocks cannot be. Keeping
  * them apart is what stops a building-block implementation of "find every instance of this version"
  * existing at all; see [MigrationCandidateProvider].
@@ -44,8 +46,20 @@ interface BlueprintVersionLineage {
     fun supports(blueprintType: BlueprintType): Boolean
 
     /**
-     * The version the given (target) blueprint was based on — the *source* version a plan deployed
-     * on it migrates from. Null when unknown (no predecessor, or the blueprint does not exist).
+     * The version the given blueprint was based on. This is only a *suggestion* for a new plan's
+     * source — the predecessor is the source an author usually wants — never the source itself, which
+     * a plan always declares for itself. Null when unknown (no predecessor, or the blueprint does not
+     * exist).
      */
     fun basedOnVersionTag(blueprintId: BlueprintId): Semver?
+
+    /**
+     * Whether the given blueprint version is deployed.
+     *
+     * Needed because [basedOnVersionTag] returning null cannot tell "this version exists but has no
+     * predecessor" apart from "this version does not exist", and a plan that names a source nobody
+     * deployed selects no instances at all — a silence worth turning into an error when a plan is
+     * saved.
+     */
+    fun exists(blueprintId: BlueprintId): Boolean
 }

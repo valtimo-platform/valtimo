@@ -15,9 +15,9 @@
   -->
 
 <div class="migration-tab" [formGroup]="form">
-  <p class="migration-tab__description">
-    {{ 'buildingBlockManagement.migration.editor.dataMigration.description' | translate }}
-  </p>
+  @if (descriptionKey) {
+    <p class="migration-tab__description">{{ descriptionKey | translate }}</p>
+  }
 
   <div class="migration-tab__patches" formArrayName="patches">
     @for (patch of patchesArray.controls; track patch) {

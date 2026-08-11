@@ -1,6 +1,10 @@
 {
     "title": "Verhuizing migreren",
     "key": "verhuizing-gegevens",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
     "migrationTriggers": {
         "triggeredByButton": true
     },

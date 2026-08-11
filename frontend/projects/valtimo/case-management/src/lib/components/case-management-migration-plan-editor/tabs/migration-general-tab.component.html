@@ -36,6 +36,42 @@
     </cds-text-label>
   </div>
 
+  <!-- Source -->
+  <h5 class="migration-tab__subheading">
+    {{ 'caseManagement.migration.editor.general.source' | translate }}
+  </h5>
+  <p class="migration-tab__hint">
+    {{ 'caseManagement.migration.editor.general.sourceHint' | translate }}
+  </p>
+
+  <div class="migration-tab__grid">
+    <!--
+      Both pickers are non-clearable: a plan always migrates FROM somewhere, so neither field has a
+      meaningful empty state. "The same case definition as the target" is expressed by selecting that
+      key, not by blanking the field. (Clearing a Carbon combobox also hands back an empty array rather
+      than an empty string, which is truthy and would travel into the plan as a version tag.)
+    -->
+    <v-select
+      formControlName="sourceKey"
+      [clearable]="false"
+      [items]="sourceKeyOptions"
+      [placeholder]="'caseManagement.migration.editor.general.sourceKeyPlaceholder' | translate"
+      [required]="true"
+      [titleTranslationKey]="'caseManagement.migration.editor.general.sourceKey'"
+      [attr.data-test-id]="testIds.sourceKeySelect"
+    ></v-select>
+
+    <v-select
+      formControlName="sourceVersionTag"
+      [clearable]="false"
+      [items]="sourceVersionOptions"
+      [placeholder]="'caseManagement.migration.editor.general.sourceVersionPlaceholder' | translate"
+      [required]="true"
+      [titleTranslationKey]="'caseManagement.migration.editor.general.sourceVersion'"
+      [attr.data-test-id]="testIds.sourceVersionSelect"
+    ></v-select>
+  </div>
+
   <!-- Triggers -->
   <h5 class="migration-tab__subheading">
     {{ 'caseManagement.migration.editor.general.triggers' | translate }}

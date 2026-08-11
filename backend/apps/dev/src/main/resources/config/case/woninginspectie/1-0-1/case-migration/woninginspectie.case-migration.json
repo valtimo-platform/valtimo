@@ -1,6 +1,10 @@
 {
     "title": "Inspectie-bouwsteen toevoegen",
     "key": "woninginspectie-bouwsteen-toevoegen",
+    "source": {
+        "key": "woninginspectie",
+        "versionTag": "1.0.0"
+    },
     "migrationTriggers": {
         "triggeredByButton": true
     },

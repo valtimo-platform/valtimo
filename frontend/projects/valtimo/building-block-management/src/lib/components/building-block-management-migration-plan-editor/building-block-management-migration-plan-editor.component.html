@@ -25,6 +25,8 @@
         [buildingBlockDefinitionVersionTag]="$buildingBlockDefinitionVersionTag()"
         [isEdit]="$isEdit()"
         [plan]="$plan()"
+        [sourceKeyOptions]="$sourceKeyOptions()"
+        [sourceVersionOptions]="$sourceVersionOptions()"
         (generalChange)="onGeneralChange($event)"
       ></valtimo-bb-migration-general-tab>
     </cds-tab>
@@ -55,6 +57,34 @@
         [instructions]="$plan().processMigration"
         (instructionsChange)="onProcessMigrationChange($event)"
       ></valtimo-bb-migration-process-migration-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'buildingBlockManagement.migration.editor.tabs.addBuildingBlock' | translate"
+      [attr.data-test-id]="testIds.addBuildingBlockTab"
+    >
+      <valtimo-bb-migration-building-block-tab
+        [buildingBlockDefinitionKey]="$buildingBlockDefinitionKey()"
+        [buildingBlockDefinitionVersionTag]="$buildingBlockDefinitionVersionTag()"
+        [instructions]="$plan().addBuildingBlock"
+        [mode]="'add'"
+        [ownerProcessDefinitions]="$targetProcessDefs()"
+        (instructionsChange)="onAddBuildingBlockChange($event)"
+      ></valtimo-bb-migration-building-block-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'buildingBlockManagement.migration.editor.tabs.removeBuildingBlock' | translate"
+      [attr.data-test-id]="testIds.removeBuildingBlockTab"
+    >
+      <valtimo-bb-migration-building-block-tab
+        [buildingBlockDefinitionKey]="$buildingBlockDefinitionKey()"
+        [buildingBlockDefinitionVersionTag]="$buildingBlockDefinitionVersionTag()"
+        [instructions]="$plan().removeBuildingBlock"
+        [mode]="'remove'"
+        [ownerProcessDefinitions]="$targetProcessDefs()"
+        (instructionsChange)="onRemoveBuildingBlockChange($event)"
+      ></valtimo-bb-migration-building-block-tab>
     </cds-tab>
 
     <cds-tab

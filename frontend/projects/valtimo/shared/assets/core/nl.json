@@ -794,7 +794,6 @@
   "caseManagement": {
     "migration": {
       "addPlan": "Migratieplan toevoegen",
-      "addPlanDisabledHint": "Deze versie heeft geen voorganger om vanaf te migreren, dus er kan geen migratieplan voor worden aangemaakt.",
       "startNow": "Migratie nu starten",
       "errorCount": "{{count}} fouten",
       "editor": {
@@ -813,6 +812,12 @@
           "titlePlaceholder": "Migreer dossiers met status 'aanvraag-ontvangen'",
           "key": "Sleutel",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
+          "source": "Bron",
+          "sourceHint": "De versie van de zaakdefinitie waarvan dit plan de zaken migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die zaken in \u00e9\u00e9n stap hierheen, en een andere sleutel kiezen brengt zaken van die zaakdefinitie over naar deze.",
+          "sourceKey": "Bronzaakdefinitie",
+          "sourceKeyPlaceholder": "Kies een zaakdefinitie",
+          "sourceVersion": "Bronversie",
+          "sourceVersionPlaceholder": "Kies een versie",
           "triggers": "Triggers",
           "triggersHint": "Bepaal wanneer dit plan draait: handmatig via de UI-knop, op een ingepland moment, of nadat een ander plan is voltooid.",
           "triggeredByButton": "Handmatig starten via de UI-knop",
@@ -3650,7 +3655,6 @@
     },
     "migration": {
       "addPlan": "Migratieplan toevoegen",
-      "addPlanDisabledHint": "Deze versie heeft geen voorganger om vanaf te migreren, dus er kan geen migratieplan voor worden aangemaakt.",
       "duplicateSuffix": "kopie",
       "editor": {
         "createTitle": "Nieuw migratieplan",
@@ -3659,6 +3663,8 @@
           "general": "Algemeen",
           "dataMigration": "Datamigratie",
           "processMigration": "Procesmigratie",
+          "addBuildingBlock": "Bouwblok toevoegen",
+          "removeBuildingBlock": "Bouwblok verwijderen",
           "jsonEditor": "JSON-editor"
         },
         "general": {
@@ -3666,9 +3672,15 @@
           "titlePlaceholder": "Migreer bouwblokken met status 'aanvraag-ontvangen'",
           "key": "Sleutel",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
+          "source": "Bron",
+          "sourceHint": "De bouwsteenversie waarvan dit plan de instanties migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die instanties in \u00e9\u00e9n stap hierheen. Een andere bouwsteen kiezen maakt dit plan de brug die de lopende instanties daarvan hierheen brengt \u2014 en dat is het enige dat dat kan, want niets anders verbindt twee verschillende bouwstenen.",
+          "sourceKey": "Bronbouwsteen",
+          "sourceKeyPlaceholder": "Kies een bouwsteen",
+          "sourceVersion": "Bronversie",
+          "sourceVersionPlaceholder": "Kies een versie",
           "whenItRuns": "Wanneer dit plan draait",
           "whenItRunsHint": "Dit plan heeft geen eigen trigger en geen eigen condities. Het draait automatisch wanneer een zaak migreert naar een zaakdefinitieversie die {{key}} op versie {{versionTag}} koppelt, en wordt toegepast op elke bouwblokinstantie die die zaakmigratie naar deze versie brengt. Het wordt gesimuleerd als onderdeel van de dry run van die zaakmigratie.",
-          "everyVersionNeedsAPlanHint": "Elke versie tussen de versie waarop een bouwblok staat en de versie die een zaak koppelt heeft een migratieplan nodig, ook een versie die niets wijzigt: elke versie van {{key}} publiceert zijn eigen procesmodel, dus een lopend bouwblok moet er expliciet naartoe worden verplaatst. Een versie daartussen zonder plan laat de zaakmigratie mislukken. Draai de zaakmigratie eerst als dry run om de hele keten te controleren."
+          "chainOfPlansHint": "Een keten van migratieplannen moet de versie waarop een bouwblokinstantie staat verbinden met de versie die een zaak koppelt. E\u00e9n plan kan de hele sprong dekken \u2014 de source is dan de versie waarop de instantie werkelijk staat \u2014 of er is een plan per stap, ook een stap die niets wijzigt: elke versie van {{key}} publiceert zijn eigen procesmodel, dus een lopend bouwblok moet er expliciet naartoe worden verplaatst. Verbindt niets de twee, of verbindt meer dan \u00e9\u00e9n keten ze, dan mislukt de zaakmigratie in plaats van te gokken. Draai de zaakmigratie eerst als dry run om de hele keten te controleren."
         },
         "dataMigration": {
           "description": "Verplaats of stel bouwblokgegevens in tijdens de migratie. Elke patch kopieert een waarde van een bronlocatie naar de doellocatie, zet een vaste waarde op het doel, of zet het doel op null. Het doelveld is verplicht.",
@@ -3711,6 +3723,26 @@
           "addVariable": "Variabele toevoegen",
           "skipCustomListeners": "Custom listeners overslaan",
           "skipIoMappings": "Input/output-mappings overslaan"
+        },
+        "buildingBlock": {
+          "buildingBlockKey": "Bouwblok",
+          "buildingBlockKeyPlaceholder": "Kies een bouwblok",
+          "buildingBlockVersionTag": "Versie",
+          "buildingBlockVersionTagPlaceholder": "Kies een versie"
+        },
+        "addBuildingBlock": {
+          "description": "Maak één of meer geneste bouwblokken aan binnen elk gemigreerd bouwblok. Elke regel maakt een (in eerste instantie leeg) bouwblokdocument aan, vult dit met de onderstaande datamigratie en neemt het/de proces(sen) van het bovenliggende bouwblok over in het nieuwe bouwblok.",
+          "empty": "Nog geen toe te voegen bouwblokken geconfigureerd.",
+          "addEntry": "Bouwblok toevoegen",
+          "dataMigrationHint": "Vult het nieuwe bouwblokdocument: elke bron leest uit het bovenliggende bouwblokdocument, elk doel schrijft naar het nieuwe bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een proces van het bovenliggende bouwblok; het doelproces is een proces van het nieuwe bouwblok. Het/de vermelde proces(sen) worden overgenomen in het nieuwe bouwblok en de business key wordt altijd op de document-id van het nieuwe bouwblok gezet."
+        },
+        "removeBuildingBlock": {
+          "description": "Verwijder één of meer geneste bouwblokken uit elk gemigreerd bouwblok. Alle bouwblokken met de opgegeven sleutel die direct onder het migrerende bouwblok hangen worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar dat bouwblok.",
+          "empty": "Nog geen te verwijderen bouwblokken geconfigureerd.",
+          "addEntry": "Bouwblok toevoegen",
+          "dataMigrationHint": "Zet data terug naar het bovenliggende bouwblok voordat het geneste bouwblok wordt verwijderd: elke bron leest uit het geneste bouwblokdocument, elk doel schrijft naar het bovenliggende bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een proces van het geneste bouwblok; het doelproces is een proces van het bovenliggende bouwblok. Het/de proces(sen) van het geneste bouwblok worden teruggegeven en de business key wordt altijd teruggezet op de document-id van het bovenliggende bouwblok."
         }
       },
       "deleteModal": {

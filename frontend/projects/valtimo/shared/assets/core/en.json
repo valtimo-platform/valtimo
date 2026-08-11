@@ -787,7 +787,6 @@
   "caseManagement": {
     "migration": {
       "addPlan": "Add migration plan",
-      "addPlanDisabledHint": "This version has no predecessor to migrate from, so a migration plan cannot be created for it.",
       "startNow": "Start migration now",
       "errorCount": "{{count}} errors",
       "editor": {
@@ -806,6 +805,12 @@
           "titlePlaceholder": "Migrate cases with status 'aanvraag-ontvangen'",
           "key": "Key",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
+          "source": "Source",
+          "sourceHint": "The case definition version whose cases this plan migrates. It need not be the immediately preceding version: naming an older one migrates those cases here in a single step, and naming a different key moves cases of that case definition onto this one.",
+          "sourceKey": "Source case definition",
+          "sourceKeyPlaceholder": "Select a case definition",
+          "sourceVersion": "Source version",
+          "sourceVersionPlaceholder": "Select a version",
           "triggers": "Triggers",
           "triggersHint": "Decide when this plan runs: manually from the UI button, at a scheduled moment, or after another plan finishes.",
           "triggeredByButton": "Run manually from the UI button",
@@ -3617,7 +3622,6 @@
     },
     "migration": {
       "addPlan": "Add migration plan",
-      "addPlanDisabledHint": "This version has no predecessor to migrate from, so a migration plan cannot be created for it.",
       "duplicateSuffix": "copy",
       "editor": {
         "createTitle": "New migration plan",
@@ -3626,6 +3630,8 @@
           "general": "General",
           "dataMigration": "Data migration",
           "processMigration": "Process migration",
+          "addBuildingBlock": "Add building block",
+          "removeBuildingBlock": "Remove building block",
           "jsonEditor": "JSON editor"
         },
         "general": {
@@ -3633,9 +3639,15 @@
           "titlePlaceholder": "Migrate building blocks with status 'aanvraag-ontvangen'",
           "key": "Key",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
+          "source": "Source",
+          "sourceHint": "The building block version whose instances this plan migrates. It need not be the immediately preceding version: naming an older one migrates those instances here in a single step. Naming a different building block makes this plan the bridge that carries its running instances over to this one \u2014 which is the only thing that can, since nothing else connects two different building blocks.",
+          "sourceKey": "Source building block",
+          "sourceKeyPlaceholder": "Select a building block",
+          "sourceVersion": "Source version",
+          "sourceVersionPlaceholder": "Select a version",
           "whenItRuns": "When this plan runs",
           "whenItRunsHint": "This plan has no trigger and no conditions of its own. It runs automatically when a case migrates to a case definition version that links {{key}} at version {{versionTag}}, and it is applied to every building block instance that case migration brings onto this version. It is simulated as part of that case migration’s dry run.",
-          "everyVersionNeedsAPlanHint": "Every version between the one a building block is on and the one a case links it at needs a migration plan, including a version that changes nothing: each version of {{key}} publishes its own process model, so a running building block has to be moved onto it explicitly. A version in between without a plan makes the case migration fail. Run the case migration as a dry run to check the whole chain before starting it."
+          "chainOfPlansHint": "A chain of migration plans has to connect the version a building block instance is on to the version a case links it at. One plan may declare the whole jump \u2014 its source is the version the instance is actually on \u2014 or there may be one plan per step, including a step that changes nothing: each version of {{key}} publishes its own process model, so a running building block has to be moved onto it explicitly. If nothing connects the two, or if more than one chain does, the case migration fails rather than guess. Run the case migration as a dry run to check the whole chain before starting it."
         },
         "dataMigration": {
           "description": "Move or set building block data during migration. Each patch either copies a value from a source location to the target location, sets a fixed value on the target, or sets the target to null. The target field is required.",
@@ -3678,6 +3690,26 @@
           "addVariable": "Add variable",
           "skipCustomListeners": "Skip custom listeners",
           "skipIoMappings": "Skip input/output mappings"
+        },
+        "buildingBlock": {
+          "buildingBlockKey": "Building block",
+          "buildingBlockKeyPlaceholder": "Select a building block",
+          "buildingBlockVersionTag": "Version",
+          "buildingBlockVersionTagPlaceholder": "Select a version"
+        },
+        "addBuildingBlock": {
+          "description": "Create one or more nested building blocks inside each migrated building block. Each entry creates an (initially empty) building block document, fills it with the data migration below, and hijacks the owning building block's process(es) into the new building block.",
+          "empty": "No building blocks to add configured yet.",
+          "addEntry": "Add building block",
+          "dataMigrationHint": "Fills the new building block document: each source reads from the owning building block document, each target writes into the new building block document.",
+          "processMigrationHint": "The source process is a process of the owning building block; the target process is a process of the new building block. The listed process(es) are hijacked into the new building block, and the business key is always set to the new building block document id."
+        },
+        "removeBuildingBlock": {
+          "description": "Remove one or more nested building blocks from each migrated building block. All building blocks with the given key that are directly owned by the migrating building block are dissolved after their data and process(es) are transferred back to it.",
+          "empty": "No building blocks to remove configured yet.",
+          "addEntry": "Add building block",
+          "dataMigrationHint": "Transfers data back to the owning building block before the nested one is deleted: each source reads from the nested building block document, each target writes into the owning building block document.",
+          "processMigrationHint": "The source process is a process of the nested building block; the target process is a process of the owning building block. The nested building block's process(es) are handed back, and the business key is always set back to the owning building block document id."
         }
       },
       "deleteModal": {

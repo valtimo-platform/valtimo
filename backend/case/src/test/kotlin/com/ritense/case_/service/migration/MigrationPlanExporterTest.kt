@@ -29,6 +29,7 @@ import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeploy
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.semver4j.Semver
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -78,6 +79,8 @@ class MigrationPlanExporterTest(
                 listOf(
                     CaseDefinitionMigration(
                         id = migrationId,
+                        sourceKey = "bezwaar",
+                        sourceVersionTag = Semver("1.2.2"),
                         title = "Migrate cases",
                         migrationTriggers = MigrationTriggers(triggeredByButton = true),
                         conditions = listOf(
@@ -100,6 +103,9 @@ class MigrationPlanExporterTest(
         val json = objectMapper.readTree(exportFile.content)
         assertThat(json.get("title").asText()).isEqualTo("Migrate cases")
         assertThat(json.get("key").asText()).isEqualTo("aanvraag-indienen")
+        // The source is always written out — it is the one thing the file's location does not imply.
+        assertThat(json.get("source").get("key").asText()).isEqualTo("bezwaar")
+        assertThat(json.get("source").get("versionTag").asText()).isEqualTo("1.2.2")
         assertThat(json.get("migrationTriggers").get("triggeredByButton").asBoolean()).isTrue()
         assertThat(json.get("conditions")[0].get("path").asText()).isEqualTo("case:internalStatus")
         assertThat(json.get("dataMigration")[0].get("source").asText()).isEqualTo("doc:/persoon/voornaam")
@@ -109,7 +115,16 @@ class MigrationPlanExporterTest(
     fun `should omit components with no data`() {
         val migrationId = BlueprintMigrationId.from(caseDefinitionId, "empty")
         whenever(caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(caseDefinitionId.blueprintType(), caseDefinitionId.getIdKey(), caseDefinitionId.blueprintVersionTag()))
-            .thenReturn(listOf(CaseDefinitionMigration(id = migrationId, title = null)))
+            .thenReturn(
+                listOf(
+                    CaseDefinitionMigration(
+                        id = migrationId,
+                        sourceKey = "bezwaar",
+                        sourceVersionTag = Semver("1.2.2"),
+                        title = null,
+                    )
+                )
+            )
         whenever(dataMigrationComponentDeployer.componentKey()).thenReturn("dataMigration")
         whenever(dataMigrationComponentDeployer.getComponentToExport(any())).thenReturn(null)
 

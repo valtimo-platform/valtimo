@@ -21,7 +21,13 @@ export const BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS = {
   generalTab: 'buildingBlockMigrationGeneralTab',
   processMigrationTab: 'buildingBlockMigrationProcessMigrationTab',
   dataMigrationTab: 'buildingBlockMigrationDataMigrationTab',
+  addBuildingBlockTab: 'buildingBlockMigrationAddBuildingBlockTab',
+  removeBuildingBlockTab: 'buildingBlockMigrationRemoveBuildingBlockTab',
   jsonEditorTab: 'buildingBlockMigrationJsonEditorTab',
+  sourceKeySelect: 'buildingBlockMigrationSourceKeySelect',
+  sourceVersionSelect: 'buildingBlockMigrationSourceVersionSelect',
   addPatchButton: 'buildingBlockMigrationAddPatchButton',
   addInstructionButton: 'buildingBlockMigrationAddInstructionButton',
+  addBuildingBlockButton: 'buildingBlockMigrationAddBuildingBlockButton',
+  removeBuildingBlockButton: 'buildingBlockMigrationRemoveBuildingBlockButton',
 } as const;

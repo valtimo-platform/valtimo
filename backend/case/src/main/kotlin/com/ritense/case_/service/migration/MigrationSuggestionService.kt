@@ -22,12 +22,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.case_.domain.migration.MigrationTriggers
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingSuggester
 import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingValidator
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
+import org.semver4j.Semver
 
 /**
  * Best-effort migration suggestions for the admin UI: a whole pre-filled plan for a new plan
@@ -44,27 +46,40 @@ class MigrationSuggestionService(
 ) {
 
     /**
-     * A best-effort, pre-filled plan for a [target] blueprint version. The source defaults to the
-     * target's `basedOnVersionTag` (its predecessor); when there is no predecessor only the skeleton
-     * (triggers, empty conditions) is returned. Each [MigrationComponentSuggester] fills its component.
+     * A best-effort, pre-filled plan for a [target] blueprint version, migrating instances from
+     * [source]. When [source] is null it defaults to the target's predecessor (`basedOnVersionTag`,
+     * under the target's own key), which is the source an author wants most of the time; when there is
+     * no predecessor either, only the skeleton is returned and the author has to name a source.
+     *
+     * The suggested `source` is written into the plan, because a plan's source is required and is never
+     * re-derived once saved. Each [MigrationComponentSuggester] then fills its own component by
+     * comparing that source with the target.
      */
-    fun suggestPlan(target: BlueprintId): ObjectNode {
-        val source = resolveSource(target)
+    fun suggestPlan(target: BlueprintId, source: BlueprintId? = null): ObjectNode {
+        val resolvedSource = source ?: predecessorOf(target)
 
         val plan = objectMapper.createObjectNode()
 
-        // Source/target are not part of the plan format (they always resolve from the plan's own
-        // definition version); [source] is only used to drive the component suggesters below.
-        plan.set<ObjectNode>(
-            "migrationTriggers",
-            objectMapper.valueToTree(MigrationTriggers(triggeredByButton = true))
-        )
-        plan.set<ObjectNode>("conditions", objectMapper.createArrayNode())
+        resolvedSource?.let {
+            plan.putObject("source")
+                .put("key", it.getIdKey())
+                .put("versionTag", it.blueprintVersionTag().toString())
+        }
+        // A building block plan carries neither: it runs when a case migration brings its building
+        // block onto this version, so [MigrationPlanImporter] refuses both outright. Suggesting them
+        // would hand the author a plan that cannot be saved.
+        if (target.blueprintType() != BlueprintType.BUILDING_BLOCK) {
+            plan.set<ObjectNode>(
+                "migrationTriggers",
+                objectMapper.valueToTree(MigrationTriggers(triggeredByButton = true))
+            )
+            plan.set<ObjectNode>("conditions", objectMapper.createArrayNode())
+        }
 
-        // Component suggestions only make sense when there is a predecessor to migrate from.
-        if (source != null) {
+        // Component suggestions only make sense once there is a source to migrate from.
+        if (resolvedSource != null) {
             componentSuggesters.forEach { suggester ->
-                suggester.suggest(source, target)?.let { suggestion ->
+                suggester.suggest(resolvedSource, target)?.let { suggestion ->
                     plan.set<ObjectNode>(suggester.componentKey(), objectMapper.valueToTree(suggestion))
                 }
             }
@@ -74,13 +89,24 @@ class MigrationSuggestionService(
     }
 
     /**
-     * Descriptions of everything in [plan] that would make it invalid to migrate a [target]
-     * blueprint's instances from their predecessor, aggregated across every [MigrationComponentValidator]
-     * (empty when the plan is valid, or when [target] has no predecessor to migrate from). Lets the
-     * management API reject an invalid plan on save instead of only failing when the migration runs.
+     * Descriptions of everything in [plan] that would stop it migrating instances from the source it
+     * declares onto [target] — the source itself being unusable, plus whatever every
+     * [MigrationComponentValidator] objects to. Empty when the plan is valid. Lets the management API
+     * reject an invalid plan on save instead of only failing when the migration runs.
+     *
+     * The source is read from the plan, and its existence is checked *here* rather than in
+     * [MigrationPlanImporter]: on this path every definition is already deployed, whereas file
+     * auto-deploy visits definition folders in no guaranteed order and would reject a perfectly good
+     * plan for arriving before the version it migrates from.
      */
     fun findPlanProblems(target: BlueprintId, plan: JsonNode): List<String> {
-        val source = resolveSource(target) ?: return emptyList()
+        val source = declaredSourceOf(target, plan)
+            ?: return listOf(
+                "the plan declares no valid 'source' (the blueprint version it migrates instances from)"
+            )
+        if (lineageOf(target)?.exists(source) == false) {
+            return listOf("its source '$source' is not deployed, so the plan would migrate no instances")
+        }
         return componentValidators.flatMap { validator ->
             plan.get(validator.componentKey())
                 ?.takeUnless { it.isNull }
@@ -89,12 +115,26 @@ class MigrationSuggestionService(
         }
     }
 
+    /**
+     * The blueprint version [plan] declares as its source, or null when it declares none or an
+     * unparseable one. The key defaults to [target]'s, mirroring [MigrationPlanImporter].
+     */
+    private fun declaredSourceOf(target: BlueprintId, plan: JsonNode): BlueprintId? {
+        val source = plan.get("source")?.takeUnless { it.isNull } ?: return null
+        val versionTag = source.get("versionTag")?.asText()?.takeUnless { it.isBlank() } ?: return null
+        val version = Semver.parse(versionTag) ?: return null
+        val key = source.get("key")?.asText()?.takeUnless { it.isBlank() } ?: target.getIdKey()
+        return BlueprintMigrationId.blueprintIdOf(target.blueprintType(), key, version)
+    }
+
     /** The predecessor blueprint of [target] (its `basedOnVersionTag`), or null when there is none. */
-    private fun resolveSource(target: BlueprintId): BlueprintId? =
-        versionLineages
-            .firstOrNull { it.supports(target.blueprintType()) }
+    private fun predecessorOf(target: BlueprintId): BlueprintId? =
+        lineageOf(target)
             ?.basedOnVersionTag(target)
             ?.let { BlueprintMigrationId.blueprintIdOf(target.blueprintType(), target.getIdKey(), it) }
+
+    private fun lineageOf(target: BlueprintId): BlueprintVersionLineage? =
+        versionLineages.firstOrNull { it.supports(target.blueprintType()) }
 
     /**
      * A best-effort `sourceActivityId -> targetActivityId` mapping between two process definitions,
@@ -125,7 +165,8 @@ class MigrationSuggestionService(
 
     /**
      * A best-effort `{ dataMigration, processMigration }` for one building-block entry, moving data
-     * and process from [source] to [target] (add: owner case → building block; remove: the reverse).
+     * and process from [source] to [target] (add: owner → building block; remove: the reverse). The
+     * owner is a case definition version or, for a nested block, a building block definition version.
      * Reuses the `dataMigration` / `processMigration` component suggesters; only copy patches are kept
      * (a `value: null` removal clears fields on a verbatim copy, which does not apply across documents).
      */

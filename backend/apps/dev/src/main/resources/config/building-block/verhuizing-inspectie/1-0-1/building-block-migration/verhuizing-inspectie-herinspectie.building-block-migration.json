@@ -1,6 +1,10 @@
 {
     "title": "Herinspectie plannen",
     "key": "verhuizing-inspectie-herinspectie",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.0"
+    },
     "dataMigration": [
         {
             "value": "herinspectie",

@@ -16,16 +16,21 @@
 
 package com.ritense.case_.domain.migration
 
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.repository.SemverConverter
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
+import org.semver4j.Semver
 
 /**
- * The plan-level skeleton of a migration plan: its title, triggers and gating conditions.
+ * The plan-level skeleton of a migration plan: the blueprint version it migrates instances FROM, its
+ * title, triggers and gating conditions.
  *
  * The actual migration actions live in separate components owned by their respective modules
  * (e.g. `dataMigration`, `processMigration`) and are deployed through
@@ -43,6 +48,23 @@ data class CaseDefinitionMigration(
 
     @EmbeddedId
     val id: BlueprintMigrationId,
+
+    /**
+     * The key of the blueprint version this plan migrates instances FROM. Usually the same key as
+     * [id], but not necessarily: a plan may move instances onto a blueprint with a different key
+     * altogether (a case renamed, a building block replaced by its successor).
+     */
+    @Column(name = "source_blueprint_key", nullable = false)
+    val sourceKey: String,
+
+    /**
+     * The version of the blueprint this plan migrates instances FROM. Any earlier version, not only
+     * the target's immediate predecessor — a plan declaring a source several versions back moves its
+     * instances the whole way in one step.
+     */
+    @Convert(converter = SemverConverter::class)
+    @Column(name = "source_blueprint_version_tag", nullable = false)
+    val sourceVersionTag: Semver,
 
     @Column(name = "title")
     val title: String? = null,
@@ -63,4 +85,16 @@ data class CaseDefinitionMigration(
      */
     @Column(name = "estimated_cases_to_migrate")
     var estimatedCasesToMigrate: Int? = null,
-)
+) {
+
+    /**
+     * The blueprint version this plan migrates instances FROM, as a concrete [BlueprintId]. Always
+     * the same blueprint *type* as the target: a case plan migrates cases, a building block plan
+     * migrates building blocks.
+     */
+    fun sourceBlueprintId(): BlueprintId =
+        BlueprintMigrationId.blueprintIdOf(id.blueprintType, sourceKey, sourceVersionTag)
+
+    /** The blueprint version this plan migrates instances TO — the version it is deployed under. */
+    fun targetBlueprintId(): BlueprintId = id.blueprintId()
+}

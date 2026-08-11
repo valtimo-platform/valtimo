@@ -20,8 +20,11 @@ import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   BuildingBlockMigrationParams,
+  DataMigrationPatch,
   MigrationExecutionStatus,
   MigrationPlanManagement,
+  MigrationPlanSource,
+  ProcessMigrationInstruction,
 } from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -73,11 +76,23 @@ export class BuildingBlockMigrationApiService extends BaseApiService {
     return this.httpClient.post<MigrationPlanManagement[]>(this.getMigrationUrl(params), plan);
   }
 
+  /**
+   * A best-effort, pre-filled plan for a new plan on this building block definition version.
+   *
+   * `source` names the version the plan should migrate instances from; omit it and the backend falls
+   * back to this version's predecessor. Pass it to re-suggest the components after the author picks a
+   * different source — including one under a different building block key.
+   */
   public getPlanSuggestion(
-    params: BuildingBlockMigrationParams
+    params: BuildingBlockMigrationParams,
+    source?: MigrationPlanSource
   ): Observable<Record<string, unknown>> {
+    const query: Record<string, string> = {};
+    if (source?.key) query['sourceKey'] = source.key;
+    if (source?.versionTag) query['sourceVersionTag'] = source.versionTag;
     return this.httpClient.get<Record<string, unknown>>(
-      `${this.getMigrationUrl(params)}/suggestion`
+      `${this.getMigrationUrl(params)}/suggestion`,
+      {params: query}
     );
   }
 
@@ -107,6 +122,27 @@ export class BuildingBlockMigrationApiService extends BaseApiService {
       activityMapping,
       {params: {sourceProcessDefinitionId, targetProcessDefinitionId}}
     );
+  }
+
+  /**
+   * A best-effort `dataMigration` + `processMigration` suggestion for one nested-building-block entry
+   * — `add` reads from the owner building block, `remove` reads from the nested one.
+   */
+  public suggestBuildingBlockEntry(
+    params: BuildingBlockMigrationParams,
+    buildingBlockKey: string,
+    buildingBlockVersionTag: string,
+    mode: 'add' | 'remove'
+  ): Observable<{
+    dataMigration: DataMigrationPatch[];
+    processMigration: ProcessMigrationInstruction[];
+  }> {
+    return this.httpClient.get<{
+      dataMigration: DataMigrationPatch[];
+      processMigration: ProcessMigrationInstruction[];
+    }>(`${this.getMigrationUrl(params)}/suggestion/building-block`, {
+      params: {buildingBlockKey, buildingBlockVersionTag, mode},
+    });
   }
 
   public deletePlan(

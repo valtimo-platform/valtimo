@@ -89,6 +89,7 @@ import com.ritense.case_.service.migration.MigrationTriggerScheduler
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.exporter.ExportService
@@ -649,8 +650,9 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(MigrationPlanApplier::class)
     fun migrationPlanApplier(
         documentRepository: JsonSchemaDocumentRepository,
+        documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
         migrationComponentExecutors: List<MigrationComponentExecutor>,
-    ) = MigrationPlanApplier(documentRepository, migrationComponentExecutors)
+    ) = MigrationPlanApplier(documentRepository, documentDefinitionRepository, migrationComponentExecutors)
 
     @Bean
     @ConditionalOnMissingBean(CaseMigrationService::class)
@@ -663,7 +665,6 @@ class CaseAutoConfiguration {
         migrationPlanApplier: MigrationPlanApplier,
         migrationConditionEvaluator: MigrationConditionEvaluator,
         migrationCandidateProviders: List<MigrationCandidateProvider>,
-        blueprintVersionLineages: List<BlueprintVersionLineage>,
         migrationComponentDeployers: List<MigrationComponentDeployer>,
         transactionTemplate: TransactionTemplate,
         applicationEventPublisher: ApplicationEventPublisher,
@@ -677,7 +678,6 @@ class CaseAutoConfiguration {
         migrationPlanApplier,
         migrationConditionEvaluator,
         migrationCandidateProviders,
-        blueprintVersionLineages,
         migrationComponentDeployers,
         transactionTemplate,
         applicationEventPublisher,

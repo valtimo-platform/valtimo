@@ -22,16 +22,21 @@
 
     <!--
         A migration plan migrates the instances of a blueprint (a case definition version or a
-        building block definition version) from one version to the next. Every table is keyed by
-        the neutral composite id (blueprint_type, blueprint_key, blueprint_version_tag,
-        migration_key) so one engine serves both blueprint types. Component sections
-        (dataMigration owned by the case module, processMigration stored by the core module, ...)
-        live in their own tables. Composite-key VARCHAR lengths stay within MySQL's 3072-byte
-        index limit (utf8mb4, 4 bytes per char).
+        building block definition version) from a declared source version onto the version the plan
+        is deployed under. Every table is keyed by the neutral composite id (blueprint_type,
+        blueprint_key, blueprint_version_tag, migration_key) — the *target* — so one engine serves
+        both blueprint types. Component sections (dataMigration owned by the case module,
+        processMigration stored by the core module, ...) live in their own tables. Composite-key
+        VARCHAR lengths stay within MySQL's 3072-byte index limit (utf8mb4, 4 bytes per char).
 
-        NOTE: this changeset is unreleased; it was rewritten in place when the feature was
-        generalized from case-only to blueprint (case + building block). Dev databases that
-        applied the earlier case_definition_migration* tables must be reset.
+        The source (source_blueprint_key, source_blueprint_version_tag) is plan data, not part of the
+        key: several plans may migrate onto the same target version from different sources. It carries
+        no blueprint_type of its own — a plan never changes a blueprint's type.
+
+        NOTE: this changeset is unreleased and has been rewritten in place twice: once when the
+        feature was generalized from case-only to blueprint (case + building block), and again when
+        the implicit source (the target's basedOnVersionTag) became the explicit, required source
+        columns below. Dev databases that applied an earlier revision must be reset.
     -->
     <changeSet id="1" author="Ritense">
         <createTable tableName="blueprint_migration">
@@ -45,6 +50,12 @@
                 <constraints nullable="false"/>
             </column>
             <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_blueprint_version_tag" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
             <column name="title" type="VARCHAR(512)"/>

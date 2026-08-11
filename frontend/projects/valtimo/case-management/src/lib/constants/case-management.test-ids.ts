@@ -92,6 +92,8 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   jsonEditorTab: 'caseMigrationJsonEditorTab',
   addPatchButton: 'caseMigrationAddPatchButton',
   addInstructionButton: 'caseMigrationAddInstructionButton',
+  sourceKeySelect: 'caseMigrationSourceKeySelect',
+  sourceVersionSelect: 'caseMigrationSourceVersionSelect',
   addConditionButton: 'caseMigrationAddConditionButton',
   addConditionGroupButton: 'caseMigrationAddConditionGroupButton',
   addBuildingBlockButton: 'caseMigrationAddBuildingBlockButton',

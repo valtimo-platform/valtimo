@@ -32,6 +32,10 @@ import java.util.UUID
  * plan. Persisted by the `audit` module against the case's [documentId], so the migration is
  * traceable from the case's audit trail: which case went from [fromVersionTag] to [toVersionTag],
  * for which definition ([blueprintKey]), by which plan ([migrationKey]), and *when* ([occurredOn]).
+ *
+ * A plan may migrate onto a blueprint with a different key from the one its instances came from, so
+ * the definition the case *left* is recorded separately as [fromBlueprintKey]; [blueprintKey] is the
+ * one it now belongs to. The two are equal for the ordinary same-key version bump.
  */
 class CaseMigratedEvent @JsonCreator constructor(
     id: UUID = UUID.randomUUID(),
@@ -45,6 +49,8 @@ class CaseMigratedEvent @JsonCreator constructor(
     val caseId: UUID? = null,
     @get:JsonView(AuditView.Public::class)
     val blueprintKey: String,
+    @get:JsonView(AuditView.Public::class)
+    val fromBlueprintKey: String = blueprintKey,
     @get:JsonView(AuditView.Public::class)
     val fromVersionTag: String,
     @get:JsonView(AuditView.Public::class)

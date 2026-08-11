@@ -39,7 +39,9 @@
         <div class="migration-tab__grid">
           <v-select
             formControlName="buildingBlockKey"
+            [clearable]="false"
             [items]="keyItems"
+            [required]="true"
             [titleTranslationKey]="'caseManagement.migration.editor.buildingBlock.buildingBlockKey'"
             [placeholder]="'caseManagement.migration.editor.buildingBlock.buildingBlockKeyPlaceholder' | translate"
           ></v-select>
@@ -47,7 +49,9 @@
           @if (isAdd) {
             <v-select
               formControlName="buildingBlockVersionTag"
+              [clearable]="false"
               [items]="versionItemsFor(instruction)"
+              [required]="true"
               [titleTranslationKey]="'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTag'"
               [placeholder]="'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTagPlaceholder' | translate"
             ></v-select>

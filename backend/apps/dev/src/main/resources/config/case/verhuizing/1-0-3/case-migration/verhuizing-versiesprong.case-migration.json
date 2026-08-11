@@ -1,0 +1,57 @@
+{
+    "title": "Versiesprong 1.0.1 -> 1.0.3 in een keer",
+    "key": "verhuizing-versiesprong",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.1"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/migratedFrom",
+            "operator": "!=",
+            "value": "1.0.0"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aantalKamers",
+            "source": "doc:/aantalPersonen"
+        },
+        {
+            "target": "doc:/afgerond",
+            "source": "doc:/spoed"
+        },
+        {
+            "target": "doc:/inspectieAkkoord",
+            "source": "doc:/inspectieStatus"
+        },
+        {
+            "target": "doc:/geschatteWaarde",
+            "source": "doc:/spoed"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.1",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {
+                "registreer_ontvangst": "registreer_ontvangst_v3",
+                "markeer_spoed": "markeer_spoed_v3",
+                "beoordelen_verhuizing": "beoordelen_verhuizing_v3",
+                "controleren_inspectie": "beoordelen_verhuizing_v3",
+                "afronden": "afronden_v3"
+            },
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

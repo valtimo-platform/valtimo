@@ -84,11 +84,47 @@ interface ProcessMigrationInstruction {
   skipIoMappings: boolean;
 }
 
+/**
+ * The building block version a plan migrates instances FROM. Required on every plan: the target is
+ * implied by the definition version the plan is deployed under, but the source never is. It may name
+ * any earlier version, and a different `key` altogether — which is how one building block is replaced
+ * by another, carrying its running instances across. Omitting `key` means "the same key as the target".
+ */
+interface MigrationPlanSource {
+  key?: string;
+  versionTag?: string;
+}
+
+/**
+ * One `addBuildingBlock` entry: a building block to create *inside* the migrating building block,
+ * filled from the owner by its own `dataMigration` and taking over one of the owner's processes by
+ * its own `processMigration`.
+ */
+interface AddBuildingBlockInstruction {
+  buildingBlockKey: string;
+  buildingBlockVersionTag: string;
+  dataMigration?: DataMigrationPatch[];
+  processMigration?: ProcessMigrationInstruction[];
+}
+
+/**
+ * One `removeBuildingBlock` entry: a nested building block to dissolve. It carries no version — every
+ * block of this key directly owned by the migrating instance is removed, whatever version it is on.
+ */
+interface RemoveBuildingBlockInstruction {
+  buildingBlockKey: string;
+  dataMigration?: DataMigrationPatch[];
+  processMigration?: ProcessMigrationInstruction[];
+}
+
 interface MigrationPlan {
   title?: string;
   key?: string;
+  source?: MigrationPlanSource;
   dataMigration?: DataMigrationPatch[];
   processMigration?: ProcessMigrationInstruction[];
+  addBuildingBlock?: AddBuildingBlockInstruction[];
+  removeBuildingBlock?: RemoveBuildingBlockInstruction[];
   [key: string]: unknown;
 }
 
@@ -98,10 +134,13 @@ export {
   MigrationExecutionError,
   MigrationExecutionStatus,
   MigrationPlanManagement,
+  MigrationPlanSource,
   DataMigrationTargetType,
   DataMigrationPatch,
   ValuePathContext,
   ProcessVariablePatch,
   ProcessMigrationInstruction,
+  AddBuildingBlockInstruction,
+  RemoveBuildingBlockInstruction,
   MigrationPlan,
 };

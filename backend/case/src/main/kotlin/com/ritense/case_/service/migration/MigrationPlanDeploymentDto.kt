@@ -25,14 +25,29 @@ import com.ritense.case_.domain.migration.MigrationTriggers
  * `processMigration`, ...) are intentionally ignored here — they are dispatched to their owning
  * [com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer] as raw JSON.
  *
- * The blueprint kind, key and version are implied by the folder the file lives in. A plan always
- * migrates the instances of its own definition version FROM its predecessor (`basedOnVersionTag`)
- * TO that version, so there are no source/target fields to override.
+ * The blueprint kind, key and version a plan migrates instances **to** are implied by the folder the
+ * file lives in. The version it migrates them **from** is [source], and is required: it is the one
+ * thing about a plan that cannot be derived from where it sits.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class MigrationPlanDeploymentDto(
     val key: String,
+    val source: MigrationPlanSourceDto? = null,
     val title: String? = null,
     val migrationTriggers: MigrationTriggers = MigrationTriggers(),
     val conditions: List<MigrationConditionNode> = emptyList(),
+)
+
+/**
+ * The blueprint version a plan migrates instances FROM. Both fields are required — a source is never
+ * inferred, because inferring it is exactly what stops a plan spanning several versions or changing
+ * key.
+ *
+ * There is no blueprint *type*: a plan migrates instances of the same kind of blueprint it is
+ * deployed under (a case plan migrates cases, a building block plan migrates building blocks).
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class MigrationPlanSourceDto(
+    val key: String? = null,
+    val versionTag: String? = null,
 )

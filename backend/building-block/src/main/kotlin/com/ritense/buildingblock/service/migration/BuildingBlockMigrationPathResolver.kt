@@ -16,76 +16,156 @@
 
 package com.ritense.buildingblock.service.migration
 
-import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.case_.domain.migration.CaseDefinitionMigration
+import com.ritense.case_.repository.CaseDefinitionMigrationRepository
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.semver4j.Semver
-import org.springframework.data.repository.findByIdOrNull
 
 /**
- * Works out the versions a building block instance has to travel through to get from the version it
- * is on to the version its owner now links.
+ * Works out which migration plans a building block instance has to be put through to get from the
+ * building block version it is on to the version its owner now links.
  *
- * A case definition may jump several building block versions at once (linking `3.0.0` where the
- * instance is still on `1.0.0`), so the upgrade is not one hop but a chain. The chain is reconstructed
- * from each definition's [com.ritense.buildingblock.domain.definition.BuildingBlockDefinition.basedOnVersionTag]
- * — the same "what was this version derived from" link the engine already uses to work out a single
- * plan's source version — walked **backwards** from the target until the instance's current version is
- * reached, then reversed.
+ * **The deployed plans are the graph.** Every plan declares the version it migrates instances *from*
+ * and is deployed under the version it migrates them *to*, so a plan is an edge between two building
+ * block versions and this walks those edges. An owner may link a version several versions ahead of the
+ * instance, so the answer is generally a chain rather than a single hop — and because a plan's source
+ * is explicit, a chain may be collapsed into one plan that declares the whole jump, and an edge may
+ * cross from one building block *key* to another.
+ *
+ * Two failures, both loud, both for the same reason: a running building block is being moved, and
+ * moving it the wrong way is worse than not moving it.
+ *
+ * - **No path.** Nothing connects the two versions. The instance cannot be brought up to what its
+ *   owner links, so the migration fails rather than leaving it behind on a version the owner no longer
+ *   knows about. A version the instance would only travel *through* still needs its own plan: it
+ *   deploys its own document schema and its own BPMN under its own `BB:<key>:<versionTag>` version tag,
+ *   so there is always a token to move and possibly a document to fit — and inferring that work would
+ *   mean guessing.
+ * - **More than one path.** Two chains of plans lead to the same place. Which transformations a running
+ *   instance goes through would then depend on a tie-break nobody chose, so it is a configuration
+ *   error to be resolved by removing an edge, not something to pick a winner for.
  */
 class BuildingBlockMigrationPathResolver(
-    private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+    private val caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
 ) {
 
     /**
-     * The versions to migrate through to get from [current] to [target], in ascending order and
-     * excluding [current] itself. `1.0.0 → 3.0.0` over a linear chain yields `[2.0.0, 3.0.0]`.
-     *
-     * Returns an empty list when [target] is not newer than [current] (the caller decides whether that
-     * is a no-op or a refusal to downgrade).
-     *
-     * @throws IllegalStateException when no path exists — the chain runs out of `basedOnVersionTag`
-     * before reaching [current], revisits a version, or is implausibly long. A building block that was
-     * created independently rather than as a new version of its predecessor has no path, and silently
-     * skipping such an instance would leave it stranded on an unsupported version.
+     * One hop of an upgrade: the plan to apply, and the building block version it lands the instance
+     * on (the version that plan is deployed under).
      */
-    fun resolvePath(key: String, current: Semver, target: Semver): List<Semver> {
-        if (!target.isGreaterThan(current)) {
+    data class MigrationStep(
+        val planId: BlueprintMigrationId,
+        val target: BuildingBlockDefinitionId,
+    )
+
+    /**
+     * The plans to apply, in order, to get an instance from [current] to [target].
+     *
+     * Empty when [current] and [target] are the same version — there is nothing to do.
+     *
+     * @throws IllegalStateException when no chain of deployed plans connects the two versions, or when
+     * more than one does.
+     */
+    fun resolvePath(
+        current: BuildingBlockDefinitionId,
+        target: BuildingBlockDefinitionId,
+    ): List<MigrationStep> {
+        if (current == target) {
             return emptyList()
         }
 
-        val descending = mutableListOf<Semver>()
-        val seen = mutableSetOf<Semver>()
-        var version: Semver = target
-
-        while (version != current) {
-            if (!seen.add(version)) {
-                throw IllegalStateException(
-                    "Cannot migrate building block '$key' from '$current' to '$target': " +
-                        "the version chain loops at '$version'"
-                )
-            }
-            if (descending.size > MAX_CHAIN_LENGTH) {
-                throw IllegalStateException(
-                    "Cannot migrate building block '$key' from '$current' to '$target': " +
-                        "the version chain is longer than $MAX_CHAIN_LENGTH steps"
-                )
-            }
-            descending += version
-
-            val definition = buildingBlockDefinitionRepository.findByIdOrNull(BuildingBlockDefinitionId(key, version))
-                ?: throw IllegalStateException(
-                    "Cannot migrate building block '$key' from '$current' to '$target': " +
-                        "no definition deployed for version '$version'"
-                )
-            version = definition.basedOnVersionTag
-                ?: throw IllegalStateException(
-                    "Cannot migrate building block '$key' from '$current' to '$target': " +
-                        "version '$version' is not based on a previous version, so there is no upgrade path"
-                )
+        val paths = findPaths(current, target, stopAfter = 2)
+        if (paths.isEmpty()) {
+            throw IllegalStateException(
+                "No migration plan connects building block version '$current' to '$target', which its " +
+                    "owner links. Every version an instance travels through needs a plan, including one " +
+                    "that changes nothing: a building block version deploys its own BPMN under its own " +
+                    "version tag, so a running process has to be migrated onto it explicitly. Deploy a " +
+                    "'*.building-block-migration.json' whose 'source' leads from '$current' to '$target' " +
+                    "— either one plan declaring the whole jump, or one per step."
+            )
         }
-
-        return descending.reversed()
+        if (paths.size > 1) {
+            throw IllegalStateException(
+                "Building block version '$current' can reach '$target' along more than one chain of " +
+                    "migration plans (${paths.joinToString(" and ") { path -> "'${describe(path)}'" }}). " +
+                    "Which of them a running instance goes through would decide which data and process " +
+                    "transformations are applied to it, so it is not something to pick for you: remove or " +
+                    "re-source one of the plans so exactly one chain remains."
+            )
+        }
+        return paths.single()
     }
+
+    /**
+     * Whether any chain of deployed plans leads from [current] to [target] — without caring how many,
+     * or which. Used to work out which of an owner's links an instance is actually able to follow.
+     */
+    fun isReachable(current: BuildingBlockDefinitionId, target: BuildingBlockDefinitionId): Boolean {
+        return current == target || findPaths(current, target, stopAfter = 1).isNotEmpty()
+    }
+
+    /**
+     * Depth-first search for the plan chains from [from] to [to], abandoning the search once
+     * [stopAfter] of them have been found.
+     *
+     * The cap is what keeps this cheap: enumerating *every* path through a graph is exponential, but no
+     * caller needs more than "none", "exactly one", or "more than one", so two is the most that is ever
+     * collected. [MAX_CHAIN_LENGTH] is a runaway backstop for a pathological configuration rather than
+     * a budget — real chains are one to three plans — and the visited set makes a cycle in the plan
+     * graph terminate instead of looping.
+     */
+    private fun findPaths(
+        from: BuildingBlockDefinitionId,
+        to: BuildingBlockDefinitionId,
+        stopAfter: Int,
+    ): List<List<MigrationStep>> {
+        val found = mutableListOf<List<MigrationStep>>()
+        walk(from, to, mutableListOf(), mutableSetOf(from), found, stopAfter)
+        return found
+    }
+
+    private fun walk(
+        node: BuildingBlockDefinitionId,
+        destination: BuildingBlockDefinitionId,
+        path: MutableList<MigrationStep>,
+        visited: MutableSet<BuildingBlockDefinitionId>,
+        found: MutableList<List<MigrationStep>>,
+        stopAfter: Int,
+    ) {
+        if (found.size >= stopAfter || path.size >= MAX_CHAIN_LENGTH) {
+            return
+        }
+        outgoingSteps(node).forEach { step ->
+            if (step.target == destination) {
+                found += path + step
+                if (found.size >= stopAfter) return
+            } else if (visited.add(step.target)) {
+                path += step
+                walk(step.target, destination, path, visited, found, stopAfter)
+                path.removeLast()
+                visited.remove(step.target)
+            }
+        }
+    }
+
+    /** The plans that migrate instances away from [node], each paired with the version it lands them on. */
+    private fun outgoingSteps(node: BuildingBlockDefinitionId): List<MigrationStep> {
+        return caseDefinitionMigrationRepository
+            .findAllByIdBlueprintTypeAndSourceKeyAndSourceVersionTag(
+                BlueprintType.BUILDING_BLOCK, node.key, node.versionTag
+            )
+            // Sorted so the order of a resolved chain, and the wording of an ambiguity failure, do not
+            // depend on how the database happened to return the rows.
+            .sortedBy { it.id.migrationKey }
+            .map { plan -> MigrationStep(plan.id, targetOf(plan)) }
+    }
+
+    private fun targetOf(plan: CaseDefinitionMigration) =
+        BuildingBlockDefinitionId(plan.id.key, plan.id.versionTag)
+
+    private fun describe(path: List<MigrationStep>) = path.joinToString(" -> ") { it.planId.migrationKey }
 
     private companion object {
         const val MAX_CHAIN_LENGTH = 100

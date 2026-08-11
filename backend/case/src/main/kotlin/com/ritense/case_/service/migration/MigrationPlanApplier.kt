@@ -20,12 +20,12 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper.Companion.byIdBlueprintId
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.util.UUID
 
 /**
@@ -40,38 +40,49 @@ import java.util.UUID
  */
 class MigrationPlanApplier(
     private val documentRepository: JsonSchemaDocumentRepository,
+    private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val componentExecutors: List<MigrationComponentExecutor>,
 ) {
 
     /**
      * Re-home [documentId] onto the [target] blueprint version and run every component of the plan
-     * [migrationId]. Returns the version tag the document was on *before* the re-home, so the caller
-     * can record an accurate from → to on the audit trail.
+     * [migrationId]. Returns the blueprint version the document was on *before* the re-home, so the
+     * caller can record an accurate from → to on the audit trail.
      */
-    fun apply(migrationId: BlueprintMigrationId, target: BlueprintId, documentId: UUID): String {
-        val fromVersionTag = rehome(documentId, target)
+    fun apply(migrationId: BlueprintMigrationId, target: BlueprintId, documentId: UUID): BlueprintId {
+        val source = rehome(documentId, target)
         // Spring injects componentExecutors already sorted by each executor's @Order, so they run in
         // a dependency-correct order without the caller knowing which executors exist or what their
         // component keys are.
         componentExecutors.forEach { it.execute(migrationId, target, documentId) }
-        return fromVersionTag
+        return source
     }
 
     /**
      * Detach the document [documentId] from its source blueprint version and attach it to the
-     * [target] version: keep the document-definition name but point the `documentDefinitionId` at the
-     * target blueprint (case definition or building block definition), then persist it.
+     * [target] version: point its `documentDefinitionId` at the target blueprint (case definition or
+     * building block definition) *and* at that blueprint's own document definition name, then persist
+     * it.
      *
-     * Returns the version tag the document was on *before* the re-home (the source version).
+     * The name is looked up rather than carried over, because a plan may migrate instances onto a
+     * blueprint with a different key, whose document definition is a different one with a different
+     * name. Keeping the source's name would leave the document claiming a definition that does not
+     * exist under the target blueprint.
+     *
+     * Returns the blueprint version the document was on *before* the re-home (the source).
      */
-    fun rehome(documentId: UUID, target: BlueprintId): String {
+    fun rehome(documentId: UUID, target: BlueprintId): BlueprintId {
         return runWithoutAuthorization {
             val document = findDocument(documentId)
             val definitionId = document.definitionId() as JsonSchemaDocumentDefinitionId
-            val fromVersionTag = definitionId.blueprintId().blueprintVersionTag().toString()
-            document.setDefinitionId(targetDefinitionId(definitionId.name(), target))
+            val source = definitionId.blueprintId().let { it.asCaseDefinitionId() ?: it.asBuildingBlockDefinitionId() }
+                ?: throw IllegalStateException(
+                    "Document '$documentId' is homed on '${definitionId.blueprintId()}', which is not a " +
+                        "blueprint version a migration can move it away from"
+                )
+            document.setDefinitionId(targetDefinitionId(target))
             documentRepository.save(document)
-            fromVersionTag
+            source
         }
     }
 
@@ -80,9 +91,18 @@ class MigrationPlanApplier(
             NoSuchElementException("No document found for '$documentId' to migrate to the target blueprint")
         }
 
-    private fun targetDefinitionId(name: String, target: BlueprintId) = when (target) {
-        is CaseDefinitionId -> JsonSchemaDocumentDefinitionId.forCase(name, target)
-        is BuildingBlockDefinitionId -> JsonSchemaDocumentDefinitionId.forBuildingBlock(name, target)
-        else -> throw IllegalArgumentException("Unsupported target blueprint '$target' for migration")
-    }
+    /**
+     * The document definition id of [target] — the one document definition deployed under that
+     * blueprint version.
+     */
+    private fun targetDefinitionId(target: BlueprintId): JsonSchemaDocumentDefinitionId =
+        documentDefinitionRepository.findOne(byIdBlueprintId(target))
+            .orElseThrow {
+                NoSuchElementException(
+                    "No document definition is deployed for blueprint '$target', so no document can be " +
+                        "migrated onto it. A migration plan's target blueprint version must carry its own " +
+                        "document definition."
+                )
+            }
+            .id() as JsonSchemaDocumentDefinitionId
 }

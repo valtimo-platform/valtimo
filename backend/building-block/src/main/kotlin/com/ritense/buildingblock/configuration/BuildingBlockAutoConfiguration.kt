@@ -975,8 +975,8 @@ class BuildingBlockAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BuildingBlockMigrationPathResolver::class)
     fun buildingBlockMigrationPathResolver(
-        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-    ) = BuildingBlockMigrationPathResolver(buildingBlockDefinitionRepository)
+        caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
+    ) = BuildingBlockMigrationPathResolver(caseDefinitionMigrationRepository)
 
     @Bean
     @ConditionalOnMissingBean(LinkedBuildingBlockVersionResolver::class)
@@ -985,11 +985,13 @@ class BuildingBlockAutoConfiguration {
         processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
         processLinkRepository: ProcessLinkRepository,
+        buildingBlockMigrationPathResolver: BuildingBlockMigrationPathResolver,
     ) = LinkedBuildingBlockVersionResolver(
         caseDefinitionBuildingBlockLinkRepository,
         processDefinitionCaseDefinitionRepository,
         processDefinitionBuildingBlockDefinitionRepository,
         processLinkRepository,
+        buildingBlockMigrationPathResolver,
     )
 
     @Bean
@@ -999,7 +1001,6 @@ class BuildingBlockAutoConfiguration {
         linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
         buildingBlockMigrationPathResolver: BuildingBlockMigrationPathResolver,
         buildingBlockProcessVersionChecker: BuildingBlockProcessVersionChecker,
-        caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
         caseMigrationCaseRepository: CaseMigrationCaseRepository,
         migrationPlanApplier: ObjectProvider<MigrationPlanApplier>,
     ) = BuildingBlockVersionAlignmentExecutor(
@@ -1007,7 +1008,6 @@ class BuildingBlockAutoConfiguration {
         linkedBuildingBlockVersionResolver,
         buildingBlockMigrationPathResolver,
         buildingBlockProcessVersionChecker,
-        caseDefinitionMigrationRepository,
         caseMigrationCaseRepository,
         migrationPlanApplier,
     )

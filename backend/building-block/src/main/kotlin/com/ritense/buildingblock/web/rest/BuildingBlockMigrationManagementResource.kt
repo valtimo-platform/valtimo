@@ -57,14 +57,28 @@ class BuildingBlockMigrationManagementResource(
     private val migrationSuggestionService: MigrationSuggestionService,
 ) {
 
-    /** A best-effort, pre-filled plan (source, target, dataMigration, processMigration) for a new plan. */
+    /**
+     * A best-effort, pre-filled plan (source, dataMigration, processMigration) for a new plan targeting
+     * this building block definition version.
+     *
+     * [sourceKey] / [sourceVersionTag] name the version the plan should migrate instances from — both
+     * optional, defaulting to this version's predecessor. A source with a *different* key is legal and
+     * is how one building block is replaced by another: the plan then becomes the edge that carries
+     * running instances across.
+     */
     @RunWithoutAuthorization
     @GetMapping("/suggestion")
     fun suggestMigrationPlan(
         @PathVariable key: String,
         @PathVariable versionTag: String,
+        @RequestParam(required = false) sourceKey: String?,
+        @RequestParam(required = false) sourceVersionTag: String?,
     ): ResponseEntity<JsonNode> {
-        return ResponseEntity.ok(migrationSuggestionService.suggestPlan(BuildingBlockDefinitionId(key, versionTag)))
+        val target = BuildingBlockDefinitionId(key, versionTag)
+        val source = sourceVersionTag?.takeUnless { it.isBlank() }?.let {
+            BuildingBlockDefinitionId(sourceKey?.takeUnless { candidate -> candidate.isBlank() } ?: key, it)
+        }
+        return ResponseEntity.ok(migrationSuggestionService.suggestPlan(target, source))
     }
 
     /** A best-effort activity mapping (`sourceActivityId -> targetActivityId`) for a process pair. */
@@ -107,6 +121,28 @@ class BuildingBlockMigrationManagementResource(
         )
     }
 
+    /**
+     * A best-effort `{ dataMigration, processMigration }` for one building-block entry of this
+     * building block plan — a block *nested* inside the one the plan targets. `mode=add` moves
+     * data/process from the owner building block into the nested one; `mode=remove` moves them back.
+     */
+    @RunWithoutAuthorization
+    @GetMapping("/suggestion/building-block")
+    fun suggestBuildingBlockEntry(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @RequestParam buildingBlockKey: String,
+        @RequestParam buildingBlockVersionTag: String,
+        @RequestParam(defaultValue = "add") mode: String,
+    ): ResponseEntity<JsonNode> {
+        val owner = BuildingBlockDefinitionId(key, versionTag)
+        val nested = BuildingBlockDefinitionId(buildingBlockKey, buildingBlockVersionTag)
+        val suggestion =
+            if (mode == "remove") migrationSuggestionService.suggestBuildingBlockEntry(nested, owner)
+            else migrationSuggestionService.suggestBuildingBlockEntry(owner, nested)
+        return ResponseEntity.ok(suggestion)
+    }
+
     @RunWithoutAuthorization
     @GetMapping
     fun getMigrationPlans(
@@ -139,7 +175,7 @@ class BuildingBlockMigrationManagementResource(
         if (problems.isNotEmpty()) {
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                "Migration plan has incompatible activity mappings: ${problems.joinToString("; ")}",
+                "Migration plan cannot be saved: ${problems.joinToString("; ")}",
             )
         }
         migrationPlanImporter.deploy(blueprintId, plan)

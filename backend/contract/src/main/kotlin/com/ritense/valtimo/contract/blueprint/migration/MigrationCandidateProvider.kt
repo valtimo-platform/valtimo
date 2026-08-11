@@ -38,8 +38,9 @@ import java.util.UUID
  * [BlueprintVersionLineage], so the omission is enforced by the compiler rather than by everyone
  * remembering to guard their call sites.
  *
- * The source version a plan migrates from comes from [BlueprintVersionLineage], which every type
- * implements.
+ * The source version passed to [findCandidateIds] is the one the plan itself declares, so it may be
+ * any earlier version and may carry a different key from the plan's target. [BlueprintVersionLineage]
+ * is not consulted for it — it only suggests a source when an author is writing a new plan.
  *
  * The returned [UUID] is the document/instance id handed to each
  * [MigrationComponentExecutor.execute] as `caseId`.

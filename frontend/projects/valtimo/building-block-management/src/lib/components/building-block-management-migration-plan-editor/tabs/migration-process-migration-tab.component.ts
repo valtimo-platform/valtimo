@@ -104,6 +104,9 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
    */
   @Input() public sourceProcessDefinitions: Record<string, string> | null = null;
   @Input() public targetProcessDefinitions: Record<string, string> | null = null;
+  /** Intro text above the instructions. Hosts that already explain the direction pass `null` to hide it. */
+  @Input() public descriptionKey: string | null =
+    'buildingBlockManagement.migration.editor.processMigration.description';
 
   @Input() public set instructions(value: ProcessMigrationInstruction[] | null | undefined) {
     this.writeInstructions(value ?? []);

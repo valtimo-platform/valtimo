@@ -1,6 +1,10 @@
 {
     "title": "Fotodossier vastleggen op de inspectie",
     "key": "verhuizing-inspectie-fotodossier",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.2"
+    },
     "dataMigration": [
         {
             "target": "doc:/fotoStatus",

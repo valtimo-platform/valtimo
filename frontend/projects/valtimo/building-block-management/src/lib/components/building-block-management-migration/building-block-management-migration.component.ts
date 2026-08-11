@@ -149,16 +149,6 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     startWith(null)
   );
 
-  // A plan migrates FROM this version's predecessor (basedOnVersionTag) TO this version, so a version
-  // with no predecessor has nothing to migrate from — adding a plan is disabled for it.
-  public readonly canAddPlan$: Observable<boolean> =
-    this.buildingBlockManagementDetailService.buildingBlockDefinition$.pipe(
-      map(definition => !!definition?.basedOnVersionTag),
-      catchError(() => of(false)),
-      startWith(false),
-      shareReplay(1)
-    );
-
   private _params: BuildingBlockMigrationParams | undefined;
   private readonly _subscriptions = new Subscription();
 

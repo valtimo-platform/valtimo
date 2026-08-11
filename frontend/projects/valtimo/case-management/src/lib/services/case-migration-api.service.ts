@@ -23,6 +23,7 @@ import {
   DryRunStatus,
   MigrationExecutionStatus,
   MigrationPlanManagement,
+  MigrationPlanSource,
   ProcessMigrationInstruction,
 } from '../models';
 
@@ -89,8 +90,24 @@ export class CaseMigrationApiService extends BaseApiService {
   }
 
   /** A best-effort, pre-filled plan (dataMigration, processMigration) for a new plan. */
-  public getPlanSuggestion(params: CaseManagementParams): Observable<Record<string, unknown>> {
-    return this.httpClient.get<Record<string, unknown>>(`${this.getMigrationUrl(params)}/suggestion`);
+  /**
+   * A best-effort, pre-filled plan for a new plan on this case definition version.
+   *
+   * `source` names the version the plan should migrate instances from; omit it and the backend falls
+   * back to this version's predecessor, which is what a new plan usually wants. Pass it to re-suggest
+   * the components after the author picks a different source.
+   */
+  public getPlanSuggestion(
+    params: CaseManagementParams,
+    source?: MigrationPlanSource
+  ): Observable<Record<string, unknown>> {
+    const query: Record<string, string> = {};
+    if (source?.key) query['sourceKey'] = source.key;
+    if (source?.versionTag) query['sourceVersionTag'] = source.versionTag;
+    return this.httpClient.get<Record<string, unknown>>(
+      `${this.getMigrationUrl(params)}/suggestion`,
+      {params: query}
+    );
   }
 
   /** A best-effort `sourceActivityId -> targetActivityId` mapping for a source/target process pair. */

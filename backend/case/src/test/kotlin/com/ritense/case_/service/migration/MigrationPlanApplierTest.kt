@@ -21,6 +21,7 @@ import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentSequenceGeneratorService
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
@@ -40,6 +41,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
+import org.springframework.data.jpa.domain.Specification
 import java.util.Optional
 import java.util.UUID
 
@@ -47,6 +49,7 @@ import java.util.UUID
 @MockitoSettings(strictness = Strictness.LENIENT)
 class MigrationPlanApplierTest(
     @Mock private val documentRepository: JsonSchemaDocumentRepository,
+    @Mock private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     @Mock private val firstExecutor: MigrationComponentExecutor,
     @Mock private val secondExecutor: MigrationComponentExecutor,
 ) {
@@ -59,7 +62,15 @@ class MigrationPlanApplierTest(
 
     @BeforeEach
     fun setUp() {
-        applier = MigrationPlanApplier(documentRepository, listOf(firstExecutor, secondExecutor))
+        applier = MigrationPlanApplier(
+            documentRepository,
+            documentDefinitionRepository,
+            listOf(firstExecutor, secondExecutor),
+        )
+        // By default the target blueprint carries a document definition under the same name as the
+        // source's, which is the ordinary same-key version bump.
+        whenever(documentDefinitionRepository.findOne(any<Specification<JsonSchemaDocumentDefinition>>()))
+            .thenReturn(Optional.of(definition(NAME, target)))
     }
 
     @Test
@@ -67,12 +78,28 @@ class MigrationPlanApplierTest(
         val document = document()
         whenever(documentRepository.findById(any())).thenReturn(Optional.of(document))
 
-        val fromVersionTag = applier.rehome(document.id().id, target)
+        val from = applier.rehome(document.id().id, target)
 
-        assertThat(fromVersionTag).isEqualTo("1.0.3")
+        assertThat(from).isEqualTo(source)
         assertThat(document.definitionId())
             .isEqualTo(JsonSchemaDocumentDefinitionId.forBuildingBlock(NAME, target))
         verify(documentRepository).save(document)
+    }
+
+    @Test
+    fun `should take the document definition name from the target, so it can re-home across keys`() {
+        val document = document()
+        whenever(documentRepository.findById(any())).thenReturn(Optional.of(document))
+        val otherBlock = BuildingBlockDefinitionId("inspectie-dossier", "1.0.0")
+        whenever(documentDefinitionRepository.findOne(any<Specification<JsonSchemaDocumentDefinition>>()))
+            .thenReturn(Optional.of(definition(OTHER_NAME, otherBlock)))
+
+        val from = applier.rehome(document.id().id, otherBlock)
+
+        assertThat(from).isEqualTo(source)
+        // Not the source's name: the target building block's document definition is a different one.
+        assertThat(document.definitionId())
+            .isEqualTo(JsonSchemaDocumentDefinitionId.forBuildingBlock(OTHER_NAME, otherBlock))
     }
 
     @Test
@@ -98,12 +125,24 @@ class MigrationPlanApplierTest(
             .hasMessageContaining("No document found")
     }
 
+    @Test
+    fun `should fail when the target blueprint has no document definition to re-home onto`() {
+        val document = document()
+        whenever(documentRepository.findById(any())).thenReturn(Optional.of(document))
+        whenever(documentDefinitionRepository.findOne(any<Specification<JsonSchemaDocumentDefinition>>()))
+            .thenReturn(Optional.empty())
+
+        assertThatThrownBy { applier.apply(planId, target, document.id().id) }
+            .isInstanceOf(NoSuchElementException::class.java)
+            .hasMessageContaining("No document definition is deployed for blueprint")
+    }
+
     private fun document(): JsonSchemaDocument {
         val sequenceGenerator = mock<DocumentSequenceGeneratorService>()
         whenever(sequenceGenerator.next(any())).thenReturn(1L)
         return JsonSchemaDocument
             .create(
-                definition(source),
+                definition(NAME, source),
                 JsonDocumentContent("""{"adres": "Dorpsstraat 1"}"""),
                 "test@test.com",
                 sequenceGenerator,
@@ -113,14 +152,14 @@ class MigrationPlanApplierTest(
             .orElseThrow()
     }
 
-    private fun definition(blueprintId: BuildingBlockDefinitionId) =
+    private fun definition(name: String, blueprintId: BuildingBlockDefinitionId) =
         JsonSchemaDocumentDefinition(
-            JsonSchemaDocumentDefinitionId.forBuildingBlock(NAME, blueprintId),
+            JsonSchemaDocumentDefinitionId.forBuildingBlock(name, blueprintId),
             JsonSchema.fromString(
                 """
                 {
                     "${'$'}schema": "http://json-schema.org/draft-07/schema#",
-                    "${'$'}id": "$NAME.schema",
+                    "${'$'}id": "$name.schema",
                     "type": "object",
                     "properties": {
                         "adres": { "type": "string" },
@@ -134,5 +173,6 @@ class MigrationPlanApplierTest(
 
     private companion object {
         const val NAME = "verhuizing-inspectie"
+        const val OTHER_NAME = "inspectie-dossier"
     }
 }

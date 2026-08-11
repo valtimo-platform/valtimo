@@ -29,6 +29,7 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.semver4j.Semver
 import org.springframework.transaction.annotation.Transactional
 
 /**
@@ -40,7 +41,13 @@ import org.springframework.transaction.annotation.Transactional
  *
  * The plan is keyed by the blueprint it targets (taken from [ImportRequest.getBlueprintId] — a case
  * definition version when part of a case, a building block definition version when part of a
- * building block), so the same file format serves both.
+ * building block), so the same file format serves both. The blueprint version it migrates instances
+ * *from* is the plan's own required `source`.
+ *
+ * Validation here is deliberately limited to the plan's shape. Whether the declared source version is
+ * actually deployed is checked by [MigrationSuggestionService.findPlanProblems] on the management save
+ * path, not here: auto-deploy walks definition folders in no guaranteed order, so a plan may legally
+ * be imported before the (older) blueprint version it migrates from.
  */
 @Transactional
 class MigrationPlanImporter(
@@ -92,9 +99,10 @@ class MigrationPlanImporter(
             rejectTriggersAndConditions(objectNode, dto.key, blueprintId)
         }
         MigrationConditionValidator.validate(dto.conditions)
+        val source = resolveSource(dto, blueprintId)
         val migrationId = BlueprintMigrationId.from(blueprintId, dto.key)
 
-        logger.debug { "Deploying migration plan '${dto.key}' for blueprint '$blueprintId'" }
+        logger.debug { "Deploying migration plan '${dto.key}' migrating '$source' to '$blueprintId'" }
 
         // Make (re)deploys idempotent: clear previously deployed component data first.
         componentDeployers.forEach { it.undeploy(migrationId) }
@@ -102,6 +110,8 @@ class MigrationPlanImporter(
         caseDefinitionMigrationRepository.save(
             CaseDefinitionMigration(
                 id = migrationId,
+                sourceKey = source.getIdKey(),
+                sourceVersionTag = source.blueprintVersionTag(),
                 title = dto.title,
                 migrationTriggers = dto.migrationTriggers,
                 conditions = dto.conditions,
@@ -116,6 +126,39 @@ class MigrationPlanImporter(
                     deployer.deploy(migrationId, component)
                 }
         }
+    }
+
+    /**
+     * The blueprint version the plan migrates instances FROM, taken from its required `source`.
+     *
+     * A source is never inferred from the target. The engine used to read the target's
+     * `basedOnVersionTag`, which silently limited every plan to a single version hop under the
+     * target's own key; making the source explicit is what lets one plan span several versions, or
+     * move instances onto a blueprint with a different key. `key` may be omitted to mean "the same
+     * key as the target", since that is by far the common case, but the version never may.
+     */
+    private fun resolveSource(dto: MigrationPlanDeploymentDto, target: BlueprintId): BlueprintId {
+        val source = requireNotNull(dto.source) {
+            "Migration plan '${dto.key}' for '$target' declares no 'source'. Every plan states the " +
+                "blueprint version it migrates instances from, as " +
+                """{"source": {"key": "${target.getIdKey()}", "versionTag": "<version>"}}""" +
+                " ('key' may be omitted when it is the same as the target's)."
+        }
+        val sourceKey = source.key?.takeUnless { it.isBlank() } ?: target.getIdKey()
+        val versionTag = requireNotNull(source.versionTag?.takeUnless { it.isBlank() }) {
+            "Migration plan '${dto.key}' for '$target' declares a 'source' without a 'versionTag'"
+        }
+        val sourceVersion = requireNotNull(Semver.parse(versionTag)) {
+            "Migration plan '${dto.key}' for '$target' declares source version '$versionTag', " +
+                "which is not a valid semantic version"
+        }
+        val sourceId = BlueprintMigrationId.blueprintIdOf(target.blueprintType(), sourceKey, sourceVersion)
+        require(sourceId != target) {
+            "Migration plan '${dto.key}' for '$target' declares '$target' as its own source. A plan " +
+                "migrates instances from one blueprint version to another, so its source and target " +
+                "cannot be the same version."
+        }
+        return sourceId
     }
 
     /**

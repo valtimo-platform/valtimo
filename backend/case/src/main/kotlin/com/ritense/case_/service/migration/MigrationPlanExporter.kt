@@ -78,6 +78,11 @@ class MigrationPlanExporter(
         val root = objectMapper.createObjectNode()
         root.put("title", migration.title)
         root.put("key", migration.id.migrationKey)
+        // The target is implied by the folder the file lands in; the source never is, so it is always
+        // written out — including its key, which may differ from the target's.
+        root.putObject("source")
+            .put("key", migration.sourceKey)
+            .put("versionTag", migration.sourceVersionTag.toString())
         // A building block plan has neither: it runs when a case migration brings its building block
         // onto this version, and applies to exactly the instances that migration carries with it.
         if (migration.id.blueprintType != BlueprintType.BUILDING_BLOCK) {

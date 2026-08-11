@@ -34,7 +34,6 @@ import com.ritense.case_.repository.CaseMigrationDryRunRepository
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
-import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
@@ -54,9 +53,12 @@ import java.util.UUID
 /**
  * Starts and drives the migration of the cases belonging to a migration plan.
  *
- * A plan migrates exactly the cases that currently satisfy its conditions; cases that do not match
- * are the responsibility of other plans and are left untouched. A run migrates its whole matching
- * slice and then finishes ([CaseMigrationStatus.COMPLETED] / [CaseMigrationStatus.COMPLETED_WITH_ERRORS]).
+ * A plan migrates exactly the cases sitting on the blueprint version it declares as its
+ * [source][CaseDefinitionMigration.sourceBlueprintId] and currently satisfying its conditions; cases
+ * that do not match are the responsibility of other plans and are left untouched. The source is the
+ * plan's own data, so it may be any earlier version and may carry a different key from the target. A
+ * run migrates its whole matching slice and then finishes ([CaseMigrationStatus.COMPLETED] /
+ * [CaseMigrationStatus.COMPLETED_WITH_ERRORS]).
  *
  * Concurrency & crash safety:
  * - Only one run per plan makes progress at a time. [claim] stamps a fresh fencing [runToken] and a
@@ -76,7 +78,6 @@ class CaseMigrationService(
     private val planApplier: MigrationPlanApplier,
     private val conditionEvaluator: MigrationConditionEvaluator,
     private val candidateProviders: List<MigrationCandidateProvider>,
-    private val versionLineages: List<BlueprintVersionLineage>,
     private val componentDeployers: List<MigrationComponentDeployer>,
     private val transactionTemplate: TransactionTemplate,
     private val applicationEventPublisher: ApplicationEventPublisher,
@@ -104,14 +105,12 @@ class CaseMigrationService(
         )
             .sortedBy { it.id.migrationKey }
             .map { plan ->
-                val target = resolveTarget(plan.id)
-                val source = resolveSource(target)
                 val isBuildingBlockPlan = plan.id.blueprintType == BlueprintType.BUILDING_BLOCK
                 MigrationPlanManagementDto(
                     migrationKey = plan.id.migrationKey,
                     title = plan.title,
-                    source = formatBlueprintVersion(source),
-                    target = formatBlueprintVersion(target),
+                    source = formatBlueprintVersion(plan.sourceBlueprintId()),
+                    target = formatBlueprintVersion(plan.targetBlueprintId()),
                     components = componentDeployers
                         .filter { it.getComponentToExport(plan.id) != null }
                         .map { it.componentKey() },
@@ -125,9 +124,28 @@ class CaseMigrationService(
     }
 
     /**
+     * Whether [migrationId] declares the manual (button) trigger.
+     *
+     * The button is a trigger like any other, so a plan that does not declare it is started only by the
+     * trigger sweep — on its `scheduledAtDate`, or after the plan its `runAfter` names. Callers that
+     * represent a person pressing the button ask this first; [startMigration] itself deliberately does
+     * not, because [MigrationTriggerScheduler] runs exactly the plans whose only triggers are the other
+     * two, and those legitimately have no button trigger.
+     */
+    fun isTriggeredByButton(migrationId: BlueprintMigrationId): Boolean {
+        return caseDefinitionMigrationRepository.findById(migrationId)
+            .orElseThrow { NoSuchElementException("No migration plan found for '$migrationId'") }
+            .migrationTriggers
+            .triggeredByButton
+    }
+
+    /**
      * Start (or resume) the migration plan identified by [migrationId]. Idempotent: cases already
      * migrated are skipped. Does nothing if the plan is already being executed elsewhere (a live lease),
      * and stops cleanly if this node is fenced by a takeover mid-run.
+     *
+     * Trigger-agnostic on purpose: this is the one entry point all three triggers share, so it does not
+     * check [isTriggeredByButton] — the manual entry point does that before calling here.
      */
     fun startMigration(migrationId: BlueprintMigrationId): CaseDefinitionMigrationExecution {
         assertNotBuildingBlockPlan(migrationId)
@@ -293,7 +311,7 @@ class CaseMigrationService(
      * per-case rows. A case whose conditions cannot be evaluated is treated as not matching.
      */
     private fun countMatchingCases(migrationId: BlueprintMigrationId, plan: CaseDefinitionMigration): Int {
-        val source = resolveSource(resolveTarget(migrationId))
+        val source = plan.sourceBlueprintId()
         val provider = candidateProvider(source.blueprintType()) ?: return 0
 
         var count = 0
@@ -328,8 +346,8 @@ class CaseMigrationService(
         plan: CaseDefinitionMigration,
         runToken: String,
     ) {
-        val target = resolveTarget(migrationId)
-        val source = resolveSource(target)
+        val target = plan.targetBlueprintId()
+        val source = plan.sourceBlueprintId()
         val provider = candidateProvider(source.blueprintType()) ?: return
 
         val renewInterval = leaseDuration.dividedBy(2)
@@ -418,7 +436,7 @@ class CaseMigrationService(
                 if (caseMigrationCaseRepository.existsByIdAndStatus(caseRecordId, CaseMigrationCaseStatus.MIGRATED)) {
                     return@executeWithoutResult // already migrated (idempotent re-run)
                 }
-                val fromVersionTag = applyMigration(migrationId, target, caseId)
+                val from = applyMigration(migrationId, target, caseId)
                 caseMigrationCaseRepository.save(CaseMigrationCase(caseRecordId, CaseMigrationCaseStatus.MIGRATED))
                 // Record the migration on the case's audit trail (in the same transaction, so it is
                 // present exactly when the case is recorded migrated — and rolled back if it is not).
@@ -426,7 +444,8 @@ class CaseMigrationService(
                     CaseMigratedEvent(
                         caseId = caseId,
                         blueprintKey = target.getIdKey(),
-                        fromVersionTag = fromVersionTag,
+                        fromBlueprintKey = from.getIdKey(),
+                        fromVersionTag = from.blueprintVersionTag().toString(),
                         toVersionTag = target.blueprintVersionTag().toString(),
                         migrationKey = migrationId.migrationKey,
                     )
@@ -487,10 +506,10 @@ class CaseMigrationService(
      * The heart of migrating a single case, shared by the real run and the dry run: re-home the case
      * onto the [target] blueprint version first (independent of which components run, so component
      * writes are validated against the target schema), then run every registered component executor.
-     * Runs in the caller's transaction. Returns the source version tag the document was on before the
-     * re-home (for the audit trail). The real run commits this; the dry run rolls it back.
+     * Runs in the caller's transaction. Returns the source blueprint version the document was on
+     * before the re-home (for the audit trail). The real run commits this; the dry run rolls it back.
      */
-    private fun applyMigration(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID): String {
+    private fun applyMigration(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID): BlueprintId {
         return planApplier.apply(migrationId, target, caseId)
     }
 
@@ -545,8 +564,8 @@ class CaseMigrationService(
         plan: CaseDefinitionMigration,
         runToken: String,
     ) {
-        val target = resolveTarget(migrationId)
-        val source = resolveSource(target)
+        val target = plan.targetBlueprintId()
+        val source = plan.sourceBlueprintId()
         val provider = candidateProvider(source.blueprintType()) ?: return
 
         val renewInterval = leaseDuration.dividedBy(2)
@@ -705,33 +724,8 @@ class CaseMigrationService(
         return candidateProviders.firstOrNull { it.supports(blueprintType) }
     }
 
-    private fun versionLineage(blueprintType: BlueprintType): BlueprintVersionLineage? {
-        return versionLineages.firstOrNull { it.supports(blueprintType) }
-    }
-
-    /**
-     * The blueprint version a plan migrates instances TO: always the plan's own id — i.e. the
-     * blueprint version the plan is deployed under (its folder).
-     */
-    private fun resolveTarget(migrationId: BlueprintMigrationId): BlueprintId {
-        return BlueprintMigrationId.blueprintIdOf(migrationId.blueprintType, migrationId.key, migrationId.versionTag)
-    }
-
     private fun formatBlueprintVersion(blueprintId: BlueprintId): String =
         "${blueprintId.getIdKey()}:${blueprintId.blueprintVersionTag()}"
-
-    /**
-     * The blueprint version a plan migrates instances FROM: the resolved [target]'s type / key, and
-     * the version from the target blueprint's `basedOnVersionTag` (falling back to the target
-     * version itself when there is no recorded predecessor).
-     */
-    private fun resolveSource(target: BlueprintId): BlueprintId {
-        // Lineage, not the candidate provider: every blueprint type has a source version to resolve
-        // and render, including building blocks, which have no candidate provider by design.
-        val sourceVersion = versionLineage(target.blueprintType())?.basedOnVersionTag(target)
-            ?: target.blueprintVersionTag()
-        return BlueprintMigrationId.blueprintIdOf(target.blueprintType(), target.getIdKey(), sourceVersion)
-    }
 
     private fun isLeaseLive(execution: CaseDefinitionMigrationExecution): Boolean {
         return isLeaseLive(execution.leaseExpiresAt)

@@ -70,6 +70,9 @@ export class BbMigrationDataMigrationTabComponent implements OnInit, OnDestroy {
    * that only exists in the source version and would otherwise be an unclearable leftover.
    */
   @Input() public targetAdditionalVersionTags: string[] = [];
+  /** Intro text above the patches. Hosts that already explain the direction pass `null` to hide it. */
+  @Input() public descriptionKey: string | null =
+    'buildingBlockManagement.migration.editor.dataMigration.description';
 
   @Input() public set patches(value: DataMigrationPatch[] | null | undefined) {
     this.writePatches(value ?? []);

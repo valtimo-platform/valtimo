@@ -34,6 +34,8 @@ import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.repository.CaseMigrationDryRunCaseRepository
 import com.ritense.case_.repository.CaseMigrationDryRunRepository
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -64,6 +66,7 @@ import org.semver4j.Semver
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.SimpleTransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
@@ -81,6 +84,7 @@ class CaseMigrationServiceTest(
     @Mock private val dryRunRepository: CaseMigrationDryRunRepository,
     @Mock private val dryRunCaseRepository: CaseMigrationDryRunCaseRepository,
     @Mock private val documentRepository: JsonSchemaDocumentRepository,
+    @Mock private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     @Mock private val caseDefinitionRepository: CaseDefinitionRepository,
     @Mock private val conditionEvaluator: MigrationConditionEvaluator,
     @Mock private val executor: MigrationComponentExecutor,
@@ -103,7 +107,6 @@ class CaseMigrationServiceTest(
         whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
         val transactionTemplate = TransactionTemplate(transactionManager)
 
-        // One bean satisfies both roles for cases: candidate enumeration and version lineage.
         val candidateProvider = CaseMigrationCandidateProvider(documentRepository, caseDefinitionRepository)
         service = CaseMigrationService(
             migrationRepository,
@@ -111,9 +114,8 @@ class CaseMigrationServiceTest(
             caseRepository,
             dryRunRepository,
             dryRunCaseRepository,
-            MigrationPlanApplier(documentRepository, listOf(executor)),
+            MigrationPlanApplier(documentRepository, documentDefinitionRepository, listOf(executor)),
             conditionEvaluator,
-            listOf(candidateProvider),
             listOf(candidateProvider),
             emptyList(),
             transactionTemplate,
@@ -137,14 +139,58 @@ class CaseMigrationServiceTest(
         whenever(caseDefinitionRepository.findById(any())).thenReturn(Optional.empty())
         val document = mock<JsonSchemaDocument>(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
         whenever(document.definitionId().name()).thenReturn("bezwaar")
+        // The blueprint the document is currently homed on — what the re-home reports as the source.
+        whenever(document.definitionId().blueprintId().asCaseDefinitionId())
+            .thenReturn(CaseDefinitionId("bezwaar", "1.0.0"))
         whenever(documentRepository.findById(any())).thenReturn(Optional.of(document))
+        val documentDefinition = mock<JsonSchemaDocumentDefinition>(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
+        whenever(documentDefinitionRepository.findOne(any<Specification<JsonSchemaDocumentDefinition>>()))
+            .thenReturn(Optional.of(documentDefinition))
     }
 
-    private fun plan() = CaseDefinitionMigration(
+    private fun plan(
+        sourceKey: String = "bezwaar",
+        sourceVersionTag: Semver = Semver("1.0.0"),
+        migrationTriggers: MigrationTriggers = MigrationTriggers(triggeredByButton = true),
+    ) = CaseDefinitionMigration(
         id = migrationId,
+        sourceKey = sourceKey,
+        sourceVersionTag = sourceVersionTag,
         title = "Plan",
-        migrationTriggers = MigrationTriggers(triggeredByButton = true),
+        migrationTriggers = migrationTriggers,
     )
+
+    @Test
+    fun `should report whether a plan has the button trigger, so the manual entry point can refuse`() {
+        whenever(migrationRepository.findById(migrationId))
+            .thenReturn(Optional.of(plan(migrationTriggers = MigrationTriggers(triggeredByButton = true))))
+        assertThat(service.isTriggeredByButton(migrationId)).isTrue()
+
+        whenever(migrationRepository.findById(migrationId)).thenReturn(
+            Optional.of(
+                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = LocalDateTime.now().minusDays(1)))
+            )
+        )
+        assertThat(service.isTriggeredByButton(migrationId)).isFalse()
+    }
+
+    @Test
+    fun `should still start a plan whose only trigger is a schedule, since that is the sweep's entry point`() {
+        // The button check belongs to the manual entry point only: MigrationTriggerScheduler runs exactly
+        // the plans that have no button trigger, and it calls startMigration directly.
+        whenever(migrationRepository.findById(migrationId)).thenReturn(
+            Optional.of(
+                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = LocalDateTime.now().minusDays(1)))
+            )
+        )
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        val result = service.startMigration(migrationId)
+
+        verify(executor).execute(migrationId, caseDefinitionId, case1)
+        assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
+    }
 
     private fun caseRecordId(caseId: UUID) = CaseMigrationCaseId(migrationId, caseId.toString())
 
@@ -170,7 +216,48 @@ class CaseMigrationServiceTest(
     }
 
     @Test
-    fun `should select candidates on the source version only, not on every version of the case`() {
+    fun `should select candidates on the version the plan declares as its source, not on every version`() {
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        service.startMigration(migrationId)
+
+        verify(documentRepository).findCaseIdsByBlueprintVersion(
+            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("1.0.0")), any()
+        )
+    }
+
+    @Test
+    fun `should select candidates several versions back when that is what the plan declares`() {
+        // Nothing about the target says 0.9.0; the plan does, and that is the only thing consulted.
+        whenever(migrationRepository.findById(migrationId))
+            .thenReturn(Optional.of(plan(sourceVersionTag = Semver("0.9.0"))))
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        service.startMigration(migrationId)
+
+        verify(documentRepository).findCaseIdsByBlueprintVersion(
+            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("0.9.0")), any()
+        )
+    }
+
+    @Test
+    fun `should select candidates of another case definition key when the plan declares one`() {
+        whenever(migrationRepository.findById(migrationId))
+            .thenReturn(Optional.of(plan(sourceKey = "bezwaar-oud", sourceVersionTag = Semver("2.0.0"))))
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        service.startMigration(migrationId)
+
+        verify(documentRepository).findCaseIdsByBlueprintVersion(
+            eq(BlueprintType.CASE), eq("bezwaar-oud"), eq(Semver("2.0.0")), any()
+        )
+    }
+
+    @Test
+    fun `should ignore the target's basedOnVersionTag, which no longer decides the source`() {
         whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(
             Optional.of(
                 CaseDefinition(
@@ -181,13 +268,15 @@ class CaseMigrationServiceTest(
                 )
             )
         )
+        whenever(migrationRepository.findById(migrationId))
+            .thenReturn(Optional.of(plan(sourceVersionTag = Semver("0.8.0"))))
         stubCandidates(case1)
         whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
 
         service.startMigration(migrationId)
 
         verify(documentRepository).findCaseIdsByBlueprintVersion(
-            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("1.0.0")), any()
+            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("0.8.0")), any()
         )
     }
 
@@ -203,6 +292,8 @@ class CaseMigrationServiceTest(
         val event = captor.firstValue
         assertThat(event.documentId).isEqualTo(case1)
         assertThat(event.blueprintKey).isEqualTo("bezwaar")
+        assertThat(event.fromBlueprintKey).isEqualTo("bezwaar")
+        assertThat(event.fromVersionTag).isEqualTo("1.0.0")
         assertThat(event.toVersionTag).isEqualTo("1.0.1")
         assertThat(event.migrationKey).isEqualTo("plan")
     }
@@ -309,6 +400,8 @@ class CaseMigrationServiceTest(
     fun `getStatus should return the cached estimate before a run has started`() {
         val plan = CaseDefinitionMigration(
             id = migrationId,
+            sourceKey = "bezwaar",
+            sourceVersionTag = Semver("1.0.0"),
             title = "Plan",
             migrationTriggers = MigrationTriggers(triggeredByButton = true),
             estimatedCasesToMigrate = 7,
@@ -387,6 +480,8 @@ class CaseMigrationServiceTest(
     fun `refreshCaseCountEstimate should count matching cases and cache it on the plan`() {
         val plan = CaseDefinitionMigration(
             id = migrationId,
+            sourceKey = "bezwaar",
+            sourceVersionTag = Semver("1.0.0"),
             title = "Plan",
             migrationTriggers = MigrationTriggers(triggeredByButton = true),
         )

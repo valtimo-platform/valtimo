@@ -33,6 +33,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.semver4j.Semver
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -103,6 +104,7 @@ class MigrationPlanImporterTest(
             {
                 "title": "Migrate cases with status 'aanvraag-ontvangen'",
                 "key": "migration-plan-aanvraag-indienen",
+                "source": { "versionTag": "1.0.0" },
                 "migrationTriggers": { "triggeredByButton": true },
                 "conditions": [
                     { "path": "case:internalStatus", "operator": "==", "value": "aanvraag-verwerkt" }
@@ -134,6 +136,9 @@ class MigrationPlanImporterTest(
         val saved = skeletonCaptor.firstValue
         assertThat(saved.id).isEqualTo(expectedId)
         assertThat(saved.title).isEqualTo("Migrate cases with status 'aanvraag-ontvangen'")
+        // The declared source, with its key defaulted to the target's.
+        assertThat(saved.sourceKey).isEqualTo("bezwaar")
+        assertThat(saved.sourceVersionTag).isEqualTo(Semver("1.0.0"))
         assertThat(saved.migrationTriggers.triggeredByButton).isTrue()
         assertThat(saved.conditions).singleElement()
         assertThat((saved.conditions.single() as MigrationCondition).path).isEqualTo("case:internalStatus")
@@ -151,6 +156,7 @@ class MigrationPlanImporterTest(
         val json = """
             {
                 "key": "grouped-conditions",
+                "source": { "versionTag": "1.0.0" },
                 "conditions": [
                     { "path": "case:internalStatus", "operator": "==", "value": "in-behandeling" },
                     { "anyOf": [
@@ -187,6 +193,7 @@ class MigrationPlanImporterTest(
         val json = """
             {
                 "key": "invalid-conditions",
+                "source": { "versionTag": "1.0.0" },
                 "conditions": [ { "path": "doc:/x", "operator": "~=", "value": "y" } ]
             }
         """.trimIndent()
@@ -211,6 +218,7 @@ class MigrationPlanImporterTest(
         val json = """
             {
                 "key": "no-data-migration",
+                "source": { "versionTag": "1.0.0" },
                 "processMigration": [ { "sourceProcessDefinitionKey": "bezwaar" } ]
             }
         """.trimIndent()
@@ -258,6 +266,7 @@ class MigrationPlanImporterTest(
         val json = """
             {
                 "key": "herinspectie",
+                "source": { "versionTag": "1.0.0" },
                 "migrationTriggers": { "triggeredByButton": true }
             }
         """.trimIndent()
@@ -275,6 +284,7 @@ class MigrationPlanImporterTest(
         val json = """
             {
                 "key": "herinspectie",
+                "source": { "versionTag": "1.0.0" },
                 "conditions": [{ "path": "doc:/inspectieStatus", "operator": "==", "value": "afgekeurd" }]
             }
         """.trimIndent()
@@ -292,7 +302,8 @@ class MigrationPlanImporterTest(
         val json = """
             {
                 "title": "Herinspectie plannen",
-                "key": "herinspectie"
+                "key": "herinspectie",
+                "source": { "versionTag": "1.0.0" }
             }
         """.trimIndent()
 
@@ -305,10 +316,76 @@ class MigrationPlanImporterTest(
     }
 
     @Test
+    fun `should keep a source key that differs from the target's, so a plan can change key`() {
+        val json = """
+            {
+                "key": "bezwaar-hernoemd",
+                "source": { "key": "bezwaar-oud", "versionTag": "2.0.0" }
+            }
+        """.trimIndent()
+
+        importer.deploy(caseDefinitionId, objectMapper.readTree(json))
+
+        val captor = argumentCaptor<CaseDefinitionMigration>()
+        verify(caseDefinitionMigrationRepository).save(captor.capture())
+        assertThat(captor.firstValue.sourceKey).isEqualTo("bezwaar-oud")
+        assertThat(captor.firstValue.sourceVersionTag).isEqualTo(Semver("2.0.0"))
+    }
+
+    @Test
+    fun `should refuse a plan that declares no source`() {
+        val json = """{ "key": "geen-source" }"""
+
+        val exception = assertThrows<IllegalArgumentException> {
+            importer.deploy(caseDefinitionId, objectMapper.readTree(json))
+        }
+
+        assertThat(exception).hasMessageContaining("declares no 'source'")
+        verify(caseDefinitionMigrationRepository, never()).save(any())
+    }
+
+    @Test
+    fun `should refuse a plan whose source has no version`() {
+        val json = """{ "key": "geen-versie", "source": { "key": "bezwaar" } }"""
+
+        val exception = assertThrows<IllegalArgumentException> {
+            importer.deploy(caseDefinitionId, objectMapper.readTree(json))
+        }
+
+        assertThat(exception).hasMessageContaining("without a 'versionTag'")
+        verify(caseDefinitionMigrationRepository, never()).save(any())
+    }
+
+    @Test
+    fun `should refuse a plan whose source version is not a semantic version`() {
+        val json = """{ "key": "rare-versie", "source": { "versionTag": "gisteren" } }"""
+
+        val exception = assertThrows<IllegalArgumentException> {
+            importer.deploy(caseDefinitionId, objectMapper.readTree(json))
+        }
+
+        assertThat(exception).hasMessageContaining("not a valid semantic version")
+        verify(caseDefinitionMigrationRepository, never()).save(any())
+    }
+
+    @Test
+    fun `should refuse a plan that declares its own target version as its source`() {
+        val json = """{ "key": "zichzelf", "source": { "key": "bezwaar", "versionTag": "1.0.1" } }"""
+
+        val exception = assertThrows<IllegalArgumentException> {
+            importer.deploy(caseDefinitionId, objectMapper.readTree(json))
+        }
+
+        assertThat(exception).hasMessageContaining("as its own source")
+        verify(caseDefinitionMigrationRepository, never()).save(any())
+    }
+
+    @Test
     fun `should still accept triggers and conditions on a case plan`() {
         val json = """
             {
                 "key": "bezwaar",
+                "source": { "versionTag": "1.0.0" },
                 "migrationTriggers": { "triggeredByButton": true },
                 "conditions": [{ "path": "doc:/status", "operator": "==", "value": "ingediend" }]
             }

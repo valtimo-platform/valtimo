@@ -1,6 +1,10 @@
 {
     "title": "Geneste fotobouwsteen toevoegen",
     "key": "verhuizing-inspectie-geneste-fotobouwsteen",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.1"
+    },
     "dataMigration": [
         {
             "target": "doc:/fotoStatus",

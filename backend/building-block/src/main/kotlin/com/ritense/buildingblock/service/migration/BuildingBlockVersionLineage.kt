@@ -45,4 +45,8 @@ class BuildingBlockVersionLineage(
         return buildingBlockDefinitionRepository.findById(blueprintId as BuildingBlockDefinitionId)
             .orElse(null)?.basedOnVersionTag
     }
+
+    override fun exists(blueprintId: BlueprintId): Boolean {
+        return buildingBlockDefinitionRepository.existsById(blueprintId as BuildingBlockDefinitionId)
+    }
 }

@@ -40,6 +40,46 @@
     </cds-text-label>
   </div>
 
+  <!-- Source -->
+  <h5 class="migration-tab__subheading">
+    {{ 'buildingBlockManagement.migration.editor.general.source' | translate }}
+  </h5>
+  <p class="migration-tab__hint">
+    {{ 'buildingBlockManagement.migration.editor.general.sourceHint' | translate }}
+  </p>
+
+  <div class="migration-tab__grid">
+    <!--
+      Both pickers are non-clearable: a plan always migrates FROM somewhere, so neither field has a
+      meaningful empty state. "The same building block as the target" is expressed by selecting that
+      key, not by blanking the field. (Clearing a Carbon combobox also hands back an empty array rather
+      than an empty string, which is truthy and would travel into the plan as a version tag.)
+    -->
+    <v-select
+      formControlName="sourceKey"
+      [clearable]="false"
+      [items]="sourceKeyOptions"
+      [placeholder]="
+        'buildingBlockManagement.migration.editor.general.sourceKeyPlaceholder' | translate
+      "
+      [required]="true"
+      [titleTranslationKey]="'buildingBlockManagement.migration.editor.general.sourceKey'"
+      [attr.data-test-id]="testIds.sourceKeySelect"
+    ></v-select>
+
+    <v-select
+      formControlName="sourceVersionTag"
+      [clearable]="false"
+      [items]="sourceVersionOptions"
+      [placeholder]="
+        'buildingBlockManagement.migration.editor.general.sourceVersionPlaceholder' | translate
+      "
+      [required]="true"
+      [titleTranslationKey]="'buildingBlockManagement.migration.editor.general.sourceVersion'"
+      [attr.data-test-id]="testIds.sourceVersionSelect"
+    ></v-select>
+  </div>
+
   <!-- When this plan runs -->
   <h5 class="migration-tab__subheading">
     {{ 'buildingBlockManagement.migration.editor.general.whenItRuns' | translate }}
@@ -58,7 +98,7 @@
 
   <p class="migration-tab__hint">
     {{
-      'buildingBlockManagement.migration.editor.general.everyVersionNeedsAPlanHint'
+      'buildingBlockManagement.migration.editor.general.chainOfPlansHint'
         | translate: {key: buildingBlockDefinitionKey}
     }}
   </p>

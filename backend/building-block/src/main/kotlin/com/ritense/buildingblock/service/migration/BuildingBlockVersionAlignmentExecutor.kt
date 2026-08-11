@@ -20,16 +20,12 @@ import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.case_.domain.migration.CaseMigrationCase
 import com.ritense.case_.domain.migration.CaseMigrationCaseId
 import com.ritense.case_.domain.migration.CaseMigrationCaseStatus
-import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.service.migration.MigrationPlanApplier
 import com.ritense.valtimo.contract.BlueprintId
-import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.semver4j.Semver
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
@@ -46,10 +42,11 @@ import java.util.UUID
  *
  * The linked version may be several versions ahead (a case jumping straight to `3.0.0` while its block
  * is still on `1.0.0`), so the upgrade runs as a chain: [BuildingBlockMigrationPathResolver] works out
- * the versions in between and each one's plans are applied in turn. Every version in that chain needs a
- * plan, including one that changes nothing: a version the block only travels through still deploys its
- * own BPMN and its own document schema, and moving a running instance onto those is a plan's job, not
- * something to be inferred. A version without one fails the migration.
+ * which plans lead from where the instance is to where it needs to be, and each is applied in turn.
+ * Because every plan declares the version it migrates *from*, that chain is read off the deployed plans
+ * themselves — so a single plan may declare the whole jump, and a plan may lead from one building block
+ * key to an entirely different one. What no plan connects, nothing here will bridge by inference: it
+ * fails the migration.
  *
  * Because a building block's own new version may in turn link different versions of the blocks *it*
  * owns, the same treatment is applied to nested blocks, descending the tree one level at a time.
@@ -67,7 +64,6 @@ class BuildingBlockVersionAlignmentExecutor(
     private val linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
     private val buildingBlockMigrationPathResolver: BuildingBlockMigrationPathResolver,
     private val buildingBlockProcessVersionChecker: BuildingBlockProcessVersionChecker,
-    private val caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
     private val caseMigrationCaseRepository: CaseMigrationCaseRepository,
     // Lazy: the applier owns the list of component executors, of which this is one. Resolving it up
     // front would be a circular bean dependency.
@@ -87,80 +83,59 @@ class BuildingBlockVersionAlignmentExecutor(
     }
 
     private fun align(ownerTarget: BlueprintId, instance: BuildingBlockInstance) {
-        val key = instance.definition.id.key
-        val current = instance.definition.id.versionTag
-        val linked = linkedBuildingBlockVersionResolver.resolveTargetVersion(ownerTarget, instance)
+        val current = instance.definition.id
+        val linked = linkedBuildingBlockVersionResolver.resolveTarget(ownerTarget, instance)
 
         if (linked == null) {
             // The owner's new version no longer links this building block. Leaving it alone is
             // deliberate: dissolving a running block is what a plan's `removeBuildingBlock` is for.
             logger.debug {
-                "Building block '$key:$current' (instance '${instance.id}') is not linked by '$ownerTarget'; leaving it as is"
+                "Building block '$current' (instance '${instance.id}') is not linked by '$ownerTarget'; leaving it as is"
             }
             return
         }
         if (linked == current) {
             return
         }
-        if (linked.isLowerThan(current)) {
+        // Only meaningful within one building block key: two versions of *different* building blocks are
+        // not ordered relative to each other, so what counts as a downgrade across keys is not something
+        // version numbers can answer. There the deployed plans are the only authority — a key change
+        // happens if and only if a plan says how.
+        if (linked.key == current.key && linked.versionTag.isLowerThan(current.versionTag)) {
             logger.warn {
-                "'$ownerTarget' links building block '$key:$linked', which is older than the '$current' " +
+                "'$ownerTarget' links building block '$linked', which is older than the '$current' " +
                     "that instance '${instance.id}' is on; not downgrading"
             }
             return
         }
 
-        logger.debug { "Migrating building block instance '${instance.id}' from '$key:$current' to '$key:$linked'" }
-        buildingBlockMigrationPathResolver.resolvePath(key, current, linked).forEach { version ->
-            applyStep(BuildingBlockDefinitionId(key, version), instance.documentId)
+        logger.debug { "Migrating building block instance '${instance.id}' from '$current' to '$linked'" }
+        buildingBlockMigrationPathResolver.resolvePath(current, linked).forEach { step ->
+            applyStep(step, instance.documentId)
         }
 
         // Descend. Applying the last step's plan already ran this executor for the block itself, so this
         // re-walk normally just re-confirms each child is on its linked version — a cheap resolve and
         // version compare. It is kept because that is not something to depend on silently: it also
         // catches a child the last plan's own components moved or added.
-        alignChildrenOf(BuildingBlockDefinitionId(key, linked), instance.documentId)
+        alignChildrenOf(linked, instance.documentId)
     }
 
     /**
-     * Move one building block document onto [stepTarget], applying every migration plan deployed on
-     * that version. Several plans on one version are unusual — a building block version is expected to
-     * carry at most one — but they are all applied, in a fixed order, rather than silently picking one.
+     * Move one building block document one hop along its upgrade chain: apply [step]'s plan and land the
+     * document on the version that plan targets.
      *
-     * A version with **no** plan is an error, not a free pass. A version the block merely travels
-     * through on its way somewhere else still has its own document schema and its own BPMN deployment,
-     * and moving a live instance onto those is what a plan is for; there is nothing here that could
-     * stand in for one without guessing.
+     * Which plans exist and in what order they run is settled by [BuildingBlockMigrationPathResolver]
+     * before anything is applied — including the refusals for "nothing connects these versions" and
+     * "more than one chain does" — so by the time a step gets here there is exactly one thing to do.
      */
-    private fun applyStep(stepTarget: BuildingBlockDefinitionId, documentId: UUID) {
-        val plans = caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
-            BlueprintType.BUILDING_BLOCK, stepTarget.key, stepTarget.versionTag
-        ).sortedBy { it.id.migrationKey }
+    private fun applyStep(step: BuildingBlockMigrationPathResolver.MigrationStep, documentId: UUID) {
+        migrationPlanApplier.getObject().apply(step.planId, step.target, documentId)
+        recordApplied(step.planId, documentId)
 
-        if (plans.isEmpty()) {
-            throw IllegalStateException(
-                "No migration plan is deployed for building block version '$stepTarget', which building " +
-                    "block document '$documentId' has to travel through to reach the version its owner " +
-                    "links. Every version in an upgrade chain needs one, including a version that changes " +
-                    "nothing: it deploys its own BPMN under its own version tag, so a running process has " +
-                    "to be migrated onto it explicitly. Deploy a '*.building-block-migration.json' on " +
-                    "'$stepTarget'."
-            )
-        }
-        if (plans.size > 1) {
-            logger.warn {
-                "Building block version '$stepTarget' has ${plans.size} migration plans " +
-                    "(${plans.joinToString { it.id.migrationKey }}); applying all of them in key order"
-            }
-        }
-        plans.forEach { plan ->
-            migrationPlanApplier.getObject().apply(plan.id, stepTarget, documentId)
-            recordApplied(plan.id, documentId)
-        }
-
-        // The plans have run; hold them to having moved the process too, rather than leaving the block
+        // The plan has run; hold it to having moved the process too, rather than leaving the block
         // claiming a version whose BPMN it is not executing.
-        buildingBlockProcessVersionChecker.assertProcessOnVersion(documentId, stepTarget)
+        buildingBlockProcessVersionChecker.assertProcessOnVersion(documentId, step.target)
     }
 
     /**

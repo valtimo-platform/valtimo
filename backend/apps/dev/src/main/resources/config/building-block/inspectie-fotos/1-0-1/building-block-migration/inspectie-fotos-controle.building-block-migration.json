@@ -1,6 +1,10 @@
 {
     "title": "Foto's controleren in plaats van uploaden",
     "key": "inspectie-fotos-controle",
+    "source": {
+        "key": "inspectie-fotos",
+        "versionTag": "1.0.0"
+    },
     "dataMigration": [
         {
             "target": "doc:/fotoKwaliteit",

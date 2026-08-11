@@ -31,11 +31,13 @@ import java.util.UUID
 
 /**
  * Enumerates the candidate cases for a case-definition migration plan: the documents currently homed
- * on the given source case-definition version (key **and** version tag), paged by document id.
+ * on the plan's declared source case-definition version (key **and** version tag), paged by document
+ * id.
  *
- * The version tag is part of the selection: a plan deployed on `1.0.3` migrates the cases sitting on
- * its predecessor version only. Cases on older versions are reached by the plans in between, one hop
- * at a time — they are not re-homed straight onto the newest version.
+ * Both halves of the source are part of the selection, and both come from the plan. A plan deployed on
+ * `1.0.3` migrates exactly the cases sitting on the version it says it migrates from — its predecessor
+ * in the ordinary case, but equally a version several steps back, or a case definition with an entirely
+ * different key. Cases on any *other* version are left to the plans that claim them.
  */
 class CaseMigrationCandidateProvider(
     private val documentRepository: JsonSchemaDocumentRepository,
@@ -47,6 +49,12 @@ class CaseMigrationCandidateProvider(
     override fun basedOnVersionTag(blueprintId: BlueprintId): Semver? {
         return runWithoutAuthorization {
             caseDefinitionRepository.findById(blueprintId as CaseDefinitionId).orElse(null)?.basedOnVersionTag
+        }
+    }
+
+    override fun exists(blueprintId: BlueprintId): Boolean {
+        return runWithoutAuthorization {
+            caseDefinitionRepository.existsById(blueprintId as CaseDefinitionId)
         }
     }
 

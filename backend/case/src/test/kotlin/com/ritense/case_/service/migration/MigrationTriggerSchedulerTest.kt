@@ -26,6 +26,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.semver4j.Semver
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -60,7 +61,13 @@ class MigrationTriggerSchedulerTest(
     private fun migrationId(key: String) = BlueprintMigrationId.from(caseDefinitionId, key)
 
     private fun plan(key: String, triggers: MigrationTriggers) =
-        CaseDefinitionMigration(id = migrationId(key), title = key, migrationTriggers = triggers)
+        CaseDefinitionMigration(
+            id = migrationId(key),
+            sourceKey = caseDefinitionId.key,
+            sourceVersionTag = Semver("1.0.0"),
+            title = key,
+            migrationTriggers = triggers,
+        )
 
     @Test
     fun `should reclaim crashed runs whose lease has expired`() {

@@ -27,13 +27,15 @@ import {
 import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {InputModule} from 'carbon-components-angular';
+import {SelectItem, SelectModule as ValtimoSelectModule} from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
-import {MigrationPlan} from '../../../models';
+import {MigrationPlan, MigrationPlanSource} from '../../../models';
 
 interface GeneralValue {
   title: string;
   key: string;
+  source: MigrationPlanSource;
 }
 
 @Component({
@@ -42,11 +44,15 @@ interface GeneralValue {
   templateUrl: './migration-general-tab.component.html',
   styleUrls: ['./migration-tab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, InputModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, InputModule, ValtimoSelectModule],
 })
 export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Input() public buildingBlockDefinitionKey: string | null = null;
   @Input() public buildingBlockDefinitionVersionTag: string | null = null;
+  /** The building blocks a plan may migrate instances from — any key, not just this one. */
+  @Input() public sourceKeyOptions: SelectItem[] = [];
+  /** The versions of the currently selected source key. */
+  @Input() public sourceVersionOptions: SelectItem[] = [];
 
   @Input() public set isEdit(value: boolean) {
     // The key identifies the plan; changing it while editing would create a new one.
@@ -66,15 +72,31 @@ export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
   public readonly form = this.fb.group({
     title: this.fb.control(''),
     key: this.fb.control(''),
+    sourceKey: this.fb.control(''),
+    sourceVersionTag: this.fb.control(''),
   });
 
   private _lastEmitted = '';
+  // True while [writeGeneral] is loading a plan into the form, so its intermediate states stay private.
+  private _writing = false;
   private readonly _subscriptions = new Subscription();
 
   constructor(private readonly fb: FormBuilder) {}
 
   public ngOnInit(): void {
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
+    // A version tag only means something under the key it belongs to, so picking another building
+    // block drops the version rather than carrying a selection that names a version of the previous
+    // one — which the version picker would show as a value it does not offer, and the save would
+    // reject as an undeployed source. Only the author's own edits reach this: [applyPlan] patches the
+    // form with `emitEvent: false`, so loading a plan keeps the source it declares.
+    this._subscriptions.add(
+      this.form.controls.sourceKey.valueChanges.subscribe(() => {
+        if (this.form.controls.sourceVersionTag.value) {
+          this.form.controls.sourceVersionTag.setValue('');
+        }
+      })
+    );
   }
 
   public ngOnDestroy(): void {
@@ -82,30 +104,69 @@ export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
   }
 
   private emit(): void {
+    // Never emit while [writeGeneral] is loading a plan into the form — see the note there.
+    if (this._writing) return;
+
     const value = this.serialize();
     this._lastEmitted = JSON.stringify(value);
     this.generalChange.emit(value);
   }
 
   private serialize(): Partial<MigrationPlan> {
-    const {title, key} = this.form.getRawValue();
+    const {title, key, sourceKey, sourceVersionTag} = this.form.getRawValue();
 
     return {
       title: title ?? '',
       key: key ?? '',
+      source: {
+        key: this.asText(sourceKey) || this.buildingBlockDefinitionKey || '',
+        versionTag: this.asText(sourceVersionTag),
+      },
     };
+  }
+
+  /**
+   * A picker's value as a plain string. Both source fields come from a `v-select`: clearing a Carbon
+   * combobox hands back an empty *array* rather than an empty string, and `[]` is truthy, so it would
+   * otherwise pass the `||` fallback above and end up in the plan as a version tag — which gets
+   * interpolated into a request URL.
+   */
+  private asText(value: unknown): string {
+    return typeof value === 'string' ? value : '';
   }
 
   private writeGeneral(plan: MigrationPlan): void {
     const incoming: GeneralValue = {
       title: plan.title ?? '',
       key: plan.key ?? '',
+      source: {
+        key: plan.source?.key ?? this.buildingBlockDefinitionKey ?? '',
+        versionTag: plan.source?.versionTag ?? '',
+      },
     };
 
     // Ignore the echo of our own emission to avoid rebuilding the form (and losing focus).
     if (JSON.stringify(incoming) === this._lastEmitted) return;
 
-    this.form.patchValue(incoming, {emitEvent: false});
+    // `emitEvent: false` is not enough to keep this write silent: a `v-select`'s writeValue()
+    // propagates the value straight back to the form, so patching `sourceKey` re-enters the form's
+    // valueChanges while this patch is only half applied, and that emission would report the
+    // not-yet-written fields as the plan's own values. The flag makes the write atomic from the
+    // outside: nothing is emitted until the form matches the plan.
+    this._writing = true;
+    try {
+      this.form.patchValue(
+        {
+          title: incoming.title,
+          key: incoming.key,
+          sourceKey: incoming.source.key ?? '',
+          sourceVersionTag: incoming.source.versionTag ?? '',
+        },
+        {emitEvent: false}
+      );
+    } finally {
+      this._writing = false;
+    }
 
     this._lastEmitted = JSON.stringify(this.serialize());
   }

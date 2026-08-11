@@ -32,6 +32,19 @@ interface CaseDefinitionMigrationRepository :
     ): List<CaseDefinitionMigration>
 
     /**
+     * All migration plans that migrate instances *away from* the given blueprint version — the plans
+     * whose declared source it is.
+     *
+     * Read as a graph: every plan is an edge from the version it declares as its source to the version
+     * it is deployed under, so this is the set of edges leaving a node. It is how
+     * `BuildingBlockMigrationPathResolver` works out how a running building block gets from the version
+     * it is on to the version its owner links, over as many plans as that takes.
+     */
+    fun findAllByIdBlueprintTypeAndSourceKeyAndSourceVersionTag(
+        blueprintType: BlueprintType, sourceKey: String, sourceVersionTag: Semver
+    ): List<CaseDefinitionMigration>
+
+    /**
      * Plans that have never been run (no execution row yet). Used by the trigger scheduler to find
      * scheduled plans to auto-start, without loading plans that are already running or finished.
      */

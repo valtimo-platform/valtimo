@@ -154,14 +154,25 @@ interface RemoveBuildingBlockInstruction {
 }
 
 /**
- * The full editable migration plan, matching the auto-deploy `*.migration.json` shape. Source and
- * target are NOT part of the plan format — a plan always migrates the instances of its own
- * definition version FROM its predecessor (`basedOnVersionTag`) TO that version, both implied by
- * the definition version the plan is deployed under.
+ * The blueprint version a plan migrates instances FROM. Required on every plan: the target is implied
+ * by the definition version the plan is deployed under, but the source never is. It may name any
+ * earlier version, and a different `key` altogether — which is how a case definition is replaced by a
+ * differently-named successor. Omitting `key` means "the same key as the target".
+ */
+interface MigrationPlanSource {
+  key?: string;
+  versionTag?: string;
+}
+
+/**
+ * The full editable migration plan, matching the auto-deploy `*.migration.json` shape. The TARGET is
+ * not part of it — that is the definition version the plan is deployed under — but the `source` is,
+ * and is required.
  */
 interface MigrationPlan {
   title?: string;
   key?: string;
+  source?: MigrationPlanSource;
   migrationTriggers?: MigrationTriggers;
   conditions?: MigrationConditionNode[];
   dataMigration?: DataMigrationPatch[];
@@ -179,6 +190,7 @@ export {
   MigrationExecutionStatus,
   DryRunStatus,
   MigrationPlanManagement,
+  MigrationPlanSource,
   DataMigrationPatch,
   DataMigrationTargetType,
   ValuePathContext,

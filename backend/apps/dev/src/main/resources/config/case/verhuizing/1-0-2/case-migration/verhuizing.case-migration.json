@@ -1,6 +1,10 @@
 {
     "title": "Verhuizing migreren",
     "key": "verhuizing-inspectie-verwijderen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.1"
+    },
     "migrationTriggers": {
         "triggeredByButton": true
     },

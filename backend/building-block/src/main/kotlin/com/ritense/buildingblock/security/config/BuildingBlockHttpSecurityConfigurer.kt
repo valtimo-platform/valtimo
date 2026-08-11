@@ -141,6 +141,8 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/migration/suggestion/activity-mapping/validate"))
                     .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/migration/suggestion/building-block"))
+                    .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/migration/{migrationKey}"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/migration/{migrationKey}"))

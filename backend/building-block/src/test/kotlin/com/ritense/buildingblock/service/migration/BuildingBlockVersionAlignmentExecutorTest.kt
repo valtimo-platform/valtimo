@@ -18,12 +18,10 @@ package com.ritense.buildingblock.service.migration
 
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
-import com.ritense.case_.domain.migration.CaseDefinitionMigration
+import com.ritense.buildingblock.service.migration.BuildingBlockMigrationPathResolver.MigrationStep
 import com.ritense.case_.domain.migration.CaseMigrationCase
-import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.service.migration.MigrationPlanApplier
-import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -34,12 +32,11 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.semver4j.Semver
 import org.springframework.beans.factory.ObjectProvider
 import java.util.UUID
 
@@ -49,7 +46,6 @@ class BuildingBlockVersionAlignmentExecutorTest {
     private lateinit var linkedVersionResolver: LinkedBuildingBlockVersionResolver
     private lateinit var pathResolver: BuildingBlockMigrationPathResolver
     private lateinit var processVersionChecker: BuildingBlockProcessVersionChecker
-    private lateinit var migrationRepository: CaseDefinitionMigrationRepository
     private lateinit var caseMigrationCaseRepository: CaseMigrationCaseRepository
     private lateinit var planApplier: MigrationPlanApplier
     private lateinit var executor: BuildingBlockVersionAlignmentExecutor
@@ -66,7 +62,6 @@ class BuildingBlockVersionAlignmentExecutorTest {
         linkedVersionResolver = mock()
         pathResolver = mock()
         processVersionChecker = mock()
-        migrationRepository = mock()
         caseMigrationCaseRepository = mock()
         planApplier = mock()
 
@@ -78,109 +73,104 @@ class BuildingBlockVersionAlignmentExecutorTest {
             linkedVersionResolver,
             pathResolver,
             processVersionChecker,
-            migrationRepository,
             caseMigrationCaseRepository,
             applierProvider,
         )
 
-        // By default nothing owns anything and no version carries a plan.
+        // By default nothing owns anything.
         whenever(ownershipResolver.directChildrenOf(any())).thenReturn(emptyList())
-        whenever(migrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(any(), any(), any()))
-            .thenReturn(emptyList())
     }
 
     @Test
-    fun `should apply the plan of each version on the way to the linked version`() {
+    fun `should apply every plan on the way to the linked version, in order`() {
         val block = block("1.0.0")
         caseOwns(block)
-        linked(block, "1.0.2")
-        whenever(pathResolver.resolvePath(bbKey, Semver("1.0.0"), Semver("1.0.2")))
-            .thenReturn(listOf(Semver("1.0.1"), Semver("1.0.2")))
-        val plan101 = bbPlan("1.0.1", "herinspectie")
-        val plan102 = bbPlan("1.0.2", "afronding")
+        linked(block, bb("1.0.2"))
+        val first = step("herinspectie", bb("1.0.1"))
+        val second = step("afronding", bb("1.0.2"))
+        whenever(pathResolver.resolvePath(bb("1.0.0"), bb("1.0.2"))).thenReturn(listOf(first, second))
 
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
-        verify(planApplier).apply(plan101.id, BuildingBlockDefinitionId.of(bbKey, "1.0.1"), blockDocumentId)
-        verify(planApplier).apply(plan102.id, BuildingBlockDefinitionId.of(bbKey, "1.0.2"), blockDocumentId)
+        inOrder(planApplier) {
+            verify(planApplier).apply(first.planId, bb("1.0.1"), blockDocumentId)
+            verify(planApplier).apply(second.planId, bb("1.0.2"), blockDocumentId)
+        }
+    }
+
+    @Test
+    fun `should apply one plan that declares the whole jump, without visiting the versions in between`() {
+        val block = block("1.0.0")
+        caseOwns(block)
+        linked(block, bb("1.0.2"))
+        val jump = step("versiesprong", bb("1.0.2"))
+        whenever(pathResolver.resolvePath(bb("1.0.0"), bb("1.0.2"))).thenReturn(listOf(jump))
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        verify(planApplier).apply(jump.planId, bb("1.0.2"), blockDocumentId)
+        verify(processVersionChecker).assertProcessOnVersion(blockDocumentId, bb("1.0.2"))
+        // 1.0.1 is skipped entirely: the plan says it is not a stop on this instance's way.
+        verify(planApplier, never()).apply(any(), eq(bb("1.0.1")), any())
+        verify(processVersionChecker, never()).assertProcessOnVersion(any(), eq(bb("1.0.1")))
+    }
+
+    @Test
+    fun `should migrate a block onto a different building block key when that is what the owner links`() {
+        val block = block("1.0.1")
+        caseOwns(block)
+        val dossier = BuildingBlockDefinitionId.of("inspectie-dossier", "1.0.0")
+        linked(block, dossier)
+        val crossKey = step("dossier-uit-fotos", dossier)
+        whenever(pathResolver.resolvePath(bb("1.0.1"), dossier)).thenReturn(listOf(crossKey))
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        verify(planApplier).apply(crossKey.planId, dossier, blockDocumentId)
+        verify(processVersionChecker).assertProcessOnVersion(blockDocumentId, dossier)
+        // And the block's own children are re-checked against the version it landed on, not the old key.
+        verify(ownershipResolver).directChildrenOf(blockDocumentId)
     }
 
     @Test
     fun `should record each applied plan against the instance it was applied to`() {
         val block = block("1.0.0")
         caseOwns(block)
-        linked(block, "1.0.1")
-        whenever(pathResolver.resolvePath(bbKey, Semver("1.0.0"), Semver("1.0.1")))
-            .thenReturn(listOf(Semver("1.0.1")))
-        val plan = bbPlan("1.0.1", "herinspectie")
+        linked(block, bb("1.0.1"))
+        val only = step("herinspectie", bb("1.0.1"))
+        whenever(pathResolver.resolvePath(bb("1.0.0"), bb("1.0.1"))).thenReturn(listOf(only))
 
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
         val captor = argumentCaptor<CaseMigrationCase>()
         verify(caseMigrationCaseRepository).save(captor.capture())
-        assertThat(captor.firstValue.id.migrationId).isEqualTo(plan.id)
+        assertThat(captor.firstValue.id.migrationId).isEqualTo(only.planId)
         assertThat(captor.firstValue.id.caseId).isEqualTo(blockDocumentId.toString())
-    }
-
-    @Test
-    fun `should fail the migration when a version in the chain has no plan deployed`() {
-        val block = block("1.0.0")
-        caseOwns(block)
-        linked(block, "1.0.1")
-        whenever(pathResolver.resolvePath(bbKey, Semver("1.0.0"), Semver("1.0.1")))
-            .thenReturn(listOf(Semver("1.0.1")))
-
-        assertThatThrownBy { executor.execute(casePlanId, caseDefinitionId, caseDocumentId) }
-            .isInstanceOf(IllegalStateException::class.java)
-            .hasMessageContaining("No migration plan is deployed")
-            .hasMessageContaining("1.0.1")
-        verify(planApplier, never()).apply(any(), any(), any())
-    }
-
-    @Test
-    fun `should fail on the plan-less version of a chain without applying the versions after it`() {
-        val block = block("1.0.0")
-        caseOwns(block)
-        linked(block, "1.0.2")
-        whenever(pathResolver.resolvePath(bbKey, Semver("1.0.0"), Semver("1.0.2")))
-            .thenReturn(listOf(Semver("1.0.1"), Semver("1.0.2")))
-        val plan102 = bbPlan("1.0.2", "afronding") // 1.0.1 has none
-
-        assertThatThrownBy { executor.execute(casePlanId, caseDefinitionId, caseDocumentId) }
-            .isInstanceOf(IllegalStateException::class.java)
-            .hasMessageContaining("1.0.1")
-        verify(planApplier, never()).apply(eq(plan102.id), any(), any())
     }
 
     @Test
     fun `should hold every applied step to having moved the process onto that version`() {
         val block = block("1.0.0")
         caseOwns(block)
-        linked(block, "1.0.2")
-        whenever(pathResolver.resolvePath(bbKey, Semver("1.0.0"), Semver("1.0.2")))
-            .thenReturn(listOf(Semver("1.0.1"), Semver("1.0.2")))
-        bbPlan("1.0.1", "herinspectie")
-        bbPlan("1.0.2", "afronding")
+        linked(block, bb("1.0.2"))
+        whenever(pathResolver.resolvePath(bb("1.0.0"), bb("1.0.2")))
+            .thenReturn(listOf(step("herinspectie", bb("1.0.1")), step("afronding", bb("1.0.2"))))
 
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
-        verify(processVersionChecker).assertProcessOnVersion(blockDocumentId, BuildingBlockDefinitionId.of(bbKey, "1.0.1"))
-        verify(processVersionChecker).assertProcessOnVersion(blockDocumentId, BuildingBlockDefinitionId.of(bbKey, "1.0.2"))
+        verify(processVersionChecker).assertProcessOnVersion(blockDocumentId, bb("1.0.1"))
+        verify(processVersionChecker).assertProcessOnVersion(blockDocumentId, bb("1.0.2"))
     }
 
     @Test
     fun `should fail the migration when a plan left the process on the version it came from`() {
         val block = block("1.0.0")
         caseOwns(block)
-        linked(block, "1.0.1")
-        whenever(pathResolver.resolvePath(bbKey, Semver("1.0.0"), Semver("1.0.1")))
-            .thenReturn(listOf(Semver("1.0.1")))
-        bbPlan("1.0.1", "herinspectie")
-        whenever(
-            processVersionChecker.assertProcessOnVersion(
-                blockDocumentId, BuildingBlockDefinitionId.of(bbKey, "1.0.1")
-            )
-        ).thenThrow(IllegalStateException("its process is still running the old definition"))
+        linked(block, bb("1.0.1"))
+        whenever(pathResolver.resolvePath(bb("1.0.0"), bb("1.0.1")))
+            .thenReturn(listOf(step("herinspectie", bb("1.0.1"))))
+        whenever(processVersionChecker.assertProcessOnVersion(blockDocumentId, bb("1.0.1")))
+            .thenThrow(IllegalStateException("its process is still running the old definition"))
 
         assertThatThrownBy { executor.execute(casePlanId, caseDefinitionId, caseDocumentId) }
             .isInstanceOf(IllegalStateException::class.java)
@@ -191,7 +181,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
     fun `should leave a block alone when the target case version links the same version it is on`() {
         val block = block("1.0.1")
         caseOwns(block)
-        linked(block, "1.0.1")
+        linked(block, bb("1.0.1"))
 
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
@@ -202,7 +192,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
     fun `should leave a block alone when the target case version no longer links it`() {
         val block = block("1.0.1")
         caseOwns(block)
-        whenever(linkedVersionResolver.resolveTargetVersion(caseDefinitionId, block)).thenReturn(null)
+        whenever(linkedVersionResolver.resolveTarget(caseDefinitionId, block)).thenReturn(null)
 
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
@@ -213,7 +203,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
     fun `should never downgrade a block whose linked version is older than the one it is on`() {
         val block = block("2.0.0")
         caseOwns(block)
-        linked(block, "1.0.1")
+        linked(block, bb("1.0.1"))
 
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
@@ -221,16 +211,47 @@ class BuildingBlockVersionAlignmentExecutorTest {
     }
 
     @Test
-    fun `should fail the migration when a block has no upgrade path`() {
+    fun `should not treat a lower version of another building block key as a downgrade`() {
+        // Versions of different building blocks are not comparable, so the plans decide — not the
+        // numbers. 1.0.0 of another block is a perfectly good destination for 2.0.0 of this one.
+        val block = block("2.0.0")
+        caseOwns(block)
+        val dossier = BuildingBlockDefinitionId.of("inspectie-dossier", "1.0.0")
+        linked(block, dossier)
+        val crossKey = step("dossier-uit-fotos", dossier)
+        whenever(pathResolver.resolvePath(bb("2.0.0"), dossier)).thenReturn(listOf(crossKey))
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        verify(planApplier).apply(crossKey.planId, dossier, blockDocumentId)
+    }
+
+    @Test
+    fun `should fail the migration when no chain of plans reaches the linked version`() {
         val block = block("1.0.0")
         caseOwns(block)
-        linked(block, "3.0.0")
-        whenever(pathResolver.resolvePath(bbKey, Semver("1.0.0"), Semver("3.0.0")))
-            .thenThrow(IllegalStateException("no upgrade path"))
+        linked(block, bb("3.0.0"))
+        whenever(pathResolver.resolvePath(bb("1.0.0"), bb("3.0.0")))
+            .thenThrow(IllegalStateException("No migration plan connects building block version"))
 
         assertThatThrownBy { executor.execute(casePlanId, caseDefinitionId, caseDocumentId) }
             .isInstanceOf(IllegalStateException::class.java)
-            .hasMessageContaining("no upgrade path")
+            .hasMessageContaining("No migration plan connects building block version")
+        verify(planApplier, never()).apply(any(), any(), any())
+    }
+
+    @Test
+    fun `should fail the migration when more than one chain of plans reaches the linked version`() {
+        val block = block("1.0.0")
+        caseOwns(block)
+        linked(block, bb("1.0.2"))
+        whenever(pathResolver.resolvePath(bb("1.0.0"), bb("1.0.2")))
+            .thenThrow(IllegalStateException("more than one chain of migration plans"))
+
+        assertThatThrownBy { executor.execute(casePlanId, caseDefinitionId, caseDocumentId) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("more than one chain of migration plans")
+        verify(planApplier, never()).apply(any(), any(), any())
     }
 
     @Test
@@ -247,57 +268,29 @@ class BuildingBlockVersionAlignmentExecutorTest {
                 name = "photo-upload",
             ),
         )
-        val parentTarget = BuildingBlockDefinitionId.of(bbKey, "2.0.0")
-        whenever(ownershipResolver.directChildrenOf(blockDocumentId)).thenReturn(listOf(child))
-        whenever(linkedVersionResolver.resolveTargetVersion(parentTarget, child)).thenReturn(Semver("1.0.1"))
-        whenever(pathResolver.resolvePath("photo-upload", Semver("1.0.0"), Semver("1.0.1")))
-            .thenReturn(listOf(Semver("1.0.1")))
+        val parentTarget = bb("2.0.0")
         val childTarget = BuildingBlockDefinitionId.of("photo-upload", "1.0.1")
-        val childPlan = CaseDefinitionMigration(BlueprintMigrationId.from(childTarget, "photo-controle"))
-        whenever(
-            migrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
-                BlueprintType.BUILDING_BLOCK, "photo-upload", Semver("1.0.1")
-            )
-        ).thenReturn(listOf(childPlan))
+        whenever(ownershipResolver.directChildrenOf(blockDocumentId)).thenReturn(listOf(child))
+        whenever(linkedVersionResolver.resolveTarget(parentTarget, child)).thenReturn(childTarget)
+        val childStep = step("photo-controle", childTarget)
+        whenever(pathResolver.resolvePath(BuildingBlockDefinitionId.of("photo-upload", "1.0.0"), childTarget))
+            .thenReturn(listOf(childStep))
 
         executor.execute(BlueprintMigrationId.from(parentTarget, "plan"), parentTarget, blockDocumentId)
 
-        verify(planApplier).apply(childPlan.id, childTarget, childDocumentId)
+        verify(planApplier).apply(childStep.planId, childTarget, childDocumentId)
         verify(processVersionChecker).assertProcessOnVersion(childDocumentId, childTarget)
-    }
-
-    @Test
-    fun `should apply every plan on a version in key order when there is more than one`() {
-        val block = block("1.0.0")
-        caseOwns(block)
-        linked(block, "1.0.1")
-        whenever(pathResolver.resolvePath(bbKey, Semver("1.0.0"), Semver("1.0.1")))
-            .thenReturn(listOf(Semver("1.0.1")))
-        val stepTarget = BuildingBlockDefinitionId.of(bbKey, "1.0.1")
-        val zebra = CaseDefinitionMigration(BlueprintMigrationId.from(stepTarget, "zebra"))
-        val alpha = CaseDefinitionMigration(BlueprintMigrationId.from(stepTarget, "alpha"))
-        whenever(
-            migrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
-                BlueprintType.BUILDING_BLOCK, bbKey, Semver("1.0.1")
-            )
-        ).thenReturn(listOf(zebra, alpha))
-
-        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
-
-        val applied = argumentCaptorOfAppliedKeys()
-        assertThat(applied).containsExactly("alpha", "zebra")
-    }
-
-    private fun argumentCaptorOfAppliedKeys(): List<String> {
-        val captor = argumentCaptor<BlueprintMigrationId>()
-        verify(planApplier, times(2)).apply(captor.capture(), any(), eq(blockDocumentId))
-        return captor.allValues.map { it.migrationKey }
     }
 
     private fun verifyNothingMigrated() {
         verify(planApplier, never()).apply(any(), any(), any())
         verify(processVersionChecker, never()).assertProcessOnVersion(any(), any())
     }
+
+    private fun bb(versionTag: String) = BuildingBlockDefinitionId.of(bbKey, versionTag)
+
+    private fun step(migrationKey: String, target: BuildingBlockDefinitionId) =
+        MigrationStep(BlueprintMigrationId.from(target, migrationKey), target)
 
     private fun block(versionTag: String) = BuildingBlockInstance(
         documentId = blockDocumentId,
@@ -312,19 +305,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
         whenever(ownershipResolver.directChildrenOf(caseDocumentId)).thenReturn(listOf(block))
     }
 
-    private fun linked(block: BuildingBlockInstance, versionTag: String) {
-        whenever(linkedVersionResolver.resolveTargetVersion(caseDefinitionId, block))
-            .thenReturn(Semver(versionTag))
-    }
-
-    private fun bbPlan(versionTag: String, migrationKey: String): CaseDefinitionMigration {
-        val stepTarget = BuildingBlockDefinitionId.of(bbKey, versionTag)
-        val plan = CaseDefinitionMigration(BlueprintMigrationId.from(stepTarget, migrationKey))
-        whenever(
-            migrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
-                BlueprintType.BUILDING_BLOCK, bbKey, Semver(versionTag)
-            )
-        ).thenReturn(listOf(plan))
-        return plan
+    private fun linked(block: BuildingBlockInstance, target: BuildingBlockDefinitionId) {
+        whenever(linkedVersionResolver.resolveTarget(caseDefinitionId, block)).thenReturn(target)
     }
 }

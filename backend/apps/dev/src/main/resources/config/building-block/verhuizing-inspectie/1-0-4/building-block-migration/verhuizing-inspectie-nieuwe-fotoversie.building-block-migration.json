@@ -1,6 +1,10 @@
 {
     "title": "Nieuwe versie van het fotoblok aanroepen",
     "key": "verhuizing-inspectie-nieuwe-fotoversie",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.3"
+    },
     "processMigration": [
         {
             "sourceProcessDefinitionKey": "verhuizing-inspectie-process",

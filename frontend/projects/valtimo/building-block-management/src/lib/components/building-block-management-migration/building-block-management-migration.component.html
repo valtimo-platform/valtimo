@@ -31,12 +31,6 @@
       <button
         cdsButton="primary"
         [attr.data-test-id]="testIds.addButton"
-        [disabled]="!(canAddPlan$ | async)"
-        [title]="
-          (canAddPlan$ | async)
-            ? null
-            : ('buildingBlockManagement.migration.addPlanDisabledHint' | translate)
-        "
         (click)="onAddPlan()"
       >
         {{ 'buildingBlockManagement.migration.addPlan' | translate }}
