@@ -19,6 +19,7 @@ package com.ritense.widget.domain
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.divider.DividerWidget
 import com.ritense.widget.web.rest.dto.WidgetDto
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
@@ -83,7 +84,8 @@ abstract class Widget(
 ) {
 
     init {
-        require(title.isNotBlank()) { "title was blank!" }
+        // a divider widget can be configured without a title
+        require(this is DividerWidget || title.isNotBlank()) { "title was blank!" }
         require(order >= 0) { "order was < 0" }
     }
 
