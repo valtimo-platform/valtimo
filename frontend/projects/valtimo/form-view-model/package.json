@@ -7,7 +7,7 @@
     "@angular/core": "19.2.25"
   },
   "dependencies": {
-    "@formio/angular": "10.0.1",
-    "@formio/js": "5.3.2"
+    "@formio/angular": "11.0.5",
+    "@formio/js": "5.5.0"
   }
 }
