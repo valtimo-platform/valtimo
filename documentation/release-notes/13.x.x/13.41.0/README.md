@@ -31,6 +31,12 @@
   could not be edited, leaving the Duplicate button disabled. The dialog now pre-populates the divider key 
   with a unique default value and allows it to be edited before duplicating.
   
+* **A form flow of a user task now loads completely when another user task is opened**
+
+  When a process has multiple user tasks that are linked to a form flow, opening the next user task
+  showed an empty or half rendered form until the tab was switched or the page was refreshed. The
+  form flow now reloads its step whenever another form flow instance is opened.
+
 * **Breadcrumbs of a DMN decision table no longer stay behind on other screens**
 
   After opening a decision table of a case and then navigating to another screen through the menu, the
