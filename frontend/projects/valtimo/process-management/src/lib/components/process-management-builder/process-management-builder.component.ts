@@ -1,19 +1,17 @@
 /*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- *  * Copyright 2015-2026 Ritense BV, the Netherlands.
- *  *
- *  * Licensed under EUPL, Version 1.2 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" basis,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {CommonModule} from '@angular/common';
@@ -1010,8 +1008,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       const badges = this.buildActivityMarkerBadges(info, elementId);
       if (badges) {
         try {
+          const element = elementRegistry.get(elementId);
+          const position = this.calculateMarkerPosition(element);
           overlays.add(elementId, 'activity-marker', {
-            position: {top: -12, right: 12},
+            position,
             html: badges,
           });
         } catch (e) {
@@ -1019,6 +1019,40 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         }
       }
     }
+  }
+
+  private calculateMarkerPosition(element: any): {top: number; left?: number; right?: number} {
+    if (element?.waypoints?.length > 1) {
+      const waypoints = element.waypoints;
+      const lastPoint = waypoints[waypoints.length - 1];
+      const secondLastPoint = waypoints[waypoints.length - 2];
+
+      // Compute bounding box from waypoints (same as diagram-js getBBox)
+      const minX = Math.min(...waypoints.map((wp: any) => wp.x));
+      const minY = Math.min(...waypoints.map((wp: any) => wp.y));
+
+      // Direction of the final segment
+      const dx = lastPoint.x - secondLastPoint.x;
+      const dy = lastPoint.y - secondLastPoint.y;
+      const len = Math.sqrt(dx * dx + dy * dy);
+
+      // Offset back from arrow tip along the line
+      const backOffset = 30;
+      const backX = len > 0 ? (-dx / len) * backOffset : 0;
+      const backY = len > 0 ? (-dy / len) * backOffset : 0;
+
+      // Perpendicular offset: above for horizontal lines, right for vertical lines
+      const perpOffset = 20;
+      const isMoreHorizontal = Math.abs(dx) > Math.abs(dy);
+      const perpX = isMoreHorizontal ? 0 : perpOffset;
+      const perpY = isMoreHorizontal ? -perpOffset : 0;
+
+      return {
+        top: lastPoint.y - minY + backY + perpY - 11,
+        left: lastPoint.x - minX + backX + perpX - 11,
+      };
+    }
+    return {top: -12, right: 12};
   }
 
   private buildActivityMarkerBadges(info: ActivityMarkerInfo, elementId: string): HTMLElement | null {
