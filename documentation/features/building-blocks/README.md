@@ -181,6 +181,74 @@ Ad-hoc start requires the building block's main process to have a start form pro
 [Start form](#start-form) below.
 {% endhint %}
 
+## Send a message to a case
+
+A message sent with the `correlationService` methods below reaches **every** running process of a case: the case's own
+processes and all of its building blocks, including nested ones. Use it to let a building block react to something that
+happens elsewhere in the case, or to let building blocks signal each other.
+
+A regular message correlation is matched on a single business key, and a building block runs under its own document id
+— so a message aimed at the case business key never arrives at its building blocks. See
+[correlating messages](../process/correlation-service.md) for the other correlation methods.
+
+### Deliver to a waiting message catch event
+
+Model an intermediate throw event (or any service task) in a case process, an ad-hoc process or a building block
+process, and use the expression:
+
+```
+${correlationService.sendCatchEventMessageToCase("income-verified", execution)}
+```
+
+The case is derived from the sending process. This also works from within a building block, so a building block can
+message its sibling building blocks and the case processes.
+
+Variables can be passed as alternating name/value pairs, or as a map:
+
+```
+${correlationService.sendCatchEventMessageToCase("income-verified", execution, "income", 42000)}
+```
+
+To message a **different** case — a related case, for example — pass its document id instead of the execution:
+
+```
+${correlationService.sendCatchEventMessageToCase("income-verified", relatedCaseId)}
+```
+
+The value has to be a document id. A building block document id is accepted too and is resolved to the case that owns
+it.
+
+### Start a building block by message
+
+A building block whose main process starts with a **message start event** can be started for a case:
+
+```
+${correlationService.sendStartMessageToCase("case-notification", execution)}
+```
+
+Every building block that is linked to the case definition (see
+[Linking building blocks to a case](#linking-building-blocks-to-a-case)) and whose main process declares a message start
+event with that name is started, in the version the link pins. The new instance is bootstrapped exactly like an ad-hoc
+start: it gets its own document, the link's `inputMappings` are applied, and its `outputMappings` are synced back to the
+case when the configured `syncTiming` fires.
+
+{% hint style="info" %}
+Message payload and document content are separate things. Variables passed along with the message end up as **process
+variables** on the started instance; the content of the new building block document comes from the link's
+`inputMappings`.
+{% endhint %}
+
+### Modelling guidance
+
+* **Use a distinct message name per intent.** Delivery is a fan-out: every subscribed process instance of the case
+  receives the message. Do not reuse a name across unrelated flows, and do not use the same name for a catch event and
+  a start event.
+* **Start building blocks with `sendStartMessageToCase`, not with a plain message start correlation.** A plain start
+  correlation always picks the latest deployed version of a process, while a case is linked to a specific building
+  block version — it would run the wrong version.
+* **Nothing listening is not an error.** When no process of the case is waiting for the message, nothing happens: a
+  warning is logged and the sending process simply continues.
+
 ## Import and export building blocks
 
 Building blocks are automatically included in case definition exports. You can also export or import a building block
