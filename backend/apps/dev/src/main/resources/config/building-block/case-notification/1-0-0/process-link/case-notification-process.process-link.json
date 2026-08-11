@@ -1,0 +1,8 @@
+[
+    {
+        "activityId": "AcknowledgeNotificationTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "case-notification-acknowledge"
+    }
+]
