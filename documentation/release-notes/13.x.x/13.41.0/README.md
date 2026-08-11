@@ -28,6 +28,11 @@
 
 ## Bugfixes
 
+* **Processes keep their concept status after an import**
+
+  On the *Processen* tab of an imported dossier, every process came back as a normal process, even when it
+  was still a concept in the dossier that was exported. Concepts now stay concepts.
+
 * **Actions now respect the linked building block version**
 
   Starting a building block from the actions of a case now always runs the version of that building block

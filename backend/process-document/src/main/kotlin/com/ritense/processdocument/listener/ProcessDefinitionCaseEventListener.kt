@@ -83,7 +83,8 @@ class ProcessDefinitionCaseEventListener(
                 caseDefinitionId = event.caseDefinitionId,
             )
         }
-        processService.getDeployedDefinitions(event.caseDefinitionId).forEach { definition ->
+        // all definitions, not just the active ones: a process saved as a draft is suspended and would be left behind
+        processService.getAllDefinitions(event.caseDefinitionId).forEach { definition ->
             processService.deleteProcessDefinition(definition.id)
         }
     }

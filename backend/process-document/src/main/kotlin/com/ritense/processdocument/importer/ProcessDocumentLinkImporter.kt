@@ -102,6 +102,9 @@ class ProcessDocumentLinkImporter(
                 }
                 processDefinitionCaseDefinitionService.createProcessDocumentDefinition(request)
             }
+
+            // deploying a process definition always activates it, so the draft state has to be restored
+            processService.setProcessDefinitionDraft(processDefinition.id, item.draft())
         }
     }
 

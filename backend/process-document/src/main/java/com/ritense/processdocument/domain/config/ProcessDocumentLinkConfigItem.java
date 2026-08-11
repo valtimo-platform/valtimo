@@ -16,6 +16,7 @@
 
 package com.ritense.processdocument.domain.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition;
 import com.ritense.processdocument.domain.ProcessDocumentDefinition;
 
@@ -23,6 +24,8 @@ public class ProcessDocumentLinkConfigItem {
     private String processDefinitionKey;
     private Boolean canInitializeDocument;
     private Boolean startableByUser;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean draft;
 
     public ProcessDocumentLinkConfigItem() {
         //Default constructor
@@ -63,6 +66,21 @@ public class ProcessDocumentLinkConfigItem {
         this.startableByUser = startableByUser;
     }
 
+    public Boolean getDraft() {
+        return draft;
+    }
+
+    /**
+     * The default is false
+     */
+    public boolean draft() {
+        return Boolean.TRUE.equals(draft);
+    }
+
+    public void setDraft(Boolean draft) {
+        this.draft = draft;
+    }
+
     public boolean equalsProcessDocumentDefinition(ProcessDocumentDefinition processDocumentDefinition) {
         return processDocumentDefinition.processDocumentDefinitionId().processDefinitionKey().toString().equals(getProcessDefinitionKey())
                 && processDocumentDefinition.startableByUser() == isStartableByUser()
@@ -82,6 +100,7 @@ public class ProcessDocumentLinkConfigItem {
                 "processDefinitionKey='" + processDefinitionKey + '\'' +
                 ", canInitializeDocument=" + canInitializeDocument +
                 ", startableByUser=" + startableByUser +
+                ", draft=" + draft +
                 '}';
     }
 }

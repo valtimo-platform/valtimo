@@ -533,6 +533,25 @@ public class OperatonProcessService {
         });
     }
 
+    /**
+     * A process definition that is saved as a draft is kept suspended, so it cannot be started. The draft
+     * state lives only in the suspension state of the deployed definition, not in the BPMN itself, which is
+     * why it has to be applied separately whenever a definition is (re)deployed.
+     */
+    @Transactional
+    public void setProcessDefinitionDraft(String processDefinitionId, boolean draft) {
+        denyAuthorization();
+
+        AuthorizationContext.runWithoutAuthorization(() -> {
+            if (draft) {
+                repositoryService.suspendProcessDefinitionById(processDefinitionId);
+            } else {
+                repositoryService.activateProcessDefinitionById(processDefinitionId);
+            }
+            return null;
+        });
+    }
+
     @Transactional
     public void deleteProcessDefinition(String processDefinitionId) {
         denyAuthorization();

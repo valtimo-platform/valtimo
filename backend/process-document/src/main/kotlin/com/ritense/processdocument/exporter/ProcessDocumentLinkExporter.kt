@@ -51,6 +51,8 @@ class ProcessDocumentLinkExporter(
                 this.processDefinitionKey = processDefinitionWithConfig.second.key
                 this.startableByUser = processDefinitionWithConfig.first.startableByUser
                 this.canInitializeDocument = processDefinitionWithConfig.first.canInitializeDocument
+                // only written for drafts, so exports of case definitions without drafts stay unchanged
+                this.draft = processDefinitionWithConfig.second.isSuspended().takeIf { it }
             }
         }
 
