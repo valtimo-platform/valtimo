@@ -144,6 +144,16 @@ interface ExternalPluginDefinition {
   currentGzacVersion: string | null;
   compatible: boolean;
   logoUrl: string | null;
+  /**
+   * Package content hash pinned when the plugin was discovered, and — when the host started
+   * serving different bytes under the same pluginId@version — the hash it serves now. While
+   * `requiresReacceptance` is true the backend withholds configuration pushes, tokens and
+   * invocations; an admin confirms the reviewed `pendingContentHash` via
+   * `POST /definition/{id}/accept-content` to resume.
+   */
+  contentHash: string | null;
+  pendingContentHash: string | null;
+  requiresReacceptance: boolean;
 }
 
 /** The subset of compatibility fields needed to render a warning message. */
@@ -158,6 +168,8 @@ interface ExternalPluginConfiguration {
   definitionId: string;
   title: string;
   createdAt: string;
+  /** Revocation counter — bumped by `POST /configuration/{id}/revoke-tokens`. */
+  tokenGeneration: number;
 }
 
 /** Response of the downscoped user-token mint endpoint (`.../configuration/{id}/user-token`). */

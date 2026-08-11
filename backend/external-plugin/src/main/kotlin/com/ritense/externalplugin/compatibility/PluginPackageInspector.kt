@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.compatibility
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
@@ -43,6 +44,21 @@ data class PluginCompatibilityRange(
 class PluginPackageInspector(
     private val objectMapper: ObjectMapper,
 ) {
+
+    /**
+     * The package's full parsed `manifest.json`, or null when it is absent or unreadable. Used by
+     * the upload endpoint's overwrite flow to show the package's requested permissions for
+     * re-review and to reset grants to the newly declared sets after a confirmed overwrite.
+     */
+    fun readManifest(zipBytes: ByteArray): JsonNode? {
+        val manifestBytes = readManifestBytes(zipBytes) ?: return null
+        return try {
+            objectMapper.readTree(manifestBytes)
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to parse manifest.json from uploaded plugin package" }
+            null
+        }
+    }
 
     fun readCompatibilityRange(zipBytes: ByteArray): PluginCompatibilityRange? {
         val manifestBytes = readManifestBytes(zipBytes) ?: return null

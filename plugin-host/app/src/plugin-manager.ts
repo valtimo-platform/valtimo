@@ -19,6 +19,7 @@ import createPlugin from "@extism/extism";
 import {mkdir, readdir, readFile, rm, writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {existsSync} from "node:fs";
+import {createHash} from "node:crypto";
 import type {HostLogger, PluginConfiguration, PluginManifest} from "./models/index.js";
 import {createGzacApiHostFunction, type GzacApiCallContext} from "./host-functions/gzac-api.js";
 import type {KvRepository} from "./db/kv-repository.js";
@@ -31,6 +32,8 @@ interface LoadedPlugin {
   pluginId: string;
   version: string;
   manifest: PluginManifest;
+  /** Package content hash (see {@link computeContentHash}) — GZAC pins this at discovery. */
+  contentHash: string;
   wasmPath: string;
   extismPlugin: ExtismPlugin | null;
   /**
@@ -76,6 +79,40 @@ const DEFAULT_INSTANCE_IDLE_TTL_MS = 10 * 60 * 1000;
 /** Extism cancels a timed-out call with "EXTISM: call canceled due to timeout". */
 function isWasmTimeoutError(err: unknown): boolean {
   return err instanceof Error && /canceled due to timeout/i.test(err.message);
+}
+
+/**
+ * Computes the package content hash: SHA-256 over every file in the plugin version directory
+ * (manifest.json, plugin.wasm, the logo, frontend/**), each record bound to its relative path and
+ * byte length so files cannot be renamed or shuffled without changing the hash. GZAC pins this
+ * value at discovery and flags the definition for re-acceptance when it changes — the on-disk
+ * package is tamper-evident even though the host itself is only semi-trusted.
+ *
+ * Exported so the upload route can hash an extracted-but-not-yet-stored package and tell an
+ * identical re-upload apart from one with different content.
+ */
+export async function computeContentHash(pluginDir: string): Promise<string> {
+  const files: string[] = [];
+  const walk = async (dir: string, prefix: string): Promise<void> => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        await walk(join(dir, entry.name), rel);
+      } else if (entry.isFile()) {
+        files.push(rel);
+      }
+    }
+  };
+  await walk(pluginDir, "");
+  files.sort();
+
+  const hash = createHash("sha256");
+  for (const rel of files) {
+    const content = await readFile(join(pluginDir, rel));
+    hash.update(`${rel}\0${content.length}\0`);
+    hash.update(content);
+  }
+  return `sha256:${hash.digest("hex")}`;
 }
 
 /**
@@ -159,6 +196,8 @@ export class PluginManager {
       );
     }
 
+    const contentHash = await computeContentHash(pluginDir);
+
     const k = this.key(pluginId, version);
 
     // If already loaded, unload first (hot-reload)
@@ -171,13 +210,14 @@ export class PluginManager {
       pluginId,
       version,
       manifest,
+      contentHash,
       wasmPath,
       extismPlugin: null,
       lock: Promise.resolve(),
       lastUsedAt: Date.now(),
     });
 
-    this.logger.info({ pluginId, version }, "Plugin loaded");
+    this.logger.info({ pluginId, version, contentHash }, "Plugin loaded");
   }
 
   /**
@@ -648,16 +688,35 @@ export class PluginManager {
   }
 
   /**
+   * Get the package content hash for a loaded plugin.
+   */
+  getContentHash(pluginId: string, version: string): string | null {
+    const k = this.key(pluginId, version);
+    return this.plugins.get(k)?.contentHash ?? null;
+  }
+
+  /**
+   * Whether this plugin version exists — loaded in memory or present on disk. Used by the upload
+   * route to make versions immutable: a version that ever existed cannot be silently replaced.
+   */
+  hasVersion(pluginId: string, version: string): boolean {
+    if (this.plugins.has(this.key(pluginId, version))) return true;
+    return existsSync(join(this.storageDir, pluginId, version, "manifest.json"));
+  }
+
+  /**
    * List all loaded plugins.
    */
   listPlugins(): Array<{
     pluginId: string;
     version: string;
+    contentHash: string;
     manifest: PluginManifest;
   }> {
     return Array.from(this.plugins.values()).map((p) => ({
       pluginId: p.pluginId,
       version: p.version,
+      contentHash: p.contentHash,
       manifest: p.manifest,
     }));
   }
@@ -667,10 +726,10 @@ export class PluginManager {
    */
   listVersions(
     pluginId: string
-  ): Array<{ version: string; manifest: PluginManifest }> {
+  ): Array<{ version: string; contentHash: string; manifest: PluginManifest }> {
     return Array.from(this.plugins.values())
       .filter((p) => p.pluginId === pluginId)
-      .map((p) => ({ version: p.version, manifest: p.manifest }));
+      .map((p) => ({ version: p.version, contentHash: p.contentHash, manifest: p.manifest }));
   }
 
   /**

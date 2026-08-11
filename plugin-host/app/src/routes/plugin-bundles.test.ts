@@ -66,6 +66,21 @@ describe("plugin-bundles routes", () => {
       expect(res.body).toContain("console.log('bundle')");
     });
 
+    it("serves every bundle with a strict anti-exfiltration CSP", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: `/plugins/${PLUGIN}/${VERSION}/bundles/case-tab.bundle.js`,
+      });
+      const csp = res.headers["content-security-policy"] as string;
+      expect(csp).toContain("default-src 'none'");
+      expect(csp).toContain("script-src 'self'");
+      expect(csp).toContain("connect-src 'self'");
+      expect(csp).toContain("form-action 'self'");
+      expect(csp).toContain("sandbox allow-scripts allow-forms");
+      expect(res.headers["x-content-type-options"]).toBe("nosniff");
+      expect(res.headers["referrer-policy"]).toBe("no-referrer");
+    });
+
     it("blocks a path-traversal attempt with 403", async () => {
       // %2e%2e%2f decodes to ../ — an attempt to escape the frontend/ directory to reach secret.txt.
       const res = await app.inject({
@@ -99,6 +114,9 @@ describe("plugin-bundles routes", () => {
       expect(res.statusCode).toBe(200);
       expect(res.headers["content-type"]).toBe("image/svg+xml");
       expect(res.headers["access-control-allow-origin"]).toBe("*");
+      // Plugin-authored content: same CSP as the bundles (an SVG can carry script).
+      expect(res.headers["content-security-policy"]).toContain("script-src 'self'");
+      expect(res.headers["x-content-type-options"]).toBe("nosniff");
     });
 
     it("returns 404 when the manifest declares no logo", async () => {

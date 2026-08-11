@@ -76,6 +76,7 @@ class ExternalPluginServiceTaskStartListener(
         val configuration = configurationService.get(configurationId)
         val definition = definitionService.get(configuration.definitionId)
         validateResolvedDefinition(processLink, definition)
+        requireAcceptedContent(definition, processLink)
         val host = hostService.get(definition.hostId)
         val hostSecret = hostService.decryptedSecret(host)
 
@@ -314,6 +315,21 @@ class ExternalPluginServiceTaskStartListener(
      * plugin's real error code and message. See [ExternalPluginActionFailedException] for why this
      * is a plain exception and not a BpmnError.
      */
+    /**
+     * A definition whose host package changed after acceptance must not be invoked: what would run
+     * is not what the admin accepted. Fails the invocation (surfacing as a process incident) until
+     * an admin re-accepts the new content.
+     */
+    private fun requireAcceptedContent(definition: ExternalPluginDefinition, processLink: ExternalPluginProcessLink) {
+        if (definition.requiresReacceptance) {
+            val message = "External plugin '${definition.pluginId}@${definition.version}' action " +
+                "'${processLink.actionKey}' was not invoked: the plugin package changed on its host " +
+                "and awaits re-acceptance by an administrator"
+            logger.warn { message }
+            throw ExternalPluginActionFailedException(CONTENT_CHANGED_ERROR_CODE, message)
+        }
+    }
+
     private fun actionFailed(
         response: ExternalPluginHostClient.ActionResponse,
         definition: ExternalPluginDefinition,
@@ -332,6 +348,9 @@ class ExternalPluginServiceTaskStartListener(
     }
 
     companion object {
+        /** Error code raised when an invocation is blocked pending content re-acceptance. */
+        const val CONTENT_CHANGED_ERROR_CODE = "EXTERNAL_PLUGIN_CONTENT_CHANGED"
+
         private val logger = KotlinLogging.logger {}
     }
 }

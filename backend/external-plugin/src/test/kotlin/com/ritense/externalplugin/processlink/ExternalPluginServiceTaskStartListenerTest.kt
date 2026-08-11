@@ -149,6 +149,25 @@ class ExternalPluginServiceTaskStartListenerTest {
     }
 
     @Test
+    fun `refuses to invoke a plugin whose changed content awaits re-acceptance`() {
+        val changedDefinition = mock<ExternalPluginDefinition> {
+            on { this.hostId } doReturn hostId
+            on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.1.0"
+            on { requiresReacceptance } doReturn true
+        }
+        whenever(definitionService.get(definitionId)).thenReturn(changedDefinition)
+
+        val thrown = runCatching { listener.notify(globalProcessServiceTaskEvent()) }.exceptionOrNull()
+
+        assertThat(thrown).isInstanceOf(ExternalPluginActionFailedException::class.java)
+        assertThat((thrown as ExternalPluginActionFailedException).errorCode)
+            .isEqualTo(ExternalPluginServiceTaskStartListener.CONTENT_CHANGED_ERROR_CODE)
+        assertThat(thrown).hasMessageContaining("awaits re-acceptance")
+        verify(hostClient, never()).invokeAction(any(), any(), any(), any(), any(), any())
+    }
+
+    @Test
     fun `BUILDING_BLOCK reference resolves the configuration via the namespaced key`() {
         val resolver = mock<BuildingBlockPluginConfigurationResolver>()
         val listenerWithResolver = ExternalPluginServiceTaskStartListener(

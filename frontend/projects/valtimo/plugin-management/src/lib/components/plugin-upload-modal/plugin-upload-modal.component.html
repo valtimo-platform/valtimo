@@ -42,6 +42,11 @@
       >
       </cds-file-uploader>
     </div>
+
+    <cds-inline-notification
+      *ngIf="$uploadNotification() as uploadNotification"
+      [notificationObj]="uploadNotification"
+    ></cds-inline-notification>
   </section>
 
   <cds-modal-footer>
@@ -69,3 +74,36 @@
   (confirmEvent)="onConfirmIncompatibleUpload()"
   (cancelEvent)="onCancelIncompatibleUpload()"
 ></valtimo-confirmation-modal>
+
+<cds-modal *ngIf="$overwriteReview() as overwriteReview" [open]="true" size="md" valtimoCdsModal>
+  <cds-modal-header (closeSelect)="onCancelOverwrite()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'pluginManagement.upload.overwriteTitle' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <section cdsModalContent [cdsLayer]="1" class="plugin-upload-modal__overwrite-content">
+    <cds-inline-notification [notificationObj]="overwriteReview.warning"></cds-inline-notification>
+
+    <valtimo-plugin-external-permissions
+      [capabilities]="overwriteReview.capabilities"
+      [endpoints]="overwriteReview.endpoints"
+      [eventSubscriptions]="overwriteReview.eventSubscriptions"
+      (validEvent)="onOverwriteValidityChange($event)"
+    ></valtimo-plugin-external-permissions>
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="secondary" [disabled]="$uploading()" (click)="onCancelOverwrite()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="danger"
+      [disabled]="!$overwriteAcknowledged() || $uploading()"
+      (click)="onConfirmOverwrite()"
+    >
+      {{ 'pluginManagement.upload.overwriteConfirm' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

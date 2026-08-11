@@ -39,11 +39,27 @@ import {
   ListItem,
   LoadingModule,
   ModalModule,
+  NotificationContent,
+  NotificationModule,
 } from 'carbon-components-angular';
 import {ConfirmationModalModule, ValtimoCdsModalDirective} from '@valtimo/components';
-import {ExternalPluginHost, ExternalPluginService} from '@valtimo/plugin';
+import {ExternalPluginEndpoint, ExternalPluginHost, ExternalPluginService} from '@valtimo/plugin';
 import {BehaviorSubject} from 'rxjs';
 import {buildExternalPluginCompatibilityMessage} from '../../utils';
+import {PluginExternalPermissionsComponent} from '../plugin-external-permissions/plugin-external-permissions.component';
+
+/**
+ * State of the overwrite-review dialog: what the already-existing version is, the permissions the
+ * uploaded package requests (shown for re-review) and the pre-built warning notification.
+ */
+interface OverwriteReview {
+  pluginId: string;
+  version: string;
+  endpoints: Array<ExternalPluginEndpoint>;
+  eventSubscriptions: Array<string>;
+  capabilities: Array<string>;
+  warning: NotificationContent;
+}
 
 @Component({
   standalone: true,
@@ -61,8 +77,10 @@ import {buildExternalPluginCompatibilityMessage} from '../../utils';
     FileUploaderModule,
     LayerModule,
     LoadingModule,
+    NotificationModule,
     ValtimoCdsModalDirective,
     ConfirmationModalModule,
+    PluginExternalPermissionsComponent,
   ],
 })
 export class PluginUploadModalComponent implements OnChanges {
@@ -79,6 +97,18 @@ export class PluginUploadModalComponent implements OnChanges {
   // Drives the "upload anyway?" confirmation shown when the backend rejects an incompatible plugin.
   public readonly _compatibilityModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly $compatibilityWarning = signal<string>('');
+
+  // Inline notification for outcomes the modal handles itself: an identical package that is
+  // already on the host (info) or any other host rejection (error). These 409s are deliberately
+  // kept off the global error toast (X-Skip-Interceptor), so this notification is their only
+  // surface.
+  public readonly $uploadNotification = signal<NotificationContent | null>(null);
+
+  // Drives the overwrite-review dialog shown when the uploaded pluginId@version already exists
+  // with different content: the admin re-reviews the requested permissions and explicitly
+  // confirms before the version is overwritten.
+  public readonly $overwriteReview = signal<OverwriteReview | null>(null);
+  public readonly $overwriteAcknowledged = signal<boolean>(false);
 
   public readonly _fileForm = this._formBuilder.group({
     file: this._formBuilder.control(new Set<any>(), [Validators.required]),
@@ -118,7 +148,7 @@ export class PluginUploadModalComponent implements OnChanges {
     this.$selectedHostId.set(event?.item?.hostId ?? null);
   }
 
-  public onUpload(force = false): void {
+  public onUpload(force = false, overwrite = false): void {
     const hostId = this.$selectedHostId();
     const fileSet = this._fileForm.value.file;
     const file: File | undefined = fileSet?.values()?.next()?.value?.file;
@@ -126,8 +156,9 @@ export class PluginUploadModalComponent implements OnChanges {
     if (!hostId || !file) return;
 
     this.$uploading.set(true);
+    this.$uploadNotification.set(null);
 
-    this._externalPluginService.uploadPlugin(hostId, file, force).subscribe({
+    this._externalPluginService.uploadPlugin(hostId, file, force, overwrite).subscribe({
       next: () => {
         this.$uploading.set(false);
         this.uploadedEvent.emit();
@@ -140,9 +171,28 @@ export class PluginUploadModalComponent implements OnChanges {
             buildExternalPluginCompatibilityMessage(error.error, this._translateService)
           );
           this._compatibilityModalOpen$.next(true);
+        } else if (error.status === 409 && error.error?.code === 'PLUGIN_VERSION_EXISTS') {
+          this._handleVersionExists(error.error);
+        } else if (error.status === 409) {
+          this.$uploadNotification.set(this._buildUploadErrorNotification(error));
         }
       },
     });
+  }
+
+  public onConfirmOverwrite(): void {
+    this.$overwriteReview.set(null);
+    // Compatibility was already checked (or explicitly forced) on the attempt that produced the
+    // version-exists 409; force=true keeps the compatibility gate from prompting a second time.
+    this.onUpload(true, true);
+  }
+
+  public onCancelOverwrite(): void {
+    this.$overwriteReview.set(null);
+  }
+
+  public onOverwriteValidityChange(valid: boolean): void {
+    this.$overwriteAcknowledged.set(valid);
   }
 
   public onConfirmIncompatibleUpload(): void {
@@ -163,6 +213,93 @@ export class PluginUploadModalComponent implements OnChanges {
     this.closeEvent.emit();
     this.$selectedHostId.set(null);
     this.$fileSelected.set(false);
+    this.$uploadNotification.set(null);
+    this.$overwriteReview.set(null);
+    this.$overwriteAcknowledged.set(false);
     this._fileForm.reset({file: new Set()});
+  }
+
+  /**
+   * The uploaded pluginId@version already exists on the host. Identical content means there is
+   * nothing to overwrite — a friendly info suffices. Different (or undeterminable) content opens
+   * the overwrite-review dialog: the requested permissions from the enriched 409 body are shown
+   * for re-review and the admin must explicitly acknowledge them before the overwrite proceeds.
+   */
+  private _handleVersionExists(body: {
+    pluginId?: string;
+    version?: string;
+    currentContentHash?: string;
+    uploadedContentHash?: string;
+    requestedEndpoints?: Array<ExternalPluginEndpoint>;
+    requestedEventSubscriptions?: Array<string>;
+    requestedCapabilities?: Array<string>;
+  }): void {
+    const identical =
+      !!body.currentContentHash &&
+      !!body.uploadedContentHash &&
+      body.currentContentHash === body.uploadedContentHash;
+
+    if (identical) {
+      this.$uploadNotification.set({
+        type: 'info',
+        title: this._translateService.instant('pluginManagement.upload.identicalTitle'),
+        message: this._translateService.instant('pluginManagement.upload.identicalMessage'),
+        showClose: false,
+        lowContrast: true,
+      });
+      return;
+    }
+
+    this.$overwriteAcknowledged.set(false);
+    this.$overwriteReview.set({
+      pluginId: body.pluginId ?? '',
+      version: body.version ?? '',
+      endpoints: body.requestedEndpoints ?? [],
+      eventSubscriptions: body.requestedEventSubscriptions ?? [],
+      capabilities: body.requestedCapabilities ?? [],
+      warning: {
+        type: 'warning',
+        title: this._translateService.instant('pluginManagement.upload.overwriteWarningTitle'),
+        message: this._translateService.instant('pluginManagement.upload.overwriteWarning', {
+          pluginId: body.pluginId ?? '',
+          version: body.version ?? '',
+        }),
+        showClose: false,
+        lowContrast: true,
+      },
+    });
+  }
+
+  private _buildUploadErrorNotification(error: HttpErrorResponse): NotificationContent {
+    const hostBody = this._parseRelayedHostBody(error);
+    const message = [
+      this._translateService.instant('pluginManagement.upload.rejected'),
+      hostBody?.message ?? hostBody?.error ?? '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return {
+      type: 'error',
+      title: this._translateService.instant('pluginManagement.upload.failedTitle'),
+      message,
+      showClose: false,
+      lowContrast: true,
+    };
+  }
+
+  // The backend relays a host rejection as `{error, detail}` where `detail` holds the host's raw
+  // JSON body (e.g. `{code, error, message}`); non-JSON detail is shown as-is.
+  private _parseRelayedHostBody(
+    error: HttpErrorResponse
+  ): {code?: string; error?: string; message?: string} | null {
+    const detail = error.error?.detail;
+    if (typeof detail !== 'string' || detail.length === 0) return null;
+
+    try {
+      return JSON.parse(detail);
+    } catch {
+      return {message: detail};
+    }
   }
 }

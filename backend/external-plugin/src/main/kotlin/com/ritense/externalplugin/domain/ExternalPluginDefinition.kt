@@ -85,4 +85,24 @@ class ExternalPluginDefinition(
 
     @Column(name = "consecutive_misses", nullable = false)
     var consecutiveMisses: Int = 0,
-)
+
+    /**
+     * The package content hash (manifest + wasm + frontend bundles) pinned at discovery. What runs
+     * on the host is only trusted while it still matches this value.
+     */
+    @Column(name = "content_hash")
+    var contentHash: String? = null,
+
+    /**
+     * Set when discovery finds the host serving *different* content under this pluginId@version
+     * than what was pinned. While set, configuration pushes, plugin invocations and user-token
+     * minting are withheld until an admin explicitly re-accepts the new content.
+     */
+    @Column(name = "pending_content_hash")
+    var pendingContentHash: String? = null,
+) {
+
+    /** True when the host's package changed after acceptance and an admin has not re-accepted it. */
+    val requiresReacceptance: Boolean
+        get() = pendingContentHash != null
+}

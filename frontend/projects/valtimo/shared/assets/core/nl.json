@@ -2275,7 +2275,15 @@
     "upload": {
       "title": "Plugin-bundel",
       "buttonText": "Bestand kiezen",
-      "description": "Alleen .zip-bestanden worden geaccepteerd"
+      "description": "Alleen .zip-bestanden worden geaccepteerd",
+      "failedTitle": "Uploaden mislukt",
+      "rejected": "De plugin-host heeft de upload geweigerd.",
+      "identicalTitle": "Al up-to-date",
+      "identicalMessage": "Exact dit pakket staat al op de host — de inhoud is identiek, dus er valt niets te overschrijven.",
+      "overwriteTitle": "Bestaande pluginversie overschrijven?",
+      "overwriteWarningTitle": "Dit overschrijft de huidige pluginversie",
+      "overwriteWarning": "Versie {{version}} van '{{pluginId}}' bestaat al op de host met andere inhoud. Overschrijven kan tot onverwacht gedrag leiden voor configuraties en processen die deze versie al gebruiken. Omdat de inhoud verschilt: beoordeel hieronder de permissies die het geüploade pakket vraagt en bevestig om door te gaan — alle bestaande configuraties van deze versie worden opnieuw ingesteld op exact deze permissies.",
+      "overwriteConfirm": "Versie overschrijven"
     },
     "noDefinitions": "Geen plugin-definities gevonden.",
     "noHosts": "Geen plugin-hosts geconfigureerd.",

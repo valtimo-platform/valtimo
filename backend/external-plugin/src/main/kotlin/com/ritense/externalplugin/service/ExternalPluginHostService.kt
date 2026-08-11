@@ -173,7 +173,7 @@ class ExternalPluginHostService(
      * it is a single read.
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    fun uploadPlugin(hostId: UUID, fileName: String, fileBytes: ByteArray): JsonNode {
+    fun uploadPlugin(hostId: UUID, fileName: String, fileBytes: ByteArray, overwrite: Boolean = false): JsonNode {
         val host = get(hostId)
         // An app *is* its single plugin — it serves its own manifest and accepts no uploads. The UI
         // hides the upload affordance for apps; this is the server-side backstop.
@@ -181,7 +181,7 @@ class ExternalPluginHostService(
             "Host $hostId is an app and does not accept plugin uploads; it serves its own plugin."
         }
         val adminToken = decryptedSecret(host)
-        return hostClient.uploadPlugin(host.baseUrl, adminToken, fileName, fileBytes)
+        return hostClient.uploadPlugin(host.baseUrl, adminToken, fileName, fileBytes, overwrite)
     }
 
     companion object {

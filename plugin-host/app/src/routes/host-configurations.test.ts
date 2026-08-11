@@ -28,7 +28,10 @@ describe("host-configurations routes", () => {
     delete: ReturnType<typeof vi.fn>;
     list: ReturnType<typeof vi.fn>;
   };
-  let pluginManager: { getManifest: ReturnType<typeof vi.fn> };
+  let pluginManager: {
+    getManifest: ReturnType<typeof vi.fn>;
+    getContentHash: ReturnType<typeof vi.fn>;
+  };
   let eventConsumerManager: { sync: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
@@ -39,7 +42,10 @@ describe("host-configurations routes", () => {
       delete: vi.fn(async () => true),
       list: vi.fn(async () => []),
     };
-    pluginManager = { getManifest: vi.fn(() => ({ pluginId: "case-summary", version: "0.1.0" })) };
+    pluginManager = {
+      getManifest: vi.fn(() => ({ pluginId: "case-summary", version: "0.1.0" })),
+      getContentHash: vi.fn(() => "sha256:abc123"),
+    };
     eventConsumerManager = { sync: vi.fn(async () => {}) };
     app = await buildTestApp((a) =>
       hostConfigurationRoutes(a, {
@@ -124,6 +130,24 @@ describe("host-configurations routes", () => {
       const stored = configRegistry.set.mock.calls[0][1].eventBroker;
       expect(stored.queueMode).toBe("durable");
       expect(stored.queueTtlMs).toBe(60 * 60 * 1000);
+    });
+
+    it("accepts a push whose expectedContentHash matches the loaded package", async () => {
+      const res = await postConfig("cfg-1", validBody({ expectedContentHash: "sha256:abc123" }));
+      expect(res.statusCode).toBe(201);
+      expect(configRegistry.set).toHaveBeenCalled();
+    });
+
+    it("refuses a push with 409 when the package content no longer matches the pinned hash", async () => {
+      pluginManager.getContentHash.mockReturnValueOnce("sha256:tampered");
+      const res = await postConfig("cfg-1", validBody({ expectedContentHash: "sha256:abc123" }));
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toMatchObject({
+        expectedContentHash: "sha256:abc123",
+        actualContentHash: "sha256:tampered",
+      });
+      expect(configRegistry.set).not.toHaveBeenCalled();
+      expect(eventConsumerManager.sync).not.toHaveBeenCalled();
     });
 
     it("returns 400 when serviceToken is missing", async () => {

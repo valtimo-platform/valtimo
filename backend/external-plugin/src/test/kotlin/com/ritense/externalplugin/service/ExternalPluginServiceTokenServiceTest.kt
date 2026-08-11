@@ -33,11 +33,13 @@ class ExternalPluginServiceTokenServiceTest {
     private val keyProvider = ExternalPluginServiceTokenKeyProvider(secret)
 
     @Test
-    fun `defaults to a 24 hour token lifetime`() {
+    fun `defaults to a 10 minute token lifetime`() {
+        // Deliberately short: the discovery poll re-pushes a fresh token every ~60s, so a longer
+        // default would only extend how long a leaked token stays usable.
         val claims = issue(ExternalPluginServiceTokenService(keyProvider))
 
         assertThat(Duration.between(claims.issuedAt.toInstant(), claims.expiration.toInstant()))
-            .isEqualTo(Duration.ofHours(24))
+            .isEqualTo(Duration.ofMinutes(10))
     }
 
     @Test
@@ -50,17 +52,32 @@ class ExternalPluginServiceTokenServiceTest {
             .isEqualTo(ttl)
     }
 
-    private fun issue(service: ExternalPluginServiceTokenService): Claims =
+    @Test
+    fun `stamps the configuration's current token generation into the token`() {
+        val claims = issue(
+            ExternalPluginServiceTokenService(keyProvider),
+            configuration = configuration(tokenGeneration = 5),
+        )
+
+        val generation = claims[ExternalPluginServiceTokenService.TOKEN_GENERATION_CLAIM] as Number
+        assertThat(generation.toLong()).isEqualTo(5L)
+    }
+
+    private fun issue(
+        service: ExternalPluginServiceTokenService,
+        configuration: ExternalPluginConfiguration = configuration(),
+    ): Claims =
         Jwts.parser()
             .verifyWith(keyProvider.signingKey)
             .build()
-            .parseSignedClaims(service.issue(configuration(), definition()))
+            .parseSignedClaims(service.issue(configuration, definition()))
             .payload
 
-    private fun configuration() = ExternalPluginConfiguration(
+    private fun configuration(tokenGeneration: Long = 0) = ExternalPluginConfiguration(
         id = UUID.randomUUID(),
         definitionId = UUID.randomUUID(),
         title = "test",
+        tokenGeneration = tokenGeneration,
     )
 
     private fun definition() = ExternalPluginDefinition(

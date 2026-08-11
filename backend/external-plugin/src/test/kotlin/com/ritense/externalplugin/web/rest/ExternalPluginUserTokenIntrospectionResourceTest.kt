@@ -47,7 +47,7 @@ class ExternalPluginUserTokenIntrospectionResourceTest {
 
     @Test
     fun `returns the token's subject, configuration id and expiry for a user-token principal`() {
-        val issued = userTokenService.issue("john@example.com", listOf("ROLE_USER"), configurationId)
+        val issued = userTokenService.issue("john@example.com", listOf("ROLE_USER"), configurationId, 0)
         val principal = ExternalPluginUserPrincipal("john@example.com", listOf("ROLE_USER"), configurationId)
         // Mirrors ExternalPluginUserTokenAuthenticator: the raw JWT rides along as credentials.
         SecurityContextHolder.getContext().authentication =

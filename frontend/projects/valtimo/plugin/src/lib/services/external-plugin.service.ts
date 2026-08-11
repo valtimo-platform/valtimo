@@ -168,15 +168,17 @@ export class ExternalPluginService {
   }
 
   /**
-   * Uploads a plugin package to the host. When `force` is false the backend rejects a plugin that
-   * is incompatible with the running GZAC version with a 409 carrying the version details; the
-   * caller catches it to warn the operator and re-issues with `force=true` to proceed. The
-   * `X-Skip-Interceptor` header keeps that expected 409 from raising a global error toast.
+   * Uploads a plugin package to the host. Two expected 409s drive the upload UX (both kept off
+   * the global error toast by the `X-Skip-Interceptor` header): an incompatible plugin returns
+   * the version details and is retried with `force=true` after the operator confirms, and an
+   * already-existing pluginId@version returns `code=PLUGIN_VERSION_EXISTS` plus the package's
+   * requested permissions and is retried with `overwrite=true` after the operator re-reviews the
+   * permissions and confirms the overwrite.
    */
-  public uploadPlugin(hostId: string, file: File, force = false): Observable<unknown> {
+  public uploadPlugin(hostId: string, file: File, force = false, overwrite = false): Observable<unknown> {
     const formData = new FormData();
     formData.append('file', file, file.name);
-    const params = new HttpParams().set('force', force);
+    const params = new HttpParams().set('force', force).set('overwrite', overwrite);
     const headers = new HttpHeaders().set(InterceptorSkip, '409');
     return this._http.post(`${this._baseUrl}/host/${hostId}/upload`, formData, {headers, params});
   }

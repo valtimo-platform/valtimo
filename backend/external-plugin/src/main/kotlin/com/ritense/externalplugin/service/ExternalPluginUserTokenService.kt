@@ -45,7 +45,12 @@ class ExternalPluginUserTokenService(
     /** Hard cap: a downscoped user token is never longer-lived than [MAX_TTL]. */
     private val ttl: Duration = if (tokenTtl > MAX_TTL) MAX_TTL else tokenTtl
 
-    fun issue(userLogin: String, roles: List<String>, configurationId: UUID): IssuedUserToken {
+    fun issue(
+        userLogin: String,
+        roles: List<String>,
+        configurationId: UUID,
+        tokenGeneration: Long,
+    ): IssuedUserToken {
         require(userLogin.isNotBlank()) { "userLogin must not be blank" }
         val now = Instant.now()
         val expiresAt = now.plus(ttl)
@@ -55,6 +60,7 @@ class ExternalPluginUserTokenService(
             .claim(ExternalPluginUserTokenKeyProvider.TYPE_CLAIM, ExternalPluginUserTokenKeyProvider.TOKEN_TYPE)
             .claim(ROLES_CLAIM, roles)
             .claim(PLUGIN_CONFIG_ID_CLAIM, configurationId.toString())
+            .claim(TOKEN_GENERATION_CLAIM, tokenGeneration)
             .issuer(ISSUER)
             .issuedAt(Date.from(now))
             .expiration(Date.from(expiresAt))
@@ -67,6 +73,13 @@ class ExternalPluginUserTokenService(
     companion object {
         const val ROLES_CLAIM = "roles"
         const val PLUGIN_CONFIG_ID_CLAIM = "plugin_config_id"
+
+        /**
+         * The configuration's revocation counter at mint time. Validated against the current value
+         * on every use, so bumping the configuration's generation also kills outstanding user
+         * tokens — not just service tokens.
+         */
+        const val TOKEN_GENERATION_CLAIM = "token_generation"
         const val ISSUER = "valtimo-gzac"
 
         val DEFAULT_TTL: Duration = Duration.ofMinutes(15)

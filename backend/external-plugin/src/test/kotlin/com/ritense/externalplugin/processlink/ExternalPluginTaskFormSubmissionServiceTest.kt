@@ -151,6 +151,32 @@ class ExternalPluginTaskFormSubmissionServiceTest {
         assertThat(result.fieldErrors).isEmpty()
     }
 
+    @Test
+    fun `refuses the submission while the plugin's changed content awaits re-acceptance`() {
+        givenProcessLink(bundleKey = "review")
+        givenTask()
+        givenManifestWithTaskFormBundle(key = "review", submitHandler = true)
+        val changedDefinition = mock<ExternalPluginDefinition> {
+            on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.1.0"
+            on { requiresReacceptance } doReturn true
+        }
+        whenever(definitionService.get(definitionId)).thenReturn(changedDefinition)
+
+        val result = service.handleSubmission(
+            processLinkId,
+            objectMapper.readTree("""{"decision":"approve"}"""),
+            documentId = "doc-1",
+            taskInstanceId = "task-1",
+        )
+
+        assertThat(result.errors).singleElement().asString().contains("awaits re-acceptance")
+        // Neither the hook nor completion may run for a changed package.
+        verify(hostClient, never()).invokeSubmit(any(), any(), any(), any(), any(), any())
+        verify(processDocumentService, never()).dispatch(any())
+        verify(operatonTaskService, never()).completeTaskWithFormData(any(), any())
+    }
+
     private fun givenProcessLink(bundleKey: String?) {
         val processLink = ExternalPluginTaskFormProcessLink(
             id = processLinkId,

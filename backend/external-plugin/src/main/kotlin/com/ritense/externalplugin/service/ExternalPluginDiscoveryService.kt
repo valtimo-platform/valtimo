@@ -128,6 +128,16 @@ class ExternalPluginDiscoveryService(
         if (definitions.isEmpty()) return
 
         definitions.forEach { definition ->
+            if (definition.requiresReacceptance) {
+                // No pushes means no fresh service tokens: the last one the host holds expires
+                // within its (short) TTL, after which the changed plugin can no longer call back
+                // into GZAC until an admin re-accepts the new content.
+                logger.warn {
+                    "Withholding configuration pushes for plugin '${definition.pluginId}@${definition.version}': " +
+                        "package content changed on host ${host.id} and awaits re-acceptance"
+                }
+                return@forEach
+            }
             val configs = configurationRepository.findAllByDefinitionId(definition.id)
             configs.forEach { config ->
                 try {
@@ -143,11 +153,12 @@ class ExternalPluginDiscoveryService(
     }
 
     private fun upsertDefinition(host: ExternalPluginHost, pluginId: String, pluginEntry: JsonNode): UUID? {
-        // Plugin-host returns: {pluginId, version, manifest: {pluginId, version, translations, ...}}
-        // The manifest carries no top-level name/description — those live per-locale under
-        // `translations` (see localizedManifestValue).
+        // Plugin-host returns: {pluginId, version, contentHash, manifest: {pluginId, version,
+        // translations, ...}}. The manifest carries no top-level name/description — those live
+        // per-locale under `translations` (see localizedManifestValue).
         val manifest = pluginEntry.get("manifest") ?: pluginEntry
         val version = pluginEntry.get("version")?.asText() ?: manifest.get("version")?.asText() ?: "0.0.0"
+        val discoveredContentHash = pluginEntry.get("contentHash")?.asText()?.takeIf { it.isNotBlank() }
 
         val existing = definitionRepository.findByPluginIdAndVersion(pluginId, version)
         if (existing != null && existing.hostId != host.id) {
@@ -165,6 +176,42 @@ class ExternalPluginDiscoveryService(
             baseUrl = "${host.baseUrl}/plugins/$pluginId",
             status = ExternalPluginDefinitionStatus.AVAILABLE,
         )
+
+        // Content pinning: the hash of the package as first discovered is what the admin's
+        // acceptance covers. Anything else the host serves later under the same pluginId@version is
+        // a change of the running code, so the definition is flagged and its stored (accepted)
+        // manifest/schema stay frozen until an admin re-accepts — see acceptContent on the
+        // definition service. A host without hash support (older host) skips pinning entirely.
+        if (discoveredContentHash != null) {
+            val pinnedContentHash = definition.contentHash
+            when {
+                pinnedContentHash == null -> definition.contentHash = discoveredContentHash
+                discoveredContentHash != pinnedContentHash -> {
+                    if (definition.pendingContentHash != discoveredContentHash) {
+                        logger.warn {
+                            "Package content of external plugin '$pluginId@$version' on host ${host.id} changed " +
+                                "(pinned $pinnedContentHash, now $discoveredContentHash) — " +
+                                "flagged for re-acceptance; configuration pushes are withheld"
+                        }
+                        definition.pendingContentHash = discoveredContentHash
+                    }
+                    // The plugin is present on the host, just changed — keep it visible.
+                    definition.status = ExternalPluginDefinitionStatus.AVAILABLE
+                    definition.consecutiveMisses = 0
+                    definitionRepository.save(definition)
+                    return definition.id
+                }
+                definition.pendingContentHash != null -> {
+                    // The host serves the pinned bytes again (e.g. a tampered package was rolled
+                    // back) — the flag has served its purpose.
+                    logger.info {
+                        "Package content of external plugin '$pluginId@$version' matches the pinned hash again; " +
+                            "clearing the re-acceptance flag"
+                    }
+                    definition.pendingContentHash = null
+                }
+            }
+        }
 
         val newConfigSchema = manifest.get("configurationSchema") as? ObjectNode
         warnOnDroppedSecretFlags(definition, newConfigSchema)

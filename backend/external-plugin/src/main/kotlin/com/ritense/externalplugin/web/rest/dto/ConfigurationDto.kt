@@ -103,6 +103,8 @@ data class ConfigurationResponse(
     val definitionId: UUID,
     val title: String,
     val createdAt: Instant,
+    /** Current revocation counter — bumped by `POST /configuration/{id}/revoke-tokens`. */
+    val tokenGeneration: Long,
 ) {
     companion object {
         fun from(configuration: ExternalPluginConfiguration) = ConfigurationResponse(
@@ -110,6 +112,7 @@ data class ConfigurationResponse(
             definitionId = configuration.definitionId,
             title = configuration.title,
             createdAt = configuration.createdAt,
+            tokenGeneration = configuration.tokenGeneration,
         )
     }
 }

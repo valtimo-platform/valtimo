@@ -42,6 +42,7 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/host/*/upload")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/definition")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/definition/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/definition/*/accept-content")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration/*/usages")).hasAuthority(ADMIN)
@@ -49,6 +50,7 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/configuration")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/configuration/*/revoke-tokens")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/endpoint-descriptions")).hasAuthority(ADMIN)
                     // Non-management: any authenticated user may mint a downscoped user token for a
                     // plugin tab — the result is always bounded by PBAC ∩ the plugin's allowlist.

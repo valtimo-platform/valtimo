@@ -207,6 +207,43 @@ describe("PluginManager (mocked Extism)", () => {
     expect(instance.close).toHaveBeenCalled();
   });
 
+  describe("package content hash", () => {
+    it("computes a stable hash at load time and exposes it via getContentHash and listPlugins", async () => {
+      manager = makeManager();
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+
+      const hash = manager.getContentHash(PLUGIN_ID, VERSION);
+      expect(hash).toMatch(/^sha256:[0-9a-f]{64}$/);
+      expect(manager.listPlugins()[0]).toMatchObject({ pluginId: PLUGIN_ID, contentHash: hash });
+      expect(manager.listVersions(PLUGIN_ID)[0]).toMatchObject({ contentHash: hash });
+
+      // Reloading unchanged bytes yields the same hash.
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      expect(manager.getContentHash(PLUGIN_ID, VERSION)).toBe(hash);
+    });
+
+    it("changes the hash when any packaged file changes — including frontend assets", async () => {
+      manager = makeManager();
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      const original = manager.getContentHash(PLUGIN_ID, VERSION);
+
+      const frontendDir = join(storageDir, PLUGIN_ID, VERSION, "frontend");
+      mkdirSync(frontendDir, { recursive: true });
+      writeFileSync(join(frontendDir, "case-tab.bundle.js"), "console.log('v2');");
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+
+      expect(manager.getContentHash(PLUGIN_ID, VERSION)).not.toBe(original);
+    });
+
+    it("hasVersion reports loaded versions and unloaded-but-on-disk versions", async () => {
+      manager = makeManager();
+      expect(manager.hasVersion(PLUGIN_ID, VERSION)).toBe(true); // on disk, not loaded
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      expect(manager.hasVersion(PLUGIN_ID, VERSION)).toBe(true); // loaded
+      expect(manager.hasVersion(PLUGIN_ID, "9.9.9")).toBe(false);
+    });
+  });
+
   it("evicts an instance that has been idle past the TTL, via the periodic sweep", async () => {
     vi.useFakeTimers();
     manager = makeManager({ instanceIdleTtlMs: 1_000 });

@@ -18,6 +18,7 @@ package com.ritense.externalplugin.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -46,6 +47,7 @@ import java.util.UUID
 @RequestMapping("/api/v1/external-plugin", produces = [APPLICATION_JSON_UTF8_VALUE])
 class ExternalPluginUserTokenResource(
     private val configurationRepository: ExternalPluginConfigurationRepository,
+    private val definitionRepository: ExternalPluginDefinitionRepository,
     private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
     private val userTokenService: ExternalPluginUserTokenService,
 ) {
@@ -68,14 +70,25 @@ class ExternalPluginUserTokenResource(
             ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "No authenticated user")
         val roles = SecurityUtils.getCurrentUserRoles()
 
-        if (!configurationRepository.existsById(configurationId)) {
-            throw ResponseStatusException(
+        val configuration = configurationRepository.findById(configurationId).orElseThrow {
+            ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "External plugin configuration $configurationId not found",
             )
         }
 
-        val issued = userTokenService.issue(userLogin, roles, configurationId)
+        // A definition whose package content changed after acceptance no longer gets tokens of any
+        // kind until an admin re-accepts it — the iframe surface goes dark alongside the host push.
+        val definition = definitionRepository.findById(configuration.definitionId).orElse(null)
+        if (definition?.requiresReacceptance == true) {
+            throw ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Plugin '${definition.pluginId}@${definition.version}' changed on its host and " +
+                    "awaits re-acceptance by an administrator",
+            )
+        }
+
+        val issued = userTokenService.issue(userLogin, roles, configurationId, configuration.tokenGeneration)
         // The configuration's granted endpoints ride along so the iframe host can precheck proxied
         // calls client-side (audit-C1). This leaks nothing: the caller just received a token scoped
         // to exactly these endpoints — the server-side allowlist remains authoritative.

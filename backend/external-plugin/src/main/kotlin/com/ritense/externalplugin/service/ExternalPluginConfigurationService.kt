@@ -189,6 +189,16 @@ class ExternalPluginConfigurationService(
         definition: ExternalPluginDefinition,
         host: ExternalPluginHost,
     ): Boolean {
+        if (definition.requiresReacceptance) {
+            // Central guard — every push path (create, update, discovery re-sync, token revocation)
+            // funnels through here. No push means no fresh service token for plugin code that
+            // differs from what the admin accepted.
+            logger.warn {
+                "Refusing to push configuration ${configuration.id}: plugin " +
+                    "'${definition.pluginId}@${definition.version}' changed on its host and awaits re-acceptance"
+            }
+            return false
+        }
         val adminToken = encryptionService.decrypt(host.secret)
         val decrypted = decryptedProperties(configuration)
         val serviceToken = serviceTokenService.issue(configuration, definition)
@@ -212,6 +222,9 @@ class ExternalPluginConfigurationService(
             properties = decrypted,
             serviceToken = serviceToken,
             gzacBaseUrl = host.gzacCallbackBaseUrl ?: fallbackGzacBaseUrl,
+            // The pinned package hash rides along; the host refuses the push (409) if the package
+            // on disk no longer matches, closing the window between discovery and this push.
+            expectedContentHash = definition.contentHash,
             eventSubscriptions = grantedEventTypes,
             grantedCapabilities = grantedCaps,
             grantedEndpoints = grantedEndpointPairs,
@@ -283,6 +296,111 @@ class ExternalPluginConfigurationService(
         pushToHostAfterCommit(saved, definition)
 
         return saved
+    }
+
+    /**
+     * Revokes every outstanding token (service *and* user) minted for this configuration by
+     * bumping its generation counter: tokens carry the generation they were minted under and only
+     * validate while it matches. After the bump commits, a fresh push hands the host a new token of
+     * the new generation, so a *legitimate* host recovers instantly while every leaked or hoarded
+     * token is dead. If the push cannot happen (host down, or the definition awaits content
+     * re-acceptance) the discovery cycle re-pushes on its next tick — or withholds, which is then
+     * exactly the intent.
+     */
+    @Transactional
+    fun revokeTokens(id: UUID): ExternalPluginConfiguration {
+        val config = configurationRepository.findById(id)
+            .orElseThrow { ExternalPluginNotFoundException("External plugin configuration", id) }
+        val definition = definitionRepository.findById(config.definitionId)
+            .orElseThrow { ExternalPluginNotFoundException("External plugin definition", config.definitionId) }
+
+        config.tokenGeneration += 1
+        val saved = configurationRepository.save(config)
+        logger.info {
+            "Revoked all tokens for external plugin configuration $id " +
+                "(new token generation ${saved.tokenGeneration})"
+        }
+
+        pushToHostAfterCommit(saved, definition)
+        return saved
+    }
+
+    /**
+     * Applies an admin-confirmed overwrite of an existing plugin version (§11): the admin
+     * re-reviewed the uploaded package's requested permissions in the upload flow, so the new
+     * package hash is pinned as the accepted content and every configuration of the definition is
+     * re-granted to **exactly** the new manifest's declared endpoint/event/capability sets — the
+     * same all-or-nothing footprint the activation screen grants. The subsequent discovery cycle
+     * refreshes the stored manifest (the hash now matches the pin) and pushes the new grants.
+     *
+     * A definition GZAC never discovered is a no-op: discovery will pin the uploaded content on
+     * first sight and there are no configurations to re-grant.
+     */
+    @Transactional
+    fun applyApprovedOverwrite(pluginId: String, version: String, contentHash: String?, manifest: JsonNode?) {
+        val definition = definitionRepository.findByPluginIdAndVersion(pluginId, version) ?: return
+
+        if (contentHash != null) {
+            definition.contentHash = contentHash
+            definition.pendingContentHash = null
+            definitionRepository.save(definition)
+        }
+        if (manifest == null) return
+
+        val declaredEndpoints = declaredEndpoints(manifest)
+        val declaredEvents = declaredEvents(manifest)
+        val declaredCapabilities = declaredCapabilities(manifest)
+
+        configurationRepository.findAllByDefinitionId(definition.id).forEach { configuration ->
+            grantedEndpointRepository.deleteAllByConfigurationId(configuration.id)
+            grantedEventRepository.deleteAllByConfigurationId(configuration.id)
+            grantedCapabilityRepository.deleteAllByConfigurationId(configuration.id)
+            // Flush the deletes before re-inserting — same unique-constraint ordering concern as
+            // in [update].
+            grantedEndpointRepository.flush()
+            grantedEventRepository.flush()
+            grantedCapabilityRepository.flush()
+            saveGrantedEndpoints(configuration.id, declaredEndpoints)
+            saveGrantedEvents(configuration.id, declaredEvents)
+            saveGrantedCapabilities(configuration.id, declaredCapabilities)
+            logger.info {
+                "Re-granted configuration ${configuration.id} to the overwritten manifest of " +
+                    "'$pluginId@$version' (${declaredEndpoints.size} endpoints, " +
+                    "${declaredEvents.size} events, ${declaredCapabilities.size} capabilities)"
+            }
+        }
+    }
+
+    private fun declaredEndpoints(manifest: JsonNode): List<GrantedEndpointEntry> {
+        val declared = manifest.get("permissions")?.get("endpoints") ?: return emptyList()
+        if (!declared.isArray) return emptyList()
+        return declared.mapNotNull { endpoint ->
+            val method = endpoint.get("method")?.asText()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val pattern = endpoint.get("pattern")?.asText()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            GrantedEndpointEntry(method, pattern)
+        }
+    }
+
+    private fun declaredEvents(manifest: JsonNode): List<GrantedEventEntry> {
+        val declared = manifest.get("eventSubscriptions") ?: return emptyList()
+        if (!declared.isArray) return emptyList()
+        return declared.mapNotNull { it.asText().takeIf { s -> s.isNotBlank() } }.map(::GrantedEventEntry)
+    }
+
+    private fun declaredCapabilities(manifest: JsonNode): List<ExternalPluginCapability> {
+        val declared = manifest.get("permissions")?.get("capabilities") ?: return emptyList()
+        if (!declared.isArray) return emptyList()
+        return declared.mapNotNull { capability ->
+            val value = capability.asText().takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            try {
+                ExternalPluginCapability.fromValue(value)
+            } catch (e: IllegalArgumentException) {
+                // Unknown to this GZAC version — grant what is known rather than failing after the
+                // host has already replaced the package; the host-side guard denies the rest anyway.
+                logger.warn { "Skipping unknown capability '$value' while re-granting after overwrite: ${e.message}" }
+                null
+            }
+        }
     }
 
     /**
