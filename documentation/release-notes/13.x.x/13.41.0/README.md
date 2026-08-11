@@ -70,3 +70,7 @@
   Starting a building block from the 'Start' menu of a case did nothing when the start form of its
   main process is configured to be shown in a panel. The panel now opens right away. Previously it
   only appeared after first opening the start form of a regular process in the panel.
+
+* **Exporting case definitions**
+
+  Case definitions that had a process definition removed via the database were unable to be exported.
