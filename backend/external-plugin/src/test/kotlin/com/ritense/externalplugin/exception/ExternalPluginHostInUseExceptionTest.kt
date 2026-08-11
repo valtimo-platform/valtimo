@@ -54,7 +54,7 @@ class ExternalPluginHostInUseExceptionTest {
 
         assertThat(exception.title).isEqualTo("External plugin host is in use")
         assertThat(exception.status).isEqualTo(Status.CONFLICT)
-        assertThat(exception.detail).contains("BPMN process links reference")
+        assertThat(exception.detail).contains("BPMN process links, case tabs or case widgets reference")
 
         assertThat(exception.parameters).containsEntry("hostId", hostId.toString())
 

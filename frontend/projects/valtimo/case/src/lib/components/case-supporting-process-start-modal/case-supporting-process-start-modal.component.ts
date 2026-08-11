@@ -112,10 +112,9 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this.processName$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([processDefinitionKey, processName]) => {
-      const translated = this.translateService.instant(processDefinitionKey);
-      return translated !== processDefinitionKey ? translated : processName;
-    })
+    map(([processDefinitionKey, processName]) =>
+      this.resolveProcessTitle(processDefinitionKey, processName)
+    )
   );
 
   // Whether the active tab exposes a panel and the start form may render in it.
@@ -206,8 +205,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       combineLatest([this.processDefinitionKey$, this.processName$])
         .pipe(take(1))
         .subscribe(([processDefinitionKey, processName]) => {
-          const translated = this.translateService.instant(processDefinitionKey);
-          const title = translated !== processDefinitionKey ? translated : processName;
+          const title = this.resolveProcessTitle(processDefinitionKey, processName);
           this.caseDetailLayoutService.openStartFormPanel(
             {template: this.startFormTemplate, title},
             formSize
@@ -224,6 +222,14 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this.modalSize$.next(
       formSize ? formSizeToCarbonModalSizeMap[formSize] : DEFAULT_START_MODAL_SIZE
     );
+  }
+
+  // The key doubles as an optional translation key; before it is set, translating the empty
+  // string would throw and permanently break the title stream.
+  private resolveProcessTitle(processDefinitionKey: string, processName: string): string {
+    if (!processDefinitionKey) return processName;
+    const translated = this.translateService.instant(processDefinitionKey);
+    return translated !== processDefinitionKey ? translated : processName;
   }
 
   public openModalForStartableItem(

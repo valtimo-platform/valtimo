@@ -26,3 +26,4 @@ export * from './case-list-quick-search.model';
 export * from './case-widget.model';
 export * from './case-inspection.models';
 export * from './external-plugin-tab.model';
+export * from './external-plugin-widget.model';

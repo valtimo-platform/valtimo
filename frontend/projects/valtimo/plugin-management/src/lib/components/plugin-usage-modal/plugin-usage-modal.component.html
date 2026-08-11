@@ -14,13 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal
-  *ngIf="open"
-  size="lg"
-  valtimoCdsModal
-  [open]="open"
-  (close)="onClose()"
->
+<cds-modal *ngIf="open" size="lg" valtimoCdsModal [open]="open" (close)="onClose()">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>
       {{ titleTranslationKey | translate }}
@@ -53,7 +47,9 @@
 
       <cds-list-row
         *ngFor="let usage of usages; trackBy: trackByUsage"
-        [attr.data-test-id]="'plugin-usage-' + (usage.processLinkId || usage.tabKey)"
+        [attr.data-test-id]="
+          'plugin-usage-' + (usage.processLinkId || usage.widgetKey || usage.tabKey)
+        "
       >
         <cds-list-column nowrap="true">
           <div class="plugin-usage-modal__cell-main">
@@ -68,7 +64,14 @@
           <div *ngIf="usage.activityName" class="plugin-usage-modal__cell-sub">
             <code class="cds--snippet--inline">{{ usage.activityId }}</code>
           </div>
-          <div *ngIf="usage.tabKey && !usage.activityId" class="plugin-usage-modal__cell-sub">
+          <div *ngIf="usage.widgetKey && !usage.activityId" class="plugin-usage-modal__cell-sub">
+            {{ 'pluginManagement.usageModal.caseWidget' | translate }}
+            <code class="cds--snippet--inline">{{ usage.widgetKey }}</code>
+          </div>
+          <div
+            *ngIf="usage.tabKey && !usage.widgetKey && !usage.activityId"
+            class="plugin-usage-modal__cell-sub"
+          >
             {{ 'pluginManagement.usageModal.caseTab' | translate }}
           </div>
           <div
@@ -92,17 +95,19 @@
         <cds-list-column nowrap="true">
           <ng-container *ngIf="usage.parentKey; else dash">
             {{ usage.parentKey }}
-            <span
-              *ngIf="usage.parentVersionTag"
-              class="plugin-usage-modal__cell-sub"
-            >
+            <span *ngIf="usage.parentVersionTag" class="plugin-usage-modal__cell-sub">
               {{ usage.parentVersionTag }}
             </span>
           </ng-container>
         </cds-list-column>
 
         <cds-list-column nowrap="true">
-          <ng-container *ngIf="usage.processDefinitionName || usage.processDefinitionKey; else processIdFallback">
+          <ng-container
+            *ngIf="
+              usage.processDefinitionName || usage.processDefinitionKey;
+              else processIdFallback
+            "
+          >
             <div class="plugin-usage-modal__cell-main">
               {{ usage.processDefinitionName || usage.processDefinitionKey }}
             </div>

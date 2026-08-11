@@ -28,9 +28,10 @@ import {ExternalPluginHostUsage, ExternalPluginHostUsageParentType} from '@valti
 
 /**
  * Read-only modal shown when an admin tries to delete an external plugin entity (a host or a
- * configuration) that is still referenced by one or more BPMN process links. The list mirrors
- * the `usages` payload the backend would attach to a 409 from the corresponding `DELETE`
- * endpoint; only "Close" is offered — there is no force-delete.
+ * configuration) that is still referenced by one or more BPMN process links, case tabs, case
+ * widgets or building-block mappings. The list mirrors the `usages` payload the backend would
+ * attach to a 409 from the corresponding `DELETE` endpoint; only "Close" is offered — there is no
+ * force-delete.
  *
  * The parent supplies the heading + description translation keys so the same modal can be
  * reused for hosts and configurations (and any future entity with the same usage shape).
@@ -67,6 +68,9 @@ export class PluginUsageModalComponent {
   public trackByUsage(_index: number, usage: ExternalPluginHostUsage): string {
     if (usage.processLinkId) {
       return usage.processLinkId;
+    }
+    if (usage.widgetKey) {
+      return `widget:${usage.parentKey}:${usage.tabKey}:${usage.widgetKey}`;
     }
     if (usage.tabKey) {
       return `tab:${usage.parentKey}:${usage.tabKey}`;

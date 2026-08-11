@@ -16,6 +16,8 @@
 
 package com.ritense.externalplugin.service
 
+import com.ritense.case_.service.CaseExternalPluginWidgetService
+import com.ritense.case_.service.CaseExternalPluginWidgetUsage
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
@@ -76,6 +78,7 @@ class ExternalPluginHostUsageResolverTest {
             // Real shared resolver over the mocked Operaton services — the tests keep asserting
             // the full resolution behaviour through it.
             ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
+            java.util.Optional.empty(),
             java.util.Optional.empty(),
         )
     }
@@ -644,6 +647,45 @@ class ExternalPluginHostUsageResolverTest {
         assertThat(usages[0].parentKey).isEqualTo("bezwaar")
     }
 
+    @Test
+    fun `configuration referenced only by an external-plugin widget still blocks deletion`() {
+        val configuration = configuration(definitionId = UUID.randomUUID(), title = "Summary Plugin")
+        val widgetService = mock<CaseExternalPluginWidgetService>()
+        val resolverWithWidgets = resolverWithWidgetService(widgetService)
+
+        whenever(configurationRepository.findById(configuration.id))
+            .thenReturn(java.util.Optional.of(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(widgetService.findUsagesForConfiguration(configuration.id)).thenReturn(
+            listOf(
+                CaseExternalPluginWidgetUsage(
+                    configurationId = configuration.id,
+                    caseDefinitionKey = "bezwaar",
+                    caseDefinitionVersionTag = "1.0.1",
+                    tabKey = "summary",
+                    tabName = "Summary",
+                    widgetKey = "summary-widget",
+                ),
+            )
+        )
+
+        val usages = resolverWithWidgets.findUsagesForConfiguration(configuration.id)
+
+        assertThat(usages).hasSize(1)
+        val usage = usages.single()
+        assertThat(usage.configurationId).isEqualTo(configuration.id)
+        assertThat(usage.parentType).isEqualTo(PluginUsageParentType.CASE)
+        assertThat(usage.parentKey).isEqualTo("bezwaar")
+        assertThat(usage.parentVersionTag).isEqualTo("1.0.1")
+        assertThat(usage.tabKey).isEqualTo("summary")
+        assertThat(usage.tabName).isEqualTo("Summary")
+        assertThat(usage.widgetKey).isEqualTo("summary-widget")
+        assertThat(usage.processDefinitionId).isNull()
+    }
+
     private fun resolverWith(finder: BuildingBlockPluginMappingUsageFinder): ExternalPluginHostUsageResolver =
         ExternalPluginHostUsageResolver(
             definitionRepository,
@@ -652,7 +694,21 @@ class ExternalPluginHostUsageResolverTest {
             taskFormProcessLinkRepository,
             ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
             java.util.Optional.empty(),
+            java.util.Optional.empty(),
             java.util.Optional.of(finder),
+        )
+
+    private fun resolverWithWidgetService(
+        widgetService: CaseExternalPluginWidgetService,
+    ): ExternalPluginHostUsageResolver =
+        ExternalPluginHostUsageResolver(
+            definitionRepository,
+            configurationRepository,
+            processLinkRepository,
+            taskFormProcessLinkRepository,
+            ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
+            java.util.Optional.empty(),
+            java.util.Optional.of(widgetService),
         )
 
     private fun definition(hostId: UUID): ExternalPluginDefinition = ExternalPluginDefinition(

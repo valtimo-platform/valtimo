@@ -44,6 +44,7 @@ class ExternalPluginImportPreviewContributor(
             when {
                 PROCESS_LINK_REGEX.matches(fileName) -> result += contributeFromProcessLink(fileName, content)
                 CASE_TAB_REGEX.matches(fileName) -> result += contributeFromCaseTab(fileName, content)
+                CASE_WIDGET_TAB_REGEX.matches(fileName) -> result += contributeFromCaseWidgetTab(fileName, content)
             }
         }
         return result
@@ -135,6 +136,59 @@ class ExternalPluginImportPreviewContributor(
         return result
     }
 
+    /**
+     * A `*.case-widget-tab.json` holds a list of widget tabs; each tab's `widgets[]` may contain
+     * `external-plugin` widgets whose `properties.configurationId` references a plugin configuration.
+     * Emits one contribution per such widget, mirroring [contributeFromCaseTab]. Self-describing
+     * exports carry the widget's plugin key/version in `properties`, so the plugin stays identifiable
+     * even when the referenced configuration was deleted in the target; older exports fall back to
+     * resolving through the configuration.
+     */
+    private fun contributeFromCaseWidgetTab(fileName: String, content: ByteArray): List<ImportPreviewContribution> {
+        val jsonTree = try {
+            objectMapper.readTree(content.toString(Charsets.UTF_8))
+        } catch (_: Exception) {
+            return emptyList()
+        }
+        if (jsonTree !is ArrayNode) return emptyList()
+
+        val result = mutableListOf<ImportPreviewContribution>()
+        for (tabNode in jsonTree) {
+            val tabKey = tabNode.path("key").asText(null)
+            val widgets = tabNode.path("widgets")
+            if (!widgets.isArray) continue
+
+            for (widgetNode in widgets) {
+                val type = widgetNode.path("type").asText(null) ?: continue
+                if (type != "external-plugin") continue
+
+                val properties = widgetNode.path("properties")
+                val configIdText = properties.path("configurationId").asText(null) ?: continue
+                val configId = configIdText.toUuidOrNull() ?: continue
+                val widgetKey = widgetNode.path("key").asText(tabKey ?: fileName)
+
+                val configuration = configurationRepository.findById(configId).orElse(null)
+                val definition = configuration?.let { definitionRepository.findById(it.definitionId).orElse(null) }
+                val pluginDefinitionKey = properties.path("pluginDefinitionKey").asText(null) ?: definition?.pluginId
+                val pluginDefinitionVersion = properties.path("pluginDefinitionVersion").asText(null) ?: definition?.version
+
+                result.add(
+                    ImportPreviewContribution(
+                        pluginConfigurationId = configId,
+                        pluginDefinitionKey = pluginDefinitionKey,
+                        pluginActionDefinitionKey = "case-widget",
+                        processDefinitionKey = fileName,
+                        activityId = if (tabKey != null) "$tabKey/$widgetKey" else widgetKey,
+                        existsInTargetEnvironment = configuration != null,
+                        source = SOURCE_EXTERNAL,
+                        pluginDefinitionVersion = pluginDefinitionVersion,
+                    )
+                )
+            }
+        }
+        return result
+    }
+
     private fun String.toUuidOrNull(): UUID? = try {
         UUID.fromString(this)
     } catch (_: IllegalArgumentException) {
@@ -144,5 +198,6 @@ class ExternalPluginImportPreviewContributor(
     private companion object {
         val PROCESS_LINK_REGEX = """.*/?process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
         val CASE_TAB_REGEX = """.*/?case/tab/([^/]+)\.case-tab\.json""".toRegex()
+        val CASE_WIDGET_TAB_REGEX = """.*/?case/widget-tab/([^/]+)\.case-widget-tab\.json""".toRegex()
     }
 }

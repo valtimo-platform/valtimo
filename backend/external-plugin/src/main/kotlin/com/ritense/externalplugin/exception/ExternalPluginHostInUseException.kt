@@ -29,8 +29,8 @@ class ExternalPluginHostInUseException(
     null,
     "External plugin host is in use",
     Status.CONFLICT,
-    "One or more BPMN process links reference configurations under this host. " +
-        "Remove the references before deleting the host.",
+    "One or more BPMN process links, case tabs or case widgets reference configurations under " +
+        "this host. Remove the references before deleting the host.",
     null,
     null,
     mapOf(

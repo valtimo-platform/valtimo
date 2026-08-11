@@ -67,6 +67,7 @@ const EMBEDDED_ISSUE_TYPE = 'plugin-process-link';
 const EXTERNAL_ISSUE_TYPE = 'external-plugin-process-link';
 const EXTERNAL_TASK_FORM_ISSUE_TYPE = 'external-plugin-task-form';
 const EXTERNAL_CASE_TAB_ISSUE_TYPE = 'external-plugin-case-tab';
+const EXTERNAL_CASE_WIDGET_ISSUE_TYPE = 'external-plugin-case-widget';
 
 @Component({
   selector: 'valtimo-case-management-missing-plugin-configurations',
@@ -89,6 +90,7 @@ export class CaseManagementMissingPluginConfigurationsComponent implements OnIni
     EXTERNAL_ISSUE_TYPE,
     EXTERNAL_TASK_FORM_ISSUE_TYPE,
     EXTERNAL_CASE_TAB_ISSUE_TYPE,
+    EXTERNAL_CASE_WIDGET_ISSUE_TYPE,
   ]);
   public readonly mappingRows$ = new BehaviorSubject<MappingRow[]>([]);
   public readonly hasUnknownPluginConfigurations$ = new BehaviorSubject<boolean>(false);

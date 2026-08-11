@@ -64,7 +64,8 @@ export class ExternalPluginService {
   }
 
   /**
-   * Returns the BPMN process links currently referencing any configuration under the host.
+   * Returns what currently references any configuration under the host — BPMN process links,
+   * external-plugin case tabs and case widgets, and building-block mappings.
    * Empty list = safe to delete. A non-empty list is also what the backend will attach to a
    * 409 if the user tries to delete anyway, so the UI uses this proactively to disable the
    * delete action.
@@ -142,8 +143,9 @@ export class ExternalPluginService {
 
   /**
    * Same shape as [getHostUsages] but scoped to a single configuration. Empty list = safe to
-   * delete. Non-empty = the configuration is referenced by one or more BPMN process links and
-   * `deleteConfiguration` would fail with a 409 carrying these same entries.
+   * delete. Non-empty = the configuration is referenced by one or more process links, case tabs,
+   * case widgets or building-block mappings, and `deleteConfiguration` would fail with a 409
+   * carrying these same entries.
    */
   public getConfigurationUsages(
     configurationId: string
