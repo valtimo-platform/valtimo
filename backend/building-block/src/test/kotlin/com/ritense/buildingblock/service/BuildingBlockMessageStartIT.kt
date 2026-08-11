@@ -33,7 +33,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.ProcessDefinitionId
-import com.ritense.processdocument.service.CaseCorrelationService
+import com.ritense.processdocument.service.CorrelationService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
@@ -46,13 +46,13 @@ import java.util.UUID
 
 /**
  * Integration test for starting building blocks by message. A case pins a specific building-block
- * version, so [CaseCorrelationService] starts the main process definition the link points at rather
+ * version, so [CorrelationService] starts the main process definition the link points at rather
  * than letting the engine pick the latest deployed version of the process definition key.
  */
 @Transactional
 class BuildingBlockMessageStartIT @Autowired constructor(
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
-    private val caseCorrelationService: CaseCorrelationService,
+    private val correlationService: CorrelationService,
     private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
     private val documentService: DocumentService,
     private val objectMapper: ObjectMapper,
@@ -66,7 +66,7 @@ class BuildingBlockMessageStartIT @Autowired constructor(
         linkNotifyBuildingBlock(NOTIFY_VERSION)
         val caseDocumentId = createCaseDocument()
 
-        val processInstances = caseCorrelationService.sendStartMessageToCase(
+        val processInstances = correlationService.sendStartMessageToCase(
             START_MESSAGE,
             caseDocumentId.toString(),
             mapOf("messagePayload" to "from-case")
@@ -92,7 +92,7 @@ class BuildingBlockMessageStartIT @Autowired constructor(
         linkNotifyBuildingBlock(NOTIFY_VERSION)
         val caseDocumentId = createCaseDocument(firstName = "Jan")
 
-        caseCorrelationService.sendStartMessageToCase(START_MESSAGE, caseDocumentId.toString())
+        correlationService.sendStartMessageToCase(START_MESSAGE, caseDocumentId.toString())
 
         val instance = buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId).single()
         val buildingBlockDocument = runWithoutAuthorization {
@@ -106,7 +106,7 @@ class BuildingBlockMessageStartIT @Autowired constructor(
         linkNotifyBuildingBlock(NOTIFY_VERSION)
         val caseDocumentId = createCaseDocument(firstName = "Jan")
 
-        caseCorrelationService.sendStartMessageToCase(START_MESSAGE, caseDocumentId.toString())
+        correlationService.sendStartMessageToCase(START_MESSAGE, caseDocumentId.toString())
 
         val instance = buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId).single()
         runWithoutAuthorization {
@@ -127,7 +127,7 @@ class BuildingBlockMessageStartIT @Autowired constructor(
         val latestProcessDefinitionId = notifyProcessDefinitionId(NOTIFY_NEWER_VERSION)
         assertThat(pinnedProcessDefinitionId).isNotEqualTo(latestProcessDefinitionId)
 
-        val processInstances = caseCorrelationService.sendStartMessageToCase(START_MESSAGE, caseDocumentId.toString())
+        val processInstances = correlationService.sendStartMessageToCase(START_MESSAGE, caseDocumentId.toString())
 
         assertThat(processInstances).hasSize(1)
         assertThat(processInstances.single().processDefinitionId).isEqualTo(pinnedProcessDefinitionId)
@@ -138,7 +138,7 @@ class BuildingBlockMessageStartIT @Autowired constructor(
         linkNotifyBuildingBlock(NOTIFY_VERSION)
         val caseDocumentId = createCaseDocument()
 
-        val processInstances = caseCorrelationService.sendStartMessageToCase(
+        val processInstances = correlationService.sendStartMessageToCase(
             "message-nobody-declares",
             caseDocumentId.toString()
         )
@@ -154,7 +154,7 @@ class BuildingBlockMessageStartIT @Autowired constructor(
         linkBezwaarBuildingBlock()
         val caseDocumentId = createCaseDocument()
 
-        caseCorrelationService.sendStartMessageToCase(START_MESSAGE, caseDocumentId.toString())
+        correlationService.sendStartMessageToCase(START_MESSAGE, caseDocumentId.toString())
 
         val instances = buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId)
         assertThat(instances).hasSize(1)

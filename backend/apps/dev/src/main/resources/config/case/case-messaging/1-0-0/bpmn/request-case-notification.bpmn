@@ -8,7 +8,7 @@
     <bpmn:intermediateThrowEvent id="throw-notification-requested" name="Start the notification building block">
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_RequestNotification" camunda:expression="${caseCorrelationService.sendStartMessageToCase(&#34;case-notification-requested&#34;, execution)}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_RequestNotification" camunda:expression="${correlationService.sendStartMessageToCase(&#34;case-notification-requested&#34;, execution)}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_2" sourceRef="throw-notification-requested" targetRef="end-event" />
     <bpmn:endEvent id="end-event">

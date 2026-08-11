@@ -178,12 +178,13 @@ Ad-hoc start requires the building block's main process to have a start form pro
 
 ## Send a message to a case
 
-A BPMN message sent with `caseCorrelationService` reaches **every** running process of a case: the case's own processes
-and all of its building blocks, including nested ones. Use it to let a building block react to something that happens
-elsewhere in the case, or to let building blocks signal each other.
+A message sent with the `correlationService` methods below reaches **every** running process of a case: the case's own
+processes and all of its building blocks, including nested ones. Use it to let a building block react to something that
+happens elsewhere in the case, or to let building blocks signal each other.
 
 A regular message correlation is matched on a single business key, and a building block runs under its own document id
-— so without this bean a message aimed at the case never arrives at its building blocks.
+— so a message aimed at the case business key never arrives at its building blocks. See
+[correlating messages](../process/correlation-service.md) for the other correlation methods.
 
 ### Deliver to a waiting message catch event
 
@@ -191,7 +192,7 @@ Model an intermediate throw event (or any service task) in a case process, an ad
 process, and use the expression:
 
 ```
-${caseCorrelationService.sendCatchEventMessageToCase("income-verified", execution)}
+${correlationService.sendCatchEventMessageToCase("income-verified", execution)}
 ```
 
 The case is derived from the sending process. This also works from within a building block, so a building block can
@@ -200,13 +201,13 @@ message its sibling building blocks and the case processes.
 Variables can be passed as alternating name/value pairs, or as a map:
 
 ```
-${caseCorrelationService.sendCatchEventMessageToCase("income-verified", execution, "income", 42000)}
+${correlationService.sendCatchEventMessageToCase("income-verified", execution, "income", 42000)}
 ```
 
 To message a **different** case — a related case, for example — pass its document id instead of the execution:
 
 ```
-${caseCorrelationService.sendCatchEventMessageToCase("income-verified", relatedCaseId)}
+${correlationService.sendCatchEventMessageToCase("income-verified", relatedCaseId)}
 ```
 
 The value has to be a document id. A building block document id is accepted too and is resolved to the case that owns
@@ -217,7 +218,7 @@ it.
 A building block whose main process starts with a **message start event** can be started for a case:
 
 ```
-${caseCorrelationService.sendStartMessageToCase("case-notification", execution)}
+${correlationService.sendStartMessageToCase("case-notification", execution)}
 ```
 
 Every building block that is linked to the case definition (see

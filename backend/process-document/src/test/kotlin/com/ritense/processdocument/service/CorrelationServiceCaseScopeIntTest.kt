@@ -33,17 +33,17 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * Integration test for [CaseCorrelationService] restricted to case processes. The building-block
+ * Integration test for [CorrelationService] restricted to case processes. The building-block
  * module is on the test classpath, so its business-key provider is active and simply contributes
  * nothing for these cases — delivery to the case's own processes must keep the behaviour of
  * [CorrelationService], including the [com.ritense.processdocument.domain.ProcessDocumentInstance]
  * association.
  */
 @Transactional
-class CaseCorrelationServiceIntTest : BaseIntegrationTest() {
+class CorrelationServiceCaseScopeIntTest : BaseIntegrationTest() {
 
     @Autowired
-    lateinit var caseCorrelationService: CaseCorrelationService
+    lateinit var correlationService: CorrelationService
 
     @Autowired
     lateinit var documentService: DocumentService
@@ -67,7 +67,7 @@ class CaseCorrelationServiceIntTest : BaseIntegrationTest() {
         startCatchEventProcessOne(documentOne)
         startCatchEventProcessTwo(documentTwo)
 
-        val results = caseCorrelationService.sendCatchEventMessageToCase(MESSAGE, documentOne.id().toString())
+        val results = correlationService.sendCatchEventMessageToCase(MESSAGE, documentOne.id().toString())
 
         assertThat(results).hasSize(1)
         assertThat(findTask(TASK_ONE)).isNotNull()
@@ -79,7 +79,7 @@ class CaseCorrelationServiceIntTest : BaseIntegrationTest() {
         val document = createDocument()
         startCatchEventProcessOne(document)
 
-        caseCorrelationService.sendCatchEventMessageToCase(MESSAGE, document.id().toString())
+        correlationService.sendCatchEventMessageToCase(MESSAGE, document.id().toString())
 
         val associations = processDocumentInstanceRepository
             .findAllByProcessDocumentInstanceIdDocumentId(JsonSchemaDocumentId.existingId(document.id().id))
@@ -91,7 +91,7 @@ class CaseCorrelationServiceIntTest : BaseIntegrationTest() {
         val document = createDocument()
         startCatchEventProcessOne(document)
 
-        caseCorrelationService.sendCatchEventMessageToCase(
+        correlationService.sendCatchEventMessageToCase(
             MESSAGE,
             document.id().toString(),
             "varName1",
@@ -109,7 +109,7 @@ class CaseCorrelationServiceIntTest : BaseIntegrationTest() {
     fun `should return an empty result when nothing is subscribed`() {
         val document = createDocument()
 
-        val results = caseCorrelationService.sendCatchEventMessageToCase(MESSAGE, document.id().toString())
+        val results = correlationService.sendCatchEventMessageToCase(MESSAGE, document.id().toString())
 
         assertThat(results).isEmpty()
     }

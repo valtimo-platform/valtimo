@@ -8,7 +8,7 @@
     <bpmn:intermediateThrowEvent id="throw-review-approved" name="Send review-approved to the case">
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_SendReviewApproved" camunda:expression="${caseCorrelationService.sendCatchEventMessageToCase(&#34;review-approved&#34;, execution, &#34;approvedBy&#34;, &#34;the send-review-approved action&#34;)}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_SendReviewApproved" camunda:expression="${correlationService.sendCatchEventMessageToCase(&#34;review-approved&#34;, execution, &#34;approvedBy&#34;, &#34;the send-review-approved action&#34;)}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_2" sourceRef="throw-review-approved" targetRef="end-event" />
     <bpmn:endEvent id="end-event">

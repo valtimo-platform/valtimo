@@ -7,7 +7,7 @@
     <bpmn:intermediateThrowEvent id="throwCaseMessage" name="Send message to case">
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1" camunda:expression="${caseCorrelationService.sendCatchEventMessageToCase(&#34;test-ready&#34;, execution)}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1" camunda:expression="${correlationService.sendCatchEventMessageToCase(&#34;test-ready&#34;, execution)}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:endEvent id="EndEvent_1">
       <bpmn:incoming>Flow_2</bpmn:incoming>

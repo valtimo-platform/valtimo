@@ -10,8 +10,9 @@
 
   Processes can now send a message to a whole case: the case's own processes and all of its building blocks receive
   it. This makes it possible to let a building block react to something that happens elsewhere in the case, and to let
-  building blocks signal each other. Messages can also be sent to another case, for example a related one. See
-  [Send a message to a case](../../../features/building-blocks/README.md#send-a-message-to-a-case).
+  building blocks signal each other. Messages can also be sent to another case, for example a related one. The new
+  methods sit on the existing `correlationService`, next to the other correlation methods — see
+  [correlating messages](../../../features/process/correlation-service.md#correlating-to-a-whole-case-including-its-building-blocks).
 
 * **Start a building block with a message**
 

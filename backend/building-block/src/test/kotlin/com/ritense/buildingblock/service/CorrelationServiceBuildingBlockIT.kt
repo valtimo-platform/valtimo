@@ -27,7 +27,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
-import com.ritense.processdocument.service.CaseCorrelationService
+import com.ritense.processdocument.service.CorrelationService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
@@ -41,13 +41,13 @@ import java.util.UUID
 /**
  * Integration test for case-scoped message correlation towards building blocks. A building-block
  * process instance runs under its own document id as business key, so the case business key alone
- * never reaches it — [CaseCorrelationService] fans the message out over the case and all of its
+ * never reaches it — [CorrelationService] fans the message out over the case and all of its
  * building-block instances.
  */
 @Transactional
-class CaseCorrelationBuildingBlockIT @Autowired constructor(
+class CorrelationServiceBuildingBlockIT @Autowired constructor(
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
-    private val caseCorrelationService: CaseCorrelationService,
+    private val correlationService: CorrelationService,
     private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
     private val documentService: DocumentService,
     private val objectMapper: ObjectMapper,
@@ -62,7 +62,7 @@ class CaseCorrelationBuildingBlockIT @Autowired constructor(
         val caseDocumentId = createCaseDocument()
         val instance = startAdHocBuildingBlock(caseDocumentId)
 
-        val results = caseCorrelationService.sendCatchEventMessageToCase(TEST_MESSAGE, caseDocumentId.toString())
+        val results = correlationService.sendCatchEventMessageToCase(TEST_MESSAGE, caseDocumentId.toString())
 
         assertThat(results).hasSize(1)
         assertThat(isRunning(instance.processInstanceId!!)).isFalse()
@@ -76,7 +76,7 @@ class CaseCorrelationBuildingBlockIT @Autowired constructor(
         val instanceTwo = startAdHocBuildingBlock(caseDocumentId)
         assertThat(instanceOne.documentId).isNotEqualTo(instanceTwo.documentId)
 
-        val results = caseCorrelationService.sendCatchEventMessageToCase(TEST_MESSAGE, caseDocumentId.toString())
+        val results = correlationService.sendCatchEventMessageToCase(TEST_MESSAGE, caseDocumentId.toString())
 
         assertThat(results).hasSize(2)
         assertThat(isRunning(instanceOne.processInstanceId!!)).isFalse()
@@ -91,7 +91,7 @@ class CaseCorrelationBuildingBlockIT @Autowired constructor(
         val targetInstance = startAdHocBuildingBlock(targetCaseDocumentId)
         val otherInstance = startAdHocBuildingBlock(otherCaseDocumentId)
 
-        val results = caseCorrelationService.sendCatchEventMessageToCase(TEST_MESSAGE, targetCaseDocumentId.toString())
+        val results = correlationService.sendCatchEventMessageToCase(TEST_MESSAGE, targetCaseDocumentId.toString())
 
         assertThat(results).hasSize(1)
         assertThat(isRunning(targetInstance.processInstanceId!!)).isFalse()
@@ -104,7 +104,7 @@ class CaseCorrelationBuildingBlockIT @Autowired constructor(
         val caseDocumentId = createCaseDocument()
         val instance = startAdHocBuildingBlock(caseDocumentId)
 
-        val results = caseCorrelationService.sendCatchEventMessageToCase(TEST_MESSAGE, instance.documentId.toString())
+        val results = correlationService.sendCatchEventMessageToCase(TEST_MESSAGE, instance.documentId.toString())
 
         assertThat(results).hasSize(1)
         assertThat(isRunning(instance.processInstanceId!!)).isFalse()
@@ -117,7 +117,7 @@ class CaseCorrelationBuildingBlockIT @Autowired constructor(
         val instance = startAdHocBuildingBlock(caseDocumentId)
         val processInstanceId = instance.processInstanceId!!
 
-        caseCorrelationService.sendCatchEventMessageToCase(
+        correlationService.sendCatchEventMessageToCase(
             TEST_MESSAGE,
             caseDocumentId.toString(),
             mapOf("messagePayload" to "from-case")
@@ -136,7 +136,7 @@ class CaseCorrelationBuildingBlockIT @Autowired constructor(
         val caseDocumentId = createCaseDocument()
         val instance = startAdHocBuildingBlock(caseDocumentId)
 
-        caseCorrelationService.sendCatchEventMessageToCase(TEST_MESSAGE, caseDocumentId.toString())
+        correlationService.sendCatchEventMessageToCase(TEST_MESSAGE, caseDocumentId.toString())
 
         val caseAssociations = processDocumentInstanceRepository
             .findAllByProcessDocumentInstanceIdDocumentId(JsonSchemaDocumentId.existingId(caseDocumentId))
@@ -150,7 +150,7 @@ class CaseCorrelationBuildingBlockIT @Autowired constructor(
         val caseDocumentId = createCaseDocument()
         startAdHocBuildingBlock(caseDocumentId)
 
-        val results = caseCorrelationService.sendCatchEventMessageToCase("no-one-listens-to-this", caseDocumentId.toString())
+        val results = correlationService.sendCatchEventMessageToCase("no-one-listens-to-this", caseDocumentId.toString())
 
         assertThat(results).isEmpty()
     }

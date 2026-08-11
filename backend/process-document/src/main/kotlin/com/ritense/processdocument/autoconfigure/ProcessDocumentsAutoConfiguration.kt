@@ -44,8 +44,6 @@ import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRep
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.repository.TaskQuickSearchRepository
 import com.ritense.processdocument.service.CaseCorrelationBusinessKeyProvider
-import com.ritense.processdocument.service.CaseCorrelationService
-import com.ritense.processdocument.service.CaseCorrelationServiceImpl
 import com.ritense.processdocument.service.CaseCorrelationStartTargetProvider
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.CaseTaskListSearchService
@@ -157,6 +155,9 @@ class ProcessDocumentsAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         repositoryService: RepositoryService,
         operatonRepositoryService: OperatonRepositoryService,
+        caseDocumentResolver: CaseDocumentResolver,
+        caseCorrelationBusinessKeyProviders: List<CaseCorrelationBusinessKeyProvider>,
+        caseCorrelationStartTargetProviders: List<CaseCorrelationStartTargetProvider>,
     ): CorrelationService {
         return CorrelationServiceImpl(
             runtimeService = runtimeService,
@@ -164,23 +165,7 @@ class ProcessDocumentsAutoConfiguration {
             documentService = documentService,
             operatonRepositoryService = operatonRepositoryService,
             repositoryService = repositoryService,
-            associationService = processDocumentAssociationService
-        )
-    }
-
-    @ProcessBean
-    @Bean
-    @ConditionalOnMissingBean(CaseCorrelationService::class)
-    fun caseCorrelationService(
-        runtimeService: RuntimeService,
-        correlationService: CorrelationService,
-        caseDocumentResolver: CaseDocumentResolver,
-        caseCorrelationBusinessKeyProviders: List<CaseCorrelationBusinessKeyProvider>,
-        caseCorrelationStartTargetProviders: List<CaseCorrelationStartTargetProvider>,
-    ): CaseCorrelationService {
-        return CaseCorrelationServiceImpl(
-            runtimeService = runtimeService,
-            correlationService = correlationService,
+            associationService = processDocumentAssociationService,
             caseDocumentResolver = caseDocumentResolver,
             businessKeyProviders = caseCorrelationBusinessKeyProviders,
             startTargetProviders = caseCorrelationStartTargetProviders,
