@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ButtonModule,
@@ -49,6 +49,7 @@ import {BehaviorSubject, map, Observable, startWith, Subscription} from 'rxjs';
     LayerModule,
     ReactiveFormsModule,
     ButtonModule,
+    ValtimoCdsModalDirective,
   ],
 })
 export class FormManagementUploadComponent implements OnInit, OnDestroy {

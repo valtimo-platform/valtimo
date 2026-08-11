@@ -22,7 +22,7 @@ import {Formio, FormioAppConfig, FormioModule} from '@formio/angular';
 import {getFormioAppConfig} from './formio-config';
 import {FormIoUploaderComponent} from './components/form-io-uploader/form-io-uploader.component';
 import {DropzoneModule} from '../dropzone/dropzone.module';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DocumentModule} from '@valtimo/document';
 import {FormIoDomService} from './services/form-io-dom.service';
 import {FileSizeModule} from '../file-size/file-size.module';
@@ -37,6 +37,7 @@ import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
 import bootstrap4 from '@formio/bootstrap/bootstrap4';
 import {applyDataGridPatch} from './patches/patched-datagrid';
+import {registerFormioFlatpickr, setFormioFlatpickrLocale} from './formio-flatpickr';
 
 // Apply FormIO patches before any form renders
 applyDataGridPatch();
@@ -82,7 +83,10 @@ applyDataGridPatch();
   ],
 })
 export class FormIoModule {
-  constructor() {
+  constructor(private translateService: TranslateService) {
     Formio.use((bootstrap4 as any)?.default ?? bootstrap4);
+    registerFormioFlatpickr();
+    setFormioFlatpickrLocale(this.translateService.currentLang);
+    this.translateService.onLangChange.subscribe(({lang}) => setFormioFlatpickrLocale(lang));
   }
 }

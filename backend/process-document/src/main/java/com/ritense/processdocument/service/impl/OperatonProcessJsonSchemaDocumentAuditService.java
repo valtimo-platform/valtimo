@@ -34,6 +34,7 @@ import com.ritense.document.event.DocumentUnassignedEvent;
 import com.ritense.document.event.InformatieObjectReceivedEvent;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.event.BesluitAddedEvent;
+import com.ritense.processdocument.event.ProcessTimerSkippedEvent;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
 import com.ritense.valtimo.operaton.processaudit.ProcessEndedEvent;
 import com.ritense.valtimo.operaton.processaudit.ProcessStartedEvent;
@@ -87,7 +88,8 @@ public class OperatonProcessJsonSchemaDocumentAuditService implements ProcessDoc
             BesluitAddedEvent.class,
             DocumentAssigneeChangedEvent.class,
             DocumentUnassignedEvent.class,
-            TaskDueDateSetEvent.class
+            TaskDueDateSetEvent.class,
+            ProcessTimerSkippedEvent.class
         );
 
         final var document = documentService.getDocumentBy(id);

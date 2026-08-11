@@ -23,6 +23,7 @@ import {
   IKO_SEARCH_ACTIONS_TEST_IDS,
 } from '../../../constants';
 import {apiDelete, apiGet, apiPost} from '../../../utils/api.utils';
+import {settleModalReset} from '../../../shared/modal/modal.utils';
 
 interface IkoSearchActionResponse {
   key: string;
@@ -85,8 +86,14 @@ export class IkoSearchActionPage {
   async closeAnyOpenModal(): Promise<void> {
     for (const heading of [this.addModalHeading, this.editModalHeading]) {
       if (await heading.isVisible().catch(() => false)) {
-        await this.cancelButton.click().catch(() => undefined);
-        await heading.waitFor({state: 'hidden', timeout: 5_000}).catch(() => undefined);
+        // Bounded: an unbounded click in a cleanup hook blocks until the test times out.
+        await this.cancelButton.click({timeout: 3_000}).catch(() => undefined);
+        await heading.waitFor({state: 'hidden', timeout: 3_000}).catch(() => undefined);
+
+        if (await heading.isVisible().catch(() => false)) {
+          await this.page.keyboard.press('Escape').catch(() => undefined);
+          await heading.waitFor({state: 'hidden', timeout: 3_000}).catch(() => undefined);
+        }
       }
     }
   }
@@ -112,16 +119,22 @@ export class IkoSearchActionPage {
   async openAddModal(): Promise<void> {
     await this.addActionButton.click();
     await expect(this.addModalHeading).toBeVisible();
+    // Let the deferred form reset fire before filling — otherwise it can wipe the form
+    // after it was filled and leave Save permanently disabled.
+    await settleModalReset(this.page);
   }
 
   async openEditModal(title: string): Promise<void> {
     await this.list.row(title).clickAction('Edit');
     await expect(this.editModalHeading).toBeVisible();
+    await settleModalReset(this.page);
   }
 
   async save(): Promise<void> {
-    await expect(this.saveButton).toBeEnabled();
-    await this.saveButton.click();
+    // A late form reset can disable Save again between filling and saving, so allow it to
+    // recover rather than clicking a disabled button until the test times out.
+    await expect(this.saveButton).toBeEnabled({timeout: 15_000});
+    await this.saveButton.click({timeout: 10_000});
     // Both add and edit modals close on save.
     await expect(this.addModalHeading).toBeHidden();
     await expect(this.editModalHeading).toBeHidden();

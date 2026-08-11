@@ -36,7 +36,7 @@
             {
                 "source": "/verifiedApplicant",
                 "target": "doc:/verifiedApplicant",
-                "syncTiming": "END"
+                "syncTiming": "CONTINUOUS"
             },
             {
                 "source": "/verificationResult/status",
@@ -46,12 +46,12 @@
             {
                 "source": "/finalSubsidyAmount",
                 "target": "doc:/calculatedSubsidy",
-                "syncTiming": "END"
+                "syncTiming": "CONTINUOUS"
             },
             {
                 "source": "/eligibilityResult",
                 "target": "doc:/eligibilityResult",
-                "syncTiming": "END"
+                "syncTiming": "CONTINUOUS"
             },
             {
                 "source": "/zaakOmschrijvingFromZgw",
@@ -76,12 +76,17 @@
             {
                 "source": "/reviewerRemarks",
                 "target": "doc:/reviewerRemarks",
-                "syncTiming": "END"
+                "syncTiming": "CONTINUOUS"
             },
             {
                 "source": "/approvalDecision",
                 "target": "doc:/approvalDecision",
-                "syncTiming": "END"
+                "syncTiming": "CONTINUOUS"
+            },
+            {
+                "source": "/bubbleNote",
+                "target": "doc:/bubbleNote",
+                "syncTiming": "CONTINUOUS"
             }
         ]
     }

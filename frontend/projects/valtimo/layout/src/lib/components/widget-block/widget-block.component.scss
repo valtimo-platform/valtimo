@@ -20,6 +20,7 @@
 }
 
 :host[data-widget-type='highlight'] .widget-block__content,
+:host[data-widget-type='text'] .widget-block__content,
 :host.widget-block--fill-content .widget-block__content {
   height: 100%;
 }
