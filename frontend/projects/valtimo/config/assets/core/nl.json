@@ -12,7 +12,8 @@
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
-    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
+    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}",
+    "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "dossier": {
     "exportButtonTooltip": "Exporteer huidige dossier lijst",
@@ -294,7 +295,14 @@
     "startedBy": "Gestart door",
     "startedOn": "Gestart op",
     "system": "Systeem",
-    "of": "van"
+    "of": "van",
+    "skipTimer": {
+      "action": "Timer overslaan",
+      "confirmTitle": "Timer overslaan",
+      "confirmContent": "Weet je zeker dat je deze timer wilt overslaan? Het proces gaat verder alsof de timer is verlopen. Dit kan niet ongedaan worden gemaakt.",
+      "confirmButton": "Overslaan",
+      "successToast": "Timer overgeslagen"
+    }
   },
   "dashboard": {
     "openTasks": {

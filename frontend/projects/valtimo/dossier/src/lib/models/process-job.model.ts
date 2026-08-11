@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-export * from './candidate-user.model';
-export * from './case-widget-content.model';
-export * from './case-widget-display.model';
-export * from './case-widget.model';
-export * from './dossier-detail-tab.model';
-export * from './dossier-parameters.model';
-export * from './pending-skip.model';
-export * from './process-job.model';
-export * from './search.model';
-export * from './tab-api.model';
-export * from './tabs.model';
-export * from './dossier-detail-layout.model';
+type ProcessJobType = 'TIMER' | 'ASYNC_CONTINUATION' | 'MESSAGE' | 'BATCH' | 'OTHER';
+
+interface ProcessJob {
+  id: string;
+  jobDefinitionId: string | null;
+  executionId: string | null;
+  activityId: string | null;
+  jobType: ProcessJobType;
+  retries: number;
+  exceptionMessage: string | null;
+  dueDate: string | null;
+  suspended: boolean;
+}
+
+export {ProcessJob, ProcessJobType};

@@ -19,6 +19,9 @@
   *ngIf="{
     processInstanceItems: processInstanceItems$ | async,
     selectedProcessInstance: selectedProcessInstance$ | async,
+    canSkipTimer: canSkipTimer$ | async,
+    skippableTimers: skippableTimers$ | async,
+    diagramReloadToken: diagramReloadToken$ | async,
   } as obs"
 >
   <span *ngIf="!obs.processInstanceItems.isLoading && !obs.processInstanceItems.value">{{
@@ -72,7 +75,21 @@
   <div>
     <valtimo-process-diagram
       *ngIf="!obs.selectedProcessInstance.isLoading"
+      [canSkipTimer]="obs.canSkipTimer || false"
       [processInstanceId]="obs.selectedProcessInstance.value.id.processInstanceId"
+      [reloadToken]="obs.diagramReloadToken || 0"
+      [skipTimerLabel]="'progress.skipTimer.action' | translate"
+      [skippableTimers]="obs.skippableTimers || []"
+      (skipTimerEvent)="onRequestSkipTimer($event)"
     ></valtimo-process-diagram>
   </div>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="progress.skipTimer.confirmButton"
+    titleTranslationKey="progress.skipTimer.confirmTitle"
+    [content]="'progress.skipTimer.confirmContent' | translate"
+    [showModalSubject$]="showSkipConfirm$"
+    (cancelEvent)="onCancelSkipTimer()"
+    (confirmEvent)="onConfirmSkipTimer()"
+  ></valtimo-confirmation-modal>
 </ng-container>
