@@ -12,9 +12,19 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Searchable dropdowns on the process migration screen**
 
-  New enhancement explanation.
+  The *Source Definition*, *Source Version*, *Target Definition*, *Target Version* and *Choose Target*
+  dropdowns on the *Process migration* screen are now combo boxes, so typing in the field filters the
+  available entries. This makes it easier to find a process in an environment with many process
+  definitions. Selecting a source definition now also preselects the same definition as target, and
+  clearing the source definition clears the source version, target definition and target version as
+  well, so no stale selection is left behind.
+
+* **Searchable process dropdown on the Progress tab**
+
+  The process dropdown on the *Progress* tab of a case is now a combo box. Typing in the field filters
+  the processes linked to the case, instead of having to scroll through the full list.
 
 ## Bugfixes
 
