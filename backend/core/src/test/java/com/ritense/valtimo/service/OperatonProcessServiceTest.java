@@ -25,14 +25,23 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
+import com.ritense.authorization.AuthorizationSupportedHelper;
+import com.ritense.valtimo.exception.ProcessDefinitionNotFoundException;
 import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionRepository;
@@ -47,6 +56,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -60,6 +70,7 @@ import org.operaton.bpm.model.bpmn.instance.Process;
 import org.operaton.bpm.model.bpmn.instance.ServiceTask;
 import org.operaton.bpm.model.dmn.Dmn;
 import org.operaton.bpm.model.dmn.DmnModelInstance;
+import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.model.dmn.instance.Decision;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
@@ -67,7 +78,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.ResolvableType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -82,6 +95,8 @@ class OperatonProcessServiceTest {
     private static final LocalDateTime FIRST_OF_JANUARY_2018 = getDate(2018,1, 1);
     private static final LocalDateTime FIRST_OF_JANUARY_2017 = getDate(2017,1, 1);
     private static final LocalDateTime FIRST_OF_JANUARY_2016 = getDate(2016,1, 1);
+
+    private static final String PROCESS_DEFINITION_ID = "test-process:2:2f8b1e3a";
 
     private static final String BUSINESSKEY1 = "businessKey1";
     private static final String BUSINESSKEY2 = "businessKey2";
@@ -148,6 +163,12 @@ class OperatonProcessServiceTest {
     @BeforeEach
     public void beforeEach() {
         MockitoAnnotations.openMocks(this);
+        // RelatedEntityAuthorizationRequest validates the resource type against the Spring context on
+        // construction, so the start-process tests need AuthorizationSupportedHelper to be initialised.
+        var applicationContext = mock(ApplicationContext.class);
+        when(applicationContext.getBeanNamesForType(any(ResolvableType.class)))
+            .thenReturn(new String[] {"authorizationSpecificationFactory"});
+        AuthorizationSupportedHelper.INSTANCE.setApplicationContext(applicationContext);
     }
 
     @Test
@@ -411,6 +432,105 @@ class OperatonProcessServiceTest {
     private BpmnModelInstance modelWithNoExtensionAttrs() {
         return Bpmn.readModelFromStream(new ByteArrayInputStream(
             String.format(MINIMAL_BPMN_TEMPLATE, "").getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    void startProcessByIdShouldStartTheExactDefinitionWithoutResolvingByKey() {
+        var processDefinition = processDefinition(PROCESS_DEFINITION_ID, null, false);
+        when(operatonRepositoryService.findProcessDefinitionById(PROCESS_DEFINITION_ID)).thenReturn(processDefinition);
+        when(formService.submitStartForm(eq(PROCESS_DEFINITION_ID), eq(BUSINESSKEY1), any()))
+            .thenReturn(mock(ProcessInstance.class, RETURNS_DEEP_STUBS));
+
+        var result = AuthorizationContext.runWithoutAuthorization(() -> createService()
+            .startProcessById(PROCESS_DEFINITION_ID, BUSINESSKEY1, Map.of()));
+
+        assertThat(result.getProcessDefinition(), is(processDefinition));
+        verify(formService).submitStartForm(eq(PROCESS_DEFINITION_ID), eq(BUSINESSKEY1), any());
+        // The whole point of starting by id: the lossy resolution by key must not run.
+        verify(operatonRepositoryService, never()).findProcessDefinition(any());
+    }
+
+    @Test
+    void startProcessByIdShouldThrowWhenDefinitionDoesNotExist() {
+        when(operatonRepositoryService.findProcessDefinitionById(PROCESS_DEFINITION_ID)).thenReturn(null);
+
+        var service = createService();
+        assertThrows(
+            ProcessDefinitionNotFoundException.class,
+            () -> AuthorizationContext.runWithoutAuthorization(
+                () -> service.startProcessById(PROCESS_DEFINITION_ID, BUSINESSKEY1, Map.of()))
+        );
+    }
+
+    @Test
+    void startProcessByIdShouldThrowWhenDefinitionIsDetached() {
+        var detached = processDefinition(
+            PROCESS_DEFINITION_ID,
+            OperatonProcessService.DETACHED_PROCESS_DEFINITION_PREFIX + "BB:bezwaar:1.0.0",
+            false
+        );
+        when(operatonRepositoryService.findProcessDefinitionById(PROCESS_DEFINITION_ID)).thenReturn(detached);
+
+        var service = createService();
+        assertThrows(
+            IllegalStateException.class,
+            () -> AuthorizationContext.runWithoutAuthorization(
+                () -> service.startProcessById(PROCESS_DEFINITION_ID, BUSINESSKEY1, Map.of()))
+        );
+        verify(formService, never()).submitStartForm(any(), any(), any());
+    }
+
+    @Test
+    void startProcessByIdShouldActivateAndReSuspendASuspendedDefinition() {
+        var suspended = processDefinition(PROCESS_DEFINITION_ID, null, true);
+        when(operatonRepositoryService.findProcessDefinitionById(PROCESS_DEFINITION_ID)).thenReturn(suspended);
+        when(formService.submitStartForm(eq(PROCESS_DEFINITION_ID), any(), any()))
+            .thenReturn(mock(ProcessInstance.class, RETURNS_DEEP_STUBS));
+
+        AuthorizationContext.runWithoutAuthorization(() -> createService()
+            .startProcessById(PROCESS_DEFINITION_ID, BUSINESSKEY1, Map.of()));
+
+        var inOrder = inOrder(repositoryService, formService);
+        inOrder.verify(repositoryService).activateProcessDefinitionById(PROCESS_DEFINITION_ID);
+        inOrder.verify(formService).submitStartForm(eq(PROCESS_DEFINITION_ID), any(), any());
+        inOrder.verify(repositoryService).suspendProcessDefinitionById(PROCESS_DEFINITION_ID);
+    }
+
+    @Test
+    void startProcessByIdShouldReSuspendADefinitionWhenStartingFails() {
+        var suspended = processDefinition(PROCESS_DEFINITION_ID, null, true);
+        when(operatonRepositoryService.findProcessDefinitionById(PROCESS_DEFINITION_ID)).thenReturn(suspended);
+        when(formService.submitStartForm(eq(PROCESS_DEFINITION_ID), any(), any()))
+            .thenThrow(new IllegalStateException("boom"));
+
+        var service = createService();
+        assertThrows(
+            IllegalStateException.class,
+            () -> AuthorizationContext.runWithoutAuthorization(
+                () -> service.startProcessById(PROCESS_DEFINITION_ID, BUSINESSKEY1, Map.of()))
+        );
+        verify(repositoryService).suspendProcessDefinitionById(PROCESS_DEFINITION_ID);
+    }
+
+    @Test
+    void startProcessByIdShouldTranslateTheUndefinedBusinessKeyToNull() {
+        var processDefinition = processDefinition(PROCESS_DEFINITION_ID, null, false);
+        when(operatonRepositoryService.findProcessDefinitionById(PROCESS_DEFINITION_ID)).thenReturn(processDefinition);
+        when(formService.submitStartForm(any(), any(), any()))
+            .thenReturn(mock(ProcessInstance.class, RETURNS_DEEP_STUBS));
+
+        AuthorizationContext.runWithoutAuthorization(() -> createService()
+            .startProcessById(PROCESS_DEFINITION_ID, "UNDEFINED_BUSINESS_KEY", Map.of()));
+
+        verify(formService).submitStartForm(eq(PROCESS_DEFINITION_ID), isNull(), any());
+    }
+
+    private OperatonProcessDefinition processDefinition(String id, String versionTag, boolean suspended) {
+        var processDefinition = mock(OperatonProcessDefinition.class);
+        when(processDefinition.getId()).thenReturn(id);
+        when(processDefinition.getVersionTag()).thenReturn(versionTag);
+        when(processDefinition.isSuspended()).thenReturn(suspended);
+        return processDefinition;
     }
 
     private BpmnModelInstance modelWithCamundaExpression(String expression) {
