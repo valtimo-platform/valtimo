@@ -19,6 +19,7 @@ package com.ritense.buildingblock.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
+import com.ritense.buildingblock.listener.BuildingBlockContinuousSyncListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
@@ -52,6 +53,8 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockCaseCorrelationBusinessKeyProvider
+import com.ritense.buildingblock.service.BuildingBlockCaseCorrelationStartTargetProvider
 import com.ritense.buildingblock.service.BuildingBlockFieldService
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionImporter
@@ -100,6 +103,8 @@ import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.BuildingBlockProcessLookup
+import com.ritense.processdocument.service.CaseCorrelationBusinessKeyProvider
+import com.ritense.processdocument.service.CaseCorrelationStartTargetProvider
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
@@ -118,6 +123,7 @@ import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -372,6 +378,30 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CaseCorrelationBusinessKeyProvider::class)
+    fun buildingBlockCaseCorrelationBusinessKeyProvider(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+    ): CaseCorrelationBusinessKeyProvider {
+        return BuildingBlockCaseCorrelationBusinessKeyProvider(buildingBlockInstanceRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseCorrelationStartTargetProvider::class)
+    fun buildingBlockCaseCorrelationStartTargetProvider(
+        documentService: DocumentService,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        repositoryService: RepositoryService,
+    ): CaseCorrelationStartTargetProvider {
+        return BuildingBlockCaseCorrelationStartTargetProvider(
+            documentService,
+            caseDefinitionBuildingBlockLinkRepository,
+            processDefinitionBuildingBlockDefinitionRepository,
+            repositoryService,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockInstanceResource::class)
     fun buildingBlockInstanceResource(
         buildingBlockInstanceService: BuildingBlockInstanceService,
@@ -566,6 +596,24 @@ class BuildingBlockAutoConfiguration {
         caseDefinitionBuildingBlockLinkService,
         documentService,
         valueResolverService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockContinuousSyncListener::class)
+    fun buildingBlockContinuousSyncListener(
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        processLinkService: ProcessLinkService,
+        caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
+        documentService: DocumentService,
+        valueResolverService: ValueResolverService,
+        runtimeService: RuntimeService,
+    ) = BuildingBlockContinuousSyncListener(
+        buildingBlockInstanceService,
+        processLinkService,
+        caseDefinitionBuildingBlockLinkService,
+        documentService,
+        valueResolverService,
+        runtimeService,
     )
 
     @Bean
