@@ -136,6 +136,11 @@ your environment.
 * Map **Outputs** from the building block back to the case.
     * Fields can be added for syncing by clicking **Add sync**
     * This is one way. Any changes to the case document will not be automatically synced to the building block instance.
+    * For each output mapping you can choose **when** the value is written back:
+        * **End** (default) — the value is written back once, when the building block completes. This is the existing behaviour.
+        * **Continuous** — the value is written back on every saved change to the building block data, while the building block is still running.
+    * The sync-timing choice applies the same way to building blocks started ad-hoc as a case action and to
+      building blocks used in independent processes (where outputs are written to process variables using the `pv:` prefix).
 
 <figure><img src="./images/building-block-input-output-mapping.png" alt=""><figcaption><p>Input and output mapping</p></figcaption></figure>
 
