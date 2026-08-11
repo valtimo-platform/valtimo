@@ -19,6 +19,7 @@ package com.ritense.processdocument.domain
 import com.ritense.processdocument.BaseIntegrationTest
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +27,8 @@ import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class ProcessDefinitionCaseDefinitionIntTest @Autowired constructor(
-    private val repository: ProcessDefinitionCaseDefinitionRepository
+    private val repository: ProcessDefinitionCaseDefinitionRepository,
+    private val entityManager: EntityManager
 ) : BaseIntegrationTest() {
 
     @Test
@@ -43,6 +45,7 @@ class ProcessDefinitionCaseDefinitionIntTest @Autowired constructor(
             startableByUser = true
         )
         repository.saveAndFlush(orphanedLink)
+        entityManager.clear()
 
         val loaded = repository.findByIdCaseDefinitionId(caseDefinitionId)
 
