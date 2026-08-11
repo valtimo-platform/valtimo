@@ -59,3 +59,10 @@
   Starting a building block from the 'Start' menu of a case did nothing when the start form of its
   main process is configured to be shown in a panel. The panel now opens right away. Previously it
   only appeared after first opening the start form of a regular process in the panel.
+
+## Security
+
+* Addressed the reported high-severity front-end security alerts. The `js-yaml`, `fast-uri`, `ip-address`,
+  `postcss` and `brace-expansion` dependencies were updated to fixed versions. The remaining alerts cannot be
+  resolved without a major upgrade: the Swagger UI fix requires Node 22, and the Angular alerts require the
+  next major Angular version. Both remain tracked.
