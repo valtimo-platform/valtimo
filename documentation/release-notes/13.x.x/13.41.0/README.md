@@ -74,9 +74,3 @@
 * **Exporting case definitions**
 
   Case definitions that had a process definition removed via the database were unable to be exported.
-
-* **Object permissions are checked before the object is retrieved**
-
-  A user without permission to view objects is now refused before anything is requested from the Objecten API.
-  Previously the object was retrieved first, so the answer of the Objecten API could tell such a user whether an
-  object exists.
