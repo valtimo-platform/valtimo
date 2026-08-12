@@ -31,6 +31,12 @@
   could not be edited, leaving the Duplicate button disabled. The dialog now pre-populates the divider key 
   with a unique default value and allows it to be edited before duplicating.
   
+* **A dashboard widget with the bar chart display type is no longer empty**
+
+  A dashboard widget that is configured with case counts and the bar chart display type showed an empty
+  widget, while the same counts were shown correctly with the donut and meter display types. The bar
+  chart is now rendered.
+
 * **A form flow of a user task now loads completely when another user task is opened**
 
   When a process has multiple user tasks that are linked to a form flow, opening the next user task
