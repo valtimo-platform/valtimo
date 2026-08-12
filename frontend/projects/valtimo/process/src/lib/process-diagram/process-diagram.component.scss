@@ -55,3 +55,27 @@
     background-color: #b2e0ff;
   }
 }
+
+.valtimo-skip-timer-overlay {
+  align-items: center;
+  background-color: var(--cds-button-primary);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px var(--cds-shadow, rgba(0, 0, 0, 0.3));
+  color: var(--cds-text-on-color);
+  cursor: pointer;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  padding: 0;
+  width: 24px;
+
+  &:hover {
+    background-color: var(--cds-button-primary-hover);
+  }
+
+  &:focus {
+    outline: 2px solid var(--cds-focus);
+    outline-offset: 1px;
+  }
+}

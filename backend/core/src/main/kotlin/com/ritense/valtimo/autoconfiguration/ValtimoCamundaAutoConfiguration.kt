@@ -25,6 +25,8 @@ import com.ritense.valtimo.camunda.authorization.CamundaExecutionSpecificationFa
 import com.ritense.valtimo.camunda.authorization.CamundaIdentityLinkSpecificationFactory
 import com.ritense.valtimo.camunda.authorization.CamundaProcessDefinitionSpecificationFactory
 import com.ritense.valtimo.camunda.authorization.CamundaTaskSpecificationFactory
+import com.ritense.valtimo.camunda.authorization.CamundaTimerExecutionMapper
+import com.ritense.valtimo.camunda.authorization.CamundaTimerSpecificationFactory
 import com.ritense.valtimo.camunda.repository.CamundaBytearrayRepository
 import com.ritense.valtimo.camunda.repository.CamundaExecutionRepository
 import com.ritense.valtimo.camunda.repository.CamundaHistoricProcessInstanceRepository
@@ -158,6 +160,13 @@ class ValtimoCamundaAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CamundaTimerSpecificationFactory::class)
+    @ConditionalOnBean(AuthorizationService::class)
+    fun camundaTimerSpecificationFactory(): CamundaTimerSpecificationFactory {
+        return CamundaTimerSpecificationFactory()
+    }
+
+    @Bean
     @ConditionalOnMissingBean(CamundaProcessDefinitionSpecificationFactory::class)
     @ConditionalOnBean(AuthorizationService::class)
     fun camundaProcessDefinitionSpecificationFactory(
@@ -172,6 +181,14 @@ class ValtimoCamundaAutoConfiguration {
     @ConditionalOnBean(AuthorizationService::class)
     fun camundaExecutionProcessDefinitionMapper() = CamundaExecutionProcessDefinitionMapper()
 
+    @Bean
+    @ConditionalOnMissingBean(CamundaTimerExecutionMapper::class)
+    @ConditionalOnBean(AuthorizationService::class)
+    fun camundaTimerExecutionMapper(
+        camundaExecutionRepository: CamundaExecutionRepository
+    ): CamundaTimerExecutionMapper {
+        return CamundaTimerExecutionMapper(camundaExecutionRepository)
+    }
 
     @Bean
     @ConditionalOnMissingBean(CamundaTaskIdentityLinkMapper::class)

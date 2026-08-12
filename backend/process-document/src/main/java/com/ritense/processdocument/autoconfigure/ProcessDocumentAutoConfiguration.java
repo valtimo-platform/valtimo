@@ -39,17 +39,20 @@ import com.ritense.processdocument.service.DocumentDefinitionProcessLinkService;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentDeploymentService;
 import com.ritense.processdocument.service.ProcessDocumentService;
+import com.ritense.processdocument.service.ProcessInstanceCaseAccessService;
 import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentAssociationService;
 import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentDeploymentService;
 import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentService;
 import com.ritense.processdocument.service.impl.DocumentDefinitionProcessLinkServiceImpl;
 import com.ritense.processdocument.web.rest.ProcessDocumentResource;
+import com.ritense.processdocument.web.rest.ProcessTimerResource;
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.service.CamundaProcessService;
 import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valueresolver.ValueResolverFactory;
 import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.ManagementService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.extension.reactor.spring.EnableCamundaEventBus;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -174,6 +177,32 @@ public class ProcessDocumentAutoConfiguration {
         DocumentDefinitionProcessLinkService documentDefinitionProcessLinkService
     ) {
         return new ProcessDocumentResource(processDocumentService, processDocumentAssociationService, documentDefinitionProcessLinkService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessInstanceCaseAccessService.class)
+    public ProcessInstanceCaseAccessService processInstanceCaseAccessService(
+        ProcessDocumentAssociationService processDocumentAssociationService
+    ) {
+        return new ProcessInstanceCaseAccessService(
+            processDocumentAssociationService
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessTimerResource.class)
+    public ProcessTimerResource processTimerResource(
+        ProcessInstanceCaseAccessService processInstanceCaseAccessService,
+        AuthorizationService authorizationService,
+        ManagementService managementService,
+        ApplicationEventPublisher eventPublisher
+    ) {
+        return new ProcessTimerResource(
+            processInstanceCaseAccessService,
+            authorizationService,
+            managementService,
+            eventPublisher
+        );
     }
 
     @Bean

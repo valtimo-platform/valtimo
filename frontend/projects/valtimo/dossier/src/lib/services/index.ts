@@ -31,3 +31,4 @@ export * from './dossier-widgets-api.service';
 export * from './dossier-widgets-layout.service';
 export * from './dossier-detail-layout.service';
 export * from './dossier-list-case-tag.service';
+export * from './dossier-process-timer.service';

@@ -170,8 +170,8 @@
 
 * [Release notes](release-notes/release-notes.md)
 * [12.x.x](release-notes/12.x.x/README.md)
+  * [12.42.0](release-notes/12.x.x/12.42.0/README.md)
   * [12.41.0](release-notes/12.x.x/12.41.0/README.md)
-    * [Backend migration](release-notes/12.x.x/12.41.0/back-end-migration.md)
   * [12.40.0](release-notes/12.x.x/12.40.0/README.md)
   * [12.39.0](release-notes/12.x.x/12.39.0/README.md)
   * [12.38.0](release-notes/12.x.x/12.38.0/README.md)

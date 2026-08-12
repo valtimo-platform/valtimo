@@ -31,6 +31,7 @@ import com.ritense.document.event.DocumentAssigneeChangedEvent;
 import com.ritense.document.event.DocumentUnassignedEvent;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.event.BesluitAddedEvent;
+import com.ritense.processdocument.event.ProcessTimerSkippedEvent;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
 import com.ritense.valtimo.camunda.processaudit.ProcessEndedEvent;
 import com.ritense.valtimo.camunda.processaudit.ProcessStartedEvent;
@@ -83,7 +84,8 @@ public class CamundaProcessJsonSchemaDocumentAuditService implements ProcessDocu
             BesluitAddedEvent.class,
             DocumentAssigneeChangedEvent.class,
             DocumentUnassignedEvent.class,
-            TaskDueDateSetEvent.class
+            TaskDueDateSetEvent.class,
+            ProcessTimerSkippedEvent.class
         );
 
         final var document = documentService.getDocumentBy(id);
