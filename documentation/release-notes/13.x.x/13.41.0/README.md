@@ -74,10 +74,3 @@
 * **Exporting case definitions**
 
   Case definitions that had a process definition removed via the database were unable to be exported.
-
-## Security
-
-* Addressed several reported high-severity front-end security alerts. The `js-yaml`, `fast-uri`, `ip-address`,
-  `postcss` and `brace-expansion` dependencies were updated to fixed versions. The remaining alerts cannot be
-  resolved without a major upgrade: the Swagger UI `immutable` fix requires Node 22, and the Angular alerts require the
-  next major Angular version. Both remain tracked.
