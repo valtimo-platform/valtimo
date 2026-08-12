@@ -35,6 +35,11 @@
                 "source": "zaakEinddatumGeplandBB3",
                 "target": "doc:zaakEinddatumGeplandBB3",
                 "syncTiming": "END"
+            },
+            {
+                "source": "bubbleNote",
+                "target": "doc:bubbleNote",
+                "syncTiming": "CONTINUOUS"
             }
         ]
     },
