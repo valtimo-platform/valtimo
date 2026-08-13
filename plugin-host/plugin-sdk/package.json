@@ -25,7 +25,8 @@
     "./manifest-validation": {
       "types": "./dist/manifest-validation.d.ts",
       "default": "./dist/manifest-validation.js"
-    }
+    },
+    "./toolchain": "./bin/toolchain.mjs"
   },
   "bin": {
     "valtimo-plugin-build": "./bin/valtimo-plugin-build.mjs",

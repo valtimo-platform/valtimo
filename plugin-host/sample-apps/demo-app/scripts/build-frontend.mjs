@@ -25,10 +25,10 @@
  * serves the built files directly rather than zipping them.
  */
 
-import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runEsbuild } from "@valtimo/plugin-sdk/toolchain";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const frontendDir = join(projectRoot, "frontend");
@@ -53,20 +53,15 @@ for (const htmlFile of htmlFiles) {
   }
 
   console.log(`[build-frontend] ${baseName}.tsx -> public/${bundleName}`);
-  execFileSync(
-    "npx",
-    [
-      "esbuild",
-      sourceFile,
-      "--bundle",
-      `--outfile=${join(publicDir, bundleName)}`,
-      "--format=iife",
-      "--target=es2020",
-      "--jsx=automatic",
-      "--loader:.tsx=tsx",
-    ],
-    { cwd: projectRoot, stdio: "inherit" },
-  );
+  await runEsbuild(projectRoot, {
+    entryPoints: [sourceFile],
+    bundle: true,
+    outfile: join(publicDir, bundleName),
+    format: "iife",
+    target: "es2020",
+    jsx: "automatic",
+    loader: { ".tsx": "tsx" },
+  });
 }
 
 console.log("[build-frontend] done");

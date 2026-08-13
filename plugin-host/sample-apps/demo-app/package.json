@@ -8,9 +8,9 @@
     "installDeps": "npm install",
     "build:frontend": "node scripts/build-frontend.mjs",
     "build": "npm run build:frontend && tsc",
-    "dev": "npm run build:frontend && ADMIN_TOKEN=test-secret tsx watch src/index.ts",
+    "dev": "node scripts/dev.mjs",
     "start": "node dist/index.js",
-    "clean": "rm -rf dist public"
+    "clean": "node -e \"const fs=require('fs');for(const d of ['dist','public'])fs.rmSync(d,{recursive:true,force:true})\""
   },
   "dependencies": {
     "amqplib": "^0.10.9",
