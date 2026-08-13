@@ -22,7 +22,7 @@ import com.ritense.valtimo.camunda.domain.CamundaTask
 
 class CamundaTaskActionProvider : ResourceActionProvider<CamundaTask> {
     override fun getAvailableActions(): List<Action<CamundaTask>> {
-        return listOf(ASSIGN, ASSIGNABLE, CLAIM, COMPLETE, VIEW_LIST, VIEW)
+        return listOf(ASSIGN, ASSIGNABLE, CLAIM, COMPLETE, VIEW_LIST, VIEW, MODIFY)
     }
 
     companion object {
