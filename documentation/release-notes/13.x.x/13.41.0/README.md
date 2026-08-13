@@ -6,59 +6,71 @@
 
 ## New Features
 
-* **Exporting and importing a process with its process links**
+* **Send a message to a case and its building blocks**
 
-  A process that is not part of a case can now be exported together with its process links, and
-  imported on another environment. Use *Export with process links* in the menu of the process to
-  download a package, and upload that package on the target environment. Changes that were built and
-  tested on one environment therefore no longer have to be reconnected by hand elsewhere.
+  Processes can now send a message to a whole case: the case's own processes and all of its building blocks receive
+  it. This makes it possible to let a building block react to something that happens elsewhere in the case, and to let
+  building blocks signal each other. Messages can also be sent to another case, for example a related one. The new
+  methods sit on the existing `correlationService`, next to the other correlation methods — see
+  [correlating messages](../../../features/process/correlation-service.md#correlating-to-a-whole-case-including-its-building-blocks).
 
-  During the import you can point every plugin link in the package at the plugin configuration of
-  the target environment, so links keep working on an environment that uses different
-  configurations. When the process already exists on the environment, the import asks for
-  confirmation before replacing it, just like uploading a single BPMN file does.
+* **Start a building block with a message**
 
-  Uploading a single BPMN file keeps working as before.
+  A building block can now be started by sending a message to the case, instead of only from a call activity or from
+  the case's **Start** menu. See
+  [Start a building block by message](../../../features/building-blocks/README.md#start-a-building-block-by-message).
+
 
 ## Enhancements
 
-* **An exported process describes itself**
+* **Searchable dropdowns on the process migration screen**
 
-  The package of an exported process now contains a manifest, just like an exported case definition or
-  building block already did. It names the process, its version, and the plugins its process links
-  need, so it is clear what a package contains and what the receiving environment has to offer before
-  it is imported.
+  The *Source Definition*, *Source Version*, *Target Definition*, *Target Version* and *Choose Target*
+  dropdowns on the *Process migration* screen are now combo boxes, so typing in the field filters the
+  available entries. This makes it easier to find a process in an environment with many process
+  definitions. Selecting a source definition now also preselects the same definition as target, and
+  clearing the source definition clears the source version, target definition and target version as
+  well, so no stale selection is left behind.
 
-* **An import summary shows what is still missing**
+* **Searchable process dropdown on the Progress tab**
 
-  After importing, a summary shows which items the process refers to that are not present on this
-  environment: forms, form flow definitions, decision tables and called sub-processes. Those items
-  are deliberately not part of the package, because they can be shared with other processes, and are
-  imported separately. Only references that could be determined are shown.
-
-  When the process refers to a form that does not exist on this environment, the import is refused
-  beforehand and the missing form is named, so no half-imported process is left behind.
-
-* **A process that is managed by configuration cannot be overwritten by an import**
-
-  Importing a package for a process that exists on this environment as a system process that may not
-  be changed is refused, with an explanation. Such a process can still be exported.
-
-* **Process links from the application configuration are leading**
-
-  Process links that are supplied with the application configuration are now leading: a link that is
-  not in that configuration is removed when the application starts. This keeps environments that are
-  managed through configuration identical to that configuration.
+  The process dropdown on the *Progress* tab of a case is now a combo box. Typing in the field filters
+  the processes linked to the case, instead of having to scroll through the full list.
 
 ## Bugfixes
 
-* **The exported file is named after the process**
+* **Actions now respect the linked building block version**
 
-  Exporting a process definition from the process editor produced a file named `diagram.bpmn`. The
-  file is now named after the process, so it is clear which process was exported.
+  Starting a building block from the actions of a case now always runs the version of that building block
+  that is linked to the case. Previously a newer version of the same building block took over: after
+  creating a new version and changing its process, starting the action still ran the newer version, which
+  led to an error when that version wrote to fields the linked version does not have. Changes to other
+  versions of a building block no longer affect the version that is linked.
 
-* **Selecting a file to upload a process definition filters on the supported file types again**
+  A process that belongs to a building block can now only be started for a specific version. Starting one
+  by process definition key alone - for example from a custom plugin or a `startProcessByProcessDefinitionKey`
+  expression outside of a building block - now reports a clear error instead of silently running whichever
+  version happened to be deployed last.
 
-  The file dialog offered every file type instead of only the supported ones, and dragging a file
-  onto the upload area did nothing. Both work again, for BPMN files as well as exported process
-  packages.
+* **A divider widget without a title no longer shows a dash**
+
+  A divider widget that is configured without a title now stays empty, both in the widget list on the
+  widget management page and on the widget tab of a case. Previously a `-` was shown in both places as a
+  placeholder for the missing title. In addition, saving a divider without a title on an IKO view no longer
+  fails: the back end required a non-blank title for every widget, while a divider does not need one.
+
+* **A divider widget can be duplicated again**
+
+  Fixed an issue where duplicating a divider opened the duplication dialog with an empty, invalid key that 
+  could not be edited, leaving the Duplicate button disabled. The dialog now pre-populates the divider key 
+  with a unique default value and allows it to be edited before duplicating.
+
+* **Start form of a building block now opens in the panel**
+
+  Starting a building block from the 'Start' menu of a case did nothing when the start form of its
+  main process is configured to be shown in a panel. The panel now opens right away. Previously it
+  only appeared after first opening the start form of a regular process in the panel.
+
+* **Exporting case definitions**
+
+  Case definitions that had a process definition removed via the database were unable to be exported.
