@@ -32,7 +32,15 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts", "dist/**", "src/models/**", "src/index.ts", "src/frontend/index.ts"],
+      exclude: [
+        "src/**/*.test.ts",
+        "dist/**",
+        // Test scaffolding (Extism Host/Memory doubles), not shipped product code.
+        "src/test-support/**",
+        "src/models/**",
+        "src/index.ts",
+        "src/frontend/index.ts",
+      ],
       reporter: ["text", "html"],
     },
   },

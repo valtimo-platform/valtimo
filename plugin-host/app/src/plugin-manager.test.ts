@@ -244,6 +244,134 @@ describe("PluginManager (mocked Extism)", () => {
     });
   });
 
+  describe("callSubmit (task-form Level 1 hook)", () => {
+    const submitInput = {
+      configurationId: "cfg-1",
+      configuration: { setting: "x" },
+      taskId: "task-1",
+      processInstanceId: "pi-1",
+      documentId: "doc-1",
+      submission: { "pv:approved": true },
+      serviceToken: "svc",
+      gzacBaseUrl: "http://gzac:8080",
+    };
+
+    it("dispatches to the handle_submit export with the submit key in the Wasm input", async () => {
+      manager = makeManager();
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      const instance = fakeExtismPlugin();
+      instance.call.mockResolvedValueOnce({
+        text: () => JSON.stringify({ status: "completed", variables: { approved: true } }),
+      });
+      createPluginMock.mockResolvedValueOnce(instance);
+
+      const result = await manager.callSubmit(PLUGIN_ID, VERSION, "review", submitInput);
+
+      expect(result).toEqual({ status: "completed", variables: { approved: true } });
+      const [exportName, wasmInput] = instance.call.mock.calls[0];
+      expect(exportName).toBe("handle_submit");
+      expect(JSON.parse(wasmInput as string)).toEqual({
+        submitKey: "review",
+        configurationId: "cfg-1",
+        configuration: { setting: "x" },
+        taskId: "task-1",
+        processInstanceId: "pi-1",
+        documentId: "doc-1",
+        submission: { "pv:approved": true },
+      });
+    });
+
+    it("keeps the service token and callback URL host-only (never in the Wasm input)", async () => {
+      manager = makeManager();
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      const instance = fakeExtismPlugin();
+      createPluginMock.mockResolvedValueOnce(instance);
+
+      await manager.callSubmit(PLUGIN_ID, VERSION, "review", submitInput);
+
+      const wasmInput = instance.call.mock.calls[0][1] as string;
+      expect(wasmInput).not.toContain("svc");
+      expect(wasmInput).not.toContain("gzac:8080");
+
+      const hostCtx = instance.call.mock.calls[0][2] as Record<string, unknown>;
+      expect(hostCtx.serviceToken).toBe("svc");
+      expect(hostCtx.gzacBaseUrl).toBe("http://gzac:8080");
+      // A server-to-server hook gets no user token — only handle_request forwards one (§13.4).
+      expect(hostCtx.userToken).toBeUndefined();
+    });
+
+    it("resolves the configuration's grants into the hook's host context", async () => {
+      manager = makeManager();
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      const instance = fakeExtismPlugin();
+      createPluginMock.mockResolvedValueOnce(instance);
+
+      await manager.callSubmit(PLUGIN_ID, VERSION, "review", submitInput);
+
+      const hostCtx = instance.call.mock.calls[0][2] as Record<string, unknown>;
+      expect(hostCtx.grantedCapabilities).toEqual(["gzac_api"]);
+      expect(hostCtx.grantedEndpoints).toEqual([{ method: "GET", pattern: "/api/v1/document/*" }]);
+    });
+
+    it("throws for an unknown plugin version", async () => {
+      manager = makeManager();
+      await expect(
+        manager.callSubmit(PLUGIN_ID, "9.9.9", "review", submitInput)
+      ).rejects.toThrow(/Plugin not found/);
+    });
+  });
+
+  describe("loadAllFromDisk", () => {
+    it("loads every version found under the storage directory", async () => {
+      const secondVersion = "2.0.0";
+      const dir = join(storageDir, PLUGIN_ID, secondVersion);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(
+        join(dir, "manifest.json"),
+        JSON.stringify({
+          pluginId: PLUGIN_ID,
+          version: secondVersion,
+          translations: { en: { name: "Test", description: "d" } },
+        })
+      );
+      writeFileSync(join(dir, "plugin.wasm"), Buffer.from([0x00, 0x61, 0x73, 0x6d]));
+
+      manager = makeManager();
+      await manager.loadAllFromDisk();
+
+      expect(manager.listVersions(PLUGIN_ID).map((v) => v.version).sort()).toEqual([
+        VERSION,
+        secondVersion,
+      ]);
+    });
+
+    it("skips a version whose package is unloadable instead of failing the boot", async () => {
+      const broken = join(storageDir, PLUGIN_ID, "3.0.0");
+      mkdirSync(broken, { recursive: true });
+      writeFileSync(join(broken, "manifest.json"), "{not json");
+
+      manager = makeManager();
+      await manager.loadAllFromDisk();
+
+      expect(manager.hasVersion(PLUGIN_ID, VERSION)).toBe(true);
+      expect(manager.listVersions(PLUGIN_ID).map((v) => v.version)).toEqual([VERSION]);
+    });
+
+    it("creates the storage directory when it does not exist yet", async () => {
+      const missing = join(storageDir, "nested", "plugins");
+      manager = new PluginManager(
+        missing,
+        noopLogger(),
+        configProvider as never,
+        stubRepos.kv,
+        stubRepos.log,
+        {}
+      );
+      await manager.loadAllFromDisk();
+      expect(manager.listPlugins()).toEqual([]);
+    });
+  });
+
   it("evicts an instance that has been idle past the TTL, via the periodic sweep", async () => {
     vi.useFakeTimers();
     manager = makeManager({ instanceIdleTtlMs: 1_000 });

@@ -21,6 +21,14 @@
  * This file provides the handle_action and get_manifest exports that the
  * Plugin Host calls. The SDK user never imports this directly — it is
  * bundled automatically by the build tooling.
+ *
+ * TEST COVERAGE: this module reads low in `npm run test:cov` by design. Its dispatch paths
+ * (`handle_action` / `handle_event` / `handle_request` / `handle_submit`, the config injection and
+ * the QuickJS `settleSync` semantics) are covered end-to-end by the L3 suite —
+ * `plugin-host/app/test/wasm/sdk-runtime.wasm.test.ts` — which runs this file *compiled to Wasm*
+ * with the real extism-js toolchain. Asserting it here with mocked globals instead would test a
+ * simulation of QuickJS rather than QuickJS; only the `result`-normalisation helper, whose behaviour
+ * is independent of the engine, is unit-tested in `runtime.test.ts`.
  */
 
 import {getActionHandler} from "./actions.js";

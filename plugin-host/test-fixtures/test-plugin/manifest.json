@@ -11,5 +11,19 @@
     { "key": "boom", "title": "Boom", "activityTypes": ["bpmn:ServiceTask"] },
     { "key": "call-gzac", "title": "Call GZAC", "activityTypes": ["bpmn:ServiceTask"] }
   ],
-  "eventSubscriptions": ["test.event.handled"]
+  "eventSubscriptions": ["test.event.handled"],
+  "frontendBundles": [
+    {
+      "type": "task-form",
+      "key": "review",
+      "path": "/frontend/review.bundle.js",
+      "submitHandler": true
+    },
+    {
+      "type": "task-form",
+      "key": "echo-submit",
+      "path": "/frontend/echo-submit.bundle.js",
+      "submitHandler": true
+    }
+  ]
 }

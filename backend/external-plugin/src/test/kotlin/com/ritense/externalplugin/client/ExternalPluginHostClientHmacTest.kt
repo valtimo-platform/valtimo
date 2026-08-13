@@ -206,6 +206,103 @@ class ExternalPluginHostClientHmacTest {
         server.verify()
     }
 
+    @Test
+    fun `invokeAction signs the action body and sends no bearer token`() {
+        val path = "/plugins/case-summary/0.1.0/actions/summarize"
+        val payload = objectMapper.createObjectNode().apply {
+            put("configurationId", UUID.randomUUID().toString())
+            put("processInstanceId", "pi-1")
+            put("activityId", "act-1")
+        }
+        val expectedBody = objectMapper.writeValueAsBytes(payload)
+
+        server.expect(requestTo("$baseUrl$path"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect { request ->
+                request as MockClientHttpRequest
+                assertSigned(request, "POST", path, expectedBody)
+            }
+            .andRespond(
+                withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                    .body("""{"status":"completed"}""")
+            )
+
+        client.invokeAction(baseUrl, "case-summary", "0.1.0", "summarize", payload, secret)
+
+        server.verify()
+    }
+
+    @Test
+    fun `invokeSubmit signs the submission body and sends no bearer token`() {
+        val path = "/plugins/case-summary/0.1.0/submit/review"
+        val payload = objectMapper.createObjectNode().apply {
+            put("configurationId", UUID.randomUUID().toString())
+            put("taskId", "task-1")
+        }
+        val expectedBody = objectMapper.writeValueAsBytes(payload)
+
+        server.expect(requestTo("$baseUrl$path"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect { request ->
+                request as MockClientHttpRequest
+                assertSigned(request, "POST", path, expectedBody)
+            }
+            .andRespond(
+                withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                    .body("""{"status":"completed"}""")
+            )
+
+        client.invokeSubmit(baseUrl, "case-summary", "0.1.0", "review", payload, secret)
+
+        server.verify()
+    }
+
+    @Test
+    fun `getConfigurationLogs signs the bare path while the request still carries the query string`() {
+        val configId = UUID.randomUUID().toString()
+        val path = "/api/host/configurations/$configId/logs"
+
+        server.expect(requestTo("$baseUrl$path?page=2&size=50&level=error&source=http_request"))
+            .andExpect(method(HttpMethod.GET))
+            .andExpect { request ->
+                request as MockClientHttpRequest
+                // Query parameters are deliberately not signature-bound: the host strips the query
+                // before verifying, so signing it would make the canonical strings diverge (§18.11).
+                assertSigned(request, "GET", path, ByteArray(0))
+            }
+            .andRespond(
+                withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                    .body("""{"content":[],"page":2,"size":50,"totalElements":0}""")
+            )
+
+        val result = client.getConfigurationLogs(
+            baseUrl, secret, configId, 2, 50, "error", "http_request"
+        )
+
+        assertThat(result.get("size").asInt()).isEqualTo(50)
+        server.verify()
+    }
+
+    @Test
+    fun `getConfigurationLogs omits blank filters from the query string`() {
+        val configId = UUID.randomUUID().toString()
+        val path = "/api/host/configurations/$configId/logs"
+
+        server.expect(requestTo("$baseUrl$path?page=0&size=25"))
+            .andExpect(method(HttpMethod.GET))
+            .andExpect { request ->
+                request as MockClientHttpRequest
+                assertSigned(request, "GET", path, ByteArray(0))
+            }
+            .andRespond(
+                withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body("{}")
+            )
+
+        client.getConfigurationLogs(baseUrl, secret, configId, 0, 25, null, "  ")
+
+        server.verify()
+    }
+
     private fun assertSigned(
         request: MockClientHttpRequest,
         method: String,
