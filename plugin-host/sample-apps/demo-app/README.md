@@ -31,7 +31,8 @@ The case tab shows the four communication levels the platform supports:
 
 - Node.js ≥ 22
 - The sibling `../../plugin-sdk` package built (`cd ../../plugin-sdk && npm install && npm run build`)
-  — the browser bundles import `@valtimo/plugin-sdk/frontend`.
+  — the browser bundles import `@valtimo/plugin-sdk/frontend`. Running `npm run setup` once at the
+  [plugin-host root](../../README.md#quick-start) covers this and installs this app too.
 
 ## Install, build & run
 

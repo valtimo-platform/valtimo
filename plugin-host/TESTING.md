@@ -27,7 +27,7 @@ things that need to be installed or running.
 |-------|-----------------|-------|
 | **L1 — Unit** | Call one function on its own and check what it returns. | nothing extra |
 | **L2 — Component** | Send a fake HTTP request into a route and check the response. | nothing extra |
-| **L3 — Wasm** | Build a real plugin and actually run it in the sandbox. | Node ≥ 22, the `extism-js` compiler |
+| **L3 — Wasm** | Build a real plugin and actually run it in the sandbox. | Node ≥ 22 (Wasm toolchain downloads itself) |
 | **L4 — Integration** | Run the code against a real database and message broker. | Docker |
 | **L5 — Contract** | Prove our code agrees with the Java/Kotlin backend, byte for byte. | nothing extra |
 
@@ -43,7 +43,7 @@ npm test                 # L1 (+ the browser-side SDK, see "happy-dom" below)
 # app/
 npm test                 # L1 + L2 + L5  — fast, no Docker, no extra tools
 npm run test:cov         # the same, plus a coverage report
-npm run test:wasm        # L3 — needs Node 22 and the extism-js compiler
+npm run test:wasm        # L3 — needs Node 22 (the Wasm toolchain downloads itself)
 npm run test:int         # L4 — needs Docker running
 ```
 
@@ -53,11 +53,11 @@ npm run test:int         # L4 — needs Docker running
   or newer.** That is because running a plugin uses a background worker thread that older Node
   versions can't start. (The part of L3 that needs Node 22 skips itself automatically on older
   versions, so nothing breaks — those tests just don't run.)
-- **`extism-js`** — only for L3. This is the compiler that turns a plugin's TypeScript into a
-  WebAssembly (`.wasm`) file. We don't commit it to the repo (it's a large binary). Download it from
-  https://github.com/extism/js-pdk/releases and drop it at `plugin-host/.bin/extism-js`; the test
-  setup looks for it there. On macOS the OS blocks freshly-downloaded binaries once — clear that with
-  `xattr -d com.apple.quarantine plugin-host/.bin/extism-js`. CI downloads it automatically.
+- **The Wasm toolchain (`extism-js` + `binaryen`)** — only for L3, and **you don't install it by
+  hand**: the first plugin build downloads the pinned versions into `plugin-host/.bin/` (gitignored)
+  automatically, both locally and on CI. Copies already on your `PATH` (e.g. `brew install binaryen`)
+  are used as-is. The pins and download logic live in `plugin-sdk/bin/toolchain.mjs`; see the
+  [SDK README](plugin-sdk/README.md#prerequisites) for the environment overrides.
 - **Docker** — only for L4. The tests start throwaway Postgres and RabbitMQ containers themselves and
   shut them down afterwards, so you just need Docker running; no manual setup.
 
@@ -141,7 +141,7 @@ is a fixed, reusable piece of test setup — here, a tiny real plugin with predi
 tests run, so to add a case you just add a handler to the fixture.
 
 ```bash
-# from plugin-host/app, with Node 22 active and extism-js in ../.bin
+# from plugin-host/app, with Node 22 active (the Wasm toolchain downloads itself on first use)
 npm run test:wasm
 ```
 
@@ -248,10 +248,12 @@ proven until a real plugin runs them (L3).
 `.github/workflows/plugin_host_ci.yml` runs automatically whenever files under `plugin-host/` change:
 
 - **`unit`** — type-check + `npm test` (with coverage) for both packages. Runs on every pull request.
-- **`wasm`** — downloads the `extism-js` compiler, builds the SDK and fixture, runs the L3 tests. If
-  you upgrade the `@extism/js-pdk` version in the fixture, bump the matching `EXTISM_JS_VERSION` in
-  the workflow.
+- **`wasm`** — builds the SDK and fixture, runs the L3 tests. The Wasm toolchain (extism-js +
+  binaryen) is downloaded automatically at the versions pinned in `plugin-sdk/bin/toolchain.mjs`;
+  bump those pins together with the `@extism/js-pdk` version in the fixture.
 - **`integration`** — runs the L4 tests against the Docker daemon that comes with the CI runner.
+- **`bootstrap`** — runs the documented one-command setup (`npm run setup -- --ci`) on Linux,
+  Windows, and macOS and checks that the sample plugin package is produced.
 
 ## Known behaviours pinned by tests
 

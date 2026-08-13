@@ -9,6 +9,8 @@ WebAssembly-based plugin system for extending Valtimo GZAC with custom actions a
 | [`app/`](./app/) | **Plugin Host** — Node.js sidecar that loads, stores, and executes Wasm plugins |
 | [`plugin-sdk/`](./plugin-sdk/) | **SDK** — TypeScript library and build tools for plugin authors |
 | [`sample-plugins/`](./sample-plugins/) | **Sample plugins** — Reference implementations |
+| [`sample-apps/`](./sample-apps/) | **Sample apps** — Reference remote "Valtimo App" (demo-app) |
+| `scripts/` | **Bootstrap tooling** — `npm run setup` / `npm run dev` orchestration (see Quick Start) |
 
 > **Testing:** see [`TESTING.md`](./TESTING.md) for the test layers (unit, component, Wasm,
 > integration, contract), how to run them, and **which kind of test to write when** you change code.
@@ -40,27 +42,48 @@ WebAssembly-based plugin system for extending Valtimo GZAC with custom actions a
 
 ## Quick Start
 
-### 1. Start the Plugin Host
+Prerequisites: **Node.js 22+** ([`.nvmrc`](./.nvmrc) provided) and **Docker** (for the host's
+PostgreSQL). Everything else — including the Wasm toolchain (`extism-js` + `binaryen`) — is
+installed automatically. Works on Linux, macOS, and Windows.
 
 ```bash
-cd app
-npm install
-npm run db:up      # Start PostgreSQL
-npm run dev        # Start host with auto-reload
+cd plugin-host
+npm run dev
 ```
 
-### 2. Build a Sample Plugin
+That single command takes a fresh checkout to a running host:
 
-```bash
-cd plugin-sdk
-npm install && npm run build
+1. Installs and builds every package in dependency order (`plugin-sdk` first — the app, sample
+   plugin, demo app, and test fixture all consume it as a `file:` dependency, so it must be built
+   before anything else)
+2. Downloads the Wasm toolchain into `.bin/` unless `extism-js`/`wasm-merge`/`wasm-opt` are
+   already on your `PATH`
+3. Compiles and packs the sample plugin (`case-summary`)
+4. Starts PostgreSQL (docker compose) and the host with auto-reload on `http://localhost:8090`
+5. Uploads the sample plugin over the HMAC-signed admin API
 
-cd ../sample-plugins/case-summary
-npm install
-npm run build:pack
-```
+Re-runs skip whatever is already done. To install & build without starting anything (no Docker
+needed), run `npm run setup`.
 
-### 3. Upload and Test
+### Root commands
+
+| Command | What it does |
+|---|---|
+| `npm run setup` | Install + build all packages, provision the toolchain, pack the sample plugin (append `-- --ci` for `npm ci`) |
+| `npm run dev` | `setup` if needed, then start PostgreSQL + the host and upload the sample plugin (`-- --no-sample` to skip) |
+| `npm run plugin:upload -- <zip>` | Upload a plugin package to the running host (signed, cross-platform; defaults to the sample plugin) |
+| `npm run sample:build` | Rebuild + repack the sample plugin |
+| `npm test` / `npm run test:wasm` / `npm run test:int` | Run the package test suites (see [`TESTING.md`](./TESTING.md)) |
+| `npm run db:up` / `db:down` / `db:reset` | Manage the PostgreSQL container |
+| `npm run clean` / `npm run clean:deep` | Remove build output (`clean:deep` also removes `node_modules` and the downloaded toolchain) |
+
+Each package also remains usable on its own — see [`app/README.md`](./app/README.md) and
+[`plugin-sdk/README.md`](./plugin-sdk/README.md) — as long as the SDK is installed and built first.
+
+### Calling the admin API by hand
+
+`npm run plugin:upload` performs the signed upload for you on any OS. When you want to explore the
+API directly (or script against it from a unix shell), this is the scheme:
 
 Every GZAC→host request is HMAC-SHA256 signed (not a bearer token): the signature covers
 `{METHOD}\n{path}\n{timestamp}\n{bodyHash}` keyed with the `ADMIN_TOKEN`, sent as `X-Valtimo-Signature`

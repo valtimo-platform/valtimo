@@ -50,15 +50,24 @@ Dockerfile                # App container image
 
 ## Quick Start (Recommended)
 
-Run the host locally with only PostgreSQL in Docker. This works seamlessly with GZAC's RabbitMQ
-since both use `localhost`.
+From a fresh checkout, use the one-command bootstrap at the [plugin-host root](../README.md#quick-start)
+— it installs and builds everything in the right order (including the `@valtimo/plugin-sdk`
+`file:` dependency this app needs built first) and uploads the sample plugin:
 
 ```bash
-npm install
+cd plugin-host
+npm run dev
+```
+
+Once bootstrapped, you can also run the host from this directory with only PostgreSQL in Docker.
+This works seamlessly with GZAC's RabbitMQ since both use `localhost`.
+
+```bash
+npm install    # requires ../plugin-sdk to be installed & built (npm run setup at the root does this)
 npm run dev    # Starts db container + app with auto-reload
 ```
 
-That's it. The database starts automatically and the host listens on port 8090.
+The database starts automatically and the host listens on port 8090.
 
 ### Full Docker Deployment
 

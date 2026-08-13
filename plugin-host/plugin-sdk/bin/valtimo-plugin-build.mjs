@@ -25,20 +25,16 @@
  * 1. Bundle the plugin TS/JS source into a single JS file (via esbuild)
  * 2. Compile the bundled JS to .wasm via the extism-js CLI
  *
+ * The required toolchain (extism-js + binaryen) is provisioned automatically —
+ * see toolchain.mjs.
+ *
  * Usage: valtimo-plugin-build [--input src/plugin.ts] [--output plugin.wasm]
  */
 
 import {execFileSync} from "node:child_process";
-import {createWriteStream, existsSync, mkdirSync, writeFileSync, chmodSync} from "node:fs";
+import {existsSync, mkdirSync, writeFileSync} from "node:fs";
 import {dirname, resolve} from "node:path";
-import {fileURLToPath} from "node:url";
-import {pipeline} from "node:stream/promises";
-import {createGunzip} from "node:zlib";
-import {Readable} from "node:stream";
-import {arch, platform} from "node:os";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import {ensureToolchain, runEsbuild} from "./toolchain.mjs";
 
 // Wasm interface (`-i`) consumed by extism-js: declares the exported entrypoint and the host
 // functions the module imports. This is identical for every plugin, so the build generates it
@@ -98,83 +94,35 @@ writeFileSync(
 // Step 1: Bundle the generated entry with esbuild into a single CJS file. esbuild compiles the
 // re-exports onto `module.exports`, which is what extism-js reads as the module's exports.
 try {
-  execFileSync("npx", [
-    "esbuild", entryPath,
-    "--bundle", `--outfile=${bundlePath}`,
-    "--format=cjs", "--target=es2020",
-    "--platform=neutral", "--main-fields=main",
-    "--external:@extism/js-pdk",
-  ], { cwd, stdio: "inherit" });
+  await runEsbuild(cwd, {
+    entryPoints: [entryPath],
+    bundle: true,
+    outfile: bundlePath,
+    format: "cjs",
+    target: "es2020",
+    platform: "neutral",
+    mainFields: ["main"],
+    external: ["@extism/js-pdk"],
+  });
 } catch (err) {
-  console.error("[valtimo-plugin-build] esbuild bundling failed");
+  console.error(`[valtimo-plugin-build] esbuild bundling failed: ${err.message}`);
   process.exit(1);
 }
 
-// Step 2: Compile to .wasm via extism-js
+// Step 2: Compile to .wasm via extism-js (auto-installed together with binaryen when missing)
 console.log(`[valtimo-plugin-build] Compiling to WebAssembly ...`);
 
-const EXTISM_JS_VERSION = "v1.6.0";
-
-function findExtismJs() {
-  try {
-    execFileSync("extism-js", ["--version"], { stdio: "pipe" });
-    return "extism-js";
-  } catch {}
-
-  const localBin = resolve(cwd, "node_modules", ".bin", "extism-js");
-  if (existsSync(localBin)) return localBin;
-
-  const searchDirs = [
-    resolve(__dirname, "..", "..", ".bin", "extism-js"),
-    resolve(__dirname, "..", "..", "..", ".bin", "extism-js"),
-  ];
-  for (const bin of searchDirs) {
-    if (existsSync(bin)) return bin;
-  }
-
-  return null;
-}
-
-async function installExtismJs() {
-  const os = platform();
-  const cpu = arch();
-
-  const osName = os === "darwin" ? "macos" : os === "win32" ? "windows" : "linux";
-  const archName = cpu === "arm64" || cpu === "aarch64" ? "aarch64" : "x86_64";
-  const fileName = `extism-js-${archName}-${osName}-${EXTISM_JS_VERSION}.gz`;
-  const url = `https://github.com/extism/js-pdk/releases/download/${EXTISM_JS_VERSION}/${fileName}`;
-
-  // Install into plugin-host/.bin/ (relative to this script at plugin-sdk/bin/)
-  const binDir = resolve(__dirname, "..", "..", ".bin");
-  mkdirSync(binDir, { recursive: true });
-  const dest = resolve(binDir, os === "win32" ? "extism-js.exe" : "extism-js");
-
-  console.log(`[valtimo-plugin-build] Installing extism-js ${EXTISM_JS_VERSION} (${osName}/${archName}) ...`);
-  console.log(`[valtimo-plugin-build] Downloading ${url}`);
-
-  const res = await fetch(url, { redirect: "follow" });
-  if (!res.ok) {
-    throw new Error(`Download failed: ${res.status} ${res.statusText}`);
-  }
-
-  const nodeStream = Readable.fromWeb(res.body);
-  await pipeline(nodeStream, createGunzip(), createWriteStream(dest));
-  chmodSync(dest, 0o755);
-
-  console.log(`[valtimo-plugin-build] Installed to ${dest}`);
-  return dest;
-}
-
-let extismJsBin = findExtismJs();
-if (!extismJsBin) {
-  try {
-    extismJsBin = await installExtismJs();
-  } catch (err) {
-    console.error(`[valtimo-plugin-build] Auto-install of extism-js failed: ${err.message}`);
-    console.error("Install it manually from: https://github.com/extism/js-pdk/releases");
-    console.error("Or place it in plugin-host/.bin/extism-js for local development.");
-    process.exit(1);
-  }
+let toolchain;
+try {
+  toolchain = await ensureToolchain({
+    log: (msg) => console.log(`[valtimo-plugin-build] ${msg}`),
+  });
+} catch (err) {
+  console.error(`[valtimo-plugin-build] Toolchain setup failed: ${err.message}`);
+  console.error("Install manually if needed:");
+  console.error("  extism-js: https://github.com/extism/js-pdk/releases");
+  console.error("  binaryen (wasm-merge/wasm-opt): https://github.com/WebAssembly/binaryen/releases");
+  process.exit(1);
 }
 
 try {
@@ -187,7 +135,9 @@ try {
     console.log("[valtimo-plugin-build] Using generated Wasm interface (no index.d.ts found)");
   }
   const extismArgs = [bundlePath, "-o", outputPath, "-i", interfaceFile];
-  execFileSync(extismJsBin, extismArgs, { cwd, stdio: "inherit" });
+  // toolchain.env carries a PATH that includes binaryen — extism-js resolves wasm-merge/wasm-opt
+  // from the PATH of its own process.
+  execFileSync(toolchain.extismJs, extismArgs, { cwd, stdio: "inherit", env: toolchain.env });
   console.log(`[valtimo-plugin-build] Built: ${output}`);
 } catch (err) {
   console.error("[valtimo-plugin-build] extism-js compilation failed");
