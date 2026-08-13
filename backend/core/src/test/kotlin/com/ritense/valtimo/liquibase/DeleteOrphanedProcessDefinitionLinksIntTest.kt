@@ -50,7 +50,8 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
     fun cleanup() {
         TransactionTemplate(transactionManager).execute {
             jdbcTemplate.update("DELETE FROM process_definition_case_definition WHERE case_definition_key IN ('valid-case', 'orphan-case')")
-            jdbcTemplate.update("DELETE FROM process_link WHERE activity_id IN ('TestServiceTask', 'SomeTask')")
+            jdbcTemplate.update("DELETE FROM building_block_process_link WHERE building_block_definition_key = 'test-building-block'")
+            jdbcTemplate.update("DELETE FROM process_link WHERE activity_id IN ('TestServiceTask', 'SomeTask', 'OrphanTask')")
         }
     }
 
@@ -206,5 +207,101 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
             Int::class.java
         )
         assertThat(totalCountAfter).isEqualTo(totalCountBefore!! - 1)
+    }
+
+    @Test
+    fun `changeset should cascade delete building_block_process_link when process_link is deleted`() {
+        val txTemplate = TransactionTemplate(transactionManager)
+
+        val validProcDefId = txTemplate.execute {
+            repositoryService.createDeployment()
+                .addClasspathResource("config/global/bpmn/test-process.bpmn")
+                .deployWithResult()
+                .deployedProcessDefinitions
+                .first()
+                .id
+        }!!
+
+        val validLinkId = UUID.randomUUID()
+        val orphanLinkId = UUID.randomUUID()
+
+        txTemplate.execute {
+            // Valid process_link with building_block_process_link child
+            jdbcTemplate.update(
+                """
+                INSERT INTO process_link
+                (id, process_definition_id, activity_id, activity_type, process_link_type)
+                VALUES (?, ?, 'TestServiceTask', 'bpmn:ServiceTask:start', 'test')
+                """.trimIndent(),
+                validLinkId,
+                validProcDefId
+            )
+            jdbcTemplate.update(
+                """
+                INSERT INTO building_block_process_link
+                (process_link_id, building_block_definition_key, building_block_definition_version_tag, plugin_configuration_mappings)
+                VALUES (?, 'test-building-block', '1.0.0', '{}')
+                """.trimIndent(),
+                validLinkId
+            )
+
+            // Orphan process_link with building_block_process_link child
+            jdbcTemplate.update(
+                """
+                INSERT INTO process_link
+                (id, process_definition_id, activity_id, activity_type, process_link_type)
+                VALUES (?, 'non-existent:1:12345', 'OrphanTask', 'bpmn:ServiceTask:start', 'test')
+                """.trimIndent(),
+                orphanLinkId
+            )
+            jdbcTemplate.update(
+                """
+                INSERT INTO building_block_process_link
+                (process_link_id, building_block_definition_key, building_block_definition_version_tag, plugin_configuration_mappings)
+                VALUES (?, 'test-building-block', '2.0.0', '{}')
+                """.trimIndent(),
+                orphanLinkId
+            )
+        }
+
+        val bbLinkCountBefore = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM building_block_process_link WHERE building_block_definition_key = 'test-building-block'",
+            Int::class.java
+        )
+        assertThat(bbLinkCountBefore).isEqualTo(2)
+
+        txTemplate.execute {
+            jdbcTemplate.update(
+                """
+                DELETE FROM DATABASECHANGELOG
+                WHERE FILENAME LIKE '%20260813-delete-orphaned%' AND AUTHOR = 'Ritense' AND ID = '2'
+                """.trimIndent()
+            )
+        }
+
+        liquibaseRunner.run()
+
+        // Verify valid building_block_process_link remains
+        val validBbLinkCount = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM building_block_process_link WHERE process_link_id = ?",
+            Int::class.java,
+            validLinkId
+        )
+        assertThat(validBbLinkCount).isEqualTo(1)
+
+        // Verify orphan building_block_process_link was cascade-deleted
+        val orphanBbLinkCount = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM building_block_process_link WHERE process_link_id = ?",
+            Int::class.java,
+            orphanLinkId
+        )
+        assertThat(orphanBbLinkCount).isEqualTo(0)
+
+        // Verify total count decreased by 1
+        val bbLinkCountAfter = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM building_block_process_link WHERE building_block_definition_key = 'test-building-block'",
+            Int::class.java
+        )
+        assertThat(bbLinkCountAfter).isEqualTo(1)
     }
 }
