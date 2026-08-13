@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.web.rest
 
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -37,6 +38,7 @@ class BuildingBlockValueResolverResource(
     private val valueResolverService: ValueResolverService
 ) {
 
+    @RunWithoutAuthorization
     @PostMapping("/management/v1/value-resolver/building-block/{buildingBlockDefinitionKey}/version/{buildingBlockDefinitionVersionTag}/keys")
     fun getResolvableKeys(
         @PathVariable buildingBlockDefinitionKey: String,
