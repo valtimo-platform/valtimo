@@ -110,7 +110,7 @@ class ProcessDocumentsService(
                 operatonProcessService.startProcess(
                     processDefinitionKey,
                     businessKey,
-                    document.get().definitionId().caseDefinitionId(),
+                    document.get().definitionId().asBlueprintId(),
                     variables
                 )
             } else {

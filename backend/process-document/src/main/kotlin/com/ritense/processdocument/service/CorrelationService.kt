@@ -20,6 +20,7 @@ import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.runtime.MessageCorrelationResult
+import org.operaton.bpm.engine.runtime.ProcessInstance
 
 @ProcessBean(description = "Sends messages to start or catch events in processes")
 interface CorrelationService {
@@ -98,4 +99,105 @@ interface CorrelationService {
 
     @ProcessBeanMethod(description = "Sends a message to all catch events using the current execution's business key")
     fun sendMessageToAll(message: String, execution: DelegateExecution): List<MessageCorrelationResult>
+
+    /**
+     * Sends [message] to all subscribed process instances of the case the [execution] belongs to:
+     * the case's own processes and every building-block instance of that case, including nested
+     * ones. Building blocks run under their own document id as business key, so
+     * [sendCatchEventMessageToAll] with the case business key does not reach them.
+     *
+     * @throws IllegalStateException when the current case cannot be determined from the execution.
+     */
+    fun sendCatchEventMessageToCase(
+        message: String,
+        execution: DelegateExecution
+    ): List<MessageCorrelationResult>
+
+    fun sendCatchEventMessageToCase(
+        message: String,
+        execution: DelegateExecution,
+        vararg variables: Any?
+    ): List<MessageCorrelationResult>
+
+    fun sendCatchEventMessageToCase(
+        message: String,
+        execution: DelegateExecution,
+        variables: Map<String, Any?>?
+    ): List<MessageCorrelationResult>
+
+    /**
+     * Sends [message] to all subscribed process instances of the case identified by
+     * [caseDocumentId], for example a related case. A building-block document id is accepted too
+     * and is normalized to the case it belongs to.
+     *
+     * @throws IllegalArgumentException when [caseDocumentId] is not a valid document id.
+     */
+    fun sendCatchEventMessageToCase(
+        message: String,
+        caseDocumentId: String
+    ): List<MessageCorrelationResult>
+
+    fun sendCatchEventMessageToCase(
+        message: String,
+        caseDocumentId: String,
+        vararg variables: Any?
+    ): List<MessageCorrelationResult>
+
+    fun sendCatchEventMessageToCase(
+        message: String,
+        caseDocumentId: String,
+        variables: Map<String, Any?>?
+    ): List<MessageCorrelationResult>
+
+    /**
+     * Starts a new instance of every building block that is linked to the case the [execution]
+     * belongs to and whose main process declares a message start event named [message]. The
+     * building block is started in the version the case link pins, not the latest deployed one.
+     *
+     * The returned process instances carry the case business key as it was at start time; the
+     * building-block bootstrap rewrites it to the new building-block document id within the same
+     * transaction.
+     *
+     * @throws IllegalStateException when the current case cannot be determined from the execution.
+     */
+    fun sendStartMessageToCase(
+        message: String,
+        execution: DelegateExecution
+    ): List<ProcessInstance>
+
+    fun sendStartMessageToCase(
+        message: String,
+        execution: DelegateExecution,
+        vararg variables: Any?
+    ): List<ProcessInstance>
+
+    fun sendStartMessageToCase(
+        message: String,
+        execution: DelegateExecution,
+        variables: Map<String, Any?>?
+    ): List<ProcessInstance>
+
+    /**
+     * Starts the matching building blocks of the case identified by [caseDocumentId], for example a
+     * related case. A building-block document id is accepted too and is normalized to the case it
+     * belongs to.
+     *
+     * @throws IllegalArgumentException when [caseDocumentId] is not a valid document id.
+     */
+    fun sendStartMessageToCase(
+        message: String,
+        caseDocumentId: String
+    ): List<ProcessInstance>
+
+    fun sendStartMessageToCase(
+        message: String,
+        caseDocumentId: String,
+        vararg variables: Any?
+    ): List<ProcessInstance>
+
+    fun sendStartMessageToCase(
+        message: String,
+        caseDocumentId: String,
+        variables: Map<String, Any?>?
+    ): List<ProcessInstance>
 }

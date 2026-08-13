@@ -6,6 +6,12 @@
         "formDefinitionName": "start-form-income-check"
     },
     {
+        "activityId": "EnterBubbleNoteTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "enter-bubble-note-income-check"
+    },
+    {
         "activityId": "PatchZaakIncomeCheckTask",
         "activityType": "bpmn:ServiceTask:start",
         "processLinkType": "plugin",

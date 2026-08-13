@@ -81,6 +81,7 @@ class URLProcessLinkService(
             document,
             taskInstanceId,
             documentDefinitionNameToUse,
+            processDefinition.id,
             processDefinition.key,
             processDefinition.getBlueprintId()
         )
@@ -125,6 +126,7 @@ class URLProcessLinkService(
         document: Document?,
         taskInstanceId: String?,
         documentDefinitionName: String,
+        processDefinitionId: String,
         processDefinitionKey: String,
         blueprintId: BlueprintId?
     ): Request {
@@ -132,12 +134,14 @@ class URLProcessLinkService(
             if (document == null) {
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
+                    processDefinitionId,
                     processDefinitionKey,
                     blueprintId
                 )
             } else {
                 modifyDocumentAndStartProcessRequest(
                     document,
+                    processDefinitionId,
                     processDefinitionKey,
                 )
             }
@@ -153,6 +157,7 @@ class URLProcessLinkService(
 
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
+        processDefinitionId: String,
         processDefinitionKey: String,
         blueprintId: BlueprintId?,
     ): NewDocumentAndStartProcessRequest {
@@ -194,11 +199,12 @@ class URLProcessLinkService(
                     )
                 )
             }
-        }
+        }.withProcessDefinitionId(processDefinitionId)
     }
 
     private fun modifyDocumentAndStartProcessRequest(
         document: Document,
+        processDefinitionId: String,
         processDefinitionKey: String,
     ): ModifyDocumentAndStartProcessRequest {
         return ModifyDocumentAndStartProcessRequest(
@@ -207,7 +213,7 @@ class URLProcessLinkService(
                 document.id().toString(),
                 objectMapper.createObjectNode()
             )
-        )
+        ).withProcessDefinitionId(processDefinitionId)
     }
 
     private fun modifyDocumentAndCompleteTaskRequest(

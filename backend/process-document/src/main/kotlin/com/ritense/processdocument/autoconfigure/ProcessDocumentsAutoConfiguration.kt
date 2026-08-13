@@ -43,6 +43,8 @@ import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefin
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.repository.TaskQuickSearchRepository
+import com.ritense.processdocument.service.CaseCorrelationBusinessKeyProvider
+import com.ritense.processdocument.service.CaseCorrelationStartTargetProvider
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
@@ -153,6 +155,9 @@ class ProcessDocumentsAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         repositoryService: RepositoryService,
         operatonRepositoryService: OperatonRepositoryService,
+        caseDocumentResolver: CaseDocumentResolver,
+        caseCorrelationBusinessKeyProviders: List<CaseCorrelationBusinessKeyProvider>,
+        caseCorrelationStartTargetProviders: List<CaseCorrelationStartTargetProvider>,
     ): CorrelationService {
         return CorrelationServiceImpl(
             runtimeService = runtimeService,
@@ -160,7 +165,10 @@ class ProcessDocumentsAutoConfiguration {
             documentService = documentService,
             operatonRepositoryService = operatonRepositoryService,
             repositoryService = repositoryService,
-            associationService = processDocumentAssociationService
+            associationService = processDocumentAssociationService,
+            caseDocumentResolver = caseDocumentResolver,
+            businessKeyProviders = caseCorrelationBusinessKeyProviders,
+            startTargetProviders = caseCorrelationStartTargetProviders,
         )
     }
 

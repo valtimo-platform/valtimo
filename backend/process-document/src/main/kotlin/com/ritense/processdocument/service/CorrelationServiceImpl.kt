@@ -19,11 +19,15 @@ package com.ritense.processdocument.service
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentIdOrNull
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.UUID
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -36,7 +40,10 @@ class CorrelationServiceImpl(
     val documentService: DocumentService,
     val operatonRepositoryService: OperatonRepositoryService,
     val repositoryService: RepositoryService,
-    val associationService: ProcessDocumentAssociationService
+    val associationService: ProcessDocumentAssociationService,
+    val caseDocumentResolver: CaseDocumentResolver,
+    val businessKeyProviders: List<CaseCorrelationBusinessKeyProvider> = emptyList(),
+    val startTargetProviders: List<CaseCorrelationStartTargetProvider> = emptyList(),
 ) : CorrelationService {
 
     override fun sendStartMessage(message: String, businessKey: String): MessageCorrelationResult {
@@ -195,6 +202,170 @@ class CorrelationServiceImpl(
         return results
     }
 
+    override fun sendCatchEventMessageToCase(
+        message: String,
+        execution: DelegateExecution
+    ): List<MessageCorrelationResult> {
+        return sendCatchEventMessageToCase(message, execution, null as Map<String, Any?>?)
+    }
+
+    override fun sendCatchEventMessageToCase(
+        message: String,
+        execution: DelegateExecution,
+        vararg variables: Any?
+    ): List<MessageCorrelationResult> {
+        return sendCatchEventMessageToCase(message, execution, toVariableMap(*variables))
+    }
+
+    override fun sendCatchEventMessageToCase(
+        message: String,
+        execution: DelegateExecution,
+        variables: Map<String, Any?>?
+    ): List<MessageCorrelationResult> {
+        return sendCatchEventMessageToCase(message, resolveCaseDocumentId(execution), variables)
+    }
+
+    override fun sendCatchEventMessageToCase(
+        message: String,
+        caseDocumentId: String
+    ): List<MessageCorrelationResult> {
+        return sendCatchEventMessageToCase(message, caseDocumentId, null as Map<String, Any?>?)
+    }
+
+    override fun sendCatchEventMessageToCase(
+        message: String,
+        caseDocumentId: String,
+        vararg variables: Any?
+    ): List<MessageCorrelationResult> {
+        return sendCatchEventMessageToCase(message, caseDocumentId, toVariableMap(*variables))
+    }
+
+    override fun sendCatchEventMessageToCase(
+        message: String,
+        caseDocumentId: String,
+        variables: Map<String, Any?>?
+    ): List<MessageCorrelationResult> {
+        return sendCatchEventMessageToCase(message, resolveCaseDocumentId(caseDocumentId), variables)
+    }
+
+    private fun sendCatchEventMessageToCase(
+        message: String,
+        caseDocumentId: UUID,
+        variables: Map<String, Any?>?
+    ): List<MessageCorrelationResult> {
+        val caseBusinessKey = caseDocumentId.toString()
+
+        // The case's own processes are delivered to exactly like sendCatchEventMessageToAll,
+        // including the ProcessDocumentInstance association.
+        val caseResults = sendCatchEventMessageToAll(message, caseBusinessKey, variables)
+
+        // Building blocks run under their own document id as business key. They get the message too,
+        // but deliberately without a case association: their processes belong to the BB document.
+        val buildingBlockResults = businessKeyProviders
+            .flatMap { it.getBusinessKeysForCase(caseDocumentId) }
+            .distinct()
+            .filterNot { it == caseBusinessKey }
+            .flatMap { correlateAll(message, it, variables) }
+
+        val results = caseResults + buildingBlockResults
+        if (results.isEmpty()) {
+            logger.warn {
+                "No process instance of case '$caseBusinessKey' was subscribed to message '$message'."
+            }
+        }
+        return results
+    }
+
+    override fun sendStartMessageToCase(
+        message: String,
+        execution: DelegateExecution
+    ): List<ProcessInstance> {
+        return sendStartMessageToCase(message, execution, null as Map<String, Any?>?)
+    }
+
+    override fun sendStartMessageToCase(
+        message: String,
+        execution: DelegateExecution,
+        vararg variables: Any?
+    ): List<ProcessInstance> {
+        return sendStartMessageToCase(message, execution, toVariableMap(*variables))
+    }
+
+    override fun sendStartMessageToCase(
+        message: String,
+        execution: DelegateExecution,
+        variables: Map<String, Any?>?
+    ): List<ProcessInstance> {
+        return sendStartMessageToCase(message, resolveCaseDocumentId(execution), variables)
+    }
+
+    override fun sendStartMessageToCase(
+        message: String,
+        caseDocumentId: String
+    ): List<ProcessInstance> {
+        return sendStartMessageToCase(message, caseDocumentId, null as Map<String, Any?>?)
+    }
+
+    override fun sendStartMessageToCase(
+        message: String,
+        caseDocumentId: String,
+        vararg variables: Any?
+    ): List<ProcessInstance> {
+        return sendStartMessageToCase(message, caseDocumentId, toVariableMap(*variables))
+    }
+
+    override fun sendStartMessageToCase(
+        message: String,
+        caseDocumentId: String,
+        variables: Map<String, Any?>?
+    ): List<ProcessInstance> {
+        return sendStartMessageToCase(message, resolveCaseDocumentId(caseDocumentId), variables)
+    }
+
+    private fun sendStartMessageToCase(
+        message: String,
+        caseDocumentId: UUID,
+        variables: Map<String, Any?>?
+    ): List<ProcessInstance> {
+        val processInstances = startTargetProviders
+            .flatMap { it.getStartTargets(caseDocumentId, message) }
+            .distinct()
+            .map { correlateWithProcessDefinitionId(message, caseDocumentId.toString(), it, variables) }
+
+        if (processInstances.isEmpty()) {
+            logger.warn {
+                "No process definition linked to case '$caseDocumentId' declares a start event " +
+                    "for message '$message'."
+            }
+        }
+        return processInstances
+    }
+
+    private fun resolveCaseDocumentId(execution: DelegateExecution): UUID {
+        val documentId = execution.getJsonSchemaDocumentIdOrNull()
+            ?: throw IllegalStateException(
+                "Cannot determine the current case for process instance '${execution.processInstanceId}': " +
+                    "the business key is not a document id. " +
+                    "Use the overload that accepts an explicit case document id."
+            )
+        return resolveCaseDocumentId(documentId)
+    }
+
+    private fun resolveCaseDocumentId(caseDocumentId: String): UUID {
+        val documentId = try {
+            UUID.fromString(caseDocumentId)
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException(
+                "Cannot send a message to case '$caseDocumentId': the value is not a valid document id.", e
+            )
+        }
+        return resolveCaseDocumentId(documentId)
+    }
+
+    private fun resolveCaseDocumentId(documentId: UUID): UUID {
+        return runWithoutAuthorization { caseDocumentResolver.resolveCaseDocumentId(documentId) }
+    }
+
     private fun getLatestProcessDefinitionIdByKey(processDefinitionKey: String): OperatonProcessDefinition {
         return runWithoutAuthorization {
             operatonRepositoryService.findProcessDefinition(byKey(processDefinitionKey).and(byLatestVersion()))
@@ -294,5 +465,9 @@ class CorrelationServiceImpl(
         } else {
             null
         }
+    }
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
