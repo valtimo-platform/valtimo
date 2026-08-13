@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.authorization.web.request
+package com.ritense.authorization
 
-import com.ritense.authorization.web.request.PermissionResourceConstraints.RESOURCE_MAX_LENGTH
-import com.ritense.authorization.web.request.PermissionResourceConstraints.RESOURCE_NAME_PATTERN
-import jakarta.validation.constraints.Pattern
-import jakarta.validation.constraints.Size
-
-class PermissionContext(
-    @field:Size(max = RESOURCE_MAX_LENGTH)
-    @field:Pattern(regexp = RESOURCE_NAME_PATTERN)
-    val resource: String,
-    val identifier: String
-)
+/**
+ * Thrown when a resource type name does not belong to a known authorization resource type.
+ *
+ * Carries no reference to the rejected value, so that it cannot leak into a response or a log line.
+ */
+class UnknownAuthorizationResourceTypeException(
+    message: String
+) : RuntimeException(message)
