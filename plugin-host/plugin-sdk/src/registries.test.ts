@@ -81,11 +81,11 @@ describe("request registry", () => {
     expect(getRegisteredRequestPaths()).toContain("/summary");
   });
 
-  it("returns undefined for an unknown path while no catch-all is registered", () => {
-    expect(getRequestHandler("/no-such-path")).toBeUndefined();
-  });
-
   it("falls back to the catch-all for an unmatched path, but exact paths still win", () => {
+    // Asserted here, not in its own test: `onRequest` sets module-level state that nothing resets,
+    // so a separate test would only pass while it happened to run before this one.
+    expect(getRequestHandler("/no-such-path")).toBeUndefined();
+
     const exact = vi.fn(() => ({status: 200}));
     const catchAll = vi.fn(() => ({status: 404}));
     request("/exact", exact);

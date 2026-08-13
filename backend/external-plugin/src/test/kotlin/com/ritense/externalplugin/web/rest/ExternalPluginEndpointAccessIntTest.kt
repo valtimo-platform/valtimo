@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -50,13 +51,15 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
 
     private val someId: UUID = UUID.randomUUID()
 
-    private fun perform(method: HttpMethod, path: String): Int =
+    private fun respond(method: HttpMethod, path: String): MockHttpServletResponse =
         mockMvc.perform(
             MockMvcRequestBuilders.request(method, path)
                 .contentType("application/json")
                 .content("{}")
                 .accept("*/*")
-        ).andReturn().response.status
+        ).andReturn().response
+
+    private fun perform(method: HttpMethod, path: String): Int = respond(method, path).status
 
     private fun assertReachable(method: HttpMethod, path: String) {
         val status = perform(method, path)
@@ -164,10 +167,19 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
     @Test
     @WithMockUser(authorities = [USER])
     fun `the introspection endpoint is reachable but rejects a non-user-token principal`() {
-        // Reachable by security config; the resource itself refuses any principal that is not an
-        // external-plugin user principal, which is asserted by its own unit suite.
-        assertThat(perform(HttpMethod.GET, "/api/v1/external-plugin/user-token/introspect"))
-            .isEqualTo(HttpStatus.FORBIDDEN.value())
+        val response = respond(HttpMethod.GET, "/api/v1/external-plugin/user-token/introspect")
+
+        assertThat(response.status).isEqualTo(HttpStatus.FORBIDDEN.value())
+        // The status alone cannot carry this test: a 403 from the filter chain and a 403 from the
+        // resource are identical. Only the resource emits its own reason, so asserting on it is what
+        // makes the test fail if the security matcher for this path is ever dropped.
+        assertThat(response.errorMessage.orEmpty() + response.contentAsString)
+            .withFailMessage(
+                "Expected the resource's own rejection, but got a bare 403 " +
+                    "(errorMessage=${response.errorMessage}, body=${response.contentAsString}) " +
+                    "— is the security matcher for this path missing?"
+            )
+            .contains("only available for external plugin user tokens")
     }
 
     // ---------------------------------------------------------------- unauthenticated

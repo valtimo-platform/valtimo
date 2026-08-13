@@ -107,7 +107,9 @@ describe("LogRepository against real Postgres", () => {
         data: {documentId: "doc-1"},
         source: "plugin",
       });
-      expect(typeof page.content[0].id).toBe("number");
+      // BIGSERIAL: `pg` hands back int8 as a string, and the contract keeps it that way.
+      expect(typeof page.content[0].id).toBe("string");
+      expect(page.content[0].id).toMatch(/^\d+$/);
       expect(Date.parse(page.content[0].createdAt)).not.toBeNaN();
     });
 
@@ -115,6 +117,16 @@ describe("LogRepository against real Postgres", () => {
       await repo.insert(entry({data: undefined}));
       const page = await repo.query("cfg-1", {page: 0, size: 25});
       expect(page.content[0].data).toBeNull();
+    });
+
+    it.each([
+      ["false", false],
+      ["zero", 0],
+      ["an empty string", ""],
+    ] as const)("round-trips %s rather than collapsing it to null", async (_label, data) => {
+      await repo.insert(entry({data}));
+      const page = await repo.query("cfg-1", {page: 0, size: 25});
+      expect(page.content[0].data).toBe(data);
     });
 
     it("truncates an over-long message to 4096 characters", async () => {
@@ -151,7 +163,16 @@ describe("LogRepository against real Postgres", () => {
       await insertSpaced(3);
       expect((await repo.query("cfg-1", {page: 0, size: 0})).size).toBe(25); // 0 → default
       expect((await repo.query("cfg-1", {page: 0, size: 5_000})).size).toBe(100);
-      expect((await repo.query("cfg-1", {page: -3, size: 2})).content).toHaveLength(2); // no negative offset
+    });
+
+    it("normalizes a negative page to the first page, in the offset and in the response", async () => {
+      await insertSpaced(3);
+      const page = await repo.query("cfg-1", {page: -3, size: 2});
+
+      expect(page.content).toHaveLength(2); // no negative offset
+      // The reported index has to match the content, or a caller paging forward from it skips rows.
+      expect(page.page).toBe(0);
+      expect(page.content.map((r) => r.message)).toEqual(["line 2", "line 1"]);
     });
 
     it("filters by level, by source, and by both", async () => {

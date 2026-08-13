@@ -21,7 +21,7 @@
  * the L3 suite (`test/wasm/`), which needs the extism-js toolchain.
  */
 
-import {mkdirSync, mkdtempSync, rmSync, writeFileSync} from "node:fs";
+import {existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
@@ -368,6 +368,10 @@ describe("PluginManager (mocked Extism)", () => {
         {}
       );
       await manager.loadAllFromDisk();
+
+      // The empty list alone would also hold if `loadAllFromDisk` returned early without the
+      // mkdir, so assert the directory itself — that is the branch under test.
+      expect(existsSync(missing)).toBe(true);
       expect(manager.listPlugins()).toEqual([]);
     });
   });

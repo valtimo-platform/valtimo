@@ -158,7 +158,9 @@ describe("http_request host function", () => {
   beforeEach(() => {
     fetchMock.mockReset();
     agentCtor.mockReset();
-    fetchMock.mockResolvedValue(jsonResponse({ok: true}));
+    // `mockImplementation`, not `mockResolvedValue`: a Response body reads only once, so sharing a
+    // single instance would push every call after the first down the host function's error path.
+    fetchMock.mockImplementation(async () => jsonResponse({ok: true}));
   });
 
   afterEach(() => {
@@ -373,32 +375,32 @@ describe("http_request host function", () => {
 
   describe("response shaping", () => {
     it("parses a JSON response body", async () => {
-      fetchMock.mockResolvedValue(jsonResponse({items: [1, 2]}));
+      fetchMock.mockImplementation(async () => jsonResponse({items: [1, 2]}));
       const reply = await invoke({method: "GET", url: "https://api.example.com/x"});
       expect(reply.status).toBe(200);
       expect(reply.body).toEqual({items: [1, 2]});
     });
 
     it("returns a non-JSON body as raw text", async () => {
-      fetchMock.mockResolvedValue(new Response("plain text", {status: 200}));
+      fetchMock.mockImplementation(async () => new Response("plain text", {status: 200}));
       const reply = await invoke({method: "GET", url: "https://api.example.com/x"});
       expect(reply.body).toBe("plain text");
     });
 
     it("returns an empty string for an empty body", async () => {
-      fetchMock.mockResolvedValue(new Response("", {status: 200}));
+      fetchMock.mockImplementation(async () => new Response("", {status: 200}));
       const reply = await invoke({method: "GET", url: "https://api.example.com/x"});
       expect(reply.body).toBe("");
     });
 
     it("echoes the response headers", async () => {
-      fetchMock.mockResolvedValue(jsonResponse({}, 200, {"x-rate-remaining": "42"}));
+      fetchMock.mockImplementation(async () => jsonResponse({}, 200, {"x-rate-remaining": "42"}));
       const reply = await invoke({method: "GET", url: "https://api.example.com/x"});
       expect(reply.headers["x-rate-remaining"]).toBe("42");
     });
 
     it("passes an upstream error status through rather than remapping it", async () => {
-      fetchMock.mockResolvedValue(jsonResponse({error: "nope"}, 429));
+      fetchMock.mockImplementation(async () => jsonResponse({error: "nope"}, 429));
       const reply = await invoke({method: "GET", url: "https://api.example.com/x"});
       expect(reply.status).toBe(429);
       expect(reply.body).toEqual({error: "nope"});
@@ -427,7 +429,9 @@ describe("http_request host function", () => {
     });
 
     it("gives up after 5 hops with a 502", async () => {
-      fetchMock.mockResolvedValue(redirectResponse(302, "https://api.example.com/loop"));
+      fetchMock.mockImplementation(async () =>
+        redirectResponse(302, "https://api.example.com/loop")
+      );
       const reply = await invoke({method: "GET", url: "https://api.example.com/x"});
       expect(reply.status).toBe(502);
       expect(reply.body.error).toBe("Too many redirects (max 5)");
@@ -527,7 +531,7 @@ describe("http_request host function", () => {
 
   describe("audit logging (plugin_logs, source http_request)", () => {
     it("persists one redacted record per successful call", async () => {
-      fetchMock.mockResolvedValue(jsonResponse({}, 201));
+      fetchMock.mockImplementation(async () => jsonResponse({}, 201));
       const {repo, insert} = logRepoDouble();
 
       await invoke(

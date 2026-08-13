@@ -17,7 +17,12 @@
 import type { DbPool } from "./index.js";
 
 export interface PluginLogEntry {
-  id: number;
+  /**
+   * `plugin_logs.id` is a BIGSERIAL, and `pg` returns int8 as a string so 64-bit values survive
+   * without the precision loss a JS number would risk. Kept as a string end-to-end — it is only
+   * ever an opaque identifier, never arithmetic.
+   */
+  id: string;
   configurationId: string;
   pluginId: string;
   pluginVersion: string;
@@ -63,7 +68,9 @@ export class LogRepository {
         entry.pluginVersion,
         entry.level,
         entry.message.slice(0, 4096),
-        entry.data ? JSON.stringify(entry.data) : null,
+        // Only an absent `data` becomes SQL NULL. A truthiness check would silently drop the
+        // falsy-but-meaningful values `false`, `0` and `""`.
+        entry.data === undefined ? null : JSON.stringify(entry.data),
         entry.source,
       ]
     );
@@ -87,7 +94,10 @@ export class LogRepository {
 
     const where = conditions.join(" AND ");
     const limit = Math.max(1, Math.min(params.size || 25, 100));
-    const offset = Math.max(0, (params.page || 0)) * limit;
+    // Normalize once and reuse for both the offset and the response, so a caller never gets
+    // first-page content labelled with a negative page index.
+    const page = Math.max(0, params.page || 0);
+    const offset = page * limit;
 
     const countResult = await this.pool.query(
       `SELECT COUNT(*) as total FROM plugin_logs WHERE ${where}`,
@@ -106,7 +116,7 @@ export class LogRepository {
 
     return {
       content: rows.map(this.mapRow),
-      page: params.page,
+      page,
       size: limit,
       totalElements,
     };
@@ -129,7 +139,7 @@ export class LogRepository {
 
   private mapRow(row: Record<string, unknown>): PluginLogEntry {
     return {
-      id: row.id as number,
+      id: String(row.id),
       configurationId: row.configuration_id as string,
       pluginId: row.plugin_id as string,
       pluginVersion: row.plugin_version as string,

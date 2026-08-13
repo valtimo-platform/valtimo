@@ -21,7 +21,8 @@ import {stubWasmGlobals} from "./test-support/wasm-globals";
 /**
  * The `kv` wrapper (plan §18.7). Unlike the other wrappers it *interprets* the host's reply — a 404
  * becomes `{found: false}` rather than an error — so a plugin can tell "no value stored" from "the
- * value is null" without checking status codes.
+ * value is null" without checking status codes. Every other non-200 throws, on every operation: a
+ * denied capability must never read as an empty result or a silent no-op.
  */
 describe("kv", () => {
   afterEach(() => {
@@ -57,6 +58,15 @@ describe("kv", () => {
 
       expect(kv.get("state").value).toEqual({a: [1, 2], nested: {b: "x"}});
     });
+
+    it("throws for a failure status rather than reporting found: true with no value", () => {
+      const stub = stubWasmGlobals("kv");
+      stub.replyWith({status: 403, error: "Capability 'kv' not granted for this configuration"});
+
+      expect(() => kv.get("k")).toThrow(
+        "kv.get failed: Capability 'kv' not granted for this configuration"
+      );
+    });
   });
 
   describe("set", () => {
@@ -87,11 +97,12 @@ describe("kv", () => {
       );
     });
 
-    it("stays silent for a non-200 status without a reason", () => {
+    it("throws for a non-200 status even when the host gives no reason", () => {
+      // Staying silent here would let a plugin believe a failed write succeeded.
       const stub = stubWasmGlobals("kv");
       stub.replyWith({status: 500});
 
-      expect(() => kv.set("k", 1)).not.toThrow();
+      expect(() => kv.set("k", 1)).toThrow("kv.set failed: host returned status 500");
     });
   });
 
@@ -104,6 +115,13 @@ describe("kv", () => {
       expect(kv.delete("k")).toBe(true);
       expect(kv.delete("k")).toBe(false);
       expect(stub.requests[0]).toEqual({op: "delete", key: "k"});
+    });
+
+    it("throws for a failure status rather than reporting 'nothing to remove'", () => {
+      const stub = stubWasmGlobals("kv");
+      stub.replyWith({status: 500});
+
+      expect(() => kv.delete("k")).toThrow("kv.delete failed: host returned status 500");
     });
   });
 
@@ -124,9 +142,19 @@ describe("kv", () => {
       expect(stub.requests[0]).toEqual({op: "list", prefix: "user:"});
     });
 
-    it("degrades to an empty array when the host returns no keys field", () => {
+    it("throws when the capability is denied instead of reporting zero keys", () => {
+      // An empty array is indistinguishable from "nothing stored", which hides the denial.
       const stub = stubWasmGlobals("kv");
       stub.replyWith({status: 403, error: "Capability 'kv' not granted for this configuration"});
+
+      expect(() => kv.list()).toThrow(
+        "kv.list failed: Capability 'kv' not granted for this configuration"
+      );
+    });
+
+    it("returns an empty array for a 200 that carries no keys field", () => {
+      const stub = stubWasmGlobals("kv");
+      stub.replyWith({status: 200});
 
       expect(kv.list()).toEqual([]);
     });
