@@ -1900,7 +1900,10 @@
     "markers": {
       "processLink": "Process link attached",
       "executionListener": "Execution listener",
-      "taskListener": "Task listener"
+      "taskListener": "Task listener",
+      "toggleTooltip": "Toggle visibility of process link, execution listener, and task listener markers",
+      "hide": "Hide markers",
+      "show": "Show markers"
     }
   },
   "processCaseConnection": {

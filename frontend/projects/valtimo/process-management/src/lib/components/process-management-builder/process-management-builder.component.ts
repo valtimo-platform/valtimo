@@ -16,7 +16,7 @@
 
 import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, signal, ViewChild} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -117,6 +117,7 @@ import {
 import {ValtimoPropertiesProviderModule, ExpressionAutocompleteModule, ExpressionAutocomplete} from './panel';
 import {PluginTranslationService} from '@valtimo/plugin';
 import {ProcessBeanService} from '../../services';
+import {View16, ViewOff16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -178,6 +179,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   public readonly canInitializeDocument$ = new BehaviorSubject<boolean>(false);
   public readonly startableByUser$ = new BehaviorSubject<boolean>(false);
   public readonly validationErrors$ = this.processManagementEditorService.validationErrors$;
+
+  public readonly $markersVisible = signal<boolean>(true);
 
   protected readonly testIds = PROCESS_MANAGEMENT_BUILDER_TEST_IDS;
 
@@ -307,6 +310,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService,
     private readonly processBeanService: ProcessBeanService
   ) {
+    this.iconService.registerAll([View16, ViewOff16]);
     this.setProcessManagementWindow();
   }
 
@@ -971,8 +975,19 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     };
   }
 
+  public toggleMarkerVisibility(): void {
+    this.$markersVisible.update(v => !v);
+    if (this.$markersVisible()) {
+      this.updateActivityMarkers();
+    } else {
+      this.clearActivityMarkers();
+    }
+  }
+
   private updateActivityMarkers(): void {
     this.clearActivityMarkers();
+
+    if (!this.$markersVisible()) return;
 
     const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
     if (!modeler) return;

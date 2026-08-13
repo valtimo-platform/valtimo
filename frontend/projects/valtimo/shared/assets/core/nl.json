@@ -1928,7 +1928,10 @@
     "markers": {
       "processLink": "Proceskoppeling",
       "executionListener": "Uitvoeringslistener",
-      "taskListener": "Taaklistener"
+      "taskListener": "Taaklistener",
+      "toggleTooltip": "Schakel zichtbaarheid van proceskoppeling, uitvoeringslistener en taaklistener markers",
+      "hide": "Markers verbergen",
+      "show": "Markers tonen"
     }
   },
   "processCaseConnection": {
