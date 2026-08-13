@@ -58,13 +58,11 @@ jobs:
         run: npm run test:cov
 
   # L3 (Wasm/Extism) tests: compile the fixture plugin with the real SDK toolchain and run it under
-  # Extism. Kept separate from `unit` because it needs the extism-js compiler, which is not committed
-  # (plugin-host/.bin is gitignored) and is downloaded here.
+  # Extism. Kept separate from `unit` because it needs the Wasm toolchain (extism-js + binaryen),
+  # which is not committed — the SDK's toolchain module downloads the versions pinned in
+  # plugin-host/plugin-sdk/bin/toolchain.mjs on first use.
   wasm:
     runs-on: ubuntu-latest
-    env:
-      # Pin the Extism JS PDK compiler version. Bump together with @extism/js-pdk in the fixture.
-      EXTISM_JS_VERSION: "1.5.1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -79,15 +77,6 @@ jobs:
             plugin-host/app/package-lock.json
             plugin-host/test-fixtures/test-plugin/package-lock.json
 
-      - name: Download extism-js compiler
-        run: |
-          mkdir -p plugin-host/.bin
-          url="https://github.com/extism/js-pdk/releases/download/v${EXTISM_JS_VERSION}/extism-js-x86_64-linux-v${EXTISM_JS_VERSION}.gz"
-          curl -sSfL "$url" -o /tmp/extism-js.gz
-          gunzip -c /tmp/extism-js.gz > plugin-host/.bin/extism-js
-          chmod +x plugin-host/.bin/extism-js
-          plugin-host/.bin/extism-js --version
-
       # The fixture bundles @valtimo/plugin-sdk from its built dist, so the SDK must be built first.
       - name: SDK - install & build
         working-directory: plugin-host/plugin-sdk
@@ -101,7 +90,8 @@ jobs:
         working-directory: plugin-host/app
         run: npm ci
 
-      # globalSetup compiles the fixture to Wasm (finds extism-js on PATH via plugin-host/.bin).
+      # globalSetup compiles the fixture to Wasm; valtimo-plugin-build downloads extism-js and
+      # binaryen into plugin-host/.bin/ on first use.
       - name: App - Wasm/Extism tests (L3)
         working-directory: plugin-host/app
         run: npm run test:wasm
@@ -135,3 +125,37 @@ jobs:
       - name: App - integration tests (Testcontainers)
         working-directory: plugin-host/app
         run: npm run test:int
+
+  # Validates the documented one-command bootstrap (`npm run setup`) on a fresh checkout for every
+  # supported development platform — including the toolchain auto-download and the sample-plugin
+  # Wasm build. Docker is intentionally not required by setup, so this runs on all three OSes.
+  bootstrap:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            plugin-host/plugin-sdk/package-lock.json
+            plugin-host/app/package-lock.json
+            plugin-host/sample-plugins/case-summary/package-lock.json
+            plugin-host/sample-apps/demo-app/package-lock.json
+            plugin-host/test-fixtures/test-plugin/package-lock.json
+
+      - name: Bootstrap (npm run setup)
+        working-directory: plugin-host
+        run: npm run setup -- --ci
+
+      - name: Verify sample plugin package was produced
+        working-directory: plugin-host
+        run: node --input-type=module -e "const {samplePluginZipPath} = await import('./scripts/setup.mjs'); const {existsSync} = await import('node:fs'); const zip = samplePluginZipPath(); if (!existsSync(zip)) { console.error('missing ' + zip); process.exit(1); } console.log('OK ' + zip);"
+        shell: bash

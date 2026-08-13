@@ -28,9 +28,25 @@ bin/
 
 ## Prerequisites
 
-- Node.js 18+
-- **`extism-js` CLI** — Download from [extism/js-pdk releases](https://github.com/extism/js-pdk/releases) and place it on your `PATH` or in `plugin-host/.bin/`
-- **`binaryen`** — `brew install binaryen` (macOS) or `apt install binaryen` (Linux)
+- Node.js 18+ (Node 22+ to also run the plugin host)
+
+That's it — the Wasm toolchain (`extism-js` and binaryen's `wasm-merge`/`wasm-opt`, which
+extism-js calls) is **provisioned automatically** by `valtimo-plugin-build` on first use, on
+Linux, macOS, and Windows. Copies already on your `PATH` (e.g. from `brew install binaryen`) are
+used as-is; anything missing is downloaded at a pinned version (sha256-verified) into:
+
+- `plugin-host/.bin/` (gitignored) when the SDK lives in this repository
+- `~/.valtimo-plugin-sdk/toolchain/` when installed from npm
+
+The shared logic lives in [`bin/toolchain.mjs`](./bin/toolchain.mjs) (importable as
+`@valtimo/plugin-sdk/toolchain`) and honours these environment overrides:
+
+| Variable | Effect |
+|---|---|
+| `VALTIMO_PLUGIN_TOOLCHAIN_DIR` | Install/download directory for the toolchain |
+| `VALTIMO_EXTISM_JS` | Absolute path to an `extism-js` binary to use as-is |
+| `EXTISM_JS_VERSION` | extism-js release to download (default pinned in `toolchain.mjs`) |
+| `BINARYEN_VERSION` | binaryen release to download (default pinned in `toolchain.mjs`) |
 
 ## Building the SDK
 
@@ -50,14 +66,16 @@ valtimo-plugin-build [--input src/plugin.ts] [--output plugin.wasm]
 ```
 
 Steps performed:
-1. Bundles the source with esbuild (`--format=cjs`, required by QuickJS)
-2. Compiles the bundle to `.wasm` via the `extism-js` CLI
+1. Bundles the source with esbuild (CJS format, required by QuickJS) using the esbuild installed
+   in the plugin project
+2. Compiles the bundle to `.wasm` via the `extism-js` CLI (with binaryen on its `PATH`)
 3. If `index.d.ts` exists in the plugin directory, passes it to extism-js with `-i` to declare exports
 
-The CLI searches for the `extism-js` binary in this order:
-1. System `PATH`
-2. `node_modules/.bin/extism-js`
-3. `plugin-host/.bin/extism-js`
+The CLI locates `extism-js` in this order (see [Prerequisites](#prerequisites)):
+1. `VALTIMO_EXTISM_JS` (explicit path)
+2. System `PATH`
+3. A previously downloaded copy (toolchain dir, `node_modules/.bin`, `plugin-host/.bin`)
+4. Automatic download of the pinned release
 
 ### `valtimo-plugin-pack`
 

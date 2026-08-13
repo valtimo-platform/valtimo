@@ -39,9 +39,11 @@ dist/             # Build output (gitignored)
 ## Prerequisites
 
 - Node.js 18+
-- **`extism-js` CLI** — Download from [extism/js-pdk releases](https://github.com/extism/js-pdk/releases) and place on `PATH` or in `plugin-host/.bin/`
-- **`binaryen`** — `brew install binaryen` (macOS) or `apt install binaryen` (Linux)
-- **SDK built** — Run `npm install && npm run build` in `../../plugin-sdk` first
+- **SDK built** — `npm install && npm run build` in `../../plugin-sdk` first
+
+Easiest: run `npm run setup` once at the [plugin-host root](../../README.md#quick-start) — it
+builds the SDK, installs this package, and packs this plugin. The Wasm toolchain (`extism-js`,
+`binaryen`) is downloaded automatically on first build; no manual install needed.
 
 ## Build & Pack
 
@@ -51,6 +53,8 @@ npm run build       # TS → dist/plugin.wasm
 npm run pack        # dist/plugin.wasm + manifest.json → dist/case-summary-0.1.0.zip
 npm run build:pack  # both steps in one command
 ```
+
+Upload the result to a running host with `npm run plugin:upload` from the plugin-host root.
 
 ## How the Plugin Calls Back into GZAC
 

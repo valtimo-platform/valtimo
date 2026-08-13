@@ -34,11 +34,11 @@
  * Usage: valtimo-plugin-pack [--wasm plugin.wasm] [--manifest manifest.json] [--output .]
  */
 
-import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, mkdirSync, unlinkSync } from "node:fs";
 import { resolve, join, basename, extname } from "node:path";
 import { createRequire } from "node:module";
 import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
+import { runEsbuild } from "./toolchain.mjs";
 
 const require = createRequire(import.meta.url);
 const AdmZip = require("adm-zip");
@@ -129,15 +129,18 @@ if (hasFrontend) {
     console.log(`[valtimo-plugin-pack] Building frontend bundle: ${baseName}${sourceExt} -> ${bundleName}`);
 
     try {
-      execFileSync("npx", [
-        "esbuild", sourceFile,
-        "--bundle", `--outfile=${outFile}`,
-        "--format=iife", "--target=es2020",
-        "--jsx=automatic", `--loader:${sourceExt}=${loader}`,
-      ], { cwd, stdio: "inherit" });
+      await runEsbuild(cwd, {
+        entryPoints: [sourceFile],
+        bundle: true,
+        outfile: outFile,
+        format: "iife",
+        target: "es2020",
+        jsx: "automatic",
+        loader: { [sourceExt]: loader },
+      });
       builtBundles.push(outFile);
     } catch (err) {
-      console.error(`[valtimo-plugin-pack] Failed to build frontend bundle: ${bundleName}`);
+      console.error(`[valtimo-plugin-pack] Failed to build frontend bundle: ${bundleName} — ${err.message}`);
       // Clean up any bundles built so far
       for (const built of builtBundles) {
         if (existsSync(built)) unlinkSync(built);

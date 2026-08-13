@@ -1,2 +1,3 @@
-# Local binary tooling (extism-js)
+# Local binary tooling downloaded by the SDK toolchain (extism-js, binaryen)
 .bin/
+node_modules/
