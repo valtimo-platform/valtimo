@@ -1,0 +1,90 @@
+{
+    "title": "Alle conditie-operatoren op één plan",
+    "key": "verhuizing-condities-operators",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.3"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/aanvrager/naam",
+            "operator": "exists"
+        },
+        {
+            "path": "doc:/aanvrager/emailadres",
+            "operator": "exists",
+            "value": false
+        },
+        {
+            "path": "doc:/status",
+            "operator": "in",
+            "value": [
+                "ingediend",
+                "in_behandeling",
+                "afgehandeld",
+                "spoed-behandeling"
+            ]
+        },
+        {
+            "path": "doc:/aanvrager/naam",
+            "operator": "contains",
+            "value": "e"
+        },
+        {
+            "path": "doc:/aantalPersonen",
+            "operator": ">=",
+            "value": 0
+        },
+        {
+            "path": "doc:/aantalPersonen",
+            "operator": "<=",
+            "value": 10
+        },
+        {
+            "path": "doc:/oppervlakte",
+            "operator": "<",
+            "value": 1000
+        },
+        {
+            "path": "case:sequence",
+            "operator": ">",
+            "value": 0
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.3",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:migratieStap",
+                    "value": "1.0.4",
+                    "targetType": "string"
+                },
+                {
+                    "target": "pv:/migratieMeta/stap",
+                    "value": "1.0.4",
+                    "targetType": "string"
+                },
+                {
+                    "target": "pv:/migratieMeta/bron",
+                    "value": "1.0.3",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

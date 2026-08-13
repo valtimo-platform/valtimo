@@ -1,0 +1,22 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Nazorg starten",
+            "content": "Start een tweede proces op deze zaak. Zo krijgt de zaak twee lopende processen, die een migratieplan met meerdere processMigration-instructies allebei meeneemt.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Nazorg starten",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

@@ -1,0 +1,85 @@
+{
+    "title": "Geneste condities (allOf / anyOf)",
+    "key": "verhuizing-geneste-condities",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.5"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/inspectieStatus",
+            "operator": "==",
+            "value": "1.0.4"
+        },
+        {
+            "anyOf": [
+                {
+                    "path": "doc:/spoed",
+                    "operator": "==",
+                    "value": true
+                },
+                {
+                    "allOf": [
+                        {
+                            "path": "doc:/geschatteWaarde",
+                            "operator": ">=",
+                            "value": 1000
+                        },
+                        {
+                            "path": "doc:/aanvrager/naam",
+                            "operator": "exists"
+                        },
+                        {
+                            "anyOf": [
+                                {
+                                    "path": "doc:/nieuwAdres",
+                                    "operator": "exists",
+                                    "value": false
+                                },
+                                {
+                                    "path": "doc:/status",
+                                    "operator": "contains",
+                                    "value": "behandeling"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.5-genest",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:/migratieMeta/stap",
+                    "value": "1.0.6",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        },
+        {
+            "sourceProcessDefinitionKey": "verhuizing-nazorg",
+            "targetProcessDefinitionKey": "verhuizing-nazorg",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

@@ -1,0 +1,74 @@
+{
+    "title": "Datatypes, null-clear en meerdere processen",
+    "key": "verhuizing-datatypes",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.4"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "pv:migratieStap",
+            "operator": "==",
+            "value": "1.0.4"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/nieuwAdres"
+        },
+        {
+            "target": "doc:/aantalKamers",
+            "source": "case:sequence",
+            "targetType": "long"
+        },
+        {
+            "target": "doc:/geschatteWaarde",
+            "value": 123456.78,
+            "targetType": "double"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "source": "case:definitionId.versionTag"
+        },
+        {
+            "target": "doc:/inspectieStatus",
+            "source": "pv:migratieStap"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:migratieStap"
+                },
+                {
+                    "target": "pv:/migratieMeta/stap",
+                    "value": "1.0.5",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": true,
+            "skipIoMappings": true
+        },
+        {
+            "sourceProcessDefinitionKey": "verhuizing-nazorg",
+            "targetProcessDefinitionKey": "verhuizing-nazorg",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:nazorgGemigreerdVan",
+                    "value": "1.0.4",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

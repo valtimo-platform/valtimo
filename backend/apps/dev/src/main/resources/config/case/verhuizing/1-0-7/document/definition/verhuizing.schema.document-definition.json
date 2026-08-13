@@ -1,0 +1,72 @@
+{
+    "$id": "verhuizing.schema",
+    "type": "object",
+    "title": "Verhuizing",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+        "aanvrager",
+        "status"
+    ],
+    "properties": {
+        "aanvrager": {
+            "type": "object",
+            "required": [
+                "naam"
+            ],
+            "properties": {
+                "naam": {
+                    "type": "string"
+                },
+                "emailadres": {
+                    "type": ["string", "null"]
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "nieuwAdres": {
+            "type": ["string", "null"]
+        },
+        "status": {
+            "type": "string"
+        },
+        "spoed": {
+            "type": ["boolean", "null"]
+        },
+        "aantalPersonen": {
+            "type": ["integer", "null"]
+        },
+        "oppervlakte": {
+            "type": "number"
+        },
+        "verhuisdatum": {
+            "type": "string",
+            "format": "date"
+        },
+        "documenten": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "migratedFrom": {
+            "type": "string"
+        },
+        "afgerond": {
+            "type": "boolean"
+        },
+        "inspectieStatus": {
+            "type": "string"
+        },
+        "inspectieAkkoord": {
+            "type": "boolean"
+        },
+        "aantalKamers": {
+            "type": "integer"
+        },
+        "geschatteWaarde": {
+            "type": "number"
+        }
+    }
+}

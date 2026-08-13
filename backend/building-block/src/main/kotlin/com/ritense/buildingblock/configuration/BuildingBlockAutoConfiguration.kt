@@ -1134,6 +1134,7 @@ class BuildingBlockAutoConfiguration {
         documentService: DocumentService,
         runtimeService: RuntimeService,
         processMigrationVariableResolver: ProcessMigrationVariableResolver,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
         migrationDataPatchApplier: MigrationDataPatchApplier,
         jdbcTemplate: JdbcTemplate,
     ) = RemoveBuildingBlockMigrationComponentExecutor(
@@ -1145,6 +1146,7 @@ class BuildingBlockAutoConfiguration {
         documentService,
         runtimeService,
         processMigrationVariableResolver,
+        processDocumentAssociationService,
         migrationDataPatchApplier,
         jdbcTemplate,
     )

@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "woningdossier",
+        "canInitializeDocument": true,
+        "startableByUser": false
+    }
+]

@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "woningcontrole",
+        "canInitializeDocument": true,
+        "startableByUser": false
+    }
+]

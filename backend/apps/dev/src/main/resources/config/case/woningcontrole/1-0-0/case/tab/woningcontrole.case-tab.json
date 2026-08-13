@@ -1,0 +1,15 @@
+[
+    {
+        "key": "progress",
+        "name": "Voortgang",
+        "type": "standard",
+        "contentKey": "progress",
+        "showTasks": true
+    },
+    {
+        "key": "audit",
+        "name": "Audittrail",
+        "type": "standard",
+        "contentKey": "audit"
+    }
+]

@@ -1,0 +1,49 @@
+[
+    {
+        "title": "Adres",
+        "key": "adres",
+        "path": "doc:adres",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": false,
+        "order": 0
+    },
+    {
+        "title": "Dossierstatus",
+        "key": "dossierStatus",
+        "path": "doc:dossierStatus",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "order": 1
+    },
+    {
+        "title": "Gemigreerd van",
+        "key": "gemigreerdVan",
+        "path": "doc:gemigreerdVan",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": false,
+        "order": 2
+    },
+    {
+        "title": "Aangemaakt",
+        "key": "createdOn",
+        "path": "case:createdOn",
+        "displayType": {
+            "type": "date",
+            "displayTypeParameters": {
+                "dateFormat": "DD-MM-YYYY"
+            }
+        },
+        "sortable": true,
+        "defaultSort": "DESC",
+        "order": 3
+    }
+]

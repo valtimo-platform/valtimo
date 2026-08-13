@@ -16,7 +16,7 @@
         "activityType": "bpmn:CallActivity:start",
         "processLinkType": "building-block",
         "buildingBlockDefinitionKey": "verhuizing-inspectie",
-        "buildingBlockDefinitionVersionTag": "1.0.5",
+        "buildingBlockDefinitionVersionTag": "1.0.6",
         "inputMappings": [
             {
                 "source": "doc:aanvrager.naam",

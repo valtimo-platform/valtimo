@@ -25,8 +25,10 @@ import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
+import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
@@ -48,8 +50,8 @@ import java.util.UUID
  * transferred back):
  *
  * 1. **hand back** the building block's process(es) to the owner: migrate them (Operaton) to the
- *    owner's target process definition, and set the process business key back to the owner document
- *    id — processes are never deleted;
+ *    owner's target process definition, and set both the process business key *and* the
+ *    process-document association back to the owner document — processes are never deleted;
  * 2. **transfer data back** via the entry's `dataMigration` (`source` read against the building
  *    block document, `target` written into the owner document);
  * 3. **delete** the building block's JSON document (last) and its instance.
@@ -68,6 +70,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
     private val documentService: DocumentService,
     private val runtimeService: RuntimeService,
     private val processMigrationVariableResolver: ProcessMigrationVariableResolver,
+    private val processDocumentAssociationService: ProcessDocumentAssociationService,
     private val dataPatchApplier: MigrationDataPatchApplier,
     private val jdbcTemplate: JdbcTemplate,
 ) : MigrationComponentExecutor {
@@ -135,8 +138,35 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         processInstances.forEach { processInstance ->
             migrate(instruction, processInstance.processDefinitionId, targetDefinitionId, processInstance.processInstanceId)
             processMigrationVariableResolver.apply(processInstance.processInstanceId, instruction.setProcessVariables)
-            // Ownership returns to the owner: business key becomes the owner document id.
+            // Ownership returns to the owner: business key AND the process-document association both
+            // repoint from the building block to the owner document — the exact mirror of what
+            // AddBuildingBlockMigrationComponentExecutor does on the way in.
             updateBusinessKey(processInstance.processInstanceId, ownerDocumentId.toString())
+            associateWithOwnerDocument(processInstance.processInstanceId, ownerDocumentId)
+        }
+    }
+
+    /**
+     * Repoints the process-document association of [processInstanceId] from the building block back to
+     * [ownerDocumentId].
+     *
+     * Leaving it on the building block document breaks two things. `ProcessDocumentService.getDocumentId`
+     * prefers the association over the business key, so the handed-back process would still resolve to a
+     * document that is about to be deleted. Worse, deleting the building block document (step 3) makes
+     * `ProcessDocumentDeletedEventListener` walk that document's associations and delete the *historic*
+     * process instance of each — which Operaton refuses for a process that is still running, failing the
+     * whole case. A handed-back process is exactly that: still running.
+     */
+    private fun associateWithOwnerDocument(processInstanceId: String, ownerDocumentId: UUID) {
+        runWithoutAuthorization {
+            val operatonProcessInstanceId = OperatonProcessInstanceId(processInstanceId)
+            processDocumentAssociationService.findProcessDocumentInstance(operatonProcessInstanceId)
+                .ifPresent { existing ->
+                    processDocumentAssociationService.deleteProcessDocumentInstance(existing.processDocumentInstanceId())
+                }
+            processDocumentAssociationService.createProcessDocumentInstance(
+                processInstanceId, ownerDocumentId, null
+            )
         }
     }
 

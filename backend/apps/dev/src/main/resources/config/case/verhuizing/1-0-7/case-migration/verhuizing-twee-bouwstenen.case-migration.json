@@ -1,0 +1,86 @@
+{
+    "title": "Twee bouwstenen toevoegen (één per lopend proces)",
+    "key": "verhuizing-twee-bouwstenen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.6"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.6",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [],
+    "addBuildingBlock": [
+        {
+            "buildingBlockKey": "case-notification",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/subject",
+                    "source": "doc:/aanvrager/naam"
+                },
+                {
+                    "target": "doc:/handledBy",
+                    "source": "case:createdBy"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing",
+                    "targetProcessDefinitionKey": "case-notification-process",
+                    "mapActivities": {
+                        "beoordelen_verhuizing_v3": "AcknowledgeNotificationTask"
+                    },
+                    "setProcessVariables": [
+                        {
+                            "target": "pv:bouwsteenOvergenomenVan",
+                            "value": "verhuizing:1.0.6",
+                            "targetType": "string"
+                        }
+                    ],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        },
+        {
+            "buildingBlockKey": "inspectie-dossier",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/aanvragerNaam",
+                    "source": "doc:/aanvrager/naam"
+                },
+                {
+                    "target": "doc:/dossierStatus",
+                    "value": "overgenomen-uit-nazorg",
+                    "targetType": "string"
+                },
+                {
+                    "target": "doc:/aantalBijlagen",
+                    "source": "doc:/aantalKamers",
+                    "targetType": "integer"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing-nazorg",
+                    "targetProcessDefinitionKey": "inspectie-dossier-process",
+                    "mapActivities": {
+                        "nazorg_uitvoeren": "DossierVaststellenTask"
+                    },
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ]
+}
