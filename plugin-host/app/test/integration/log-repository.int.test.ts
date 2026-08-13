@@ -43,7 +43,7 @@ const entry = (overrides: Record<string, unknown> = {}) => ({
 });
 
 /**
- * L4 — the storage behind the `log` capability and the admin log view (plan §18.9/§18.10) against
+ * L4 — the storage behind the `log` capability and the admin log view against
  * real Postgres: JSONB round-trip, the paged/filtered query the host route echoes, and the
  * retention job's cutoff arithmetic.
  */

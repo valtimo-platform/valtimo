@@ -326,7 +326,7 @@ class ExternalPluginConfigurationService(
     }
 
     /**
-     * Applies an admin-confirmed overwrite of an existing plugin version (§11): the admin
+     * Applies an admin-confirmed overwrite of an existing plugin version: the admin
      * re-reviewed the uploaded package's requested permissions in the upload flow, so the new
      * package hash is pinned as the accepted content and every configuration of the definition is
      * re-granted to **exactly** the new manifest's declared endpoint/event/capability sets — the
@@ -515,7 +515,7 @@ class ExternalPluginConfigurationService(
     }
 
     /**
-     * All-or-nothing parity with endpoints (§3.1): the admin's acknowledgement covers the full
+     * All-or-nothing parity with endpoints: the admin's acknowledgement covers the full
      * declared set, recorded as the authoritative subscription list for this configuration.
      */
     private fun validateGrantedEventsCoverManifest(

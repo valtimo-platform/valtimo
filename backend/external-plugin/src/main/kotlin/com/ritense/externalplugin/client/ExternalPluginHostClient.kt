@@ -235,7 +235,7 @@ class ExternalPluginHostClient(
         fileBytes: ByteArray,
         /**
          * Replace an existing pluginId@version. Only sent after an admin explicitly confirmed the
-         * overwrite (permission re-review, §11); without it the host refuses a duplicate with 409.
+         * overwrite (permission re-review); without it the host refuses a duplicate with 409.
          */
         overwrite: Boolean = false,
     ): JsonNode {

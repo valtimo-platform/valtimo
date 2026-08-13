@@ -19,7 +19,7 @@ import {log} from "./host-functions";
 import {stubWasmGlobals} from "./test-support/wasm-globals";
 
 /**
- * The `log` wrapper (plan §18.8). It is fire-and-forget by design: a plugin's logging must never
+ * The `log` wrapper. It is fire-and-forget by design: a plugin's logging must never
  * throw, and outside Wasm (a plugin author's local build or unit test) it has to degrade to the
  * console instead of failing.
  */

@@ -28,7 +28,7 @@ interface HmacVector {
   expectedSignature: string;
 }
 
-// Shared cross-language golden vectors (plan §5). expectedSignature/bodyHash were produced by an
+// Shared cross-language golden vectors. expectedSignature/bodyHash were produced by an
 // independent oracle (openssl), so this asserts parity with the Kotlin ExternalPluginHmacSigner
 // rather than the Node implementation checking itself.
 const fixture = JSON.parse(
@@ -37,7 +37,7 @@ const fixture = JSON.parse(
 
 const SECRET = fixture.secret;
 
-describe("HMAC golden-vector parity (cross-language, §3.9/§5)", () => {
+describe("HMAC golden-vector parity (cross-language)", () => {
   it.each(fixture.vectors)("computeBodyHash matches the oracle for $name", (v) => {
     expect(computeBodyHash(Buffer.from(v.body, "utf8"))).toBe(v.bodyHash);
   });

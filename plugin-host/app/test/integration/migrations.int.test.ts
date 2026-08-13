@@ -31,11 +31,11 @@ function noopLogger(): HostLogger {
 }
 
 /**
- * L4 — the host's own migration runner (plan §18.9). Every host boot calls `runMigrations`, so
+ * L4 — the host's own migration runner. Every host boot calls `runMigrations`, so
  * "applies on an empty database" and "is a no-op on an already-migrated one" are both production
  * paths. The column-level assertions pin the defaults the code depends on: `granted_capabilities`
  * defaults to `[]` (no implicit capability grant) while `granted_endpoints` stays nullable, because
- * NULL and `[]` mean different things to the gzac_api allowlist (§8.2).
+ * NULL and `[]` mean different things to the gzac_api allowlist.
  */
 describe("runMigrations against real Postgres", () => {
   let container: StartedPostgreSqlContainer;
@@ -95,7 +95,7 @@ describe("runMigrations against real Postgres", () => {
     expect(cols.event_subscriptions).toMatchObject({type: "jsonb", nullable: "NO"});
     expect(cols.event_subscriptions.default).toContain("'[]'");
 
-    // Migration 3: no implicit grant — an unlisted capability is denied (§18.4).
+    // Migration 3: no implicit grant — an unlisted capability is denied.
     expect(cols.granted_capabilities).toMatchObject({type: "jsonb", nullable: "NO"});
     expect(cols.granted_capabilities.default).toContain("'[]'");
 

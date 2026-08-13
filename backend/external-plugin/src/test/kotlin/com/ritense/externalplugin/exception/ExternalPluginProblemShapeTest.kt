@@ -24,7 +24,7 @@ import org.zalando.problem.Status
 import java.util.UUID
 
 /**
- * Wire shape of the remaining external-plugin problems (plan §12.2). The in-use exception is what the
+ * Wire shape of the remaining external-plugin problems. The in-use exception is what the
  * frontend branches on to open the read-only usage modal, and `getCause() == null` is what keeps a
  * stack trace out of the response body — both silent-breakage risks if the class is ever refactored.
  * `ExternalPluginHostInUseExceptionTest` pins the host-scoped sibling.

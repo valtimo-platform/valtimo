@@ -27,7 +27,7 @@ import {getRegisteredSubmitKeys, getSubmitHandler, submit} from "./submit";
 import {config, setCurrentConfig} from "./config";
 
 /**
- * The handler registries a plugin author writes against (plan §9). `runtime.ts` looks handlers up
+ * The handler registries a plugin author writes against. `runtime.ts` looks handlers up
  * here on every Wasm invocation, so registration semantics — last-registration-wins, the request
  * catch-all fallback, multiple event handlers — decide what a shipped plugin actually dispatches.
  * Module state is shared across a file, so each block registers its own keys.

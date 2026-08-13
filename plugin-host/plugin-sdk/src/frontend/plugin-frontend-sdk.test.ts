@@ -315,7 +315,7 @@ describe("event buffering & lifecycle", () => {
 });
 
 /**
- * Task-form Level 0/1 submission (plan §13.6): the iframe hands its data to the Angular parent,
+ * Task-form Level 0/1 submission: the iframe hands its data to the Angular parent,
  * which posts it to GZAC under the logged-in user's session. A validation failure must *resolve*
  * (not reject) so the form renders inline errors instead of being torn down.
  */

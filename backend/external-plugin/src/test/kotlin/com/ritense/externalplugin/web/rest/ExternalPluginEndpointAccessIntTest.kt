@@ -38,7 +38,7 @@ import java.util.UUID
  * [ExternalPluginSecuritySmokeIntegrationTest] cannot express: an endpoint with no matcher at all is
  * denied by default, so a route the platform is supposed to expose to ordinary users silently 403s
  * for everyone. Both such bugs in this feature (the case-tab content endpoint and the non-management
- * user-token mint) were found by clicking through a browser rather than by a test — plan §16.
+ * user-token mint) were found by clicking through a browser rather than by a test.
  *
  * Assertions are deliberately about *reachability*, not about handler outcomes: an authorised request
  * for a random UUID may legitimately answer 404/400, so the check is "not 401/403". Denied requests

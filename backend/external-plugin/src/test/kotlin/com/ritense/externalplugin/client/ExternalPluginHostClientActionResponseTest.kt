@@ -33,7 +33,7 @@ import java.util.UUID
 
 /**
  * Every failure mode of an action/submit invocation has to arrive at the caller as a structured
- * [ActionResponse], never as a thrown exception (plan §7): the service-task listener turns a non-2xx
+ * [ActionResponse], never as a thrown exception: the service-task listener turns a non-2xx
  * into a BPMN error and the task-form service turns it into form errors. A leaking exception would
  * bypass both paths, so an unreachable host must surface as a synthetic 503 rather than blowing up
  * the process.

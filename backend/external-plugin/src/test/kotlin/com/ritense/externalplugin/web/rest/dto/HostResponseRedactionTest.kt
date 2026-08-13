@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 /**
- * Broker credentials must never reach the browser (plan §6): every API response carrying a host row
+ * Broker credentials must never reach the browser: every API response carrying a host row
  * replaces the AMQP userinfo with `***`, while the full URL stays server-side for the config push.
  */
 class HostResponseRedactionTest {

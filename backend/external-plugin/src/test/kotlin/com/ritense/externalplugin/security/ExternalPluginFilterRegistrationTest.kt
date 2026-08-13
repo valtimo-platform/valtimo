@@ -26,7 +26,7 @@ import org.springframework.core.annotation.Order
 import kotlin.reflect.jvm.javaMethod
 
 /**
- * Two structural guarantees of the plugin filter wiring (plan §3.3) that no functional test would
+ * Two structural guarantees of the plugin filter wiring that no functional test would
  * notice breaking:
  *
  * 1. Each plugin filter is a Spring bean *and* a servlet filter, so Boot's servlet auto-registration
@@ -94,7 +94,7 @@ class ExternalPluginFilterRegistrationTest {
     private fun autoConfiguration() = ExternalPluginAutoConfiguration()
 
     private companion object {
-        /** Any 32+ byte secret: the key providers derive an HmacSHA256 key by hashing it (§3.2). */
+        /** Any 32+ byte secret: the key providers derive an HmacSHA256 key by hashing it. */
         const val SECRET = "test-encryption-secret-value-1234"
     }
 }

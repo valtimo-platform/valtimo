@@ -26,7 +26,7 @@ import {
 } from "./url-guard";
 
 /**
- * The SSRF guard behind the `http_request` capability (plan §18.6). A plugin supplies the URL, so
+ * The SSRF guard behind the `http_request` capability. A plugin supplies the URL, so
  * these ranges are the boundary between "call a public API" and "make the host read its own
  * network position" — loopback services, the host's admin API, cloud metadata (169.254.169.254).
  */

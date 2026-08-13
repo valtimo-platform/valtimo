@@ -30,7 +30,7 @@ import org.springframework.http.HttpStatus
 import java.util.UUID
 
 /**
- * The case-tab content endpoint (plan §13.1). Its job is narrow but load-bearing: hand the frontend
+ * The case-tab content endpoint. Its job is narrow but load-bearing: hand the frontend
  * wrapper the bundle URL and the case context, and answer 404 rather than an empty 200 when the tab
  * or document is unknown — the wrapper branches on that. The PBAC check lives in the service and must
  * propagate, never be swallowed into a 200.

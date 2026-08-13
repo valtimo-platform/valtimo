@@ -296,7 +296,7 @@ describe("PluginManager (mocked Extism)", () => {
       const hostCtx = instance.call.mock.calls[0][2] as Record<string, unknown>;
       expect(hostCtx.serviceToken).toBe("svc");
       expect(hostCtx.gzacBaseUrl).toBe("http://gzac:8080");
-      // A server-to-server hook gets no user token — only handle_request forwards one (§13.4).
+      // A server-to-server hook gets no user token — only handle_request forwards one.
       expect(hostCtx.userToken).toBeUndefined();
     });
 

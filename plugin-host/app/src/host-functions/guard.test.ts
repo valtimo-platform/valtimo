@@ -41,7 +41,7 @@ function callContextWith(ctx: GzacApiCallContext | undefined, input: string | nu
 }
 
 /**
- * The shared entry guard every host function funnels through (plan §18.4): it resolves the per-call
+ * The shared entry guard every host function funnels through: it resolves the per-call
  * host context, enforces the capability allowlist, and parses the plugin's JSON request.
  */
 describe("guardHostCall", () => {
@@ -86,7 +86,7 @@ describe("guardHostCall", () => {
   });
 
   it("denies when the configuration was pushed without a capability list at all", () => {
-    // No implicit grant: a push carrying no grantedCapabilities stores an empty allowlist (§18.4).
+    // No implicit grant: a push carrying no grantedCapabilities stores an empty allowlist.
     const ctx = {...baseCtx, grantedCapabilities: undefined};
     expect(guardHostCall(callContextWith(ctx), 0n, "kv")).toMatchObject({ok: false, status: 403});
   });

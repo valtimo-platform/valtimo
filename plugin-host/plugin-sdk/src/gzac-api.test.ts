@@ -19,7 +19,7 @@ import {gzacApi} from "./gzac-api";
 import {stubWasmGlobals} from "./test-support/wasm-globals";
 
 /**
- * The plugin-author-facing `gzacApi` wrapper (plan §9/§13.4). What matters here is the *request
+ * The plugin-author-facing `gzacApi` wrapper. What matters here is the *request
  * envelope* it hands the host function — especially the `as` discriminator that selects between the
  * service token and the downscoped user token — because the host decides the credential from it.
  */

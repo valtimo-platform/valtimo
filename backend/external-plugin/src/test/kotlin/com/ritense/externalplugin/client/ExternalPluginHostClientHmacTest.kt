@@ -267,7 +267,7 @@ class ExternalPluginHostClientHmacTest {
             .andExpect { request ->
                 request as MockClientHttpRequest
                 // Query parameters are deliberately not signature-bound: the host strips the query
-                // before verifying, so signing it would make the canonical strings diverge (§18.11).
+                // before verifying, so signing it would make the canonical strings diverge.
                 assertSigned(request, "GET", path, ByteArray(0))
             }
             .andRespond(

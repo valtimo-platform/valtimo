@@ -1,6 +1,6 @@
 {
   "description": [
-    "Cross-language golden vectors for the GZAC->host HMAC scheme (plan §3.9 / §5).",
+    "Cross-language golden vectors for the GZAC->host HMAC scheme.",
     "Canonical string: `{METHOD.toUpperCase()}\\n{path}\\n{timestamp}\\n{bodyHash}` where",
     "bodyHash = lowercase-hex SHA-256(body) and the HMAC-SHA256 key is the host ADMIN_TOKEN (secret).",
     "This construction is defined by the Kotlin signer",

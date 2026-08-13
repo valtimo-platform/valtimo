@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 /**
- * Structural guarantees of the grant tables (plan §5) against a real database — neither the unique
+ * Structural guarantees of the grant tables against a real database — neither the unique
  * constraints nor the capability column's wire form can be verified with a mocked repository:
  *
  * - each grant table has a DB unique constraint on its natural key, so duplicate grants are
@@ -208,7 +208,7 @@ class ExternalPluginGrantRepositoryIntTest @Autowired constructor(
     @Test
     fun `replacing an overlapping endpoint grant set succeeds because the delete is flushed first`() {
         // Hibernate orders inserts ahead of deletes inside one flush, so re-inserting an overlapping
-        // grant without an explicit flush would trip the unique constraint (§5). This reproduces the
+        // grant without an explicit flush would trip the unique constraint. This reproduces the
         // exact sequence ExternalPluginConfigurationService.update performs.
         val configuration = seedConfiguration()
         grantedEndpointRepository.saveAllAndFlush(
@@ -255,7 +255,7 @@ class ExternalPluginGrantRepositoryIntTest @Autowired constructor(
         entityManager.clear()
 
         // Read the raw column: the host protocol and the manifest both use these identifiers, so the
-        // stored form has to match them exactly (§18.2).
+        // stored form has to match them exactly.
         @Suppress("UNCHECKED_CAST")
         val stored = entityManager
             .createNativeQuery("SELECT capability FROM external_plugin_granted_capability")

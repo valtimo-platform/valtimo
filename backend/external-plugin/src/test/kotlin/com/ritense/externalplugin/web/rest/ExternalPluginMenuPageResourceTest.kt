@@ -26,7 +26,7 @@ import org.springframework.http.HttpStatus
 import java.util.UUID
 
 /**
- * The menu-page listing the menu-configuration builder reads (plan §13). Access to the page's actual
+ * The menu-page listing the menu-configuration builder reads. Access to the page's actual
  * data is enforced at render time by PBAC ∩ the configuration's allowlist through the downscoped user
  * token, so this list is intentionally unfiltered — the resource must not invent its own filtering.
  */

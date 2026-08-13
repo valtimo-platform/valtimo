@@ -19,7 +19,7 @@ import {httpRequest} from "./http-request";
 import {stubWasmGlobals} from "./test-support/wasm-globals";
 
 /**
- * The `httpRequest` wrapper (plan §18.6). It mirrors `gzacApi`'s shape but targets external
+ * The `httpRequest` wrapper. It mirrors `gzacApi`'s shape but targets external
  * services; the host does the fetch and applies the HTTPS/SSRF policy, so the wrapper's job is
  * purely the envelope and the reply pass-through.
  */
@@ -94,7 +94,7 @@ describe("httpRequest", () => {
   });
 
   it("passes a host-side policy rejection through as data rather than throwing", () => {
-    // e.g. the SSRF guard or the HTTPS-only rule refusing the target (§18.6).
+    // e.g. the SSRF guard or the HTTPS-only rule refusing the target.
     const stub = stubWasmGlobals("http_request");
     stub.replyWith({
       status: 400,

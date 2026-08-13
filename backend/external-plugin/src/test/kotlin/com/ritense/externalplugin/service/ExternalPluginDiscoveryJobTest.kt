@@ -25,7 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import java.lang.reflect.Modifier
 
 /**
- * The polling job's *lock* is the multi-replica guarantee of plan §3.6: without ShedLock every replica
+ * The polling job's *lock* is the multi-replica guarantee: without ShedLock every replica
  * would health-check the same hosts, upsert the same definitions and re-push the same configurations
  * on every tick. None of that fails visibly — it just multiplies host load and races token pushes —
  * so the annotations are pinned here.
@@ -63,7 +63,7 @@ class ExternalPluginDiscoveryJobTest {
 
         assertThat(scheduled).isNotNull()
         // The default must stay comfortably below the service-token TTL (10m) — the poll *is* the
-        // token refresh mechanism (§3.6).
+        // token refresh mechanism.
         assertThat(scheduled.fixedRateString)
             .isEqualTo("\${valtimo.external-plugin.polling.rate:PT60S}")
     }

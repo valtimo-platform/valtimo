@@ -32,7 +32,7 @@ function noopLogger(): HostLogger {
 }
 
 /**
- * L4 — the `kv` capability's storage (plan §18.7) against real Postgres. The JSONB round-trip, the
+ * L4 — the `kv` capability's storage against real Postgres. The JSONB round-trip, the
  * upsert-on-conflict primary key and the prefix `LIKE` escaping are all database behaviour that a
  * mocked pool would assert nothing about.
  */
@@ -83,7 +83,7 @@ describe("KvRepository against real Postgres", () => {
     it("distinguishes a stored null from a missing key", async () => {
       await repo.set("cfg-1", "explicit-null", null);
 
-      // `found` is what the host function turns into 200-with-null vs 404 (§18.7).
+      // `found` is what the host function turns into 200-with-null vs 404.
       expect(await repo.get("cfg-1", "explicit-null")).toEqual({found: true, value: null});
       expect(await repo.get("cfg-1", "never-written")).toEqual({found: false, value: undefined});
     });

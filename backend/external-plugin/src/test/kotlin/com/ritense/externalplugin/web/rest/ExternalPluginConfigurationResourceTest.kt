@@ -59,8 +59,8 @@ import java.util.UUID
 
 /**
  * Configuration-facing endpoints of the management resource. Two properties matter beyond plumbing:
- * secret values never travel to the browser (plan §5 — `maskedProperties` omits `x-secret` fields),
- * and the edit flow can never change event or capability grants (§4) because `update` has no such
+ * secret values never travel to the browser (`maskedProperties` omits `x-secret` fields),
+ * and the edit flow can never change event or capability grants because `update` has no such
  * parameters to forward.
  */
 class ExternalPluginConfigurationResourceTest {
@@ -275,7 +275,7 @@ class ExternalPluginConfigurationResourceTest {
             ),
         )
 
-        // No event/capability parameters exist to forward — the edit flow cannot widen those grants (§4).
+        // No event/capability parameters exist to forward — the edit flow cannot widen those grants.
         verify(configurationService).update(
             configurationId,
             "Renamed",

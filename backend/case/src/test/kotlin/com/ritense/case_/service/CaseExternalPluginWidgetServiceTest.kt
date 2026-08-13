@@ -47,7 +47,7 @@ import java.util.Optional
 import java.util.UUID
 
 /**
- * Query/mutation surface the external-plugin module drives for case widgets (plan §13.7/§20): the
+ * Query/mutation surface the external-plugin module drives for case widgets: the
  * delete guard's usage lookup, the dangling-repair panel's listing, and the import remap. The case
  * module deliberately knows nothing about plugins, so it must expose *every* external-plugin widget —
  * including one whose configuration id is null after a dangling import — and never filter on

@@ -54,8 +54,8 @@ import org.hibernate.boot.registry.StandardServiceRegistry
  *     will map the *same* embeddable type with *identical* column definitions — there is no
  *     divergence to catch.
  *
- * Conclusion: the shared-column design in D1 is safe to implement as specified. The plan's fallback
- * (distinct external column names, e.g. `external_plugin_reference_type`) is **not needed**.
+ * Conclusion: the shared-column design is safe to implement as specified. The fallback of
+ * distinct external column names (e.g. `external_plugin_reference_type`) is **not needed**.
  */
 class PluginConfigurationReferenceSharedStiColumnsTest {
 

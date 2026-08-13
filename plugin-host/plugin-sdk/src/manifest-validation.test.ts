@@ -19,7 +19,7 @@ import {validatePluginManifest} from "./manifest-validation";
 
 /**
  * `validatePluginManifest` is the single rule set enforced at BOTH the pack tool (build-time) and
- * the host upload route (runtime) — plan §9. These cases pin that shared contract so the two gates
+ * the host upload route (runtime). These cases pin that shared contract so the two gates
  * cannot drift.
  */
 describe("validatePluginManifest", () => {
@@ -151,7 +151,7 @@ describe("validatePluginManifest", () => {
     });
 
     it("rejects an unknown capability name, listing the allowed set", () => {
-      // The host enforces capabilities by exact name (§18.4), so a typo must fail the upload rather
+      // The host enforces capabilities by exact name, so a typo must fail the upload rather
       // than silently granting nothing at runtime.
       const errors = validatePluginManifest(withPermissions({ capabilities: ["gzac-api"] }));
       expect(errors).toEqual([
@@ -182,7 +182,7 @@ describe("validatePluginManifest", () => {
 
     it("rejects endpoints declared without the gzac_api capability", () => {
       // endpoints only scope which GZAC routes gzac_api may reach; declaring them without the
-      // capability is a manifest the admin could accept but the host would always deny (§18.1).
+      // capability is a manifest the admin could accept but the host would always deny.
       const errors = validatePluginManifest(
         withPermissions({
           capabilities: ["kv"],
@@ -259,7 +259,7 @@ describe("validatePluginManifest", () => {
 
     it("rejects a duplicated output key, naming it", () => {
       // The result-contract check on the host matches result keys against this list, so duplicates
-      // would make the declared contract ambiguous (§21).
+      // would make the declared contract ambiguous.
       expect(
         validatePluginManifest(
           withActions([{ key: "summarize", outputs: ["summary", "summary"] }])

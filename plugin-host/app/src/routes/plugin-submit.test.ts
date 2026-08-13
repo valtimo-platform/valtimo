@@ -25,7 +25,7 @@ const VERSION = "0.1.0";
 const SUBMIT_KEY = "review";
 
 /**
- * The task-form Level 1 hook (plan §13.6): GZAC calls this during a submission when the bundle
+ * The task-form Level 1 hook: GZAC calls this during a submission when the bundle
  * declares `submitHandler: true`. Same rails as the action route — HMAC-signed, service-token
  * context injected host-side — but GZAC, not the plugin, completes the task, so a plugin-level
  * rejection has to come back as a distinguishable 422 rather than an infrastructure error.
@@ -92,7 +92,7 @@ describe("plugin-submit route", () => {
     ...overrides,
   });
 
-  describe("authentication (HMAC, §3.9)", () => {
+  describe("authentication (HMAC)", () => {
     it("rejects an unsigned request with 401 and never runs the hook", async () => {
       const path = `/plugins/${PLUGIN}/${VERSION}/submit/${SUBMIT_KEY}`;
       const res = await app.inject({

@@ -85,7 +85,7 @@ class ExternalPluginHostUsageResolver(
 
     /**
      * A `case-tab` of an external plugin references the configuration without a process link, so it
-     * counts as a usage that blocks deletion (system-plan §12).
+     * counts as a usage that blocks deletion.
      */
     private fun buildCaseTabUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {
         val tabService = caseExternalPluginTabService.orElse(null) ?: return emptyList()
@@ -107,7 +107,7 @@ class ExternalPluginHostUsageResolver(
 
     /**
      * An `external-plugin` case widget references the configuration without a process link, so it
-     * counts as a usage that blocks deletion (system-plan §12) — the widget sibling of
+     * counts as a usage that blocks deletion — the widget sibling of
      * [buildCaseTabUsageDtos].
      */
     private fun buildCaseWidgetUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {

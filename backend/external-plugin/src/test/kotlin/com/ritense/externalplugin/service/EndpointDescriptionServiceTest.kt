@@ -28,7 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 /**
  * Resolves the localised text the activation-time permission screen renders for each endpoint a
- * plugin requests (plan §4). The screen is security-critical — it is where an admin decides what the
+ * plugin requests. The screen is security-critical — it is where an admin decides what the
  * plugin may reach — so a manifest's wildcard glob has to resolve against the controller's Spring
  * placeholder pattern (`{documentId}` and friends), and the answer must not depend on the JVM's
  * handler-map iteration order.

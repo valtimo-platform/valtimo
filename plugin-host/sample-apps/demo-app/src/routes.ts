@@ -229,7 +229,7 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
     await serveFile(reply, LOGO_PATH);
   });
 
-  // handle_request data route — public, mirroring the plugin host (see §14 of the plan: this is a
+  // handle_request data route — public, mirroring the plugin host (this is a
   // known POC gap; a production app would gate it). CORS + OPTIONS preflight for the opaque-origin
   // iframe's cross-origin POST.
   fastify.options(`${pluginBase}/data`, async (_request, reply) => {

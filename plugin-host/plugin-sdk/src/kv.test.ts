@@ -19,7 +19,7 @@ import {kv} from "./kv";
 import {stubWasmGlobals} from "./test-support/wasm-globals";
 
 /**
- * The `kv` wrapper (plan §18.7). Unlike the other wrappers it *interprets* the host's reply — a 404
+ * The `kv` wrapper. Unlike the other wrappers it *interprets* the host's reply — a 404
  * becomes `{found: false}` rather than an error — so a plugin can tell "no value stored" from "the
  * value is null" without checking status codes. Every other non-200 throws, on every operation: a
  * denied capability must never read as an empty result or a silent no-op.

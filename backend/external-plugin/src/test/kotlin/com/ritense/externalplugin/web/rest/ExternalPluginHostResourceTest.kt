@@ -51,7 +51,7 @@ import java.util.UUID
 
 /**
  * Host-facing endpoints of the management resource. The security-critical part is the broker
- * credential flow (plan §6): `host-defaults` must hand the browser a **redacted** AMQP URL, and when
+ * credential flow: `host-defaults` must hand the browser a **redacted** AMQP URL, and when
  * that redacted value is echoed back on registration the real credentials must be substituted
  * server-side so a round-tripped placeholder never ends up stored.
  */

@@ -43,7 +43,7 @@ import java.util.UUID
 
 /**
  * Definition-facing endpoints of the management resource: the compatibility verdict folded into the
- * response (plan §11 — informational, never blocking), the `requiresReacceptance` flag that makes a
+ * response (informational, never blocking), the `requiresReacceptance` flag that makes a
  * changed package visible to the admin, the logo URL the UI renders, and the API-only content
  * re-acceptance recovery path.
  */
@@ -129,7 +129,7 @@ class ExternalPluginDefinitionResourceTest {
 
         val body = resource.getDefinition(definitionId).body!!
 
-        // Informational only — an incompatible definition still lists and can still be activated (§11).
+        // Informational only — an incompatible definition still lists and can still be activated.
         assertThat(body.compatible).isFalse()
         assertThat(body.id).isEqualTo(definitionId)
         assertThat(body.status).isEqualTo(ExternalPluginDefinitionStatus.AVAILABLE)
