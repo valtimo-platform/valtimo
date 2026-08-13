@@ -2,18 +2,28 @@
 
 The Document upload fields sub-tab configures the default value, visibility, and read-only state of the fields shown to users when uploading a document to a case.
 
-## Overview
-
 Unlike [Document columns](document-columns.md), the list of upload fields is fixed — fields cannot be added or removed, only edited. Each field corresponds to a Documenten API document property, such as **Title**, **Language**, or **Status**.
+
+---
 
 ## Configuration
 
-1. Expand **Admin** in the left sidebar
-2. Click **Cases** under the Configuration section
-3. Click a case definition to open it
-4. Click the **ZGW** tab, then the **Document upload fields** sub-tab
+{% stepper %}
+{% step %}
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click a case definition to open it
+{% endstep %}
+{% step %}
+Click the **ZGW** tab, then the **Document upload fields** sub-tab
 
-![Document upload fields list](../../../assets/configuration-guides/cases/zgw/document-upload-fields/01-upload-fields-list.png)
+<figure><img src="../../../assets/configuration-guides/cases/zgw/document-upload-fields/01-upload-fields-list.png" alt=""><figcaption>Document upload fields list</figcaption></figure>
+{% endstep %}
+{% endstepper %}
 
 The list shows every upload field with its configured **Default value**, **Visible**, and **Readonly** state.
 
@@ -25,7 +35,7 @@ Document upload fields apply to the case definition as a whole. Changes affect e
 
 Click a row, or use its overflow menu (⋮), to edit a field:
 
-![Edit upload field modal — Language](../../../assets/configuration-guides/cases/zgw/document-upload-fields/02-edit-language-modal.png)
+<figure><img src="../../../assets/configuration-guides/cases/zgw/document-upload-fields/02-edit-language-modal.png" alt=""><figcaption>Edit upload field modal</figcaption></figure>
 
 | Property | Description |
 |----------|-------------|

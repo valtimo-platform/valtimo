@@ -1,7 +1,5 @@
 # Cases
 
-## Overview
-
 The Cases configuration area lets you manage case definitions — the templates that define how
 different types of cases behave in your Valtimo implementation. Each case definition specifies
 its document structure, linked processes, forms, and how it appears to end users.
@@ -31,7 +29,7 @@ Expand **Admin** in the left sidebar
 {% step %}
 Click **Cases** under the Configuration section
 
-![Admin sidebar with Cases navigation](../../assets/configuration-guides/cases/01-admin-cases-navigation.png)
+<figure><img src="../../assets/configuration-guides/cases/01-admin-cases-navigation.png" alt=""><figcaption>Admin sidebar with Cases navigation</figcaption></figure>
 {% endstep %}
 {% step %}
 Click a case row to open its configuration
@@ -39,7 +37,7 @@ Click a case row to open its configuration
 {% step %}
 Use the tabs to navigate between configuration areas
 
-![Case configuration tabs](../../assets/configuration-guides/cases/02-case-configuration-tabs.png)
+<figure><img src="../../assets/configuration-guides/cases/02-case-configuration-tabs.png" alt=""><figcaption>Case configuration tabs</figcaption></figure>
 {% endstep %}
 {% endstepper %}
 
@@ -57,14 +55,14 @@ Click the **Create** button in the toolbar
 {% step %}
 Fill in the case definition details:
 
-![Create case definition modal](../../assets/configuration-guides/cases/03-create-modal-empty.png)
+<figure><img src="../../assets/configuration-guides/cases/03-create-modal-empty.png" alt=""><figcaption>Create case definition modal</figcaption></figure>
 
 - **Name** — Display name for the case definition
 - **Key** — Unique identifier (auto-generated from name, can be edited)
 - **Version** — Semantic version number (e.g., `1.0.0`)
 - **Description** — Optional description of what this case type handles
 
-![Create case definition with filled fields](../../assets/configuration-guides/cases/04-create-modal-filled.png)
+<figure><img src="../../assets/configuration-guides/cases/04-create-modal-filled.png" alt=""><figcaption>Create case definition with filled fields</figcaption></figure>
 {% endstep %}
 {% step %}
 Click **Save** to create the case definition
@@ -84,7 +82,7 @@ Click the **Upload** button in the toolbar
 {% step %}
 Select a `.zip` file containing the case definition
 
-![Upload case definition file select](../../assets/configuration-guides/cases/05-upload-modal-file-select.png)
+<figure><img src="../../assets/configuration-guides/cases/05-upload-modal-file-select.png" alt=""><figcaption>Upload case definition file select</figcaption></figure>
 {% endstep %}
 {% step %}
 Configure the import settings:
@@ -108,20 +106,20 @@ and allows switching between versions.
 
 Click the **Version management** button to access version management options.The deployment page shows version information and provides actions depending on the version status:
 
-![Version selector dropdown](../../assets/configuration-guides/cases/06-version-selector-dropdown.png)
+<figure><img src="../../assets/configuration-guides/cases/06-version-selector-dropdown.png" alt=""><figcaption>Version selector dropdown</figcaption></figure>
 
 #### For published versions
 
 - **Create draft version** — Create a new draft version based on this published version
 
-![Published version deployment](../../assets/configuration-guides/cases/10-deployment-published.png)
+<figure><img src="../../assets/configuration-guides/cases/10-deployment-published.png" alt=""><figcaption>Published version deployment</figcaption></figure>
 
 #### For draft versions
 
 - **Finalize draft** — Publish the draft version (makes it available for new cases)
 - **Delete draft** — Remove the draft version
 
-![Draft version deployment](../../assets/configuration-guides/cases/08-deployment-draft.png)
+<figure><img src="../../assets/configuration-guides/cases/08-deployment-draft.png" alt=""><figcaption>Draft version deployment</figcaption></figure>
 
 ### Viewing all versions
 
@@ -129,7 +127,7 @@ Click **Show all versions** in the version selector to see a complete list of al
 the case definition. This opens a modal with a paginated table showing all versions and their
 status (draft or published).
 
-![Show all versions modal](../../assets/configuration-guides/cases/13-show-all-versions-modal.png)
+<figure><img src="../../assets/configuration-guides/cases/13-show-all-versions-modal.png" alt=""><figcaption>Show all versions modal</figcaption></figure>
 
 {% hint style="info" %}
 Most configuration changes are version-specific. When you modify a setting, it applies to the
@@ -150,7 +148,7 @@ Click **Create draft version**
 {% step %}
 Fill in the new version details:
 
-![Create draft version modal](../../assets/configuration-guides/cases/11-create-draft-modal.png)
+<figure><img src="../../assets/configuration-guides/cases/11-create-draft-modal.png" alt=""><figcaption>Create draft version modal</figcaption></figure>
 
 - **Name** — Display name for the case definition
 - **Key** — Unique identifier (cannot be changed)
@@ -178,7 +176,7 @@ Click **Finalize draft**
 {% step %}
 Review the confirmation message
 
-![Finalize confirmation modal](../../assets/configuration-guides/cases/09-finalize-confirmation.png)
+<figure><img src="../../assets/configuration-guides/cases/09-finalize-confirmation.png" alt=""><figcaption>Finalize confirmation modal</figcaption></figure>
 {% endstep %}
 {% step %}
 Click **Finalize** to publish
@@ -223,7 +221,7 @@ Click the **More** menu
 {% step %}
 Select **Set as active version**
 
-![More menu with Set as active version option](../../assets/configuration-guides/cases/12-more-menu.png)
+<figure><img src="../../assets/configuration-guides/cases/12-more-menu.png" alt=""><figcaption>More menu with Set as active version option</figcaption></figure>
 {% endstep %}
 {% step %}
 Confirm the change in the modal

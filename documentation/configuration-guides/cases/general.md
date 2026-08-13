@@ -4,11 +4,26 @@ The General tab configures case-level settings that affect how the case behaves 
 application. These settings include case handler assignment, external start forms, and document
 upload handling.
 
-## Configuration
+---
 
-Navigate to **Admin** > **Cases** > select a case > **General** tab.
+## Configuring general settings
 
-![General tab overview](../../assets/configuration-guides/cases/general/01-general-tab-overview.png)
+{% stepper %}
+{% step %}
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click a case definition to open it
+{% endstep %}
+{% step %}
+Click the **General** tab
+
+<figure><img src="../../assets/configuration-guides/cases/general/01-general-tab-overview.png" alt=""><figcaption>General tab overview</figcaption></figure>
+{% endstep %}
+{% endstepper %}
 
 {% hint style="info" %}
 Settings on this tab can only be modified in draft versions. Published versions are read-only.
@@ -19,7 +34,7 @@ Settings on this tab can only be modified in draft versions. Published versions 
 Select which process should handle file uploads for this case type. When users upload documents
 to a case, the selected process is started to handle the upload.
 
-![Upload process configuration](../../assets/configuration-guides/cases/general/06-upload-process.png)
+<figure><img src="../../assets/configuration-guides/cases/general/06-upload-process.png" alt=""><figcaption>Upload process configuration</figcaption></figure>
 
 | Property | Description |
 |----------|-------------|
@@ -32,7 +47,7 @@ Leave empty if document uploads should not trigger a process.
 Configure whether cases of this type can be assigned to a handler (case worker) and whether
 tasks should automatically be assigned to the case handler.
 
-![Case handler settings](../../assets/configuration-guides/cases/general/02-case-handler.png)
+<figure><img src="../../assets/configuration-guides/cases/general/02-case-handler.png" alt=""><figcaption>Case handler settings</figcaption></figure>
 
 | Property | Description |
 |----------|-------------|
@@ -44,7 +59,7 @@ tasks should automatically be assigned to the case handler.
 Configure an external form URL that users can access to start new cases. This is useful when
 case creation happens through an external portal or citizen-facing form application.
 
-![External start form settings](../../assets/configuration-guides/cases/general/05-external-start-form-filled.png)
+<figure><img src="../../assets/configuration-guides/cases/general/05-external-start-form-filled.png" alt=""><figcaption>External start form settings</figcaption></figure>
 
 | Property | Description |
 |----------|-------------|
@@ -66,12 +81,3 @@ For each missing plugin configuration:
 2. Click **Save** to apply the mapping
 
 This resolves the "Needs configuration" status shown in the case list.
-
-## Access control
-
-The General tab is only accessible to users with the `ROLE_ADMIN` role. Individual settings on
-this tab do not have separate access control — they are all-or-nothing based on case management
-access.
-
-For case handler assignment permissions, see the case access control documentation in
-[Cases](README.md#access-control).

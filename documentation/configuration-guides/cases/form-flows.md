@@ -3,8 +3,6 @@
 The Form flows tab lets you configure multi-step form sequences for complex data collection
 workflows.
 
-## Overview
-
 A form flow guides a user through a sequence of forms, like a wizard. Use it to break a single
 task into several screens, to branch based on user input (for example, showing different
 follow-up forms for approved and denied requests), and to run actions when a step opens,

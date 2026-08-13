@@ -2,8 +2,6 @@
 
 The Forms tab lets you manage the Form.io form definitions available for the case. These forms are used as start forms, user task forms, and other form-driven steps within the case's processes.
 
-## Overview
-
 Each form definition is a [Form.io](https://form.io) form: a JSON structure describing input fields, layout, and validation, built with a drag-and-drop builder. Forms can be created from scratch, uploaded from a `.json` file, or duplicated from an existing form.
 
 Some forms are marked **Read-only** — for example, forms that are deployed from the classpath as part of a case's default configuration. Read-only forms can be viewed and downloaded but not edited, uploaded to, or deleted.

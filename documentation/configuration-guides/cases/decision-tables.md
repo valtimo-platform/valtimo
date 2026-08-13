@@ -2,11 +2,11 @@
 
 The Decision tables tab lets you manage DMN decision tables for automated business decisions within the case definition.
 
-## Overview
-
 A decision table encodes business rules as a structured table: given one or more input values (process variables), the table evaluates the matching rule and returns an output. Decision tables follow the [DMN (Decision Model and Notation)](https://www.omg.org/dmn/) standard and are executed automatically as part of a process.
 
 Use decision tables to separate business logic from process flow — for example, to determine eligibility, calculate a fee, or classify a request based on its attributes.
+
+---
 
 ## Configuring decision tables
 
@@ -23,7 +23,7 @@ Click a case definition to open it
 {% step %}
 Click the **Decision tables** tab
 
-![Decision tables tab — empty state](../../assets/configuration-guides/cases/decision-tables/02-decision-tables-empty.png)
+<figure><img src="../../assets/configuration-guides/cases/decision-tables/02-decision-tables-empty.png" alt=""><figcaption>Decision tables tab empty state</figcaption></figure>
 {% endstep %}
 {% endstepper %}
 
@@ -41,7 +41,13 @@ Fill in the form:
   - **Process variable** (required) — The variable name from the process (e.g. `requestAmount`)
   - **Label** (optional) — A human-readable column header shown in the DMN editor
 
-![Create decision table modal — filled](../../assets/configuration-guides/cases/decision-tables/05-create-modal-filled.png)
+| Property | Description |
+|----------|-------------|
+| Name | Display name for the decision table |
+| Process variable | Name of the process variable used as an input column (e.g. `requestAmount`) |
+| Label | Human-readable column header shown in the DMN editor (optional) |
+
+<figure><img src="../../assets/configuration-guides/cases/decision-tables/05-create-modal-filled.png" alt=""><figcaption>Create decision table modal</figcaption></figure>
 {% endstep %}
 {% step %}
 Click **Create**
@@ -59,7 +65,7 @@ Click the upload icon in the toolbar (next to the search field)
 {% step %}
 Click **Choose DMN file** and select a `.dmn` file from your system
 
-![Upload decision table modal](../../assets/configuration-guides/cases/decision-tables/03-upload-modal.png)
+<figure><img src="../../assets/configuration-guides/cases/decision-tables/03-upload-modal.png" alt=""><figcaption>Upload decision table modal</figcaption></figure>
 {% endstep %}
 {% step %}
 Click **Upload**
@@ -72,7 +78,7 @@ The file is deployed immediately and appears in the list.
 
 After adding one or more decision tables, the list shows each table's **Key**, **Name**, and **Version**.
 
-![Decision tables list with one entry](../../assets/configuration-guides/cases/decision-tables/06-decision-tables-list.png)
+<figure><img src="../../assets/configuration-guides/cases/decision-tables/06-decision-tables-list.png" alt=""><figcaption>Decision tables list</figcaption></figure>
 
 ### Editing a decision table
 
@@ -85,7 +91,7 @@ Open the overflow menu (⋮) on the row
 {% step %}
 Click **Edit**
 
-![Edit decision table modal](../../assets/configuration-guides/cases/decision-tables/09-edit-modal.png)
+<figure><img src="../../assets/configuration-guides/cases/decision-tables/09-edit-modal.png" alt=""><figcaption>Edit decision table modal</figcaption></figure>
 {% endstep %}
 {% step %}
 Modify the decision table properties:
@@ -100,7 +106,7 @@ Click **Save**
 
 To edit the decision logic itself, click directly on the row to open the DMN modeler.
 
-![DMN modeler — DRD canvas view](../../assets/configuration-guides/cases/decision-tables/07-decision-modeler.png)
+<figure><img src="../../assets/configuration-guides/cases/decision-tables/07-decision-modeler.png" alt=""><figcaption>DMN modeler</figcaption></figure>
 
 Modify the decision logic in the editor, then click **Save** to deploy the changes.
 
@@ -110,7 +116,7 @@ Modify the decision logic in the editor, then click **Save** to deploy the chang
 {% step %}
 Open the overflow menu (⋮) on the row
 
-![Row overflow menu with Edit and Delete options](../../assets/configuration-guides/cases/decision-tables/08-overflow-menu.png)
+<figure><img src="../../assets/configuration-guides/cases/decision-tables/08-overflow-menu.png" alt=""><figcaption>Row overflow menu</figcaption></figure>
 {% endstep %}
 {% step %}
 Click **Delete**
@@ -123,11 +129,3 @@ Confirm the deletion in the modal
 {% hint style="warning" %}
 Deleting a decision table cannot be undone. Any process that relies on it will stop functioning correctly.
 {% endhint %}
-
-## Properties
-
-| Property | Description |
-|----------|-------------|
-| Name | Display name for the decision table |
-| Process variable | Name of the process variable used as an input column (e.g. `requestAmount`) |
-| Label | Human-readable column header shown in the DMN editor (optional) |

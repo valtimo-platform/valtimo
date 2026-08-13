@@ -1,7 +1,5 @@
 # Case details
 
-## Overview
-
 The Case details tab configures how case information is presented to end users — internal
 statuses, tags, and the tabs and header shown on a case's detail page.
 
@@ -12,14 +10,26 @@ This includes:
 - **[Tags](tags.md)** — Labels users can attach to individual cases
 - **[Header](header.md)** — Fields shown in the case detail header
 
+---
+
 ## Configuring case details
 
-1. Expand **Admin** in the left sidebar
-2. Click **Cases** under the Configuration section
-3. Click a case definition to open it
-4. Click the **Case details** tab
+{% stepper %}
+{% step %}
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click a case definition to open it
+{% endstep %}
+{% step %}
+Click the **Case details** tab
 
-![Case details tab with Tabs, Statuses, Tags, and Header sub-tabs](../../../assets/configuration-guides/cases/case-details/readme/01-case-details-tab-overview.png)
+<figure><img src="../../../assets/configuration-guides/cases/case-details/readme/01-case-details-tab-overview.png" alt=""><figcaption>Case details tab overview</figcaption></figure>
+{% endstep %}
+{% endstepper %}
 
 {% hint style="info" %}
 Tabs, Tags, and Header apply to the selected case definition version and can only be edited on a

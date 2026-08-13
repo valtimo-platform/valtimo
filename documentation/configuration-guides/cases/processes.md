@@ -1,84 +1,115 @@
 # Processes
 
-The Processes tab lets you manage BPMN process definitions linked to the case definition.
-
-## Overview
+The Processes tab manages BPMN process definitions linked to the case definition. 
 
 Processes define the workflows that drive a case. Each case definition can have multiple
 linked processes that handle different aspects of case processing.
 
-Key capabilities:
+## Configuring processes
 
-- Upload existing BPMN process definitions
-- Create new processes using the built-in BPMN modeler
-- Configure whether a process can start new cases
-- Configure whether users can start the process from within an existing case
-- Configure process links to connect activities to forms, plugins, and building blocks
+{% stepper %}
+{% step %}
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click a case definition to open it
+{% endstep %}
+{% step %}
+Click the **Processes** tab
 
-## Configuration
+<figure><img src="../../assets/configuration-guides/cases/processes/01-processes-tab-overview.png" alt=""><figcaption>Processes tab overview</figcaption></figure>
+{% endstep %}
+{% endstepper %}
 
-Navigate to **Admin** > **Cases** > select a case > **Processes** tab.
+### Creating a new process
 
-<figure><img src="../../assets/configuration-guides/cases/processes/01-processes-tab-overview.png" alt="Processes tab showing a list of linked processes"><figcaption>The Processes tab displays all process definitions linked to the case.</figcaption></figure>
+{% stepper %}
+{% step %}
+Click **Create process**
+{% endstep %}
+{% step %}
+Design your process using the BPMN modeler
 
-### Process list columns
-
-| Column | Description |
-|--------|-------------|
-| Name | Display name of the process definition |
-| Key | Technical identifier (process definition key) |
-| Starts case | Whether starting this process creates a new case |
-| Startable by user | Whether users can start this process from within an existing case |
-| Status | Current deployment status (e.g., draft) |
+<figure><img src="../../assets/configuration-guides/cases/processes/03-process-builder.png" alt=""><figcaption>Process builder</figcaption></figure>
+{% endstep %}
+{% step %}
+Configure process settings using the toggles in the header
+{% endstep %}
+{% step %}
+Click **Save** to deploy
+{% endstep %}
+{% endstepper %}
 
 ### Uploading a process
 
-1. Click the upload button in the toolbar
-2. Select a `.bpmn` file from your computer
-3. Click **Upload**
+{% stepper %}
+{% step %}
+Click the upload button in the toolbar
+{% endstep %}
+{% step %}
+Select a `.bpmn` file from your computer
 
-<figure><img src="../../assets/configuration-guides/cases/processes/02-upload-modal.png" alt="Upload process definition modal"><figcaption>Upload an existing BPMN file to add a process definition.</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/cases/processes/02-upload-modal.png" alt=""><figcaption>Upload process modal</figcaption></figure>
+{% endstep %}
+{% step %}
+Click **Upload**
+{% endstep %}
+{% endstepper %}
 
 {% hint style="info" %}
 If you upload a process with a key that already exists, the existing process will be replaced.
 {% endhint %}
 
-### Creating a new process
-
-1. Click **Create process**
-2. Design your process using the BPMN modeler
-3. Configure process settings using the toggles in the header
-4. Click **Save** to deploy
-
 ### Editing a process
 
-1. Click on a process row to open the process builder
-2. Make changes in the BPMN modeler
-3. Click **Save** to deploy changes
+{% stepper %}
+{% step %}
+Click on a process row to open the process builder
+{% endstep %}
+{% step %}
+Make changes in the BPMN modeler
+{% endstep %}
+{% step %}
+Click **Save** to deploy changes
+{% endstep %}
+{% endstepper %}
 
-<figure><img src="../../assets/configuration-guides/cases/processes/03-process-builder.png" alt="Process builder with BPMN modeler"><figcaption>The process builder provides a visual BPMN editor with a properties panel.</figcaption></figure>
+### Deleting a process
 
-### Process settings
+{% stepper %}
+{% step %}
+Hover over the process row to reveal the overflow menu
+{% endstep %}
+{% step %}
+Click the overflow menu (three dots)
+{% endstep %}
+{% step %}
+Select **Delete**
+{% endstep %}
+{% step %}
+Confirm deletion in the confirmation dialog
+{% endstep %}
+{% endstepper %}
+
+## Process settings
 
 The process builder header contains toggles to configure process behavior:
 
-| Toggle | Description                                                                                                     |
-|--------|-----------------------------------------------------------------------------------------------------------------|
-| **Draft** | When enabled, the process is saved as a draft and requires additional confirmation before it can be started     |
+| Toggle | Description |
+|--------|-------------|
+| **Draft** | When enabled, the process is saved as a draft and requires additional confirmation before it can be started |
 | **Starts case** | When enabled, starting this process creates a new case instance. A start form must be linked to the first step. |
-| **Startable by user** | When enabled, users can start this process from the case detail page via the start menu                         |
+| **Startable by user** | When enabled, users can start this process from the case detail page via the start menu |
 
-### Validating a process
+## Process validation
 
 Click **Validate** to check for errors before saving. Validation errors appear in a
 collapsible panel showing the element and issue. Fix any errors before deploying.
 
-### Deleting a process
-
-1. Hover over the process row to reveal the overflow menu
-2. Click the overflow menu (three dots)
-3. Select **Delete**
-4. Confirm deletion in the confirmation dialog
+---
 
 ## Access control
 

@@ -1,13 +1,8 @@
 # Actions
 
-The Actions tab lets you configure startable items — processes and building blocks that end
-users can trigger directly from a case. These actions appear under the start button when
-viewing an existing case.
+The Actions tab lets you configure startable items — processes and building blocks that end users can trigger directly from a case. These actions appear under the start button when viewing an existing case.
 
-## Overview
-
-Actions provide a way for users to initiate additional workflows from within an existing case.
-This is useful for:
+Actions provide a way for users to initiate additional workflows from within an existing case. This is useful for:
 
 - Starting follow-up processes related to the current case
 - Triggering reusable building blocks that perform common operations
@@ -20,58 +15,101 @@ There are two types of actions:
 | **Process** | A BPMN process definition linked to the case. Starting this action runs the process in the context of the current case. |
 | **Building block** | A reusable building block that can be configured with input/output mappings. See [Building blocks](../building-blocks/building-blocks.md) for more information. |
 
-## Configuration
+---
 
-Navigate to **Admin** > **Cases** > select a case > **Actions** tab.
+## Configuring actions
 
-<figure><img src="../../assets/configuration-guides/cases/actions/01-actions-tab-overview.png" alt="Actions tab showing a list of configured actions"><figcaption>The Actions tab displays all configured actions with their names and types.</figcaption></figure>
+{% stepper %}
+{% step %}
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click a case definition to open it
+{% endstep %}
+{% step %}
+Click the **Actions** tab
+
+<figure><img src="../../assets/configuration-guides/cases/actions/01-actions-tab-overview.png" alt="Actions tab showing a list of configured actions"><figcaption></figcaption></figure>
+{% endstep %}
+{% endstepper %}
+
+The list shows all configured actions with their names and types.
 
 ### Adding an action
 
-1. Click **Create an action**
-2. Select the action type: **Process** or **Building block**
+{% stepper %}
+{% step %}
+Click **Create an action**
+{% endstep %}
+{% step %}
+Select the action type: **Process** or **Building block**
 
-<figure><img src="../../assets/configuration-guides/cases/actions/02-add-action-modal-type-selection.png" alt="Action type selection modal"><figcaption>Choose between adding a process or a building block as an action.</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/cases/actions/02-add-action-modal-type-selection.png" alt="Action type selection modal"><figcaption></figcaption></figure>
+{% endstep %}
+{% step %}
+Select the specific process or building block from the dropdown
 
-3. Select the specific process or building block from the dropdown
-
-<figure><img src="../../assets/configuration-guides/cases/actions/03-add-building-block-selection.png" alt="Building block selection dropdown"><figcaption>Select a building block from the available options.</figcaption></figure>
-
-4. For building blocks, click **Next** to configure input/output mappings if needed
-5. Click **Add** to save the action
+<figure><img src="../../assets/configuration-guides/cases/actions/03-add-building-block-selection.png" alt="Building block selection dropdown"><figcaption></figcaption></figure>
+{% endstep %}
+{% step %}
+For building blocks, click **Next** to configure input/output mappings if needed
+{% endstep %}
+{% step %}
+Click **Add** to save the action
+{% endstep %}
+{% endstepper %}
 
 {% hint style="info" %}
-Each process or building block can only be added once per case. Items already configured as
-actions will not appear in the selection dropdown.
+Each process or building block can only be added once per case. Items already configured as actions will not appear in the selection dropdown.
 {% endhint %}
 
 ### Reordering actions
 
-Actions can be reordered by dragging and dropping rows in the list. The order determines how
-actions appear to end users in the case view.
+Actions can be reordered by dragging and dropping rows in the list. The order determines how actions appear to end users in the case view.
 
 ### Editing an action
 
-1. Click on a row or use the overflow menu on the right side of the row
-2. Select **Edit**
-3. For processes, you can change which process is linked
-4. For building blocks, you can update the input/output mappings
-5. Save your changes
+{% stepper %}
+{% step %}
+Click a row or use the overflow menu (⋮) on the right side of the row
+{% endstep %}
+{% step %}
+Select **Edit**
 
-<figure><img src="../../assets/configuration-guides/cases/actions/04-row-actions-menu.png" alt="Row actions menu showing Edit and Delete options"><figcaption>Access Edit and Delete options via the overflow menu.</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/cases/actions/04-row-actions-menu.png" alt="Row actions menu showing Edit and Delete options"><figcaption></figcaption></figure>
+{% endstep %}
+{% step %}
+For processes, change which process is linked; for building blocks, update the input/output mappings
+{% endstep %}
+{% step %}
+Save your changes
+{% endstep %}
+{% endstepper %}
 
 ### Deleting an action
 
-1. Click the overflow menu on the row you want to delete
-2. Select **Delete**
-3. Confirm the deletion in the confirmation dialog
+{% stepper %}
+{% step %}
+Click the overflow menu (⋮) on the row you want to delete
+{% endstep %}
+{% step %}
+Select **Delete**
+{% endstep %}
+{% step %}
+Confirm the deletion in the confirmation dialog
 
-<figure><img src="../../assets/configuration-guides/cases/actions/05-delete-confirmation-modal.png" alt="Delete confirmation dialog"><figcaption>Confirm deletion of an action.</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/cases/actions/05-delete-confirmation-modal.png" alt="Delete confirmation dialog"><figcaption></figcaption></figure>
+{% endstep %}
+{% endstepper %}
+
+---
 
 ## Access control
 
-Actions are filtered based on the user's permissions. An action only appears to users who have
-permission to execute it.
+Actions are filtered based on the user's permissions. An action only appears to users who have permission to execute it.
 
 ### Resources and actions
 
@@ -79,9 +117,7 @@ permission to execute it.
 |---------------|--------|--------|
 | `com.ritense.valtimo.operaton.domain.OperatonExecution` | `create` | Required to start the process associated with the action. This applies to both process actions and building block actions (which have an underlying main process). |
 
-When an action is triggered from within a case, the permission check includes the current
-document as context. This allows permissions to be scoped based on the specific case instance
-using [context conditions](../access-control/context-conditions.md).
+When an action is triggered from within a case, the permission check includes the current document as context. This allows permissions to be scoped based on the specific case instance using [context conditions](../access-control/context-conditions.md).
 
 ### Examples
 
