@@ -142,4 +142,67 @@ describe("SDK runtime dispatch (compiled Wasm)", () => {
       expect(out.status).toBe(404);
     });
   });
+
+  describe("handle_submit (task-form Level 1 hook)", () => {
+    const submitInput = (submitKey: string, submission: Record<string, unknown> = {}) => ({
+      submitKey,
+      configurationId: "cfg-1",
+      configuration: { greeting: "hi" },
+      taskId: "task-1",
+      processInstanceId: "pi-1",
+      documentId: "doc-1",
+      submission,
+    });
+
+    it("completes with derived variables and document content", async () => {
+      const out = await call(
+        "handle_submit",
+        submitInput("review", { approved: true, comment: "looks good" })
+      );
+      expect(out).toEqual({
+        status: "completed",
+        variables: { approved: true, taskId: "task-1" },
+        documentContent: { "/reviewComment": "looks good" },
+      });
+    });
+
+    it("rejects with fieldErrors so GZAC does not complete the task", async () => {
+      const out = await call("handle_submit", submitInput("review", { approved: false }));
+      expect(out).toEqual({
+        status: "error",
+        errorMessage: "A rejection needs a comment",
+        fieldErrors: { comment: "Required when rejecting" },
+      });
+    });
+
+    it("only sees the SubmitInput fields — no host-only secrets leak into the Wasm input", async () => {
+      const out = await call("handle_submit", submitInput("echo-submit", { a: 1 }));
+      expect(out.variables).toEqual({
+        inputKeys: [
+          "configuration",
+          "configurationId",
+          "documentId",
+          "processInstanceId",
+          "submission",
+          "submitKey",
+          "taskId",
+        ],
+      });
+    });
+
+    it("returns UNKNOWN_SUBMIT_HANDLER for an unregistered key", async () => {
+      const out = await call("handle_submit", submitInput("not-registered"));
+      expect(out).toMatchObject({ status: "error", errorCode: "UNKNOWN_SUBMIT_HANDLER" });
+      expect(out.errorMessage).toContain("not-registered");
+    });
+
+    it("wraps a thrown hook error in an EXECUTION_ERROR envelope", async () => {
+      const out = await call("handle_submit", submitInput("boom-submit"));
+      expect(out).toMatchObject({
+        status: "error",
+        errorCode: "EXECUTION_ERROR",
+        errorMessage: "intentional submit boom",
+      });
+    });
+  });
 });

@@ -80,22 +80,33 @@ class EndpointDescriptionService(
         // Convert the query glob into a regex: `*` matches a single path segment (`[^/]+`),
         // `**` matches any number of segments (`.+`).
         if ("*" in pattern) {
-            val regex = buildGlobRegex(pattern)
-            return descriptionsByKey.entries
-                .firstOrNull { (key, _) -> key.startsWith("$method:") && regex.matches(key.substringAfter(":")) }
-                ?.value
+            return firstMatching(method, buildGlobRegex(pattern))
         }
 
         // If the queried pattern contains {param} placeholders, also try matching registered
         // patterns that might use different placeholder names or `*`.
         if ("{" in pattern) {
-            val regex = buildGlobRegex(pattern.replace(Regex("\\{[^}]+}"), "*"))
-            return descriptionsByKey.entries
-                .firstOrNull { (key, _) -> key.startsWith("$method:") && regex.matches(key.substringAfter(":")) }
-                ?.value
+            return firstMatching(method, buildGlobRegex(pattern.replace(Regex("\\{[^}]+}"), "*")))
         }
 
         return null
+    }
+
+    /**
+     * Resolves a wildcard query against the registered patterns **deterministically**.
+     *
+     * A broad double-wildcard glob can match many registered endpoints, and there is no single
+     * "right" description for it. The index is built from Spring's handler map, whose order is not
+     * stable across JVM runs, so picking whichever entry came first would make the permission screen
+     * show different text for the same grant on different boots (and any test of it flaky). Sorting
+     * the matches and taking the first makes the choice arbitrary but stable.
+     */
+    private fun firstMatching(method: String, regex: Regex): Map<String, String>? {
+        val prefix = "$method:"
+        return descriptionsByKey.entries
+            .filter { (key, _) -> key.startsWith(prefix) && regex.matches(key.removePrefix(prefix)) }
+            .minByOrNull { it.key }
+            ?.value
     }
 
     private fun buildGlobRegex(glob: String): Regex {

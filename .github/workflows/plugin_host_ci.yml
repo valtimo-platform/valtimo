@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Node 22 matches the host runtime requirement (Extism runInWorker needs Node >= 22, plan §7).
+      # Node 22 matches the host runtime requirement (Extism runInWorker needs Node >= 22).
       - name: Setup Node
         uses: actions/setup-node@v4
         with:

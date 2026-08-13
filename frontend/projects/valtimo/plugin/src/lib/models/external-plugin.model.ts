@@ -360,7 +360,8 @@ function isExternalPluginDefinitionIncompatible(
 }
 
 interface PluginLogEntry {
-  id: number;
+  /** A BIGSERIAL the host serializes as a string; an opaque identifier, never arithmetic. */
+  id: string;
   level: string;
   message: string;
   data: Record<string, unknown> | null;

@@ -12,5 +12,12 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/frontend", "src/**/*.test.ts", "vitest.config.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/frontend",
+    "src/**/*.test.ts",
+    "src/test-support/**",
+    "vitest.config.ts"
+  ]
 }

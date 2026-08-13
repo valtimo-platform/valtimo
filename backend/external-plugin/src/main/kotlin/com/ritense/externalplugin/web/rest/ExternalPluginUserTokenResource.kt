@@ -39,7 +39,7 @@ import java.util.UUID
  * Mints a short-lived, downscoped user token for an external plugin's iframe (via the Angular
  * parent-proxy). Deliberately a **non-management** `/api/v1/...` path so it is *not* ADMIN-gated:
  * any authenticated user may mint one, because the result is always bounded by PBAC ∩ the plugin
- * configuration's granted-endpoint allowlist (system-plan §6.6.1). The minted token never grants
+ * configuration's granted-endpoint allowlist. The minted token never grants
  * more than the requesting user already has.
  */
 @Controller

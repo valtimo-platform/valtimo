@@ -313,3 +313,103 @@ describe("event buffering & lifecycle", () => {
     sdk = undefined; // already destroyed; skip the afterEach destroy
   });
 });
+
+/**
+ * Task-form Level 0/1 submission: the iframe hands its data to the Angular parent,
+ * which posts it to GZAC under the logged-in user's session. A validation failure must *resolve*
+ * (not reject) so the form renders inline errors instead of being torn down.
+ */
+describe("task-form submission", () => {
+  function lastSubmitTask(): PostedMessage {
+    const req = [...postedMessages].reverse().find((m) => m.event === "submitTask");
+    if (!req) throw new Error("no submitTask was posted");
+    return req;
+  }
+
+  it("emits a submitTask with the collected data and resolves on the matching submitResult", async () => {
+    sdk = new ValtimoPluginSDK();
+    initFromParent();
+
+    const promise = sdk.submitTask({ "pv:approved": true, "doc:/reviewComment": "ok" });
+
+    const req = lastSubmitTask();
+    expect(req.source).toBe("valtimo-plugin");
+    expect(req.payload.data).toEqual({ "pv:approved": true, "doc:/reviewComment": "ok" });
+    // The iframe never names the task — the parent supplies the authoritative task id.
+    expect(req.payload).not.toHaveProperty("taskId");
+
+    sendFromParent("submitResult", { correlationId: req.payload.correlationId, ok: true });
+    await expect(promise).resolves.toEqual({ ok: true, errors: undefined, fieldErrors: undefined });
+  });
+
+  it("resolves — never rejects — on a validation failure so the form survives", async () => {
+    sdk = new ValtimoPluginSDK();
+    initFromParent();
+
+    const promise = sdk.submitTask({ "pv:approved": false });
+    const {correlationId} = lastSubmitTask().payload;
+
+    sendFromParent("submitResult", {
+      correlationId,
+      ok: false,
+      errors: ["A rejection needs a comment"],
+      fieldErrors: { comment: "Required when rejecting" },
+    });
+
+    await expect(promise).resolves.toEqual({
+      ok: false,
+      errors: ["A rejection needs a comment"],
+      fieldErrors: { comment: "Required when rejecting" },
+    });
+  });
+
+  it("keys concurrent submissions by correlation id", async () => {
+    sdk = new ValtimoPluginSDK();
+    initFromParent();
+
+    const first = sdk.submitTask({ n: 1 });
+    const second = sdk.submitTask({ n: 2 });
+    const posted = postedMessages.filter((m) => m.event === "submitTask");
+    expect(posted).toHaveLength(2);
+
+    // Reply out of order — each promise must still get its own result.
+    sendFromParent("submitResult", { correlationId: posted[1].payload.correlationId, ok: false });
+    sendFromParent("submitResult", { correlationId: posted[0].payload.correlationId, ok: true });
+
+    await expect(first).resolves.toMatchObject({ ok: true });
+    await expect(second).resolves.toMatchObject({ ok: false });
+  });
+
+  it("ignores a submitResult for an unknown correlation id and leaves the call pending", async () => {
+    sdk = new ValtimoPluginSDK();
+    initFromParent();
+
+    const promise = sdk.submitTask({ n: 1 });
+    let settled = false;
+    void promise.then(() => {
+      settled = true;
+    });
+
+    sendFromParent("submitResult", { correlationId: "does-not-exist", ok: true });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+
+    // The real reply still resolves it.
+    sendFromParent("submitResult", { correlationId: lastSubmitTask().payload.correlationId, ok: true });
+    await expect(promise).resolves.toMatchObject({ ok: true });
+  });
+
+  it("queues a pre-init submission and flushes it to the pinned origin, never to '*'", async () => {
+    sdk = new ValtimoPluginSDK();
+
+    const promise = sdk.submitTask({ "pv:approved": true });
+    expect(postedMessages.filter((m) => m.event === "submitTask")).toHaveLength(0);
+
+    initFromParent();
+
+    const req = lastSubmitTask();
+    expect(req.targetOrigin).toBe(PARENT_ORIGIN);
+    sendFromParent("submitResult", { correlationId: req.payload.correlationId, ok: true });
+    await expect(promise).resolves.toMatchObject({ ok: true });
+  });
+});

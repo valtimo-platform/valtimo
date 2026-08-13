@@ -62,9 +62,25 @@ function callKv(req: KvRequest): KvResponse {
   return JSON.parse(replyJson) as KvResponse;
 }
 
+/**
+ * Fail on any status the operation does not treat as meaningful. Applied by every operation, so a
+ * denied capability or a host-side failure can never read as an empty result or a silent no-op —
+ * `error` is a nice-to-have detail in the message, not the trigger.
+ */
+function failUnless(op: string, res: KvResponse, okStatuses: number[]): void {
+  if (okStatuses.includes(res.status)) {
+    return;
+  }
+  throw new Error(
+    `kv.${op} failed: ${res.error ?? `host returned status ${res.status}`}`
+  );
+}
+
 export const kv = {
   get<T = unknown>(key: string): KvGetResult<T> {
     const res = callKv({ op: "get", key });
+    // 404 is not a failure: it is how the host says "no value stored".
+    failUnless("get", res, [200, 404]);
     if (res.status === 404) {
       return { found: false, value: undefined };
     }
@@ -73,18 +89,19 @@ export const kv = {
 
   set(key: string, value: unknown): void {
     const res = callKv({ op: "set", key, value });
-    if (res.status !== 200 && res.error) {
-      throw new Error(`kv.set failed: ${res.error}`);
-    }
+    failUnless("set", res, [200]);
   },
 
   delete(key: string): boolean {
     const res = callKv({ op: "delete", key });
+    // 404 is not a failure: it means there was nothing to remove.
+    failUnless("delete", res, [200, 404]);
     return res.status === 200;
   },
 
   list(prefix?: string): string[] {
     const res = callKv({ op: "list", prefix });
+    failUnless("list", res, [200]);
     return res.keys ?? [];
   },
 };

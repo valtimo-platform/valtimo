@@ -20,7 +20,7 @@
  * mock. Each handler is intentionally simple and side-effect-free.
  */
 
-import {action, config, gzacApi, onEvent, request} from "@valtimo/plugin-sdk";
+import {action, config, gzacApi, onEvent, request, submit} from "@valtimo/plugin-sdk";
 
 // Echoes the exact Wasm input the handler received. Lets a test prove that the service token and
 // gzacBaseUrl are NOT serialised into the Wasm input (they ride in the host context only).
@@ -77,3 +77,33 @@ request("/echo", (input) => ({
     configuration: input.configuration,
   },
 }));
+
+// Task-form Level 1 hook. Rejects with per-field errors when a rejection carries no comment, and
+// otherwise derives process variables plus a document field — the two branches GZAC distinguishes
+// (complete the task vs. surface errors on the form).
+submit("review", (input) => {
+  const submission = input.submission as { approved?: boolean; comment?: string };
+  if (submission.approved === false && !submission.comment) {
+    return {
+      status: "error",
+      errorMessage: "A rejection needs a comment",
+      fieldErrors: { comment: "Required when rejecting" },
+    };
+  }
+  return {
+    status: "completed",
+    variables: { approved: submission.approved === true, taskId: input.taskId ?? null },
+    documentContent: { "/reviewComment": submission.comment ?? "" },
+  };
+});
+
+// Echoes the submit input so a test can prove no host-only secret is serialised into the Wasm input.
+submit("echo-submit", (input) => ({
+  status: "completed",
+  variables: { inputKeys: Object.keys(input).sort() },
+}));
+
+// Throws, to exercise the runtime's EXECUTION_ERROR envelope on the submit path.
+submit("boom-submit", () => {
+  throw new Error("intentional submit boom");
+});

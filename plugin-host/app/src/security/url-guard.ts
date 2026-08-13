@@ -55,8 +55,10 @@ blockedIpv4.addSubnet("198.18.0.0", 15);
 blockedIpv4.addSubnet("224.0.0.0", 3);
 
 const blockedIpv6 = new BlockList();
-// Unspecified and loopback
-blockedIpv6.addSubnet("::", 127, "ipv6");
+// Unspecified, loopback, and the whole deprecated IPv4-compatible range (`::a.b.c.d`, RFC 4291
+// §2.5.5.1). The WHATWG URL parser normalises such a literal to its hex form (`::7f00:1`), which no
+// dotted-quad check would catch, and a dual stack routes it to the embedded IPv4 address.
+blockedIpv6.addSubnet("::", 96, "ipv6");
 // Link-local and unique-local
 blockedIpv6.addSubnet("fe80::", 10, "ipv6");
 blockedIpv6.addSubnet("fc00::", 7, "ipv6");
@@ -73,6 +75,11 @@ export function isPrivateOrReservedAddress(address: string): boolean {
     // IPv4 address, so judge it by its IPv4 rules.
     const embedded = /^::(?:ffff:)?(\d+\.\d+\.\d+\.\d+)$/i.exec(address);
     if (embedded) return isPrivateOrReservedAddress(embedded[1]);
+    // The dotted form above only appears when a caller hands us the address verbatim; the URL
+    // parser normalises `[::ffff:127.0.0.1]` to the hex form `::ffff:7f00:1`. Checking the IPv4
+    // rules with family "ipv6" catches both — node resolves an IPv4-mapped address against IPv4
+    // rules — while leaving a genuinely public mapped address (`::ffff:8.8.8.8`) allowed.
+    if (blockedIpv4.check(address, "ipv6")) return true;
     return blockedIpv6.check(address, "ipv6");
   }
   return blockedIpv4.check(address);
