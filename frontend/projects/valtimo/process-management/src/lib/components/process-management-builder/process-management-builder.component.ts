@@ -1507,6 +1507,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
           );
           this.startableByUser$.next(!!processDefinitionResult?.processCaseLink?.startableByUser);
+          this.draft$.next(!!processDefinitionResult?.draft);
 
           this.loading$.next(false);
         })

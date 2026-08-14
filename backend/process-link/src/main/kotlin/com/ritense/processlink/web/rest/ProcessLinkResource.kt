@@ -256,6 +256,7 @@ class ProcessLinkResource(
                 getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
             },
             getBpmnXml(definition),
+            draft = definition.isSuspended(),
             autofilledElements = getAutofilledElements(definition.id)
         )
 
@@ -310,6 +311,7 @@ class ProcessLinkResource(
                 getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
             },
             getBpmnXml(definition),
+            draft = definition.isSuspended(),
             autofilledElements = getAutofilledElements(definition.id)
         )
 
