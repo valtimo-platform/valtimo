@@ -16,14 +16,18 @@
 
 package com.ritense.document.dashboard
 
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.Companion.byDocumentDefinitionIdName
+import com.ritense.document.service.JsonSchemaDocumentActionProvider.VIEW_LIST
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.valtimo.contract.dashboard.WidgetDataSource
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.repository.ExpressionOperator
 import jakarta.persistence.EntityManager
+import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Path
@@ -32,12 +36,14 @@ import jakarta.persistence.criteria.Root
 class DocumentWidgetDataSource(
     private val documentRepository: JsonSchemaDocumentRepository,
     private val queryDialectHelper: QueryDialectHelper,
-    private val entityManager: EntityManager
+    private val entityManager: EntityManager,
+    private val authorizationService: AuthorizationService
 ) {
 
     @WidgetDataSource("case-count", "Case count")
     fun getCaseCount(caseCountDataSourceProperties: DocumentCountDataSourceProperties): DocumentCountDataResult {
-        val byCaseSpec = byDocumentDefinitionIdName(caseCountDataSourceProperties.documentDefinition)
+        val byCaseSpec = getAuthorizationSpecification()
+            .and(byDocumentDefinitionIdName(caseCountDataSourceProperties.documentDefinition))
         val spec = byCaseSpec.and { root, _, criteriaBuilder ->
             criteriaBuilder.and(
                 *caseCountDataSourceProperties.queryConditions?.map {
@@ -53,8 +59,10 @@ class DocumentWidgetDataSource(
 
     @WidgetDataSource("case-counts", "Case counts")
     fun getCaseCounts(caseCountsDataSourceProperties: DocumentCountsDataSourceProperties): DocumentCountsDataResult {
+        val authorizationSpec = getAuthorizationSpecification()
         val items: List<DocumentCountsItem> = caseCountsDataSourceProperties.queryItems.map { queryItem ->
-            val spec = byDocumentDefinitionIdName(caseCountsDataSourceProperties.documentDefinition)
+            val spec = authorizationSpec
+                .and(byDocumentDefinitionIdName(caseCountsDataSourceProperties.documentDefinition))
                 .and { root, _, criteriaBuilder ->
                     criteriaBuilder.and(
                         *queryItem.queryConditions.map {
@@ -96,8 +104,15 @@ class DocumentWidgetDataSource(
         val conditionPredicates = caseGroupByDataSourceProperties.queryConditions?.map {
             it.toPredicate(root, criteriaBuilder, this::getPathExpression)
         }?.toTypedArray() ?: arrayOf()
-        val combinedPredicates =
-            arrayOf(docPredicate, pathIsNotNullPredicate, pathIsNotNullStringPredicate, *conditionPredicates)
+        val authorizationPredicate = getAuthorizationSpecification()
+            .toPredicate(root, query as AbstractQuery<*>, criteriaBuilder)
+        val combinedPredicates = arrayOf(
+            authorizationPredicate,
+            docPredicate,
+            pathIsNotNullPredicate,
+            pathIsNotNullStringPredicate,
+            *conditionPredicates
+        )
         val groupByExpression =
             getPathExpression(String::class.java, caseGroupByDataSourceProperties.path, root, criteriaBuilder)
 
@@ -128,6 +143,14 @@ class DocumentWidgetDataSource(
 
         return DocumentGroupByDataResult(values = result)
     }
+
+    private fun getAuthorizationSpecification() = authorizationService.getAuthorizationSpecification(
+        EntityAuthorizationRequest(
+            JsonSchemaDocument::class.java,
+            VIEW_LIST
+        ),
+        null
+    )
 
     private fun <T> getPathExpression(
         valueClass: Class<T>,

@@ -16,6 +16,7 @@
 
 package com.ritense.document.autoconfiguration
 
+import com.ritense.authorization.AuthorizationService
 import com.ritense.document.dashboard.DocumentWidgetDataSource
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.database.QueryDialectHelper
@@ -32,6 +33,7 @@ class DocumentWidgetAutoConfiguration {
     fun documentWidgetDataSource(
         documentRepository: JsonSchemaDocumentRepository,
         queryDialectHelper: QueryDialectHelper,
-        entityManager: EntityManager
-    ) = DocumentWidgetDataSource(documentRepository, queryDialectHelper, entityManager)
+        entityManager: EntityManager,
+        authorizationService: AuthorizationService
+    ) = DocumentWidgetDataSource(documentRepository, queryDialectHelper, entityManager, authorizationService)
 }
