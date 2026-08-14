@@ -12,9 +12,10 @@
 
 ## Enhancements
 
-* **New enhancement title**
+* **Dashboard case widgets only count cases you are allowed to see**
 
-  New enhancement explanation.
+  Widgets that show case counts used to include every case in the system. They now count only the cases you may
+  view, so the numbers match what you see in the case list.
 
 ## Bugfixes
 
