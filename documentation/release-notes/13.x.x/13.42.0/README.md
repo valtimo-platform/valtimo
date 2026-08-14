@@ -6,9 +6,11 @@
 
 ## New Features
 
-* **New feature title**
+* **Documenten API WOPI plugin**
 
-  New feature explanation.
+  The new "Documenten API WOPI plugin" allows users to open, edit and collaborate on documents using the WOPI 
+  protocol. This plugin depends on Baseflow's CG-DMF implementation of the Document Registratie Component and requires
+  the availability of an online document editing suite that supports the WOPI protocol (e.g., Collabora or ONLYOFFICE).
 
 ## Enhancements
 
