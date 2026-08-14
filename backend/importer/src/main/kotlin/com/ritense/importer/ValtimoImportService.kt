@@ -525,7 +525,8 @@ class ValtimoImportService(
             // Only present when the placeholder actually contained a ':'
             val default = match.groups[2]?.value
             if (whitelistedEnvironmentProperties.none { it.matches(name) }) {
-                logger.debug { "Property '$name' is not whitelisted. Leaving '${match.value}' untouched." }
+                // Only the name is logged: a default value can hold a secret
+                logger.debug { "Property '$name' is not whitelisted. Leaving its placeholder untouched." }
                 match.value
             } else {
                 environment.getProperty(name)?.takeIf { it.isNotBlank() }
