@@ -23,7 +23,18 @@
   When a process that was linked to a case definition was deleted, the link remained in the database.
   This could cause errors when viewing or exporting the case definition. Existing orphaned
   links from earlier versions are automatically cleaned up during upgrade.
-* New bugfix.
+
+* **Form flow steps with a colon in their expressions work again after import**
+
+  Importing a case no longer breaks form flow steps whose start or complete expression contains a colon, such as one
+  that saves submission data to a document or process variable. These steps stopped working after import because part
+  of the expression was cut off.
+
+* **Object permissions are checked before the object is retrieved**
+
+  A user without permission to view objects is now refused before anything is requested from the Objecten API.
+  Previously the object was retrieved first, so the answer of the Objecten API could tell such a user whether an
+  object exists.
 
 ## Security
 
