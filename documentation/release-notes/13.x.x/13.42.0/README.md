@@ -6,18 +6,34 @@
 
 ## New Features
 
-* **New feature title**
+* **Process bean autocomplete**
 
-  New feature explanation.
+  In the BPMN modeler, Expression fields now suggest available `@ProcessBean` names and methods with parameter info.
+
+* **Activity markers**
+
+  In the BPMN modeler, visual indicators on BPMN elements show configuration at a glance: **P** for process link, **E** for execution 
+  listener, **T** for task listener.
+
+* **Autofill tracking**
+
+  In the BPMN modeler, properties auto-filled by Valtimo are marked in the properties panel, with the option to dismiss the indicator.
 
 ## Enhancements
 
-* **New enhancement title**
+* **Smarter start event validation**
 
-  New enhancement explanation.
+  Start events without forms no longer trigger warnings when the process isn't user-startable.
+
+* **Standardized validation error codes**
+
+  Validation messages now use a consistent error code format.
 
 ## Bugfixes
 
+* **Invisible elements removed from process definitions**
+
+  In the BPMN modeler, orphaned invisible elements are now cleaned up when saving a process definition.
 
 * **Form flow steps with a colon in their expressions work again after import**
 
