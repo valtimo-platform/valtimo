@@ -131,26 +131,6 @@
         "roleKey": "ROLE_ADMIN"
     },
     {
-        "resourceType": "com.ritense.team.domain.Team",
-        "actions": [
-            "view",
-            "view_list",
-            "create",
-            "modify",
-            "delete",
-            "assign"
-        ],
-        "roleKey": "ROLE_USER"
-    },
-    {
-        "resourceType": "com.ritense.valtimo.contract.authentication.User",
-        "actions": [
-            "view",
-            "view_list"
-        ],
-        "roleKey": "ROLE_USER"
-    },
-    {
         "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
         "actions": [
             "create"
