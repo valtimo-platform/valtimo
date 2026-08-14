@@ -23,3 +23,13 @@
   When a process that was linked to a case definition was deleted, the link remained in the database.
   This could cause errors when viewing or exporting the case definition. Existing orphaned
   links from earlier versions are automatically cleaned up during upgrade.
+* New bugfix.
+
+## Security
+
+* **Permission checks only accept known resource types**
+
+  When Valtimo was asked whether a user may perform an action, the resource type in that question was taken at
+  face value, which allowed any signed-in user to make the server load arbitrary internal parts of the
+  application. Only the resource types that can be selected under **Access control** are accepted now, and
+  anything else is answered as "not permitted", so normal use is unaffected.
