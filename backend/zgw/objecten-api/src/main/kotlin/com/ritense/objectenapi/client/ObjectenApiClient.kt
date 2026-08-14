@@ -51,12 +51,6 @@ class ObjectenApiClient(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI
     ): ObjectWrapper {
-        val result = buildRestClient(authentication)
-            .get()
-            .uri(objectUrl)
-            .retrieve()
-            .body<ObjectWrapper>()!!
-
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 Object::class.java,
@@ -64,6 +58,12 @@ class ObjectenApiClient(
                 Object()
             )
         )
+
+        val result = buildRestClient(authentication)
+            .get()
+            .uri(objectUrl)
+            .retrieve()
+            .body<ObjectWrapper>()!!
 
         outboxService.send {
             ObjectViewed(
@@ -79,6 +79,14 @@ class ObjectenApiClient(
         objectUrl: URI,
         index: Int
     ): ObjectRecord {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                Object::class.java,
+                ObjectActionProvider.VIEW,
+                Object()
+            )
+        )
+
         val recordUrl = UriComponentsBuilder
             .fromUri(objectUrl)
             .pathSegment(index.toString())
@@ -90,14 +98,6 @@ class ObjectenApiClient(
             .uri(recordUrl)
             .retrieve()
             .body<ObjectRecord>()!!
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.VIEW,
-                Object()
-            )
-        )
 
         outboxService.send {
             ObjectViewed(
@@ -116,6 +116,14 @@ class ObjectenApiClient(
         ordering: String? = null,
         pageable: Pageable
     ): ObjectsList {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                Object::class.java,
+                ObjectActionProvider.VIEW_LIST,
+                Object()
+            )
+        )
+
         val objectTypeUrl = UriComponentsBuilder.newInstance()
             .uri(objecttypesApiUrl)
             .host(objecttypesApiUrl.host)
@@ -156,14 +164,6 @@ class ObjectenApiClient(
             .retrieve()
             .body<ObjectsList>()!!
 
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.VIEW_LIST,
-                Object()
-            )
-        )
-
         outboxService.send {
             ObjectsListed(
                 objectMapper.valueToTree(result.results)
@@ -181,6 +181,14 @@ class ObjectenApiClient(
         ordering: String? = null,
         pageable: Pageable
     ): ObjectsList {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                Object::class.java,
+                ObjectActionProvider.VIEW_LIST,
+                Object()
+            )
+        )
+
         val objectTypeUrl = UriComponentsBuilder.newInstance()
             .uri(objecttypesApiUrl)
             .host(objecttypesApiUrl.host)
@@ -221,14 +229,6 @@ class ObjectenApiClient(
             .header(ACCEPT_CRS, EPSG_4326)
             .retrieve()
             .body<ObjectsList>()!!
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.VIEW_LIST,
-                Object()
-            )
-        )
 
         outboxService.send {
             ObjectsListed(
