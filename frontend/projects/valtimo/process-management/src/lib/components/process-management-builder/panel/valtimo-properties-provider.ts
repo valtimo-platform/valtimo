@@ -1,19 +1,17 @@
 /*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- *  * Copyright 2015-2026 Ritense BV, the Netherlands.
- *  *
- *  * Licensed under EUPL, Version 1.2 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" basis,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {useService} from 'bpmn-js-properties-panel';
@@ -26,7 +24,7 @@ import {
   ProcessDefinitionValidationError,
   ProcessManagementWindow,
 } from '../../../models';
-import {ModalParams, ProcessLink} from '@valtimo/process-link';
+import {ModalParams, ProcessLink, ProcessLinkService} from '@valtimo/process-link';
 import {TranslateService} from '@ngx-translate/core';
 import {mapActivityTypeToActivityListenerType} from '../../../utils';
 import {VNode} from 'preact';
@@ -45,6 +43,10 @@ class ValtimoPropertiesProvider {
 
   private get pluginTranslationService(): PluginTranslationService {
     return (window as any as ProcessManagementWindow).pluginTranslationService;
+  }
+
+  private get processLinkService(): ProcessLinkService {
+    return (window as any as ProcessManagementWindow).processLinkService;
   }
 
   constructor(propertiesPanel: any) {
@@ -69,6 +71,9 @@ class ValtimoPropertiesProvider {
     const elementErrors = this.processManagementEditorService.validationErrors.filter(
       error => error.elementId === element.id
     );
+
+    const autofillInfo = this.processManagementEditorService.getAutofillForActivity(element.id);
+    const isAutofillDismissed = this.processManagementEditorService.isAutofillDismissed(element.id);
 
     return (groups: any[]) => {
       const generalGroup = groups.find((g: any) => g.id === 'general');
@@ -95,6 +100,24 @@ class ValtimoPropertiesProvider {
         groups.unshift(errorGroup);
       }
 
+      if (autofillInfo && !isAutofillDismissed) {
+        const targetGroupId = this.getGroupIdForModificationType(autofillInfo.modificationType);
+        const targetGroup = groups.find((g: any) => g.id === targetGroupId);
+        if (targetGroup) {
+          const notificationEntry = {
+            id: 'autofilledNotificationEntry',
+            activityId: element.id,
+            element,
+            translateService: this.translateService,
+            processManagementEditorService: this.processManagementEditorService,
+            processLinkService: this.processLinkService,
+            component: AutofilledNotificationElement,
+          };
+          targetGroup.entries.unshift(notificationEntry);
+          targetGroup.shouldOpen = true;
+        }
+      }
+
       if (
         is(element, 'bpmn:UserTask') ||
         is(element, 'bpmn:StartEvent') ||
@@ -115,6 +138,17 @@ class ValtimoPropertiesProvider {
       }
       return groups;
     };
+  }
+
+  private getGroupIdForModificationType(modificationType: string): string {
+    const groupMapping: Record<string, string> = {
+      SERVICE_TASK_EXPRESSION: 'CamundaPlatform__Implementation',
+      SEND_TASK_EXPRESSION: 'CamundaPlatform__Implementation',
+      MESSAGE_EVENT_EXPRESSION: 'message',
+      TIMER_DURATION: 'timer',
+      CALL_ACTIVITY_BUSINESS_KEY: 'CamundaPlatform__BusinessKey',
+    };
+    return groupMapping[modificationType] || 'general';
   }
 
   public createCustomRootElement(element: any, processLink: ProcessLink | null): any {
@@ -438,6 +472,36 @@ const ValidationErrorsElement = (props: {
           <span class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}">${getErrorMessage(error)}</span>
         </div>`
     )}
+  </div>`;
+};
+
+const AutofilledNotificationElement = (props: {
+  activityId: string;
+  element: BpmnElement;
+  translateService: TranslateService;
+  processManagementEditorService: ProcessManagementEditorService;
+  processLinkService: ProcessLinkService;
+}): VNode => {
+  const handleDismiss = (event: Event): void => {
+    const processDefinitionId = props.processManagementEditorService.selectionProcessDefinition?.id;
+    if (processDefinitionId) {
+      props.processLinkService.deleteAutofill(processDefinitionId, props.activityId).subscribe();
+    }
+    props.processManagementEditorService.dismissAutofill(props.activityId);
+
+    const target = event.currentTarget as HTMLElement;
+    const panel = target.closest('.autofilled-notification-panel') as HTMLElement;
+    if (panel) {
+      panel.style.display = 'none';
+    }
+  };
+
+  return html`<div class="autofilled-notification-panel">
+    <span class="autofilled-notification-panel__icon">!</span>
+    <span class="autofilled-notification-panel__message">
+      ${props.translateService.instant('processManagement.autofilled.sidebarMessage')}
+    </span>
+    <button class="autofilled-notification-panel__dismiss" onClick=${handleDismiss}>×</button>
   </div>`;
 };
 

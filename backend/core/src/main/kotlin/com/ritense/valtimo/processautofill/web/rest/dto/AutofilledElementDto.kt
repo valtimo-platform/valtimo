@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package com.ritense.processlink.web.rest.dto
+package com.ritense.valtimo.processautofill.web.rest.dto
 
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
-import com.ritense.valtimo.processautofill.web.rest.dto.AutofilledElementDto
-import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
+import com.ritense.valtimo.processautofill.domain.ProcessDefinitionAutofill
 
-data class CaseProcessDefinitionResponseDto(
-    val processDefinition: ProcessDefinitionWithPropertiesDto,
-    val processCaseLink: ProcessDefinitionCaseDefinition,
-    val processLinks: List<ProcessLinkResponseDto>,
-    val bpmn20Xml: String,
-    val draft: Boolean = false,
-    val autofilledElements: List<AutofilledElementDto> = emptyList()
-)
+data class AutofilledElementDto(
+    val activityId: String,
+    val modificationType: String,
+    val appliedValue: String
+) {
+    companion object {
+        fun from(autofill: ProcessDefinitionAutofill): AutofilledElementDto {
+            return AutofilledElementDto(
+                activityId = autofill.activityId,
+                modificationType = autofill.modificationType.name,
+                appliedValue = autofill.appliedValue
+            )
+        }
+    }
+}

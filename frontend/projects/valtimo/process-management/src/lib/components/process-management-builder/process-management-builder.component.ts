@@ -41,7 +41,7 @@ import {
   ManagementContext,
   ProcessDefinitionWithPropertiesDto,
 } from '@valtimo/shared';
-import {ProcessService} from '@valtimo/process';
+import {AutofilledElement, ProcessService} from '@valtimo/process';
 import {
   BuildingBlockProcessDefinitionConflictResponse,
   BuildingBlockProcessLinkCreateDto,
@@ -171,6 +171,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private _expressionAutocomplete: ExpressionAutocomplete | null = null;
   private _activityMarkerElementIds: string[] = [];
   private _activityMarkerUpdateTimeout: any = null;
+  private _autofilledElements: AutofilledElement[] = [];
+  private _autofilledElementIds: string[] = [];
 
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public readonly isSystemProcess$ = new BehaviorSubject<boolean>(false);
@@ -197,8 +199,14 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       ),
       tap(result => {
         this.cleanUpListenersOnModeler();
-        this._bpmnModeler?.importXML(result.bpmn20Xml);
-        this._bpmnViewer?.importXML(result.bpmn20Xml);
+        this._autofilledElements = result.autofilledElements ?? [];
+        this.processManagementEditorService.setAutofilledElements(this._autofilledElements);
+        this._bpmnModeler?.importXML(result.bpmn20Xml).then(() => {
+          this.highlightAutofilledElements();
+        });
+        this._bpmnViewer?.importXML(result.bpmn20Xml).then(() => {
+          this.highlightAutofilledElements();
+        });
         this.isReadOnlyProcess$.next(result.readOnly);
         this.isSystemProcess$.next(result.systemProcess);
         this.loading$.next(false);
@@ -324,6 +332,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.subscribeToProcessLinkUpdateEvents();
     this.subscribeToProcessLinkCreateEvents();
     this.subscribeToProcessLinkDeleteEvents();
+    this.subscribeToAutofillDismissEvents();
     this.initEditing();
   }
 
@@ -444,6 +453,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       .subscribe({
         next: context => {
           this.clearValidationErrors();
+          this.processManagementEditorService.clearDismissedAutofills();
           if (context === 'independent') {
             this.reload();
             this.showNotification('success');
@@ -509,6 +519,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       .subscribe({
         next: () => {
           this.clearValidationErrors();
+          this.processManagementEditorService.clearDismissedAutofills();
           this.navigateBack('success');
         },
         error: (error: unknown) => {
@@ -618,6 +629,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     processManagementWindow.processManagementEditorService = this.processManagementEditorService;
     processManagementWindow.translateService = this.translateService;
     processManagementWindow.pluginTranslationService = this.pluginTranslationService;
+    processManagementWindow.processLinkService = this.processLinkService;
   }
 
   private showNotification(
@@ -951,6 +963,68 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     } catch (e) {
       // ignore
     }
+  }
+
+  private highlightAutofilledElements(): void {
+    this.clearAutofilledHighlights();
+
+    if (!this._autofilledElements?.length) return;
+
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+
+    for (const element of this._autofilledElements) {
+      try {
+        this._autofilledElementIds.push(element.activityId);
+
+        const tooltipText = this.getAutofilledTooltip();
+        overlays.add(element.activityId, 'autofilled-indicator', {
+          position: {top: -12, left: -12},
+          html: this.buildAutofilledOverlayElement(element.activityId, tooltipText),
+        });
+      } catch (e) {
+        // Element may not exist on the canvas
+      }
+    }
+  }
+
+  private clearAutofilledHighlights(): void {
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+
+    this._autofilledElementIds = [];
+
+    try {
+      overlays.remove({type: 'autofilled-indicator'});
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  private buildAutofilledOverlayElement(elementId: string, tooltipText: string): HTMLElement {
+    const container = document.createElement('div');
+    container.className = 'autofilled-indicator-overlay';
+    container.dataset.elementId = elementId;
+
+    const icon = document.createElement('span');
+    icon.className = 'autofilled-indicator-icon';
+    icon.innerHTML = '!';
+    container.appendChild(icon);
+
+    const tooltip = document.createElement('span');
+    tooltip.className = 'autofilled-indicator-tooltip';
+    tooltip.textContent = tooltipText;
+    container.appendChild(tooltip);
+
+    return container;
+  }
+
+  private getAutofilledTooltip(): string {
+    return this.translateService.instant('processManagement.autofilled.generic');
   }
 
   private getElementListeners(element: any): {
@@ -1326,6 +1400,31 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     );
   }
 
+  private subscribeToAutofillDismissEvents(): void {
+    this._subscriptions.add(
+      this.processManagementEditorService.autofillDismissed$.subscribe(activityId => {
+        this.removeAutofillOverlay(activityId);
+      })
+    );
+  }
+
+  private removeAutofillOverlay(activityId: string): void {
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+    try {
+      overlays.remove({element: activityId, type: 'autofilled-indicator'});
+    } catch (e) {
+      // ignore
+    }
+
+    const idx = this._autofilledElementIds.indexOf(activityId);
+    if (idx > -1) {
+      this._autofilledElementIds.splice(idx, 1);
+    }
+  }
+
   private initIfCreate(): void {
     if (this._selectedProcess$.getValue() !== 'create') return;
 
@@ -1394,9 +1493,15 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           const processDefinitionResult = result as ProcessDefinitionResult;
 
           this.cleanUpListenersOnModeler();
+          this._autofilledElements = processDefinitionResult.autofilledElements ?? [];
+          this.processManagementEditorService.setAutofilledElements(this._autofilledElements);
 
-          this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml);
-          this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml);
+          this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
+            this.highlightAutofilledElements();
+          });
+          this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
+            this.highlightAutofilledElements();
+          });
 
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument

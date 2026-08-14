@@ -1909,6 +1909,10 @@
       "toggleTooltip": "Toggle visibility of process link, execution listener, and task listener markers",
       "hide": "Hide markers",
       "show": "Show markers"
+    },
+    "autofilled": {
+      "generic": "Auto-filled values present",
+      "sidebarMessage": "This field was auto-filled. Dismiss to not see this message again."
     }
   },
   "processCaseConnection": {

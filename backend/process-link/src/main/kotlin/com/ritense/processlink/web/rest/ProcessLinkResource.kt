@@ -1,19 +1,17 @@
 /*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- *  * Copyright 2015-2026 Ritense BV, the Netherlands.
- *  *
- *  * Licensed under EUPL, Version 1.2 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" basis,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.ritense.processlink.web.rest
@@ -43,6 +41,8 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
+import com.ritense.valtimo.processautofill.web.rest.dto.AutofilledElementDto
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.ProcessPropertyService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
@@ -80,7 +80,8 @@ class ProcessLinkResource(
     private val repositoryService: RepositoryService,
     private val processDeploymentService: ProcessDeploymentService,
     private val processDefinitionValidator: ProcessDefinitionValidator,
-    private val processPropertyService: ProcessPropertyService
+    private val processPropertyService: ProcessPropertyService,
+    private val processDefinitionAutofillService: ProcessDefinitionAutofillService
 ) {
 
     @GetMapping("/v1/process-link")
@@ -172,7 +173,8 @@ class ProcessLinkResource(
                             getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                         },
                         getBpmnXml(definition),
-                        draft = definition.isSuspended()
+                        draft = definition.isSuspended(),
+                        autofilledElements = getAutofilledElements(definition.id)
                     )
                 }
                 .collect(Collectors.toList())
@@ -197,7 +199,8 @@ class ProcessLinkResource(
                             getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                         },
                         getBpmnXml(definition),
-                        draft = definition.isSuspended()
+                        draft = definition.isSuspended(),
+                        autofilledElements = getAutofilledElements(definition.id)
                     )
                 }
                 .collect(Collectors.toList())
@@ -224,7 +227,8 @@ class ProcessLinkResource(
                     getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                 },
                 getBpmnXml(definition),
-                draft = definition.isSuspended()
+                draft = definition.isSuspended(),
+                autofilledElements = getAutofilledElements(definition.id)
             )
         }.sortedBy { it.processDefinition.version }
 
@@ -251,7 +255,8 @@ class ProcessLinkResource(
             processLinkService.getProcessLinks(definition.id).map {
                 getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
             },
-            getBpmnXml(definition)
+            getBpmnXml(definition),
+            autofilledElements = getAutofilledElements(definition.id)
         )
 
         return ResponseEntity.ok(responseDto)
@@ -270,7 +275,8 @@ class ProcessLinkResource(
                 processLinkService.getProcessLinks(definition.id).map {
                     getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
                 },
-                getBpmnXml(definition)
+                getBpmnXml(definition),
+                autofilledElements = getAutofilledElements(definition.id)
             )
         }.sortedBy { it.processDefinition.version }
 
@@ -303,7 +309,8 @@ class ProcessLinkResource(
             processLinkService.getProcessLinks(definition.id).map {
                 getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
             },
-            getBpmnXml(definition)
+            getBpmnXml(definition),
+            autofilledElements = getAutofilledElements(definition.id)
         )
 
         return ResponseEntity.ok(responseDto)
@@ -502,5 +509,22 @@ class ProcessLinkResource(
             return xml.replace("isExecutable=\"true\"", "isExecutable=\"false\"")
         }
         return xml
+    }
+
+    private fun getAutofilledElements(processDefinitionId: String): List<AutofilledElementDto> {
+        return processDefinitionAutofillService
+            .findByProcessDefinitionId(processDefinitionId)
+            .map { AutofilledElementDto.from(it) }
+    }
+
+    @DeleteMapping("/management/v1/process-definition/{processDefinitionId}/autofill/{activityId}")
+    fun deleteAutofill(
+        @PathVariable processDefinitionId: String,
+        @PathVariable activityId: String
+    ): ResponseEntity<Void> {
+        processDefinitionAutofillService.deleteByProcessDefinitionIdAndActivityId(
+            processDefinitionId, activityId
+        )
+        return ResponseEntity.noContent().build()
     }
 }

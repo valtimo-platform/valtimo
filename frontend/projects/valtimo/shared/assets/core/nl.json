@@ -1937,6 +1937,10 @@
       "toggleTooltip": "Schakel zichtbaarheid van proceskoppeling, uitvoeringslistener en taaklistener markers",
       "hide": "Markers verbergen",
       "show": "Markers tonen"
+    },
+    "autofilled": {
+      "generic": "Automatisch ingevulde waarde aanwezig",
+      "sidebarMessage": "Dit veld is automatisch ingevuld. Sluit dit bericht om het niet meer te zien."
     }
   },
   "processCaseConnection": {
