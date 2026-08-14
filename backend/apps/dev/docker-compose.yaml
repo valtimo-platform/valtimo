@@ -152,6 +152,8 @@ services:
             - SENDFILE_BACKEND=django_sendfile.backends.simple
             - NOTIFICATIONS_DISABLED=true
             - DISABLE_2FA=True
+        extra_hosts:
+            - "cg-dmf.localhost:host-gateway"
         ports:
             - "8001:8000"
         depends_on:
@@ -766,6 +768,7 @@ services:
             - DB_URL=jdbc:postgresql://cg-dmf-database:5432/documenten
             - DB_USER=cg-dmf
             - DB_PASSWORD=cg-dmf
+            - BASE_URL=http://cg-dmf.localhost:8083
             - OIDC_ISSUER=http://keycloak.localhost:8081/auth/realms/valtimo
             - OIDC_RESOURCE_CLIENT_ID=cg-dmf
             - CLIENT_CREDENTIALS=valtimo_client:e09b8bc5-5831-4618-ab28-41411304309d
@@ -825,8 +828,10 @@ services:
             - MKNOD
         ports:
             - "9980:9980"
+        extra_hosts:
+            - "cg-dmf.localhost:host-gateway"
         environment:
-            - domain=cg-dmf
+            - aliasgroup1=http://cg-dmf.localhost:8083
             - extra_params=--o:ssl.enable=false --o:ssl.termination=false
 
 volumes:

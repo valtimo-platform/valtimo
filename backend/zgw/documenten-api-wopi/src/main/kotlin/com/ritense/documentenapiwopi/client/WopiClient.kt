@@ -67,7 +67,7 @@ class WopiClient(
                 ClientTools.baseUrlToBuilder(it, baseUrl)
                     .replacePath("/wopi/files/$documentId")
                     .queryParam("access_token", wopiAccessToken.accessToken)
-                    .queryParam("wopi_client", wopiClientUrl.toString())
+                    .queryParam("wopiClient", wopiClientUrl.toString())
                     .build()
             }
             .headers { it.setBearerAuth(wopiAccessToken.accessToken) }

@@ -64,7 +64,7 @@ def sharedComposeFile = project(":backend:apps:dev").file("docker-compose.yaml")
 dockerCompose {
     projectName = "gzac-docker-compose"
     useComposeFiles = [sharedComposeFile.path]
-    composeAdditionalArgs = ["--profile", "zgw", "--profile", "openklant", "--profile", "iko"]
+    composeAdditionalArgs = ["--profile", "zgw", "--profile", "openklant", "--profile", "iko", "--profile", "wopi"]
     stopContainers = false
     removeContainers = false
     removeVolumes = false
