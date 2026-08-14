@@ -35,6 +35,21 @@ In order to prevent new subscriptions from being created in the Notificaties API
 valtimo.zgw.register-abonnementen: true
 ```
 
+#### Subscription registration retries:
+
+Subscriptions are registered after the application has fully started, on a background thread. The Notificaties API validates a new subscription by immediately calling back to the configured `callbackUrl`, which cannot succeed until the platform hosting Valtimo routes traffic to it — on Kubernetes that only happens once the readiness probe has been observed. Registration is therefore retried with exponential backoff until it succeeds, and a failure to register does not stop the application.
+
+The retry policy can be tuned with the following properties:
+
+```yaml
+valtimo.zgw.abonnement-registration:
+  initial-backoff: 2s
+  max-backoff: 30s
+  max-duration: 15m
+```
+
+`max-duration` is a backstop for a genuinely unreachable `callbackUrl`; the retries stop as soon as registration succeeds.
+
 ### Frontend
 
 A general instruction to add a front-end plugin to the implementation can be found in the [plugin documentation](../core/plugin.md#adding-a-front-end-plugin-to-the-implementation).

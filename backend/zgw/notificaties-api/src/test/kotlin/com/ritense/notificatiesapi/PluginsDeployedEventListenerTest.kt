@@ -17,6 +17,7 @@
 package com.ritense.notificatiesapi
 
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
+import com.ritense.notificatiesapi.config.NotificatiesApiAbonnementRegistrationProperties
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
@@ -37,6 +38,9 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeast
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -46,8 +50,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
 import java.net.URI
+import java.time.Duration
 import java.util.Optional
 import java.util.UUID
+import java.util.concurrent.Executor
 
 @ExtendWith(OutputCaptureExtension::class)
 class PluginsDeployedEventListenerTest {
@@ -79,7 +85,7 @@ class PluginsDeployedEventListenerTest {
     }
 
     @Test
-    fun `should shutdown due to inability to connect to abonnementen api`(output: CapturedOutput) {
+    fun `should throw due to inability to connect to abonnementen api`(output: CapturedOutput) {
         val pluginInstance: NotificatiesApiListener = mock()
 
         val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
@@ -613,6 +619,94 @@ class PluginsDeployedEventListenerTest {
         assertThat(output).contains("Notificaties API abonnement registration is disabled")
         verifyNoInteractions(client)
     }
+
+    @Test
+    fun `should hand startup registration off to the executor instead of running it on the event thread`() {
+        val submitted = mutableListOf<Runnable>()
+        val listener = listenerWith(registrationExecutor = { submitted.add(it) })
+
+        listener.handleApplicationFullyReadyEvent()
+
+        assertThat(submitted).hasSize(1)
+        verifyNoInteractions(pluginService)
+    }
+
+    @Test
+    fun `should keep retrying with backoff and stay up when registration never succeeds`(output: CapturedOutput) {
+        stubSinglePluginConfiguration()
+        whenever(client.getAbonnementen(any(), any()))
+            .thenThrow(RuntimeException("Connection refused"))
+        val listener = listenerWith(registrationProperties(maxDuration = Duration.ofMillis(60)))
+
+        assertDoesNotThrow { listener.registerAbonnementenWithBackoff() }
+
+        assertThat(output).contains("retrying in PT0.01S")
+        assertThat(output).contains("Giving up on registering abonnementen")
+        assertThat(output).contains("The application stays up")
+        // the backoff loop owns the retrying now, so each pass makes a single attempt
+        assertThat(output).doesNotContain("Failed to register abonnementen after")
+        verify(client, atLeast(2)).getAbonnementen(any(), any())
+    }
+
+    @Test
+    fun `should stop retrying as soon as registration succeeds`(output: CapturedOutput) {
+        stubSinglePluginConfiguration()
+        doThrow(RuntimeException("Connection refused"))
+            .doReturn(emptyList<Abonnement>())
+            .whenever(client).getAbonnementen(any(), any())
+        whenever(client.createAbonnement(any(), any(), any<Abonnement>()))
+            .thenReturn(
+                Abonnement(
+                    url = "http://localhost:9999/nothing/456",
+                    callbackUrl = "http://localhost:9999/callback",
+                    auth = "test",
+                    kanalen = emptyList()
+                )
+            )
+        val listener = listenerWith(registrationProperties(maxDuration = Duration.ofMinutes(15)))
+
+        listener.registerAbonnementenWithBackoff()
+
+        assertThat(output).contains("Successfully registered abonnementen on attempt 2")
+        verify(client, times(2)).getAbonnementen(any(), any())
+        verify(notificatiesApiAbonnementLinkRepository).save(any())
+    }
+
+    /** Stubs one Notificaties API plugin configuration, leaving `client.getAbonnementen` to the caller. */
+    private fun stubSinglePluginConfiguration() {
+        val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
+        whenever(notificatiesApiPlugin.url).thenReturn(URI("http://localhost:9999/nothing"))
+        whenever(notificatiesApiPlugin.callbackUrl).thenReturn(URI("http://localhost:9999/callback"))
+        whenever(notificatiesApiPlugin.authenticationPluginConfiguration).thenReturn(mock())
+        whenever(notificatiesApiPlugin.authHeader).thenReturn("12345")
+        whenever(notificatiesApiPlugin.notificatiesApiConfigurationId).thenReturn(
+            NotificatiesApiConfigurationId.existingId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+        )
+        val listenerInstance: NotificatiesApiListener = mock()
+        whenever(listenerInstance.getNotificatiesApiPlugin()).thenReturn(notificatiesApiPlugin)
+        whenever(pluginService.createInstance(any<PluginConfiguration>())).thenReturn(listenerInstance)
+        whenever(pluginService.getPluginConfigurations(any())).thenReturn(listOf(mock()))
+    }
+
+    private fun registrationProperties(maxDuration: Duration) =
+        NotificatiesApiAbonnementRegistrationProperties().apply {
+            initialBackoff = Duration.ofMillis(10)
+            maxBackoff = Duration.ofMillis(20)
+            this.maxDuration = maxDuration
+        }
+
+    private fun listenerWith(
+        registrationProperties: NotificatiesApiAbonnementRegistrationProperties =
+            NotificatiesApiAbonnementRegistrationProperties(),
+        registrationExecutor: Executor = Executor { it.run() }
+    ) = PluginsDeployedEventListener(
+        client = client,
+        notificatiesApiAbonnementLinkRepository = notificatiesApiAbonnementLinkRepository,
+        pluginService = pluginService,
+        registerAbonnementen = true,
+        registrationProperties = registrationProperties,
+        registrationExecutor = registrationExecutor
+    )
 
     private fun markApplicationFullyReady() {
         whenever(pluginService.getPluginConfigurations(any()))
