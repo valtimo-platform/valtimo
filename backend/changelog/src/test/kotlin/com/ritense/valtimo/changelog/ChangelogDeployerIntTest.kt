@@ -151,4 +151,13 @@ internal class ChangelogDeployerIntTest : BaseIntegrationTest() {
 
         assertThat(result).isEqualTo(content)
     }
+
+    @Test
+    fun `should leave expression containing a colon untouched`() {
+        val content = """{"value": "${'$'}{someBean.doSomething(step.submissionData, {'doc:/a':'/b'})}"}"""
+
+        val result = changelogDeployer.resolveProperties(content)
+
+        assertThat(result).isEqualTo(content)
+    }
 }
