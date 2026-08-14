@@ -46,7 +46,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -55,6 +57,7 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders.CONTENT_TYPE
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
@@ -306,6 +309,27 @@ internal class ObjectenApiClientTest {
     }
 
     @Test
+    fun `should throw exception and not call api when not authorized to get object`() {
+        assertReadDeniedWithoutCallingApi { client, deniedApi ->
+            client.getObject(
+                TestAuthentication(),
+                deniedApi.url("/some-object").toUri()
+            )
+        }
+    }
+
+    @Test
+    fun `should throw exception and not call api when not authorized to get objectrecord`() {
+        assertReadDeniedWithoutCallingApi { client, deniedApi ->
+            client.getObjectRecord(
+                TestAuthentication(),
+                deniedApi.url("/some-object").toUri(),
+                2
+            )
+        }
+    }
+
+    @Test
     fun `should get objectslist`() {
         val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
 
@@ -473,6 +497,20 @@ internal class ObjectenApiClientTest {
     }
 
     @Test
+    fun `should throw exception and not call api when not authorized to get objects by object type url`() {
+        assertReadDeniedWithoutCallingApi { client, deniedApi ->
+            client.getObjectsByObjecttypeUrl(
+                TestAuthentication(),
+                deniedApi.url("/some-object").toUri(),
+                deniedApi.url("/some-objectTypesApi").toUri(),
+                "typeId",
+                "",
+                PageRequest.of(0, 10)
+            )
+        }
+    }
+
+    @Test
     fun `should send outbox message when getting objects by object type url with search params`() {
         val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
 
@@ -563,6 +601,21 @@ internal class ObjectenApiClientTest {
         mockApi.takeRequest()
 
         verify(outboxService, times(0)).send(eventCapture.capture())
+    }
+
+    @Test
+    fun `should throw exception and not call api when not authorized to get objects by object type url with search params`() {
+        assertReadDeniedWithoutCallingApi { client, deniedApi ->
+            client.getObjectsByObjecttypeUrlWithSearchParams(
+                authentication = TestAuthentication(),
+                objecttypesApiUrl = deniedApi.url("/some-object").toUri(),
+                objectsApiUrl = deniedApi.url("/some-objectTypesApi").toUri(),
+                objectypeId = "typeId",
+                searchString = "test",
+                ordering = "ordering",
+                pageable = PageRequest.of(0, 10)
+            )
+        }
     }
 
     @Test
@@ -1116,6 +1169,37 @@ internal class ObjectenApiClientTest {
         return MockResponse()
             .addHeader("Content-Type", "application/json")
             .setBody(body)
+    }
+
+    /**
+     * Asserts that a read operation is denied before any request leaves for the Objecten API.
+     *
+     * The permission check has to happen before the fetch: otherwise the response status of the
+     * Objecten API surfaces to an unauthorized caller, who can then tell an existing object apart
+     * from a non-existent one. The mock API answers 404 to make that leak visible - when the check
+     * runs too late, the caller sees the 404 instead of an [AccessDeniedException].
+     *
+     * A dedicated [MockWebServer] is used so that the enqueued response cannot leak into the
+     * queue of another test in this class.
+     */
+    private fun assertReadDeniedWithoutCallingApi(invoke: (ObjectenApiClient, MockWebServer) -> Unit) {
+        val deniedApi = MockWebServer()
+        deniedApi.start()
+        try {
+            deniedApi.enqueue(mockResponse("").setResponseCode(404))
+
+            val deniedAuthorizationService: AuthorizationService = mock {
+                on { this.requirePermission<Any>(any()) } doThrow AccessDeniedException("Unauthorized")
+            }
+            val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, deniedAuthorizationService)
+
+            assertThrows<AccessDeniedException> { invoke(client, deniedApi) }
+
+            assertEquals(0, deniedApi.requestCount)
+            verify(outboxService, times(0)).send(any())
+        } finally {
+            deniedApi.shutdown()
+        }
     }
 
     class TestAuthentication : ObjectenApiAuthentication {
