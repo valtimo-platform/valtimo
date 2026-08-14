@@ -1,0 +1,33 @@
+[
+    {
+        "resourceType": "com.ritense.dashboard.domain.Dashboard",
+        "actions": [
+            "view"
+        ],
+        "roleKey": "ROLE_ADMIN",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "key",
+                "operator": "==",
+                "value": "my_admin_dashboard"
+            }
+        ]
+    },
+    {
+        "resourceType": "com.ritense.dashboard.domain.Dashboard",
+        "actions": [
+            "view",
+            "view_list"
+        ],
+        "roleKey": "ROLE_USER",
+        "conditions": [
+            {
+                "type": "field",
+                "field": "key",
+                "operator": "==",
+                "value": "user-dashboard"
+            }
+        ]
+    }
+]

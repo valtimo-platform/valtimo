@@ -61,13 +61,23 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `should return form flow definition schema`() {
+        mockMvc
+            .perform(get("/api/management/v1/form-flow-definition/schema"))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.title").value("Form flow definition"))
+            .andExpect(jsonPath("$.properties.steps").exists())
+    }
+
+    @Test
     fun `should return form flow definitions`() {
         mockMvc
             .perform(get("/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition", "profile", "1.0.0"))
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].key").value("inkomens_loket"))
-            .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].readOnly").value(true))
+            .andExpect(jsonPath("$.content[?(@.key=='inkomens_loket')].readOnly").value(false))
     }
 
     @Test

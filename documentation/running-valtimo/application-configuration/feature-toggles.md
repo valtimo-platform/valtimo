@@ -14,9 +14,6 @@ In the frontend, feature toggles can be configured under the `featureToggles` ke
 *   **`showUserNameInTopBar`**
 
     If enabled, the full name of the user currently logged in is shown in the top bar next to the user menu button.
-*   **`experimentalDmnEditing`**
-
-    If enabled, it is possible to edit DMN tables from the ui from the admin page. This feature is experimental.
 *   **`disableCaseCount`**
 
     If set to `true`, showing the number of open cases in the menu is disabled.
@@ -60,6 +57,9 @@ In the frontend, feature toggles can be configured under the `featureToggles` ke
 
     If enabled, access to the list of uploaded documents now requires permissions. Additionally, the backend requires the following property to be set in `application.yml`:\
     `valtimo.authorization.zgwDocuments.enabled`
+* **`enableGenericCaseList`**
+
+    If enabled, the case list is displayed similar to the task list, with an overview of all cases across all case definitions. This helps keep the sidebar organized when you have a lot of case definitions.
 
 ## Backend
 
@@ -69,3 +69,9 @@ In backend, feature toggles can be configured in the `application.yml` file.
 
     If enabled, returns the content of the document when this is retrieved via the REST endpoint. This should only be
     used for debug purposes, normally content is retrieved through tabs and their widgets.
+
+*   **`useOpenSearchForDocumentSearch`**
+
+    If enabled, case list search and global document queries use OpenSearch instead of PostgreSQL. The toggle is
+    automatically disabled when OpenSearch becomes unreachable or during a full reindex operation to ensure query
+    results remain consistent.

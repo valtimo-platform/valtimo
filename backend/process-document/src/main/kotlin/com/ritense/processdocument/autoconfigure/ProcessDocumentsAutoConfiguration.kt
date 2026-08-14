@@ -42,18 +42,23 @@ import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumen
 import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
+import com.ritense.processdocument.repository.TaskQuickSearchRepository
+import com.ritense.processdocument.service.CaseCorrelationBusinessKeyProvider
+import com.ritense.processdocument.service.CaseCorrelationStartTargetProvider
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DefaultProcessDefinitionCaseDefinitionLinker
 import com.ritense.processdocument.service.DocumentDelegateService
+import com.ritense.processdocument.service.DraftProcessDefinitionCaseDefinitionFinalizationChecker
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentDeletedEventListener
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
 import com.ritense.processdocument.service.StartableProcessItemProvider
+import com.ritense.processdocument.service.TaskQuickSearchService
 import com.ritense.processdocument.service.ValueResolverDelegateService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService
 import com.ritense.processdocument.tasksearch.TaskSearchFieldExporter
@@ -98,13 +103,11 @@ class ProcessDocumentsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(DocumentDelegate::class)
     fun documentDelegate(
-        processDocumentService: ProcessDocumentService,
         userManagementService: UserManagementService,
         documentService: DocumentService,
         caseDocumentResolver: CaseDocumentResolver,
     ): DocumentDelegate {
         return DocumentDelegate(
-            processDocumentService,
             userManagementService,
             documentService,
             caseDocumentResolver,
@@ -126,7 +129,6 @@ class ProcessDocumentsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(DocumentDelegateService::class)
     fun documentDelegateService(
-        processDocumentService: ProcessDocumentService,
         documentService: DocumentService,
         jsonSchemaDocumentService: JsonSchemaDocumentService,
         userManagementService: UserManagementService,
@@ -134,7 +136,6 @@ class ProcessDocumentsAutoConfiguration {
         caseDocumentResolver: CaseDocumentResolver,
     ): DocumentDelegateService {
         return DocumentDelegateService(
-            processDocumentService,
             documentService,
             jsonSchemaDocumentService,
             userManagementService,
@@ -154,6 +155,9 @@ class ProcessDocumentsAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         repositoryService: RepositoryService,
         operatonRepositoryService: OperatonRepositoryService,
+        caseDocumentResolver: CaseDocumentResolver,
+        caseCorrelationBusinessKeyProviders: List<CaseCorrelationBusinessKeyProvider>,
+        caseCorrelationStartTargetProviders: List<CaseCorrelationStartTargetProvider>,
     ): CorrelationService {
         return CorrelationServiceImpl(
             runtimeService = runtimeService,
@@ -161,7 +165,10 @@ class ProcessDocumentsAutoConfiguration {
             documentService = documentService,
             operatonRepositoryService = operatonRepositoryService,
             repositoryService = repositoryService,
-            associationService = processDocumentAssociationService
+            associationService = processDocumentAssociationService,
+            caseDocumentResolver = caseDocumentResolver,
+            businessKeyProviders = caseCorrelationBusinessKeyProviders,
+            startTargetProviders = caseCorrelationStartTargetProviders,
         )
     }
 
@@ -172,7 +179,6 @@ class ProcessDocumentsAutoConfiguration {
         documentService: DocumentService,
         operatonProcessService: OperatonProcessService,
         associationService: ProcessDocumentAssociationService,
-        processDocumentService: ProcessDocumentService,
         repositoryService: RepositoryService,
         operatonRuntimeService: OperatonRuntimeService
     ): ProcessDocumentsService {
@@ -180,7 +186,6 @@ class ProcessDocumentsAutoConfiguration {
             documentService,
             operatonProcessService,
             associationService,
-            processDocumentService,
             repositoryService,
             operatonRuntimeService
         )
@@ -337,14 +342,30 @@ class ProcessDocumentsAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(TaskQuickSearchService::class)
+    fun taskQuickSearchService(
+        taskQuickSearchRepository: TaskQuickSearchRepository,
+        caseDefinitionService: CaseDefinitionService,
+        authorizationService: AuthorizationService,
+    ): TaskQuickSearchService {
+        return TaskQuickSearchService(
+            taskQuickSearchRepository,
+            caseDefinitionService,
+            authorizationService,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(TaskListResource::class)
     fun processDocumentTaskListResource(
         caseTaskListSearchService: CaseTaskListSearchService,
         operatonTaskService: OperatonTaskService,
+        taskQuickSearchService: TaskQuickSearchService,
     ): TaskListResource {
         return TaskListResource(
             caseTaskListSearchService,
             operatonTaskService,
+            taskQuickSearchService,
         )
     }
 
@@ -508,10 +529,18 @@ class ProcessDocumentsAutoConfiguration {
     fun startableProcessItemProvider(
         processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
         authorizationService: AuthorizationService,
+        repositoryService: OperatonRepositoryService,
     ): StartableProcessItemProvider {
         return StartableProcessItemProvider(
             processDefinitionCaseDefinitionRepository,
             authorizationService,
+            repositoryService,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(DraftProcessDefinitionCaseDefinitionFinalizationChecker::class)
+    fun draftProcessDefinitionCaseDefinitionFinalizationChecker(
+        operatonProcessService: OperatonProcessService
+    ) = DraftProcessDefinitionCaseDefinitionFinalizationChecker(operatonProcessService)
 }

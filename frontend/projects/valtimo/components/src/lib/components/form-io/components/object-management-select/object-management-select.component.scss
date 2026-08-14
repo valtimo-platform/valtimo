@@ -1,0 +1,95 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.object-management-select {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.filter-accordion {
+  ::ng-deep .cds--accordion {
+    background-color: var(--cds-layer);
+  }
+
+  ::ng-deep .cds--accordion__item {
+    border-inline-start: 1px solid var(--cds-border-subtle);
+    border-inline-end: 1px solid var(--cds-border-subtle);
+    border-block-start: 1px solid var(--cds-border-subtle);
+    border-block-end: none;
+  }
+
+  ::ng-deep .cds--accordion__heading {
+    height: 48px;
+  }
+
+  ::ng-deep .cds--accordion__content {
+    padding: 0 16px;
+  }
+}
+
+::ng-deep .cds--table-toolbar {
+  background-color: var(--cds-layer);
+  border-inline-start: 1px solid var(--cds-border-subtle);
+  border-inline-end: 1px solid var(--cds-border-subtle);
+}
+
+.search-fields-container {
+  padding-bottom: 16px;
+  padding-top: 16px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.search-field-container--full {
+  grid-column: span 2;
+
+  @media (max-width: 480px) {
+    grid-column: span 1;
+  }
+}
+
+.date-range-fields {
+  display: grid;
+  grid-template-columns: 5fr 2fr 5fr;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.to-text {
+  text-align: center;
+}
+
+.buttons-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-bottom: 16px;
+}
+
+.selections-section {
+  margin-top: 1rem;
+}

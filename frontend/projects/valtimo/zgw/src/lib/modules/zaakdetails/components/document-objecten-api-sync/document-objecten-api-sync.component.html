@@ -144,7 +144,7 @@
         [disabled]="!formGroup.valid"
         (click)="submit()"
       >
-        {{ 'searchFieldsOverview.submit' | translate }}
+        {{ ((documentObjectenApiSync$ | async) ? 'interface.save' : 'interface.create') | translate }}
       </button>
     </cds-modal-footer>
   </cds-modal>

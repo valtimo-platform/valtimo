@@ -89,7 +89,6 @@
     <valtimo-json-editor
       [model]="obs.jsonEditorModel"
       [fitPage]="true"
-      [fitPageSpaceAdjustment]="248"
       [showEditButton]="obs.hasEditPermissions"
       (saveEvent)="updateSearchFields(obs.caseDefinitionKey, $event)"
     >
@@ -296,7 +295,7 @@
     [disabled]="obs.disableInput || !obs.valid"
     (click)="saveSearchField(obs.caseDefinitionKey)"
   >
-    {{ 'searchFieldsOverview.submit' | translate }}
+    {{ (searchFieldActionTypeIsAdd ? 'interface.create' : 'interface.save') | translate }}
   </button>
 </ng-template>
 

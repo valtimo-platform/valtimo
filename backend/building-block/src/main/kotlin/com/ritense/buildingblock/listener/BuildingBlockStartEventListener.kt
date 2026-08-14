@@ -24,8 +24,8 @@ import com.ritense.buildingblock.service.CaseDefinitionBuildingBlockLinkService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentIdOrNull
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
-import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
@@ -45,7 +45,6 @@ import org.springframework.stereotype.Component
 @SkipComponentScan
 class BuildingBlockStartEventListener(
     private val buildingBlockInstanceService: BuildingBlockInstanceService,
-    private val processDocumentService: ProcessDocumentService,
     private val operatonRepositoryService: OperatonRepositoryService,
     private val caseDocumentResolver: CaseDocumentResolver,
     private val objectMapper: ObjectMapper,
@@ -70,10 +69,9 @@ class BuildingBlockStartEventListener(
             ?: return
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.fromProcessVersionTag(processDefinition.versionTag)
             ?: return
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
+        val documentId = execution.getJsonSchemaDocumentIdOrNull()
             ?: return
-        val existingInstance = buildingBlockInstanceService.getByDocumentId(documentId.id)
+        val existingInstance = buildingBlockInstanceService.getByDocumentId(documentId)
         if (existingInstance != null) {
             if (existingInstance.processInstanceId == null) {
                 existingInstance.processInstanceId = execution.processInstanceId
@@ -83,7 +81,7 @@ class BuildingBlockStartEventListener(
         }
 
         val caseDocumentId = try {
-            caseDocumentResolver.resolveCaseDocumentId(documentId.id)
+            caseDocumentResolver.resolveCaseDocumentId(documentId)
         } catch (_: Exception) {
             null
         } ?: return
@@ -107,7 +105,7 @@ class BuildingBlockStartEventListener(
         logger.debug { "Creating ad-hoc BuildingBlockInstance for '${buildingBlockDefinitionId.key}'" }
         val inputSources = link.inputMappings.map { it.source }
         val resolvedValues = valueResolverService.resolveValues(caseDocumentId.toString(), inputSources)
-        val valuesToHandle = link.inputMappings.associate { it.target to resolvedValues[it.source] }
+        val valuesToHandle = link.inputMappings.associate { it.getPrefixedTarget() to resolvedValues[it.source] }
         val preProcessValues = valueResolverService.preProcessValuesForNewCase(valuesToHandle)
         val documentContent = objectMapper.valueToTree<JsonNode>(preProcessValues[DOC_PREFIX])
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ export class MenuService implements OnDestroy {
           item.children?.forEach(child => {
             if (Array.isArray(child.link)) {
               const fullLink = [...(item.link || []), ...child.link].join('/');
-              checkItemMatch(fullLink, `${item.sequence}${child.sequence}`, `${item.sequence}`);
+              checkItemMatch(fullLink, `${item.sequence}.${child.sequence}`, `${item.sequence}`);
             }
           });
         });
@@ -148,9 +148,9 @@ export class MenuService implements OnDestroy {
     let menuItems: MenuItem[] = [];
 
     this.menuConfig.menuItems.forEach(menuItem => {
-      if (menuItem.includeFunction) {
+      if (menuItem.includeFunction !== undefined) {
         this.includeFunctionObservables[menuItem.title] =
-          this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);
+          this.menuIncludeService.getIncludeFunctionObservable(menuItem.includeFunction);
       }
 
       menuItem.show = true;
@@ -159,11 +159,30 @@ export class MenuService implements OnDestroy {
         const filteredChildren = menuItem.children?.filter(
           child => !child.roles || child.roles.some(role => userRoles.includes(role))
         );
+
+        filteredChildren?.forEach(child => {
+          if (child.includeFunction !== undefined) {
+            this.includeFunctionObservables[child.title] =
+              this.menuIncludeService.getIncludeFunctionObservable(child.includeFunction);
+          }
+        });
+
         menuItems.push({...menuItem, ...(filteredChildren && {children: filteredChildren})});
       }
     });
 
-    return menuItems.sort((a, b) => a.sequence - b.sequence);
+    return menuItems;
+  }
+
+  private assignSequences(menuItems: MenuItem[]): MenuItem[] {
+    return menuItems.map((item, index) => ({
+      ...item,
+      sequence: index,
+      children: item.children?.map((child, childIndex) => ({
+        ...child,
+        sequence: childIndex,
+      })),
+    }));
   }
 
   private applyMenuRoleSecurity(menuItems: MenuItem[]): MenuItem[] {
@@ -205,6 +224,7 @@ export class MenuService implements OnDestroy {
             return sourceObs.pipe(...operators);
           }),
           map(items => this.applyMenuRoleSecurity(items)),
+          map(items => this.assignSequences(items)),
           tap(items => {
             if (!isEqual(this._menuItems$.getValue(), items)) this._menuItems$.next(items);
           })

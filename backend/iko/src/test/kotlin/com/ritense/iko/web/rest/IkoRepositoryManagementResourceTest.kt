@@ -47,6 +47,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 
 @Transactional
 internal class IkoRepositoryManagementResourceTest {
@@ -64,6 +65,7 @@ internal class IkoRepositoryManagementResourceTest {
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
+            .setValidator(LocalValidatorFactoryBean().apply { afterPropertiesSet() })
             .build();
     }
 
@@ -192,6 +194,23 @@ internal class IkoRepositoryManagementResourceTest {
         mockMvc.perform(delete("/api/management/v1/iko/{repositoryConfigKey}", "iko-api"))
             .andDo(print())
             .andExpect(status().isNoContent())
+    }
+
+    @Test
+    fun `should reject create iko repository config with type exceeding column cap`() {
+        val request = IkoRepositoryConfigCreateRequest(
+            title = "IKO API",
+            type = "x".repeat(65),
+            properties = emptyMap()
+        )
+
+        mockMvc.perform(
+            post("/api/management/v1/iko/{repositoryConfigKey}", "iko-api")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
     }
 
 }

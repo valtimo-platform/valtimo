@@ -1,0 +1,338 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.document.opensearch.service
+
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.persistence.EntityManager
+import jakarta.persistence.criteria.JoinType
+import jakarta.persistence.criteria.Predicate
+import net.javacrumbs.shedlock.core.LockConfiguration
+import net.javacrumbs.shedlock.core.LockProvider
+import org.springframework.beans.factory.DisposableBean
+import org.opensearch.index.query.BoolQueryBuilder
+import org.opensearch.index.query.QueryBuilders
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.UUID
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+
+/**
+ * Re-runnable, scoped re-index of [JsonSchemaDocument] rows into the live `json_schema_document`
+ * OpenSearch index.
+ *
+ * - **Cluster-safe single runner**: a ShedLock named lock ([LOCK_NAME]) guarantees at most one run
+ *   cluster-wide; a concurrent [start] returns `null` (→ HTTP 409).
+ * - **Persisted, resumable state**: progress (cursor, counts, heartbeat) lives in the database via
+ *   [OpenSearchReindexRunService]; a FAILED/STOPPED run can be resumed from its cursor with an
+ *   idempotent upsert.
+ * - **Scoped**: only documents matching the [ReindexRequest] filters are (re)indexed; the index stays
+ *   complete and queryable throughout.
+ * - **Crash-safe refresh**: no global `refresh_interval` toggle — a single explicit refresh runs at
+ *   successful completion.
+ */
+open class DocumentOpenSearchReindexService(
+    private val entityManager: EntityManager,
+    private val converter: JsonSchemaDocumentOsConverter,
+    private val elasticsearchOperations: ElasticsearchOperations,
+    private val transactionManager: PlatformTransactionManager,
+    private val lockProvider: LockProvider,
+    private val runService: OpenSearchReindexRunService,
+    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+) : DisposableBean {
+
+    private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "opensearch-reindex").apply { isDaemon = true }
+    }
+
+    @Volatile
+    private var cancelRequested = false
+
+    /**
+     * Acquires the cluster-wide lock, creates (or resumes) a run record and dispatches the re-index on
+     * the managed executor. Returns the run id, or `null` if a re-index is already running anywhere in
+     * the cluster.
+     */
+    fun start(request: ReindexRequest): UUID? {
+        val lock = lockProvider.lock(
+            LockConfiguration(Instant.now(), LOCK_NAME, LOCK_AT_MOST_FOR, Duration.ZERO)
+        )
+        if (lock.isEmpty) return null
+
+        cancelRequested = false
+        val run = try {
+            runService.startOrResume(request)
+        } catch (e: Exception) {
+            lock.get().unlock()
+            throw e
+        }
+
+        executor.execute {
+            try {
+                reindex(run.id)
+            } catch (e: Exception) {
+                logger.error(e) { "Re-index run ${run.id} terminated with error" }
+            } finally {
+                lock.get().unlock()
+            }
+        }
+        return run.id
+    }
+
+    /**
+     * Runs the chunked, resumable re-index loop for [runId].
+     * Each DB page is read in its own short read-only transaction (keeping snapshots short) and the
+     * persistence context is cleared after every page. Returns the number of documents processed.
+     */
+    open fun reindex(runId: UUID): Long {
+        val scope = runService.scopeOf(runId)
+        var lastId: UUID? = runService.cursorOf(runId)
+        var processed: Long = runService.processedOf(runId)
+        var skipped = 0L
+        val pageSize = runService.pageSizeOf(runId)
+        val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+
+        try {
+            while (!cancelRequested) {
+                val cursor = lastId
+                val batch = txTemplate.execute {
+                    fetchBatch(scope, cursor, pageSize).also { entityManager.clear() }
+                } ?: break
+                if (batch.isEmpty()) break
+
+                val docs = batch.mapNotNull { jpaDoc ->
+                    try {
+                        converter.toOsDocument(jpaDoc)
+                    } catch (e: Exception) {
+                        skipped++
+                        logger.warn(e) { "Failed to convert document — skipping" }
+                        null
+                    }
+                }
+                skipped += docs.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).sumOf { converter.indexChunk(it) }
+
+                processed += docs.size
+                lastId = batch.last().id().id
+                runService.recordProgress(runId, lastId, processed, skipped)
+            }
+
+            if (cancelRequested) {
+                logger.info { "Re-index run $runId cancelled — marking STOPPED (processed=$processed, skipped=$skipped)" }
+                runService.stop(runId)
+            } else {
+                if (scope.pruneOrphans) {
+                    val pruned = pruneOrphans(runId, scope)
+                    logger.info { "Pruned $pruned orphan document(s) from OpenSearch" }
+                }
+                indexOps().refresh()
+                logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
+                runService.complete(runId, processed + skipped)
+            }
+        } catch (e: Exception) {
+            runService.fail(runId, e.message)
+            logger.error(e) { "Re-index failed (run $runId)" }
+            throw e
+        }
+        return processed
+    }
+
+    /** Status of a specific run (by id) or the most recent run when [runId] is null. */
+    fun status(runId: UUID? = null): Map<String, Any?> = runService.toStatusMap(runId)
+
+    fun listRuns(pageable: Pageable): Page<Map<String, Any?>> = runService.listRuns(pageable)
+
+    /**
+     * Scoped keyset fetch. Applies the optional [scope] filters, eagerly loads the lazy `internalStatus`
+     * `@ManyToOne` (C1 — so the detached entity serializes the real status key, not null), and keeps a
+     * keyset cursor on the primary key for constant-cost pagination.
+     */
+    private fun fetchBatch(scope: ReindexRequest, lastId: UUID?, pageSize: Int): List<JsonSchemaDocument> {
+        val cb = entityManager.criteriaBuilder
+        val query = cb.createQuery(JsonSchemaDocument::class.java)
+        val root = query.from(JsonSchemaDocument::class.java)
+        root.fetch<Any, Any>("internalStatus", JoinType.LEFT)
+
+        val predicates = mutableListOf<Predicate>()
+        scope.modifiedAfter?.let { predicates += cb.greaterThan(root.get<LocalDateTime>("modifiedOn"), it) }
+        scope.modifiedBefore?.let { predicates += cb.lessThan(root.get<LocalDateTime>("modifiedOn"), it) }
+        scope.documentDefinitionName?.let {
+            predicates += cb.equal(root.get<Any>("documentDefinitionId").get<String>("name"), it)
+        }
+        scope.documentIds?.takeIf { it.isNotEmpty() }?.let {
+            predicates += root.get<Any>("id").get<UUID>("id").`in`(it)
+        }
+        lastId?.let { predicates += cb.greaterThan(root.get<Any>("id").get<UUID>("id"), it) }
+
+        // Only restrict when there is at least one predicate; an empty where(...) matches no rows.
+        if (predicates.isNotEmpty()) {
+            query.where(*predicates.toTypedArray())
+        }
+        query.orderBy(cb.asc(root.get<Any>("id").get<UUID>("id")))
+        return entityManager.createQuery(query).setMaxResults(pageSize).resultList
+    }
+
+    /**
+     * Scans OpenSearch for documents matching [scope], checks each batch against PostgreSQL,
+     * and deletes orphans (documents in OpenSearch but not in PostgreSQL).
+     * Uses scroll API to handle datasets larger than 10k documents.
+     */
+    private fun pruneOrphans(runId: UUID, scope: ReindexRequest): Long {
+        var pruned = 0L
+        var checked = 0L
+        val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+
+        val totalOsCount = countOpenSearchDocs(scope)
+        runService.startPruning(runId, totalOsCount)
+
+        scrollOpenSearchIds(scope, PRUNE_BATCH_SIZE) { osIds ->
+            if (cancelRequested) return@scrollOpenSearchIds false
+
+            val existingIds = txTemplate.execute {
+                findExistingIds(osIds.map { UUID.fromString(it) })
+            }.orEmpty()
+
+            val orphans = osIds.filter { UUID.fromString(it) !in existingIds }
+            orphans.forEach { openSearchRepository.deleteById(it) }
+            pruned += orphans.size
+            checked += osIds.size
+
+            runService.recordPruneProgress(runId, checked, pruned)
+            true
+        }
+        return pruned
+    }
+
+    private fun countOpenSearchDocs(scope: ReindexRequest): Long {
+        val boolQuery = BoolQueryBuilder()
+
+        scope.documentDefinitionName?.let {
+            boolQuery.filter(QueryBuilders.termQuery("definitionId.name", it))
+        }
+        scope.modifiedAfter?.let {
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").gt(it.format(OS_DATE_FORMAT)))
+        }
+        scope.modifiedBefore?.let {
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").lt(it.format(OS_DATE_FORMAT)))
+        }
+        scope.documentIds?.takeIf { it.isNotEmpty() }?.let { ids ->
+            boolQuery.filter(QueryBuilders.idsQuery().addIds(*ids.map { it.toString() }.toTypedArray()))
+        }
+
+        val query = NativeSearchQueryBuilder()
+            .withQuery(boolQuery)
+            .build()
+
+        return elasticsearchOperations.count(query, JsonSchemaDocumentOsDocument::class.java)
+    }
+
+    /**
+     * Scrolls through all OpenSearch documents matching [scope], invoking [handler] for each batch.
+     * Handler returns `true` to continue, `false` to stop early.
+     */
+    private fun scrollOpenSearchIds(scope: ReindexRequest, batchSize: Int, handler: (List<String>) -> Boolean) {
+        val boolQuery = BoolQueryBuilder()
+
+        scope.documentDefinitionName?.let {
+            boolQuery.filter(QueryBuilders.termQuery("definitionId.name", it))
+        }
+        scope.modifiedAfter?.let {
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").gt(it.format(OS_DATE_FORMAT)))
+        }
+        scope.modifiedBefore?.let {
+            boolQuery.filter(QueryBuilders.rangeQuery("modifiedOn").lt(it.format(OS_DATE_FORMAT)))
+        }
+        scope.documentIds?.takeIf { it.isNotEmpty() }?.let { ids ->
+            boolQuery.filter(QueryBuilders.idsQuery().addIds(*ids.map { it.toString() }.toTypedArray()))
+        }
+
+        val query = NativeSearchQueryBuilder()
+            .withQuery(boolQuery)
+            .withPageable(PageRequest.of(0, batchSize))
+            .build()
+
+        elasticsearchOperations.searchForStream(query, JsonSchemaDocumentOsDocument::class.java).use { stream ->
+            val iterator = stream.iterator()
+            val batch = mutableListOf<String>()
+
+            while (iterator.hasNext()) {
+                val id = iterator.next().id ?: continue
+                batch.add(id)
+                if (batch.size >= batchSize) {
+                    if (!handler(batch.toList())) return
+                    batch.clear()
+                }
+            }
+            if (batch.isNotEmpty()) {
+                handler(batch)
+            }
+        }
+    }
+
+    private fun findExistingIds(ids: List<UUID>): Set<UUID> {
+        if (ids.isEmpty()) return emptySet()
+        return entityManager.createQuery(
+            "SELECT d.id.id FROM JsonSchemaDocument d WHERE d.id.id IN :ids",
+            UUID::class.java
+        ).setParameter("ids", ids).resultList.toSet()
+    }
+
+    private fun indexOps() = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
+
+    /** Signals an in-flight run to stop gracefully and shuts the executor down on context close. */
+    override fun destroy() {
+        cancelRequested = true
+        executor.shutdown()
+        try {
+            if (!executor.awaitTermination(SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                executor.shutdownNow()
+            }
+        } catch (e: InterruptedException) {
+            executor.shutdownNow()
+            Thread.currentThread().interrupt()
+        }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+        private val OS_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS")
+
+        const val LOCK_NAME = "document-opensearch-reindex"
+
+        /**
+         * Generous lock lease. The persisted run-state heartbeat is the robust liveness signal; the lock
+         * is only the cluster-wide mutex. A run exceeding this could in theory let a second runner start —
+         * acceptable because all writes are idempotent upserts.
+         */
+        val LOCK_AT_MOST_FOR: Duration = Duration.ofHours(6)
+
+        private const val SHUTDOWN_TIMEOUT_SECONDS = 30L
+        private const val PRUNE_BATCH_SIZE = 1000
+    }
+}

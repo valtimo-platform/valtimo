@@ -33,6 +33,7 @@ import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProces
 import com.ritense.processdocument.domain.impl.request.NewDocumentForRunningProcessRequest;
 import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest;
 import com.ritense.processdocument.domain.request.Request;
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.processdocument.service.impl.result.ModifyDocumentAndCompleteTaskResultFailed;
@@ -54,15 +55,12 @@ import com.ritense.processdocument.service.result.StartProcessForDocumentResult;
 import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;
-import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import java.util.Map;
 import java.util.UUID;
-import org.operaton.bpm.engine.delegate.BaseDelegateExecution;
-import org.operaton.bpm.engine.delegate.DelegateTask;
 import org.operaton.bpm.engine.delegate.VariableScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,6 +140,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             );
 
             final var processInstanceWithDefinition = startProcess(
+                request.processDefinitionId(),
                 document,
                 processDefinitionKey,
                 request.getProcessVars()
@@ -299,7 +298,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             //Part 2 process start
             final var processDefinitionKey = request.processDefinitionKey();
             final var processInstanceWithDefinition = startProcess(
-                document, processDefinitionKey, request.getProcessVars());
+                request.processDefinitionId(), document, processDefinitionKey, request.getProcessVars());
             final var operatonProcessInstanceId = new OperatonProcessInstanceId(
                 processInstanceWithDefinition.getProcessInstanceDto().getId()
             );
@@ -344,7 +343,7 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
             //Part 2 process start
             final var processDefinitionKey = request.getProcessDefinitionKey();
             final var processInstanceWithDefinition = startProcess(
-                document, processDefinitionKey, request.getProcessVars());
+                request.getProcessDefinitionId(), document, processDefinitionKey, request.getProcessVars());
             final var operatonProcessInstanceId = new OperatonProcessInstanceId(
                 processInstanceWithDefinition.getProcessInstanceDto().getId()
             );
@@ -366,17 +365,36 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
     /**
      * Gets the document ID for the given process instance.
      * The document is determined by:
-     * 1. Looking up the ProcessDocumentInstance association (if it exists)
-     * 2. Falling back to the process's business key (which is set to the document ID)
-     *
+     * 1. Looking up the process's business key (which is set to the document ID)
+     * 2. Falling back to the ProcessDocumentInstance association (if it exists)
      * This works for both case processes (business key = case document ID) and
      * building block processes (business key = building block document ID).
      */
     public JsonSchemaDocumentId getDocumentId(
-        ProcessInstanceId processInstanceId,
+        @Nullable ProcessInstanceId processInstanceId,
         @Nullable VariableScope variableScope
     ) {
         denyAuthorization();
+
+        UUID documentId = variableScope != null
+            ? GetJsonSchemaDocumentHelper.getJsonSchemaDocumentIdOrNull(variableScope)
+            : null;
+
+        if (documentId != null) {
+            return JsonSchemaDocumentId.existingId(documentId);
+        }
+
+        if (processInstanceId == null) {
+            return null;
+        }
+
+        String businessKey = operatonProcessService.findProcessInstanceById(processInstanceId.toString())
+            .orElseThrow(() -> new RuntimeException("Process instance not found by id " + processInstanceId))
+            .getBusinessKey();
+
+        if (businessKey != null && GetJsonSchemaDocumentHelper.UUID_REGEX.matches(businessKey)) {
+            return JsonSchemaDocumentId.existingId(UUID.fromString(businessKey));
+        }
 
         var processDocumentInstance = processDocumentAssociationService
             .findProcessDocumentInstance(processInstanceId)
@@ -384,17 +402,9 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         if (processDocumentInstance != null) {
             var jsonSchemaDocumentId = processDocumentInstance.processDocumentInstanceId().documentId();
             return JsonSchemaDocumentId.existingId(jsonSchemaDocumentId);
-        } else {
-            // In case a process has no token wait state ProcessDocumentInstance is not yet created,
-            // therefore the business-key is our fallback which is populated with the documentId.
-            // This works for both case processes and building block processes.
-            var businessKey = getBusinessKey(processInstanceId, variableScope);
-            if (businessKey != null && businessKey.matches("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}")) {
-                return JsonSchemaDocumentId.existingId(businessKey);
-            } else {
-                return null;
-            }
         }
+
+        return null;
     }
 
     public JsonSchemaDocument getDocument(ProcessInstanceId processInstanceId, VariableScope variableScope) {
@@ -436,36 +446,33 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
         return documentService.getDocumentBy(caseDocumentId);
     }
 
-    private String getBusinessKey(ProcessInstanceId processInstanceId, VariableScope variableScope) {
-        if (variableScope instanceof BaseDelegateExecution delegateExecution) {
-            return delegateExecution.getBusinessKey();
-        } else if (variableScope instanceof DelegateTask delegateTask) {
-            return delegateTask.getExecution().getBusinessKey();
-        } else if (variableScope instanceof OperatonExecution operatonExecution) {
-            return operatonExecution.getBusinessKey();
-        } else if (variableScope instanceof OperatonTask operatonTask && operatonTask.getExecution() != null) {
-            return operatonTask.getExecution().getBusinessKey();
-        } else {
-            var processInstance =
-                runWithoutAuthorization(
-                    () -> operatonProcessService.findProcessInstanceById(processInstanceId.toString())
-                        .orElseThrow(() -> new RuntimeException("Process instance not found by id $processInstanceId"))
-                );
-            return processInstance.getBusinessKey();
-        }
-    }
-
+    /**
+     * Starts the process for a document. When the caller knows the exact process definition version -
+     * for instance because the request originated from a process link - that version is started
+     * directly. Otherwise the definition is resolved from its key and the document's blueprint, which
+     * cannot tell versions of a blueprint-owned process apart.
+     */
     private ProcessInstanceWithDefinition startProcess(
+        @Nullable String processDefinitionId,
         Document document,
         String processDefinitionKey,
         Map<String, Object> processVars
     ) {
-        return runWithoutAuthorization(() -> operatonProcessService.startProcess(
-            processDefinitionKey,
-            document.id().toString(),
-            document.definitionId().caseDefinitionId(),
-            processVars
-        ));
+        return runWithoutAuthorization(() -> {
+            if (processDefinitionId != null) {
+                return operatonProcessService.startProcessById(
+                    processDefinitionId,
+                    document.id().toString(),
+                    processVars
+                );
+            }
+            return operatonProcessService.startProcess(
+                processDefinitionKey,
+                document.id().toString(),
+                document.definitionId().asBlueprintId(),
+                processVars
+            );
+        });
     }
 
     private FunctionResult<OperatonTask, OperationError> findTaskById(String taskId) {

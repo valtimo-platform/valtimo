@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, NavigationStart, ParamMap, Params, Router} from '@angular/router';
-import {ChevronDown16} from '@carbon/icons';
+import {ChevronDown16, Close16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
@@ -51,15 +51,18 @@ import {
 } from '@valtimo/document';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
-import {IntermediateSubmission} from '@valtimo/task';
+import {SseService} from '@valtimo/sse';
+import {IntermediateSubmission, TaskUpdateSseEvent} from '@valtimo/task';
 import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
   combineLatest,
+  debounceTime,
   filter,
   map,
+  merge,
   Observable,
   of,
   shareReplay,
@@ -76,15 +79,24 @@ import {
   CASE_DETAIL_GUTTER_SIZE,
   CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
 } from '../../constants';
-import {TabImpl, TabLoaderImpl} from '../../models';
+import {
+  CaseAssignedSseEvent,
+  CaseStatusUpdatedSseEvent,
+  CaseUnassignedSseEvent,
+  DocumentUpdatedSseEvent,
+  TabImpl,
+  TabLoaderImpl,
+} from '../../models';
 import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
   CAN_DELETE_CASE_PERMISSION,
+  CAN_INSPECT_CASE_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {CaseDetailLayoutService, CaseService, CaseTabService} from '../../services';
+import {resolveStartableItemTitle} from '../../utils';
 import {CaseSupportingProcessStartModalComponent} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {WidgetsService} from './tab/widgets/widgets.service';
 
@@ -123,6 +135,8 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly taskAndProcessLinkOpenedInPanel$ =
     this.caseDetailLayoutService.taskAndProcessLinkOpenedInPanel$;
+
+  public readonly startFormPanel$ = this.caseDetailLayoutService.startFormPanel$;
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
 
@@ -284,6 +298,15 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     )
   );
 
+  public readonly canInspect$: Observable<boolean> = this.route.paramMap.pipe(
+    switchMap((params: ParamMap) =>
+      this.permissionService.requestPermission(CAN_INSPECT_CASE_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+        identifier: params.get('documentId') ?? '',
+      })
+    )
+  );
+
   public readonly loadingTabs$ = new BehaviorSubject<boolean>(true);
   public readonly noTabsConfigured$ = new BehaviorSubject<boolean>(false);
   public readonly showNoAccess$ = new BehaviorSubject<boolean>(false);
@@ -351,6 +374,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     private readonly router: Router,
     private readonly widgetsService: WidgetsService,
     private readonly userProviderService: UserProviderService,
+    private readonly sseService: SseService,
     @Inject(DOCUMENT) private readonly htmlDocument: Document
   ) {
     this._snapshot = this.route.snapshot.paramMap;
@@ -364,11 +388,13 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.initBreadcrumb();
     this.openWidthObserver();
     this.pageTitleService.disableReset();
-    this.iconService.registerAll([ChevronDown16]);
+    this.iconService.registerAll([ChevronDown16, Close16]);
     this.setDocumentStyle();
     this.enableResetOnBackNavigation();
     this.openWidgetProcessSubscription();
     this.openSmallTitleSubscription();
+    this.openStartableItemsSseSubscription();
+    this.openCaseStateSseSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -398,13 +424,72 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  public startItem(item: StartableItem): void {
-    this.supportingProcessStart.openModalForStartableItem(
-      item,
-      this.documentId,
-      this.caseDefinitionKey,
-      this.caseDefinitionVersionTag
+  /**
+   * Keeps the start menu in sync with PBAC visibility: supporting processes can become
+   * (un)available as the case progresses. Instead of requiring a page refresh, re-fetch the
+   * startable items whenever an SSE event signals that the case state changed. The backend
+   * re-evaluates PBAC on every request, so a fresh fetch reflects the current visibility.
+   */
+  private openStartableItemsSseSubscription(): void {
+    this._subscriptions.add(
+      merge(
+        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
+        this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED')
+      )
+        .pipe(
+          filter(event => event?.documentId === this.documentId),
+          debounceTime(300)
+        )
+        .subscribe(() => this.reloadStartableItems())
     );
+  }
+
+  /**
+   * Keeps the internal status tag and the assignee widget in sync with the current case state.
+   * The status can change without user interaction (e.g. a task completes or a timer expires) and
+   * the assignee can be (un)set from elsewhere. Refresh the document whenever an SSE event signals
+   * such a change for this case, so both re-derive from `document$` without a page reload.
+   */
+  private openCaseStateSseSubscription(): void {
+    this._subscriptions.add(
+      merge(
+        this.sseService.getSseEventObservable<CaseAssignedSseEvent>('CASE_ASSIGNED'),
+        this.sseService.getSseEventObservable<CaseUnassignedSseEvent>('CASE_UNASSIGNED'),
+        this.sseService.getSseEventObservable<CaseStatusUpdatedSseEvent>('CASE_STATUS_UPDATED')
+      )
+        .pipe(
+          filter(event => event?.documentId === this.documentId),
+          debounceTime(300)
+        )
+        .subscribe(() => this.caseService.refresh())
+    );
+  }
+
+  private reloadStartableItems(): void {
+    this._subscriptions.add(
+      this.documentService
+        .getStartableItems({caseDocumentId: this.documentId})
+        .subscribe(startableItems => {
+          this.startableItems = this.mapStartableItems(startableItems);
+          this.setProcessDropdownWidth();
+        })
+    );
+  }
+
+  public startItem(item: StartableItem): void {
+    this.showTaskList$.pipe(take(1)).subscribe(showTaskList => {
+      this.supportingProcessStart.openModalForStartableItem(
+        item,
+        this.documentId,
+        this.caseDefinitionKey,
+        this.caseDefinitionVersionTag,
+        showTaskList
+      );
+    });
+  }
+
+  public onStartFormPanelClose(): void {
+    this.supportingProcessStart.closePanel();
   }
 
   public openWidgetProcessSubscription(): void {
@@ -466,6 +551,16 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public deleteDocument(): void {
     this.showDeleteModal$.next(true);
+  }
+
+  public navigateToInspection(): void {
+    this.router.navigate([
+      '/cases',
+      this.caseDefinitionKey,
+      'document',
+      this.documentId,
+      'case-inspection',
+    ]);
   }
 
   public onConfirmDelete(): void {
@@ -538,6 +633,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     // }
 
     if (!tab.showTasks) this.openTaskAndProcessLinkInModal$.next(null);
+    this.supportingProcessStart.closePanel();
     this.tabLoader.load(tab);
     this.setDocumentStyle();
   }
@@ -701,10 +797,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   private mapStartableItems(items: StartableItem[]): (StartableItem & {displayName: string})[] {
     return items.map(item => ({
       ...item,
-      displayName:
-        this.translateService.instant(item.key) !== item.key
-          ? this.translateService.instant(item.key)
-          : item.name || item.key,
+      displayName: resolveStartableItemTitle(this.translateService, item.key, item.name),
     }));
   }
 

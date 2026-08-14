@@ -23,7 +23,6 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.BaseTest
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.valtimo.contract.OauthConfigHolder
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
@@ -47,7 +46,6 @@ import java.util.UUID
 
 internal class DocumentDelegateServiceTest : BaseTest() {
 
-    private lateinit var processDocumentService: ProcessDocumentService
     private lateinit var documentService: DocumentService
     private lateinit var jsonSchemaDocumentService: JsonSchemaDocumentService
     private lateinit var userManagementService: UserManagementService
@@ -74,7 +72,6 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         definition = definition()
         documentSequenceGeneratorService = mock()
         whenever(documentSequenceGeneratorService.next(any())).thenReturn(1L)
-        processDocumentService = mock()
         userManagementService = mock()
         documentService = mock()
         jsonSchemaDocumentService = mock()
@@ -82,7 +79,6 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         caseDocumentResolver = mock()
         whenever(caseDocumentResolver.resolveCaseDocumentId(anyKt())).thenAnswer { it.arguments[0] }
         documentDelegateService = DocumentDelegateService(
-            processDocumentService,
             documentService,
             jsonSchemaDocumentService,
             userManagementService,
@@ -91,7 +87,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         )
         delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
-        whenever(delegateExecution.processBusinessKey).thenReturn("56f29315-c581-4c26-9b70-8bc818e8c86e")
+        whenever(delegateExecution.businessKey).thenReturn("56f29315-c581-4c26-9b70-8bc818e8c86e")
 
         OauthConfigHolder(Oauth())
     }
@@ -104,12 +100,12 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val modifiedOn = LocalDateTime.now()
 
         whenever(documentMock.modifiedOn()).thenReturn(Optional.of(modifiedOn))
-        prepareDocument(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        prepareDocument(delegateExecution, jsonSchemaDocumentService)
 
         val modifiedOnResult = documentDelegateService.getDocumentModifiedOn(delegateExecution)
 
         assertEquals(modifiedOnResult, modifiedOn)
-        verifyTest(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        verifyTest(delegateExecution, jsonSchemaDocumentService)
     }
 
     @Test
@@ -120,12 +116,12 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val assigneeId = "1234"
 
         whenever(documentMock.assigneeId()).thenReturn(assigneeId)
-        prepareDocument(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        prepareDocument(delegateExecution, jsonSchemaDocumentService)
 
         val assigneeIdResult = documentDelegateService.getDocumentAssigneeId(delegateExecution)
 
         assertEquals(assigneeIdResult, assigneeId)
-        verifyTest(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        verifyTest(delegateExecution, jsonSchemaDocumentService)
     }
 
     @Test
@@ -136,12 +132,12 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val createdBy = "Pietersen"
 
         whenever(documentMock.createdBy()).thenReturn(createdBy)
-        prepareDocument(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        prepareDocument(delegateExecution, jsonSchemaDocumentService)
 
         val createdByResult = documentDelegateService.getDocumentCreatedBy(delegateExecution)
 
         assertEquals(createdByResult, createdBy)
-        verifyTest(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        verifyTest(delegateExecution, jsonSchemaDocumentService)
     }
 
     @Test
@@ -152,12 +148,12 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val assigneeFullname = "Jan Jansen"
 
         whenever(documentMock.assigneeFullName()).thenReturn(assigneeFullname)
-        prepareDocument(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        prepareDocument(delegateExecution, jsonSchemaDocumentService)
 
         val assigneFullNameResult = documentDelegateService.getDocumentAssigneeFullName(delegateExecution)
 
         assertEquals(assigneFullNameResult, assigneeFullname)
-        verifyTest(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        verifyTest(delegateExecution, jsonSchemaDocumentService)
     }
 
     @Test
@@ -168,12 +164,12 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val version = documentMock.version()
 
         whenever(documentMock.version()).thenReturn(version)
-        prepareDocument(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        prepareDocument(delegateExecution, jsonSchemaDocumentService)
 
         val versionResult = documentDelegateService.getDocumentVersion(delegateExecution)
 
         assertEquals(versionResult, version)
-        verifyTest(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        verifyTest(delegateExecution, jsonSchemaDocumentService)
     }
 
     @Test
@@ -184,12 +180,12 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val createdOn = LocalDateTime.now()
 
         whenever(documentMock.createdOn()).thenReturn(createdOn)
-        prepareDocument(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        prepareDocument(delegateExecution, jsonSchemaDocumentService)
 
         val createdOnResult = documentDelegateService.getDocumentCreatedOn(delegateExecution)
 
         assertEquals(createdOnResult, createdOn)
-        verifyTest(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        verifyTest(delegateExecution, jsonSchemaDocumentService)
     }
 
     @Test
@@ -198,33 +194,24 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
 
-        prepareDocument(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        prepareDocument(delegateExecution, jsonSchemaDocumentService)
 
         val resultDocument = documentDelegateService.getDocument(delegateExecution)
 
         assertEquals(documentMock, resultDocument)
-        verifyTest(processDocumentService, delegateExecution, jsonSchemaDocumentService)
+        verifyTest(delegateExecution, jsonSchemaDocumentService)
     }
 
-    private fun prepareDocument(processDocumentService: ProcessDocumentService,
-                                delegateExecution: DelegateExecution,
+    private fun prepareDocument(delegateExecution: DelegateExecution,
                                 jsonSchemaDocumentService: JsonSchemaDocumentService) {
-        whenever(
-            processDocumentService.getDocumentId(
-                OperatonProcessInstanceId(processInstanceId),
-                delegateExecution
-            )
-        )
-            .thenReturn(jsonSchemaDocumentId)
+        whenever(delegateExecution.businessKey).thenReturn(documentId)
 
         whenever(jsonSchemaDocumentService.getDocumentBy(jsonSchemaDocumentId))
             .thenReturn(documentMock)
     }
 
-    private fun verifyTest(processDocumentService: ProcessDocumentService,
-                           delegateExecution: DelegateExecution,
+    private fun verifyTest(delegateExecution: DelegateExecution,
                            jsonSchemaDocumentService: JsonSchemaDocumentService) {
-        verify(processDocumentService).getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
         verify(jsonSchemaDocumentService).getDocumentBy(jsonSchemaDocumentId)
     }
 
@@ -271,10 +258,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId)
-        whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
-        ).thenReturn(JsonSchemaDocumentId.existingId(UUID.fromString(documentId)))
+        whenever(delegateExecution.businessKey).thenReturn(documentId)
         whenever(userManagementService.findByEmail("john@example.com"))
             .thenReturn(Optional.of(ValtimoUserBuilder().id("anId").build()))
 
@@ -292,11 +276,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId.toString())
-        whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
-        ).thenReturn(documentId)
-
+        whenever(delegateExecution.businessKey).thenReturn(documentId.toString())
         val newStatus = "test"
         documentDelegateService.setInternalStatus(delegateExecution, newStatus)
 
@@ -314,10 +294,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(buildingBlockDocumentUuid.toString())
-        whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
-        ).thenReturn(buildingBlockDocumentId)
+        whenever(delegateExecution.businessKey).thenReturn(buildingBlockDocumentUuid.toString())
         whenever(caseDocumentResolver.resolveCaseDocumentId(buildingBlockDocumentUuid)).thenReturn(caseDocumentUuid)
 
         val newStatus = "test"
@@ -335,11 +312,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId.toString())
-        whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
-        ).thenReturn(documentId)
-
+        whenever(delegateExecution.businessKey).thenReturn(documentId.toString())
         documentDelegateService.addCaseTag(delegateExecution, "important")
 
         verify(caseDocumentResolver).resolveCaseDocumentId(documentUuid)
@@ -354,11 +327,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId.toString())
-        whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
-        ).thenReturn(documentId)
-
+        whenever(delegateExecution.businessKey).thenReturn(documentId.toString())
         documentDelegateService.removeCaseTag(delegateExecution, "important")
 
         verify(caseDocumentResolver).resolveCaseDocumentId(documentUuid)
@@ -372,11 +341,7 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         val delegateExecution = mock<DelegateExecution>()
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId)
-        whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
-        ).thenReturn(JsonSchemaDocumentId.existingId(UUID.fromString(documentId)))
-
+        whenever(delegateExecution.businessKey).thenReturn(documentId)
         documentDelegateService.unassign(delegateExecution)
 
         verify(caseDocumentResolver).resolveCaseDocumentId(UUID.fromString(documentId))

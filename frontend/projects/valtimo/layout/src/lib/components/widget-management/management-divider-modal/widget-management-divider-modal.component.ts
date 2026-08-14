@@ -38,6 +38,7 @@ import {
   AutoKeyInputComponent,
   CarbonListItem,
   runAfterCarbonModalClosed,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {BehaviorSubject} from 'rxjs';
 import {
@@ -65,6 +66,7 @@ import {WIDGET_DIVIDER_MODAL_TEST_IDS} from '../../../constants';
     ReactiveFormsModule,
     LayerModule,
     AutoKeyInputComponent,
+    ValtimoCdsModalDirective,
   ],
 })
 export class WidgetManagementDividerModalComponent {
@@ -96,9 +98,11 @@ export class WidgetManagementDividerModalComponent {
     key: this.fb.control<string>('', [Validators.required, Validators.pattern('[A-Za-z0-9-]*')]),
   });
 
+  private _sourceKey = '';
   @Input() public set prefillData(value: Widget | null) {
     if (!value) return;
 
+    this._sourceKey = value.key || '';
     this.dividerForm.patchValue({
       title: value.title || '',
       key: value.key || '',
@@ -109,6 +113,12 @@ export class WidgetManagementDividerModalComponent {
 
   public get title(): AbstractControl<string> {
     return this.dividerForm.get('title') as AbstractControl<string>;
+  }
+
+  // a divider can be configured without a title, in which case the key of the divider it is
+  // duplicated from is the only text a new key can be generated from
+  public get keySourceText(): string {
+    return this.title.value || this._sourceKey;
   }
 
   public get buttonLabel(): string {
@@ -156,10 +166,11 @@ export class WidgetManagementDividerModalComponent {
     this.divider.key = key.value ?? '';
 
     this.closeEvent.emit({
+      // duplicating results in a new divider, just like adding one
       type:
-        this.modalMode === 'add'
-          ? WidgetWizardCloseEventType.CREATE
-          : WidgetWizardCloseEventType.EDIT,
+        this.modalMode === 'edit'
+          ? WidgetWizardCloseEventType.EDIT
+          : WidgetWizardCloseEventType.CREATE,
       widget: this.divider,
     });
     runAfterCarbonModalClosed(() => {
@@ -176,6 +187,7 @@ export class WidgetManagementDividerModalComponent {
   }
 
   private resetForm = (): void => {
+    this._sourceKey = '';
     this.dividerForm.reset();
     this.dividerForm.markAsPristine();
     this.dividerForm.markAsUntouched();

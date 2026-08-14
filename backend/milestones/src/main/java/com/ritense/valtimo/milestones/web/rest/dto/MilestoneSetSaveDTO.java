@@ -17,10 +17,11 @@
 package com.ritense.valtimo.milestones.web.rest.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class MilestoneSetSaveDTO {
     private Long id;
-    @NotNull private String title;
+    @NotNull @Size(max = 255) private String title;
 
     public MilestoneSetSaveDTO() {
         //Default constructor

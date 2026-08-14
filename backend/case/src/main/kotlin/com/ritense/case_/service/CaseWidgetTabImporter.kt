@@ -71,7 +71,8 @@ class CaseWidgetTabImporter(
                     caseWidgetMappers.first { mapper ->
                         mapper.supportedDtoType().isAssignableFrom(widgetDto::class.java)
                     }.toEntity(widgetDto, index)
-                }
+                },
+                widgetLayout = tab.widgetLayout
             )
         }
 

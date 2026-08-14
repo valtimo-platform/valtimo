@@ -13,3 +13,5 @@ description: >-
 [Custom case widget](../../../features/case/for-developers/register-angular-component.md)
 
 [Custom case management tab](custom-case-management-tab.md)
+
+[Custom UI component process link](custom-ui-component-process-link.md)

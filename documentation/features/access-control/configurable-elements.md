@@ -142,6 +142,16 @@ define what can be configured for that element.
 			<td valign="top">Core</td>
 		</tr>
 		<tr>
+			<td valign="top"></td>
+			<td valign="top">
+				<a href="../process/#access-control">Timer</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.valtimo.operaton.domain.OperatonTimer</code>
+			</td>
+			<td valign="top">Core</td>
+		</tr>
+		<tr>
 			<td valign="top">
 				<strong>Tasks</strong>
 			</td>
@@ -191,6 +201,16 @@ define what can be configured for that element.
 			<td valign="top">
 				<strong>ZGW</strong>
 			</td>
+			<td valign="top">
+				<a href="../zgw/load-zaak-in-form-flow.md#access-control">Zaak</a>
+			</td>
+			<td valign="top">
+				<code>com.ritense.zakenapi.security.Zaak</code>
+			</td>
+			<td valign="top">Zaken API</td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
 			<td valign="top">
 				<a href="../case/zgw/zgw-documents/access-control.md">Documents</a>
 			</td>

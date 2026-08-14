@@ -1,4 +1,5 @@
 {
+  "deleteDestPath": false,
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/layout",
   "assets": ["./assets"],
@@ -47,6 +48,7 @@
     "tslib",
     "csp-header",
     "lodash",
+    "marked",
     "ol"
   ]
 }

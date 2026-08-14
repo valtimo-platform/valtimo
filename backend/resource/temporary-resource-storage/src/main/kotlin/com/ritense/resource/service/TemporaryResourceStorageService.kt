@@ -115,6 +115,9 @@ class TemporaryResourceStorageService(
         return metaDataFile.nameWithoutExtension
     }
 
+    fun storeContent(content: String): String =
+        store(content.byteInputStream(Charsets.UTF_8), emptyMap())
+
     /**
      * This method can be used to enrich the metadata before it is handled.
      */

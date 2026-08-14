@@ -25,6 +25,7 @@ import com.ritense.iko.web.rest.response.IkoSearchActionResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.iko.PropertyField
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -78,7 +79,7 @@ class IkoSearchActionManagementResource(
     fun createIkoSearchAction(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoSearchActionCreateRequest
+        @Valid @RequestBody request: IkoSearchActionCreateRequest
     ): ResponseEntity<IkoSearchActionResponse> {
         val ikoView = ikoViewService.getByKey(ikoViewKey)
         val existingIkoSearchActions = service.findAll(
@@ -95,7 +96,7 @@ class IkoSearchActionManagementResource(
     fun updateIkoSearchAction(
         @PathVariable ikoViewKey: String,
         @PathVariable key: String,
-        @RequestBody request: IkoSearchActionUpdateRequest,
+        @Valid @RequestBody request: IkoSearchActionUpdateRequest,
     ): ResponseEntity<IkoSearchActionResponse> {
         require(request.key == key)
         val existingIkoSearchAction = service.getByKey(ikoViewKey = ikoViewKey, key = key)
@@ -112,7 +113,7 @@ class IkoSearchActionManagementResource(
     @PutMapping("/v1/iko-view/{ikoViewKey}/search-action")
     fun updateIkoSearchActionsOrder(
         @PathVariable ikoViewKey: String,
-        @RequestBody request: List<IkoSearchActionUpdateRequest>,
+        @Valid @RequestBody request: List<IkoSearchActionUpdateRequest>,
     ): ResponseEntity<List<IkoSearchActionResponse>> {
         val existingIkoSearchActions = service.findAll(
             ikoViewKey = ikoViewKey,

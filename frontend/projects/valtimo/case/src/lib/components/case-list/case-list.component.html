@@ -39,6 +39,7 @@
     assigneeFilter: orchestration.assigneeFilter$ | async,
     hiddenColumns: orchestration.hiddenColumns$ | async,
     disableStartButton: disableStartButton$ | async,
+    invalidSearchFields: orchestration.invalidSearchFields$ | async,
   } as obs"
 >
   <valtimo-case-list-actions
@@ -96,15 +97,19 @@
     [fields]="obs.fields"
     [header]="false"
     [initialSortState]="pagination.sort"
+    [invalidSearchFields]="obs.invalidSearchFields || []"
+    [isSearchable]="true"
+    [searchDebounceMs]="2000"
+    [searchFields]="obs.searchFields || []"
     [items]="obs.documentItems"
     [pagination]="pagination"
-    paginationIdentifier="caseList"
     lockedTooltipTranslationKey="case.rowLocked"
     [showSelectionColumn]="canHaveAssignee"
     [tableTranslations]="tableTranslations"
     (paginationClicked)="pageChange($event)"
     (paginationSet)="pageSizeChange($event)"
     (rowClicked)="rowClick($event)"
+    (search)="onGlobalSearchFilterChange($event)"
     (sortChanged)="sortChanged($event)"
   >
     <ng-container carbonToolbarActions>

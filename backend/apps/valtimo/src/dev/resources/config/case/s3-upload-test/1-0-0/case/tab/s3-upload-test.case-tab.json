@@ -1,0 +1,27 @@
+[
+    {
+        "key": "summary",
+        "name": "Summary",
+        "type": "standard",
+        "contentKey": "summary",
+        "showTasks": true
+    },
+    {
+        "key": "progress",
+        "name": "Progress",
+        "type": "standard",
+        "contentKey": "progress"
+    },
+    {
+        "key": "audit",
+        "name": "Audit",
+        "type": "standard",
+        "contentKey": "audit"
+    },
+    {
+        "key": "documents",
+        "name": "Documents",
+        "type": "standard",
+        "contentKey": "documents"
+    }
+]

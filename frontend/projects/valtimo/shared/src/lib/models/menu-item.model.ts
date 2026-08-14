@@ -1,5 +1,6 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,17 +13,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 import {Observable} from 'rxjs';
 
 enum IncludeFunction {
   ObjectManagementEnabled,
+  OpenSearchEnabled,
+  ZgwFeaturesEnabled,
 }
 
 interface MenuItem {
   title: string;
-  sequence: number;
+  sequence?: number;
   id?: string;
   link?: string[] | null;
   textClass?: string;
@@ -31,7 +35,7 @@ interface MenuItem {
   roles?: string[];
   show?: boolean;
   count$?: Observable<number>;
-  includeFunction?: IncludeFunction;
+  includeFunction?: IncludeFunction | IncludeFunction[];
 }
 
 export {MenuItem, IncludeFunction};

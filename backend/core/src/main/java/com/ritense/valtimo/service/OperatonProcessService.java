@@ -25,6 +25,7 @@ import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionS
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byActive;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byBlueprintId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKeyOfUnlinkedProcess;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersion;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition;
@@ -268,22 +269,62 @@ public class OperatonProcessService {
     ) {
         final OperatonProcessDefinition processDefinition = AuthorizationContext
             .runWithoutAuthorization(() -> {
-                var pd = operatonRepositoryService.findProcessDefinition(
-                    // TODO: FIX THIS NOW
-                    byKey(processDefinitionKey).and(byBlueprintId(blueprintId))
-                );
-                if (pd != null) {
-                    return pd;
-                } else {
-                    // Needed by the VerzoekPlugin:
-                    return operatonRepositoryService.findProcessDefinition(
-                        byKey(processDefinitionKey).and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(byNotLinkedToCaseDefinition()))
+                if (blueprintId != null) {
+                    var pd = operatonRepositoryService.findProcessDefinition(
+                        byKey(processDefinitionKey).and(byBlueprintId(blueprintId))
                     );
+                    if (pd != null) {
+                        return pd;
+                    }
                 }
+                // Needed by the VerzoekPlugin:
+                return operatonRepositoryService.findProcessDefinition(byKeyOfUnlinkedProcess(processDefinitionKey));
             });
         if (processDefinition == null) {
-            throw new IllegalStateException("No process definition found with key: '" + processDefinitionKey + "' and blueprintId: '" + blueprintId + "'");
+            throw new IllegalStateException(
+                "No process definition found with key: '" + processDefinitionKey + "' and blueprintId: '" + blueprintId
+                    + "'" + deployedVersionTagsSuffixFor(processDefinitionKey)
+            );
         }
+
+        return startProcessInstance(processDefinition, businessKey, variables);
+    }
+
+    /**
+     * Starts the exact process definition identified by {@code processDefinitionId}. Prefer this over
+     * {@link #startProcess(String, String, BlueprintId, Map)} whenever the caller already knows which
+     * version has to be started - for example because it came from a process link - since resolving a
+     * process definition from its key alone cannot tell versions apart.
+     */
+    public ProcessInstanceWithDefinition startProcessById(
+        String processDefinitionId,
+        String businessKey,
+        Map<String, Object> variables
+    ) {
+        final OperatonProcessDefinition processDefinition = AuthorizationContext
+            .runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitionById(processDefinitionId));
+        if (processDefinition == null) {
+            throw new ProcessDefinitionNotFoundException("definition with id: '" + processDefinitionId + "'");
+        }
+        // Resolving by key never returned a detached definition. Starting by id bypasses that filter, so
+        // guard explicitly: a detached definition has been superseded by a newer deployment and starting
+        // it would run a process that no longer belongs to any blueprint version.
+        if (processDefinition.getVersionTag() != null
+            && processDefinition.getVersionTag().startsWith(DETACHED_PROCESS_DEFINITION_PREFIX)) {
+            throw new IllegalStateException(
+                "Process definition '" + processDefinitionId + "' has been superseded by a newer deployment"
+                    + " and can no longer be started. Reload the case and try again."
+            );
+        }
+
+        return startProcessInstance(processDefinition, businessKey, variables);
+    }
+
+    private ProcessInstanceWithDefinition startProcessInstance(
+        OperatonProcessDefinition processDefinition,
+        String businessKey,
+        Map<String, Object> variables
+    ) {
         businessKey = businessKey.equals(UNDEFINED_BUSINESS_KEY) ? null : businessKey;
 
         authorizationService.requirePermission(
@@ -295,13 +336,37 @@ public class OperatonProcessService {
             )
         );
 
-        ProcessInstance processInstance = formService.submitStartForm(
-            processDefinition.getId(),
-            businessKey,
-            FormUtils.createTypedVariableMap(variables)
-        );
+        boolean wasSuspended = processDefinition.isSuspended();
+        if (wasSuspended) {
+            repositoryService.activateProcessDefinitionById(processDefinition.getId());
+        }
+        try {
+            ProcessInstance processInstance = formService.submitStartForm(
+                processDefinition.getId(),
+                businessKey,
+                FormUtils.createTypedVariableMap(variables)
+            );
+            return new ProcessInstanceWithDefinition(processInstance, processDefinition);
+        } finally {
+            if (wasSuspended) {
+                repositoryService.suspendProcessDefinitionById(processDefinition.getId());
+            }
+        }
+    }
 
-        return new ProcessInstanceWithDefinition(processInstance, processDefinition);
+    /**
+     * Lists the version tags deployed under a process key, to explain why a lookup missed. A blueprint's
+     * process can only be found by its version tag, so seeing the tags that do exist is what tells the
+     * reader whether the key is unknown or the blueprint version is.
+     */
+    private String deployedVersionTagsSuffixFor(String processDefinitionKey) {
+        String versionTags = AuthorizationContext.runWithoutAuthorization(() ->
+            operatonRepositoryService.findProcessDefinitions(byKey(processDefinitionKey)).stream()
+                .map(definition -> definition.getVersionTag() == null ? "<none>" : definition.getVersionTag())
+                .distinct()
+                .collect(Collectors.joining(", "))
+        );
+        return versionTags.isEmpty() ? "" : ". Version tags deployed for this key: " + versionTags;
     }
 
     /**
@@ -364,11 +429,19 @@ public class OperatonProcessService {
         ));
     }
 
+    public List<OperatonProcessDefinition> getAllDefinitions(CaseDefinitionId caseDefinitionId) {
+        denyAuthorization();
+        return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
+            byBlueprintId(caseDefinitionId),
+            Sort.by(NAME)
+        ));
+    }
+
     public List<OperatonProcessDefinition> getUnlinkedDeployedDefinitions() {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() ->
             operatonRepositoryService.findProcessDefinitions(
-                    byActive().and(byNotLinkedToCaseDefinition()).and(byNotLinkedToBuildingBlock()),
+                    byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock()),
                     Sort.by(NAME)
                 ).stream()
                 .collect(Collectors.groupingBy(
@@ -386,7 +459,7 @@ public class OperatonProcessService {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() ->
             operatonRepositoryService.findProcessDefinitions(
-                    byActive().and(byKey(processDefinitionKey)),
+                    byKey(processDefinitionKey),
                     Sort.by(NAME)
                 ).stream()
                 .filter(def -> def.getVersionTag() == null || !def.getVersionTag()
@@ -480,6 +553,7 @@ public class OperatonProcessService {
         ByteArrayInputStream fileInput,
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck,
+        boolean setExecutable,
         @Nullable String originalVersionTag,
         @Nullable String originalProcessDefinitionId
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
@@ -495,7 +569,9 @@ public class OperatonProcessService {
             updateCaseDefinitionProcessesVersionTags(bpmnModel, blueprintId);
             updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, blueprintId);
 
-            setProcessesExecutable(bpmnModel);
+            if (setExecutable) {
+                setProcessesExecutable(bpmnModel);
+            }
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
             setToNullWhenSendTaskExpressionIsEmpty(bpmnModel);
             setToCorrelateAllWhenMessageSendEventExpressionIsEmpty(bpmnModel);
@@ -585,6 +661,19 @@ public class OperatonProcessService {
     public DeploymentWithDefinitions deploy(
         BlueprintId blueprintId,
         String fileName,
+        ByteArrayInputStream fileInput,
+        boolean skipProcessLinksCopy,
+        boolean skipIsDeployableCheck,
+        @Nullable String originalVersionTag,
+        @Nullable String originalProcessDefinitionId
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, true, originalVersionTag, originalProcessDefinitionId);
+    }
+
+    @Transactional
+    public DeploymentWithDefinitions deploy(
+        BlueprintId blueprintId,
+        String fileName,
         ByteArrayInputStream fileInput
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
         return deploy(
@@ -593,6 +682,7 @@ public class OperatonProcessService {
             fileInput,
             false,
             false,
+            true,
             null,
             null
         );
@@ -606,7 +696,19 @@ public class OperatonProcessService {
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
-        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, null, null);
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, true, null, null);
+    }
+
+    @Transactional
+    public DeploymentWithDefinitions deploy(
+        BlueprintId blueprintId,
+        String fileName,
+        ByteArrayInputStream fileInput,
+        boolean skipProcessLinksCopy,
+        boolean skipIsDeployableCheck,
+        boolean setExecutable
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deploy(blueprintId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck, setExecutable, null, null);
     }
 
     private boolean isProcessDefinitionPreviouslyDeployed(
@@ -657,7 +759,6 @@ public class OperatonProcessService {
 
         List<OperatonProcessDefinition> processDefinition = operatonRepositoryService.findProcessDefinitions(
             byKey(processDefinitionKey)
-                .and(byActive())
                 .and(blueprintId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
                     blueprintId.getTagPrefix() + blueprintId))
             ,

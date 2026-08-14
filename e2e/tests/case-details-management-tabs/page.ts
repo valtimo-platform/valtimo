@@ -36,8 +36,10 @@ export class CaseDetailsManagementTabsPage {
   }
 
   get addTabButton() {
-    // Toolbar button inside the tabs panel
-    return this.tabsPanel.getByRole('button', {name: /Add tab/i});
+    // Toolbar button inside the tabs panel.
+    // Label was renamed "Add tab" → "Create tab"; accept both so the test does not
+    // break while a target environment still runs an older frontend build.
+    return this.tabsPanel.getByRole('button', {name: /(Create|Add) tab/i});
   }
 
   get tabNameInput() {
@@ -49,8 +51,11 @@ export class CaseDetailsManagementTabsPage {
   }
 
   get addTabConfirmButton() {
-    // Primary "Add tab" button in the modal footer (only visible after a type is selected)
-    return this.page.locator('cds-modal-footer .valtimo-add-tab-modal__actions').getByRole('button', {name: /Add tab/i});
+    // Primary confirm button in the modal footer (only rendered after a type is selected).
+    // Label comes from `interface.create` ("Create"); older builds used "Add tab".
+    return this.page
+      .locator('cds-modal-footer .valtimo-add-tab-modal__actions')
+      .getByRole('button', {name: /^(Create|Add tab)$/i});
   }
 
   get modalCancelButton() {
@@ -61,8 +66,7 @@ export class CaseDetailsManagementTabsPage {
 
   async goToCaseManagement(caseIdentifier: string) {
     console.log('Navigate to Case Management...');
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
   }
@@ -70,6 +74,9 @@ export class CaseDetailsManagementTabsPage {
   async switchToCaseDetailsTabs() {
     await this.page.getByRole('tab', {name: 'Case details'}).click();
     await this.page.getByRole('tab', {name: 'Tabs'}).click();
+    // Confirm we landed: a late redirect from the version switch can throw the page back to
+    // /general, and every test in this file then runs against the wrong panel.
+    await expect(this.tabsList).toBeVisible();
   }
 
   async ensureDraftVersionSelected(): Promise<string> {

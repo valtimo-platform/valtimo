@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.contract.config;
 
+import com.ritense.valtimo.contract.bootstrap.BootstrapState;
 import java.util.List;
 import javax.sql.DataSource;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -34,16 +35,31 @@ import org.springframework.context.annotation.Bean;
  */
 @AutoConfiguration
 @AutoConfigureAfter({DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
-@EnableConfigurationProperties(LiquibaseProperties.class)
+@EnableConfigurationProperties({LiquibaseProperties.class, ValtimoProperties.class})
 public class LiquibaseRunnerAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(BootstrapState.class)
+    public BootstrapState bootstrapState() {
+        return new BootstrapState();
+    }
 
     @Bean
     @ConditionalOnMissingBean(LiquibaseRunner.class)
     public LiquibaseRunner liquibaseRunner(
         final List<LiquibaseMasterChangeLogLocation> liquibaseMasterChangeLogLocations,
         final LiquibaseProperties liquibaseProperties,
-        final DataSource datasource
+        final DataSource datasource,
+        final ValtimoProperties valtimoProperties,
+        final BootstrapState bootstrapState
     ) {
-        return new LiquibaseRunner(liquibaseMasterChangeLogLocations, liquibaseProperties, datasource);
+        return new LiquibaseRunner(
+            liquibaseMasterChangeLogLocations,
+            liquibaseProperties,
+            datasource,
+            valtimoProperties.getLiquibase().getStaleLockThresholdMinutes(),
+            valtimoProperties.getBootstrap().isEnabled(),
+            bootstrapState
+        );
     }
 }

@@ -19,6 +19,8 @@ import {CarbonList, CarbonListRow} from '../../shared/carbon-list/carbon-list.ut
 import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 import * as ApiUtils from '../../utils/api.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
+import {fillValuePathManually} from '../../utils/value-path-selector.utils';
+import {fillStable} from '../../utils/ui.utils';
 
 export class CaseDetailsManagementTasksPage {
   constructor(
@@ -29,8 +31,7 @@ export class CaseDetailsManagementTasksPage {
   // ─── Navigation ───────────────────────────────────────────────────
 
   async goToCaseManagement(caseIdentifier: string) {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
   }
@@ -73,9 +74,13 @@ export class CaseDetailsManagementTasksPage {
   // No data-test-ids in column modal — use cds-label + hasText
 
   get addColumnButton() {
-    // Two "Add column" buttons exist when list is empty: toolbar + no-results panel.
+    // Two "Create column" buttons exist when list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
-    return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add column'});
+    // Label was renamed "Add column" → "Create column"; accept both so the test does not
+    // break while a target environment still runs an older frontend build.
+    return this.page
+      .getByLabel('Table action bar')
+      .getByRole('button', {name: /^(Create|Add) column$/i});
   }
 
   get columnTitleInput() {
@@ -86,8 +91,14 @@ export class CaseDetailsManagementTasksPage {
     return this.page.locator('cds-modal').locator('cds-label').filter({hasText: 'Key'}).locator('input');
   }
 
+  // Path uses valtimo-value-path-selector. Whether it starts in dropdown or manual
+  // mode depends on the configuration, so use the shared helper to force manual mode.
+  get columnPathSelector() {
+    return this.page.locator('cds-modal').locator('valtimo-value-path-selector');
+  }
+
   get columnPathInput() {
-    return this.page.locator('cds-modal').locator('cds-label').filter({hasText: 'Path'}).locator('input');
+    return this.columnPathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   get columnDisplayTypeDropdown() {
@@ -99,16 +110,22 @@ export class CaseDetailsManagementTasksPage {
   }
 
   get columnSaveButton() {
-    return this.page.locator('cds-modal-footer').getByRole('button', {name: 'Save column'});
+    // The primary button reads "Create" while adding and "Save column" while editing.
+    return this.page
+      .locator('cds-modal-footer')
+      .getByRole('button', {name: /^(Create|Save column)$/i});
   }
 
   // ─── Search Field Modal Elements ──────────────────────────────────
   // Search field modal uses data-testid attributes
 
   get addSearchFieldButton() {
-    // Two "Add search field" buttons exist when list is empty: toolbar + no-results panel.
+    // Two "Create search field" buttons exist when list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
-    return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add search field'});
+    // Label was renamed "Add search field" → "Create search field"; accept both.
+    return this.page
+      .getByLabel('Table action bar')
+      .getByRole('button', {name: /^(Create|Add) search field$/i});
   }
 
   get searchFieldKeyInput() {
@@ -163,27 +180,23 @@ export class CaseDetailsManagementTasksPage {
     await this.addColumnButton.click();
     await expect(this.columnKeyInput).toBeVisible();
 
+    // The modal resets its form shortly after opening, so fill until the values stick.
     if (column.title) {
-      await this.columnTitleInput.fill(column.title);
+      await fillStable(this.columnTitleInput, column.title);
     }
-    await this.columnKeyInput.fill(column.key);
-    await this.columnPathInput.fill(column.path);
+    await fillStable(this.columnKeyInput, column.key);
+    await fillValuePathManually(this.columnPathSelector, column.path);
     await this.selectDropdownItem(this.columnDisplayTypeDropdown, column.displayType);
     await expect(this.columnSaveButton).toBeEnabled();
     await this.columnSaveButton.click();
   }
 
-  get searchFieldPathToggle() {
-    return this.page
-      .locator('valtimo-value-path-selector')
-      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.toggle)
-      .locator('.cds--toggle__switch');
+  get searchFieldPathSelector() {
+    return this.page.locator('valtimo-value-path-selector');
   }
 
   get searchFieldPathInput() {
-    return this.page
-      .locator('valtimo-value-path-selector')
-      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
+    return this.searchFieldPathSelector.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   async addSearchField(field: {title: string; key: string; path: string; dataType: string; matchType?: string; fieldType: string}) {
@@ -191,8 +204,7 @@ export class CaseDetailsManagementTasksPage {
     await expect(this.searchFieldKeyInput).toBeVisible();
     await this.page.locator('[data-testid="task-management-search-title"]').fill(field.title);
     await this.searchFieldKeyInput.fill(field.key);
-    await this.searchFieldPathToggle.click();
-    await this.searchFieldPathInput.fill(field.path);
+    await fillValuePathManually(this.searchFieldPathSelector, field.path);
     await this.selectDropdownItem(this.searchFieldDataTypeDropdown, field.dataType);
     if (field.matchType) {
       const matchTypeVisible = await this.searchFieldMatchTypeDropdown.isVisible();

@@ -24,10 +24,14 @@ dependencies {
     api(platform("org.junit:junit-bom:${junitVersion}"))
     api(platform("software.amazon.awssdk:bom:${awssdkVersion}"))
     constraints {
+        api(project(":backend:admin-settings"))
         api(project(":backend:audit"))
         api(project(":backend:authorization"))
+        api(project(":backend:aws"))
+        api(project(":backend:aws:s3-resource"))
         api(project(":backend:building-block"))
         api(project(":backend:case"))
+        api(project(":backend:case-opensearch"))
         api(project(":backend:changelog"))
         api(project(":backend:command-handling"))
         api(project(":backend:contract"))
@@ -74,6 +78,7 @@ dependencies {
         api(project(":backend:widget"))
 
         //GZAC
+        api(project(":backend:plugin-authentication"))
         api(project(":backend:plugin-authentication:notificaties-api-authentication"))
         api(project(":backend:plugin-authentication:objecten-api-authentication"))
         api(project(":backend:plugin-authentication:openklant-authentication"))
@@ -83,6 +88,7 @@ dependencies {
         api(project(":backend:zgw:besluiten-api"))
         api(project(":backend:zgw:catalogi-api"))
         api(project(":backend:zgw:documenten-api"))
+        api(project(":backend:zgw:documenten-api-preview"))
         api(project(":backend:zgw:klantinteracties-api"))
         api(project(":backend:zgw:notificaties-api"))
         api(project(":backend:zgw:object-management"))
@@ -95,6 +101,10 @@ dependencies {
         api(project(":backend:dependencies:valtimo-gzac-dependencies"))
 
         //!GZAC
+
+        api("org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}")
+        api("org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}")
 
         api("org.liquibase:liquibase-core:${liquibaseVersion}")
 

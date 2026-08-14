@@ -22,6 +22,7 @@ import com.ritense.localization.web.rest.dto.LocalizationResponseDto
 import com.ritense.localization.web.rest.dto.LocalizationUpdateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PathVariable
@@ -46,7 +47,7 @@ class AdminLocalizationResource(
 
     @PutMapping("/v1/localization")
     fun editLocalizations(
-        @RequestBody localizations: List<LocalizationUpdateRequestDto>
+        @Valid @RequestBody localizations: List<LocalizationUpdateRequestDto>
     ): ResponseEntity<List<LocalizationResponseDto>> {
         val updatedLocalizations = localizationService.updateLocalizations(localizations)
         return ResponseEntity.ok(updatedLocalizations.map { LocalizationResponseDto.of(it) })

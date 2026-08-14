@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "catalogi-api-plugin",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

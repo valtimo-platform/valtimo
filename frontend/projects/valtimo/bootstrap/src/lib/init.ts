@@ -1,25 +1,29 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
 import {accountInitializer} from '@valtimo/account';
 import {Injector} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/shared';
-import {menuInitializer} from '@valtimo/components';
+import {AdminSettingsService, menuInitializer} from '@valtimo/components';
+import {firstValueFrom} from 'rxjs';
 
 export function initialize(
   // eslint-disable-next-line
@@ -56,6 +60,53 @@ export function initializerFactory(
 
   // Auth-initializer
   initializersArray.push(configService.config.authentication.initializer(injector));
+
+  // Fetch feature toggle overrides from the backend and patch them into the config
+  // before other initializers run, so all reactive consumers see the correct merged values.
+  initializersArray.push(async () => {
+    try {
+      const adminSettingsService = injector.get(AdminSettingsService);
+      const overrides = await firstValueFrom(adminSettingsService.getFeatureToggleOverrides());
+      if (overrides && Object.keys(overrides).length > 0) {
+        configService.patchFeatureToggles(overrides);
+        logger.debug('Feature toggle overrides applied', overrides);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch feature toggle overrides, using defaults', error);
+    }
+  });
+
+  // Fetch accent colors from the backend and apply them as CSS custom properties
+  // before other initializers run, so the UI renders with the correct colors immediately.
+  initializersArray.push(async () => {
+    try {
+      const adminSettingsService = injector.get(AdminSettingsService);
+      const colors = await firstValueFrom(adminSettingsService.getAccentColors());
+      if (colors && Object.keys(colors).length > 0) {
+        adminSettingsService.applyAccentColors(colors);
+        logger.debug('Accent colors applied', colors);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch accent colors, using defaults', error);
+    }
+  });
+
+  // Check OpenSearch availability and patch feature toggle
+  initializersArray.push(async () => {
+    try {
+      const httpClient = injector.get(HttpClient);
+      const response = await firstValueFrom(
+        httpClient.get<{available: boolean}>(
+          `${configService.config.valtimoApi.endpointUri}management/v1/search-engine`
+        )
+      );
+      if (response?.available) {
+        configService.patchFeatureToggles({enableOpenSearch: true});
+      }
+    } catch {
+      // OpenSearch not available
+    }
+  });
 
   // Use environment config initializers to be used in app startup.
   configService.initializers.forEach(initializer => {

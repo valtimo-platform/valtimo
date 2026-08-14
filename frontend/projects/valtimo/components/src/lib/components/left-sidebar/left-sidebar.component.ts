@@ -67,7 +67,9 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   public readonly disableCaseCount$: Observable<boolean>;
 
   private _breakpointSubscription!: Subscription;
+  private _menuCollapsedByDefaultSubscription!: Subscription;
   private _breakpointsInitialized = false;
+  private _menuCollapsedByDefaultInitialized = false;
   private _lastSmallScreen!: boolean;
   private _lastLargeScreen!: boolean;
 
@@ -85,6 +87,7 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
 
   public ngAfterViewInit(): void {
     this.openBreakpointSubscription();
+    this.openMenuCollapsedByDefaultSubscription();
     this.shellService.setSidenavElement(
       this.elementRef.nativeElement.querySelector('.cds--side-nav')
     );
@@ -92,6 +95,16 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._breakpointSubscription?.unsubscribe();
+    this._menuCollapsedByDefaultSubscription?.unsubscribe();
+  }
+
+  /**
+   * Keeps menu item views stable across menu reloads, so that the expanded state of
+   * `cds-sidenav-menu` (which is internal to the Carbon component) survives a reload.
+   * Keyed on the link, since titles are not guaranteed to be unique.
+   */
+  public trackByMenuItem(_index: number, menuItem: MenuItem): string {
+    return Array.isArray(menuItem.link) ? menuItem.link.join('/') : menuItem.title;
   }
 
   public navigateToRoute(route: Array<string>, event: MouseEvent): void {
@@ -136,7 +149,7 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   }
 
   private openBreakpointSubscription(): void {
-    this.breakpointObserver
+    this._breakpointSubscription = this.breakpointObserver
       .observe(['(max-width: 1055px)', '(min-width: 1056px)'])
       .subscribe(state => {
         combineLatest([
@@ -170,6 +183,17 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
             this._lastLargeScreen = largeScreen;
             this.shellService.setLargeScreen(largeScreen);
           });
+      });
+  }
+
+  private openMenuCollapsedByDefaultSubscription(): void {
+    this._menuCollapsedByDefaultSubscription = this.configService
+      .getFeatureToggleObservable('menuCollapsedByDefault')
+      .subscribe(menuCollapsedByDefault => {
+        if (!this._menuCollapsedByDefaultInitialized && menuCollapsedByDefault) {
+          this.shellService.collapseSideBar();
+          this._menuCollapsedByDefaultInitialized = true;
+        }
       });
   }
 }

@@ -65,6 +65,12 @@
     </cds-label>
 
     <cds-label>
+      {{ 'caseManagement.statuses.columns.label' | translate }}
+
+      <input cdsText formControlName="label" [attr.data-test-id]="testIds.labelInput" />
+    </cds-label>
+
+    <cds-label>
       {{ 'caseManagement.statuses.columns.key' | translate }}
 
       <div class="edit-key-input">
@@ -172,7 +178,7 @@
     [disabled]="invalid || pristine || obs.disabled"
     (click)="addStatus()"
   >
-    {{ 'interface.add' | translate }}
+    {{ 'interface.create' | translate }}
   </button>
 
   <button

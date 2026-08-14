@@ -23,13 +23,13 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {KeycloakService} from 'keycloak-angular';
-import {map, Observable, of, switchMap} from 'rxjs';
-import {ConfigService, ValtimoConfig} from '@valtimo/shared';
+import {combineLatest, map, Observable, of, switchMap} from 'rxjs';
+import {AdminSettingsLogosDto, ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import User20 from '@carbon/icons/es/user/20';
 import {ShellService} from '../../services/shell.service';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
-import {CdsThemeService, PageHeaderService} from '../../services';
+import {AdminSettingsService, CdsThemeService, PageHeaderService} from '../../services';
 import {CurrentCarbonTheme, TopbarLogo} from '../../models';
 
 @Component({
@@ -44,16 +44,22 @@ export class TopbarComponent implements OnInit, AfterViewInit {
   @ViewChild('headerVcr', {static: true, read: ViewContainerRef})
   private readonly _headerVcr!: ViewContainerRef;
 
-  public readonly logoBase64$: Observable<SafeResourceUrl> =
-    this.cdsThemeService.currentTheme$.pipe(
-      map(currentTheme => {
-        const base64logo = this.getBase64Logo(this.configService.config, currentTheme);
+  public readonly logoBase64$: Observable<SafeResourceUrl> = combineLatest([
+    this.cdsThemeService.currentTheme$,
+    this.adminSettingsService.getLogos(),
+  ]).pipe(
+    map(([currentTheme, adminLogos]) => {
+      const base64logo = this.getBase64Logo(
+        this.configService.config,
+        currentTheme,
+        adminLogos
+      );
 
-        return this.sanitizer.bypassSecurityTrustResourceUrl(
-          `${base64logo.isSvg ? 'data:image/svg+xml;base64' : 'data:image/png;base64'}, ${base64logo.base64string}`
-        );
-      })
-    );
+      return this.sanitizer.bypassSecurityTrustResourceUrl(
+        `${base64logo.isSvg ? 'data:image/svg+xml;base64' : 'data:image/png;base64'}, ${base64logo.base64string}`
+      );
+    })
+  );
 
   public readonly userFullName$ = of(this.keyCloakService.isLoggedIn()).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),
@@ -61,7 +67,7 @@ export class TopbarComponent implements OnInit, AfterViewInit {
   );
 
   public readonly applicationTitle = this.configService.config.applicationTitle;
-  public readonly largeLogoMargin = this.configService.config.featureToggles?.largeLogoMargin;
+  public readonly largeLogoMargin$ = this.configService.getFeatureToggleObservable('largeLogoMargin');
   public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
   public readonly largeScreen$ = this.shellService.largeScreen$;
   public readonly panelExpanded$ = this.shellService.panelExpanded$;
@@ -69,6 +75,7 @@ export class TopbarComponent implements OnInit, AfterViewInit {
   public readonly showUserNameInTopBar$ = this.pageHeaderService.showUserNameInTopBar$;
 
   constructor(
+    private readonly adminSettingsService: AdminSettingsService,
     private readonly keyCloakService: KeycloakService,
     private readonly configService: ConfigService,
     private readonly iconService: IconService,
@@ -102,7 +109,35 @@ export class TopbarComponent implements OnInit, AfterViewInit {
     this.shellService.setMouseOnTopBar(false);
   }
 
-  private getBase64Logo(config: ValtimoConfig, currentTheme: CurrentCarbonTheme): TopbarLogo {
+  private getBase64Logo(
+    config: ValtimoConfig,
+    currentTheme: CurrentCarbonTheme,
+    adminLogos: AdminSettingsLogosDto | null
+  ): TopbarLogo {
+    const adminLogo = adminLogos?.logo?.imageBase64;
+    const adminLogoDark = adminLogos?.logoDarkMode?.imageBase64;
+
+    const themeAdminLogo =
+      currentTheme === CurrentCarbonTheme.G10 ? adminLogo : adminLogoDark;
+
+    if (themeAdminLogo) {
+      return {isSvg: this.isSvg(themeAdminLogo), base64string: themeAdminLogo};
+    }
+
+    return this.getConfigLogo(currentTheme);
+  }
+
+  private isSvg(base64: string): boolean {
+    try {
+      const decoded = atob(base64.substring(0, 64));
+      const trimmed = decoded.trimStart();
+      return trimmed.startsWith('<?xml') || trimmed.startsWith('<svg');
+    } catch {
+      return false;
+    }
+  }
+
+  private getConfigLogo(currentTheme: CurrentCarbonTheme): TopbarLogo {
     const {logoSvgBase64, logoPngBase64, darkModeLogoSvgBase64, darkModeLogoPngBase64} =
       this.configService.config;
     let base64string!: string;
@@ -137,9 +172,6 @@ export class TopbarComponent implements OnInit, AfterViewInit {
         break;
     }
 
-    return {
-      isSvg,
-      base64string,
-    };
+    return {isSvg, base64string};
   }
 }

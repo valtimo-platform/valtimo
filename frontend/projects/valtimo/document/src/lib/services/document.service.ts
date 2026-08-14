@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {
   AssigneeFilter,
@@ -26,7 +26,7 @@ import {
   SearchOperator,
   TeamResponseDto,
 } from '@valtimo/shared';
-import {catchError, Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject, catchError, Observable, of, switchMap, tap} from 'rxjs';
 
 import {
   AssignHandlerToDocumentResult,
@@ -84,11 +84,31 @@ export class DocumentService {
     totalPages: 0,
   };
 
+  private readonly _invalidSearchFields$ = new BehaviorSubject<string[]>([]);
+  public readonly invalidSearchFields$ = this._invalidSearchFields$.asObservable();
+
   constructor(
     private http: HttpClient,
     private configService: ConfigService
   ) {
     this.valtimoEndpointUri = this.configService.config.valtimoApi.endpointUri;
+  }
+
+  public clearInvalidSearchFields(): void {
+    this._invalidSearchFields$.next([]);
+  }
+
+  private extractInvalidSearchFields(error: HttpErrorResponse): string[] {
+    const message = error?.error?.detail || error?.error?.message || error?.error || '';
+    const pluralMatch = message.match(/Unknown search field\(s\): (.+)/);
+    if (pluralMatch) {
+      return pluralMatch[1].split(', ').map((f: string) => f.trim());
+    }
+    const singularMatch = message.match(/Unknown search field: (.+)/);
+    if (singularMatch) {
+      return [singularMatch[1].trim()];
+    }
+    return [];
   }
 
   // Document-calls
@@ -135,13 +155,22 @@ export class DocumentService {
   }
 
   public getDocuments(documentSearchRequest: DocumentSearchRequest): Observable<Documents> {
-    return this.http.post<Documents>(
-      `${this.valtimoEndpointUri}v1/document-search`,
-      documentSearchRequest.asHttpBody(),
-      {
+    return this.http
+      .post<Documents>(`${this.valtimoEndpointUri}v1/document-search`, documentSearchRequest.asHttpBody(), {
         params: documentSearchRequest.asHttpParams(),
-      }
-    );
+        headers: new HttpHeaders().set(InterceptorSkip, '500'),
+      })
+      .pipe(
+        tap(() => this._invalidSearchFields$.next([])),
+        catchError((error: HttpErrorResponse) => {
+          const invalidFields = this.extractInvalidSearchFields(error);
+          if (invalidFields.length > 0) {
+            this._invalidSearchFields$.next(invalidFields);
+            return of(this.EMPTY_DOCUMENTS_RESPONSE as Documents);
+          }
+          throw error;
+        })
+      );
   }
 
   public getDocumentsSearch(
@@ -150,7 +179,8 @@ export class DocumentService {
     assigneeFilter?: AssigneeFilter,
     otherFilters?: Array<SearchFilter | SearchFilterRange>,
     statusFilter?: Array<string | null>,
-    caseTagsFilter?: Array<string | null>
+    caseTagsFilter?: Array<string | null>,
+    globalSearchFilter?: string
   ): Observable<Documents> {
     const body = {
       ...documentSearchRequest.asHttpBody(),
@@ -159,15 +189,29 @@ export class DocumentService {
       ...(otherFilters && {otherFilters}),
       ...(statusFilter && {statusFilter}),
       ...(caseTagsFilter && {caseTagsFilter}),
+      ...(globalSearchFilter && {globalSearchFilter}),
     };
 
     return this.http
       .post<Documents>(
         `${this.valtimoEndpointUri}v1/document-definition/${documentSearchRequest.definitionName}/search`,
         body,
-        {params: documentSearchRequest.asHttpParams()}
+        {
+          params: documentSearchRequest.asHttpParams(),
+          headers: new HttpHeaders().set(InterceptorSkip, '500'),
+        }
       )
-      .pipe(catchError(() => of(this.EMPTY_DOCUMENTS_RESPONSE as Documents)));
+      .pipe(
+        tap(() => this._invalidSearchFields$.next([])),
+        catchError((error: HttpErrorResponse) => {
+          const invalidFields = this.extractInvalidSearchFields(error);
+          if (invalidFields.length > 0) {
+            this._invalidSearchFields$.next(invalidFields);
+            return of(this.EMPTY_DOCUMENTS_RESPONSE as Documents);
+          }
+          throw error;
+        })
+      );
   }
 
   public getSpecifiedDocumentsSearch(
@@ -176,7 +220,8 @@ export class DocumentService {
     assigneeFilter?: AssigneeFilter,
     otherFilters?: Array<SearchFilter | SearchFilterRange>,
     statusFilter?: Array<string | null>,
-    caseTagsFilter?: Array<string | null>
+    caseTagsFilter?: Array<string | null>,
+    globalSearchFilter?: string
   ): Observable<SpecifiedDocuments> {
     const body = {
       ...documentSearchRequest.asHttpBody(),
@@ -185,15 +230,29 @@ export class DocumentService {
       ...(otherFilters && {otherFilters}),
       ...(statusFilter && {statusFilter}),
       ...(caseTagsFilter && {caseTagsFilter}),
+      ...(globalSearchFilter && {globalSearchFilter}),
     };
 
     return this.http
       .post<SpecifiedDocuments>(
         `${this.valtimoEndpointUri}v1/case/${documentSearchRequest.definitionName}/search`,
         body,
-        {params: documentSearchRequest.asHttpParams()}
+        {
+          params: documentSearchRequest.asHttpParams(),
+          headers: new HttpHeaders().set(InterceptorSkip, '500'),
+        }
       )
-      .pipe(catchError(() => of(this.EMPTY_DOCUMENTS_RESPONSE as SpecifiedDocuments)));
+      .pipe(
+        tap(() => this._invalidSearchFields$.next([])),
+        catchError((error: HttpErrorResponse) => {
+          const invalidFields = this.extractInvalidSearchFields(error);
+          if (invalidFields.length > 0) {
+            this._invalidSearchFields$.next(invalidFields);
+            return of(this.EMPTY_DOCUMENTS_RESPONSE as SpecifiedDocuments);
+          }
+          throw error;
+        })
+      );
   }
 
   public getDocumentSearchFields(caseDefinitionKey: string): Observable<Array<SearchField>> {
@@ -478,14 +537,21 @@ export class DocumentService {
     caseDefinitionKey: string,
     versionTag: string
   ): Observable<DocumentType[]> {
+    // A 403 is expected when the user may open the form but not view the case's document types
+    // (e.g. task access without document access); it is skipped so no error toast is shown and
+    // callers can fall back to an empty list.
     return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`,
+      {headers: new HttpHeaders().set(InterceptorSkip, '403')}
     );
   }
 
   public getDocumentTypesForDocument(documentId: string): Observable<DocumentType[]> {
+    // See getDocumentTypesForCase: a 403 is expected when the user cannot view the document and is
+    // skipped to avoid an error toast.
     return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`
+      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`,
+      {headers: new HttpHeaders().set(InterceptorSkip, '403')}
     );
   }
 

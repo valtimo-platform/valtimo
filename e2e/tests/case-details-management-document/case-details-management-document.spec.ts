@@ -39,7 +39,6 @@ test.describe('Case details management — Document', () => {
 
     documentPage = new CaseDetailsManagementDocumentPage(page, request);
 
-    await page.goto('/');
     await documentPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await documentPage.ensureDraftVersionSelected();
     await documentPage.switchToDocumentTab();

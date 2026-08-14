@@ -90,7 +90,8 @@ export class TaskDetailIntermediateSaveComponent {
   public readonly submission$ = this.taskIntermediateSaveService.submission$;
   public readonly formIoFormData$ = this.taskIntermediateSaveService.formIoFormData$;
 
-  public intermediateSaveEnabled = false;
+  public readonly intermediateSaveEnabled$ =
+    this.configService.getFeatureToggleObservable('enableIntermediateSave');
   public currentIntermediateSave: IntermediateSubmission | null = null;
 
   constructor(
@@ -101,7 +102,6 @@ export class TaskDetailIntermediateSaveComponent {
     private readonly taskService: TaskService,
     private readonly translateService: TranslateService
   ) {
-    this.intermediateSaveEnabled = !!this.configService.featureToggles?.enableIntermediateSave;
     this.iconService.registerAll([RecentlyViewed16]);
   }
 

@@ -55,6 +55,11 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
+        fun byKeyIn(processDefinitionKeys: Collection<String>) = Specification<OperatonProcessDefinition> { root, _, _ ->
+            root.get<Any>(KEY).`in`(processDefinitionKeys)
+        }
+
+        @JvmStatic
         fun byVersion(version: Int) = Specification<OperatonProcessDefinition> { root, _, cb ->
             cb.equal(root.get<Any>(VERSION), version)
         }
@@ -114,6 +119,19 @@ class OperatonProcessDefinitionSpecificationHelper {
             } else {
                 maxVersionOf(byNotLinkedToCaseDefinition())
             }
+        }
+
+        /**
+         * Matches the latest version of a process key that does not belong to a case definition or a
+         * building block. Definitions owned by a blueprint must be resolved by their version tag, never by
+         * key, because every blueprint version redeploys the same key under a new engine version.
+         */
+        @JvmStatic
+        fun byKeyOfUnlinkedProcess(processDefinitionKey: String): Specification<OperatonProcessDefinition> {
+            val unlinked = byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock())
+            return byKey(processDefinitionKey)
+                .and(unlinked)
+                .and(maxVersionOf(unlinked))
         }
 
         @JvmStatic

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -343,4 +343,5 @@
     <include file="config/liquibase/initial-setup/team/changelog/20260309-create-table-team.xml"/>
     <include file="config/liquibase/initial-setup/case/changelog/20260311-add-team-key-to-json-schema-document.xml"/>
     <include file="config/liquibase/initial-setup/task/changelog/20260317-create-table-task-team.xml"/>
+
 </databaseChangeLog>

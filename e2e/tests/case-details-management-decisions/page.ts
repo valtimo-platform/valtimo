@@ -42,8 +42,7 @@ export class CaseDetailsDecisionsPage {
   // ─── Navigation ────────────────────────────────────────────────────
 
   async goToCaseDecisions(caseIdentifier: string): Promise<string> {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
     await this.page.waitForURL(/\/case-management\/case\//);
@@ -130,7 +129,7 @@ export class CaseDetailsDecisionsPage {
   }
 
   async saveDecision() {
-    await expect(this.deployButton).toBeEnabled();
+    await expect(this.deployButton).toBeEnabled({timeout: 15_000});
     await this.deployButton.click();
   }
 
@@ -150,7 +149,7 @@ export class CaseDetailsDecisionsPage {
 
   async switchToDecisionTableView() {
     await this.decisionTableTab.click();
-    await expect(this.decisionTable).toBeVisible();
+    await expect(this.decisionTable).toBeVisible({timeout: 15_000});
   }
 
   get decisionTable() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,12 @@ class ProcessDefinitionCaseDefinition(
         " FROM     act_re_procdef " +
         " WHERE    act_re_procdef.id_ = process_definition_id)")
     var processDefinitionKey: String? = null
+
+    @Formula("COALESCE(( " +
+        " SELECT   CASE WHEN act_re_procdef.suspension_state_ = 2 THEN true ELSE false END " +
+        " FROM     act_re_procdef " +
+        " WHERE    act_re_procdef.id_ = process_definition_id), false)")
+    var draft: Boolean = false
 
     fun copy(
         id: ProcessDefinitionCaseDefinitionId? = null,

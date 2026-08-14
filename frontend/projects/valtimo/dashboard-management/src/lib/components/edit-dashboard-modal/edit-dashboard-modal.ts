@@ -24,9 +24,16 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../constants/dashboard-management.test-ids';
 import {DashboardItem} from '../../models';
 import {FormBuilder, Validators} from '@angular/forms';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  SelectItem,
+  WIDGET_LAYOUT_TRANSLATION_KEYS,
+  WIDGET_LAYOUT_VALUES,
+  WidgetLayout,
+} from '@valtimo/components';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
 import {ConfigurationOutput} from '@valtimo/dashboard';
 
@@ -39,6 +46,7 @@ import {ConfigurationOutput} from '@valtimo/dashboard';
   standalone: false,
 })
 export class EditDashboardModalComponent implements OnInit {
+  protected readonly testIds = DASHBOARD_MANAGEMENT_TEST_IDS;
   @Input() public showModal$: Observable<boolean>;
   @Input() public dashboard: DashboardItem;
   @Output() public saveEvent = new EventEmitter<ConfigurationOutput>();
@@ -48,6 +56,7 @@ export class EditDashboardModalComponent implements OnInit {
   public readonly editDashboardForm = this.fb.group({
     title: this.fb.control('', [Validators.required]),
     description: this.fb.control('', [Validators.required]),
+    widgetLayout: this.fb.control<WidgetLayout>(WidgetLayout.MUURI_GAP_FREE),
   });
 
   public get dashboardTitle() {
@@ -57,6 +66,11 @@ export class EditDashboardModalComponent implements OnInit {
   public get dashboardDescription() {
     return this.editDashboardForm.get('description');
   }
+
+  public readonly widgetLayoutSelectItems: SelectItem[] = WIDGET_LAYOUT_VALUES.map(value => ({
+    id: value,
+    translationKey: WIDGET_LAYOUT_TRANSLATION_KEYS[value],
+  }));
 
   private _openSubscription!: Subscription;
 
@@ -85,6 +99,7 @@ export class EditDashboardModalComponent implements OnInit {
         description: this.dashboardDescription.value,
         title: this.dashboardTitle.value,
         key: this.dashboard.key,
+        widgetLayout: this.editDashboardForm.get('widgetLayout').value ?? WidgetLayout.MUURI_GAP_FREE,
       })
       .subscribe(() => {
         this.saveEvent.emit();
@@ -96,6 +111,9 @@ export class EditDashboardModalComponent implements OnInit {
     if (this.dashboard) {
       this.dashboardTitle?.setValue(this.dashboard.title);
       this.dashboardDescription?.setValue(this.dashboard.description);
+      this.editDashboardForm
+        .get('widgetLayout')
+        ?.setValue(this.dashboard.widgetLayout ?? WidgetLayout.MUURI_GAP_FREE);
     }
 
     this.enable();

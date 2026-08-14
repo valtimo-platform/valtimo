@@ -14,6 +14,40 @@ The list of configured tabs for a case is displayed within the case settings. To
 
 <figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption><p>Widget configuration UI</p></figcaption></figure>
 
+## Layout algorithm
+
+The way a widget tab's widgets are arranged can be chosen per tab. The same options are available for dashboards and IKO tabs.
+
+| Selector label | Stored value (`widgetLayout`) | Behaviour |
+| --- | --- | --- |
+| Default (less gaps) | `MUURI_GAP_FREE` | An algorithm that fills small gaps, while keeping widgets in their configured order as much as possible. **Used when nothing is configured** (the original behaviour). |
+| Default | `MUURI` | Plain layout algorithm without gap filling. Keeps the configured order, but empty gaps can remain. |
+| Gap free | `BEAUTIFUL` | Custom dense-packing algorithm. May reorder widgets within a section to remove gaps and almost always produces a clean layout without holes. |
+
+**Trade-off:** *Default* and *Default (less gaps)* keep the widgets in the order you configured (predictable) but can leave empty space, while *Gap free* reorders widgets to eliminate gaps at the cost of changing their order.
+
+{% tabs %}
+{% tab title="Via UI" %}
+Open the widget tab and click **Edit widget tab**. Pick an option in the **Layout algorithm** dropdown of the modal and save. An information block underneath the dropdown summarises the trade-off.
+{% endtab %}
+
+{% tab title="Via IDE" %}
+Add the optional `widgetLayout` property (one of the stored values above) to the tab object in the `*.case-widget-tab.json` file. When omitted, the layout falls back to `MUURI_GAP_FREE`.
+
+```json
+[
+  {
+    "key": "personal-info",
+    "widgetLayout": "BEAUTIFUL",
+    "widgets": []
+  }
+]
+```
+{% endtab %}
+{% endtabs %}
+
+## Adding widgets
+
 Click **Add widget** to open the create new widget modal that will guide the widget creation in 4 steps.
 
 {% stepper %}
@@ -512,6 +546,60 @@ For a layer in the map widget, the following configuration needs to be done.
   }
 }
 ```
+
+### Dutch address support
+
+The map widget can also render a layer when the data referenced by the path is a Dutch address object instead of a
+GeoJSON geometry. Valtimo will geocode the address to a WGS84 coordinate via the
+[PDOK Locatieserver](https://api.pdok.nl/bzk/locatieserver/search/v3_1/ui/) (the standard free geocoding service of the
+Dutch government, based on BAG data) and render the result as a `Point` feature on the map.
+
+**Recognised fields** (BAG naming):
+
+* `straatnaam` — street name
+* `huisnummer` — house number (number or string)
+* `huisletter` — optional house letter
+* `huisnummertoevoeging` — optional house number addition
+* `postcode` — postal code (e.g. `1011AB`)
+* `woonplaats` — city
+
+**Supported field combinations.** A layer is rendered when the address object contains one of:
+
+* `postcode` + `huisnummer`
+* `straatnaam` + `huisnummer` + (`postcode` or `woonplaats`)
+* `straatnaam` + `woonplaats` (street-level match without a house number)
+* `postcode` + `woonplaats` (postcode-area match without a house number)
+
+**Example.** With a path of `doc:/address`, the document below renders a marker at Damrak 1, Amsterdam:
+
+```json
+{
+  ...
+  "address": {
+    "straatnaam": "Damrak",
+    "huisnummer": 1,
+    "postcode": "1012LG",
+    "woonplaats": "Amsterdam"
+  }
+}
+```
+
+{% hint style="info" %}
+PDOK Locatieserver is a free public service with best-effort availability. If a request fails or the address cannot be
+geocoded, the layer is silently dropped — other layers on the map continue to render.
+
+To use a different geocoding provider, override the `PdokLocatieserverClient` Spring bean.
+{% endhint %}
+
+{% hint style="warning" %}
+**Privacy and data residency**
+
+Address data referenced by a map widget layer is sent to PDOK Locatieserver, an external service hosted by the Dutch
+government (Kadaster). For installations with strict data-residency or privacy requirements, point Valtimo at an
+alternative endpoint by setting the `valtimo.pdok.locatieserver.base-url` property in `application.yml` (for example to
+a self-hosted PDOK mirror or a caching proxy), or replace the geocoder entirely by providing your own
+`PdokLocatieserverClient` bean.
+{% endhint %}
 
 </details>
 

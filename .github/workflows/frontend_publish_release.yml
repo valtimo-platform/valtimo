@@ -2,12 +2,19 @@ name: Frontend - Publish release
 
 permissions:
   contents: read
+  packages: write
 
 on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       project_version:
-        description: "Project version"
+        description: "Base semantic version (e.g. 13.6.0)"
         required: true
 
 defaults:
@@ -15,35 +22,101 @@ defaults:
     working-directory: frontend
 
 jobs:
-  determine_version:
-    runs-on: ubuntu-latest
-    outputs:
-      project_version: ${{ steps.version.outputs.version_release }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Compute version from branch
-        id: version
-        shell: bash
-        run: |
-          SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
-          echo "version_release=$SEMVER_VERSION" >> "$GITHUB_OUTPUT"
-
   build_and_test_libs:
-    needs: ["determine_version"]
     uses: ./.github/workflows/frontend_build_test_libraries.yml
     with:
-      project_version: ${{ needs.determine_version.outputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
-  publish:
-    if: ${{ startsWith(github.ref_name, 'release/') }}
+  publish_libs:
     needs:
       - build_and_test_libs
-      - determine_version
     uses: ./.github/workflows/frontend_publish_to_npm.yml
     with:
-      project_version: ${{ needs.determine_version.outputs.project_version }}
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+    secrets: inherit
+
+  # Release images are built to GHCR only here (no push_to_dockerhub). The
+  # smoke_and_promote jobs below run each image and only then copy it to Docker
+  # Hub, so Docker Hub never receives an image that has not served a page.
+  build_gzac_image:
+    name: Build gzac-frontend image (GHCR)
+    needs:
+      - build_and_test_libs
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+      variant: gzac
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  build_valtimo_image:
+    name: Build valtimo-frontend image (GHCR)
+    needs:
+      - build_and_test_libs
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+      variant: valtimo
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  build_evenementenvergunning_image:
+    name: Build gzac-evenementenvergunning-frontend image (GHCR)
+    needs:
+      - build_and_test_libs
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
+      variant: evenementenvergunning
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_gzac:
+    name: Smoke test + promote gzac-frontend
+    needs:
+      - build_gzac_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/frontend_smoke_and_promote.yml
+    with:
+      image_name: gzac-frontend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_valtimo:
+    name: Smoke test + promote valtimo-frontend
+    needs:
+      - build_valtimo_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/frontend_smoke_and_promote.yml
+    with:
+      image_name: valtimo-frontend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
+    secrets: inherit
+
+  smoke_and_promote_evenementenvergunning:
+    name: Smoke test + promote gzac-evenementenvergunning-frontend
+    needs:
+      - build_evenementenvergunning_image
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/frontend_smoke_and_promote.yml
+    with:
+      image_name: gzac-evenementenvergunning-demo-frontend
+      release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit

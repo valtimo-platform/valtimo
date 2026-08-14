@@ -18,29 +18,22 @@ import {expect, test} from '@playwright/test';
 import {roleTestData} from './access-control';
 import {AccessControlPage} from './page';
 
-test.use({storageState: undefined});
-
 test.describe('Access Control Management', () => {
-  let context;
-  let page;
+  // Create → view → delete is a dependent lifecycle: run in order, share the same page.
+  test.describe.configure({mode: 'serial'});
+
   let accessControlPage: AccessControlPage;
-  let request;
 
-  // Arrange
-  test.beforeAll(async ({browser, baseURL}) => {
-    context = await browser.newContext({baseURL});
-    page = await context.newPage();
-    request = context.request;
-
+  // Arrange — the `page` fixture is already authenticated via the "admin tests"
+  // project's storageState, so we can navigate straight to the roles list.
+  test.beforeEach(async ({page, request}) => {
     accessControlPage = new AccessControlPage(page, request);
-
-    await page.goto('/');
-    await accessControlPage.goToAccessControl();
+    await accessControlPage.goToAccessControlList();
   });
 
-  test.afterAll(async () => {
-    await accessControlPage.deleteRolesViaApi([roleTestData.key]);
-    await context.close();
+  test.afterAll(async ({request}) => {
+    // Best-effort cleanup — the role may already be deleted by the 11.8 test.
+    await request.delete('/api/management/v1/roles', {data: [roleTestData.key]}).catch(() => {});
   });
 
   // ─── 11.1 View roles list ─────────────────────────────────────────
@@ -54,23 +47,16 @@ test.describe('Access Control Management', () => {
   // ─── 11.2–11.4 Add new role ───────────────────────────────────────
 
   test.describe('11.2–11.4 — Add new role', () => {
-    test.describe('Success', () => {
-      test('Open add role modal', async () => {
-        // Act
-        await accessControlPage.addRoleButton.click();
+    // Keep open-modal → fill → submit in one test: the beforeEach re-navigates to
+    // the list before every test, so a split modal would be lost between blocks.
+    test('Add a new role', async () => {
+      // Act — the modal opens in "choose from list" mode; switch it to manual entry first
+      await accessControlPage.openAddRoleModal();
+      await accessControlPage.roleNameInput.fill(roleTestData.key);
+      await accessControlPage.createRoleButton.click();
 
-        // Assert — modal input is visible
-        await expect(accessControlPage.roleNameInput).toBeVisible();
-      });
-
-      test('Enter role name and create role', async () => {
-        // Act
-        await accessControlPage.roleNameInput.fill(roleTestData.key);
-        await accessControlPage.createRoleButton.click();
-
-        // Assert
-        await accessControlPage.assertRoleExists(roleTestData.key);
-      });
+      // Assert
+      await accessControlPage.assertRoleExists(roleTestData.key);
     });
   });
 
@@ -78,8 +64,9 @@ test.describe('Access Control Management', () => {
 
   test.describe('11.5 — View role details', () => {
     test('Open role and view permissions editor', async () => {
-      // Act
+      // Act — the editor lives behind the "JSON editor" tab; the "Summary" tab is shown first
       await accessControlPage.openRole(roleTestData.key);
+      await accessControlPage.openJsonEditorTab();
 
       // Assert — Monaco editor with permissions JSON is visible
       await accessControlPage.assertPermissionsEditorVisible();
@@ -89,13 +76,10 @@ test.describe('Access Control Management', () => {
   // ─── 11.8 Delete role ─────────────────────────────────────────────
 
   test.describe('11.8 — Delete role', () => {
-    test('Navigate back to roles list', async () => {
-      await page.goBack();
-      await page.waitForURL('**/access-control', {waitUntil: 'load'});
-      await accessControlPage.assertRoleExists(roleTestData.key);
-    });
-
     test('Delete the role', async () => {
+      // The beforeEach already lands on the roles list; the role from 11.2 persists (serial mode).
+      await accessControlPage.assertRoleExists(roleTestData.key);
+
       // Act
       await accessControlPage.deleteRole(roleTestData.key);
 

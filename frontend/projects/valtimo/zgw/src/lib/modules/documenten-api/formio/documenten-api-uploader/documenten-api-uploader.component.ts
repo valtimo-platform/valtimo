@@ -55,6 +55,7 @@ export class DocumentenApiUploaderComponent
   @Input() subtitle: string;
   @Input() maxFileSize: number;
   @Input() hideMaxFileSize: boolean;
+  @Input() maxFiles: number;
   @Input() acceptedFiles: string;
   @Input() hideAcceptedFiles: boolean;
   @Input() camera: boolean;
@@ -245,6 +246,10 @@ export class DocumentenApiUploaderComponent
     return this._value;
   }
 
+  public get limitReached(): boolean {
+    return !!this.maxFiles && this._value.length >= this.maxFiles;
+  }
+
   @Input()
   public set value(value: Array<DocumentenApiFileReference>) {
     if (Array.isArray(value)) {
@@ -253,6 +258,10 @@ export class DocumentenApiUploaderComponent
   }
 
   public fileSelected(file: File): void {
+    if (this.limitReached) {
+      return;
+    }
+
     this.fileToBeUploaded$.next(file);
     this.showModal.set(true);
   }

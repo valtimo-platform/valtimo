@@ -30,8 +30,7 @@ export class CaseDetailsManagementFormFlowsPage {
   // ─── Navigation ───────────────────────────────────────────────────
 
   async goToCaseManagement(caseIdentifier: string) {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
   }
@@ -54,9 +53,12 @@ export class CaseDetailsManagementFormFlowsPage {
   }
 
   get addFormFlowButton() {
-    // Two "Add new form flow" buttons exist when list is empty: toolbar + no-results panel.
+    // Two "Create new form flow" buttons exist when list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
-    return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add new form flow'});
+    // Label was renamed "Add new form flow" → "Create new form flow"; accept both.
+    return this.page
+      .getByLabel('Table action bar')
+      .getByRole('button', {name: /^(Create|Add) new form flow$/i});
   }
 
   // Create modal: only a key field, no data-test-ids

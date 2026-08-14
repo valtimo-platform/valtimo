@@ -37,30 +37,41 @@ class Iso8601Deserializer : StdDeserializer<OffsetDateTime?>(OffsetDateTime::cla
             return null
         }
 
-        try {
-            // "2026-03-23T14:37:41+01:00" or "2026-03-23T14:37:41Z"
-            return OffsetDateTime.parse(value)
-        } catch (ignored: DateTimeParseException) {
-        }
+        return parseOrNull(value) ?: error("Failed to parse ISO 8601 datetime: '$value'")
+    }
 
-        try {
-            // "2026-03-23T14:37:41+01:00[Europe/Amsterdam]"
-            return ZonedDateTime.parse(value).toOffsetDateTime()
-        } catch (ignored: DateTimeParseException) {
-        }
+    companion object {
+        /**
+         * Parses an ISO-8601 timestamp tolerantly, accepting:
+         * - Offset date-time (`2026-03-23T14:37:41+01:00`, `2026-03-23T14:37:41Z`)
+         * - Zoned date-time (`2026-03-23T14:37:41+01:00[Europe/Amsterdam]`)
+         * - Instant (`2026-03-23T14:37:41Z`) — interpreted at UTC
+         * - Local date-time (`2026-03-23T14:37:41`) — interpreted at UTC
+         *
+         * Returns null when the value is not a parseable timestamp.
+         */
+        fun parseOrNull(value: String): OffsetDateTime? {
+            try {
+                return OffsetDateTime.parse(value)
+            } catch (ignored: DateTimeParseException) {
+            }
 
-        try {
-            // "2026-03-23T14:37:41Z"
-            return Instant.parse(value).atOffset(ZoneOffset.UTC)
-        } catch (ignored: DateTimeParseException) {
-        }
+            try {
+                return ZonedDateTime.parse(value).toOffsetDateTime()
+            } catch (ignored: DateTimeParseException) {
+            }
 
-        try {
-            // "2026-03-23T14:37:41"
-            return LocalDateTime.parse(value).atOffset(ZoneOffset.UTC)
-        } catch (ignored: DateTimeParseException) {
-        }
+            try {
+                return Instant.parse(value).atOffset(ZoneOffset.UTC)
+            } catch (ignored: DateTimeParseException) {
+            }
 
-        error("Failed to parse ISO 8601 datetime: '$value'")
+            try {
+                return LocalDateTime.parse(value).atOffset(ZoneOffset.UTC)
+            } catch (ignored: DateTimeParseException) {
+            }
+
+            return null
+        }
     }
 }

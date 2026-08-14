@@ -22,6 +22,7 @@ import {
   CARBON_CONSTANTS,
   ConfirmationModalModule,
   RenderInBodyComponent,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {ProcessDefinitionConflictResponse, ProcessLinkService} from '@valtimo/process-link';
@@ -50,6 +51,7 @@ import {ProcessManagementService, ProcessManagementStateService} from '../../ser
     ButtonModule,
     ConfirmationModalModule,
     RenderInBodyComponent,
+    ValtimoCdsModalDirective,
   ],
 })
 export class ProcessManagementUploadComponent {

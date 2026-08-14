@@ -22,14 +22,34 @@ enum WidgetManagementTab {
   JSON = 'json',
 }
 
-const WidgetTypeTags: {[key: string]: TagType} = {
-  [WidgetType.COLLECTION]: 'teal',
-  [WidgetType.CUSTOM]: 'magenta',
+/**
+ * The tag colour each widget type is shown with in the widget overview, so the type column can be
+ * scanned at a glance.
+ *
+ * Carbon ships twelve tag types, but three of those are grays that are hard to tell apart, which
+ * leaves too few usable colours for the number of widget types. The palette is therefore extended
+ * with the colours registered in `carbon.scss` (`periwinkle`, `light-green`, `orange`, `brown`);
+ * those follow Carbon's own tag recipe and flip with the theme like the built-in ones. `yellow` is
+ * available too but deliberately unused: it is the one extended colour that struggles to carry
+ * legible text at the tag's font size.
+ *
+ * Types outside Carbon's own `TagType` union are cast; their classnames are backed by the extended
+ * tag colours in `carbon.scss`.
+ */
+const WidgetTypeTags: Record<WidgetType, TagType> = {
   [WidgetType.FIELDS]: 'blue',
-  [WidgetType.FORMIO]: 'green',
   [WidgetType.TABLE]: 'purple',
-  [WidgetType.INTERACTIVE_TABLE]: 'red',
+  [WidgetType.INTERACTIVE_TABLE]: 'magenta',
+  [WidgetType.COLLECTION]: 'teal',
   [WidgetType.MAP]: 'cyan',
+  [WidgetType.FORMIO]: 'green',
+  [WidgetType.HIGHLIGHT]: 'red',
+  [WidgetType.PERSON_CARD]: 'periwinkle' as TagType,
+  [WidgetType.METROLINE]: 'light-green' as TagType,
+  [WidgetType.TEXT]: 'orange' as TagType,
+  [WidgetType.CUSTOM]: 'brown' as TagType,
+  [WidgetType.IMAGE]: 'cool-gray',
+  [WidgetType.DIVIDER]: 'outline',
 };
 
 export {WidgetManagementTab, WidgetTypeTags};

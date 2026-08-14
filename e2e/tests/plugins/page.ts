@@ -36,10 +36,11 @@ export class PluginPage {
   }
 
   // Navigation
+  // Navigate directly to the plugins route — avoids relying on the Admin menu,
+  // which is flaky under the shared beforeAll context.
   async goToPluginManagement() {
     console.log('Navigate to Plugin management...');
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Plugins'}).click();
+    await this.page.goto('/plugins');
     await this.page.waitForSelector('valtimo-carbon-list');
   }
 

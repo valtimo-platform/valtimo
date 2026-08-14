@@ -18,8 +18,11 @@ package com.ritense.case_.domain.tab
 
 import com.ritense.case.domain.CaseTabId
 import jakarta.persistence.CascadeType.ALL
+import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType.EAGER
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
@@ -36,6 +39,10 @@ data class CaseWidgetTab(
     @OrderBy("order ASC")
 
     val widgets: List<CaseWidgetTabWidget> = listOf(),
+
+    @Column(name = "widget_layout")
+    @Enumerated(EnumType.STRING)
+    val widgetLayout: WidgetLayout? = null,
 ) {
     init {
         widgets.forEach { widget -> widget.id.caseWidgetTab = this }

@@ -114,6 +114,11 @@ export class CaseListOrchestrationService {
   public readonly searchFields$: Observable<Array<SearchField> | null> =
     this.searchService.documentSearchFields$;
 
+  public readonly globalSearchFilter$: Observable<string> = this.searchService.globalSearchFilter$;
+
+  public readonly invalidSearchFields$: Observable<string[]> =
+    this.documentService.invalidSearchFields$;
+
   public readonly statuses$: Observable<Array<InternalCaseStatus>> =
     this.statusService.caseStatuses$;
 
@@ -130,11 +135,14 @@ export class CaseListOrchestrationService {
   public readonly hiddenColumns$: Observable<ListField[]> = this._refreshHiddenColumns$.pipe(
     switchMap(() => this.caseDefinitionKey$),
     switchMap((caseDefinitionKey: string) =>
-      this.caseListHiddenColumnsService.getHiddenColumns(caseDefinitionKey)
+      caseDefinitionKey
+        ? this.caseListHiddenColumnsService.getHiddenColumns(caseDefinitionKey)
+        : of([])
     )
   );
 
   public readonly schema$ = this.listService.caseDefinitionKey$.pipe(
+    filter(caseDefinitionKey => !!caseDefinitionKey),
     switchMap(caseDefinitionKey => this.documentService.getDocumentDefinition(caseDefinitionKey)),
     map(caseDefinition => caseDefinition?.schema),
     tap(schema => {
@@ -146,22 +154,26 @@ export class CaseListOrchestrationService {
 
   public readonly canCreateCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
-        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-        identifier: caseDefinitionKey,
-      })
+      caseDefinitionKey
+        ? this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
+            resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+            identifier: caseDefinitionKey,
+          })
+        : of(false)
     )
   );
 
   public readonly canExportCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      combineLatest([
-        this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
-          resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-          identifier: caseDefinitionKey,
-        }),
-        this.documentService.getCaseList(caseDefinitionKey),
-      ])
+      caseDefinitionKey
+        ? combineLatest([
+            this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
+              resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+              identifier: caseDefinitionKey,
+            }),
+            this.documentService.getCaseList(caseDefinitionKey),
+          ])
+        : of([false, []] as [boolean, any[]])
     ),
     switchMap(([canExportPermission, caseList]) => {
       const isExportableColumns = caseList.some(caseListitem => caseListitem.exportable);
@@ -180,14 +192,18 @@ export class CaseListOrchestrationService {
 
   private readonly _columns$: Observable<Array<DefinitionColumn>> =
     this.listService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey => this.columnService.getDefinitionColumns(caseDefinitionKey)),
+      switchMap(caseDefinitionKey =>
+        caseDefinitionKey
+          ? this.columnService.getDefinitionColumns(caseDefinitionKey)
+          : of({hasApiConfig: false, columns: []})
+      ),
       map(res => {
         this.hasApiColumnConfig$.next(res.hasApiConfig);
         return res.columns;
       }),
       tap(columns => {
-        this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(_ => {
-          this.paginationService.setPagination(columns);
+        this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
+          this.paginationService.setPagination(columns, caseDefinitionKey);
         });
       })
     );
@@ -295,7 +311,7 @@ export class CaseListOrchestrationService {
 
   private readonly _documentSearchRequest$: Observable<AdvancedDocumentSearchRequest> =
     combineLatest([this.pagination$, this.listService.caseDefinitionKey$]).pipe(
-      filter(([pagination]) => !!pagination),
+      filter(([pagination, caseDefinitionKey]) => !!pagination && !!caseDefinitionKey),
       map(([pagination, caseDefinitionKey]) => {
         const page = pagination.page - 1;
         return new AdvancedDocumentSearchRequestImpl(
@@ -319,6 +335,7 @@ export class CaseListOrchestrationService {
         this.hasApiColumnConfig$,
         this.statusService.caseStatuses$,
         this.caseListCaseTagService.caseTags$,
+        this.globalSearchFilter$,
       ]).pipe(debounceTime(50))
     ),
     distinctUntilChanged(this.areDocumentRequestsEqual),
@@ -332,6 +349,8 @@ export class CaseListOrchestrationService {
         _,
         hasApiColumnConfig,
         allStatuses,
+        __,
+        globalSearchFilter,
       ]) =>
         this.fetchDocuments(
           documentSearchRequest,
@@ -340,7 +359,8 @@ export class CaseListOrchestrationService {
           selectedStatuses,
           selectedCaseTagKeys,
           hasApiColumnConfig,
-          allStatuses
+          allStatuses,
+          globalSearchFilter
         )
     ),
     switchMap(res => this.checkDocumentPermissions(res)),
@@ -428,6 +448,10 @@ export class CaseListOrchestrationService {
       prevSelectedStatuses,
       prevCaseTagKeys,
       prevForceRefresh,
+      _prevHasApiColumnConfig,
+      _prevStatuses,
+      _prevCaseTags,
+      prevGlobalSearchFilter,
     ]: any[],
     [
       currSearchRequest,
@@ -436,6 +460,10 @@ export class CaseListOrchestrationService {
       currSelectedStatuses,
       currCaseTagKeys,
       currForceRefresh,
+      _currHasApiColumnConfig,
+      _currStatuses,
+      _currCaseTags,
+      currGlobalSearchFilter,
     ]: any[]
   ): boolean {
     return isEqual(
@@ -446,6 +474,7 @@ export class CaseListOrchestrationService {
         ...prevSelectedStatuses,
         ...prevCaseTagKeys,
         forceRefresh: prevForceRefresh,
+        globalSearchFilter: prevGlobalSearchFilter,
       },
       {
         ...currSearchRequest,
@@ -454,6 +483,7 @@ export class CaseListOrchestrationService {
         ...currSelectedStatuses,
         ...currCaseTagKeys,
         forceRefresh: currForceRefresh,
+        globalSearchFilter: currGlobalSearchFilter,
       }
     );
   }
@@ -465,7 +495,8 @@ export class CaseListOrchestrationService {
     selectedStatuses: string[],
     selectedCaseTagKeys: string[],
     hasApiColumnConfig: boolean,
-    allStatuses: InternalCaseStatus[]
+    allStatuses: InternalCaseStatus[],
+    globalSearchFilter?: string
   ): Observable<{
     documents: Documents | SpecifiedDocuments;
     hasApiColumnConfig: boolean;
@@ -485,6 +516,8 @@ export class CaseListOrchestrationService {
         ? this.searchService.mapSearchValuesToFilters(searchValues)
         : undefined;
 
+    const globalFilter = globalSearchFilter?.trim() || undefined;
+
     const documentsObs = !hasApiColumnConfig
       ? this.documentService.getDocumentsSearch(
           documentSearchRequest,
@@ -492,7 +525,8 @@ export class CaseListOrchestrationService {
           assigneeFilter,
           searchFilters,
           statusKeys,
-          selectedCaseTagKeys
+          selectedCaseTagKeys,
+          globalFilter
         )
       : this.documentService.getSpecifiedDocumentsSearch(
           documentSearchRequest,
@@ -500,13 +534,14 @@ export class CaseListOrchestrationService {
           assigneeFilter,
           searchFilters,
           statusKeys,
-          selectedCaseTagKeys
+          selectedCaseTagKeys,
+          globalFilter
         );
 
     return forkJoin({
       documents: documentsObs,
       hasApiColumnConfig: of(hasApiColumnConfig),
-      isSearchResult: of(!!searchFilters),
+      isSearchResult: of(!!searchFilters || !!globalFilter),
       allStatuses: of(allStatuses),
       assigneeFilter: of(assigneeFilter),
     });

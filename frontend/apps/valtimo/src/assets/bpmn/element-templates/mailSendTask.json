@@ -1,0 +1,84 @@
+{
+  "name": "Valtimo Mail send task",
+  "id": "valtimo-mail-send-task",
+  "appliesTo": [
+    "bpmn:SendTask"
+  ],
+  "properties": [
+    {
+      "label": "Implementation Type",
+      "type": "String",
+      "value": "${mailService.sendElementTemplateTaskMail(execution)}",
+      "editable": false,
+      "binding": {
+        "type": "property",
+        "name": "camunda:expression"
+      }
+    },
+    {
+      "label": "Van",
+      "description": "verzender van de mail",
+      "type": "String",
+      "value": "",
+      "binding": {
+        "type": "camunda:property",
+        "name": "mailSendTaskFrom"
+      },
+      "constraints": {
+        "not_empty":true
+      }
+    },
+    {
+      "label": "Naar",
+      "description": "ontvanger van de mail",
+      "type": "String",
+      "value": "",
+      "binding": {
+        "type": "camunda:property",
+        "name": "mailSendTaskTo"
+      },
+      "constraints": {
+        "not_empty":true
+      }
+    },
+    {
+      "label": "Onderwerp",
+      "description": "onderwerp van de mail",
+      "type": "String",
+      "value": "",
+      "binding": {
+        "type": "camunda:property",
+        "name": "mailSendTaskSubject"
+      },
+      "constraints": {
+        "not_empty":true
+      }
+    },
+    {
+      "label": "Template",
+      "description": "Mandrill slug voor de template ID",
+      "type": "String",
+      "value": "",
+      "binding": {
+        "type": "camunda:property",
+        "name": "mailSendTaskTemplate"
+      },
+      "constraints": {
+        "not_empty":true
+      }
+    },
+    {
+      "label": "Bijlagen",
+      "description": "De IDs van de FileUpload variabelen die moeten worden toegevoegd als bijlage (delimiteer met komma's)",
+      "type": "String",
+      "value": "",
+      "binding": {
+        "type": "camunda:property",
+        "name": "mailSendTaskAttachments"
+      }
+    }
+  ],
+  "entriesVisible": {
+    "_all": true
+  }
+}

@@ -15,24 +15,70 @@ The list of configured tabs for a case is displayed within the case settings. To
 
 <figure><img src="../../../../.gitbook/assets/image (11).png" alt=""><figcaption><p>Widget configuration UI</p></figcaption></figure>
 
+## Layout algorithm
+
+The way a widget tab's widgets are arranged can be chosen per tab. The same options are available for dashboards and IKO tabs.
+
+| Selector label | Stored value (`widgetLayout`) | Behaviour |
+| --- | --- | --- |
+| Default (less gaps) | `MUURI_GAP_FREE` | An algorithm that fills small gaps, while keeping widgets in their configured order as much as possible. **Used when nothing is configured** (the original behaviour). |
+| Default | `MUURI` | Plain layout algorithm without gap filling. Keeps the configured order, but empty gaps can remain. |
+| Gap free | `BEAUTIFUL` | Custom dense-packing algorithm. May reorder widgets within a section to remove gaps and almost always produces a clean layout without holes. |
+
+**Trade-off:** *Default* and *Default (less gaps)* keep the widgets in the order you configured (predictable) but can leave empty space, while *Gap free* reorders widgets to eliminate gaps at the cost of changing their order.
+
+{% tabs %}
+{% tab title="Via UI" %}
+Open the widget tab and click **Edit widget tab**. Pick an option in the **Layout algorithm** dropdown of the modal and save. An information block underneath the dropdown summarises the trade-off.
+{% endtab %}
+
+{% tab title="Via IDE" %}
+Add the optional `widgetLayout` property (one of the stored values above) to the tab object in the `*.case-widget-tab.json` file. When omitted, the layout falls back to `MUURI_GAP_FREE`.
+
+```json
+[
+  {
+    "key": "personal-info",
+    "widgetLayout": "BEAUTIFUL",
+    "widgets": []
+  }
+]
+```
+{% endtab %}
+{% endtabs %}
+
+## Adding widgets
+
 Click **Add widget** to open the create new widget modal that will guide the widget creation in 4 steps.
 
 {% stepper %}
 {% step %}
 **Choose widget type**
 
-Five types of widgets are currently supported:
+The following widget types are currently supported:
 
 * **Fields**\
-  _&#x41; set of single data elements in a widget._
+  _A set of single data elements in a widget._
 * **Custom component**\
-  _&#x41;n option to direct to a custom Angular component in de codebase._
+  _An option to direct to a custom Angular component in de codebase._
 * **Form.io form**\
-  _&#x54;his type makes is possible to display a Form.io form within a widget. The form is prefilled with case data._
+  _This type makes is possible to display a Form.io form within a widget. The form is prefilled with case data._
 * **Table**\
-  _&#x50;resent array case data in a table within a widget._
+  _Present array case data in a table within a widget._
 * **Collection**\
-  _&#x50;resent array case data in a collection of cards within a widget._
+  _Present array case data in a collection of cards within a widget._
+* **Map**\
+  _Render geographic data on a map using GeoJSON sources._
+* **Metroline**\
+  _Visualise the progression of a case as an ordered set of steps, driven either by the internal case status history or by the zaak status._
+* **Person card**\
+  _Display personal data for a single person (full name, birth date, BSN, phone, email and city) in a compact card._
+* **Highlight**\
+  _Compact widget that highlights a single value or the count of items in a collection._
+* **Image**\
+  _Display image files stored on the case, either in a grid or as a carousel._
+* **Text**\
+  _Show a fixed explanatory text, authored in markdown. The text is part of the widget configuration and is the same for every case._
 
 <figure><img src="../../../../.gitbook/assets/image (21).png" alt=""><figcaption><p>Choosing widget type</p></figcaption></figure>
 {% endstep %}
@@ -436,6 +482,189 @@ See below screenshot for the presentation result of a collection. 6 files where 
 
 </details>
 
+<details>
+
+<summary>Person card widget</summary>
+
+{% hint style="info" %}
+**Knowledge requirements**
+
+* Basic knowledge of JSON file structure.
+{% endhint %}
+
+A person card widget displays personal data for a single person in a compact card. It is intended for cases that revolve around a natural person (for example a citizen) and surfaces the most common identifying details next to each other.
+
+The following fields can be configured. Each field accepts a value path into the case document (for example `doc:/applicant/fullName`) — the widget resolves the path and renders the resulting value.
+
+* **Widget title** _(required)_\
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+* **Widget icon** _(optional)_\
+  _&#x41;n MDI icon shown next to the widget title._
+* **Full name** _(required)_\
+  _&#x50;ath to the person's full name. This is the only required person field; the widget cannot be saved without it._
+* **Birth date** _(optional)_\
+  _&#x50;ath to the person's birth date._
+* **BSN** _(optional)_\
+  _&#x50;ath to the Dutch citizen service number (Burgerservicenummer)._
+* **Phone** _(optional)_\
+  _&#x50;ath to the person's phone number._
+* **Email** _(optional)_\
+  _&#x50;ath to the person's e-mail address._
+* **City** _(optional)_\
+  _&#x50;ath to the person's city of residence._
+
+Optional fields that resolve to an empty value are hidden in the rendered card, so the widget only shows fields that are actually filled in for the case.
+
+{% hint style="info" %}
+*Field paths:**
+
+`doc:/applicant/fullName`
+
+`doc:/applicant/birthDate`
+
+`doc:/applicant/bsn`
+
+`doc:/applicant/phone`
+
+`doc:/applicant/email`
+
+`doc:/applicant/city`
+
+This configuration is based on below JSON.
+
+```json
+"applicant": {
+  "fullName": "Jan de Vries",
+  "birthDate": "1985-03-12",
+  "bsn": "123456789",
+  "phone": "+31 6 12345678",
+  "email": "jan.devries@example.com",
+  "city": "Amsterdam"
+}
+```
+{% endhint %}
+
+</details>
+
+<details>
+
+<summary>Metroline widget</summary>
+
+The metroline widget shows the progression of a case as an ordered set of steps, similar to a metro-line diagram. Each step represents a status the case has gone through or still needs to go through, and the currently active step is highlighted. Completed steps display the date and time they were reached.
+
+**Widget configuration**
+
+The metroline widget requires the following fields to be configured.
+
+* **Widget title**\
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+* **Widget icon** _(optional)_\
+  _&#x41;n MDI icon shown next to the widget title._
+* **Orientation**\
+  _&#x44;etermines how the steps are laid out in the widget. Choose between **Horizontal** (steps run left-to-right) and **Vertical** (steps run top-to-bottom)._
+* **Status source**\
+  _&#x44;etermines where the steps and their completion data come from. See the section below for the available sources._
+
+**Status sources**
+
+<table><thead><tr><th width="171" valign="top">Status source</th><th valign="top">Description</th></tr></thead><tbody><tr><td valign="top"><strong>Internal status</strong></td><td valign="top">The steps are derived from the case's <a href="../statuses.md">internal case status</a> history. Each entry in the history becomes a step, in chronological order. The most recent entry is rendered as the current step; all earlier entries are rendered as completed and show the date and time at which the case moved into that status. The step title comes from the configured internal status title, with the status label shown in an info toggletip next to the step.</td></tr><tr><td valign="top"><strong>Zaak status</strong></td><td valign="top">The steps are derived from the statustypen of the zaaktype linked to the case. All statustypen for the zaaktype are rendered in their defined order, so future statuses are visible up-front as incomplete steps. A step is marked complete once the matching status has been set on the zaak, and shows the date and time it was reached. The first not-yet-reached status is rendered as the current step. This source is only selectable when the <code>zaken-api</code> module is on the classpath; without it, the status source dropdown will not offer this option and the widget will fail to load data if it has been configured for it via JSON or autodeploy.</td></tr></tbody></table>
+
+**Step states**
+
+Each step in the rendered metroline is in one of the following states:
+
+* **Current** — the step the case is currently on. Highlighted with a distinct icon and styling.
+* **Complete** — a step the case has already passed. Displays the completion date and time.
+* **Incomplete** — a step the case has not yet reached. Only relevant for the Zaak status source, where future steps are known up-front.
+
+{% hint style="info" %}
+The metroline widget does not use the **Appearance** (color) or **Density** (compact) options from the widget creation wizard. Those steps are still shown but do not affect the metroline rendering.
+{% endhint %}
+
+</details>
+
+<details>
+
+<summary>Text widget</summary>
+
+The text widget shows a fixed block of explanatory text on a widget tab. Unlike the other widget types it does
+not read anything from the case document: the text is part of the widget configuration and is therefore
+identical for every case of that case definition. Use it to explain what is expected of a case handler, to point
+to a work instruction, or to introduce the widgets around it.
+
+**Configuration**
+
+* **Widget title**\
+  _&#x54;he widget title is presented in the UI at the top-left corner of the widget and should describe the content for that widget._
+* **Widget icon** _(optional)_\
+  _&#x41;n MDI icon shown next to the widget title._
+* **Text**\
+  _&#x54;he content of the widget, authored as markdown. See the supported markdown below._
+* **Accent color**\
+  _&#x54;he color palette that is also available for the other widgets. For the text widget the color is chosen in the content step itself, because the separate **Appearance** step of the wizard is not shown for this type._
+
+The widget width can be set to 1 up to 4 columns like any other widget. The **Density** (compact) step of the
+wizard is not shown for text widgets, as there is no data density to vary.
+
+**Supported markdown**
+
+The content is rendered as [GitHub Flavored Markdown](https://github.github.com/gfm/). The following is
+supported and styled by the widget:
+
+* Headings (`#`, `##`, `###`, `####`)
+* Bulleted (`-`) and numbered (`1.`) lists
+* `**bold**` and `*italic*` text
+* Links: `[link text](https://example.org)`
+* Inline `code` and fenced code blocks
+* Block quotes (`>`), tables, images and horizontal rules (`---`)
+
+A single newline is rendered as a line break, so the text appears the way it is typed in the editor — an empty
+line is not needed to break a line.
+
+{% hint style="warning" %}
+**Asterisks must sit directly against the text**
+
+`**bold**` and `*italic*` only work without spaces between the asterisks and the text. `** bold **` is shown as
+plain text including the asterisks, and a line starting with `* ` is read as a list item rather than as italic
+text. This is standard markdown behaviour.
+{% endhint %}
+
+{% hint style="info" %}
+**Links open in a new tab**
+
+Every link in a text widget opens in a new browser tab, because the target is typically outside the case (an
+intranet page or a work instruction, for example). Relative links (`/handbook`), fragments (`#top`), `mailto:`
+and `tel:` links are supported as well.
+
+The text widget resolves no case data, so a value resolver path (for example `doc:/customer/name`) placed in the
+content or in the URL of an action button is **not** substituted — it is shown as-is.
+{% endhint %}
+
+{% hint style="warning" %}
+**Sanitization**
+
+The rendered markdown is sanitized before it is displayed. Scripts, event handler attributes and links with a
+dangerous scheme (such as `javascript:` or `data:`) are removed. Raw HTML in the content is therefore not a way
+to work around the widget: anything the sanitizer considers unsafe is stripped, and the surrounding text stays
+visible.
+{% endhint %}
+
+**Example**
+
+```markdown
+## What is expected of you
+
+Check the submitted documents before the case is assigned:
+
+- verify the identity of the applicant
+- check whether all attachments are present
+- consult the [work instruction](https://intranet.example.org/work-instruction) when in doubt
+
+Questions? Mail [the back office](mailto:backoffice@example.org).
+```
+
+</details>
+
 ## JSON Editor
 
 Widgets for a case can also be configured directly through a JSON editor. For process engineers, configuring widgets in JSON may offer greater control and efficiency. In the second tab of the Widget configuration UI, a JSON editor displays the complete widget configuration in JSON format. This editor includes error-checking functionality to ensure the JSON structure is correct.
@@ -508,5 +737,82 @@ Access to the case widgets can be configured through access control. More inform
 }
 ```
 {% endcode %}
+
+</details>
+
+<details>
+
+<summary>Highlight widget</summary>
+
+The highlight widget is a compact widget that draws attention to a single value or to the count of items in a
+collection. It is rendered one column wide and has a coloured accent border on the left.
+
+**Configuration**
+
+The widget configuration is split into three sections:
+
+1. **Widget identity**
+   * **Widget title** — the label displayed at the top of the widget.
+   * **Icon** — an optional MDI icon, identical to the icon picker used by the other widgets. The icon is
+     rendered in the selected accent color in the top-right corner of the widget.
+2. **Action**
+   * **Action button type** — optionally choose between a process action (start a process from the widget) or an
+     external link, identical to the action button on the other widgets.
+3. **Value & Accent color**
+   * **Value** — the value resolver path that will be displayed (for example `doc:/customer/firstName` or
+     `doc:/uploadedFiles`). If the path resolves to a single primitive value (string, number, boolean) the value
+     itself is rendered. If it resolves to an array, the number of items in the array is rendered instead.
+   * **Accent color** — the same color palette that is available for the other widgets. The selected color is
+     applied to the left-hand border and to the icon. The title and value text keep the default text colors so
+     the highlighted value stays legible against any accent. In the color picker, colors that have a Carbon tag
+     equivalent (Blue, Purple, Turquoise, Green, Brown, Red, High contrast) are previewed using the same canonical
+     Carbon tones as the case status tags; the remaining colors (Periwinkle, Orange, Yellow, Default) keep their
+     widget-specific tones.
+
+The widget width is fixed to one column for highlight widgets and the width step in the wizard is hidden
+accordingly.
+
+**Empty / invalid path handling**
+
+When the configured path does not resolve to a value (path missing in the document, value is `null`/`undefined`,
+or the resolved value is a non-primitive object), the widget renders a discreet "No value" placeholder rather
+than a stringified representation of the underlying object.
+
+</details>
+
+<details>
+
+<summary>Image widget</summary>
+
+The image widget displays image files that are stored on the case. It resolves a value resolver path to one or
+more uploaded file resources and renders the ones that are browser-renderable images. Each image is shown with
+its file name and with buttons to open the image in a new tab or download it.
+
+**Configuration**
+
+The widget configuration is split into three sections:
+
+1. **Widget identity**
+   * **Widget title** — the label displayed at the top of the widget.
+   * **Icon** — an optional MDI icon, identical to the icon picker used by the other widgets.
+2. **Action**
+   * **Action button type** — optionally choose between a process action (start a process from the widget) or an
+     external link, identical to the action button on the other widgets.
+3. **Value**
+   * **Value** — the value resolver path that points to the file resources to display (for example
+     `doc:/uploadedFiles`). The path must resolve to one or more uploaded file resources.
+   * **Display as carousel** — when enabled, the images are presented one at a time in a carousel with navigation
+     dots and previous/next arrows instead of the default grid. The carousel is only used when more than one image
+     is resolved; with a single image the carousel controls are hidden.
+
+**Supported formats**
+
+Only browser-renderable image files are shown: `png`, `jpg`, `jpeg`, `gif`, `webp`, `avif`, `svg`, `bmp` and
+`ico`. Resources that resolve to other file types (for example a PDF) are filtered out so they are not rendered
+incorrectly.
+
+**Empty handling**
+
+When the path resolves to no renderable images, the widget renders a "No image found" placeholder.
 
 </details>

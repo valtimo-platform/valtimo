@@ -63,6 +63,7 @@ class ValtimoImportTypes {
         const val ZGW_DOCUMENT_UPLOAD_FIELD = "zgwdocumentuploadfield"
         const val ZGW_ZAAK_TYPE_LINK = "zgwzaaktypelink"
         const val ZGW_ZAAKDETAIL_SYNC = "zgwzaakdetailsync"
+        const val ZGW_ZAKEN_API_SYNC = "zgwzakenapisync"
 
         // IKO
         const val IKO_REPOSITORY_CONFIG = "ikorepositoryconfig"
@@ -75,5 +76,10 @@ class ValtimoImportTypes {
 
         // TEAM
         const val TEAM = "team"
+
+        // ADMIN SETTINGS
+        const val ADMIN_SETTINGS_FEATURE_TOGGLES = "adminsettingsfeaturetoggles"
+        const val ADMIN_SETTINGS_ACCENT_COLORS = "adminsettingsaccentcolors"
+        const val ADMIN_SETTINGS_LOGO = "adminsettingslogo"
     }
 }

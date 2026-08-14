@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,12 @@ import {useService} from 'bpmn-js-properties-panel';
 import {html} from 'htm/preact';
 import {is} from 'bpmn-js/lib/util/ModelUtil';
 import {ProcessManagementEditorService} from '../../../services';
-import {BpmnElement, OpenProcessLinkModalEvent, ProcessManagementWindow} from '../../../models';
+import {
+  BpmnElement,
+  OpenProcessLinkModalEvent,
+  ProcessDefinitionValidationError,
+  ProcessManagementWindow,
+} from '../../../models';
 import {ModalParams, ProcessLink} from '@valtimo/process-link';
 import {TranslateService} from '@ngx-translate/core';
 import {mapActivityTypeToActivityListenerType} from '../../../utils';
@@ -59,7 +64,35 @@ class ValtimoPropertiesProvider {
         processLink => processLink.activityId === element.id
       ) || null;
 
+    const elementErrors = this.processManagementEditorService.validationErrors.filter(
+      error => error.elementId === element.id
+    );
+
     return (groups: any[]) => {
+      const generalGroup = groups.find((g: any) => g.id === 'general');
+      if (generalGroup) {
+        generalGroup.entries = generalGroup.entries.filter(
+          (entry: any) => entry.id !== 'isExecutable'
+        );
+      }
+
+      if (elementErrors.length > 0) {
+        const errorGroup = {
+          id: 'validationErrorsGroup',
+          label: this.translateService.instant('processManagement.validationErrors'),
+          entries: [
+            {
+              id: 'validationErrorsEntry',
+              errors: elementErrors,
+              translateService: this.translateService,
+              component: ValidationErrorsElement,
+            },
+          ],
+          shouldOpen: true,
+        };
+        groups.unshift(errorGroup);
+      }
+
       if (
         is(element, 'bpmn:UserTask') ||
         is(element, 'bpmn:StartEvent') ||
@@ -378,6 +411,32 @@ const CustomRootElement = (props: {
   </div>`;
 
   return processLink ? genericLinkedPanel : genericCreatePanel;
+};
+
+const ValidationErrorsElement = (props: {
+  errors: ProcessDefinitionValidationError[];
+  translateService: TranslateService;
+}): VNode => {
+  const getErrorMessage = (error: ProcessDefinitionValidationError): string => {
+    if (error.errorCode) {
+      const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
+      const translated = props.translateService.instant(translationKey, {expression: error.expression ? `'${error.expression}'` : ''});
+      if (translated !== translationKey) {
+        return translated;
+      }
+    }
+    return error.reason;
+  };
+
+  return html`<div class="validation-errors-panel">
+    ${props.errors.map(
+      error =>
+        html`<div class="validation-errors-panel__item${error.severity === 'WARNING' ? ' warning' : ''}">
+          <span class="validation-errors-panel__icon${error.severity === 'WARNING' ? ' warning' : ''}">!</span>
+          <span class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}">${getErrorMessage(error)}</span>
+        </div>`
+    )}
+  </div>`;
 };
 
 const ValtimoPropertiesProviderModule = {

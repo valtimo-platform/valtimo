@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,46 @@
  */
 
 import {Injectable} from '@angular/core';
-import {IncludeFunction, ValtimoConfig} from '../models';
+import {IncludeFunction} from '../models';
 import {ConfigService} from './config.service';
-import {Observable, of} from 'rxjs';
+import {combineLatest, map, Observable, of} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MenuIncludeService {
-  private valtimoConfig!: ValtimoConfig;
+  constructor(private readonly configService: ConfigService) {}
 
-  constructor(private readonly configService: ConfigService) {
-    this.valtimoConfig = this.configService.config;
+  getIncludeFunctionObservable(
+    includeFunction: IncludeFunction | IncludeFunction[]
+  ): Observable<boolean> {
+    if (Array.isArray(includeFunction)) {
+      if (includeFunction.length === 0) {
+        return of(true);
+      }
+      const observables = includeFunction.map(fn => this.getSingleIncludeFunction(fn));
+      return combineLatest(observables).pipe(map(results => results.every(result => result)));
+    }
+    return this.getSingleIncludeFunction(includeFunction);
   }
 
-  getIncludeFunction(includeFunction: IncludeFunction): Observable<boolean> {
+  private getSingleIncludeFunction(includeFunction: IncludeFunction): Observable<boolean> {
     switch (includeFunction) {
       case IncludeFunction.ObjectManagementEnabled:
-        return of(!!this.valtimoConfig?.featureToggles?.enableObjectManagement || true);
+        return this.configService.getFeatureToggleObservable('enableObjectManagement', true);
+      case IncludeFunction.OpenSearchEnabled:
+        return this.configService.getFeatureToggleObservable('enableOpenSearch', false);
+      case IncludeFunction.ZgwFeaturesEnabled:
+        return this.configService.getFeatureToggleObservable('enableZgwFeatures', false);
       default:
         return of(true);
     }
+  }
+
+  /**
+   * @deprecated Use getIncludeFunctionObservable instead
+   */
+  getIncludeFunction(includeFunction: IncludeFunction): Observable<boolean> {
+    return this.getSingleIncludeFunction(includeFunction);
   }
 }

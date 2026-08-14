@@ -52,6 +52,7 @@ import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
 import {
   CAN_ASSIGN_TASK_PERMISSION,
   CAN_MODIFY_TASK_PERMISSION,
+  CAN_VIEW_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
@@ -113,7 +114,9 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.canAssignUserToTask$,
   ]).pipe(
     switchMap(([task, canAssign]) =>
-      canAssign ? this.taskService.getCandidateUsers(task.id) : of([])
+      canAssign
+        ? this.taskService.getCandidateUsers(task.id).pipe(catchError(() => of([])))
+        : of([])
     ),
     shareReplay(1)
   );
@@ -124,7 +127,10 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   ]).pipe(
     switchMap(([task, canAssign]) =>
       canAssign
-        ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content))
+        ? this.taskService.getCandidateTeams(task.id).pipe(
+            map(page => page.content),
+            catchError(() => of([]))
+          )
         : of([])
     ),
     shareReplay(1)
@@ -193,9 +199,25 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
             .subscribe((allowed: boolean) => {
               this.canModifyTask$.next(allowed);
             });
+
+          this.permissionService
+            .requestPermission(CAN_VIEW_TASK_PERMISSION, {
+              resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+              identifier: task.id,
+            })
+            .subscribe((allowed: boolean) => {
+              if (!allowed && this.task$.getValue()?.id === task.id) {
+                this.logger.debug(
+                  'Closing task detail as user is not allowed to view Task with id:',
+                  task.id
+                );
+                this.closeModal();
+              }
+            });
         } else {
           this.logger.debug('Reset is user allowed to assign a user to Task as task is null');
           this.canAssignUserToTask$.next(false);
+          this.canModifyTask$.next(false);
         }
       })
     );
@@ -207,17 +229,26 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
         .getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE')
         .pipe(
           filter(event => this.task$.getValue()?.id === event.taskId),
-          switchMap(event =>
-            this.taskService.getTask(event.taskId).pipe(
+          switchMap(event => {
+            // A task update (e.g. an assignment by another user) can change the outcome of
+            // permission checks for this task, so drop cached permissions before re-checking
+            this.permissionService.invalidateResource(
+              TASK_DETAIL_PERMISSION_RESOURCE.task,
+              event.taskId
+            );
+
+            // a 403 or 404 means the user can no longer view the task; these are expected
+            // outcomes here, so they are skipped to avoid a global error toast
+            return this.taskService.getTask(event.taskId, ['403', '404']).pipe(
               catchError(err => {
-                if (err.status === 404) {
+                if (err.status === 403 || err.status === 404) {
                   return of(null);
                 }
                 this.logger.error('Failed to fetch task on SSE update', err);
                 return EMPTY;
               })
-            )
-          )
+            );
+          })
         )
         .subscribe(response => {
           if (!response) {
@@ -333,12 +364,11 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.taskService
       .assignTask(task.id, assignRequest)
       .pipe(
-        switchMap(() => this.taskService.getTask(task.id)),
+        switchMap(() => this.refreshTaskAfterAssignmentChange(task.id)),
         take(1)
       )
       .subscribe(response => {
-        this.refreshTask(response);
-        this.assignmentOfTaskChanged.emit();
+        this.handleAssignmentChangeResponse(response);
       });
   }
 
@@ -349,13 +379,39 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.taskService
       .unassignTask(task.id)
       .pipe(
-        switchMap(() => this.taskService.getTask(task.id)),
+        switchMap(() => this.refreshTaskAfterAssignmentChange(task.id)),
         take(1)
       )
       .subscribe(response => {
-        this.refreshTask(response);
-        this.assignmentOfTaskChanged.emit();
+        this.handleAssignmentChangeResponse(response);
       });
+  }
+
+  private refreshTaskAfterAssignmentChange(taskId: string): Observable<any> {
+    // The new assignment can change the outcome of permission checks for this task,
+    // so drop cached permissions before the task is re-fetched and re-checked
+    this.permissionService.invalidateResource(TASK_DETAIL_PERMISSION_RESOURCE.task, taskId);
+
+    // a 403 or 404 means the user can no longer view the task; these are expected
+    // outcomes here, so they are skipped to avoid a global error toast
+    return this.taskService.getTask(taskId, ['403', '404']).pipe(
+      catchError(error => {
+        if (error?.status === 403 || error?.status === 404) {
+          return of(null);
+        }
+        this.logger.error('Failed to fetch task after assignment change', error);
+        return EMPTY;
+      })
+    );
+  }
+
+  private handleAssignmentChangeResponse(response: any): void {
+    if (response) {
+      this.refreshTask(response);
+    } else {
+      this.closeModal();
+    }
+    this.assignmentOfTaskChanged.emit();
   }
 
   public onFormSubmit(): void {

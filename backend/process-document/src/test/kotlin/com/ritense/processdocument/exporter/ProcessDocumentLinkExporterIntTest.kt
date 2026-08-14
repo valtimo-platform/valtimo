@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,13 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
 import com.ritense.processdocument.BaseIntegrationTest
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
+import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
@@ -32,11 +37,13 @@ import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.StreamUtils
 
-@Transactional(readOnly = true)
+@Transactional
 class ProcessDocumentLinkExporterIntTest @Autowired constructor(
     private val resourceLoader: ResourceLoader,
     private val operatonRepositoryService: OperatonRepositoryService,
-    private val processDocumentLinkExporter: ProcessDocumentLinkExporter
+    private val processDocumentLinkExporter: ProcessDocumentLinkExporter,
+    private val processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+    private val entityManager: EntityManager
 ) : BaseIntegrationTest() {
 
     @Test
@@ -66,6 +73,36 @@ class ProcessDocumentLinkExporterIntTest @Autowired constructor(
         assertThat(result.relatedRequests).contains(
             ProcessDefinitionExportRequest(processDefinitionId, caseDefinitionId)
         )
+    }
+
+    @Test
+    fun `should skip orphaned process document links during export`(): Unit = runWithoutAuthorization {
+        val caseDefinitionId = CaseDefinitionId("house", "1.0.0")
+        val documentDefinitionName = "house"
+
+        val orphanedLink = ProcessDefinitionCaseDefinition(
+            id = ProcessDefinitionCaseDefinitionId(
+                processDefinitionId = ProcessDefinitionId("non-existent-process:1:12345"),
+                caseDefinitionId = caseDefinitionId
+            ),
+            canInitializeDocument = false,
+            startableByUser = true
+        )
+        processDefinitionCaseDefinitionRepository.saveAndFlush(orphanedLink)
+        entityManager.clear()
+
+        val result = processDocumentLinkExporter.export(DocumentDefinitionExportRequest(documentDefinitionName, caseDefinitionId))
+
+        val exportFile = result.exportFiles.single {
+            it.path == PATH.format(documentDefinitionName)
+        }
+        val exportJson = exportFile.content.toString(Charsets.UTF_8)
+
+        assertThat(exportJson).doesNotContain("non-existent-process")
+
+        assertThat(result.relatedRequests).noneMatch {
+            it is ProcessDefinitionExportRequest && it.processDefinitionId.contains("non-existent-process")
+        }
     }
 
     companion object {

@@ -16,11 +16,15 @@
 
 package com.ritense.processdocument.web.rest;
 
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ritense.case_.domain.definition.CaseDefinition;
 import com.ritense.case_.service.ActiveCaseDefinitionService;
 import com.ritense.document.domain.impl.JsonDocumentContent;
@@ -65,6 +70,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -107,10 +113,13 @@ class ProcessDocumentResourceTest extends BaseTest {
             processDefinitionCaseDefinitionService,
             activeCaseDefinitionService
         );
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders.standaloneSetup(processDocumentResource)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
             .setMessageConverters(new MappingJackson2HttpMessageConverter(MapperSingleton.INSTANCE.get()))
+            .setValidator(validator)
             .build();
 
         processDefinitionCaseDefinition = new ProcessDefinitionCaseDefinition(
@@ -307,5 +316,93 @@ class ProcessDocumentResourceTest extends BaseTest {
             .andExpect(jsonPath("$.document").exists())
             .andExpect(jsonPath("$.errors").exists())
             .andExpect(jsonPath("$.errors").isEmpty());
+    }
+
+    @Test
+    void shouldRejectModifyDocumentAndStartProcessWhenProcessDefinitionKeyIsMissing() throws Exception {
+        String json = "{\"request\": {\"documentId\": \""
+            + UUID.randomUUID() + "\", \"content\": {}}}";
+
+        mockMvc.perform(
+                post("/api/v1/process-document/operation/modify-document-and-start-process")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .content(json))
+            .andDo(print())
+            .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * A client-supplied process definition id would bypass resolution by key and blueprint, making it
+     * possible to start a superseded or suspended definition, or one belonging to a different case.
+     */
+    @Test
+    void shouldNotBindAClientSuppliedProcessDefinitionIdOnModifyDocumentAndStartProcess() throws Exception {
+        var content = new JsonDocumentContent("{\"street\": \"Funenparks\"}");
+        final CreateDocumentResult result = createDocument(definition(), content);
+        var resultSucceeded = new ModifyDocumentAndStartProcessResultSucceeded(
+            result.resultingDocument().orElseThrow(),
+            new OperatonProcessInstanceId(UUID.randomUUID().toString())
+        );
+        when(processDocumentService.modifyDocumentAndStartProcess(any())).thenReturn(resultSucceeded);
+
+        var validRequest = new ModifyDocumentAndStartProcessRequest(
+            "some-key",
+            new ModifyDocumentRequest(UUID.randomUUID().toString(), objectMapper.readTree("{}"))
+        );
+        var json = (ObjectNode) objectMapper.readTree(TestUtil.convertObjectToJsonBytes(validRequest));
+        json.put("processDefinitionId", "evil-process:9:deadbeef");
+
+        mockMvc.perform(
+                post("/api/v1/process-document/operation/modify-document-and-start-process")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .content(objectMapper.writeValueAsBytes(json)))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        var captor = ArgumentCaptor.forClass(ModifyDocumentAndStartProcessRequest.class);
+        verify(processDocumentService).modifyDocumentAndStartProcess(captor.capture());
+        assertNull(captor.getValue().processDefinitionId());
+    }
+
+    @Test
+    void shouldNotBindAClientSuppliedProcessDefinitionIdOnNewDocumentAndStartProcess() throws Exception {
+        var content = new JsonDocumentContent("{\"street\": \"Funenparks\"}");
+        final CreateDocumentResult result = createDocument(definition(), content);
+        var resultSucceeded = new NewDocumentAndStartProcessResultSucceeded(
+            result.resultingDocument().orElseThrow(),
+            new OperatonProcessInstanceId(UUID.randomUUID().toString())
+        );
+        when(processDocumentService.newDocumentAndStartProcess(any())).thenReturn(resultSucceeded);
+
+        var validRequest = new NewDocumentAndStartProcessRequest(
+            "some-key",
+            new NewDocumentRequest("house", "house", "1.0.0", objectMapper.readTree("{}"))
+        );
+        var json = (ObjectNode) objectMapper.readTree(TestUtil.convertObjectToJsonBytes(validRequest));
+        json.put("processDefinitionId", "evil-process:9:deadbeef");
+
+        mockMvc.perform(
+                post("/api/v1/process-document/operation/new-document-and-start-process")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .content(objectMapper.writeValueAsBytes(json)))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        var captor = ArgumentCaptor.forClass(NewDocumentAndStartProcessRequest.class);
+        verify(processDocumentService).newDocumentAndStartProcess(captor.capture());
+        assertNull(captor.getValue().processDefinitionId());
+    }
+
+    @Test
+    void shouldNotSerialiseTheProcessDefinitionIdOntoTheWire() throws Exception {
+        var request = new ModifyDocumentAndStartProcessRequest(
+            "some-key",
+            new ModifyDocumentRequest(UUID.randomUUID().toString(), objectMapper.createObjectNode())
+        ).withProcessDefinitionId("some-process:1:abc");
+
+        assertFalse(objectMapper.writeValueAsString(request).contains("processDefinitionId"));
     }
 }

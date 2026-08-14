@@ -64,9 +64,10 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
   public readonly customPageTitleSet$ = this.pageTitleService.customPageTitleSet$;
   public readonly translatedTitle$ = new BehaviorSubject<string>('');
   public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
+  public readonly titleAsBreadcrumb$ = this.pageHeaderService.titleAsBreadcrumb$;
 
-  private appTitleAsSuffix =
-    this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
+  private readonly _appTitleAsSuffix$ =
+    this.configService.getFeatureToggleObservable('applicationTitleAsSuffix');
   private readonly _subscriptions = new Subscription();
   private readonly _hidePageTitle$: Observable<boolean> = this.router.events.pipe(
     startWith(this.router),
@@ -91,6 +92,7 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.openRouterTranslateSubscription();
     this.openHidePageTitleSubscription();
     this.openCompactModeSubscription();
+    this.openCurrentTitleSubscription();
   }
 
   public ngAfterViewInit(): void {
@@ -106,7 +108,8 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
       combineLatest([
         this.router.events.pipe(startWith(null)),
         this.translateService.stream('key'),
-      ]).subscribe(() => {
+        this._appTitleAsSuffix$,
+      ]).subscribe(([, , appTitleAsSuffix]) => {
         const routeTitle =
           this.activatedRoute?.snapshot?.firstChild?.data?.title ||
           this.activatedRoute?.snapshot?.firstChild?.children[0]?.data?.title;
@@ -126,7 +129,7 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
         if (translatedRouteTitle) {
           this.logger.debug('PageTitle: setTitle translated async', translatedRouteTitle);
           this.translatedTitle$.next(translatedRouteTitle);
-          if (this.appTitleAsSuffix) {
+          if (appTitleAsSuffix) {
             this.titleService.setTitle(translatedRouteTitle + ' - ' + this.appTitle);
           } else {
             this.titleService.setTitle(this.appTitle + ' - ' + translatedRouteTitle);
@@ -152,6 +155,24 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
     this._subscriptions.add(
       this.pageHeaderService.compactMode$.subscribe(compactMode => {
         this.isCompact = compactMode;
+      })
+    );
+  }
+
+  private openCurrentTitleSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this.translatedTitle$,
+        this.hasCustomPageTitle$,
+        this.customPageTitle$,
+        this.customPageTitleSet$,
+      ]).subscribe(([translatedTitle, hasCustomPageTitle, customPageTitle, customPageTitleSet]) => {
+        const currentTitle = hasCustomPageTitle
+          ? customPageTitleSet
+            ? customPageTitle
+            : ''
+          : translatedTitle;
+        this.pageTitleService.setCurrentTitle(currentTitle || '');
       })
     );
   }

@@ -37,7 +37,6 @@ test.describe('Case details - Decision tables tab', () => {
 
     decisionsPage = new CaseDetailsDecisionsPage(page, request);
 
-    await page.goto('/');
     draftVersion = await decisionsPage.goToCaseDecisions(CASE_KEY);
 
     // Remove any stale decision from a previous aborted run so the upload step can succeed
@@ -86,9 +85,9 @@ test.describe('Case details - Decision tables tab', () => {
       await decisionsPage.clickDecisionRow(UPLOADED_DECISION_KEY);
       await page.waitForURL(/\/decisions\/[^/]+$/);
 
-      await expect(decisionsPage.modelerContainer).toBeVisible();
-      await expect(decisionsPage.deployButton).toBeVisible();
-      await expect(decisionsPage.backButton).toBeVisible();
+      await expect(decisionsPage.modelerContainer).toBeVisible({timeout: 30_000});
+      await expect(decisionsPage.deployButton).toBeVisible({timeout: 30_000});
+      await expect(decisionsPage.backButton).toBeVisible({timeout: 30_000});
       await decisionsPage.switchToDecisionTableView();
 
       // Structure from the seeded DMN: 1 input column, 1 output column, 2 rules

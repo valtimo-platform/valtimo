@@ -39,8 +39,7 @@ export class CaseDetailsManagementWidgetsPage {
   // ─── Navigation ───────────────────────────────────────────────────
 
   async goToCaseManagement(caseIdentifier: string) {
-    await this.page.getByRole('button', {name: 'Admin'}).click();
-    await this.page.getByRole('link', {name: 'Cases'}).click();
+    await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
     await this.page.locator(`tr:has(td:has-text("${caseIdentifier}"))`).click();
   }
@@ -122,7 +121,9 @@ export class CaseDetailsManagementWidgetsPage {
   async selectValuePath(pathText: string) {
     const selector = this.page.getByTestId(WIDGET_CONTENT_FIELDS_TEST_IDS.valuePathSelector);
     await selector.getByRole('combobox').click();
-    await this.page.getByText(pathText).click();
+    // Match the option exactly: several paths share a prefix (e.g. `case:definitionId.key`
+    // and `case:definitionId.versionTag`), so a substring match is ambiguous.
+    await this.page.getByRole('option', {name: pathText, exact: true}).click();
   }
 
   /**

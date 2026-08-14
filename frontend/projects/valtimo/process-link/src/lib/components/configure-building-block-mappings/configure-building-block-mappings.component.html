@@ -64,8 +64,10 @@
                 <valtimo-value-path-selector
                   [cdsLayer]="2"
                   [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [notation]="'slashes'"
                   [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                  [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
                   [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
                   [buildingBlockDefinitionVersionTag]="
                     obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
@@ -82,11 +84,8 @@
             <div class="mapping-part">
               <div class="mapping-cell" [attr.data-test-id]="testIds.inputTargetSelectWrapper">
                 @if (isRequiredTarget(obs.fields, group.get('target')?.value)) {
-                  <div
-                    class="required-target"
-                    [attr.data-test-id]="testIds.inputRequiredTargetLabel"
-                  >
-                    {{ 'doc:' + group.get('target')?.value }}
+                  <div class="required-target" [attr.data-test-id]="testIds.inputRequiredTargetLabel">
+                    {{ group.get('target')?.value }}
                   </div>
                 } @else {
                   <v-select
@@ -170,7 +169,7 @@
           "
         />
 
-        <div class="sync-options" [style.display]="'none'">
+        <div class="sync-options">
           <v-input-label
             [title]="'processLinkConfiguration.buildingBlock.sync.title' | translate"
           />
@@ -210,8 +209,10 @@
                 <valtimo-value-path-selector
                   [cdsLayer]="2"
                   [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [notation]="'slashes'"
                   [caseDefinitionKey]="obs.params?.caseDefinitionKey"
                   [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+                  [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
                   [buildingBlockDefinitionKey]="obs.buildingBlockParams?.buildingBlockDefinitionKey"
                   [buildingBlockDefinitionVersionTag]="
                     obs.buildingBlockParams?.buildingBlockDefinitionVersionTag
@@ -225,7 +226,7 @@
             </div>
 
             <div class="mapping-part">
-              <div class="mapping-cell" [style.display]="'none'">
+              <div class="mapping-cell">
                 <cds-radio-group
                   class="sync-radio-group"
                   formControlName="syncTiming"

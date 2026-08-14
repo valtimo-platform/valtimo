@@ -29,6 +29,7 @@ import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
 import com.ritense.case.repository.QuickSearchRepository
 import com.ritense.case.repository.StartableItemRepository
+import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionCheckerImpl
@@ -69,7 +70,6 @@ import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
-import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
@@ -270,6 +270,7 @@ class CaseAutoConfiguration {
     @Bean
     fun taskColumnService(
         repository: TaskListColumnRepository,
+        hiddenTaskListColumnRepository: HiddenTaskListColumnRepository,
         documentDefinitionService: DocumentDefinitionService,
         valueResolverService: ValueResolverService,
         authorizationService: AuthorizationService,
@@ -277,6 +278,7 @@ class CaseAutoConfiguration {
     ): TaskColumnService {
         return TaskColumnService(
             repository,
+            hiddenTaskListColumnRepository,
             documentDefinitionService,
             valueResolverService,
             authorizationService,
@@ -436,17 +438,19 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseExporter::class)
     fun caseExporter(
         caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
-        documentSearchService: JsonSchemaDocumentSearchService,
+        documentSearchService: DocumentSearchService,
         outboxService: OutboxService,
         mapper: ObjectMapper,
-        caseListRowMapper: CaseListRowMapper
+        caseListRowMapper: CaseListRowMapper,
+        authorizationService: AuthorizationService
     ): CaseExporter {
         return CaseExporter(
             caseDefinitionListColumnRepository,
             documentSearchService,
             outboxService,
             mapper,
-            caseListRowMapper
+            caseListRowMapper,
+            authorizationService
         )
     }
 

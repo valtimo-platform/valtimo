@@ -41,7 +41,6 @@ test.describe('Case details management — Widgets', () => {
     widgetsPage = new CaseDetailsManagementWidgetsPage(page, context.request);
 
     // Navigate to the case management page
-    await page.goto('/');
     await widgetsPage.goToCaseManagement(CASE_IDENTIFIER);
     draftVersion = await widgetsPage.ensureDraftVersionSelected();
 

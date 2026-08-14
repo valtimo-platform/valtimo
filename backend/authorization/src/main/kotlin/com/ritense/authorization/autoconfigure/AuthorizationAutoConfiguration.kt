@@ -19,9 +19,11 @@ package com.ritense.authorization.autoconfigure
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationEntityMapper
+import com.ritense.authorization.AuthorizationResourceTypeResolver
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.AuthorizationServiceHolder
 import com.ritense.authorization.AuthorizationSupportedHelper
+import com.ritense.authorization.PbacRegistryService
 import com.ritense.authorization.ResourceActionProvider
 import com.ritense.authorization.ValtimoAuthorizationService
 import com.ritense.authorization.annotation.RunWithoutAuthorizationAspect
@@ -38,8 +40,10 @@ import com.ritense.authorization.role.RoleRepository
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
 import com.ritense.authorization.specification.impl.DenyAuthorizationSpecificationFactory
 import com.ritense.authorization.specification.impl.NoopAuthorizationSpecificationFactory
+import com.ritense.authorization.web.PbacRegistryResource
 import com.ritense.authorization.web.PermissionManagementResource
 import com.ritense.authorization.web.PermissionResource
+import com.ritense.authorization.web.PermissionSchemaResource
 import com.ritense.authorization.web.RoleManagementResource
 import com.ritense.authorization.web.security.ValtimoAuthorizationHttpSecurityConfigurer
 import com.ritense.valtimo.changelog.service.ChangelogService
@@ -157,9 +161,18 @@ class AuthorizationAutoConfiguration(
     @Bean
     @ConditionalOnMissingBean(PermissionResource::class)
     fun permissionResource(
-        authorizationService: AuthorizationService
+        authorizationService: AuthorizationService,
+        resourceTypeResolver: AuthorizationResourceTypeResolver
     ): PermissionResource {
-        return PermissionResource(authorizationService)
+        return PermissionResource(authorizationService, resourceTypeResolver)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AuthorizationResourceTypeResolver::class)
+    fun authorizationResourceTypeResolver(
+        pbacRegistryService: PbacRegistryService
+    ): AuthorizationResourceTypeResolver {
+        return AuthorizationResourceTypeResolver(pbacRegistryService)
     }
 
     @Bean
@@ -173,6 +186,31 @@ class AuthorizationAutoConfiguration(
         permissionRepository: PermissionRepository
     ): PermissionManagementResource {
         return PermissionManagementResource(permissionRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PermissionSchemaResource::class)
+    fun permissionSchemaResource(): PermissionSchemaResource {
+        return PermissionSchemaResource()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PbacRegistryService::class)
+    fun pbacRegistryService(
+        actionProviders: List<ResourceActionProvider<*>>,
+        mappers: List<AuthorizationEntityMapper<*, *>>,
+        specificationFactories: List<AuthorizationSpecificationFactory<*>>,
+        roleRepository: RoleRepository,
+    ): PbacRegistryService {
+        return PbacRegistryService(actionProviders, mappers, specificationFactories, roleRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PbacRegistryResource::class)
+    fun pbacRegistryResource(
+        pbacRegistryService: PbacRegistryService,
+    ): PbacRegistryResource {
+        return PbacRegistryResource(pbacRegistryService)
     }
 
     @Bean

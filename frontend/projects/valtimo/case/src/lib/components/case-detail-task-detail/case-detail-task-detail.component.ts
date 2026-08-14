@@ -41,7 +41,9 @@ import {
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
+  EMPTY,
   filter,
   map,
   Observable,
@@ -115,7 +117,9 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     this.canAssignUserToTask$,
   ]).pipe(
     switchMap(([task, canAssign]) =>
-      canAssign ? this.taskService.getCandidateUsers(task.id) : of([])
+      canAssign
+        ? this.taskService.getCandidateUsers(task.id).pipe(catchError(() => of([])))
+        : of([])
     ),
     shareReplay(1)
   );
@@ -126,13 +130,17 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
   ]).pipe(
     switchMap(([task, canAssign]) =>
       canAssign
-        ? this.taskService.getCandidateTeams(task.id).pipe(map(page => page.content))
+        ? this.taskService.getCandidateTeams(task.id).pipe(
+            map(page => page.content),
+            catchError(() => of([]))
+          )
         : of([])
     ),
     shareReplay(1)
   );
 
-  public enableIntermediateSave = false;
+  public readonly enableIntermediateSave$ =
+    this.configService.getFeatureToggleObservable('enableIntermediateSave');
 
   constructor(
     private readonly configService: ConfigService,
@@ -140,9 +148,7 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly translateService: TranslateService,
     private readonly taskService: TaskService
-  ) {
-    this.enableIntermediateSave = !!this.configService.featureToggles?.enableIntermediateSave;
-  }
+  ) {}
 
   public ngOnDestroy(): void {
     this.closeEvent.emit();
@@ -173,12 +179,11 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
       this.taskService
         .assignTask(task.id, assignRequest)
         .pipe(
-          switchMap(() => this.taskService.getTask(task.id)),
+          switchMap(() => this.refreshTaskAfterAssignmentChange(task.id)),
           take(1)
         )
         .subscribe(response => {
-          this.refreshTask(response);
-          this.assignmentOfTaskChanged.emit();
+          this.handleAssignmentChangeResponse(response);
         });
     });
   }
@@ -189,14 +194,34 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
       this.taskService
         .unassignTask(task.id)
         .pipe(
-          switchMap(() => this.taskService.getTask(task.id)),
+          switchMap(() => this.refreshTaskAfterAssignmentChange(task.id)),
           take(1)
         )
         .subscribe(response => {
-          this.refreshTask(response);
-          this.assignmentOfTaskChanged.emit();
+          this.handleAssignmentChangeResponse(response);
         });
     });
+  }
+
+  private refreshTaskAfterAssignmentChange(taskId: string): Observable<any> {
+    // The new assignment can change the outcome of permission checks for this task,
+    // so drop cached permissions before the task is re-fetched and re-checked
+    this.permissionService.invalidateResource(TASK_DETAIL_PERMISSION_RESOURCE.task, taskId);
+
+    // a 403 or 404 means the user can no longer view the task; these are expected
+    // outcomes here, so they are skipped to avoid a global error toast
+    return this.taskService.getTask(taskId, ['403', '404']).pipe(
+      catchError(error => (error?.status === 403 || error?.status === 404 ? of(null) : EMPTY))
+    );
+  }
+
+  private handleAssignmentChangeResponse(response: any): void {
+    if (response) {
+      this.refreshTask(response);
+    } else {
+      this.onClose();
+    }
+    this.assignmentOfTaskChanged.emit();
   }
 
   private refreshTask(response: any): void {

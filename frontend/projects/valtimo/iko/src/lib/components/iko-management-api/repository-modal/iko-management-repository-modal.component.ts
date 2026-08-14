@@ -35,6 +35,7 @@ import {PropertyField, IkoRepositoryConfigResponse} from '../../../models';
 import {IkoManagementApiService} from '../../../services';
 import {PropertiesFormComponent} from '../../iko-management-properties/iko-management-properties.component';
 import {ConfigService, ModalMode} from '@valtimo/shared';
+import {IKO_REPOSITORY_MODAL_TEST_IDS} from '../../../constants';
 
 @Component({
   selector: 'valtimo-iko-management-repository-modal',
@@ -58,6 +59,7 @@ import {ConfigService, ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementRepositoryModalComponent {
+  public readonly testIds = IKO_REPOSITORY_MODAL_TEST_IDS;
   private readonly _open$ = new BehaviorSubject<boolean>(false);
   @Input() public set open(value: boolean) {
     this._open$.next(value);
@@ -95,7 +97,9 @@ export class IkoManagementRepositoryModalComponent {
     return this.formGroup.get('title') as AbstractControl<string>;
   }
 
-  public enableIkoType = false;
+  public get enableIkoType(): boolean {
+    return this.configService.getFeatureToggle('enableIkoType');
+  }
   public readonly disabled$ = new BehaviorSubject(true);
   private readonly _ikoRepositoryTypes$ = this.ikoManagementApiService.getIkoRepositoryTypes();
 
@@ -131,7 +135,6 @@ export class IkoManagementRepositoryModalComponent {
     private readonly ikoManagementApiService: IkoManagementApiService,
     private readonly configService: ConfigService
   ) {
-    this.enableIkoType = this.configService.getFeatureToggle('enableIkoType');
     if (this.enableIkoType) {
       this.formGroup.get('type').enable({emitEvent: false});
     }

@@ -31,6 +31,7 @@ import {delay, map, take} from 'rxjs/operators';
 import {Dashboard, DashboardWidgetConfiguration, DisplayComponent, WidgetData} from '../../models';
 import {WidgetService} from '../../services';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
+import {resolveWidgetLayout, ResolvedWidgetLayout} from '@valtimo/components';
 import {WIDGET_1X_HEIGHT} from '../../constants';
 import Muuri from 'muuri';
 import {Router} from '@angular/router';
@@ -58,8 +59,11 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
     this._widgetData$.next(value.data);
   }
   @Input() set dashboard(value: Dashboard) {
+    this._resolvedLayout = resolveWidgetLayout(value?.widgetLayout);
     this.setWidgetConfigurations(value);
   }
+
+  private _resolvedLayout: ResolvedWidgetLayout = resolveWidgetLayout(null);
 
   public readonly widgetConfigurations$ =
     new BehaviorSubject<Array<DashboardWidgetConfiguration> | null>(null);
@@ -221,9 +225,7 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
 
     this.layoutService.setMuuri(
       new Muuri(this._widgetContainerRef.nativeElement, {
-        layout: {
-          fillGaps: true,
-        },
+        layout: this._resolvedLayout.muuriLayout,
         layoutOnResize: false,
       })
     );

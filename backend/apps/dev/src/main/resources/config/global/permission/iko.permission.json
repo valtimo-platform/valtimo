@@ -1,0 +1,10 @@
+[
+    {
+        "resourceType": "com.ritense.iko.domain.IkoView",
+        "actions": [
+            "view",
+            "view_list"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    }
+]

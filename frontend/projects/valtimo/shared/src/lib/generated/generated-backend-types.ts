@@ -1,6 +1,61 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2026-03-16 10:02:12.
+// Generated using typescript-generator version 3.2.1263 on 2026-04-28 11:17:58.
+
+export interface PbacConditionFieldDto {
+    name: string;
+    type: string;
+}
+
+export interface PbacConditionTypeDto {
+    key: string;
+}
+
+export interface PbacEntityMapperDto {
+    fromResourceType: string;
+    toResourceType: string;
+}
+
+export interface PbacFieldAliasDto {
+    alias: string;
+    field: string;
+}
+
+export interface PbacOperatorDto {
+    key: string;
+}
+
+export interface PbacRegistryDto {
+    resources: PbacResourceDto[];
+    operators: PbacOperatorDto[];
+    conditionTypes: PbacConditionTypeDto[];
+    entityMappers: PbacEntityMapperDto[];
+    roles: string[];
+}
+
+export interface PbacResourceDto {
+    resourceType: string;
+    shortName: string;
+    actions: string[];
+    fields: PbacConditionFieldDto[];
+    fieldAliases: PbacFieldAliasDto[];
+    hasSpecificationFactory: boolean;
+    containerTargets: string[];
+}
+
+export interface AdminSettingsLogoDto {
+    logoType: string;
+    imageBase64: string;
+}
+
+export interface AdminSettingsLogosDto {
+    logo: AdminSettingsLogoDto | null;
+    logoDarkMode: AdminSettingsLogoDto | null;
+}
+
+export interface CreateAdminSettingsLogoDto {
+    imageBase64: string;
+}
 
 export interface BuildingBlockDefinitionArtworkDto {
   key: string;
@@ -28,22 +83,35 @@ export interface BuildingBlockFormDefinitionDto {
 }
 
 export interface BuildingBlockProcessDefinitionDto {
-  id: string;
-  key: string;
-  name: string | null;
-  versionTag: string | null;
-  main: boolean;
+    id: string;
+    key: string;
+    name: string | null;
+    versionTag: string | null;
+    main: boolean;
+    draft: boolean;
 }
 
 export interface BuildingBlockProcessDefinitionWithLinksDto {
-  processDefinition: ProcessDefinitionWithPropertiesDto;
-  processLinks: ProcessLinkResponseDto[];
-  bpmn20Xml: string;
+    processDefinition: ProcessDefinitionWithPropertiesDto;
+    processLinks: ProcessLinkResponseDto[];
+    bpmn20Xml: string;
+    draft: boolean;
 }
 
 export interface BuildingBlockVersionDto {
   versionTag: string;
   final: boolean;
+}
+
+export interface CaseDefinitionBuildingBlockLinkDto {
+    id: string;
+    caseDefinitionKey: string;
+    caseDefinitionVersionTag: string;
+    buildingBlockDefinitionKey: string;
+    buildingBlockDefinitionVersionTag: string;
+    inputMappings: BuildingBlockInputMapping[];
+    outputMappings: BuildingBlockOutputMapping[];
+    pluginConfigurationMappings: { [index: string]: string };
 }
 
 export interface CreateBuildingBlockDefinitionArtworkDto {
@@ -67,6 +135,14 @@ export interface CreateBuildingBlockFormDefinitionDto {
   readOnly: boolean | null;
 }
 
+export interface CreateCaseDefinitionBuildingBlockLinkDto {
+    buildingBlockDefinitionKey: string;
+    buildingBlockDefinitionVersionTag: string;
+    inputMappings: BuildingBlockInputMapping[];
+    outputMappings: BuildingBlockOutputMapping[];
+    pluginConfigurationMappings: { [index: string]: string };
+}
+
 export interface UpdateBuildingBlockDefinitionArtworkDto {
   imageBase64: string;
 }
@@ -81,18 +157,39 @@ export interface UpdateBuildingBlockFormDefinitionDto {
   formDefinition: string;
 }
 
+export interface UpdateCaseDefinitionBuildingBlockLinkDto {
+    inputMappings: BuildingBlockInputMapping[];
+    outputMappings: BuildingBlockOutputMapping[];
+    pluginConfigurationMappings: { [index: string]: string };
+}
+
 export interface CaseDefinitionCheckResponse {
   canUpdateGlobalConfiguration: boolean;
 }
 
+export interface CaseDefinitionConfigurationIssueDto {
+    id: string;
+    issueType: string;
+    resolved: boolean;
+    createdAt: DateAsString;
+    resolvedAt: DateAsString | null;
+}
+
 export interface CaseDefinitionDraftCreateRequest {
-  caseDefinitionKey: string;
-  caseDefinitionVersion: string;
-  name: string | null;
-  description: string | null;
-  basedOnCaseDefinitionVersion: string | null;
-  basedOnCaseDefinitionId: CaseDefinitionId | null;
-  caseDefinitionId: CaseDefinitionId;
+    caseDefinitionKey: string;
+    caseDefinitionVersion: string;
+    name: string | null;
+    description: string | null;
+    basedOnCaseDefinitionVersion: string | null;
+    caseDefinitionId: CaseDefinitionId;
+    basedOnCaseDefinitionId: CaseDefinitionId | null;
+}
+
+export interface CaseDefinitionImportPreviewResponse {
+    key: string;
+    name: string;
+    versionTag: string;
+    final: boolean;
 }
 
 export interface CaseDefinitionImportResponse {
@@ -105,21 +202,25 @@ export interface CaseDefinitionQuickSearchDto {
 }
 
 export interface CaseDefinitionResponseDto {
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  name: string;
-  description: string | null;
-  createdBy: string | null;
-  createdDate: DateAsString | null;
-  basedOnVersionTag: string | null;
-  final: boolean;
-  active: boolean;
-  canHaveAssignee: boolean;
-  autoAssignTasks: boolean;
-  hasExternalStartForm: boolean | null;
-  externalStartFormUrl: string | null;
-  externalStartFormDescription: string | null;
-  conflictingVersions: string | null;
+    caseDefinitionKey: string;
+    caseDefinitionVersionTag: string;
+    name: string;
+    description: string | null;
+    createdBy: string | null;
+    createdDate: DateAsString | null;
+    basedOnVersionTag: string | null;
+    final: boolean;
+    active: boolean;
+    canHaveAssignee: boolean;
+    autoAssignTasks: boolean;
+    hasExternalStartForm: boolean | null;
+    externalStartFormUrl: string | null;
+    externalStartFormDescription: string | null;
+    conflictingVersions: string | null;
+    hasConfigurationIssues: boolean;
+    originalKey: string | null;
+    originalName: string | null;
+    originalVersionTag: string | null;
 }
 
 export interface CaseDefinitionSettingsResponseDto {
@@ -200,8 +301,37 @@ export interface CaseVersionDto {
   final: boolean;
 }
 
+export interface CreateStartableItemRequest {
+    type: StartableItemType;
+    properties: any;
+}
+
 export interface HiddenCaseListColumnDto {
   columnKey: string;
+}
+
+export interface ManagementStartableItemDto {
+    type: StartableItemType;
+    name: string | null;
+    key: string;
+    versionTag: string | null;
+    processDefinitionId: string | null;
+    sortOrder: number | null;
+}
+
+export interface StartableItemDto {
+    type: StartableItemType;
+    name: string | null;
+    key: string;
+    versionTag: string | null;
+    processDefinitionId: string | null;
+}
+
+export interface StartableItemOrderEntry {
+    key: string;
+    type: StartableItemType;
+    versionTag: string | null;
+    sortOrder: number;
 }
 
 export interface TaskListColumnDto {
@@ -212,6 +342,15 @@ export interface TaskListColumnDto {
   sortable: boolean;
   defaultSort: ColumnDefaultSort | null;
   order: number | null;
+}
+
+export interface UpdateStartableItemOrderRequest {
+    items: StartableItemOrderEntry[];
+}
+
+export interface UpdateStartableItemRequest {
+    type: StartableItemType;
+    properties: any;
 }
 
 export interface AdminWidgetConfigurationResponseDto {
@@ -369,26 +508,29 @@ export interface DocumentSearchRequest {
 }
 
 export interface DocumentenApiDocumentDto {
-  fileId: string;
-  pluginConfigurationId: string;
-  bestandsnaam: string | null;
-  bestandsomvang: number | null;
-  creatiedatum: DateAsString;
-  auteur: string | null;
-  titel: string | null;
-  status: string | null;
-  taal: string | null;
-  identificatie: string | null;
-  beschrijving: string | null;
-  informatieobjecttype: string | null;
-  informatieobjecttypeOmschrijving: string | null;
-  trefwoorden: string[] | null;
-  formaat: string | null;
-  verzenddatum: DateAsString | null;
-  ontvangstdatum: DateAsString | null;
-  vertrouwelijkheidaanduiding: string | null;
-  versie: number | null;
-  indicatieGebruiksrecht: boolean | null;
+    fileId: string;
+    pluginConfigurationId: string;
+    bestandsnaam: string | null;
+    bestandsomvang: number | null;
+    creatiedatum: DateAsString;
+    auteur: string | null;
+    titel: string | null;
+    status: string | null;
+    taal: string | null;
+    identificatie: string | null;
+    beschrijving: string | null;
+    informatieobjecttype: string | null;
+    informatieobjecttypeOmschrijving: string | null;
+    trefwoorden: string[] | null;
+    formaat: string | null;
+    verzenddatum: DateAsString | null;
+    ontvangstdatum: DateAsString | null;
+    vertrouwelijkheidaanduiding: string | null;
+    versie: number | null;
+    indicatieGebruiksrecht: boolean | null;
+    canView: boolean;
+    canModify: boolean;
+    canDelete: boolean;
 }
 
 export interface DocumentenApiUploadFieldDto {
@@ -398,12 +540,23 @@ export interface DocumentenApiUploadFieldDto {
   readonly: boolean;
 }
 
+export interface DocumentenApiVersionDetailsDto {
+    version: string;
+    supportsFilterableColumns: boolean;
+    supportsSortableColumns: boolean;
+    supportsTrefwoorden: boolean;
+    supportsUpdatingDefinitiveDocument: boolean;
+    supportsObjectInformatieObjecten: boolean;
+    experimentalVersion: boolean;
+}
+
 export interface DocumentenApiVersionDto {
-  selectedVersion: string | null;
-  supportsFilterableColumns: boolean;
-  supportsSortableColumns: boolean;
-  supportsTrefwoorden: boolean;
-  supportsUpdatingDefinitiveDocument: boolean;
+    selectedVersion: string | null;
+    supportsFilterableColumns: boolean;
+    supportsSortableColumns: boolean;
+    supportsTrefwoorden: boolean;
+    supportsUpdatingDefinitiveDocument: boolean;
+    supportsObjectInformatieObjecten: boolean;
 }
 
 export interface DocumentenApiVersionManagementDto {
@@ -415,7 +568,8 @@ export interface DocumentenApiVersionManagementDto {
 }
 
 export interface DocumentenApiVersionsManagementDto {
-  versions: string[];
+    versions: string[];
+    versionDetails: DocumentenApiVersionDetailsDto[];
 }
 
 export interface ModifyDocumentRequest {
@@ -435,24 +589,27 @@ export interface ModifyDocumentRequest {
 }
 
 export interface RelatedFileDto extends RelatedFile {
-  fileName: string | null;
-  sizeInBytes: number | null;
-  pluginConfigurationId: string;
-  author: string | null;
-  title: string | null;
-  status: string | null;
-  language: string | null;
-  identification: string | null;
-  description: string | null;
-  informatieobjecttype: string | null;
-  informatieobjecttypeOmschrijving: string | null;
-  keywords: string[] | null;
-  format: string | null;
-  sendDate: DateAsString | null;
-  receiptDate: DateAsString | null;
-  confidentialityLevel: string | null;
-  version: number | null;
-  indicationUsageRights: boolean | null;
+    fileName: string | null;
+    sizeInBytes: number | null;
+    pluginConfigurationId: string;
+    author: string | null;
+    title: string | null;
+    status: string | null;
+    language: string | null;
+    identification: string | null;
+    description: string | null;
+    informatieobjecttype: string | null;
+    informatieobjecttypeOmschrijving: string | null;
+    keywords: string[] | null;
+    format: string | null;
+    sendDate: DateAsString | null;
+    receiptDate: DateAsString | null;
+    confidentialityLevel: string | null;
+    version: number | null;
+    indicationUsageRights: boolean | null;
+    canView: boolean;
+    canModify: boolean;
+    canDelete: boolean;
 }
 
 export interface ReorderColumnRequest {
@@ -660,10 +817,11 @@ export interface URLVariables {
 }
 
 export interface CaseProcessDefinitionResponseDto {
-  processDefinition: ProcessDefinitionWithPropertiesDto;
-  processCaseLink: ProcessDefinitionCaseDefinition;
-  processLinks: ProcessLinkResponseDto[];
-  bpmn20Xml: string;
+    processDefinition: ProcessDefinitionWithPropertiesDto;
+    processCaseLink: ProcessDefinitionCaseDefinition;
+    processLinks: ProcessLinkResponseDto[];
+    bpmn20Xml: string;
+    draft: boolean;
 }
 
 export interface ProcessDefinitionResponseDto {
@@ -686,24 +844,24 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-  activityId: string;
-  processLinkType: string;
-  processDefinitionId: string;
-  activityType: ActivityTypeWithEventName;
+    activityId: string;
+    activityType: ActivityTypeWithEventName;
+    processLinkType: string;
+    processDefinitionId: string;
 }
 
 export interface ProcessLinkExportResponseDto {
-  activityId: string;
-  processLinkType: string;
-  activityType: ActivityTypeWithEventName;
+    activityId: string;
+    activityType: ActivityTypeWithEventName;
+    processLinkType: string;
 }
 
 export interface ProcessLinkResponseDto {
-  activityId: string;
-  processLinkType: string;
-  processDefinitionId: string;
-  activityType: ActivityTypeWithEventName;
-  id: string;
+    activityId: string;
+    activityType: ActivityTypeWithEventName;
+    processLinkType: string;
+    processDefinitionId: string;
+    id: string;
 }
 
 export interface ProcessLinkUpdateRequestDto {
@@ -770,8 +928,9 @@ export interface TeamUserResponseDto {
 }
 
 export interface BatchAssignTaskDTO {
-  assignee: string;
-  tasksIds: string[];
+    assignee: string;
+    assignedTeamKey: string;
+    tasksIds: string[];
 }
 
 export interface ChoiceFieldCreateRequestDTO {
@@ -891,17 +1050,32 @@ export interface TaskCompletionDTO {
   filesToDelete: string[];
 }
 
+export interface UserTeamDto {
+    key: string;
+}
+
 export interface WidgetDto {
-  type: string;
-  color: WidgetColor | null;
-  icon: string | null;
-  width: number;
-  compact: boolean | null;
-  title: string;
-  highContrast: boolean;
-  displayConditions: Condition<any>[] | null;
-  key: string;
-  actions: WidgetAction[];
+    type: string;
+    title: string;
+    compact: boolean | null;
+    color: WidgetColor | null;
+    icon: string | null;
+    width: number;
+    displayConditions: Condition<any>[] | null;
+    highContrast: boolean;
+    key: string;
+    actions: WidgetAction[];
+}
+
+export interface BuildingBlockInputMapping {
+    source: string;
+    target: string;
+}
+
+export interface BuildingBlockOutputMapping {
+    source: string;
+    target: string;
+    syncTiming: BuildingBlockSyncTiming;
 }
 
 export interface CaseDefinitionId extends AbstractId<CaseDefinitionId>, BlueprintId {
@@ -919,11 +1093,11 @@ export interface ObjectNode extends ContainerNode<ObjectNode>, Serializable {}
 export interface URI extends Comparable<URI>, Serializable {}
 
 export interface RelatedFile {
-  createdOn: DateAsString;
-  createdBy: string;
-  fileId: string;
-  sizeInBytes: number;
-  fileName: string;
+    createdOn: DateAsString;
+    fileId: string;
+    sizeInBytes: number;
+    createdBy: string;
+    fileName: string;
 }
 
 export interface OperationError {}
@@ -936,10 +1110,10 @@ export interface ComponentError {
 }
 
 export interface ProcessLinkDeployDto {
-  processLinkType: 'url';
-  activityId: string;
-  processDefinitionId: string;
-  activityType: ActivityTypeWithEventName;
+    processLinkType: "url";
+    activityId: string;
+    activityType: ActivityTypeWithEventName;
+    processDefinitionId: string;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -951,32 +1125,34 @@ export interface ProcessDefinitionCaseDefinition {
 }
 
 export interface TaskInstanceWithIdentityLink {
-  businessKey: string;
-  id: string | null;
-  name: string | null;
-  assignee: string | null;
-  created: DateAsString | null;
-  due: DateAsString | null;
-  followUp: DateAsString | null;
-  lastUpdated: DateAsString | null;
-  delegationState: string | null;
-  description: string | null;
-  executionId: string | null;
-  owner: string | null;
-  parentTaskId: string | null;
-  priority: number;
-  processDefinitionId: string | null;
-  processInstanceId: string | null;
-  taskDefinitionKey: string | null;
-  caseExecutionId: string | null;
-  caseInstanceId: string | null;
-  caseDefinitionId: string | null;
-  suspended: boolean;
-  tenantId: string | null;
-  external: boolean;
-  processDefinitionKey: string;
-  identityLinks: OperatonIdentityLinkDto[];
-  subtitles: string[];
+    businessKey: string;
+    id: string | null;
+    name: string | null;
+    assignee: string | null;
+    created: DateAsString | null;
+    due: DateAsString | null;
+    followUp: DateAsString | null;
+    lastUpdated: DateAsString | null;
+    delegationState: string | null;
+    description: string | null;
+    executionId: string | null;
+    owner: string | null;
+    parentTaskId: string | null;
+    priority: number;
+    processDefinitionId: string | null;
+    processInstanceId: string | null;
+    taskDefinitionKey: string | null;
+    caseExecutionId: string | null;
+    caseInstanceId: string | null;
+    caseDefinitionId: string | null;
+    suspended: boolean;
+    tenantId: string | null;
+    assignedTeam: TeamDto | null;
+    valtimoAssignee: AssigneeDto | null;
+    external: boolean;
+    processDefinitionKey: string;
+    identityLinks: OperatonIdentityLinkDto[];
+    subtitles: string[];
 }
 
 export interface ChoiceFieldValue extends AbstractAuditingEntity, Serializable {
@@ -989,42 +1165,44 @@ export interface ChoiceFieldValue extends AbstractAuditingEntity, Serializable {
 }
 
 export interface OperatonTaskDto {
-  id: string | null;
-  name: string | null;
-  assignee: string | null;
-  created: DateAsString | null;
-  due: DateAsString | null;
-  followUp: DateAsString | null;
-  lastUpdated: DateAsString | null;
-  delegationState: string | null;
-  description: string | null;
-  executionId: string | null;
-  owner: string | null;
-  parentTaskId: string | null;
-  priority: number;
-  processDefinitionId: string | null;
-  processInstanceId: string | null;
-  taskDefinitionKey: string | null;
-  caseExecutionId: string | null;
-  caseInstanceId: string | null;
-  caseDefinitionId: string | null;
-  suspended: boolean;
-  tenantId: string | null;
+    id: string | null;
+    name: string | null;
+    assignee: string | null;
+    created: DateAsString | null;
+    due: DateAsString | null;
+    followUp: DateAsString | null;
+    lastUpdated: DateAsString | null;
+    delegationState: string | null;
+    description: string | null;
+    executionId: string | null;
+    owner: string | null;
+    parentTaskId: string | null;
+    priority: number;
+    processDefinitionId: string | null;
+    processInstanceId: string | null;
+    taskDefinitionKey: string | null;
+    caseExecutionId: string | null;
+    caseInstanceId: string | null;
+    caseDefinitionId: string | null;
+    suspended: boolean;
+    tenantId: string | null;
+    assignedTeam: TeamDto | null;
+    valtimoAssignee: AssigneeDto | null;
 }
 
 export interface FormField {
-  label: string;
-  businessKey: boolean;
-  validationConstraints: FormFieldValidationConstraint[];
-  value: TypedValue;
-  typeName: string;
-  properties: {[index: string]: string};
-  id: string;
-  type: FormType;
-  /**
-   * @deprecated since 1.0
-   */
-  defaultValue: any;
+    businessKey: boolean;
+    label: string;
+    validationConstraints: FormFieldValidationConstraint[];
+    value: TypedValue;
+    typeName: string;
+    properties: { [index: string]: string };
+    id: string;
+    type: FormType;
+    /**
+     * @deprecated since 1.0
+     */
+    defaultValue: any;
 }
 
 export interface ProcessDefinitionDto {
@@ -1045,27 +1223,27 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-  startTime: DateAsString;
-  endTime: DateAsString;
-  taskId: string;
-  activityId: string;
-  processDefinitionId: string;
-  activityType: string;
-  assignee: string;
-  tenantId: string;
-  processDefinitionKey: string;
-  processInstanceId: string;
-  executionId: string;
-  canceled: boolean;
-  removalTime: DateAsString;
-  rootProcessInstanceId: string;
-  parentActivityInstanceId: string;
-  calledProcessInstanceId: string;
-  calledCaseInstanceId: string;
-  activityName: string;
-  durationInMillis: number;
-  completeScope: boolean;
-  id: string;
+    executionId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
+    activityId: string;
+    assignee: string;
+    tenantId: string;
+    startTime: DateAsString;
+    endTime: DateAsString;
+    taskId: string;
+    activityType: string;
+    processDefinitionId: string;
+    processDefinitionKey: string;
+    rootProcessInstanceId: string;
+    parentActivityInstanceId: string;
+    calledProcessInstanceId: string;
+    calledCaseInstanceId: string;
+    processInstanceId: string;
+    activityName: string;
+    durationInMillis: number;
+    completeScope: boolean;
+    id: string;
 }
 
 export interface ProcessVariableDTOV2 {
@@ -1092,8 +1270,8 @@ export interface Semver extends Comparable<Semver> {
 }
 
 export interface BlueprintId {
-  idKey: string;
-  tagPrefix: string;
+    tagPrefix: string;
+    idKey: string;
 }
 
 export interface Serializable {}
@@ -1117,6 +1295,16 @@ export interface ChoiceField extends AbstractAuditingEntity, Serializable {
 }
 
 export interface AbstractAuditingEntity {}
+
+export interface TeamDto extends Team {
+}
+
+export interface AssigneeDto {
+    username: string;
+    firstName: string | null;
+    lastName: string | null;
+    fullName: string;
+}
 
 export interface FormFieldValidationConstraint {
   configuration: any;
@@ -1173,6 +1361,11 @@ export interface ProcessDefinitionId {
   id: string;
 }
 
+export interface Team {
+    title: string;
+    key: string;
+}
+
 export interface ValueType extends Serializable {
   primitiveValueType: boolean;
   name: string;
@@ -1193,7 +1386,9 @@ export interface JsonNodeCreator {}
 
 export type DateAsString = string;
 
-export type ColumnDefaultSort = 'ASC' | 'DESC';
+export type StartableItemType = "PROCESS" | "BUILDING_BLOCK";
+
+export type ColumnDefaultSort = "ASC" | "DESC";
 
 export type CaseTabType = 'standard' | 'formio' | 'custom' | 'widgets';
 
@@ -1375,7 +1570,9 @@ export type WidgetColor =
   | 'HIGHCONTRAST'
   | 'WHITE';
 
-export type ExpressionOperator = '!=' | '==' | '>' | '>=' | '<' | '<=' | 'list_contains' | 'in';
+export type BuildingBlockSyncTiming = "CONTINUOUS" | "END";
+
+export type ExpressionOperator = "!=" | "==" | ">" | ">=" | "<" | "<=" | "list_contains" | "in";
 
 export type ProcessVariableDTOV2Union =
   | StringProcessVariableDTOV2

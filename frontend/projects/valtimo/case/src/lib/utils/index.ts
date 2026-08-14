@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './bin-packing.util';
+export * from './startable-item-title.util';

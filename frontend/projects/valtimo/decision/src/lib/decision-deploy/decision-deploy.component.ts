@@ -27,6 +27,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
 import {DECISION_UPLOAD_TEST_IDS} from '../constants';
+import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {
   getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
@@ -48,6 +49,7 @@ import {DecisionService, DecisionStateService} from '../services';
     LayerModule,
     FileUploaderModule,
     ReactiveFormsModule,
+    ValtimoCdsModalDirective,
   ],
 })
 export class DecisionDeployComponent {

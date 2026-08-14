@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.ritense.logging.web.rest.dto.LoggingEventSearchRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -57,6 +58,11 @@ class LoggingEventService(
             spec = spec.and(byProperty(key, value))
         }
 
+        return loggingEventRepository.findAll(spec, pageable)
+    }
+
+    @Transactional(readOnly = true)
+    fun searchLoggingEvents(spec: Specification<LoggingEvent>, pageable: Pageable): Page<LoggingEvent> {
         return loggingEventRepository.findAll(spec, pageable)
     }
 }

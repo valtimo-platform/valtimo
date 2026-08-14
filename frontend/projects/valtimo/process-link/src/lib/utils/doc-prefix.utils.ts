@@ -16,13 +16,13 @@
 
 const DOC_PREFIX = 'doc:/';
 
-export function stripDocPrefix(value: string): string {
-  if (!value) return value;
-  return value.startsWith(DOC_PREFIX) ? value.substring(DOC_PREFIX.length) : value;
-}
-
 export function ensureDocPrefix(value: string): string {
   if (!value) return value;
-  if (value.includes(':')) return value;
-  return `${DOC_PREFIX}${value}`;
+  const colonIndex = value.indexOf(':');
+  if (colonIndex > -1 && !value.startsWith('doc:')) return value;
+  let path = value;
+  if (path.startsWith('doc:/')) path = path.substring(5);
+  else if (path.startsWith('doc:')) path = path.substring(4);
+  if (path.startsWith('/')) path = path.substring(1);
+  return `${DOC_PREFIX}${path.replace(/\./g, '/')}`;
 }

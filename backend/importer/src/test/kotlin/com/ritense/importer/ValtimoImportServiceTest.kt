@@ -33,6 +33,7 @@ import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.core.env.Environment
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -229,6 +230,104 @@ class ValtimoImportServiceTest {
 
         assertThat(String(received["config/test.json"]!!, Charsets.UTF_8))
             .isEqualTo(jsonText)
+    }
+
+    @Test
+    fun `should use default when whitelisted property is not set`() {
+        val environment = mock(Environment::class.java)
+        val service = ValtimoImportService(setOf(), environment, listOf(Regex("MY_PROP")), null)
+
+        val result = service.invokeResolveProperties("""{"url": "${'$'}{MY_PROP:https://default.example.com}"}""")
+
+        assertThat(result).isEqualTo("""{"url": "https://default.example.com"}""")
+    }
+
+    @Test
+    fun `should prefer whitelisted environment value over default`() {
+        val environment = mock(Environment::class.java)
+        whenever(environment.getProperty("MY_PROP")).thenReturn("https://actual.example.com")
+        val service = ValtimoImportService(setOf(), environment, listOf(Regex("MY_PROP")), null)
+
+        val result = service.invokeResolveProperties("""{"url": "${'$'}{MY_PROP:https://default.example.com}"}""")
+
+        assertThat(result).isEqualTo("""{"url": "https://actual.example.com"}""")
+    }
+
+    @Test
+    fun `should leave placeholder untouched when property is not whitelisted`() {
+        val environment = mock(Environment::class.java)
+        val service = ValtimoImportService(setOf(), environment, emptyList(), null)
+        val content = """{"url": "${'$'}{NOT_WHITELISTED:https://default.example.com}"}"""
+
+        val result = service.invokeResolveProperties(content)
+
+        assertThat(result).isEqualTo(content)
+    }
+
+    @Test
+    fun `should resolve empty default to empty string`() {
+        val environment = mock(Environment::class.java)
+        val service = ValtimoImportService(setOf(), environment, listOf(Regex("MY_PROP")), null)
+
+        val result = service.invokeResolveProperties("""{"suffix": "value=${'$'}{MY_PROP:}"}""")
+
+        assertThat(result).isEqualTo("""{"suffix": "value="}""")
+    }
+
+    @Test
+    fun `should leave placeholder untouched when not whitelisted and no default`() {
+        val environment = mock(Environment::class.java)
+        val service = ValtimoImportService(setOf(), environment, emptyList(), null)
+        val content = """{"value": "${'$'}{NOT_WHITELISTED}"}"""
+
+        val result = service.invokeResolveProperties(content)
+
+        assertThat(result).isEqualTo(content)
+    }
+
+    @Test
+    fun `should leave form flow expression containing a colon untouched`() {
+        val environment = mock(Environment::class.java)
+        val service = ValtimoImportService(setOf(), environment, listOf(Regex("valtimo.*")), null)
+        val content = """
+            {"onComplete": ["${'$'}{valtimoFormFlow.completeTask(additionalProperties, step.submissionData, {'doc:/address/streetName':'/street', 'pv:approved':'/approval'})}"]}
+        """.trimIndent()
+
+        val result = service.invokeResolveProperties(content)
+
+        assertThat(result).isEqualTo(content)
+    }
+
+    @Test
+    fun `should leave value resolver expression untouched`() {
+        val environment = mock(Environment::class.java)
+        val service = ValtimoImportService(setOf(), environment, listOf(Regex("VALTIMO_.*")), null)
+        val content = """{"navigateTo": "/iko/demo/bsn/details/${'$'}{doc:ikoSearchResult.id}"}"""
+
+        val result = service.invokeResolveProperties(content)
+
+        assertThat(result).isEqualTo(content)
+    }
+
+    @Test
+    fun `should resolve whitelisted property next to an expression`() {
+        val environment = mock(Environment::class.java)
+        whenever(environment.getProperty("VALTIMO_API_URL")).thenReturn("https://api.example.com")
+        val service = ValtimoImportService(setOf(), environment, listOf(Regex("VALTIMO_.*")), null)
+
+        val result = service.invokeResolveProperties(
+            """{"url": "${'$'}{VALTIMO_API_URL}", "expression": "${'$'}{someBean.call('doc:/a', 'pv:b')}"}"""
+        )
+
+        assertThat(result).isEqualTo(
+            """{"url": "https://api.example.com", "expression": "${'$'}{someBean.call('doc:/a', 'pv:b')}"}"""
+        )
+    }
+
+    private fun ValtimoImportService.invokeResolveProperties(content: String): String {
+        val method = ValtimoImportService::class.java.getDeclaredMethod("resolveProperties", String::class.java)
+        method.isAccessible = true
+        return method.invoke(this, content) as String
     }
 
     private fun createZipInputStream(size: Int = 5, skip: Int? = null, extraEntries: List<Pair<String, String>> = emptyList()): InputStream {

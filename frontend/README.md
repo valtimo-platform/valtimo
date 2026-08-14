@@ -2,8 +2,16 @@
 
 This folder contains:
 
-- A collection of Angular libraries that together form the Valtimo frontend.
-- The `app` module, containing an Angular application, used for library development.
+- A collection of Angular libraries under `projects/valtimo/*` that together
+  form the Valtimo frontend.
+- Two application variants under `apps/`:
+    - `apps/dev/` — the developer-loop console, with showcase components, demo
+      routes, and the dev-only plugins enabled. This is what you serve when
+      iterating on the libraries.
+    - `apps/gzac/` — the template-equivalent application that is packaged into
+      the released `ritense/gzac-frontend` Docker image. Imports the same
+      shared set of feature modules directly in its `AppModule` but skips the
+      dev showcase modules.
 
 ### Starting the Valtimo platform
 
@@ -25,32 +33,47 @@ Starting up the Valtimo platform requires two steps:
 
 Run the following command to install the dependencies: `npm install`.
 
-#### Build libraries
-
-Run the following command to build all the Valtimo libraries: `npm run libs-build-all`.
-
 #### Start application
 
-- Run the following command to start the Angular application: `npm start`.
-- When this command has been completed, navigate to `http://localhost:4200/`
+Pick a variant to serve:
 
-#### Development mode
+| Command                | Variant                              | Notes                                                                    |
+|------------------------|--------------------------------------|--------------------------------------------------------------------------|
+| `npm start`            | `apps/dev` (developer console)       | Default for library development. Showcase components, dev routes, devTabs. |
+| `npm run start:gzac`   | `apps/gzac` (template-equivalent)    | Same shell as the released image but served with the dev `app-plugins` stub (no `@valtimo-plugins/*` required locally). |
+| `npm run start:valtimo` | `apps/valtimo`                      | The Valtimo released app (`ritense/valtimo-frontend`). |
+| `npm run start:evenementenvergunning` | `apps/evenementenvergunning` | The event-permit demo app (`ritense/gzac-evenementenvergunning-frontend`). |
 
-- If you expect to make changes to multiple libraries at once, use the following commands:
-  - `npm run devMode` to build all libraries, watch them for changes and to start the Angular
-    application.
-  - `npm run devMode:skipLibsBuild`. Use this command if all libraries have already been built.
-    Watches all libraries for changes and starts the Angular application.
+Both serve at `http://localhost:4200/` by default. To run them side by side, pass
+`-- --port 4201` to one of the commands.
 
-### Making changes to the Valtimo frontend
+Edits to library `*.ts` source files under `projects/valtimo/**` are picked up
+automatically by `ng serve` — no manual rebuild required.
 
-When making changes to the libraries, the modified libraries have to be rebuilt. The following
-command can be used to build one specific library: `npm run libs:build:libraryName`. Note: it is
-possible to `watch` for changes in a specific library, building it automatically after a change has
-been saved. For rebuilding automatically use the following command:
-`npm run libs:watch:libraryName`.
+#### Production-config builds
 
-The app will automatically reload if you change any of the source files.
+`npm run build:dev` and `npm run build:gzac` produce optimised bundles via
+`ng build <variant> --configuration production`. These swap in
+`app-plugins.prod.ts` (which imports `@valtimo-plugins/{smtpmail,freemarker}`)
+through Angular `fileReplacements`. Those plugin tarballs are **not** in
+`frontend/package.json` — they are installed only inside CI by
+`.github/workflows/frontend_build_push_docker_image.yml`'s
+"Add release plugin dependencies" step (reading
+[`release-plugins.json`](./release-plugins.json)). Running these commands on
+your laptop will therefore fail to resolve `@valtimo-plugins/*`; that's
+expected. Use CI to validate production builds.
+
+#### Rebuilding libraries
+
+The libraries are wired in via npm workspaces (`projects/valtimo/*` is symlinked into
+`node_modules/@valtimo/*`), so most source changes are picked up live. You only need
+to rebuild a library manually when:
+
+- you change a library's `package.json`, `ng-package.json`, or assets, or
+- you want to refresh the published artifacts in `dist/`.
+
+Use `npm run libs:build:libraryName` for a single library or `npm run libs-build-all`
+to rebuild every library. `npm run libs-build-all` is also what CI/CD and publishing use.
 
 ### Code quality
 

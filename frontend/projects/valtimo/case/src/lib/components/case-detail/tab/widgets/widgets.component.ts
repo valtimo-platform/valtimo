@@ -17,10 +17,11 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, HostBinding, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule} from '@valtimo/components';
+import {CarbonListModule, WidgetLayout} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, shareReplay, startWith, switchMap} from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
+import {CaseWidgetsRes} from '../../../../models';
 import {
   BasicWidget,
   WidgetComponentMap,
@@ -36,6 +37,11 @@ import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
 import {CaseWidgetMapComponent} from './components/map/case-widget-map.component';
+import {CaseWidgetPersonCardComponent} from './components/person-card/case-widget-person-card.component';
+import {CaseWidgetMetrolineComponent} from './components/metroline/case-widget-metroline.component';
+import {CaseWidgetHighlightComponent} from './components/highlight/case-widget-highlight.component';
+import {CaseWidgetImageComponent} from './components/image/case-widget-image.component';
+import {CaseWidgetTextComponent} from './components/text/case-widget-text.component';
 import {DocumentUpdatedSseEvent} from '../../../../models';
 import {SseService} from '@valtimo/sse';
 import {WidgetsService} from './widgets.service';
@@ -84,7 +90,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   ]).pipe(
     switchMap(([documentId, tabKey, documentUpdatedEvent]) => {
       return this.filterDuplicateConfigurations(
-        this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey),
+        this.widgetsApiService.getWidgetTab(documentId, tabKey),
         documentUpdatedEvent
       );
     }),
@@ -92,8 +98,11 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   );
 
   public readonly widgetGroups$: Observable<WidgetGroup[]> = this._widgetConfiguration$.pipe(
-    map(widgets => this.toCaseWidgetGroups(widgets))
+    map(configuration => this.toCaseWidgetGroups(configuration.widgets))
   );
+
+  public readonly widgetLayout$: Observable<WidgetLayout | undefined> =
+    this._widgetConfiguration$.pipe(map(configuration => configuration.widgetLayout));
 
   public readonly widgetComponentMap: WidgetComponentMap = {
     [WidgetType.FIELDS]: CaseWidgetFieldComponent,
@@ -103,6 +112,11 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     [WidgetType.INTERACTIVE_TABLE]: CaseWidgetTableComponent,
     [WidgetType.COLLECTION]: CaseWidgetCollectionComponent,
     [WidgetType.MAP]: CaseWidgetMapComponent,
+    [WidgetType.PERSON_CARD]: CaseWidgetPersonCardComponent,
+    [WidgetType.METROLINE]: CaseWidgetMetrolineComponent,
+    [WidgetType.HIGHLIGHT]: CaseWidgetHighlightComponent,
+    [WidgetType.IMAGE]: CaseWidgetImageComponent,
+    [WidgetType.TEXT]: CaseWidgetTextComponent,
   };
 
   constructor(
@@ -145,14 +159,14 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   }
 
   private filterDuplicateConfigurations(
-    widgetConfiguration: Observable<BasicWidget[]>,
+    widgetConfiguration: Observable<CaseWidgetsRes>,
     documentUpdatedEvent: DocumentUpdatedSseEvent | null
-  ): Observable<BasicWidget[]> {
+  ): Observable<CaseWidgetsRes> {
     return widgetConfiguration.pipe(
       map(configuration => {
         const configurationChanged =
           !this._previousWidgetConfiguration ||
-          !isEqual(this._previousWidgetConfiguration, configuration);
+          !isEqual(this._previousWidgetConfiguration, configuration.widgets);
 
         if (!configurationChanged && documentUpdatedEvent) {
           this.widgetsService.refreshWidgets();
@@ -160,13 +174,13 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
         }
 
         if (configurationChanged) {
-          this._previousWidgetConfiguration = configuration;
+          this._previousWidgetConfiguration = configuration.widgets;
           return configuration;
         }
 
         return null;
       }),
-      filter((configuration): configuration is BasicWidget[] => configuration !== null)
+      filter((configuration): configuration is CaseWidgetsRes => configuration !== null)
     );
   }
 }

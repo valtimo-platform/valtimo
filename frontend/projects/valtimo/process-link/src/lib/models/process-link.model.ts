@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {PluginConfiguration} from '@valtimo/plugin/lib/models/plugin';
+import {PluginConfiguration} from '@valtimo/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {ListItem} from 'carbon-components-angular/dropdown';
 
@@ -89,6 +89,8 @@ interface FormFlowProcessLinkCreateRequestDto {
   activityType: string;
   processLinkType: string;
   formFlowDefinitionKey: string;
+  formDisplayType?: string;
+  formSize?: string;
   subtitles: string[];
 }
 

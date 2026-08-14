@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,6 +130,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.subscribeToCanHaveAssignee();
     this.subscribeToSearchFields();
     this.resolveVisibleCaseTabs();
+
+    if (!this.configService.config?.featureToggles?.enableGenericCaseList) {
+      this.breadcrumbService.suppressSecondBreadcrumb();
+    }
   }
 
   public ngOnDestroy(): void {
@@ -138,12 +142,17 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this._canHaveAssigneeSubscription?.unsubscribe();
     this._searchFieldsSubscription?.unsubscribe();
     this.pageTitleService.enableReset();
+    this.breadcrumbService.unsuppressSecondBreadcrumb();
   }
 
   // --- Search ---
 
   public search(searchFieldValues: SearchFieldValues): void {
     this.searchService.search(searchFieldValues);
+  }
+
+  public onGlobalSearchFilterChange(value: string): void {
+    this.searchService.setGlobalSearchFilter(value);
   }
 
   // --- Row click ---
@@ -293,6 +302,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.parameterService.setSearchFieldValues(
           this.parameterService.getSearchObject(queryParams['search']) as SearchFieldValues
         );
+        this.searchService.setGlobalSearchFilter(null);
       });
   }
 

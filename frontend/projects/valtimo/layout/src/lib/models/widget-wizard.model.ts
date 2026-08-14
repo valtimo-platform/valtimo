@@ -20,8 +20,13 @@ import {
   WidgetManagementCollectionComponent,
   WidgetManagementCustomComponent,
   WidgetManagementFieldsComponent,
+  WidgetManagementHighlightComponent,
+  WidgetManagementImageComponent,
   WidgetManagementMapComponent,
+  WidgetManagementPersonCardComponent,
+  WidgetManagementMetrolineComponent,
   WidgetManagementTableComponent,
+  WidgetManagementTextComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
 import {BasicWidget, WidgetColor, WidgetType} from './widget.model';
@@ -127,6 +132,41 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/map.svg',
     type: WidgetType.MAP,
     component: WidgetManagementMapComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.metroline.title',
+    descriptionKey: 'widgetTabManagement.type.metroline.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/metroline.svg',
+    type: WidgetType.METROLINE,
+    component: WidgetManagementMetrolineComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.person-card.title',
+    descriptionKey: 'widgetTabManagement.type.person-card.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/person.svg',
+    type: WidgetType.PERSON_CARD,
+    component: WidgetManagementPersonCardComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.highlight.title',
+    descriptionKey: 'widgetTabManagement.type.highlight.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/highlight.svg',
+    type: WidgetType.HIGHLIGHT,
+    component: WidgetManagementHighlightComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.image.title',
+    descriptionKey: 'widgetTabManagement.type.image.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/image.svg',
+    type: WidgetType.IMAGE,
+    component: WidgetManagementImageComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.text.title',
+    descriptionKey: 'widgetTabManagement.type.text.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/text.svg',
+    type: WidgetType.TEXT,
+    component: WidgetManagementTextComponent,
   },
 ];
 

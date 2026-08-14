@@ -19,6 +19,9 @@
   *ngIf="{
     processInstanceItems: processInstanceItems$ | async,
     selectedProcessInstance: selectedProcessInstance$ | async,
+    canSkipTimer: canSkipTimer$ | async,
+    skippableTimers: skippableTimers$ | async,
+    diagramReloadToken: diagramReloadToken$ | async,
   } as obs"
 >
   <span *ngIf="!obs.processInstanceItems.isLoading && !obs.processInstanceItems.value">{{
@@ -26,16 +29,17 @@
   }}</span>
 
   <div class="process-info-row">
-    <cds-dropdown
+    <cds-combo-box
       [dropUp]="false"
+      [appendInline]="true"
+      [disabled]="obs.processInstanceItems.isLoading"
       [label]="'progress.process' | translate"
-      [skeleton]="obs.processInstanceItems.isLoading"
-      [style.width.px]="350"
-      (selected)="loadProcessInstance($event.item.processInstanceId)"
+      [placeholder]="'progress.process' | translate"
+      [items]="obs.processInstanceItems.value || []"
+      (selected)="loadProcessInstance($event)"
     >
-      <cds-dropdown-list [items]="obs.processInstanceItems.value || []"></cds-dropdown-list>
-    </cds-dropdown>
-
+      <cds-dropdown-list></cds-dropdown-list>
+    </cds-combo-box>
     <div>
       <v-input-label [title]="'progress.version' | translate"></v-input-label>
 
@@ -83,7 +87,21 @@
   <div>
     <valtimo-process-diagram
       *ngIf="!obs.selectedProcessInstance.isLoading"
+      [canSkipTimer]="obs.canSkipTimer || false"
       [processInstanceId]="obs.selectedProcessInstance.value.id.processInstanceId"
+      [reloadToken]="obs.diagramReloadToken || 0"
+      [skipTimerLabel]="'progress.skipTimer.action' | translate"
+      [skippableTimers]="obs.skippableTimers || []"
+      (skipTimerEvent)="onRequestSkipTimer($event)"
     ></valtimo-process-diagram>
   </div>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="progress.skipTimer.confirmButton"
+    titleTranslationKey="progress.skipTimer.confirmTitle"
+    [content]="'progress.skipTimer.confirmContent' | translate"
+    [showModalSubject$]="showSkipConfirm$"
+    (cancelEvent)="onCancelSkipTimer()"
+    (confirmEvent)="onConfirmSkipTimer()"
+  ></valtimo-confirmation-modal>
 </ng-container>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
  */
 
 dependencies {
+    api(project(":backend:admin-settings"))
     api(project(":backend:audit"))
     api(project(":backend:authorization"))
     api(project(":backend:building-block"))
     api(project(":backend:case"))
+    api(project(":backend:case-opensearch"))
     api(project(":backend:changelog"))
     api(project(":backend:command-handling"))
     api(project(":backend:contract"))

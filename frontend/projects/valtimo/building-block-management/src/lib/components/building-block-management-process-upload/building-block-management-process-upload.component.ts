@@ -22,6 +22,7 @@ import {
   CARBON_CONSTANTS,
   ConfirmationModalModule,
   RenderInBodyComponent,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {
@@ -52,6 +53,7 @@ import {
     ButtonModule,
     ConfirmationModalModule,
     RenderInBodyComponent,
+    ValtimoCdsModalDirective,
   ],
 })
 export class BuildingBlockManagementProcessUploadComponent {

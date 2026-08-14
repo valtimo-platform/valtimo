@@ -509,6 +509,325 @@ class NestedBuildingBlockIT @Autowired constructor(
         assertThat(caseDocument.content().asJson().get("resultFromBB").asText()).isEqualTo(bb1ResultValue)
     }
 
+    @Test
+    fun `should continuously bubble a change up through multiple nested building blocks to the case document`() {
+        // Case schema needs a field to receive the bubbled value
+        val updatedCaseSchema = """
+            {
+              "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+              "${'$'}id": "nested-test-case.schema",
+              "type": "object",
+              "properties": {
+                "initialValue": {"type": "string"},
+                "level": {"type": "integer"},
+                "bubbledToCase": {"type": "string"}
+              }
+            }
+        """.trimIndent()
+        documentDefinitionRepository.saveAndFlush(
+            JsonSchemaDocumentDefinition(
+                JsonSchemaDocumentDefinitionId.forCase("nested-test-case", caseDefinitionId),
+                JsonSchema.fromString(updatedCaseSchema)
+            )
+        )
+
+        // CONTINUOUS output mapping at every hop: BB3 -> BB2 -> BB1 -> case
+        val bb1ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "case-process",
+            activityId = "callBB1",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb1DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/initialValue", target = "processedValue"),
+                BuildingBlockInputMapping(source = "doc:/level", target = "level")
+            ),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "doc:/processedValue",
+                    target = "doc:/bubbledToCase",
+                    syncTiming = BuildingBlockSyncTiming.CONTINUOUS
+                )
+            )
+        )
+        val bb2ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "bb-level-1-process",
+            activityId = "callBB2",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb2DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/processedValue", target = "processedValue"),
+                BuildingBlockInputMapping(source = "doc:/level", target = "level")
+            ),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "doc:/processedValue",
+                    target = "doc:/processedValue",
+                    syncTiming = BuildingBlockSyncTiming.CONTINUOUS
+                )
+            )
+        )
+        val bb3ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "bb-level-2-process",
+            activityId = "callBB3",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb3DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/processedValue", target = "processedValue"),
+                BuildingBlockInputMapping(source = "doc:/level", target = "level")
+            ),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "doc:/processedValue",
+                    target = "doc:/processedValue",
+                    syncTiming = BuildingBlockSyncTiming.CONTINUOUS
+                )
+            )
+        )
+
+        whenever(processLinkService.getProcessLinks("case-process", "callBB1")).thenReturn(listOf(bb1ProcessLink))
+        whenever(processLinkService.getProcessLinks("bb-level-1-process", "callBB2")).thenReturn(listOf(bb2ProcessLink))
+        whenever(processLinkService.getProcessLinks("bb-level-2-process", "callBB3")).thenReturn(listOf(bb3ProcessLink))
+
+        // Build the chain: case -> BB1 -> BB2 -> BB3
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(
+                OperatonExecutionEvent(
+                    createMockExecution("case-process", "callBB1", caseDocumentId.toString(), null)
+                )
+            )
+        })
+        val bb1Instance = buildingBlockInstanceRepository.findAll().single { it.definition.id == bb1DefinitionId }
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(
+                OperatonExecutionEvent(
+                    createMockExecution(
+                        "bb-level-1-process", "callBB2", bb1Instance.documentId.toString(),
+                        createParentCallActivityExecution(bb1Instance.documentId)
+                    )
+                )
+            )
+        })
+        val bb2Instance = buildingBlockInstanceRepository.findAll().single { it.definition.id == bb2DefinitionId }
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(
+                OperatonExecutionEvent(
+                    createMockExecution(
+                        "bb-level-2-process", "callBB3", bb2Instance.documentId.toString(),
+                        createParentCallActivityExecution(bb2Instance.documentId)
+                    )
+                )
+            )
+        })
+        val bb3Instance = buildingBlockInstanceRepository.findAll().single { it.definition.id == bb3DefinitionId }
+
+        // Change a value in the DEEPEST building block. No building block is completed.
+        val bubbledValue = "bubbled-from-bb3"
+        runWithoutAuthorization {
+            val bb3Document = documentService.get(bb3Instance.documentId.toString()) as JsonSchemaDocument
+            val updatedContent = bb3Document.content().asJson().deepCopy<com.fasterxml.jackson.databind.node.ObjectNode>()
+            updatedContent.put("processedValue", bubbledValue)
+            documentService.modifyDocument(bb3Document, updatedContent)
+        }
+
+        // The change bubbled up every level synchronously, while all building blocks are still running.
+        val bb2Document = runWithoutAuthorization {
+            documentService.get(bb2Instance.documentId.toString())
+        } as JsonSchemaDocument
+        assertThat(bb2Document.content().asJson().get("processedValue").asText()).isEqualTo(bubbledValue)
+
+        val bb1Document = runWithoutAuthorization {
+            documentService.get(bb1Instance.documentId.toString())
+        } as JsonSchemaDocument
+        assertThat(bb1Document.content().asJson().get("processedValue").asText()).isEqualTo(bubbledValue)
+
+        val caseDocument = runWithoutAuthorization {
+            documentService.get(caseDocumentId.toString())
+        } as JsonSchemaDocument
+        assertThat(caseDocument.content().asJson().get("bubbledToCase").asText()).isEqualTo(bubbledValue)
+    }
+
+    @Test
+    fun `should bubble a change up through multiple nested building blocks one level per completion with end sync`() {
+        // Case schema needs a field to receive the bubbled value
+        val updatedCaseSchema = """
+            {
+              "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+              "${'$'}id": "nested-test-case.schema",
+              "type": "object",
+              "properties": {
+                "initialValue": {"type": "string"},
+                "level": {"type": "integer"},
+                "bubbledToCase": {"type": "string"}
+              }
+            }
+        """.trimIndent()
+        documentDefinitionRepository.saveAndFlush(
+            JsonSchemaDocumentDefinition(
+                JsonSchemaDocumentDefinitionId.forCase("nested-test-case", caseDefinitionId),
+                JsonSchema.fromString(updatedCaseSchema)
+            )
+        )
+
+        // END output mapping at every hop: BB3 -> BB2 -> BB1 -> case
+        val bb1ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "case-process",
+            activityId = "callBB1",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb1DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/initialValue", target = "processedValue"),
+                BuildingBlockInputMapping(source = "doc:/level", target = "level")
+            ),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "doc:/processedValue",
+                    target = "doc:/bubbledToCase",
+                    syncTiming = BuildingBlockSyncTiming.END
+                )
+            )
+        )
+        val bb2ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "bb-level-1-process",
+            activityId = "callBB2",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb2DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/processedValue", target = "processedValue"),
+                BuildingBlockInputMapping(source = "doc:/level", target = "level")
+            ),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "doc:/processedValue",
+                    target = "doc:/processedValue",
+                    syncTiming = BuildingBlockSyncTiming.END
+                )
+            )
+        )
+        val bb3ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "bb-level-2-process",
+            activityId = "callBB3",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb3DefinitionId,
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMapping(source = "doc:/processedValue", target = "processedValue"),
+                BuildingBlockInputMapping(source = "doc:/level", target = "level")
+            ),
+            outputMappings = listOf(
+                BuildingBlockOutputMapping(
+                    source = "doc:/processedValue",
+                    target = "doc:/processedValue",
+                    syncTiming = BuildingBlockSyncTiming.END
+                )
+            )
+        )
+
+        whenever(processLinkService.getProcessLinks("case-process", "callBB1")).thenReturn(listOf(bb1ProcessLink))
+        whenever(processLinkService.getProcessLinks("bb-level-1-process", "callBB2")).thenReturn(listOf(bb2ProcessLink))
+        whenever(processLinkService.getProcessLinks("bb-level-2-process", "callBB3")).thenReturn(listOf(bb3ProcessLink))
+
+        // Build the chain: case -> BB1 -> BB2 -> BB3
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(
+                OperatonExecutionEvent(
+                    createMockExecution("case-process", "callBB1", caseDocumentId.toString(), null)
+                )
+            )
+        })
+        val bb1Instance = buildingBlockInstanceRepository.findAll().single { it.definition.id == bb1DefinitionId }
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(
+                OperatonExecutionEvent(
+                    createMockExecution(
+                        "bb-level-1-process", "callBB2", bb1Instance.documentId.toString(),
+                        createParentCallActivityExecution(bb1Instance.documentId)
+                    )
+                )
+            )
+        })
+        val bb2Instance = buildingBlockInstanceRepository.findAll().single { it.definition.id == bb2DefinitionId }
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityStart(
+                OperatonExecutionEvent(
+                    createMockExecution(
+                        "bb-level-2-process", "callBB3", bb2Instance.documentId.toString(),
+                        createParentCallActivityExecution(bb2Instance.documentId)
+                    )
+                )
+            )
+        })
+        val bb3Instance = buildingBlockInstanceRepository.findAll().single { it.definition.id == bb3DefinitionId }
+
+        // Change a value in the DEEPEST building block.
+        val bubbledValue = "bubbled-via-end"
+        runWithoutAuthorization {
+            val bb3Document = documentService.get(bb3Instance.documentId.toString()) as JsonSchemaDocument
+            val updatedContent = bb3Document.content().asJson().deepCopy<com.fasterxml.jackson.databind.node.ObjectNode>()
+            updatedContent.put("processedValue", bubbledValue)
+            documentService.modifyDocument(bb3Document, updatedContent)
+        }
+
+        // END sync does NOT propagate on a write: nothing moved up yet.
+        assertThat(processedValue(bb2Instance.documentId)).isEqualTo("test-data")
+        assertThat(processedValue(bb1Instance.documentId)).isEqualTo("test-data")
+        assertThat(hasBubbledToCase()).isFalse()
+
+        // Completing BB3 moves the value up exactly one level (into BB2).
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityEnd(
+                OperatonExecutionEvent(createCallActivityEndExecution("bb-level-2-process", bb3Instance.documentId))
+            )
+        })
+        assertThat(processedValue(bb2Instance.documentId)).isEqualTo(bubbledValue)
+        assertThat(processedValue(bb1Instance.documentId)).isEqualTo("test-data")
+        assertThat(hasBubbledToCase()).isFalse()
+
+        // Completing BB2 moves it up another level (into BB1).
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityEnd(
+                OperatonExecutionEvent(createCallActivityEndExecution("bb-level-1-process", bb2Instance.documentId))
+            )
+        })
+        assertThat(processedValue(bb1Instance.documentId)).isEqualTo(bubbledValue)
+        assertThat(hasBubbledToCase()).isFalse()
+
+        // Completing the top-level BB1 finally writes it to the case document.
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            listener.onCallActivityEnd(
+                OperatonExecutionEvent(createCallActivityEndExecution("case-process", bb1Instance.documentId))
+            )
+        })
+        val caseDocument = runWithoutAuthorization {
+            documentService.get(caseDocumentId.toString())
+        } as JsonSchemaDocument
+        assertThat(caseDocument.content().asJson().get("bubbledToCase").asText()).isEqualTo(bubbledValue)
+    }
+
+    private fun processedValue(documentId: UUID): String {
+        val document = runWithoutAuthorization { documentService.get(documentId.toString()) } as JsonSchemaDocument
+        return document.content().asJson().get("processedValue").asText()
+    }
+
+    private fun hasBubbledToCase(): Boolean {
+        val document = runWithoutAuthorization { documentService.get(caseDocumentId.toString()) } as JsonSchemaDocument
+        return document.content().asJson().has("bubbledToCase")
+    }
+
     private fun createMockExecution(
         processDefinitionId: String,
         activityId: String,
@@ -524,6 +843,7 @@ class NestedBuildingBlockIT @Autowired constructor(
         return mock {
             on { this.currentActivityId } doReturn activityId
             on { this.processDefinitionId } doReturn processDefinitionId
+            on { this.processInstanceId } doReturn UUID.randomUUID().toString()
             on { this.businessKey } doReturn businessKey
             on { this.processBusinessKey } doReturn businessKey  // Used by findParentBuildingBlockInstance
             on { this.processInstance } doReturn processInstance

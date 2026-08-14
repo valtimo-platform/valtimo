@@ -28,29 +28,41 @@ import com.ritense.valtimo.processdefinition.repository.ProcessDefinitionPropert
 import org.operaton.bpm.engine.RepositoryService;
 import org.operaton.bpm.model.bpmn.instance.operaton.OperatonProperty;
 import org.operaton.bpm.model.xml.ModelInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
 public class ProcessDefinitionPropertyListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessDefinitionPropertyListener.class);
 
     private static final String SYSTEM_PROCESS_PROPERTY = "systemProcess";
 
     private final ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository;
     private final RepositoryService repositoryService;
     private final OperatonRepositoryService operatonRepositoryService;
+    private final boolean bootstrapEnabled;
 
     public ProcessDefinitionPropertyListener(
         ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository,
         RepositoryService repositoryService,
-        OperatonRepositoryService operatonRepositoryService
+        OperatonRepositoryService operatonRepositoryService,
+        boolean bootstrapEnabled
     ) {
         this.processDefinitionPropertiesRepository = processDefinitionPropertiesRepository;
         this.repositoryService = repositoryService;
         this.operatonRepositoryService = operatonRepositoryService;
+        this.bootstrapEnabled = bootstrapEnabled;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReadyEvent() {
+        if (!bootstrapEnabled) {
+            logger.info("Bootstrap disabled (valtimo.bootstrap.enabled=false); "
+                + "skipping startup process-definition property sync");
+            return;
+        }
         AuthorizationContext.runWithoutAuthorization(() -> {
             operatonRepositoryService.findProcessDefinitions(byLatestVersion()).forEach(processDefinition ->
                 withLoggingContext(OperatonProcessDefinition.class, processDefinition.getId(), () ->

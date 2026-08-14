@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package com.ritense.valtimo.contract.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.ritense.valtimo.contract.OauthConfigHolder;
-import javax.annotation.Nonnull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
@@ -35,19 +33,27 @@ public class ValtimoProperties {
 
     private final Process process;
 
+    private final Liquibase liquibase;
+
+    private final Bootstrap bootstrap;
+
     @ConstructorBinding
     public ValtimoProperties(
         App app,
         Mandrill mandrill,
         Oauth oauth,
         Portal portal,
-        Process process
+        Process process,
+        Liquibase liquibase,
+        Bootstrap bootstrap
     ) {
         this.app = app != null ? app : new App();
         this.mandrill = mandrill != null ? mandrill : new Mandrill();
         this.oauth = oauth != null ? oauth : new Oauth();
         this.portal = portal != null ? portal : new Portal();
         this.process = process != null ? process : new Process();
+        this.liquibase = liquibase != null ? liquibase : new Liquibase();
+        this.bootstrap = bootstrap != null ? bootstrap : new Bootstrap();
         new OauthConfigHolder(this.oauth);
     }
 
@@ -69,6 +75,14 @@ public class ValtimoProperties {
 
     public Process getProcess() {
         return process;
+    }
+
+    public Liquibase getLiquibase() {
+        return liquibase;
+    }
+
+    public Bootstrap getBootstrap() {
+        return bootstrap;
     }
 
     public static class App {
@@ -210,6 +224,42 @@ public class ValtimoProperties {
 
         public void setCallDepthWarningThreshold(int callDepthWarningThreshold) {
             this.callDepthWarningThreshold = callDepthWarningThreshold;
+        }
+    }
+
+    public static class Bootstrap {
+
+        /**
+         * When {@code true} (default) the application performs its full bootstrap on startup:
+         * Liquibase migrations (contract + outbox), the Operaton schema migration and all
+         * autodeployments. When {@code false} none of that work runs, allowing a pod to start
+         * against an already-migrated schema without competing for locks or duplicating work.
+         */
+        private boolean enabled = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+
+    public static class Liquibase {
+        private int staleLockThresholdMinutes = 30;
+
+        public int getStaleLockThresholdMinutes() {
+            return staleLockThresholdMinutes;
+        }
+
+        public void setStaleLockThresholdMinutes(int staleLockThresholdMinutes) {
+            if (staleLockThresholdMinutes <= 0) {
+                throw new IllegalArgumentException(
+                    "valtimo.liquibase.stale-lock-threshold-minutes must be > 0, was: " + staleLockThresholdMinutes
+                );
+            }
+            this.staleLockThresholdMinutes = staleLockThresholdMinutes;
         }
     }
 }

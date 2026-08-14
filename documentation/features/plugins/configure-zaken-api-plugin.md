@@ -16,8 +16,6 @@ To configure this plugin the following properties have to be entered:
 
 * **URL.** Contains the complete base URL of the Zaken API to connect to. This generally includes the path `/api/v1/`.
 * **Authentication plugin configuration.** Reference to another plugin configuration that will be used to add authentication to any request performed on the Zaken API. If no option is available in this field a plugin has to be configured that is able to authenticate for the specific application that hosts the Zaken API. (e.g. OpenZaak)
-* **Synchronise Case note as Zaak-notitie to the Zaak.** .
-* **ZaakNotitie subject.** The fixed value which will be used for the 'onderwerp' when a Zaak-notitie is created/updated.
 
 An example plugin configuration:
 
@@ -57,52 +55,107 @@ This process link does the following steps:
 
 ### Create zaak
 
-The **Create zaak** action creates a zaak in the zaken API. When creating a process link the following properties have to be entered:
+The **Create zaak** action creates a zaak in the zaken API. When creating a process link the following required properties have to be entered:
 
 * **RSIN.** Contains the RSIN of the organisation. The RSIN number (Rechtspersonen en Samenwerkingsverbanden Identificatie Nummer in Dutch) is an identification number for legal entities and partnerships. This will be used when creating the zaak to indicate who is responsible for creating the zaak record in the API.
 * **Zaak type.** The type of the zaak that is created.
-* **Description** (Optional) A brief description of the zaak.
-* **Planned end date** (Optional) The date by which the zaak is scheduled to be completed.
-* **Final delivery date** (Optional) The last date by which the zaak must be completed according to law and regulations.
-* **Explanation.** (Optional) An explanation of the zaak.
-* **Communication channel.** (Optional) The medium through which the reason for initiating a zaak was received. URL to a communication channel in the VNG Reference List of communication channels.
-* **Payment indication.** (Optional) Indication of whether the costs associated with handling the zaak have been paid by the person involved.
-  * Options:
-    * `nvt` - There are no costs associated with the case to be paid.
-    * `nog_niet` - The costs associated with the case have not (yet) been paid.
-    * `gedeeltelijk` - The costs associated with the case have been partially paid.
-    * `geheel` - The costs associated with the case have been fully paid.
-* **Case geometry.** (Optional) Point, line or (multi-)plane geometry information.
-  * **Type.** The geometry shape/type.
-    * Options:
-      * `Point`
-      * `MultiPoint`
-      * `LineString`
-      * `MultiLineString`
-      * `Polygon`
-      * `GeometryCollection`
-      * `MultiPolygon`
-  * **Coordinates.** Collection of coordinates/points representing the geometry shape/type.
-* **Main Case.** (Optional) URL reference to the zaak requested by its initiator, which is dealt with in two or more separate zaken, of which the present zaak is one.
+
+Additional optional properties can be added via the **Add zaak property** menu. The following optional properties are available:
+
+* **Archive action-date.** The date on which the archived zaak file should be destroyed or transferred to an archive repository. Supports date/time in ISO 8601 format and process variables.
+* **Archive nomination.** Indication of whether the zaak should be retained or destroyed after the retention period.
+  * Options: `blijvend_bewaren`, `vernietigen`
+* **Archive status.** The current archiving state of the zaak.
+  * Options: `nog_te_archiveren`, `gearchiveerd`, `gearchiveerd_procestermijn_onbekend`, `overgedragen`
+* **Case geometry.** Point, line or (multi-)plane geometry information (GeoJSON, Long/Lat order). Adding this property adds two linked fields:
+  * **Case geometry type.** The geometry shape/type.
+    * Options: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `GeometryCollection`, `MultiPolygon`
+  * **Case geometry coordinates.** Collection of coordinates/points representing the geometry shape/type. Example: `[0.0, 1.0]`
+* **Characteristics.** A list of characteristics of the zaak as a JSON array.
+* **Commissioning organisation.** RSIN of the organisation that has commissioned the handling of the zaak to the responsible organisation.
+* **Communication channel.** The medium through which the reason for initiating the zaak was received. URL to a communication channel in the VNG Reference List of communication channels.
+* **Communication channel name.** (Experimental) The name of the medium through which the reason for initiating the zaak was received.
+* **Confidentiality.** Indication of the level of confidentiality of the zaak.
+  * Options: `openbaar`, `beperkt_openbaar`, `intern`, `zaakvertrouwelijk`, `vertrouwelijk`, `confidentieel`, `geheim`, `zeer_geheim`
+* **Description.** A brief description of the zaak.
+* **Explanation.** An explanation of the zaak.
+* **Final delivery date.** The last date by which the zaak must be completed according to law and regulations. Supports date/time in ISO 8601 format and process variables.
+* **Identification.** A unique identification of the zaak within the organisation. When left empty the Zaken API generates the identification automatically.
+* **Last opened date.** The date on which the zaak was last viewed or edited. Supports date/time in ISO 8601 format and process variables.
+* **Last payment date.** The date on which the most recent payment was processed for costs associated with handling the zaak. Supports date/time in ISO 8601 format and process variables.
+* **Main case.** URL reference to the zaak requested by its initiator, which is dealt with in two or more separate zaken, of which the present zaak is one.
+* **Payment indication.** Indication of whether the costs associated with handling the zaak have been paid by the person involved.
+  * Options: `nvt`, `gefactureerd`, `gecrediteerd`, `betaald`
+* **Planned end date.** The date by which the zaak is scheduled to be completed. Supports date/time in ISO 8601 format and process variables.
+* **Process object.** Indicator that this zaak is related to a specific object within the scope of a notification of the selectielijstprocestype. Adding this property adds four linked fields:
+  * **Process object date attribute.** The attribute of the process object to which the retention period start date is related.
+  * **Process object identification.** The identification of the process object within the applicable register.
+  * **Process object type.** The URL of the object type from the applicable RGBZ-derived object type register.
+  * **Process object registration.** The URL of the register where the process object can be found.
+* **Process object category.** URL reference to the selectielijstprocestype of the zaak.
+* **Products and services.** The list of products and/or services that this zaak is about, as a JSON array of URLs to entries in the VNG Referentielijst van producten en diensten.
+* **Publication date.** Date on which (the start of) the zaak is or will be published. Supports date/time in ISO 8601 format and process variables.
+* **Registration date.** The date on which the zaak was registered in the Zaken API. Supports date/time in ISO 8601 format and process variables.
+* **Related cases.** JSON array of related zaken, each with a `url` field referencing the related zaak.
+* **Relevant other cases.** JSON array of other relevant zaken, each with a `url` and `aardRelatie` field.
+* **Selection list class.** URL reference to the applicable selectielijstklasse as defined in the VNG Selectielijst.
+* **Start date retention period.** The date that marks the start of the period by which the zaak file must be destroyed. Supports date/time in ISO 8601 format and process variables.
+* **Extension.** Indication that the period within which the zaak must be dealt with has been extended. Adding this property adds two linked fields:
+  * **Extension reason.** The reason for extending the handling period of the zaak.
+  * **Extension duration.** The number of calendar days by which the handling period of the zaak has been extended.
+* **Suspension.** Indication that the handling of the zaak has been suspended. Adding this property adds two linked fields:
+  * **Suspension indication.** Whether the zaak is currently suspended. Options: `true`, `false`
+  * **Suspension reason.** The reason for suspending the handling of the zaak.
 
 ### Patch zaak
 
-The **Patch zaak** action updates a zaak in the zaken API. When creating a process link at least one of the following properties has to be provided:
+The **Patch zaak** action updates a zaak in the zaken API. When creating a process link, at least one property must be added via the **Add zaak property** menu. The following optional properties are available:
 
-* **Description.** A short description of the Zaak.
-* **Explanation.** An explanation of the Zaak.
-* **Start date.** The date on which the execution of the Zaak was started.
-* **Planned end-date.** The date by which the Zaak is scheduled to be completed.
-* **Final delivery-date.** The last date by which the Zaak must be completed according to law and regulations.
-* **Publication date.** Date on which (the start of) the Zaak is or will be published.
-* **Communication channel.** The medium through which the reason for initiating a case was received. URL to a communication channel in the VNG Reference List of communication channels.
-* **Communication channel name.** (Experimental) The name of the medium through which the impetus for starting a Case was received.
-* **Payment indication.** Indication of whether the costs associated with handling the case have been paid by the person concerned.
-* **Last payment date.** The date on which the most recent payment was processed for costs associated with handling the case.
-* **Case geometry.** Point, line, or (multi-)plane geometry information, in GeoJSON. (Long, Lat order). Exists of a type and a list of coordinates
-* **Main Case.** URL reference to the Zaak requested by its initiator, which is dealt with in two or more separate Zaken, of which the present Zaak is one.
-* **Archive action-date.** The date on which the archived Zaak file should be destroyed or transferred to an archive repository.
-* **Start-date retention period.** The date that marks the start of the period by which the Zaak file must be destroyed.
+* **Archive action-date.** The date on which the archived zaak file should be destroyed or transferred to an archive repository. Supports date/time in ISO 8601 format and process variables.
+* **Archive nomination.** Indication of whether the zaak should be retained or destroyed after the retention period.
+  * Options: `blijvend_bewaren`, `vernietigen`
+* **Archive status.** The current archiving state of the zaak.
+  * Options: `nog_te_archiveren`, `gearchiveerd`, `gearchiveerd_procestermijn_onbekend`, `overgedragen`
+* **Case geometry.** Point, line or (multi-)plane geometry information (GeoJSON, Long/Lat order). Adding this property adds two linked fields:
+  * **Case geometry type.** The geometry shape/type.
+    * Options: `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `GeometryCollection`, `MultiPolygon`
+  * **Case geometry coordinates.** Collection of coordinates/points representing the geometry shape/type. Example: `[0.0, 1.0]`
+* **Characteristics.** A list of characteristics of the zaak as a JSON array.
+* **Commissioning organisation.** RSIN of the organisation that has commissioned the handling of the zaak to the responsible organisation.
+* **Communication channel.** The medium through which the reason for initiating the zaak was received. URL to a communication channel in the VNG Reference List of communication channels.
+* **Communication channel name.** (Experimental) The name of the medium through which the reason for initiating the zaak was received.
+* **Confidentiality.** Indication of the level of confidentiality of the zaak.
+  * Options: `openbaar`, `beperkt_openbaar`, `intern`, `zaakvertrouwelijk`, `vertrouwelijk`, `confidentieel`, `geheim`, `zeer_geheim`
+* **Description.** A brief description of the zaak.
+* **Explanation.** An explanation of the zaak.
+* **Final delivery date.** The last date by which the zaak must be completed according to law and regulations. Supports date/time in ISO 8601 format and process variables.
+* **Identification.** A unique identification of the zaak within the organisation.
+* **Last opened date.** The date on which the zaak was last viewed or edited. Supports date/time in ISO 8601 format and process variables.
+* **Last payment date.** The date on which the most recent payment was processed for costs associated with handling the zaak. Supports date/time in ISO 8601 format and process variables.
+* **Main case.** URL reference to the zaak requested by its initiator, which is dealt with in two or more separate zaken, of which the present zaak is one.
+* **Payment indication.** Indication of whether the costs associated with handling the zaak have been paid by the person involved.
+  * Options: `nvt`, `gefactureerd`, `gecrediteerd`, `betaald`
+* **Planned end date.** The date by which the zaak is scheduled to be completed. Supports date/time in ISO 8601 format and process variables.
+* **Process object.** Indicator that this zaak is related to a specific object within the scope of a notification of the selectielijstprocestype. Adding this property adds four linked fields:
+  * **Process object date attribute.** The attribute of the process object to which the retention period start date is related.
+  * **Process object identification.** The identification of the process object within the applicable register.
+  * **Process object type.** The URL of the object type from the applicable RGBZ-derived object type register.
+  * **Process object registration.** The URL of the register where the process object can be found.
+* **Process object category.** URL reference to the selectielijstprocestype of the zaak.
+* **Products and services.** The list of products and/or services that this zaak is about, as a JSON array of URLs to entries in the VNG Referentielijst van producten en diensten.
+* **Publication date.** Date on which (the start of) the zaak is or will be published. Supports date/time in ISO 8601 format and process variables.
+* **Registration date.** The date on which the zaak was registered in the Zaken API. Supports date/time in ISO 8601 format and process variables.
+* **Related cases.** JSON array of related zaken, each with a `url` field referencing the related zaak.
+* **Relevant other cases.** JSON array of other relevant zaken, each with a `url` and `aardRelatie` field.
+* **Selection list class.** URL reference to the applicable selectielijstklasse as defined in the VNG Selectielijst.
+* **Start date.** The date on which the execution of the zaak was started. Supports date/time in ISO 8601 format and process variables.
+* **Start date retention period.** The date that marks the start of the period by which the zaak file must be destroyed. Supports date/time in ISO 8601 format and process variables.
+* **Extension.** Indication that the period within which the zaak must be dealt with has been extended. Adding this property adds two linked fields:
+  * **Extension reason.** The reason for extending the handling period of the zaak.
+  * **Extension duration.** The number of calendar days by which the handling period of the zaak has been extended.
+* **Suspension.** Indication that the handling of the zaak has been suspended. Adding this property adds two linked fields:
+  * **Suspension indication.** Whether the zaak is currently suspended. Options: `true`, `false`
+  * **Suspension reason.** The reason for suspending the handling of the zaak.
 
 ### Create zaakrol - natural person
 
