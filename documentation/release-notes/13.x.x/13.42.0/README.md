@@ -18,6 +18,13 @@
 
 ## Bugfixes
 
+
+* **Form flow steps with a colon in their expressions work again after import**
+
+  Importing a case no longer breaks form flow steps whose start or complete expression contains a colon, such as one
+  that saves submission data to a document or process variable. These steps stopped working after import because part
+  of the expression was cut off.
+
 * **Object permissions are checked before the object is retrieved**
 
   A user without permission to view objects is now refused before anything is requested from the Objecten API.
