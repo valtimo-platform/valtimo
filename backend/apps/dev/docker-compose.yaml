@@ -832,6 +832,11 @@ services:
 volumes:
     gzac-database-data:
     gzac-database-data-mysql:
+<<<<<<< Updated upstream:backend/apps/dev/docker-compose.yaml
     gzac-opensearch-data:
     cg-dmf-database-data:
     cg-dmf-minio-data:
+=======
+    cg-dmf-database-data:
+    cg-dmf-minio-data:
+>>>>>>> Stashed changes:backend/app/gzac/docker-compose.yaml
