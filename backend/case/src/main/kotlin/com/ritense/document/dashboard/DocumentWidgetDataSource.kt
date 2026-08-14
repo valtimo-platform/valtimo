@@ -148,8 +148,7 @@ class DocumentWidgetDataSource(
         EntityAuthorizationRequest(
             JsonSchemaDocument::class.java,
             VIEW_LIST
-        ),
-        null
+        )
     )
 
     private fun <T> getPathExpression(
