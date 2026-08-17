@@ -25,6 +25,13 @@
   that saves submission data to a document or process variable. These steps stopped working after import because part
   of the expression was cut off.
 
+* **A case that cannot be found no longer stops a process, an assignment or a note**
+
+  Automatic team assignment is skipped when the case a task belongs to cannot be determined, instead of failing the
+  user task. Previously this aborted the whole process, which for instance stopped a verzoek from being turned into
+  a zaak. Assigning a case and adding a note no longer fail either when the case behind the document cannot be
+  determined; the behandelaar and notitie are simply not synchronised to the Zaken API.
+
 * **Object permissions are checked before the object is retrieved**
 
   A user without permission to view objects is now refused before anything is requested from the Objecten API.
