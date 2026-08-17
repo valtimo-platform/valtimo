@@ -33,9 +33,12 @@ import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.net.URI
 import java.util.UUID
 
@@ -153,9 +156,12 @@ class ExternalPluginHostService(
             throw ExternalPluginHostInUseException(hostId, usages)
         }
 
+        val host = hostRepository.findById(hostId).orElse(null)
         val definitions = definitionRepository.findAllByHostId(hostId)
+        val configurationIds = mutableListOf<UUID>()
         for (definition in definitions) {
             val configurations = configurationRepository.findAllByDefinitionId(definition.id)
+            configurationIds += configurations.map { it.id }
             for (configuration in configurations) {
                 grantedEndpointRepository.deleteAllByConfigurationId(configuration.id)
                 grantedEventRepository.deleteAllByConfigurationId(configuration.id)
@@ -165,6 +171,44 @@ class ExternalPluginHostService(
         }
         definitionRepository.deleteAll(definitions)
         hostRepository.deleteById(hostId)
+
+        // Best-effort host-side cleanup after the local delete commits. Without this, every config
+        // ever pushed would be orphaned on the host forever: once the host row is gone, GZAC no
+        // longer polls the host, so the discovery reconciliation pass can never prune them. If the
+        // host is down right now the rows do remain until manually cleaned — GZAC has forgotten
+        // the host and cannot retry (deliberate scope choice; documented).
+        if (host != null && configurationIds.isNotEmpty()) {
+            val baseUrl = host.baseUrl
+            val adminToken = encryptionService.decrypt(host.secret)
+            runAfterCommit {
+                configurationIds.forEach { configurationId ->
+                    try {
+                        val deleted = hostClient.deleteConfiguration(baseUrl, adminToken, configurationId.toString())
+                        if (!deleted) {
+                            logger.warn { "Failed to delete configuration $configurationId from plugin host at $baseUrl during host removal" }
+                        }
+                    } catch (e: Exception) {
+                        logger.warn(e) { "Failed to delete configuration $configurationId from plugin host at $baseUrl during host removal" }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Runs [action] after the surrounding transaction commits, or immediately when no transaction
+     * is active. Same pattern as [ExternalPluginConfigurationService]: host HTTP I/O must never
+     * run inside a database transaction, and a failed host call must never roll back the local
+     * delete.
+     */
+    private fun runAfterCommit(action: () -> Unit) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+                override fun afterCommit() = action()
+            })
+        } else {
+            action()
+        }
     }
 
     /**
@@ -185,6 +229,8 @@ class ExternalPluginHostService(
     }
 
     companion object {
+        private val logger = KotlinLogging.logger {}
+
         private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "::1")
 
         /** Default queue inactivity TTL for new DURABLE hosts: 72 hours. */

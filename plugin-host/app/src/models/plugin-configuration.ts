@@ -87,4 +87,12 @@ export interface PluginConfiguration {
    * the configuration then receives no platform events (actions still work).
    */
   eventBroker?: EventBrokerConfig;
+  /**
+   * Opaque identity of the GZAC↔host relationship that owns this configuration (GZAC sends its
+   * host-row UUID with every push). The GZAC-side reconciliation pass only ever deletes
+   * configurations carrying its own ownerId, so multiple GZAC instances can share one host
+   * without deleting each other's configs. Absent when pushed by a GZAC that predates ownership —
+   * such rows are never auto-deleted.
+   */
+  ownerId?: string;
 }

@@ -120,6 +120,7 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
         gzacBaseUrl: body.gzacBaseUrl,
         eventSubscriptions: normalizeSubscriptions(body.eventSubscriptions),
         eventBroker: normalizeEventBroker(body.eventBroker),
+        ownerId: typeof body.ownerId === "string" && body.ownerId ? body.ownerId : null,
       };
       store.set(record);
       await deps.onConfigsChanged();
@@ -147,6 +148,8 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
           ? normalizeSubscriptions(body.eventSubscriptions)
           : existing.eventSubscriptions,
         eventBroker: body.eventBroker !== undefined ? normalizeEventBroker(body.eventBroker) : existing.eventBroker,
+        // Preserve the owner unless the update explicitly carries one.
+        ownerId: typeof body.ownerId === "string" && body.ownerId ? body.ownerId : existing.ownerId,
       };
       store.set(record);
       await deps.onConfigsChanged();
@@ -168,7 +171,16 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
     },
   );
 
-  fastify.get("/api/host/configurations", { preHandler: hmac }, async () => store.list());
+  // Summaries only, mirroring the plugin host: the listing exists for GZAC's reconciliation pass
+  // (delete-own-orphans), so service tokens / properties / broker credentials stay server-side.
+  fastify.get("/api/host/configurations", { preHandler: hmac }, async () =>
+    store.list().map((record) => ({
+      configurationId: record.configurationId,
+      pluginId: record.pluginId,
+      pluginVersion: record.pluginVersion,
+      ownerId: record.ownerId,
+    })),
+  );
 
   // ---- Action invocation (HMAC) ----
   fastify.post<{ Params: { pluginId: string; version: string; actionKey: string }; Body: Record<string, unknown> }>(

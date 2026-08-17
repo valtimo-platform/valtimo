@@ -77,7 +77,7 @@ describe("runMigrations against real Postgres", () => {
 
   it("records every migration version exactly once", async () => {
     const {rows} = await pool.query("SELECT version FROM schema_migrations ORDER BY version");
-    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5]);
+    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it("is idempotent — a second run on the same database changes nothing", async () => {
@@ -85,7 +85,7 @@ describe("runMigrations against real Postgres", () => {
     await runMigrations(pool, noopLogger());
 
     const {rows} = await pool.query("SELECT version FROM schema_migrations ORDER BY version");
-    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5]);
+    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it("creates plugin_configurations with the capability and endpoint columns", async () => {
@@ -101,6 +101,10 @@ describe("runMigrations against real Postgres", () => {
 
     // Migration 5: nullable on purpose — NULL means "no allowlist pushed", [] means "deny all".
     expect(cols.granted_endpoints).toMatchObject({type: "jsonb", nullable: "YES", default: null});
+
+    // Migration 6: nullable on purpose — NULL means "unowned" (pushed by a pre-ownership GZAC);
+    // such rows are excluded from every GZAC's reconciliation pass.
+    expect(cols.owner_id).toMatchObject({type: "text", nullable: "YES", default: null});
   });
 
   it("creates plugin_kv keyed by (configuration_id, key) with a prefix index", async () => {
@@ -153,7 +157,7 @@ describe("runMigrations against real Postgres", () => {
     try {
       await runMigrations(freshPool, noopLogger());
       const {rows} = await freshPool.query("SELECT version FROM schema_migrations ORDER BY version");
-      expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5]);
+      expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6]);
 
       const {rows: tables} = await freshPool.query(
         `SELECT table_name FROM information_schema.tables

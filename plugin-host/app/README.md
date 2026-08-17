@@ -173,6 +173,36 @@ may still be registered over plain HTTP.
 Configurations persist across host restarts. Event consumers automatically reconnect to brokers
 referenced by persisted configurations on startup.
 
+## Reconciliation & ownership
+
+One host serves many GZAC instances, so every configuration row records **which** GZAC↔host
+relationship pushed it: GZAC sends its host-row UUID as `ownerId` with every push, and the host
+persists it (`owner_id` column) and echoes it in the configuration listing. The host treats the
+value as an opaque token — it never interprets or enforces it.
+
+Each GZAC's discovery cycle uses this to **reconcile**: it fetches
+`GET /api/host/configurations` and deletes host configurations that carry *its own* `ownerId` but
+no longer exist on its side — healing the case where a configuration was deleted while the host was
+down or unreachable (the direct delete call is best-effort and does not retry). The never-delete
+rules:
+
+- a configuration owned by **another** GZAC is never touched, whatever its state;
+- an **unowned** configuration (`ownerId` null — pushed by a GZAC that predates ownership) is never
+  auto-deleted by anyone; it is claimed on the owner's next push, or must be removed manually;
+- when the listing request fails, or a host does not implement it, reconciliation is skipped
+  entirely for that cycle.
+
+Ownership scoping is a *safety* mechanism against accidental cross-instance deletion, not an
+authorization boundary: every GZAC connecting to a host shares the same `ADMIN_TOKEN` and is fully
+trusted (any of them could overwrite or delete any configuration directly).
+
+**Owner-change warning.** When a push changes an existing configuration's owner, the host logs a
+warning — this is the fingerprint of two GZAC environments pushing the same configuration id.
+The usual cause is a **database-cloned GZAC environment pointed at the same host as its source**:
+clones share host-row UUIDs and configuration ids, so their pushes and reconciliation passes fight
+over the same rows. Never point a cloned environment at the same host — register a fresh host entry
+(new UUID) instead.
+
 ## Events
 
 A GZAC instance publishes domain events through its transactional outbox as CloudEvents v1.0 JSON to
@@ -330,7 +360,14 @@ curl -sS -X DELETE http://localhost:8090/api/host/plugins/say-hello/0.1.0 \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" -w "\nHTTP %{http_code}\n"
 ```
 
-### `GET /api/host/configurations` — list all configurations
+### `GET /api/host/configurations` — list all configurations (summaries)
+
+Returns one `{configurationId, pluginId, pluginVersion, ownerId}` summary per stored
+configuration. The response is deliberately redacted — no `serviceToken`, `properties` or
+`eventBroker` — because a host serves multiple GZAC instances and this listing exists for each
+instance's [reconciliation pass](#reconciliation--ownership); full configurations would hand every
+`ADMIN_TOKEN` holder the secrets of *other* instances. `ownerId` is `null` for configurations
+pushed by a GZAC that predates ownership.
 
 ```bash
 host_sign GET /api/host/configurations
@@ -349,6 +386,11 @@ Optional grant fields: `grantedCapabilities` (array of `gzac_api` / `http_reques
 GZAC endpoints `gzac_api` may call. When `grantedEndpoints` is omitted entirely (older GZAC
 versions) the host logs a warning and skips its side of the allowlist check — GZAC still enforces
 the allowlist server-side; an empty array denies every endpoint.
+
+Optional `ownerId` (string): the pushing GZAC's host-row UUID, persisted and echoed in the
+configuration listing so that GZAC's [reconciliation pass](#reconciliation--ownership) can later
+delete its own orphaned configurations without touching another instance's. Omitted → the
+configuration is unowned and never auto-deleted.
 
 Write the body to a file so the signed bytes and the sent bytes match exactly
 (`--data-binary @file`):

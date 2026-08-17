@@ -19,6 +19,7 @@ package com.ritense.externalplugin.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.client.ExternalPluginHostClient
+import com.ritense.externalplugin.client.ExternalPluginHostClient.HostConfigurationSummary
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
@@ -34,12 +35,19 @@ import java.time.Instant
 import java.util.UUID
 
 /**
- * Polls every registered host: health check, manifest discovery and configuration re-push.
+ * Polls every registered host: health check, manifest discovery, configuration reconciliation
+ * (pruning host-side configs this GZAC owns but no longer has) and configuration re-push.
  *
- * Transaction discipline: HTTP calls to the host (health, plugin listing, config pushes) run
+ * Transaction discipline: HTTP calls to the host (health, listings, config pushes/deletes) run
  * **outside** any database transaction; database writes happen in short per-host transactions via
  * [transactionTemplate]. A slow or hanging host therefore never pins a database connection or
  * transaction open, and one host's failure never rolls back another host's bookkeeping.
+ *
+ * Status discipline: [ExternalPluginHostStatus.CONNECTED] is recorded only after a fully
+ * successful poll — the host answered `/health` **and** GZAC fetched its state (plugin and
+ * configuration listings) with valid credentials. A host that pings but rejects the admin token
+ * counts toward the same failure threshold as an unreachable one, so the UI never advertises a
+ * host GZAC cannot actually use.
  */
 @Service
 @SkipComponentScan
@@ -82,45 +90,123 @@ class ExternalPluginDiscoveryService(
 
     private fun pollHost(host: ExternalPluginHost) {
         // HTTP health probe outside any transaction.
-        val healthy = hostClient.health(host.baseUrl)
-
-        // Short transaction: record the health-check outcome and status flip.
-        transactionTemplate.executeWithoutResult { recordHealthCheck(host.id, healthy) }
-        if (!healthy) return
-
-        val adminToken = hostService.decryptedSecret(host)
-        // HTTP manifest listing outside any transaction.
-        val plugins = hostClient.listPlugins(host.baseUrl, adminToken)
-
-        // Short transaction: upsert discovered definitions and mark missing ones.
-        transactionTemplate.executeWithoutResult {
-            val seenDefinitionIds = mutableSetOf<UUID>()
-            plugins.forEach { manifest ->
-                val pluginId = manifest.get("pluginId")?.asText()
-                if (pluginId.isNullOrBlank()) return@forEach
-                val defId = upsertDefinition(host, pluginId, manifest)
-                if (defId != null) seenDefinitionIds += defId
-            }
-            markMissingDefinitions(host, seenDefinitionIds)
+        if (!hostClient.health(host.baseUrl)) {
+            transactionTemplate.executeWithoutResult { recordFailedPoll(host.id, "health probe failed") }
+            return
         }
+        try {
+            val adminToken = hostService.decryptedSecret(host)
+            // Both listings are fetched over HTTP (outside any transaction) BEFORE any local state
+            // is read: the reconciliation safety argument requires the host snapshot to be older
+            // than the local read — see [reconcileConfigurations].
+            val plugins = hostClient.listPlugins(host.baseUrl, adminToken)
+            val hostConfigurations = hostClient.listConfigurations(host.baseUrl, adminToken)
 
-        // Config pushes are HTTP calls again — outside any transaction.
-        syncConfigurations(host)
+            // Short transaction: upsert discovered definitions and mark missing ones.
+            transactionTemplate.executeWithoutResult {
+                val seenDefinitionIds = mutableSetOf<UUID>()
+                plugins.forEach { manifest ->
+                    val pluginId = manifest.get("pluginId")?.asText()
+                    if (pluginId.isNullOrBlank()) return@forEach
+                    val defId = upsertDefinition(host, pluginId, manifest)
+                    if (defId != null) seenDefinitionIds += defId
+                }
+                markMissingDefinitions(host, seenDefinitionIds)
+            }
+
+            // Reconciliation deletes and config pushes are HTTP calls again — outside any transaction.
+            reconcileConfigurations(host, adminToken, hostConfigurations)
+            syncConfigurations(host)
+
+            // CONNECTED is recorded only now: it attests "state fetched and synced with valid
+            // credentials this cycle", not merely "the host answers /health".
+            transactionTemplate.executeWithoutResult { recordSuccessfulPoll(host.id) }
+        } catch (e: Exception) {
+            // A host that answers /health but fails the authenticated state fetch is just as
+            // unusable as one that does not answer at all — count it toward the same threshold
+            // instead of leaving the host CONNECTED on stale information.
+            transactionTemplate.executeWithoutResult {
+                recordFailedPoll(host.id, e.message ?: e.javaClass.simpleName)
+            }
+            throw e
+        }
     }
 
-    private fun recordHealthCheck(hostId: UUID, healthy: Boolean) {
+    private fun recordFailedPoll(hostId: UUID, reason: String) {
         val host = hostRepository.findById(hostId).orElse(null) ?: return
         host.lastHealthCheck = Instant.now()
-        if (healthy) {
-            host.consecutiveFailures = 0
-            host.status = ExternalPluginHostStatus.CONNECTED
-        } else {
-            host.consecutiveFailures += 1
-            if (host.consecutiveFailures >= failureThreshold) {
-                host.status = ExternalPluginHostStatus.UNREACHABLE
+        host.consecutiveFailures += 1
+        if (host.consecutiveFailures >= failureThreshold && host.status != ExternalPluginHostStatus.UNREACHABLE) {
+            host.status = ExternalPluginHostStatus.UNREACHABLE
+            logger.warn {
+                "Marking external plugin host $hostId as UNREACHABLE after " +
+                    "${host.consecutiveFailures} consecutive failed polls (last failure: $reason)"
             }
         }
         hostRepository.save(host)
+    }
+
+    private fun recordSuccessfulPoll(hostId: UUID) {
+        val host = hostRepository.findById(hostId).orElse(null) ?: return
+        host.lastHealthCheck = Instant.now()
+        host.consecutiveFailures = 0
+        host.status = ExternalPluginHostStatus.CONNECTED
+        hostRepository.save(host)
+    }
+
+    /**
+     * Deletes host-side configurations that this GZAC owns but no longer has — the healing pass
+     * for "config deleted while the host was down/unreachable" and for any other host-side drift.
+     *
+     * Ownership scope: only entries whose `ownerId` equals this host row's UUID are candidates.
+     * Configs owned by another GZAC connected to the same host, and unowned entries (pushed by a
+     * GZAC that predates ownership), are never touched. [hostConfigurations] is `null` when the
+     * host predates the listing endpoint — reconciliation is then skipped entirely.
+     *
+     * Safety: the host snapshot was fetched BEFORE the local set is read here, so a configuration
+     * created concurrently is absent from the snapshot (never a candidate), and one deleted
+     * concurrently is still in the local set (pruned next cycle). Configuration ids are
+     * GZAC-generated UUIDs and never reused, so no id can be recreated between the two reads.
+     */
+    private fun reconcileConfigurations(
+        host: ExternalPluginHost,
+        adminToken: String,
+        hostConfigurations: List<HostConfigurationSummary>?,
+    ) {
+        if (hostConfigurations == null) return
+        val ownerId = host.id.toString()
+        val owned = hostConfigurations.filter { it.ownerId == ownerId }
+        if (owned.isEmpty()) return
+
+        // Short transaction: read this GZAC's current configuration set for the host.
+        val localIds = transactionTemplate.execute {
+            definitionRepository.findAllByHostId(host.id)
+                .flatMap { definition -> configurationRepository.findAllByDefinitionId(definition.id) }
+                .map { configuration -> configuration.id.toString() }
+                .toSet()
+        } ?: return
+
+        val orphans = owned.filter { it.configurationId !in localIds }
+        if (orphans.isEmpty()) return
+
+        val deletedIds = mutableListOf<String>()
+        orphans.forEach { orphan ->
+            // deleteConfiguration handles its own exceptions and treats 404 as success.
+            if (hostClient.deleteConfiguration(host.baseUrl, adminToken, orphan.configurationId)) {
+                deletedIds += orphan.configurationId
+            } else {
+                logger.warn {
+                    "Failed to delete orphaned configuration ${orphan.configurationId} from host " +
+                        "${host.id}; will retry on the next discovery cycle"
+                }
+            }
+        }
+        if (deletedIds.isNotEmpty()) {
+            logger.info {
+                "Reconciliation removed ${deletedIds.size} orphaned configuration(s) no longer " +
+                    "present in GZAC from host ${host.id}: $deletedIds"
+            }
+        }
     }
 
     private fun syncConfigurations(host: ExternalPluginHost) {

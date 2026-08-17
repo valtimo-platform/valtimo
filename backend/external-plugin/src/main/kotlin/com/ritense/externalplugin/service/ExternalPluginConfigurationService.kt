@@ -222,6 +222,10 @@ class ExternalPluginConfigurationService(
             properties = decrypted,
             serviceToken = serviceToken,
             gzacBaseUrl = host.gzacCallbackBaseUrl ?: fallbackGzacBaseUrl,
+            // The host-row UUID identifies this GZAC↔host relationship: the host persists it per
+            // configuration, and the discovery reconciliation pass only deletes host configs
+            // carrying it — so another GZAC sharing the host can never lose configs to this one.
+            ownerId = host.id.toString(),
             // The pinned package hash rides along; the host refuses the push (409) if the package
             // on disk no longer matches, closing the window between discovery and this push.
             expectedContentHash = definition.contentHash,

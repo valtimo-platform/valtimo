@@ -33,9 +33,11 @@ describe("host-configurations routes", () => {
     getContentHash: ReturnType<typeof vi.fn>;
   };
   let eventConsumerManager: { sync: ReturnType<typeof vi.fn> };
+  let warnLines: string[];
 
   beforeEach(async () => {
     resetReplayCacheForTests();
+    warnLines = [];
     configRegistry = {
       set: vi.fn(async () => {}),
       get: vi.fn(async () => undefined),
@@ -47,13 +49,16 @@ describe("host-configurations routes", () => {
       getContentHash: vi.fn(() => "sha256:abc123"),
     };
     eventConsumerManager = { sync: vi.fn(async () => {}) };
-    app = await buildTestApp((a) =>
-      hostConfigurationRoutes(a, {
-        configRegistry: configRegistry as never,
-        pluginManager: pluginManager as never,
-        config: testConfig(),
-        eventConsumerManager: eventConsumerManager as never,
-      })
+    app = await buildTestApp(
+      (a) =>
+        hostConfigurationRoutes(a, {
+          configRegistry: configRegistry as never,
+          pluginManager: pluginManager as never,
+          config: testConfig(),
+          eventConsumerManager: eventConsumerManager as never,
+        }),
+      // Capture warn-level lines so specs can assert on operator-facing warnings.
+      { logger: { level: "warn", stream: { write: (line: string) => warnLines.push(line) } } }
     );
   });
 
@@ -150,6 +155,38 @@ describe("host-configurations routes", () => {
       expect(eventConsumerManager.sync).not.toHaveBeenCalled();
     });
 
+    it("stores the pushing GZAC's ownerId", async () => {
+      await postConfig("cfg-1", validBody({ ownerId: "host-row-1" }));
+      expect(configRegistry.set.mock.calls[0][1].ownerId).toBe("host-row-1");
+    });
+
+    it("stores no owner when the push carries none (older GZAC)", async () => {
+      await postConfig("cfg-1", validBody());
+      expect(configRegistry.set.mock.calls[0][1].ownerId).toBeUndefined();
+    });
+
+    it("warns on an owner change but still applies the push (last push wins)", async () => {
+      configRegistry.get.mockResolvedValueOnce({
+        configurationId: "cfg-1",
+        ownerId: "host-row-1",
+      });
+
+      const res = await postConfig("cfg-1", validBody({ ownerId: "host-row-2" }));
+
+      expect(res.statusCode).toBe(201);
+      expect(configRegistry.set.mock.calls[0][1].ownerId).toBe("host-row-2");
+      expect(warnLines.some((line) => line.includes("Configuration owner changed"))).toBe(true);
+    });
+
+    it("does not warn when the owner is unchanged", async () => {
+      configRegistry.get.mockResolvedValueOnce({
+        configurationId: "cfg-1",
+        ownerId: "host-row-1",
+      });
+      await postConfig("cfg-1", validBody({ ownerId: "host-row-1" }));
+      expect(warnLines.some((line) => line.includes("Configuration owner changed"))).toBe(false);
+    });
+
     it("returns 400 when serviceToken is missing", async () => {
       const res = await postConfig("cfg-1", validBody({ serviceToken: undefined }));
       expect(res.statusCode).toBe(400);
@@ -219,6 +256,23 @@ describe("host-configurations routes", () => {
       });
     });
 
+    it("retains the stored owner when the update omits it", async () => {
+      configRegistry.get.mockResolvedValueOnce({
+        configurationId: "cfg-1",
+        pluginId: "case-summary",
+        pluginVersion: "0.1.0",
+        properties: {},
+        serviceToken: "old-token",
+        gzacBaseUrl: "http://gzac:8080",
+        eventSubscriptions: [],
+        ownerId: "host-row-1",
+      });
+
+      await putConfig("cfg-1", { properties: {} });
+
+      expect(configRegistry.set.mock.calls[0][1].ownerId).toBe("host-row-1");
+    });
+
     it("returns 404 when updating a configuration that does not exist", async () => {
       configRegistry.get.mockResolvedValueOnce(undefined);
       const res = await putConfig("missing", { properties: {} });
@@ -248,12 +302,39 @@ describe("host-configurations routes", () => {
   });
 
   describe("GET (list)", () => {
-    it("returns the registry contents", async () => {
-      configRegistry.list.mockResolvedValueOnce([{ configurationId: "cfg-1" }]);
+    it("returns owner-attributed summaries without tokens, properties or broker credentials", async () => {
+      // A host serves multiple GZAC instances; the listing exists for reconciliation, so it must
+      // not leak one instance's service token / decrypted properties / broker URL to another.
+      configRegistry.list.mockResolvedValueOnce([
+        {
+          configurationId: "cfg-1",
+          pluginId: "case-summary",
+          pluginVersion: "0.1.0",
+          properties: { apiKey: "s3cr3t" },
+          serviceToken: "svc-token",
+          gzacBaseUrl: "http://gzac:8080",
+          eventSubscriptions: [],
+          eventBroker: { amqpUrl: "amqp://user:pass@broker", exchange: "valtimo-events", exchangeType: "fanout" },
+          ownerId: "host-row-1",
+        },
+        {
+          configurationId: "cfg-2",
+          pluginId: "case-summary",
+          pluginVersion: "0.1.0",
+          properties: {},
+          serviceToken: "other-token",
+          gzacBaseUrl: "http://other-gzac:8080",
+          eventSubscriptions: [],
+        },
+      ]);
       const path = "/api/host/configurations";
       const res = await app.inject({ method: "GET", url: path, headers: signHeaders("GET", path) });
       expect(res.statusCode).toBe(200);
-      expect(res.json()).toEqual([{ configurationId: "cfg-1" }]);
+      expect(res.json()).toEqual([
+        { configurationId: "cfg-1", pluginId: "case-summary", pluginVersion: "0.1.0", ownerId: "host-row-1" },
+        // An unowned (pre-ownership) configuration lists with ownerId null — never auto-deleted.
+        { configurationId: "cfg-2", pluginId: "case-summary", pluginVersion: "0.1.0", ownerId: null },
+      ]);
     });
   });
 });

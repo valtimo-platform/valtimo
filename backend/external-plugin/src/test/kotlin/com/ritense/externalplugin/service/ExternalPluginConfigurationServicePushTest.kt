@@ -142,6 +142,9 @@ class ExternalPluginConfigurationServicePushTest {
             properties = any(),
             serviceToken = eq("svc-token"),
             gzacBaseUrl = any(),
+            // The ownership claim is the host-row UUID — it scopes which configs this GZAC's
+            // reconciliation pass may ever delete on the shared host.
+            ownerId = eq(host.id.toString()),
             expectedContentHash = eq("sha256:accepted"),
             eventSubscriptions = any(),
             grantedCapabilities = any(),
@@ -184,6 +187,7 @@ class ExternalPluginConfigurationServicePushTest {
             properties = any(),
             serviceToken = eq("svc-token"),
             gzacBaseUrl = any(),
+            ownerId = any(),
             expectedContentHash = anyOrNull(),
             eventSubscriptions = any(),
             grantedCapabilities = any(),
