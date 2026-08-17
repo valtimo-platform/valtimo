@@ -74,6 +74,7 @@ class AddBuildingBlockMigrationComponentExecutor(
     private val processMigrationVariableResolver: ProcessMigrationVariableResolver,
     private val processDocumentAssociationService: ProcessDocumentAssociationService,
     private val dataPatchApplier: MigrationDataPatchApplier,
+    private val addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
     private val jdbcTemplate: JdbcTemplate,
 ) : MigrationComponentExecutor {
 
@@ -86,6 +87,12 @@ class AddBuildingBlockMigrationComponentExecutor(
         if (instructions.isEmpty()) {
             return
         }
+
+        // Refuse before creating anything: a block whose version the target does not link is invisible
+        // to every later migration (R2). Checked here as well as on the save path because a plan
+        // deployed from a file never passes the save path; on a dry run this surfaces as WOULD_FAIL.
+        // Deliberately ahead of the "nothing to hijack" skip below — the plan is wrong either way.
+        addBuildingBlockLinkChecker.assertLinked(target, instructions)
 
         // The owner is whatever instance the plan migrates: a case (no building block for its
         // document id) or a parent building block (in which case the new block nests under it).

@@ -14,5 +14,12 @@
             }
         ],
         "outputMappings": []
+    },
+    {
+        "buildingBlockDefinitionKey": "income-check",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {},
+        "inputMappings": [],
+        "outputMappings": []
     }
 ]

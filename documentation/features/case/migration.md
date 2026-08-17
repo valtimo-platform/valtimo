@@ -163,6 +163,77 @@ sections. There the owner is the migrating building block instead of a case: **A
 creates a block nested inside it and moves one of its processes into that block, and **Remove building
 block** dissolves a nested block, handing its data and process back to the block that owned it.
 
+### What "add building block" really does
+
+One sentence explains everything the feature can and cannot do:
+
+> **Adding a building block does not start a new process — it moves a process that is already running
+> into the new building block.**
+
+The building block is created empty, filled from the case, and then *takes over* one of the case's
+running processes: that process keeps its steps and its position, but from then on it belongs to the
+building block. Nothing is started, and nothing is copied.
+
+That is what makes the feature useful for existing cases — a case halfway through its process keeps
+its progress while the work moves into a building block — and it is also the source of every
+limitation below.
+
+### What it can do
+
+* **Move the case's own process into a building block.** The most common use: the work the case was
+  doing becomes work the building block does.
+* **Create several building blocks in one plan.** A case can have more than one process running at
+  the same time, and each entry takes over one of them, so one plan can produce one building block per
+  running process.
+* **Move a sub-process into a building block.** If the case's process *calls* another process, an
+  entry can take over that called process instead of the main one. The result is a building block that
+  behaves exactly like one the case started normally.
+* **Fill the new building block from the case.** Each entry has its own data migration, reading from
+  the case document and writing into the new building block document.
+* **Re-map the process steps on the way in.** Each entry has its own process migration, so the steps
+  of the process being taken over can be mapped onto the building block's own process model.
+* **Work the same way inside a building block.** On a building block plan, the same section nests a
+  new building block inside the migrating one.
+
+### What it cannot do
+
+{% hint style="warning" %}
+**It cannot split one process into two.** If the old version does everything in one process and the
+new version should have a shorter process that *calls* a building block, adding a building block
+cannot produce that. The case's process becomes the building block's process, so there is nothing
+left over to do the calling.
+{% endhint %}
+
+Fortunately this is rarely a problem, because **most cases don't need it**. If you are carving a
+piece of work out of a large process into a building block:
+
+* For cases whose process **has not reached that work yet**, you need no building block section at
+  all. Migrate them normally onto the new version; when the process arrives at the point where the
+  new version calls the building block, the building block is created there and then, exactly as it
+  is for a brand-new case.
+* The same is true for cases that are already **past** that work.
+* Only cases that are **executing that very work at the moment of migration** are a problem — and the
+  way around it is to let the new version keep the old step alongside the new call for a while, so
+  those cases can be mapped onto the old step, and drop it in a later version once no case is sitting
+  there any more.
+
+The other limits are smaller, but worth knowing:
+
+* **No running process means no building block.** If a case has no running process for the entry to
+  take over — a closed case, for example — that entry is skipped and no building block is created.
+  The case still migrates and is not reported as failed.
+* **The new version must actually use the building block.** A plan can only add a building block
+  version that the target case version links, either as a startable item or through a call in one of
+  its processes. A plan that adds something the version does not use is refused when you save it, and
+  again if it is run. The reason is that such a building block would be created once and then never be
+  migrated again by any later plan, because a building block only ever moves when the version owning
+  it says which version it should be on.
+* **Adding happens before removing.** Within one plan, building blocks are added before any are
+  removed, so an entry cannot take over a process that another entry in the *same* plan is about to
+  hand back. If you need that, use two plans and chain them with "after another plan".
+* **An entry takes over a whole process instance**, not part of one. There is no way to move only some
+  steps of a running process into a building block.
+
 ## How building blocks follow a case
 
 A building block has no life of its own — it lives inside a case — so a building block plan is never

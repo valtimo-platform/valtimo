@@ -1,0 +1,16 @@
+[
+    {
+        "buildingBlockDefinitionKey": "case-notification",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {},
+        "inputMappings": [],
+        "outputMappings": []
+    },
+    {
+        "buildingBlockDefinitionKey": "inspectie-dossier",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {},
+        "inputMappings": [],
+        "outputMappings": []
+    }
+]

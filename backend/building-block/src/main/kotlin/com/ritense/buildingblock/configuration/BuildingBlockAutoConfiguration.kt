@@ -38,8 +38,10 @@ import com.ritense.buildingblock.repository.JsonSchemaDocumentCaseDefinitionMapp
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.RemoveBuildingBlockConfigurationRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.migration.AddBuildingBlockLinkChecker
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentDeployer
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentExecutor
+import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentValidator
 import com.ritense.buildingblock.service.migration.BuildingBlockInstanceRehomeExecutor
 import com.ritense.buildingblock.service.migration.BuildingBlockInstanceRehomer
 import com.ritense.buildingblock.service.migration.BuildingBlockVersionLineage
@@ -1076,6 +1078,19 @@ class BuildingBlockAutoConfiguration {
     )
 
     @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockLinkChecker::class)
+    fun addBuildingBlockLinkChecker(
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    ) = AddBuildingBlockLinkChecker(linkedBuildingBlockVersionResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentValidator::class)
+    fun addBuildingBlockMigrationComponentValidator(
+        objectMapper: ObjectMapper,
+        addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
+    ) = AddBuildingBlockMigrationComponentValidator(objectMapper, addBuildingBlockLinkChecker)
+
+    @Bean
     @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentDeployer::class)
     fun addBuildingBlockMigrationComponentDeployer(
         objectMapper: ObjectMapper,
@@ -1108,6 +1123,7 @@ class BuildingBlockAutoConfiguration {
         processMigrationVariableResolver: ProcessMigrationVariableResolver,
         processDocumentAssociationService: ProcessDocumentAssociationService,
         migrationDataPatchApplier: MigrationDataPatchApplier,
+        addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
         jdbcTemplate: JdbcTemplate,
     ) = AddBuildingBlockMigrationComponentExecutor(
         objectMapper,
@@ -1120,6 +1136,7 @@ class BuildingBlockAutoConfiguration {
         processMigrationVariableResolver,
         processDocumentAssociationService,
         migrationDataPatchApplier,
+        addBuildingBlockLinkChecker,
         jdbcTemplate,
     )
 
