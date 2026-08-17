@@ -73,9 +73,7 @@
         @if (!!taskWithProcessLink.task.assignedTeam || !!taskWithProcessLink.task.assignee) {
           <cds-tag
             class="cds-tag--no-margin"
-            [ngbTooltip]="
-              getAssigneeTooltip(taskWithProcessLink.task) || ('summary.taskIsAssigned' | translate)
-            "
+            [ngbTooltip]="getAssigneeTooltip(taskWithProcessLink.task) || ('summary.taskIsAssigned' | translate)"
             [type]="'cool-gray'"
           >
             @if (!!taskWithProcessLink.task.assignedTeam) {

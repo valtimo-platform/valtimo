@@ -61,7 +61,10 @@
         </div>
       </v-overflow-menu>
 
-      <v-overflow-menu *ngIf="!!widgetConfiguration?.actions?.length" placement="bottom-end">
+      <v-overflow-menu
+        *ngIf="!!widgetConfiguration?.actions?.length"
+        placement="bottom-end"
+      >
         <button overflowTrigger cdsButton="ghost" [iconOnly]="true">
           <svg cdsIcon="link" size="16"></svg>
         </button>

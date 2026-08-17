@@ -21,10 +21,7 @@ const mapActivityTypeToActivityListenerType = (activityType: string, element?: a
 
   if (activityType === 'bpmn:StartEvent' && element) {
     const eventDefinitions = element.businessObject?.eventDefinitions;
-    if (
-      eventDefinitions?.length > 0 &&
-      eventDefinitions[0].$type === 'bpmn:MessageEventDefinition'
-    ) {
+    if (eventDefinitions?.length > 0 && eventDefinitions[0].$type === 'bpmn:MessageEventDefinition') {
       return 'bpmn:MessageStartEvent:start';
     }
   }

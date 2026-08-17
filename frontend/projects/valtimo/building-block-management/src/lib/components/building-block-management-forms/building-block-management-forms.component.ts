@@ -198,7 +198,9 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
         .subscribe()
     );
 
-    this._subscriptions.add(this.isFinal$.subscribe(isFinal => (this._isFinal = isFinal)));
+    this._subscriptions.add(
+      this.isFinal$.subscribe(isFinal => (this._isFinal = isFinal))
+    );
   }
 
   public ngOnDestroy(): void {

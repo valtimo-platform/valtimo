@@ -79,23 +79,17 @@
               <cds-dropdown-list [items]="getFieldTypeDropdownItems(filterRow)"></cds-dropdown-list>
             </cds-dropdown>
 
-            @if (filterRow.get('dataType')?.value?.id === 'text') {
-              <cds-dropdown
-                cdsLayer
-                [label]="'searchFieldsOverview.matchType' | translate"
-                formControlName="matchType"
-              >
-                <cds-dropdown-list
-                  [items]="getMatchTypeDropdownItems(filterRow)"
-                ></cds-dropdown-list>
+            @if ((filterRow.get('dataType')?.value?.id) === 'text') {
+              <cds-dropdown cdsLayer [label]="'searchFieldsOverview.matchType' | translate" formControlName="matchType">
+                <cds-dropdown-list [items]="getMatchTypeDropdownItems(filterRow)"></cds-dropdown-list>
               </cds-dropdown>
             }
 
             @if (
-              filterRow.get('dataType')?.value?.id === 'text' &&
-              (filterRow.get('fieldType')?.value?.id === 'single-select-dropdown' ||
-                filterRow.get('fieldType')?.value?.id === 'multi-select-dropdown')
-            ) {
+              (filterRow.get('dataType')?.value?.id) === 'text' &&
+              ((filterRow.get('fieldType')?.value?.id) === 'single-select-dropdown' ||
+                (filterRow.get('fieldType')?.value?.id) === 'multi-select-dropdown')
+              ) {
               <cds-dropdown
                 cdsLayer
                 [label]="'searchFieldsOverview.dropdownDataProvider' | translate"
@@ -115,14 +109,8 @@
                   [noMargin]="true"
                 ></v-input-label>
 
-                @for (
-                  dropdownValue of filterRow.get('dropdownValues')?.['controls'] ?? [];
-                  track $index
-                ) {
-                  <div
-                    [formGroup]="dropdownValue"
-                    class="valtimo-widget-wizard-filters__dropdown-values"
-                  >
+                @for (dropdownValue of (filterRow.get('dropdownValues')?.['controls'] ?? []); track $index) {
+                  <div [formGroup]="dropdownValue" class="valtimo-widget-wizard-filters__dropdown-values">
                     <cds-text-label>
                       {{ 'interface.value' | translate }}
                       <input cdsText type="text" formControlName="key" cdsLayer />

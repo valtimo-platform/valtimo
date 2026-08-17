@@ -24,8 +24,7 @@
       <cds-text-label
         class="valtimo-widget-interactive-table-search__filter-field"
         [ngClass]="{
-          'valtimo-widget-interactive-table-search__filter-field--range':
-            filter.fieldType === 'range',
+          'valtimo-widget-interactive-table-search__filter-field--range': filter.fieldType === 'range'
         }"
       >
         <v-input-label *ngIf="filter.title" [title]="filter.title"></v-input-label>
@@ -40,11 +39,9 @@
             [carbonTheme]="'g100'"
             (valueChange)="singleValueChange(filter.key, $event)"
           ></v-input>
-        } @else if (filter.dataType === 'text' && filter.fieldType === 'range') {
-          <v-form
-            className="multiple-search-fields"
-            (valueChange)="rangeValueChange(filter.key, $event)"
-          >
+        }
+        @else if (filter.dataType === 'text' && filter.fieldType === 'range') {
+          <v-form className="multiple-search-fields" (valueChange)="rangeValueChange(filter.key, $event)">
             <v-input
               name="start"
               [defaultValue]="filtersFormGroup.get(filter.key + '_start')?.value"
@@ -63,14 +60,16 @@
               [fullWidth]="true"
             ></v-input>
           </v-form>
-        } @else if (filter.dataType === 'text' && filter.fieldType === 'single-select-dropdown') {
+        }
+        @else if (filter.dataType === 'text' && filter.fieldType === 'single-select-dropdown') {
           <v-select
             [items]="dropdownSelectItemsMap[filter.key]"
             [formControlName]="filter.key"
             [placeholder]="'searchFields.textPlaceholder' | translate"
             [appendInline]="true"
           ></v-select>
-        } @else if (filter.dataType === 'text' && filter.fieldType === 'multi-select-dropdown') {
+        }
+        @else if (filter.dataType === 'text' && filter.fieldType === 'multi-select-dropdown') {
           <v-select
             [items]="dropdownSelectItemsMap[filter.key]"
             [formControlName]="filter.key"
@@ -78,7 +77,8 @@
             [placeholder]="'searchFields.textPlaceholder' | translate"
             [appendInline]="true"
           ></v-select>
-        } @else if (filter.dataType === 'number' && filter.fieldType === 'single') {
+        }
+        @else if (filter.dataType === 'number' && filter.fieldType === 'single') {
           <v-input
             type="number"
             [hideNumberSpinBox]="true"
@@ -88,11 +88,9 @@
             [fullWidth]="true"
             (valueChange)="singleValueChange(filter.key, $event)"
           ></v-input>
-        } @else if (filter.dataType === 'number' && filter.fieldType === 'range') {
-          <v-form
-            className="multiple-search-fields"
-            (valueChange)="rangeValueChange(filter.key, $event)"
-          >
+        }
+        @else if (filter.dataType === 'number' && filter.fieldType === 'range') {
+          <v-form className="multiple-search-fields" (valueChange)="rangeValueChange(filter.key, $event)">
             <v-input
               type="number"
               name="start"
@@ -113,19 +111,22 @@
               [fullWidth]="true"
             ></v-input>
           </v-form>
-        } @else if (filter.dataType === 'boolean' && filter.fieldType === 'single') {
+        }
+        @else if (filter.dataType === 'boolean' && filter.fieldType === 'single') {
           <v-select
             *ngIf="booleanItems$ | async as booleanItems"
             [items]="booleanItems"
             [formControlName]="filter.key"
             [clearSelectionSubject$]="clear$"
           ></v-select>
-        } @else if (filter.dataType === 'time' && filter.fieldType === 'single') {
+        }
+        @else if (filter.dataType === 'time' && filter.fieldType === 'single') {
           <cds-timepicker
             [placeholder]="'searchFields.timePlaceholder' | translate"
             [formControlName]="filter.key"
           ></cds-timepicker>
-        } @else if (filter.dataType === 'time' && filter.fieldType === 'range') {
+        }
+        @else if (filter.dataType === 'time' && filter.fieldType === 'range') {
           <cds-timepicker [formControlName]="filter.key + '_start'"></cds-timepicker>
 
           <div class="to-text">
@@ -133,7 +134,8 @@
           </div>
 
           <cds-timepicker [formControlName]="filter.key + '_end'"></cds-timepicker>
-        } @else if (filter.dataType === 'date' && filter.fieldType === 'single') {
+        }
+        @else if (filter.dataType === 'date' && filter.fieldType === 'single') {
           <valtimo-date-time-picker
             [defaultDate]="filtersFormGroup.get(filter.key)?.value ?? ''"
             [clear$]="clear$"
@@ -141,7 +143,8 @@
             [showFieldLabel]="false"
             (valueChange)="singleValueChange(filter.key, $event)"
           ></valtimo-date-time-picker>
-        } @else if (filter.dataType === 'date' && filter.fieldType === 'range') {
+        }
+        @else if (filter.dataType === 'date' && filter.fieldType === 'range') {
           <div class="multiple-search-fields">
             <valtimo-date-time-picker
               [defaultDate]="filtersFormGroup.get(filter.key + '_start')?.value ?? ''"
@@ -163,7 +166,8 @@
               (valueChange)="singleValueChange(filter.key + '_end', $event)"
             ></valtimo-date-time-picker>
           </div>
-        } @else if (filter.dataType === 'datetime' && filter.fieldType === 'single') {
+        }
+        @else if (filter.dataType === 'datetime' && filter.fieldType === 'single') {
           <valtimo-date-time-picker
             [defaultDate]="filtersFormGroup.get(filter.key)?.value ?? ''"
             [clear$]="clear$"
@@ -171,7 +175,8 @@
             [showFieldLabel]="false"
             (valueChange)="singleValueChange(filter.key, $event)"
           ></valtimo-date-time-picker>
-        } @else if (filter.dataType === 'datetime' && filter.fieldType === 'range') {
+        }
+        @else if (filter.dataType === 'datetime' && filter.fieldType === 'range') {
           <div class="multiple-search-fields multiple-search-fields--stacked">
             <valtimo-date-time-picker
               [defaultDate]="filtersFormGroup.get(filter.key + '_start')?.value ?? ''"

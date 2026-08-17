@@ -45,12 +45,7 @@
   </section>
 
   <cds-modal-footer class="valtimo-widget-management-wizard__footer">
-    <button
-      class="valtimo-widget-management-wizard__cancel"
-      cdsButton="ghost"
-      [attr.data-test-id]="testIds.cancelButton"
-      (click)="onClose()"
-    >
+    <button class="valtimo-widget-management-wizard__cancel" cdsButton="ghost" [attr.data-test-id]="testIds.cancelButton" (click)="onClose()">
       {{ 'interface.cancel' | translate }}
     </button>
 
@@ -69,11 +64,7 @@
     <button
       class="valtimo-widget-management-wizard__next"
       cdsButton="primary"
-      [attr.data-test-id]="
-        $currentStepIndex() === (numberOfSteps$ | async) - 1
-          ? testIds.saveButton
-          : testIds.nextButton
-      "
+      [attr.data-test-id]="$currentStepIndex() === (numberOfSteps$ | async) - 1 ? testIds.saveButton : testIds.nextButton"
       [disabled]="$nextButtonDisabled()"
       (click)="onNextButtonClick()"
     >

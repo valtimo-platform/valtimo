@@ -69,7 +69,11 @@
         </div>
       </section>
     } @else if (canEdit$ | async) {
-      <button cdsButton="primary" [attr.data-test-id]="testIds.addButton" (click)="showModal()">
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.addButton"
+        (click)="showModal()"
+      >
         {{ 'zaakdetails.submitButton' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -80,9 +84,7 @@
   @if (hasConfigurationIssue$ | async) {
     <div class="tile-error-message">
       <svg cdsIcon="warning--filled" size="16" class="tile-error-message__icon"></svg>
-      <span class="tile-error-message__text">{{
-        'zaakdetails.configurationIssue' | translate
-      }}</span>
+      <span class="tile-error-message__text">{{ 'zaakdetails.configurationIssue' | translate }}</span>
     </div>
   }
 </cds-tile>
@@ -122,7 +124,9 @@
           (selectedChange)="configSelected($event)"
         ></v-select>
 
-        <cds-checkbox formControlName="enabled" [attr.data-test-id]="testIds.modalEnabledCheckbox"
+        <cds-checkbox
+          formControlName="enabled"
+          [attr.data-test-id]="testIds.modalEnabledCheckbox"
           >{{ 'zaakdetails.editModal.enabled' | translate }}
         </cds-checkbox>
       </form>

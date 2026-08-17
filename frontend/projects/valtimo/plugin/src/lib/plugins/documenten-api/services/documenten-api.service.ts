@@ -60,9 +60,7 @@ export class DocumentenApiService {
     );
   }
 
-  public getVersionDetails(
-    versionTag: string
-  ): Observable<DocumentenApiVersionDetails | undefined> {
+  public getVersionDetails(versionTag: string): Observable<DocumentenApiVersionDetails | undefined> {
     return this.getManagementApiAllVersions().pipe(
       map(response => response.versionDetails?.find(v => v.version === versionTag))
     );

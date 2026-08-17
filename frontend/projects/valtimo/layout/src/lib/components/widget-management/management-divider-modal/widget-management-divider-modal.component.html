@@ -51,20 +51,11 @@
   </form>
 
   <cds-modal-footer>
-    <button
-      [attr.data-test-id]="testIds.cancelButton"
-      cdsButton="secondary"
-      (click)="onCloseModal()"
-    >
+    <button [attr.data-test-id]="testIds.cancelButton" cdsButton="secondary" (click)="onCloseModal()">
       {{ 'caseManagement.allVersionsModal.closeButton' | translate }}
     </button>
 
-    <button
-      [attr.data-test-id]="testIds.createButton"
-      [disabled]="!dividerForm.valid"
-      cdsButton="primary"
-      (click)="onCloseModal(true)"
-    >
+    <button [attr.data-test-id]="testIds.createButton" [disabled]="!dividerForm.valid" cdsButton="primary" (click)="onCloseModal(true)">
       {{ buttonLabel | translate }}
     </button>
   </cds-modal-footer>

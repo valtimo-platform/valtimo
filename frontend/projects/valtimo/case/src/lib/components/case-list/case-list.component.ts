@@ -216,7 +216,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
   // --- Bulk assign ---
 
   public showAssignModal(): void {
-    this.selectedCaseIds$.next(this.carbonList.selectedItems.map(document => document.id));
+    this.selectedCaseIds$.next(
+      this.carbonList.selectedItems.map(document => document.id)
+    );
     this.showAssignModal$.next(true);
   }
 
@@ -224,12 +226,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.showAssignModal$.next(false);
     if (!bulkAssign?.assigneeId && !bulkAssign?.assignedTeamKey) return;
 
-    this.bulkAssignService
-      .bulkAssign(bulkAssign.ids, bulkAssign.assigneeId, bulkAssign.assignedTeamKey)
-      .subscribe(() => {
-        this.carbonList.model.selectAll(false);
-        this.forceRefresh();
-      });
+    this.bulkAssignService.bulkAssign(bulkAssign.ids, bulkAssign.assigneeId, bulkAssign.assignedTeamKey).subscribe(() => {
+      this.carbonList.model.selectAll(false);
+      this.forceRefresh();
+    });
   }
 
   // --- Actions ---
@@ -357,7 +357,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     const tabs = this.configService.config?.visibleCaseListTabs || DEFAULT_CASE_LIST_TABS;
 
     this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
-      this.visibleCaseTabs = teams.length > 0 ? tabs : tabs.filter(tab => tab !== CaseListTab.TEAM);
+      this.visibleCaseTabs =
+        teams.length > 0 ? tabs : tabs.filter(tab => tab !== CaseListTab.TEAM);
     });
   }
 }

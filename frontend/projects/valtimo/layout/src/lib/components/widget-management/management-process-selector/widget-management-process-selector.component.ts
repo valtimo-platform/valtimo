@@ -69,17 +69,17 @@ export class WidgetManagementProcessSelectorComponent implements OnInit {
         return items
           .filter((item: StartableItem) => item.type === 'PROCESS')
           .map((item: StartableItem) => {
-            const mappedItem: ListItem = {
-              content: item.name || item.key,
-              key: item.key,
-              selected: selectedProcessKey === item.key,
-            };
+          const mappedItem: ListItem = {
+            content: item.name || item.key,
+            key: item.key,
+            selected: selectedProcessKey === item.key,
+          };
 
-            if (mappedItem.selected)
-              this.formGroup.patchValue({processDefinition: mappedItem}, {emitEvent: false});
+          if (mappedItem.selected)
+            this.formGroup.patchValue({processDefinition: mappedItem}, {emitEvent: false});
 
-            return mappedItem;
-          });
+          return mappedItem;
+        });
       })
     );
 

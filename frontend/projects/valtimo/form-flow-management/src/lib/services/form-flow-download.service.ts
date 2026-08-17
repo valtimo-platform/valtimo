@@ -18,7 +18,10 @@ import {FormFlowEditorParams} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class FormFlowDownloadService {
-  public downloadJson(json: object, params: FormFlowEditorParams): void {
+  public downloadJson(
+    json: object,
+    params: FormFlowEditorParams
+  ): void {
     const sJson = JSON.stringify(json, null, 2);
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));

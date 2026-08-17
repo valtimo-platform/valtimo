@@ -102,7 +102,8 @@ export const ikoSearchFormioEditForm = () => ({
           key: 'ikoProperty',
           label: 'Table Column Key',
           placeholder: 'geboortedatum',
-          tooltip: 'Exact column key from the IKO view config, no prefixes. Example: naam, adres.',
+          tooltip:
+            'Exact column key from the IKO view config, no prefixes. Example: naam, adres.',
         },
         {
           type: 'textfield',

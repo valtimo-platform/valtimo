@@ -34,9 +34,7 @@
               *ngIf="!hasPropertyBeenAdded(propertyOption)"
               (selected)="addProperty(propertyOption)"
             >
-              {{
-                translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async
-              }}
+              {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
             </v-overflow-menu-option>
           }
         </v-overflow-menu>
@@ -69,3 +67,4 @@
     }
   </v-form>
 </ng-container>
+

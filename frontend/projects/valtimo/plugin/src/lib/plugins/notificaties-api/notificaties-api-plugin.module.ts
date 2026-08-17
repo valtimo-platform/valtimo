@@ -30,11 +30,7 @@ import {
 import {NotificationModule} from 'carbon-components-angular';
 
 @NgModule({
-  declarations: [
-    NotificatiesApiConfigurationComponent,
-    PublishNotificatieConfigurationComponent,
-    ReceiveNotificatieConfigurationComponent,
-  ],
+  declarations: [NotificatiesApiConfigurationComponent, PublishNotificatieConfigurationComponent, ReceiveNotificatieConfigurationComponent],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -45,10 +41,6 @@ import {NotificationModule} from 'carbon-components-angular';
     CarbonMultiInputModule,
     NotificationModule,
   ],
-  exports: [
-    NotificatiesApiConfigurationComponent,
-    PublishNotificatieConfigurationComponent,
-    ReceiveNotificatieConfigurationComponent,
-  ],
+  exports: [NotificatiesApiConfigurationComponent, PublishNotificatieConfigurationComponent, ReceiveNotificatieConfigurationComponent],
 })
 export class NotificatiesApiPluginModule {}

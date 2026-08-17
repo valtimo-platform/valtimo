@@ -94,7 +94,7 @@ import {DeleteZaakResultatenConfigurationComponent} from './components/delete-za
     GetZaakbesluitenConfigurationComponent,
     CreateZaakNotitieConfigurationComponent,
     PatchZaakNotitieConfigurationComponent,
-    DeleteZaakResultatenConfigurationComponent,
+    DeleteZaakResultatenConfigurationComponent
   ],
   imports: [
     CommonModule,
@@ -147,7 +147,7 @@ import {DeleteZaakResultatenConfigurationComponent} from './components/delete-za
     GetZaakbesluitenConfigurationComponent,
     CreateZaakNotitieConfigurationComponent,
     PatchZaakNotitieConfigurationComponent,
-    DeleteZaakResultatenConfigurationComponent,
+    DeleteZaakResultatenConfigurationComponent
   ],
 })
 export class ZakenApiPluginModule {}

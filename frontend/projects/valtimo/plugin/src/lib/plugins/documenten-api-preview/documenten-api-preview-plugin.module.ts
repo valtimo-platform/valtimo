@@ -18,13 +18,7 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiPreviewConfigurationComponent} from './components/documenten-api-preview-configuration/documenten-api-preview-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {
-  FormModule,
-  InputLabelModule,
-  InputModule,
-  ParagraphModule,
-  SelectModule,
-} from '@valtimo/components';
+import {FormModule, InputLabelModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/components';
 import {ToggleModule} from 'carbon-components-angular';
 
 @NgModule({

@@ -88,20 +88,21 @@ export class ReceiveNotificatieConfigurationComponent
 
   private openPrefillSubscription(): void {
     if (this.prefillConfiguration$) {
-      this.prefillSubscription = this.prefillConfiguration$.pipe(take(1)).subscribe(config => {
-        if (config) {
-          this.formValue$.next({...config});
-          if (config.kenmerken) {
-            this.kenmerken = config.kenmerken;
-            this.kenmerkenDefaultValues = Object.entries(config.kenmerken).map(([key, value]) => ({
-              key,
-              value,
-            }));
+      this.prefillSubscription = this.prefillConfiguration$
+        .pipe(take(1))
+        .subscribe(config => {
+          if (config) {
+            this.formValue$.next({...config});
+            if (config.kenmerken) {
+              this.kenmerken = config.kenmerken;
+              this.kenmerkenDefaultValues = Object.entries(config.kenmerken).map(
+                ([key, value]) => ({key, value})
+              );
+            }
+          } else {
+            this.formValue$.next({});
           }
-        } else {
-          this.formValue$.next({});
-        }
-      });
+        });
     } else {
       this.formValue$.next({});
     }

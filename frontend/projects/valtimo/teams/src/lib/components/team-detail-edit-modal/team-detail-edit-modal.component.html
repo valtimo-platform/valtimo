@@ -27,7 +27,12 @@
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="formGroup" cdsModalContent class="valtimo-team-edit__content" [cdsLayer]="1">
+  <form
+    [formGroup]="formGroup"
+    cdsModalContent
+    class="valtimo-team-edit__content"
+    [cdsLayer]="1"
+  >
     <div class="cds--text-input__field-wrapper">
       <cds-label [disabled]="formGroup.disabled" [invalid]="title.touched && title.invalid">
         {{ 'teams.createEditModal.teamName' | translate }}

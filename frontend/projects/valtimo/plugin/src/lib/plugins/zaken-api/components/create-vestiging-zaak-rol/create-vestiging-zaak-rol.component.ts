@@ -58,7 +58,11 @@ export class CreateVestigingZaakRolComponent
     const valid = !!(
       formValue.rolToelichting &&
       formValue.roltypeUrl &&
-      (formValue.handelsnaam || formValue.kvkNummer || formValue.vestigingsNummer)
+      (
+        formValue.handelsnaam ||
+        formValue.kvkNummer ||
+        formValue.vestigingsNummer
+      )
     );
 
     this._valid$.next(valid);

@@ -56,12 +56,7 @@
     <cds-label>
       {{ 'caseManagement.statuses.columns.title' | translate }}
 
-      <input
-        cdsText
-        formControlName="title"
-        [attr.data-test-id]="testIds.titleInput"
-        [attr.modal-primary-focus]="true"
-      />
+      <input cdsText formControlName="title" [attr.data-test-id]="testIds.titleInput" [attr.modal-primary-focus]="true" />
     </cds-label>
 
     <cds-label>
@@ -162,12 +157,7 @@
 </ng-template>
 
 <ng-template #buttons let-obs="obs">
-  <button
-    cdsButton="ghost"
-    [attr.data-test-id]="testIds.cancelButton"
-    (click)="onClose()"
-    [disabled]="obs.disabled"
-  >
+  <button cdsButton="ghost" [attr.data-test-id]="testIds.cancelButton" (click)="onClose()" [disabled]="obs.disabled">
     {{ 'interface.cancel' | translate }}
   </button>
 

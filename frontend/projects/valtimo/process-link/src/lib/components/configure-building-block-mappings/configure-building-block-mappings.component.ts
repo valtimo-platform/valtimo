@@ -739,4 +739,5 @@ export class ConfigureBuildingBlockMappingsComponent implements OnInit, OnDestro
     if (!fields) return false;
     return fields.some(field => field.required && field.name === target);
   }
+
 }

@@ -30,13 +30,7 @@ import {
   tap,
 } from 'rxjs';
 import {isEqual} from 'lodash';
-import {
-  ActionItem,
-  CarbonListModule,
-  ColumnConfig,
-  ConfirmationModalModule,
-  ViewType,
-} from '@valtimo/components';
+import {ActionItem, CarbonListModule, ColumnConfig, ConfirmationModalModule, ViewType} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
@@ -141,10 +135,7 @@ export class BuildingBlockManagementFormFlowsComponent implements OnInit, OnDest
           distinctUntilChanged((a, b) => isEqual(a, b)),
           tap(() => this.$loading.set(true)),
           switchMap(([key, versionTag]) =>
-            combineLatest([
-              this.buildingBlockManagementDetailService.reloadFormFlowDefinitions$,
-              this._refresh$,
-            ]).pipe(
+            combineLatest([this.buildingBlockManagementDetailService.reloadFormFlowDefinitions$, this._refresh$]).pipe(
               tap(() => this.$loading.set(true)),
               switchMap(() =>
                 this.buildingBlockManagementApiService.getBuildingBlockFormFlowDefinitions(
@@ -203,7 +194,7 @@ export class BuildingBlockManagementFormFlowsComponent implements OnInit, OnDest
         formFlowDefinition
       )
       .subscribe({
-        next: result => {
+        next: (result) => {
           this.navigateToFormFlowEditor(result.key);
         },
         error: () => {

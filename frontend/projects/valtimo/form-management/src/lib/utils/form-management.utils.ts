@@ -53,10 +53,7 @@ function getFormManagementRouteParamsAndContext(
       }
 
       if (context === 'buildingBlock') {
-        return combineLatest([
-          of(context),
-          getBuildingBlockManagementRouteParams(route, true),
-        ]).pipe(
+        return combineLatest([of(context), getBuildingBlockManagementRouteParams(route, true)]).pipe(
           map(
             ([ctx, params]) =>
               [

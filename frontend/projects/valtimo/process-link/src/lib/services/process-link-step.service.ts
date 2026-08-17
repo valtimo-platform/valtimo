@@ -412,15 +412,9 @@ export class ProcessLinkStepService {
     const prefix: Array<Step> = [];
     if (!options.skipSelection) {
       if (!options.hasOneType) {
-        prefix.push({
-          label: 'chooseProcessLinkType',
-          secondaryLabel: 'processLinkType.building-block',
-        });
+        prefix.push({label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.building-block'});
       }
-      prefix.push({
-        label: 'selectBuildingBlock',
-        ...(options.selectionLabel && {secondaryLabel: options.selectionLabel}),
-      });
+      prefix.push({label: 'selectBuildingBlock', ...(options.selectionLabel && {secondaryLabel: options.selectionLabel})});
     }
 
     const steps = [...prefix, ...bbSteps];
@@ -475,9 +469,7 @@ export class ProcessLinkStepService {
         break;
       case 'plugin': {
         const selectionLabel =
-          this._context === 'buildingBlock'
-            ? 'choosePluginDefinition'
-            : 'choosePluginConfiguration';
+          this._context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
         // Plugin has 3 config steps: select config, select action, configure action
         this._steps$.next([
           {label: selectionLabel},

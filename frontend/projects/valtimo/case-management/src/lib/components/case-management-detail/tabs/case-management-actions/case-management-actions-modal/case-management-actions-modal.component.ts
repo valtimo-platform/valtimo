@@ -15,21 +15,10 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  OnDestroy,
-  Output,
-  signal,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, Output, signal} from '@angular/core';
 import {FormBuilder, FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {
-  runAfterCarbonModalClosed,
-  TooltipModule,
-  ValtimoCdsModalDirective,
-} from '@valtimo/components';
+import {runAfterCarbonModalClosed, TooltipModule, ValtimoCdsModalDirective} from '@valtimo/components';
 import {BuildingBlockDefinitionDto, CaseProcessDefinitionResponseDto} from '@valtimo/shared';
 import {ProcessLinkBuildingBlockApiService} from '@valtimo/process-link';
 import {FlowModeler20, BlockStorageAlt20} from '@carbon/icons';
@@ -76,8 +65,7 @@ import {StartableItemManagementService} from '../../../../../services';
   ],
 })
 export class CaseManagementActionsModalComponent implements OnDestroy {
-  @Output() public readonly configureBuildingBlockEvent =
-    new EventEmitter<BuildingBlockConfigRequest>();
+  @Output() public readonly configureBuildingBlockEvent = new EventEmitter<BuildingBlockConfigRequest>();
 
   public readonly showModal$ = this.stateService.showModal$;
   public readonly editingItem$ = this.stateService.editingItem$;
@@ -136,7 +124,8 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
         .filter(
           (def: BuildingBlockDefinitionDto) =>
             !usedKeys.includes(def.key) ||
-            (editingItem?.type === StartableItemType.BUILDING_BLOCK && editingItem?.key === def.key)
+            (editingItem?.type === StartableItemType.BUILDING_BLOCK &&
+              editingItem?.key === def.key)
         )
         .map(
           (def: BuildingBlockDefinitionDto): ListItem => ({
@@ -199,14 +188,18 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
   }
 
   public get isBuildingBlockEdit(): boolean {
-    return this.isEditMode && this._editingItem?.type === StartableItemType.BUILDING_BLOCK;
+    return (
+      this.isEditMode && this._editingItem?.type === StartableItemType.BUILDING_BLOCK
+    );
   }
 
   public get modalTitle(): string {
     if (this.isEditMode) {
       return this._editingItem?.type === StartableItemType.PROCESS
         ? this.translateService.instant('caseManagement.actions.modal.editProcessTitle')
-        : this.translateService.instant('caseManagement.actions.modal.editBuildingBlockTitle');
+        : this.translateService.instant(
+            'caseManagement.actions.modal.editBuildingBlockTitle'
+          );
     }
 
     if (this.$step() === 'selectType') {
@@ -303,8 +296,7 @@ export class CaseManagementActionsModalComponent implements OnDestroy {
             type: StartableItemType.BUILDING_BLOCK,
             properties: {
               buildingBlockDefinitionKey: selectedId,
-              buildingBlockDefinitionVersionTag:
-                this.getSelectedBuildingBlockVersionTag(selectedId),
+              buildingBlockDefinitionVersionTag: this.getSelectedBuildingBlockVersionTag(selectedId),
             },
           };
 

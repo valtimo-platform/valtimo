@@ -17,13 +17,15 @@
 import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
-import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {TranslatePipe} from '@ngx-translate/core';
 import {
-  AutoKeyInputComponent,
-  runAfterCarbonModalClosed,
-  ValtimoCdsModalDirective,
-} from '@valtimo/components';
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {TranslatePipe} from '@ngx-translate/core';
+import {AutoKeyInputComponent, runAfterCarbonModalClosed, ValtimoCdsModalDirective} from '@valtimo/components';
 import {TeamsApiService, TeamsService} from '../../services';
 import {catchError, map, of, Subscription} from 'rxjs';
 import {ModalMode, TeamListResponseDto} from '@valtimo/shared';

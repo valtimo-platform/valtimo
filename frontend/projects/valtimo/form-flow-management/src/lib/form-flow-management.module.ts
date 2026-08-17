@@ -42,7 +42,11 @@ import {FormFlowEditorComponent} from './components/editor/form-flow-editor.comp
 import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/delete-form-flow-modal.component';
 
 @NgModule({
-  declarations: [FormFlowOverviewComponent, FormFlowEditorComponent, DeleteFormFlowModalComponent],
+  declarations: [
+    FormFlowOverviewComponent,
+    FormFlowEditorComponent,
+    DeleteFormFlowModalComponent,
+  ],
   imports: [
     CommonModule,
     ButtonModule,

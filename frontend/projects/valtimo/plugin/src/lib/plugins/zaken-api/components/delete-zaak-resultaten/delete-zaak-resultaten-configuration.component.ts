@@ -16,7 +16,10 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {Observable, Subscription} from 'rxjs';
+import {
+  Observable,
+  Subscription,
+} from 'rxjs';
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({

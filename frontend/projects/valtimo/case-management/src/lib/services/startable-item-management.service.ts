@@ -72,7 +72,9 @@ export class StartableItemManagementService {
   public readonly linkedProcessDefinitions$: Observable<CaseProcessDefinitionResponseDto[]> =
     this._params$.pipe(
       filter((params): params is CaseManagementParams => params !== null),
-      switchMap(params => this.startableItemApiService.getLinkedProcessDefinitions(params))
+      switchMap(params =>
+        this.startableItemApiService.getLinkedProcessDefinitions(params)
+      )
     );
 
   constructor(
@@ -143,7 +145,12 @@ export class StartableItemManagementService {
     versionTag: string | null,
     request: CreateStartableItemRequest
   ): Observable<ManagementStartableItem> {
-    return this.startableItemApiService.updateItem(this.getParams(), key, versionTag, request);
+    return this.startableItemApiService.updateItem(
+      this.getParams(),
+      key,
+      versionTag,
+      request
+    );
   }
 
   public getItemProperties(
@@ -160,7 +167,11 @@ export class StartableItemManagementService {
   }
 
   public deleteItem(item: ManagementStartableItem): Observable<void> {
-    return this.startableItemApiService.deleteItem(this.getParams(), item.key, item.versionTag);
+    return this.startableItemApiService.deleteItem(
+      this.getParams(),
+      item.key,
+      item.versionTag
+    );
   }
 
   public updateOrder(items: ManagementStartableItem[]): void {

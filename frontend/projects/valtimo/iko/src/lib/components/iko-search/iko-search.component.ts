@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 import {AsyncPipe, CommonModule, NgClass, NgIf, NgTemplateOutlet} from '@angular/common';
-import {
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  HostBinding,
-  Input,
-  OnInit,
-  OnDestroy,
-  Output,
-} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, HostBinding, Input, OnInit, OnDestroy, Output} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';

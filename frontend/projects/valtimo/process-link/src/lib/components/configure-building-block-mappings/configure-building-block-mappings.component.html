@@ -56,7 +56,11 @@
 
       <div formArrayName="inputs">
         @for (group of inputs.controls; let inputIndex = $index; track inputIndex) {
-          <div class="mapping-row input" [formGroup]="group" [attr.data-test-id]="testIds.inputRow">
+          <div
+            class="mapping-row input"
+            [formGroup]="group"
+            [attr.data-test-id]="testIds.inputRow"
+          >
             <div class="mapping-part">
               @if (obs.sourceIsIndependent) {
                 <input [cdsLayer]="2" cdsText formControlName="source" [placeholder]="'pv:'" />
@@ -115,10 +119,7 @@
                     <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
                   </button>
                 } @else {
-                  <div
-                    class="required-indicator"
-                    [attr.data-test-id]="testIds.inputRequiredIndicator"
-                  >
+                  <div class="required-indicator" [attr.data-test-id]="testIds.inputRequiredIndicator">
                     *
                   </div>
 

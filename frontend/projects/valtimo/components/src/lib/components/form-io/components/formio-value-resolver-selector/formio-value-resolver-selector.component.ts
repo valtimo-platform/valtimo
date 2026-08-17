@@ -40,8 +40,7 @@ export class FormioValueResolverSelectorComponent implements FormioCustomCompone
   public readonly context$ = formioParams$.pipe(map(params => params?.context));
   public readonly caseDefinitionKey$ = formioParams$.pipe(
     filter(params => !!params),
-    map(params => params?.caseDefinitionKey)
-  );
+    map(params => params?.caseDefinitionKey));
   public readonly caseDefinitionVersionTag$ = formioParams$.pipe(
     filter(params => !!params),
     map(params => params?.caseDefinitionVersionTag)

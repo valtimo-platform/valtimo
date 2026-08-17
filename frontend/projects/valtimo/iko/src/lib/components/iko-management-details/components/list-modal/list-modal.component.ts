@@ -43,7 +43,7 @@ import {
   SelectModule,
   ValtimoCdsModalDirective,
   ViewType,
-  AutoKeyInputComponent,
+  AutoKeyInputComponent
 } from '@valtimo/components';
 import {ColumnDefaultSort, IkoListColumnRequest, ListColumnDto} from '../../../../models';
 import {map} from 'rxjs/operators';
@@ -72,7 +72,7 @@ import {IKO_COLUMN_MODAL_TEST_IDS} from '../../../../constants/iko.test-ids';
     CarbonMultiInputModule,
     InputLabelModule,
     NumberModule,
-    AutoKeyInputComponent,
+    AutoKeyInputComponent
   ],
 })
 export class IkoManagementListModalComponent implements OnInit, OnDestroy {

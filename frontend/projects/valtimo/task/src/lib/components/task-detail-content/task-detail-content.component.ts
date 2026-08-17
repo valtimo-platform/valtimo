@@ -119,10 +119,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
     if (!value) return;
 
-    const task = enrichTaskFromProcessLink(
-      value.task as any as Task,
-      value.processLinkActivityResult
-    );
+    const task = enrichTaskFromProcessLink(value.task as any as Task, value.processLinkActivityResult);
     this.loadTaskDetails(task, value.processLinkActivityResult);
   }
   @Input() public set modalClosed(closed: boolean) {

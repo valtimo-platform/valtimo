@@ -30,7 +30,12 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {Page} from '@valtimo/shared';
-import {ButtonModule, DropdownModule, IconModule, IconService} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  DropdownModule,
+  IconModule,
+  IconService,
+} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,

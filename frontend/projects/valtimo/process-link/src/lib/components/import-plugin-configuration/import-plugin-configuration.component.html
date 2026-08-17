@@ -27,7 +27,10 @@
     <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
   </button>
 
-  <div cdsToggletipContent class="process-link-configuration-select">
+  <div
+    cdsToggletipContent
+    class="process-link-configuration-select"
+  >
     <cds-dropdown
       [attr.data-carbon-theme]="toggletipTheme$ | async"
       [label]="'processLinkConfiguration.process' | translate"
@@ -72,13 +75,7 @@
       ></cds-dropdown-list>
     </cds-dropdown>
 
-    <button
-      cdsButton
-      [attr.data-carbon-theme]="toggletipTheme$ | async"
-      [disabled]="!importPluginForm.valid"
-      (click)="onSubmit()"
-      [cdsLayer]="1"
-    >
+    <button cdsButton [attr.data-carbon-theme]="toggletipTheme$ | async" [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1">
       {{ 'processLinkConfiguration.importConfiguration' | translate }}
     </button>
   </div>

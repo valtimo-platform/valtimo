@@ -82,31 +82,28 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
   );
 
   public readonly canModifyTeam$ = this.teamContext$.pipe(
-    switchMap(context =>
-      this.permissionService.requestPermission(CAN_MODIFY_TEAM_PERMISSION, context)
-    )
+    switchMap(context => this.permissionService.requestPermission(CAN_MODIFY_TEAM_PERMISSION, context))
   );
 
   public readonly canDeleteTeam$ = this.teamContext$.pipe(
-    switchMap(context =>
-      this.permissionService.requestPermission(CAN_DELETE_TEAM_PERMISSION, context)
-    )
+    switchMap(context => this.permissionService.requestPermission(CAN_DELETE_TEAM_PERMISSION, context))
   );
 
-  public readonly canViewUsers$ =
-    this.permissionService.requestPermission(CAN_VIEW_USERS_PERMISSION);
+  public readonly canViewUsers$ = this.permissionService.requestPermission(
+    CAN_VIEW_USERS_PERMISSION
+  );
 
   private canAssign = false;
   private readonly permissionSubscription = new Subscription();
 
   public readonly canAddMember$ = combineLatest([
     this.teamContext$.pipe(
-      switchMap(context =>
-        this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION, context)
-      )
+      switchMap(context => this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION, context))
     ),
     this.canViewUsers$,
-  ]).pipe(map(([canAssign, canViewUsers]) => canAssign && canViewUsers));
+  ]).pipe(
+    map(([canAssign, canViewUsers]) => canAssign && canViewUsers)
+  );
 
   public readonly MEMBER_ACTION_ITEMS: ActionItem[] = [
     {
@@ -138,13 +135,9 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
     );
 
     this.permissionSubscription.add(
-      this.teamContext$
-        .pipe(
-          switchMap(context =>
-            this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION, context)
-          )
-        )
-        .subscribe(canAssign => (this.canAssign = canAssign))
+      this.teamContext$.pipe(
+        switchMap(context => this.permissionService.requestPermission(CAN_ASSIGN_TEAM_PERMISSION, context))
+      ).subscribe(canAssign => this.canAssign = canAssign)
     );
   }
 
@@ -196,7 +189,8 @@ export class TeamDetailComponent implements OnInit, OnDestroy {
 
   public onPaginationSet(size: number): void {
     const {collectionSize, page} = this.teamDetailService.membersPagination$.getValue();
-    const resetPage = Math.ceil(+collectionSize / size) <= +page && +collectionSize > 0;
+    const resetPage =
+      Math.ceil(+collectionSize / size) <= +page && +collectionSize > 0;
     this.teamDetailService.membersPagination$.next({
       ...this.teamDetailService.membersPagination$.getValue(),
       size,
