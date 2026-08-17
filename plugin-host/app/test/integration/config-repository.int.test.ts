@@ -42,6 +42,7 @@ function config(overrides: Partial<PluginConfiguration> = {}): PluginConfigurati
     gzacBaseUrl: "http://gzac:8080",
     eventSubscriptions: ["com.ritense.valtimo.document.created"],
     grantedCapabilities: [],
+    allowedEgress: [],
     eventBroker: {
       amqpUrl: "amqp://broker",
       exchange: "valtimo-events",
@@ -88,6 +89,21 @@ describe("ConfigRepository against real Postgres", () => {
     const got = await repo.get("cfg-1");
 
     expect(got).toEqual(config()); // properties, eventSubscriptions and eventBroker rehydrate from JSONB
+  });
+
+  it("round-trips the egress allowlist, and an absent one rehydrates as deny-all", async () => {
+    await repo.set("cfg-1", config({
+      allowedEgress: ["api.kvk.nl", "https://sd.acme-acc.internal:8443"],
+    }));
+    expect((await repo.get("cfg-1"))?.allowedEgress).toEqual([
+      "api.kvk.nl",
+      "https://sd.acme-acc.internal:8443",
+    ]);
+
+    // Unlike grantedEndpoints there is no NULL "not pushed" state to preserve: http_request is
+    // deny-by-default, so an absent list and an empty list mean the same thing.
+    await repo.set("cfg-2", config({ configurationId: "cfg-2", allowedEgress: undefined }));
+    expect((await repo.get("cfg-2"))?.allowedEgress).toEqual([]);
   });
 
   it("round-trips granted capabilities and endpoints; an absent endpoint list stays absent", async () => {

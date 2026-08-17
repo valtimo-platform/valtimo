@@ -74,6 +74,8 @@
         [endpoints]="$endpoints()"
         [eventSubscriptions]="$eventSubscriptions()"
         [capabilities]="$capabilities()"
+        [egress]="$egress()"
+        [derivedEgress]="$derivedEgress()"
         [readonlyMode]="true"
         (validEvent)="onPermissionsValid($event)"
       ></valtimo-plugin-external-permissions>

@@ -25,7 +25,9 @@ import {
   findBlockedIpLiteral,
   isPrivateAddressError,
   rootCauseMessage,
+  type AllowedInternalCidrs,
 } from "../security/url-guard.js";
+import { findEgressViolation } from "../security/egress-allowlist.js";
 
 interface HttpRequestInput {
   method: string;
@@ -64,20 +66,30 @@ export function createHttpRequestHostFunction(
   logger: HostLogger,
   logRepository: LogRepository,
   allowHttp: boolean,
-  allowPrivateNetwork: boolean
+  allowPrivateNetwork: boolean,
+  /**
+   * Operator-declared internal ranges the address envelope exempts. Narrows nothing on its own — a
+   * target still has to be in the configuration's egress allowlist.
+   */
+  allowedInternalCidrs?: AllowedInternalCidrs
 ): (callContext: CallContext, addr: bigint) => Promise<bigint> {
   const log = logger.child({ component: "http_request" });
 
   // The guarded agent blocks connections to private/reserved addresses at the socket's own DNS
   // lookup, so hostname checks are pinned to the exact addresses being connected to (no DNS
   // rebinding window) and automatically cover every redirect hop.
-  const dispatcher = allowPrivateNetwork ? new Agent() : createGuardedAgent();
+  const dispatcher = allowPrivateNetwork ? new Agent() : createGuardedAgent(allowedInternalCidrs);
 
   /**
-   * Validates a request target. Applied to the initial URL AND to every redirect hop, so a public
-   * URL cannot 3xx the host into the GZAC instance or an internal service.
+   * Validates a request target. Applied to the initial URL AND to every redirect hop, so an
+   * allowlisted URL cannot 3xx the host into the GZAC instance, an undeclared destination, or an
+   * internal service.
    */
-  const validateTarget = (url: URL, gzacBaseUrl: string | undefined): string | null => {
+  const validateTarget = (
+    url: URL,
+    gzacBaseUrl: string | undefined,
+    allowedEgress: string[] | undefined
+  ): string | null => {
     if (url.protocol !== "https:" && url.protocol !== "http:") {
       return "Only http(s) URLs are supported";
     }
@@ -97,11 +109,22 @@ export function createHttpRequestHostFunction(
     }
 
     // IP-literal hosts skip DNS, so the guarded agent's lookup never sees them — reject here.
+    // Checked before the allowlist so a blocked address reports *why* the address is refused: it is
+    // the more specific diagnostic, and it is the one that names the operator knob that would fix it.
+    // Both checks must pass either way, so the order only decides which reason the plugin is told.
     if (!allowPrivateNetwork) {
-      const violation = findBlockedIpLiteral(url);
+      const violation = findBlockedIpLiteral(url, allowedInternalCidrs);
       if (violation) {
-        return `${violation} (set HOST_ALLOW_PRIVATE_NETWORK=true for dev)`;
+        return `${violation} (set HOST_ALLOWED_INTERNAL_CIDRS to declare a reachable internal range, or HOST_ALLOW_PRIVATE_NETWORK=true for dev)`;
       }
+    }
+
+    // The primary gate: only origins the admin accepted at activation. Runs before any name
+    // resolution, so an undeclared hostname is never even looked up — which closes DNS-encoded
+    // exfiltration as well as plain HTTP exfiltration.
+    const egressViolation = findEgressViolation(url, allowedEgress);
+    if (egressViolation) {
+      return egressViolation;
     }
 
     return null;
@@ -128,7 +151,7 @@ export function createHttpRequestHostFunction(
       return callContext.store(JSON.stringify(errorReply(400, "Invalid URL")));
     }
 
-    const targetError = validateTarget(parsed, ctx.gzacBaseUrl);
+    const targetError = validateTarget(parsed, ctx.gzacBaseUrl, ctx.allowedEgress);
     if (targetError) {
       return callContext.store(JSON.stringify(errorReply(400, targetError)));
     }
@@ -199,7 +222,7 @@ export function createHttpRequestHostFunction(
           );
         }
 
-        const redirectError = validateTarget(next, ctx.gzacBaseUrl);
+        const redirectError = validateTarget(next, ctx.gzacBaseUrl, ctx.allowedEgress);
         if (redirectError) {
           return callContext.store(
             JSON.stringify(errorReply(400, `Redirect to '${next}' blocked: ${redirectError}`))
@@ -276,7 +299,12 @@ export function createHttpRequestHostFunction(
       // upstream failure — report it like the other validation errors.
       if (isPrivateAddressError(err)) {
         return callContext.store(
-          JSON.stringify(errorReply(400, `${errMsg} (set HOST_ALLOW_PRIVATE_NETWORK=true for dev)`))
+          JSON.stringify(
+            errorReply(
+              400,
+              `${errMsg} (set HOST_ALLOWED_INTERNAL_CIDRS to declare a reachable internal range, or HOST_ALLOW_PRIVATE_NETWORK=true for dev)`
+            )
+          )
         );
       }
 

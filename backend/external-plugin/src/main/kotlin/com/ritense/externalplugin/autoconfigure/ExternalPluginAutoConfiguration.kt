@@ -36,6 +36,7 @@ import com.ritense.externalplugin.processlink.web.ExternalPluginTaskFormSubmissi
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
@@ -70,6 +71,7 @@ import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenIntrospectionResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
+import com.ritense.externalplugin.web.rest.error.ExternalPluginHostValidationExceptionMapper
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginActionResultHandler
@@ -164,6 +166,7 @@ class ExternalPluginAutoConfiguration {
         grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         grantedEventRepository: ExternalPluginGrantedEventRepository,
         grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository,
+        grantedEgressRepository: ExternalPluginGrantedEgressRepository,
         encryptionService: EncryptionService,
         hostClient: ExternalPluginHostClient,
         hostUsageResolver: ExternalPluginHostUsageResolver,
@@ -174,6 +177,7 @@ class ExternalPluginAutoConfiguration {
         grantedEndpointRepository,
         grantedEventRepository,
         grantedCapabilityRepository,
+        grantedEgressRepository,
         encryptionService,
         hostClient,
         hostUsageResolver,
@@ -226,6 +230,14 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginHostOriginsResource(
         hostService: ExternalPluginHostService,
     ) = ExternalPluginHostOriginsResource(hostService)
+
+    /**
+     * Maps an operator-fixable host validation failure to a 400 carrying the reason, instead of the
+     * catch-all 500 the add-host modal cannot explain.
+     */
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginHostValidationExceptionMapper::class)
+    fun externalPluginHostValidationExceptionMapper() = ExternalPluginHostValidationExceptionMapper()
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenKeyProvider::class)
@@ -361,6 +373,7 @@ class ExternalPluginAutoConfiguration {
         grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
         grantedEventRepository: ExternalPluginGrantedEventRepository,
         grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository,
+        grantedEgressRepository: ExternalPluginGrantedEgressRepository,
         hostClient: ExternalPluginHostClient,
         propertyEncryptor: PluginPropertyEncryptor,
         encryptionService: EncryptionService,
@@ -376,6 +389,7 @@ class ExternalPluginAutoConfiguration {
         grantedEndpointRepository,
         grantedEventRepository,
         grantedCapabilityRepository,
+        grantedEgressRepository,
         hostClient,
         propertyEncryptor,
         encryptionService,
@@ -397,6 +411,7 @@ class ExternalPluginAutoConfiguration {
         hostClient: ExternalPluginHostClient,
         transactionManager: PlatformTransactionManager,
         @Value("\${valtimo.external-plugin.polling.failure-threshold:3}") failureThreshold: Int,
+        @Value("\${server.port:8080}") serverPort: Int,
     ) = ExternalPluginDiscoveryService(
         hostRepository,
         definitionRepository,
@@ -406,6 +421,7 @@ class ExternalPluginAutoConfiguration {
         hostClient,
         TransactionTemplate(transactionManager),
         failureThreshold,
+        "http://localhost:$serverPort",
     )
 
     @Bean

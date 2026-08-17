@@ -66,11 +66,20 @@
 </ng-container>
 
 <valtimo-plugin-host-modal
+  [errorMessage]="hostErrorMessage$ | async"
   [kind]="'PLUGIN_HOST'"
   [open]="hostModalOpen$ | async"
+  [submitting]="hostSubmitting$ | async"
   (closeEvent)="closeHostModal()"
   (submitEvent)="submitHost($event)"
 ></valtimo-plugin-host-modal>
+
+<valtimo-plugin-host-frontend-origins-modal
+  [host]="hostToEditFrontendOrigins$ | async"
+  [open]="frontendOriginsModalOpen$ | async"
+  (closeEvent)="closeFrontendOriginsModal()"
+  (submitEvent)="submitFrontendOriginsUpdate($event)"
+></valtimo-plugin-host-frontend-origins-modal>
 
 <valtimo-plugin-host-event-queue-modal
   [host]="hostToEditEventQueue$ | async"

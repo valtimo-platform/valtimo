@@ -27,6 +27,7 @@ import type {LogRepository} from "./db/log-repository.js";
 import {createKvHostFunction} from "./host-functions/kv.js";
 import {createLogHostFunction} from "./host-functions/log.js";
 import {createHttpRequestHostFunction} from "./host-functions/http-request.js";
+import type {AllowedInternalCidrs} from "./security/url-guard.js";
 
 interface LoadedPlugin {
   pluginId: string;
@@ -61,6 +62,12 @@ export interface PluginManagerOptions {
   allowHttp?: boolean;
   /** Allow private/loopback targets in `http_request` (dev only). */
   allowPrivateNetwork?: boolean;
+  /**
+   * Operator-declared internal ranges `http_request` may reach despite them being private
+   * (`HOST_ALLOWED_INTERNAL_CIDRS`). A carve-out from the address envelope, not a grant: the target
+   * still has to be in the configuration's egress allowlist.
+   */
+  allowedInternalCidrs?: AllowedInternalCidrs;
   /** Hard wall-clock limit per Wasm call; Extism cancels the call when exceeded. */
   wasmTimeoutMs?: number;
   /** Cap on the module's linear memory in 64 KiB pages; 0 disables the cap. */
@@ -130,6 +137,7 @@ export class PluginManager {
   private logRepository: LogRepository;
   private readonly allowHttp: boolean;
   private readonly allowPrivateNetwork: boolean;
+  private readonly allowedInternalCidrs?: AllowedInternalCidrs;
   private readonly wasmTimeoutMs: number;
   private readonly wasmMaxMemoryPages: number;
   private readonly gzacApiTimeoutMs: number;
@@ -151,6 +159,7 @@ export class PluginManager {
     this.logRepository = logRepository;
     this.allowHttp = options.allowHttp ?? false;
     this.allowPrivateNetwork = options.allowPrivateNetwork ?? false;
+    this.allowedInternalCidrs = options.allowedInternalCidrs;
     this.wasmTimeoutMs = options.wasmTimeoutMs ?? DEFAULT_WASM_TIMEOUT_MS;
     this.wasmMaxMemoryPages = options.wasmMaxMemoryPages ?? DEFAULT_WASM_MAX_MEMORY_PAGES;
     this.gzacApiTimeoutMs = options.gzacApiTimeoutMs ?? DEFAULT_GZAC_API_TIMEOUT_MS;
@@ -353,7 +362,8 @@ export class PluginManager {
             this.logger,
             this.logRepository,
             this.allowHttp,
-            this.allowPrivateNetwork
+            this.allowPrivateNetwork,
+            this.allowedInternalCidrs
           ),
         },
       },
@@ -427,19 +437,23 @@ export class PluginManager {
   }
 
   /**
-   * Resolves the grants (capabilities + gzac_api endpoint allowlist) the admin gave a
-   * configuration. Read per call so a re-push takes effect immediately.
+   * Resolves the grants (capabilities, the gzac_api endpoint allowlist, and the http_request egress
+   * allowlist) the admin gave a configuration. Read per call so a re-push takes effect immediately.
    */
   private async resolveGrants(
     configurationId: string | undefined
-  ): Promise<Pick<GzacApiCallContext, "grantedCapabilities" | "grantedEndpoints">> {
+  ): Promise<
+    Pick<GzacApiCallContext, "grantedCapabilities" | "grantedEndpoints" | "allowedEgress">
+  > {
     if (!configurationId) {
-      return { grantedCapabilities: [] };
+      return { grantedCapabilities: [], allowedEgress: [] };
     }
     const config = await this.configProvider.get(configurationId);
     return {
       grantedCapabilities: config?.grantedCapabilities ?? [],
       grantedEndpoints: config?.grantedEndpoints,
+      // Deny-by-default: an unresolvable configuration grants no destinations.
+      allowedEgress: config?.allowedEgress ?? [],
     };
   }
 

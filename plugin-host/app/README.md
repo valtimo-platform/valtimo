@@ -102,7 +102,9 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | no | `10000` | Timeout on the user-token introspection call the `/plugins/:id/:version/data` route makes against GZAC before executing Wasm. GZAC not answering within it fails the request with a 503 (fail closed). |
 | `UPLOAD_MAX_BYTES` | no | `26214400` | Maximum plugin package (.zip) upload size (25 MiB), enforced before the file is buffered for the HMAC check. |
 | `DATA_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-configuration request budget for the public `/plugins/:id/:version/data` route. `0` disables the limit. |
-| `CONFIG_CACHE_TTL_MS` | no | `10000` | How long configurations are served from the in-memory cache before re-reading Postgres. Writes through this host invalidate immediately. `0` disables caching. |
+| `CONFIG_CACHE_TTL_MS` | no | `10000` | How long configurations are served from the in-memory cache before re-reading Postgres. Writes through this host invalidate immediately. `0` disables caching. Also caps how long the frame-ancestor allowlist is cached. |
+| `ALLOWED_FRAME_ANCESTORS` | no | — | Extra browser origins allowed to embed plugin screens, on top of those GZAC instances register. Comma-separated `scheme://host[:port]`. Escape hatch for local development, and for frontends no GZAC announces (see [Embedding](#embedding-frame-ancestors)). |
+| `FRAME_ANCESTOR_STALE_MS` | no | `604800000` | A GZAC instance that has not re-announced itself within this window (7 days) drops out of the frame-ancestor allowlist. There is no deregistration call, so this is what removes a decommissioned GZAC. |
 | `TLS_CERT_PATH` | no | — | PEM certificate. Set **together with** `TLS_KEY_PATH` to make the host serve HTTPS (see [Transport security](#transport-security)). |
 | `TLS_KEY_PATH` | no | — | PEM private key. Set together with `TLS_CERT_PATH`. |
 | `TLS_CA_PATH` | no | — | PEM CA / intermediate chain, when the certificate file is not self-contained. |
@@ -110,6 +112,30 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 The host does **not** configure an event broker. Each GZAC instance pushes its own broker connection
 alongside every configuration (see [Events](#events)), so one host can serve many GZAC instances,
 each on its own broker.
+
+## Embedding (frame-ancestors)
+
+Plugin screens run in an iframe inside a Valtimo frontend. A page that is *not* a Valtimo frontend
+must not be able to frame them: the iframe holds no credential, but a hostile embedder could
+otherwise answer the plugin's proxied calls with fabricated data and render a convincing off-origin
+fake.
+
+The host therefore serves every piece of plugin content (`…/bundles/**` and the logo) with a
+`frame-ancestors` CSP directive listing exactly the browser origins allowed to embed it. Those
+origins come from two places:
+
+- **GZAC announces them.** Each GZAC instance calls `PUT /api/host/gzac-instances` with its own
+  identity and the origins it allows — on host registration, when an admin edits them, and on every
+  discovery poll. Because it repeats, the allowlist is self-healing: connect a second GZAC and its
+  frontend works within one poll cycle, with neither side restarted. Announcements are persisted, so
+  they survive a host restart, and an instance that stops announcing ages out after
+  `FRAME_ANCESTOR_STALE_MS`.
+- **`ALLOWED_FRAME_ANCESTORS`** adds origins the operator declares directly.
+
+With **no** origins from either source the host **fails closed**: it serves
+`frame-ancestors 'none'` plus `X-Frame-Options: DENY`, and logs once explaining the two ways to
+populate the allowlist. A freshly upgraded host therefore shows blank plugin screens until GZAC
+announces itself — that is intentional, and `ALLOWED_FRAME_ANCESTORS` is the immediate unblock.
 
 ## Transport security
 
@@ -398,4 +424,32 @@ curl -sS -X POST http://localhost:8090/plugins/say-hello/0.1.0/actions/say-hello
 
 ```bash
 curl -sS http://localhost:8090/plugins/say-hello/0.1.0/plugin-manifest | jq .
+```
+
+### `PUT /api/host/gzac-instances` — announce a GZAC instance and its frontend origins
+
+Registers (or refreshes) the browser origins that instance allows to embed this host's plugin
+screens; the host serves the union of all registered instances' origins as `frame-ancestors` (see
+[Embedding](#embedding-frame-ancestors)). Keyed by `gzacBaseUrl`, so re-announcing updates the same
+row. Sending an empty `frontendOrigins` clears that instance's contribution.
+
+```bash
+cat > /tmp/instance.json <<'JSON'
+{"gzacBaseUrl": "http://localhost:8080", "frontendOrigins": ["http://localhost:4200"]}
+JSON
+host_sign PUT /api/host/gzac-instances /tmp/instance.json
+curl -sS -X PUT http://localhost:8090/api/host/gzac-instances \
+  -H "X-Valtimo-Signature: $SIG" -H "X-Valtimo-Timestamp: $TS" \
+  -H 'Content-Type: application/json' --data-binary @/tmp/instance.json | jq .
+```
+
+### `GET /plugins/:pluginId/:version/frame-policy?origin=…` — may this origin embed the plugin?
+
+Public probe used by the frontend SDK as defence in depth where a proxy strips CSP. Deliberately a
+probe rather than a listing: the caller must already know the origin it is asking about, so the
+route never enumerates which GZAC frontends use this host.
+
+```bash
+curl -sS "http://localhost:8090/plugins/say-hello/0.1.0/frame-policy?origin=http%3A%2F%2Flocalhost%3A4200" | jq .
+# → {"allowed": true}
 ```

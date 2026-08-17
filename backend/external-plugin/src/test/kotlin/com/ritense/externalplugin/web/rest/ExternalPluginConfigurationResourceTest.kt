@@ -26,6 +26,7 @@ import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginGrantedCapability
+import com.ritense.externalplugin.domain.ExternalPluginGrantedEgress
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import com.ritense.externalplugin.domain.ExternalPluginHost
@@ -109,7 +110,7 @@ class ExternalPluginConfigurationResourceTest {
     // ---------------------------------------------------------------- create
 
     @Test
-    fun `createConfiguration forwards all three granted sets unchanged for the service to gate`() {
+    fun `createConfiguration forwards all four granted sets unchanged for the service to gate`() {
         val request = ConfigurationCreateRequest(
             definitionId = definitionId,
             title = "My configuration",
@@ -117,9 +118,10 @@ class ExternalPluginConfigurationResourceTest {
             grantedEndpoints = listOf(GrantedEndpointEntry("GET", "/api/v1/document/*")),
             grantedEvents = listOf(GrantedEventEntry("com.ritense.valtimo.document.created")),
             grantedCapabilities = listOf("gzac_api", "log"),
+            grantedEgress = listOf("api.kvk.nl"),
         )
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration())
 
         val response = resource.createConfiguration(request)
@@ -132,6 +134,7 @@ class ExternalPluginConfigurationResourceTest {
             eq(listOf(GrantedEndpointEntry("GET", "/api/v1/document/*"))),
             eq(listOf(GrantedEventEntry("com.ritense.valtimo.document.created"))),
             eq(listOf("gzac_api", "log")),
+            eq(listOf("api.kvk.nl")),
         )
     }
 
@@ -144,20 +147,20 @@ class ExternalPluginConfigurationResourceTest {
             grantedEndpoints = emptyList(),
         )
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration())
 
         resource.createConfiguration(request)
 
         verify(configurationService).create(
-            eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList())
+            eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList()), eq(emptyList())
         )
     }
 
     @Test
     fun `createConfiguration response carries the token generation but no properties`() {
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration(tokenGeneration = 3))
 
         val body = resource.createConfiguration(
@@ -176,7 +179,7 @@ class ExternalPluginConfigurationResourceTest {
     // ---------------------------------------------------------------- read
 
     @Test
-    fun `getConfiguration returns masked properties plus all three granted sets`() {
+    fun `getConfiguration returns masked properties plus all four granted sets`() {
         val masked: ObjectNode = objectMapper.createObjectNode().put("apiUrl", "https://example.com")
         whenever(configurationService.get(configurationId)).thenReturn(configuration())
         whenever(configurationService.maskedProperties(any())).thenReturn(masked)
@@ -208,6 +211,17 @@ class ExternalPluginConfigurationResourceTest {
                 )
             )
         )
+        whenever(configurationService.getGrantedEgress(configurationId)).thenReturn(
+            listOf(
+                ExternalPluginGrantedEgress(
+                    id = UUID.randomUUID(),
+                    configurationId = configurationId,
+                    target = "api.kvk.nl",
+                )
+            )
+        )
+        whenever(configurationService.getDerivedEgress(any()))
+            .thenReturn(listOf("https://sd.acme-acc.internal:8443"))
 
         val body = resource.getConfiguration(configurationId).body!!
 
@@ -219,6 +233,9 @@ class ExternalPluginConfigurationResourceTest {
             .containsExactly("com.ritense.valtimo.document.created")
         // The capability rides the wire as its lowercase manifest/protocol form.
         assertThat(body.grantedCapabilities.map { it.capability }).containsExactly("gzac_api")
+        // Manifest-declared egress is a stored grant; the x-egress-target origins are recomputed.
+        assertThat(body.grantedEgress.map { it.target }).containsExactly("api.kvk.nl")
+        assertThat(body.derivedEgress).containsExactly("https://sd.acme-acc.internal:8443")
     }
 
     @Test

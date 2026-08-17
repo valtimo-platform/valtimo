@@ -43,7 +43,12 @@ import {
   NotificationModule,
 } from 'carbon-components-angular';
 import {ConfirmationModalModule, ValtimoCdsModalDirective} from '@valtimo/components';
-import {ExternalPluginEndpoint, ExternalPluginHost, ExternalPluginService} from '@valtimo/plugin';
+import {
+  ExternalPluginEndpoint,
+  ExternalPluginHost,
+  ExternalPluginService,
+  ExternalPluginUploadResult,
+} from '@valtimo/plugin';
 import {BehaviorSubject} from 'rxjs';
 import {buildExternalPluginCompatibilityMessage} from '../../utils';
 import {PluginExternalPermissionsComponent} from '../plugin-external-permissions/plugin-external-permissions.component';
@@ -58,6 +63,7 @@ interface OverwriteReview {
   endpoints: Array<ExternalPluginEndpoint>;
   eventSubscriptions: Array<string>;
   capabilities: Array<string>;
+  egress: Array<string>;
   warning: NotificationContent;
 }
 
@@ -88,7 +94,11 @@ export class PluginUploadModalComponent implements OnChanges {
   @Input() public hosts: Array<ExternalPluginHost> = [];
 
   @Output() public closeEvent = new EventEmitter<void>();
-  @Output() public uploadedEvent = new EventEmitter<void>();
+  /**
+   * Emitted only on a successful upload, carrying the host's `{pluginId, version}` so the parent
+   * can name the installed plugin in its success notification.
+   */
+  @Output() public uploadedEvent = new EventEmitter<ExternalPluginUploadResult>();
 
   public readonly $uploading = signal(false);
   public readonly $hostItems = signal<Array<ListItem>>([]);
@@ -159,9 +169,9 @@ export class PluginUploadModalComponent implements OnChanges {
     this.$uploadNotification.set(null);
 
     this._externalPluginService.uploadPlugin(hostId, file, force, overwrite).subscribe({
-      next: () => {
+      next: (result: ExternalPluginUploadResult) => {
         this.$uploading.set(false);
-        this.uploadedEvent.emit();
+        this.uploadedEvent.emit(result);
         this._resetAndClose();
       },
       error: (error: HttpErrorResponse) => {
@@ -233,6 +243,7 @@ export class PluginUploadModalComponent implements OnChanges {
     requestedEndpoints?: Array<ExternalPluginEndpoint>;
     requestedEventSubscriptions?: Array<string>;
     requestedCapabilities?: Array<string>;
+    requestedEgress?: Array<string>;
   }): void {
     const identical =
       !!body.currentContentHash &&
@@ -257,6 +268,7 @@ export class PluginUploadModalComponent implements OnChanges {
       endpoints: body.requestedEndpoints ?? [],
       eventSubscriptions: body.requestedEventSubscriptions ?? [],
       capabilities: body.requestedCapabilities ?? [],
+      egress: body.requestedEgress ?? [],
       warning: {
         type: 'warning',
         title: this._translateService.instant('pluginManagement.upload.overwriteWarningTitle'),

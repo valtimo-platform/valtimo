@@ -100,4 +100,24 @@ class ExternalPluginHost(
      */
     @Column(name = "event_queue_ttl_ms")
     var eventQueueTtlMs: Long? = null,
-)
+
+    /**
+     * Browser origins (`scheme://host[:port]`, comma-separated) allowed to embed this host's plugin
+     * screens. Pushed to the plugin host, which serves them as the `frame-ancestors` CSP directive
+     * on every bundle response. Deliberately not derived from [gzacCallbackBaseUrl]: that is a
+     * server-to-server URL and is routinely a different address than the one the admin's browser
+     * uses. Null (legacy rows, or a host registered before the field existed) means nothing may
+     * frame this host's plugins until an admin fills it in — fail closed.
+     */
+    @Column(name = "frontend_origins", length = 2000)
+    var frontendOrigins: String? = null,
+) {
+
+    /** [frontendOrigins] as a list, with blanks dropped. Empty when nothing is registered. */
+    val frontendOriginList: List<String>
+        get() = frontendOrigins
+            ?.split(',')
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?: emptyList()
+}

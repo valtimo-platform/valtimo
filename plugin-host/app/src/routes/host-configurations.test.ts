@@ -110,6 +110,29 @@ describe("host-configurations routes", () => {
       expect(eventConsumerManager.sync).toHaveBeenCalledTimes(1);
     });
 
+    it("stores the pushed egress allowlist", async () => {
+      await postConfig(
+        "cfg-1",
+        validBody({allowedEgress: ["api.kvk.nl", "https://sd.acme-acc.internal:8443"]})
+      );
+      expect(configRegistry.set.mock.calls[0][1].allowedEgress).toEqual([
+        "api.kvk.nl",
+        "https://sd.acme-acc.internal:8443",
+      ]);
+    });
+
+    it("stores an empty allowlist when the push carries none — no implicit grant", async () => {
+      // Unlike grantedEndpoints there is no "not pushed" state: http_request is deny-by-default, so
+      // an older GZAC that sends nothing leaves the configuration unable to call out.
+      await postConfig("cfg-1", validBody());
+      expect(configRegistry.set.mock.calls[0][1].allowedEgress).toEqual([]);
+    });
+
+    it("drops non-string entries from the egress allowlist", async () => {
+      await postConfig("cfg-1", validBody({allowedEgress: ["api.kvk.nl", 42, "", null]}));
+      expect(configRegistry.set.mock.calls[0][1].allowedEgress).toEqual(["api.kvk.nl"]);
+    });
+
     it("drops non-string entries from eventSubscriptions", async () => {
       await postConfig("cfg-1", validBody({ eventSubscriptions: ["a", 123, "", "b"] }));
       expect(configRegistry.set.mock.calls[0][1].eventSubscriptions).toEqual(["a", "b"]);
@@ -205,6 +228,7 @@ describe("host-configurations routes", () => {
         gzacBaseUrl: "http://gzac:8080",
         eventSubscriptions: ["com.ritense.valtimo.document.created"],
         eventBroker: { amqpUrl: "amqp://broker", exchange: "valtimo-events", exchangeType: "fanout" as const },
+        allowedEgress: ["api.kvk.nl"],
       };
       configRegistry.get.mockResolvedValueOnce(existing);
 
@@ -214,9 +238,29 @@ describe("host-configurations routes", () => {
       expect(configRegistry.set.mock.calls[0][1]).toMatchObject({
         eventBroker: existing.eventBroker,
         eventSubscriptions: existing.eventSubscriptions,
+        allowedEgress: existing.allowedEgress,
         serviceToken: "old-token",
         properties: { changed: true },
       });
+    });
+
+    it("replaces the egress allowlist when the update supplies one", async () => {
+      configRegistry.get.mockResolvedValueOnce({
+        configurationId: "cfg-1",
+        pluginId: "case-summary",
+        pluginVersion: "0.1.0",
+        properties: {},
+        serviceToken: "old-token",
+        gzacBaseUrl: "http://gzac:8080",
+        eventSubscriptions: [],
+        allowedEgress: ["api.kvk.nl"],
+      });
+
+      await putConfig("cfg-1", { properties: {}, allowedEgress: ["https://sd.internal:8443"] });
+
+      expect(configRegistry.set.mock.calls[0][1].allowedEgress).toEqual([
+        "https://sd.internal:8443",
+      ]);
     });
 
     it("returns 404 when updating a configuration that does not exist", async () => {

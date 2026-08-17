@@ -32,6 +32,7 @@
  */
 
 import {FRONTEND_BUNDLE_TYPES, HOST_CAPABILITIES} from "./models/types.js";
+import {validateEgressEntry} from "./egress.js";
 
 export function validatePluginManifest(manifest: unknown): string[] {
   const errors: string[] = [];
@@ -114,8 +115,35 @@ export function validatePluginManifest(manifest: unknown): string[] {
           );
         }
       }
+      const egress = p.egress;
+      if (egress !== undefined) {
+        if (!Array.isArray(egress)) {
+          errors.push("manifest.json 'permissions.egress' must be an array when present");
+        } else {
+          egress.forEach((entry, i) => {
+            const reason = validateEgressEntry(entry);
+            if (reason !== null) {
+              errors.push(`manifest.json permissions.egress[${i}] ${reason}`);
+            }
+          });
+          // Same shape as the endpoints→gzac_api rule: declaring destinations without the capability
+          // that reaches them is always an authoring mistake.
+          if (
+            egress.length > 0 &&
+            capabilities !== undefined &&
+            Array.isArray(capabilities) &&
+            !capabilities.includes("http_request")
+          ) {
+            errors.push(
+              "manifest.json declares 'permissions.egress' but does not include 'http_request' in 'permissions.capabilities' — egress targets require the http_request capability"
+            );
+          }
+        }
+      }
     }
   }
+
+  errors.push(...validateEgressTargetProperties(m.configurationSchema));
 
   const actions = m.actions;
   if (actions !== undefined) {
@@ -174,6 +202,45 @@ export function validatePluginManifest(manifest: unknown): string[] {
           errors.push(`manifest.json frontendBundles[${index}] must contain a non-empty 'path'`);
         }
       });
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Checks the `x-egress-target` markers in `configurationSchema`. The keyword tells GZAC that the
+ * admin-supplied value of that property is an `http_request` destination, so GZAC derives an egress
+ * grant from it at activation — the counterpart to `permissions.egress` for targets that differ per
+ * environment. It only makes sense on a URI-shaped string property: GZAC has to parse the value into
+ * an origin, and a property that never holds a URL would contribute nothing while looking like it
+ * grants something.
+ *
+ * Only top-level properties are inspected, matching how GZAC walks the schema for `x-secret`.
+ */
+function validateEgressTargetProperties(configurationSchema: unknown): string[] {
+  const errors: string[] = [];
+  if (typeof configurationSchema !== "object" || configurationSchema === null || Array.isArray(configurationSchema)) {
+    return errors;
+  }
+  const properties = (configurationSchema as Record<string, unknown>).properties;
+  if (typeof properties !== "object" || properties === null || Array.isArray(properties)) {
+    return errors;
+  }
+
+  for (const [name, value] of Object.entries(properties as Record<string, unknown>)) {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) continue;
+    const property = value as Record<string, unknown>;
+    if (property["x-egress-target"] !== true) continue;
+    if (property.type !== "string") {
+      errors.push(
+        `manifest.json configurationSchema.properties.${name} is marked 'x-egress-target' but is not a string property`
+      );
+    }
+    if (property.format !== "uri") {
+      errors.push(
+        `manifest.json configurationSchema.properties.${name} is marked 'x-egress-target' but does not declare "format": "uri"`
+      );
     }
   }
 

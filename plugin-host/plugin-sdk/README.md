@@ -122,6 +122,46 @@ against GZAC before executing any Wasm; the Angular parent-proxy attaches it aut
 `sdk.getPluginData(...)` calls only succeed for authenticated users of the configuration's GZAC
 instance.
 
+### Declaring `http_request` destinations
+
+`http_request` is deny-by-default: the capability alone reaches nothing. Every destination has to be
+declared, from one of two places depending on who knows its value.
+
+```json
+{
+  "permissions": {
+    "capabilities": ["http_request"],
+    "egress": ["api.kvk.nl", "https://svc.vendor.com:8443"]
+  },
+  "configurationSchema": {
+    "properties": {
+      "smartDocumentsUrl": { "type": "string", "format": "uri", "x-egress-target": true }
+    }
+  }
+}
+```
+
+- **`permissions.egress`** — origins that are the same in every environment. The admin accepts them
+  on the activation screen, and they cannot change without re-accepting the plugin version.
+- **`x-egress-target`** — put it on the configuration property that holds a URL which differs per
+  customer or environment. The admin typing the value *is* the grant, so there is nothing extra to
+  accept and the destination follows the configuration when it is edited. The property must be a
+  string with `"format": "uri"`.
+
+Entries are **origins**, matched on scheme + host + port:
+
+- A scheme-less entry means https on 443. Write `http://…` explicitly for a plain-http target.
+- A missing port means the scheme's default port, not any port — declare
+  `https://svc.internal:8443` if that is the port you call.
+- The path is ignored; a grant covers the whole origin. Do not include one.
+- A leading `*.` wildcard is allowed with at least two labels after it (`*.vendor.com`, never
+  `*.com`) and matches exactly one label — `api.vendor.com` but not `vendor.com` or
+  `a.b.vendor.com`. Prefer explicit hosts: a wildcard under your own DNS is a much wider grant, and
+  it is flagged as such on the admin's acceptance screen.
+
+Declaring `egress` without `http_request` in `capabilities` fails validation, as does an unparseable
+entry — the pack tool catches both before the package is built.
+
 ## Frontend SDK (`@valtimo/plugin-sdk/frontend`)
 
 The browser-side `ValtimoPluginSDK` runs inside the plugin's iframe and talks to the Valtimo
