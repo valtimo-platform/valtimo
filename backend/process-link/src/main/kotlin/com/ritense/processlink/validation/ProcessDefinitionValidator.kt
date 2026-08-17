@@ -62,7 +62,6 @@ class ProcessDefinitionValidator(
 ) {
     private val treeBuilder = Builder(Builder.Feature.METHOD_INVOCATIONS)
     private val beanNameRegex = Regex("""[\$#]\{(\w+)[\.\(\}]""")
-    private val methodCallRegex = Regex("""[\$#]\{(\w+)\.(\w+)\(([^)]*)\)?""")
 
     fun validate(
         bpmnModel: BpmnModelInstance,
@@ -915,9 +914,7 @@ class ProcessDefinitionValidator(
         listenerType: String? = null,
         listenerIndex: Int? = null
     ): Boolean {
-        val methodMatch = methodCallRegex.find(expression) ?: return false
-        val methodName = methodMatch.groupValues[2]
-        val argsString = methodMatch.groupValues[3].trim()
+        val (methodName, argsString) = parseMethodInvocation(expression, beanName) ?: return false
 
         val beanDto = processBeanService.getProcessBean(beanName) ?: return false
 
@@ -1021,6 +1018,33 @@ class ProcessDefinitionValidator(
         }
         // Return true to indicate method validation ran (suppress generic syntax error)
         return true
+    }
+
+    private fun parseMethodInvocation(expression: String, beanName: String): Pair<String, String>? {
+        val prefix = "$beanName."
+        val startIndex = expression.indexOf(prefix)
+        if (startIndex == -1) return null
+
+        val afterBean = startIndex + prefix.length
+        val parenStart = expression.indexOf('(', afterBean)
+        if (parenStart == -1) return null
+
+        val methodName = expression.substring(afterBean, parenStart)
+        if (methodName.isEmpty() || !methodName.all { it.isLetterOrDigit() || it == '_' }) return null
+
+        var depth = 1
+        var pos = parenStart + 1
+        while (pos < expression.length && depth > 0) {
+            when (expression[pos]) {
+                '(' -> depth++
+                ')' -> depth--
+            }
+            pos++
+        }
+        if (depth != 0) return null
+
+        val argsString = expression.substring(parenStart + 1, pos - 1).trim()
+        return Pair(methodName, argsString)
     }
 
     private fun countArgumentsWithEmptyCheck(argsString: String): Pair<Int, List<Int>> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,49 +100,46 @@ interface CorrelationService {
     @ProcessBeanMethod(description = "Sends a message to all catch events using the current execution's business key")
     fun sendMessageToAll(message: String, execution: DelegateExecution): List<MessageCorrelationResult>
 
-    /**
-     * Sends [message] to all subscribed process instances of the case the [execution] belongs to:
-     * the case's own processes and every building-block instance of that case, including nested
-     * ones. Building blocks run under their own document id as business key, so
-     * [sendCatchEventMessageToAll] with the case business key does not reach them.
-     *
-     * @throws IllegalStateException when the current case cannot be determined from the execution.
-     */
+    @ProcessBeanMethod(
+        description = "Sends a message to all catch events of the case the execution belongs to, including building blocks",
+        example = "\${correlationService.sendCatchEventMessageToCase('notification', execution)}"
+    )
     fun sendCatchEventMessageToCase(
         message: String,
         execution: DelegateExecution
     ): List<MessageCorrelationResult>
 
+    @ProcessBeanMethod(description = "Sends a message to all catch events of the case with variables")
     fun sendCatchEventMessageToCase(
         message: String,
         execution: DelegateExecution,
         vararg variables: Any?
     ): List<MessageCorrelationResult>
 
+    @ProcessBeanMethod(description = "Sends a message to all catch events of the case with a variables map")
     fun sendCatchEventMessageToCase(
         message: String,
         execution: DelegateExecution,
         variables: Map<String, Any?>?
     ): List<MessageCorrelationResult>
 
-    /**
-     * Sends [message] to all subscribed process instances of the case identified by
-     * [caseDocumentId], for example a related case. A building-block document id is accepted too
-     * and is normalized to the case it belongs to.
-     *
-     * @throws IllegalArgumentException when [caseDocumentId] is not a valid document id.
-     */
+    @ProcessBeanMethod(
+        description = "Sends a message to all catch events of the case identified by document id",
+        example = "\${correlationService.sendCatchEventMessageToCase('notification', documentId)}"
+    )
     fun sendCatchEventMessageToCase(
         message: String,
         caseDocumentId: String
     ): List<MessageCorrelationResult>
 
+    @ProcessBeanMethod(description = "Sends a message to all catch events of the case by document id with variables")
     fun sendCatchEventMessageToCase(
         message: String,
         caseDocumentId: String,
         vararg variables: Any?
     ): List<MessageCorrelationResult>
 
+    @ProcessBeanMethod(description = "Sends a message to all catch events of the case by document id with a variables map")
     fun sendCatchEventMessageToCase(
         message: String,
         caseDocumentId: String,
@@ -160,17 +157,23 @@ interface CorrelationService {
      *
      * @throws IllegalStateException when the current case cannot be determined from the execution.
      */
+    @ProcessBeanMethod(
+        description = "Starts building blocks linked to the case that declare a message start event",
+        example = "\${correlationService.sendStartMessageToCase('start-building-block', execution)}"
+    )
     fun sendStartMessageToCase(
         message: String,
         execution: DelegateExecution
     ): List<ProcessInstance>
 
+    @ProcessBeanMethod(description = "Starts building blocks of the case with variables")
     fun sendStartMessageToCase(
         message: String,
         execution: DelegateExecution,
         vararg variables: Any?
     ): List<ProcessInstance>
 
+    @ProcessBeanMethod(description = "Starts building blocks of the case with a variables map")
     fun sendStartMessageToCase(
         message: String,
         execution: DelegateExecution,
@@ -184,17 +187,23 @@ interface CorrelationService {
      *
      * @throws IllegalArgumentException when [caseDocumentId] is not a valid document id.
      */
+    @ProcessBeanMethod(
+        description = "Starts building blocks of the case identified by document id",
+        example = "\${correlationService.sendStartMessageToCase('start-building-block', documentId)}"
+    )
     fun sendStartMessageToCase(
         message: String,
         caseDocumentId: String
     ): List<ProcessInstance>
 
+    @ProcessBeanMethod(description = "Starts building blocks of the case by document id with variables")
     fun sendStartMessageToCase(
         message: String,
         caseDocumentId: String,
         vararg variables: Any?
     ): List<ProcessInstance>
 
+    @ProcessBeanMethod(description = "Starts building blocks of the case by document id with a variables map")
     fun sendStartMessageToCase(
         message: String,
         caseDocumentId: String,

@@ -31,6 +31,7 @@ class BpmnInvisibleOrphanCleaner {
 
     fun clean(bpmnModel: BpmnModelInstance): CleanupResult {
         val removedElements = mutableListOf<RemovedElement>()
+        val removedFlowIds = mutableSetOf<String>()
 
         val visibleElementIds = bpmnModel.getModelElementsByType(BpmnShape::class.java)
             .mapNotNull { it.bpmnElement?.id }
@@ -44,8 +45,9 @@ class BpmnInvisibleOrphanCleaner {
             val outgoingFlows = flowNode.outgoing.toList()
 
             for (flow in incomingFlows + outgoingFlows) {
-                removedElements.add(RemovedElement(flow.id, "SequenceFlow", flow.name))
-                flow.parentElement.removeChildElement(flow)
+                if (!removedFlowIds.add(flow.id)) {
+                    flow.parentElement.removeChildElement(flow)
+                }
             }
 
             removedElements.add(RemovedElement(flowNode.id, flowNode.elementType.typeName, flowNode.name))
