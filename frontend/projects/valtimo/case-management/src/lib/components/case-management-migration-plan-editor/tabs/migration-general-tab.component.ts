@@ -23,17 +23,20 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  signal,
 } from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CheckboxModule, InputModule} from 'carbon-components-angular';
 import {
+  AutoKeyInputComponent,
   SelectItem,
   SelectModule as ValtimoSelectModule,
   ValueConditionTreeComponent,
   ValueConditionTreeService,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
+import {ModalMode} from '@valtimo/shared';
 import {Subscription} from 'rxjs';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
 import {
@@ -61,6 +64,7 @@ interface GeneralValue {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    AutoKeyInputComponent,
     CheckboxModule,
     InputModule,
     ValtimoSelectModule,
@@ -75,9 +79,13 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Input() public sourceKeyOptions: SelectItem[] = [];
   /** The versions of the currently selected source key. */
   @Input() public sourceVersionOptions: SelectItem[] = [];
+  /** The migration keys this case definition version already has, so a generated key stays unique. */
+  @Input() public usedKeys: string[] = [];
 
   @Input() public set isEdit(value: boolean) {
-    // The key identifies the plan; changing it while editing would create a new one.
+    // The key identifies the plan; changing it while editing would create a new one. `edit` also puts
+    // the key input in its read-only state, so the two say the same thing to the author and the form.
+    this.$keyMode.set(value ? 'edit' : 'add');
     const keyControl = this.form.get('key');
     if (value) keyControl?.disable({emitEvent: false});
     else keyControl?.enable({emitEvent: false});
@@ -96,6 +104,12 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     ValuePathSelectorPrefix.DOC,
     ValuePathSelectorPrefix.CASE,
   ];
+
+  // Whether the key input generates a key from the title (`add`) or shows the plan's own (`edit`).
+  public readonly $keyMode = signal<ModalMode>('add');
+  // The title as the key input sees it. A signal rather than a template read of the control, because
+  // the form is also written to programmatically (see [writeGeneral]) with change detection silenced.
+  public readonly $title = signal<string>('');
 
   public readonly form = this.fb.group({
     title: this.fb.control(''),
@@ -124,6 +138,9 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
+    this._subscriptions.add(
+      this.form.controls.title.valueChanges.subscribe(title => this.$title.set(title ?? ''))
+    );
     // A version tag only means something under the key it belongs to, so picking another case
     // definition drops the version rather than carrying a selection that names a version of the
     // previous one — which the version picker would show as a value it does not offer, and the save
@@ -241,6 +258,8 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
           emitEvent: false,
         })
       );
+      // The patch above is silent, so the key input would otherwise keep generating from a stale title.
+      this.$title.set(incoming.title);
     } finally {
       this._writing = false;
     }

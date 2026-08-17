@@ -19,6 +19,7 @@ package com.ritense.document.domain
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionType.COLLECTION
 import com.ritense.valueresolver.ValueResolverOptionType.FIELD
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.everit.json.schema.ArraySchema
 import org.everit.json.schema.BooleanSchema
 import org.everit.json.schema.CombinedSchema
@@ -35,25 +36,61 @@ import org.everit.json.schema.StringSchema
  */
 @JvmOverloads
 fun Schema.collectValueResolverOptions(prefix: String = ""): List<ValueResolverOption> =
-    walkValueResolverOptions(prefix, "")
+    walkValueResolverOptions(prefix, "", 0, emptyList())
 
-private fun Schema.walkValueResolverOptions(prefix: String, path: String): List<ValueResolverOption> {
+/**
+ * @param depth how many schema levels have been descended into already, guarded by [MAX_SCHEMA_DEPTH] so a
+ * recursive schema does not cause a `StackOverflowError`.
+ * @param visitedReferences the `$ref` schemas on the path from the root to this schema. A recursive `$ref` (one
+ * that points back at an ancestor) is not followed a second time, since it would otherwise expand endlessly.
+ */
+private fun Schema.walkValueResolverOptions(
+    prefix: String,
+    path: String,
+    depth: Int,
+    visitedReferences: List<ReferenceSchema>
+): List<ValueResolverOption> {
+    if (depth > MAX_SCHEMA_DEPTH) {
+        logger.warn {
+            "Stopped collecting value resolver options at '$prefix$path'. " +
+                "The schema is nested deeper than $MAX_SCHEMA_DEPTH levels."
+        }
+        return emptyList()
+    }
     return when (this) {
         is ObjectSchema ->
             // The root schema itself (empty path) is not a selectable option, but every nested object node is,
             // so a whole subtree can be selected (e.g. doc:/applicant) in addition to its individual leaf properties.
             objectSelfOption(prefix, path) +
-                propertySchemas.flatMap { (key, sub) -> sub.walkValueResolverOptions(prefix, "$path/$key") }
+                propertySchemas.flatMap { (key, sub) ->
+                    sub.walkValueResolverOptions(prefix, "$path/$key", depth + 1, visitedReferences)
+                }
 
         is ArraySchema -> listOf(
-            ValueResolverOption("$prefix$path", COLLECTION, allItemSchema?.collectValueResolverOptions().orEmpty())
+            ValueResolverOption(
+                "$prefix$path",
+                COLLECTION,
+                allItemSchema?.walkValueResolverOptions("", "", depth + 1, visitedReferences).orEmpty()
+            )
         )
 
-        is ReferenceSchema ->
-            referredSchema?.walkValueResolverOptions(prefix, path).orEmpty()
+        is ReferenceSchema -> {
+            val reference = this
+            if (visitedReferences.any { it === reference }) {
+                emptyList()
+            } else {
+                referredSchema?.walkValueResolverOptions(
+                    prefix,
+                    path,
+                    depth + 1,
+                    visitedReferences + reference
+                ).orEmpty()
+            }
+        }
 
         is CombinedSchema ->
-            subschemas.flatMap { it.walkValueResolverOptions(prefix, path) }.distinctBy { it.path }
+            subschemas.flatMap { it.walkValueResolverOptions(prefix, path, depth + 1, visitedReferences) }
+                .distinctBy { it.path }
 
         is StringSchema, is NumberSchema, is BooleanSchema, is EnumSchema, is ConstSchema ->
             listOf(ValueResolverOption("$prefix$path", FIELD))
@@ -68,3 +105,5 @@ private fun Schema.walkValueResolverOptions(prefix: String, path: String): List<
  */
 private fun objectSelfOption(prefix: String, path: String): List<ValueResolverOption> =
     if (path.isEmpty()) emptyList() else listOf(ValueResolverOption("$prefix$path", FIELD))
+
+private val logger = KotlinLogging.logger {}

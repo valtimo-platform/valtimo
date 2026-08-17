@@ -48,10 +48,11 @@ Here you see all migration plans for that version, together with their current s
 Select **New migration plan** to open the plan editor. The editor is split into a few tabs, each
 covering one part of the plan:
 
-* **General** — the plan's **title**, **when it runs** (its trigger, see below), and **which cases**
-  it applies to. The conditions decide which cases this plan touches (for example, only cases with a
-  certain status or a certain value in their data — see [Conditions](#conditions)). Cases that don't
-  match are left for other plans; leave the conditions empty to apply the plan to all cases.
+* **General** — the plan's **title**, its **key** (generated from the title, and editable if you want a
+  different one), **when it runs** (its trigger, see below), and **which cases** it applies to. The
+  conditions decide which cases this plan touches (for example, only cases with a certain status or a
+  certain value in their data — see [Conditions](#conditions)). Cases that don't match are left for
+  other plans; leave the conditions empty to apply the plan to all cases.
 * **Data migration** — what happens to the case data (see [Source and target](#source-and-target)).
   Each row writes one **target** field from a **source**: copy an existing field's value, set a
   fixed value, or clear it. Each change can optionally be given a type (text, number, yes/no, and so

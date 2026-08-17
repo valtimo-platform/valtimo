@@ -16,6 +16,12 @@
 
   New enhancement explanation.
 
+* **A migration plan's key is generated from its title**
+
+  When creating a migration plan, its key now follows the title you type instead of having to be entered by
+  hand. It is made unique against the plans that already exist on that version, and can still be adjusted
+  before saving.
+
 ## Bugfixes
 
 
@@ -24,6 +30,12 @@
   Importing a case no longer breaks form flow steps whose start or complete expression contains a colon, such as one
   that saves submission data to a document or process variable. These steps stopped working after import because part
   of the expression was cut off.
+
+* **Document schemas that refer to themselves no longer crash the application**
+
+  A case document schema in which a property refers back to the schema itself could make the server run out of stack
+  space while reading it, for example when listing the values that can be used in a mapping or when migrating
+  documents. Such schemas are now read up to a maximum nesting depth.
 
 * **Object permissions are checked before the object is retrieved**
 

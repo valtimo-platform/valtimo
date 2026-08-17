@@ -17,6 +17,7 @@
 package com.ritense.document.domain
 
 import com.fasterxml.jackson.core.JsonPointer
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.everit.json.schema.CombinedSchema
 import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.ReferenceSchema
@@ -72,9 +73,21 @@ private fun Schema.allowsRemovalOf(jsonPointer: JsonPointer): Boolean {
     return !objectSchema.requiredProperties.contains(propertyName)
 }
 
-private fun Schema.unwrapObjectSchema(): ObjectSchema? = when (this) {
-    is ObjectSchema -> this
-    is ReferenceSchema -> referredSchema?.unwrapObjectSchema()
-    is CombinedSchema -> subschemas.firstNotNullOfOrNull { it.unwrapObjectSchema() }
-    else -> null
+/**
+ * @param depth how many schema levels have been descended into already, guarded by [MAX_SCHEMA_DEPTH] so a
+ * recursive schema does not cause a `StackOverflowError`.
+ */
+private fun Schema.unwrapObjectSchema(depth: Int = 0): ObjectSchema? {
+    if (depth > MAX_SCHEMA_DEPTH) {
+        logger.warn { "Stopped unwrapping the object schema. The schema is nested deeper than $MAX_SCHEMA_DEPTH levels." }
+        return null
+    }
+    return when (this) {
+        is ObjectSchema -> this
+        is ReferenceSchema -> referredSchema?.unwrapObjectSchema(depth + 1)
+        is CombinedSchema -> subschemas.firstNotNullOfOrNull { it.unwrapObjectSchema(depth + 1) }
+        else -> null
+    }
 }
+
+private val logger = KotlinLogging.logger {}

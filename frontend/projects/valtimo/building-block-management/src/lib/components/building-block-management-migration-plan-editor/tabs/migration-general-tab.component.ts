@@ -23,11 +23,17 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  signal,
 } from '@angular/core';
 import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {InputModule} from 'carbon-components-angular';
-import {SelectItem, SelectModule as ValtimoSelectModule} from '@valtimo/components';
+import {
+  AutoKeyInputComponent,
+  SelectItem,
+  SelectModule as ValtimoSelectModule,
+} from '@valtimo/components';
+import {ModalMode} from '@valtimo/shared';
 import {Subscription} from 'rxjs';
 import {BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
 import {MigrationPlan, MigrationPlanSource} from '../../../models';
@@ -44,7 +50,14 @@ interface GeneralValue {
   templateUrl: './migration-general-tab.component.html',
   styleUrls: ['./migration-tab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, InputModule, ValtimoSelectModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    AutoKeyInputComponent,
+    InputModule,
+    ValtimoSelectModule,
+  ],
 })
 export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Input() public buildingBlockDefinitionKey: string | null = null;
@@ -53,9 +66,13 @@ export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Input() public sourceKeyOptions: SelectItem[] = [];
   /** The versions of the currently selected source key. */
   @Input() public sourceVersionOptions: SelectItem[] = [];
+  /** The migration keys this building block version already has, so a generated key stays unique. */
+  @Input() public usedKeys: string[] = [];
 
   @Input() public set isEdit(value: boolean) {
-    // The key identifies the plan; changing it while editing would create a new one.
+    // The key identifies the plan; changing it while editing would create a new one. `edit` also puts
+    // the key input in its read-only state, so the two say the same thing to the author and the form.
+    this.$keyMode.set(value ? 'edit' : 'add');
     const keyControl = this.form.get('key');
     if (value) keyControl?.disable({emitEvent: false});
     else keyControl?.enable({emitEvent: false});
@@ -68,6 +85,12 @@ export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Output() public readonly generalChange = new EventEmitter<Partial<MigrationPlan>>();
 
   protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
+
+  // Whether the key input generates a key from the title (`add`) or shows the plan's own (`edit`).
+  public readonly $keyMode = signal<ModalMode>('add');
+  // The title as the key input sees it. A signal rather than a template read of the control, because
+  // the form is also written to programmatically (see [writeGeneral]) with change detection silenced.
+  public readonly $title = signal<string>('');
 
   public readonly form = this.fb.group({
     title: this.fb.control(''),
@@ -85,6 +108,9 @@ export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
+    this._subscriptions.add(
+      this.form.controls.title.valueChanges.subscribe(title => this.$title.set(title ?? ''))
+    );
     // A version tag only means something under the key it belongs to, so picking another building
     // block drops the version rather than carrying a selection that names a version of the previous
     // one — which the version picker would show as a value it does not offer, and the save would
@@ -164,6 +190,8 @@ export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
         },
         {emitEvent: false}
       );
+      // The patch above is silent, so the key input would otherwise keep generating from a stale title.
+      this.$title.set(incoming.title);
     } finally {
       this._writing = false;
     }

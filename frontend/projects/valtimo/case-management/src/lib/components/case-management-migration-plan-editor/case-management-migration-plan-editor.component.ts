@@ -112,6 +112,9 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
       : [];
   });
   public readonly $runAfterOptions = signal<SelectItem[]>([]);
+  // The keys of this version's other plans, so the key generated from a new plan's title cannot
+  // collide with one of them (saving under an existing key would overwrite that plan).
+  public readonly $usedMigrationKeys = signal<string[]>([]);
   // The case definitions a plan may migrate from, and the versions of whichever one is selected.
   public readonly $sourceKeyOptions = signal<SelectItem[]>([]);
   public readonly $sourceVersionOptions = signal<SelectItem[]>([]);
@@ -183,7 +186,7 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     this._migrationKey = params['migrationKey'] ?? null;
 
     this.initBreadcrumbs();
-    this.loadRunAfterOptions();
+    this.loadExistingPlans();
     this.loadProcessKeys();
     this.loadSourceKeyOptions();
 
@@ -344,18 +347,21 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     }
   }
 
-  /** Load the other migration plans of this case definition version, so they can gate `runAfter`. */
-  private loadRunAfterOptions(): void {
+  /**
+   * Load the other migration plans of this case definition version: they are what `runAfter` may point
+   * at, and their keys are the ones a new plan's generated key has to stay clear of.
+   */
+  private loadExistingPlans(): void {
     this.caseMigrationApiService
       .getPlans(this._params)
       .pipe(take(1))
-      .subscribe(plans =>
+      .subscribe(plans => {
+        const others = plans.filter(plan => plan.migrationKey !== this._migrationKey);
         this.$runAfterOptions.set(
-          plans
-            .filter(plan => plan.migrationKey !== this._migrationKey)
-            .map(plan => ({id: plan.migrationKey, text: plan.title || plan.migrationKey}))
-        )
-      );
+          others.map(plan => ({id: plan.migrationKey, text: plan.title || plan.migrationKey}))
+        );
+        this.$usedMigrationKeys.set(others.map(plan => plan.migrationKey));
+      });
   }
 
   /**

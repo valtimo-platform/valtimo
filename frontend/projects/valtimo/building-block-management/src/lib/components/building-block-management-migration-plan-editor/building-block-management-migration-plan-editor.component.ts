@@ -110,6 +110,9 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
       ? [sourceVersion]
       : [];
   });
+  // The keys of this version's other plans, so the key generated from a new plan's title cannot
+  // collide with one of them (saving under an existing key would overwrite that plan).
+  public readonly $usedMigrationKeys = signal<string[]>([]);
   // The building blocks a plan may migrate from, and the versions of whichever one is selected.
   public readonly $sourceKeyOptions = signal<SelectItem[]>([]);
   public readonly $sourceVersionOptions = signal<SelectItem[]>([]);
@@ -178,6 +181,7 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     this._migrationKey = params['migrationKey'] ?? null;
 
     this.initBreadcrumbs();
+    this.loadExistingPlanKeys();
     this.loadProcessKeys();
     this.loadSourceKeyOptions();
 
@@ -341,6 +345,23 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     } catch {
       return null;
     }
+  }
+
+  /**
+   * The keys of this version's other migration plans, which is what the key generated from a new plan's
+   * title has to stay clear of — a save under an existing key overwrites that plan.
+   */
+  private loadExistingPlanKeys(): void {
+    this.buildingBlockMigrationApiService
+      .getPlans(this._params)
+      .pipe(take(1))
+      .subscribe(plans =>
+        this.$usedMigrationKeys.set(
+          plans
+            .filter(plan => plan.migrationKey !== this._migrationKey)
+            .map(plan => plan.migrationKey)
+        )
+      );
   }
 
   /**

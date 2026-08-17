@@ -28,16 +28,21 @@
       />
     </cds-text-label>
 
-    <cds-text-label>
-      {{ 'buildingBlockManagement.migration.editor.general.key' | translate }}
-      <input
-        cdsText
-        formControlName="key"
-        [placeholder]="
-          'buildingBlockManagement.migration.editor.general.keyPlaceholder' | translate
-        "
-      />
-    </cds-text-label>
+    <!--
+      The key is derived from the title rather than typed: it identifies the plan, so it has to be
+      URL-safe and unique among this version's plans, and [usedKeys] lets the shared input suffix a
+      number when a plan of that name already exists. The author can still take it over with the edit
+      button while creating; on an existing plan it is read-only, since changing it would create a
+      second plan rather than rename this one.
+    -->
+    <valtimo-auto-key-input
+      formControlName="key"
+      labelTranslationKey="buildingBlockManagement.migration.editor.general.key"
+      [mode]="$keyMode()"
+      placeholderTranslationKey="buildingBlockManagement.migration.editor.general.keyPlaceholder"
+      [sourceText]="$title()"
+      [usedKeys]="usedKeys"
+    ></valtimo-auto-key-input>
   </div>
 
   <!-- Source -->
@@ -91,7 +96,7 @@
         | translate
           : {
               key: buildingBlockDefinitionKey,
-              versionTag: buildingBlockDefinitionVersionTag
+              versionTag: buildingBlockDefinitionVersionTag,
             }
     }}
   </p>

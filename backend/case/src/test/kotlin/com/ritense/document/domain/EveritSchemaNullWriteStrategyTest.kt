@@ -137,6 +137,31 @@ class EveritSchemaNullWriteStrategyTest {
         assertThat(schema.determineNullWriteStrategy("/address/city")).isEqualTo(WRITE_NULL)
     }
 
+    @Test
+    fun `should determine a strategy for a recursive schema without overflowing the stack`() {
+        val schema = schemaOf(
+            """
+            "definitions": {
+              "node": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "nickname": { "type": "string" },
+                  "child": { "${'$'}ref": "#/definitions/node" }
+                }
+              }
+            },
+            "properties": {
+              "root": { "${'$'}ref": "#/definitions/node" }
+            }
+            """.trimIndent()
+        )
+
+        assertThat(schema.determineNullWriteStrategy("/root/child/nickname")).isEqualTo(REMOVE)
+        assertThat(schema.determineNullWriteStrategy("/root/child/name")).isEqualTo(NOT_ALLOWED)
+    }
+
     private fun schemaOf(properties: String): Schema =
         JsonSchema.fromString(
             """
