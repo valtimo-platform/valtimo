@@ -18,6 +18,11 @@
 
 ## Bugfixes
 
+* **A form flow can now be used as the start form of a building block**
+
+  Starting a building block from the actions of a case now opens its form flow start form, and submitting that
+  form starts the building block version that is linked to the case. Previously the start form did not open at
+  all and the building block could not be started this way, while the same setup with a regular form did work.
 
 * **Form flow steps with a colon in their expressions work again after import**
 
