@@ -133,26 +133,34 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
             );
 
             const lang = this._translateService.currentLang;
-            const external: UnifiedPluginConfigurationRow[] = externalConfigurations.map(config => {
-              const definition = externalDefinitions.find(d => d.id === config.definitionId);
-              const incompatible = isExternalPluginDefinitionIncompatible(definition);
-              const host = definition ? hosts.find(h => h.id === definition.hostId) : undefined;
-              return {
-                id: config.id,
-                title: config.title,
-                pluginName: definition ? getExternalPluginDisplayName(definition, lang) : '',
-                definitionKey: definition?.pluginId ?? '',
-                source: 'external',
-                sourceLabel: this._translateService.instant('pluginManagement.source.external'),
-                externalDefinitionId: config.definitionId,
-                incompatible,
-                compatibilityMessage:
-                  incompatible && definition
-                    ? buildExternalPluginCompatibilityMessage(definition, this._translateService)
-                    : undefined,
-                hostName: host?.name,
-              };
-            });
+            const appHostIds = new Set(hosts.filter(h => h.kind === 'APP').map(h => h.id));
+            const external: UnifiedPluginConfigurationRow[] = externalConfigurations
+              // App configurations are managed on the apps page; a configuration whose definition
+              // is unknown cannot be classified and stays visible here rather than nowhere.
+              .filter(config => {
+                const definition = externalDefinitions.find(d => d.id === config.definitionId);
+                return !definition || !appHostIds.has(definition.hostId);
+              })
+              .map(config => {
+                const definition = externalDefinitions.find(d => d.id === config.definitionId);
+                const incompatible = isExternalPluginDefinitionIncompatible(definition);
+                const host = definition ? hosts.find(h => h.id === definition.hostId) : undefined;
+                return {
+                  id: config.id,
+                  title: config.title,
+                  pluginName: definition ? getExternalPluginDisplayName(definition, lang) : '',
+                  definitionKey: definition?.pluginId ?? '',
+                  source: 'external' as const,
+                  sourceLabel: this._translateService.instant('pluginManagement.source.external'),
+                  externalDefinitionId: config.definitionId,
+                  incompatible,
+                  compatibilityMessage:
+                    incompatible && definition
+                      ? buildExternalPluginCompatibilityMessage(definition, this._translateService)
+                      : undefined,
+                  hostName: host?.name,
+                };
+              });
 
             return [...embedded, ...external];
           }),
@@ -231,9 +239,6 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  public readonly externalDefinitions$: Observable<ExternalPluginDefinition[]> =
-    this._allDefinitions$;
-
   // --- Plugin upload ---
   public readonly uploadModalOpen$ = new BehaviorSubject<boolean>(false);
 
@@ -256,6 +261,21 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
   );
   public readonly hasConnectedHosts$: Observable<boolean> = this.connectedHosts$.pipe(
     map(hosts => hosts.length > 0)
+  );
+
+  /**
+   * Definitions offered in the add flow. Apps are connected *and* configured on the apps page, so
+   * definitions served by an APP-kind host are excluded here.
+   */
+  public readonly externalDefinitions$: Observable<ExternalPluginDefinition[]> = combineLatest([
+    this._allDefinitions$,
+    this._allHosts$,
+  ]).pipe(
+    map(([definitions, hosts]) => {
+      const appHostIds = new Set(hosts.filter(h => h.kind === 'APP').map(h => h.id));
+      return definitions.filter(definition => !appHostIds.has(definition.hostId));
+    }),
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
   constructor(

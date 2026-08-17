@@ -51,8 +51,19 @@ export class ExternalPluginService {
     return this._http.get<Array<ExternalPluginHost>>(`${this._baseUrl}/host`);
   }
 
-  public createHost(request: ExternalPluginHostCreateRequest): Observable<ExternalPluginHost> {
-    return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request);
+  /**
+   * Registers a host. With `handleConflictInline` the expected 409 (`code:
+   * APP_PLUGIN_ALREADY_REGISTERED` — the app's plugin is already registered under another host)
+   * is kept off the global error toast so the caller can render it inline.
+   */
+  public createHost(
+    request: ExternalPluginHostCreateRequest,
+    handleConflictInline = false
+  ): Observable<ExternalPluginHost> {
+    const options = handleConflictInline
+      ? {headers: new HttpHeaders().set(InterceptorSkip, '409')}
+      : {};
+    return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request, options);
   }
 
   public getHostDefaults(): Observable<ExternalPluginHostDefaults> {
@@ -135,10 +146,9 @@ export class ExternalPluginService {
       .set('size', params.size.toString());
     if (params.level) httpParams = httpParams.set('level', params.level);
     if (params.source) httpParams = httpParams.set('source', params.source);
-    return this._http.get<PluginLogPage>(
-      `${this._baseUrl}/configuration/${configurationId}/logs`,
-      {params: httpParams}
-    );
+    return this._http.get<PluginLogPage>(`${this._baseUrl}/configuration/${configurationId}/logs`, {
+      params: httpParams,
+    });
   }
 
   /**
@@ -175,7 +185,12 @@ export class ExternalPluginService {
    * requested permissions and is retried with `overwrite=true` after the operator re-reviews the
    * permissions and confirms the overwrite.
    */
-  public uploadPlugin(hostId: string, file: File, force = false, overwrite = false): Observable<unknown> {
+  public uploadPlugin(
+    hostId: string,
+    file: File,
+    force = false,
+    overwrite = false
+  ): Observable<unknown> {
     const formData = new FormData();
     formData.append('file', file, file.name);
     const params = new HttpParams().set('force', force).set('overwrite', overwrite);

@@ -18,6 +18,7 @@
  * Public API Surface of plugin-management
  */
 
+export * from './lib/constants';
 export * from './lib/models';
 export * from './lib/services';
 export * from './lib/plugin-management.module';
@@ -28,5 +29,6 @@ export * from './lib/components/plugin-configure/plugin-configure.component';
 export * from './lib/components/plugin-edit-modal/plugin-edit-modal.component';
 export * from './lib/components/plugin-edit/plugin-edit.component';
 export * from './lib/components/plugin-host-modal/plugin-host-modal.component';
+export * from './lib/components/plugin-app-add-modal/plugin-app-add-modal.component';
 export * from './lib/components/plugin-hosts-page/plugin-hosts-page.component';
 export * from './lib/components/plugin-apps-page/plugin-apps-page.component';

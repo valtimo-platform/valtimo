@@ -18,6 +18,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  Input,
   OnDestroy,
   OnInit,
   Output,
@@ -50,6 +51,16 @@ interface ExternalPluginSaveEvent {
   grantedCapabilities: Array<string>;
 }
 
+/**
+ * The "enter data" step for an external plugin configuration: the plugin's own config bundle in an
+ * iframe when it ships one, a title + JSON properties fallback otherwise.
+ *
+ * Works in two modes:
+ * - Bound to {@link PluginManagementStateService} (the plugins page add modal): the definition
+ *   follows the selected plugin and saving is triggered through the state service's `save$`.
+ * - Standalone via the `definitionId` input (the app add stepper): the definition is loaded
+ *   directly and saving is triggered imperatively through {@link triggerSave}.
+ */
 @Component({
   standalone: true,
   selector: 'valtimo-plugin-external-configure',
@@ -65,6 +76,9 @@ interface ExternalPluginSaveEvent {
   ],
 })
 export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
+  /** When set, configures this definition directly instead of the state service's selection. */
+  @Input() public definitionId: string | null = null;
+
   @Output() public validEvent = new EventEmitter<boolean>();
   @Output() public saveEvent = new EventEmitter<ExternalPluginSaveEvent>();
   @Output() public endpointsResolved = new EventEmitter<Array<ExternalPluginEndpoint>>();
@@ -93,59 +107,53 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    this._subscriptions.add(
-      this._stateService.selectedPluginDefinition$
-        .pipe(
-          switchMap(def => {
-            if (!def?.key || !isExternalPluginKey(def.key)) {
-              this._definitionId = null;
-              this.$configBundleUrl.set(null);
-              this.$loading.set(false);
-              this.endpointsResolved.emit([]);
-              this.eventSubscriptionsResolved.emit([]);
-              this.capabilitiesResolved.emit([]);
-              return [];
-            }
-
-            this._definitionId = extractExternalDefinitionId(def.key);
-            this.$loading.set(true);
-
-            return this._externalPluginService.getDefinition(this._definitionId).pipe(
-              map((definition: ExternalPluginDefinition) => {
-                const configBundle = definition.manifest?.frontendBundles?.find(
-                  b => b.type === 'config'
-                );
-
-                if (configBundle) {
-                  this.$configBundleUrl.set(
-                    `${definition.baseUrl}/${definition.version}${configBundle.path}`
-                  );
-                } else {
-                  this.$configBundleUrl.set(null);
-                }
-
-                const endpoints = definition.manifest?.permissions?.endpoints ?? [];
-                this.endpointsResolved.emit(endpoints);
-                const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
-                this.eventSubscriptionsResolved.emit(eventSubscriptions);
-                const capabilities = definition.manifest?.permissions?.capabilities ?? [];
-                this.capabilitiesResolved.emit(capabilities);
-
+    if (this.definitionId) {
+      this._definitionId = this.definitionId;
+      this.$loading.set(true);
+      this._externalPluginService
+        .getDefinition(this.definitionId)
+        .subscribe(definition => this._applyDefinition(definition));
+    } else {
+      this._subscriptions.add(
+        this._stateService.selectedPluginDefinition$
+          .pipe(
+            switchMap(def => {
+              if (!def?.key || !isExternalPluginKey(def.key)) {
+                this._definitionId = null;
+                this.$configBundleUrl.set(null);
                 this.$loading.set(false);
-              })
-            );
-          })
-        )
-        .subscribe()
-    );
+                this.endpointsResolved.emit([]);
+                this.eventSubscriptionsResolved.emit([]);
+                this.capabilitiesResolved.emit([]);
+                return [];
+              }
+
+              this._definitionId = extractExternalDefinitionId(def.key);
+              this.$loading.set(true);
+
+              return this._externalPluginService
+                .getDefinition(this._definitionId)
+                .pipe(map(definition => this._applyDefinition(definition)));
+            })
+          )
+          .subscribe()
+      );
+
+      // Only the state-service-driven mode saves through `save$` — an instance embedded via
+      // `definitionId` must not react to the plugins page's save trigger.
+      this._subscriptions.add(this._stateService.save$.subscribe(() => this._onSaveTriggered()));
+    }
 
     this._subscriptions.add(this._form.valueChanges.subscribe(() => this._validateForm()));
-
-    this._subscriptions.add(this._stateService.save$.subscribe(() => this._onSaveTriggered()));
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  /** Imperative save trigger for the `definitionId` mode (mirrors the state service's `save$`). */
+  public triggerSave(): void {
+    this._onSaveTriggered();
   }
 
   public onIframeConfigurationChanged(event: {
@@ -168,6 +176,25 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
 
   public setGrantedCapabilities(caps: Array<string>): void {
     this._grantedCapabilities = caps;
+  }
+
+  private _applyDefinition(definition: ExternalPluginDefinition): void {
+    const configBundle = definition.manifest?.frontendBundles?.find(b => b.type === 'config');
+
+    if (configBundle) {
+      this.$configBundleUrl.set(`${definition.baseUrl}/${definition.version}${configBundle.path}`);
+    } else {
+      this.$configBundleUrl.set(null);
+    }
+
+    const endpoints = definition.manifest?.permissions?.endpoints ?? [];
+    this.endpointsResolved.emit(endpoints);
+    const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
+    this.eventSubscriptionsResolved.emit(eventSubscriptions);
+    const capabilities = definition.manifest?.permissions?.capabilities ?? [];
+    this.capabilitiesResolved.emit(capabilities);
+
+    this.$loading.set(false);
   }
 
   private _validateForm(): void {

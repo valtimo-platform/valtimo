@@ -14,5 +14,11 @@
  * limitations under the License.
  */
 
-export * from './csp-allows-origin.util';
-export * from './external-plugin-compatibility.util';
+export const PLUGIN_APP_ADD_MODAL_TEST_IDS = {
+  cancelButton: 'pluginAppAddModalCancelButton',
+  connectButton: 'pluginAppAddModalConnectButton',
+  continueButton: 'pluginAppAddModalContinueButton',
+  retryButton: 'pluginAppAddModalRetryButton',
+  nextButton: 'pluginAppAddModalNextButton',
+  completeButton: 'pluginAppAddModalCompleteButton',
+} as const;

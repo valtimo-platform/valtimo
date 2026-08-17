@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.web.rest
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
@@ -29,8 +30,11 @@ import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.externalplugin.service.HostDiscoveryResult
+import com.ritense.externalplugin.service.PluginRegistrationConflict
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
+import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import org.assertj.core.api.Assertions.assertThat
@@ -253,7 +257,7 @@ class ExternalPluginHostResourceTest {
         val response = resource.createHost(createRequest())
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
-        assertThat(response.body!!.eventBrokerAmqpUrl).isEqualTo("amqp://***@rabbit:5672")
+        assertThat((response.body as HostResponse).eventBrokerAmqpUrl).isEqualTo("amqp://***@rabbit:5672")
     }
 
     @Test
@@ -295,6 +299,87 @@ class ExternalPluginHostResourceTest {
             anyOrNull(),
             eq(ExternalPluginHostKind.APP),
         )
+    }
+
+    // ------------------------------------------- createHost: app plugin already registered
+
+    @Test
+    fun `createHost rejects an app whose only plugin is already registered under another host, and rolls it back`() {
+        val existingHostId = UUID.randomUUID()
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+            .thenReturn(host(kind = ExternalPluginHostKind.APP))
+        whenever(hostService.get(existingHostId))
+            .thenReturn(host(id = existingHostId, kind = ExternalPluginHostKind.APP))
+        whenever(discoveryService.discoverHost(hostId)).thenReturn(
+            HostDiscoveryResult(
+                reachable = true,
+                registeredDefinitionIds = emptySet(),
+                conflicts = listOf(PluginRegistrationConflict("pdca", "0.1.0", existingHostId)),
+            )
+        )
+
+        val response = resource.createHost(createRequest(kind = ExternalPluginHostKind.APP))
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CONFLICT)
+        val body = response.body as JsonNode
+        assertThat(body.get("code").asText())
+            .isEqualTo(ExternalPluginManagementResource.APP_ALREADY_REGISTERED_CODE)
+        val conflict = body.get("conflicts").first()
+        assertThat(conflict.get("pluginId").asText()).isEqualTo("pdca")
+        assertThat(conflict.get("version").asText()).isEqualTo("0.1.0")
+        assertThat(conflict.get("existingHostName").asText()).isEqualTo("host-$existingHostId")
+        assertThat(conflict.get("existingHostKind").asText()).isEqualTo("APP")
+        verify(hostService).delete(hostId)
+    }
+
+    @Test
+    fun `createHost keeps an app that registered at least one plugin, even when another one conflicted`() {
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+            .thenReturn(host(kind = ExternalPluginHostKind.APP))
+        whenever(discoveryService.discoverHost(hostId)).thenReturn(
+            HostDiscoveryResult(
+                reachable = true,
+                registeredDefinitionIds = setOf(UUID.randomUUID()),
+                conflicts = listOf(PluginRegistrationConflict("other", "1.0.0", UUID.randomUUID())),
+            )
+        )
+
+        val response = resource.createHost(createRequest(kind = ExternalPluginHostKind.APP))
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+        verify(hostService, never()).delete(any())
+    }
+
+    @Test
+    fun `createHost keeps an unreachable app — discovery retries and the UI offers configuring later`() {
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+            .thenReturn(host(kind = ExternalPluginHostKind.APP))
+        whenever(discoveryService.discoverHost(hostId)).thenReturn(
+            HostDiscoveryResult(reachable = false, registeredDefinitionIds = emptySet(), conflicts = emptyList())
+        )
+
+        val response = resource.createHost(createRequest(kind = ExternalPluginHostKind.APP))
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+        verify(hostService, never()).delete(any())
+    }
+
+    @Test
+    fun `createHost stays lenient for plugin hosts serving already-registered plugins`() {
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+            .thenReturn(host(kind = ExternalPluginHostKind.PLUGIN_HOST))
+        whenever(discoveryService.discoverHost(hostId)).thenReturn(
+            HostDiscoveryResult(
+                reachable = true,
+                registeredDefinitionIds = emptySet(),
+                conflicts = listOf(PluginRegistrationConflict("pdca", "0.1.0", UUID.randomUUID())),
+            )
+        )
+
+        val response = resource.createHost(createRequest())
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+        verify(hostService, never()).delete(any())
     }
 
     // ---------------------------------------------------------------- event-queue PATCH

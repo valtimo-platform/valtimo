@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
-import {SelectItem, SelectModule, ValtimoCdsModalDirective} from '@valtimo/components';
-import {
-  ExternalPluginEventQueueMode,
-  ExternalPluginHostCreateRequest,
-  ExternalPluginHostKind,
-  ExternalPluginService,
-} from '@valtimo/plugin';
-import {Subscription} from 'rxjs';
+import {ButtonModule, ModalModule} from 'carbon-components-angular';
+import {ValtimoCdsModalDirective} from '@valtimo/components';
+import {ExternalPluginHostCreateRequest, ExternalPluginHostKind} from '@valtimo/plugin';
+import {PluginHostConnectionFormComponent} from '../plugin-host-connection-form/plugin-host-connection-form.component';
 
 @Component({
   standalone: true,
@@ -37,129 +38,41 @@ import {Subscription} from 'rxjs';
   imports: [
     CommonModule,
     TranslateModule,
-    ReactiveFormsModule,
     ModalModule,
     ButtonModule,
-    InputModule,
-    LayerModule,
-    SelectModule,
     ValtimoCdsModalDirective,
+    PluginHostConnectionFormComponent,
   ],
 })
-export class PluginHostModalComponent implements OnChanges, OnInit, OnDestroy {
+export class PluginHostModalComponent {
+  @ViewChild(PluginHostConnectionFormComponent)
+  private _connectionForm: PluginHostConnectionFormComponent | undefined;
+
   @Input() public open = false;
   @Input() public kind: ExternalPluginHostKind = 'PLUGIN_HOST';
 
   @Output() public closeEvent = new EventEmitter<void>();
   @Output() public submitEvent = new EventEmitter<ExternalPluginHostCreateRequest>();
 
+  public formValid = false;
+
   public get isApp(): boolean {
     return this.kind === 'APP';
   }
 
-  public readonly form = new FormGroup({
-    name: new FormControl('', Validators.required),
-    baseUrl: new FormControl('', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]),
-    secret: new FormControl('', Validators.required),
-    gzacCallbackBaseUrl: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/^https?:\/\/.+/),
-    ]),
-    eventBrokerAmqpUrl: new FormControl(''),
-    eventBrokerExchange: new FormControl(''),
-    eventQueueMode: new FormControl<ExternalPluginEventQueueMode>('LIVE', {nonNullable: true}),
-    eventQueueTtlMs: new FormControl<number | null>(null),
-  });
-
-  public minTtlMs = 60 * 60 * 1000;
-  public maxTtlMs = 30 * 24 * 60 * 60 * 1000;
-  public defaultTtlMs = 72 * 60 * 60 * 1000;
-
-  public readonly queueModeItems: SelectItem[] = [
-    {id: 'LIVE', translationKey: 'pluginManagement.eventQueueMode.live'},
-    {id: 'DURABLE', translationKey: 'pluginManagement.eventQueueMode.durable'},
-  ];
-
-  private readonly _subscriptions = new Subscription();
-
-  constructor(private readonly _externalPluginService: ExternalPluginService) {}
-
-  public ngOnInit(): void {
-    this._subscriptions.add(
-      this.form.controls.eventQueueMode.valueChanges.subscribe(mode => {
-        const ttl = this.form.controls.eventQueueTtlMs;
-        if (mode === 'DURABLE') {
-          ttl.setValidators([
-            Validators.required,
-            Validators.min(this.minTtlMs),
-            Validators.max(this.maxTtlMs),
-          ]);
-          if (ttl.value == null) ttl.setValue(this.defaultTtlMs);
-        } else {
-          ttl.clearValidators();
-          ttl.setValue(null);
-        }
-        ttl.updateValueAndValidity();
-      })
-    );
-  }
-
-  public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['open']?.currentValue === true) {
-      this._fetchDefaults();
-    }
-  }
-
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+  public onFormValidChange(valid: boolean): void {
+    this.formValid = valid;
   }
 
   public onSubmit(): void {
-    if (this.form.invalid) return;
-    const value = this.form.value;
-    const mode = value.eventQueueMode ?? 'LIVE';
-    this.submitEvent.emit({
-      name: value.name!,
-      baseUrl: value.baseUrl!,
-      secret: value.secret!,
-      kind: this.kind,
-      gzacCallbackBaseUrl: value.gzacCallbackBaseUrl!,
-      eventBrokerAmqpUrl: value.eventBrokerAmqpUrl?.trim() || null,
-      eventBrokerExchange: value.eventBrokerExchange?.trim() || null,
-      eventQueueMode: mode,
-      eventQueueTtlMs: mode === 'DURABLE' ? value.eventQueueTtlMs ?? null : null,
-    });
-    this._resetForm();
+    const request = this._connectionForm?.buildRequest(this.kind);
+    if (!request) return;
+    this.submitEvent.emit(request);
+    this._connectionForm?.reset();
   }
 
   public onClose(): void {
     this.closeEvent.emit();
-    this._resetForm();
-  }
-
-  private _fetchDefaults(): void {
-    this._externalPluginService.getHostDefaults().subscribe(defaults => {
-      this.minTtlMs = defaults.minEventQueueTtlMs;
-      this.maxTtlMs = defaults.maxEventQueueTtlMs;
-      this.defaultTtlMs = defaults.defaultEventQueueTtlMs;
-      this.form.patchValue({
-        gzacCallbackBaseUrl: defaults.gzacCallbackBaseUrl,
-        eventBrokerAmqpUrl: defaults.eventBrokerAmqpUrl,
-        eventBrokerExchange: defaults.eventBrokerExchange,
-      });
-    });
-  }
-
-  private _resetForm(): void {
-    this.form.reset({
-      name: '',
-      baseUrl: '',
-      secret: '',
-      gzacCallbackBaseUrl: '',
-      eventBrokerAmqpUrl: '',
-      eventBrokerExchange: '',
-      eventQueueMode: 'LIVE',
-      eventQueueTtlMs: null,
-    });
+    this._connectionForm?.reset();
   }
 }

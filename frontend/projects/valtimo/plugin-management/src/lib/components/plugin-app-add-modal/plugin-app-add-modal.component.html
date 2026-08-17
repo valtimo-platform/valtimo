@@ -1,0 +1,247 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal valtimoCdsModal [open]="open" size="lg" (close)="onClose()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
+    <h3 cdsModalHeaderHeading class="plugin-app-add-modal__header">
+      {{ 'pluginManagement.addApp' | translate }}
+    </h3>
+
+    <cds-progress-indicator
+      [current]="$currentStep()"
+      [steps]="progressSteps"
+      spacing="equal"
+      class="plugin-app-add-modal__progress"
+    ></cds-progress-indicator>
+  </cds-modal-header>
+
+  <section cdsModalContent [cdsLayer]="1">
+    <div [hidden]="$currentStep() !== 0">
+      <valtimo-plugin-host-connection-form
+        [active]="open && !resumeHostId"
+        [disabled]="connectionLocked"
+        variant="app"
+        (validChange)="onConnectionFormValidChange($event)"
+      ></valtimo-plugin-host-connection-form>
+
+      @if ($connectState() === 'connecting') {
+        <div class="plugin-app-add-modal__status">
+          <cds-loading size="sm" [isActive]="true"></cds-loading>
+
+          <span>{{
+            ($resolvingDefinition()
+              ? 'pluginManagement.appAdd.preparing'
+              : 'pluginManagement.appAdd.connecting'
+            ) | translate
+          }}</span>
+        </div>
+      }
+
+      @if ($connectState() === 'connected') {
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'success',
+            title: ('pluginManagement.appAdd.connectedTitle' | translate),
+            message: ('pluginManagement.appAdd.connectedDescription' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-app-add-modal__notification"
+        ></cds-inline-notification>
+      }
+
+      @if ($connectState() === 'timeout') {
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'warning',
+            title: ('pluginManagement.appAdd.discoveryTimeoutTitle' | translate),
+            message: ('pluginManagement.appAdd.discoveryTimeoutDescription' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-app-add-modal__notification"
+        ></cds-inline-notification>
+      }
+
+      @if ($connectState() === 'failed') {
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'error',
+            title: ('pluginManagement.appAdd.connectFailed' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-app-add-modal__notification"
+        ></cds-inline-notification>
+      }
+
+      @if ($connectState() === 'conflict' && $conflict(); as conflict) {
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'error',
+            title: ('pluginManagement.appAdd.conflictTitle' | translate),
+            message:
+              ('pluginManagement.appAdd.conflictDescription'
+              | translate: {pluginId: conflict.pluginId, hostName: conflict.hostName}),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-app-add-modal__notification"
+        ></cds-inline-notification>
+      }
+    </div>
+
+    <div [hidden]="$currentStep() !== 1">
+      @if ($definition(); as definition) {
+        <valtimo-plugin-external-configure
+          [definitionId]="definition.id"
+          (capabilitiesResolved)="onCapabilitiesResolved($event)"
+          (endpointsResolved)="onEndpointsResolved($event)"
+          (eventSubscriptionsResolved)="onEventSubscriptionsResolved($event)"
+          (saveEvent)="onExternalSave($event)"
+          (validEvent)="onConfigValid($event)"
+        ></valtimo-plugin-external-configure>
+      } @else if ($resumeLoadFailed()) {
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'error',
+            title: ('pluginManagement.appAdd.resumeLoadFailed' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-app-add-modal__notification"
+        ></cds-inline-notification>
+      } @else if ($connectState() === 'timeout') {
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'warning',
+            title: ('pluginManagement.appAdd.discoveryTimeoutTitle' | translate),
+            message: ('pluginManagement.appAdd.discoveryTimeoutDescription' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-app-add-modal__notification"
+        ></cds-inline-notification>
+      } @else {
+        <div class="plugin-app-add-modal__status">
+          <cds-loading size="sm" [isActive]="true"></cds-loading>
+
+          <span>{{ 'pluginManagement.appAdd.preparing' | translate }}</span>
+        </div>
+      }
+    </div>
+
+    <div [hidden]="$currentStep() !== 2">
+      <valtimo-plugin-external-permissions
+        [capabilities]="$capabilities()"
+        [endpoints]="$endpoints()"
+        [eventSubscriptions]="$eventSubscriptions()"
+        (grantedCapabilitiesChange)="onGrantedCapabilitiesChange($event)"
+        (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
+        (grantedEventsChange)="onGrantedEventsChange($event)"
+        (validEvent)="onPermissionsValid($event)"
+      ></valtimo-plugin-external-permissions>
+    </div>
+  </section>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="ghost"
+      [attr.data-test-id]="testIds.cancelButton"
+      [disabled]="$saving()"
+      (click)="onClose()"
+    >
+      {{ 'stepper.cancelButtonText' | translate }}
+    </button>
+
+    @if ($currentStep() === 0) {
+      @switch ($connectState()) {
+        @case ('connected') {
+          <button
+            cdsButton="primary"
+            [attr.data-test-id]="testIds.continueButton"
+            (click)="onContinue()"
+          >
+            {{ 'pluginManagement.appAdd.continue' | translate }}
+          </button>
+        }
+
+        @case ('timeout') {
+          <button
+            cdsButton="primary"
+            [attr.data-test-id]="testIds.retryButton"
+            (click)="onRetryDiscovery()"
+          >
+            {{ 'pluginManagement.appAdd.retry' | translate }}
+          </button>
+        }
+
+        @default {
+          <button
+            cdsButton="primary"
+            [attr.data-test-id]="testIds.connectButton"
+            [disabled]="!$connectionFormValid() || connectionLocked"
+            (click)="onConnect()"
+          >
+            {{ 'pluginManagement.appAdd.connect' | translate }}
+          </button>
+        }
+      }
+    }
+
+    @if ($currentStep() === 1) {
+      @if ($connectState() === 'timeout') {
+        <button
+          cdsButton="primary"
+          [attr.data-test-id]="testIds.retryButton"
+          (click)="onRetryDiscovery()"
+        >
+          {{ 'pluginManagement.appAdd.retry' | translate }}
+        </button>
+      } @else {
+        <button
+          cdsButton="primary"
+          [attr.data-test-id]="testIds.nextButton"
+          [disabled]="!$configValid()"
+          (click)="goToPermissionsStep()"
+        >
+          {{ 'pluginManagement.appAdd.steps.permissions' | translate }}
+        </button>
+      }
+    }
+
+    @if ($currentStep() === 2) {
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.completeButton"
+        [disabled]="!$permissionsValid() || $saving()"
+        (click)="onComplete()"
+      >
+        {{ 'pluginManagement.appAdd.complete' | translate }}
+      </button>
+    }
+  </cds-modal-footer>
+</cds-modal>
+
+<valtimo-confirmation-modal
+  [cancelButtonTextTranslationKey]="'pluginManagement.appAdd.refreshModal.cancel'"
+  [confirmButtonTextTranslationKey]="'pluginManagement.appAdd.refreshModal.confirm'"
+  [contentTranslationKey]="'pluginManagement.appAdd.refreshModal.description'"
+  [showModalSubject$]="refreshModalOpen$"
+  [titleTranslationKey]="'pluginManagement.appAdd.refreshModal.title'"
+  (cancelEvent)="onRefreshCancel()"
+  (confirmEvent)="onRefreshConfirm()"
+></valtimo-confirmation-modal>

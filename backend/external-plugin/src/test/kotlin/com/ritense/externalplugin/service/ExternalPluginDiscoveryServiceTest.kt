@@ -204,6 +204,58 @@ class ExternalPluginDiscoveryServiceTest {
     }
 
     @Test
+    fun `a plugin already registered under another host is skipped and reported as a conflict`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        val otherHostId = UUID.randomUUID()
+        givenHost(host)
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:aaa"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0"))
+            .thenReturn(definition(hostId = otherHostId))
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        val result = service.discoverHost(host.id)
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.reachable).isTrue()
+        assertThat(result.registeredDefinitionIds).isEmpty()
+        assertThat(result.conflicts)
+            .containsExactly(PluginRegistrationConflict("case-summary", "1.0.0", otherHostId))
+        // The other host's definition must not be touched, let alone re-homed.
+        verify(definitionRepository, never()).save(any())
+    }
+
+    @Test
+    fun `discoverHost reports the registered definition so registration can tell success from conflict`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:aaa"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(null)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        val result = service.discoverHost(host.id)
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.reachable).isTrue()
+        assertThat(result.registeredDefinitionIds).hasSize(1)
+        assertThat(result.conflicts).isEmpty()
+    }
+
+    @Test
+    fun `discoverHost reports an unreachable host without listing plugins`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(false)
+
+        val result = service.discoverHost(host.id)
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.reachable).isFalse()
+        assertThat(result.registeredDefinitionIds).isEmpty()
+        assertThat(result.conflicts).isEmpty()
+        verify(hostClient, never()).listPlugins(any(), any())
+    }
+
+    @Test
     fun `definition missing from the manifest list is marked UNAVAILABLE after the threshold`() {
         val host = host(status = ExternalPluginHostStatus.CONNECTED)
         givenHost(host)

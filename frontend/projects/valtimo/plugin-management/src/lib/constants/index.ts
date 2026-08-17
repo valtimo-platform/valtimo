@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export * from './csp-allows-origin.util';
-export * from './external-plugin-compatibility.util';
+export * from './plugin-app-add-modal.test-ids';

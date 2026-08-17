@@ -48,6 +48,8 @@ import {Subscription} from 'rxjs';
 export class PluginHostEventQueueModalComponent implements OnChanges, OnInit, OnDestroy {
   @Input() public open = false;
   @Input() public host: ExternalPluginHost | null = null;
+  /** Chooses the wording: 'host' on the plugin-hosts page, 'app' on the apps page. */
+  @Input() public variant: 'host' | 'app' = 'host';
 
   @Output() public closeEvent = new EventEmitter<void>();
   @Output() public submitEvent = new EventEmitter<ExternalPluginHostEventQueueUpdateRequest>();
@@ -61,16 +63,30 @@ export class PluginHostEventQueueModalComponent implements OnChanges, OnInit, On
   public maxTtlMs = 30 * 24 * 60 * 60 * 1000;
   public defaultTtlMs = 72 * 60 * 60 * 1000;
 
-  public readonly queueModeItems: SelectItem[] = [
-    {id: 'LIVE', translationKey: 'pluginManagement.eventQueueMode.live'},
-    {id: 'DURABLE', translationKey: 'pluginManagement.eventQueueMode.durable'},
-  ];
+  public queueModeItems: SelectItem[] = [];
 
   private readonly _subscriptions = new Subscription();
+
+  public get ttlHintKey(): string {
+    return this.variant === 'app'
+      ? 'pluginManagement.hints.eventQueueTtlMsApp'
+      : 'pluginManagement.hints.eventQueueTtlMs';
+  }
 
   constructor(private readonly _externalPluginService: ExternalPluginService) {}
 
   public ngOnInit(): void {
+    this.queueModeItems =
+      this.variant === 'app'
+        ? [
+            {id: 'LIVE', translationKey: 'pluginManagement.eventQueueMode.liveApp'},
+            {id: 'DURABLE', translationKey: 'pluginManagement.eventQueueMode.durableApp'},
+          ]
+        : [
+            {id: 'LIVE', translationKey: 'pluginManagement.eventQueueMode.live'},
+            {id: 'DURABLE', translationKey: 'pluginManagement.eventQueueMode.durable'},
+          ];
+
     this._subscriptions.add(
       this.form.controls.eventQueueMode.valueChanges.subscribe(mode => {
         const ttl = this.form.controls.eventQueueTtlMs;

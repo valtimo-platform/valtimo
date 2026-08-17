@@ -24,12 +24,14 @@ import com.ritense.externalplugin.compatibility.CompatibilityResult
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
 import com.ritense.externalplugin.compatibility.PluginPackageInspector
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.EndpointQuery
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.externalplugin.service.PluginRegistrationConflict
 import com.ritense.externalplugin.web.rest.dto.AcceptContentRequest
 import com.ritense.externalplugin.web.rest.dto.ConfigurationCreateRequest
 import com.ritense.externalplugin.web.rest.dto.ConfigurationDetailResponse
@@ -47,6 +49,7 @@ import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -96,7 +99,7 @@ class ExternalPluginManagementResource(
         nl = "Externe-pluginhost registreren",
     )
     @PostMapping("/host")
-    fun createHost(@RequestBody request: HostCreateRequest): ResponseEntity<HostResponse> {
+    fun createHost(@RequestBody request: HostCreateRequest): ResponseEntity<Any> {
         val host = hostService.register(
             request.name,
             request.baseUrl,
@@ -109,7 +112,23 @@ class ExternalPluginManagementResource(
             request.kind,
         )
 
-        runCatching { discoveryService.discoverHost(host.id) }
+        val discovery = runCatching { discoveryService.discoverHost(host.id) }.getOrNull()
+
+        // An app *is* its single plugin. When the app was reachable but every plugin it serves is
+        // already registered under another host (e.g. the same app connected twice, or a plugin
+        // with the same id uploaded to a plugin host), this registration can never become
+        // functional — no definition will ever appear for it. Roll the host back and report the
+        // conflict instead of leaving a permanently unconfigurable app behind. An unreachable app
+        // still registers (discovery keeps retrying), and plugin hosts keep the lenient behaviour.
+        if (host.kind == ExternalPluginHostKind.APP &&
+            discovery != null && discovery.reachable &&
+            discovery.registeredDefinitionIds.isEmpty() && discovery.conflicts.isNotEmpty()
+        ) {
+            runCatching { hostService.delete(host.id) }
+                .onFailure { e -> logger.warn(e) { "Failed to roll back conflicting app host ${host.id}" } }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(appAlreadyRegisteredBody(discovery.conflicts))
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
     }
 
@@ -571,8 +590,38 @@ class ExternalPluginManagementResource(
             if (!detail.isNullOrBlank()) put("detail", detail)
         }
 
+    /**
+     * The 409 body for connecting an app whose plugin(s) are already registered under another
+     * host: the conflicting plugin coordinates plus the holding host's name/kind so the UI can
+     * tell the admin *where* the plugin already lives.
+     */
+    private fun appAlreadyRegisteredBody(conflicts: List<PluginRegistrationConflict>): JsonNode =
+        objectMapper.createObjectNode().apply {
+            put("code", APP_ALREADY_REGISTERED_CODE)
+            set<JsonNode>(
+                "conflicts",
+                objectMapper.createArrayNode().apply {
+                    conflicts.forEach { conflict ->
+                        val existingHost = runCatching { hostService.get(conflict.existingHostId) }.getOrNull()
+                        addObject().apply {
+                            put("pluginId", conflict.pluginId)
+                            put("version", conflict.version)
+                            put("existingHostId", conflict.existingHostId.toString())
+                            put("existingHostName", existingHost?.name)
+                            put("existingHostKind", existingHost?.kind?.name)
+                        }
+                    }
+                },
+            )
+        }
+
     companion object {
+        private val logger = KotlinLogging.logger {}
+
         /** Host 409 code for an upload naming an already-existing pluginId@version. */
         const val PLUGIN_VERSION_EXISTS_CODE = "PLUGIN_VERSION_EXISTS"
+
+        /** 409 code for connecting an app whose plugin is already registered under another host. */
+        const val APP_ALREADY_REGISTERED_CODE = "APP_PLUGIN_ALREADY_REGISTERED"
     }
 }

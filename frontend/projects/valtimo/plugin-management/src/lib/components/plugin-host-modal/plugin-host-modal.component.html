@@ -14,82 +14,26 @@
   ~ limitations under the License.
   -->
 
-<cds-modal
-  *ngIf="open"
-  [open]="open"
-  size="sm"
-  valtimoCdsModal
->
+<cds-modal *ngIf="open" [open]="open" size="sm" valtimoCdsModal>
   <cds-modal-header (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>
       {{ (isApp ? 'pluginManagement.addApp' : 'pluginManagement.addHost') | translate }}
     </h3>
   </cds-modal-header>
 
-  <form
-    [formGroup]="form"
-    cdsModalContent
-    [cdsLayer]="1"
-    class="plugin-host-modal__content"
-  >
-    <cds-label>
-      {{ 'pluginManagement.labels.name' | translate }}
-      <input cdsText formControlName="name" placeholder="my-plugin-host" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.baseUrl' | translate }}
-      <input cdsText formControlName="baseUrl" placeholder="https://plugin-host.internal:8090" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.secret' | translate }}
-      <input cdsText formControlName="secret" type="password" placeholder="admin-token" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.gzacCallbackBaseUrl' | translate }}
-      <input cdsText formControlName="gzacCallbackBaseUrl" placeholder="http://localhost:8080" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.eventBrokerAmqpUrl' | translate }}
-      <input cdsText formControlName="eventBrokerAmqpUrl" placeholder="amqp://guest:guest@localhost:5672" />
-    </cds-label>
-
-    <cds-label>
-      {{ 'pluginManagement.labels.eventBrokerExchange' | translate }}
-      <input cdsText formControlName="eventBrokerExchange" placeholder="valtimo-events" />
-    </cds-label>
-
-    <v-select
-      [appendInline]="false"
-      [dropUp]="false"
-      [items]="queueModeItems"
-      [title]="'pluginManagement.labels.eventQueueMode' | translate"
-      formControlName="eventQueueMode"
-    ></v-select>
-
-    <cds-label *ngIf="form.controls.eventQueueMode.value === 'DURABLE'">
-      {{ 'pluginManagement.labels.eventQueueTtlMs' | translate }}
-      <input
-        cdsText
-        formControlName="eventQueueTtlMs"
-        [max]="maxTtlMs"
-        [min]="minTtlMs"
-        [placeholder]="defaultTtlMs"
-        type="number"
-      />
-      <small>{{ 'pluginManagement.hints.eventQueueTtlMs' | translate }}</small>
-    </cds-label>
-  </form>
+  <div cdsModalContent class="plugin-host-modal__content">
+    <valtimo-plugin-host-connection-form
+      [active]="open"
+      (validChange)="onFormValidChange($event)"
+    ></valtimo-plugin-host-connection-form>
+  </div>
 
   <cds-modal-footer>
     <button cdsButton="secondary" (click)="onClose()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="form.invalid" (click)="onSubmit()">
+    <button cdsButton="primary" [disabled]="!formValid" (click)="onSubmit()">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

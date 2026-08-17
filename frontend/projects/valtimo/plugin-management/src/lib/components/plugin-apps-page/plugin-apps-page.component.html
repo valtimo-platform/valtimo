@@ -16,30 +16,27 @@
 
 <ng-container
   *ngIf="{
-    hosts: hosts$ | async,
-    refreshing: hostsRefreshing$ | async,
-  } as hostObs"
+    apps: apps$ | async,
+    refreshing: appsRefreshing$ | async,
+  } as appObs"
 >
   <valtimo-carbon-list
-    [loading]="hostsLoading$ | async"
-    [items]="hostObs.hosts"
-    [fields]="hostFields"
-    [actionItems]="hostActionItems"
+    [loading]="appsLoading$ | async"
+    [items]="appObs.apps"
+    [fields]="appFields"
+    [actionItems]="appActionItems"
     [header]="false"
+    (rowClicked)="onRowClicked($event)"
   >
     <ng-container carbonToolbarContent>
       <cds-loading
-        *ngIf="hostObs.refreshing"
+        *ngIf="appObs.refreshing"
         size="sm"
         [isActive]="true"
         class="plugin-apps-page__spinner"
       ></cds-loading>
 
-      <button
-        cdsButton="primary"
-        [disabled]="hostsLoading$ | async"
-        (click)="openHostModal()"
-      >
+      <button cdsButton="primary" [disabled]="appsLoading$ | async" (click)="openAddModal()">
         {{ 'pluginManagement.addApp' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -53,11 +50,7 @@
   </valtimo-carbon-list>
 
   <ng-template #addAppButton>
-    <button
-      cdsButton="primary"
-      [disabled]="hostsLoading$ | async"
-      (click)="openHostModal()"
-    >
+    <button cdsButton="primary" [disabled]="appsLoading$ | async" (click)="openAddModal()">
       {{ 'pluginManagement.addApp' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -65,28 +58,55 @@
   </ng-template>
 </ng-container>
 
-<valtimo-plugin-host-modal
-  [kind]="'APP'"
-  [open]="hostModalOpen$ | async"
-  (closeEvent)="closeHostModal()"
-  (submitEvent)="submitHost($event)"
-></valtimo-plugin-host-modal>
+<valtimo-plugin-app-add-modal
+  [open]="$addModalOpen()"
+  [resumeHostId]="$resumeHostId()"
+  (closeEvent)="onAddModalClose()"
+  (completedEvent)="onAddModalCompleted()"
+></valtimo-plugin-app-add-modal>
+
+<valtimo-plugin-external-edit-modal
+  [open]="$editModalOpen()"
+  [configuration]="$selectedConfiguration()"
+  (closeEvent)="closeEditModal()"
+  (savedEvent)="onConfigurationSaved()"
+  (deleteEvent)="onConfigurationDeleteRequested($event)"
+></valtimo-plugin-external-edit-modal>
 
 <valtimo-plugin-host-event-queue-modal
   [host]="hostToEditEventQueue$ | async"
   [open]="eventQueueModalOpen$ | async"
+  variant="app"
   (closeEvent)="closeEventQueueModal()"
   (submitEvent)="submitEventQueueUpdate($event)"
 ></valtimo-plugin-host-event-queue-modal>
 
+<valtimo-plugin-log-modal
+  [open]="$logModalOpen()"
+  [configurationId]="$logConfigurationId()"
+  [configurationTitle]="$logConfigurationTitle()"
+  (closeModal)="closeLogModal()"
+></valtimo-plugin-log-modal>
+
 <valtimo-confirmation-modal
-  [showModalSubject$]="reloadModalOpen$"
-  [titleTranslationKey]="'pluginManagement.reloadModal.title'"
-  [contentTranslationKey]="'pluginManagement.reloadModal.description'"
-  [confirmButtonTextTranslationKey]="'pluginManagement.reloadModal.reload'"
-  [cancelButtonTextTranslationKey]="'pluginManagement.reloadModal.later'"
-  (confirmEvent)="confirmReload()"
-  (cancelEvent)="cancelReload()"
+  [showModalSubject$]="refreshModalOpen$"
+  [titleTranslationKey]="'pluginManagement.appAdd.refreshModal.title'"
+  [contentTranslationKey]="'pluginManagement.appAdd.refreshModal.description'"
+  [confirmButtonTextTranslationKey]="'pluginManagement.appAdd.refreshModal.confirm'"
+  [cancelButtonTextTranslationKey]="'pluginManagement.appAdd.refreshModal.cancel'"
+  (confirmEvent)="onRefreshConfirm()"
+  (cancelEvent)="onRefreshCancel()"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="deleteConfigurationModalOpen$"
+  [titleTranslationKey]="'pluginManagement.deleteConfigurationModal.title'"
+  [contentTranslationKey]="'pluginManagement.deleteConfigurationModal.description'"
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [confirmButtonType]="'danger'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="confirmDeleteConfiguration()"
+  (cancelEvent)="cancelDeleteConfiguration()"
 ></valtimo-confirmation-modal>
 
 <valtimo-confirmation-modal

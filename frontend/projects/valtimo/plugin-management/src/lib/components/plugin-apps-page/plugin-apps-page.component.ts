@@ -14,26 +14,70 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
-import {ActionItem, CarbonListModule, CarbonTag, ColumnConfig, ConfirmationModalModule, ViewType} from '@valtimo/components';
 import {
+  ActionItem,
+  CarbonListModule,
+  CarbonTag,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
+import {
+  ExternalPluginConfiguration,
+  ExternalPluginDefinition,
   ExternalPluginHost,
-  ExternalPluginHostCreateRequest,
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {ButtonModule, LoadingModule} from 'carbon-components-angular';
-import {BehaviorSubject, EMPTY, fromEvent, merge, Observable, of, Subject, timer} from 'rxjs';
-import {catchError, distinctUntilChanged, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  EMPTY,
+  forkJoin,
+  fromEvent,
+  merge,
+  Observable,
+  of,
+  Subject,
+  timer,
+} from 'rxjs';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  startWith,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
-import {PluginHostModalComponent} from '../plugin-host-modal/plugin-host-modal.component';
+import {PluginAppAddModalComponent} from '../plugin-app-add-modal/plugin-app-add-modal.component';
+import {PluginExternalEditModalComponent} from '../plugin-external-edit-modal/plugin-external-edit-modal.component';
 import {PluginHostEventQueueModalComponent} from '../plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
+import {PluginLogModalComponent} from '../plugin-log-modal/plugin-log-modal.component';
 import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-modal.component';
+import {UnifiedPluginConfigurationRow} from '../../models';
+import {cspAllowsFrameOrigin} from '../../utils';
+
+/** One row on the apps page: the APP-kind host enriched with its discovered plugin and configuration. */
+interface PluginAppRow extends ExternalPluginHost {
+  statusTag: CarbonTag;
+  lastHealthCheckFormatted: string;
+  configurationTitle: string;
+  definition: ExternalPluginDefinition | null;
+  configuration: ExternalPluginConfiguration | null;
+}
+
+/** Query parameter that restores the add-app stepper at the configuration step after a reload. */
+const CONFIGURE_APP_QUERY_PARAM = 'configureApp';
 
 @Component({
   standalone: true,
@@ -47,25 +91,48 @@ import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-moda
     LoadingModule,
     CarbonListModule,
     ConfirmationModalModule,
-    PluginHostModalComponent,
+    PluginAppAddModalComponent,
+    PluginExternalEditModalComponent,
     PluginHostEventQueueModalComponent,
+    PluginLogModalComponent,
     PluginUsageModalComponent,
   ],
 })
-export class PluginAppsPageComponent implements OnDestroy {
+export class PluginAppsPageComponent implements OnInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
-  private readonly _refreshHosts$ = new Subject<void>();
-  private _hostsInitialLoad = true;
+  private readonly _refreshApps$ = new Subject<void>();
+  private _appsInitialLoad = true;
 
   private readonly _tabVisible$: Observable<boolean> = fromEvent(document, 'visibilitychange').pipe(
     startWith(null),
     map(() => document.visibilityState === 'visible')
   );
 
-  public readonly hostsLoading$ = new BehaviorSubject<boolean>(true);
-  public readonly hostsRefreshing$ = new BehaviorSubject<boolean>(false);
-  public readonly hostModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly reloadModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly appsLoading$ = new BehaviorSubject<boolean>(true);
+  public readonly appsRefreshing$ = new BehaviorSubject<boolean>(false);
+
+  // --- Add / configure stepper ---
+  public readonly $addModalOpen = signal<boolean>(false);
+  public readonly $resumeHostId = signal<string | null>(null);
+
+  // --- Refresh-before-configure dialog (list action on an app added in this page session) ---
+  public readonly refreshModalOpen$ = new BehaviorSubject<boolean>(false);
+  private _pendingRefreshHostId: string | null = null;
+
+  // --- Edit configuration modal ---
+  public readonly $editModalOpen = signal<boolean>(false);
+  public readonly $selectedConfiguration = signal<UnifiedPluginConfigurationRow | null>(null);
+
+  // --- Configuration delete ---
+  public readonly deleteConfigurationModalOpen$ = new BehaviorSubject<boolean>(false);
+  public configurationToDelete: {id: string; title: string} | null = null;
+
+  // --- Logs modal ---
+  public readonly $logModalOpen = signal<boolean>(false);
+  public readonly $logConfigurationId = signal<string | null>(null);
+  public readonly $logConfigurationTitle = signal<string>('');
+
+  // --- Host delete ---
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
 
@@ -78,7 +145,7 @@ export class PluginAppsPageComponent implements OnDestroy {
   public usageModalTitleKey = '';
   public usageModalDescriptionKey = '';
 
-  public readonly hostFields: ColumnConfig[] = [
+  public readonly appFields: ColumnConfig[] = [
     {
       key: 'name',
       label: 'pluginManagement.labels.name',
@@ -99,9 +166,29 @@ export class PluginAppsPageComponent implements OnDestroy {
       label: 'pluginManagement.labels.lastHealthCheck',
       viewType: ViewType.TEXT,
     },
+    {
+      key: 'configurationTitle',
+      label: 'pluginManagement.labels.configuration',
+      viewType: ViewType.TEXT,
+    },
   ];
 
-  public readonly hostActionItems: ActionItem[] = [
+  public readonly appActionItems: ActionItem[] = [
+    {
+      callback: this.configureApp.bind(this),
+      label: 'pluginManagement.configureApp',
+      disabledCallback: (row: PluginAppRow) => !!row.configuration,
+    },
+    {
+      callback: this.editConfiguration.bind(this),
+      label: 'pluginManagement.editConfiguration',
+      disabledCallback: (row: PluginAppRow) => !row.configuration,
+    },
+    {
+      callback: this.viewLogs.bind(this),
+      label: 'pluginManagement.logs.menuItem',
+      disabledCallback: (row: PluginAppRow) => !row.configuration,
+    },
     {
       callback: this.editHostEventQueue.bind(this),
       label: 'pluginManagement.editEventQueue',
@@ -113,73 +200,239 @@ export class PluginAppsPageComponent implements OnDestroy {
     },
   ];
 
-  public readonly hosts$: Observable<
-    Array<ExternalPluginHost & {statusTag: CarbonTag; lastHealthCheckFormatted: string}>
-  > = merge(
+  public readonly apps$: Observable<Array<PluginAppRow>> = merge(
     this._tabVisible$.pipe(switchMap(visible => (visible ? timer(0, 5000) : EMPTY))),
-    this._refreshHosts$
+    this._refreshApps$
   ).pipe(
     takeUntil(this._destroy$),
     tap(() => {
-      if (!this._hostsInitialLoad) {
-        this.hostsRefreshing$.next(true);
+      if (!this._appsInitialLoad) {
+        this.appsRefreshing$.next(true);
       }
     }),
     switchMap(() =>
-      this._externalPluginService
-        .getHosts()
-        .pipe(catchError(() => of([] as ExternalPluginHost[])))
+      forkJoin({
+        hosts: this._externalPluginService
+          .getHosts()
+          .pipe(catchError(() => of([] as ExternalPluginHost[]))),
+        definitions: this._externalPluginService
+          .getDefinitions()
+          .pipe(catchError(() => of([] as ExternalPluginDefinition[]))),
+        configurations: this._externalPluginService
+          .getConfigurations()
+          .pipe(catchError(() => of([] as ExternalPluginConfiguration[]))),
+      })
     ),
-    map(hosts => hosts.filter(h => h.kind === 'APP')),
-    switchMap(hosts =>
-      this._translateService.stream('key').pipe(
-        map(() =>
-          hosts.map(host => ({
-            ...host,
-            statusTag: this._getStatusTag(host.status),
-            lastHealthCheckFormatted: this._formatLastHealthCheck(host.lastHealthCheck),
-          }))
+    switchMap(({hosts, definitions, configurations}) =>
+      this._translateService
+        .stream('key')
+        .pipe(
+          map(() =>
+            hosts
+              .filter(host => host.kind === 'APP')
+              .map(host => this._toAppRow(host, definitions, configurations))
+          )
         )
-      )
     ),
     tap(() => {
-      this._hostsInitialLoad = false;
-      this.hostsLoading$.next(false);
-      this.hostsRefreshing$.next(false);
+      this._appsInitialLoad = false;
+      this.appsLoading$.next(false);
+      this.appsRefreshing$.next(false);
     }),
     distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
   constructor(
     private readonly _logger: NGXLogger,
+    private readonly _route: ActivatedRoute,
+    private readonly _router: Router,
     private readonly _translateService: TranslateService,
     private readonly _externalPluginService: ExternalPluginService
   ) {}
+
+  public ngOnInit(): void {
+    // Restore the add-app stepper at the configuration step after the CSP refresh (or after a
+    // manual reload while configuring).
+    const resumeHostId = this._route.snapshot.queryParamMap.get(CONFIGURE_APP_QUERY_PARAM);
+    if (resumeHostId) {
+      this.$resumeHostId.set(resumeHostId);
+      this.$addModalOpen.set(true);
+    }
+  }
 
   public ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
   }
 
-  public openHostModal(): void {
-    this.hostModalOpen$.next(true);
+  // --- Add / configure stepper ---
+
+  public openAddModal(): void {
+    this.$resumeHostId.set(null);
+    this.$addModalOpen.set(true);
   }
 
-  public closeHostModal(): void {
-    this.hostModalOpen$.next(false);
+  public onAddModalClose(): void {
+    this._closeAddModal();
   }
 
-  public submitHost(request: ExternalPluginHostCreateRequest): void {
-    this._externalPluginService.createHost(request).subscribe({
-      next: () => {
-        this.hostModalOpen$.next(false);
-        this.reloadModalOpen$.next(true);
-      },
-      error: () => {
-        this._logger.error('Something went wrong with creating the app.');
-      },
+  public onAddModalCompleted(): void {
+    this._closeAddModal();
+  }
+
+  public onRowClicked(row: PluginAppRow): void {
+    if (row.configuration) {
+      this.editConfiguration(row);
+    } else {
+      this.configureApp(row);
+    }
+  }
+
+  public configureApp(row: PluginAppRow): void {
+    if (row.configuration) return;
+
+    // An app registered during this page session is not yet covered by the bootstrap CSP —
+    // configuring it requires the same refresh-and-resume the stepper uses.
+    if (cspAllowsFrameOrigin(row.baseUrl)) {
+      this._openResume(row.id);
+    } else {
+      this._pendingRefreshHostId = row.id;
+      this.refreshModalOpen$.next(true);
+    }
+  }
+
+  public onRefreshConfirm(): void {
+    if (!this._pendingRefreshHostId) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set(CONFIGURE_APP_QUERY_PARAM, this._pendingRefreshHostId);
+    window.location.assign(url.toString());
+  }
+
+  public onRefreshCancel(): void {
+    this._pendingRefreshHostId = null;
+  }
+
+  private _openResume(hostId: string): void {
+    this.$resumeHostId.set(hostId);
+    this.$addModalOpen.set(true);
+    this._setConfigureAppQueryParam(hostId);
+  }
+
+  private _closeAddModal(): void {
+    this.$addModalOpen.set(false);
+    this.$resumeHostId.set(null);
+    this._setConfigureAppQueryParam(null);
+    this.appsLoading$.next(true);
+    this._refreshApps$.next();
+  }
+
+  /** Keeps the resume parameter in the URL while configuring, so a manual reload restores the step. */
+  private _setConfigureAppQueryParam(hostId: string | null): void {
+    this._router.navigate([], {
+      relativeTo: this._route,
+      queryParams: {[CONFIGURE_APP_QUERY_PARAM]: hostId},
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
     });
   }
+
+  // --- Edit configuration ---
+
+  public editConfiguration(row: PluginAppRow): void {
+    const configuration = row.configuration;
+    if (!configuration) return;
+
+    this.$selectedConfiguration.set({
+      id: configuration.id,
+      title: configuration.title,
+      pluginName: '',
+      definitionKey: row.definition?.pluginId ?? '',
+      source: 'external',
+      externalDefinitionId: configuration.definitionId,
+    });
+    this.$editModalOpen.set(true);
+  }
+
+  public closeEditModal(): void {
+    this.$editModalOpen.set(false);
+    this.$selectedConfiguration.set(null);
+  }
+
+  public onConfigurationSaved(): void {
+    this.closeEditModal();
+    this._refreshApps$.next();
+  }
+
+  // --- Configuration delete ---
+
+  public onConfigurationDeleteRequested(configurationId: string): void {
+    const configurationTitle = this.$selectedConfiguration()?.title ?? '';
+    this.closeEditModal();
+
+    this._externalPluginService
+      .getConfigurationUsages(configurationId)
+      .pipe(take(1))
+      .subscribe({
+        next: usages => {
+          if (usages.length > 0) {
+            this._showConfigurationInUseModal(configurationTitle, usages);
+            return;
+          }
+          this.configurationToDelete = {id: configurationId, title: configurationTitle};
+          this.deleteConfigurationModalOpen$.next(true);
+        },
+        error: () => {
+          this.configurationToDelete = {id: configurationId, title: configurationTitle};
+          this.deleteConfigurationModalOpen$.next(true);
+        },
+      });
+  }
+
+  public confirmDeleteConfiguration(): void {
+    const target = this.configurationToDelete;
+    if (!target) return;
+    this.configurationToDelete = null;
+
+    this._externalPluginService
+      .deleteConfiguration(target.id)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this._refreshApps$.next();
+        },
+        error: (response: HttpErrorResponse) => {
+          if (response.status === 409 && response.error?.usages) {
+            this._showConfigurationInUseModal(
+              target.title,
+              response.error.usages as Array<ExternalPluginHostUsage>
+            );
+            return;
+          }
+          this._logger.error('Something went wrong with deleting the app configuration.');
+        },
+      });
+  }
+
+  public cancelDeleteConfiguration(): void {
+    this.configurationToDelete = null;
+  }
+
+  // --- Logs ---
+
+  public viewLogs(row: PluginAppRow): void {
+    if (!row.configuration) return;
+    this.$logConfigurationId.set(row.configuration.id);
+    this.$logConfigurationTitle.set(row.configuration.title);
+    this.$logModalOpen.set(true);
+  }
+
+  public closeLogModal(): void {
+    this.$logModalOpen.set(false);
+    this.$logConfigurationId.set(null);
+    this.$logConfigurationTitle.set('');
+  }
+
+  // --- Host delete ---
 
   public deleteHost(host: ExternalPluginHost): void {
     this._externalPluginService
@@ -210,8 +463,8 @@ export class PluginAppsPageComponent implements OnDestroy {
       .subscribe({
         next: () => {
           this.hostToDelete = null;
-          this.hostsLoading$.next(true);
-          this._refreshHosts$.next();
+          this.appsLoading$.next(true);
+          this._refreshApps$.next();
         },
         error: (response: HttpErrorResponse) => {
           if (response.status === 409 && response.error?.usages) {
@@ -227,6 +480,8 @@ export class PluginAppsPageComponent implements OnDestroy {
   public cancelDeleteHost(): void {
     this.hostToDelete = null;
   }
+
+  // --- Event queue ---
 
   public editHostEventQueue(host: ExternalPluginHost): void {
     this.hostToEditEventQueue$.next(host);
@@ -245,7 +500,7 @@ export class PluginAppsPageComponent implements OnDestroy {
       next: () => {
         this.eventQueueModalOpen$.next(false);
         this.hostToEditEventQueue$.next(null);
-        this._refreshHosts$.next();
+        this._refreshApps$.next();
       },
       error: () => {
         this._logger.error('Something went wrong with updating the app event queue.');
@@ -253,19 +508,44 @@ export class PluginAppsPageComponent implements OnDestroy {
     });
   }
 
+  // --- Usage modal ---
+
   public closeUsageModal(): void {
     this.usageModalOpen$.next(false);
     this.usageModalUsages$.next([]);
     this.usageModalEntityName = null;
   }
 
-  public confirmReload(): void {
-    window.location.reload();
-  }
+  // --- Private helpers ---
 
-  public cancelReload(): void {
-    this.hostsLoading$.next(true);
-    this._refreshHosts$.next();
+  private _toAppRow(
+    host: ExternalPluginHost,
+    definitions: Array<ExternalPluginDefinition>,
+    configurations: Array<ExternalPluginConfiguration>
+  ): PluginAppRow {
+    const hostDefinitions = definitions.filter(definition => definition.hostId === host.id);
+    const definition =
+      hostDefinitions.find(candidate => candidate.status === 'AVAILABLE') ??
+      hostDefinitions[0] ??
+      null;
+
+    const hostDefinitionIds = new Set(hostDefinitions.map(hostDefinition => hostDefinition.id));
+    // An app conceptually has a single configuration; should more exist (e.g. after a version
+    // upgrade), the most recent one is the one the page manages.
+    const configuration =
+      configurations
+        .filter(candidate => hostDefinitionIds.has(candidate.definitionId))
+        .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''))[0] ?? null;
+
+    return {
+      ...host,
+      statusTag: this._getStatusTag(host.status),
+      lastHealthCheckFormatted: this._formatLastHealthCheck(host.lastHealthCheck),
+      configurationTitle:
+        configuration?.title ?? this._translateService.instant('pluginManagement.notConfigured'),
+      definition,
+      configuration,
+    };
   }
 
   private _showHostInUseModal(
@@ -276,6 +556,19 @@ export class PluginAppsPageComponent implements OnDestroy {
       host.name || this._translateService.instant('pluginManagement.hostInUseModal.thisHost');
     this.usageModalTitleKey = 'pluginManagement.hostInUseModal.title';
     this.usageModalDescriptionKey = 'pluginManagement.hostInUseModal.description';
+    this.usageModalUsages$.next(usages);
+    this.usageModalOpen$.next(true);
+  }
+
+  private _showConfigurationInUseModal(
+    title: string,
+    usages: Array<ExternalPluginHostUsage>
+  ): void {
+    this.usageModalEntityName =
+      title ||
+      this._translateService.instant('pluginManagement.configurationInUseModal.thisConfiguration');
+    this.usageModalTitleKey = 'pluginManagement.configurationInUseModal.title';
+    this.usageModalDescriptionKey = 'pluginManagement.configurationInUseModal.description';
     this.usageModalUsages$.next(usages);
     this.usageModalOpen$.next(true);
   }
