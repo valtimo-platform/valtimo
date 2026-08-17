@@ -26,11 +26,13 @@
         },
         {
             "target": "doc:/inspectieAkkoord",
-            "source": "doc:/inspectieStatus"
+            "value": false,
+            "targetType": "boolean"
         },
         {
             "target": "doc:/geschatteWaarde",
-            "source": "doc:/spoed"
+            "value": 0,
+            "targetType": "number"
         },
         {
             "target": "doc:/migratedFrom",

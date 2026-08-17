@@ -110,9 +110,20 @@ class LinkedBuildingBlockVersionResolver(
         }
 
         val preferred = if (instance.activityId != null) {
+            // The activity identifies the link exactly, so the key is deliberately not consulted: the
+            // same call activity naming a different building block *is* the key-change instruction.
             candidates.firstOrNull { it.origin == LinkOrigin.CALL_ACTIVITY && it.activityId == instance.activityId }
         } else {
-            candidates.firstOrNull { it.origin == LinkOrigin.STARTABLE_ITEM }
+            // A startable-item link carries no identity beyond its key, so the key is the only thing
+            // that can say which link this instance came from. Matching on the origin kind alone would
+            // pin every startable-origin instance to whichever startable item happened to come back
+            // first — including a block just created by `addBuildingBlock` under a completely unrelated
+            // key. Where no startable item shares the key, the link that governs really is unknown, and
+            // the reachability tie-break below is what decides.
+            candidates.firstOrNull {
+                it.origin == LinkOrigin.STARTABLE_ITEM &&
+                    it.buildingBlockDefinitionId.key == current.key
+            }
         }
         if (preferred != null) {
             return preferred.buildingBlockDefinitionId

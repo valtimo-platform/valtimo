@@ -37,7 +37,7 @@
                 },
                 {
                     "target": "doc:/inspectieAkkoord",
-                    "source": "doc:/inspecteur"
+                    "source": "doc:/akkoord"
                 },
                 {
                     "target": "doc:/aantalPersonen",
@@ -57,7 +57,7 @@
                 },
                 {
                     "target": "doc:/oppervlakte",
-                    "source": "doc:/inspecteur"
+                    "source": "doc:/geschatteWaarde"
                 },
                 {
                     "target": "doc:/status",
@@ -93,11 +93,13 @@
         },
         {
             "target": "doc:/inspectieAkkoord",
-            "source": "doc:/inspectieStatus"
+            "value": false,
+            "targetType": "boolean"
         },
         {
             "target": "doc:/geschatteWaarde",
-            "source": "doc:/spoed"
+            "value": 0,
+            "targetType": "number"
         }
     ],
     "processMigration": [
@@ -105,8 +107,7 @@
             "sourceProcessDefinitionKey": "verhuizing",
             "targetProcessDefinitionKey": "verhuizing",
             "mapActivities": {
-                "beoordelen_verhuizing": "beoordelen_verhuizing",
-                "controleren_inspectie": "markeer_spoed",
+                "controleren_inspectie": "beoordelen_verhuizing",
                 "registreer_ontvangst": "registreer_ontvangst",
                 "markeer_spoed": "markeer_spoed",
                 "afronden": "afronden"

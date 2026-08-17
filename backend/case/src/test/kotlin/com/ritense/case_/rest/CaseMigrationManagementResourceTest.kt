@@ -16,6 +16,7 @@
 
 package com.ritense.case_.rest
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.service.migration.MigrationExecutionStatusDto
 import com.ritense.case_.service.migration.MigrationPlanExporter
@@ -41,12 +42,14 @@ import org.springframework.web.server.ResponseStatusException
 class CaseMigrationManagementResourceTest {
 
     private val caseMigrationService = mock<CaseMigrationService>()
+    private val migrationPlanImporter = mock<MigrationPlanImporter>()
+    private val migrationSuggestionService = mock<MigrationSuggestionService>()
 
     private val resource = CaseMigrationManagementResource(
         caseMigrationService,
-        mock<MigrationPlanImporter>(),
+        migrationPlanImporter,
         mock<MigrationPlanExporter>(),
-        mock<MigrationSuggestionService>(),
+        migrationSuggestionService,
     )
 
     private val caseDefinitionId = CaseDefinitionId("woninginspectie", "1.0.4")
@@ -77,6 +80,24 @@ class CaseMigrationManagementResourceTest {
             })
 
         verify(caseMigrationService, never()).startMigration(any())
+    }
+
+    @Test
+    fun `a plan the importer refuses is answered 400, not 500`() {
+        // The importer validates the plan itself (missing source, source == target, unknown condition
+        // operator, ...) and throws IllegalArgumentException. On this path the caller wrote the plan,
+        // so it has to read as a bad request rather than as a server fault.
+        val plan = ObjectMapper().createObjectNode()
+        whenever(migrationSuggestionService.findPlanProblems(any(), any())).thenReturn(emptyList())
+        whenever(migrationPlanImporter.deploy(any(), any()))
+            .thenThrow(IllegalArgumentException("A migration plan requires a non-blank 'key'"))
+
+        assertThatThrownBy { resource.saveMigrationPlan("woninginspectie", "1.0.4", plan) }
+            .isInstanceOf(ResponseStatusException::class.java)
+            .satisfies({ thrown ->
+                assertThat((thrown as ResponseStatusException).statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+                assertThat(thrown.reason).contains("non-blank 'key'")
+            })
     }
 
     @Test

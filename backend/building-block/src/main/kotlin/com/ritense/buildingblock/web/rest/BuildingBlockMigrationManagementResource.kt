@@ -178,7 +178,15 @@ class BuildingBlockMigrationManagementResource(
                 "Migration plan cannot be saved: ${problems.joinToString("; ")}",
             )
         }
-        migrationPlanImporter.deploy(blueprintId, plan)
+        // As on the case save path: the importer refuses a building block plan that declares
+        // `migrationTriggers` or `conditions` (and other malformed plans) with an
+        // IllegalArgumentException, which would surface as a 500. It is the caller's plan that is
+        // wrong, so answer 400 and let the editor show the reason.
+        try {
+            migrationPlanImporter.deploy(blueprintId, plan)
+        } catch (e: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message, e)
+        }
         return ResponseEntity.ok(caseMigrationService.getPlans(blueprintId))
     }
 

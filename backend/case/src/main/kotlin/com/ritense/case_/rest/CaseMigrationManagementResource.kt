@@ -182,7 +182,15 @@ class CaseMigrationManagementResource(
                 "Migration plan cannot be saved: ${problems.joinToString("; ")}",
             )
         }
-        migrationPlanImporter.deploy(caseDefinitionId, plan)
+        // The importer's own validation (a missing/self-referencing source, an unknown condition
+        // operator, ...) throws IllegalArgumentException, which Spring would render as a 500. On the
+        // management save path the caller supplied the plan, so the failure is theirs to fix: answer
+        // 400 with the importer's message rather than telling the editor the server broke.
+        try {
+            migrationPlanImporter.deploy(caseDefinitionId, plan)
+        } catch (e: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message, e)
+        }
         return ResponseEntity.ok(caseMigrationService.getPlans(caseDefinitionId))
     }
 

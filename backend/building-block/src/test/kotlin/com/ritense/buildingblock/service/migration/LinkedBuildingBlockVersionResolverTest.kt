@@ -228,6 +228,30 @@ class LinkedBuildingBlockVersionResolverTest {
     }
 
     @Test
+    fun `should leave a startable-item instance alone when the only startable item is another block`() {
+        // A block just created by `addBuildingBlock` has no activity id, so it reads as startable-item
+        // origin. Matching it on origin kind alone pinned it to whatever startable item the owner
+        // happened to offer — here an unrelated block, which then failed the whole case for having no
+        // migration path. The key is the only thing that identifies a startable-item link.
+        startableItemLink("1.0.0", key = "verhuizing-inspectie")
+        whenever(pathResolver.isReachable(any(), any())).thenReturn(false)
+
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0", key = "income-check"))
+
+        assertThat(target).isNull()
+    }
+
+    @Test
+    fun `should match a startable-item instance to the startable item for its own key`() {
+        startableItemLink("2.0.0", key = "income-check")
+        startableItemLink("1.0.1")
+
+        val target = resolver.resolveTarget(caseDefinitionId, instance("1.0.0"))
+
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "1.0.1"))
+    }
+
+    @Test
     fun `should resolve call-activity links of a building block owner`() {
         val ownerId = BuildingBlockDefinitionId.of("verhuizing-inspectie", "2.0.0")
         val bbProcessDefinitionId = "inspectie-process:1:xyz"

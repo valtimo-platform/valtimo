@@ -56,8 +56,8 @@
                     "sourceProcessDefinitionKey": "verhuizing",
                     "targetProcessDefinitionKey": "income-check-process",
                     "mapActivities": {
-                        "beoordelen_verhuizing": "BeoordeelInkomenstoetsTask",
-                        "controleren_inspectie": "BeoordeelInkomenstoetsTask",
+                        "beoordelen_verhuizing": "EnterBubbleNoteTask",
+                        "controleren_inspectie": "EnterBubbleNoteTask",
                         "registreer_ontvangst": "StoreCheckStatusTask",
                         "markeer_spoed": "StoreCheckStatusTask",
                         "afronden": "ReadZaakEinddatumTask"
@@ -76,7 +76,8 @@
         },
         {
             "target": "doc:/migratedFrom",
-            "source": "doc:/spoed"
+            "value": "1.0.0",
+            "targetType": "string"
         },
         {
             "target": "doc:/inspectieStatus",
@@ -89,7 +90,8 @@
         },
         {
             "target": "doc:/oppervlakte",
-            "source": "doc:/spoed"
+            "value": 0,
+            "targetType": "number"
         }
     ],
     "processMigration": [
