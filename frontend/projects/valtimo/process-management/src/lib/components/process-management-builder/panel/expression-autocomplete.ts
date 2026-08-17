@@ -29,9 +29,30 @@ class ExpressionAutocomplete {
   private panelContainer: HTMLElement | null = null;
   private stylesInjected = false;
   private observer: MutationObserver | null = null;
+  private documentClickHandlers: Array<(e: MouseEvent) => void> = [];
 
   constructor(eventBus: any) {
     this.injectStyles();
+
+    eventBus.on('diagram.destroy', () => {
+      this.dispose();
+    });
+  }
+
+  private dispose(): void {
+    this.cleanupClickHandlers();
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+    this.panelContainer = null;
+  }
+
+  private cleanupClickHandlers(): void {
+    for (const handler of this.documentClickHandlers) {
+      document.removeEventListener('click', handler);
+    }
+    this.documentClickHandlers = [];
   }
 
   public setProcessBeans(beans: ProcessBeanDto[]): void {
@@ -216,6 +237,8 @@ class ExpressionAutocomplete {
   }
 
   private renderSimpleMode(container: HTMLElement, input: HTMLInputElement | HTMLTextAreaElement): void {
+    this.cleanupClickHandlers();
+
     const parsed = this.parseExpression(input.value);
 
     container.innerHTML = `
@@ -360,6 +383,7 @@ class ExpressionAutocomplete {
       }
     };
     document.addEventListener('click', closeHandler);
+    this.documentClickHandlers.push(closeHandler);
 
     wrapper.appendChild(nativeSelect);
     wrapper.appendChild(dropdown);

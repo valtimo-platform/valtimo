@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -102,25 +102,6 @@
   [showModalSubject$]="showDraftConfirmation$"
   titleTranslationKey="case.draftProcessConfirmation.title"
   contentTranslationKey="case.draftProcessConfirmation.content"
-  (confirmEvent)="onDraftConfirmationConfirm()"
-  (cancelEvent)="onDraftConfirmationCancel()"
->
-  <cds-notification
-    class="full-width-notification"
-    [notificationObj]="{
-      type: 'warning',
-      title: 'case.draftProcessConfirmation.warningTitle' | translate,
-      message: 'case.draftProcessConfirmation.warningDescription' | translate,
-      showClose: false,
-      lowContrast: true
-    }"
-  ></cds-notification>
-</valtimo-confirmation-modal>
-
-<valtimo-confirmation-modal
-  confirmButtonTextTranslationKey="case.draftProcessConfirmation.confirm"
-  [showModalSubject$]="showDraftConfirmation$"
-  titleTranslationKey="case.draftProcessConfirmation.title"
   (confirmEvent)="onDraftConfirmationConfirm()"
   (cancelEvent)="onDraftConfirmationCancel()"
 >
