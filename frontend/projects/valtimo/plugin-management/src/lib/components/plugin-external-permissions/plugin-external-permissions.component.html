@@ -15,6 +15,7 @@
   -->
 
 <cds-inline-notification
+  *ngIf="!isEmpty"
   class="plugin-external-permissions__trust-notice"
   [notificationObj]="{
     type: readonlyMode ? 'info' : 'warning',
@@ -30,13 +31,11 @@
 ></cds-inline-notification>
 
 <cds-inline-notification
-  *ngIf="
-    $capabilities().length === 0 && $enrichedEndpoints().length === 0 && $eventTypes().length === 0
-  "
+  *ngIf="isEmpty"
   [notificationObj]="{
     type: 'info',
     title: '',
-    subtitle: 'pluginManagement.permissions.noEndpoints' | translate,
+    message: 'pluginManagement.permissions.noEndpoints' | translate,
     showClose: false,
     lowContrast: true,
   }"
@@ -132,10 +131,7 @@
 </section>
 
 <cds-checkbox
-  *ngIf="
-    !readonlyMode &&
-    ($capabilities().length > 0 || $enrichedEndpoints().length > 0 || $eventTypes().length > 0)
-  "
+  *ngIf="!readonlyMode && !isEmpty"
   class="plugin-external-permissions__acceptance"
   [checked]="$accepted()"
   (checkedChange)="onAcceptanceChange($event)"
