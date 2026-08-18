@@ -18,6 +18,11 @@
 
 ## Bugfixes
 
+* **Deleting a process linked to a case now cleans up properly**
+
+  When a process that was linked to a case definition was deleted, the link remained in the database.
+  This could cause errors when viewing or exporting the case definition. Existing orphaned
+  links from earlier versions are automatically cleaned up during upgrade.
 
 * **Form flow steps with a colon in their expressions work again after import**
 
