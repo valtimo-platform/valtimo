@@ -145,6 +145,10 @@ export class MigrationComponent implements OnInit, AfterViewInit {
     this.targetVersionCombobox.clearInput(event);
   }
 
+  public onTargetDefinitionClear(event: Event): void {
+    this.targetVersionCombobox.clearInput(event);
+  }
+
   public onTaskMappingSelected(selection: ListItem | ListItem[], nodeId: string) {
     const item = Array.isArray(selection) ? selection[0] : selection;
     this.taskMapping[nodeId] = item?.id ?? null;
