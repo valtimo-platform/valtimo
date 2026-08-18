@@ -19,6 +19,7 @@ package com.ritense.dataprovider.web.rest
 import com.ritense.dataprovider.service.DataProviderService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -36,6 +37,10 @@ class DataProviderResource(
     private val dataProviderService: DataProviderService,
 ) {
 
+    @EndpointDescription(
+        en = "List data provider names by category",
+        nl = "Gegevensbronnamen ophalen op categorie",
+    )
     @GetMapping("/v1/data/{category}/provider")
     fun getProviderNames(
         @PathVariable category: String,
@@ -43,6 +48,10 @@ class DataProviderResource(
         return ResponseEntity.ok(dataProviderService.getProviderNames(category))
     }
 
+    @EndpointDescription(
+        en = "List all data by category",
+        nl = "Alle gegevens ophalen op categorie",
+    )
     @GetMapping("/v1/data/{category}/all")
     fun getAll(
         @PathVariable category: String,
@@ -52,6 +61,10 @@ class DataProviderResource(
         return ResponseEntity.ok(dataProviderService.getAllData(category, provider, query))
     }
 
+    @EndpointDescription(
+        en = "Get data by category",
+        nl = "Gegevens ophalen op categorie",
+    )
     @GetMapping("/v1/data/{category}")
     fun getData(
         @PathVariable category: String,
@@ -61,6 +74,10 @@ class DataProviderResource(
         return ResponseEntity.ok(dataProviderService.getData(category, provider, query))
     }
 
+    @EndpointDescription(
+        en = "Post data by category",
+        nl = "Gegevens versturen op categorie",
+    )
     @PostMapping("/v1/data/{category}")
     fun postData(
         @PathVariable category: String,
@@ -72,6 +89,10 @@ class DataProviderResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Delete data by category",
+        nl = "Gegevens verwijderen op categorie",
+    )
     @DeleteMapping("/v1/data/{category}")
     fun deleteData(
         @PathVariable category: String,

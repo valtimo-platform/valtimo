@@ -37,6 +37,7 @@ import com.ritense.processdocument.service.result.ModifyDocumentAndStartProcessR
 import com.ritense.processdocument.service.result.NewDocumentAndStartProcessResult;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -75,6 +76,10 @@ public class ProcessDocumentResource {
     }
 
     @Deprecated(since = "13.x", forRemoval = true)
+    @EndpointDescription(
+        en = "List process links by case definition",
+        nl = "Proceskoppelingen per dossierdefinitie ophalen"
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/case-process-link")
     public ResponseEntity<List<ProcessDefinitionCaseDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "caseDefinitionKey") String caseDefinitionKey,
@@ -94,6 +99,10 @@ public class ProcessDocumentResource {
     }
 
     @Deprecated(since = "13.x", forRemoval = true)
+    @EndpointDescription(
+        en = "List process links by document instance",
+        nl = "Proceskoppelingen per documentinstantie ophalen"
+    )
     @GetMapping("/v1/document-instance/{documentId}/case-process-link")
     public ResponseEntity<List<ProcessDefinitionCaseDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "documentId") UUID documentId,
@@ -107,6 +116,10 @@ public class ProcessDocumentResource {
         ));
     }
 
+    @EndpointDescription(
+        en = "Get process link by process instance",
+        nl = "Proceskoppeling per procesinstantie ophalen"
+    )
     @GetMapping("/v1/process-instance/{processInstanceId}/case-process-link")
     public ResponseEntity<ProcessDefinitionCaseDefinition> getProcessDocumentDefinition(
         @PathVariable String processInstanceId
@@ -117,6 +130,10 @@ public class ProcessDocumentResource {
     }
 
     @Deprecated(since = "Since v13", forRemoval = true)
+    @EndpointDescription(
+        en = "List process document instances by document",
+        nl = "Procesdocumentinstanties per document ophalen"
+    )
     @GetMapping("/v1/process-document/instance/document/{documentId}")
     public ResponseEntity<List<? extends ProcessDocumentInstance>> findProcessDocumentInstancesV1(
         @PathVariable UUID documentId
@@ -125,6 +142,10 @@ public class ProcessDocumentResource {
             processDocumentAssociationService.findProcessDocumentInstanceDtosWithoutBuildingBlocks(JsonSchemaDocumentId.existingId(documentId)));
     }
 
+    @EndpointDescription(
+        en = "List process document instances by document",
+        nl = "Procesdocumentinstanties per document ophalen"
+    )
     @GetMapping("/v2/process-document/instance/document/{documentId}")
     public ResponseEntity<List<? extends ProcessDocumentInstance>> findProcessDocumentInstances(
         @PathVariable UUID documentId
@@ -133,6 +154,10 @@ public class ProcessDocumentResource {
             processDocumentAssociationService.findProcessDocumentInstanceDtos(JsonSchemaDocumentId.existingId(documentId)));
     }
 
+    @EndpointDescription(
+        en = "Create document and start process",
+        nl = "Document aanmaken en proces starten"
+    )
     @PostMapping(value = "/v1/process-document/operation/new-document-and-start-process", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<NewDocumentAndStartProcessResult> newDocumentAndStartProcess(
         @Valid @RequestBody NewDocumentAndStartProcessRequest request
@@ -142,6 +167,10 @@ public class ProcessDocumentResource {
         return ResponseEntity.status(httpStatus).body(result);
     }
 
+    @EndpointDescription(
+        en = "Modify document and complete task",
+        nl = "Document bijwerken en taak afronden"
+    )
     @PostMapping(value = "/v1/process-document/operation/modify-document-and-complete-task", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<ModifyDocumentAndCompleteTaskResult> modifyDocumentAndCompleteTask(
         @Valid @RequestBody ModifyDocumentAndCompleteTaskRequest request
@@ -151,6 +180,10 @@ public class ProcessDocumentResource {
         return ResponseEntity.status(httpStatus).body(result);
     }
 
+    @EndpointDescription(
+        en = "Modify document and start process",
+        nl = "Document bijwerken en proces starten"
+    )
     @PostMapping(value = "/v1/process-document/operation/modify-document-and-start-process", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<ModifyDocumentAndStartProcessResult> modifyDocumentAndStartProcess(
         @Valid @RequestBody ModifyDocumentAndStartProcessRequest request

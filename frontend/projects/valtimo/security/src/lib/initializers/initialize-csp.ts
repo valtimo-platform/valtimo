@@ -60,12 +60,27 @@ export const initializeCsp =
     logger: NGXLogger,
     configService: ConfigService,
     document: Document,
-    domSanitizer: DomSanitizer
+    domSanitizer: DomSanitizer,
+    additionalPluginHostOrigins?: string[]
   ): (() => Promise<boolean>) =>
   async (): Promise<boolean> => {
     const cspHeaderParams = configService?.config?.csp;
 
     if (cspHeaderParams) {
+      if (additionalPluginHostOrigins?.length > 0) {
+        // Each external plugin host serves iframes (frame-src), assets like the plugin logo
+        // (img-src), and the parent-proxy data route the case-tab fetches cross-origin
+        // (connect-src), all from its own origin — so every one of those directives needs augmenting.
+        for (const directive of ['frame-src', 'img-src', 'connect-src'] as const) {
+          const values = cspHeaderParams.directives?.[directive];
+          if (Array.isArray(values)) {
+            const unique = additionalPluginHostOrigins.filter(o => !values.includes(o));
+            values.push(...unique);
+            logger.log(`CSP ${directive} augmented with:`, unique);
+          }
+        }
+      }
+
       logger.log('Create CSP header element from:', cspHeaderParams);
 
       const cspHeaderElement = getCspHeaderElement(cspHeaderParams, domSanitizer, document);

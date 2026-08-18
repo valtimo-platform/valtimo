@@ -22,17 +22,25 @@
     <div class="action-tiles">
       <cds-tile-group
         [multiple]="false"
-        *ngIf="{selectedPluginDefinition: selectedPluginDefinition$ | async} as obs"
+        *ngIf="{
+          selectedPluginDefinition: selectedPluginDefinition$ | async,
+          isExternal: isExternalPlugin$ | async
+        } as obs"
         (selected)="selected($event)"
       >
         <cds-selection-tile
           *ngFor="let pluginFunction of pluginFunctions"
           [value]="stringify(pluginFunction)"
           [selected]="false"
-          >{{
-            pluginFunction.key | pluginTranslate: obs.selectedPluginDefinition.key | async
-          }}</cds-selection-tile
         >
+          <ng-container *ngIf="obs.isExternal; else embeddedLabel">
+            {{ pluginFunction.title || pluginFunction.key }}
+          </ng-container>
+
+          <ng-template #embeddedLabel>
+            {{ pluginFunction.key | pluginTranslate: obs.selectedPluginDefinition.key | async }}
+          </ng-template>
+        </cds-selection-tile>
       </cds-tile-group>
     </div>
   </div>

@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {FormLinkProcessDiagramComponent} from './components/form-link-process-diagram/form-link-process-diagram.component';
 import {CommonModule} from '@angular/common';
 import {ProcessLinkRoutingModule} from './process-link-routing.module';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {ReactiveFormsModule} from '@angular/forms';
 import {
   CarbonMultiInputModule,
   FormIoModule,
@@ -37,7 +37,11 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginActionComponent} from './components/select-plugin-action/select-plugin-action.component';
-import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
+import {
+  ExternalPluginIframeComponent,
+  PluginConfigurationContainerModule,
+  PluginTranslatePipeModule,
+} from '@valtimo/plugin';
 import {PluginActionConfigurationComponent} from './components/plugin-action-configuration/plugin-action-configuration.component';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
 import {ProcessLinkModalComponent} from './components/process-link-modal/process-link-modal.component';
@@ -71,6 +75,7 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
 import {SelectBuildingBlockComponent} from './components/select-building-block';
 import {ConfigureBuildingBlockPluginsComponent} from './components/configure-building-block-plugins';
 import {ConfigureBuildingBlockMappingsComponent} from './components/configure-building-block-mappings/configure-building-block-mappings.component';
+import {PluginActionResultMappingsComponent} from './components/plugin-action-result-mappings/plugin-action-result-mappings.component';
 
 @NgModule({
   declarations: [
@@ -94,7 +99,6 @@ import {ConfigureBuildingBlockMappingsComponent} from './components/configure-bu
   imports: [
     CommonModule,
     ProcessLinkRoutingModule,
-    FormsModule,
     ReactiveFormsModule,
     ModalModule,
     TranslateModule,
@@ -132,7 +136,9 @@ import {ConfigureBuildingBlockMappingsComponent} from './components/configure-bu
     CarbonRadioModule,
     ValuePathSelectorComponent,
     ConfigureBuildingBlockMappingsComponent,
+    PluginActionResultMappingsComponent,
     NotificationModule,
+    ExternalPluginIframeComponent,
   ],
   exports: [
     ProcessLinkComponent,

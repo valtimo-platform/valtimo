@@ -22,7 +22,14 @@ import {accountInitializer} from '@valtimo/account';
 import {Injector} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/shared';
-import {AdminSettingsService, menuInitializer} from '@valtimo/components';
+import {
+  AdminSettingsService,
+  hasSavedMenuConfiguration,
+  menuInitializer,
+  resolveMenuConfiguration,
+} from '@valtimo/components';
+import {initializeCsp} from '@valtimo/security';
+import {DomSanitizer} from '@angular/platform-browser';
 import {firstValueFrom} from 'rxjs';
 
 export function initialize(
@@ -52,7 +59,9 @@ export function initializerFactory(
   configService: ConfigService,
   injector: Injector,
   logger: NGXLogger,
-  translateService: TranslateService
+  translateService: TranslateService,
+  document: Document,
+  domSanitizer: DomSanitizer
 ) {
   logger.debug('Provided app initializers ', configService.initializers);
 
@@ -63,6 +72,8 @@ export function initializerFactory(
 
   // Fetch feature toggle overrides from the backend and patch them into the config
   // before other initializers run, so all reactive consumers see the correct merged values.
+  // Kept sequential (before the parallel batch below) because later initializers and reactive
+  // consumers must observe the merged toggle values.
   initializersArray.push(async () => {
     try {
       const adminSettingsService = injector.get(AdminSettingsService);
@@ -78,7 +89,7 @@ export function initializerFactory(
 
   // Fetch accent colors from the backend and apply them as CSS custom properties
   // before other initializers run, so the UI renders with the correct colors immediately.
-  initializersArray.push(async () => {
+  const accentColorsInitializer = async (): Promise<void> => {
     try {
       const adminSettingsService = injector.get(AdminSettingsService);
       const colors = await firstValueFrom(adminSettingsService.getAccentColors());
@@ -89,10 +100,57 @@ export function initializerFactory(
     } catch (error) {
       logger.warn('Failed to fetch accent colors, using defaults', error);
     }
-  });
+  };
+
+  // Initialize CSP after auth so we can fetch external plugin host origins and add them to
+  // frame-src before the meta tag is inserted (CSP meta is immutable once parsed).
+  const cspInitializer = async (): Promise<void> => {
+    const pluginHostOrigins = new Set<string>();
+    const collectOrigin = (value: string | null | undefined): void => {
+      if (!value) return;
+      try {
+        pluginHostOrigins.add(new URL(value).origin);
+      } catch {
+        // ignore unparseable URLs
+      }
+    };
+
+    const http = injector.get(HttpClient);
+    const apiBase = configService.config?.valtimoApi?.endpointUri;
+
+    if (apiBase) {
+      // host-origins is authenticated (not ADMIN-only) so every user who renders a plugin surface
+      // gets the host origins into frame-src/connect-src; it exposes derived origins only.
+      await firstValueFrom(http.get<string[]>(`${apiBase}v1/external-plugin/host-origins`))
+        .then(origins => origins.forEach(origin => collectOrigin(origin)))
+        .catch(error =>
+          logger.debug('No external plugin host origins found for CSP augmentation:', error)
+        );
+    }
+
+    await initializeCsp(logger, configService, document, domSanitizer, [...pluginHostOrigins])();
+  };
+
+  // Fetch the persisted menu configuration and, when one exists, resolve it into MenuItem[] and
+  // patch config.menu.menuItems BEFORE the menu initializer runs (mirrors the feature-toggle/accent
+  // patches above). When the DB has no saved config (every existing installation) or the call
+  // errors, do nothing — config.menu is left untouched so the static environment.ts menu (custom
+  // links included) renders byte-identically. Backwards compatible by construction.
+  const menuConfigurationInitializer = async (): Promise<void> => {
+    try {
+      const adminSettingsService = injector.get(AdminSettingsService);
+      const dto = await firstValueFrom(adminSettingsService.getMenuConfiguration());
+      if (hasSavedMenuConfiguration(dto)) {
+        configService.config.menu.menuItems = resolveMenuConfiguration(dto.configuration, logger);
+        logger.debug('Persisted menu configuration applied');
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch menu configuration, using default menu', error);
+    }
+  };
 
   // Check OpenSearch availability and patch feature toggle
-  initializersArray.push(async () => {
+  const openSearchInitializer = async (): Promise<void> => {
     try {
       const httpClient = injector.get(HttpClient);
       const response = await firstValueFrom(
@@ -106,7 +164,21 @@ export function initializerFactory(
     } catch {
       // OpenSearch not available
     }
-  });
+  };
+
+  // These four initializers are order-independent (accent colors touch CSS custom properties, CSP
+  // inserts the meta tag, the menu patch only reads the DTO, and the OpenSearch check only patches
+  // its own toggle), so run them in parallel instead of serially blocking bootstrap on each round
+  // trip. Each one handles its own failures, so this combined initializer cannot reject for
+  // recoverable reasons.
+  initializersArray.push(() =>
+    Promise.all([
+      accentColorsInitializer(),
+      cspInitializer(),
+      menuConfigurationInitializer(),
+      openSearchInitializer(),
+    ])
+  );
 
   // Use environment config initializers to be used in app startup.
   configService.initializers.forEach(initializer => {

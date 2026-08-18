@@ -22,6 +22,7 @@ import com.ritense.localization.web.rest.dto.LocalizationResponseDto
 import com.ritense.localization.web.rest.dto.LocalizationUpdateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -36,6 +37,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 class AdminLocalizationResource(
     private val localizationService: LocalizationService,
 ) {
+    @EndpointDescription(
+        en = "Update localization by language key",
+        nl = "Lokalisatie bijwerken op taalsleutel",
+    )
     @PutMapping("/v1/localization/{languageKey}")
     fun editLocalization(
         @PathVariable(name = "languageKey") languageKey: String,
@@ -45,6 +50,10 @@ class AdminLocalizationResource(
         return ResponseEntity.ok(updatedLocalization)
     }
 
+    @EndpointDescription(
+        en = "Update localizations",
+        nl = "Lokalisaties bijwerken",
+    )
     @PutMapping("/v1/localization")
     fun editLocalizations(
         @Valid @RequestBody localizations: List<LocalizationUpdateRequestDto>

@@ -1011,20 +1011,30 @@
         "uniqueKeyError": "The key for this tab must be unique.",
         "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
         "widgetsComponent": "Widgets component",
+        "externalPlugin": "Plugin",
+        "externalPluginDisabled": "There are no activated plugins with a case tab, or they have all been added already.",
         "visibleTitle": "Task list visible on tab",
         "visible": "Visible",
         "invisible": "Not visible"
+      },
+      "externalPlugin": {
+        "loadError": "Could not load the external plugin tab. The plugin host may be unreachable or the bundle is unavailable.",
+        "widgetLoadError": "Could not load the external plugin widget. The plugin host may be unreachable or the bundle is unavailable.",
+        "unavailable": "This plugin widget is unavailable. Its configuration may be missing or the bundle could not be resolved."
       },
       "titles": {
         "custom": "Create new tab with custom component",
         "formio": "Create new tab with FormIO component",
         "standard": "Create new tab with standard content",
-        "widgets": "Create a new tab with widgets"
+        "widgets": "Create a new tab with widgets",
+        "external_plugin": "Create a new tab with a plugin"
       },
       "contentLabels": {
         "custom": "Choose custom component",
         "formio": "Choose FormIO component",
-        "standard": "Choose standard content"
+        "standard": "Choose standard content",
+        "external_plugin_config": "Choose plugin configuration",
+        "external_plugin_bundle": "Choose tab"
       },
       "editModal": {"title": "Edit tab {{name}}", "updateTab": "Update tab"},
       "deleteModal": {
@@ -1135,6 +1145,7 @@
         "noPluginsTitle": "No plugins to configure",
         "notInstalled": "Plugin type not installed",
         "noConfigurations": "No configurations available",
+        "externalVersionMismatchWarning": "This configuration's plugin version ({{selectedVersion}}) does not match the exported version ({{requiredVersion}}). It may not support the same actions.",
         "unidentifiable": {
           "title": "Unidentified plugin configurations",
           "message": "Some plugin configurations could not be identified from the export. The import can continue, but you will need to manually configure the affected process links afterwards."
@@ -1148,6 +1159,7 @@
       "unknownPlugin": "Unknown plugin",
       "notInstalled": "Plugin type not installed",
       "noConfigurations": "No configurations available",
+      "externalVersionMismatchWarning": "This configuration's plugin version ({{selectedVersion}}) does not match the required version ({{requiredVersion}}). It may not support the same actions.",
       "saveSuccess": "Plugin configuration mappings saved successfully",
       "saveError": "Failed to save plugin configuration mappings",
       "legacyExport": {
@@ -1186,7 +1198,7 @@
       "keyDuplicated": "This key is already in use. Please change to a unique key.",
       "colorPlaceholder": "Choose a color",
       "showRetentionPeriod": "Set retention period",
-      "retentionPeriodExistingCasesWarning": "The retention period for existing cases cases with this status will not be updated automatically.",
+      "retentionPeriodExistingCasesWarning": "The retention period for existing cases with this status will not be updated automatically.",
       "columns": {
         "title": "Status name",
         "retentionPeriod": "Retention period in days",
@@ -1311,6 +1323,10 @@
         "title": "Image",
         "description": "Show an uploaded image"
       },
+      "external-plugin": {
+        "title": "External plugin",
+        "description": "Render a card from an external plugin's case-widget bundle"
+      },
       "text": {
         "title": "Text",
         "description": "Show a fixed explanatory text"
@@ -1364,6 +1380,14 @@
       "widgetTitleTooltip": "Title that displays at the top of the widget",
       "hideWhenEmpty": "Hide when empty",
       "column": "Column {{number}}",
+      "externalPlugin": {
+        "configLabel": "Plugin configuration",
+        "configPlaceholder": "Choose a plugin configuration",
+        "bundleLabel": "Widget",
+        "bundlePlaceholder": "Choose a widget",
+        "unavailableTitle": "External plugins unavailable",
+        "unavailableMessage": "No external plugin exposing a case-widget bundle is available."
+      },
       "fields": {
         "add": "Add field",
         "addEnum": "Add enum value",
@@ -1566,9 +1590,9 @@
     "actionButtonLabel": "Action button type",
     "externalLink": {
       "linkLabel": "Target URL (with placeholders)",
-      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "linkPlaceholder": "https://ritense.nl/case/${doc:/case/id}",
       "buttonTextLabel": "Button label",
-      "buttonTextPlaceholder": "'Go to zaak'",
+      "buttonTextPlaceholder": "'Go to case'",
       "openInNewTabLabel": "Open in new tab"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
@@ -1962,6 +1986,7 @@
     "icon": "Icon",
     "iconPlaceholder": "Select an icon",
     "iconTooltip": "Select an icon",
+    "dragToReorder": "Drag to reorder",
     "mainMenu": "Main menu",
     "toggleMenu": "Menu",
     "typeToSearch": "Type here to search",
@@ -2090,7 +2115,12 @@
     "dueDateSetNotificationTitle": "Due date set",
     "dueDateSetNotificationContent": "Due date '{{date}}' set for task '{{task}}'",
     "dueDateRemovedNotificationTitle": "Due date removed",
-    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'"
+    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'",
+    "externalPluginTaskForm": {
+      "unavailable": "This task's plugin form could not be loaded. The plugin may be unavailable or no longer exposes a task-form.",
+      "tokenError": "Could not securely connect to the plugin to load this task's form.",
+      "submitError": "The task could not be completed. Please try again or contact support."
+    }
   },
   "assignTask": {
     "assignedTo": "Assigned to",
@@ -2194,6 +2224,8 @@
   },
   "pages": {
     "plugins": {"title": "Plugins", "noResults": "There are no plugins configured yet"},
+    "pluginHosts": {"title": "Plugin hosts"},
+    "pluginApps": {"title": "Apps"},
     "customercases": {
       "title": "Cases",
       "description": "On this page you can view the cases of a specific customer."
@@ -2214,18 +2246,184 @@
   "pluginManagement": {
     "tableItemsText": "plugin configurations",
     "add": "Configure plugin",
+    "addHost": "Add plugin host",
+    "addApp": "Add app",
+    "uploadPlugin": "Upload plugin",
+    "selectHost": "Select a plugin host",
+    "upload": {
+      "title": "Plugin bundle",
+      "buttonText": "Choose file",
+      "description": "Only .zip files are accepted",
+      "failedTitle": "Upload failed",
+      "rejected": "The plugin host rejected the upload.",
+      "identicalTitle": "Already up to date",
+      "identicalMessage": "This exact package already exists on the host — the content is identical, so there is nothing to overwrite.",
+      "overwriteTitle": "Overwrite existing plugin version?",
+      "overwriteWarningTitle": "This will overwrite the current plugin version",
+      "overwriteWarning": "Version {{version}} of '{{pluginId}}' already exists on the host with different content. Overwriting it can lead to unexpected behavior for configurations and processes that already use this version. Since the content differs, review the permissions the uploaded package requests below and confirm to proceed — all existing configurations of this version will be reset to exactly these permissions.",
+      "overwriteConfirm": "Overwrite version"
+    },
     "noDefinitions": "No plugin definitions found.",
+    "noHosts": "No plugin hosts configured.",
+    "noApps": "No apps configured.",
+    "uploadDisabledTooltip": "A connected plugin host is required before plugins can be uploaded.",
     "save": "Save configuration",
     "remove": "Delete configuration",
+    "tabs": {
+      "configurations": "Configurations",
+      "pluginHosts": "Plugin hosts",
+      "integrations": "Integrations"
+    },
     "labels": {
       "pluginName": "Plugin name",
       "identifier": "Identifier",
-      "configurationName": "Configuration name"
+      "configurationName": "Configuration name",
+      "name": "Name",
+      "baseUrl": "Base URL",
+      "kind": "Type",
+      "status": "Status",
+      "lastHealthCheck": "Last health check",
+      "secret": "Secret",
+      "source": "Source",
+      "properties": "Properties (JSON)",
+      "pluginHost": "Plugin host",
+      "gzacCallbackBaseUrl": "GZAC callback URL",
+      "eventBrokerAmqpUrl": "Event broker URL (optional)",
+      "eventBrokerExchange": "Event broker exchange (optional)",
+      "eventQueueMode": "Event queue mode",
+      "eventQueueTtlMs": "Event queue inactivity TTL (ms)",
+      "host": "Host"
     },
+    "eventQueueMode": {
+      "live": "Live (events lost while host is down)",
+      "durable": "Durable (retains events for the TTL while host is down)"
+    },
+    "hints": {
+      "eventQueueTtlMs": "The durable queue is deleted after this many ms with no connected host. Min 1h (3600000), max 30d (2592000000), default 72h (259200000)."
+    },
+    "editEventQueue": "Edit event queue",
+    "editHostEventQueueModalTitle": "Edit event queue for {{name}}",
+    "saveEventQueue": "Save",
+    "source": {
+      "embedded": "Embedded",
+      "external": "External"
+    },
+    "hostStatus": {
+      "CONNECTED": "Connected",
+      "UNREACHABLE": "Unreachable"
+    },
+    "kind": {
+      "PLUGIN_HOST": "Plugin host",
+      "APP": "App"
+    },
+    "editExternalConfiguration": "Edit external plugin configuration",
+    "invalidJson": "Invalid JSON",
     "addSteps": {
       "step0": "Choose your plugin",
       "step1": "Enter data",
+      "step2": "Permissions",
       "complete": "Save configuration"
+    },
+    "editSteps": {
+      "step0": "Enter data",
+      "step1": "Permissions",
+      "save": "Save configuration"
+    },
+    "permissions": {
+      "description": "By accepting these permissions you trust this plugin to act within your environment. A granted capability, endpoint, or event gives the plugin access to platform data and services — only proceed if you trust the plugin's source and have reviewed what it requests.",
+      "descriptionReadonly": "The following permissions were accepted when this configuration was activated. They define what the plugin is allowed to do within your environment.",
+      "noEndpoints": "This plugin does not require any permissions.",
+      "capabilitiesHeading": "Host capabilities",
+      "capabilityHeading": "Capability",
+      "capability": {
+        "gzac_api": "Make authenticated API calls to the GZAC instance (read and write case data, tasks, documents, etc.)",
+        "http_request": "Make outbound HTTP requests to external services",
+        "kv": "Store and retrieve persistent key–value data scoped to this configuration",
+        "log": "Write structured log entries visible to administrators",
+        "frontend_data": "Serve data requests from the plugin's own user interface"
+      },
+      "endpointsHeading": "API endpoints",
+      "eventsHeading": "Events",
+      "methodHeading": "Method",
+      "endpointHeading": "Endpoint",
+      "descriptionHeading": "Description",
+      "accept": "I trust this plugin and accept the requested permissions"
+    },
+    "logs": {
+      "menuItem": "Logs",
+      "title": "Plugin logs",
+      "columns": {
+        "timestamp": "Timestamp",
+        "level": "Level",
+        "source": "Source",
+        "message": "Message"
+      },
+      "data": "Data",
+      "filterAll": "All",
+      "levels": {
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error",
+        "debug": "Debug"
+      },
+      "sources": {
+        "plugin": "Plugin",
+        "gzacApi": "GZAC API",
+        "httpRequest": "HTTP Request"
+      },
+      "empty": "No log entries found.",
+      "close": "Close"
+    },
+    "reloadModal": {
+      "title": "Reload required",
+      "description": "The plugin host was added successfully. To configure plugins from this host, the page needs to be reloaded so that security policies can be updated.",
+      "reload": "Reload now",
+      "later": "Later"
+    },
+    "deleteHostModal": {
+      "title": "Delete plugin host",
+      "description": "Are you sure you want to delete this plugin host? All plugin definitions and configurations from this host will also be deleted. This action cannot be undone."
+    },
+    "deleteConfigurationModal": {
+      "title": "Delete plugin configuration",
+      "description": "Are you sure you want to delete this plugin configuration? This action cannot be undone."
+    },
+    "hostInUseModal": {
+      "title": "Plugin host is in use",
+      "thisHost": "this plugin host",
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs, case widgets or building blocks still use a plugin or configuration from this host. Remove these usages first."
+    },
+    "configurationInUseModal": {
+      "title": "Plugin configuration is in use",
+      "thisConfiguration": "this plugin configuration",
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs, case widgets or building blocks still reference it. Remove these usages first."
+    },
+    "usageModal": {
+      "headers": {
+        "activity": "Activity",
+        "configuration": "Plugin configuration",
+        "type": "Type",
+        "linkedTo": "Linked to",
+        "processDefinition": "Process definition"
+      },
+      "parentType": {
+        "CASE": "Case",
+        "BUILDING_BLOCK": "Building block",
+        "GLOBAL": "Global"
+      },
+      "caseTab": "Case tab",
+      "caseWidget": "Case widget",
+      "buildingBlockMapping": "Building block plugin mapping"
+    },
+    "compatibility": {
+      "incompatibleTag": "Incompatible",
+      "warningTitle": "Possible compatibility issue",
+      "uploadWarningTitle": "Upload an incompatible plugin?",
+      "uploadAnyway": "Upload anyway",
+      "intro": "Your GZAC version might be incompatible with this plugin.",
+      "current": "You're currently running {{current}}.",
+      "minimum": "Minimum compatible version: {{min}}.",
+      "maximum": "Maximum compatible version: {{max}}."
     }
   },
   "customerCases": {
@@ -2237,7 +2435,8 @@
     "edit": "Edit process link",
     "saveChanges": "Save changes",
     "unlink": "Unlink",
-    "noPluginFunctions": "This plugin does not support any plugin actions."
+    "noPluginFunctions": "This plugin does not support any plugin actions.",
+    "pluginForm": "Plugin form"
   },
   "keycloak": {
     "expiryPromptTitle": "The session is about to expire",
@@ -2474,6 +2673,10 @@
     "buildingBlockActionTitle": "Building block action: {{buildingBlockName}}",
     "modalTitle": "Process step: {{processStepName}}",
     "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
+    "externalPluginTaskForm": {
+      "defaultTitle": "Form",
+      "description": "The selected plugin renders the form for this user task and completes the task itself, using the current user's permissions. There's nothing more to configure here — save to link it."
+    },
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
     "chooseFormDescription": "Choose the form that you want to link to the process step.",
     "chooseFormFlowDescription": "Choose the FormFlow that you want to link to the process step.",
@@ -2492,6 +2695,18 @@
       "checkboxDescription": "Enables Form View Model form processing"
     },
     "importConfiguration": "Import configuration",
+    "externalPlugin": "External plugin",
+    "externalPluginActionProperties": "Configure the action properties for this external plugin action as JSON. Click save when done.",
+    "actionPropertiesJson": "Action properties (JSON)",
+    "invalidJson": "Invalid JSON",
+    "resultMappings": {
+      "description": "Map values from the action's result onto the case document or a process variable.",
+      "source": "Result path",
+      "target": "Destination",
+      "sourcePlaceholder": "/path/in/result",
+      "sourceSelectPlaceholder": "Select a result field...",
+      "addRow": "Add mapping"
+    },
     "selectProcess": "Select process",
     "process": "Process",
     "version": "Version",
@@ -2532,7 +2747,8 @@
         "zaakInstanceAndTypeLink": "This building block may need both a zaak instance link and a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly.",
         "zaakInstanceLink": "This building block may need a zaak instance link to be configured for the case definition under which this building block is used, in order to function correctly.",
         "zaakTypeLink": "This building block may need a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly."
-      }
+      },
+      "externalPluginVersionMismatchWarning": "The selected configuration's plugin version ({{selectedVersion}}) does not match the version ({{requiredVersion}}) this building block was linked against. It may not support this action."
     }
   },
   "processLinkType": {
@@ -2542,6 +2758,43 @@
     "url": "URL",
     "ui-component": "UI Component",
     "building-block": "Building block"
+  },
+  "externalPlugin": {
+    "menuTitle": "External Plugins",
+    "host": {
+      "title": "Hosts",
+      "add": "Add host",
+      "name": "Name",
+      "baseUrl": "Base URL",
+      "status": "Status",
+      "lastHealthCheck": "Last health check"
+    },
+    "definition": {
+      "title": "Plugin definitions",
+      "pluginId": "Plugin ID",
+      "version": "Version",
+      "name": "Name",
+      "provider": "Provider",
+      "status": "Status"
+    },
+    "configuration": {
+      "title": "Configurations",
+      "titleField": "Title",
+      "add": "Add configuration",
+      "definition": "Plugin definition",
+      "definitionPlaceholder": "Select a plugin",
+      "definitionId": "Definition",
+      "createdAt": "Created at",
+      "properties": "Properties (JSON)",
+      "propertiesInvalidJson": "Properties must be valid JSON"
+    },
+    "processLink": {
+      "configuration": "Plugin configuration",
+      "configurationPlaceholder": "Select a configuration",
+      "actionKey": "Action key",
+      "actionProperties": "Action properties (JSON)",
+      "actionPropertiesInvalidJson": "Action properties must be valid JSON"
+    }
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Choose link type",
@@ -2568,6 +2821,7 @@
     "choosePluginDefinition": "Select plugin definition",
     "choosePluginAction": "Choose your action",
     "configurePluginAction": "Configure your action",
+    "configurePluginActionResultMappings": "Output mapping",
     "selectURL": "Configure your URL",
     "subtitles": "Subtitles",
     "addSubtitle": "Add subtitle",
@@ -3196,12 +3450,67 @@
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
   },
+  "externalPluginPage": {
+    "loadError": "This plugin page could not be loaded."
+  },
   "adminSettings": {
     "title": "Settings",
     "tabs": {
       "appearance": "Appearance",
+      "menuConfiguration": "Menu configuration",
       "featureToggles": "Feature toggles",
       "opensearch": "OpenSearch"
+    },
+    "menuConfiguration": {
+      "intro": "Build the application's left-hand menu. Drag items between the available items and the menu structure, reorder them, and edit an item's title, link or icon. Access to each item is managed via PBAC.",
+      "structureTitle": "Menu structure",
+      "availableTitle": "Available items",
+      "save": "Save menu",
+      "reset": "Reset",
+      "resetTooltip": "Discard unsaved changes and restore the last saved menu configuration.",
+      "savedTitle": "Menu saved",
+      "savedSubtitle": "The menu configuration has been saved and applies on the next reload.",
+      "reloadModal": {
+        "title": "Menu saved",
+        "content": "The new menu configuration has been saved. Reload the application to see the changes right away, or dismiss this dialog to keep working and reload later.",
+        "confirm": "Reload now",
+        "dismiss": "Dismiss"
+      },
+      "required": "Required",
+      "runtimeSubmenu": "Dynamic submenu",
+      "runtimeSubmenuNote": "This item's submenu is filled at runtime (for example pinned cases) and cannot be edited here.",
+      "allPlaced": "All items are already in the menu.",
+      "emptyStructure": "Drag items here to build the menu.",
+      "emptySection": "Drop items here",
+      "add": "Add to menu",
+      "dragHandle": "Drag to reorder",
+      "categories": {
+        "generic": "Generic",
+        "main": "Main menu items",
+        "admin": "Admin pages",
+        "development": "Development pages",
+        "pluginPages": "Plugin pages"
+      },
+      "generic": {
+        "group": "Section",
+        "sectionHeader": "Section header",
+        "customLink": "Custom link"
+      },
+      "defaults": {
+        "group": "New section",
+        "sectionHeader": "New header",
+        "customLink": "New link"
+      },
+      "editor": {
+        "title": "Edit menu item",
+        "titleHelper": "Enter a translation key to show a translated title, or type a fixed title if no translation key exists.",
+        "link": "Link (route or external URL)",
+        "section": "Section",
+        "sectionRoot": "Top level",
+        "includeFunction": "Include function",
+        "includeFunctionNone": "None",
+        "pbacNote": "Access to this item is managed via PBAC, not here."
+      }
     },
     "appearance": {
       "logo": {
@@ -3554,6 +3863,7 @@
     "mdi-folder-account": "Folder Account",
     "mdi-folder-multiple": "Folder Multiple",
     "mdi-folder-star": "Folder Star",
+    "mdi-archive": "Archive",
     "mdi-file": "File",
     "mdi-file-document": "File Document",
     "mdi-file-cog": "File Cog",
@@ -3601,7 +3911,9 @@
     "mdi-lightbulb": "Lightbulb",
     "mdi-check": "Check",
     "mdi-check-circle": "Check Circle",
+    "mdi-check-all": "Check All",
     "mdi-close": "Close",
+    "mdi-dot-circle": "Dot Circle",
     "mdi-lock": "Lock",
     "mdi-lock-open": "Lock Open",
     "mdi-lock-check": "Lock Check",
@@ -3619,6 +3931,7 @@
     "mdi-view-dashboard": "View Dashboard",
     "mdi-view-list": "View List",
     "mdi-view-grid": "View Grid",
+    "mdi-layers": "Layers",
     "mdi-table": "Table",
     "mdi-chart-bar": "Chart Bar",
     "mdi-chart-line": "Chart Line",
@@ -3643,6 +3956,8 @@
     "mdi-lan": "LAN",
     "mdi-api": "API",
     "mdi-application-braces": "Application Braces",
+    "mdi-xml": "XML",
+    "mdi-code": "Code",
     "mdi-cube": "Cube",
     "mdi-view-module": "View Module",
     "mdi-puzzle": "Puzzle",

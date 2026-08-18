@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 import {PluginConfiguration} from '@valtimo/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {ListItem} from 'carbon-components-angular/dropdown';
+import {PluginRequirementSource} from './plugin.model';
 
 interface ProcessLink {
   id: string;
@@ -30,6 +31,7 @@ interface ProcessLink {
   actionProperties?: {
     [key: string]: any;
   };
+  actionResultMappings?: Array<PluginActionResultMapping>;
   formDefinitionId?: string;
   formFlowDefinitionKey?: string;
   viewModelEnabled?: boolean;
@@ -43,6 +45,10 @@ interface ProcessLink {
   pluginConfigurationMappings?: Record<string, string>;
   inputMappings?: Array<BuildingBlockInputMapping>;
   outputMappings?: Array<BuildingBlockOutputMapping>;
+  externalPluginConfigurationId?: string;
+  actionKey?: string;
+  pluginVersion?: string;
+  bundleKey?: string;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -62,6 +68,7 @@ type ProcessLinkConfigurationStep =
   | 'choosePluginConfiguration'
   | 'choosePluginAction'
   | 'configurePluginAction'
+  | 'configurePluginActionResultMappings'
   | 'selectForm'
   | 'selectFormFlow'
   | 'selectBuildingBlock'
@@ -104,6 +111,7 @@ interface PluginProcessLinkCreateDto {
   actionProperties: object;
   referenceType?: PluginConfigurationReferenceType;
   pluginDefinitionKey?: string;
+  actionResultMappings?: Array<PluginActionResultMapping>;
 }
 
 interface PluginProcessLinkUpdateDto {
@@ -116,6 +124,7 @@ interface PluginProcessLinkUpdateDto {
   };
   referenceType: PluginConfigurationReferenceType;
   pluginDefinitionKey?: string;
+  actionResultMappings?: Array<PluginActionResultMapping>;
 }
 
 interface FormFlowProcessLinkUpdateRequestDto {
@@ -203,6 +212,60 @@ interface BuildingBlockProcessLinkUpdateDto {
   outputMappings: Array<BuildingBlockOutputMapping>;
 }
 
+/**
+ * `externalPluginConfigurationId` is required for `FIXED` references and omitted for
+ * `BUILDING_BLOCK` references, mirroring the embedded plugin process link (D1). For
+ * `BUILDING_BLOCK`, `pluginDefinitionKey` (the external plugin's `pluginId`) and `pluginVersion`
+ * are required instead — field names must match
+ * `ExternalPluginProcessLinkCreateRequestDto`/`UpdateRequestDto` on the backend exactly.
+ */
+interface ExternalPluginProcessLinkCreateDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: 'external_plugin';
+  externalPluginConfigurationId?: string;
+  actionKey: string;
+  pluginVersion: string;
+  referenceType?: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
+  actionProperties?: object;
+  actionResultMappings?: Array<PluginActionResultMapping>;
+}
+
+interface ExternalPluginProcessLinkUpdateDto {
+  id: string;
+  processLinkType: 'external_plugin';
+  externalPluginConfigurationId?: string;
+  actionKey: string;
+  pluginVersion: string;
+  referenceType?: PluginConfigurationReferenceType;
+  pluginDefinitionKey?: string;
+  actionProperties?: object;
+  actionResultMappings?: Array<PluginActionResultMapping>;
+}
+
+interface ExternalPluginTaskFormProcessLinkCreateDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: 'external_plugin_task_form';
+  externalPluginConfigurationId: string;
+  pluginVersion: string;
+  // Always serialized (null when the plugin's task-form bundle has no key) so the backend's
+  // field-based (Jackson DEDUCTION) process-link type resolution can distinguish this from the
+  // action link, which is identified by its `actionKey`.
+  bundleKey: string | null;
+}
+
+interface ExternalPluginTaskFormProcessLinkUpdateDto {
+  id: string;
+  processLinkType: 'external_plugin_task_form';
+  externalPluginConfigurationId: string;
+  pluginVersion: string;
+  bundleKey: string | null;
+}
+
 type BuildingBlockSyncTiming = 'CONTINUOUS' | 'END';
 
 interface BuildingBlockInputMapping {
@@ -216,7 +279,31 @@ interface BuildingBlockOutputMapping {
   syncTiming: BuildingBlockSyncTiming;
 }
 
-type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
+/**
+ * A single plugin-action result write-back rule (`com.ritense.plugin.domain.PluginActionResultMapping`
+ * on the backend). `source` is an RFC 6901 JSON pointer into the action's result (empty string =
+ * whole result); `target` is a value-resolver-prefixed key (`doc:`, `pv:`, `case:`) describing where
+ * to write it.
+ */
+interface PluginActionResultMapping {
+  source: string;
+  target: string;
+}
+
+type TaskProcessLinkType =
+  | 'form'
+  | 'form-flow'
+  | 'form-view-model'
+  | 'url'
+  | 'ui-component'
+  | 'external-plugin-task-form';
+
+interface ExternalPluginTaskFormContext {
+  taskId?: string | null;
+  processInstanceId?: string | null;
+  documentId?: string | null;
+  pluginConfigurationId?: string;
+}
 
 interface TaskProcessLinkResult {
   processLinkId: string;
@@ -233,6 +320,11 @@ interface TaskProcessLinkResult {
     formDisplayType?: FormDisplayType;
     formSize?: FormSize;
     componentKey?: string;
+    // external-plugin-task-form
+    bundleUrl?: string | null;
+    configurationId?: string;
+    bundleKey?: string | null;
+    context?: ExternalPluginTaskFormContext;
   };
 }
 
@@ -247,7 +339,9 @@ type ProcessLinkUpdateEvent =
   | FormProcessLinkUpdateRequestDto
   | URLProcessLinkUpdateRequestDto
   | UIComponentProcessLinkUpdateRequestDto
-  | BuildingBlockProcessLinkUpdateDto;
+  | BuildingBlockProcessLinkUpdateDto
+  | ExternalPluginProcessLinkUpdateDto
+  | ExternalPluginTaskFormProcessLinkUpdateDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -269,7 +363,9 @@ type ProcessLinkCreateEvent =
   | PluginProcessLinkCreateDto
   | BuildingBlockProcessLinkCreateDto
   | URLProcessLinkCreateDto
-  | UIComponentProcessLinkCreateRequestDto;
+  | UIComponentProcessLinkCreateRequestDto
+  | ExternalPluginProcessLinkCreateDto
+  | ExternalPluginTaskFormProcessLinkCreateDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -302,6 +398,9 @@ type PluginListItem = {
   logo?: string | null;
   payload: PluginConfiguration | string;
   isDefinition: boolean;
+  external?: boolean;
+  externalConfigurationId?: string;
+  externalDefinitionId?: string;
 };
 
 interface PluginConfigurationViewModel {
@@ -309,6 +408,14 @@ interface PluginConfigurationViewModel {
   label: string;
   dropdownItems: Array<ListItem>;
   hasOptions: boolean;
+  source: PluginRequirementSource;
+  pluginDefinitionVersion?: string | null;
+  /**
+   * The selected external configuration's actual definition version, set only when it differs from
+   * `pluginDefinitionVersion` (D3 non-blocking warning). `undefined` for embedded plugins and exact
+   * version matches.
+   */
+  selectedConfigurationVersion?: string;
 }
 
 interface DuplicateProcessDefinitionDescriptor {
@@ -330,6 +437,11 @@ interface ProcessDefinitionConflictResponse {
 export {
   CompatiblePluginProcessLinks,
   CompatibleProcessVersion,
+  ExternalPluginProcessLinkCreateDto,
+  ExternalPluginProcessLinkUpdateDto,
+  ExternalPluginTaskFormContext,
+  ExternalPluginTaskFormProcessLinkCreateDto,
+  ExternalPluginTaskFormProcessLinkUpdateDto,
   FormDisplayType,
   FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,
@@ -343,6 +455,7 @@ export {
   BuildingBlockSyncTiming,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
+  PluginActionResultMapping,
   PluginConfigurationViewModel,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,

@@ -25,7 +25,7 @@ import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
 class ProcessLinkChangedEventListener(
-    private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolver
+    private val pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -44,10 +44,12 @@ class ProcessLinkChangedEventListener(
     }
 
     private fun recheckIssues(processDefinitionId: String) {
-        try {
-            pluginConfigurationMappingResolver.recheckIssuesForProcessDefinition(processDefinitionId)
-        } catch (e: Exception) {
-            logger.debug(e) { "Could not recheck plugin configuration issues for process definition $processDefinitionId" }
+        pluginConfigurationMappingResolvers.forEach { resolver ->
+            try {
+                resolver.recheckIssuesForProcessDefinition(processDefinitionId)
+            } catch (e: Exception) {
+                logger.debug(e) { "Could not recheck plugin configuration issues for process definition $processDefinitionId" }
+            }
         }
     }
 

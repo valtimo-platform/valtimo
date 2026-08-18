@@ -28,6 +28,7 @@ import jakarta.validation.Valid
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.SortDefault
@@ -52,6 +53,10 @@ class TeamResource(
     private val userManagementService: UserManagementService,
 ) {
 
+    @EndpointDescription(
+        en = "List all teams",
+        nl = "Alle teams ophalen",
+    )
     @GetMapping
     fun getAllTeams(
         @RequestParam(required = false) titleContains: String?,
@@ -60,12 +65,20 @@ class TeamResource(
         return teamManagementService.findAll(titleContains, pageable).map { TeamListResponseDto.from(it) }
     }
 
+    @EndpointDescription(
+        en = "Get a team by key",
+        nl = "Team op sleutel ophalen",
+    )
     @GetMapping("/{key}")
     fun getTeamById(@PathVariable key: String): TeamResponseDto {
         val team = teamManagementService.findByKey(key) ?: error("Team not found")
         return TeamResponseDto.from(team)
     }
 
+    @EndpointDescription(
+        en = "Create a team",
+        nl = "Team aanmaken",
+    )
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun createTeam(@Valid @RequestBody request: TeamCreateRequestDto): TeamResponseDto {
@@ -73,18 +86,30 @@ class TeamResource(
         return TeamResponseDto.from(team)
     }
 
+    @EndpointDescription(
+        en = "Update a team",
+        nl = "Team bijwerken",
+    )
     @PutMapping("/{key}")
     fun updateTeam(@PathVariable key: String, @Valid @RequestBody request: TeamUpdateRequestDto): TeamResponseDto {
         val team = teamManagementService.update(key, request.title)
         return TeamResponseDto.from(team)
     }
 
+    @EndpointDescription(
+        en = "Delete a team",
+        nl = "Team verwijderen",
+    )
     @DeleteMapping("/{key}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteTeam(@PathVariable key: String) {
         teamManagementService.delete(key)
     }
 
+    @EndpointDescription(
+        en = "List users in a team",
+        nl = "Gebruikers van een team ophalen",
+    )
     @GetMapping("/{teamKey}/user")
     fun getTeamUsers(
         @PathVariable teamKey: String,
@@ -95,6 +120,10 @@ class TeamResource(
             .map { uname -> TeamUserResponseDto.from(userManagementService.findByUsername(uname)) }
     }
 
+    @EndpointDescription(
+        en = "Add a user to a team",
+        nl = "Gebruiker aan een team toevoegen",
+    )
     @PostMapping("/{teamKey}/user")
     @ResponseStatus(HttpStatus.CREATED)
     fun addUserToTeam(
@@ -105,6 +134,10 @@ class TeamResource(
         return TeamUserResponseDto.from(userManagementService.findByUsername(username))
     }
 
+    @EndpointDescription(
+        en = "Remove a user from a team",
+        nl = "Gebruiker uit een team verwijderen",
+    )
     @DeleteMapping("/{teamKey}/user/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun removeUserFromTeam(
@@ -114,6 +147,10 @@ class TeamResource(
         teamManagementService.removeUserFromTeam(username, teamKey)
     }
 
+    @EndpointDescription(
+        en = "List candidate users for a team",
+        nl = "Kandidaat-gebruikers voor een team ophalen",
+    )
     @GetMapping("/{teamKey}/candidate-user")
     fun getCandidateUsers(@PathVariable teamKey: String): List<ManageableUser> {
         val memberUsernames = teamManagementService.findAllTeamUsernames(teamKey = teamKey).content.toSet()

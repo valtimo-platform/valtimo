@@ -218,13 +218,13 @@ class ProcessLinkAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ProcessLinkChangedEventListener::class)
     fun processLinkChangedEventListener(
-        pluginConfigurationMappingResolver: PluginConfigurationMappingResolver,
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
     ): ProcessLinkChangedEventListener {
-        return ProcessLinkChangedEventListener(pluginConfigurationMappingResolver)
+        return ProcessLinkChangedEventListener(pluginConfigurationMappingResolvers)
     }
 
     @Bean
-    @ConditionalOnMissingBean(PluginConfigurationMappingResolver::class)
+    @ConditionalOnMissingBean(PluginConfigurationMappingResolverImpl::class)
     fun pluginConfigurationMappingResolver(
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
         pluginConfigurationRepository: PluginConfigurationRepository,

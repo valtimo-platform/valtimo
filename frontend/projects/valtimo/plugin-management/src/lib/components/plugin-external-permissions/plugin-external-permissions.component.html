@@ -1,0 +1,145 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-inline-notification
+  class="plugin-external-permissions__trust-notice"
+  [notificationObj]="{
+    type: readonlyMode ? 'info' : 'warning',
+    title: '',
+    message:
+      (readonlyMode
+        ? 'pluginManagement.permissions.descriptionReadonly'
+        : 'pluginManagement.permissions.description'
+      ) | translate,
+    showClose: false,
+    lowContrast: true,
+  }"
+></cds-inline-notification>
+
+<cds-inline-notification
+  *ngIf="
+    $capabilities().length === 0 && $enrichedEndpoints().length === 0 && $eventTypes().length === 0
+  "
+  [notificationObj]="{
+    type: 'info',
+    title: '',
+    subtitle: 'pluginManagement.permissions.noEndpoints' | translate,
+    showClose: false,
+    lowContrast: true,
+  }"
+></cds-inline-notification>
+
+<section *ngIf="$capabilities().length > 0" class="plugin-external-permissions__section">
+  <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
+    {{ 'pluginManagement.permissions.capabilitiesHeading' | translate }}
+  </h6>
+
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.permissions.capabilityHeading' | translate }}
+      </cds-list-column>
+      <cds-list-column>
+        {{ 'pluginManagement.permissions.descriptionHeading' | translate }}
+      </cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row
+      *ngFor="let cap of $capabilities()"
+      [attr.data-test-id]="'external-plugin-permission-capability-' + cap"
+    >
+      <cds-list-column nowrap="true">
+        <cds-tag type="purple" size="sm">{{ cap }}</cds-tag>
+      </cds-list-column>
+
+      <cds-list-column>
+        {{ 'pluginManagement.permissions.capability.' + cap | translate }}
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</section>
+
+<section *ngIf="$enrichedEndpoints().length > 0" class="plugin-external-permissions__section">
+  <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
+    {{ 'pluginManagement.permissions.endpointsHeading' | translate }}
+  </h6>
+
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.permissions.methodHeading' | translate }}
+      </cds-list-column>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.permissions.endpointHeading' | translate }}
+      </cds-list-column>
+      <cds-list-column>
+        {{ 'pluginManagement.permissions.descriptionHeading' | translate }}
+      </cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row
+      *ngFor="let endpoint of $enrichedEndpoints()"
+      [attr.data-test-id]="'external-plugin-permission-' + endpoint.method + '-' + endpoint.pattern"
+    >
+      <cds-list-column nowrap="true">
+        <cds-tag [type]="_httpMethodTagType(endpoint.method)" size="sm">{{
+          endpoint.method | uppercase
+        }}</cds-tag>
+      </cds-list-column>
+
+      <cds-list-column nowrap="true">
+        <cds-tag type="cool-gray" size="sm">{{ endpoint.pattern }}</cds-tag>
+      </cds-list-column>
+
+      <cds-list-column>
+        <span *ngIf="endpoint.description; else noDescription">{{ endpoint.description }}</span>
+        <ng-template #noDescription>
+          <span class="plugin-external-permissions__helper">—</span>
+        </ng-template>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</section>
+
+<section *ngIf="$eventTypes().length > 0" class="plugin-external-permissions__section">
+  <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
+    {{ 'pluginManagement.permissions.eventsHeading' | translate }}
+  </h6>
+
+  <cds-structured-list>
+    <cds-list-row
+      *ngFor="let eventType of $eventTypes()"
+      [attr.data-test-id]="'external-plugin-permission-event-' + eventType"
+    >
+      <cds-list-column>
+        <cds-tag type="teal" size="sm">{{ eventType }}</cds-tag>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</section>
+
+<cds-checkbox
+  *ngIf="
+    !readonlyMode &&
+    ($capabilities().length > 0 || $enrichedEndpoints().length > 0 || $eventTypes().length > 0)
+  "
+  class="plugin-external-permissions__acceptance"
+  [checked]="$accepted()"
+  (checkedChange)="onAcceptanceChange($event)"
+  data-test-id="external-plugin-permissions-accept"
+>
+  {{ 'pluginManagement.permissions.accept' | translate }}
+</cds-checkbox>

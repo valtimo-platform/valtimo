@@ -205,20 +205,35 @@
           >
             <path d="M18 6l-1.4 1.4L24.2 15H4v2h20.2l-7.6 7.6L18 26l10-10z" />
           </svg>
-          <cds-combo-box
-            *ngIf="row.status === 'available'"
-            [attr.data-test-id]="testIds.pluginMappingDropdown"
-            [items]="row.listItems"
-            itemValueKey="id"
-            [formControlName]="row.sourcePluginConfigurationId"
-            [placeholder]="'caseManagement.importDefinition.plugins.selectPlaceholder' | translate"
-            [cdsLayer]="2"
-            [appendInline]="true"
-            [dropUp]="false"
-            (clear)="onPluginMappingClear(row.sourcePluginConfigurationId)"
-          >
-            <cds-dropdown-list></cds-dropdown-list>
-          </cds-combo-box>
+          <div *ngIf="row.status === 'available'" class="valtimo-definition-uploader__plugins-target">
+            <cds-combo-box
+              [attr.data-test-id]="testIds.pluginMappingDropdown"
+              [items]="row.listItems"
+              itemValueKey="id"
+              [formControlName]="row.sourcePluginConfigurationId"
+              [placeholder]="'caseManagement.importDefinition.plugins.selectPlaceholder' | translate"
+              [cdsLayer]="2"
+              [appendInline]="true"
+              [dropUp]="false"
+              (clear)="onPluginMappingClear(row.sourcePluginConfigurationId)"
+            >
+              <cds-dropdown-list></cds-dropdown-list>
+            </cds-combo-box>
+
+            <div
+              *ngIf="selectedConfigurationVersion(row) as mismatchedVersion"
+              class="valtimo-definition-uploader__plugins-version-warning"
+            >
+              {{
+                'caseManagement.importDefinition.plugins.externalVersionMismatchWarning'
+                  | translate
+                    : {
+                        selectedVersion: mismatchedVersion,
+                        requiredVersion: row.pluginDefinitionVersion
+                      }
+              }}
+            </div>
+          </div>
           <div *ngIf="row.status === 'not-installed'" class="valtimo-definition-uploader__plugins-unavailable valtimo-definition-uploader__plugins-unavailable--error">
             {{ 'caseManagement.importDefinition.plugins.notInstalled' | translate }}
           </div>

@@ -32,6 +32,20 @@
   margin-top: 30px;
 }
 
+.plugin-configuration-select {
+  &__warning {
+    display: flex;
+    width: 100%;
+    margin-top: var(--cds-spacing-03);
+
+    ::ng-deep cds-inline-notification {
+      width: 100%;
+      max-inline-size: unset;
+      margin: 0;
+    }
+  }
+}
+
 .configure-building-block-plugins__warning {
   display: flex;
   width: 100%;

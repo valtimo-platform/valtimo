@@ -1,0 +1,161 @@
+name: Plugin host & SDK - build and test
+
+permissions:
+  contents: read
+
+on:
+  push:
+    paths:
+      - "plugin-host/**"
+      - ".github/workflows/plugin_host_ci.yml"
+  pull_request:
+    paths:
+      - "plugin-host/**"
+      - ".github/workflows/plugin_host_ci.yml"
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Node 22 matches the host runtime requirement (Extism runInWorker needs Node >= 22).
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            plugin-host/plugin-sdk/package-lock.json
+            plugin-host/app/package-lock.json
+
+      # The SDK is a file: dependency of the app and must be built first so the app's `tsc` can
+      # resolve @valtimo/plugin-sdk types.
+      - name: SDK - install
+        working-directory: plugin-host/plugin-sdk
+        run: npm ci
+
+      - name: SDK - build (tsc)
+        working-directory: plugin-host/plugin-sdk
+        run: npm run build
+
+      - name: SDK - test
+        working-directory: plugin-host/plugin-sdk
+        run: npm run test:cov
+
+      - name: App - install
+        working-directory: plugin-host/app
+        run: npm ci
+
+      - name: App - build (tsc)
+        working-directory: plugin-host/app
+        run: npm run build
+
+      - name: App - test
+        working-directory: plugin-host/app
+        run: npm run test:cov
+
+  # L3 (Wasm/Extism) tests: compile the fixture plugin with the real SDK toolchain and run it under
+  # Extism. Kept separate from `unit` because it needs the Wasm toolchain (extism-js + binaryen),
+  # which is not committed — the SDK's toolchain module downloads the versions pinned in
+  # plugin-host/plugin-sdk/bin/toolchain.mjs on first use.
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            plugin-host/plugin-sdk/package-lock.json
+            plugin-host/app/package-lock.json
+            plugin-host/test-fixtures/test-plugin/package-lock.json
+
+      # The fixture bundles @valtimo/plugin-sdk from its built dist, so the SDK must be built first.
+      - name: SDK - install & build
+        working-directory: plugin-host/plugin-sdk
+        run: npm ci && npm run build
+
+      - name: Fixture - install deps
+        working-directory: plugin-host/test-fixtures/test-plugin
+        run: npm install
+
+      - name: App - install
+        working-directory: plugin-host/app
+        run: npm ci
+
+      # globalSetup compiles the fixture to Wasm; valtimo-plugin-build downloads extism-js and
+      # binaryen into plugin-host/.bin/ on first use.
+      - name: App - Wasm/Extism tests (L3)
+        working-directory: plugin-host/app
+        run: npm run test:wasm
+
+  # L4 (integration) tests: real Postgres + RabbitMQ via Testcontainers. The ubuntu runner ships a
+  # working Docker daemon, which Testcontainers uses directly.
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            plugin-host/plugin-sdk/package-lock.json
+            plugin-host/app/package-lock.json
+
+      # The app's tsc/type surface pulls @valtimo/plugin-sdk, so build the SDK first.
+      - name: SDK - install & build
+        working-directory: plugin-host/plugin-sdk
+        run: npm ci && npm run build
+
+      - name: App - install
+        working-directory: plugin-host/app
+        run: npm ci
+
+      - name: App - integration tests (Testcontainers)
+        working-directory: plugin-host/app
+        run: npm run test:int
+
+  # Validates the documented one-command bootstrap (`npm run setup`) on a fresh checkout for every
+  # supported development platform — including the toolchain auto-download and the sample-plugin
+  # Wasm build. Docker is intentionally not required by setup, so this runs on all three OSes.
+  bootstrap:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            plugin-host/plugin-sdk/package-lock.json
+            plugin-host/app/package-lock.json
+            plugin-host/sample-plugins/case-summary/package-lock.json
+            plugin-host/sample-apps/demo-app/package-lock.json
+            plugin-host/test-fixtures/test-plugin/package-lock.json
+
+      - name: Bootstrap (npm run setup)
+        working-directory: plugin-host
+        run: npm run setup -- --ci
+
+      - name: Verify sample plugin package was produced
+        working-directory: plugin-host
+        run: node --input-type=module -e "const {samplePluginZipPath} = await import('./scripts/setup.mjs'); const {existsSync} = await import('node:fs'); const zip = samplePluginZipPath(); if (!existsSync(zip)) { console.error('missing ' + zip); process.exit(1); } console.log('OK ' + zip);"
+        shell: bash

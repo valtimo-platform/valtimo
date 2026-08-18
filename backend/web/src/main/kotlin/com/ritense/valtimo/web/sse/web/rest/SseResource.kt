@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.sse.web.rest
 
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.web.sse.domain.Subscriber
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -29,9 +30,17 @@ class SseResource(
     private val sseSubscriptionService: SseSubscriptionService
 ) {
 
+    @EndpointDescription(
+        en = "Subscribe to server-sent events",
+        nl = "Inschrijven op server-sent events",
+    )
     @GetMapping("/api/v1/sse")
     fun subscribeToEvents() = sseSubscriptionService.subscribe()
 
+    @EndpointDescription(
+        en = "Subscribe to server-sent events by subscription id",
+        nl = "Inschrijven op server-sent events op inschrijvings-id",
+    )
     @GetMapping("/api/v1/sse/{subscriptionId}")
     fun subscribeToEvents(
         @PathVariable subscriptionId: UUID?

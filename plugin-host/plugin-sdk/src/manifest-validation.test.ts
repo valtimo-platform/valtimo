@@ -1,0 +1,343 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {describe, expect, it} from "vitest";
+import {validatePluginManifest} from "./manifest-validation";
+
+/**
+ * `validatePluginManifest` is the single rule set enforced at BOTH the pack tool (build-time) and
+ * the host upload route (runtime). These cases pin that shared contract so the two gates
+ * cannot drift.
+ */
+describe("validatePluginManifest", () => {
+  const validManifest = () => ({
+    pluginId: "case-summary",
+    version: "0.1.0",
+    translations: {
+      en: { name: "Case Summary", description: "Shows a case summary" },
+      nl: { name: "Zaakoverzicht", description: "Toont een zaakoverzicht" },
+    },
+  });
+
+  it("accepts a well-formed manifest with per-locale name + description", () => {
+    expect(validatePluginManifest(validManifest())).toEqual([]);
+  });
+
+  it.each([
+    ["null", null],
+    ["an array", [{ pluginId: "x" }]],
+    ["a string", "not-an-object"],
+    ["a number", 42],
+  ])("rejects a manifest that is %s", (_label, input) => {
+    const errors = validatePluginManifest(input);
+    expect(errors).toContain("manifest.json must be a JSON object");
+  });
+
+  it("requires a non-empty pluginId", () => {
+    const errors = validatePluginManifest({ ...validManifest(), pluginId: "  " });
+    expect(errors).toContain("manifest.json must contain a non-empty 'pluginId'");
+  });
+
+  it("requires a non-empty version", () => {
+    const m = validManifest() as Record<string, unknown>;
+    delete m.version;
+    expect(validatePluginManifest(m)).toContain("manifest.json must contain a non-empty 'version'");
+  });
+
+  it("accepts the pack-tool-stamped sdkVersion and the frontend_data capability", () => {
+    const m = {
+      ...validManifest(),
+      sdkVersion: "0.1.0",
+      permissions: { capabilities: ["gzac_api", "frontend_data"] },
+    };
+    expect(validatePluginManifest(m)).toEqual([]);
+  });
+
+  it("rejects a non-string or empty sdkVersion (when present)", () => {
+    expect(validatePluginManifest({ ...validManifest(), sdkVersion: 42 })).toContain(
+      "manifest.json 'sdkVersion' must be a non-empty string when present"
+    );
+    expect(validatePluginManifest({ ...validManifest(), sdkVersion: " " })).toContain(
+      "manifest.json 'sdkVersion' must be a non-empty string when present"
+    );
+  });
+
+  it("rejects a missing translations block and stops there", () => {
+    const m = validManifest() as Record<string, unknown>;
+    delete m.translations;
+    const errors = validatePluginManifest(m);
+    expect(errors).toEqual([
+      "manifest.json must contain a 'translations' object with at least one locale; 'name' and 'description' are defined per locale, not at the top level",
+    ]);
+  });
+
+  it("rejects an empty translations object", () => {
+    const errors = validatePluginManifest({ ...validManifest(), translations: {} });
+    expect(errors).toContain("manifest.json 'translations' must declare at least one locale");
+  });
+
+  it("rejects a non-object locale bucket", () => {
+    const errors = validatePluginManifest({
+      ...validManifest(),
+      translations: { en: "nope" },
+    });
+    expect(errors).toContain("manifest.json translations.en must be an object");
+  });
+
+  it("requires a non-empty name in every declared locale", () => {
+    const errors = validatePluginManifest({
+      ...validManifest(),
+      translations: {
+        en: { name: "Case Summary", description: "ok" },
+        nl: { name: "  ", description: "Toont een zaakoverzicht" },
+      },
+    });
+    expect(errors).toContain("manifest.json translations.nl must contain a non-empty 'name'");
+    expect(errors).not.toContain("manifest.json translations.en must contain a non-empty 'name'");
+  });
+
+  it("requires a non-empty description in every declared locale", () => {
+    const errors = validatePluginManifest({
+      ...validManifest(),
+      translations: { en: { name: "Case Summary" } },
+    });
+    expect(errors).toContain("manifest.json translations.en must contain a non-empty 'description'");
+  });
+
+  it("accumulates multiple errors across fields and locales", () => {
+    const errors = validatePluginManifest({
+      version: "",
+      translations: { en: {}, fr: { name: "Résumé" } },
+    });
+    // missing pluginId, blank version, en missing name+description, fr missing description
+    expect(errors).toContain("manifest.json must contain a non-empty 'pluginId'");
+    expect(errors).toContain("manifest.json must contain a non-empty 'version'");
+    expect(errors).toContain("manifest.json translations.en must contain a non-empty 'name'");
+    expect(errors).toContain("manifest.json translations.en must contain a non-empty 'description'");
+    expect(errors).toContain("manifest.json translations.fr must contain a non-empty 'description'");
+    expect(errors.length).toBeGreaterThanOrEqual(5);
+  });
+
+  describe("permissions", () => {
+    const withPermissions = (permissions: unknown) => ({ ...validManifest(), permissions });
+
+    it("rejects permissions that is not an object", () => {
+      expect(validatePluginManifest(withPermissions(["gzac_api"]))).toContain(
+        "manifest.json 'permissions' must be an object when present"
+      );
+    });
+
+    it("accepts every known capability name", () => {
+      expect(
+        validatePluginManifest(
+          withPermissions({
+            capabilities: ["gzac_api", "http_request", "kv", "log", "frontend_data"],
+          })
+        )
+      ).toEqual([]);
+    });
+
+    it("rejects an unknown capability name, listing the allowed set", () => {
+      // The host enforces capabilities by exact name, so a typo must fail the upload rather
+      // than silently granting nothing at runtime.
+      const errors = validatePluginManifest(withPermissions({ capabilities: ["gzac-api"] }));
+      expect(errors).toEqual([
+        "manifest.json permissions.capabilities[0] must be one of: gzac_api, http_request, kv, log, frontend_data",
+      ]);
+    });
+
+    it("rejects a non-string capability entry and reports its index", () => {
+      const errors = validatePluginManifest(withPermissions({ capabilities: ["kv", 42] }));
+      expect(errors).toEqual([
+        "manifest.json permissions.capabilities[1] must be one of: gzac_api, http_request, kv, log, frontend_data",
+      ]);
+    });
+
+    it("rejects capabilities that is not an array", () => {
+      expect(validatePluginManifest(withPermissions({ capabilities: "kv" }))).toContain(
+        "manifest.json 'permissions.capabilities' must be an array when present"
+      );
+    });
+
+    it("rejects endpoints that is not an array", () => {
+      expect(
+        validatePluginManifest(
+          withPermissions({ capabilities: ["gzac_api"], endpoints: "/api/v1/**" })
+        )
+      ).toContain("manifest.json 'permissions.endpoints' must be an array when present");
+    });
+
+    it("rejects endpoints declared without the gzac_api capability", () => {
+      // endpoints only scope which GZAC routes gzac_api may reach; declaring them without the
+      // capability is a manifest the admin could accept but the host would always deny.
+      const errors = validatePluginManifest(
+        withPermissions({
+          capabilities: ["kv"],
+          endpoints: [{ method: "GET", pattern: "/api/v1/document/*" }],
+        })
+      );
+      expect(errors).toContain(
+        "manifest.json declares 'permissions.endpoints' but does not include 'gzac_api' in 'permissions.capabilities' — endpoints require the gzac_api capability"
+      );
+    });
+
+    it("accepts endpoints alongside the gzac_api capability", () => {
+      expect(
+        validatePluginManifest(
+          withPermissions({
+            capabilities: ["gzac_api"],
+            endpoints: [{ method: "GET", pattern: "/api/v1/document/*" }],
+          })
+        )
+      ).toEqual([]);
+    });
+
+    it("does not require the gzac_api pairing when no capability list is declared at all", () => {
+      // An older manifest without a capabilities block cannot be judged against it.
+      expect(
+        validatePluginManifest(
+          withPermissions({ endpoints: [{ method: "GET", pattern: "/api/v1/document/*" }] })
+        )
+      ).toEqual([]);
+    });
+  });
+
+  describe("action outputs", () => {
+    const withActions = (actions: unknown) => ({ ...validManifest(), actions });
+
+    it("accepts unique non-empty output keys", () => {
+      expect(
+        validatePluginManifest(withActions([{ key: "summarize", outputs: ["summary", "title"] }]))
+      ).toEqual([]);
+    });
+
+    it("accepts an action without an outputs block", () => {
+      expect(validatePluginManifest(withActions([{ key: "summarize" }]))).toEqual([]);
+    });
+
+    it("rejects actions that is not an array", () => {
+      expect(validatePluginManifest(withActions({ key: "x" }))).toContain(
+        "manifest.json 'actions' must be an array when present"
+      );
+    });
+
+    it("rejects a non-object action entry, reporting its index", () => {
+      expect(validatePluginManifest(withActions(["summarize"]))).toContain(
+        "manifest.json actions[0] must be an object"
+      );
+    });
+
+    it("rejects outputs that is not an array", () => {
+      expect(
+        validatePluginManifest(withActions([{ key: "summarize", outputs: "summary" }]))
+      ).toContain("manifest.json actions[0].outputs must be an array when present");
+    });
+
+    it.each([
+      ["a blank string", ""],
+      ["whitespace", "   "],
+      ["a number", 7],
+      ["null", null],
+    ])("rejects %s as an output key", (_label, value) => {
+      expect(
+        validatePluginManifest(withActions([{ key: "summarize", outputs: [value] }]))
+      ).toContain("manifest.json actions[0].outputs[0] must be a non-empty string");
+    });
+
+    it("rejects a duplicated output key, naming it", () => {
+      // The result-contract check on the host matches result keys against this list, so duplicates
+      // would make the declared contract ambiguous.
+      expect(
+        validatePluginManifest(
+          withActions([{ key: "summarize", outputs: ["summary", "summary"] }])
+        )
+      ).toContain(
+        "manifest.json actions[0].outputs must contain unique keys; 'summary' is duplicated"
+      );
+    });
+
+    it("reports the offending action's index when several are declared", () => {
+      const errors = validatePluginManifest(
+        withActions([{ key: "a", outputs: ["ok"] }, { key: "b", outputs: [""] }])
+      );
+      expect(errors).toEqual(["manifest.json actions[1].outputs[0] must be a non-empty string"]);
+    });
+  });
+
+  describe("frontend bundles", () => {
+    const withBundles = (frontendBundles: unknown) => ({ ...validManifest(), frontendBundles });
+
+    it("accepts every known bundle type", () => {
+      expect(
+        validatePluginManifest(
+          withBundles([
+            { type: "config", path: "/frontend/config.html" },
+            { type: "process-link-action", path: "/frontend/action.html" },
+            { type: "case-tab", path: "/frontend/case-tab.html" },
+            { type: "case-widget", path: "/frontend/case-widget.html" },
+            { type: "page", path: "/frontend/page.html" },
+            { type: "task-form", path: "/frontend/task-form.html", submitHandler: true },
+          ])
+        )
+      ).toEqual([]);
+    });
+
+    it("rejects frontendBundles that is not an array", () => {
+      expect(validatePluginManifest(withBundles({ type: "config" }))).toContain(
+        "manifest.json 'frontendBundles' must be an array when present"
+      );
+    });
+
+    it("rejects a non-object bundle entry", () => {
+      expect(validatePluginManifest(withBundles(["config"]))).toContain(
+        "manifest.json frontendBundles[0] must be an object"
+      );
+    });
+
+    it("rejects an unknown bundle type, listing the allowed set", () => {
+      expect(
+        validatePluginManifest(withBundles([{ type: "dashboard", path: "/frontend/x.html" }]))
+      ).toContain(
+        "manifest.json frontendBundles[0].type must be one of: config, process-link-action, case-tab, case-widget, page, task-form"
+      );
+    });
+
+    it.each([
+      ["a missing path", { type: "case-tab" }],
+      ["a blank path", { type: "case-tab", path: "   " }],
+      ["a non-string path", { type: "case-tab", path: 7 }],
+    ])("rejects a bundle with %s", (_label, bundle) => {
+      expect(validatePluginManifest(withBundles([bundle]))).toContain(
+        "manifest.json frontendBundles[0] must contain a non-empty 'path'"
+      );
+    });
+
+    it("reports both the type and path problems of one entry", () => {
+      const errors = validatePluginManifest(withBundles([{ type: "nope" }]));
+      expect(errors).toHaveLength(2);
+    });
+  });
+
+  it("accumulates errors across capabilities, actions and bundles in one pass", () => {
+    const errors = validatePluginManifest({
+      ...validManifest(),
+      permissions: { capabilities: ["nope"] },
+      actions: [{ key: "a", outputs: ["", ""] }],
+      frontendBundles: [{ type: "unknown", path: "" }],
+    });
+    expect(errors.length).toBeGreaterThanOrEqual(5);
+  });
+});

@@ -1,0 +1,78 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.externalplugin.security
+
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
+import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
+import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
+import org.springframework.http.HttpMethod.DELETE
+import org.springframework.http.HttpMethod.GET
+import org.springframework.http.HttpMethod.PATCH
+import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+
+class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
+
+    override fun configure(http: HttpSecurity) {
+        try {
+            http.authorizeHttpRequests { requests ->
+                requests
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/host")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/external-plugin/host/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PATCH, "/api/management/v1/external-plugin/host/*/event-queue")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host/*/usages")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host-defaults")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/host/*/upload")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/definition")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/definition/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/definition/*/accept-content")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration/*/usages")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/configuration/*/logs")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/configuration")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/configuration/*/revoke-tokens")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/endpoint-descriptions")).hasAuthority(ADMIN)
+                    // Non-management: any authenticated user may mint a downscoped user token for a
+                    // plugin tab — the result is always bounded by PBAC ∩ the plugin's allowlist.
+                    .requestMatchers(antMatcher(POST, "/api/v1/external-plugin/configuration/*/user-token")).authenticated()
+                    // Non-management: the plugin host introspects a user token before serving a /data
+                    // call. The caller authenticates with the token itself; the resource rejects any
+                    // principal that is not an external-plugin user principal.
+                    .requestMatchers(antMatcher(GET, "/api/v1/external-plugin/user-token/introspect")).authenticated()
+                    // Non-management: the menu-configuration builder lists activated page bundles. The
+                    // list is unfiltered; access to page data is enforced at render time (PBAC ∩ allowlist).
+                    .requestMatchers(antMatcher(GET, "/api/v1/external-plugin/menu-pages")).authenticated()
+                    // Non-management: host origins for the frontend CSP (frame-src/connect-src). Every
+                    // user rendering a plugin surface needs these; an origin exposes no secret.
+                    .requestMatchers(antMatcher(GET, "/api/v1/external-plugin/host-origins")).authenticated()
+                    // Non-management: submit a plugin task-form. GZAC completes the task server-side as
+                    // the user — the standard COMPLETE permission is enforced in the submission service.
+                    .requestMatchers(
+                        antMatcher(POST, "/api/v1/process-link/*/external-plugin-task-form/submission")
+                    ).authenticated()
+            }
+        } catch (e: Exception) {
+            throw HttpConfigurerConfigurationException(e)
+        }
+    }
+}

@@ -113,7 +113,12 @@ export class WidgetWizardService {
         const selectedType = this.$selectedWidget()?.type;
         return !selectedType
           ? false
-          : [WidgetType.COLLECTION, WidgetType.FIELDS, WidgetType.TABLE].includes(selectedType);
+          : [
+              WidgetType.COLLECTION,
+              WidgetType.FIELDS,
+              WidgetType.TABLE,
+              WidgetType.EXTERNAL_PLUGIN,
+            ].includes(selectedType);
       },
     },
     [WidgetWizardStep.APPEARANCE]: {
@@ -122,7 +127,12 @@ export class WidgetWizardService {
         const selectedType = this.$selectedWidget()?.type;
         return (
           !!selectedType &&
-          [WidgetType.FIELDS, WidgetType.COLLECTION, WidgetType.TABLE].includes(selectedType)
+          [
+            WidgetType.FIELDS,
+            WidgetType.COLLECTION,
+            WidgetType.TABLE,
+            WidgetType.EXTERNAL_PLUGIN,
+          ].includes(selectedType)
         );
       },
     },

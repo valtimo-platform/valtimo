@@ -15,3 +15,5 @@
  */
 
 export * from './plugin';
+export * from './external-plugin.model';
+export * from './external-plugin-page.model';

@@ -24,6 +24,10 @@ import {
 } from '../../services';
 import {BuildingBlockStateService} from '../../services/building-block-state.service';
 import {
+  ExternalPluginConfiguration,
+  ExternalPluginDefinition,
+  ExternalPluginService,
+  getExternalPluginDisplayName,
   PluginConfiguration,
   PluginManagementService,
   PluginTranslationService,
@@ -34,6 +38,7 @@ import {
   PluginConfigurationViewModel,
   ProcessLink,
   ProcessLinkType,
+  RequiredPlugin,
 } from '../../models';
 import {combineLatest, distinctUntilChanged, Observable, of, shareReplay, Subscription} from 'rxjs';
 import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
@@ -48,7 +53,7 @@ import {NotificationContent} from 'carbon-components-angular';
   styleUrls: ['./configure-building-block-plugins.component.scss'],
 })
 export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy {
-  public readonly pluginKeys$ = this.buildingBlockStateService.requiredPluginKeys$;
+  public readonly requiredPlugins$ = this.buildingBlockStateService.requiredPlugins$;
   public readonly isNestedBuildingBlock$ = this.buildingBlockStateService.isNestedBuildingBlock$;
   private readonly _pluginDependenciesWarningTranslationKey$: Observable<string> =
     this.buildingBlockStateService.pluginDependencies$.pipe(
@@ -122,28 +127,38 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
   );
   public readonly pluginConfigurationViewModels$: Observable<Array<PluginConfigurationViewModel>> =
     combineLatest([
-      this.pluginKeys$,
+      this.requiredPlugins$,
       this.buildingBlockStateService.pluginMappings$,
       this.configurationPlaceholder$,
+      this.translateService.stream('key'),
     ]).pipe(
-      switchMap(([pluginKeys, pluginMappings, placeholder]) => {
-        if (!pluginKeys?.length) {
+      switchMap(([requiredPlugins, pluginMappings, placeholder]) => {
+        if (!requiredPlugins?.length) {
           return of([]);
         }
 
         return combineLatest(
-          pluginKeys.map(pluginKey =>
-            this.getConfigurationOptions(pluginKey).pipe(
-              map(options => ({
-                key: pluginKey,
-                label: this.pluginLabel(pluginKey),
-                dropdownItems: this.buildDropdownItems(
-                  options,
-                  pluginMappings?.[pluginKey],
-                  placeholder
-                ),
-                hasOptions: options.length > 0,
-              }))
+          requiredPlugins.map(requiredPlugin =>
+            (requiredPlugin.source === 'EXTERNAL'
+              ? this.getExternalConfigurationOptions(requiredPlugin)
+              : this.getEmbeddedConfigurationOptions(requiredPlugin).pipe(
+                  map(options => ({options, mismatchedVersionsById: new Map<string, string>()}))
+                )
+            ).pipe(
+              map(({options, mismatchedVersionsById}) => {
+                const selectedId = pluginMappings?.[requiredPlugin.mappingKey];
+                return {
+                  key: requiredPlugin.mappingKey,
+                  label: this.pluginLabel(requiredPlugin),
+                  dropdownItems: this.buildDropdownItems(options, selectedId, placeholder),
+                  hasOptions: options.length > 0,
+                  source: requiredPlugin.source,
+                  pluginDefinitionVersion: requiredPlugin.pluginDefinitionVersion,
+                  selectedConfigurationVersion: selectedId
+                    ? mismatchedVersionsById.get(selectedId)
+                    : undefined,
+                } as PluginConfigurationViewModel;
+              })
             )
           )
         );
@@ -155,6 +170,10 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     string,
     Observable<Array<PluginConfiguration>>
   >();
+  private readonly _externalConfigurationOptionsCache = new Map<
+    string,
+    Observable<{options: Array<PluginConfiguration>; mismatchedVersionsById: Map<string, string>}>
+  >();
 
   constructor(
     private readonly stateService: ProcessLinkStateService,
@@ -165,7 +184,8 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     private readonly pluginTranslationService: PluginTranslationService,
     private readonly processLinkService: ProcessLinkService,
     private readonly translateService: TranslateService,
-    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
+    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService,
+    private readonly externalPluginService: ExternalPluginService
   ) {}
 
   public ngOnInit(): void {
@@ -236,9 +256,10 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     this._subscriptions.unsubscribe();
   }
 
-  private getConfigurationOptions(
-    pluginDefinitionKey: string
+  private getEmbeddedConfigurationOptions(
+    requiredPlugin: RequiredPlugin
   ): Observable<Array<PluginConfiguration>> {
+    const pluginDefinitionKey = requiredPlugin.pluginDefinitionKey;
     if (!this._configurationOptionsCache.has(pluginDefinitionKey)) {
       this._configurationOptionsCache.set(
         pluginDefinitionKey,
@@ -253,17 +274,79 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     return this._configurationOptionsCache.get(pluginDefinitionKey) ?? of([]);
   }
 
-  public onMappingChange(pluginDefinitionKey: string, configurationId: string): void {
-    const normalizedValue = configurationId || null;
-    this.buildingBlockStateService.setPluginConfigurationMapping(
-      pluginDefinitionKey,
-      normalizedValue
+  /**
+   * Activated external configurations for the required plugin's `pluginId`. Configurations
+   * matching `pluginId@version` exactly are offered as normal options; configurations of the same
+   * `pluginId` at a different version are still offered (selectable), with their actual definition
+   * version recorded in `mismatchedVersionsById` so the template can render the D3 non-blocking
+   * warning when such a configuration is selected.
+   */
+  private getExternalConfigurationOptions(
+    requiredPlugin: RequiredPlugin
+  ): Observable<{options: Array<PluginConfiguration>; mismatchedVersionsById: Map<string, string>}> {
+    const cacheKey = requiredPlugin.mappingKey;
+    if (!this._externalConfigurationOptionsCache.has(cacheKey)) {
+      this._externalConfigurationOptionsCache.set(
+        cacheKey,
+        combineLatest([
+          this.externalPluginService
+            .getConfigurations()
+            .pipe(catchError(() => of([] as Array<ExternalPluginConfiguration>))),
+          this.externalPluginService
+            .getDefinitions()
+            .pipe(catchError(() => of([] as Array<ExternalPluginDefinition>))),
+        ]).pipe(
+          map(([configurations, definitions]) => {
+            const definitionById = new Map(definitions.map(d => [d.id, d]));
+            const matchingConfigurations = configurations.filter(configuration => {
+              const definition = definitionById.get(configuration.definitionId);
+              return definition?.pluginId === requiredPlugin.pluginDefinitionKey;
+            });
+
+            const lang = this.translateService.currentLang;
+            const mismatchedVersionsById = new Map<string, string>();
+            const options: Array<PluginConfiguration> = matchingConfigurations.map(
+              configuration => {
+                const definition = definitionById.get(configuration.definitionId);
+                if (definition && definition.version !== requiredPlugin.pluginDefinitionVersion) {
+                  mismatchedVersionsById.set(configuration.id, definition.version);
+                }
+                return {
+                  id: configuration.id,
+                  title: definition
+                    ? `${configuration.title} — ${getExternalPluginDisplayName(definition, lang)}`
+                    : configuration.title,
+                  properties: {},
+                } as PluginConfiguration;
+              }
+            );
+
+            return {options, mismatchedVersionsById};
+          }),
+          shareReplay(1)
+        )
+      );
+    }
+    return (
+      this._externalConfigurationOptionsCache.get(cacheKey) ??
+      of({options: [], mismatchedVersionsById: new Map<string, string>()})
     );
   }
 
-  public pluginLabel(pluginDefinitionKey: string): string {
+  public onMappingChange(mappingKey: string, configurationId: string): void {
+    const normalizedValue = configurationId || null;
+    this.buildingBlockStateService.setPluginConfigurationMapping(mappingKey, normalizedValue);
+  }
+
+  public pluginLabel(requiredPlugin: RequiredPlugin): string {
+    if (requiredPlugin.source === 'EXTERNAL') {
+      return requiredPlugin.pluginDefinitionVersion
+        ? `${requiredPlugin.pluginDefinitionKey} (${requiredPlugin.pluginDefinitionVersion})`
+        : requiredPlugin.pluginDefinitionKey;
+    }
     return (
-      this.pluginTranslationService.instant('title', pluginDefinitionKey) || pluginDefinitionKey
+      this.pluginTranslationService.instant('title', requiredPlugin.pluginDefinitionKey) ||
+      requiredPlugin.pluginDefinitionKey
     );
   }
 

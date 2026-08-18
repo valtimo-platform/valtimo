@@ -65,5 +65,6 @@ services:
 #   url: jdbc:postgresql://localhost:3365/admin-settings-test
 #   url: jdbc:postgresql://localhost:3366/documenten-api-preview-test
 #   url: jdbc:postgresql://localhost:3367/aws-test
+#   url: jdbc:postgresql://localhost:3368/external-plugin-test
 #   url: localhost:55672 <--rabbitmq
 #   url: localhost:55673 <--rabbitmq

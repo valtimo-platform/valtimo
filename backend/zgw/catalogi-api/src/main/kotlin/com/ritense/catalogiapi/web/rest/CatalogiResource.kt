@@ -33,6 +33,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.semver4j.Semver
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -51,6 +52,10 @@ class CatalogiResource(
     private val caseDefinitionService: CaseDefinitionService,
     private val documentService: DocumentService
 ) {
+    @EndpointDescription(
+        en = "List zaaktype informatieobjecttypes by case definition",
+        nl = "Informatieobjecttypen van zaaktype ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaaktype/documenttype")
     fun getZaakObjecttypes(
         @LoggableResource("caseDefinitionKey") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -68,6 +73,10 @@ class CatalogiResource(
         return ResponseEntity.ok(zaakObjectTypes)
     }
 
+    @EndpointDescription(
+        en = "List zaaktype informatieobjecttypes by document",
+        nl = "Informatieobjecttypen van zaaktype per document ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/zaaktype/documenttype")
     fun getZaakObjecttypes(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable documentId: UUID,
@@ -85,6 +94,10 @@ class CatalogiResource(
         return ResponseEntity.ok(zaakObjectTypes)
     }
 
+    @EndpointDescription(
+        en = "List zaaktype role types",
+        nl = "Roltypen van zaaktype ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/zaaktype/roltype")
     fun getZaakRoltypes(
         @LoggableResource("caseDefinitionKey") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -104,6 +117,10 @@ class CatalogiResource(
         return ResponseEntity.ok(zaakRolTypes)
     }
 
+    @EndpointDescription(
+        en = "List zaaktype status types",
+        nl = "Statustypen van zaaktype ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaaktype/statustype")
     fun getZaakStatustypen(
         @LoggableResource("caseDefinitionKey") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -120,6 +137,10 @@ class CatalogiResource(
         return ResponseEntity.ok(zaakStatusTypes)
     }
 
+    @EndpointDescription(
+        en = "List zaaktype result types",
+        nl = "Resultaattypen van zaaktype ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaaktype/resultaattype")
     fun getZaakResultaattypen(
         @LoggableResource("caseDefinitionKey") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -137,6 +158,10 @@ class CatalogiResource(
         return ResponseEntity.ok(zaakResultaatTypes)
     }
 
+    @EndpointDescription(
+        en = "List zaaktype besluittypes",
+        nl = "Besluittypen van zaaktype ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaaktype/besluittype")
     fun getZaakBesuilttypen(
         @LoggableResource("caseDefinitionKey") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -153,12 +178,20 @@ class CatalogiResource(
         return ResponseEntity.ok(zaakBesluitTypes)
     }
 
+    @EndpointDescription(
+        en = "List zaaktypes",
+        nl = "Zaaktypen ophalen",
+    )
     @GetMapping("/management/v1/zgw/zaaktype")
     fun getZaakTypen(): ResponseEntity<List<ZaaktypeDto>> {
         val zaakTypen = catalogiService.getZaakTypen().map { ZaaktypeDto.of(it) }
         return ResponseEntity.ok(zaakTypen)
     }
 
+    @EndpointDescription(
+        en = "List catalogus eigenschappen",
+        nl = "Catalogus eigenschappen ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/catalogi-eigenschappen")
     fun getEigenschappen(
         @LoggableResource("caseDefinitionKey") @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
