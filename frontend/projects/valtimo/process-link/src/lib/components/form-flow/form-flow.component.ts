@@ -192,15 +192,20 @@ export class FormFlowComponent implements OnDestroy {
         this.currentStepIndex$.next(breadcrumbs.currentStepIndex);
 
         this.breadcrumbs$.next(
-          breadcrumbs.breadcrumbs.map(breadcrumb => ({
-            label:
-              breadcrumb.title ??
-              this.translateService.instant(`formFlow.step.${breadcrumb.key}.title`) ??
-              breadcrumb.key,
-            disabled: breadcrumb.stepInstanceId === null,
-            complete: breadcrumb.completed,
-            stepInstanceId: breadcrumb.stepInstanceId,
-          }))
+          breadcrumbs.breadcrumbs.map(breadcrumb => {
+            const translationKey = `formFlow.step.${breadcrumb.key}.title`;
+            // instant() returns the key itself when no translation exists
+            const translatedTitle = this.translateService.instant(translationKey);
+
+            return {
+              label:
+                breadcrumb.title ??
+                (translatedTitle !== translationKey ? translatedTitle : breadcrumb.key),
+              disabled: breadcrumb.stepInstanceId === null,
+              complete: breadcrumb.completed,
+              stepInstanceId: breadcrumb.stepInstanceId,
+            };
+          })
         );
 
         if (classElement.length > 0) {

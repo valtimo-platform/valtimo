@@ -77,6 +77,19 @@
   showed an empty or half rendered form until the tab was switched or the page was refreshed. The
   form flow now reloads its step whenever another form flow instance is opened.
 
+* **Quickly opening the next user task no longer empties the task modal**
+
+  When a user completed a task and opened the next one within a fraction of a second, the task modal
+  could lose its content shortly after opening: the delayed cleanup of the previous task cleared the
+  modal after the next task was already shown. That cleanup is now skipped when another task has been
+  opened in the meantime.
+
+* **A form flow step without a translation no longer shows a raw translation key**
+
+  The step indicator above a form flow form showed the raw translation key (for example
+  `formFlow.step.step1.title`) when no translation was defined for a step. It now falls back to the
+  step key from the form flow definition.
+
 * **Breadcrumbs of a DMN decision table no longer stay behind on other screens**
 
   After opening a decision table of a case and then navigating to another screen through the menu, the
