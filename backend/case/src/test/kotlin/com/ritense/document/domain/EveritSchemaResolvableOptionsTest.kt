@@ -22,7 +22,9 @@ import com.ritense.valueresolver.ValueResolverOptionType.COLLECTION
 import com.ritense.valueresolver.ValueResolverOptionType.FIELD
 import java.net.URI
 import org.assertj.core.api.Assertions.assertThat
+import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.Schema
+import org.everit.json.schema.StringSchema
 import org.junit.jupiter.api.Test
 
 class EveritSchemaResolvableOptionsTest {
@@ -173,7 +175,7 @@ class EveritSchemaResolvableOptionsTest {
 
     @Test
     fun `should stop collecting options beyond the maximum schema depth`() {
-        val options = schemaOf(nestedObjectProperties(MAX_SCHEMA_DEPTH + 20)).collectValueResolverOptions("doc:")
+        val options = nestedObjectSchema(MAX_SCHEMA_DEPTH + 20).collectValueResolverOptions("doc:")
 
         val deepestOption = options.maxOf { option -> option.path.count { it == '/' } }
         assertThat(deepestOption).isLessThanOrEqualTo(MAX_SCHEMA_DEPTH + 1)
@@ -183,13 +185,18 @@ class EveritSchemaResolvableOptionsTest {
     private fun countOptions(options: List<ValueResolverOption>): Int =
         options.sumOf { 1 + countOptions(it.children.orEmpty()) }
 
-    /** Builds `"properties": { "level": { ... "properties": { "level": { "type": "string" } } } }`, [depth] levels deep. */
-    private fun nestedObjectProperties(depth: Int): String {
-        var properties = """"properties": { "level": { "type": "string" } }"""
-        repeat(depth) {
-            properties = """"properties": { "level": { "type": "object", $properties } }"""
+    /**
+     * Builds an object schema whose `level` property is again such an object, [depth] levels deep, ending in a
+     * string. Built through the everit builders rather than [schemaOf], because loading a schema this deep from
+     * JSON validates it against the draft-07 meta-schema, and that validation recurses per level and overflows
+     * the stack before the walker under test is ever reached.
+     */
+    private fun nestedObjectSchema(depth: Int): Schema {
+        var schema: Schema = StringSchema.builder().build()
+        repeat(depth + 1) {
+            schema = ObjectSchema.builder().addPropertySchema("level", schema).build()
         }
-        return properties
+        return schema
     }
 
     private fun schemaOf(properties: String): Schema =
