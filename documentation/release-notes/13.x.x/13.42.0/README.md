@@ -18,6 +18,12 @@
 
 ## Bugfixes
 
+* **Pages no longer break when a user has been deleted**
+
+  Valtimo shows who created or was assigned to something by looking up that person's name. When that user had
+  since been deleted, the lookup failed and took the whole page down with it: the tab overview of a case type,
+  for example, could no longer be opened at all. A name that can no longer be found is now simply left out
+  instead of causing an error, and tasks are no longer automatically assigned to a user that no longer exists.
 
 * **A form flow can now be used as the start form of a building block**
 
