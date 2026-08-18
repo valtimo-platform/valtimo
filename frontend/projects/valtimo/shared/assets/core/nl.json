@@ -740,6 +740,9 @@
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
   "carousel": {"previous": "Vorige", "next": "Volgende", "goToSlide": "Ga naar dia"},
   "formManagement": {
+    "edit": {
+      "title": "Formulier bewerken"
+    },
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
     "gotoProcessLinksButton": "Configureer nu",

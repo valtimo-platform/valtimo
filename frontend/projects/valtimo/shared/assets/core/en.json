@@ -737,6 +737,9 @@
   "cta": {"close": "Close", "moreDetails": "More details"},
   "carousel": {"previous": "Previous", "next": "Next", "goToSlide": "Go to slide"},
   "formManagement": {
+    "edit": {
+      "title": "Edit form"
+    },
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To configure this, click on the button below.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
     "gotoProcessLinksButton": "Configure now",
