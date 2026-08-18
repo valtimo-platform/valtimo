@@ -246,31 +246,6 @@ class ProcessLinkResource(
     }
 
 
-    @GetMapping(
-        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/{processDefinitionId}"],
-    )
-    @Transactional
-    fun getSingleProcessDefinitionWithLinks(
-        @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
-        @PathVariable("versionTag") versionTag: String,
-        @PathVariable("processDefinitionId") processDefinitionId: String
-    ): ResponseEntity<CaseProcessDefinitionResponseDto> {
-        val definition = operatonProcessService.getProcessDefinitionById(processDefinitionId)
-
-        val responseDto = CaseProcessDefinitionResponseDto(
-            ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
-            processDefinitionCaseDefinitionService.findByProcessDefinitionId(
-                ProcessDefinitionId(definition.id)
-            ),
-            processLinkService.getProcessLinks(definition.id).map {
-                getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
-            },
-            getBpmnXml(definition)
-        )
-
-        return ResponseEntity.ok(responseDto)
-    }
-
     @GetMapping("/management/v1/process-definition/{processDefinitionKey}")
     @Transactional
     fun getUnlinkedProcessDefinitionsWithLinks(
@@ -475,7 +450,6 @@ class ProcessLinkResource(
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
-
 
     @PostMapping(
         value = ["/management/v1/process-definition/validate"],
