@@ -3170,7 +3170,8 @@
         "title": "The definition contains errors",
         "duplicateKeys": "Duplicate step keys: {{keys}}.",
         "startStepMissing": "The start step \"{{startStep}}\" does not exist.",
-        "unknownTargets": "Transitions point to unknown steps: {{targets}}."
+        "unknownTargets": "Transitions point to unknown steps: {{targets}}.",
+        "stepIncomplete": "Step \"{{step}}\" has missing or invalid fields."
       }
     }
   },

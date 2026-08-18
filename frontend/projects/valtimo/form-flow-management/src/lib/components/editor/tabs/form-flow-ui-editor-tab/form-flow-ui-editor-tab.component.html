@@ -28,58 +28,62 @@
   </div>
 } @else if (form && registry) {
   <div [formGroup]="form">
-    @if ($definitionErrors().length) {
-      <div class="ui-editor__notification">
-        <cds-inline-notification
-          [notificationObj]="{
-            type: 'error',
-            title: 'formFlow.uiEditor.errors.title' | translate,
-            message: $definitionErrors().join(' '),
-            showClose: false,
-            lowContrast: true,
-          }"
-        ></cds-inline-notification>
-      </div>
-    }
-
-    <!-- fitPage sizes this container to the viewport so the sidebar and panel each scroll on
-         their own. -->
+    <!-- fitPage sizes this container to the viewport; the notification, sidebar and panel all live
+         inside it, so toggling the notification reflows the body instead of shifting the container's
+         top offset (which fitPage only re-measures on a header change or resize). -->
     <div class="ui-editor" fitPage>
-      <aside class="ui-editor__sidebar">
-        <valtimo-form-flow-step-list
-          [readOnly]="readOnly"
-          [selectedIndex]="$selectedIndex()"
-          [steps]="$stepListItems()"
-          (addEvent)="onAddStep()"
-          (selectEvent)="onSelectStep($event)"
-        ></valtimo-form-flow-step-list>
-      </aside>
+      @if (revealErrors && $definitionErrors().length) {
+        <div class="ui-editor__notification">
+          <cds-inline-notification
+            [notificationObj]="{
+              type: 'error',
+              title: 'formFlow.uiEditor.errors.title' | translate,
+              message: $definitionErrors().join(' '),
+              showClose: false,
+              lowContrast: true,
+            }"
+          ></cds-inline-notification>
+        </div>
+      }
 
-      <div class="ui-editor__panel">
-        @if (selectedStepGroup; as stepGroup) {
-          <valtimo-form-flow-step-detail
-            [componentOptions]="$componentOptions()"
-            [duplicateKey]="isSelectedKeyDuplicate()"
-            [formOptions]="$formOptions()"
-            [isStartStep]="isSelectedStepStart()"
+      <div class="ui-editor__body">
+        <aside class="ui-editor__sidebar">
+          <valtimo-form-flow-step-list
             [readOnly]="readOnly"
-            [registry]="registry"
-            [stepGroup]="stepGroup"
-            [stepKeys]="$stepKeys()"
-            (deleteStepEvent)="onDeleteStep()"
-            (makeStartEvent)="onMakeStartStep()"
-          ></valtimo-form-flow-step-detail>
-        } @else {
-          <div class="ui-editor__empty">
-            <h5 class="ui-editor__empty-title">
-              {{ 'formFlow.uiEditor.noStepsTitle' | translate }}
-            </h5>
+            [selectedIndex]="$selectedIndex()"
+            [steps]="$stepListItems()"
+            (addEvent)="onAddStep()"
+            (selectEvent)="onSelectStep($event)"
+          ></valtimo-form-flow-step-list>
+        </aside>
 
-            <p class="ui-editor__empty-message">
-              {{ 'formFlow.uiEditor.noStepsDescription' | translate }}
-            </p>
-          </div>
-        }
+        <div class="ui-editor__panel">
+          @if (selectedStepGroup; as stepGroup) {
+            <valtimo-form-flow-step-detail
+              [componentOptions]="$componentOptions()"
+              [duplicateKey]="isSelectedKeyDuplicate()"
+              [formOptions]="$formOptions()"
+              [isStartStep]="isSelectedStepStart()"
+              [readOnly]="readOnly"
+              [registry]="registry"
+              [revealErrors]="revealErrors"
+              [stepGroup]="stepGroup"
+              [stepKeys]="$stepKeys()"
+              (deleteStepEvent)="onDeleteStep()"
+              (makeStartEvent)="onMakeStartStep()"
+            ></valtimo-form-flow-step-detail>
+          } @else {
+            <div class="ui-editor__empty">
+              <h5 class="ui-editor__empty-title">
+                {{ 'formFlow.uiEditor.noStepsTitle' | translate }}
+              </h5>
+
+              <p class="ui-editor__empty-message">
+                {{ 'formFlow.uiEditor.noStepsDescription' | translate }}
+              </p>
+            </div>
+          }
+        </div>
       </div>
     </div>
   </div>

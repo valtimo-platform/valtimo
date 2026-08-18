@@ -77,6 +77,10 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly $activeTab = signal<FormFlowEditorTab>(FormFlowEditorTab.EDITOR);
+  // Validate-on-save: while the admin is modelling nothing is flagged. Clicking Save on an invalid
+  // definition flips this instead of calling the backend, which reveals the errors in the active
+  // tab and — from then on — gates the Save button on validity until the definition is fixed.
+  public readonly $saveAttempted = signal<boolean>(false);
 
   protected readonly FormFlowEditorTab = FormFlowEditorTab;
   protected readonly testIds = FORM_FLOW_EDITOR_TEST_IDS;
@@ -146,6 +150,8 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
       this._pendingBaseline = null;
       this.pendingChanges = false;
       this.valid$.next(true);
+      // A reloaded definition starts a fresh modelling session; drop any prior save-attempt state.
+      this.$saveAttempted.set(false);
     })
   );
   public readonly model$: Observable<EditorModel> = this._formFlowDefinition2$.pipe(
@@ -218,6 +224,14 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
   }
 
   public updateFormFlowDefinition(): void {
+    // Validate on the click: while modelling nothing is flagged, so clicking Save on an invalid
+    // definition reveals its errors (via $saveAttempted → the tabs' revealErrors) instead of
+    // sending it to the backend. From here on the Save button gates on validity until it is fixed.
+    if (!this.valid$.value) {
+      this.$saveAttempted.set(true);
+      return;
+    }
+
     this.loading$.next(true);
 
     combineLatest([this._params$, this._updatedModelValue$, this._context$])
@@ -251,6 +265,7 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
         // The saved value is the new clean baseline for the leave-page guard.
         this._pendingBaseline = this.normalizeJson(this._updatedModelValue$.getValue());
         this.pendingChanges = false;
+        this.$saveAttempted.set(false);
         this.showSuccessMessage(result.key);
       });
   }

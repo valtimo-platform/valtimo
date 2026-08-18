@@ -26,7 +26,7 @@
       <input
         cdsText
         [formControl]="control"
-        [invalid]="control.invalid && control.touched"
+        [invalid]="control.invalid && revealErrors"
         [attr.data-test-id]="testIds.expressionInput"
         placeholder="${valtimoFormFlow.completeTask(additionalProperties)}"
       />

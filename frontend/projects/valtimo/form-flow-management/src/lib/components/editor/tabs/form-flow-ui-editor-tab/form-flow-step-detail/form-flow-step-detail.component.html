@@ -55,7 +55,7 @@
 
   <div class="step-detail__grid">
     <cds-label
-      [invalid]="isControlInvalid('key') || duplicateKey"
+      [invalid]="isControlInvalid('key') || (duplicateKey && revealErrors)"
       [invalidText]="
         duplicateKey
           ? ('formFlow.uiEditor.duplicateKey' | translate)
@@ -73,7 +73,7 @@
       <input
         cdsText
         formControlName="key"
-        [invalid]="isControlInvalid('key') || duplicateKey"
+        [invalid]="isControlInvalid('key') || (duplicateKey && revealErrors)"
         [attr.data-test-id]="testIds.stepKeyInput"
         placeholder="{{ 'formFlow.uiEditor.keyPlaceholder' | translate }}"
       />
@@ -117,10 +117,7 @@
             <cds-dropdown
               formControlName="definition"
               itemValueKey="id"
-              [invalid]="
-                propertiesGroup.get('definition')?.invalid &&
-                propertiesGroup.get('definition')?.touched
-              "
+              [invalid]="propertiesGroup.get('definition')?.invalid && revealErrors"
               [label]="formDefinitionLabelTemplate"
               [placeholder]="'formFlow.uiEditor.selectForm' | translate"
             >
@@ -142,10 +139,7 @@
             <cds-dropdown
               formControlName="componentId"
               itemValueKey="id"
-              [invalid]="
-                propertiesGroup.get('componentId')?.invalid &&
-                propertiesGroup.get('componentId')?.touched
-              "
+              [invalid]="propertiesGroup.get('componentId')?.invalid && revealErrors"
               [label]="componentIdLabelTemplate"
               [placeholder]="'formFlow.uiEditor.selectComponent' | translate"
             >
@@ -164,10 +158,7 @@
           </div>
         } @else {
           <cds-label
-            [invalid]="
-              propertiesGroup.get(propertyName)?.invalid &&
-              propertiesGroup.get(propertyName)?.touched
-            "
+            [invalid]="propertiesGroup.get(propertyName)?.invalid && revealErrors"
             [invalidText]="'formFlow.uiEditor.required' | translate"
           >
             {{ getPropertyLabel(propertyName) }}
@@ -175,10 +166,7 @@
             <input
               cdsText
               [formControlName]="propertyName"
-              [invalid]="
-                propertiesGroup.get(propertyName)?.invalid &&
-                propertiesGroup.get(propertyName)?.touched
-              "
+              [invalid]="propertiesGroup.get(propertyName)?.invalid && revealErrors"
               [attr.data-test-id]="testIds.stepPropertyInput"
             />
           </cds-label>
@@ -200,6 +188,7 @@
 
     <valtimo-form-flow-transition-list
       [readOnly]="readOnly"
+      [revealErrors]="revealErrors"
       [stepKeys]="stepKeys"
       [transitions]="transitions"
     ></valtimo-form-flow-transition-list>
@@ -246,6 +235,7 @@
       [label]="'formFlow.uiEditor.onOpen' | translate"
       [readOnly]="readOnly"
       [registry]="registry"
+      [revealErrors]="revealErrors"
     ></valtimo-form-flow-expression-list>
 
     <valtimo-form-flow-expression-list
@@ -254,6 +244,7 @@
       [label]="'formFlow.uiEditor.onComplete' | translate"
       [readOnly]="readOnly"
       [registry]="registry"
+      [revealErrors]="revealErrors"
     ></valtimo-form-flow-expression-list>
 
     <valtimo-form-flow-expression-list
@@ -262,6 +253,7 @@
       [label]="'formFlow.uiEditor.onBack' | translate"
       [readOnly]="readOnly"
       [registry]="registry"
+      [revealErrors]="revealErrors"
     ></valtimo-form-flow-expression-list>
   </section>
 

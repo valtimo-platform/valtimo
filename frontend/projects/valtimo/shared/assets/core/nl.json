@@ -3205,7 +3205,8 @@
         "title": "De definitie bevat fouten",
         "duplicateKeys": "Dubbele stap-keys: {{keys}}.",
         "startStepMissing": "De startstap \"{{startStep}}\" bestaat niet.",
-        "unknownTargets": "Overgangen verwijzen naar onbekende stappen: {{targets}}."
+        "unknownTargets": "Overgangen verwijzen naar onbekende stappen: {{targets}}.",
+        "stepIncomplete": "Stap \"{{step}}\" heeft ontbrekende of ongeldige velden."
       }
     }
   },

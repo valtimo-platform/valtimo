@@ -40,6 +40,7 @@
       <valtimo-form-flow-ui-editor-tab
         [model]="model"
         [readOnly]="readOnly$ | async"
+        [revealErrors]="$saveAttempted()"
         (validEvent)="onValid($event)"
         (valueChangeEvent)="onValueChange($event)"
       ></valtimo-form-flow-ui-editor-tab>
@@ -96,7 +97,7 @@
       </button>
 
       <button
-        [disabled]="!obs.valid || obs.readOnly"
+        [disabled]="obs.readOnly || ($saveAttempted() && !obs.valid)"
         cdsButton="primary"
         [size]="obs.compactMode ? 'sm' : 'md'"
         [attr.data-test-id]="testIds.saveButton"

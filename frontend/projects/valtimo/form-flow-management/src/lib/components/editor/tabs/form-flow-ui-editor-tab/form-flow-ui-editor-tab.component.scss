@@ -15,11 +15,20 @@
  */
 
 .ui-editor {
-  // fitPage gives this container an explicit height; the sidebar and panel scroll independently
-  // inside it, so the container itself never scrolls.
+  // fitPage gives this container an explicit height. An optional notification stacks above the body
+  // row; the sidebar and panel inside the body scroll independently, so the container itself never
+  // scrolls and toggling the notification never changes its outer height.
   display: flex;
+  flex-direction: column;
   border: 1px solid var(--cds-border-subtle, #e0e0e0);
   overflow: hidden;
+
+  &__body {
+    // The sidebar/panel row fills the height left below the notification.
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
 
   &__sidebar {
     background: var(--cds-layer-01, #f4f4f4);
@@ -38,12 +47,21 @@
   }
 
   &__notification {
-    padding: 0 0 var(--cds-spacing-03) 0;
+    // Sits at the top of the fixed-height container, above the body; kept out of the flex-grow so it
+    // takes only its natural height and the body absorbs the rest.
+    flex: 0 0 auto;
 
     cds-inline-notification {
       display: block;
       max-width: none;
       margin: 0;
+    }
+
+    // Carbon draws the low-contrast notification's subtle frame with a ::before border on all sides
+    // but the accented left edge. Sitting flush at the top of the editor container, only the bottom
+    // divider is wanted, so drop the top and right edges.
+    ::ng-deep .cds--inline-notification--low-contrast::before {
+      border-width: 0 0 1px 0;
     }
   }
 

@@ -19,11 +19,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {FormArray, FormControl, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {Add16, TrashCan16} from '@carbon/icons';
-import {
-  OverflowMenuComponent,
-  OverflowMenuOptionComponent,
-  OverflowMenuTriggerComponent,
-} from '@valtimo/components';
+import {OverflowMenuComponent, OverflowMenuOptionComponent} from '@valtimo/components';
 import {FormFlowExpressionMethodDto, FormFlowRegistryDto} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {FORM_FLOW_EDITOR_TEST_IDS} from '../../../../../constants';
@@ -54,7 +50,6 @@ interface ExpressionSuggestion {
     InputModule,
     OverflowMenuComponent,
     OverflowMenuOptionComponent,
-    OverflowMenuTriggerComponent,
   ],
 })
 export class FormFlowExpressionListComponent {
@@ -62,6 +57,9 @@ export class FormFlowExpressionListComponent {
   @Input() public label = '';
   @Input() public description = '';
   @Input() public readOnly: boolean | null = false;
+  /** While false the admin is still modelling and empty-expression errors stay hidden; a save
+   * attempt flips it to reveal them. */
+  @Input() public revealErrors = false;
 
   @Input() public set registry(registry: FormFlowRegistryDto | null) {
     this.suggestions = (registry?.expressionBeans ?? []).flatMap(bean =>

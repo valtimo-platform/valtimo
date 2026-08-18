@@ -106,6 +106,10 @@
   &__item-warning {
     fill: var(--cds-support-error, #da1e28);
     flex-shrink: 0;
+    // Pin to an integer size so the filled glyph renders crisply instead of being scaled to a
+    // fractional box by the surrounding flex layout.
+    height: 1rem;
+    width: 1rem;
   }
 
   &__item-title {

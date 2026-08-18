@@ -25,7 +25,7 @@
         <cds-dropdown
           formControlName="step"
           itemValueKey="id"
-          [invalid]="transitionGroup.get('step')?.invalid && transitionGroup.get('step')?.touched"
+          [invalid]="transitionGroup.get('step')?.invalid && revealErrors"
           [label]="targetStepLabelTemplate"
           [placeholder]="'formFlow.uiEditor.selectStep' | translate"
         >
@@ -99,7 +99,7 @@
     <p class="transition-list__empty">{{ 'formFlow.uiEditor.noTransitions' | translate }}</p>
   }
 
-  @if (transitions.hasError('multipleDefaultTransitions')) {
+  @if (revealErrors && transitions.hasError('multipleDefaultTransitions')) {
     <p class="transition-list__error">
       {{ 'formFlow.uiEditor.multipleDefaultTransitions' | translate }}
     </p>

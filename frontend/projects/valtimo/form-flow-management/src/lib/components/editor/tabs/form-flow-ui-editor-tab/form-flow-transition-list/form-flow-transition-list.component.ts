@@ -57,6 +57,9 @@ export class FormFlowTransitionListComponent implements OnChanges {
   @Input() public transitions!: FormArray;
   @Input() public stepKeys: string[] = [];
   @Input() public readOnly: boolean | null = false;
+  /** While false the admin is still modelling and empty-target errors stay hidden; a save attempt
+   * flips it to reveal them. */
+  @Input() public revealErrors = false;
 
   protected readonly testIds = FORM_FLOW_EDITOR_TEST_IDS;
 

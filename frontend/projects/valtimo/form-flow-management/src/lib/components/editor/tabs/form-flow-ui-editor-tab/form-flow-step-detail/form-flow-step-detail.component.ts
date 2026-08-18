@@ -88,6 +88,9 @@ export class FormFlowStepDetailComponent implements OnInit, OnChanges, OnDestroy
   @Input() public isStartStep = false;
   @Input() public readOnly: boolean | null = false;
   @Input() public duplicateKey = false;
+  /** When false the admin is still modelling and required-field errors stay hidden; a save attempt
+   * flips it to reveal them. */
+  @Input() public revealErrors = false;
 
   @Output() public deleteStepEvent = new EventEmitter<void>();
   @Output() public makeStartEvent = new EventEmitter<void>();
@@ -160,7 +163,7 @@ export class FormFlowStepDetailComponent implements OnInit, OnChanges, OnDestroy
 
   public isControlInvalid(name: string): boolean {
     const control = this.stepGroup.get(name);
-    return !!control && control.invalid && control.touched;
+    return !!control && control.invalid && this.revealErrors;
   }
 
   public getPropertyLabel(name: string): string {

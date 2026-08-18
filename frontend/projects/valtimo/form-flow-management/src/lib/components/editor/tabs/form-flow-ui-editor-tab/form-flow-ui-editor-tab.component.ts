@@ -76,6 +76,9 @@ import {
 export class FormFlowUiEditorTabComponent implements OnChanges, OnDestroy {
   @Input() public model: EditorModel | null = null;
   @Input() public readOnly: boolean | null = false;
+  /** The parent's save-attempt state: while false the admin is still modelling and no validation
+   * errors are shown; a save attempt flips it and reveals them. */
+  @Input() public revealErrors = false;
 
   @Output() public validEvent = new EventEmitter<boolean>();
   @Output() public valueChangeEvent = new EventEmitter<string>();
@@ -403,6 +406,21 @@ export class FormFlowUiEditorTabComponent implements OnChanges, OnDestroy {
         })
       );
     }
+
+    // A step can be invalid on its own — a missing type, an unselected form, an empty transition
+    // target or expression — which the definition-level checks above never name. `invalid` (not
+    // `!valid`) skips disabled controls, so a read-only flow is never reported as incomplete; this
+    // mirrors the warning icon shown per step. The notification is only *shown* after a save attempt
+    // (see `revealErrors` in the template), so collecting these stays quiet while modelling.
+    (this.form?.get('steps') as FormArray | null)?.controls.forEach((stepGroup, index) => {
+      if (!stepGroup.invalid) return;
+      const key = (stepGroup.get('key')?.value ?? '').trim();
+      errors.push(
+        this.translateService.instant('formFlow.uiEditor.errors.stepIncomplete', {
+          step: key || `#${index + 1}`,
+        })
+      );
+    });
 
     return errors;
   }
