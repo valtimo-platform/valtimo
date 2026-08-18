@@ -34,8 +34,6 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -158,10 +156,8 @@ class FormFlowProcessLinkActivityHandler(
         val definition = if (caseDefinitionId != null) {
             formFlowService.findDefinitionOrNull(formFlowDefinitionKey, caseDefinitionId)
         } else {
-            when (val blueprintId = processDefinition.getBlueprintId()) {
-                is BuildingBlockDefinitionId -> formFlowService.findDefinitionOrNull(formFlowDefinitionKey, blueprintId)
-                is CaseDefinitionId -> formFlowService.findDefinitionOrNull(formFlowDefinitionKey, blueprintId)
-                else -> null
+            processDefinition.getBlueprintId()?.let {
+                formFlowService.findDefinitionOrNull(formFlowDefinitionKey, it)
             }
         }
         // Last resort for process definitions deployed without a blueprint version tag.

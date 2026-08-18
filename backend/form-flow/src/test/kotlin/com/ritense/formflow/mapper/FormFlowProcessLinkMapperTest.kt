@@ -26,6 +26,7 @@ import com.ritense.formflow.web.rest.dto.FormFlowProcessLinkExportResponseDto
 import com.ritense.formflow.web.rest.dto.FormFlowProcessLinkResponseDto
 import com.ritense.formflow.web.rest.dto.FormFlowProcessLinkUpdateRequestDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions
@@ -119,7 +120,12 @@ internal class FormFlowProcessLinkMapperTest {
             formSize = FormSizes.small,
             subtitles = SUBTITLES
         )
-        whenever(formFlowService.findDefinition(createRequestDto.formFlowDefinitionKey, caseDefinitionId)).thenReturn(mock())
+        whenever(
+            formFlowService.findDefinitionOrNull(
+                createRequestDto.formFlowDefinitionKey,
+                caseDefinitionId as BlueprintId
+            )
+        ).thenReturn(mock())
 
         val formFlowProcessLink = formFlowProcessLinkMapper.toNewProcessLink(createRequestDto, caseDefinitionId)
 
@@ -149,9 +155,15 @@ internal class FormFlowProcessLinkMapperTest {
             formSize = FormSizes.small,
             subtitles = SUBTITLES
         )
-        whenever(formFlowService.findDefinition(updateRequestDto.formFlowDefinitionKey, caseDefinitionId)).thenReturn(mock())
+        whenever(
+            formFlowService.findDefinitionOrNull(
+                updateRequestDto.formFlowDefinitionKey,
+                caseDefinitionId as BlueprintId
+            )
+        ).thenReturn(mock())
 
-        val formFlowProcessLink = formFlowProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
+        val formFlowProcessLink =
+            formFlowProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
 
         assertTrue(formFlowProcessLink is FormFlowProcessLink)
         assertEquals(processLinkToUpdate.processDefinitionId, formFlowProcessLink.processDefinitionId)
