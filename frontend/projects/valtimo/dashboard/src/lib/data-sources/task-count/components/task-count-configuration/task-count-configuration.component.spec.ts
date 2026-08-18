@@ -28,7 +28,6 @@ describe('TaskCountConfigurationComponent', () => {
     currentLang: 'en',
   };
   const widgetTranslationServiceMock = {instant: (key: string) => key, translate: () => of('')};
-  const iconServiceMock = {registerAll: () => {}};
 
   function createComponent(): TaskCountConfigurationComponent {
     return TestBed.runInInjectionContext(
@@ -36,8 +35,7 @@ describe('TaskCountConfigurationComponent', () => {
         new TaskCountConfigurationComponent(
           documentServiceMock as any,
           translateServiceMock as any,
-          widgetTranslationServiceMock as any,
-          iconServiceMock as any
+          widgetTranslationServiceMock as any
         )
     );
   }
@@ -56,28 +54,25 @@ describe('TaskCountConfigurationComponent', () => {
     TestBed.configureTestingModule({});
   });
 
-  it('prefills a legacy queryConditions config and emits the canonical leaf shape', () => {
+  it('emits the configuration on init', () => {
     const component = createComponent();
     const output = captureOutput(component);
 
-    component.prefillConfiguration = {
-      queryConditions: [{queryPath: 'task:assignee', queryOperator: '==', queryValue: 'x'}],
-    } as any;
     component.ngOnInit();
 
-    expect(output.current?.valid).toBe(true);
-    expect(output.current?.data.conditions).toEqual([
-      {path: 'task:assignee', operator: '==', value: 'x'},
-    ]);
+    expect(output.current).toEqual({
+      valid: true,
+      data: {caseDefinitionName: undefined, conditions: []},
+    });
   });
 
-  it('prefills a flat leaf plus an or-group', () => {
+  it('prefills the root group from the conditions of the stored configuration', () => {
     const component = createComponent();
     const output = captureOutput(component);
 
     component.prefillConfiguration = {
+      caseDefinitionName: 'leerlingzaken',
       conditions: [
-        {path: 'task:assignee', operator: '!=', value: 'x'},
         {
           or: [
             {path: 'task:name', operator: '==', value: 'A'},
@@ -85,63 +80,73 @@ describe('TaskCountConfigurationComponent', () => {
           ],
         },
       ],
-    } as any;
+    };
     component.ngOnInit();
 
-    expect(component.$orGroups().length).toBe(1);
-    expect(output.current?.data.conditions).toEqual([
-      {path: 'task:assignee', operator: '!=', value: 'x'},
-      {
-        or: [
-          {path: 'task:name', operator: '==', value: 'A'},
-          {path: 'task:name', operator: '==', value: 'B'},
-        ],
-      },
+    expect(component.$rootGroup().operator).toBe('or');
+    expect(output.current?.data).toEqual({
+      caseDefinitionName: 'leerlingzaken',
+      conditions: [
+        {
+          or: [
+            {path: 'task:name', operator: '==', value: 'A'},
+            {path: 'task:name', operator: '==', value: 'B'},
+          ],
+        },
+      ],
+    });
+  });
+
+  it('falls back to the legacy queryConditions key when prefilling', () => {
+    const component = createComponent();
+
+    component.prefillConfiguration = {
+      queryConditions: [{queryPath: 'task:assignee', queryOperator: '==', queryValue: 'x'}],
+    };
+
+    expect(component.$rootGroup().rows).toEqual([
+      {key: 'task:assignee', dropdown: '==', value: 'x'},
     ]);
   });
 
-  it('preserves passthrough nodes (and-groups, in-arrays) across an edit-save round-trip', () => {
+  it('ignores an absent prefill configuration', () => {
     const component = createComponent();
-    const output = captureOutput(component);
 
-    const andGroup = {and: [{path: 'task:name', operator: '==', value: 'A'}]};
+    component.prefillConfiguration = undefined as any;
+
+    expect(component.$rootGroup()).toEqual({
+      operator: 'and',
+      rows: [],
+      groups: [],
+      unsupportedNodes: [],
+    });
+  });
+
+  it('reports whether the tree still holds unsupported conditions after every change', () => {
+    const component = createComponent();
     const inLeaf = {path: 'task:name', operator: 'in', value: ['A', 'B']};
 
-    component.prefillConfiguration = {
-      conditions: [andGroup, inLeaf, {path: 'task:assignee', operator: '!=', value: 'x'}],
-    } as any;
+    component.prefillConfiguration = {conditions: [{or: [inLeaf]}]};
     component.ngOnInit();
 
     expect(component.$hasUnsupportedConditions()).toBe(true);
 
-    // Simulate an edit in the admin UI (adding an empty or-group).
-    component.addOrGroup();
+    // The child component mutates the group tree in place, so the flag has to be recomputed on
+    // change rather than derived once.
+    component.$rootGroup().unsupportedNodes = [];
+    component.conditionsChange();
 
-    const conditions = output.current?.data.conditions as any[];
-    expect(conditions).toContain(andGroup);
-    expect(conditions).toContain(inLeaf);
-    expect(conditions).toContain(
-      jasmine.objectContaining({path: 'task:assignee', operator: '!=', value: 'x'})
-    );
+    expect(component.$hasUnsupportedConditions()).toBe(false);
   });
 
-  it('is invalid when a flat row is partially filled', () => {
+  it('reports the validity of the condition rows', () => {
     const component = createComponent();
     const output = captureOutput(component);
 
-    component.flatConditionsValueChange([{key: 'task:name', dropdown: '', value: ''}]);
+    component.$rootGroup().rows = [{key: 'task:name', dropdown: '', value: ''}];
+    component.conditionsChange();
 
     expect(output.current?.valid).toBe(false);
-    expect(output.current?.data.conditions).toEqual([]);
-  });
-
-  it('excludes an empty or-group from the emitted conditions and stays valid', () => {
-    const component = createComponent();
-    const output = captureOutput(component);
-
-    component.addOrGroup();
-
-    expect(output.current?.valid).toBe(true);
     expect(output.current?.data.conditions).toEqual([]);
   });
 

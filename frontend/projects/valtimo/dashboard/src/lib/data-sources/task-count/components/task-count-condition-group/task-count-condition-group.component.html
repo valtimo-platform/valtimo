@@ -1,0 +1,183 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!--
+  The AND/OR selector for this group. Rendered once in the header of a nested group, or once as the
+  first connector between the root sections; [index] only keeps the test ids of those two apart.
+-->
+<ng-template #operatorSwitcher let-index="index">
+  <cds-content-switcher
+    class="condition-operator"
+    [attr.data-test-id]="testId(testIds.operatorSwitcher, index)"
+    size="sm"
+  >
+    <button
+      cdsContentOption
+      type="button"
+      [active]="group.operator === 'and'"
+      [attr.data-test-id]="testId(testIds.operatorAndButton, index)"
+      [disabled]="disabled"
+      (selected)="setOperator('and')"
+    >
+      {{ 'and' | widgetTranslate: dataSourceKey | async }}
+    </button>
+
+    <button
+      cdsContentOption
+      type="button"
+      [active]="group.operator === 'or'"
+      [attr.data-test-id]="testId(testIds.operatorOrButton, index)"
+      [disabled]="disabled"
+      (selected)="setOperator('or')"
+    >
+      {{ 'or' | widgetTranslate: dataSourceKey | async }}
+    </button>
+  </cds-content-switcher>
+</ng-template>
+
+@if (root) {
+  <!--
+    The root group is not a section of its own: it only groups the sections. Its single operator
+    defines how all of the sections relate to each other, and is rendered as a connector between
+    them - a selector on the first connector, static text on the ones after it. Connectors only
+    appear once there is something to relate (two or more sections, or a section following
+    root-level rows). Each section carries its own operator for the conditions inside it. "Add"
+    appends a new section. Direct root-level rows only exist for configuration authored in a file;
+    they are kept editable so that saving does not drop them.
+  -->
+  <div class="condition-root" [attr.data-test-id]="testId(testIds.conditionGroup)">
+    @if (group.rows.length) {
+      <valtimo-carbon-multi-input
+        [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
+        [defaultValues]="initialRows"
+        [disabled]="disabled"
+        [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
+        [dropdownItems]="operatorItems"
+        [fullWidth]="true"
+        [initialAmountOfRows]="0"
+        [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
+        [minimumAmountOfRows]="0"
+        [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+        addButtonType="tertiary"
+        type="keyDropdownValue"
+        (valueChange)="rowsValueChange($event)"
+      ></valtimo-carbon-multi-input>
+    }
+
+    @for (nestedGroup of group.groups; track nestedGroup; let index = $index) {
+      @if (index === interactiveConnectorIndex) {
+        <ng-container *ngTemplateOutlet="operatorSwitcher; context: {index: index}"></ng-container>
+      } @else if (index > interactiveConnectorIndex) {
+        <p
+          class="condition-root__operator-mirror"
+          [attr.data-test-id]="testId(testIds.operatorMirror, index)"
+        >
+          {{ group.operator | widgetTranslate: dataSourceKey | async }}
+        </p>
+      }
+
+      <valtimo-task-count-condition-group
+        [dataSourceKey]="dataSourceKey"
+        [disabled]="disabled"
+        [group]="nestedGroup"
+        [groupId]="groupId + '-' + index"
+        [operatorItems]="operatorItems"
+        (deleteGroup)="removeGroup(nestedGroup)"
+        (groupChange)="groupChange.emit()"
+      ></valtimo-task-count-condition-group>
+    }
+
+    <v-overflow-menu
+      class="condition-root__add-menu"
+      [menuWidth]="160"
+      [portalToBody]="true"
+      placement="top-start"
+    >
+      <button
+        overflowTrigger
+        cdsButton="tertiary"
+        type="button"
+        [attr.data-test-id]="testId(testIds.addGroupButton)"
+        [disabled]="disabled"
+      >
+        {{ 'add' | widgetTranslate: dataSourceKey | async }}
+
+        <svg class="cds--btn__icon" cdsIcon="chevron--up" size="16"></svg>
+      </button>
+
+      <v-overflow-menu-option
+        [testId]="testId(testIds.addAndGroupOption)"
+        (selected)="addGroup('and')"
+        >{{ 'and' | widgetTranslate: dataSourceKey | async }}</v-overflow-menu-option
+      >
+
+      <v-overflow-menu-option
+        [testId]="testId(testIds.addOrGroupOption)"
+        (selected)="addGroup('or')"
+        >{{ 'or' | widgetTranslate: dataSourceKey | async }}</v-overflow-menu-option
+      >
+    </v-overflow-menu>
+  </div>
+} @else {
+  <cds-tile
+    class="condition-group"
+    [attr.data-test-id]="testId(testIds.conditionGroup)"
+    [cdsLayer]="0"
+  >
+    <div class="condition-group__header">
+      <ng-container *ngTemplateOutlet="operatorSwitcher"></ng-container>
+
+      <cds-icon-button
+        [attr.data-test-id]="testId(testIds.deleteGroupButton)"
+        [description]="'deleteGroup' | widgetTranslate: dataSourceKey | async"
+        [disabled]="disabled"
+        (click)="deleteGroup.emit()"
+        kind="danger"
+        size="sm"
+      >
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+      </cds-icon-button>
+    </div>
+
+    <valtimo-carbon-multi-input
+      [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
+      [defaultValues]="initialRows"
+      [disabled]="disabled"
+      [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
+      [dropdownItems]="operatorItems"
+      [fullWidth]="true"
+      [initialAmountOfRows]="1"
+      [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
+      [minimumAmountOfRows]="1"
+      [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+      addButtonType="tertiary"
+      type="keyDropdownValue"
+      (valueChange)="rowsValueChange($event)"
+    ></valtimo-carbon-multi-input>
+
+    @for (nestedGroup of group.groups; track nestedGroup; let index = $index) {
+      <valtimo-task-count-condition-group
+        [dataSourceKey]="dataSourceKey"
+        [disabled]="disabled"
+        [group]="nestedGroup"
+        [groupId]="groupId + '-' + index"
+        [operatorItems]="operatorItems"
+        (deleteGroup)="removeGroup(nestedGroup)"
+        (groupChange)="groupChange.emit()"
+      ></valtimo-task-count-condition-group>
+    }
+  </cds-tile>
+}

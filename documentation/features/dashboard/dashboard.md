@@ -40,7 +40,11 @@ A condition node is one of:
 * **An `and` group** — `{ "and": [ ...nodes ] }`. All child nodes must match.
 * **An `or` group** — `{ "or": [ ...nodes ] }`. At least one child node must match.
 
-Groups may be nested to arbitrary depth in configuration files. The admin UI supports a flat list of `AND` conditions plus one level of `OR` groups; deeper trees (and `in` conditions) authored in configuration files are preserved when the widget is edited in the UI, but can only be changed through the configuration file.
+Groups may be nested to arbitrary depth. The admin UI mirrors this: every group has an `AND`/`OR` selector, its own list of conditions, and an **Add** button that appends a section, joined to the sections that are already there by the `AND` or `OR` chosen in that menu. Conditions that the editor cannot represent (`in` conditions with an array value, or operators outside the dropdown) are preserved in the group they were configured in when the widget is edited in the UI, but can only be changed through the configuration file.
+
+The UI writes the tree back as a single root group, so `conditions` holds one `and`/`or` node after a widget has been saved from the admin UI. A flat list of conditions (implicitly combined with `AND`) remains valid input.
+
+Because a group has one operator, the sections at the same level are always joined by that same operator: the UI shows a selector on the first connector between them and repeats the chosen operator as plain text on the following connectors. To combine sections with different operators, nest them in a group of their own.
 
 ### Operators
 

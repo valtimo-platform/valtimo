@@ -14,15 +14,4 @@
  * limitations under the License.
  */
 
-export const TASK_COUNT_TEST_IDS = {
-  caseDefinitionDropdown: 'taskCountCaseDefinitionDropdown',
-  conditionGroup: 'taskCountConditionGroup',
-  operatorSwitcher: 'taskCountGroupOperatorSwitcher',
-  operatorAndButton: 'taskCountGroupOperatorAndButton',
-  operatorOrButton: 'taskCountGroupOperatorOrButton',
-  operatorMirror: 'taskCountGroupOperatorMirror',
-  addGroupButton: 'taskCountAddGroupButton',
-  addAndGroupOption: 'taskCountAddAndGroupOption',
-  addOrGroupOption: 'taskCountAddOrGroupOption',
-  deleteGroupButton: 'taskCountDeleteGroupButton',
-} as const;
+export * from './task-count-conditions.utils';

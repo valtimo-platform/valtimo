@@ -36,78 +36,18 @@
     </div>
   }
 
-  <div class="form__element conditions-multi-input">
-    <cds-label
-      [helperText]="'conditionsHelperText' | widgetTranslate: dataSourceKey | async"
-      class="conditions-label"
-      >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
-    >
-    <valtimo-carbon-multi-input
-      [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
-      [defaultValues]="defaultConditionValues$ | async"
-      [disabled]="$disabled()"
-      [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
-      [dropdownItems]="operatorItems$ | async"
-      [fullWidth]="true"
-      [initialAmountOfRows]="0"
-      [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
-      [minimumAmountOfRows]="0"
-      [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
-      type="keyDropdownValue"
-      (valueChange)="flatConditionsValueChange($event)"
-    ></valtimo-carbon-multi-input>
-  </div>
-
-  <cds-label class="or-groups__label">{{
-    'orGroupTitle' | widgetTranslate: dataSourceKey | async
-  }}</cds-label>
-
-  <p class="or-groups__helper-text cds--form__helper-text">
-    {{ 'orGroupHelperText' | widgetTranslate: dataSourceKey | async }}
-  </p>
-
-  @for (group of $orGroups(); track $index; let i = $index) {
-    <cds-tile class="or-group-tile" [cdsLayer]="1">
-      <div class="or-group-tile__input" [cdsLayer]="0">
-        <valtimo-carbon-multi-input
-          [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
-          [defaultValues]="group.rows"
-          [disabled]="$disabled()"
-          [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
-          [dropdownItems]="operatorItems$ | async"
-          [fullWidth]="true"
-          [initialAmountOfRows]="1"
-          [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
-          [minimumAmountOfRows]="1"
-          [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
-          type="keyDropdownValue"
-          (valueChange)="groupConditionsValueChange(i, $event)"
-        ></valtimo-carbon-multi-input>
-      </div>
-
-      <div class="or-group-tile__delete-button">
-        <cds-icon-button
-          [attr.data-test-id]="testIds.deleteOrGroupButton"
-          [disabled]="$disabled()"
-          (click)="deleteOrGroup(i)"
-          kind="danger"
-          size="sm"
-        >
-          <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-        </cds-icon-button>
-      </div>
-    </cds-tile>
-  }
-
-  <button
-    class="add-or-group-button"
-    cdsButton="primary"
-    [attr.data-test-id]="testIds.addOrGroupButton"
-    [disabled]="$disabled()"
-    (click)="addOrGroup()"
+  <cds-label
+    [helperText]="'conditionsHelperText' | widgetTranslate: dataSourceKey | async"
+    class="conditions-label"
+    >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
   >
-    {{ 'addOrGroup' | widgetTranslate: dataSourceKey | async }}
 
-    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-  </button>
+  <valtimo-task-count-condition-group
+    [dataSourceKey]="dataSourceKey"
+    [disabled]="$disabled()"
+    [group]="$rootGroup()"
+    [operatorItems]="(operatorItems$ | async) || []"
+    [root]="true"
+    (groupChange)="conditionsChange()"
+  ></valtimo-task-count-condition-group>
 </div>

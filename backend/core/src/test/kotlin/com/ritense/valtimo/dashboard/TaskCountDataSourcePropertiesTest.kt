@@ -17,6 +17,7 @@
 package com.ritense.valtimo.dashboard
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.valtimo.contract.conditions.AndConditionGroup
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.valtimo.contract.conditions.OrConditionGroup
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -82,6 +83,37 @@ class TaskCountDataSourcePropertiesTest {
         assertThat(properties.conditions!![0]).isInstanceOf(Condition::class.java)
         assertThat(properties.conditions!![1]).isInstanceOf(OrConditionGroup::class.java)
         assertThat((properties.conditions!![1] as OrConditionGroup).or).hasSize(2)
+    }
+
+    @Test
+    fun `should deserialize a single wrapping root group as written by the admin UI`() {
+        val properties = read(
+            """
+            {
+                "conditions":[
+                    {"and":[
+                        {"path":"task:assignee","operator":"!=","value":"x"},
+                        {"or":[
+                            {"path":"task:name","operator":"==","value":"A"},
+                            {"and":[
+                                {"path":"task:name","operator":"==","value":"B"},
+                                {"path":"task:assignee","operator":"==","value":"y"}
+                            ]}
+                        ]}
+                    ]}
+                ]
+            }
+            """.trimIndent()
+        )
+
+        assertThat(properties.conditions).hasSize(1)
+        val rootGroup = properties.conditions!![0] as AndConditionGroup
+        assertThat(rootGroup.and).hasSize(2)
+        assertThat(rootGroup.and[0]).isInstanceOf(Condition::class.java)
+        val orGroup = rootGroup.and[1] as OrConditionGroup
+        assertThat(orGroup.or).hasSize(2)
+        assertThat(orGroup.or[0]).isInstanceOf(Condition::class.java)
+        assertThat((orGroup.or[1] as AndConditionGroup).and).hasSize(2)
     }
 
     @Test

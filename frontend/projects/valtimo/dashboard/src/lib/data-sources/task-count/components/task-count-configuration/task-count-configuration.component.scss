@@ -15,44 +15,20 @@
  */
 
 ::ng-deep .task-count-configuration-form {
+  // Space between the "Add" button at the end of the conditions and the following "Display type".
+  margin-bottom: 24px;
+
   .form__element {
     margin-bottom: 16px;
   }
 
   .conditions-label {
-    margin-bottom: 16px;
-  }
-
-  .conditions-multi-input .cds--form__helper-text {
-    font-style: italic;
-  }
-
-  .or-groups {
-    &__label {
-      display: flex;
-      margin-bottom: 8px;
-    }
-
-    &__helper-text {
-      font-style: italic;
-      display: flex;
-      margin-bottom: 16px;
-    }
-  }
-
-  .or-group-tile {
     display: flex;
-    flex-direction: row;
-    gap: 32px;
-    justify-content: space-between;
+    flex-direction: column;
     margin-bottom: 16px;
 
-    &__input {
-      width: 100%;
+    .cds--form__helper-text {
+      font-style: italic;
     }
-  }
-
-  .add-or-group-button {
-    margin-bottom: 16px;
   }
 }

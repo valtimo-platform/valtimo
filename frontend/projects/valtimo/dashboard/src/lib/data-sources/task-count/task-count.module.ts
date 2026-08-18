@@ -18,10 +18,11 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DATA_SOURCE_TOKEN} from '../../constants';
 import {taskCountSpecification} from './task-count.specification';
-import {TaskCountConfigurationComponent} from './components';
+import {TaskCountConditionGroupComponent, TaskCountConfigurationComponent} from './components';
 import {WidgetTranslatePipeModule} from '../../pipes';
 import {
   ButtonModule,
+  ContentSwitcherModule,
   DropdownModule,
   IconModule,
   InputModule,
@@ -29,10 +30,10 @@ import {
   NotificationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {CarbonMultiInputModule} from '@valtimo/components';
+import {CarbonMultiInputModule, OverflowMenuModule} from '@valtimo/components';
 
 @NgModule({
-  declarations: [TaskCountConfigurationComponent],
+  declarations: [TaskCountConditionGroupComponent, TaskCountConfigurationComponent],
   imports: [
     CommonModule,
     WidgetTranslatePipeModule,
@@ -40,12 +41,14 @@ import {CarbonMultiInputModule} from '@valtimo/components';
     DropdownModule,
     CarbonMultiInputModule,
     ButtonModule,
+    ContentSwitcherModule,
     IconModule,
     LayerModule,
     NotificationModule,
+    OverflowMenuModule,
     TilesModule,
   ],
-  exports: [TaskCountConfigurationComponent],
+  exports: [TaskCountConditionGroupComponent, TaskCountConfigurationComponent],
   providers: [{provide: DATA_SOURCE_TOKEN, useValue: taskCountSpecification, multi: true}],
 })
 export class TaskCountDataSourceModule {}

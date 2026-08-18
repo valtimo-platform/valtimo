@@ -1,0 +1,81 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:host {
+  display: block;
+}
+
+// Without a width the content switcher stretches across its container. Shared by the root
+// operator (rendered on its own, between the section cards) and the nested group headers.
+.condition-operator {
+  max-width: 160px;
+  width: 100%;
+
+  // Carbon's smallest content switcher is 32px tall; the design uses a slightly more compact toggle.
+  // Carbon centres the label with vertical padding, so with a fixed height we centre it with flex.
+  .cds--content-switcher-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 1.875rem;
+    block-size: 1.875rem;
+    padding-block: 0;
+  }
+}
+
+.condition-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  // Every connector after the first one only reflects the operator, which is shared by the whole
+  // root group. Same box as the selector above it so the connectors line up.
+  &__operator-mirror {
+    max-width: 160px;
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    color: var(--cds-text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.32px;
+  }
+
+  // "Add" sits outside the sections and creates a new one.
+  &__add-menu {
+    align-self: flex-start;
+  }
+}
+
+.condition-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--cds-border-subtle);
+  // The group section sits on a grey layer, while the inputs inside it stay white.
+  // Carbon couples the layer and field tokens per level, so the field token is
+  // overridden explicitly to keep the inputs white on the grey section.
+  background-color: var(--cds-layer-01);
+  --cds-field: var(--cds-field-02);
+
+  &__header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+}
