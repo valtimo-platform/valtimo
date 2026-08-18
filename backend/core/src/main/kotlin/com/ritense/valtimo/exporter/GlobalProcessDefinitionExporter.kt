@@ -43,11 +43,15 @@ import java.io.ByteArrayOutputStream
  * Exports the BPMN of a process definition that is not part of a case definition.
  *
  * Like [ProcessDefinitionExporter] this exporter walks the process and creates related export
- * requests for the called sub-processes and referenced decision definitions it can resolve, so an
- * exported process can be imported on another environment together with everything it references.
- * References that cannot be resolved statically (a `deployment` binding, or an expression based
- * called element / decision reference) cannot be bundled and are left out; the import preview
- * reports them so the user is not surprised.
+ * requests for the called sub-processes and referenced decision definitions, so an exported process
+ * can be imported on another environment together with everything it references.
+ *
+ * A reference that cannot be bundled is left out rather than failing the export: a `deployment`
+ * binding or an expression based called element / decision reference cannot be resolved to a
+ * specific definition, so it is skipped and reported by the import preview instead. A reference that
+ * *can* be resolved statically (a literal key with a latest, version or versionTag binding) but
+ * points at a definition that is not deployed here fails the export, matching [ProcessDefinitionExporter]:
+ * bundling something that references a missing definition would produce a broken package.
  *
  * Building-block-tagged call activities are skipped: those have their own building block exporters.
  */
@@ -98,10 +102,10 @@ class GlobalProcessDefinitionExporter(
 
     /**
      * Resolves the called sub-processes of the process to global export requests. A call activity
-     * that cannot be resolved to a specific process definition (a `deployment` binding, or an
-     * expression based called element) is skipped rather than failing the export: it cannot be
+     * with a `deployment` binding or an expression based called element is skipped: it cannot be
      * bundled and the import preview reports it instead. Building-block-tagged call activities are
-     * skipped as well, matching [ProcessDefinitionExporter].
+     * skipped as well, matching [ProcessDefinitionExporter]. A statically resolvable called element
+     * that is not deployed here fails the export.
      */
     private fun getCallActivityProcessDefinitionExportRequests(
         bpmnModelInstance: BpmnModelInstance
@@ -111,37 +115,57 @@ class GlobalProcessDefinitionExporter(
             if (callActivity.operatonCalledElementVersionTag?.startsWith(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX) == true) {
                 return@mapNotNull null
             }
-            val spec = byKey(calledElement)
-            val processDefinition = when (callActivity.operatonCalledElementBinding) {
-                "version" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersion(callActivity.operatonCalledElementVersion.toInt())))
-                "versionTag" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersionTag(callActivity.operatonCalledElementVersionTag)))
-                "deployment" -> null
-                else -> operatonRepositoryService.findProcessDefinition(spec.and(byLatestVersion()))
+            if (callActivity.operatonCalledElementBinding == DEPLOYMENT_BINDING || isExpression(calledElement)) {
+                return@mapNotNull null
             }
-            processDefinition?.let { GlobalProcessDefinitionExportRequest(it.id) }
+            val spec = byKey(calledElement)
+            val processDefinition = checkNotNull(
+                when (callActivity.operatonCalledElementBinding) {
+                    "version" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersion(callActivity.operatonCalledElementVersion.toInt())))
+                    "versionTag" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersionTag(callActivity.operatonCalledElementVersionTag)))
+                    else -> operatonRepositoryService.findProcessDefinition(spec.and(byLatestVersion()))
+                }
+            ) {
+                "Process definition with key '$calledElement' referenced by the process could not be found!"
+            }
+            GlobalProcessDefinitionExportRequest(processDefinition.id)
         }.toSet()
     }
 
     /**
      * Resolves the decision definitions referenced by business rule tasks to global export requests.
-     * A reference that cannot be resolved statically (a `deployment` binding, or an expression based
-     * decision reference) is skipped for the same reason as [getCallActivityProcessDefinitionExportRequests].
+     * A reference with a `deployment` binding or an expression based decision reference is skipped
+     * for the same reason as [getCallActivityProcessDefinitionExportRequests]; a statically
+     * resolvable reference that is not deployed here fails the export.
      */
     private fun getDecisionExportRequests(
         bpmnModelInstance: BpmnModelInstance
     ): Set<GlobalDecisionDefinitionExportRequest> {
         return bpmnModelInstance.getModelElementsByType(BusinessRuleTask::class.java).mapNotNull { businessRuleTask ->
             val decisionRef = businessRuleTask.operatonDecisionRef ?: return@mapNotNull null
-            val spec = OperatonDecisionDefinitionSpecificationHelper.byKey(decisionRef)
-            val decisionDefinition = when (businessRuleTask.operatonDecisionRefBinding) {
-                "version" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersion(businessRuleTask.operatonDecisionRefVersion.toInt())))
-                "versionTag" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersionTag(businessRuleTask.operatonDecisionRefVersionTag)))
-                "deployment" -> null
-                else -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byLatestVersion()))
+            if (businessRuleTask.operatonDecisionRefBinding == DEPLOYMENT_BINDING || isExpression(decisionRef)) {
+                return@mapNotNull null
             }
-            decisionDefinition?.let { GlobalDecisionDefinitionExportRequest(it.id) }
+            val spec = OperatonDecisionDefinitionSpecificationHelper.byKey(decisionRef)
+            val decisionDefinition = checkNotNull(
+                when (businessRuleTask.operatonDecisionRefBinding) {
+                    "version" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersion(businessRuleTask.operatonDecisionRefVersion.toInt())))
+                    "versionTag" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersionTag(businessRuleTask.operatonDecisionRefVersionTag)))
+                    else -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byLatestVersion()))
+                }
+            ) {
+                "Decision definition with reference '$decisionRef' referenced by the process could not be found!"
+            }
+            GlobalDecisionDefinitionExportRequest(decisionDefinition.id)
         }.toSet()
     }
+
+    /**
+     * A called element or decision reference can be a static value or an expression that is only
+     * resolved at runtime. An expression cannot be resolved to a definition to bundle, so it is left
+     * out of the export.
+     */
+    private fun isExpression(value: String): Boolean = value.contains("\${") || value.contains("#{")
 
     /**
      * A BPMN file has no field the manifest can reference, so the version is written as a literal
@@ -155,5 +179,6 @@ class GlobalProcessDefinitionExporter(
 
     companion object {
         private const val PATH = "config/global/bpmn/%s.bpmn"
+        private const val DEPLOYMENT_BINDING = "deployment"
     }
 }

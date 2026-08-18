@@ -22,10 +22,12 @@ import com.ritense.valtimo.operaton.domain.OperatonDecisionDefinition
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -98,6 +100,33 @@ class GlobalProcessDefinitionExporterTest {
     }
 
     @Test
+    fun `should skip an expression based called element and decision reference`() {
+        mockRootProcess(bpmn(callActivityCalling = "\${processKey}", decisionRef = "\${decisionKey}"))
+
+        val result = exporter.export(GlobalProcessDefinitionExportRequest(ROOT_ID))
+
+        assertThat(result.relatedRequests).isEmpty()
+    }
+
+    @Test
+    fun `should fail when a referenced process definition is not deployed`() {
+        mockRootProcess(bpmn(callActivityCalling = "sub-process"))
+
+        assertThatThrownBy { exporter.export(GlobalProcessDefinitionExportRequest(ROOT_ID)) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("sub-process")
+    }
+
+    @Test
+    fun `should fail when a referenced decision definition is not deployed`() {
+        mockRootProcess(bpmn(decisionRef = "my-decision"))
+
+        assertThatThrownBy { exporter.export(GlobalProcessDefinitionExportRequest(ROOT_ID)) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("my-decision")
+    }
+
+    @Test
     fun `should support the global process definition export request`() {
         assertThat(exporter.supports()).isEqualTo(GlobalProcessDefinitionExportRequest::class.java)
     }
@@ -105,7 +134,9 @@ class GlobalProcessDefinitionExporterTest {
     private fun mockRootProcess(bpmn: String) {
         val processDefinition = mock<OperatonProcessDefinition>()
         whenever(processDefinition.id).thenReturn(ROOT_ID)
-        whenever(processDefinition.key).thenReturn(ROOT_KEY)
+        // The key is only read once the walk succeeds and the export file is written, so it is
+        // lenient: the "fail when a reference is not deployed" tests throw before reaching it.
+        Mockito.lenient().`when`(processDefinition.key).thenReturn(ROOT_KEY)
         whenever(operatonRepositoryService.findProcessDefinitionById(ROOT_ID)).thenReturn(processDefinition)
         whenever(repositoryService.getProcessModel(ROOT_ID)).thenReturn(ByteArrayInputStream(bpmn.toByteArray()))
     }
