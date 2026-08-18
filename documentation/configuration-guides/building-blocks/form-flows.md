@@ -1,7 +1,5 @@
 # Form flows
 
-## Overview
-
 Form flows are multi-step form wizards that guide users through a sequence of forms. They enable complex data collection by chaining multiple forms together, with support for conditional navigation, branching logic, and step transitions.
 
 In the context of building blocks, form flows allow you to package reusable wizard-style interactions that can be linked to user tasks in BPMN processes.
@@ -88,6 +86,8 @@ Confirm the deletion in the dialog
 {% hint style="info" %}
 Form flows marked as read-only cannot be deleted.
 {% endhint %}
+
+---
 
 ## Form flow scope
 

@@ -1,7 +1,5 @@
 # Forms
 
-## Overview
-
 The Forms tab manages form definitions included in the building block. Forms defined here can be linked to user tasks in the building block's processes.
 
 ---
@@ -102,6 +100,8 @@ Click **Save**
 ### Deleting a form
 
 Forms can be deleted via the overflow menu (three dots) on each row. Read-only forms and forms in finalized building block versions cannot be deleted.
+
+---
 
 ---
 

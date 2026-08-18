@@ -2,8 +2,6 @@
 
 The Processes tab manages BPMN process definitions within a building block. Processes define the automated workflows that execute when the building block is used.
 
-## Overview
-
 Each building block can contain multiple process definitions. One process is designated as the **main process**, which serves as the entry point when the building block starts. Additional processes can be included as supporting workflows (e.g., sub-processes, call activities).
 
 <figure><img src="../../assets/configuration-guides/building-blocks/processes/01-processes-tab.png" alt=""><figcaption>Processes tab showing the process list</figcaption></figure>

@@ -1,7 +1,5 @@
 # General
 
-## Overview
-
 The General tab contains core configuration for a building block: metadata (name, key, description), plugin dependencies, and artwork. This tab is always the first one displayed when opening a building block.
 
 ---
@@ -61,18 +59,16 @@ Upload a PNG image to visually represent the building block.
 
 To upload artwork:
 
-1. Click **Choose file**
-2. Select a PNG image
-3. Click **Upload**
+{% stepper %}
+{% step %}
+Click **Choose file**
+{% endstep %}
+{% step %}
+Select a PNG image
+{% endstep %}
+{% step %}
+Click **Upload**
+{% endstep %}
+{% endstepper %}
 
 If artwork is already uploaded, it will be displayed as a preview. Use the **Delete** button to remove existing artwork.
-
----
-
-## Read-only state
-
-When a building block version is marked as **final**, all fields on the General tab become read-only. The name, description, and artwork can no longer be modified.
-
-<figure><img src="../../assets/configuration-guides/building-blocks/general/02-general-tab-readonly.png" alt="General tab in read-only state (final version)"><figcaption></figcaption></figure>
-
-To make changes, create a new draft version of the building block.

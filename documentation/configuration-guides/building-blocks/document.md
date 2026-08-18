@@ -1,7 +1,5 @@
 # Document
 
-## Overview
-
 The Document tab defines the JSON schema for a building block's data structure. This schema specifies which data fields the building block uses, their types, and validation constraints. When a building block is linked to a case, its document schema is merged with the case's document schema.
 
 ---
@@ -66,10 +64,3 @@ Click **Save** to apply the changes
 
 <figure><img src="../../assets/configuration-guides/building-blocks/document/02-required-fields-panel.png" alt="Required fields panel"><figcaption></figcaption></figure>
 
----
-
-## Read-only state
-
-When a building block version is marked as **final**, the schema editor becomes read-only. The schema can no longer be modified, and the Save button is disabled.
-
-To make changes, create a new draft version of the building block.

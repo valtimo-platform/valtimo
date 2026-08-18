@@ -1,7 +1,5 @@
 # Decision tables
 
-## Overview
-
 The Decision tables tab manages DMN (Decision Model and Notation) decision definitions within a building block. Decision tables allow you to define business rules in a tabular format that can be evaluated during process execution.
 
 ---
