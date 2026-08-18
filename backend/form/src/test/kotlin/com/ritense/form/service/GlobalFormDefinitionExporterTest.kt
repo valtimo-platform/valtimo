@@ -20,6 +20,7 @@ import com.ritense.exporter.request.GlobalFormDefinitionExportRequest
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -59,6 +60,15 @@ class GlobalFormDefinitionExporterTest {
         val exportFile = result.exportFiles.single()
         assertThat(exportFile.path).isEqualTo("config/global/form/my-form.form.json")
         assertThat(exportFile.content.toString(Charsets.UTF_8)).contains("components")
+    }
+
+    @Test
+    fun `should fail with the form name when the referenced form cannot be found`() {
+        whenever(formDefinitionService.getFormDefinitionByName("my-form")).thenReturn(Optional.empty())
+
+        assertThatThrownBy { exporter.export(GlobalFormDefinitionExportRequest("my-form")) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("my-form")
     }
 
     @Test

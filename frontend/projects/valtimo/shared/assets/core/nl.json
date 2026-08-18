@@ -1865,7 +1865,7 @@
     },
     "successNotification": "Proces succesvol gepubliceerd",
     "errorNotification": "Er ging iets mis bij het publiceren van het proces",
-    "exportErrorNotification": "Het exporteren van het proces is mislukt. Controleer of de subprocessen en beslistabellen waarnaar het verwijst zijn gepubliceerd.",
+    "exportErrorNotification": "Het exporteren van het proces is mislukt. Controleer of de subprocessen, beslistabellen en formulieren waarnaar het verwijst beschikbaar zijn op deze omgeving.",
     "validate": "Valideren",
     "validationSuccessNotification": "Procesdefinitie is geldig",
     "validationWarningNotification": "Procesdefinitie bevat waarschuwingen",

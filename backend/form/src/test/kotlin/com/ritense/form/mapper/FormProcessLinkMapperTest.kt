@@ -37,6 +37,7 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -246,6 +247,26 @@ internal class FormProcessLinkMapperTest {
         val relatedExportRequests = formProcessLinkMapper.createGlobalRelatedExportRequests(formProcessLink)
 
         assertThat(relatedExportRequests).containsExactly(GlobalFormDefinitionExportRequest("testing"))
+    }
+
+    @Test
+    fun `should fail with the activity and process when the form of a global process link is gone`() {
+        val formProcessLink = FormProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "my-process:1:abc",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionId = UUID.randomUUID(),
+            viewModelEnabled = false
+        )
+        whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
+            .thenReturn(Optional.empty())
+
+        assertThatThrownBy { formProcessLinkMapper.createGlobalRelatedExportRequests(formProcessLink) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("userTask1")
+            .hasMessageContaining("my-process:1:abc")
+            .hasMessageContaining(formProcessLink.formDefinitionId.toString())
     }
 
     @Test

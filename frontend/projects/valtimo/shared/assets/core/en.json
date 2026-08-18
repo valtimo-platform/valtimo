@@ -1837,7 +1837,7 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
-    "exportErrorNotification": "Failed to export the process. Check that the sub-processes and decision tables it references are deployed.",
+    "exportErrorNotification": "Failed to export the process. Check that the sub-processes, decision tables and forms it references are available on this environment.",
     "validate": "Validate",
     "validationSuccessNotification": "Process definition is valid",
     "validationWarningNotification": "Process definition has warnings",

@@ -176,7 +176,16 @@ class FormProcessLinkMapper(
 
     override fun createGlobalRelatedExportRequests(processLink: ProcessLink): Set<ExportRequest> {
         processLink as FormProcessLink
-        val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow()
+        // The form is referenced by id, so its name is not available when it no longer exists. The
+        // activity and process the link belongs to are the locator that lets the user find it.
+        val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId)
+            .orElseThrow {
+                IllegalStateException(
+                    "Form definition '${processLink.formDefinitionId}' referenced by the process link on " +
+                        "activity '${processLink.activityId}' of process '${processLink.processDefinitionId}' " +
+                        "could not be found. The form may have been deleted while the process link remained."
+                )
+            }
         return setOf(GlobalFormDefinitionExportRequest(formDefinition.name))
     }
 

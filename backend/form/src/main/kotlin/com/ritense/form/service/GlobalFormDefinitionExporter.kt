@@ -38,7 +38,11 @@ class GlobalFormDefinitionExporter(
 
     override fun export(request: GlobalFormDefinitionExportRequest): ExportResult {
         val formDefinition = formDefinitionService.getFormDefinitionByName(request.formName)
-            .orElseThrow()
+            .orElseThrow {
+                IllegalStateException(
+                    "Form definition '${request.formName}' referenced by a process link could not be found!"
+                )
+            }
 
         return ExportResult(
             ExportFile(
