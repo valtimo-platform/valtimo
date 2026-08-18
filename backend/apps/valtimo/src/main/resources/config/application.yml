@@ -163,9 +163,6 @@ valtimo:
         secret: dummy
         rsin: dummy
     database: postgres
-    changelog:
-        pbac:
-            clear-tables: true
     security:
         whitelist:
             hosts:

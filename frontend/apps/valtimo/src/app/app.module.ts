@@ -78,7 +78,6 @@ import {DashboardManagementModule} from '@valtimo/dashboard-management';
 import {TaskManagementModule} from '@valtimo/task-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
 import {LoggingModule} from '@valtimo/logging';
-import {pluginImports, pluginSpecifications} from './app-plugins';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -155,7 +154,6 @@ export function tabsFactory() {
     TranslationManagementModule,
     TaskManagementModule,
     LoggingModule,
-    ...pluginImports,
   ],
   providers: [{
     provide: PLUGINS_TOKEN,
@@ -163,7 +161,6 @@ export function tabsFactory() {
       objectenApiPluginSpecification,
       objecttypenApiPluginSpecification,
       objectTokenAuthenticationPluginSpecification,
-      ...pluginSpecifications,
     ]
   }],
   bootstrap: [AppComponent]
