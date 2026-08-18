@@ -34,6 +34,8 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -97,13 +99,15 @@ class FormFlowProcessLinkActivityHandler(
     ): ProcessLinkActivityResult<FormFlowTaskOpenResultProperties> {
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLink as FormFlowProcessLink
-            val processDefinitionCaseDefinitionLink = processDefinitionCaseDefinitionService.findByProcessDefinitionId(ProcessDefinitionId(processDefinitionId))
-            val formFlowDefinition = formFlowService.findDefinition(processLink.formFlowDefinitionKey, processDefinitionCaseDefinitionLink.id.caseDefinitionId)!!
-            val processDefinition = AuthorizationContext.runWithoutAuthorization {
-                repositoryService.findProcessDefinitionById(processDefinitionId)!!
-            }
+            val processDefinition = findProcessDefinition(processDefinitionId)
+            val formFlowDefinition = resolveFormFlowDefinition(processDefinition, processLink.formFlowDefinitionKey)
 
-            val additionalProperties = mutableMapOf<String, Any>("processDefinitionKey" to processDefinition.key)
+            val additionalProperties = mutableMapOf<String, Any>(
+                "processDefinitionKey" to processDefinition.key,
+                // The key alone cannot identify a version: every building block version redeploys the same
+                // process definition key. Pass the id on so submitting starts the linked version.
+                "processDefinitionId" to processDefinition.id,
+            )
             documentId?.let { additionalProperties["documentId"] = it }
             documentDefinitionName?.let { additionalProperties["documentDefinitionName"] = it }
 
@@ -126,23 +130,46 @@ class FormFlowProcessLinkActivityHandler(
 
     private fun createFormFlowInstance(task: OperatonTask, processLink: FormFlowProcessLink): FormFlowInstance {
         val additionalProperties = getAdditionalProperties(task)
-        val formFlowDefinition = findFormFlowDefinition(processLink)
+        val processDefinition = findProcessDefinition(processLink.processDefinitionId)
+        val formFlowDefinition = resolveFormFlowDefinition(processDefinition, processLink.formFlowDefinitionKey)
         return formFlowService.save(formFlowDefinition.createInstance(additionalProperties))
     }
 
-    private fun findFormFlowDefinition(processLink: FormFlowProcessLink): FormFlowDefinition {
-        val caseLink = try {
-            processDefinitionCaseDefinitionService
-                .findByProcessDefinitionId(ProcessDefinitionId(processLink.processDefinitionId))
-        } catch (e: Exception) {
-            null
-        }
-        return if (caseLink != null) {
-            formFlowService.findDefinition(processLink.formFlowDefinitionKey, caseLink.id.caseDefinitionId)
+    private fun findProcessDefinition(processDefinitionId: String): OperatonProcessDefinition {
+        return AuthorizationContext.runWithoutAuthorization {
+            repositoryService.findProcessDefinitionById(processDefinitionId)
+        } ?: throw IllegalStateException("Process definition '$processDefinitionId' not found")
+    }
+
+    /**
+     * Form flow definitions are owned by a blueprint - either a case definition or a building block
+     * definition. A case-definition link is authoritative when one exists, but a building-block-owned
+     * process definition has no such link row, because [com.ritense.valtimo.service.OperatonProcessService]
+     * only links `CD:` blueprints. Fall back to the blueprint encoded in the process definition's version
+     * tag, which covers both kinds.
+     */
+    private fun resolveFormFlowDefinition(
+        processDefinition: OperatonProcessDefinition,
+        formFlowDefinitionKey: String
+    ): FormFlowDefinition {
+        val caseDefinitionId = processDefinitionCaseDefinitionService
+            .findByProcessDefinitionIdOrNull(ProcessDefinitionId(processDefinition.id))
+            ?.id?.caseDefinitionId
+        val definition = if (caseDefinitionId != null) {
+            formFlowService.findDefinitionOrNull(formFlowDefinitionKey, caseDefinitionId)
         } else {
-            formFlowService.findDefinitionByKey(processLink.formFlowDefinitionKey)
-                ?: throw IllegalStateException("FormFlow definition '${processLink.formFlowDefinitionKey}' not found")
+            when (val blueprintId = processDefinition.getBlueprintId()) {
+                is BuildingBlockDefinitionId -> formFlowService.findDefinitionOrNull(formFlowDefinitionKey, blueprintId)
+                is CaseDefinitionId -> formFlowService.findDefinitionOrNull(formFlowDefinitionKey, blueprintId)
+                else -> null
+            }
         }
+        // Last resort for process definitions deployed without a blueprint version tag.
+        return definition
+            ?: formFlowService.findDefinitionByKey(formFlowDefinitionKey)
+            ?: throw IllegalStateException(
+                "FormFlow definition '$formFlowDefinitionKey' not found for process definition '${processDefinition.id}'"
+            )
     }
 
 }
