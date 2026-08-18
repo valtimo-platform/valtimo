@@ -354,7 +354,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     const processDefinitionId = this.processManagementEditorService.selectionProcessDefinition?.id;
 
     if (!processDefinitionId) {
-      this.showNotification('error');
+      this.showNotification('exportError');
       return;
     }
 
@@ -365,13 +365,13 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         next: response => {
           const blob = response.body;
           if (!blob) {
-            this.showNotification('error');
+            this.showNotification('exportError');
             return;
           }
           this.downloadFile(blob, this.getFileName(response));
         },
         error: () => {
-          this.showNotification('error');
+          this.showNotification('exportError');
         },
       });
   }
@@ -680,6 +680,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       | null
       | 'success'
       | 'error'
+      | 'exportError'
       | 'alreadyExists'
       | 'validationError'
       | 'validationWarning'
@@ -691,6 +692,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     if (
       notification === 'alreadyExists' ||
       notification === 'validationError' ||
+      notification === 'exportError' ||
       notification === 'error'
     ) {
       type = 'error';
