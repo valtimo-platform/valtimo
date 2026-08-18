@@ -24,5 +24,5 @@ export const PROCESS_MANAGEMENT_BUILDER_TEST_IDS = {
   startsCaseToggle: 'processManagementBuilderStartsCaseToggle',
   startableByUserToggle: 'processManagementBuilderStartableByUserToggle',
   deployButton: 'processManagementBuilderDeployButton',
-  exportWithProcessLinksOption: 'processManagementBuilderExportWithProcessLinksOption',
+  exportOption: 'processManagementBuilderExportOption',
 } as const;

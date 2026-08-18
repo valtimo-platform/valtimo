@@ -335,7 +335,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.breadcrumbService.clearFourthBreadcrumb();
   }
 
-  public export(isReadOnlyProcess: boolean): void {
+  public exportBpmn(isReadOnlyProcess: boolean): void {
     (isReadOnlyProcess ? from(this._bpmnViewer.saveXML()) : from(this._bpmnModeler.saveXML()))
       .pipe(take(1))
       .subscribe(result => {
@@ -350,7 +350,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       });
   }
 
-  public exportWithProcessLinks(): void {
+  public export(): void {
     const processDefinitionId = this.processManagementEditorService.selectionProcessDefinition?.id;
 
     if (!processDefinitionId) {

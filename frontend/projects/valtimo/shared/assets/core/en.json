@@ -1903,7 +1903,7 @@
         }
       }
     },
-    "exportWithProcessLinks": "Export with process links",
+    "exportBpmn": "Export BPMN definition",
     "canInitializeDocument": "Starts case",
     "startableByUser": "Startable by user",
     "expressionErrors": {

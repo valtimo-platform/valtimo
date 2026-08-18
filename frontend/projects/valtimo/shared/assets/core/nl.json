@@ -1931,7 +1931,7 @@
         }
       }
     },
-    "exportWithProcessLinks": "Exporteren met proceskoppelingen",
+    "exportBpmn": "BPMN-definitie exporteren",
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten",
     "expressionErrors": {

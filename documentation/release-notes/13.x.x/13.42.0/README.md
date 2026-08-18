@@ -12,8 +12,8 @@
   elements it references** — the called sub-processes, decision tables and forms — and imported on
   another environment. This is the same as exporting a case definition: the package is complete, so a
   process that is moved works on the target environment without recreating those elements by hand.
-  Use *Export with process links* in the menu of the process to download a package, and upload that
-  package on the target environment.
+  Use *Export* in the menu of the process to download a package, and upload that package on the
+  target environment. (*Export BPMN definition* in the same menu still downloads only the BPMN file.)
 
   During the import you can point every plugin link in the package at the plugin configuration of
   the target environment, so links keep working on an environment that uses different configurations.
