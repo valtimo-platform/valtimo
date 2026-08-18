@@ -421,9 +421,11 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
 
       const routeWithFormFlows = `${route}/form-flows`;
 
+      // The breadcrumb service translates this key on render (and re-translates on load / language
+      // switch), so a direct page load shows the label, not the raw key.
       this.breadcrumbService.setFourthBreadcrumb({
         route: [routeWithFormFlows],
-        content: this.translateService.instant('buildingBlockManagement.tabs.formFlows'),
+        content: 'buildingBlockManagement.tabs.formFlows',
         href: routeWithFormFlows,
       });
     } else {
@@ -439,7 +441,7 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
 
       this.breadcrumbService.setFourthBreadcrumb({
         route: [routeWithFormFlows],
-        content: this.translateService.instant('caseManagement.tabs.formFlows'),
+        content: 'caseManagement.tabs.formFlows',
         href: routeWithFormFlows,
       });
     }
