@@ -14,42 +14,42 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
-import {FormioCustomComponent} from '../../../../modules';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { FormioCustomComponent } from '../../../../modules';
 
 @Component({
-  selector: 'valtimo-mail-preview',
-  template: `
+    selector: 'valtimo-mail-preview',
+    template: `
     <div style="text-align:center">
-      <p style="font-size:24px;color:#e0e0e0">E-MAILVOORBEELD</p>
+      <p style="font-size:24px;color:darkgrey">E-MAILVOORBEELD</p>
       <p class="mail-preview-key">{{ variableKey }}</p>
     </div>
-    <div [innerHTML]="safeValue"></div>
+    <div style="border:1px solid darkgrey;padding:10px" [innerHTML]="safeValue"></div>
   `,
-  styles: [`
+    styles: [`
     .mail-preview-key { display: none; font-size: 12px; color: #b0b0b0; }
     :host-context(.builder-component) .mail-preview-key { display: block; }
   `],
-  standalone: false,
+    standalone: false,
 })
 export class FormIoMailPreviewComponent implements FormioCustomComponent<string> {
-  @Input() public disabled = false;
-  @Input() public variableKey = '';
-  @Output() public readonly valueChange = new EventEmitter<string>();
+    @Input() public disabled = false;
+    @Input() public variableKey = '';
+    @Output() public readonly valueChange = new EventEmitter<string>();
 
-  public safeValue: SafeHtml = '';
+    public safeValue: SafeHtml = '';
 
-  private _value = '';
+    private _value = '';
 
-  @Input() public set value(v: string) {
-    this._value = v;
-    this.safeValue = this.sanitizer.bypassSecurityTrustHtml(v ?? '');
-  }
+    @Input() public set value(v: string) {
+        this._value = v;
+        this.safeValue = this.sanitizer.bypassSecurityTrustHtml(v ?? "Hier wordt het e-mailvoorbeeld getoond.");
+    }
 
-  public get value(): string {
-    return this._value;
-  }
+    public get value(): string {
+        return this._value;
+    }
 
-  constructor(private readonly sanitizer: DomSanitizer) {}
+    constructor(private readonly sanitizer: DomSanitizer) { }
 }
