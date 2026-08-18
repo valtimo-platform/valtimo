@@ -63,13 +63,23 @@ function sendFromParent(event: string, payload: unknown, origin = PARENT_ORIGIN)
   );
 }
 
+/**
+ * Lets pending promise chains settle. The test URL is a plugin-host bundle path (see
+ * vitest.config.ts), so an unpinned `init` goes through the asynchronous embedder probe before it is
+ * applied — exactly as it does in a deployed iframe.
+ */
+async function settle(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 /** Completes the init handshake, which pins the parent origin for subsequent emits. */
-function initFromParent(origin = PARENT_ORIGIN): void {
+async function initFromParent(origin = PARENT_ORIGIN): Promise<void> {
   sendFromParent(
     "init",
     { context: { pluginId: "case-summary" }, accessToken: "t", theme: "g10", locale: "en" },
     origin
   );
+  await settle();
 }
 
 function lastProxyRequest(): PostedMessage {
@@ -96,7 +106,7 @@ afterEach(() => {
 describe("parent-proxy transport", () => {
   it("emits a proxyRequest for callValtimo and resolves on the matching proxyResponse", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
     const promise = sdk.callValtimo("GET", "/api/v1/document/123");
 
     const req = lastProxyRequest();
@@ -114,7 +124,7 @@ describe("parent-proxy transport", () => {
 
   it("rejects the pending call when the parent reports an error", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
     const promise = sdk.callValtimo("GET", "/api/v1/document/123");
     const req = lastProxyRequest();
 
@@ -123,9 +133,9 @@ describe("parent-proxy transport", () => {
     await expect(promise).rejects.toThrow("boom");
   });
 
-  it("routes getPluginData to the plugin target with a GET and query", () => {
+  it("routes getPluginData to the plugin target with a GET and query", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
     void sdk.getPluginData("/summary", { docId: "42" });
 
     const req = lastProxyRequest();
@@ -134,7 +144,7 @@ describe("parent-proxy transport", () => {
 
   it("keys concurrent requests by distinct correlation ids and resolves each independently", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
     const p1 = sdk.callValtimo("GET", "/a");
     const p2 = sdk.callValtimo("GET", "/b");
 
@@ -159,7 +169,7 @@ describe("origin pinning", () => {
     // Nothing data-bearing may have been broadcast before the origin is known.
     expect(postedMessages.filter((m) => m.event === "proxyRequest")).toEqual([]);
 
-    initFromParent();
+    await initFromParent();
     const req = lastProxyRequest();
     expect(req.targetOrigin).toBe(PARENT_ORIGIN);
 
@@ -181,9 +191,9 @@ describe("origin pinning", () => {
     ]);
   });
 
-  it("pins every emit to the origin of the first init and ignores messages from other origins afterwards", () => {
+  it("pins every emit to the origin of the first init and ignores messages from other origins afterwards", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
 
     sdk.emit("notification", { type: "info", message: "hi" });
     expect(postedMessages.at(-1)!.targetOrigin).toBe(PARENT_ORIGIN);
@@ -205,12 +215,12 @@ describe("origin pinning", () => {
   });
 
   describe("with an explicit parentOrigin option", () => {
-    it("ignores init from any other origin entirely", () => {
+    it("ignores init from any other origin entirely", async () => {
       sdk = new ValtimoPluginSDK({ parentOrigin: PARENT_ORIGIN });
-      initFromParent("http://evil.example");
+      await initFromParent("http://evil.example");
       expect(sdk.getAccessToken()).toBeNull();
 
-      initFromParent();
+      await initFromParent();
       expect(sdk.getAccessToken()).toBe("t");
     });
 
@@ -223,8 +233,146 @@ describe("origin pinning", () => {
   });
 });
 
+/**
+ * A bundle served from a plugin host asks that host whether the page framing it is a registered
+ * GZAC frontend before trusting its `init`. The CSP `frame-ancestors` header is the authoritative
+ * gate; this is defence in depth for deployments where a proxy drops CSP, so it must refuse only on
+ * an explicit "no" and never break an honest plugin when the probe cannot be answered.
+ */
+describe("embedder verification", () => {
+  const BUNDLE_URL = "http://host.example:8090/plugins/case-summary/0.1.0/bundles/case-tab.js";
+  const DEFAULT_URL = "http://host.example:8090/plugins/case-summary/0.1.0/case-tab.html";
+
+  /** Serves the manifest for the manifest fetch and `verdicts` for each frame-policy probe. */
+  function stubHost(verdicts: Record<string, boolean>): ReturnType<typeof vi.fn> {
+    const fetchMock = vi.fn(async (url: string) => {
+      const probed = new URL(url).searchParams.get("origin");
+      if (probed === null) return new Response(JSON.stringify(MANIFEST), { status: 200 });
+      return new Response(JSON.stringify({ allowed: verdicts[probed] === true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    return fetchMock;
+  }
+
+  function setUrl(href: string): void {
+    (window as unknown as { happyDOM: { setURL(href: string): void } }).happyDOM.setURL(href);
+  }
+
+  beforeEach(() => setUrl(BUNDLE_URL));
+  afterEach(() => setUrl(DEFAULT_URL));
+
+  it("pins the origin and applies init once the host confirms the embedder", async () => {
+    stubHost({ [PARENT_ORIGIN]: true });
+    sdk = new ValtimoPluginSDK();
+
+    await initFromParent();
+    await settle();
+
+    expect(sdk.getAccessToken()).toBe("t");
+    sdk.emit("notification", { type: "info", message: "hi" });
+    expect(postedMessages.at(-1)!.targetOrigin).toBe(PARENT_ORIGIN);
+  });
+
+  it("ignores init from an origin the host does not list — the hostile page never gets the pin", async () => {
+    stubHost({ [PARENT_ORIGIN]: true });
+    sdk = new ValtimoPluginSDK();
+
+    await initFromParent("http://evil.example");
+    await settle();
+
+    expect(sdk.getAccessToken()).toBeNull();
+    // No pin means data-bearing emits stay queued rather than reaching the attacker.
+    void sdk.getPluginData("/summary");
+    expect(postedMessages.filter((m) => m.event === "proxyRequest")).toEqual([]);
+
+    // The real parent still gets through afterwards.
+    await initFromParent();
+    await settle();
+    expect(sdk.getAccessToken()).toBe("t");
+  });
+
+  it("proceeds when the probe cannot be answered — the CSP still protects an honest plugin", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (new URL(url).searchParams.get("origin") !== null) throw new Error("network down");
+        return new Response(JSON.stringify(MANIFEST), { status: 200 });
+      })
+    );
+    sdk = new ValtimoPluginSDK();
+
+    await initFromParent();
+    await settle();
+
+    expect(sdk.getAccessToken()).toBe("t");
+  });
+
+  it("proceeds when the host has no frame-policy route (an older host)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (new URL(url).searchParams.get("origin") !== null) {
+          return new Response("Not found", { status: 404 });
+        }
+        return new Response(JSON.stringify(MANIFEST), { status: 200 });
+      })
+    );
+    sdk = new ValtimoPluginSDK();
+
+    await initFromParent();
+    await settle();
+
+    expect(sdk.getAccessToken()).toBe("t");
+  });
+
+  it("probes each origin once and reuses the verdict", async () => {
+    const fetchMock = stubHost({ [PARENT_ORIGIN]: true });
+    sdk = new ValtimoPluginSDK();
+
+    await initFromParent();
+    await initFromParent();
+    await settle();
+
+    const probes = fetchMock.mock.calls.filter(
+      ([url]) => new URL(url as string).searchParams.get("origin") !== null
+    );
+    expect(probes).toHaveLength(1);
+    expect(probes[0][0]).toContain(`frame-policy?origin=${encodeURIComponent(PARENT_ORIGIN)}`);
+  });
+
+  it("skips the probe entirely when parentOrigin was configured explicitly", async () => {
+    const fetchMock = stubHost({ [PARENT_ORIGIN]: false });
+    sdk = new ValtimoPluginSDK({ parentOrigin: PARENT_ORIGIN });
+
+    await initFromParent();
+    await settle();
+
+    // The explicitly configured origin wins: it is trusted without asking, and still pinned.
+    expect(sdk.getAccessToken()).toBe("t");
+    expect(
+      fetchMock.mock.calls.filter(([url]) => String(url).includes("frame-policy"))
+    ).toHaveLength(0);
+  });
+
+  it("does not probe when the bundle was not served from a plugin-host path", async () => {
+    // A standalone preview or a rehosted bundle: there is no plugin host to ask, so init stays
+    // synchronous and works exactly as it did before this check existed.
+    setUrl("http://preview.example/index.html");
+    const fetchMock = stubHost({});
+    sdk = new ValtimoPluginSDK();
+
+    await initFromParent();
+
+    // Synchronous, exactly as before this check existed — a standalone preview still works.
+    expect(sdk.getAccessToken()).toBe("t");
+    expect(
+      fetchMock.mock.calls.filter(([url]) => String(url).includes("frame-policy"))
+    ).toHaveLength(0);
+  });
+});
+
 describe("token confidentiality", () => {
-  it("never forwards a credential in any outgoing message, even after init supplies one", () => {
+  it("never forwards a credential in any outgoing message, even after init supplies one", async () => {
     sdk = new ValtimoPluginSDK();
     sendFromParent("init", {
       context: { pluginId: "case-summary" },
@@ -232,6 +380,7 @@ describe("token confidentiality", () => {
       theme: "g10",
       locale: "en",
     });
+    await settle();
 
     void sdk.callValtimo("POST", "/api/v1/case/x/search", { size: 1 });
 
@@ -281,9 +430,10 @@ describe("translations", () => {
 });
 
 describe("event buffering & lifecycle", () => {
-  it("replays a buffered event to a handler registered after it arrived", () => {
+  it("replays a buffered event to a handler registered after it arrived", async () => {
     sdk = new ValtimoPluginSDK();
     sendFromParent("init", { context: { pluginId: "p" }, accessToken: "t", theme: "g10", locale: "en" });
+    await settle();
 
     const received: unknown[] = [];
     sdk.onContext((ctx) => received.push(ctx));
@@ -328,7 +478,7 @@ describe("task-form submission", () => {
 
   it("emits a submitTask with the collected data and resolves on the matching submitResult", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
 
     const promise = sdk.submitTask({ "pv:approved": true, "doc:/reviewComment": "ok" });
 
@@ -344,7 +494,7 @@ describe("task-form submission", () => {
 
   it("resolves — never rejects — on a validation failure so the form survives", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
 
     const promise = sdk.submitTask({ "pv:approved": false });
     const {correlationId} = lastSubmitTask().payload;
@@ -365,7 +515,7 @@ describe("task-form submission", () => {
 
   it("keys concurrent submissions by correlation id", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
 
     const first = sdk.submitTask({ n: 1 });
     const second = sdk.submitTask({ n: 2 });
@@ -382,7 +532,7 @@ describe("task-form submission", () => {
 
   it("ignores a submitResult for an unknown correlation id and leaves the call pending", async () => {
     sdk = new ValtimoPluginSDK();
-    initFromParent();
+    await initFromParent();
 
     const promise = sdk.submitTask({ n: 1 });
     let settled = false;
@@ -405,7 +555,7 @@ describe("task-form submission", () => {
     const promise = sdk.submitTask({ "pv:approved": true });
     expect(postedMessages.filter((m) => m.event === "submitTask")).toHaveLength(0);
 
-    initFromParent();
+    await initFromParent();
 
     const req = lastSubmitTask();
     expect(req.targetOrigin).toBe(PARENT_ORIGIN);

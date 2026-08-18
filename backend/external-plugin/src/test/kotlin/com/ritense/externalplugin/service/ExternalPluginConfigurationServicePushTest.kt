@@ -17,16 +17,19 @@
 package com.ritense.externalplugin.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
+import com.ritense.externalplugin.domain.ExternalPluginGrantedEgress
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
@@ -62,6 +65,7 @@ class ExternalPluginConfigurationServicePushTest {
     private lateinit var grantedEndpointRepository: ExternalPluginGrantedEndpointRepository
     private lateinit var grantedEventRepository: ExternalPluginGrantedEventRepository
     private lateinit var grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository
+    private lateinit var grantedEgressRepository: ExternalPluginGrantedEgressRepository
     private lateinit var hostClient: ExternalPluginHostClient
     private lateinit var encryptionService: EncryptionService
     private lateinit var propertyEncryptor: PluginPropertyEncryptor
@@ -100,6 +104,7 @@ class ExternalPluginConfigurationServicePushTest {
         grantedEndpointRepository = mock()
         grantedEventRepository = mock()
         grantedCapabilityRepository = mock()
+        grantedEgressRepository = mock()
         hostClient = mock()
         encryptionService = mock()
         propertyEncryptor = mock()
@@ -118,6 +123,7 @@ class ExternalPluginConfigurationServicePushTest {
             grantedEndpointRepository,
             grantedEventRepository,
             grantedCapabilityRepository,
+            grantedEgressRepository,
             hostClient,
             propertyEncryptor,
             encryptionService,
@@ -146,12 +152,95 @@ class ExternalPluginConfigurationServicePushTest {
             eventSubscriptions = any(),
             grantedCapabilities = any(),
             grantedEndpoints = any(),
+            allowedEgress = any(),
             eventBrokerUrl = anyOrNull(),
             eventBrokerExchange = any(),
             eventBrokerExchangeType = any(),
             eventQueueMode = any(),
             eventQueueTtlMs = anyOrNull(),
         )
+    }
+
+    @Test
+    fun `pushToHost unions the manifest egress grants with the x-egress-target origins`() {
+        // Provenance is invisible to the host: one merged list, so it never has to know which source
+        // an entry came from. Deriving here rather than at create time is what keeps the
+        // configuration-driven half in step when an admin edits the URL.
+        definition.configSchema = objectMapper.readTree(
+            """
+            {
+              "type": "object",
+              "properties": {
+                "smartDocumentsUrl": {"type": "string", "format": "uri", "x-egress-target": true}
+              }
+            }
+            """.trimIndent(),
+        ) as ObjectNode
+        configuration.properties = objectMapper.createObjectNode()
+            .put("smartDocumentsUrl", "https://sd.acme-acc.internal:8443/api")
+        whenever(grantedEgressRepository.findAllByConfigurationId(configuration.id)).thenReturn(
+            listOf(
+                ExternalPluginGrantedEgress(
+                    id = UUID.randomUUID(),
+                    configurationId = configuration.id,
+                    target = "api.kvk.nl",
+                )
+            )
+        )
+
+        service.pushToHost(configuration, definition, host)
+
+        val captor = argumentCaptor<List<String>>()
+        verify(hostClient).pushConfiguration(
+            baseUrl = any(),
+            adminToken = any(),
+            configId = any(),
+            pluginId = any(),
+            pluginVersion = any(),
+            properties = any(),
+            serviceToken = any(),
+            gzacBaseUrl = any(),
+            expectedContentHash = anyOrNull(),
+            eventSubscriptions = any(),
+            grantedCapabilities = any(),
+            grantedEndpoints = any(),
+            allowedEgress = captor.capture(),
+            eventBrokerUrl = anyOrNull(),
+            eventBrokerExchange = any(),
+            eventBrokerExchangeType = any(),
+            eventQueueMode = any(),
+            eventQueueTtlMs = anyOrNull(),
+        )
+        assertThat(captor.firstValue)
+            .containsExactly("api.kvk.nl", "https://sd.acme-acc.internal:8443")
+    }
+
+    @Test
+    fun `pushToHost sends an empty allowlist when nothing was granted — deny by default`() {
+        service.pushToHost(configuration, definition, host)
+
+        val captor = argumentCaptor<List<String>>()
+        verify(hostClient).pushConfiguration(
+            baseUrl = any(),
+            adminToken = any(),
+            configId = any(),
+            pluginId = any(),
+            pluginVersion = any(),
+            properties = any(),
+            serviceToken = any(),
+            gzacBaseUrl = any(),
+            expectedContentHash = anyOrNull(),
+            eventSubscriptions = any(),
+            grantedCapabilities = any(),
+            grantedEndpoints = any(),
+            allowedEgress = captor.capture(),
+            eventBrokerUrl = anyOrNull(),
+            eventBrokerExchange = any(),
+            eventBrokerExchangeType = any(),
+            eventQueueMode = any(),
+            eventQueueTtlMs = anyOrNull(),
+        )
+        assertThat(captor.firstValue).isEmpty()
     }
 
     @Test
@@ -188,6 +277,7 @@ class ExternalPluginConfigurationServicePushTest {
             eventSubscriptions = any(),
             grantedCapabilities = any(),
             grantedEndpoints = any(),
+            allowedEgress = any(),
             eventBrokerUrl = anyOrNull(),
             eventBrokerExchange = any(),
             eventBrokerExchangeType = any(),

@@ -38,6 +38,12 @@ interface ExternalPluginHost {
   eventBrokerExchange: string | null;
   eventQueueMode: ExternalPluginEventQueueMode;
   eventQueueTtlMs: number | null;
+  /**
+   * Browser origins (`scheme://host[:port]`) allowed to embed this host's plugin screens. The
+   * backend pushes them to the plugin host, which serves them as the `frame-ancestors` CSP
+   * directive. Empty means no page may frame this host's plugins.
+   */
+  frontendOrigins: Array<string>;
 }
 
 interface ExternalPluginHostCreateRequest {
@@ -50,6 +56,7 @@ interface ExternalPluginHostCreateRequest {
   eventBrokerExchange: string | null;
   eventQueueMode: ExternalPluginEventQueueMode;
   eventQueueTtlMs: number | null;
+  frontendOrigins: Array<string>;
 }
 
 interface ExternalPluginHostDefaults {
@@ -59,11 +66,24 @@ interface ExternalPluginHostDefaults {
   defaultEventQueueTtlMs: number;
   minEventQueueTtlMs: number;
   maxEventQueueTtlMs: number;
+  /**
+   * Origins derived from the configured CORS allowed-origins. Empty when CORS is unconfigured, in
+   * which case the add-host form falls back to the admin's own `window.location.origin` — the page
+   * the plugin will actually be embedded in.
+   */
+  frontendOrigins: Array<string>;
 }
 
 interface ExternalPluginHostEventQueueUpdateRequest {
   eventQueueMode: ExternalPluginEventQueueMode;
   eventQueueTtlMs: number | null;
+}
+
+/** The plugin host's 201 body for a successful package upload, relayed by the backend. */
+interface ExternalPluginUploadResult {
+  pluginId: string;
+  version: string;
+  contentHash?: string;
 }
 
 interface ExternalPluginAction {
@@ -108,6 +128,12 @@ interface ExternalPluginEndpoint {
 interface ExternalPluginPermissions {
   endpoints?: Array<ExternalPluginEndpoint>;
   capabilities?: Array<string>;
+  /**
+   * Origins the plugin's `http_request` calls may reach, declared by the author for the targets that
+   * are the same in every environment. `http_request` is deny-by-default, so anything not listed here
+   * — and not supplied by the admin in a property marked `x-egress-target` — is refused by the host.
+   */
+  egress?: Array<string>;
 }
 
 interface ExternalPluginManifest {
@@ -230,6 +256,13 @@ interface ExternalPluginEndpointDescription {
   description: string | null;
 }
 
+interface ExternalPluginGrantedEgressResponse {
+  id: string;
+  configurationId: string;
+  target: string;
+  grantedAt: string;
+}
+
 interface ExternalPluginConfigurationDetail {
   id: string;
   definitionId: string;
@@ -237,6 +270,9 @@ interface ExternalPluginConfigurationDetail {
   properties: Record<string, unknown>;
   grantedEndpoints: Array<ExternalPluginGrantedEndpointResponse>;
   grantedEvents: Array<ExternalPluginGrantedEventResponse>;
+  grantedEgress: Array<ExternalPluginGrantedEgressResponse>;
+  /** Origins derived from this configuration's own `x-egress-target` values; recomputed per read. */
+  derivedEgress: Array<string>;
   createdAt: string;
 }
 
@@ -247,6 +283,11 @@ interface ExternalPluginConfigurationCreateRequest {
   grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
   grantedEvents: Array<ExternalPluginGrantedEventEntry>;
   grantedCapabilities: Array<string>;
+  /**
+   * The manifest's `permissions.egress` entries, accepted whole. Environment-specific targets are not
+   * sent — GZAC derives those from the `x-egress-target` property values in `properties`.
+   */
+  grantedEgress: Array<string>;
 }
 
 interface ExternalPluginConfigurationUpdateRequest {
@@ -395,6 +436,7 @@ export {
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
   ExternalPluginHostUsageParentType,
+  ExternalPluginUploadResult,
   ExternalPluginDefinition,
   ExternalPluginConfiguration,
   ExternalPluginUserTokenResponse,
@@ -406,6 +448,7 @@ export {
   ExternalPluginGrantedEndpointResponse,
   ExternalPluginGrantedEventEntry,
   ExternalPluginGrantedEventResponse,
+  ExternalPluginGrantedEgressResponse,
   ExternalPluginEndpointDescriptionQuery,
   ExternalPluginEndpointDescription,
   isExternalPluginKey,

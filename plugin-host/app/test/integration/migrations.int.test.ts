@@ -77,7 +77,7 @@ describe("runMigrations against real Postgres", () => {
 
   it("records every migration version exactly once", async () => {
     const {rows} = await pool.query("SELECT version FROM schema_migrations ORDER BY version");
-    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5]);
+    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6, 7]);
   });
 
   it("is idempotent — a second run on the same database changes nothing", async () => {
@@ -85,7 +85,7 @@ describe("runMigrations against real Postgres", () => {
     await runMigrations(pool, noopLogger());
 
     const {rows} = await pool.query("SELECT version FROM schema_migrations ORDER BY version");
-    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5]);
+    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6, 7]);
   });
 
   it("creates plugin_configurations with the capability and endpoint columns", async () => {
@@ -153,13 +153,14 @@ describe("runMigrations against real Postgres", () => {
     try {
       await runMigrations(freshPool, noopLogger());
       const {rows} = await freshPool.query("SELECT version FROM schema_migrations ORDER BY version");
-      expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5]);
+      expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6, 7]);
 
       const {rows: tables} = await freshPool.query(
         `SELECT table_name FROM information_schema.tables
           WHERE table_schema = 'public' ORDER BY table_name`
       );
       expect(tables.map((r: {table_name: string}) => r.table_name)).toEqual([
+        "gzac_instances",
         "plugin_configurations",
         "plugin_kv",
         "plugin_logs",

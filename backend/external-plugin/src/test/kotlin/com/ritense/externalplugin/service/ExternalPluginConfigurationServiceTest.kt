@@ -24,10 +24,12 @@ import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginGrantedCapability
+import com.ritense.externalplugin.domain.ExternalPluginGrantedEgress
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
@@ -64,6 +66,7 @@ class ExternalPluginConfigurationServiceTest {
     private lateinit var hostRepository: ExternalPluginHostRepository
     private lateinit var grantedEndpointRepository: ExternalPluginGrantedEndpointRepository
     private lateinit var grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository
+    private lateinit var grantedEgressRepository: ExternalPluginGrantedEgressRepository
     private lateinit var encryptionService: EncryptionService
     private lateinit var propertyEncryptor: PluginPropertyEncryptor
     private lateinit var service: ExternalPluginConfigurationService
@@ -75,6 +78,7 @@ class ExternalPluginConfigurationServiceTest {
         hostRepository = mock()
         grantedEndpointRepository = mock()
         grantedCapabilityRepository = mock()
+        grantedEgressRepository = mock()
         encryptionService = mock()
         propertyEncryptor = mock()
         whenever(configurationRepository.save(any<ExternalPluginConfiguration>())).thenAnswer { it.getArgument(0) }
@@ -87,6 +91,7 @@ class ExternalPluginConfigurationServiceTest {
             grantedEndpointRepository,
             mock<ExternalPluginGrantedEventRepository>(),
             grantedCapabilityRepository,
+            grantedEgressRepository,
             mock<ExternalPluginHostClient>(),
             propertyEncryptor,
             encryptionService,
@@ -240,6 +245,84 @@ class ExternalPluginConfigurationServiceTest {
     }
 
     @Test
+    fun `create rejects when a manifest-declared egress target is not granted`() {
+        stubDefinition(manifestJson = manifestWithEgress("api.kvk.nl", "svc.vendor.com"))
+
+        assertThatThrownBy {
+            create(grantedCapabilities = listOf("http_request"), grantedEgress = listOf("api.kvk.nl"))
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("All egress targets declared in the plugin manifest must be granted")
+            .hasMessageContaining("svc.vendor.com")
+
+        verify(configurationRepository, never()).save(any())
+        verify(grantedEgressRepository, never()).save(any())
+    }
+
+    @Test
+    fun `create rejects a granted egress target the manifest does not declare`() {
+        stubDefinition(manifestJson = manifestWithEgress("api.kvk.nl"))
+
+        assertThatThrownBy {
+            create(
+                grantedCapabilities = listOf("http_request"),
+                grantedEgress = listOf("api.kvk.nl", "attacker.example.com"),
+            )
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("Granted egress targets must be declared in the plugin manifest")
+            .hasMessageContaining("attacker.example.com")
+
+        verify(configurationRepository, never()).save(any())
+        verify(grantedEgressRepository, never()).save(any())
+    }
+
+    @Test
+    fun `create persists the granted egress targets verbatim`() {
+        // Stored as the manifest wrote them, so what is persisted is what the admin saw and accepted.
+        stubDefinition(manifestJson = manifestWithEgress("api.kvk.nl", "*.vendor.com"))
+
+        val saved = create(
+            grantedCapabilities = listOf("http_request"),
+            grantedEgress = listOf("api.kvk.nl", "*.vendor.com"),
+        )
+
+        val captor = argumentCaptor<ExternalPluginGrantedEgress>()
+        verify(grantedEgressRepository, times(2)).save(captor.capture())
+        assertThat(captor.allValues).allSatisfy { assertThat(it.configurationId).isEqualTo(saved.id) }
+        assertThat(captor.allValues.map { it.target })
+            .containsExactlyInAnyOrder("api.kvk.nl", "*.vendor.com")
+    }
+
+    @Test
+    fun `create rejects an x-egress-target property whose value is not an absolute URL`() {
+        // Fail closed: the admin typing the URL *is* the grant, so a value GZAC cannot turn into an
+        // origin has to surface as an error rather than silently granting nothing.
+        stubDefinition(manifestJson = null, configSchema = egressTargetSchema())
+
+        assertThatThrownBy {
+            create(
+                grantedCapabilities = emptyList(),
+                properties = objectMapper.createObjectNode().put("smartDocumentsUrl", "sd.internal:8443"),
+            )
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("smartDocumentsUrl")
+            .hasMessageContaining("absolute http(s) URL")
+
+        verify(configurationRepository, never()).save(any())
+    }
+
+    @Test
+    fun `create accepts an absent x-egress-target value — an optional URL simply grants nothing`() {
+        stubDefinition(manifestJson = null, configSchema = egressTargetSchema())
+
+        create(grantedCapabilities = emptyList(), properties = objectMapper.createObjectNode())
+
+        verify(configurationRepository).save(any())
+    }
+
+    @Test
     fun `update keeps the stored ciphertext when a secret property is omitted from the payload`() {
         val secretAwareService = serviceWithRealEncryptor()
         val configId = UUID.randomUUID()
@@ -314,6 +397,7 @@ class ExternalPluginConfigurationServiceTest {
         grantedEndpointRepository,
         mock<ExternalPluginGrantedEventRepository>(),
         grantedCapabilityRepository,
+        grantedEgressRepository,
         mock<ExternalPluginHostClient>(),
         PluginPropertyEncryptor(encryptionService),
         encryptionService,
@@ -345,13 +429,18 @@ class ExternalPluginConfigurationServiceTest {
             }
         }
 
-    private fun create(grantedCapabilities: List<String>): ExternalPluginConfiguration = service.create(
+    private fun create(
+        grantedCapabilities: List<String>,
+        grantedEgress: List<String> = emptyList(),
+        properties: ObjectNode = objectMapper.createObjectNode(),
+    ): ExternalPluginConfiguration = service.create(
         definitionId = definitionId,
         title = "Test configuration",
-        properties = objectMapper.createObjectNode(),
+        properties = properties,
         grantedEndpoints = emptyList(),
         grantedEvents = emptyList(),
         grantedCapabilities = grantedCapabilities,
+        grantedEgress = grantedEgress,
     )
 
     private fun stubDefinition(manifestJson: ObjectNode?, configSchema: ObjectNode? = null) {
@@ -374,6 +463,25 @@ class ExternalPluginConfigurationServiceTest {
                 capabilities.forEach { add(it) }
             }
         }
+
+    private fun manifestWithEgress(vararg targets: String): ObjectNode =
+        objectMapper.createObjectNode().apply {
+            putObject("permissions").apply {
+                putArray("capabilities").add("http_request")
+                putArray("egress").apply { targets.forEach { add(it) } }
+            }
+        }
+
+    private fun egressTargetSchema(): ObjectNode = objectMapper.readTree(
+        """
+        {
+          "type": "object",
+          "properties": {
+            "smartDocumentsUrl": {"type": "string", "format": "uri", "x-egress-target": true}
+          }
+        }
+        """.trimIndent(),
+    ) as ObjectNode
 
     private fun manifestWithEvents(vararg eventTypes: String): ObjectNode =
         objectMapper.createObjectNode().apply {

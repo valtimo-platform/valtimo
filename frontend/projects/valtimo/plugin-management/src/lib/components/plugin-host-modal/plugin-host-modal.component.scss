@@ -3,3 +3,25 @@
   flex-direction: column;
   gap: 16px;
 }
+
+.plugin-host-modal__origins {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plugin-host-modal__origin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input {
+    flex: 1;
+  }
+}
+
+.plugin-host-modal__spinner {
+  margin-right: auto;
+  padding-left: 16px;
+  align-self: center;
+}

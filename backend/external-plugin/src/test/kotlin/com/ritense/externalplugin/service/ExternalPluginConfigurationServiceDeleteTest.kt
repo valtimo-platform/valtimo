@@ -73,6 +73,7 @@ class ExternalPluginConfigurationServiceDeleteTest {
             grantedEndpointRepository,
             grantedEventRepository,
             mock(),
+            mock(),
             hostClient,
             mock(),
             encryptionService,

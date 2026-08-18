@@ -18,6 +18,7 @@ package com.ritense.externalplugin.service
 
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.EventQueueMode
+import com.ritense.externalplugin.exception.ExternalPluginHostValidationException
 import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
@@ -61,6 +62,7 @@ class ExternalPluginHostServiceTest {
             mock<ExternalPluginConfigurationRepository>(),
             mock<ExternalPluginGrantedEndpointRepository>(),
             mock<ExternalPluginGrantedEventRepository>(),
+            mock(),
             mock(),
             encryptionService,
             mock<ExternalPluginHostClient>(),
@@ -110,8 +112,134 @@ class ExternalPluginHostServiceTest {
                 eventBrokerAmqpUrl = "amqp://guest:guest@broker:5672",
                 eventBrokerExchange = null,
             )
-        }.isInstanceOf(IllegalArgumentException::class.java)
+        }
+            // Not IllegalArgumentException: the mapper turns this type into a 400 whose detail is
+            // this message, which is what the add-host modal renders.
+            .isInstanceOf(ExternalPluginHostValidationException::class.java)
             .hasMessageContaining("unencrypted transport")
+    }
+
+    @Test
+    fun `rejects a bind address as base URL and names the field in the message`() {
+        listOf("http://0.0.0.0:8090", "http://[::]:8090", "https://0.0.0.0").forEach { baseUrl ->
+            assertThatThrownBy {
+                service.register(
+                    name = "bound-everywhere",
+                    baseUrl = baseUrl,
+                    secret = "admin-token",
+                    gzacCallbackBaseUrl = "http://localhost:8080",
+                    eventBrokerAmqpUrl = null,
+                    eventBrokerExchange = null,
+                )
+            }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+                .hasMessageContaining("base URL")
+                .hasMessageContaining("bind address")
+        }
+    }
+
+    @Test
+    fun `accepts a host name java net URI cannot parse rather than guessing it is unreachable`() {
+        // Docker service names may contain underscores, which URI.getHost() rejects. Only genuine
+        // bind addresses are refused here.
+        val host = service.register(
+            name = "docker",
+            baseUrl = "http://plugin_host:8090",
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "http://localhost:8080",
+            eventBrokerAmqpUrl = null,
+            eventBrokerExchange = null,
+        )
+
+        assertThat(host.baseUrl).isEqualTo("http://plugin_host:8090")
+    }
+
+    @Test
+    fun `classifies connectable base urls`() {
+        assertThat(ExternalPluginHostService.isConnectableBaseUrl("http://0.0.0.0:8090")).isFalse()
+        assertThat(ExternalPluginHostService.isConnectableBaseUrl("http://[::]:8090")).isFalse()
+        assertThat(ExternalPluginHostService.isConnectableBaseUrl("http://localhost:8090")).isTrue()
+        assertThat(ExternalPluginHostService.isConnectableBaseUrl("https://plugin-host.example.com")).isTrue()
+    }
+
+    // ---------------------------------------------------------------- frontend origins
+
+    @Test
+    fun `register stores normalized frontend origins`() {
+        val host = service.register(
+            name = "local",
+            baseUrl = "https://plugin-host.example.com",
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "https://gzac.example.com",
+            eventBrokerAmqpUrl = null,
+            eventBrokerExchange = null,
+            frontendOrigins = listOf("https://Valtimo.Example.com/", "  ", "http://localhost:4200"),
+        )
+
+        assertThat(host.frontendOrigins).isEqualTo("https://valtimo.example.com,http://localhost:4200")
+        assertThat(host.frontendOriginList)
+            .containsExactly("https://valtimo.example.com", "http://localhost:4200")
+    }
+
+    @Test
+    fun `register leaves frontend origins null when none are supplied`() {
+        val host = registerMinimal()
+
+        assertThat(host.frontendOrigins).isNull()
+        assertThat(host.frontendOriginList).isEmpty()
+    }
+
+    @Test
+    fun `updateFrontendOrigins replaces the stored list`() {
+        val existing = registerMinimal()
+        whenever(hostRepository.findById(existing.id)).thenReturn(Optional.of(existing))
+
+        val updated = service.updateFrontendOrigins(
+            existing.id,
+            listOf("https://valtimo.example.com", "https://valtimo.example.com/"),
+        )
+
+        // The duplicate — same origin, trailing slash — collapses.
+        assertThat(updated.frontendOriginList).containsExactly("https://valtimo.example.com")
+    }
+
+    @Test
+    fun `updateFrontendOrigins with an empty list clears the allowlist so nothing may frame the host`() {
+        val existing = registerMinimal()
+        existing.frontendOrigins = "https://valtimo.example.com"
+        whenever(hostRepository.findById(existing.id)).thenReturn(Optional.of(existing))
+
+        val updated = service.updateFrontendOrigins(existing.id, emptyList())
+
+        assertThat(updated.frontendOrigins).isNull()
+        assertThat(updated.frontendOriginList).isEmpty()
+    }
+
+    @Test
+    fun `normalizeFrontendOrigin canonicalises scheme, host case and trailing slash`() {
+        assertThat(ExternalPluginHostService.normalizeFrontendOrigin("HTTPS://Valtimo.Example.com/"))
+            .isEqualTo("https://valtimo.example.com")
+        assertThat(ExternalPluginHostService.normalizeFrontendOrigin(" http://localhost:4200 "))
+            .isEqualTo("http://localhost:4200")
+        assertThat(ExternalPluginHostService.normalizeFrontendOrigin("http://[::1]:4200"))
+            .isEqualTo("http://[::1]:4200")
+    }
+
+    @Test
+    fun `normalizeFrontendOrigin rejects wildcards, paths, non-http schemes and credentials`() {
+        listOf(
+            "*",
+            "https://*.example.com",
+            "https://valtimo.example.com/app",
+            "https://valtimo.example.com?q=1",
+            "ftp://valtimo.example.com",
+            "valtimo.example.com",
+            "https://user:pw@valtimo.example.com",
+        ).forEach { value ->
+            assertThatThrownBy { ExternalPluginHostService.normalizeFrontendOrigin(value) }
+                .describedAs("origin '%s'", value)
+                .isInstanceOf(ExternalPluginHostValidationException::class.java)
+                .hasMessageContaining("not a valid frontend origin")
+        }
     }
 
     @Test

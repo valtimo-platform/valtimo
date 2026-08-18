@@ -64,6 +64,16 @@ export const envSchema = z.object({
   // are picked up after at most this TTL. 0 disables caching.
   CONFIG_CACHE_TTL_MS: z.coerce.number().int().min(0).default(10_000),
 
+  // Extra browser origins allowed to frame plugin bundles, on top of those registered by GZAC
+  // instances. Escape hatch for local development, and for frontends that no GZAC announces (a
+  // separate portal, a proxy alias). Comma-separated `scheme://host[:port]` list.
+  ALLOWED_FRAME_ANCESTORS: z.string().optional(),
+  // A GZAC instance that has not re-announced itself within this window drops out of the
+  // frame-ancestors allowlist. There is no deregistration call, so this is what eventually removes a
+  // decommissioned GZAC. Comfortably longer than the discovery poll (60 s) so a GZAC that is merely
+  // down for maintenance does not lose its plugins' framability.
+  FRAME_ANCESTOR_STALE_MS: z.coerce.number().int().positive().default(7 * 24 * 60 * 60 * 1000),
+
   // Database configuration
   DB_HOST: z.string().default("localhost"),
   DB_PORT: z.coerce.number().default(5434),

@@ -109,7 +109,7 @@
   [hosts]="connectedHosts$ | async"
   [open]="uploadModalOpen$ | async"
   (closeEvent)="closeUploadModal()"
-  (uploadedEvent)="onPluginUploaded()"
+  (uploadedEvent)="onPluginUploaded($event)"
 ></valtimo-plugin-upload-modal>
 
 <valtimo-confirmation-modal
