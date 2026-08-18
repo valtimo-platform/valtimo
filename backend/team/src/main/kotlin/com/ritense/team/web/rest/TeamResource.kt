@@ -92,7 +92,7 @@ class TeamResource(
         @SortDefaults(SortDefault(sort = ["id.username"])) pageable: Pageable
     ): Page<TeamUserResponseDto> {
         return teamManagementService.findAllTeamUsernames(teamKey = teamKey, username = username, pageable = pageable)
-            .map { uname -> TeamUserResponseDto.from(userManagementService.findByUsername(uname)) }
+            .map { uname -> TeamUserResponseDto.from(uname, userManagementService.findByUsername(uname)) }
     }
 
     @PostMapping("/{teamKey}/user")
@@ -102,7 +102,7 @@ class TeamResource(
         @Valid @RequestBody request: TeamUserCreateRequestDto
     ): TeamUserResponseDto {
         val username = teamManagementService.addUserToTeam(request.username, teamKey)
-        return TeamUserResponseDto.from(userManagementService.findByUsername(username))
+        return TeamUserResponseDto.from(username, userManagementService.findByUsername(username))
     }
 
     @DeleteMapping("/{teamKey}/user/{username}")
