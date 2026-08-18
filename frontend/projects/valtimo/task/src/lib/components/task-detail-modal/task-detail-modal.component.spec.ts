@@ -18,7 +18,9 @@ import {ComponentFixture, fakeAsync, flush, TestBed, tick} from '@angular/core/t
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionRequest, PermissionService} from '@valtimo/access-control';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
+import {TaskWithProcessLink} from '@valtimo/process-link';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {SseService} from '@valtimo/sse';
 import {IconService} from 'carbon-components-angular';
@@ -37,6 +39,18 @@ describe('TaskDetailModalComponent', () => {
     created: '2026-01-01',
     assignee: null,
   } as unknown as Task;
+
+  const secondTask = {...task, id: 'task-2', name: 'Second task'} as unknown as Task;
+
+  const taskWithProcessLink = {
+    task,
+    processLinkActivityResult: null,
+  } as unknown as TaskWithProcessLink;
+
+  const secondTaskWithProcessLink = {
+    task: secondTask,
+    processLinkActivityResult: null,
+  } as unknown as TaskWithProcessLink;
 
   let fixture: ComponentFixture<TaskDetailModalComponent>;
   let component: TaskDetailModalComponent;
@@ -195,6 +209,63 @@ describe('TaskDetailModalComponent', () => {
     // the re-fetch skips 403/404 so no global error toast is shown for the expected access loss
     expect(taskService.getTask).toHaveBeenCalledWith(task.id, ['403', '404']);
     expect(component.modalOpen$.getValue()).toBeFalse();
+    flush();
+  }));
+
+  it('clears the task state after the modal close animation', fakeAsync(() => {
+    const intermediateSaveService = TestBed.inject(
+      TaskIntermediateSaveService
+    ) as jasmine.SpyObj<TaskIntermediateSaveService>;
+
+    component.openTaskAndProcessLinkDetails(taskWithProcessLink);
+    tick();
+    expect(component.modalOpen$.getValue()).toBeTrue();
+    expect(component.processLinkPreloaded$.getValue()).toBeTrue();
+
+    component.closeModal();
+    tick(CARBON_CONSTANTS.modalAnimationMs);
+
+    expect(component.processLinkPreloaded$.getValue()).toBeFalse();
+    expect(component.task$.getValue()).toBeNull();
+    expect(component.taskAndProcessLink$.getValue()).toBeNull();
+    expect(intermediateSaveService.setSubmission).toHaveBeenCalledWith({});
+    flush();
+  }));
+
+  it('keeps the next task when it is opened within the close animation of the previous task', fakeAsync(() => {
+    const intermediateSaveService = TestBed.inject(
+      TaskIntermediateSaveService
+    ) as jasmine.SpyObj<TaskIntermediateSaveService>;
+
+    component.openTaskAndProcessLinkDetails(taskWithProcessLink);
+    tick();
+
+    component.closeModal();
+    // reopen for another task before the close animation (and its delayed cleanup) completes
+    tick(CARBON_CONSTANTS.modalAnimationMs / 2);
+    component.openTaskAndProcessLinkDetails(secondTaskWithProcessLink);
+    tick(CARBON_CONSTANTS.modalAnimationMs);
+
+    expect(component.modalOpen$.getValue()).toBeTrue();
+    expect(component.processLinkPreloaded$.getValue()).toBeTrue();
+    expect(component.task$.getValue()?.id).toBe('task-2');
+    expect(component.taskAndProcessLink$.getValue()).toBe(secondTaskWithProcessLink);
+    expect(intermediateSaveService.setSubmission).not.toHaveBeenCalled();
+    flush();
+  }));
+
+  it('resets the preloaded flag when a task without a preloaded process link is opened within the close animation', fakeAsync(() => {
+    component.openTaskAndProcessLinkDetails(taskWithProcessLink);
+    tick();
+
+    component.closeModal();
+    tick(CARBON_CONSTANTS.modalAnimationMs / 2);
+    component.openTaskDetails(secondTask);
+    tick(CARBON_CONSTANTS.modalAnimationMs);
+
+    expect(component.modalOpen$.getValue()).toBeTrue();
+    expect(component.processLinkPreloaded$.getValue()).toBeFalse();
+    expect(component.task$.getValue()?.id).toBe('task-2');
     flush();
   }));
 });
