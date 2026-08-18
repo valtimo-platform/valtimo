@@ -1,0 +1,43 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "HTML",
+            "tag": "h3",
+            "content": "Voer een Bubbel-notitie In (BB3 - Inkomenstoets)",
+            "refreshOnChange": false,
+            "key": "html-title",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "HTML",
+            "content": "Deze taak zit in de diepst geneste building block (BB3). BB2 en BB1 en de zaak staan nu alle drie stil (geblokkeerd op hun call activity). Typ hieronder een waarde en sla op: dankzij continue synchronisatie op elke laag borrelt de waarde direct door van BB3 naar BB2, naar BB1 en naar de zaak. Open daarna de zaak en zie de waarde bij 'Multi-level Bubble' staan, terwijl deze building block nog loopt.",
+            "refreshOnChange": false,
+            "key": "html-description",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Bubbel-notitie",
+            "placeholder": "Typ hier een waarde, bijvoorbeeld 'hallo vanuit BB3'...",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "key": "bubbleNote",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Sla Op en Borrel Door",
+            "key": "submit",
+            "disableOnInvalid": true,
+            "input": true,
+            "tableView": false
+        }
+    ]
+}

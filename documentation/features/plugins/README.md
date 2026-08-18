@@ -93,7 +93,10 @@ valtimo:
       - "GZAC_.*"
 ```
 
-This ensures that only environment variables matching the given patterns are available in the deployment file.
+This ensures that only environment variables matching the given patterns are available in the deployment file. A
+`${...}` placeholder whose name does not match any of the patterns is left in the file as-is, including its default
+value if it has one. This keeps expressions that use the same syntax, such as
+`${valtimoFormFlow.completeTask(additionalProperties, step.submissionData, {'doc:/path':'/other'})}`, intact.
 
 {% endtab %}
 {% endtabs %}

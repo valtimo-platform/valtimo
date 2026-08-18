@@ -1,0 +1,8 @@
+{
+    "key": "case-messaging",
+    "name": "Case messaging",
+    "versionTag": "1.0.0",
+    "final": false,
+    "canHaveAssignee": true,
+    "autoAssignTasks": false
+}
