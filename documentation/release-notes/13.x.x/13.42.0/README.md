@@ -6,17 +6,20 @@
 
 ## New Features
 
-* **Exporting and importing a process with its process links**
+* **Exporting and importing a process with everything it uses**
 
-  A process that is not part of a case can now be exported together with its process links, and
-  imported on another environment. Use *Export with process links* in the menu of the process to
-  download a package, and upload that package on the target environment. Changes that were built and
-  tested on one environment therefore no longer have to be reconnected by hand elsewhere.
+  A process that is not part of a case can now be exported together with its process links **and the
+  elements it references** — the called sub-processes, decision tables and forms — and imported on
+  another environment. This is the same as exporting a case definition: the package is complete, so a
+  process that is moved works on the target environment without recreating those elements by hand.
+  Use *Export with process links* in the menu of the process to download a package, and upload that
+  package on the target environment.
 
   During the import you can point every plugin link in the package at the plugin configuration of
-  the target environment, so links keep working on an environment that uses different
-  configurations. When the process already exists on the environment, the import asks for
-  confirmation before replacing it, just like uploading a single BPMN file does.
+  the target environment, so links keep working on an environment that uses different configurations.
+
+  One thing is deliberately not part of the package: form flow definitions. A form flow belongs to a
+  case or building block and moves with it, so it cannot be attached to a process outside a case.
 
   Uploading a single BPMN file keeps working as before.
 
@@ -29,15 +32,16 @@
   need, so it is clear what a package contains and what the receiving environment has to offer before
   it is imported.
 
-* **An import summary shows what is still missing**
+* **The import preview shows what will be replaced**
 
-  After importing, a summary shows which items the process refers to that are not present on this
-  environment: forms, form flow definitions, decision tables and called sub-processes. Those items
-  are deliberately not part of the package, because they can be shared with other processes, and are
-  imported separately. Only references that could be determined are shown.
+  Because the package now includes the elements the process references, importing it can update an
+  element that already exists on the target and is shared with other processes. Before importing, the
+  preview therefore lists which existing processes, decision tables and forms the import will replace,
+  so replacing them is a conscious choice.
 
-  When the process refers to a form that does not exist on this environment, the import is refused
-  beforehand and the missing form is named, so no half-imported process is left behind.
+  If a process refers to a sub-process or decision table through a dynamic or deployment binding, that
+  element cannot be included in the package. The preview names those separately, so it is clear they
+  have to be imported on their own.
 
 * **A process that is managed by configuration cannot be overwritten by an import**
 

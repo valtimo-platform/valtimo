@@ -22,19 +22,34 @@ import com.ritense.exporter.Exporter
 import com.ritense.exporter.manifest.ArtifactManifestEntry
 import com.ritense.exporter.manifest.ArtifactType
 import com.ritense.exporter.manifest.ResolvableValue
+import com.ritense.exporter.request.GlobalDecisionDefinitionExportRequest
 import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionSpecificationHelper
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersion
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersionTag
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
+import org.operaton.bpm.model.bpmn.BpmnModelInstance
+import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask
+import org.operaton.bpm.model.bpmn.instance.CallActivity
 import java.io.ByteArrayOutputStream
 
 /**
  * Exports the BPMN of a process definition that is not part of a case definition.
  *
- * Unlike [ProcessDefinitionExporter] this exporter does not create related export requests for
- * called sub-processes or referenced decision definitions. Those can be shared with other
- * processes and are exported and imported separately.
+ * Like [ProcessDefinitionExporter] this exporter walks the process and creates related export
+ * requests for the called sub-processes and referenced decision definitions it can resolve, so an
+ * exported process can be imported on another environment together with everything it references.
+ * References that cannot be resolved statically (a `deployment` binding, or an expression based
+ * called element / decision reference) cannot be bundled and are left out; the import preview
+ * reports them so the user is not surprised.
+ *
+ * Building-block-tagged call activities are skipped: those have their own building block exporters.
  */
 class GlobalProcessDefinitionExporter(
     private val operatonRepositoryService: OperatonRepositoryService,
@@ -55,6 +70,9 @@ class GlobalProcessDefinitionExporter(
             Bpmn.readModelFromStream(inputStream)
         }
 
+        val relatedRequests = getCallActivityProcessDefinitionExportRequests(bpmnModelInstance) +
+            getDecisionExportRequests(bpmnModelInstance)
+
         val exportFile = ByteArrayOutputStream().use {
             Bpmn.writeModelToStream(it, bpmnModelInstance)
             ExportFile(
@@ -65,7 +83,7 @@ class GlobalProcessDefinitionExporter(
 
         return ExportResult(
             exportFiles = setOf(exportFile),
-            relatedRequests = emptySet(),
+            relatedRequests = relatedRequests,
             manifestArtifact = ArtifactManifestEntry(
                 artifactVersionTag = ResolvableValue.of(getArtifactVersionTag(processDefinition)),
                 title = ResolvableValue.of(processDefinition.name ?: processDefinition.key),
@@ -76,6 +94,53 @@ class GlobalProcessDefinitionExporter(
             ),
             manifestDependencies = emptySet(),
         )
+    }
+
+    /**
+     * Resolves the called sub-processes of the process to global export requests. A call activity
+     * that cannot be resolved to a specific process definition (a `deployment` binding, or an
+     * expression based called element) is skipped rather than failing the export: it cannot be
+     * bundled and the import preview reports it instead. Building-block-tagged call activities are
+     * skipped as well, matching [ProcessDefinitionExporter].
+     */
+    private fun getCallActivityProcessDefinitionExportRequests(
+        bpmnModelInstance: BpmnModelInstance
+    ): Set<GlobalProcessDefinitionExportRequest> {
+        return bpmnModelInstance.getModelElementsByType(CallActivity::class.java).mapNotNull { callActivity ->
+            val calledElement = callActivity.calledElement ?: return@mapNotNull null
+            if (callActivity.operatonCalledElementVersionTag?.startsWith(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX) == true) {
+                return@mapNotNull null
+            }
+            val spec = byKey(calledElement)
+            val processDefinition = when (callActivity.operatonCalledElementBinding) {
+                "version" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersion(callActivity.operatonCalledElementVersion.toInt())))
+                "versionTag" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersionTag(callActivity.operatonCalledElementVersionTag)))
+                "deployment" -> null
+                else -> operatonRepositoryService.findProcessDefinition(spec.and(byLatestVersion()))
+            }
+            processDefinition?.let { GlobalProcessDefinitionExportRequest(it.id) }
+        }.toSet()
+    }
+
+    /**
+     * Resolves the decision definitions referenced by business rule tasks to global export requests.
+     * A reference that cannot be resolved statically (a `deployment` binding, or an expression based
+     * decision reference) is skipped for the same reason as [getCallActivityProcessDefinitionExportRequests].
+     */
+    private fun getDecisionExportRequests(
+        bpmnModelInstance: BpmnModelInstance
+    ): Set<GlobalDecisionDefinitionExportRequest> {
+        return bpmnModelInstance.getModelElementsByType(BusinessRuleTask::class.java).mapNotNull { businessRuleTask ->
+            val decisionRef = businessRuleTask.operatonDecisionRef ?: return@mapNotNull null
+            val spec = OperatonDecisionDefinitionSpecificationHelper.byKey(decisionRef)
+            val decisionDefinition = when (businessRuleTask.operatonDecisionRefBinding) {
+                "version" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersion(businessRuleTask.operatonDecisionRefVersion.toInt())))
+                "versionTag" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersionTag(businessRuleTask.operatonDecisionRefVersionTag)))
+                "deployment" -> null
+                else -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byLatestVersion()))
+            }
+            decisionDefinition?.let { GlobalDecisionDefinitionExportRequest(it.id) }
+        }.toSet()
     }
 
     /**

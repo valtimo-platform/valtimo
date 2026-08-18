@@ -1863,12 +1863,12 @@
       "summaryDescription": "The following items the process refers to are missing on this environment. Import them separately.",
       "missingReference": {
         "SUB_PROCESS": {
-          "title": "Missing sub-processes",
-          "message": "These processes are called, but do not exist on this environment:"
+          "title": "Sub-processes not included",
+          "message": "These called processes could not be included in the package and do not exist on this environment. They use a dynamic or deployment binding, so import them separately:"
         },
         "DECISION_DEFINITION": {
-          "title": "Missing decision tables",
-          "message": "These decision tables are used, but do not exist on this environment:"
+          "title": "Decision tables not included",
+          "message": "These decision tables could not be included in the package and do not exist on this environment. They use a dynamic or deployment binding, so import them separately:"
         },
         "FORM": {
           "title": "Missing forms",
@@ -1881,6 +1881,20 @@
         "READ_ONLY_SYSTEM_PROCESS": {
           "title": "Process is managed by configuration",
           "message": "This process cannot be overwritten because it is managed by the application configuration:"
+        }
+      },
+      "willBeReplaced": {
+        "PROCESS_DEFINITION": {
+          "title": "Processes will be replaced",
+          "message": "These processes already exist on this environment and will be replaced by the import:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Decision tables will be replaced",
+          "message": "These decision tables already exist on this environment and will be replaced by the import:"
+        },
+        "FORM": {
+          "title": "Forms will be replaced",
+          "message": "These forms already exist on this environment and will be replaced by the import:"
         }
       }
     },

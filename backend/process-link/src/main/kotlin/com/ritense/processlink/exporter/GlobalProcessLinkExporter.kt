@@ -22,6 +22,7 @@ import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.manifest.ArtifactDependency
+import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
@@ -30,9 +31,10 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 /**
  * Exports the process links of a process definition that is not part of a case definition.
  *
- * Unlike [ProcessLinkExporter] this exporter does not create related export requests for the
- * definitions a process link points at (forms, form flows). Those can be shared with other
- * processes and are exported and imported separately.
+ * Like [ProcessLinkExporter] this exporter creates related export requests for the definitions a
+ * process link points at, through [ProcessLinkMapper.createGlobalRelatedExportRequests], so they are
+ * bundled into the `config/global` export. Form flow links contribute nothing: form flows are
+ * case/building-block scoped and cannot occur on a case-unlinked process.
  */
 class GlobalProcessLinkExporter(
     private val objectMapper: ObjectMapper,
@@ -51,10 +53,12 @@ class GlobalProcessLinkExporter(
     override fun export(request: GlobalProcessDefinitionExportRequest): ExportResult {
         val processLinks = processLinkService.getProcessLinks(request.processDefinitionId)
 
+        val relatedRequests = mutableSetOf<ExportRequest>()
         val manifestDependencies = mutableSetOf<ArtifactDependency>()
         val exportDtos = processLinks.map { processLink ->
             val mapper = processLinkService.getProcessLinkMapper(processLink.processLinkType)
 
+            relatedRequests.addAll(mapper.createGlobalRelatedExportRequests(processLink))
             manifestDependencies.addAll(mapper.toManifestDependencies(processLink))
 
             mapper.toProcessLinkExportResponseDto(processLink)
@@ -67,7 +71,7 @@ class GlobalProcessLinkExporter(
                     objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(exportDtos)
                 )
             ),
-            relatedRequests = emptySet(),
+            relatedRequests = relatedRequests,
             // The process definition of the request is the artifact of this export
             manifestArtifact = null,
             manifestDependencies = manifestDependencies,

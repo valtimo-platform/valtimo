@@ -38,12 +38,21 @@ interface ProcessDefinitionPluginConfigurationPreview {
   existsInTargetEnvironment: boolean;
 }
 
+type ReplacedElementType = 'PROCESS_DEFINITION' | 'DECISION_DEFINITION' | 'FORM';
+
+interface ReplacedElement {
+  type: ReplacedElementType;
+  key: string;
+}
+
 interface ProcessDefinitionImportPreview {
   processDefinitionKeys: string[];
   /** The processes of the package that already exist here and will be replaced by the import. */
   existingProcessDefinitionKeys: string[];
   pluginConfigurations: ProcessDefinitionPluginConfigurationPreview[];
   missingReferences: MissingReference[];
+  /** Elements bundled in the package that already exist here and will be replaced by the import. */
+  elementsToReplace: ReplacedElement[];
   canImport: boolean;
 }
 
@@ -58,4 +67,6 @@ export {
   ProcessDefinitionImportPreview,
   ProcessDefinitionImportResult,
   ProcessDefinitionPluginConfigurationPreview,
+  ReplacedElement,
+  ReplacedElementType,
 };

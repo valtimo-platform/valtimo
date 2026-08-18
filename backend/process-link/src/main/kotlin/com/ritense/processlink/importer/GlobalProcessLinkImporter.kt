@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.importer.ImportRequest
+import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_FORM
 import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_PROCESS_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_PROCESS_LINK
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
@@ -47,8 +48,14 @@ class GlobalProcessLinkImporter(
 ) {
     override fun type() = GLOBAL_PROCESS_LINK
 
+    /**
+     * A process link cannot be created before the definition it points at is deployed. The
+     * mappers report their case-scoped importer type; for the global path the process definition
+     * and any bundled form are deployed by the global importers, so those are depended on
+     * explicitly. This guarantees a bundled form is deployed before the form link referencing it.
+     */
     override fun dependsOn(): Set<String> {
-        return setOf(GLOBAL_PROCESS_DEFINITION) +
+        return setOf(GLOBAL_PROCESS_DEFINITION, GLOBAL_FORM) +
             processLinkService.getImporterDependsOnTypes()
     }
 

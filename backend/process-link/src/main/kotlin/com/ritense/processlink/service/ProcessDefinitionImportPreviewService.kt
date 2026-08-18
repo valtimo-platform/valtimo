@@ -29,6 +29,8 @@ import com.ritense.processlink.web.rest.dto.MissingReferenceDto
 import com.ritense.processlink.web.rest.dto.MissingReferenceType
 import com.ritense.processlink.web.rest.dto.ProcessLinkPluginConfigurationPreviewDto
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionImportPreviewResponseDto
+import com.ritense.processlink.web.rest.dto.ReplacedElementDto
+import com.ritense.processlink.web.rest.dto.ReplacedElementType
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionSpecificationHelper
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -77,6 +79,10 @@ class ProcessDefinitionImportPreviewService(
                 )
             }
 
+        val bundledFormNames = zipEntries.keys
+            .mapNotNull { FORM_REGEX.matchEntire(it)?.groupValues?.get(1) }
+            .toSet()
+
         return runWithoutAuthorization {
             val existingProcessDefinitionKeys = processDefinitionKeys.filter {
                 repositoryService.findLatestProcessDefinition(it) != null
@@ -88,9 +94,64 @@ class ProcessDefinitionImportPreviewService(
                 pluginConfigurations = pluginConfigurations,
                 missingReferences = findReadOnlySystemProcesses(existingProcessDefinitionKeys) +
                     findMissingBpmnReferences(bpmnEntries, processDefinitionKeys, zipEntries) +
-                    findMissingProcessLinkReferences(zipEntries),
+                    findMissingProcessLinkReferences(zipEntries, bundledFormNames),
+                elementsToReplace = findElementsToReplace(
+                    existingProcessDefinitionKeys,
+                    zipEntries,
+                    bundledFormNames,
+                ),
             )
         }
+    }
+
+    /**
+     * The elements bundled in the package that already exist here and will be replaced by the
+     * import: the processes, the referenced decision definitions, and the referenced forms.
+     */
+    private fun findElementsToReplace(
+        existingProcessDefinitionKeys: List<String>,
+        zipEntries: Map<String, ByteArray>,
+        bundledFormNames: Set<String>,
+    ): List<ReplacedElementDto> {
+        val replacedProcesses = existingProcessDefinitionKeys.map {
+            ReplacedElementDto(ReplacedElementType.PROCESS_DEFINITION, it)
+        }
+
+        val replacedDecisions = zipEntries.keys
+            .mapNotNull { DMN_REGEX.matchEntire(it)?.groupValues?.get(1) }
+            .filter { globalDecisionDefinitionExists(it) }
+            .map { ReplacedElementDto(ReplacedElementType.DECISION_DEFINITION, it) }
+
+        val replacedForms = findReplacedProcessLinkReferences(zipEntries)
+            .filter { it.type != ReplacedElementType.FORM || it.key in bundledFormNames }
+
+        return (replacedProcesses + replacedDecisions + replacedForms).distinct()
+    }
+
+    private fun globalDecisionDefinitionExists(decisionDefinitionKey: String): Boolean {
+        return repositoryService.findDecisionDefinition(
+            OperatonDecisionDefinitionSpecificationHelper.byKey(decisionDefinitionKey)
+                .and(OperatonDecisionDefinitionSpecificationHelper.byNotLinkedToCaseDefinition())
+                .and(OperatonDecisionDefinitionSpecificationHelper.byLatestVersion())
+        ) != null
+    }
+
+    private fun findReplacedProcessLinkReferences(
+        zipEntries: Map<String, ByteArray>,
+    ): List<ReplacedElementDto> {
+        return zipEntries.filterKeys { it.matches(PROCESS_LINK_REGEX) }
+            .flatMap { (fileName, content) ->
+                parseProcessLinkNodes(fileName, content).mapNotNull { node ->
+                    getReplacedReference(node)
+                }
+            }
+    }
+
+    private fun getReplacedReference(node: JsonNode): ReplacedElementDto? {
+        val deployDto = parseDeployDto(node) ?: return null
+        return processLinkService.getProcessLinkMapper(deployDto.processLinkType)
+            // A process definition outside a case definition has no blueprint
+            .getReplacedReference(deployDto, null)
     }
 
     /**
@@ -168,27 +229,48 @@ class ProcessDefinitionImportPreviewService(
         ) != null
     }
 
-    private fun findMissingProcessLinkReferences(zipEntries: Map<String, ByteArray>): List<MissingReferenceDto> {
+    /**
+     * A form referenced by a process link is now bundled into the package (see the global
+     * exporter), so a form present in the archive is not reported as missing even when it is not yet
+     * on this environment: the import deploys it. Only forms that are neither here nor in the package
+     * remain a blocking missing reference.
+     */
+    private fun findMissingProcessLinkReferences(
+        zipEntries: Map<String, ByteArray>,
+        bundledFormNames: Set<String>,
+    ): List<MissingReferenceDto> {
         return zipEntries.filterKeys { it.matches(PROCESS_LINK_REGEX) }
             .flatMap { (fileName, content) ->
                 val processDefinitionKey = PROCESS_LINK_REGEX.matchEntire(fileName)!!.groupValues[1]
-                val jsonTree = try {
-                    objectMapper.readTree(content.toString(Charsets.UTF_8))
-                } catch (e: Exception) {
-                    logger.info(e) { "Could not read '$fileName' while previewing the import" }
-                    return@flatMap emptyList()
-                }
-                if (jsonTree !is ArrayNode) {
-                    return@flatMap emptyList()
-                }
-
-                jsonTree.mapNotNull { node ->
+                parseProcessLinkNodes(fileName, content).mapNotNull { node ->
                     getMissingReference(node, processDefinitionKey)
                 }
             }
+            .filter { it.type != MissingReferenceType.FORM || it.reference !in bundledFormNames }
+    }
+
+    private fun parseProcessLinkNodes(fileName: String, content: ByteArray): List<JsonNode> {
+        val jsonTree = try {
+            objectMapper.readTree(content.toString(Charsets.UTF_8))
+        } catch (e: Exception) {
+            logger.info(e) { "Could not read '$fileName' while previewing the import" }
+            return emptyList()
+        }
+        if (jsonTree !is ArrayNode) {
+            return emptyList()
+        }
+        return jsonTree.toList()
     }
 
     private fun getMissingReference(node: JsonNode, processDefinitionKey: String): MissingReferenceDto? {
+        val deployDto = parseDeployDto(node) ?: return null
+        return processLinkService.getProcessLinkMapper(deployDto.processLinkType)
+            // A process definition outside a case definition has no blueprint
+            .getMissingReference(deployDto, null)
+            ?.copy(processDefinitionKey = processDefinitionKey)
+    }
+
+    private fun parseDeployDto(node: JsonNode): ProcessLinkDeployDto? {
         if (node !is ObjectNode) {
             return null
         }
@@ -196,18 +278,12 @@ class ProcessDefinitionImportPreviewService(
         if (!node.has(PROCESS_DEFINITION_ID)) {
             node.set<ObjectNode>(PROCESS_DEFINITION_ID, TextNode.valueOf(PROCESS_DEFINITION_ID_PLACEHOLDER))
         }
-
-        val deployDto = try {
+        return try {
             objectMapper.treeToValue<ProcessLinkDeployDto>(node)
         } catch (e: Exception) {
-            logger.info(e) { "Could not read process link of process '$processDefinitionKey' while previewing the import" }
-            return null
+            logger.info(e) { "Could not read process link while previewing the import" }
+            null
         }
-
-        return processLinkService.getProcessLinkMapper(deployDto.processLinkType)
-            // A process definition outside a case definition has no blueprint
-            .getMissingReference(deployDto, null)
-            ?.copy(processDefinitionKey = processDefinitionKey)
     }
 
     private fun readZipEntries(inputStream: InputStream): Map<String, ByteArray> {
@@ -240,6 +316,7 @@ class ProcessDefinitionImportPreviewService(
         private const val PROCESS_DEFINITION_ID_PLACEHOLDER = "-"
         private val BPMN_REGEX = """.*/?global/bpmn/(?:.*/)?(.+)\.bpmn""".toRegex()
         private val DMN_REGEX = """.*/?global/dmn/(?:.*/)?(.+)\.dmn""".toRegex()
+        private val FORM_REGEX = """.*/?global/form/(?:.*/)?(.+)\.form\.json""".toRegex()
         private val PROCESS_LINK_REGEX = """.*/?process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
     }
 }

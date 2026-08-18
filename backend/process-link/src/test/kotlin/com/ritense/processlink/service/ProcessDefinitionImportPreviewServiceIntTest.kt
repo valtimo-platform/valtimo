@@ -21,6 +21,8 @@ import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.web.rest.dto.MissingReferenceType
+import com.ritense.processlink.web.rest.dto.ReplacedElementDto
+import com.ritense.processlink.web.rest.dto.ReplacedElementType
 import com.ritense.valtimo.contract.config.ValtimoProperties
 import com.ritense.valtimo.domain.processdefinition.ProcessDefinitionProperties
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -57,6 +59,26 @@ class ProcessDefinitionImportPreviewServiceIntTest @Autowired constructor(
         val preview = processDefinitionImportPreviewService.preview(exportedPackage())
 
         assertThat(preview.existingProcessDefinitionKeys).containsExactly(PROCESS_DEFINITION_KEY)
+    }
+
+    @Test
+    fun `should list the process of the package as an element to replace`(): Unit = runWithoutAuthorization {
+        val preview = processDefinitionImportPreviewService.preview(exportedPackage())
+
+        assertThat(preview.elementsToReplace).contains(
+            ReplacedElementDto(ReplacedElementType.PROCESS_DEFINITION, PROCESS_DEFINITION_KEY)
+        )
+        // Replacing an existing element is informational, not a block
+        assertThat(preview.canImport).isTrue()
+    }
+
+    @Test
+    fun `should report nothing to replace for a process that does not exist here yet`(): Unit = runWithoutAuthorization {
+        val preview = processDefinitionImportPreviewService.preview(
+            zipOf("config/global/bpmn/does-not-exist-here.bpmn" to bpmnWithCallActivity("does-not-exist-here", null))
+        )
+
+        assertThat(preview.elementsToReplace).isEmpty()
     }
 
     @Test

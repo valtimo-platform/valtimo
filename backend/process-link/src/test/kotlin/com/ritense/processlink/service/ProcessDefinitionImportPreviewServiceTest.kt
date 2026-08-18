@@ -22,6 +22,8 @@ import com.ritense.processlink.importer.ProcessLinkImporterTest.TestProcessLinkD
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.web.rest.dto.MissingReferenceDto
 import com.ritense.processlink.web.rest.dto.MissingReferenceType
+import com.ritense.processlink.web.rest.dto.ReplacedElementDto
+import com.ritense.processlink.web.rest.dto.ReplacedElementType
 import com.ritense.valtimo.contract.importer.ImportPreviewContribution
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -248,6 +250,102 @@ class ProcessDefinitionImportPreviewServiceTest {
         assertThat(preview.canImport).isTrue()
     }
 
+    @Test
+    fun `should report a bundled process that already exists as an element to replace`() {
+        whenever(repositoryService.findLatestProcessDefinition(PROCESS_DEFINITION_KEY))
+            .thenReturn(mock<OperatonProcessDefinition>())
+
+        val preview = service.preview(zipOf(BPMN_PATH to bpmn()))
+
+        assertThat(preview.elementsToReplace).containsExactly(
+            ReplacedElementDto(ReplacedElementType.PROCESS_DEFINITION, PROCESS_DEFINITION_KEY)
+        )
+        // Replacing an existing element is informational, not a block
+        assertThat(preview.canImport).isTrue()
+    }
+
+    @Test
+    fun `should report a bundled decision definition that already exists as an element to replace`() {
+        whenever(repositoryService.findDecisionDefinition(any<Specification<OperatonDecisionDefinition>>()))
+            .thenReturn(mock<OperatonDecisionDefinition>())
+
+        val preview = service.preview(
+            zipOf(
+                BPMN_PATH to bpmn(),
+                "config/global/dmn/my-decision.dmn" to "<definitions/>",
+            )
+        )
+
+        assertThat(preview.elementsToReplace).contains(
+            ReplacedElementDto(ReplacedElementType.DECISION_DEFINITION, "my-decision")
+        )
+    }
+
+    @Test
+    fun `should report a bundled form that already exists as an element to replace`() {
+        val mapper = mock<ProcessLinkMapper>()
+        whenever(mapper.getReplacedReference(any(), anyOrNull())).thenReturn(
+            ReplacedElementDto(ReplacedElementType.FORM, "my-form")
+        )
+        whenever(processLinkService.getProcessLinkMapper("test-type")).thenReturn(mapper)
+
+        val preview = service.preview(
+            zipOf(
+                BPMN_PATH to bpmn(),
+                PROCESS_LINK_PATH to processLinkJson(),
+                "config/global/form/my-form.form.json" to "{}",
+            )
+        )
+
+        assertThat(preview.elementsToReplace).contains(
+            ReplacedElementDto(ReplacedElementType.FORM, "my-form")
+        )
+    }
+
+    @Test
+    fun `should not report a bundled form as missing`() {
+        val mapper = mock<ProcessLinkMapper>()
+        whenever(mapper.getMissingReference(any(), anyOrNull())).thenReturn(
+            MissingReferenceDto(type = MissingReferenceType.FORM, reference = "my-form")
+        )
+        whenever(processLinkService.getProcessLinkMapper("test-type")).thenReturn(mapper)
+
+        val preview = service.preview(
+            zipOf(
+                BPMN_PATH to bpmn(),
+                PROCESS_LINK_PATH to processLinkJson(),
+                "config/global/form/my-form.form.json" to "{}",
+            )
+        )
+
+        assertThat(preview.missingReferences).isEmpty()
+        assertThat(preview.canImport).isTrue()
+    }
+
+    @Test
+    fun `should report a called sub-process that could not be included as a missing reference`() {
+        // A deployment-bound (or expression) call activity cannot be bundled and is not on the target
+        val preview = service.preview(
+            zipOf(BPMN_PATH to bpmn(callActivityCalling = "other-process", callActivityBinding = "deployment"))
+        )
+
+        assertThat(preview.missingReferences).containsExactly(
+            MissingReferenceDto(
+                type = MissingReferenceType.SUB_PROCESS,
+                reference = "other-process",
+                activityId = "CallActivity_1",
+                processDefinitionKey = PROCESS_DEFINITION_KEY,
+            )
+        )
+    }
+
+    @Test
+    fun `should report no elements to replace when nothing is bundled that exists here`() {
+        val preview = service.preview(zipOf(BPMN_PATH to bpmn()))
+
+        assertThat(preview.elementsToReplace).isEmpty()
+    }
+
     private fun mockDeployedSystemProcess(readOnly: Boolean) {
         whenever(repositoryService.findLatestProcessDefinition(PROCESS_DEFINITION_KEY))
             .thenReturn(mock<OperatonProcessDefinition>())
@@ -282,10 +380,12 @@ class ProcessDefinitionImportPreviewServiceTest {
     private fun bpmn(
         key: String = PROCESS_DEFINITION_KEY,
         callActivityCalling: String? = null,
+        callActivityBinding: String? = null,
         decisionRef: String? = null,
     ): String {
         val callActivity = callActivityCalling?.let {
-            """<bpmn:callActivity id="CallActivity_1" calledElement="$it" />"""
+            val binding = callActivityBinding?.let { b -> """ camunda:calledElementBinding="$b"""" } ?: ""
+            """<bpmn:callActivity id="CallActivity_1" calledElement="$it"$binding />"""
         } ?: ""
         val businessRuleTask = decisionRef?.let {
             """<bpmn:businessRuleTask id="BusinessRuleTask_1" camunda:decisionRef="$it" />"""

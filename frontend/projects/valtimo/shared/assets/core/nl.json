@@ -1891,12 +1891,12 @@
       "summaryDescription": "De volgende onderdelen waarnaar het proces verwijst, ontbreken op deze omgeving. Importeer deze apart.",
       "missingReference": {
         "SUB_PROCESS": {
-          "title": "Ontbrekende subprocessen",
-          "message": "Deze processen worden aangeroepen, maar bestaan niet op deze omgeving:"
+          "title": "Subprocessen niet meegenomen",
+          "message": "Deze aangeroepen processen konden niet in het pakket worden meegenomen en bestaan niet op deze omgeving. Ze gebruiken een dynamische of deployment-binding, importeer ze daarom apart:"
         },
         "DECISION_DEFINITION": {
-          "title": "Ontbrekende beslistabellen",
-          "message": "Deze beslistabellen worden gebruikt, maar bestaan niet op deze omgeving:"
+          "title": "Beslistabellen niet meegenomen",
+          "message": "Deze beslistabellen konden niet in het pakket worden meegenomen en bestaan niet op deze omgeving. Ze gebruiken een dynamische of deployment-binding, importeer ze daarom apart:"
         },
         "FORM": {
           "title": "Ontbrekende formulieren",
@@ -1909,6 +1909,20 @@
         "READ_ONLY_SYSTEM_PROCESS": {
           "title": "Proces wordt beheerd via configuratie",
           "message": "Dit proces kan niet worden overschreven, omdat het via de applicatieconfiguratie wordt beheerd:"
+        }
+      },
+      "willBeReplaced": {
+        "PROCESS_DEFINITION": {
+          "title": "Processen worden vervangen",
+          "message": "Deze processen bestaan al op deze omgeving en worden vervangen door de import:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Beslistabellen worden vervangen",
+          "message": "Deze beslistabellen bestaan al op deze omgeving en worden vervangen door de import:"
+        },
+        "FORM": {
+          "title": "Formulieren worden vervangen",
+          "message": "Deze formulieren bestaan al op deze omgeving en worden vervangen door de import:"
         }
       }
     },

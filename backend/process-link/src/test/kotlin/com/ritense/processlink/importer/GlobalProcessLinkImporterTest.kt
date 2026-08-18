@@ -17,6 +17,7 @@
 package com.ritense.processlink.importer
 
 import com.ritense.importer.ImportRequest
+import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_FORM
 import com.ritense.importer.ValtimoImportTypes.Companion.GLOBAL_PROCESS_DEFINITION
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -83,10 +84,10 @@ class GlobalProcessLinkImporterTest {
     }
 
     @Test
-    fun `should depend on 'globalprocessdefinition' type`() {
+    fun `should depend on the global process definition and global form types`() {
         whenever(processLinkService.getImporterDependsOnTypes()).thenReturn(setOf("x"))
 
-        assertThat(importer.dependsOn()).isEqualTo(setOf(GLOBAL_PROCESS_DEFINITION, "x"))
+        assertThat(importer.dependsOn()).isEqualTo(setOf(GLOBAL_PROCESS_DEFINITION, GLOBAL_FORM, "x"))
     }
 
     @Test

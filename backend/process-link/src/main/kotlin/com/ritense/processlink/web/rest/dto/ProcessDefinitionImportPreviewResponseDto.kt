@@ -26,6 +26,10 @@ data class ProcessDefinitionImportPreviewResponseDto(
     val existingProcessDefinitionKeys: List<String> = emptyList(),
     val pluginConfigurations: List<ProcessLinkPluginConfigurationPreviewDto> = emptyList(),
     val missingReferences: List<MissingReferenceDto> = emptyList(),
+    /**
+     * Elements bundled in the package that already exist here and will be replaced by the import.
+     */
+    val elementsToReplace: List<ReplacedElementDto> = emptyList(),
 ) {
     val canImport: Boolean get() = missingReferences.none { it.blocksImport }
 }

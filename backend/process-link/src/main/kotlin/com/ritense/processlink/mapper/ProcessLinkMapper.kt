@@ -22,6 +22,7 @@ import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.web.rest.dto.MissingReferenceDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
+import com.ritense.processlink.web.rest.dto.ReplacedElementDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
@@ -61,6 +62,15 @@ interface ProcessLinkMapper {
         setOf()
 
     /**
+     * Used by the export service for a process definition that is not part of a case definition.
+     * Should return the (global) export requests the provided processLink depends on, so the
+     * definitions it points at (e.g. forms) are bundled into the `config/global` export.
+     * @param processLink The processLink to create related export requests for
+     */
+    fun createGlobalRelatedExportRequests(processLink: ProcessLink): Set<ExportRequest> =
+        setOf()
+
+    /**
      * Used by the export service to build the export manifest.
      * Should return the manifest dependencies (e.g. plugins) the provided processLink introduces.
      * @param processLink The processLink to derive manifest dependencies from
@@ -77,6 +87,15 @@ interface ProcessLinkMapper {
      * @param blueprintId The case or building block the process link will be imported for, if any
      */
     fun getMissingReference(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): MissingReferenceDto? = null
+
+    /**
+     * Used when previewing an import of a process that is not part of a case definition. Should
+     * return the definition this process link points at when it already exists on this environment
+     * and is bundled in the import, so the user can be told it will be replaced before importing.
+     * @param deployDto The process link as present in the import
+     * @param blueprintId The case or building block the process link will be imported for, if any
+     */
+    fun getReplacedReference(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ReplacedElementDto? = null
 
     /**
      * Called after all imports for a case definition are complete.

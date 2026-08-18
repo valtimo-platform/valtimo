@@ -19,6 +19,7 @@ package com.ritense.processlink.exporter
 import com.ritense.exporter.manifest.ArtifactDependency
 import com.ritense.exporter.manifest.DependencyType
 import com.ritense.exporter.manifest.ResolvableValue
+import com.ritense.exporter.request.GlobalFormDefinitionExportRequest
 import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
@@ -78,7 +79,23 @@ class GlobalProcessLinkExporterTest {
     }
 
     @Test
-    fun `should not create related export requests for referenced definitions`() {
+    fun `should create related export requests from the mapper for referenced definitions`() {
+        val processLink = mock<ProcessLink>()
+        val mapper = mapperReturning()
+        val relatedRequest = GlobalFormDefinitionExportRequest("my-form")
+        whenever(mapper.createGlobalRelatedExportRequests(processLink)).thenReturn(setOf(relatedRequest))
+        whenever(processLink.processLinkType).thenReturn("test-type")
+        whenever(processLinkService.getProcessLinks(PROCESS_DEFINITION_ID)).thenReturn(listOf(processLink))
+        whenever(processLinkService.getProcessLinkMapper("test-type")).thenReturn(mapper)
+        mockProcessDefinition()
+
+        val result = exporter.export(GlobalProcessDefinitionExportRequest(PROCESS_DEFINITION_ID))
+
+        assertThat(result.relatedRequests).containsExactly(relatedRequest)
+    }
+
+    @Test
+    fun `should not create related export requests when the mapper contributes none`() {
         val processLink = mock<ProcessLink>()
         val mapper = mapperReturning()
         whenever(processLink.processLinkType).thenReturn("test-type")

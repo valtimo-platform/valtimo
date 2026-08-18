@@ -61,6 +61,23 @@
           ></cds-inline-notification>
         </ng-container>
 
+        <ng-container
+          *ngFor="let group of getReplacedElementGroups(obs.preview?.elementsToReplace ?? [])"
+        >
+          <cds-inline-notification
+            [notificationObj]="{
+              type: 'warning',
+              title: 'processManagement.upload.willBeReplaced.' + group.type + '.title' | translate,
+              message:
+                ('processManagement.upload.willBeReplaced.' + group.type + '.message' | translate) +
+                ' ' +
+                group.keys.join(', '),
+              showClose: false,
+              lowContrast: true,
+            }"
+          ></cds-inline-notification>
+        </ng-container>
+
         <ng-container *ngIf="obs.preview?.pluginConfigurations?.length">
           <p class="process-management-upload__description">
             {{ 'processManagement.upload.pluginsDescription' | translate }}

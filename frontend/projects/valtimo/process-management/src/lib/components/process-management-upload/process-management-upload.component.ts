@@ -36,7 +36,13 @@ import {
   NotificationModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, from, map, startWith, switchMap, take} from 'rxjs';
-import {MissingReference, MissingReferenceType, ProcessDefinitionImportPreview} from '../../models';
+import {
+  MissingReference,
+  MissingReferenceType,
+  ProcessDefinitionImportPreview,
+  ReplacedElement,
+  ReplacedElementType,
+} from '../../models';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
 
 enum UPLOAD_STEP {
@@ -241,6 +247,22 @@ export class ProcessManagementUploadComponent {
     );
   }
 
+  public getReplacedElementGroups(
+    elementsToReplace: ReplacedElement[]
+  ): {type: ReplacedElementType; keys: string[]}[] {
+    return (elementsToReplace ?? []).reduce(
+      (groups, element) => {
+        const group = groups.find(({type}) => type === element.type);
+        if (group) {
+          group.keys = [...new Set([...group.keys, element.key])];
+          return groups;
+        }
+        return [...groups, {type: element.type, keys: [element.key]}];
+      },
+      [] as {type: ReplacedElementType; keys: string[]}[]
+    );
+  }
+
   private previewProcessPackage(file: File): void {
     const fileItem: FileItem | undefined = this.form.value?.file?.values()?.next()?.value;
 
@@ -254,8 +276,13 @@ export class ProcessManagementUploadComponent {
           this.preview$.next(preview);
           this.missingReferences$.next(preview.missingReferences);
 
-          // Nothing to review, so the package can be imported straight away
-          if (preview.pluginConfigurations.length === 0 && preview.missingReferences.length === 0) {
+          // Nothing to review, so the package can be imported straight away. Elements that will be
+          // replaced are shown in the review step first, so the replacement is a conscious choice.
+          if (
+            preview.pluginConfigurations.length === 0 &&
+            preview.missingReferences.length === 0 &&
+            preview.elementsToReplace.length === 0
+          ) {
             this.importProcessPackage();
             return;
           }

@@ -39,6 +39,7 @@ describe('ProcessManagementUploadComponent', () => {
       },
     ],
     missingReferences: [],
+    elementsToReplace: [],
     canImport: true,
   };
 
@@ -118,6 +119,7 @@ describe('ProcessManagementUploadComponent', () => {
         existingProcessDefinitionKeys: [],
         pluginConfigurations: [],
         missingReferences: [],
+        elementsToReplace: [],
         canImport: true,
       })
     );
@@ -130,6 +132,25 @@ describe('ProcessManagementUploadComponent', () => {
 
     expect(processManagementService.importProcessDefinition).toHaveBeenCalled();
     expect(processManagementStateService.reloadDefinitions).toHaveBeenCalled();
+  });
+
+  it('should show the review step when elements will be replaced', () => {
+    processManagementService.previewProcessDefinitionImport.and.returnValue(
+      of({
+        processDefinitionKeys: ['my-process'],
+        existingProcessDefinitionKeys: [],
+        pluginConfigurations: [],
+        missingReferences: [],
+        elementsToReplace: [{type: 'FORM', key: 'my-form'}],
+        canImport: true,
+      })
+    );
+    selectFile(zipFile());
+
+    component.uploadProcessBpmn();
+
+    expect(component.activeStep$.value).toBe('review' as any);
+    expect(processManagementService.importProcessDefinition).not.toHaveBeenCalled();
   });
 
   it('should ask to replace when the process of the package already exists', () => {
@@ -293,6 +314,21 @@ describe('ProcessManagementUploadComponent', () => {
     expect(groups).toEqual([
       {type: 'FORM', references: ['form-a', 'form-b']},
       {type: 'SUB_PROCESS', references: ['sub-a']},
+    ]);
+  });
+
+  it('should group elements to replace by type', () => {
+    const groups = component.getReplacedElementGroups([
+      {type: 'PROCESS_DEFINITION', key: 'my-process'},
+      {type: 'FORM', key: 'form-a'},
+      {type: 'FORM', key: 'form-b'},
+      {type: 'DECISION_DEFINITION', key: 'decision-a'},
+    ]);
+
+    expect(groups).toEqual([
+      {type: 'PROCESS_DEFINITION', keys: ['my-process']},
+      {type: 'FORM', keys: ['form-a', 'form-b']},
+      {type: 'DECISION_DEFINITION', keys: ['decision-a']},
     ]);
   });
 });
