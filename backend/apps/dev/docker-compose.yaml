@@ -753,7 +753,7 @@ services:
     # CG-DMF (DRC implementation by Baseflow)
 
     cg-dmf:
-        image: baseflow/cg-dmf-poc:1.1.0
+        image: baseflow/cg-dmf-poc:1.1.1
         restart: unless-stopped
         depends_on:
             cg-dmf-database:
