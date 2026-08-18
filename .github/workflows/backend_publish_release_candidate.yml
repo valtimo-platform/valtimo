@@ -28,6 +28,11 @@ jobs:
       PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      # Required: backend/gradle/publishing-module.gradle only applies the 'signing'
+      # plugin when both of these are set. Without them nothing produces .asc files
+      # and Sonatype rejects every component with "Missing signature for file".
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
       JRELEASER_MAVENCENTRAL_sonatype_STAGE: UPLOAD
 
     steps:
