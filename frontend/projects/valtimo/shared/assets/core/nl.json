@@ -796,6 +796,7 @@
       "addPlan": "Migratieplan toevoegen",
       "startNow": "Migratie nu starten",
       "errorCount": "{{count}} fouten",
+      "warningCount": "{{count}} waarschuwingen",
       "editor": {
         "createTitle": "Nieuw migratieplan",
         "editTitle": "Migratieplan bewerken",
@@ -935,6 +936,7 @@
         "casesToMigrate": "Te migreren dossiers",
         "casesMigrated": "Gemigreerde dossiers",
         "casesWithErrors": "Dossiers met fouten",
+        "casesWithWarnings": "Dossiers met waarschuwingen",
         "startedOn": "Gestart op",
         "finishedOn": "Voltooid op"
       },
@@ -946,6 +948,12 @@
         "copied": "Stacktrace gekopieerd naar klembord",
         "showStacktrace": "Volledige stacktrace tonen",
         "hideStacktrace": "Stacktrace verbergen"
+      },
+      "warnings": {
+        "heading": "Dossiers met waarschuwingen",
+        "dryRunHeading": "Waarschuwingen bij de proefmigratie",
+        "description": "Deze dossiers zijn gemigreerd, maar het plan heeft niet alles gedaan wat erin staat. Meestal was er geen lopend proces om over te nemen.",
+        "message": "Waarschuwing"
       }
     },
     "version": "Versie: ",

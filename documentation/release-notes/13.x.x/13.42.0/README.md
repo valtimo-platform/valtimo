@@ -16,12 +16,6 @@
 
   New enhancement explanation.
 
-* **A migration plan's key is generated from its title**
-
-  When creating a migration plan, its key now follows the title you type instead of having to be entered by
-  hand. It is made unique against the plans that already exist on that version, and can still be adjusted
-  before saving.
-
 ## Bugfixes
 
 

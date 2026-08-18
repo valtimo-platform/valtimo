@@ -50,4 +50,14 @@ data class CaseMigrationDryRunCase(
     @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "error_message")
     val errorMessage: String? = null,
+
+    /**
+     * What the plan's components would decide *not* to do for this case, newline-separated, or null
+     * when they would all do their work. Warnings are collected in memory rather than in the
+     * transaction, so a dry run reports them despite always rolling back — which is what lets an
+     * author find out that their plan would migrate every case and create nothing, before running it.
+     */
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "warnings")
+    val warnings: String? = null,
 )

@@ -32,10 +32,12 @@ import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlan
 import org.operaton.bpm.engine.runtime.ProcessInstance
@@ -75,6 +77,7 @@ class AddBuildingBlockMigrationComponentExecutor(
     private val processDocumentAssociationService: ProcessDocumentAssociationService,
     private val dataPatchApplier: MigrationDataPatchApplier,
     private val addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
+    private val addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
     private val jdbcTemplate: JdbcTemplate,
 ) : MigrationComponentExecutor {
 
@@ -93,6 +96,11 @@ class AddBuildingBlockMigrationComponentExecutor(
         // deployed from a file never passes the save path; on a dry run this surfaces as WOULD_FAIL.
         // Deliberately ahead of the "nothing to hijack" skip below — the plan is wrong either way.
         addBuildingBlockLinkChecker.assertLinked(target, instructions)
+
+        // Same argument, same two call sites: an entry with no processMigration cannot hijack a
+        // process, so it can never create a building block — for any case, on any run. Refusing is the
+        // only way that reaches the author; skipping it looks identical to a plan that worked.
+        addBuildingBlockProcessChecker.assertHijacksSomething(target, instructions)
 
         // The owner is whatever instance the plan migrates: a case (no building block for its
         // document id) or a parent building block (in which case the new block nests under it).
@@ -119,10 +127,23 @@ class AddBuildingBlockMigrationComponentExecutor(
         // match. A building block only exists to take ownership of a running process, so if there is
         // nothing to hijack we skip it entirely — no document, no instance — instead of leaving an
         // orphan block behind. This is a skip, not a failure: the rest of the migration continues.
+        //
+        // But it is never a *silent* skip. Whether this owner happens to have a matching process is a
+        // runtime fact (a closed case has none, and that is fine), yet the same branch is also what a
+        // plan naming the wrong process key falls into — and that plan skips every case while
+        // reporting success. The warning names both halves of the query that found nothing, because
+        // between the process definition key and the business key it is always one of the two.
         val processMigrations = instruction.processMigration
             .map { it to findHijackableProcesses(it, ownerDocumentId) }
             .filter { (_, processInstances) -> processInstances.isNotEmpty() }
         if (processMigrations.isEmpty()) {
+            val skipped = "Building block '$buildingBlockDefinitionId' was not added to '$ownerDocumentId': " +
+                "none of its processMigration entries (" +
+                instruction.processMigration.joinToString { "'${it.sourceProcessDefinitionKey}'" } +
+                ") matched a running process with business key '$ownerDocumentId'. Adding a building " +
+                "block takes over a process the owner is already running; there is nothing to take over."
+            logger.warn { skipped }
+            MigrationWarnings.warn(skipped)
             return
         }
 
@@ -314,5 +335,9 @@ class AddBuildingBlockMigrationComponentExecutor(
             "UPDATE ACT_RU_EXECUTION SET BUSINESS_KEY_ = ? WHERE ID_ = ?",
             businessKey, processInstanceId
         )
+    }
+
+    private companion object {
+        val logger = KotlinLogging.logger {}
     }
 }

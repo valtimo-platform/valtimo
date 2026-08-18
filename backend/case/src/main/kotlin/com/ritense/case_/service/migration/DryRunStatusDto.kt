@@ -18,6 +18,7 @@ package com.ritense.case_.service.migration
 
 import com.ritense.case_.domain.migration.CaseMigrationStatus
 import com.ritense.case_.domain.migration.MigrationExecutionError
+import com.ritense.case_.domain.migration.MigrationExecutionWarning
 import java.time.LocalDateTime
 
 /**
@@ -33,6 +34,12 @@ data class DryRunStatusDto(
     val casesWouldMigrate: Int,
     val casesWouldFail: Int,
     val errors: List<MigrationExecutionError>,
+    /**
+     * Cases that would migrate, but for which a component would skip its work. The dry run is the
+     * cheapest place to discover that a plan would migrate everything and create nothing.
+     */
+    val casesWithWarnings: Int,
+    val warnings: List<MigrationExecutionWarning>,
     val startedOn: LocalDateTime?,
     val finishedOn: LocalDateTime?,
 ) {
@@ -43,6 +50,8 @@ data class DryRunStatusDto(
             casesWouldMigrate = 0,
             casesWouldFail = 0,
             errors = emptyList(),
+            casesWithWarnings = 0,
+            warnings = emptyList(),
             startedOn = null,
             finishedOn = null,
         )

@@ -30,6 +30,11 @@ import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
  * [ProcessDefinitionBlueprintResolver], so it works for case↔case, block↔block and mixed plans) and
  * asks the engine ([ProcessMigrationActivityValidator]) whether the activity mapping is a valid
  * migration — the same check that runs at execution — so an incompatible mapping is rejected on save.
+ *
+ * It also rejects a process definition key neither blueprint deploys. That is not something the
+ * engine can catch later: at execution an unknown source key simply matches no running process and
+ * the instruction is skipped in silence, which is indistinguishable from a case that has nothing
+ * running. Save is the last point at which the plan can still be corrected.
  */
 class ProcessMigrationComponentValidator(
     private val processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
@@ -51,8 +56,22 @@ class ProcessMigrationComponentValidator(
         return instructions.flatMap { instruction ->
             val sourceDefinitionId = sourceProcessDefinitions[instruction.sourceProcessDefinitionKey]
             val targetDefinitionId = targetProcessDefinitions[instruction.targetProcessDefinitionKey]
-            if (sourceDefinitionId == null || targetDefinitionId == null) {
-                emptyList() // cannot resolve one of the definitions; leave it to the run-time guard
+            // A key neither end deploys used to be left "to the run-time guard", but there is no such
+            // guard: at execution an unmatched source key finds no process instances and the
+            // instruction is skipped without a word, so a mistyped key migrates every case's document
+            // and none of its processes. Save is the last moment it is free to fix.
+            if (sourceDefinitionId == null) {
+                listOf(
+                    "'${instruction.sourceProcessDefinitionKey}' is not a process of '$source', so no " +
+                        "running process will ever match it and the instruction would be skipped for " +
+                        "every case. Available: ${sourceProcessDefinitions.keys.sorted().joinToString { "'$it'" }}."
+                )
+            } else if (targetDefinitionId == null) {
+                listOf(
+                    "'${instruction.targetProcessDefinitionKey}' is not a process of '$target', so there " +
+                        "is nothing to migrate '${instruction.sourceProcessDefinitionKey}' onto. " +
+                        "Available: ${targetProcessDefinitions.keys.sorted().joinToString { "'$it'" }}."
+                )
             } else {
                 activityValidator
                     .findInvalidActivityMappings(sourceDefinitionId, targetDefinitionId, instruction.mapActivities)

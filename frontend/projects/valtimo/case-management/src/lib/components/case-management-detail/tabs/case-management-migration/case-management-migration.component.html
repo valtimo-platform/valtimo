@@ -127,6 +127,17 @@
           </dd>
         </div>
 
+        @if (plan.status.casesWithWarnings > 0) {
+          <div class="migration-metric">
+            <dt class="migration-metric__label">
+              {{ 'caseManagement.migration.fields.casesWithWarnings' | translate }}
+            </dt>
+            <dd class="migration-metric__value migration-metric__value--number">
+              {{ plan.status.casesWithWarnings }}
+            </dd>
+          </div>
+        }
+
         @if (plan.status.startedOn) {
           <div class="migration-metric">
             <dt class="migration-metric__label">
@@ -159,6 +170,27 @@
               [pagination]="errorsView.pagination"
               [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
               (paginationClicked)="onErrorPageChange($event)"
+            ></valtimo-carbon-list>
+          }
+        </div>
+      }
+
+      <!-- Warnings: cases that migrated, but for which a component skipped its work -->
+      @if (plan.status.warnings?.length) {
+        <div class="migration-detail__errors" [attr.data-test-id]="testIds.warnings">
+          <h5 class="migration-detail__config-heading">
+            {{ 'caseManagement.migration.warnings.heading' | translate }}
+          </h5>
+          <p class="migration-detail__hint">
+            {{ 'caseManagement.migration.warnings.description' | translate }}
+          </p>
+          @if (warningsView$ | async; as warningsView) {
+            <valtimo-carbon-list
+              [items]="warningsView.items"
+              [fields]="warningFields$ | async"
+              [pagination]="warningsView.pagination"
+              [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
+              (paginationClicked)="onWarningPageChange($event)"
             ></valtimo-carbon-list>
           }
         </div>
@@ -239,6 +271,26 @@
               }
             </div>
           }
+
+          @if (plan.dryRun.warnings?.length) {
+            <div class="migration-detail__errors" [attr.data-test-id]="testIds.dryRunWarnings">
+              <h5 class="migration-detail__config-heading">
+                {{ 'caseManagement.migration.warnings.dryRunHeading' | translate }}
+              </h5>
+              <p class="migration-detail__hint">
+                {{ 'caseManagement.migration.warnings.description' | translate }}
+              </p>
+              @if (dryRunWarningsView$ | async; as dryRunWarningsView) {
+                <valtimo-carbon-list
+                  [items]="dryRunWarningsView.items"
+                  [fields]="warningFields$ | async"
+                  [pagination]="dryRunWarningsView.pagination"
+                  [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
+                  (paginationClicked)="onDryRunWarningPageChange($event)"
+                ></valtimo-carbon-list>
+              }
+            </div>
+          }
         </div>
       }
     </section>
@@ -283,6 +335,14 @@
       {{
         'caseManagement.migration.errorCount'
           | translate: {count: data.item.status.casesWithErrors}
+      }}
+    </cds-tag>
+  }
+  @if (data.item.status.casesWithWarnings > 0) {
+    <cds-tag type="warm-gray" class="cds-tag--no-margin">
+      {{
+        'caseManagement.migration.warningCount'
+          | translate: {count: data.item.status.casesWithWarnings}
       }}
     </cds-tag>
   }

@@ -222,7 +222,14 @@ The other limits are smaller, but worth knowing:
 
 * **No running process means no building block.** If a case has no running process for the entry to
   take over — a closed case, for example — that entry is skipped and no building block is created.
-  The case still migrates and is not reported as failed.
+  The case still migrates and is not reported as failed, but it is listed under **Cases with
+  warnings** in the plan's results, saying which process was looked for and not found. Check that
+  list after a run — and after a dry run, which reports the same warnings without changing anything.
+  It is what tells apart "these cases had nothing to take over" from "this plan never creates
+  anything".
+* **Every entry needs a process to take over.** An entry that names a building block but no process
+  migration can never create anything, so it is refused when you save the plan, and again if it is
+  run. The same goes for an entry naming a process that neither version deploys.
 * **The new version must actually use the building block.** A plan can only add a building block
   version that the target case version links, either as a startable item or through a call in one of
   its processes. A plan that adds something the version does not use is refused when you save it, and

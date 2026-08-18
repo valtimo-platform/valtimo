@@ -26,6 +26,7 @@ import com.ritense.case_.domain.migration.CaseMigrationDryRunCase
 import com.ritense.case_.domain.migration.CaseMigrationStatus
 import com.ritense.case_.domain.migration.DryRunCaseStatus
 import com.ritense.case_.domain.migration.MigrationExecutionError
+import com.ritense.case_.domain.migration.MigrationExecutionWarning
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
@@ -35,6 +36,7 @@ import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
+import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -182,6 +184,7 @@ class CaseMigrationService(
             .countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.MIGRATED).toInt()
         val failedCases = caseMigrationCaseRepository
             .findByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.FAILED)
+        val warnedCases = caseMigrationCaseRepository.findByIdMigrationIdAndWarningsIsNotNull(migrationId)
         // casesMigrated and the failed rows are *lifetime* counts: one row per instance the plan has
         // touched, kept across runs so a re-run skips what it already migrated. execution.casesToMigrate
         // is only the **current** run's matched slice, and a plan run twice over successive batches
@@ -199,6 +202,8 @@ class CaseMigrationService(
             casesMigrated = casesMigrated,
             casesWithErrors = failedCases.size,
             errors = failedCases.map { MigrationExecutionError(it.id.caseId, it.errorMessage) },
+            casesWithWarnings = warnedCases.size,
+            warnings = warnedCases.map { MigrationExecutionWarning(it.id.caseId, it.warnings) },
             startedOn = execution.startedOn,
             finishedOn = execution.finishedOn,
         )
@@ -245,12 +250,15 @@ class CaseMigrationService(
             .countByIdMigrationIdAndStatus(migrationId, DryRunCaseStatus.WOULD_MIGRATE).toInt()
         val wouldFail = dryRunCaseRepository
             .findByIdMigrationIdAndStatus(migrationId, DryRunCaseStatus.WOULD_FAIL)
+        val warnedCases = dryRunCaseRepository.findByIdMigrationIdAndWarningsIsNotNull(migrationId)
         return DryRunStatusDto(
             status = dryRun.status,
             casesChecked = wouldMigrate + wouldFail.size,
             casesWouldMigrate = wouldMigrate,
             casesWouldFail = wouldFail.size,
             errors = wouldFail.map { MigrationExecutionError(it.id.caseId, it.errorMessage) },
+            casesWithWarnings = warnedCases.size,
+            warnings = warnedCases.map { MigrationExecutionWarning(it.id.caseId, it.warnings) },
             startedOn = dryRun.startedOn,
             finishedOn = dryRun.finishedOn,
         )
@@ -295,6 +303,8 @@ class CaseMigrationService(
             casesMigrated = instancesMigrated,
             casesWithErrors = 0,
             errors = emptyList(),
+            casesWithWarnings = 0,
+            warnings = emptyList(),
             startedOn = null,
             finishedOn = null,
         )
@@ -428,6 +438,11 @@ class CaseMigrationService(
 
     private fun migrateCase(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID, runToken: String) {
         val caseRecordId = CaseMigrationCaseId(migrationId, caseId.toString())
+        // Warnings are collected on the thread for the duration of this one case (MigrationWarnings),
+        // so start from a clean slate and hold on to whatever the components raise — the same set is
+        // recorded on the case whether it ends up MIGRATED or FAILED.
+        MigrationWarnings.clear()
+        var warnings: String? = null
         try {
             // One transaction per case: the case migration (dataMigration + processMigration) AND
             // recording it as migrated commit together, or roll back together.
@@ -437,7 +452,10 @@ class CaseMigrationService(
                     return@executeWithoutResult // already migrated (idempotent re-run)
                 }
                 val from = applyMigration(migrationId, target, caseId)
-                caseMigrationCaseRepository.save(CaseMigrationCase(caseRecordId, CaseMigrationCaseStatus.MIGRATED))
+                warnings = MigrationWarnings.drain()
+                caseMigrationCaseRepository.save(
+                    CaseMigrationCase(caseRecordId, CaseMigrationCaseStatus.MIGRATED, warnings = warnings)
+                )
                 // Record the migration on the case's audit trail (in the same transaction, so it is
                 // present exactly when the case is recorded migrated — and rolled back if it is not).
                 applicationEventPublisher.publishEvent(
@@ -451,6 +469,9 @@ class CaseMigrationService(
                     )
                 )
             }
+            warnings?.let {
+                logger.warn { "Case '$caseId' migrated under plan '$migrationId', but not completely: $it" }
+            }
         } catch (e: MigrationOwnershipLostException) {
             throw e // propagate: this node has been fenced, stop the run
         } catch (e: OptimisticLockingFailureException) {
@@ -461,7 +482,7 @@ class CaseMigrationService(
             // A genuine migration failure is recorded against the case; it stays on the old version
             // and the run continues.
             logger.warn(e) { "Migration failed for case '$caseId' in plan '$migrationId'; rolled back" }
-            recordFailure(migrationId, caseId, e, runToken)
+            recordFailure(migrationId, caseId, e, runToken, warnings ?: MigrationWarnings.drain())
         }
     }
 
@@ -470,12 +491,18 @@ class CaseMigrationService(
         caseId: UUID,
         error: Throwable,
         runToken: String,
+        warnings: String? = null,
     ) {
         val stackTrace = StringWriter().also { error.printStackTrace(PrintWriter(it)) }.toString()
         transactionTemplate.executeWithoutResult {
             assertOwnership(migrationId, runToken)
             caseMigrationCaseRepository.save(
-                CaseMigrationCase(CaseMigrationCaseId(migrationId, caseId.toString()), CaseMigrationCaseStatus.FAILED, stackTrace)
+                CaseMigrationCase(
+                    CaseMigrationCaseId(migrationId, caseId.toString()),
+                    CaseMigrationCaseStatus.FAILED,
+                    stackTrace,
+                    warnings,
+                )
             )
         }
     }
@@ -521,6 +548,7 @@ class CaseMigrationService(
      * recorded in its own (separate, committed) transaction so it survives the rollback.
      */
     private fun simulateCase(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID, runToken: String) {
+        MigrationWarnings.clear()
         try {
             transactionTemplate.executeWithoutResult {
                 assertDryRunOwnership(migrationId, runToken) // stop if another node has taken over
@@ -528,12 +556,18 @@ class CaseMigrationService(
                 throw DryRunRollback // undo the simulated migration; commit nothing
             }
         } catch (e: DryRunRollback) {
-            recordDryRunOutcome(migrationId, caseId, DryRunCaseStatus.WOULD_MIGRATE, null, runToken)
+            // The rollback undoes the simulated migration, but not the warnings: they were collected
+            // in memory, which is what lets a dry run report what the real run would skip.
+            recordDryRunOutcome(
+                migrationId, caseId, DryRunCaseStatus.WOULD_MIGRATE, null, runToken, MigrationWarnings.drain()
+            )
         } catch (e: MigrationOwnershipLostException) {
             throw e // propagate: this node has been fenced, stop the dry run
         } catch (e: Exception) {
             logger.debug(e) { "Dry run: case '$caseId' would fail in plan '$migrationId'" }
-            recordDryRunOutcome(migrationId, caseId, DryRunCaseStatus.WOULD_FAIL, e, runToken)
+            recordDryRunOutcome(
+                migrationId, caseId, DryRunCaseStatus.WOULD_FAIL, e, runToken, MigrationWarnings.drain()
+            )
         }
     }
 
@@ -543,12 +577,15 @@ class CaseMigrationService(
         status: DryRunCaseStatus,
         error: Throwable?,
         runToken: String,
+        warnings: String? = null,
     ) {
         val stackTrace = error?.let { StringWriter().also { w -> it.printStackTrace(PrintWriter(w)) }.toString() }
         transactionTemplate.executeWithoutResult {
             assertDryRunOwnership(migrationId, runToken)
             dryRunCaseRepository.save(
-                CaseMigrationDryRunCase(CaseMigrationCaseId(migrationId, caseId.toString()), status, stackTrace)
+                CaseMigrationDryRunCase(
+                    CaseMigrationCaseId(migrationId, caseId.toString()), status, stackTrace, warnings
+                )
             )
         }
     }

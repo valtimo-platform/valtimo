@@ -24,14 +24,25 @@ import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 
 /**
- * Validates the `addBuildingBlock` component of a plan before it is saved: every building block
- * version it creates has to be one the target blueprint version links (see [AddBuildingBlockLinkChecker]
- * for why). Rejecting the plan on save is the only moment the mistake is still free to fix — once the
- * migration has run, the wrongly-versioned instances exist.
+ * Validates the `addBuildingBlock` component of a plan before it is saved, on two axes:
+ *
+ * - the building block **version** it creates has to be one the target blueprint version links
+ *   (D12, [AddBuildingBlockLinkChecker]);
+ * - the **process** it takes over has to be one that can exist ([AddBuildingBlockProcessChecker]).
+ *
+ * Both matter here rather than at execution because a plan is only free to fix before it runs: an
+ * entry naming a version nobody links leaves instances behind that no later migration can see, and
+ * an entry that can never hijack anything quietly does nothing to every case it is run against.
+ *
+ * Note that the nested `processMigration` of an `addBuildingBlock` entry reaches no other validator.
+ * `MigrationSuggestionService.findPlanProblems` dispatches validators on **top-level** component
+ * keys, so `ProcessMigrationComponentValidator` never sees these instructions — this is the only
+ * place they are checked before they run.
  */
 class AddBuildingBlockMigrationComponentValidator(
     private val objectMapper: ObjectMapper,
     private val addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
+    private val addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
 ) : MigrationComponentValidator {
 
     override fun componentKey() = AddBuildingBlockMigrationComponentDeployer.ADD_BUILDING_BLOCK_COMPONENT_KEY
@@ -41,6 +52,8 @@ class AddBuildingBlockMigrationComponentValidator(
             component,
             object : TypeReference<List<AddBuildingBlockInstruction>>() {},
         )
-        return addBuildingBlockLinkChecker.findUnlinked(target, instructions)
+        return addBuildingBlockLinkChecker.findUnlinked(target, instructions) +
+            addBuildingBlockProcessChecker.findEntriesWithoutProcessMigration(instructions) +
+            addBuildingBlockProcessChecker.findUnresolvableProcesses(source, target, instructions)
     }
 }

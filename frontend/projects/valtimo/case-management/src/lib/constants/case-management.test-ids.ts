@@ -81,6 +81,8 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   startButton: 'caseMigrationStartButton',
   dryRunButton: 'caseMigrationDryRunButton',
   dryRunResults: 'caseMigrationDryRunResults',
+  warnings: 'caseMigrationWarnings',
+  dryRunWarnings: 'caseMigrationDryRunWarnings',
   addButton: 'caseMigrationAddButton',
   saveButton: 'caseMigrationSaveButton',
   cancelButton: 'caseMigrationCancelButton',

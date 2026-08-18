@@ -31,5 +31,8 @@ interface CaseMigrationDryRunCaseRepository : JpaRepository<CaseMigrationDryRunC
         status: DryRunCaseStatus,
     ): List<CaseMigrationDryRunCase>
 
+    /** Simulated cases that raised a warning, whatever their status. */
+    fun findByIdMigrationIdAndWarningsIsNotNull(migrationId: BlueprintMigrationId): List<CaseMigrationDryRunCase>
+
     fun deleteByIdMigrationId(migrationId: BlueprintMigrationId)
 }

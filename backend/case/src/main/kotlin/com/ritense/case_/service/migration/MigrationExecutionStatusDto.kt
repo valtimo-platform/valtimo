@@ -18,6 +18,7 @@ package com.ritense.case_.service.migration
 
 import com.ritense.case_.domain.migration.CaseMigrationStatus
 import com.ritense.case_.domain.migration.MigrationExecutionError
+import com.ritense.case_.domain.migration.MigrationExecutionWarning
 import java.time.LocalDateTime
 
 /** Read model for the migration status shown in the UI. */
@@ -42,6 +43,13 @@ data class MigrationExecutionStatusDto(
     val casesMigrated: Int,
     val casesWithErrors: Int,
     val errors: List<MigrationExecutionError>,
+    /**
+     * Cases the plan migrated without doing everything it describes — a component skipped its work.
+     * Counted separately from [casesWithErrors] because these cases succeeded; they are reported so
+     * that a plan doing nothing does not read the same as a plan doing its job.
+     */
+    val casesWithWarnings: Int,
+    val warnings: List<MigrationExecutionWarning>,
     val startedOn: LocalDateTime?,
     val finishedOn: LocalDateTime?,
 ) {
@@ -53,6 +61,8 @@ data class MigrationExecutionStatusDto(
             casesMigrated = 0,
             casesWithErrors = 0,
             errors = emptyList(),
+            casesWithWarnings = 0,
+            warnings = emptyList(),
             startedOn = null,
             finishedOn = null,
         )

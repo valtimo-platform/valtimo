@@ -42,6 +42,7 @@ import com.ritense.buildingblock.service.migration.AddBuildingBlockLinkChecker
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentDeployer
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentExecutor
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentValidator
+import com.ritense.buildingblock.service.migration.AddBuildingBlockProcessChecker
 import com.ritense.buildingblock.service.migration.BuildingBlockInstanceRehomeExecutor
 import com.ritense.buildingblock.service.migration.BuildingBlockInstanceRehomer
 import com.ritense.buildingblock.service.migration.BuildingBlockVersionLineage
@@ -67,6 +68,7 @@ import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.processdocument.migration.ProcessDefinitionBlueprintResolver
+import com.ritense.processdocument.migration.ProcessMigrationActivityValidator
 import com.ritense.processdocument.migration.ProcessMigrationComponentSuggester
 import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
@@ -1084,11 +1086,23 @@ class BuildingBlockAutoConfiguration {
     ) = AddBuildingBlockLinkChecker(linkedBuildingBlockVersionResolver)
 
     @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockProcessChecker::class)
+    fun addBuildingBlockProcessChecker(
+        processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
+        processMigrationActivityValidator: ProcessMigrationActivityValidator,
+    ) = AddBuildingBlockProcessChecker(processDefinitionBlueprintResolvers, processMigrationActivityValidator)
+
+    @Bean
     @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentValidator::class)
     fun addBuildingBlockMigrationComponentValidator(
         objectMapper: ObjectMapper,
         addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
-    ) = AddBuildingBlockMigrationComponentValidator(objectMapper, addBuildingBlockLinkChecker)
+        addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
+    ) = AddBuildingBlockMigrationComponentValidator(
+        objectMapper,
+        addBuildingBlockLinkChecker,
+        addBuildingBlockProcessChecker,
+    )
 
     @Bean
     @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentDeployer::class)
@@ -1124,6 +1138,7 @@ class BuildingBlockAutoConfiguration {
         processDocumentAssociationService: ProcessDocumentAssociationService,
         migrationDataPatchApplier: MigrationDataPatchApplier,
         addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
+        addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
         jdbcTemplate: JdbcTemplate,
     ) = AddBuildingBlockMigrationComponentExecutor(
         objectMapper,
@@ -1137,6 +1152,7 @@ class BuildingBlockAutoConfiguration {
         processDocumentAssociationService,
         migrationDataPatchApplier,
         addBuildingBlockLinkChecker,
+        addBuildingBlockProcessChecker,
         jdbcTemplate,
     )
 

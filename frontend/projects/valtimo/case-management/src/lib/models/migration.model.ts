@@ -35,6 +35,15 @@ interface MigrationExecutionError {
   message: string | null;
 }
 
+/**
+ * A case the plan migrated without doing everything it describes — a component found nothing to act
+ * on and skipped its work. Not a failure: the case is on its target version and nothing rolled back.
+ */
+interface MigrationExecutionWarning {
+  caseId: string;
+  message: string | null;
+}
+
 interface MigrationExecutionStatus {
   status: CaseMigrationStatus;
   /** Cases still needing migration; drops to 0 once the run has migrated its whole matching slice. */
@@ -44,6 +53,9 @@ interface MigrationExecutionStatus {
   casesMigrated: number;
   casesWithErrors: number;
   errors: MigrationExecutionError[];
+  /** Cases that migrated, but for which a component skipped its work. */
+  casesWithWarnings: number;
+  warnings: MigrationExecutionWarning[];
   startedOn: string | null;
   finishedOn: string | null;
 }
@@ -58,6 +70,9 @@ interface DryRunStatus {
   casesWouldMigrate: number;
   casesWouldFail: number;
   errors: MigrationExecutionError[];
+  /** Cases that would migrate, but for which a component would skip its work. */
+  casesWithWarnings: number;
+  warnings: MigrationExecutionWarning[];
   startedOn: string | null;
   finishedOn: string | null;
 }
@@ -187,6 +202,7 @@ export {
   MigrationTriggers,
   MigrationConditionNode,
   MigrationExecutionError,
+  MigrationExecutionWarning,
   MigrationExecutionStatus,
   DryRunStatus,
   MigrationPlanManagement,

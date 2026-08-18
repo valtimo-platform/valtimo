@@ -33,5 +33,8 @@ interface CaseMigrationCaseRepository : JpaRepository<CaseMigrationCase, CaseMig
         status: CaseMigrationCaseStatus,
     ): List<CaseMigrationCase>
 
+    /** Cases the plan touched that raised a warning, whatever their status. */
+    fun findByIdMigrationIdAndWarningsIsNotNull(migrationId: BlueprintMigrationId): List<CaseMigrationCase>
+
     fun deleteByIdMigrationId(migrationId: BlueprintMigrationId)
 }

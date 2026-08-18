@@ -47,4 +47,14 @@ data class CaseMigrationCase(
     @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "error_message")
     val errorMessage: String? = null,
+
+    /**
+     * What the plan's components decided *not* to do for this case, newline-separated, or null when
+     * they all did their work. A migrated case with warnings has succeeded — it is just not the
+     * whole story, and "47 migrated" alone would misrepresent a run that skipped every building
+     * block it was asked to create. Same column type as [errorMessage], for the same reason.
+     */
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "warnings")
+    val warnings: String? = null,
 )

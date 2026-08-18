@@ -789,6 +789,7 @@
       "addPlan": "Add migration plan",
       "startNow": "Start migration now",
       "errorCount": "{{count}} errors",
+      "warningCount": "{{count}} warnings",
       "editor": {
         "createTitle": "New migration plan",
         "editTitle": "Edit migration plan",
@@ -928,6 +929,7 @@
         "casesToMigrate": "Cases to migrate",
         "casesMigrated": "Cases migrated",
         "casesWithErrors": "Cases with errors",
+        "casesWithWarnings": "Cases with warnings",
         "startedOn": "Started on",
         "finishedOn": "Finished on"
       },
@@ -939,6 +941,12 @@
         "copied": "Stacktrace copied to clipboard",
         "showStacktrace": "Show full stacktrace",
         "hideStacktrace": "Hide stacktrace"
+      },
+      "warnings": {
+        "heading": "Cases with warnings",
+        "dryRunHeading": "Warnings from the dry run",
+        "description": "These cases migrated, but the plan did not do everything it describes. Usually there was no running process to take over.",
+        "message": "Warning"
       }
     },
     "version": "Version: ",

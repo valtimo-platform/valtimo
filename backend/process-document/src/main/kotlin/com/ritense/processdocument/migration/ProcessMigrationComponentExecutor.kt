@@ -22,9 +22,11 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.migration.ProcessMigrationComponentDeployer
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlan
 import org.springframework.core.annotation.Order
@@ -85,6 +87,14 @@ class ProcessMigrationComponentExecutor(
             .processInstanceBusinessKey(caseId.toString())
             .list()
         if (instances.isEmpty()) {
+            // Not a failure: a case whose process has ended has nothing to migrate. But the same
+            // branch catches an instruction naming a process key nothing runs under this case, and
+            // that instruction is wrong for every case — so say so instead of returning in silence.
+            val skipped = "No running process '${instruction.sourceProcessDefinitionKey}' with business " +
+                "key '$caseId' was found, so it was not migrated to " +
+                "'${instruction.targetProcessDefinitionKey}' on '$targetCaseDefinitionId'."
+            logger.warn { skipped }
+            MigrationWarnings.warn(skipped)
             return
         }
 
@@ -142,5 +152,9 @@ class ProcessMigrationComponentExecutor(
             .mapEqualActivities()
         instruction.mapActivities.forEach { (source, target) -> builder.mapActivities(source, target) }
         return builder.build()
+    }
+
+    private companion object {
+        val logger = KotlinLogging.logger {}
     }
 }

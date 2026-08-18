@@ -56,6 +56,11 @@
     border-top: 1px solid var(--cds-border-subtle);
   }
 
+  &__hint {
+    margin: 0 0 8px;
+    color: var(--cds-text-secondary);
+  }
+
   &__empty {
     color: var(--cds-text-secondary);
     font-style: italic;

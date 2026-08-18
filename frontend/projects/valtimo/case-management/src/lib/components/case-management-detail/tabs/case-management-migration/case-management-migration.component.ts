@@ -70,6 +70,7 @@ import {catchError} from 'rxjs/operators';
 import {
   CaseMigrationStatus,
   MigrationExecutionError,
+  MigrationExecutionWarning,
   MigrationPlanManagement,
 } from '../../../../models';
 import {CaseMigrationApiService} from '../../../../services';
@@ -106,6 +107,7 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly errorFields$ = new BehaviorSubject<ColumnConfig[]>([]);
+  public readonly warningFields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   // The failed-cases table is paginated client-side: the full error list lives on the plan status,
   // and only a page-sized slice is handed to the list. The page size is fixed (no per-page selector).
@@ -198,6 +200,28 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     })
   );
 
+  private readonly _warningPage$ = new BehaviorSubject<number>(1);
+
+  // Cases the run migrated but did not do everything for. Same client-side paging as the errors
+  // table; kept a separate table because a warning is not a failure and reads differently.
+  public readonly warningsView$: Observable<{
+    items: MigrationExecutionWarning[];
+    pagination: Pagination;
+  }> = combineLatest([this.selectedPlan$, this._warningPage$]).pipe(
+    map(([plan, page]) => this.pageOf(plan?.status.warnings ?? [], page))
+  );
+
+  private readonly _dryRunWarningPage$ = new BehaviorSubject<number>(1);
+
+  // The same, for the plan's latest dry run — where an author should discover a plan that would
+  // migrate every case and create nothing.
+  public readonly dryRunWarningsView$: Observable<{
+    items: MigrationExecutionWarning[];
+    pagination: Pagination;
+  }> = combineLatest([this.selectedPlan$, this._dryRunWarningPage$]).pipe(
+    map(([plan, page]) => this.pageOf(plan?.dryRun.warnings ?? [], page))
+  );
+
   private readonly _dryRunErrorPage$ = new BehaviorSubject<number>(1);
 
   // The current page of would-fail cases from the selected plan's latest dry run.
@@ -245,6 +269,8 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     // the modal's content keeps live-updating from the polled plan list while it is open.
     this._errorPage$.next(1);
     this._dryRunErrorPage$.next(1);
+    this._warningPage$.next(1);
+    this._dryRunWarningPage$.next(1);
     this._$expandedErrors.set(new Set());
     this._selectedKey$.next(plan.migrationKey);
     this._showDetailModal$.next(true);
@@ -255,6 +281,8 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     this._selectedKey$.next(null);
     this._errorPage$.next(1);
     this._dryRunErrorPage$.next(1);
+    this._warningPage$.next(1);
+    this._dryRunWarningPage$.next(1);
     this._$expandedErrors.set(new Set());
   }
 
@@ -264,6 +292,22 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
 
   public onDryRunPageChange(page: number): void {
     this._dryRunErrorPage$.next(page);
+  }
+
+  public onWarningPageChange(page: number): void {
+    this._warningPage$.next(page);
+  }
+
+  public onDryRunWarningPageChange(page: number): void {
+    this._dryRunWarningPage$.next(page);
+  }
+
+  private pageOf<T>(items: T[], page: number): {items: T[]; pagination: Pagination} {
+    const start = (page - 1) * this.ERROR_PAGE_SIZE;
+    return {
+      items: items.slice(start, start + this.ERROR_PAGE_SIZE),
+      pagination: {page, size: this.ERROR_PAGE_SIZE, collectionSize: items.length},
+    };
   }
 
   public isErrorExpanded(caseId: string): boolean {
@@ -480,6 +524,22 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
         label: 'caseManagement.migration.errors.message',
         viewType: ViewType.TEMPLATE,
         template: this.errorColumnTemplate,
+      },
+    ]);
+
+    // A warning is a sentence, not a stacktrace, so it needs no expand/collapse template.
+    this.warningFields$.next([
+      {
+        key: 'caseId',
+        label: 'caseManagement.migration.errors.caseId',
+        viewType: ViewType.TEMPLATE,
+        template: this.caseIdColumnTemplate,
+        className: 'migration-error__case-column',
+      },
+      {
+        key: 'message',
+        label: 'caseManagement.migration.warnings.message',
+        viewType: ViewType.TEXT,
       },
     ]);
   }
