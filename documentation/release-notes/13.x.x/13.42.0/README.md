@@ -55,6 +55,12 @@
   widget, while the same counts were shown correctly with the donut and meter display types. The bar
   chart is now rendered.
 
+* **A donut chart widget with many categories now shows its circle**
+
+  A dashboard widget with the donut chart display type showed only its legend and no circle when the data source
+  returned many categories, because the legend took up all of the space that was meant for the chart. The legend
+  is now limited in height and scrolls when it does not fit, so the circle always keeps its space.
+
 * **A form flow of a user task now loads completely when another user task is opened**
 
   When a process has multiple user tasks that are linked to a form flow, opening the next user task
