@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,22 +27,22 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 /**
- * Secures the base process-link CRUD surface (`/api/v1/process-link`) served by [ProcessLinkResource].
- * The management surfaces are secured by [CaseProcessDefinitionManagementHttpSecurityConfigurer] and
- * [ProcessDefinitionManagementHttpSecurityConfigurer]; the runtime task surface by
- * [ProcessLinkTaskHttpSecurityConfigurer].
+ * Secures the case-definition process-definition management surface served by
+ * [CaseProcessDefinitionManagementResource].
  */
-class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
+class CaseProcessDefinitionManagementHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$PROCESS_LINK_URL/types")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$PROCESS_LINK_URL/export")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$PROCESS_LINK_URL/{processLinkId}")).hasAuthority(ADMIN)
+                requests
+                    .requestMatchers(antMatcher(GET, PROCESS_DEFINITION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, PROCESS_DEFINITION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, PROCESS_DEFINITION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$PROCESS_DEFINITION_URL/key/{processDefinitionKey}"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$PROCESS_DEFINITION_URL/key/{processDefinitionKey}"))
+                    .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
@@ -50,6 +50,7 @@ class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
     }
 
     companion object {
-        private const val PROCESS_LINK_URL = "/api/v1/process-link"
+        private const val PROCESS_DEFINITION_URL =
+            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"
     }
 }

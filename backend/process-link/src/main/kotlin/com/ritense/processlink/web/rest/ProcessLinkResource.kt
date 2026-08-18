@@ -16,52 +16,22 @@
 
 package com.ritense.processlink.web.rest
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.exporter.ExportService
-import com.ritense.exporter.request.GlobalProcessDefinitionExportRequest
-import com.ritense.importer.ImportService
-import com.ritense.importer.exception.ImportServiceException
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
-import com.ritense.processdocument.domain.ProcessDefinitionId
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.domain.ProcessLinkType
-import com.ritense.processlink.mapper.ProcessLinkMapper
-import com.ritense.processlink.service.ProcessDefinitionImportPreviewService
-import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.processlink.web.rest.dto.CaseProcessDefinitionResponseDto
-import com.ritense.processlink.web.rest.dto.ProcessDefinitionImportPreviewResponseDto
-import com.ritense.processlink.web.rest.dto.ProcessDefinitionImportResponseDto
-import com.ritense.processlink.web.rest.dto.ProcessDefinitionResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
-import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateRequestDto
-import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
-import com.ritense.processlink.web.rest.dto.ProcessDefinitionConflictResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
-import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.ProcessPropertyService
-import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.model.bpmn.Bpmn
-import org.operaton.bpm.engine.impl.util.IoUtil
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -70,31 +40,19 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
-import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
-import java.util.stream.Collectors
 
+/**
+ * Manages the process links of a process definition: the base `/api/v1/process-link` CRUD surface.
+ * Management of the process definitions themselves lives in [CaseProcessDefinitionManagementResource]
+ * (case-definition scoped) and [ProcessDefinitionManagementResource] (case-unlinked).
+ */
 @RestController
 @SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class ProcessLinkResource(
-    private var processLinkService: ProcessLinkService,
-    private val processLinkMappers: List<ProcessLinkMapper>,
-    private val operatonProcessService: OperatonProcessService,
-    private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-    private val repositoryService: RepositoryService,
-    private val processDeploymentService: ProcessDeploymentService,
-    private val processDefinitionValidator: ProcessDefinitionValidator,
-    private val processPropertyService: ProcessPropertyService,
-    private val exportService: ExportService,
-    private val importService: ImportService,
-    private val processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService,
-    private val objectMapper: ObjectMapper,
+    private val processLinkService: ProcessLinkService,
 ) {
 
     @GetMapping("/v1/process-link")
@@ -106,7 +64,7 @@ class ProcessLinkResource(
             processLinkService.getProcessLinks(processDefinitionId)
         } else {
             processLinkService.getProcessLinks(processDefinitionId, activityId)
-        }.map { getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it) }
+        }.map { processLinkService.getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it) }
 
         return ResponseEntity.ok(list)
     }
@@ -123,7 +81,6 @@ class ProcessLinkResource(
         @Valid @RequestBody processLink: ProcessLinkCreateRequestDto
     ): ResponseEntity<Unit> {
         return withLoggingContext(OperatonProcessDefinition::class.java, processLink.processDefinitionId) {
-            // To
             processLinkService.createProcessLink(processLink, null)
             ResponseEntity.status(HttpStatus.NO_CONTENT).build()
         }
@@ -148,7 +105,6 @@ class ProcessLinkResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
-
     @Deprecated("Since 12.7.0")
     @GetMapping("/v1/process-link/export")
     fun exportProcessLinks(
@@ -156,405 +112,9 @@ class ProcessLinkResource(
     ): ResponseEntity<List<ProcessLinkExportResponseDto>> {
         val list = runWithoutAuthorization {
             processLinkService.getProcessLinksByProcessDefinitionKey(processDefinitionKey)
-                .map { getProcessLinkMapper(it.processLinkType).toProcessLinkExportResponseDto(it) }
+                .map { processLinkService.getProcessLinkMapper(it.processLinkType).toProcessLinkExportResponseDto(it) }
         }
 
         return ResponseEntity.ok(list)
-    }
-
-    @GetMapping(
-        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"],
-    )
-    @Transactional
-    fun getProcessDefinitionsAndProcessLinks(
-        @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
-        @PathVariable("versionTag") versionTag: String
-    ): ResponseEntity<List<CaseProcessDefinitionResponseDto>> {
-        val definitions = runWithoutAuthorization {
-            operatonProcessService
-                .getAllDefinitions(CaseDefinitionId.of(caseDefinitionKey, versionTag))
-                .stream()
-                .map { definition: OperatonProcessDefinition? ->
-                    CaseProcessDefinitionResponseDto(
-                        ProcessDefinitionWithPropertiesDto.fromProcessDefinition(
-                            definition
-                        ),
-                        processDefinitionCaseDefinitionService.findByProcessDefinitionId(
-                            ProcessDefinitionId(definition!!.id)
-                        ),
-                        processLinkService.getProcessLinks(definition.id).map {
-                            getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
-                        },
-                        getBpmnXml(definition),
-                        draft = definition.isSuspended()
-                    )
-                }
-                .collect(Collectors.toList())
-        }
-
-        return ResponseEntity.ok(definitions)
-    }
-
-    @GetMapping("/management/v1/process-definition")
-    @Transactional
-    fun getUnlinkedProcessDefinitionsAndProcessLinks(): ResponseEntity<List<ProcessDefinitionResponseDto>> {
-        val definitions = runWithoutAuthorization {
-            operatonProcessService
-                .getUnlinkedDeployedDefinitions()
-                .stream()
-                .map { definition ->
-                    val processDefinitionDto = ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition)
-                    processDefinitionDto.setReadOnly(processPropertyService.isReadOnly(definition.key))
-                    ProcessDefinitionResponseDto(
-                        processDefinitionDto,
-                        processLinkService.getProcessLinks(definition.id).map {
-                            getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
-                        },
-                        getBpmnXml(definition),
-                        draft = definition.isSuspended()
-                    )
-                }
-                .collect(Collectors.toList())
-        }
-
-        return ResponseEntity.ok(definitions)
-    }
-
-    @GetMapping("/management/v1/process-definition/key/{processDefinitionKey}")
-    @Transactional
-    fun getUnlinkedProcessDefinitionsByKeyList(
-        @PathVariable("processDefinitionKey") processDefinitionKey: String
-    ): ResponseEntity<List<ProcessDefinitionResponseDto>> {
-        val definitions = runWithoutAuthorization {
-            operatonProcessService.getUnlinkedDeployedDefinitionsByKey(processDefinitionKey)
-        }
-
-        val responseDtos = definitions.map { definition ->
-            val processDefinitionDto = ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition)
-            processDefinitionDto.setReadOnly(processPropertyService.isReadOnly(definition.key))
-            ProcessDefinitionResponseDto(
-                processDefinitionDto,
-                processLinkService.getProcessLinks(definition.id).map {
-                    getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
-                },
-                getBpmnXml(definition),
-                draft = definition.isSuspended()
-            )
-        }.sortedBy { it.processDefinition.version }
-
-        return ResponseEntity.ok(responseDtos)
-    }
-
-
-    @GetMapping("/management/v1/process-definition/{processDefinitionKey}")
-    @Transactional
-    fun getUnlinkedProcessDefinitionsWithLinks(
-        @PathVariable("processDefinitionKey") processDefinitionKey: String
-    ): ResponseEntity<List<ProcessDefinitionResponseDto>> {
-        val definitions = operatonProcessService.getGlobalDefinitionsByKey(processDefinitionKey)
-
-        val responseDto = definitions.map { definition ->
-            ProcessDefinitionResponseDto(
-                ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
-                processLinkService.getProcessLinks(definition.id).map {
-                    getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
-                },
-                getBpmnXml(definition)
-            )
-        }.sortedBy { it.processDefinition.version }
-
-        return ResponseEntity.ok(responseDto)
-    }
-
-    @GetMapping(
-        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"]
-    )
-    @Transactional
-    fun getProcessDefinitionByKeyWithLinks(
-        @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
-        @PathVariable("versionTag") versionTag: String,
-        @PathVariable("processDefinitionKey") processDefinitionKey: String
-    ): ResponseEntity<CaseProcessDefinitionResponseDto> {
-        val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, versionTag)
-
-        val definition = runWithoutAuthorization {
-            operatonProcessService
-                .getDefinitionsByKeyAndBlueprint(caseDefinitionId, processDefinitionKey)
-                .firstOrNull()
-                ?: throw IllegalStateException("No process definition found for key '$processDefinitionKey' in case definition '$caseDefinitionId'")
-        }
-
-        val responseDto = CaseProcessDefinitionResponseDto(
-            ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
-            processDefinitionCaseDefinitionService.findByProcessDefinitionId(
-                ProcessDefinitionId(definition.id)
-            ),
-            processLinkService.getProcessLinks(definition.id).map {
-                getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
-            },
-            getBpmnXml(definition)
-        )
-
-        return ResponseEntity.ok(responseDto)
-    }
-
-    @DeleteMapping(
-        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"],
-    )
-    @Transactional
-    fun deleteProcessDefinitionsAndProcessLinks(
-        @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
-        @PathVariable("versionTag") versionTag: String,
-        @PathVariable("processDefinitionKey") processDefinitionKey: String,
-    ): ResponseEntity<Any> {
-        runWithoutAuthorization {
-            operatonProcessService
-                .getDefinitionsByKeyAndBlueprint(
-                    CaseDefinitionId.of(caseDefinitionKey, versionTag),
-                    processDefinitionKey
-                )
-                .forEach { definition: OperatonProcessDefinition ->
-                    processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
-                        ProcessDefinitionId(definition.id),
-                        CaseDefinitionId.of(caseDefinitionKey, versionTag)
-                    )
-                    processLinkService.deleteProcessLinksForProcessDefinition(definition.id)
-                    operatonProcessService.deleteProcessDefinition(definition.id)
-                }
-        }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
-
-    @DeleteMapping("/management/v1/process-definition/key/{processDefinitionKey}")
-    @Transactional
-    fun deleteUnlinkedProcessDefinitionsAndLinksByKey(
-        @PathVariable("processDefinitionKey") processDefinitionKey: String
-    ): ResponseEntity<Any> {
-        runWithoutAuthorization {
-            operatonProcessService.getUnlinkedDeployedDefinitionsByKey(processDefinitionKey)
-                .forEach { definition ->
-                    processLinkService.deleteProcessLinksForProcessDefinition(definition.id)
-                    operatonProcessService.deleteProcessDefinition(definition.id)
-                }
-        }
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
-
-    @PostMapping(
-        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    @Transactional
-    fun deployProcessDefinitionAndProcessLinks(
-        @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
-        @PathVariable(name = "caseDefinitionVersionTag") caseDefinitionVersionTag: String,
-        @RequestPart(name = "file") bpmn: MultipartFile?,
-        @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
-        @RequestParam(name = "processDefinitionId") processDefinitionId: String?,
-        @RequestParam(name = "canInitializeDocument") canInitializeDocument: String?,
-        @RequestParam(name = "startableByUser") startableByUser: String?
-    ): ResponseEntity<Any> {
-        val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
-        val existing = processDeploymentService.findExistingProcessDefinitionForCaseDefinition(caseDefinitionId, bpmn, processDefinitionId)
-        if (existing != null) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                ProcessDefinitionConflictResponseDto(existing.key, existing.id, existing.name)
-            )
-        }
-        processDeploymentService.deployProcessDefinitionAndProcessLinksForCaseDefinition(
-            caseDefinitionId,
-            bpmn,
-            processLinks,
-            processDefinitionId,
-            canInitializeDocument.toBoolean(),
-            startableByUser.toBoolean()
-        )
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
-
-    @PutMapping(
-        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    @Transactional
-    fun updateProcessDefinitionAndProcessLinks(
-        @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
-        @PathVariable(name = "caseDefinitionVersionTag") caseDefinitionVersionTag: String,
-        @RequestPart(name = "file") bpmn: MultipartFile?,
-        @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
-        @RequestParam(name = "processDefinitionId") processDefinitionId: String?,
-        @RequestParam(name = "canInitializeDocument") canInitializeDocument: String?,
-        @RequestParam(name = "startableByUser") startableByUser: String?
-    ): ResponseEntity<Any> {
-        val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
-        processDeploymentService.deployProcessDefinitionAndProcessLinksForCaseDefinition(
-            caseDefinitionId,
-            bpmn,
-            processLinks,
-            processDefinitionId,
-            canInitializeDocument.toBoolean(),
-            startableByUser.toBoolean()
-        )
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
-
-    @PostMapping(
-        value = ["/management/v1/process-definition"],
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    @Transactional
-    fun deployUnlinkedProcessDefinitionAndProcessLinks(
-        @RequestPart(name = "file") bpmn: MultipartFile?,
-        @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
-        @RequestPart(name = "processDefinitionId") processDefinitionId: String?
-    ): ResponseEntity<Any> {
-        val existing = processDeploymentService.findExistingUnlinkedProcessDefinition(bpmn, processDefinitionId)
-        if (existing != null) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                ProcessDefinitionConflictResponseDto(existing.key, existing.id, existing.name)
-            )
-        }
-        processDeploymentService.deployProcessDefinitionAndProcessLinks(
-            null,
-            bpmn,
-            processLinks,
-            processDefinitionId
-        )
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
-
-    @PutMapping(
-        value = ["/management/v1/process-definition"],
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    @Transactional
-    fun updateUnlinkedProcessDefinitionAndProcessLinks(
-        @RequestPart(name = "file") bpmn: MultipartFile?,
-        @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
-        @RequestPart(name = "processDefinitionId") processDefinitionId: String?
-    ): ResponseEntity<Any> {
-        processDeploymentService.deployProcessDefinitionAndProcessLinks(
-            null,
-            bpmn,
-            processLinks,
-            processDefinitionId
-        )
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
-
-    @PostMapping(
-        value = ["/management/v1/process-definition/validate"],
-        consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    fun validateProcessDefinition(
-        @RequestBody request: ProcessDefinitionValidateRequestDto
-    ): ResponseEntity<ProcessDefinitionValidateResponseDto> {
-        val bpmnModel = Bpmn.readModelFromStream(request.bpmnXml.byteInputStream())
-        val result = processDefinitionValidator.validate(bpmnModel, request.processLinks)
-        return ResponseEntity.ok(
-            ProcessDefinitionValidateResponseDto(
-                isValid = result.isValid,
-                hasWarnings = result.hasWarnings,
-                errors = result.errors
-            )
-        )
-    }
-
-    private fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
-        return processLinkMappers.singleOrNull { it.supportsProcessLinkType(processLinkType) }
-            ?: throw IllegalStateException("No ProcessLinkMapper found for processLinkType $processLinkType")
-    }
-
-    @GetMapping(
-        value = ["/management/v1/process-definition/{processDefinitionId}/export"],
-        produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
-    )
-    fun exportProcessDefinition(
-        @LoggableResource(resourceType = OperatonProcessDefinition::class) @PathVariable processDefinitionId: String
-    ): ResponseEntity<ByteArray> {
-        return runWithoutAuthorization {
-            val processDefinition = operatonProcessService.getProcessDefinitionById(processDefinitionId)
-            val outputStream = exportService.export(GlobalProcessDefinitionExportRequest(processDefinitionId))
-            val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))
-            val fileName = "${processDefinition.key}_v${processDefinition.version}_$timestamp.process.zip"
-
-            ResponseEntity
-                .ok()
-                .header("Content-Disposition", "attachment;filename=$fileName")
-                .body(outputStream.toByteArray())
-        }
-    }
-
-    @PostMapping("/management/v1/process-definition/import/preview")
-    fun previewProcessDefinitionImport(
-        @RequestParam("file") file: MultipartFile
-    ): ResponseEntity<ProcessDefinitionImportPreviewResponseDto> {
-        return try {
-            ResponseEntity.ok(processDefinitionImportPreviewService.preview(file.inputStream))
-        } catch (exception: ImportServiceException) {
-            logger.info(exception) { "Process definition import preview failed" }
-            ResponseEntity.badRequest().build()
-        }
-    }
-
-    @PostMapping("/management/v1/process-definition/import")
-    fun importProcessDefinition(
-        @RequestParam("file") file: MultipartFile,
-        @RequestPart("pluginConfigurationMappings", required = false) pluginConfigurationMappingsJson: String?,
-    ): ResponseEntity<ProcessDefinitionImportResponseDto> {
-        return try {
-            val preview = processDefinitionImportPreviewService.preview(file.inputStream)
-            val response = ProcessDefinitionImportResponseDto(
-                processDefinitionKeys = preview.processDefinitionKeys,
-                missingReferences = preview.missingReferences,
-            )
-
-            // Importing would either fail or overwrite a process that is managed by configuration
-            if (!preview.canImport) {
-                return ResponseEntity.badRequest().body(response)
-            }
-
-            val pluginConfigurationMappings: Map<UUID, UUID?>? = try {
-                pluginConfigurationMappingsJson?.let { objectMapper.readValue<Map<UUID, UUID?>>(it) }
-            } catch (exception: JsonProcessingException) {
-                logger.info(exception) { "Could not read the plugin configuration mappings" }
-                return ResponseEntity.badRequest().build()
-            }
-            runWithoutAuthorization {
-                importService.importGlobal(file.inputStream, pluginConfigurationMappings)
-            }
-
-            ResponseEntity.ok(response)
-        } catch (exception: ImportServiceException) {
-            logger.info(exception) { "Process definition import failed" }
-            ResponseEntity.badRequest().build()
-        }
-    }
-
-    private fun getBpmnXml(definition: OperatonProcessDefinition): String {
-        val xml = String(
-            IoUtil.readInputStream(
-                repositoryService.getProcessModel(definition.id),
-                "processModelBpmn20Xml"
-            ), StandardCharsets.UTF_8
-        )
-        if (definition.isSuspended()) {
-            return xml.replace("isExecutable=\"true\"", "isExecutable=\"false\"")
-        }
-        return xml
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }
