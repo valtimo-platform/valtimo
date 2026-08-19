@@ -171,6 +171,7 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
         val additionalProperties = dbFormFlowInstances[0].getAdditionalProperties()
         assertEquals(additionalProperties["documentDefinitionName"], "some-document")
         assertEquals(additionalProperties["processDefinitionKey"], "formflow-one-task-process")
+        assertEquals(additionalProperties["processDefinitionId"], processDefinition.id)
     }
 
     companion object {

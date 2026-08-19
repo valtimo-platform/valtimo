@@ -206,7 +206,11 @@ public class OperatonTaskService {
         } else if (EmailValidator.getInstance().isValid(assignee)) {
             throw new IllegalStateException("Task assignee must be an ID. Not an email: '" + assignee + "'");
         } else {
-            String assigneeUsername = runWithoutAuthorization(() -> userManagementService.findById(assignee).getUsername());
+            var assigneeUser = runWithoutAuthorization(() -> userManagementService.findById(assignee));
+            if (assigneeUser == null) {
+                throw new IllegalStateException("Cannot assign task to unknown user with id: '" + assignee + "'");
+            }
+            String assigneeUsername = assigneeUser.getUsername();
             final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
             final String currentUser = userManagementService.getCurrentUser().getUsername();
             if (assignee.equals(currentUser)) {
