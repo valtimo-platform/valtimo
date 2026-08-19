@@ -43,7 +43,7 @@ class CopyProcessLinkOnProcessDeploymentListener(
         }
 
         val originalProcessDefinitionId = event.source.originalProcessDefinitionId
-            ?: event.previousProcessDefinitionId?.takeIf { isOwnedBySameBlueprint(it, event) }
+            ?: event.previousProcessDefinitionId?.takeIf { mayCopyLinksFrom(it, event) }
 
         if (originalProcessDefinitionId != null) {
             val modelInstance = event.processDefinitionModelInstance
@@ -76,7 +76,7 @@ class CopyProcessLinkOnProcessDeploymentListener(
         }
     }
 
-    private fun isOwnedBySameBlueprint(
+    private fun mayCopyLinksFrom(
         previousProcessDefinitionId: String,
         event: ProcessDefinitionDeployedEvent
     ): Boolean {
@@ -86,6 +86,9 @@ class CopyProcessLinkOnProcessDeploymentListener(
         val previousOwner = owningBlueprintOf(previousVersionTag)
         val owner = owningBlueprintOf(event.versionTag)
 
+        if (owner == null) {
+            return true // nothing claims the new deployment, so nothing is being taken from its owner
+        }
         if (previousOwner != owner) {
             logger.debug {
                 "Not copying process links from process with id $previousProcessDefinitionId to newly deployed " +
