@@ -33,7 +33,7 @@ open class DocumentenApiWopiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(DocumentenApiWopiService::class)
-    fun documentenPreviewApiService(
+    fun documentenWopiApiService(
         pluginService: PluginService,
     ): DocumentenApiWopiService {
         return DocumentenApiWopiService(
@@ -43,7 +43,7 @@ open class DocumentenApiWopiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(DocumentenApiWopiResource::class)
-    fun documentenApiPreviewResource(
+    fun documentenApiWopiResource(
         documentenApiWopiService: DocumentenApiWopiService,
     ): DocumentenApiWopiResource {
         return DocumentenApiWopiResource(
