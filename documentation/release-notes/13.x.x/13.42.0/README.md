@@ -82,6 +82,12 @@
   until the page was reloaded. The decision table screen now always cleans up its breadcrumbs and title,
   even when the DMN editor fails to shut down.
 
+* **The options menu of a note is now translated**
+
+  The menu behind the three dots of a note in the notes timeline of a case showed its options in English, even
+  when the application was used in Dutch. The **Edit** and **Delete** options now follow the selected language,
+  and the three dots themselves have a translated label as well.
+
 ## Security
 
 * **Permission checks only accept known resource types**
