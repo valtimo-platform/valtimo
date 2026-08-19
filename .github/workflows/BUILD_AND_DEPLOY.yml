@@ -10,6 +10,9 @@ defaults:
   run:
     working-directory: frontend
 
+env:
+  NODE_VERSION: "20.x"
+
 jobs:
   build_and_test_libraries:
     name: Build and test libraries
@@ -76,41 +79,8 @@ jobs:
           echo "Content of package.json:"
           cat package.json
 
-          sed -i "s/\"dist\/valtimo/\"dist\/valtimo/g" angular.json
-
       - name: Build app (optioneel voor andere outputs)
         run: npm run build
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Resolve frontend tree hash
-        id: frontend_tree
-        run: echo "tree=$(git rev-parse HEAD:frontend)" >> "$GITHUB_OUTPUT"
-
-      - name: Generate image tags
-        id: generate_tags
-        uses: docker/metadata-action@v5
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        with:
-          images: ghcr.io/${{ github.repository }}/gzac-frontend
-          tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}-test.${{ github.run_number }}
-            type=raw,value=commit-test-${{ github.sha }}
-            type=raw,value=contents-test-${{ steps.frontend_tree.outputs.tree }}
-          flavor: |
-            latest=false
-
-      - name: Extract primary image tag
-        id: primary_tag
-        run: |
-          full_tag='${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}'
-          echo "tag=${full_tag##*:}" >> "$GITHUB_OUTPUT"
 
       - uses: ./.github/actions/docker
         name: Build and push to Azure Container Registry
@@ -123,4 +93,3 @@ jobs:
           registry: "commongroundacr.azurecr.io"
           push: ${{ github.event_name != 'pull_request' }}
           vulnerability_scan: false
-          version: ${{ steps.primary_tag.outputs.full_tag }}

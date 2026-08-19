@@ -171,6 +171,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       label: 'document.preview',
       callback: this.onPreviewActionClick.bind(this),
       disabled$: this.previewDisabled.bind(this),
+      hidden$: this.previewHidden.bind(this),
       type: 'normal',
     },
     {
@@ -189,6 +190,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       label: 'document.editContent',
       callback: this.onEditContent.bind(this),
       disabled$: this.editContentDisabled.bind(this),
+      hidden$: this.editContentHidden.bind(this),
       type: 'normal',
     },
     {
@@ -623,18 +625,62 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     this._refetch$.next(null);
   }
 
+  // The document list of a case (zaak) can contain documents from different Documenten APIs, so
+  // checks if the preview or edit contents features are supported needs to be done per each file's
+  // pluginConfigurationId - these caches just make sure that, for a given configId, the
+  // "is preview/WOPI supported" HTTP check fires once and is shared by every row (and by both the
+  // disabled$ and hidden$ callbacks) instead of once per row per callback.
+  private readonly canGeneratePreviewCache = new Map<string, Observable<boolean>>();
+  private readonly hasWopiSupportCache = new Map<string, Observable<boolean>>();
+
+  private canGeneratePreview$(pluginConfigurationId: string): Observable<boolean> {
+    if (!this.canGeneratePreviewCache.has(pluginConfigurationId)) {
+      this.canGeneratePreviewCache.set(
+        pluginConfigurationId,
+        this.documentenApiPreviewService
+          .canGeneratePreview(pluginConfigurationId)
+          .pipe(shareReplay(1))
+      );
+    }
+
+    return this.canGeneratePreviewCache.get(pluginConfigurationId);
+  }
+
+  private hasWopiSupport$(pluginConfigurationId: string): Observable<boolean> {
+    if (!this.hasWopiSupportCache.has(pluginConfigurationId)) {
+      this.hasWopiSupportCache.set(
+        pluginConfigurationId,
+        this.documentenApiWopiService.checkWopiSupport(pluginConfigurationId).pipe(shareReplay(1))
+      );
+    }
+
+    return this.hasWopiSupportCache.get(pluginConfigurationId);
+  }
+
+  private editContentHidden(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return this.hasWopiSupport$(file?.pluginConfigurationId).pipe(
+      map(hasWopiSupport => !hasWopiSupport)
+    );
+  }
+
   private editContentDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
     return combineLatest([
-      this.documentenApiWopiService.checkWopiSupport(file?.pluginConfigurationId),
+      this.hasWopiSupport$(file?.pluginConfigurationId),
       this.filePermissions$,
     ]).pipe(
       map(([hasWopiSupport, permissions]) => !hasWopiSupport || !permissions[file.fileId]?.canModify)
     );
   }
 
+  private previewHidden(file: DocumentenApiRelatedFile): Observable<boolean> {
+    return this.canGeneratePreview$(file?.pluginConfigurationId).pipe(
+      map(canGeneratePreview => !canGeneratePreview)
+    );
+  }
+
   private previewDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {
     return combineLatest([
-      this.documentenApiPreviewService.canGeneratePreview(file?.pluginConfigurationId),
+      this.canGeneratePreview$(file?.pluginConfigurationId),
       this.filePermissions$,
     ]).pipe(
       map(

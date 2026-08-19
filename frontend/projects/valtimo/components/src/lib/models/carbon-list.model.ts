@@ -65,6 +65,8 @@ interface ActionItem {
   callback: (_) => void;
   disabledCallback?: (_) => boolean;
   disabled$?: (_) => Observable<boolean>;
+  // when this resolves true, the action is omitted from the menu entirely (unlike disabled$, which still renders it)
+  hidden$?: (_) => Observable<boolean>;
   iconClass?: string;
   type?: 'normal' | 'danger';
 }
