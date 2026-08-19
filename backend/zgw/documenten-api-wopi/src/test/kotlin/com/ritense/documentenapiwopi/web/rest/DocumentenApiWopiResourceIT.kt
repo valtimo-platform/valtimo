@@ -111,9 +111,11 @@ internal class DocumentenApiWopiResourceIT : BaseIntegrationTest() {
     fun `should return WOPI host page after enforcing modify permission`() {
         val documentenApiBaseUrl = URI(mockWebServer.url("/").toString())
 
+        val documentInformatieObject = mock<DocumentInformatieObject>()
+        whenever(documentInformatieObject.bestandsnaam).thenReturn("mock_document.docx")
         whenever(mockDocumentenApiPlugin.authenticationPluginConfiguration).thenReturn(mock<DocumentenApiAuthentication>())
         whenever(mockDocumentenApiPlugin.url).thenReturn(documentenApiBaseUrl)
-        whenever(mockDocumentenApiPlugin.requireModifyAccess(any(), any())).thenReturn(mock<DocumentInformatieObject>())
+        whenever(mockDocumentenApiPlugin.requireModifyAccess(any(), any())).thenReturn(documentInformatieObject)
 
         mockWebServer.enqueue(mockResponse("""{"access_token": "test", "access_token_expires_at": 1234567890}"""))
         mockWebServer.enqueue(

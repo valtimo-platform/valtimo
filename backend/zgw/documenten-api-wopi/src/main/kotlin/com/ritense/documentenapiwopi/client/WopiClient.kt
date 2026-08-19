@@ -27,13 +27,24 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import java.net.URI
+import java.time.Duration
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 
 @SkipComponentScan
 @Component
 class WopiClient(
     private val restClientBuilder: RestClient.Builder
 ) {
+    private val discoveryCache = ConcurrentHashMap<URI, CachedDiscovery>()
+
     fun getWopiDiscovery(wopiClientDiscoveryUrl: URI): WopiDiscovery {
+        discoveryCache[wopiClientDiscoveryUrl]?.let { cached ->
+            if (Instant.now().isBefore(cached.expiresAt)) {
+                return cached.discovery
+            }
+        }
+
         val result = restClient()
             .get()
             .uri {
@@ -42,6 +53,8 @@ class WopiClient(
             }
             .retrieve()
             .body<WopiDiscovery>()!!
+
+        discoveryCache[wopiClientDiscoveryUrl] = CachedDiscovery(result, Instant.now().plus(DISCOVERY_CACHE_TTL))
 
         return result
     }
@@ -100,7 +113,12 @@ class WopiClient(
             .build()
     }
 
+    private data class CachedDiscovery(val discovery: WopiDiscovery, val expiresAt: Instant)
+
     companion object {
         private val xmlMapper: XmlMapper = XmlMapper()
+
+        // WOPI discovery is near-static; office suites expect clients to cache it rather than refetch per document open
+        private val DISCOVERY_CACHE_TTL: Duration = Duration.ofHours(24)
     }
 }

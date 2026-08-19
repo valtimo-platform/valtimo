@@ -47,12 +47,13 @@ class DocumentenApiWopiPlugin(
 
     fun getWopiHostPage(documentId: String, caseDocumentId: UUID?): String {
         val documentenApiPlugin = getDocumentenApiPlugin()
-        documentenApiPlugin.requireModifyAccess(documentId, caseDocumentId)
+        val documentInformatieObject = documentenApiPlugin.requireModifyAccess(documentId, caseDocumentId)
+        val extension = documentInformatieObject.bestandsnaam?.substringAfterLast('.', "")?.lowercase()
 
         val documentenApiAuthentication = documentenApiPlugin.authenticationPluginConfiguration
         val slatToken: WopiAccessToken = wopiClient.getWopiAccessToken(documentenApiPlugin.url, documentId, documentenApiAuthentication)
         val wopiDiscovery: WopiDiscovery = wopiClient.getWopiDiscovery(wopiClientDiscoveryUrl)
-        val wopiClientUrl: URI = wopiDiscovery.firstActionUrl()
+        val wopiClientUrl: URI = wopiDiscovery.editActionUrl(extension)
 
         return wopiClient.getWopiHostPage(documentenApiPlugin.url, wopiClientUrl, documentId, slatToken)
     }
@@ -74,11 +75,14 @@ class DocumentenApiWopiPlugin(
     }
 }
 
-fun WopiDiscovery.firstActionUrl(): URI {
-    val actionUrl = netZone.apps.first { !it.actions.isNullOrEmpty() }.actions?.first()?.urlSrc
+fun WopiDiscovery.editActionUrl(extension: String?): URI {
+    val actionUrl = netZone.apps
+        .flatMap { it.actions.orEmpty() }
+        .firstOrNull { it.name == "edit" && it.ext.equals(extension, ignoreCase = true) }
+        ?.urlSrc
 
     if (actionUrl.isNullOrBlank()) {
-        throw IllegalStateException("No action URL found in WOPI discovery")
+        throw IllegalStateException("No WOPI 'edit' action found in discovery for file extension '$extension'")
     }
 
     return URI(actionUrl)
