@@ -50,6 +50,7 @@ class WopiClient(
         val result = restClient(documentenApiAuthentication)
             .post()
             .uri {
+                // replacePath drops baseUrl's own path (e.g. /documenten/); the WOPI extension is mounted at the host root
                 ClientTools.baseUrlToBuilder(it, baseUrl)
                     .replacePath("/wopi/api/v1/token/$documentId")
                     .build()
@@ -64,6 +65,7 @@ class WopiClient(
         val result = restClient()
             .get()
             .uri {
+                // replacePath drops baseUrl's own path (e.g. /documenten/); the WOPI extension is mounted at the host root
                 ClientTools.baseUrlToBuilder(it, baseUrl)
                     .replacePath("/wopi/files/$documentId")
                     .queryParam("access_token", wopiAccessToken.accessToken)

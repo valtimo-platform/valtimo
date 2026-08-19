@@ -50,12 +50,11 @@ class DocumentenApiWopiPlugin(
         documentenApiPlugin.requireModifyAccess(documentId, caseDocumentId)
 
         val documentenApiAuthentication = documentenApiPlugin.authenticationPluginConfiguration
-        val documentenApiBaseUrl = URI("${documentenApiPlugin.url.scheme}://${documentenApiPlugin.url.host}:${documentenApiPlugin.url.port}")
-        val slatToken: WopiAccessToken = wopiClient.getWopiAccessToken(documentenApiBaseUrl, documentId, documentenApiAuthentication)
+        val slatToken: WopiAccessToken = wopiClient.getWopiAccessToken(documentenApiPlugin.url, documentId, documentenApiAuthentication)
         val wopiDiscovery: WopiDiscovery = wopiClient.getWopiDiscovery(wopiClientDiscoveryUrl)
         val wopiClientUrl: URI = wopiDiscovery.firstActionUrl()
 
-        return wopiClient.getWopiHostPage(documentenApiBaseUrl, wopiClientUrl, documentId, slatToken)
+        return wopiClient.getWopiHostPage(documentenApiPlugin.url, wopiClientUrl, documentId, slatToken)
     }
 
     private fun getDocumentenApiPlugin(): DocumentenApiPlugin {
