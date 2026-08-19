@@ -23,6 +23,7 @@ import com.ritense.case_.domain.migration.CaseMigrationCase
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.service.migration.MigrationPlanApplier
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
@@ -197,6 +198,25 @@ class BuildingBlockVersionAlignmentExecutorTest {
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
         verifyNothingMigrated()
+    }
+
+    /**
+     * G24: leaving it alone is right — dissolving deletes a document, so it is never inferred — but the
+     * block keeps running under a version that does not declare it, and its call activity throws whenever
+     * it next ends. This warning is the one moment an author can still act on that.
+     */
+    @Test
+    fun `should warn about a block the target case version no longer links`() {
+        val block = block("1.0.1")
+        caseOwns(block)
+        whenever(linkedVersionResolver.resolveTarget(caseDefinitionId, block)).thenReturn(null)
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        assertThat(MigrationWarnings.drain())
+            .contains("is still running under")
+            .contains("no longer links it")
+            .contains("'removeBuildingBlock'")
     }
 
     @Test

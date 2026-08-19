@@ -46,16 +46,15 @@
             [placeholder]="'caseManagement.migration.editor.buildingBlock.buildingBlockKeyPlaceholder' | translate"
           ></v-select>
 
-          @if (isAdd) {
-            <v-select
-              formControlName="buildingBlockVersionTag"
-              [clearable]="false"
-              [items]="versionItemsFor(instruction)"
-              [required]="true"
-              [titleTranslationKey]="'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTag'"
-              [placeholder]="'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTagPlaceholder' | translate"
-            ></v-select>
-          }
+          <!-- Required in both modes: an entry acts on one version, whichever direction it runs in -->
+          <v-select
+            formControlName="buildingBlockVersionTag"
+            [clearable]="false"
+            [items]="versionItemsFor(instruction)"
+            [required]="true"
+            [titleTranslationKey]="'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTag'"
+            [placeholder]="'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTagPlaceholder' | translate"
+          ></v-select>
         </div>
 
         @if (isSuggesting(instruction)) {

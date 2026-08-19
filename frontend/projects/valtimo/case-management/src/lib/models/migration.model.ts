@@ -156,14 +156,20 @@ interface AddBuildingBlockInstruction {
 }
 
 /**
- * A single `removeBuildingBlock` entry: dissolve the building block(s) of `buildingBlockKey`
- * directly linked to the instance being migrated. `processMigration` hands the building block's
- * process(es) back to the owner and `dataMigration` copies data back (each patch's `source` reads
- * the building block document, its `target` writes into the owner document) before the building
+ * A single `removeBuildingBlock` entry: dissolve the building block(s) of `buildingBlockKey` anywhere
+ * below the instance being migrated, at any depth, deepest first. `processMigration` hands the building
+ * block's process(es) back to its owner and `dataMigration` copies data back (each patch's `source`
+ * reads the building block document, its `target` writes into the owner document) before the building
  * block document is deleted. Mirrors the backend `RemoveBuildingBlockInstruction`.
+ *
+ * `buildingBlockVersionTag` is required, as `AddBuildingBlockInstruction`'s is: the entry's
+ * `dataMigration` reads paths out of that version's document schema and its `processMigration` names
+ * that version's process definitions. A fleet holding two versions of one block therefore needs one
+ * entry per version, and a version no entry names fails the case rather than being left behind.
  */
 interface RemoveBuildingBlockInstruction {
   buildingBlockKey: string;
+  buildingBlockVersionTag: string;
   dataMigration: DataMigrationPatch[];
   processMigration: ProcessMigrationInstruction[];
 }

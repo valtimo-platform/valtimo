@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Bijstand" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="bijstand" name="Bijstand behandelen" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Aanvraag ontvangen">
+      <bpmn:outgoing>Flow_Start_To_Uitvoeren</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="UitvoerenCallActivity" name="Uitvoeren" calledElement="bijstand-uitvoeren" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="CD:bijstand:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Start_To_Uitvoeren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Uitvoeren_To_End</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="EndEvent" name="Aanvraag afgehandeld">
+      <bpmn:incoming>Flow_Uitvoeren_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Uitvoeren" sourceRef="StartEvent" targetRef="UitvoerenCallActivity" />
+    <bpmn:sequenceFlow id="Flow_Uitvoeren_To_End" sourceRef="UitvoerenCallActivity" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="bijstand">
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="180" y="132" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UitvoerenCallActivity_di" bpmnElement="UitvoerenCallActivity">
+        <dc:Bounds x="280" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="450" y="132" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Uitvoeren_di" bpmnElement="Flow_Start_To_Uitvoeren">
+        <di:waypoint x="216" y="150" />
+        <di:waypoint x="280" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Uitvoeren_To_End_di" bpmnElement="Flow_Uitvoeren_To_End">
+        <di:waypoint x="380" y="150" />
+        <di:waypoint x="450" y="150" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

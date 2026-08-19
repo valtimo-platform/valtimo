@@ -51,6 +51,9 @@ type BuildingBlockInstruction = AddBuildingBlockInstruction | RemoveBuildingBloc
 /** Whether this tab edits the `addBuildingBlock` or the `removeBuildingBlock` component. */
 type BuildingBlockMode = 'add' | 'remove';
 
+/** Page size for the version lookup; `all=true` returns every version regardless, this is a formality. */
+const MAX_VERSIONS_PER_KEY = 100;
+
 /**
  * Editor for the `addBuildingBlock` / `removeBuildingBlock` components of a *building block* plan —
  * the blocks nested inside the block the plan targets. A building block owns other building blocks
@@ -59,8 +62,8 @@ type BuildingBlockMode = 'add' | 'remove';
  *
  * Both components are arrays of entries where each entry embeds its own `dataMigration` and
  * `processMigration`, so the existing data-/process-migration tab components are reused per entry.
- * The only difference between the two modes is that `add` also carries a `buildingBlockVersionTag`
- * (the version to create at).
+ * Both modes carry a `buildingBlockKey` and a `buildingBlockVersionTag` — the version to create at, or
+ * the version to dissolve — so the two differ only in the direction data and processes move.
  *
  * The building-block key/version fields live in a reactive form array; the nested data/process
  * migrations are managed by the reused child components and kept index-aligned in
@@ -112,10 +115,12 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   private _lastEmitted = '[]';
   private readonly _subscriptions = new Subscription();
 
+  // The versions are loaded per key on demand — the definition list carries only the latest of each.
   private readonly _versionsByKey = new Map<string, SelectItem[]>();
+  private readonly _versionsInFlight = new Set<string>();
 
-  // Nested-building-block process scoping: a `key` -> latest versionTag map (for `remove`, which
-  // stores no version), a `key:version` -> process definitions cache, and the lookups in flight.
+  // Nested-building-block process scoping: a `key` -> latest versionTag map (the default version an
+  // entry gets), a `key:version` -> process definitions cache, and the lookups in flight.
   private readonly _bbLatestVersion = new Map<string, string>();
   private readonly _bbProcessDefs = new Map<string, Record<string, string>>();
   private readonly _bbInFlight = new Set<string>();
@@ -145,9 +150,11 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
 
-    // Load every building block definition to drive the key/version dropdowns, track each key's
-    // latest version (used to look up a `remove` entry's processes, since those store no version),
-    // then load processes for existing rows.
+    // Load every building block definition to drive the key dropdown and track each key's latest
+    // version (the version an entry defaults to), then load processes for existing rows. This endpoint
+    // answers the LATEST version per key only, so the version dropdown cannot be built from it — a plan
+    // targets a specific blueprint version and usually has to name an older block version than the
+    // newest one deployed. Those come from [ensureVersionItems], per key.
     this.buildingBlockManagementApiService.getBuildingBlockDefinitions().subscribe(definitions => {
       const keyItems: SelectItem[] = [];
       const seenKeys = new Set<string>();
@@ -156,9 +163,6 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
         if (!current || definition.versionTag.localeCompare(current) > 0) {
           this._bbLatestVersion.set(definition.key, definition.versionTag);
         }
-        const versions = this._versionsByKey.get(definition.key) ?? [];
-        versions.push({id: definition.versionTag, text: definition.versionTag});
-        this._versionsByKey.set(definition.key, versions);
         if (!seenKeys.has(definition.key)) {
           seenKeys.add(definition.key);
           const label =
@@ -214,21 +218,23 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   private createInstructionGroup(instruction?: BuildingBlockInstruction): FormGroup {
     const group = this.fb.group({
       buildingBlockKey: this.fb.control(instruction?.buildingBlockKey ?? ''),
-      buildingBlockVersionTag: this.fb.control(
-        (instruction as AddBuildingBlockInstruction)?.buildingBlockVersionTag ?? ''
-      ),
+      buildingBlockVersionTag: this.fb.control(instruction?.buildingBlockVersionTag ?? ''),
     });
 
-    // When the selected building block changes: default the version to that block's latest (add mode),
-    // reload its processes, and auto-suggest this entry's data/process migration for the new block.
+    // When the selected building block changes: load its versions, reset the version (the one another
+    // key was picked at means nothing here), reload its processes, and auto-suggest this entry's
+    // data/process migration for the new block. `add` defaults to the block's latest version, `remove`
+    // to none: what it dissolves is the version the instances are *on*, which is usually an older one,
+    // so a default would be a guess the author has to notice and undo. Required either way.
     this._subscriptions.add(
       group.get('buildingBlockKey')!.valueChanges.subscribe(key => {
-        if (this.isAdd) {
-          // emitEvent: false so the version subscription doesn't ALSO suggest (avoid a double fetch).
-          group
-            .get('buildingBlockVersionTag')!
-            .setValue(key ? this._bbLatestVersion.get(key) ?? '' : '', {emitEvent: false});
-        }
+        this.ensureVersionItems(key);
+        // emitEvent: false so the version subscription doesn't ALSO suggest (avoid a double fetch).
+        group
+          .get('buildingBlockVersionTag')!
+          .setValue(this.isAdd && key ? (this._bbLatestVersion.get(key) ?? '') : '', {
+            emitEvent: false,
+          });
         this.ensureBuildingBlockProcessKeys(group);
         this.suggestForEntry(group);
       })
@@ -297,12 +303,45 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return (key && this._versionsByKey.get(key)) || [];
   }
 
-  /** Version to look up a building block's processes at: the entry's own (add) or its latest (remove). */
+  /**
+   * Fetch (once, cached) every deployed version of [key] into [_versionsByKey]. Every version has to be
+   * offered: which one an entry may name is decided by what the plan's target blueprint version links
+   * (the engine refuses the rest on save), and that is regularly an older version than the newest one
+   * deployed — a plan on block version 1.0.4 links the version 1.0.4 links, not whatever has been
+   * released since.
+   */
+  private ensureVersionItems(key: string | null | undefined): void {
+    if (!key || this._versionsByKey.has(key) || this._versionsInFlight.has(key)) return;
+
+    this._versionsInFlight.add(key);
+    this.buildingBlockManagementApiService
+      .getVersionsForBuildingBlock(key, 0, MAX_VERSIONS_PER_KEY, true)
+      .subscribe({
+        next: page => {
+          this._versionsByKey.set(
+            key,
+            (page?.content ?? [])
+              .map(version => version?.versionTag)
+              .filter((versionTag): versionTag is string => !!versionTag)
+              .map(versionTag => ({id: versionTag, text: versionTag}))
+          );
+          this._versionsInFlight.delete(key);
+          this.cdr.markForCheck();
+        },
+        error: () => this._versionsInFlight.delete(key),
+      });
+  }
+
+  /**
+   * Version to resolve a building block's processes and value paths at: the entry's own when it names
+   * one, else that block's latest — a `remove` entry may leave the version open ("whichever version is
+   * here"), and the pickers still need a document schema and a process to read.
+   */
   private resolveBuildingBlockVersion(group: FormGroup): string | null {
     const key = group.get('buildingBlockKey')?.value;
     if (!key) return null;
     const stored = group.get('buildingBlockVersionTag')?.value;
-    return (this.isAdd && stored) || this._bbLatestVersion.get(key) || stored || null;
+    return stored || this._bbLatestVersion.get(key) || null;
   }
 
   /** Fetch (once, cached) the entry's building block `key -> definitionId` map into [_bbProcessDefs]. */
@@ -398,21 +437,14 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
       const group = control as FormGroup;
       const dataMigration = this._dataMigrations[index] ?? [];
       const processMigration = this._processMigrations[index] ?? [];
-
-      if (this.isAdd) {
-        return {
-          buildingBlockKey: group.get('buildingBlockKey')?.value ?? '',
-          buildingBlockVersionTag: group.get('buildingBlockVersionTag')?.value ?? '',
-          dataMigration,
-          processMigration,
-        } as AddBuildingBlockInstruction;
-      }
-
+      // Both modes carry the same four fields: an entry names one building block version, whether it
+      // creates it or dissolves it.
       return {
         buildingBlockKey: group.get('buildingBlockKey')?.value ?? '',
+        buildingBlockVersionTag: group.get('buildingBlockVersionTag')?.value ?? '',
         dataMigration,
         processMigration,
-      } as RemoveBuildingBlockInstruction;
+      } as BuildingBlockInstruction;
     });
   }
 
@@ -427,6 +459,7 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     instructions.forEach(instruction => {
       const group = this.createInstructionGroup(instruction);
       this.instructionsArray.push(group, {emitEvent: false});
+      this.ensureVersionItems(instruction.buildingBlockKey);
       this.ensureBuildingBlockProcessKeys(group);
     });
 

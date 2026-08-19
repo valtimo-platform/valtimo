@@ -37,8 +37,13 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.operaton.bpm.model.bpmn.BpmnModelInstance
+import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.semver4j.Semver
 import java.util.UUID
 
@@ -49,6 +54,7 @@ class LinkedBuildingBlockVersionResolverTest {
     private lateinit var processDefBbDefRepository: ProcessDefinitionBuildingBlockDefinitionRepository
     private lateinit var processLinkRepository: ProcessLinkRepository
     private lateinit var pathResolver: BuildingBlockMigrationPathResolver
+    private lateinit var repositoryService: RepositoryService
     private lateinit var resolver: LinkedBuildingBlockVersionResolver
 
     private val caseDefinitionId = CaseDefinitionId("verhuizing", "1.0.2")
@@ -62,12 +68,14 @@ class LinkedBuildingBlockVersionResolverTest {
         processDefBbDefRepository = mock()
         processLinkRepository = mock()
         pathResolver = mock()
+        repositoryService = mock()
         resolver = LinkedBuildingBlockVersionResolver(
             caseLinkRepository,
             processDefCaseDefRepository,
             processDefBbDefRepository,
             processLinkRepository,
             pathResolver,
+            repositoryService,
         )
         // Unless a test says otherwise, every version an owner links is reachable through the plans, so
         // reachability never silently narrows the candidates a test set up.
@@ -284,6 +292,58 @@ class LinkedBuildingBlockVersionResolverTest {
         )
     }
 
+    @Test
+    fun `should resolve call-activity-linked blocks transitively, through the blocks themselves`() {
+        // case -> uitvoeren, and uitvoeren -> besluit, which only uitvoeren's own definition declares.
+        callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockCallActivityLink(uitvoeren, "besluit:1:x", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
+
+        assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).containsExactly(
+            uitvoeren,
+            BuildingBlockDefinitionId.of("bijstand-besluit", "1.0.0"),
+        )
+    }
+
+    @Test
+    fun `should terminate on a cyclic call-activity link graph`() {
+        // A block that links itself: the walk must stop rather than spin.
+        callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockCallActivityLink(uitvoeren, "loop:1:x", "SelfCallActivity", "bijstand-uitvoeren", "1.0.0")
+
+        assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).containsExactly(uitvoeren)
+    }
+
+    @Test
+    fun `should resolve nothing reachable when the owner links no call activity`() {
+        startableItemLink("1.0.1") // a startable item is not something a running tree nests through
+
+        assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).isEmpty()
+    }
+
+    /** [owner] (a building block) declares [key]:[versionTag] on [activityId] of its own process. */
+    private fun blockCallActivityLink(
+        owner: BuildingBlockDefinitionId,
+        ownerProcessDefinitionId: String,
+        activityId: String,
+        key: String,
+        versionTag: String,
+    ) {
+        whenever(processDefBbDefRepository.findAllByIdBuildingBlockDefinitionId(owner)).thenReturn(
+            listOf(
+                ProcessDefinitionBuildingBlockDefinition(
+                    ProcessDefinitionBuildingBlockDefinitionId(
+                        ProcessDefinitionId(ownerProcessDefinitionId), owner
+                    )
+                )
+            )
+        )
+        whenever(processLinkRepository.findByProcessDefinitionId(ownerProcessDefinitionId)).thenReturn(
+            listOf(buildingBlockProcessLink(ownerProcessDefinitionId, activityId, key, versionTag))
+        )
+    }
+
     private fun callActivityLink(activityId: String, versionTag: String, key: String = bbKey) {
         whenever(processDefCaseDefRepository.findByIdCaseDefinitionId(caseDefinitionId)).thenReturn(
             listOf(
@@ -311,6 +371,112 @@ class LinkedBuildingBlockVersionResolverTest {
         buildingBlockDefinitionId = BuildingBlockDefinitionId.of(key, versionTag),
         pluginConfigurationMappings = emptyMap(),
     )
+
+    @Test
+    fun `should resolve a link that sits behind an unlinked building-block call activity`() {
+        // The shape of a case mid-way through the v12 upgrade: the case calls a building block's
+        // deployment as a plain sub-process (tagged, not linked), and *that* block declares the nested
+        // one. Reading only linked hops would stop at the case and find nothing.
+        caseProcessDefinition()
+        bbTaggedCallActivity(processDefinitionId, "bijstand-uitvoeren", "1.0.0")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockCallActivityLink(uitvoeren, "besluit:1:x", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
+
+        // Only the linked one is authorisable — the hop itself is called, never declared, so a plan may
+        // not name it and adoption will leave it a plain sub-process.
+        assertThat(resolver.resolveCallActivityReachable(caseDefinitionId))
+            .containsExactly(BuildingBlockDefinitionId.of("bijstand-besluit", "1.0.0"))
+    }
+
+    @Test
+    fun `should not authorise a building block that is only called, never linked`() {
+        caseProcessDefinition()
+        bbTaggedCallActivity(processDefinitionId, "bijstand-uitvoeren", "1.0.0")
+
+        assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).isEmpty()
+    }
+
+    @Test
+    fun `should terminate when unlinked call activities form a cycle`() {
+        caseProcessDefinition()
+        bbTaggedCallActivity(processDefinitionId, "bijstand-uitvoeren", "1.0.0")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockProcessDefinition(uitvoeren, "loop:1:x")
+        bbTaggedCallActivity("loop:1:x", "bijstand-uitvoeren", "1.0.0") // calls itself, still unlinked
+
+        assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).isEmpty()
+    }
+
+    /**
+     * G23: the runtime counterpart of the two-set closure. A hop left as a plain sub-process keeps running
+     * the old blueprint's copy of its process, which carries none of the new model's links — so the link
+     * for what it calls has to be read from the blueprint the *target model* says deploys that process.
+     */
+    @Test
+    fun `should resolve a link from the blueprint the target model says deploys the process`() {
+        caseProcessDefinition()
+        bbTaggedCallActivity(processDefinitionId, "bijstand-uitvoeren", "1.0.0")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockCallActivityLink(uitvoeren, "uitvoeren:bb", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
+        val uitvoerenDefinition = mock<ProcessDefinition>() // built first: stubbing inside whenever() breaks Mockito
+        whenever(uitvoerenDefinition.key).thenReturn("bijstand-uitvoeren")
+        whenever(repositoryService.getProcessDefinition("uitvoeren:bb")).thenReturn(uitvoerenDefinition)
+
+        val link = resolver.resolveCallActivityLink(caseDefinitionId, "bijstand-uitvoeren", "BesluitCallActivity")
+
+        assertThat(link?.buildingBlockDefinitionId)
+            .isEqualTo(BuildingBlockDefinitionId.of("bijstand-besluit", "1.0.0"))
+    }
+
+    @Test
+    fun `should resolve no link for an activity the target model does not declare`() {
+        caseProcessDefinition()
+        bbTaggedCallActivity(processDefinitionId, "bijstand-uitvoeren", "1.0.0")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockCallActivityLink(uitvoeren, "uitvoeren:bb", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
+        val uitvoerenDefinition = mock<ProcessDefinition>() // built first: stubbing inside whenever() breaks Mockito
+        whenever(uitvoerenDefinition.key).thenReturn("bijstand-uitvoeren")
+        whenever(repositoryService.getProcessDefinition("uitvoeren:bb")).thenReturn(uitvoerenDefinition)
+
+        assertThat(resolver.resolveCallActivityLink(caseDefinitionId, "bijstand-uitvoeren", "AndereActivity")).isNull()
+        assertThat(resolver.resolveCallActivityLink(caseDefinitionId, "ander-proces", "BesluitCallActivity")).isNull()
+    }
+
+    /** The case owns [processDefinitionId], with no building-block links on it. */
+    private fun caseProcessDefinition() {
+        whenever(processDefCaseDefRepository.findByIdCaseDefinitionId(caseDefinitionId)).thenReturn(
+            listOf(
+                ProcessDefinitionCaseDefinition(
+                    ProcessDefinitionCaseDefinitionId(ProcessDefinitionId(processDefinitionId), caseDefinitionId)
+                )
+            )
+        )
+    }
+
+    /** [owner] (a building block) owns [ownerProcessDefinitionId], with no links on it. */
+    private fun blockProcessDefinition(owner: BuildingBlockDefinitionId, ownerProcessDefinitionId: String) {
+        whenever(processDefBbDefRepository.findAllByIdBuildingBlockDefinitionId(owner)).thenReturn(
+            listOf(
+                ProcessDefinitionBuildingBlockDefinition(
+                    ProcessDefinitionBuildingBlockDefinitionId(
+                        ProcessDefinitionId(ownerProcessDefinitionId), owner
+                    )
+                )
+            )
+        )
+    }
+
+    /**
+     * [processDefinitionId] has a call activity bound to [key]:[versionTag]'s deployment by version tag
+     * and **no** building-block process link — a block called as a plain sub-process.
+     */
+    private fun bbTaggedCallActivity(processDefinitionId: String, key: String, versionTag: String) {
+        val callActivity = mock<CallActivity>()
+        whenever(callActivity.operatonCalledElementVersionTag).thenReturn("BB:$key:$versionTag")
+        val model = mock<BpmnModelInstance>()
+        whenever(model.getModelElementsByType(CallActivity::class.java)).thenReturn(listOf(callActivity))
+        whenever(repositoryService.getBpmnModelInstance(processDefinitionId)).thenReturn(model)
+    }
 
     private fun instance(versionTag: String, key: String = bbKey, activityId: String? = null) = BuildingBlockInstance(
         documentId = UUID.randomUUID(),

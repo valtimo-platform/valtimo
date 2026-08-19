@@ -53,9 +53,15 @@ class AddBuildingBlockLinkChecker(
         if (instructions.isEmpty()) {
             return emptyList()
         }
-        val linked = linkedBuildingBlockVersionResolver.resolveLinkedVersions(target)
-            .map { it.buildingBlockDefinitionId }
-            .distinct()
+        // Directly linked, plus everything reachable by following call activities down. A nested block is
+        // declared by the block above it, never by the case: `bijstand:1.0.1` links `bijstand-uitvoeren`,
+        // and `bijstand-besluit` is linked by `bijstand-uitvoeren`. An entry for the nested one is exactly
+        // as legitimate as one for the level above — adoption reaches both in a single run — so the check
+        // has to ask "does the target model this block anywhere below it", not "at the first level".
+        val linked = (
+            linkedBuildingBlockVersionResolver.resolveLinkedVersions(target).map { it.buildingBlockDefinitionId } +
+                linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
+            ).distinct()
 
         return instructions.mapNotNull { instruction ->
             val added = BuildingBlockDefinitionId.of(

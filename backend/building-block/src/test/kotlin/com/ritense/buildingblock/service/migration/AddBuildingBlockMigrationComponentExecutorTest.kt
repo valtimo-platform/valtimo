@@ -28,6 +28,7 @@ import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
@@ -42,6 +43,9 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valueresolver.ValueResolverService
+import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.runtime.ProcessInstance
 import org.operaton.bpm.engine.runtime.ProcessInstanceQuery
@@ -61,6 +65,7 @@ class AddBuildingBlockMigrationComponentExecutorTest {
     private lateinit var runtimeService: RuntimeService
     private lateinit var linkChecker: AddBuildingBlockLinkChecker
     private lateinit var processChecker: AddBuildingBlockProcessChecker
+    private lateinit var linkResolver: LinkedBuildingBlockVersionResolver
     private lateinit var executor: AddBuildingBlockMigrationComponentExecutor
 
     private val target = CaseDefinitionId("verhuizing", "1.0.1")
@@ -76,6 +81,9 @@ class AddBuildingBlockMigrationComponentExecutorTest {
         runtimeService = mock()
         linkChecker = mock()
         processChecker = mock()
+        linkResolver = mock()
+        // No call-activity link by default, so the "nothing to hijack" warning still applies as before.
+        whenever(linkResolver.resolveCallActivityReachable(any())).thenReturn(emptySet())
 
         whenever(instanceRepository.findByDocumentId(ownerDocumentId)).thenReturn(null)
         noRunningProcesses()
@@ -86,10 +94,14 @@ class AddBuildingBlockMigrationComponentExecutorTest {
             instanceService,
             instanceRepository,
             mock<ProcessDefinitionBuildingBlockDefinitionRepository>(),
+            mock<ProcessLinkService>(),
+            linkResolver,
             runtimeService,
+            mock<RepositoryService>(),
             mock<OperatonExecutionRepository>(),
             mock<ProcessMigrationVariableResolver>(),
             mock<ProcessDocumentAssociationService>(),
+            mock<ValueResolverService>(),
             mock<MigrationDataPatchApplier>(),
             linkChecker,
             processChecker,
@@ -135,6 +147,37 @@ class AddBuildingBlockMigrationComponentExecutorTest {
         executor.execute(migrationId, target, ownerDocumentId)
 
         assertThat(MigrationWarnings.drain()).isNull()
+    }
+
+    @Test
+    fun `should warn when an entry the target declares on a call activity is reached by neither pass`() {
+        // The shape §6.7 hit live: the plan authorises a nested block, the target declares it on a call
+        // activity, but the walk never reaches the process — because the level above stayed a plain
+        // sub-process and still runs the old deployment. Both passes created nothing; before this, both
+        // also stayed silent, and the migration reported COMPLETED with no blocks and no warning.
+        deploy(instruction()) // no processMigration: pass 1 defers to the walk
+        whenever(linkResolver.resolveCallActivityReachable(any()))
+            .thenReturn(setOf(BuildingBlockDefinitionId.of("income-check", "1.0.0")))
+
+        executor.execute(migrationId, target, ownerDocumentId)
+
+        verify(instanceService, never()).create(any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())
+        assertThat(MigrationWarnings.drain())
+            .contains("Building block 'income-check:1.0.0' was not added to '$ownerDocumentId'")
+            .contains("no running process was reached")
+            .contains("left a plain sub-process")
+    }
+
+    @Test
+    fun `should not warn about an unreached entry the target does not declare on a call activity`() {
+        // That entry's failure is pass 1's to report, and it already does, naming the business key.
+        deploy(instruction(ProcessMigrationInstruction("verhuizing-process", "income-check-process")))
+
+        executor.execute(migrationId, target, ownerDocumentId)
+
+        val warnings = MigrationWarnings.drain()
+        assertThat(warnings).contains("matched a running process with business key")
+        assertThat(warnings).doesNotContain("no running process was reached")
     }
 
     private fun deploy(vararg instructions: AddBuildingBlockInstruction) {

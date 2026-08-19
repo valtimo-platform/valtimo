@@ -108,11 +108,16 @@ interface AddBuildingBlockInstruction {
 }
 
 /**
- * One `removeBuildingBlock` entry: a nested building block to dissolve. It carries no version — every
- * block of this key directly owned by the migrating instance is removed, whatever version it is on.
+ * One `removeBuildingBlock` entry: a nested building block to dissolve, anywhere below the migrating
+ * instance and deepest first. `buildingBlockVersionTag` is required, as `AddBuildingBlockInstruction`'s
+ * is: the entry's `dataMigration` reads paths out of that version's document schema and its
+ * `processMigration` names that version's process definitions. A fleet holding two versions of one block
+ * therefore needs one entry per version, and a version no entry names fails the case rather than being
+ * left behind.
  */
 interface RemoveBuildingBlockInstruction {
   buildingBlockKey: string;
+  buildingBlockVersionTag: string;
   dataMigration?: DataMigrationPatch[];
   processMigration?: ProcessMigrationInstruction[];
 }

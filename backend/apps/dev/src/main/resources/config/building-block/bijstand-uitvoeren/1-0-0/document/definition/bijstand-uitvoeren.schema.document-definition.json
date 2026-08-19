@@ -1,0 +1,16 @@
+{
+    "$id": "bijstand-uitvoeren.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Bijstand uitvoeren",
+    "type": "object",
+    "properties": {
+        "aanvrager": {
+            "type": ["string", "null"],
+            "description": "Overgenomen van de zaak via de inputMappings van de call-activity-koppeling"
+        },
+        "uitvoerStatus": {
+            "type": ["string", "null"],
+            "description": "Status van de uitvoering"
+        }
+    }
+}

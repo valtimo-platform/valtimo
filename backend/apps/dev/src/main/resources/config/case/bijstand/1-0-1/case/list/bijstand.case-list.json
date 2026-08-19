@@ -1,0 +1,49 @@
+[
+    {
+        "title": "Aanvrager",
+        "key": "aanvrager",
+        "path": "doc:aanvrager",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "order": 0
+    },
+    {
+        "title": "Uitvoerstatus",
+        "key": "uitvoerStatus",
+        "path": "doc:uitvoerStatus",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": false,
+        "order": 1
+    },
+    {
+        "title": "Gemigreerd vanaf",
+        "key": "migratedFrom",
+        "path": "doc:migratedFrom",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": false,
+        "order": 2
+    },
+    {
+        "title": "Aangemaakt",
+        "key": "createdOn",
+        "path": "case:createdOn",
+        "displayType": {
+            "type": "date",
+            "displayTypeParameters": {
+                "dateFormat": "DD-MM-YYYY"
+            }
+        },
+        "sortable": true,
+        "defaultSort": "DESC",
+        "order": 3
+    }
+]

@@ -25,6 +25,7 @@ import com.ritense.case_.service.migration.MigrationPlanApplier
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.core.annotation.Order
@@ -88,10 +89,22 @@ class BuildingBlockVersionAlignmentExecutor(
 
         if (linked == null) {
             // The owner's new version no longer links this building block. Leaving it alone is
-            // deliberate: dissolving a running block is what a plan's `removeBuildingBlock` is for.
-            logger.debug {
-                "Building block '$current' (instance '${instance.id}') is not linked by '$ownerTarget'; leaving it as is"
-            }
+            // deliberate: dissolving a running block is what a plan's `removeBuildingBlock` is for, and
+            // it deletes a document, so it is never done on inference alone.
+            //
+            // But it is not left *quietly*. This is the mirror of the warning the add side raises for a
+            // call activity that declares a block no entry authorises, and it is the only moment anyone
+            // is told: a block whose governing link is gone keeps running, and the failure surfaces
+            // whenever its call activity next ends — possibly weeks after a run that reported COMPLETED
+            // (G24). By the time alignment runs (@500) anything a `removeBuildingBlock` entry dissolved
+            // (@400) is already gone, so every instance reaching this branch is one nothing asked about.
+            val stale = "Building block '$current' (instance '${instance.id}') is still running under " +
+                "'${instance.caseDocumentId ?: instance.documentId}', but '$ownerTarget' no longer links it, so it " +
+                "was left as it is. A case started on this version would not have it. Add a " +
+                "'removeBuildingBlock' entry for '$current' to dissolve it and hand its process back, or " +
+                "restore the link on the call activity that used to declare it."
+            logger.warn { stale }
+            MigrationWarnings.warn(stale)
             return
         }
         if (linked == current) {

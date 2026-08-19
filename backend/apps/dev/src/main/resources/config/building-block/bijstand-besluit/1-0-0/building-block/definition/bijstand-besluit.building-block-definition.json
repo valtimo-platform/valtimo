@@ -1,0 +1,7 @@
+{
+    "key": "bijstand-besluit",
+    "name": "Bijstand besluit",
+    "description": "Het besluit op een bijstandsaanvraag, met de gebruikerstaak waar het token van een lopende zaak op wacht. Het diepste niveau van de boom die in één migratie bouwstenen wordt.",
+    "versionTag": "1.0.0",
+    "final": false
+}

@@ -57,11 +57,14 @@ class BuildingBlockInstance(
     @Column(name = "process_instance_id", nullable = true)
     var processInstanceId: String? = null,
 
+    // Mutable because a migration can move an instance within the tree: BuildingBlockAdoptionExecutor
+    // claims a block the runtime listener created outside any tree (parent null, because the calling
+    // process still carried the case's business key) and re-homes it under the block it belongs to.
     @Column(name = "parent_building_block_instance_id", nullable = true)
-    val parentBuildingBlockInstanceId: UUID? = null,
+    var parentBuildingBlockInstanceId: UUID? = null,
 
     @Column(name = "root_building_block_instance_id", nullable = true)
-    val rootBuildingBlockInstanceId: UUID? = null,
+    var rootBuildingBlockInstanceId: UUID? = null,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(

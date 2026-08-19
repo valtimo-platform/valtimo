@@ -1,0 +1,17 @@
+[
+    {
+        "processDefinitionKey": "bijstand",
+        "canInitializeDocument": true,
+        "startableByUser": false
+    },
+    {
+        "processDefinitionKey": "bijstand-uitvoeren",
+        "canInitializeDocument": false,
+        "startableByUser": false
+    },
+    {
+        "processDefinitionKey": "bijstand-besluit",
+        "canInitializeDocument": false,
+        "startableByUser": false
+    }
+]

@@ -34,6 +34,7 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -296,5 +297,56 @@ class BuildingBlockCallActivityListenerTest {
         listener.onCallActivityEnd(OperatonExecutionEvent(execution))
 
         verify(valueResolverService).handleValues(caseDocumentId, mapOf("doc:/result" to "value"))
+    }
+
+    /**
+     * G24: a migration can leave the call activity's `buildingBlockDocumentId` pointing at a block whose
+     * governing link the owner's new version dropped. Output mappings live on that link, so there is
+     * nothing to sync — and throwing here would break a running process weeks after the migration that
+     * caused it, over work the new version deliberately does not want done.
+     */
+    @Test
+    fun `should skip the output mappings when the new version no longer declares a block on the activity`() {
+        val buildingBlockDocumentId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
+        val activityId = "callActivity"
+        val testProcessDefinitionId = "case-process"
+        val execution = mock<DelegateExecution> {
+            on { processDefinitionId } doReturn testProcessDefinitionId
+            on { getVariableLocal("buildingBlockDocumentId") } doReturn buildingBlockDocumentId.toString()
+            on { this.eventName } doReturn "end"
+        }
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(
+            BuildingBlockInstance(
+                documentId = buildingBlockDocumentId,
+                caseDocumentId = caseDocumentId,
+                activityId = activityId,
+                definition = BuildingBlockDefinition(
+                    BuildingBlockDefinitionId.of("bb", "1.0.0"),
+                    "Test block", "desc", "tester", LocalDateTime.now(), null, false
+                )
+            )
+        )
+        whenever(processLinkService.getProcessLinks(testProcessDefinitionId, activityId)).thenReturn(emptyList())
+
+        assertDoesNotThrow { listener.onCallActivityEnd(OperatonExecutionEvent(execution)) }
+
+        verify(valueResolverService, never()).handleValues(any<UUID>(), any())
+    }
+
+    /** The same, for a block a `removeBuildingBlock` dissolved while this call activity was still open. */
+    @Test
+    fun `should skip the output mappings when the building block instance no longer exists`() {
+        val buildingBlockDocumentId = UUID.randomUUID()
+        val execution = mock<DelegateExecution> {
+            on { processDefinitionId } doReturn "case-process"
+            on { getVariableLocal("buildingBlockDocumentId") } doReturn buildingBlockDocumentId.toString()
+            on { this.eventName } doReturn "end"
+        }
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(null)
+
+        assertDoesNotThrow { listener.onCallActivityEnd(OperatonExecutionEvent(execution)) }
+
+        verify(valueResolverService, never()).handleValues(any<UUID>(), any())
     }
 }

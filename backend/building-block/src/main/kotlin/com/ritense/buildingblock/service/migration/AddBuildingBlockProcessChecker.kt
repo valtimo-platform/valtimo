@@ -54,27 +54,47 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 class AddBuildingBlockProcessChecker(
     private val processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
     private val activityValidator: ProcessMigrationActivityValidator,
+    private val linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
 ) {
 
     /**
-     * Entries that can never hijack a process, whatever the state of the running system; empty when
-     * they all name one. Needs no deployed blueprint, so it holds at execution time too.
+     * Entries that can never take over a process, whatever the state of the running system; empty when
+     * they all can. Needs no deployed blueprint beyond [target]'s links, so it holds at execution time too.
+     *
+     * An entry with no `processMigration` is **not** automatically dead. Where [target] declares the block
+     * on a **call activity**, `BuildingBlockAdoptionExecutor` (@450) locates the running sub-process from
+     * that link and the running tree, needing no process definition key from the plan at all — the entry
+     * exists to authorise the adoption, and naming a key would only repeat the link. It is dead only when
+     * neither route can find anything: no `processMigration` to hijack with, and no call-activity link to
+     * adopt through.
      */
-    fun findEntriesWithoutProcessMigration(instructions: List<AddBuildingBlockInstruction>): List<String> =
-        instructions.filter { it.processMigration.isEmpty() }.map { instruction ->
-            "adds building block '${blockOf(instruction)}' without a 'processMigration'. Adding a " +
-                "building block hands it a process the owner is already running, so an entry with no " +
-                "process migration has nothing to do and is silently skipped for every case. Name the " +
-                "owner's running process and the block's process to take it over with, or drop the entry."
+    fun findEntriesWithoutProcessMigration(
+        target: BlueprintId,
+        instructions: List<AddBuildingBlockInstruction>,
+    ): List<String> {
+        if (instructions.isEmpty()) {
+            return emptyList()
         }
+        val adoptable = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
+
+        return instructions
+            .filter { it.processMigration.isEmpty() && blockOf(it) !in adoptable }
+            .map { instruction ->
+                "adds building block '${blockOf(instruction)}' without a 'processMigration', and '$target' " +
+                    "does not declare it on a call activity either. A building block takes over a process " +
+                    "the owner is already running: either name that process and the block's process to " +
+                    "take it over with, or declare the block on a call activity so it can be adopted from " +
+                    "the running tree. As it stands the entry has nothing to do and is skipped for every case."
+            }
+    }
 
     /**
-     * @throws IllegalStateException when any of [instructions] has no `processMigration`. Fatal on
-     * purpose, like the D12 link check: the alternative is a plan that reports success on every case
-     * and creates nothing.
+     * @throws IllegalStateException when any of [instructions] can reach a process by neither route.
+     * Fatal on purpose, like the D12 link check: the alternative is a plan that reports success on every
+     * case and creates nothing.
      */
     fun assertHijacksSomething(target: BlueprintId, instructions: List<AddBuildingBlockInstruction>) {
-        val problems = findEntriesWithoutProcessMigration(instructions)
+        val problems = findEntriesWithoutProcessMigration(target, instructions)
         check(problems.isEmpty()) {
             "Migration plan for '$target' ${problems.joinToString("; and ")}"
         }

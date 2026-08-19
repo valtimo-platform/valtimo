@@ -16,10 +16,14 @@
 
 package com.ritense.processlink.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.processlink.domain.ProcessLinksCopiedEvent
 import com.ritense.processlink.repository.ProcessLinkRepository
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.service.OperatonProcessService.DETACHED_PROCESS_DEFINITION_PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.model.bpmn.instance.FlowNode
 import org.springframework.context.ApplicationEventPublisher
@@ -28,6 +32,7 @@ import java.util.UUID
 
 class CopyProcessLinkOnProcessDeploymentListener(
     private val processLinkRepository: ProcessLinkRepository,
+    private val operatonRepositoryService: OperatonRepositoryService,
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
@@ -37,7 +42,8 @@ class CopyProcessLinkOnProcessDeploymentListener(
             return
         }
 
-        val originalProcessDefinitionId = event.source.originalProcessDefinitionId ?: event.previousProcessDefinitionId
+        val originalProcessDefinitionId = event.source.originalProcessDefinitionId
+            ?: event.previousProcessDefinitionId?.takeIf { isOwnedBySameBlueprint(it, event) }
 
         if (originalProcessDefinitionId != null) {
             val modelInstance = event.processDefinitionModelInstance
@@ -70,7 +76,36 @@ class CopyProcessLinkOnProcessDeploymentListener(
         }
     }
 
+    private fun isOwnedBySameBlueprint(
+        previousProcessDefinitionId: String,
+        event: ProcessDefinitionDeployedEvent
+    ): Boolean {
+        val previousVersionTag = runWithoutAuthorization {
+            operatonRepositoryService.findProcessDefinitionById(previousProcessDefinitionId)
+        }?.versionTag
+        val previousOwner = owningBlueprintOf(previousVersionTag)
+        val owner = owningBlueprintOf(event.versionTag)
+
+        if (previousOwner != owner) {
+            logger.debug {
+                "Not copying process links from process with id $previousProcessDefinitionId to newly deployed " +
+                    "process with id ${event.processDefinitionId}. The previous version of process " +
+                    "'${event.processDefinitionKey}' is owned by ${previousOwner ?: "no blueprint"}, " +
+                    "the newly deployed version by ${owner ?: "no blueprint"}."
+            }
+            return false
+        }
+        return true
+    }
+
     companion object {
         private val logger = KotlinLogging.logger {}
+
+        internal fun owningBlueprintOf(versionTag: String?): String? {
+            val tag = versionTag?.removePrefix(DETACHED_PROCESS_DEFINITION_PREFIX) ?: return null
+
+            return BuildingBlockDefinitionId.fromProcessVersionTag(tag)?.let { "${it.getTagPrefix()}${it.key}" }
+                ?: CaseDefinitionId.fromProcessVersionTag(tag)?.let { "${it.getTagPrefix()}${it.key}" }
+        }
     }
 }

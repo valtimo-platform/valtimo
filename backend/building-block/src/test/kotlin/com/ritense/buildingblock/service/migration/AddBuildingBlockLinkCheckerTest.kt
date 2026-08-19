@@ -59,6 +59,41 @@ class AddBuildingBlockLinkCheckerTest {
     }
 
     @Test
+    fun `should accept an entry for a nested block the target reaches through another block`() {
+        // The `bijstand` shape: the case links `uitvoeren`, and only `uitvoeren` links `besluit`. An entry
+        // for the nested one is what authorises adoption to descend into it, so it must not be refused.
+        linksOn(target, callActivity("bijstand-uitvoeren", "1.0.0", "UitvoerenCallActivity"))
+        reachableFrom(
+            target,
+            BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0"),
+            BuildingBlockDefinitionId.of("bijstand-besluit", "1.0.0"),
+        )
+
+        val problems = checker.findUnlinked(
+            target,
+            listOf(adds("bijstand-uitvoeren", "1.0.0"), adds("bijstand-besluit", "1.0.0")),
+        )
+
+        assertThat(problems).isEmpty()
+    }
+
+    @Test
+    fun `should still refuse a nested entry at a version nothing below the target links`() {
+        linksOn(target, callActivity("bijstand-uitvoeren", "1.0.0", "UitvoerenCallActivity"))
+        reachableFrom(
+            target,
+            BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0"),
+            BuildingBlockDefinitionId.of("bijstand-besluit", "1.0.0"),
+        )
+
+        val problems = checker.findUnlinked(target, listOf(adds("bijstand-besluit", "2.0.0")))
+
+        assertThat(problems).singleElement().asString()
+            .contains("adds building block 'bijstand-besluit:2.0.0', which is never used")
+            .contains("links 'bijstand-besluit:1.0.0' instead")
+    }
+
+    @Test
     fun `should refuse an entry whose building block the target links nowhere`() {
         linksOn(target, startableItem("verhuizing-inspectie", "1.0.0"))
 
@@ -131,5 +166,9 @@ class AddBuildingBlockLinkCheckerTest {
 
     private fun linksOn(owner: CaseDefinitionId, vararg links: LinkedBuildingBlock) {
         whenever(linkResolver.resolveLinkedVersions(owner)).thenReturn(links.toList())
+    }
+
+    private fun reachableFrom(owner: CaseDefinitionId, vararg blocks: BuildingBlockDefinitionId) {
+        whenever(linkResolver.resolveCallActivityReachable(owner)).thenReturn(blocks.toSet())
     }
 }

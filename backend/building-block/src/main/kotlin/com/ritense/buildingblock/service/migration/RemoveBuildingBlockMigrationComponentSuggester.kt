@@ -20,13 +20,10 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.domain.CaseDefinitionBuildingBlockLink
 import com.ritense.buildingblock.domain.migration.RemoveBuildingBlockInstruction
-import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
-import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.case_.service.migration.DataMigrationComponentSuggester
 import com.ritense.processdocument.migration.ProcessMigrationComponentSuggester
-import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -34,25 +31,32 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 
 /**
- * Best-effort `removeBuildingBlock` suggestion: the building blocks the [source] owner linked that
- * the [target] owner no longer does — i.e. the blocks an owner *loses* across the version bump. Each
- * becomes an entry to remove, pre-filled the same way the standalone suggesters do:
+ * Best-effort `removeBuildingBlock` suggestion: the building blocks the [source] owner modelled that the
+ * [target] owner no longer does — the blocks an owner *loses* across the version bump — each pre-filled the
+ * same way the standalone suggesters do:
  *
- * - `dataMigration` — from the [DataMigrationComponentSuggester] for the lost building block
- *   definition → `target` (the owner): field-name matched copy patches to transfer data back.
- * - `processMigration` — from the [ProcessMigrationComponentSuggester] for the same pair: the
- *   building block's process(es) mapped back onto the owner's process(es), with activity mappings.
+ * - `dataMigration` — field-name matched copy patches transferring data back out of the block;
+ * - `processMigration` — the block's process(es) mapped back onto its owner's, with activity mappings.
  *
- * Works for both blueprint types, matching how each owner declares its directly-linked building
- * blocks: a case via its ad-hoc [CaseDefinitionBuildingBlockLink]s, a (parent) building block via
- * the building-block call activities in its own process(es). Any other blueprint type contributes
- * no links, so it returns null there. Suggestions are advisory — the user edits before saving.
+ * **The whole subtree, not the first level.** A case that stops modelling a block stops modelling everything
+ * that block declared below it, and every one of those needs its own entry: the executor dissolves only what
+ * an entry names, and a block left below a dissolved parent is orphaned (G25). So the lost set is computed
+ * over [LinkedBuildingBlockVersionResolver.resolveCallActivityDeclarers] — the transitive call-activity
+ * closure — mirroring [AddBuildingBlockMigrationComponentSuggester] on the way in. Startable-item links are
+ * included for the owner's own level, since a case can lose a block it only ever offered as a startable item.
+ *
+ * **Each entry is aimed at the owner that block actually hands back to**, which for a nested block is its
+ * **parent block**, not the migrating case — the executor transfers one level, so suggesting patches against
+ * the case would propose moving data to a document that never receives it.
+ *
+ * Every entry names a version, because [RemoveBuildingBlockInstruction] requires one and the patches only
+ * make sense against the version they were derived from. Suggestions are advisory — the user edits before
+ * saving.
  */
 class RemoveBuildingBlockMigrationComponentSuggester(
     private val objectMapper: ObjectMapper,
     private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
-    private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
-    private val processLinkService: ProcessLinkService,
+    private val linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
     private val dataMigrationComponentSuggester: DataMigrationComponentSuggester,
     private val processMigrationComponentSuggester: ProcessMigrationComponentSuggester,
 ) : MigrationComponentSuggester {
@@ -60,20 +64,23 @@ class RemoveBuildingBlockMigrationComponentSuggester(
     override fun componentKey() = RemoveBuildingBlockMigrationComponentDeployer.REMOVE_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun suggest(source: BlueprintId, target: BlueprintId): Any? {
-        val targetKeys = directlyLinkedBuildingBlocks(target).map { it.key }.toSet()
+        val kept = modelledBy(target).keys.map { it.key }.toSet()
 
-        val instructions = directlyLinkedBuildingBlocks(source)
-            .filter { it.key !in targetKeys }
-            .distinctBy { it.key }
-            .map { buildingBlockDefinitionId ->
+        val instructions = modelledBy(source)
+            .filterKeys { it.key !in kept }
+            .map { (lost, declaredBy) ->
                 RemoveBuildingBlockInstruction(
-                    buildingBlockKey = buildingBlockDefinitionId.key,
-                    // Data/process are transferred back from the building block to the owner (target).
+                    buildingBlockKey = lost.key,
+                    buildingBlockVersionTag = lost.versionTag.toString(),
+                    // Back to the blueprint that declared it — the parent block for a nested one, the owner
+                    // itself for a block at the first level. `declaredBy` is `source` in that second case,
+                    // and `target` is the version the owner will be on, so the owner's side of the mapping
+                    // is resolved against the target where that is what it means.
                     dataMigration = toDataPatches(
-                        dataMigrationComponentSuggester.suggest(buildingBlockDefinitionId, target)
+                        dataMigrationComponentSuggester.suggest(lost, ownerSideOf(declaredBy, source, target))
                     ),
                     processMigration = toProcessInstructions(
-                        processMigrationComponentSuggester.suggest(buildingBlockDefinitionId, target)
+                        processMigrationComponentSuggester.suggest(lost, ownerSideOf(declaredBy, source, target))
                     ),
                 )
             }
@@ -82,21 +89,30 @@ class RemoveBuildingBlockMigrationComponentSuggester(
     }
 
     /**
-     * The building block definitions directly linked to [owner], resolved per blueprint type:
-     * a case's ad-hoc links, or the building-block call activities within a building block's own
-     * process(es). Nested (transitive) building blocks are intentionally excluded — only the ones
-     * the owner directly loses become a `removeBuildingBlock` entry.
+     * Every building block version [owner] models, mapped to the blueprint that declares it: its own
+     * startable-item links (which [owner] declares itself) plus the transitive call-activity closure.
      */
-    private fun directlyLinkedBuildingBlocks(owner: BlueprintId): List<BuildingBlockDefinitionId> = when (owner) {
+    private fun modelledBy(owner: BlueprintId): Map<BuildingBlockDefinitionId, BlueprintId> {
+        val startable = startableItemLinks(owner).associateWith { owner }
+        // Call-activity declarers win on a clash: that is the relationship a running tree nests through,
+        // and therefore the owner the executor hands the block back to.
+        return startable + linkedBuildingBlockVersionResolver.resolveCallActivityDeclarers(owner)
+    }
+
+    /**
+     * The blueprint to compute the owner half of a mapping against. For a block declared by the migrating
+     * owner itself, that is [target] — the version the owner ends up on, whose processes and schema the
+     * block's state is transferred into. For a nested block it is the declaring parent block, which this
+     * migration does not move.
+     */
+    private fun ownerSideOf(declaredBy: BlueprintId, source: BlueprintId, target: BlueprintId): BlueprintId =
+        if (declaredBy == source) target else declaredBy
+
+    /** The building blocks [owner] offers as startable items; case definitions only. */
+    private fun startableItemLinks(owner: BlueprintId): List<BuildingBlockDefinitionId> = when (owner) {
         is CaseDefinitionId -> caseDefinitionBuildingBlockLinkRepository
             .findAllByCaseDefinitionId(owner)
             .map { it.buildingBlockDefinitionId }
-
-        is BuildingBlockDefinitionId -> processDefinitionBuildingBlockDefinitionRepository
-            .findAllByIdBuildingBlockDefinitionId(owner)
-            .flatMap { processLinkService.getProcessLinks(it.id.processDefinitionId.id) }
-            .filter { it.processLinkType == BuildingBlockProcessLink.PROCESS_LINK_TYPE }
-            .map { (it as BuildingBlockProcessLink).buildingBlockDefinitionId }
 
         else -> emptyList()
     }

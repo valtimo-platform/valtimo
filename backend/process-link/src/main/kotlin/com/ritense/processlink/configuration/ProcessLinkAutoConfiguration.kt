@@ -163,10 +163,12 @@ class ProcessLinkAutoConfiguration {
     @ConditionalOnClass(ProcessDefinitionDeployedEvent::class)
     fun copyProcessLinkOnProcessDeploymentListener(
         processLinkRepository: ProcessLinkRepository,
+        operatonRepositoryService: OperatonRepositoryService,
         applicationEventPublisher: ApplicationEventPublisher
     ): CopyProcessLinkOnProcessDeploymentListener {
         return CopyProcessLinkOnProcessDeploymentListener(
             processLinkRepository,
+            operatonRepositoryService,
             applicationEventPublisher
         )
     }

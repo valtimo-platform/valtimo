@@ -18,6 +18,7 @@ package com.ritense.buildingblock.service.migration
 
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 
 /**
@@ -42,5 +43,56 @@ class BuildingBlockOwnershipResolver(
                 ownerDocumentId
             )
         }
+    }
+
+    /**
+     * Every building block below [ownerDocumentId], to any depth, **deepest first**.
+     *
+     * The order is the point. Dissolving a block deletes one row (G25) and hands its process back to
+     * *its own* owner, so a parent taken out before its children leaves them pointing at a deleted
+     * instance and a document that no longer exists. Deepest-first makes each dissolve see a tree that is
+     * still whole beneath it, and it is a property of the traversal rather than something each caller has
+     * to remember.
+     *
+     * Each entry carries the instance's real owner, which is what a nested block's state must be handed
+     * back to — the parent block, not the case that happens to be migrating.
+     */
+    fun subtreeOf(ownerDocumentId: UUID): List<OwnedBuildingBlock> {
+        val byDepth = mutableListOf<List<OwnedBuildingBlock>>()
+        var level = directChildrenOf(ownerDocumentId).map { OwnedBuildingBlock(it, parent = null, depth = 0) }
+        var depth = 0
+        while (level.isNotEmpty()) {
+            byDepth += level
+            if (++depth > MAX_DEPTH) {
+                // Self-inflicted only: parent pointers are ours to set. Stop rather than loop forever,
+                // and say so, because the caller is about to delete things based on this answer.
+                logger.warn {
+                    "Stopped walking building blocks below '$ownerDocumentId' at depth $MAX_DEPTH; the " +
+                        "parent pointers are either cyclic or deeper than any blueprint should be. " +
+                        "Anything below that depth is left alone."
+                }
+                break
+            }
+            val nextDepth = depth
+            level = level.flatMap { owned ->
+                buildingBlockInstanceRepository.findAllByParentBuildingBlockInstanceId(owned.instance.id)
+                    .map { OwnedBuildingBlock(it, parent = owned.instance, depth = nextDepth) }
+            }
+        }
+        return byDepth.reversed().flatten()
+    }
+
+    /** A building block below the migrating instance, with the instance that actually owns it. */
+    data class OwnedBuildingBlock(
+        val instance: BuildingBlockInstance,
+        /** Null when [instance] hangs directly off the migrating owner. */
+        val parent: BuildingBlockInstance?,
+        val depth: Int,
+    )
+
+    private companion object {
+        /** Matches `BuildingBlockAdoptionExecutor`'s cap: the trees are the same trees. */
+        const val MAX_DEPTH = 20
+        val logger = KotlinLogging.logger {}
     }
 }

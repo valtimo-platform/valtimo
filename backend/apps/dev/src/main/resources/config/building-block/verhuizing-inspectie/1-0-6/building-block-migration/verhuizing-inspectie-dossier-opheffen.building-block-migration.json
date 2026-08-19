@@ -31,6 +31,7 @@
     "removeBuildingBlock": [
         {
             "buildingBlockKey": "inspectie-dossier",
+            "buildingBlockVersionTag": "1.0.0",
             "dataMigration": [
                 {
                     "target": "doc:/dossierStatus",

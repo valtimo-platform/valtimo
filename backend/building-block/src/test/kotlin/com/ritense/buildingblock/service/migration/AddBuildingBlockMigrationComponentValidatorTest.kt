@@ -71,6 +71,7 @@ class AddBuildingBlockMigrationComponentValidatorTest {
             AddBuildingBlockProcessChecker(
                 listOf(fakeResolver(BlueprintType.CASE), fakeResolver(BlueprintType.BUILDING_BLOCK)),
                 activityValidator,
+                linkResolver,
             ),
         )
     }

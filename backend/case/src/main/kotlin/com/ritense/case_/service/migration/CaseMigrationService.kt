@@ -35,6 +35,7 @@ import com.ritense.case_.repository.CaseMigrationDryRunRepository
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
@@ -80,6 +81,7 @@ class CaseMigrationService(
     private val planApplier: MigrationPlanApplier,
     private val conditionEvaluator: MigrationConditionEvaluator,
     private val candidateProviders: List<MigrationCandidateProvider>,
+    private val blueprintVersionLineages: List<BlueprintVersionLineage>,
     private val componentDeployers: List<MigrationComponentDeployer>,
     private val transactionTemplate: TransactionTemplate,
     private val applicationEventPublisher: ApplicationEventPublisher,
@@ -154,6 +156,7 @@ class CaseMigrationService(
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
             NoSuchElementException("No migration plan found for '$migrationId'")
         }
+        assertSourceIsDeployed(plan)
 
         val runToken = claim(migrationId)
         if (runToken == null) {
@@ -225,6 +228,7 @@ class CaseMigrationService(
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
             NoSuchElementException("No migration plan found for '$migrationId'")
         }
+        assertSourceIsDeployed(plan)
 
         val runToken = claimDryRun(migrationId)
         if (runToken == null) {
@@ -749,6 +753,28 @@ class CaseMigrationService(
      * which is what it would otherwise do, since there is no building block
      * [MigrationCandidateProvider] to enumerate instances with.
      */
+    /**
+     * A plan whose declared source version was never deployed selects nothing, migrates nothing and
+     * finishes `COMPLETED` — the most convincing way this feature can appear to work while doing
+     * nothing (G16). The save path refuses it (`findPlanProblems`), but a plan deployed from a **file**
+     * never passes the save path, and auto-deploy visits definition folders in no guaranteed order, so
+     * it cannot be refused at import either. Running it is the first moment the answer is knowable and
+     * the last moment before an operator reads `COMPLETED` and believes it.
+     *
+     * Deliberately narrow: this refuses an undeployed *version*, never an empty one. A source version
+     * with no documents left is the normal state of a plan that already ran, and re-running it has to
+     * stay a silent no-op.
+     */
+    private fun assertSourceIsDeployed(plan: CaseDefinitionMigration) {
+        val source = plan.sourceBlueprintId()
+        val lineage = blueprintVersionLineages.firstOrNull { it.supports(source.blueprintType()) } ?: return
+        require(lineage.exists(source)) {
+            "Migration plan '${plan.id}' declares source '$source', which is not deployed. Running it " +
+                "would select no cases and report success without migrating anything. Correct the " +
+                "plan's source, or deploy that version first."
+        }
+    }
+
     private fun assertNotBuildingBlockPlan(migrationId: BlueprintMigrationId) {
         require(migrationId.blueprintType != BlueprintType.BUILDING_BLOCK) {
             "Building block migration plan '$migrationId' cannot be started on its own. A building " +

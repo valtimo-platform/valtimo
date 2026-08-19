@@ -56,6 +56,9 @@ import com.ritense.buildingblock.service.migration.BuildingBlockProcessMigration
 import com.ritense.buildingblock.service.migration.BuildingBlockProcessVersionChecker
 import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentDeployer
 import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentExecutor
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentValidator
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockVersionChecker
+import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentSuggester
 import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentSuggester
 import com.ritense.buildingblock.web.rest.BuildingBlockMigrationManagementResource
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
@@ -1037,12 +1040,14 @@ class BuildingBlockAutoConfiguration {
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
         processLinkRepository: ProcessLinkRepository,
         buildingBlockMigrationPathResolver: BuildingBlockMigrationPathResolver,
+        repositoryService: RepositoryService,
     ) = LinkedBuildingBlockVersionResolver(
         caseDefinitionBuildingBlockLinkRepository,
         processDefinitionCaseDefinitionRepository,
         processDefinitionBuildingBlockDefinitionRepository,
         processLinkRepository,
         buildingBlockMigrationPathResolver,
+        repositoryService,
     )
 
     @Bean
@@ -1090,7 +1095,12 @@ class BuildingBlockAutoConfiguration {
     fun addBuildingBlockProcessChecker(
         processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
         processMigrationActivityValidator: ProcessMigrationActivityValidator,
-    ) = AddBuildingBlockProcessChecker(processDefinitionBlueprintResolvers, processMigrationActivityValidator)
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    ) = AddBuildingBlockProcessChecker(
+        processDefinitionBlueprintResolvers,
+        processMigrationActivityValidator,
+        linkedBuildingBlockVersionResolver,
+    )
 
     @Bean
     @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentValidator::class)
@@ -1115,13 +1125,25 @@ class BuildingBlockAutoConfiguration {
     )
 
     @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockVersionChecker::class)
+    fun removeBuildingBlockVersionChecker() = RemoveBuildingBlockVersionChecker()
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentValidator::class)
+    fun removeBuildingBlockMigrationComponentValidator(
+        removeBuildingBlockVersionChecker: RemoveBuildingBlockVersionChecker,
+    ) = RemoveBuildingBlockMigrationComponentValidator(removeBuildingBlockVersionChecker)
+
+    @Bean
     @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentDeployer::class)
     fun removeBuildingBlockMigrationComponentDeployer(
         objectMapper: ObjectMapper,
         removeBuildingBlockConfigurationRepository: RemoveBuildingBlockConfigurationRepository,
+        removeBuildingBlockVersionChecker: RemoveBuildingBlockVersionChecker,
     ) = RemoveBuildingBlockMigrationComponentDeployer(
         objectMapper,
         removeBuildingBlockConfigurationRepository,
+        removeBuildingBlockVersionChecker,
     )
 
     @Bean
@@ -1132,10 +1154,14 @@ class BuildingBlockAutoConfiguration {
         buildingBlockInstanceService: BuildingBlockInstanceService,
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        processLinkService: ProcessLinkService,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
         runtimeService: RuntimeService,
+        repositoryService: RepositoryService,
         operatonExecutionRepository: OperatonExecutionRepository,
         processMigrationVariableResolver: ProcessMigrationVariableResolver,
         processDocumentAssociationService: ProcessDocumentAssociationService,
+        valueResolverService: ValueResolverService,
         migrationDataPatchApplier: MigrationDataPatchApplier,
         addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
         addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
@@ -1146,10 +1172,14 @@ class BuildingBlockAutoConfiguration {
         buildingBlockInstanceService,
         buildingBlockInstanceRepository,
         processDefinitionBuildingBlockDefinitionRepository,
+        processLinkService,
+        linkedBuildingBlockVersionResolver,
         runtimeService,
+        repositoryService,
         operatonExecutionRepository,
         processMigrationVariableResolver,
         processDocumentAssociationService,
+        valueResolverService,
         migrationDataPatchApplier,
         addBuildingBlockLinkChecker,
         addBuildingBlockProcessChecker,
@@ -1189,17 +1219,27 @@ class BuildingBlockAutoConfiguration {
     fun removeBuildingBlockMigrationComponentSuggester(
         objectMapper: ObjectMapper,
         caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
-        processLinkService: ProcessLinkService,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
         dataMigrationComponentSuggester: DataMigrationComponentSuggester,
         processMigrationComponentSuggester: ProcessMigrationComponentSuggester,
     ) = RemoveBuildingBlockMigrationComponentSuggester(
         objectMapper,
         caseDefinitionBuildingBlockLinkRepository,
-        processDefinitionBuildingBlockDefinitionRepository,
-        processLinkService,
+        linkedBuildingBlockVersionResolver,
         dataMigrationComponentSuggester,
         processMigrationComponentSuggester,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentSuggester::class)
+    fun addBuildingBlockMigrationComponentSuggester(
+        objectMapper: ObjectMapper,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        dataMigrationComponentSuggester: DataMigrationComponentSuggester,
+    ) = AddBuildingBlockMigrationComponentSuggester(
+        objectMapper,
+        linkedBuildingBlockVersionResolver,
+        dataMigrationComponentSuggester,
     )
 
     @Bean

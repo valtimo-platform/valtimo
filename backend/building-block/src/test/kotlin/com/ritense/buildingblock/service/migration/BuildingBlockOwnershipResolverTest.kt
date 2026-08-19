@@ -65,6 +65,53 @@ class BuildingBlockOwnershipResolverTest {
             .findAllByCaseDocumentIdAndParentBuildingBlockInstanceIdIsNull(parent.documentId)
     }
 
+    @Test
+    fun `should walk the whole subtree deepest first, each with its real owner`() {
+        val level1 = block()
+        val level2 = block(parentBuildingBlockInstanceId = level1.id)
+        val level3 = block(parentBuildingBlockInstanceId = level2.id)
+        whenever(instanceRepository.findByDocumentId(caseDocumentId)).thenReturn(null)
+        whenever(
+            instanceRepository.findAllByCaseDocumentIdAndParentBuildingBlockInstanceIdIsNull(caseDocumentId)
+        ).thenReturn(listOf(level1))
+        whenever(instanceRepository.findAllByParentBuildingBlockInstanceId(level1.id)).thenReturn(listOf(level2))
+        whenever(instanceRepository.findAllByParentBuildingBlockInstanceId(level2.id)).thenReturn(listOf(level3))
+        whenever(instanceRepository.findAllByParentBuildingBlockInstanceId(level3.id)).thenReturn(emptyList())
+
+        val subtree = resolver.subtreeOf(caseDocumentId)
+
+        assertThat(subtree.map { it.instance }).containsExactly(level3, level2, level1)
+        assertThat(subtree.map { it.depth }).containsExactly(2, 1, 0)
+        // The owner of a nested block is the block above it, not the migrating case.
+        assertThat(subtree.map { it.parent }).containsExactly(level2, level1, null)
+    }
+
+    @Test
+    fun `should stop walking a cyclic parent chain instead of looping`() {
+        val looping = block()
+        whenever(instanceRepository.findByDocumentId(caseDocumentId)).thenReturn(null)
+        whenever(
+            instanceRepository.findAllByCaseDocumentIdAndParentBuildingBlockInstanceIdIsNull(caseDocumentId)
+        ).thenReturn(listOf(looping))
+        // Its own child, forever.
+        whenever(instanceRepository.findAllByParentBuildingBlockInstanceId(looping.id)).thenReturn(listOf(looping))
+
+        val subtree = resolver.subtreeOf(caseDocumentId)
+
+        assertThat(subtree).isNotEmpty()
+        assertThat(subtree.map { it.depth }.max()).isLessThanOrEqualTo(20)
+    }
+
+    @Test
+    fun `should return an empty subtree for an owner with no blocks`() {
+        whenever(instanceRepository.findByDocumentId(caseDocumentId)).thenReturn(null)
+        whenever(
+            instanceRepository.findAllByCaseDocumentIdAndParentBuildingBlockInstanceIdIsNull(caseDocumentId)
+        ).thenReturn(emptyList())
+
+        assertThat(resolver.subtreeOf(caseDocumentId)).isEmpty()
+    }
+
     private fun block(parentBuildingBlockInstanceId: UUID? = null) = BuildingBlockInstance(
         documentId = UUID.randomUUID(),
         caseDocumentId = caseDocumentId,

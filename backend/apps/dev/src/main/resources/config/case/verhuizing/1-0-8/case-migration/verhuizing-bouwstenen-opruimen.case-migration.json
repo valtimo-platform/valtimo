@@ -42,6 +42,7 @@
     "removeBuildingBlock": [
         {
             "buildingBlockKey": "case-notification",
+            "buildingBlockVersionTag": "1.0.0",
             "dataMigration": [
                 {
                     "target": "doc:/inspectieStatus",
@@ -69,6 +70,7 @@
         },
         {
             "buildingBlockKey": "inspectie-dossier",
+            "buildingBlockVersionTag": "1.0.0",
             "dataMigration": [
                 {
                     "target": "doc:/aantalKamers",

@@ -31,6 +31,7 @@ import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFIN
 import com.ritense.valtimo.event.OperatonExecutionEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.event.EventListener
@@ -137,8 +138,25 @@ class BuildingBlockCallActivityListener(
                 "referencing the building block document, but was '$buildingBlockVariableString'")
         }
 
+        // A dangling `#{buildingBlockDocumentId}` is not a broken process. A migration can legitimately
+        // leave the variable pointing at a block that no longer exists (a `removeBuildingBlock` dissolved
+        // it while this call activity was still open) or at one whose governing link the owner's new
+        // version dropped (G24). In both cases the answer is the same: there are no output mappings to
+        // run, because output mappings live on the link and the model no longer declares one. Throwing
+        // here would break the process — weeks after the migration that caused it — over work the new
+        // version deliberately does not want done. So it is logged and skipped, and the migration itself
+        // is where this gets reported (BuildingBlockVersionAlignmentExecutor warns at the moment a block's
+        // link disappears, which is the moment an author can still act).
         val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
-            ?: throw IllegalStateException("No building block instance found for documentId '$buildingBlockDocumentId'")
+        if (buildingBlockInstance == null) {
+            logger.warn {
+                "Call activity '${execution.currentActivityId}' of '${execution.processDefinitionId}' still carries " +
+                    "building block document '$buildingBlockDocumentId', but no building block instance exists for " +
+                    "it — it was most likely dissolved by a migration while this call activity was open. " +
+                    "Skipping its output mappings."
+            }
+            return
+        }
 
         val activityId = buildingBlockInstance.activityId
             ?: throw IllegalStateException("No buildingBlockInstance.activityId found for documentId '$buildingBlockDocumentId'")
@@ -148,6 +166,19 @@ class BuildingBlockCallActivityListener(
             activityId
         ).filterIsInstance<BuildingBlockProcessLink>()
 
+        if (processLinks.isEmpty()) {
+            logger.warn {
+                "Building block '${buildingBlockInstance.definition.id}' ('$buildingBlockDocumentId') ended, but " +
+                    "'${execution.processDefinitionId}' no longer declares a building block on activity " +
+                    "'$activityId', so it has no output mappings to run. The owner was migrated onto a version " +
+                    "that dropped the link (G24); dissolve the block with a 'removeBuildingBlock' entry, or " +
+                    "restore the link."
+            }
+            return
+        }
+
+        // Several links on one activity remains a genuine configuration ambiguity: unlike a missing link,
+        // there is no defensible answer to which one owns the sync.
         val processLink = processLinks.singleOrNull()
             ?: throw IllegalStateException(
                 "Expected a single building block process link for processDefinitionId '${execution.processDefinitionId}' " +
@@ -241,5 +272,6 @@ class BuildingBlockCallActivityListener(
 
     private companion object {
         private const val DOC_PREFIX = "doc"
+        private val logger = KotlinLogging.logger {}
     }
 }

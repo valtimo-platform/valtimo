@@ -26,7 +26,7 @@ import {
   signal,
 } from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CheckboxModule, InputModule} from 'carbon-components-angular';
 import {
   AutoKeyInputComponent,
@@ -123,6 +123,9 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   });
 
   private _lastEmitted = '';
+  // The title this tab suggested, so a later source change may replace it while a title the author
+  // typed is left alone. See [suggestTitle].
+  private _suggestedTitle = '';
   // True while [writeGeneral] is loading a plan into the form, so its intermediate states stay private.
   private _writing = false;
   private readonly _subscriptions = new Subscription();
@@ -133,7 +136,8 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly conditionTreeService: ValueConditionTreeService
+    private readonly conditionTreeService: ValueConditionTreeService,
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -153,6 +157,55 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
         }
       })
     );
+    // The suggested title names the versions the plan moves between, so it follows the source.
+    this._subscriptions.add(
+      this.form.controls.sourceVersionTag.valueChanges.subscribe(() => this.suggestTitle())
+    );
+  }
+
+  /**
+   * Fills the title in with `Migration plan 1.0.1 to 1.0.2` — the plan's source and target — while the
+   * author has not written one of their own.
+   *
+   * The title is the field a new plan cannot do without, because the **key is generated from it**
+   * (§8.6): an untitled plan has no key, and no key means it cannot be saved at all. Yet what to call a
+   * migration plan is exactly what the plan already knows — it moves instances between two versions.
+   *
+   * Only offered, never imposed. A title the author typed is left alone; one this tab suggested is
+   * replaced when the source changes, so picking a different source does not leave a title naming the
+   * previous one. Across keys the version tags alone would not say what moves where, so both blueprints
+   * are named. Skipped while the source version is still blank: there is nothing to name yet, and the
+   * previous suggestion is better than a half-written one.
+   */
+  private suggestTitle(): void {
+    if (this.$keyMode() === 'edit') return;
+
+    const current = this.form.controls.title.value ?? '';
+    if (current && current !== this._suggestedTitle) return;
+
+    const sourceVersion = this.asText(this.form.controls.sourceVersionTag.value);
+    const targetVersion = this.caseDefinitionVersionTag;
+    if (!sourceVersion || !targetVersion) return;
+
+    const sourceKey = this.asText(this.form.controls.sourceKey.value) || this.caseDefinitionKey;
+    const crossKey = !!sourceKey && sourceKey !== this.caseDefinitionKey;
+    const params = crossKey
+      ? {source: `${sourceKey} ${sourceVersion}`, target: `${this.caseDefinitionKey} ${targetVersion}`}
+      : {source: sourceVersion, target: targetVersion};
+
+    // get() rather than instant(): on a cold direct navigation the translations may still be loading,
+    // and instant() would write the raw key into a field that ends up stored on the plan.
+    this.translateService
+      .get('caseManagement.migration.editor.general.titleSuggestion', params)
+      .subscribe(suggested => {
+        // Re-checked, because the author may have started typing while this resolved.
+        const title = this.form.controls.title.value ?? '';
+        if (typeof suggested !== 'string' || (title && title !== this._suggestedTitle)) return;
+        this._suggestedTitle = suggested;
+        // Emits deliberately: the parent holds the plan JSON that gets saved, and the key input
+        // regenerates from the title.
+        this.form.controls.title.setValue(suggested);
+      });
   }
 
   public ngOnDestroy(): void {
@@ -265,5 +318,9 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     }
 
     this._lastEmitted = JSON.stringify(this.serialize());
+
+    // After [_lastEmitted] is settled, so the title this adds is emitted to the parent rather than
+    // swallowed as part of the write.
+    this.suggestTitle();
   }
 }

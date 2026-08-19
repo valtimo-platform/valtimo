@@ -811,6 +811,7 @@
         "general": {
           "title": "Titel",
           "titlePlaceholder": "Migreer dossiers met status 'aanvraag-ontvangen'",
+          "titleSuggestion": "Migratieplan {{source}} naar {{target}}",
           "key": "Sleutel",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
           "source": "Bron",
@@ -3683,6 +3684,7 @@
         "general": {
           "title": "Titel",
           "titlePlaceholder": "Migreer bouwblokken met status 'aanvraag-ontvangen'",
+          "titleSuggestion": "Migratieplan {{source}} naar {{target}}",
           "key": "Sleutel",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
           "source": "Bron",

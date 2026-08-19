@@ -45,7 +45,7 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
     size: number = 5,
     all: boolean = false
   ): Observable<Page<BuildingBlockVersionDto>> {
-    const allParam: string = all ? 'all=true' : '';
+    const allParam: string = all ? '&all=true' : '';
     return this.httpClient.get<Page<BuildingBlockVersionDto>>(
       this.getApiUrl(
         `management/v1/building-block/${key}/version?page=${page}&size=${size}${allParam}`
@@ -134,10 +134,7 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
       .pipe(catchError(() => of(null)));
   }
 
-  public getCaseDefinition(
-    key: string,
-    versionTag: string
-  ): Observable<{name: string} | null> {
+  public getCaseDefinition(key: string, versionTag: string): Observable<{name: string} | null> {
     return this.httpClient
       .get<{name: string}>(
         this.getApiUrl(`management/v1/case-definition/${key}/version/${versionTag}`),

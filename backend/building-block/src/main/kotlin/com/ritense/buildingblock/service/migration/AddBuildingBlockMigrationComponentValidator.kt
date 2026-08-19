@@ -53,7 +53,7 @@ class AddBuildingBlockMigrationComponentValidator(
             object : TypeReference<List<AddBuildingBlockInstruction>>() {},
         )
         return addBuildingBlockLinkChecker.findUnlinked(target, instructions) +
-            addBuildingBlockProcessChecker.findEntriesWithoutProcessMigration(instructions) +
+            addBuildingBlockProcessChecker.findEntriesWithoutProcessMigration(target, instructions) +
             addBuildingBlockProcessChecker.findUnresolvableProcesses(source, target, instructions)
     }
 }

@@ -18,6 +18,7 @@
     "removeBuildingBlock": [
         {
             "buildingBlockKey": "verhuizing-inspectie",
+            "buildingBlockVersionTag": "1.0.0",
             "dataMigration": [
                 {
                     "target": "doc:/aanvrager/naam",

@@ -39,6 +39,7 @@ import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionReposito
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
@@ -46,6 +47,7 @@ import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
+import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Answers
@@ -117,6 +119,7 @@ class CaseMigrationServiceTest(
             MigrationPlanApplier(documentRepository, documentDefinitionRepository, listOf(executor)),
             conditionEvaluator,
             listOf(candidateProvider),
+            emptyList(), // no lineage: the source-is-deployed guard is a no-op, as in a bare context
             emptyList(),
             transactionTemplate,
             applicationEventPublisher,
@@ -147,6 +150,61 @@ class CaseMigrationServiceTest(
         whenever(documentDefinitionRepository.findOne(any<Specification<JsonSchemaDocumentDefinition>>()))
             .thenReturn(Optional.of(documentDefinition))
     }
+
+    /**
+     * G16: a plan whose declared source version was never deployed selects nothing, migrates nothing and
+     * reports success — the most convincing way this can look like it worked. The save path refuses it,
+     * but a file-deployed plan never passes the save path, so running it is the last moment to say so.
+     */
+    @Test
+    fun `should refuse to run a plan whose source version is not deployed`() {
+        val lineage = mock<BlueprintVersionLineage>()
+        whenever(lineage.supports(BlueprintType.CASE)).thenReturn(true)
+        whenever(lineage.exists(any())).thenReturn(false)
+        val guarded = serviceWith(lineage)
+        whenever(migrationRepository.findById(migrationId)).thenReturn(Optional.of(plan()))
+
+        assertThatThrownBy { guarded.startMigration(migrationId) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("is not deployed")
+
+        assertThatThrownBy { guarded.startDryRun(migrationId) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("is not deployed")
+
+        verify(executionRepository, never()).save(any())
+    }
+
+    @Test
+    fun `should run a plan whose source version is deployed but empty`() {
+        val lineage = mock<BlueprintVersionLineage>()
+        whenever(lineage.supports(BlueprintType.CASE)).thenReturn(true)
+        whenever(lineage.exists(any())).thenReturn(true)
+        val guarded = serviceWith(lineage)
+        whenever(migrationRepository.findById(migrationId)).thenReturn(Optional.of(plan()))
+
+        // A source version with no documents left is the normal state of a plan that already ran, so it
+        // has to stay a silent no-op rather than joining G16's refusal. Asserted on the guard alone:
+        // running to completion here would need the whole candidate-scan fixture, which other tests own.
+        val thrown = runCatching { guarded.startMigration(migrationId) }.exceptionOrNull()
+        assertThat(thrown?.message).doesNotContain("is not deployed")
+    }
+
+    private fun serviceWith(lineage: BlueprintVersionLineage) = CaseMigrationService(
+        migrationRepository,
+        executionRepository,
+        caseRepository,
+        dryRunRepository,
+        dryRunCaseRepository,
+        MigrationPlanApplier(documentRepository, documentDefinitionRepository, listOf(executor)),
+        conditionEvaluator,
+        listOf(CaseMigrationCandidateProvider(documentRepository, caseDefinitionRepository)),
+        listOf(lineage),
+        emptyList(),
+        TransactionTemplate(transactionManager),
+        applicationEventPublisher,
+        Duration.ofMinutes(5),
+    )
 
     private fun plan(
         sourceKey: String = "bezwaar",

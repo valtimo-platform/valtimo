@@ -558,6 +558,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
               "removeBuildingBlock": [
                 {
                   "buildingBlockKey": "${fixture.innerKey}",
+                  "buildingBlockVersionTag": "$V1",
                   "dataMigration": [{"target": "doc:/value", "source": "doc:/value"}],
                   "processMigration": []
                 }

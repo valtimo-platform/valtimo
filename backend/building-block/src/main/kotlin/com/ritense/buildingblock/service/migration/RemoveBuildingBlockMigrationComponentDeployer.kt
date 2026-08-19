@@ -35,11 +35,15 @@ import org.springframework.transaction.annotation.Transactional
 class RemoveBuildingBlockMigrationComponentDeployer(
     private val objectMapper: ObjectMapper,
     private val removeBuildingBlockConfigurationRepository: RemoveBuildingBlockConfigurationRepository,
+    private val removeBuildingBlockVersionChecker: RemoveBuildingBlockVersionChecker,
 ) : MigrationComponentDeployer {
 
     override fun componentKey() = REMOVE_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun deploy(migrationId: BlueprintMigrationId, component: JsonNode) {
+        // Ahead of parsing: the version tag is required, so an entry without one fails inside Jackson with
+        // a message about a Kotlin constructor parameter. This says which entry and why instead.
+        removeBuildingBlockVersionChecker.assertVersioned(component)
         val instructions: List<RemoveBuildingBlockInstruction> = objectMapper.convertValue(
             component,
             object : TypeReference<List<RemoveBuildingBlockInstruction>>() {}
@@ -48,9 +52,9 @@ class RemoveBuildingBlockMigrationComponentDeployer(
     }
 
     override fun undeploy(migrationId: BlueprintMigrationId) {
-        removeBuildingBlockConfigurationRepository.findById(migrationId).ifPresent {
-            removeBuildingBlockConfigurationRepository.delete(it)
-        }
+        // Deletes without reading: a row stored before the version tag was required cannot be
+        // deserialised, and this is the path a *corrected* plan takes on its way in. See the repository.
+        removeBuildingBlockConfigurationRepository.deleteByMigrationId(migrationId)
     }
 
     override fun getComponentToExport(migrationId: BlueprintMigrationId): Any? {

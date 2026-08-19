@@ -43,6 +43,7 @@ class AddBuildingBlockProcessCheckerTest {
     private val block = BuildingBlockDefinitionId.of("income-check", "1.0.0")
 
     private val deployedProcesses = mutableMapOf<BlueprintId, Map<String, String>>()
+    private lateinit var linkResolver: LinkedBuildingBlockVersionResolver
 
     @BeforeEach
     fun setUp() {
@@ -51,9 +52,13 @@ class AddBuildingBlockProcessCheckerTest {
         deployedProcesses[source] = mapOf("verhuizing-process" to "verhuizing:1")
         deployedProcesses[target] = mapOf("verhuizing-process" to "verhuizing:2")
         deployedProcesses[block] = mapOf("income-check-process" to "income-check:1")
+        linkResolver = mock()
+        // Nothing linked on a call activity by default, so an entry with no processMigration is still dead.
+        whenever(linkResolver.resolveCallActivityReachable(any())).thenReturn(emptySet())
         checker = AddBuildingBlockProcessChecker(
             listOf(fakeResolver(BlueprintType.CASE), fakeResolver(BlueprintType.BUILDING_BLOCK)),
             activityValidator,
+            linkResolver,
         )
     }
 
@@ -61,16 +66,24 @@ class AddBuildingBlockProcessCheckerTest {
     fun `should find no problem with an entry naming a process on both ends`() {
         val instructions = listOf(instruction(hijack("verhuizing-process", "income-check-process")))
 
-        assertThat(checker.findEntriesWithoutProcessMigration(instructions)).isEmpty()
+        assertThat(checker.findEntriesWithoutProcessMigration(target, instructions)).isEmpty()
         assertThat(checker.findUnresolvableProcesses(source, target, instructions)).isEmpty()
     }
 
     @Test
     fun `should find an entry with no process migration`() {
-        assertThat(checker.findEntriesWithoutProcessMigration(listOf(instruction())))
+        assertThat(checker.findEntriesWithoutProcessMigration(target, listOf(instruction())))
             .singleElement().asString()
             .contains("adds building block 'income-check:1.0.0' without a 'processMigration'")
-            .contains("nothing to do and is silently skipped for every case")
+            .contains("does not declare it on a call activity either")
+    }
+
+    @Test
+    fun `should accept an entry with no process migration when the target declares it on a call activity`() {
+        whenever(linkResolver.resolveCallActivityReachable(target))
+            .thenReturn(setOf(BuildingBlockDefinitionId.of("income-check", "1.0.0")))
+
+        assertThat(checker.findEntriesWithoutProcessMigration(target, listOf(instruction()))).isEmpty()
     }
 
     @Test

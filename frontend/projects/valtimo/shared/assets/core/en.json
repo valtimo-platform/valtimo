@@ -804,6 +804,7 @@
         "general": {
           "title": "Title",
           "titlePlaceholder": "Migrate cases with status 'aanvraag-ontvangen'",
+          "titleSuggestion": "Migration plan {{source}} to {{target}}",
           "key": "Key",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
           "source": "Source",
@@ -3650,6 +3651,7 @@
         "general": {
           "title": "Title",
           "titlePlaceholder": "Migrate building blocks with status 'aanvraag-ontvangen'",
+          "titleSuggestion": "Migration plan {{source}} to {{target}}",
           "key": "Key",
           "keyPlaceholder": "migration-plan-aanvraag-indienen",
           "source": "Source",
