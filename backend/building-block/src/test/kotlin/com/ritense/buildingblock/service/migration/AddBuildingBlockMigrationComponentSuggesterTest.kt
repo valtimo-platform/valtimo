@@ -84,6 +84,19 @@ class AddBuildingBlockMigrationComponentSuggesterTest {
     }
 
     @Test
+    fun `should suggest nothing for a block the source already models at another version`() {
+        // A version bump is alignment's job (R2) and needs a building-block plan for the jump (R3). An
+        // addBuildingBlock entry for it would be a no-op the walk skips — the child is already a block with a
+        // process — and would now warn for having reached nothing.
+        whenever(linkResolver.resolveCallActivityReachable(source))
+            .thenReturn(setOf(BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")))
+        whenever(linkResolver.resolveCallActivityReachable(target))
+            .thenReturn(setOf(BuildingBlockDefinitionId.of("bijstand-uitvoeren", "2.0.0")))
+
+        assertThat(suggester.suggest(source, target)).isNull()
+    }
+
+    @Test
     fun `should suggest nothing when the target declares no new blocks`() {
         whenever(linkResolver.resolveCallActivityReachable(source)).thenReturn(setOf(uitvoeren))
         whenever(linkResolver.resolveCallActivityReachable(target)).thenReturn(setOf(uitvoeren))

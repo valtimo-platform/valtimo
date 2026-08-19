@@ -60,9 +60,18 @@ class AddBuildingBlockMigrationComponentSuggester(
     override fun componentKey() = AddBuildingBlockMigrationComponentDeployer.ADD_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun suggest(source: BlueprintId, target: BlueprintId): Any? {
-        val before = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(source)
+        // Compared by **key**, not by key and version. A block whose key the source already models is not
+        // being added — it is being *version-bumped*, which is version alignment's job (R2) and needs a
+        // building-block plan from the old version to the new one (R3), not an `addBuildingBlock` entry.
+        // Suggesting one would propose an entry the walk finds already satisfied (the child is a block with a
+        // process, so it descends rather than creating), leaving a no-op entry that now also warns for having
+        // reached nothing. Symmetric with the remove suggester, which drops a lost block by key for the same
+        // reason.
+        val keysBefore = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(source)
+            .map { it.key }
+            .toSet()
         val instructions = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
-            .filter { it !in before }
+            .filter { it.key !in keysBefore }
             .sortedBy { it.toString() }
             .map { block ->
                 AddBuildingBlockInstruction(
