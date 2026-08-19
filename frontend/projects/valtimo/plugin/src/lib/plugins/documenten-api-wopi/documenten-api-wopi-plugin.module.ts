@@ -18,20 +18,11 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiWopiConfigurationComponent} from './components/documenten-api-wopi-configuration/documenten-api-wopi-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputLabelModule, InputModule, SelectModule} from '@valtimo/components';
-import {ToggleModule} from 'carbon-components-angular';
+import {FormModule, InputModule, SelectModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [DocumentenApiWopiConfigurationComponent],
-  imports: [
-    CommonModule,
-    PluginTranslatePipeModule,
-    FormModule,
-    InputModule,
-    SelectModule,
-    InputLabelModule,
-    ToggleModule,
-  ],
+  imports: [CommonModule, PluginTranslatePipeModule, FormModule, InputModule, SelectModule],
   exports: [DocumentenApiWopiConfigurationComponent],
 })
 export class DocumentenApiWopiPluginModule {}

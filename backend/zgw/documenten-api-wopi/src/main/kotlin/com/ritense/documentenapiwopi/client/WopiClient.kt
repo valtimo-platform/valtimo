@@ -16,7 +16,6 @@
 
 package com.ritense.documentenapiwopi.client
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.ritense.documentenapi.DocumentenApiAuthentication
 import com.ritense.documentenapiwopi.domain.WopiAccessToken
 import com.ritense.documentenapiwopi.domain.WopiDiscovery
@@ -115,8 +114,6 @@ class WopiClient(
     private data class CachedDiscovery(val discovery: WopiDiscovery, val expiresAt: Instant)
 
     companion object {
-        private val xmlMapper: XmlMapper = XmlMapper()
-
         // WOPI discovery is near-static; office suites expect clients to cache it rather than refetch per document open
         private val DISCOVERY_CACHE_TTL: Duration = Duration.ofHours(24)
     }

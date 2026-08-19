@@ -73,11 +73,8 @@ export class DocumentenApiWopiConfigurationComponent
   }
 
   formValueChange(formValue: DocumentenApiWopiConfig): void {
-    const formValueIncludingToggle = {
-      ...formValue,
-    };
-    this.formValue$.next(formValueIncludingToggle);
-    this.handleValid(formValueIncludingToggle);
+    this.formValue$.next(formValue);
+    this.handleValid(formValue);
   }
 
   private handleValid(formValue: DocumentenApiWopiConfig): void {
