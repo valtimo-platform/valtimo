@@ -22,14 +22,8 @@ export const mailPreviewEditForm = () => ({
         },
         {
             key: 'label',
-            type: 'textfield',
-            input: true,
-            label: 'Label',
-            placeholder: 'Label',
+            type: 'hidden',
             defaultValue: 'E-mail preview',
-            validate: {
-                required: true,
-            },
         },
         {
             key: 'customOptions.variableKey',
