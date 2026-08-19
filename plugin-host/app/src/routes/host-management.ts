@@ -15,7 +15,7 @@
  */
 
 import { FastifyInstance } from "fastify";
-import { computeContentHash, PluginManager } from "../plugin-manager.js";
+import { PluginManager } from "../plugin-manager.js";
 import { ConfigRegistry } from "../config-registry.js";
 import { AppConfig } from "../config.js";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -24,9 +24,10 @@ import { fileURLToPath } from "node:url";
 import AdmZip from "adm-zip";
 import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
 import { createHmacAuthHook, verifyDeferredHmac } from "../security/hmac-auth.js";
+import { InvalidPluginPackageError } from "../errors.js";
 
-/** Raised for a malicious/malformed plugin package — mapped to a 400, not a 500. */
-export class InvalidPluginPackageError extends Error {}
+// Re-exported so the existing import sites keep working now that the plugin manager raises it too.
+export { InvalidPluginPackageError };
 
 /**
  * Extracts a plugin package entry-by-entry, defending against zip-slip: every entry's resolved
@@ -160,33 +161,6 @@ export async function hostManagementRoutes(
         return;
       }
 
-      // A version is never replaced *silently*: re-uploading an existing pluginId@version without
-      // the explicit overwrite flag is refused, because different code would hot-reload under an
-      // already-accepted identity (a time-of-check/time-of-use gap). GZAC sends `?overwrite=true`
-      // only after an admin confirmed the overwrite and re-reviewed the package's requested
-      // permissions. The 409 carries both content hashes so the caller can tell an identical
-      // re-upload (nothing to do) apart from genuinely different content (review required).
-      const overwrite = (request.query as {overwrite?: string}).overwrite === "true";
-      const versionExists = pluginManager.hasVersion(manifest.pluginId, manifest.version);
-      if (versionExists && !overwrite) {
-        reply.code(409).send({
-          // Machine-readable so GZAC's upload UI can branch without string-matching English text.
-          code: "PLUGIN_VERSION_EXISTS",
-          error: `Plugin version already exists: ${manifest.pluginId}@${manifest.version}`,
-          message:
-            "This version already exists on the host. Overwriting requires explicit admin confirmation.",
-          currentContentHash: pluginManager.getContentHash(manifest.pluginId, manifest.version),
-          uploadedContentHash: await computeContentHash(extractDir),
-        });
-        return;
-      }
-      if (versionExists) {
-        request.log.warn(
-          { pluginId: manifest.pluginId, version: manifest.version },
-          "Overwriting existing plugin version (admin-confirmed)"
-        );
-      }
-
       // Read wasm
       const wasmPath = join(extractDir, "plugin.wasm");
       const wasmBuffer = await readFile(wasmPath);
@@ -194,25 +168,55 @@ export async function hostManagementRoutes(
       // Check for frontend directory
       const frontendDir = join(extractDir, "frontend");
 
-      // Pack tool writes the logo filename onto the manifest; pass the source file through so the
-      // plugin manager can persist it alongside manifest.json and plugin.wasm.
-      const logoPath = manifest.logo ? join(extractDir, manifest.logo) : undefined;
+      // The logo file name comes from the untrusted manifest. Require a plain file directly inside
+      // the extraction directory: a value like `../../../etc/passwd` would otherwise be copied into
+      // the package, and into the content hash GZAC pins.
+      let logoPath: string | undefined;
+      if (manifest.logo !== undefined) {
+        const extractRoot = resolve(extractDir);
+        const resolvedLogo = resolve(extractRoot, manifest.logo);
+        if (dirname(resolvedLogo) !== extractRoot) {
+          throw new InvalidPluginPackageError(
+            `manifest.logo must be a file at the package root: ${manifest.logo}`
+          );
+        }
+        logoPath = resolvedLogo;
+      }
 
-      // Store and load (includes frontend assets and optional logo if present)
-      const result = await pluginManager.storeAndLoad(
-        manifest.pluginId,
-        manifest.version,
+      // A version is never replaced *silently*: re-uploading an existing pluginId@version without
+      // the explicit overwrite flag is refused, because different code would hot-reload under an
+      // already-accepted identity. The existence check and the store run inside one critical
+      // section in the plugin manager, so two concurrent uploads of the same version cannot both
+      // pass the check. The 409 carries both content hashes so the caller can tell an identical
+      // re-upload (nothing to do) apart from genuinely different content (review required).
+      const result = await pluginManager.installPackage({
+        pluginId: manifest.pluginId,
+        version: manifest.version,
         manifestJson,
         wasmBuffer,
         frontendDir,
-        logoPath
-      );
+        logoSourcePath: logoPath,
+        overwrite: (request.query as {overwrite?: string}).overwrite === "true",
+      });
+
+      if (result.outcome === "conflict") {
+        reply.code(409).send({
+          // Machine-readable so GZAC's upload UI can branch without string-matching English text.
+          code: "PLUGIN_VERSION_EXISTS",
+          error: `Plugin version already exists: ${manifest.pluginId}@${manifest.version}`,
+          message:
+            "This version already exists on the host. Overwriting requires explicit admin confirmation.",
+          currentContentHash: result.currentContentHash,
+          uploadedContentHash: result.uploadedContentHash,
+        });
+        return;
+      }
 
       reply.code(201).send({
         pluginId: manifest.pluginId,
         version: manifest.version,
-        contentHash: pluginManager.getContentHash(manifest.pluginId, manifest.version),
-        manifest: result,
+        contentHash: result.contentHash,
+        manifest: result.manifest,
       });
     } catch (err) {
       request.log.error(

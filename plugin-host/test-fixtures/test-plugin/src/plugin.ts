@@ -55,6 +55,27 @@ action("spin", () => {
   }
 });
 
+// Allocates until the host's memory cap stops it — proves the cap is enforced for a JS plugin and
+// that the failure is contained to the call. Chunks are large so the cap is hit long before the
+// wall-clock timeout would fire.
+action("mem-bomb", (input) => {
+  const chunks: string[] = [];
+  const limit = Number((input.properties as { chunks?: number }).chunks ?? 4000);
+  for (let i = 0; i < limit; i++) chunks.push("x".repeat(256 * 1024));
+  return { status: "completed", variables: { allocated: chunks.length } };
+});
+
+// Busy-waits for a fixed duration so a test can prove two calls to the same plugin overlap instead
+// of queueing. QuickJS has no timers, so this burns CPU rather than sleeping.
+action("burn", (input) => {
+  const ms = Number((input.properties as { ms?: number }).ms ?? 100);
+  const started = Date.now();
+  while (Date.now() - started < ms) {
+    /* intentional busy-wait */
+  }
+  return { status: "completed", variables: { ms } };
+});
+
 // Calls back into GZAC via the service token — exercises the gzac_api host function + host context.
 action("call-gzac", () => {
   const res = gzacApi.get("/api/v1/echo");

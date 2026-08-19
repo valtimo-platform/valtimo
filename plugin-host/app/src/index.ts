@@ -109,6 +109,9 @@ async function main(): Promise<void> {
       wasmMaxMemoryPages: config.WASM_MAX_MEMORY_PAGES,
       gzacApiTimeoutMs: config.GZAC_API_TIMEOUT_MS,
       instanceIdleTtlMs: config.WASM_INSTANCE_IDLE_TTL_MS,
+      poolMinInstances: config.WASM_POOL_MIN_INSTANCES,
+      poolMaxInstances: config.WASM_POOL_MAX_INSTANCES,
+      poolAcquireTimeoutMs: config.WASM_POOL_ACQUIRE_TIMEOUT_MS,
     }
   );
 
