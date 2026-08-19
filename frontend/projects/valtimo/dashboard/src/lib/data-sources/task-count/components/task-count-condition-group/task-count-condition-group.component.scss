@@ -54,8 +54,8 @@
     letter-spacing: 0.32px;
   }
 
-  // "Add" sits outside the sections and creates a new one.
-  &__add-menu {
+  // "Add" sits outside the sections and appends a new one.
+  &__add-button {
     align-self: flex-start;
   }
 }

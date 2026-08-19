@@ -15,9 +15,20 @@
 * **Dashboard: task count widget improvements**
 
   The `task-count` dashboard widget data source has been improved:
-  * An optional filter on the case definition type.
+  * An optional filter on the case definition type. When set, both the count and the total it is
+    compared against are limited to tasks belonging to cases of that case definition. This filter
+    requires the `process-document` module.
   * `and`/`or` condition groups, so multiple task types (or any other conditions) can be combined
     in a single widget (for example `assignee != null AND (name == A OR name == B)`).
+  * The `in` operator, as a compact alternative to an `or` group of `==` conditions.
+
+  The widget configuration screen in the admin UI has been extended with a case type dropdown and
+  an editor for condition groups. Every group has an `AND`/`OR` selector and can be nested to any
+  depth, so the full condition tree can be configured from the UI. Individual conditions that the
+  editor cannot represent (`in` conditions with an array value, or operators outside the dropdown)
+  are shown as a notification and preserved in their group when the widget is saved. Existing
+  configurations keep working without migration: the `queryConditions` property and the
+  `queryPath`/`queryOperator`/`queryValue` aliases remain valid.
 
 * **Zaaktype dropdown now shows the begin and end date**
 

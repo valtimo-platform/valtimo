@@ -80,36 +80,44 @@ describe('TaskCountConditionGroupComponent', () => {
     expect(state.changes).toBe(1);
   });
 
-  it('adds a section with one empty row and joins it with the chosen operator', () => {
+  it('adds a section with one empty row that combines its own conditions with and', () => {
     const state = createComponent(emptyGroup('and'));
 
-    state.component.addGroup('or');
+    state.component.addGroup();
 
-    expect(state.component.group.operator).toBe('or');
     expect(state.component.group.groups.length).toBe(1);
     expect(state.component.group.groups[0].operator).toBe('and');
     expect(state.component.group.groups[0].rows).toEqual([{key: '', dropdown: '', value: ''}]);
     expect(state.changes).toBe(1);
   });
 
-  it('applies the operator of the last addition to every connector of the group', () => {
-    const state = createComponent(emptyGroup('and'));
+  it('never changes the operator of the group when a section is added', () => {
+    const state = createComponent(emptyGroup('or'));
 
-    state.component.addGroup('or');
-    state.component.addGroup('or');
+    state.component.addGroup();
+    state.component.addGroup();
+    state.component.addGroup();
 
     expect(state.component.group.operator).toBe('or');
-
-    state.component.addGroup('and');
-
-    expect(state.component.group.operator).toBe('and');
     expect(state.component.group.groups.length).toBe(3);
+  });
+
+  it('changes the operator of the whole group through the connector selector only', () => {
+    const state = createComponent(emptyGroup('and'));
+    state.component.addGroup();
+    state.component.addGroup();
+
+    state.component.setOperator('or');
+
+    expect(state.component.group.operator).toBe('or');
+    // The sections keep their own operator; only the way they relate to each other changed.
+    expect(state.component.group.groups.map(group => group.operator)).toEqual(['and', 'and']);
   });
 
   it('removes the requested nested group only', () => {
     const state = createComponent(emptyGroup());
-    state.component.addGroup('or');
-    state.component.addGroup('and');
+    state.component.addGroup();
+    state.component.addGroup();
     const [firstGroup, secondGroup] = state.component.group.groups;
 
     state.component.removeGroup(firstGroup);

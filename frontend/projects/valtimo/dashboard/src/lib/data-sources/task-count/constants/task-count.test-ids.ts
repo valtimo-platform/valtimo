@@ -22,7 +22,5 @@ export const TASK_COUNT_TEST_IDS = {
   operatorOrButton: 'taskCountGroupOperatorOrButton',
   operatorMirror: 'taskCountGroupOperatorMirror',
   addGroupButton: 'taskCountAddGroupButton',
-  addAndGroupOption: 'taskCountAddAndGroupOption',
-  addOrGroupOption: 'taskCountAddOrGroupOption',
   deleteGroupButton: 'taskCountDeleteGroupButton',
 } as const;

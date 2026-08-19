@@ -32,6 +32,17 @@ Returns the number of tasks that are visible to the user and match the criteria 
 
 <table><thead><tr><th valign="top">Name</th><th valign="top">Description</th></tr></thead><tbody><tr><td valign="top"><code>caseDefinitionName</code></td><td valign="top">Optional. When set, only tasks that belong to a case of this case definition are counted. When omitted, tasks of all case definitions (and standalone tasks) are counted.</td></tr><tr><td valign="top"><code>conditions</code></td><td valign="top">Optional. An array of condition nodes that a task needs to match in order to be included in the count. A node is either a single condition or an <code>and</code>/<code>or</code> group (see below). The nodes at the top level are combined with <code>AND</code>.</td></tr></tbody></table>
 
+Note that both the filtered count and the total the widget compares it against are scoped by
+`caseDefinitionName`. A widget with `caseDefinitionName` set therefore shows a percentage relative
+to the tasks of that case definition, not relative to all tasks the user can see.
+
+{% hint style="warning" %}
+Filtering on `caseDefinitionName` requires the `process-document` module, which contributes the
+`TaskCaseDefinitionSpecificationFactory` bean that resolves a task to its case. Without that module
+on the classpath, a widget that sets `caseDefinitionName` fails with an `IllegalStateException`.
+Leaving the property out keeps the data source usable in applications without `process-document`.
+{% endhint %}
+
 ### Condition node
 
 A condition node is one of:
@@ -40,11 +51,13 @@ A condition node is one of:
 * **An `and` group** — `{ "and": [ ...nodes ] }`. All child nodes must match.
 * **An `or` group** — `{ "or": [ ...nodes ] }`. At least one child node must match.
 
-Groups may be nested to arbitrary depth. The admin UI mirrors this: every group has an `AND`/`OR` selector, its own list of conditions, and an **Add** button that appends a section, joined to the sections that are already there by the `AND` or `OR` chosen in that menu. Conditions that the editor cannot represent (`in` conditions with an array value, or operators outside the dropdown) are preserved in the group they were configured in when the widget is edited in the UI, but can only be changed through the configuration file.
+Groups may be nested to arbitrary depth. The admin UI mirrors this: every group has an `AND`/`OR` selector, its own list of conditions, and an **Add condition group** button that appends a section. Conditions that the editor cannot represent (`in` conditions with an array value, or operators outside the dropdown) are preserved in the group they were configured in when the widget is edited in the UI, but can only be changed through the configuration file.
 
 The UI writes the tree back as a single root group, so `conditions` holds one `and`/`or` node after a widget has been saved from the admin UI. A flat list of conditions (implicitly combined with `AND`) remains valid input.
 
 Because a group has one operator, the sections at the same level are always joined by that same operator: the UI shows a selector on the first connector between them and repeats the chosen operator as plain text on the following connectors. To combine sections with different operators, nest them in a group of their own.
+
+The connector is the only place where that operator is set. **Add condition group** just appends a section: the way the sections relate belongs to the group, not to the section being added, and a section carries its own `AND`/`OR` for the conditions inside it - two different levels that would be easy to confuse if the button asked as well. A group starts out combining its sections with `AND`, which the selector on the connector changes for the whole group at once.
 
 ### Operators
 

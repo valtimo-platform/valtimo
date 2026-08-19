@@ -35,8 +35,8 @@ export const taskCountSpecification: DataSourceSpecification = {
       addCondition: 'Bedingung hinzufügen',
       and: 'UND',
       or: 'ODER',
-      add: 'Hinzufügen',
-      deleteGroup: 'Gruppe löschen',
+      addGroup: 'Bedingungsgruppe hinzufügen',
+      deleteGroup: 'Bedingungsgruppe löschen',
       unsupportedConditionsNotification:
         'Dieses Widget enthält Bedingungen, die nur über Konfigurationsdateien bearbeitet werden können. Sie bleiben beim Speichern erhalten.',
     },
@@ -53,8 +53,8 @@ export const taskCountSpecification: DataSourceSpecification = {
       addCondition: 'Add condition',
       and: 'AND',
       or: 'OR',
-      add: 'Add',
-      deleteGroup: 'Delete group',
+      addGroup: 'Add condition group',
+      deleteGroup: 'Delete condition group',
       unsupportedConditionsNotification:
         'This widget contains conditions that can only be edited through configuration files. They are preserved when you save.',
     },
@@ -71,8 +71,8 @@ export const taskCountSpecification: DataSourceSpecification = {
       addCondition: 'Conditie toevoegen',
       and: 'EN',
       or: 'OF',
-      add: 'Toevoegen',
-      deleteGroup: 'Groep verwijderen',
+      addGroup: 'Conditiegroep toevoegen',
+      deleteGroup: 'Conditiegroep verwijderen',
       unsupportedConditionsNotification:
         'Dit widget bevat condities die alleen via configuratiebestanden bewerkt kunnen worden. Ze blijven behouden bij het opslaan.',
     },

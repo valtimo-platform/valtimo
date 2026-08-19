@@ -54,8 +54,8 @@
     defines how all of the sections relate to each other, and is rendered as a connector between
     them - a selector on the first connector, static text on the ones after it. Connectors only
     appear once there is something to relate (two or more sections, or a section following
-    root-level rows). Each section carries its own operator for the conditions inside it. "Add"
-    appends a new section. Direct root-level rows only exist for configuration authored in a file;
+    root-level rows). Each section carries its own operator for the conditions inside it. "Add
+    condition group" appends a new section. Direct root-level rows only exist for configuration authored in a file;
     they are kept editable so that saving does not drop them.
   -->
   <div class="condition-root" [attr.data-test-id]="testId(testIds.conditionGroup)">
@@ -100,36 +100,24 @@
       ></valtimo-task-count-condition-group>
     }
 
-    <v-overflow-menu
-      class="condition-root__add-menu"
-      [menuWidth]="160"
-      [portalToBody]="true"
-      placement="top-start"
+    <!--
+      "Add condition group" only appends a section. How the sections relate is a property of this
+      group, so it is chosen on the connector between them - the level the operator actually belongs
+      to - and never here: at the moment of the first addition there is nothing to relate it to yet,
+      and the section that appears carries its own operator for the conditions inside it.
+    -->
+    <button
+      class="condition-root__add-button"
+      cdsButton="tertiary"
+      type="button"
+      [attr.data-test-id]="testId(testIds.addGroupButton)"
+      [disabled]="disabled"
+      (click)="addGroup()"
     >
-      <button
-        overflowTrigger
-        cdsButton="tertiary"
-        type="button"
-        [attr.data-test-id]="testId(testIds.addGroupButton)"
-        [disabled]="disabled"
-      >
-        {{ 'add' | widgetTranslate: dataSourceKey | async }}
+      {{ 'addGroup' | widgetTranslate: dataSourceKey | async }}
 
-        <svg class="cds--btn__icon" cdsIcon="chevron--up" size="16"></svg>
-      </button>
-
-      <v-overflow-menu-option
-        [testId]="testId(testIds.addAndGroupOption)"
-        (selected)="addGroup('and')"
-        >{{ 'and' | widgetTranslate: dataSourceKey | async }}</v-overflow-menu-option
-      >
-
-      <v-overflow-menu-option
-        [testId]="testId(testIds.addOrGroupOption)"
-        (selected)="addGroup('or')"
-        >{{ 'or' | widgetTranslate: dataSourceKey | async }}</v-overflow-menu-option
-      >
-    </v-overflow-menu>
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
   </div>
 } @else {
   <cds-tile

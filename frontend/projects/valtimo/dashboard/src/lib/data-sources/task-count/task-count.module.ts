@@ -30,7 +30,7 @@ import {
   NotificationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {CarbonMultiInputModule, OverflowMenuModule} from '@valtimo/components';
+import {CarbonMultiInputModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [TaskCountConditionGroupComponent, TaskCountConfigurationComponent],
@@ -45,7 +45,6 @@ import {CarbonMultiInputModule, OverflowMenuModule} from '@valtimo/components';
     IconModule,
     LayerModule,
     NotificationModule,
-    OverflowMenuModule,
     TilesModule,
   ],
   exports: [TaskCountConditionGroupComponent, TaskCountConfigurationComponent],

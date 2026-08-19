@@ -16,7 +16,7 @@
 
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {ListItemWithId, MultiInputValues} from '@valtimo/components';
-import {ChevronUp16, TrashCan16} from '@carbon/icons';
+import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {ConditionGroupForm, ConditionGroupOperator} from '../../models';
@@ -82,7 +82,7 @@ export class TaskCountConditionGroupComponent {
   private _group: ConditionGroupForm;
 
   constructor(private readonly iconService: IconService) {
-    this.iconService.registerAll([ChevronUp16, TrashCan16]);
+    this.iconService.registerAll([Add16, TrashCan16]);
   }
 
   /**
@@ -112,14 +112,15 @@ export class TaskCountConditionGroupComponent {
   }
 
   /**
-   * Appends a section, joined to what is already in this group by [operator].
+   * Appends a section to this group, leaving the operator of the group untouched.
    *
-   * A group has a single operator, so the choice made here is the operator of this group - the one
-   * the connectors between the sections show. The new section starts out combining its own
-   * conditions with 'and'; that operator is changed in the header of the section itself.
+   * How the sections relate is a single property of this group, shown on the connectors between
+   * them and changed there with [setOperator]. An addition deliberately does not ask for it: the
+   * operator of the group and the operator inside a section are two different levels, and the first
+   * addition has nothing to relate the new section to yet. The new section starts out combining its
+   * own conditions with 'and'; that operator is changed in the header of the section itself.
    */
-  public addGroup(operator: ConditionGroupOperator): void {
-    this._group.operator = operator;
+  public addGroup(): void {
     this._group.groups = [
       ...this._group.groups,
       createConditionGroup('and', [createEmptyConditionRow()]),
