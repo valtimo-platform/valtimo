@@ -1,0 +1,167 @@
+[
+    {
+        "resourceType": "com.ritense.case.domain.CaseTab",
+        "actions": [
+            "view"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.case_.domain.definition.CaseDefinition",
+        "actions": [
+            "view",
+            "view_list"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.case_.domain.tab.CaseWidgetTabWidget",
+        "actions": [
+            "view"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.dashboard.domain.Dashboard",
+        "actions": [
+            "view",
+            "view_list"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+        "actions": [
+            "view",
+            "view_list",
+            "create",
+            "modify",
+            "delete",
+            "claim",
+            "assign",
+            "assignable",
+            "export",
+            "inspect",
+            "inspect_modify"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
+        "actions": [
+            "view",
+            "view_list",
+            "create",
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.searchfield.SearchField",
+        "actions": [
+            "view_list"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot",
+        "actions": [
+            "view",
+            "view_list"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.documentenapi.authorization.ZgwDocument",
+        "actions": [
+            "view",
+            "view_list",
+            "create",
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.iko.domain.IkoView",
+        "actions": [
+            "view",
+            "view_list"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.note.domain.Note",
+        "actions": [
+            "view_list",
+            "create",
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.objectenapi.security.Object",
+        "actions": [
+            "view",
+            "view_list",
+            "create",
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.objectmanagement.domain.ObjectManagement",
+        "actions": [
+            "view_list"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.resource.authorization.ResourcePermission",
+        "actions": [
+            "view",
+            "view_list",
+            "create",
+            "modify",
+            "delete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonExecution",
+        "actions": [
+            "create"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+        "actions": [
+            "view",
+            "view_list",
+            "modify",
+            "assign",
+            "assignable",
+            "claim",
+            "complete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTimer",
+        "actions": [
+            "complete"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    },
+    {
+        "resourceType": "com.ritense.zakenapi.security.Zaak",
+        "actions": [
+            "view"
+        ],
+        "roleKey": "ROLE_ADMIN"
+    }
+]
