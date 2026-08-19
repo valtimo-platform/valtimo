@@ -812,15 +812,14 @@ services:
 
     cg-dmf-minio:
         image: minio/minio:latest
-        container_name: cg-dmf-minio
         # restart: always
         profiles:
             - cg-dmf
         environment:
-            - S3_ACCESS_KEY=minioadmin
-            - S3_SECRET_KEY=minioadmin
-            - CONSOLE_ACCESS_KEY=admin
-            - CONSOLE_SECRET_KEY=admin
+            # MinIO's root user/password double as both the S3 API and console credentials -
+            # must match cg-dmf's BLOB_STORAGE_ACCESS_KEY1/BLOB_STORAGE_SECRET_KEY1 above.
+            - MINIO_ROOT_USER=minioadmin
+            - MINIO_ROOT_PASSWORD=minioadmin
         command: server --address ":9000" --console-address ":9001" /data
         volumes:
             - cg-dmf-minio-data:/data
