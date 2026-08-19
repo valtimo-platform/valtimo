@@ -76,22 +76,6 @@ class CopyProcessLinkOnProcessDeploymentListener(
         }
     }
 
-    /**
-     * Whether the links of the key-based predecessor may follow the new deployment.
-     *
-     * Carrying them forward is right within one blueprint — a new version of a process keeps its links —
-     * and wrong *between* blueprints, which is the leak this guard exists for: a building block's links
-     * landing on the deployment of a case definition that happens to use the same process definition key.
-     *
-     * The rule is deliberately **asymmetric**. A blueprint's links may follow onto a deployment that
-     * belongs to **no** blueprint, because the two are not competing owners: an unblueprinted deployment
-     * of the same key is the same process, deployed once more outside a case or building block, and
-     * several lookups resolve a process purely by key — `byKeyOfUnlinkedProcess` for a start form, and
-     * key-plus-latest-version for a user task. Refusing that copy leaves those lookups pointing at a
-     * deployment with no links at all, which is what broke `FormViewModelResourceIntTest`. What stays
-     * refused is a copy *into* a blueprint from anywhere it does not own: another case definition, a
-     * building block, or a process with no blueprint at all.
-     */
     private fun mayCopyLinksFrom(
         previousProcessDefinitionId: String,
         event: ProcessDefinitionDeployedEvent
