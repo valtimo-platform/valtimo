@@ -151,8 +151,14 @@ class CopyProcessLinkOnProcessDeploymentListenerTest {
         assertNothingCopied()
     }
 
+    /**
+     * The asymmetry: a blueprint's links may follow onto a deployment nothing owns, because several
+     * lookups resolve a process by key alone — `byKeyOfUnlinkedProcess` for a start form, key plus latest
+     * version for a user task. Refusing this left those pointing at a link-less deployment, which is what
+     * broke `FormViewModelResourceIntTest`. Copying *into* a blueprint from elsewhere stays refused.
+     */
     @Test
-    fun `should NOT copy process links from a case definition to a process without a blueprint`() {
+    fun `should copy process links from a case definition to a process without a blueprint`() {
         val event = deploymentEvent(
             versionTag = null,
             previousVersionTag = "CD:bijstand:1.0.0"
@@ -160,7 +166,19 @@ class CopyProcessLinkOnProcessDeploymentListenerTest {
 
         listener.copyProcessLinks(event)
 
-        assertNothingCopied()
+        assertEquals(1, savedLinks().size)
+    }
+
+    @Test
+    fun `should copy process links from a building block definition to a process without a blueprint`() {
+        val event = deploymentEvent(
+            versionTag = null,
+            previousVersionTag = "BB:bijstand-uitvoeren:1.0.0"
+        )
+
+        listener.copyProcessLinks(event)
+
+        assertEquals(1, savedLinks().size)
     }
 
     @Test
