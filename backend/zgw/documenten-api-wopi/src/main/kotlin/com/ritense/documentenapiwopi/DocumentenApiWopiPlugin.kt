@@ -70,7 +70,8 @@ class DocumentenApiWopiPlugin(
         const val DOCUMENTEN_API_CONFIGURATION_ID = "documentenApiConfigurationId"
 
         fun findConfigurationByDocumentenApiConfiguration(documentenApiConfigurationId: String) = { properties: JsonNode ->
-            documentenApiConfigurationId == properties[DOCUMENTEN_API_CONFIGURATION_ID].textValue()
+            // a config missing this property should just not match, not blow up the check for every other config
+            documentenApiConfigurationId == properties[DOCUMENTEN_API_CONFIGURATION_ID]?.textValue()
         }
     }
 }

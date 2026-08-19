@@ -46,14 +46,16 @@ class WopiClient(
             }
         }
 
-        val result = restClient()
-            .get()
-            .uri {
-                ClientTools.baseUrlToBuilder(it, wopiClientDiscoveryUrl)
-                    .build()
-            }
-            .retrieve()
-            .body<WopiDiscovery>()!!
+        val result = checkNotNull(
+            restClient()
+                .get()
+                .uri {
+                    ClientTools.baseUrlToBuilder(it, wopiClientDiscoveryUrl)
+                        .build()
+                }
+                .retrieve()
+                .body<WopiDiscovery>()
+        ) { "WOPI discovery response from '$wopiClientDiscoveryUrl' was empty" }
 
         discoveryCache[wopiClientDiscoveryUrl] = CachedDiscovery(result, Instant.now().plus(DISCOVERY_CACHE_TTL))
 
@@ -61,18 +63,18 @@ class WopiClient(
     }
 
     fun getWopiAccessToken(baseUrl: URI, documentId: String, documentenApiAuthentication: DocumentenApiAuthentication): WopiAccessToken {
-        val result = restClient(documentenApiAuthentication)
-            .post()
-            .uri {
-                // replacePath drops baseUrl's own path (e.g. /documenten/); the WOPI extension is mounted at the host root
-                ClientTools.baseUrlToBuilder(it, baseUrl)
-                    .replacePath("/wopi/api/v1/token/$documentId")
-                    .build()
-            }
-            .retrieve()
-            .body<WopiAccessToken>()!!
-
-        return result
+        return checkNotNull(
+            restClient(documentenApiAuthentication)
+                .post()
+                .uri {
+                    // replacePath drops baseUrl's own path (e.g. /documenten/); the WOPI extension is mounted at the host root
+                    ClientTools.baseUrlToBuilder(it, baseUrl)
+                        .replacePath("/wopi/api/v1/token/$documentId")
+                        .build()
+                }
+                .retrieve()
+                .body<WopiAccessToken>()
+        ) { "WOPI access token response for document '$documentId' was empty" }
     }
 
     /**

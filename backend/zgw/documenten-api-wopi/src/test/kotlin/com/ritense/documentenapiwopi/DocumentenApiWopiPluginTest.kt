@@ -16,6 +16,7 @@
 
 package com.ritense.documentenapiwopi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.documentenapi.DocumentenApiAuthentication
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
@@ -35,6 +36,7 @@ import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class DocumentenApiWopiPluginTest {
 
@@ -96,6 +98,18 @@ class DocumentenApiWopiPluginTest {
         assertFailsWith<IllegalStateException> {
             plugin.getWopiHostPageUrl(dummyDocumentId, dummyCaseDocumentId)
         }
+    }
+
+    @Test
+    fun `should not match a stored config that is missing the documentenApiConfigurationId property`() {
+        val propertiesWithoutConfigId = ObjectMapper().readTree("""{"wopiClientDiscoveryUrl": "http://localhost:8080"}""")
+
+        val matches = DocumentenApiWopiPlugin
+            .findConfigurationByDocumentenApiConfiguration(DOCUMENTEN_API_CONFIGURATION_ID)
+            .invoke(propertiesWithoutConfigId)
+
+        // must not throw and must not match - one malformed stored config should never break the check for every other config
+        assertFalse(matches)
     }
 
     companion object {
