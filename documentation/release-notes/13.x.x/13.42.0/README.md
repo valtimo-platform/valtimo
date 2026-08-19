@@ -82,6 +82,14 @@
   until the page was reloaded. The decision table screen now always cleans up its breadcrumbs and title,
   even when the DMN editor fails to shut down.
 
+* **An invalid IBAN no longer corrupts the value of the IBAN component**
+
+  The IBAN component of a form replaced its own value with an internal object as soon as the entered IBAN
+  was invalid. In a data grid this became visible as soon as a row was added: the IBAN of the rows above it
+  changed into `[object Object]` and the entered value was lost. The component now always keeps the entered
+  text, and an invalid IBAN is rejected through a regular validation error, which still blocks submitting
+  the form.
+
 ## Security
 
 * **Permission checks only accept known resource types**
