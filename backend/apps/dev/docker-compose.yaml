@@ -750,11 +750,15 @@ services:
         depends_on:
             - gzac-demo-backend
 
-    # CG-DMF (DRC implementation by Baseflow)
+    # CG-DMF (DRC implementation by Baseflow) - only needed to test the WOPI plugin.
+    # Enable with `docker compose --profile cg-dmf up`, or `./gradlew :backend:apps:<app>:bootRunWithDocker -Pcg-dmf`.
+    # Also point VALTIMO_DOCUMENTEN_API_URL at cg-dmf instead of OpenZaak - see .env.properties.
 
     cg-dmf:
         image: baseflow/cg-dmf-poc:1.1.1
         restart: unless-stopped
+        profiles:
+            - cg-dmf
         depends_on:
             cg-dmf-database:
                 condition: service_healthy
@@ -790,6 +794,8 @@ services:
     cg-dmf-database:
         image: postgres:16
         restart: unless-stopped
+        profiles:
+            - cg-dmf
         ports:
             - "54340:5432"
         environment:
@@ -808,6 +814,8 @@ services:
         image: minio/minio:latest
         container_name: cg-dmf-minio
         # restart: always
+        profiles:
+            - cg-dmf
         environment:
             - S3_ACCESS_KEY=minioadmin
             - S3_SECRET_KEY=minioadmin
@@ -818,12 +826,11 @@ services:
             - cg-dmf-minio-data:/data
 
     # Collabora Online (CODE) — WOPI client used to view/edit cg-dmf documents in the browser.
-    # Enable with `docker compose --profile wopi up`.
     collabora:
         image: collabora/code:latest
         container_name: gzac-docker-compose-collabora
         profiles:
-            - wopi
+            - cg-dmf
         cap_add:
             - MKNOD
         ports:
