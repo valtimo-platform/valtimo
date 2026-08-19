@@ -405,6 +405,37 @@ class DefaultFormSubmissionServiceTest {
         assertThat(captor.firstValue.processDefinitionId()).isEqualTo(PROCESS_DEFINITION_ID)
     }
 
+    @Test
+    fun `should resolve the document definition name from the building block blueprint when there is no case definition link`() {
+        val formData = formData()
+        val document = createDocument(JsonDocumentContent.build(formData), caseDefinitionId)
+        // A building-block-owned process definition has no case-definition link row, so the blueprint from
+        // its version tag is the only thing left to resolve the document definition with.
+        whenever(processDefinition.getBlueprintId())
+            .thenReturn(BuildingBlockDefinitionId.of("bezwaar", "1.0.0"))
+        whenever(processDefinitionCaseDefinitionService.findByProcessDefinitionIdOrNull(any()))
+            .thenReturn(null)
+        whenever(documentDefinitionService.findByBlueprintId(any()))
+            .thenReturn(Optional.of(definition(caseDefinitionId)))
+        whenever(processDocumentService.dispatch(any()))
+            .thenReturn(ModifyDocumentAndCompleteTaskResultSucceeded(document))
+
+        val formSubmissionResult = defaultFormSubmissionService.handleSubmission(
+            processLinkId = formProcessLink(START_EVENT_START).id,
+            formData = formData,
+            documentId = null,
+            taskInstanceId = null,
+            documentDefinitionName = null
+        )
+
+        assertThat(formSubmissionResult).isInstanceOf(FormSubmissionResultSucceeded::class.java)
+        val captor = argumentCaptor<NewDocumentAndStartProcessRequest>()
+        verify(processDocumentService).dispatch(captor.capture())
+        assertThat(captor.firstValue.newDocumentRequest().documentDefinitionName()).isEqualTo("person")
+        assertThat(captor.firstValue.newDocumentRequest().buildingBlockDefinitionKey()).isEqualTo("bezwaar")
+        assertThat(captor.firstValue.processDefinitionId()).isEqualTo(PROCESS_DEFINITION_ID)
+    }
+
     private fun formProcessLink(activityType: ActivityTypeWithEventName = USER_TASK_CREATE): FormProcessLink {
         val formProcessLink = FormProcessLink(
             id = UUID.randomUUID(),
