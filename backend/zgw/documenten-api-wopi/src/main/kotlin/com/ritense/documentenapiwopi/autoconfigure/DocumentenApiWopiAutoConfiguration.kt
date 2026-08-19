@@ -31,6 +31,7 @@ import org.springframework.web.client.RestClient
 @AutoConfiguration
 open class DocumentenApiWopiAutoConfiguration {
     @Bean
+    @ConditionalOnMissingBean(WopiClient::class)
     fun wopiClient(
         restClientBuilder: RestClient.Builder,
     ) = WopiClient(restClientBuilder)

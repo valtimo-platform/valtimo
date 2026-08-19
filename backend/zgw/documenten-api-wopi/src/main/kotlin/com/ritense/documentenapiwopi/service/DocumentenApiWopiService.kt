@@ -35,7 +35,7 @@ class DocumentenApiWopiService(
         return wopiPlugin.getWopiHostPageUrl(documentId, caseDocumentId)
     }
 
-    open fun isWopiConfigured(documentenApiConfigurationId: String): Boolean {
+    fun isWopiConfigured(documentenApiConfigurationId: String): Boolean {
         return pluginService.findPluginConfigurations(
             DocumentenApiWopiPlugin::class.java,
             DocumentenApiWopiPlugin.findConfigurationByDocumentenApiConfiguration(documentenApiConfigurationId)

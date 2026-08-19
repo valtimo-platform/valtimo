@@ -39,7 +39,7 @@ const documentenApiWopiPluginSpecification: PluginSpecification = {
     },
     en: {
       title: 'Documenten API WOPI',
-      description: 'Plugin to allow previewing documents directly in the GZAC.',
+      description: 'Plugin to allow viewing, editing and collaborating on documents directly from GZAC.',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'Here you can enter a name for the plugin. This name will be used to recognize the plugin throughout the rest of the application',

@@ -36,10 +36,10 @@ To configure this plugin the following properties have to be entered:
 ## Configuring MIME types 
 
 Valtimo / GZAC by default restricts the types of documents that can be uploaded to images and PDF files. To allow 
-uploading additional document types, there MIME types following MIME types have to be explicitly added to the 
-`application.yaml` configuration. For example to support Word documents (`.doc` and `.docx`) the MIME types 
-`application/msword` and `application/vnd.openxmlformats-officedocument.wordprocessingml.document` have to be added to 
-the `mime-types` section of the `application.yaml` file as shown below.
+uploading additional document types, their MIME types have to be explicitly added to the `application.yaml`
+configuration. For example to support Word documents (`.doc` and `.docx`) the MIME types `application/msword` and
+`application/vnd.openxmlformats-officedocument.wordprocessingml.document` have to be added to the `mime-types` section
+of the `application.yaml` file as shown below.
 
 ```yaml
 spring:
@@ -52,10 +52,9 @@ spring:
       - application/vnd.openxmlformats-officedocument.wordprocessingml.document
 ```
 
-A complete list of MIME types for Microsoft Office documents can be found [here][5]. 
+A complete list of MIME types for Microsoft Office documents can be found [here][4]. 
 
 [1]: https://github.com/Baseflow/cg-dmf-poc/?tab=readme-ov-file
 [2]: https://www.collaboraonline.com/
 [3]: https://www.onlyoffice.com/
-[4]: ../../running-valtimo/application-configuration/content-security-policy.md
-[5]: https://learn.microsoft.com/en-us/previous-versions/office/office-2007-resource-kit/ee309278%28v=office.12%29
+[4]: https://learn.microsoft.com/en-us/previous-versions/office/office-2007-resource-kit/ee309278%28v=office.12%29

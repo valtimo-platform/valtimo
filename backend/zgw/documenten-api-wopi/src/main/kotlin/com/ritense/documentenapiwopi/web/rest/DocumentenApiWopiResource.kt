@@ -38,22 +38,22 @@ class DocumentenApiWopiResource(
 ) {
     @GetMapping("/v1/documenten-api-wopi/configuration-exists/{documentenApiConfigurationId}")
     fun isWopiConfigured(
-        @PathVariable(name = "documentenApiConfigurationId") documentenApiConfigurationId: String,
+        @PathVariable documentenApiConfigurationId: String,
     ): ResponseEntity<Boolean> {
         return ResponseEntity.ok(
             documentenApiWopiService.isWopiConfigured(documentenApiConfigurationId)
         )
     }
 
-    @GetMapping("/v1/documenten-api-wopi/{pluginConfigurationId}/case-document/{caseDocumentId}/wopi-host-page/{documentId}")
+    @GetMapping("/v1/documenten-api-wopi/{documentenApiConfigurationId}/case-document/{caseDocumentId}/wopi-host-page/{documentId}")
     fun getWopiHostPage(
-        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
-        @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
-        @PathVariable(name = "documentId") documentId: String,
+        @PathVariable @LoggableResource(resourceType = PluginConfiguration::class) documentenApiConfigurationId: String,
+        @PathVariable caseDocumentId: UUID,
+        @PathVariable documentId: String,
     ): ResponseEntity<WopiHostPageResponse> {
         // the browser must navigate to this URL directly rather than us fetching and relaying its HTML,
         // so that markup returned by the WOPI host renders under its own origin, not ours
-        val wopiHostPageUrl = documentenApiWopiService.getWopiHostPageUrl(pluginConfigurationId, documentId, caseDocumentId)
+        val wopiHostPageUrl = documentenApiWopiService.getWopiHostPageUrl(documentenApiConfigurationId, documentId, caseDocumentId)
 
         return ResponseEntity.ok(WopiHostPageResponse(wopiHostPageUrl.toString()))
     }

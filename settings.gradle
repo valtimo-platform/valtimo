@@ -120,5 +120,3 @@ dependencyResolutionManagement {
         mavenLocal()
     }
 }
-
-include 'backend:zgw:documenten-api-wopi'
