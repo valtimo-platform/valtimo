@@ -532,17 +532,19 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onEditContent(file: DocumentenApiRelatedFile): void {
-    this.documentenApiWopiService
-      .getWopiHostPage(file.pluginConfigurationId, file.fileId)
-      .subscribe({
-        next: (value: string) => {
-          let blobUrl = URL.createObjectURL(new Blob([value], {type: 'text/html'}));
-          window.open(blobUrl, '_blank');
+    this.documentId$.pipe(take(1)).subscribe(documentId => {
+      this.documentenApiWopiService
+        .getWopiHostPage(file.pluginConfigurationId, documentId, file.fileId)
+        .subscribe({
+          next: (value: string) => {
+            let blobUrl = URL.createObjectURL(new Blob([value], {type: 'text/html'}));
+            window.open(blobUrl, '_blank');
 
-          // Clean up after a short delay (10 seconds)
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
-        },
-      });
+            // Clean up after a short delay (10 seconds)
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+          },
+        });
+    });
   }
 
   public closeMetadataModal(): void {
@@ -619,7 +621,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       this.documentenApiWopiService.checkWopiSupport(file?.pluginConfigurationId),
       this.filePermissions$,
     ]).pipe(
-      map(([hasWopiSupport, permissions]) => !hasWopiSupport || !permissions[file.fileId]?.canView)
+      map(([hasWopiSupport, permissions]) => !hasWopiSupport || !permissions[file.fileId]?.canModify)
     );
   }
 

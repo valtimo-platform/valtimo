@@ -27,6 +27,7 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.validation.Url
 import java.net.URI
+import java.util.UUID
 
 @Plugin(
     key = PLUGIN_KEY,
@@ -44,8 +45,10 @@ class DocumentenApiWopiPlugin(
     @PluginProperty(key = DOCUMENTEN_API_CONFIGURATION_ID, secret = false)
     lateinit var documentenApiConfigurationId: String
 
-    fun getWopiHostPage(documentId: String): String {
+    fun getWopiHostPage(documentId: String, caseDocumentId: UUID?): String {
         val documentenApiPlugin = getDocumentenApiPlugin()
+        documentenApiPlugin.requireModifyAccess(documentId, caseDocumentId)
+
         val documentenApiAuthentication = documentenApiPlugin.authenticationPluginConfiguration
         val documentenApiBaseUrl = URI("${documentenApiPlugin.url.scheme}://${documentenApiPlugin.url.host}:${documentenApiPlugin.url.port}")
         val slatToken: WopiAccessToken = wopiClient.getWopiAccessToken(documentenApiBaseUrl, documentId, documentenApiAuthentication)

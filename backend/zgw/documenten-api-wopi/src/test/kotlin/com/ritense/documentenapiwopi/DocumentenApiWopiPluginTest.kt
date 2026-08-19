@@ -30,6 +30,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.net.URI
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -52,6 +53,7 @@ class DocumentenApiWopiPluginTest {
     fun `should return WOPI connection details`() {
         val mockDocumentenApiAuthentication: DocumentenApiAuthentication = mock<DocumentenApiAuthentication>()
         val dummyDocumentId: String = "123"
+        val dummyCaseDocumentId: UUID = UUID.randomUUID()
         whenever(documentenApiPlugin.authenticationPluginConfiguration).thenReturn(mockDocumentenApiAuthentication)
         whenever(documentenApiPlugin.url).thenReturn(wopiHostBaseUrl)
         whenever(wopiClient.getWopiAccessToken(any(), any(), any())).thenReturn(wopiAccessToken)
@@ -62,7 +64,7 @@ class DocumentenApiWopiPluginTest {
         plugin.documentenApiConfigurationId = DOCUMENTEN_API_CONFIGURATION_ID
         plugin.wopiClientDiscoveryUrl = URI("http://localhost:8080")
 
-        val page: String = plugin.getWopiHostPage(dummyDocumentId)
+        val page: String = plugin.getWopiHostPage(dummyDocumentId, dummyCaseDocumentId)
 
         assertEquals("TEST_HTML", page)
     }

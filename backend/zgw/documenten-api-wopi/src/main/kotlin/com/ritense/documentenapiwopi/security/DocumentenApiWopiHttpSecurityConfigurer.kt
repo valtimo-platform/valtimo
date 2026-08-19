@@ -29,7 +29,7 @@ class DocumentenApiWopiHttpSecurityConfigurer : HttpSecurityConfigurer {
             http.authorizeHttpRequests { requests ->
                 requests
                     .requestMatchers(antMatcher(GET, "/api/v1/documenten-api-wopi/configuration-exists/*")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/documenten-api-wopi/*/wopi-host-page/*")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/documenten-api-wopi/*/case-document/*/wopi-host-page/*")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

@@ -18,10 +18,13 @@ package com.ritense.documentenapiwopi.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.documentenapi.DocumentenApiAuthentication
 import com.ritense.documentenapi.DocumentenApiPlugin
+import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapiwopi.BaseIntegrationTest
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -30,6 +33,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.servlet.MockMvc
@@ -37,10 +41,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
+import java.net.URI
 import java.util.Optional
 import java.util.UUID
 
@@ -77,8 +81,7 @@ internal class DocumentenApiWopiResourceIT : BaseIntegrationTest() {
             objectMapper.readTree(
                 """
                     {
-                        "wopiClientUrl": "https://wopiclient.example.com",
-                        "wopiHostUrl": "https://wopihost.example.com",
+                        "wopiClientDiscoveryUrl": "${mockWebServer.url("/hosting/discovery")}",
                         "documentenApiConfigurationId": "$DOCUMENTEN_API_PLUGIN_CONFIGURATION_ID"
                     }
                 """.trimIndent()
@@ -105,20 +108,50 @@ internal class DocumentenApiWopiResourceIT : BaseIntegrationTest() {
     }
 
     @Test
-    fun `should return WOPI connection details`() {
+    fun `should return WOPI host page after enforcing modify permission`() {
+        val documentenApiBaseUrl = URI(mockWebServer.url("/").toString())
+
+        whenever(mockDocumentenApiPlugin.authenticationPluginConfiguration).thenReturn(mock<DocumentenApiAuthentication>())
+        whenever(mockDocumentenApiPlugin.url).thenReturn(documentenApiBaseUrl)
+        whenever(mockDocumentenApiPlugin.requireModifyAccess(any(), any())).thenReturn(mock<DocumentInformatieObject>())
+
+        mockWebServer.enqueue(mockResponse("""{"access_token": "test", "access_token_expires_at": 1234567890}"""))
+        mockWebServer.enqueue(
+            MockResponse()
+                .addHeader("Content-Type", "application/xml")
+                .setBody(
+                    """
+                        <?xml version="1.0" encoding="utf-8"?>
+                        <wopi-discovery>
+                            <net-zone name="external-https">
+                                <app name="Word" favIconUrl="https://example.com/word.ico">
+                                    <action name="edit" ext="docx" default="true" urlsrc="https://example.com/wopi/action"/>
+                                </app>
+                            </net-zone>
+                        </wopi-discovery>
+                    """.trimIndent()
+                )
+        )
+        mockWebServer.enqueue(
+            MockResponse()
+                .addHeader("Content-Type", "text/html")
+                .setBody("<html>WOPI host page</html>")
+        )
+
         mockMvc.perform(
             get(
-                "/api/v1/documenten-api-wopi/{pluginConfigurationId}/wopi-connection-details/{documentId}",
+                "/api/v1/documenten-api-wopi/{pluginConfigurationId}/case-document/{caseDocumentId}/wopi-host-page/{documentId}",
                 DOCUMENTEN_API_PLUGIN_CONFIGURATION_ID,
+                CASE_DOCUMENT_ID,
                 DOCUMENT_ID
             )
         )
-        .andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-        .andExpect(jsonPath("$").isNotEmpty)
-        .andExpect(jsonPath("$.wopi_client_url").value("https://wopiclient.example.com"))
-        .andExpect(jsonPath("$.wopi_src").value("https://wopihost.example.com/$DOCUMENT_ID"))
-        .andExpect(jsonPath("$.access_token").value("test"))
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(content().string("<html>WOPI host page</html>"))
+
+        // the WOPI token may only be minted after the caller's MODIFY permission on the document has been verified
+        verify(mockDocumentenApiPlugin).requireModifyAccess(DOCUMENT_ID, CASE_DOCUMENT_ID)
     }
 
     companion object {

@@ -24,6 +24,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.UUID
 
 class DocumentenApiWopiServiceTest {
     private lateinit var documentenApiWopiService: DocumentenApiWopiService
@@ -40,12 +41,13 @@ class DocumentenApiWopiServiceTest {
     fun `should call plugin to get wopi host page`() {
         val documentApiConfigurationId = "mock_document_api_configuration_id"
         val documentId = "mock_document_identifier"
+        val caseDocumentId = UUID.randomUUID()
         val pluginInstance = mock<DocumentenApiWopiPlugin>()
         whenever(pluginService.createInstance<DocumentenApiWopiPlugin>(any(), any()))
             .thenReturn(pluginInstance)
 
-        documentenApiWopiService.getWopiHostPage(documentApiConfigurationId, documentId)
+        documentenApiWopiService.getWopiHostPage(documentApiConfigurationId, documentId, caseDocumentId)
 
-        verify(pluginInstance).getWopiHostPage(documentId)
+        verify(pluginInstance).getWopiHostPage(documentId, caseDocumentId)
     }
 }

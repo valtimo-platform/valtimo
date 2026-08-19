@@ -21,6 +21,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Transactional(readOnly = true)
 @Service
@@ -28,9 +29,9 @@ import org.springframework.transaction.annotation.Transactional
 class DocumentenApiWopiService(
     private val pluginService: PluginService,
 ) {
-    fun getWopiHostPage(documentenApiConfigurationId: String, documentId: String): String {
+    fun getWopiHostPage(documentenApiConfigurationId: String, documentId: String, caseDocumentId: UUID?): String {
         val wopiPlugin = getDocumentenApiWopiPlugin(documentenApiConfigurationId)
-        return wopiPlugin.getWopiHostPage(documentId);
+        return wopiPlugin.getWopiHostPage(documentId, caseDocumentId)
     }
 
     open fun isWopiConfigured(documentenApiConfigurationId: String): Boolean {

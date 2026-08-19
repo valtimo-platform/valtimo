@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @SkipComponentScan
@@ -45,12 +46,13 @@ class DocumentenApiWopiResource(
         )
     }
 
-    @GetMapping("/v1/documenten-api-wopi/{pluginConfigurationId}/wopi-host-page/{documentId}")
+    @GetMapping("/v1/documenten-api-wopi/{pluginConfigurationId}/case-document/{caseDocumentId}/wopi-host-page/{documentId}")
     fun getWopiHostPage(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<String> {
-        val wopiHostPage: String = documentenApiWopiService.getWopiHostPage(pluginConfigurationId, documentId)
+        val wopiHostPage: String = documentenApiWopiService.getWopiHostPage(pluginConfigurationId, documentId, caseDocumentId)
 
         return ResponseEntity.ok(wopiHostPage)
     }
