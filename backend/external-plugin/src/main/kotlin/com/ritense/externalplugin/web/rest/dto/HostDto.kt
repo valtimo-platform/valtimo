@@ -33,6 +33,12 @@ data class HostCreateRequest(
     val eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
     val eventQueueTtlMs: Long? = null,
     val kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
+    /**
+     * Browser origins allowed to embed this host's plugin screens. Defaults to empty so an older
+     * client that does not send the field still registers — the host then frames nothing until an
+     * admin fills the origins in.
+     */
+    val frontendOrigins: List<String> = emptyList(),
 )
 
 data class HostResponse(
@@ -48,6 +54,8 @@ data class HostResponse(
     val eventBrokerExchange: String?,
     val eventQueueMode: EventQueueMode,
     val eventQueueTtlMs: Long?,
+    /** Browser origins allowed to embed this host's plugin screens; empty when none registered. */
+    val frontendOrigins: List<String>,
 ) {
     companion object {
         /** Marker replacing the `user:password` userinfo of an AMQP URL in API responses. */
@@ -65,6 +73,7 @@ data class HostResponse(
             eventBrokerExchange = host.eventBrokerExchange,
             eventQueueMode = host.eventQueueMode,
             eventQueueTtlMs = host.eventQueueTtlMs,
+            frontendOrigins = host.frontendOriginList,
         )
 
         /**
@@ -88,6 +97,10 @@ data class HostResponse(
  * - `defaultEventQueueTtlMs` / `minEventQueueTtlMs` / `maxEventQueueTtlMs`: the queue inactivity
  *   TTL bounds the backend will accept when a host opts into DURABLE mode. Pre-fills and validates
  *   the TTL input in the add-host UI.
+ * - `frontendOrigins`: the configured CORS allowed-origins, which in a split frontend/backend
+ *   deployment are exactly the browser origins that will frame plugin screens. Empty when CORS is
+ *   unconfigured or declares only wildcards — the modal then falls back to the admin's own
+ *   `window.location.origin`, which is by definition the page the plugin will be embedded in.
  */
 data class HostDefaultsResponse(
     val gzacCallbackBaseUrl: String,
@@ -96,6 +109,7 @@ data class HostDefaultsResponse(
     val defaultEventQueueTtlMs: Long,
     val minEventQueueTtlMs: Long,
     val maxEventQueueTtlMs: Long,
+    val frontendOrigins: List<String>,
 )
 
 /**
@@ -106,4 +120,13 @@ data class HostDefaultsResponse(
 data class HostEventQueueUpdateRequest(
     val eventQueueMode: EventQueueMode,
     val eventQueueTtlMs: Long?,
+)
+
+/**
+ * Narrow update payload for the browser origins allowed to embed this host's plugin screens. Same
+ * shape of change as [HostEventQueueUpdateRequest]: one runtime-editable field, everything
+ * security-sensitive stays immutable. An empty list means nothing may frame this host's plugins.
+ */
+data class HostFrontendOriginsUpdateRequest(
+    val frontendOrigins: List<String>,
 )

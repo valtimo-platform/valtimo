@@ -89,6 +89,12 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   public readonly $endpoints = signal<Array<ExternalPluginEndpoint>>([]);
   public readonly $eventSubscriptions = signal<Array<string>>([]);
   public readonly $capabilities = signal<Array<string>>([]);
+  public readonly $egress = signal<Array<string>>([]);
+  /**
+   * Destinations derived from this configuration's own `x-egress-target` values. Taken from the saved
+   * configuration rather than recomputed locally, so the list matches what GZAC pushed to the host.
+   */
+  public readonly $derivedEgress = signal<Array<string>>([]);
   public readonly $permissionsValid = signal(false);
   public readonly $hasPermissionsStep = signal(false);
   public readonly $definitionName = signal<string>('');
@@ -247,6 +253,8 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$endpoints.set([]);
     this.$eventSubscriptions.set([]);
     this.$capabilities.set([]);
+    this.$egress.set([]);
+    this.$derivedEgress.set([]);
     this.$permissionsValid.set(false);
     this.$hasPermissionsStep.set(false);
     this._$definition.set(null);
@@ -281,11 +289,21 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           const endpoints = definition.manifest?.permissions?.endpoints ?? [];
           const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
           const capabilities = definition.manifest?.permissions?.capabilities ?? [];
+          // Egress comes off the configuration, not the manifest: the manifest-declared grants are
+          // what was accepted at activation, and the derived ones follow the values actually stored.
+          const egress = configDetail.grantedEgress?.map(entry => entry.target) ?? [];
+          const derivedEgress = configDetail.derivedEgress ?? [];
           this.$endpoints.set(endpoints);
           this.$eventSubscriptions.set(eventSubscriptions);
           this.$capabilities.set(capabilities);
+          this.$egress.set(egress);
+          this.$derivedEgress.set(derivedEgress);
           this.$hasPermissionsStep.set(
-            endpoints.length > 0 || eventSubscriptions.length > 0 || capabilities.length > 0
+            endpoints.length > 0 ||
+              eventSubscriptions.length > 0 ||
+              capabilities.length > 0 ||
+              egress.length > 0 ||
+              derivedEgress.length > 0
           );
           this.$permissionsValid.set(true);
 
@@ -307,11 +325,16 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           const endpoints = definition.manifest?.permissions?.endpoints ?? [];
           const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
           const capabilities = definition.manifest?.permissions?.capabilities ?? [];
+          const egress = definition.manifest?.permissions?.egress ?? [];
           this.$endpoints.set(endpoints);
           this.$eventSubscriptions.set(eventSubscriptions);
           this.$capabilities.set(capabilities);
+          this.$egress.set(egress);
           this.$hasPermissionsStep.set(
-            endpoints.length > 0 || eventSubscriptions.length > 0 || capabilities.length > 0
+            endpoints.length > 0 ||
+              eventSubscriptions.length > 0 ||
+              capabilities.length > 0 ||
+              egress.length > 0
           );
           this.$permissionsValid.set(true);
 

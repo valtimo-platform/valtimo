@@ -31,7 +31,11 @@
 
 <cds-inline-notification
   *ngIf="
-    $capabilities().length === 0 && $enrichedEndpoints().length === 0 && $eventTypes().length === 0
+    $capabilities().length === 0 &&
+    $enrichedEndpoints().length === 0 &&
+    $eventTypes().length === 0 &&
+    $egress().length === 0 &&
+    $derivedEgress().length === 0
   "
   [notificationObj]="{
     type: 'info',
@@ -131,10 +135,70 @@
   </cds-structured-list>
 </section>
 
+<section
+  *ngIf="$egress().length > 0 || $derivedEgress().length > 0"
+  class="plugin-external-permissions__section"
+>
+  <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
+    {{ 'pluginManagement.permissions.egressHeading' | translate }}
+  </h6>
+
+  <p class="plugin-external-permissions__helper">
+    {{ 'pluginManagement.permissions.egressDescription' | translate }}
+  </p>
+
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.permissions.egressTargetHeading' | translate }}
+      </cds-list-column>
+      <cds-list-column>
+        {{ 'pluginManagement.permissions.egressSourceHeading' | translate }}
+      </cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row
+      *ngFor="let target of $egress()"
+      [attr.data-test-id]="'external-plugin-permission-egress-' + target"
+    >
+      <cds-list-column nowrap="true">
+        <cds-tag [type]="_isWildcardEgress(target) ? 'magenta' : 'cool-gray'" size="sm">{{
+          target
+        }}</cds-tag>
+      </cds-list-column>
+
+      <cds-list-column>
+        <span *ngIf="_isWildcardEgress(target); else fixedTarget">
+          {{ 'pluginManagement.permissions.egressWildcard' | translate }}
+        </span>
+        <ng-template #fixedTarget>
+          {{ 'pluginManagement.permissions.egressFromManifest' | translate }}
+        </ng-template>
+      </cds-list-column>
+    </cds-list-row>
+
+    <cds-list-row
+      *ngFor="let target of $derivedEgress()"
+      [attr.data-test-id]="'external-plugin-permission-egress-derived-' + target"
+    >
+      <cds-list-column nowrap="true">
+        <cds-tag type="blue" size="sm">{{ target }}</cds-tag>
+      </cds-list-column>
+
+      <cds-list-column>
+        {{ 'pluginManagement.permissions.egressFromConfiguration' | translate }}
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</section>
+
 <cds-checkbox
   *ngIf="
     !readonlyMode &&
-    ($capabilities().length > 0 || $enrichedEndpoints().length > 0 || $eventTypes().length > 0)
+    ($capabilities().length > 0 ||
+      $enrichedEndpoints().length > 0 ||
+      $eventTypes().length > 0 ||
+      $egress().length > 0)
   "
   class="plugin-external-permissions__acceptance"
   [checked]="$accepted()"

@@ -42,12 +42,24 @@ describe("plugin-bundles routes", () => {
     rmSync(pluginDir, { recursive: true, force: true });
   });
 
+  // Origins the stub registry reports as allowed to frame. Read per request, so a test can change
+  // the allowlist without rebuilding the app — which is also how the real registry behaves once its
+  // short-TTL cache expires.
+  let allowedOrigins: string[];
+
   beforeEach(async () => {
+    allowedOrigins = ["https://valtimo.example.com"];
     pluginManager = {
       getManifest: vi.fn(() => ({ logo: "logo.svg" })),
       getPluginDir: vi.fn(() => pluginDir),
     };
-    app = await buildTestApp((a) => pluginBundleRoutes(a, { pluginManager: pluginManager as never }));
+    const frameAncestorRegistry = {
+      allowedOrigins: async () => allowedOrigins,
+      isAllowed: async (origin: string) => allowedOrigins.includes(origin),
+    };
+    app = await buildTestApp((a) =>
+      pluginBundleRoutes(a, { pluginManager: pluginManager as never, frameAncestorRegistry })
+    );
   });
 
   afterEach(async () => {
@@ -128,6 +140,94 @@ describe("plugin-bundles routes", () => {
     it("returns 404 when the declared logo is missing on disk", async () => {
       pluginManager.getManifest.mockReturnValueOnce({ logo: "ghost.svg" });
       const res = await app.inject({ method: "GET", url: `/plugins/${PLUGIN}/${VERSION}/logo` });
+      expect(res.statusCode).toBe(404);
+    });
+  });
+
+  /**
+   * The gate that stops an attacker-controlled page from framing a plugin and answering its
+   * proxied calls with fabricated data. The browser enforces it, so the only thing the host has to
+   * get right is which origins end up in the directive — and that nothing may frame it when the
+   * allowlist is empty.
+   */
+  describe("frame-ancestors", () => {
+    const bundleUrl = `/plugins/${PLUGIN}/${VERSION}/bundles/case-tab.bundle.js`;
+    const logoUrl = `/plugins/${PLUGIN}/${VERSION}/logo`;
+
+    it("lists every registered origin on both the bundle and the logo", async () => {
+      allowedOrigins = ["https://valtimo.example.com", "http://localhost:4200"];
+
+      for (const url of [bundleUrl, logoUrl]) {
+        const res = await app.inject({ method: "GET", url });
+        expect(res.headers["content-security-policy"]).toContain(
+          "frame-ancestors https://valtimo.example.com http://localhost:4200"
+        );
+        // The legitimate embed must not be broken by the older header, which has no allowlist form.
+        expect(res.headers["x-frame-options"]).toBeUndefined();
+      }
+    });
+
+    it("fails closed with 'none' and X-Frame-Options when no origin is registered", async () => {
+      allowedOrigins = [];
+
+      for (const url of [bundleUrl, logoUrl]) {
+        const res = await app.inject({ method: "GET", url });
+        expect(res.headers["content-security-policy"]).toContain("frame-ancestors 'none'");
+        expect(res.headers["x-frame-options"]).toBe("DENY");
+      }
+    });
+
+    it("keeps the anti-exfiltration directives alongside frame-ancestors", async () => {
+      const csp = (await app.inject({ method: "GET", url: bundleUrl })).headers[
+        "content-security-policy"
+      ] as string;
+
+      expect(csp).toContain("default-src 'none'");
+      expect(csp).toContain("connect-src 'self'");
+      expect(csp).toContain("sandbox allow-scripts allow-forms");
+      expect(csp).toContain("frame-ancestors https://valtimo.example.com");
+    });
+  });
+
+  describe("frame-policy probe", () => {
+    const policyUrl = `/plugins/${PLUGIN}/${VERSION}/frame-policy`;
+
+    it("answers true for a registered origin and false for anything else", async () => {
+      const allowed = await app.inject({
+        method: "GET",
+        url: `${policyUrl}?origin=${encodeURIComponent("https://valtimo.example.com")}`,
+      });
+      expect(allowed.statusCode).toBe(200);
+      expect(allowed.json()).toEqual({ allowed: true });
+
+      const denied = await app.inject({
+        method: "GET",
+        url: `${policyUrl}?origin=${encodeURIComponent("https://evil.example")}`,
+      });
+      expect(denied.json()).toEqual({ allowed: false });
+    });
+
+    it("never enumerates the registered origins — the caller must name the one it asks about", async () => {
+      const res = await app.inject({ method: "GET", url: policyUrl });
+
+      expect(res.json()).toEqual({ allowed: false });
+      expect(res.body).not.toContain("valtimo.example.com");
+    });
+
+    it("is reachable from the iframe's opaque origin", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: `${policyUrl}?origin=${encodeURIComponent("https://valtimo.example.com")}`,
+        headers: { origin: "null" },
+      });
+
+      expect(res.headers["access-control-allow-origin"]).toBe("*");
+      expect(res.headers["cache-control"]).toBe("no-store");
+    });
+
+    it("returns 404 for a plugin that is not loaded", async () => {
+      pluginManager.getManifest.mockReturnValueOnce(null);
+      const res = await app.inject({ method: "GET", url: `${policyUrl}?origin=https://x.example` });
       expect(res.statusCode).toBe(404);
     });
   });

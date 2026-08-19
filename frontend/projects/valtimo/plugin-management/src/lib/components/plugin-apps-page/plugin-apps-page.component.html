@@ -66,8 +66,10 @@
 </ng-container>
 
 <valtimo-plugin-host-modal
+  [errorMessage]="hostErrorMessage$ | async"
   [kind]="'APP'"
   [open]="hostModalOpen$ | async"
+  [submitting]="hostSubmitting$ | async"
   (closeEvent)="closeHostModal()"
   (submitEvent)="submitHost($event)"
 ></valtimo-plugin-host-modal>

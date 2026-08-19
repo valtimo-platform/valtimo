@@ -33,7 +33,14 @@ vi.mock("@extism/extism", () => ({
   default: (...args: unknown[]) => createPluginMock(...args),
 }));
 
-// Import AFTER the mock so plugin-manager picks it up.
+// Stands in for the http_request host function so the manager's *wiring* into it can be asserted.
+// Extism itself is mocked, so the returned closure is registered but never invoked.
+const createHttpRequestMock = vi.fn(() => async () => 0n);
+vi.mock("./host-functions/http-request.js", () => ({
+  createHttpRequestHostFunction: (...args: unknown[]) => createHttpRequestMock(...(args as [])),
+}));
+
+// Import AFTER the mocks so plugin-manager picks them up.
 const {PluginManager, computeContentHash} = await import("./plugin-manager.js");
 
 const PLUGIN_ID = "test-plugin";
@@ -155,6 +162,23 @@ describe("PluginManager (mocked Extism)", () => {
     expect(options.timeoutMs).toBe(12_345);
     expect(options.memory).toEqual({ maxPages: 512 });
     expect(options.runInWorker).toBe(true);
+  });
+
+  it("hands the http_request host function its target policy, including the internal-CIDR carve-out", async () => {
+    // The carve-out only takes effect if it is threaded all the way through to the host function;
+    // stored-but-unused, HOST_ALLOWED_INTERNAL_CIDRS would silently do nothing.
+    const allowedInternalCidrs = ["10.1.0.0/16"] as never;
+    manager = makeManager({ allowHttp: true, allowPrivateNetwork: true, allowedInternalCidrs });
+    await manager.loadPlugin(PLUGIN_ID, VERSION);
+    await manager.callAction(PLUGIN_ID, VERSION, "echo", actionInput);
+
+    expect(createHttpRequestMock).toHaveBeenCalledWith(
+      expect.anything(), // logger
+      expect.anything(), // log repository
+      true,
+      true,
+      allowedInternalCidrs
+    );
   });
 
   it("defaults the limits and omits the memory cap when it is disabled (0)", async () => {

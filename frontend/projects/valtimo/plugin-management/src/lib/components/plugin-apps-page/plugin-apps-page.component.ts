@@ -65,6 +65,8 @@ export class PluginAppsPageComponent implements OnDestroy {
   public readonly hostsLoading$ = new BehaviorSubject<boolean>(true);
   public readonly hostsRefreshing$ = new BehaviorSubject<boolean>(false);
   public readonly hostModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostSubmitting$ = new BehaviorSubject<boolean>(false);
+  public readonly hostErrorMessage$ = new BehaviorSubject<string | null>(null);
   public readonly reloadModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
@@ -169,16 +171,39 @@ export class PluginAppsPageComponent implements OnDestroy {
     this.hostModalOpen$.next(false);
   }
 
+  /**
+   * Same contract as the hosts page: a rejected registration keeps the modal populated and shows
+   * the backend's reason inline, because `createHost` opts its 400 out of the global error toast.
+   */
   public submitHost(request: ExternalPluginHostCreateRequest): void {
+    this.hostSubmitting$.next(true);
+    this.hostErrorMessage$.next(null);
     this._externalPluginService.createHost(request).subscribe({
       next: () => {
+        this.hostSubmitting$.next(false);
         this.hostModalOpen$.next(false);
         this.reloadModalOpen$.next(true);
       },
-      error: () => {
-        this._logger.error('Something went wrong with creating the app.');
+      error: (response: HttpErrorResponse) => {
+        this.hostSubmitting$.next(false);
+        this.hostErrorMessage$.next(this._extractHostError(response));
+        this._logger.error('Something went wrong with creating the app.', response);
       },
     });
+  }
+
+  /** See `PluginHostsPageComponent._extractHostError` — the message precedence is identical. */
+  private _extractHostError(response: HttpErrorResponse): string {
+    const body = response?.error;
+    const candidate =
+      (typeof body?.detail === 'string' && body.detail) ||
+      (typeof body?.message === 'string' && body.message) ||
+      (typeof body?.title === 'string' && body.title) ||
+      '';
+    return (
+      candidate.trim() ||
+      this._translateService.instant('pluginManagement.host.createFailedFallback')
+    );
   }
 
   public deleteHost(host: ExternalPluginHost): void {

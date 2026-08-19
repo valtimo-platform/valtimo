@@ -50,6 +50,8 @@
           (endpointsResolved)="onEndpointsResolved($event)"
           (eventSubscriptionsResolved)="onEventSubscriptionsResolved($event)"
           (capabilitiesResolved)="onCapabilitiesResolved($event)"
+          (egressResolved)="onEgressResolved($event)"
+          (derivedEgressResolved)="onDerivedEgressResolved($event)"
           (validEvent)="onValid($event)"
           (saveEvent)="onExternalSave($event)"
         ></valtimo-plugin-external-configure>
@@ -68,10 +70,13 @@
         [endpoints]="endpoints$ | async"
         [eventSubscriptions]="eventSubscriptions$ | async"
         [capabilities]="capabilities$ | async"
+        [egress]="egress$ | async"
+        [derivedEgress]="derivedEgress$ | async"
         (validEvent)="onPermissionsValid($event)"
         (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
         (grantedEventsChange)="onGrantedEventsChange($event)"
         (grantedCapabilitiesChange)="onGrantedCapabilitiesChange($event)"
+        (grantedEgressChange)="onGrantedEgressChange($event)"
       ></valtimo-plugin-external-permissions>
     </div>
   </section>
