@@ -75,6 +75,11 @@
   `formFlow.step.step1.title`) when no translation was defined for a step. It now falls back to the
   step key from the form flow definition.
 
+* **The image widget no longer offers task fields it cannot show**
+
+  The value picker of an image widget offered `task:` fields such as the assignee or the due date, even
+  though a widget has no task to read them from. Choosing one produced a widget that failed to render.
+
 * **Breadcrumbs of a DMN decision table no longer stay behind on other screens**
 
   After opening a decision table of a case and then navigating to another screen through the menu, the
