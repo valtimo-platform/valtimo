@@ -532,16 +532,23 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onEditContent(file: DocumentenApiRelatedFile): void {
+    // Open the tab synchronously so the browser still associates it with this click's user activation;
+    // the URL is filled in once the backend responds. Navigating there directly (rather than fetching the
+    // WOPI host's HTML ourselves and rendering it via a blob: URL) keeps that markup on the WOPI host's own
+    // origin instead of ours.
+    const wopiTab = window.open('', '_blank');
+
     this.documentId$.pipe(take(1)).subscribe(documentId => {
       this.documentenApiWopiService
         .getWopiHostPage(file.pluginConfigurationId, documentId, file.fileId)
         .subscribe({
-          next: (value: string) => {
-            let blobUrl = URL.createObjectURL(new Blob([value], {type: 'text/html'}));
-            window.open(blobUrl, '_blank');
-
-            // Clean up after a short delay (10 seconds)
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+          next: ({url}) => {
+            if (wopiTab) {
+              wopiTab.location.href = url;
+            }
+          },
+          error: () => {
+            wopiTab?.close();
           },
         });
     });

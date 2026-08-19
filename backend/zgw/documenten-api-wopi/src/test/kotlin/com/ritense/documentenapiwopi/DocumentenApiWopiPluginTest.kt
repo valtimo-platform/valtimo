@@ -64,16 +64,16 @@ class DocumentenApiWopiPluginTest {
         whenever(wopiClient.getWopiAccessToken(any(), any(), any())).thenReturn(wopiAccessToken)
         whenever(wopiClient.getWopiDiscovery(any())).thenReturn(wopiDiscovery)
         // Only stub the exact edit/docx URL: if the plugin picks the wrong app, extension or action, this returns null and the test fails.
-        whenever(wopiClient.getWopiHostPage(wopiHostBaseUrl, URI(WORD_EDIT_URL), dummyDocumentId, wopiAccessToken))
-            .thenReturn("TEST_HTML")
+        whenever(wopiClient.buildWopiHostPageUrl(wopiHostBaseUrl, URI(WORD_EDIT_URL), dummyDocumentId, wopiAccessToken))
+            .thenReturn(URI(EXPECTED_HOST_PAGE_URL))
 
         val plugin = DocumentenApiWopiPlugin(wopiClient, pluginService)
         plugin.documentenApiConfigurationId = DOCUMENTEN_API_CONFIGURATION_ID
         plugin.wopiClientDiscoveryUrl = URI("http://localhost:8080")
 
-        val page: String = plugin.getWopiHostPage(dummyDocumentId, dummyCaseDocumentId)
+        val url: URI = plugin.getWopiHostPageUrl(dummyDocumentId, dummyCaseDocumentId)
 
-        assertEquals("TEST_HTML", page)
+        assertEquals(URI(EXPECTED_HOST_PAGE_URL), url)
     }
 
     @Test
@@ -94,13 +94,14 @@ class DocumentenApiWopiPluginTest {
         plugin.wopiClientDiscoveryUrl = URI("http://localhost:8080")
 
         assertFailsWith<IllegalStateException> {
-            plugin.getWopiHostPage(dummyDocumentId, dummyCaseDocumentId)
+            plugin.getWopiHostPageUrl(dummyDocumentId, dummyCaseDocumentId)
         }
     }
 
     companion object {
         private const val DOCUMENTEN_API_CONFIGURATION_ID = "documentenApiConfigurationId"
         private const val WORD_EDIT_URL = "https://word.example.com/edit"
+        private const val EXPECTED_HOST_PAGE_URL = "https://wopihost.example.com/wopi/files/123?access_token=test"
 
         private val wopiHostBaseUrl: URI = URI("https://wopihost.example.com")
 

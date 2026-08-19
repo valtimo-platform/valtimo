@@ -45,7 +45,7 @@ class DocumentenApiWopiPlugin(
     @PluginProperty(key = DOCUMENTEN_API_CONFIGURATION_ID, secret = false)
     lateinit var documentenApiConfigurationId: String
 
-    fun getWopiHostPage(documentId: String, caseDocumentId: UUID?): String {
+    fun getWopiHostPageUrl(documentId: String, caseDocumentId: UUID?): URI {
         val documentenApiPlugin = getDocumentenApiPlugin()
         val documentInformatieObject = documentenApiPlugin.requireModifyAccess(documentId, caseDocumentId)
         val extension = documentInformatieObject.bestandsnaam?.substringAfterLast('.', "")?.lowercase()
@@ -55,7 +55,7 @@ class DocumentenApiWopiPlugin(
         val wopiDiscovery: WopiDiscovery = wopiClient.getWopiDiscovery(wopiClientDiscoveryUrl)
         val wopiClientUrl: URI = wopiDiscovery.editActionUrl(extension)
 
-        return wopiClient.getWopiHostPage(documentenApiPlugin.url, wopiClientUrl, documentId, slatToken)
+        return wopiClient.buildWopiHostPageUrl(documentenApiPlugin.url, wopiClientUrl, documentId, slatToken)
     }
 
     private fun getDocumentenApiPlugin(): DocumentenApiPlugin {

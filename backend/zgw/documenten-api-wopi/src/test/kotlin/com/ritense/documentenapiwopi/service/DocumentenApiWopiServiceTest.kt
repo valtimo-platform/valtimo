@@ -46,8 +46,8 @@ class DocumentenApiWopiServiceTest {
         whenever(pluginService.createInstance<DocumentenApiWopiPlugin>(any(), any()))
             .thenReturn(pluginInstance)
 
-        documentenApiWopiService.getWopiHostPage(documentApiConfigurationId, documentId, caseDocumentId)
+        documentenApiWopiService.getWopiHostPageUrl(documentApiConfigurationId, documentId, caseDocumentId)
 
-        verify(pluginInstance).getWopiHostPage(documentId, caseDocumentId)
+        verify(pluginInstance).getWopiHostPageUrl(documentId, caseDocumentId)
     }
 }

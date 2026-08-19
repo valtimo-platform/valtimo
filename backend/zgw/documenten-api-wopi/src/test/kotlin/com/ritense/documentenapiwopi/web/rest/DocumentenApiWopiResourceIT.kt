@@ -41,12 +41,16 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 import java.net.URI
 import java.util.Optional
 import java.util.UUID
+import org.hamcrest.Matchers.allOf
+import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.startsWith
 
 @Transactional
 internal class DocumentenApiWopiResourceIT : BaseIntegrationTest() {
@@ -134,12 +138,6 @@ internal class DocumentenApiWopiResourceIT : BaseIntegrationTest() {
                     """.trimIndent()
                 )
         )
-        mockWebServer.enqueue(
-            MockResponse()
-                .addHeader("Content-Type", "text/html")
-                .setBody("<html>WOPI host page</html>")
-        )
-
         mockMvc.perform(
             get(
                 "/api/v1/documenten-api-wopi/{pluginConfigurationId}/case-document/{caseDocumentId}/wopi-host-page/{documentId}",
@@ -150,7 +148,17 @@ internal class DocumentenApiWopiResourceIT : BaseIntegrationTest() {
         )
             .andDo(MockMvcResultHandlers.print())
             .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-            .andExpect(content().string("<html>WOPI host page</html>"))
+            // the response must be a JSON URL for the browser to navigate to directly - never the WOPI host's HTML itself
+            .andExpect(
+                jsonPath(
+                    "$.url",
+                    allOf(
+                        startsWith(mockWebServer.url("/wopi/files/$DOCUMENT_ID").toString()),
+                        containsString("access_token=test"),
+                        containsString("wopiClient="),
+                    )
+                )
+            )
 
         // the WOPI token may only be minted after the caller's MODIFY permission on the document has been verified
         verify(mockDocumentenApiPlugin).requireModifyAccess(DOCUMENT_ID, CASE_DOCUMENT_ID)

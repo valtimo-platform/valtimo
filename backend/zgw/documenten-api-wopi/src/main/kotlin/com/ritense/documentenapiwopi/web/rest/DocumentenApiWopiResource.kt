@@ -17,12 +17,11 @@
 package com.ritense.documentenapiwopi.web.rest
 
 import com.ritense.documentenapiwopi.service.DocumentenApiWopiService
+import com.ritense.documentenapiwopi.web.rest.dto.WopiHostPageResponse
 import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import org.apache.coyote.Response
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -51,9 +50,11 @@ class DocumentenApiWopiResource(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
         @PathVariable(name = "documentId") documentId: String,
-    ): ResponseEntity<String> {
-        val wopiHostPage: String = documentenApiWopiService.getWopiHostPage(pluginConfigurationId, documentId, caseDocumentId)
+    ): ResponseEntity<WopiHostPageResponse> {
+        // the browser must navigate to this URL directly rather than us fetching and relaying its HTML,
+        // so that markup returned by the WOPI host renders under its own origin, not ours
+        val wopiHostPageUrl = documentenApiWopiService.getWopiHostPageUrl(pluginConfigurationId, documentId, caseDocumentId)
 
-        return ResponseEntity.ok(wopiHostPage)
+        return ResponseEntity.ok(WopiHostPageResponse(wopiHostPageUrl.toString()))
     }
 }

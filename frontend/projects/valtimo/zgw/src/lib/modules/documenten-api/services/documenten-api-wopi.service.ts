@@ -44,12 +44,11 @@ export class DocumentenApiWopiService extends BaseApiService {
     documentenApiPluginConfigurationId: string,
     caseDocumentId: string,
     documentId: string
-  ): Observable<string> {
-    return this.httpClient.get(
+  ): Observable<{url: string}> {
+    return this.httpClient.get<{url: string}>(
       this.getApiUrl(
         `/v1/documenten-api-wopi/${documentenApiPluginConfigurationId}/case-document/${caseDocumentId}/wopi-host-page/${documentId}`
-      ),
-      {responseType: 'text'}
+      )
     );
   }
 }

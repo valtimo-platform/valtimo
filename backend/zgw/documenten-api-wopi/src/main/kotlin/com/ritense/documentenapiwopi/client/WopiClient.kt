@@ -26,6 +26,7 @@ import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
@@ -74,22 +75,18 @@ class WopiClient(
         return result
     }
 
-    fun getWopiHostPage(baseUrl: URI, wopiClientUrl: URI, documentId: String, wopiAccessToken: WopiAccessToken): String {
-        val result = restClient()
-            .get()
-            .uri {
-                // replacePath drops baseUrl's own path (e.g. /documenten/); the WOPI extension is mounted at the host root
-                ClientTools.baseUrlToBuilder(it, baseUrl)
-                    .replacePath("/wopi/files/$documentId")
-                    .queryParam("access_token", wopiAccessToken.accessToken)
-                    .queryParam("wopiClient", wopiClientUrl.toString())
-                    .build()
-            }
-            .headers { it.setBearerAuth(wopiAccessToken.accessToken) }
-            .retrieve()
-            .body<String>()!!
-
-        return result
+    /**
+     * Builds the browser-facing WOPI host page URL. This must NOT be fetched server-side and relayed to the
+     * frontend: the resulting page is rendered by the WOPI host (e.g. cg-dmf), and the browser needs to navigate
+     * there directly so any markup it returns executes under the WOPI host's own origin, not ours.
+     */
+    fun buildWopiHostPageUrl(baseUrl: URI, wopiClientUrl: URI, documentId: String, wopiAccessToken: WopiAccessToken): URI {
+        // replacePath drops baseUrl's own path (e.g. /documenten/); the WOPI extension is mounted at the host root
+        return ClientTools.baseUrlToBuilder(UriComponentsBuilder.newInstance(), baseUrl)
+            .replacePath("/wopi/files/$documentId")
+            .queryParam("access_token", wopiAccessToken.accessToken)
+            .queryParam("wopiClient", wopiClientUrl.toString())
+            .build()
     }
 
     private fun restClient(): RestClient {
