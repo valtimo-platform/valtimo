@@ -348,11 +348,19 @@ public class OperatonProcessJsonSchemaDocumentService implements ProcessDocument
                 processInstanceWithDefinition.getProcessInstanceDto().getId()
             );
 
-            runWithoutAuthorization(() -> processDocumentAssociationService.createProcessDocumentInstance(
-                operatonProcessInstanceId.toString(),
-                document.id().getId(),
-                processInstanceWithDefinition.getProcessDefinition().getName()
-            ));
+            // Starting the process may already have associated the instance with another document: a building
+            // block's start event listener creates the building block document and points the association at
+            // it. Leave that association alone, the same way modifyDocumentAndStartProcess does.
+            runWithoutAuthorization(() -> {
+                if (processDocumentAssociationService.findProcessDocumentInstance(operatonProcessInstanceId).isEmpty()) {
+                    processDocumentAssociationService.createProcessDocumentInstance(
+                        operatonProcessInstanceId.toString(),
+                        document.id().getId(),
+                        processInstanceWithDefinition.getProcessDefinition().getName()
+                    );
+                }
+                return null;
+            });
 
             request.doAdditionalModifications(document);
 

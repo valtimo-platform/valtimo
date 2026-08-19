@@ -65,7 +65,11 @@ public class NotificationServiceImpl implements NotificationService {
             final String userId = task.getAssignee();
             if (userId != null) {
                 var user = runWithoutAuthorization(() -> userManagementService.findByUsername(userId));
-                notifyUserAboutTaskAssignment(user, task, template, "nl");
+                if (user == null) {
+                    logger.warn("Not sending assignment notification for task {}. User '{}' could not be found.", task.getId(), userId);
+                } else {
+                    notifyUserAboutTaskAssignment(user, task, template, "nl");
+                }
             }
         } else if (delegateTaskHelper.isTaskBeingCreated(task)) {
             notifyCandidateGroupAboutTaskAssignment(task, template);
