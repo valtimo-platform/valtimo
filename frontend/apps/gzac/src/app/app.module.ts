@@ -102,6 +102,15 @@ import {
   ZgwModule
 } from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
+import {SmtpMailPluginModule, smtpmailPluginSpecification} from '@valtimo-plugins/smtpmail';
+import {
+  DocumentGeneratorPluginModule,
+  documentGeneratorPluginSpecification,
+  MailTemplatePluginModule,
+  mailTemplatePluginSpecification,
+  TextTemplatePluginModule,
+  textTemplatePluginSpecification,
+} from '@valtimo-plugins/freemarker';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -188,7 +197,11 @@ export function tabsFactory() {
     TranslationManagementModule,
     TaskManagementModule,
     ZgwModule,
-    LoggingModule
+    LoggingModule,
+    SmtpMailPluginModule,
+    MailTemplatePluginModule,
+    TextTemplatePluginModule,
+    DocumentGeneratorPluginModule,
   ],
   providers: [{
     provide: PLUGINS_TOKEN,
@@ -205,7 +218,11 @@ export function tabsFactory() {
       notificatiesApiPluginSpecification,
       openNotificatiesPluginSpecification,
       portaaltaakPluginSpecification,
-      verzoekPluginSpecification
+      verzoekPluginSpecification,
+      smtpmailPluginSpecification,
+      mailTemplatePluginSpecification,
+      textTemplatePluginSpecification,
+      documentGeneratorPluginSpecification,
     ]
   }],
   bootstrap: [AppComponent]

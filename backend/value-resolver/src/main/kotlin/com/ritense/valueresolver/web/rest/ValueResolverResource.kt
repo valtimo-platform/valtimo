@@ -16,6 +16,7 @@
 
 package com.ritense.valueresolver.web.rest
 
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valueresolver.ValueResolverOption
@@ -36,11 +37,13 @@ import org.springframework.web.bind.annotation.RestController
 class ValueResolverResource(
     private val valueResolverService: ValueResolverService
 ) {
+    @RunWithoutAuthorization
     @GetMapping("/management/v1/value-resolver")
     fun getValueResolvers(): ResponseEntity<List<String>> {
         return ResponseEntity.ok(valueResolverService.getValueResolvers())
     }
 
+    @RunWithoutAuthorization
     @PostMapping("/management/v1/value-resolver/document-definition/{documentDefinitionName}/keys")
     fun getResolvableKeys(
         @PathVariable documentDefinitionName: String,
@@ -53,6 +56,7 @@ class ValueResolverResource(
         return ResponseEntity.ok(options.map { it.path })
     }
 
+    @RunWithoutAuthorization
     @PostMapping("/management/v2/value-resolver/document-definition/{documentDefinitionName}/keys")
     fun getResolvableKeys(
         @PathVariable documentDefinitionName: String,
@@ -61,6 +65,7 @@ class ValueResolverResource(
         return ResponseEntity.ok(valueResolverService.getResolvableKeys(request, documentDefinitionName))
     }
 
+    @RunWithoutAuthorization
     @PostMapping("/management/v1/value-resolver/document-definition/{documentDefinitionName}/version/{version}/keys")
     fun getResolvableKeys(
         @PathVariable documentDefinitionName: String,
@@ -75,6 +80,7 @@ class ValueResolverResource(
         return ResponseEntity.ok(options.map { it.path })
     }
 
+    @RunWithoutAuthorization
     @PostMapping("/management/v2/value-resolver/document-definition/{documentDefinitionName}/version/{version}/keys")
     fun getResolvableKeys(
         @PathVariable documentDefinitionName: String,
