@@ -293,6 +293,34 @@ Each of these properties supports more than one expression, e.g. when a step is 
 
 Valtimo provides access to certain variables in the SpEL context, e.g. what the current step is. Which properties are available can be found in the [available SpEL context properties section](forms/forms/whitelist-spring-bean.md#available-properties-in-spel-context).
 
+### Completing a form flow
+
+The last step of a form flow normally hands control back to the process it belongs to. Valtimo provides the `valtimoFormFlow` bean for this. Which expression you need depends on where the form flow is linked, and using the wrong one fails at runtime because each expression needs different context:
+
+| Expression                                                                                           | Use when the form flow is linked to                                                                        | Effect                                                         |
+|------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+| `valtimoFormFlow.completeTask(additionalProperties)`                                                 | a **user task**                                                                                            | Completes the user task, so the process continues.             |
+| `valtimoFormFlow.completeTask(additionalProperties, step.submissionData)`                            | a **user task**                                                                                            | Completes the user task, so the process continues.             |
+| `valtimoFormFlow.completeTask(additionalProperties, step.submissionData, {'doc:/target':'/source'})` | a **user task**                                                                                            | Completes the user task, so the process continues.             |
+| `valtimoFormFlow.startCase(instance.id, {'doc:/target':'/source'})`                                  | the **start event** of a process that creates a new case                                                   | Creates the case document and starts the process.              |
+| `valtimoFormFlow.startSupportingProcess(instance.id, {'doc:/target':'/source'})`                     | the **start event** of a process that runs for an existing case, including a building block's main process | Starts the process for the case the form flow was opened from. |
+
+Note the difference in arguments. `completeTask` takes `step.submissionData`, so it only sees the data of the step it is declared on. `startCase` and `startSupportingProcess` take `instance.id` and read the submission data of *all* steps, which is what you want in a multi-step form flow where the fields to store are spread over several forms.
+
+Both `startCase` and `startSupportingProcess` take a map of save paths, where the key is the destination and the value is a JSON pointer into the submission data. The `doc:` prefix writes to the document, `pv:` sets a process variable:
+
+{% code title="*/resources/config/case/loan/1-0-0/form-flow/example.form-flow.json" overflow="wrap" %}
+```json
+{
+  "onComplete": [
+    "${valtimoFormFlow.startSupportingProcess(instance.id, {'doc:/address/streetName':'/street', 'pv:approved':'/approval'})}"
+  ]
+}
+```
+{% endcode %}
+
+For a building block, `doc:` writes to the **case** document, not to the building block document. The building block document does not exist yet when the form flow is submitted: it is created while the building block's main process starts, and filled from the input mappings of the link between the case and the building block. To get a submitted value into the building block document, map it there with an input mapping on that link.
+
 ### Examples
 
 The step condition below will only go to the step `loanApprovedStep` when a user has entered an age that is above 21:
@@ -344,7 +372,7 @@ The `onOpen` expressions delete any existing submission data of the step, before
 ```
 {% endcode %}
 
-An example of a complete form flow:
+An example of a complete form flow. This one is linked to a user task, so its last step calls `completeTask`. Replace that with `startCase` or `startSupportingProcess` when the form flow is linked to a start event, as described in [completing a form flow](#completing-a-form-flow):
 
 {% code title="*/resources/config/case/loan/1-0-0/form-flow/example.form-flow.json" overflow="wrap" %}
 ```json

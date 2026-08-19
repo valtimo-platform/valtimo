@@ -105,6 +105,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "apps/dev/src/tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "apps/dev/src/environments/environment.ts",
@@ -299,6 +300,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "apps/gzac/src/tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "apps/gzac/src/environments/environment.ts",
@@ -489,6 +491,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "apps/valtimo/src/tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "apps/valtimo/src/environments/environment.ts",
@@ -675,6 +678,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "apps/evenementenvergunning/src/tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "apps/evenementenvergunning/src/environments/environment.ts",

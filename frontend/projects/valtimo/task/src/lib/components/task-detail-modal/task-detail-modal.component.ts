@@ -136,6 +136,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     shareReplay(1)
   );
 
+  private _modalSession = 0;
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -312,6 +314,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   public openTaskDetails(task: Task | null): void {
+    // A skipped close cleanup can leave the preloaded flag of a previous open behind
+    this.processLinkPreloaded$.next(false);
     if (task) {
       this.task$.next({...task});
     }
@@ -426,8 +430,13 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.modalOpen$.next(false);
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
     this.modalClosed.emit();
-    // Delay clearing task data and submission until after modal close animation completes
+    const session = this._modalSession;
+    // Delay clearing task data and submission until after modal close animation completes.
+    // When the modal has been reopened for another task within that delay, clearing would wipe
+    // the newly opened task, so the cleanup of a stale close is skipped.
     runAfterCarbonModalClosed(() => {
+      if (session !== this._modalSession) return;
+
       this.processLinkPreloaded$.next(false);
       this.task$.next(null);
       this.taskAndProcessLink$.next(null);
@@ -436,6 +445,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   private openModal(): void {
+    this._modalSession++;
     this.modalOpen$.next(false);
 
     setTimeout(() => {
