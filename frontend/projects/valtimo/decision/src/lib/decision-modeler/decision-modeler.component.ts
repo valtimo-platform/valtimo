@@ -275,10 +275,17 @@ export class DecisionModelerComponent
   }
 
   public ngOnDestroy(): void {
-    this.dmnEditor?.destroy();
-    this.pageTitleService.enableReset();
+    // Reset the shared page state first: a failing teardown of the editor or the page header
+    // would otherwise leave this page's breadcrumbs and title behind on the next screen.
     this.breadcrumbService.clearThirdBreadcrumb();
     this.breadcrumbService.clearFourthBreadcrumb();
+    this.pageTitleService.enableReset();
+
+    try {
+      this.dmnEditor?.destroy();
+    } catch (err) {
+      console.error('dmn editor destroy error', err);
+    }
   }
 
   public ngAfterViewInit(): void {

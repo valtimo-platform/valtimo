@@ -36,6 +36,11 @@ dockerCompose {
 }
 
 dependencies {
+    // Only needed to compile the @RunWithoutAuthorization annotation on the management endpoints.
+    // Kept off the runtime classpath so this low-level module does not drag
+    // AuthorizationAutoConfiguration into every consumer's context; the applications that host
+    // these endpoints always have :backend:authorization, so the aspect is there to intercept.
+    compileOnly(project(":backend:authorization"))
     implementation(project(":backend:contract"))
     implementation(project(":backend:logging"))
 

@@ -25,6 +25,7 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
+import com.ritense.formflow.domain.instance.FormFlowInstance
 import com.ritense.formflow.domain.instance.FormFlowInstanceId
 import com.ritense.formflow.expression.FormFlowBean
 import com.ritense.formflow.service.FormFlowService
@@ -136,7 +137,7 @@ open class ValtimoFormFlow(
             document.id(),
             processDefinitionKey,
             submittedByType["pv"] as Map<String, Any>?
-        )
+        ).withLinkedProcessDefinitionId(formFlowInstance)
         //TODO: PBAC START/CREATE check
         val startProcessForDocumentResult = AuthorizationContext.runWithoutAuthorization {
             processDocumentService.startProcessForDocument(startProcessForDocumentRequest)
@@ -180,7 +181,7 @@ open class ValtimoFormFlow(
             JsonSchemaDocumentId.existingId(UUID.fromString(documentId)),
             processDefinitionKey,
             submittedByType["pv"] as Map<String, Objects>?
-        )
+        ).withLinkedProcessDefinitionId(formFlowInstance)
         //TODO: PBAC START/CREATE check
         val startProcessForDocumentResult = AuthorizationContext.runWithoutAuthorization {
             processDocumentService.startProcessForDocument(startProcessForDocumentRequest)
@@ -192,6 +193,19 @@ open class ValtimoFormFlow(
                     startProcessForDocumentResult.errors().joinToString(separator = "\n - ")
             )
         }
+    }
+
+    /**
+     * Starts the exact process definition version the start form was opened for, when the form flow instance
+     * knows it. A process definition key cannot identify a version of a building-block-owned process, because
+     * every building block version redeploys the same key. Instances created before this property existed
+     * fall back to resolving by key.
+     */
+    private fun StartProcessForDocumentRequest.withLinkedProcessDefinitionId(
+        formFlowInstance: FormFlowInstance
+    ): StartProcessForDocumentRequest {
+        val processDefinitionId = formFlowInstance.getAdditionalProperties()["processDefinitionId"] as String?
+        return processDefinitionId?.let { withProcessDefinitionId(it) } ?: this
     }
 
     private fun getRequiredAdditionalProperty(additionalProperties: Map<String, Any>, propertyName: String): Any {

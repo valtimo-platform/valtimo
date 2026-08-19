@@ -44,8 +44,6 @@ import com.ritense.form.web.rest.dto.FormSubmissionResultFailed
 import com.ritense.form.web.rest.dto.FormSubmissionResultSucceeded
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest
@@ -121,10 +119,7 @@ class DefaultFormSubmissionService(
             val processDefinition = getProcessDefinition(processLink)
             val documentDefinitionNameToUse = document?.definitionId()?.name()
                 ?: documentDefinitionName
-                ?: getProcessDocumentDefinition(processDefinition, document).run {
-                    documentDefinitionService.findByBlueprintId(this.id.caseDefinitionId).orElseThrow().id?.name()
-                        ?: throw ProcessDocumentDefinitionNotFoundException("DocumentDefinition not found for processDefinitionId: ${processDefinition.id}")
-                }
+                ?: resolveDocumentDefinitionName(processDefinition)
             val processVariables = getProcessVariables(taskInstanceId)
             val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow()
 
@@ -311,24 +306,27 @@ class DefaultFormSubmissionService(
         }
     }
 
-    private fun getProcessDocumentDefinition(
-        processDefinition: OperatonProcessDefinition,
-        document: Document?
-    ): ProcessDefinitionCaseDefinition {
-        val processDefinitionId =
-            ProcessDefinitionId(processDefinition.id)
-        return runWithoutAuthorization {
-            if (document == null) {
-                processDefinitionCaseDefinitionService.findByProcessDefinitionId(processDefinitionId)
-            } else {
-                processDefinitionCaseDefinitionService.findById(
-                    ProcessDefinitionCaseDefinitionId(
-                        processDefinitionId,
-                        document.definitionId().caseDefinitionId()
-                    )
-                )!!
-            }
-        }
+    /**
+     * Derives the document definition name from the blueprint that owns the process definition. A
+     * case-definition link is used when one exists; a building-block-owned process definition has no such
+     * link row, so the blueprint from the process definition's version tag is used instead.
+     */
+    private fun resolveDocumentDefinitionName(
+        processDefinition: OperatonProcessDefinition
+    ): String {
+        val blueprintId = runWithoutAuthorization {
+            processDefinitionCaseDefinitionService
+                .findByProcessDefinitionIdOrNull(ProcessDefinitionId(processDefinition.id))
+        }?.id?.caseDefinitionId
+            ?: processDefinition.getBlueprintId()
+            ?: throw ProcessDocumentDefinitionNotFoundException(
+                "Blueprint not found for processDefinitionId: ${processDefinition.id}"
+            )
+
+        return documentDefinitionService.findByBlueprintId(blueprintId).orElse(null)?.id?.name()
+            ?: throw ProcessDocumentDefinitionNotFoundException(
+                "DocumentDefinition not found for processDefinitionId: ${processDefinition.id}"
+            )
     }
 
     private fun getDocumentDefinition(documentId: String): Document {
