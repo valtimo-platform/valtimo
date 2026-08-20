@@ -130,7 +130,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
 
   public readonly refreshModalOpen$ = new BehaviorSubject<boolean>(false);
 
-  public progressSteps: Array<{label: string}> = [];
+  public progressSteps: Array<{label: string; complete: boolean}> = [];
 
   protected readonly testIds = PLUGIN_APP_ADD_MODAL_TEST_IDS;
 
@@ -410,11 +410,20 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
+  /**
+   * Carbon's progress indicator recomputes step completion only inside its `current` setter, so a
+   * rebuilt steps array must carry the `complete` flags itself: a rebuild with an unchanged current
+   * step — the translation file finishing to load after the modal already resumed at the
+   * configuration step — would otherwise wipe the checkmarks of the completed steps.
+   */
   private _buildProgressSteps(): void {
     this.progressSteps = [
-      {label: this._translateService.instant('pluginManagement.appAdd.steps.connection')},
-      {label: this._translateService.instant('pluginManagement.appAdd.steps.configuration')},
-      {label: this._translateService.instant('pluginManagement.appAdd.steps.permissions')},
-    ];
+      'pluginManagement.appAdd.steps.connection',
+      'pluginManagement.appAdd.steps.configuration',
+      'pluginManagement.appAdd.steps.permissions',
+    ].map((key, index) => ({
+      label: this._translateService.instant(key),
+      complete: index < this.$currentStep(),
+    }));
   }
 }

@@ -94,7 +94,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   public readonly $definitionName = signal<string>('');
 
   public currentStepIndex = 0;
-  public progressSteps: Array<{label: string}> = [];
+  public progressSteps: Array<{label: string; complete: boolean}> = [];
 
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
@@ -359,16 +359,22 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     }
   }
 
+  /**
+   * Carbon's progress indicator recomputes step completion only inside its `current` setter, so a
+   * rebuilt steps array (language change, permissions step appearing) must carry the `complete`
+   * flags itself — with an unchanged current step the rebuild would otherwise wipe the checkmarks.
+   */
   private _buildProgressSteps(): void {
-    const steps = [{label: this._translateService.instant('pluginManagement.editSteps.step0')}];
+    const labels = [this._translateService.instant('pluginManagement.editSteps.step0')];
 
     if (this.$hasPermissionsStep()) {
-      steps.push({
-        label: this._translateService.instant('pluginManagement.editSteps.step1'),
-      });
+      labels.push(this._translateService.instant('pluginManagement.editSteps.step1'));
     }
 
-    this.progressSteps = steps;
+    this.progressSteps = labels.map((label, index) => ({
+      label,
+      complete: index < this.currentStepIndex,
+    }));
   }
 
   private _resetForm(): void {

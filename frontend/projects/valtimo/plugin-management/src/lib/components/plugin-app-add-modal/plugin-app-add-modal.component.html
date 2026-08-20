@@ -20,9 +20,15 @@
       {{ 'pluginManagement.addApp' | translate }}
     </h3>
 
+    <!--
+      `[steps]` must bind before `[current]`: Carbon marks preceding steps complete inside the
+      `current` setter, which no-ops if `steps` isn't set yet. When the modal opens straight at the
+      configuration step (resume after the CSP reload), `current` is 1 from the first render, so
+      binding it after `steps` is what lets the connection step show as complete.
+    -->
     <cds-progress-indicator
-      [current]="$currentStep()"
       [steps]="progressSteps"
+      [current]="$currentStep()"
       spacing="equal"
       class="plugin-app-add-modal__progress"
     ></cds-progress-indicator>

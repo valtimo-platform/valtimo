@@ -43,13 +43,18 @@ export class ProcessLinkStepService {
     return combineLatest([
       this._steps$,
       this._disableSteps$,
+      this._currentStepIndex$,
       this.translateService.stream('key'),
     ]).pipe(
       filter(([steps]) => !!steps),
-      map(([steps, disableSteps]) =>
-        steps.map(step => ({
+      map(([steps, disableSteps, currentStepIndex]) =>
+        steps.map((step, index) => ({
           ...step,
           disabled: disableSteps,
+          // Carbon recomputes step completion only inside its `current` setter, and every emission
+          // here produces fresh step objects (language change, disable toggle) — so the `complete`
+          // flags must be carried explicitly or the completed steps' checkmarks are wiped.
+          complete: index < currentStepIndex,
           label: this.translateService.instant(`processLinkSteps.${step.label}`),
           ...(step.secondaryLabel && {
             secondaryLabel: this.translateService.instant(step.secondaryLabel),

@@ -74,10 +74,20 @@ interface PluginAppRow extends ExternalPluginHost {
   configurationTitle: string;
   definition: ExternalPluginDefinition | null;
   configuration: ExternalPluginConfiguration | null;
+  /** Whether the app's plugin declares the `log` capability — apps without it serve no logs endpoint. */
+  supportsLogs: boolean;
 }
 
 /** Query parameter that restores the add-app stepper at the configuration step after a reload. */
 const CONFIGURE_APP_QUERY_PARAM = 'configureApp';
+
+/**
+ * Manifest capability an app must declare for its host to expose a logs endpoint. An app that does
+ * not declare it (e.g. a lightweight app that only serves a plugin definition) has no logs to fetch,
+ * so the logs action is disabled rather than left to fail against a missing endpoint. Plugins
+ * uploaded to a full plugin host are not gated this way — the host always serves the logs endpoint.
+ */
+const LOG_CAPABILITY = 'log';
 
 @Component({
   standalone: true,
@@ -174,11 +184,9 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   ];
 
   public readonly appActionItems: ActionItem[] = [
-    {
-      callback: this.configureApp.bind(this),
-      label: 'pluginManagement.configureApp',
-      disabledCallback: (row: PluginAppRow) => !!row.configuration,
-    },
+    // Configuring an app for the first time happens through the add-app stepper (or a row click on
+    // an unconfigured app); a dedicated menu entry that only ever showed disabled once configured is
+    // omitted until editing apps/hosts is reworked in a later story.
     {
       callback: this.editConfiguration.bind(this),
       label: 'pluginManagement.editConfiguration',
@@ -187,7 +195,9 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
     {
       callback: this.viewLogs.bind(this),
       label: 'pluginManagement.logs.menuItem',
-      disabledCallback: (row: PluginAppRow) => !row.configuration,
+      // Also disabled when the app declares no `log` capability: its host serves no logs endpoint,
+      // so fetching would fail rather than return an empty page.
+      disabledCallback: (row: PluginAppRow) => !row.configuration || !row.supportsLogs,
     },
     {
       callback: this.editHostEventQueue.bind(this),
@@ -420,7 +430,7 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   // --- Logs ---
 
   public viewLogs(row: PluginAppRow): void {
-    if (!row.configuration) return;
+    if (!row.configuration || !row.supportsLogs) return;
     this.$logConfigurationId.set(row.configuration.id);
     this.$logConfigurationTitle.set(row.configuration.title);
     this.$logModalOpen.set(true);
@@ -545,6 +555,7 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
         configuration?.title ?? this._translateService.instant('pluginManagement.notConfigured'),
       definition,
       configuration,
+      supportsLogs: (definition?.manifest?.permissions?.capabilities ?? []).includes(LOG_CAPABILITY),
     };
   }
 
