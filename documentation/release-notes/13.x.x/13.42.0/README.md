@@ -26,11 +26,6 @@
   for example, could no longer be opened at all. A name that can no longer be found is now simply left out
   instead of causing an error, and tasks are no longer automatically assigned to a user that no longer exists.
 
-* **Searching on a date returns results again**
-
-  Picking a date in a search field, such as **Geboortedatum** under **Achternaam en geboortedatum** in a Beelden
-  search, passed the date on in a format the external source did not accept, so the search stayed empty.
-
 * **A form flow can now be used as the start form of a building block**
 
   Starting a building block from the actions of a case now opens its form flow start form, and submitting that
