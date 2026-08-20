@@ -8,7 +8,10 @@ Roles are containers for permissions. Each role maps to a Keycloak role — user
 
 {% stepper %}
 {% step %}
-Go to **Admin** > **Access Control**
+Navigate to **Admin** in the sidebar
+{% endstep %}
+{% step %}
+Click **Access Control**
 {% endstep %}
 {% step %}
 Click **Add new role**

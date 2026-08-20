@@ -16,7 +16,10 @@ This includes:
 
 {% stepper %}
 {% step %}
-Go to **Admin** > **Access Control**
+Navigate to **Admin** in the sidebar
+{% endstep %}
+{% step %}
+Click **Access Control**
 {% endstep %}
 {% endstepper %}
 

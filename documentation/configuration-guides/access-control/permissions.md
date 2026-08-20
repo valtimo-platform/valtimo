@@ -8,7 +8,10 @@ Permissions define what actions a role can perform on specific resources. Each p
 
 {% stepper %}
 {% step %}
-Go to **Admin** > **Access Control**
+Navigate to **Admin** in the sidebar
+{% endstep %}
+{% step %}
+Click **Access Control**
 {% endstep %}
 {% step %}
 Click on a role to open its editor

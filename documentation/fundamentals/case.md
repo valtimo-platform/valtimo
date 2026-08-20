@@ -8,11 +8,21 @@ Cases give organizations a structured way to:
 - Store all relevant data in one place
 - Automate progression through processes
 - Assign work to the right people
-- Maintain a complete audit trail
 
 ---
 
 ## How cases work
+
+Think of a case as a container that holds everything related to a piece of work:
+
+- **Document** — The structured data (applicant details, request info, decisions)
+- **Processes** — The workflows driving progress
+- **Tasks** — Work items waiting for someone to act
+- **Files** — Attached documents and evidence
+- **Audit trail** — Complete history of what happened
+
+When someone submits a request, Valtimo creates a case. A process starts automatically, creating tasks for users. As users complete tasks, the process updates the case data and moves forward. Everything stays connected to that one case until the work is done.
+
 
 ### Case definition vs case instance
 
@@ -25,16 +35,24 @@ A **case definition** is the blueprint that describes what a case looks like and
 
 A **case instance** (or simply "case") is an actual piece of work created from that definition. When someone submits a request or a process creates a new case, Valtimo creates a case instance based on the case definition.
 
-### Case data (the document)
+### Case data
 
-Every case has a **document** — a structured JSON object that holds all the case data. This document follows a schema defined in the case definition, which ensures data consistency and enables validation.
+Cases store data in several places:
 
-For example, a subsidy request case might store:
+**Document** — The primary data store. A structured JSON object that holds core case information like applicant details, request data, and decisions. The document follows a schema defined in the case definition, which validates data and ensures consistency. Forms write to the document, and widgets display from it.
 
-- Applicant name and contact details
-- Requested amount
-- Supporting documentation references
-- Decision outcome
+**Process variables** — Temporary data that exists while a process runs. Useful for workflow decisions and intermediate values that don't need to persist after the process completes. Each process instance has its own variables.
+
+**Files** — Attachments like PDFs, images, or other documents. Files are linked to the case and can be stored locally, in S3, or in an external document management system.
+
+**Notes** — Free-form comments added by users. Notes provide a way to capture observations, decisions, or context that doesn't fit the structured document.
+
+For example, a subsidy request case might have:
+
+- **Document**: Applicant name, requested amount, decision outcome
+- **Process variables**: Current review stage, temporary calculation results
+- **Files**: Uploaded proof of income, signed agreement
+- **Notes**: Reviewer comments about edge cases
 
 ### Case lifecycle
 

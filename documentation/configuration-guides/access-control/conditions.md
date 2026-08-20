@@ -175,6 +175,8 @@ Select the condition type
 {% endstep %}
 {% step %}
 Configure the condition fields
+
+<figure><img src="../../assets/configuration-guides/access-control/conditions/05-configuring-condition.png" alt=""><figcaption>Configuring a field condition</figcaption></figure>
 {% endstep %}
 {% step %}
 Click **Save** in the page header

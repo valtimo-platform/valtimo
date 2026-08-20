@@ -9,7 +9,6 @@
 
 ## Valtimo fundamentals
 
-* [The Valtimo big picture](fundamentals/big-picture.md)
 * [What is a case?](fundamentals/case.md)
 * [What is a process?](fundamentals/process.md)
 * [What is a form?](fundamentals/form.md)

@@ -13,7 +13,7 @@ There are two types of actions:
 | Type | Description |
 |------|-------------|
 | **Process** | A BPMN process definition linked to the case. Starting this action runs the process in the context of the current case. |
-| **Building block** | A reusable building block that can be configured with input/output mappings. See [Building blocks](../building-blocks/building-blocks.md) for more information. |
+| **Building block** | A reusable building block that can be configured with input/output mappings. See [Building blocks](../building-blocks/README.md) for more information. |
 
 ---
 
