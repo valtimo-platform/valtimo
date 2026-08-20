@@ -54,6 +54,27 @@ spring:
 
 A complete list of MIME types for Microsoft Office documents can be found [here][4]. 
 
+## Starting the preconfigured backend in a development environment
+
+Valtimo comes with a preconfigured [docker-compose.yaml](../../../backend/apps/dev/docker-compose.yaml) file that will
+pull in all the required images to run Valtimo and the CG-DMF DRC. These images are not run by default but are 
+configured to be run when the `cg-dmf` profile is used.
+
+Before starting the development environment, you do have to manually update the `VALTIMO_DOCUMENTEN_API_URL` in the 
+[.env.properties](../../../backend/apps/dev/.env.properties) file so it points to the CG-DMF DRC. The correct 
+configuration should look like this:
+
+```properties
+VALTIMO_DOCUMENTEN_API_URL=http://cg-dmf.localhost:8083/documenten/api/v1/
+```
+
+Now you are ready to start the development environment, simply run the following command from the root of the Valtimo 
+repository:
+
+```bash
+./gradlew :backend:apps:dev:bootRunWithDocker -Pcg-dmf
+```
+
 [1]: https://github.com/Baseflow/cg-dmf-poc/?tab=readme-ov-file
 [2]: https://www.collaboraonline.com/
 [3]: https://www.onlyoffice.com/
