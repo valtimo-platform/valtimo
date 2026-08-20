@@ -72,6 +72,54 @@ class EveritSchemaGetPropertyTest {
         assertDoesNotThrow { schema.allowsProperty(tooDeep) }
     }
 
+    @Test
+    fun `should not overflow the stack when an allOf refers back to itself`() {
+        val schema = schemaOf(
+            """
+            "definitions": {
+              "node": {
+                "allOf": [ { "${'$'}ref": "#/definitions/node" } ]
+              }
+            },
+            "properties": {
+              "root": { "${'$'}ref": "#/definitions/node" }
+            }
+            """.trimIndent()
+        )
+
+        // without the depth guard both walkers recurse through the cycle until the JVM throws a StackOverflowError
+        assertThat(schema.getProperty("/root/name")).isNull()
+        // the cycle resolves nothing, so the property is only allowed because the root permits additional properties
+        assertThat(schema.allowsProperty("/root/name")).isTrue()
+    }
+
+    @Test
+    fun `should not overflow the stack when a schema dependency refers back to itself`() {
+        // the dependency key deliberately differs from the property being looked up, so the walkers have to descend
+        // into the dependency schema instead of short-circuiting on the key itself
+        val schema = schemaOf(
+            """
+            "definitions": {
+              "node": {
+                "type": "object",
+                "dependencies": { "trigger": { "${'$'}ref": "#/definitions/node" } }
+              }
+            },
+            "properties": {
+              "root": { "${'$'}ref": "#/definitions/node" }
+            }
+            """.trimIndent()
+        )
+
+        assertThat(schema.getProperty("/root/name")).isNull()
+        assertThat(schema.allowsProperty("/root/name")).isTrue()
+    }
+
+    /**
+     * A schema that recurses through `properties`, so every step consumes a json pointer segment and a lookup for
+     * a finite path terminates on its own. Contrast the `allOf` and `dependencies` cycles above, which recurse on
+     * the *same* field and are stopped only by [MAX_SCHEMA_DEPTH].
+     */
     private fun recursiveSchema(): Schema = schemaOf(
         """
         "definitions": {
