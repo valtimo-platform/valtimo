@@ -253,18 +253,23 @@ jobs:
           # sections stay correctly separated (dropping the preceding rule rather
           # than the following one also works for the last section, which has no
           # trailing rule). They only fire when nothing else follows in that
-          # section (next line is another rule, a "##" heading, or EOF), so a
+          # section (next line is another rule, a level-two heading, or EOF), so a
           # genuinely-empty section header a release intentionally left behind is
-          # NOT removed. The last three drop a stray placeholder from a section
+          # NOT removed. The boundary is "## " with a following character rather
+          # than bare "##", because "##" also matches the "###" of a real authored
+          # entry: an entry added *below* an unreplaced placeholder would then be
+          # treated as the end of the section, and the rule plus the "##" heading
+          # would be deleted along with the placeholder, orphaning that entry.
+          # The last three drop a stray placeholder from a section
           # that also has real content (its header and rule are kept) — for
           # bugfixes that is a single table row, leaving the table intact. The
           # final substitution trims the blank line that removing the last section
           # leaves behind at EOF.
           before="$(cat "$README")"
           perl -0777 -i -pe '
-            s/^---\n\n## New Features\n\n### New feature title\n\nNew feature explanation\.\n(?:[ \t]*\n)*(?=---|##|\z)//mg;
-            s/^---\n\n## Enhancements\n\n### New enhancement title\n\nNew enhancement explanation\.\n(?:[ \t]*\n)*(?=---|##|\z)//mg;
-            s/^---\n\n## Bugfixes\n\n\| Area \| Fix \|\n\|------\|-----\|\n\| Area name \| New bugfix\. \|\n(?:[ \t]*\n)*(?=---|##|\z)//mg;
+            s/^---\n\n## New Features\n\n### New feature title\n\nNew feature explanation\.\n(?:[ \t]*\n)*(?=---|## [^\n]|\z)//mg;
+            s/^---\n\n## Enhancements\n\n### New enhancement title\n\nNew enhancement explanation\.\n(?:[ \t]*\n)*(?=---|## [^\n]|\z)//mg;
+            s/^---\n\n## Bugfixes\n\n\| Area \| Fix \|\n\|------\|-----\|\n\| Area name \| New bugfix\. \|\n(?:[ \t]*\n)*(?=---|## [^\n]|\z)//mg;
             s/^### New feature title\n\nNew feature explanation\.\n\n?//mg;
             s/^### New enhancement title\n\nNew enhancement explanation\.\n\n?//mg;
             s/^\| Area name \| New bugfix\. \|\n//mg;
@@ -360,7 +365,7 @@ jobs:
           # a plain "Release date:" line (no GitBook hint block), "---" rules
           # separating the sections, "###" sub-headings for features/enhancements
           # and a table for bugfixes. Keep this in sync with the placeholder-strip
-          # step in the release_stable_pr job — it matches this text literally.
+          # step in the pr_to_stable job — it matches this text literally.
           # Heredoc body is intentionally NOT indented so no leading spaces leak
           # into the generated file.
           cat > "${NOTES_DIR}/README.md" <<EOF
