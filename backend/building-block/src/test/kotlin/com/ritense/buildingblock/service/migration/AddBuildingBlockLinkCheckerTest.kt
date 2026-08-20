@@ -139,6 +139,24 @@ class AddBuildingBlockLinkCheckerTest {
         verify(linkResolver, never()).resolveLinkedVersions(any())
     }
 
+    /**
+     * G31: the executor runs this check per migrating instance and needs the same closure itself, so it hands
+     * it in. That has to actually skip the walk — it is the dominant cost of migrating an instance.
+     */
+    @Test
+    fun `should not walk the tree again when the caller already resolved the closure`() {
+        linksOn(target) // no links of its own, so only the closure it is handed can satisfy the entry
+
+        val problems = checker.findUnlinked(
+            target,
+            listOf(adds("bijstand-besluit", "1.0.0")),
+            callActivityReachable = setOf(BuildingBlockDefinitionId.of("bijstand-besluit", "1.0.0")),
+        )
+
+        assertThat(problems).isEmpty()
+        verify(linkResolver, never()).resolveCallActivityReachable(any())
+    }
+
     @Test
     fun `should throw when asserting an unlinked entry`() {
         linksOn(target)

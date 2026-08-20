@@ -288,6 +288,29 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
     }
 
     @Test
+    fun `should dissolve every level of a recursive block from one entry, deepest first`() {
+        // A block whose process calls itself produces a chain of instances all on the same definition id.
+        // One entry names them all — matching is by definition, never by position — and the subtree walk
+        // orders them so no parent is deleted before the child that points at it (G25).
+        val level1 = block("herhaling", "1.0.0")
+        val level2 = block("herhaling", "1.0.0", parent = level1)
+        val level3 = block("herhaling", "1.0.0", parent = level2)
+        givenSubtree(owned(level3, level2, 2), owned(level2, level1, 1), owned(level1, null, 0))
+        instructions += RemoveBuildingBlockInstruction(
+            buildingBlockKey = "herhaling",
+            buildingBlockVersionTag = "1.0.0",
+        )
+
+        executor.execute(migrationId, target, caseDocumentId)
+
+        assertThat(deleted).containsExactly(level3.id, level2.id, level1.id)
+        // Each level hands its state back to the level above, not to the case.
+        verify(dataPatchApplier).apply(any(), eq(level3.documentId), eq(level2.documentId))
+        verify(dataPatchApplier).apply(any(), eq(level2.documentId), eq(level1.documentId))
+        verify(dataPatchApplier).apply(any(), eq(level1.documentId), eq(caseDocumentId))
+    }
+
+    @Test
     fun `should do nothing when the plan has no removeBuildingBlock section`() {
         whenever(configurationRepository.findById(migrationId)).thenReturn(Optional.empty())
 

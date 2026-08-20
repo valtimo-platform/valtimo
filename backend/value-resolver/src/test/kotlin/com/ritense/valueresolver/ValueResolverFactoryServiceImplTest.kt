@@ -26,6 +26,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.delegate.DelegateTask
+import java.io.IOException
+import java.io.UncheckedIOException
 import java.util.UUID
 
 internal class ValueResolverFactoryServiceImplTest {
@@ -35,6 +37,32 @@ internal class ValueResolverFactoryServiceImplTest {
     private val resolverService = ValueResolverServiceImpl(
         listOf(ProcessVariableValueResolverFactory(runtimeService, objectMapper), FixedValueResolverFactory())
     )
+
+    @Test
+    fun `Should leave out a prefix whose keys cannot be enumerated and still return the others`() {
+        // Seen in the field: a document schema `$ref`d a file absent from the deployment, the everit loader
+        // threw UncheckedIOException from inside schema loading, and every caller of getResolvableKeys got a
+        // 500 — the editor's field pickers and the migration plan suggestion alike. Enumerating keys is a
+        // best-effort listing, so a resolver that cannot read its own configuration must cost only itself.
+        val working = mock<ValueResolverFactory>()
+        whenever(working.supportedPrefix()).thenReturn("ok")
+        whenever(working.getResolvableKeyOptions(any<String>()))
+            .thenReturn(listOf(ValueResolverOption("ok:field", ValueResolverOptionType.FIELD)))
+
+        val broken = mock<ValueResolverFactory>()
+        whenever(broken.supportedPrefix()).thenReturn("broken")
+        whenever(broken.getResolvableKeyOptions(any<String>()))
+            .thenThrow(UncheckedIOException(IOException("Could not find classpath://…/persoon.schema.json")))
+
+        val service = ValueResolverServiceImpl(listOf(working, broken))
+
+        val options = service.getResolvableKeys(
+            ValueResolverOptionRequest(prefixes = emptyList(), type = ValueResolverOptionType.FIELD),
+            "some-case-definition",
+        )
+
+        assertThat(options.map { it.path }).containsExactly("ok:field")
+    }
 
     @Test
     fun `Should fail on duplicate resolver prefixes`() {

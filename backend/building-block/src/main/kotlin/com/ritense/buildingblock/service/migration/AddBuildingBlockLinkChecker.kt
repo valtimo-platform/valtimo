@@ -49,7 +49,17 @@ class AddBuildingBlockLinkChecker(
      * Descriptions of every [instruction][instructions] whose building block version [target] does not
      * link; empty when they all check out.
      */
-    fun findUnlinked(target: BlueprintId, instructions: List<AddBuildingBlockInstruction>): List<String> {
+    fun findUnlinked(
+        target: BlueprintId,
+        instructions: List<AddBuildingBlockInstruction>,
+        /**
+         * The call-activity closure of [target], when the caller already has it. The walk behind it is the
+         * expensive part of a migration (G31) and every caller that runs this check per migrating instance
+         * also needs the closure itself, so it is passed in rather than recomputed. Null means "work it out"
+         * — the save path, which checks one plan once.
+         */
+        callActivityReachable: Set<BuildingBlockDefinitionId>? = null,
+    ): List<String> {
         if (instructions.isEmpty()) {
             return emptyList()
         }
@@ -60,7 +70,7 @@ class AddBuildingBlockLinkChecker(
         // has to ask "does the target model this block anywhere below it", not "at the first level".
         val linked = (
             linkedBuildingBlockVersionResolver.resolveLinkedVersions(target).map { it.buildingBlockDefinitionId } +
-                linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
+                (callActivityReachable ?: linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target))
             ).distinct()
 
         return instructions.mapNotNull { instruction ->
@@ -88,8 +98,12 @@ class AddBuildingBlockLinkChecker(
      * [instructions] would create. Fatal on purpose: the alternative is creating an instance that is
      * invisible to every migration after this one.
      */
-    fun assertLinked(target: BlueprintId, instructions: List<AddBuildingBlockInstruction>) {
-        val problems = findUnlinked(target, instructions)
+    fun assertLinked(
+        target: BlueprintId,
+        instructions: List<AddBuildingBlockInstruction>,
+        callActivityReachable: Set<BuildingBlockDefinitionId>? = null,
+    ) {
+        val problems = findUnlinked(target, instructions, callActivityReachable)
         check(problems.isEmpty()) {
             "Migration plan for '$target' ${problems.joinToString("; and ")}"
         }

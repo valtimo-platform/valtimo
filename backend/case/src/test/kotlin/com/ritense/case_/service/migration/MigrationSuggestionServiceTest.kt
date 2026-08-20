@@ -28,6 +28,8 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.semver4j.Semver
+import java.io.IOException
+import java.io.UncheckedIOException
 
 class MigrationSuggestionServiceTest {
 
@@ -135,6 +137,40 @@ class MigrationSuggestionServiceTest {
 
         assertThat(validated).containsExactly(CaseDefinitionId("verhuizing-oud", "2.3.4"))
         assertThat(problems).containsExactly("boom")
+    }
+
+
+    @Test
+    fun `a suggester that throws leaves its component out instead of failing the whole suggestion`() {
+        // Seen in the field: a building block's document schema `$ref`d a file absent from the deployment,
+        // the everit loader threw UncheckedIOException out of the dataMigration suggester, and
+        // GET /suggestion answered 500 — so the editor got no plan at all and nothing said which component
+        // was at fault. Suggestions are advisory by contract, so one broken component must cost only itself.
+        val service = MigrationSuggestionService(
+            objectMapper = objectMapper,
+            versionLineages = emptyList(),
+            componentSuggesters = listOf(
+                throwingSuggester("dataMigration"),
+                suggester("processMigration", listOf(mapOf("sourceProcessDefinitionKey" to "verhuizing"))),
+            ),
+            activityMappingSuggesters = emptyList(),
+            activityMappingValidators = emptyList(),
+            componentValidators = emptyList(),
+        )
+
+        val plan = service.suggestPlan(target = target, source = CaseDefinitionId("verhuizing", "1.0.1"))
+
+        assertThat(plan.has("dataMigration")).isFalse()
+        assertThat(plan.get("processMigration")).isNotNull()
+        // The skeleton still arrives, so the editor can open the plan and the author can fill the rest in.
+        assertThat(plan.get("source").get("versionTag").asText()).isEqualTo("1.0.1")
+        assertThat(plan.get("migrationTriggers").get("triggeredByButton").asBoolean()).isTrue()
+    }
+
+    private fun throwingSuggester(componentKey: String) = object : MigrationComponentSuggester {
+        override fun componentKey() = componentKey
+        override fun suggest(source: BlueprintId, target: BlueprintId): Any =
+            throw UncheckedIOException(IOException("Could not find classpath://…/persoon.schema.json"))
     }
 
     private val target = CaseDefinitionId("verhuizing", "1.0.2")

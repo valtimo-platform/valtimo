@@ -80,6 +80,9 @@ class BuildingBlockVersionAlignmentExecutorTest {
 
         // By default nothing owns anything.
         whenever(ownershipResolver.directChildrenOf(any())).thenReturn(emptyList())
+        // ...and by default the owner's own version is what governs its blocks. The redirection to a
+        // declaring blueprint is the exception (G33) and is set up per test.
+        whenever(linkedVersionResolver.resolveGoverningBlueprint(any(), any())).thenAnswer { it.getArgument(0) }
     }
 
     @Test
@@ -302,6 +305,46 @@ class BuildingBlockVersionAlignmentExecutorTest {
         verify(processVersionChecker).assertProcessOnVersion(childDocumentId, childTarget)
     }
 
+    /**
+     * G33. A block the adoption walk took over from under a hop the plan left as a plain sub-process hangs
+     * directly off the case, while the call activity that declares it belongs to the skipped block's BPMN.
+     * Asking the case gets "I link nothing of the sort" — the same answer as a withdrawn link — so the
+     * block would be warned about and never upgraded again. The declarer has to be asked instead.
+     */
+    @Test
+    fun `should ask the blueprint that declares the call activity rather than the owner`() {
+        val block = block("1.0.0", activityId = "BesluitCallActivity")
+        caseOwns(block)
+        val declarer = BuildingBlockDefinitionId.of("skipped-hop", "1.0.0")
+        whenever(linkedVersionResolver.resolveGoverningBlueprint(caseDefinitionId, block)).thenReturn(declarer)
+        whenever(linkedVersionResolver.resolveTarget(declarer, block)).thenReturn(bb("1.0.0"))
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        // The declarer says it is already on the right version, so nothing moves and nothing is warned about.
+        verifyNothingMigrated()
+        assertThat(MigrationWarnings.drain()).isNull()
+        // And the case was never asked, which is the whole point: its answer would have been "no link".
+        verify(linkedVersionResolver, never()).resolveTarget(eq(caseDefinitionId), any())
+    }
+
+    @Test
+    fun `should upgrade an adopted block when its declaring blueprint links a newer version`() {
+        val block = block("1.0.0", activityId = "BesluitCallActivity")
+        caseOwns(block)
+        val declarer = BuildingBlockDefinitionId.of("skipped-hop", "1.0.0")
+        whenever(linkedVersionResolver.resolveGoverningBlueprint(caseDefinitionId, block)).thenReturn(declarer)
+        whenever(linkedVersionResolver.resolveTarget(declarer, block)).thenReturn(bb("1.0.1"))
+        val step = step("herinspectie", bb("1.0.1"))
+        whenever(pathResolver.resolvePath(bb("1.0.0"), bb("1.0.1"))).thenReturn(listOf(step))
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        // Such a block used to be frozen on the version it was adopted on, forever.
+        verify(planApplier).apply(step.planId, bb("1.0.1"), blockDocumentId)
+        verify(processVersionChecker).assertProcessOnVersion(blockDocumentId, bb("1.0.1"))
+    }
+
     private fun verifyNothingMigrated() {
         verify(planApplier, never()).apply(any(), any(), any())
         verify(processVersionChecker, never()).assertProcessOnVersion(any(), any())
@@ -312,9 +355,10 @@ class BuildingBlockVersionAlignmentExecutorTest {
     private fun step(migrationKey: String, target: BuildingBlockDefinitionId) =
         MigrationStep(BlueprintMigrationId.from(target, migrationKey), target)
 
-    private fun block(versionTag: String) = BuildingBlockInstance(
+    private fun block(versionTag: String, activityId: String? = null) = BuildingBlockInstance(
         documentId = blockDocumentId,
         caseDocumentId = caseDocumentId,
+        activityId = activityId,
         definition = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId.of(bbKey, versionTag),
             name = bbKey,

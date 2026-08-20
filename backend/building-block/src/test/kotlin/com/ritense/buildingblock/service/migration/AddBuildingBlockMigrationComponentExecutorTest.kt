@@ -130,7 +130,7 @@ class AddBuildingBlockMigrationComponentExecutorTest {
     @Test
     fun `should refuse an entry with no process migration before looking at anything else`() {
         deploy(instruction())
-        whenever(processChecker.assertHijacksSomething(any(), any()))
+        whenever(processChecker.assertHijacksSomething(any(), any(), anyOrNull()))
             .thenThrow(IllegalStateException("adds building block 'income-check:1.0.0' without a 'processMigration'"))
 
         assertThatThrownBy { executor.execute(migrationId, target, ownerDocumentId) }

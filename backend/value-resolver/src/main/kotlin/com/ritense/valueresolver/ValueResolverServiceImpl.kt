@@ -26,6 +26,7 @@ import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCO
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.stereotype.Service
 import java.util.UUID
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 @Service
 @SkipComponentScan
@@ -61,7 +62,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionKey) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(caseDefinitionKey) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -74,7 +75,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionId) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(caseDefinitionId) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -87,7 +88,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(blueprintId) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(blueprintId) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -115,7 +116,6 @@ class ValueResolverServiceImpl(
             requestedValues = requestedValues
         )
     }
-
 
     /**
      * This method provides a way of validating a propertyName using defined resolvers.
@@ -263,6 +263,19 @@ class ValueResolverServiceImpl(
         }
     }
 
+    private fun optionsOf(
+        prefix: String,
+        enumerate: (ValueResolverFactory) -> List<ValueResolverOption>,
+    ): List<ValueResolverOption> {
+        val factory = resolverFactoryMap[prefix] ?: return emptyList()
+        return runCatching { enumerate(factory) }.getOrElse { e ->
+            logger.warn(e) {
+                "Could not getResolvableKeyOptions for prefix '$prefix:'; it is left out of the options."
+            }
+            emptyList()
+        }
+    }
+
     private fun mapPropertyPaths(
         propertyPaths: List<String>,
         values: Map<String, Any?>
@@ -346,5 +359,6 @@ class ValueResolverServiceImpl(
     companion object {
         const val DELIMITER = ":"
         private val prefixRegex = Regex("^[A-Za-z_-]+$") // no numbers allowed
+        private val logger = KotlinLogging.logger {}
     }
 }

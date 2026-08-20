@@ -31,6 +31,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 class AddBuildingBlockProcessCheckerTest {
@@ -84,6 +86,21 @@ class AddBuildingBlockProcessCheckerTest {
             .thenReturn(setOf(BuildingBlockDefinitionId.of("income-check", "1.0.0")))
 
         assertThat(checker.findEntriesWithoutProcessMigration(target, listOf(instruction()))).isEmpty()
+    }
+
+    /**
+     * G31: the walk behind the closure is the dominant cost of migrating an instance, and the executor runs
+     * this check per instance while needing the same closure itself. Passing it in has to actually skip the
+     * walk, or the saving is imaginary.
+     */
+    @Test
+    fun `should not walk the tree again when the caller already resolved the closure`() {
+        val problems = checker.findEntriesWithoutProcessMigration(
+            target, listOf(instruction()), callActivityReachable = setOf(block)
+        )
+
+        assertThat(problems).isEmpty() // the closure it was handed declares the block
+        verify(linkResolver, never()).resolveCallActivityReachable(any())
     }
 
     @Test

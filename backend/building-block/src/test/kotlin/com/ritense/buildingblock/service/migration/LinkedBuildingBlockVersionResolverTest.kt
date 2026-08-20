@@ -306,6 +306,21 @@ class LinkedBuildingBlockVersionResolverTest {
     }
 
     @Test
+    fun `should record the shallowest declarer for a block that also declares itself`() {
+        // A recursive block: the case declares it, and its own process declares it again. The walk must keep
+        // the *case* as its declarer, because that is the owner a first-level block hands its state back to.
+        // Recording the block as its own declarer would make the remove suggester compute the mapping
+        // against the block itself.
+        callActivityLink("HerhaalCallActivity", "1.0.0", key = "herhaling")
+        val herhaling = BuildingBlockDefinitionId.of("herhaling", "1.0.0")
+        blockCallActivityLink(herhaling, "herhaling:bb", "HerhaalCallActivity", "herhaling", "1.0.0")
+
+        val declarers = resolver.resolveCallActivityDeclarers(caseDefinitionId)
+
+        assertThat(declarers).containsExactly(java.util.Map.entry(herhaling, caseDefinitionId))
+    }
+
+    @Test
     fun `should terminate on a cyclic call-activity link graph`() {
         // A block that links itself: the walk must stop rather than spin.
         callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")

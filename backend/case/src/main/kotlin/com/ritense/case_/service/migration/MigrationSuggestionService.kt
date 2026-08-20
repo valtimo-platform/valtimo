@@ -30,6 +30,7 @@ import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 import org.semver4j.Semver
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Best-effort migration suggestions for the admin UI: a whole pre-filled plan for a new plan
@@ -79,9 +80,24 @@ class MigrationSuggestionService(
         // Component suggestions only make sense once there is a source to migrate from.
         if (resolvedSource != null) {
             componentSuggesters.forEach { suggester ->
-                suggester.suggest(resolvedSource, target)?.let { suggestion ->
-                    plan.set<ObjectNode>(suggester.componentKey(), objectMapper.valueToTree(suggestion))
-                }
+                // Isolated per component. A suggestion is advisory by contract, and every suggester reads
+                // deployed configuration it does not own — a document schema that `$ref`s a file absent from
+                // this deployment throws `UncheckedIOException` out of the everit loader, for example. One
+                // such fault used to cost the *whole* pre-filled plan and answer 500, so the editor showed
+                // nothing and the author could not tell which component was at fault. Now the rest of the
+                // plan still arrives and the log names the component.
+                runCatching { suggester.suggest(resolvedSource, target) }
+                    .onFailure { e ->
+                        logger.warn(e) {
+                            "Suggesting '${suggester.componentKey()}' for '$target' failed; the rest of the " +
+                                "plan is still suggested and that component is left out. This usually means " +
+                                "configuration the suggester had to read is broken, not the plan."
+                        }
+                    }
+                    .getOrNull()
+                    ?.let { suggestion ->
+                        plan.set<ObjectNode>(suggester.componentKey(), objectMapper.valueToTree(suggestion))
+                    }
             }
         }
 
@@ -195,5 +211,6 @@ class MigrationSuggestionService(
         // The plan component keys these suggestions fill (match the corresponding componentKey()s).
         const val DATA_MIGRATION = "dataMigration"
         const val PROCESS_MIGRATION = "processMigration"
+        val logger = KotlinLogging.logger {}
     }
 }

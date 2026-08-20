@@ -41,6 +41,7 @@ import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
 import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -157,6 +158,7 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         // Everything the plan authorises is declared on a call activity in these fixtures, which is what
         // makes the tree walk (pass 2) rather than the business-key route (pass 1) own it. Computed at
         // call time because `authorised` is still being mutated by the tests' own setup.
+        whenever(linkedResolver.resolveCallActivityLinkIndex(any())).thenReturn(emptyMap())
         whenever(linkedResolver.resolveCallActivityReachable(target)).thenAnswer {
             authorised.map { BuildingBlockDefinitionId.of(it.buildingBlockKey, it.buildingBlockVersionTag) }.toSet()
         }
@@ -252,6 +254,8 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         whenever(existing.id).thenReturn(existingId)
         whenever(existing.documentId).thenReturn(UUID.randomUUID())
         whenever(existing.processInstanceId).thenReturn(uitvoerenPi) // it already owns its process
+        val definition = definitionOf("bijstand-uitvoeren", "1.0.0") // built first: stubbing inside a
+        whenever(existing.definition).thenReturn(definition)         // whenever() argument breaks Mockito
         whenever(instanceRepository.findByProcessInstanceId(uitvoerenPi)).thenReturn(existing)
 
         executor.execute(migrationId, target, caseDocumentId)
@@ -260,6 +264,50 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
             assertThat(it.key).isEqualTo("bijstand-besluit")
             assertThat(it.parentInstanceId).isEqualTo(existingId)
         })
+        // And the entry for the block that was already there counts as honoured: it would otherwise be
+        // reported as one nothing created, on a case where it plainly exists (G30).
+        assertThat(MigrationWarnings.drain()).isNull()
+    }
+
+    /**
+     * G23/G30, the shape the `aanvraag-algemene-bijstand-dcm` upgrade hits: the owner's own process was left
+     * on its pre-upgrade deployment, so the definition it is *running* carries none of the new model's
+     * links. The link then has to come from the target model, looked up by the **caller's** process
+     * definition key — `bijstand-process` here, never the called `bijstand-uitvoeren`, because a link is
+     * stored against the BPMN the call activity lives in.
+     */
+    @Test
+    fun `should resolve the link from the target model when the caller is still on its old deployment`() {
+        running(Node(rootPi, "bijstand-process:cd-old", "bijstand-process"))
+        running(
+            Node(
+                uitvoerenPi, "bijstand-uitvoeren:cd", "bijstand-uitvoeren",
+                parent = rootPi, callerActivityId = "UitvoerenCallActivity",
+                callerProcessDefinitionId = "bijstand-process:cd-old",
+            )
+        )
+        // The deployment the caller is running declares nothing — `processLinkService` answers empty for it.
+        authorises("bijstand-uitvoeren", "1.0.0")
+        deploys("bijstand-uitvoeren", "1.0.0", "bijstand-uitvoeren", "bijstand-uitvoeren:bb")
+        val link = mock<BuildingBlockProcessLink>()
+        whenever(link.buildingBlockDefinitionId)
+            .thenReturn(BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0"))
+        whenever(link.inputMappings).thenReturn(emptyList())
+        whenever(linkedResolver.resolveCallActivityLinkIndex(target))
+            .thenReturn(mapOf(("bijstand-process" to "UitvoerenCallActivity") to link))
+
+        executor.execute(migrationId, target, caseDocumentId)
+
+        assertThat(created).singleElement().satisfies({
+            assertThat(it.key).isEqualTo("bijstand-uitvoeren")
+            assertThat(it.processInstanceId).isEqualTo(uitvoerenPi)
+        })
+        verify(runtimeService).createMigrationPlan("bijstand-uitvoeren:cd", "bijstand-uitvoeren:bb")
+        // Found under the caller's key. The index holds that pair only, so looking it up under the called
+        // process's key would leave the block unadopted and warned about instead.
+        // Resolved once for the whole instance, not once per hop (G31).
+        verify(linkedResolver).resolveCallActivityLinkIndex(target)
+        assertThat(MigrationWarnings.drain()).isNull()
     }
 
     /**
@@ -401,6 +449,69 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
     }
 
     /** case process → uitvoeren (declared) → besluit (declared by the block's own definition). */
+    @Test
+    fun `should adopt every level of a block whose own process calls the same block again`() {
+        // A building block is allowed to recurse: its BPMN carries a call activity bound to its own
+        // deployment, declaring itself. In the running tree that is not a cycle — each level is a distinct
+        // process instance — so every level is its own block, nested under the one above it. One entry
+        // authorises them all, because an entry names a block and never a position (D14).
+        running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
+        val depth = 4
+        val pis = (1..depth).map { UUID.fromString("00000000-0000-0000-0000-0000000000c$it").toString() }
+        pis.forEachIndexed { index, pi ->
+            running(
+                Node(
+                    pi, if (index == 0) "herhaling:cd" else "herhaling:bb", "herhaling",
+                    parent = if (index == 0) rootPi else pis[index - 1],
+                    callerActivityId = "HerhaalCallActivity",
+                    callerProcessDefinitionId = if (index == 0) "bijstand-process:1" else "herhaling:bb",
+                )
+            )
+        }
+        // The case declares it, and the block's own deployment declares it again — that is the recursion.
+        declares("bijstand-process:1", "HerhaalCallActivity", "herhaling", "1.0.0")
+        declares("herhaling:bb", "HerhaalCallActivity", "herhaling", "1.0.0")
+        deploys("herhaling", "1.0.0", "herhaling", "herhaling:bb")
+
+        executor.execute(migrationId, target, caseDocumentId)
+
+        // One block per running level, each parented on the level above.
+        assertThat(created).hasSize(depth)
+        assertThat(created.map { it.key }).containsOnly("herhaling")
+        assertThat(created.first().parentInstanceId).isNull()
+        created.drop(1).forEachIndexed { index, block ->
+            assertThat(block.parentInstanceId).isEqualTo(created[index].instanceId)
+        }
+        // And no warning: the entry was satisfied, repeatedly.
+        assertThat(MigrationWarnings.drain()).isNull()
+    }
+
+    @Test
+    fun `should fail rather than adopt when a recursive tree runs deeper than the walk allows`() {
+        // Documents the one real limit. The cap exists as a backstop, and a running tree cannot actually
+        // cycle, so a legitimately deep recursion trips it and fails the case. 20 is far past anything a
+        // blueprint should model, but the message should be read as "too deep", not "broken".
+        running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
+        val pis = (1..22).map { UUID.nameUUIDFromBytes("deep-$it".toByteArray()).toString() }
+        pis.forEachIndexed { index, pi ->
+            running(
+                Node(
+                    pi, if (index == 0) "herhaling:cd" else "herhaling:bb", "herhaling",
+                    parent = if (index == 0) rootPi else pis[index - 1],
+                    callerActivityId = "HerhaalCallActivity",
+                    callerProcessDefinitionId = if (index == 0) "bijstand-process:1" else "herhaling:bb",
+                )
+            )
+        }
+        declares("bijstand-process:1", "HerhaalCallActivity", "herhaling", "1.0.0")
+        declares("herhaling:bb", "HerhaalCallActivity", "herhaling", "1.0.0")
+        deploys("herhaling", "1.0.0", "herhaling", "herhaling:bb")
+
+        assertThatThrownBy { executor.execute(migrationId, target, caseDocumentId) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("more than 20 levels below")
+    }
+
     private fun givenTwoLevelTree() {
         running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
         running(

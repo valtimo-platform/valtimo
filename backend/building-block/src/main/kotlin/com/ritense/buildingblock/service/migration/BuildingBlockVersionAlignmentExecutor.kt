@@ -85,7 +85,16 @@ class BuildingBlockVersionAlignmentExecutor(
 
     private fun align(ownerTarget: BlueprintId, instance: BuildingBlockInstance) {
         val current = instance.definition.id
-        val linked = linkedBuildingBlockVersionResolver.resolveTarget(ownerTarget, instance)
+        // Which blueprint's links govern this instance. Normally the owner's own target version, and for
+        // a block the adoption walk took over from under a hop the plan left as a plain sub-process, the
+        // blueprint that declares the call activity it came from — which is not the owner, because nothing
+        // became a block at that level. Asking the owner there gets "I link nothing of the sort", which is
+        // the same answer as a withdrawn link: the block would be left alone with a warning telling the
+        // author to dissolve what their plan had just deliberately created, and no later migration would
+        // ever upgrade it. The authorising check reaches such a block *through* its declarer, so the
+        // declarer is what maintains it (G33).
+        val governing = linkedBuildingBlockVersionResolver.resolveGoverningBlueprint(ownerTarget, instance)
+        val linked = linkedBuildingBlockVersionResolver.resolveTarget(governing, instance)
 
         if (linked == null) {
             // The owner's new version no longer links this building block. Leaving it alone is
@@ -99,7 +108,7 @@ class BuildingBlockVersionAlignmentExecutor(
             // (G24). By the time alignment runs (@500) anything a `removeBuildingBlock` entry dissolved
             // (@400) is already gone, so every instance reaching this branch is one nothing asked about.
             val stale = "Building block '$current' (instance '${instance.id}') is still running under " +
-                "'${instance.caseDocumentId ?: instance.documentId}', but '$ownerTarget' no longer links it, so it " +
+                "'${instance.caseDocumentId ?: instance.documentId}', but '$governing' no longer links it, so it " +
                 "was left as it is. A case started on this version would not have it. Add a " +
                 "'removeBuildingBlock' entry for '$current' to dissolve it and hand its process back, or " +
                 "restore the link on the call activity that used to declare it."
@@ -116,7 +125,7 @@ class BuildingBlockVersionAlignmentExecutor(
         // happens if and only if a plan says how.
         if (linked.key == current.key && linked.versionTag.isLowerThan(current.versionTag)) {
             logger.warn {
-                "'$ownerTarget' links building block '$linked', which is older than the '$current' " +
+                "'$governing' links building block '$linked', which is older than the '$current' " +
                     "that instance '${instance.id}' is on; not downgrading"
             }
             return

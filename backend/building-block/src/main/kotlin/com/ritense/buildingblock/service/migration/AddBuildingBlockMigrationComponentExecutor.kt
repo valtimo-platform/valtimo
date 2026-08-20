@@ -100,8 +100,11 @@ import java.util.UUID
  * Reading the link from the caller's *current* definition is what makes the recursion correct: by the
  * time a child is visited its caller has already been migrated — by the plan's own `processMigration`
  * (@200) for the first level, by this executor for every level below — so the links consulted are the
- * target version's. (The exception, and a live gap, is a child behind a hop that stays a plain
- * sub-process: its caller keeps running the old deployment. See G21/G23.)
+ * target version's. The exception is a child behind a hop that stays a plain sub-process: that caller never
+ * moves, so it keeps running the old deployment, which carries none of the new model's links. For those the
+ * link is resolved from the target model instead, by the caller's process definition **key**, out of the
+ * index this takes once per instance ([LinkedBuildingBlockVersionResolver.resolveCallActivityLinkIndex]).
+ * See G23/G30 for why the key matters and G31 for why the index does.
  *
  * Only **running** processes are taken over. Work the case already finished keeps the flat shape in
  * history; there is no instance left to give an identity to.
@@ -143,16 +146,26 @@ class AddBuildingBlockMigrationComponentExecutor(
             return
         }
 
+        // Blocks this plan authorises that the target declares on a call activity, transitively: the
+        // walk locates those from the running tree, so a business-key miss for one of them is not the
+        // end of the story and must not be reported as one.
+        //
+        // Resolved first and handed to both checks below, which need exactly the same set. The walk
+        // behind it reads every process definition and parsed BPMN in the target's tree, so on a real
+        // configuration it is the dominant cost of migrating an instance and doing it three times per
+        // instance was three times too many (G31).
+        val adoptable = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
+
         // Refuse before creating anything: a block whose version the target does not link is invisible
         // to every later migration (R2). Checked here as well as on the save path because a plan
         // deployed from a file never passes the save path; on a dry run this surfaces as WOULD_FAIL.
         // Deliberately ahead of the "nothing to take over" skips below — the plan is wrong either way.
-        addBuildingBlockLinkChecker.assertLinked(target, instructions)
+        addBuildingBlockLinkChecker.assertLinked(target, instructions, adoptable)
 
         // Same argument, same two call sites: an entry that can reach a process by neither route can
         // never create a building block — for any case, on any run. Refusing is the only way that
         // reaches the author; skipping it looks identical to a plan that worked.
-        addBuildingBlockProcessChecker.assertHijacksSomething(target, instructions)
+        addBuildingBlockProcessChecker.assertHijacksSomething(target, instructions, adoptable)
 
         // The owner is whatever instance the plan migrates: a case (no building block for its
         // document id) or a parent building block (in which case new blocks nest under it).
@@ -160,10 +173,10 @@ class AddBuildingBlockMigrationComponentExecutor(
         val caseDocumentId = parent?.caseDocumentId ?: ownerDocumentId
         val parentBuildingBlockInstanceId = parent?.id
 
-        // Blocks this plan authorises that the target declares on a call activity, transitively: the
-        // walk locates those from the running tree, so a business-key miss for one of them is not the
-        // end of the story and must not be reported as one.
-        val adoptable = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
+        // Every call activity the target's model declares, by (process definition key, activity id) — the
+        // whole index in one walk, because pass 2 needs it once per hop the plan leaves as a plain
+        // sub-process, and resolving those one at a time re-walked the tree for each (G31).
+        val callActivityLinks = linkedBuildingBlockVersionResolver.resolveCallActivityLinkIndex(target)
 
         // Which entries actually produced a block. Pass 1 deliberately stays quiet for an entry the
         // target declares on a call activity, on the grounds that pass 2 will take it — so if pass 2
@@ -184,6 +197,7 @@ class AddBuildingBlockMigrationComponentExecutor(
             caseDocumentId = caseDocumentId,
             instructions = instructions,
             satisfied = satisfied,
+            callActivityLinks = callActivityLinks,
             depth = 0,
         )
 
@@ -431,6 +445,8 @@ class AddBuildingBlockMigrationComponentExecutor(
         caseDocumentId: UUID,
         instructions: List<AddBuildingBlockInstruction>,
         satisfied: MutableSet<BuildingBlockDefinitionId>,
+        /** [target]'s call activities by (process definition key, activity id) — resolved once per instance. */
+        callActivityLinks: Map<Pair<String, String>, BuildingBlockProcessLink>,
         depth: Int,
     ) {
         if (parentProcessInstanceIds.isEmpty()) {
@@ -450,26 +466,35 @@ class AddBuildingBlockMigrationComponentExecutor(
                     ?: instanceRecordedOn(callingExecution.id)
                 if (existing?.processInstanceId != null) {
                     // Already a building block, process and all — natively started, or created by pass 1.
+                    // An entry naming it asked for exactly what is already there, so it has been honoured:
+                    // recording that keeps reportEntriesNeitherPassReached from reporting a block that
+                    // plainly exists as one nothing created (G30).
+                    satisfied += existing.definition.id
                     // Its own children are still ours to take over, under it.
                     takeOverTreeBelow(
                         target, listOf(childProcessInstanceId), existing.documentId, existing.id, caseDocumentId,
-                        instructions, satisfied, depth + 1,
+                        instructions, satisfied, callActivityLinks, depth + 1,
                     )
                     return@forEach
                 }
 
                 val callerActivityId = callingExecution.activityId
-                val link = callerActivityId?.let {
-                    buildingBlockLinkOf(callingExecution.getProcessDefinitionId(), it)
-                    // The caller's *running* definition answers only while the caller was itself taken
-                    // over — it is then on the block's own deployment, which carries the link. A hop the
-                    // plan leaves as a plain sub-process never moves, so its caller keeps running the old
-                    // blueprint's copy, which legitimately carries none of the new model's links, and
-                    // everything below it would be invisible (G23). The target model knows which
-                    // blueprint deploys that process and therefore which links the new version means.
-                        ?: linkedBuildingBlockVersionResolver.resolveCallActivityLink(
-                            target, processDefinitionKeyOf(childProcessInstanceId), it
-                        )
+                val callerDefinitionId = callingExecution.getProcessDefinitionId()
+                // The caller's *running* definition answers only while the caller was itself taken over —
+                // it is then on the block's own deployment, which carries the link. A hop the plan leaves
+                // as a plain sub-process never moves, so its caller keeps running the old blueprint's copy,
+                // which legitimately carries none of the new model's links, and everything below it would
+                // be invisible (G23). The target model knows which blueprint deploys that process and
+                // therefore which links the new version means.
+                //
+                // Looked up by the **caller's** process definition key: a link is stored against the
+                // process whose BPMN contains the call activity, so the *called* process's key matches
+                // nothing, ever, and the fallback could never answer (G30).
+                val link = callerActivityId?.let { activityId ->
+                    buildingBlockLinkOf(callerDefinitionId, activityId)
+                        ?: keyOfDefinition(callerDefinitionId)?.let { callerProcessDefinitionKey ->
+                            callActivityLinks[callerProcessDefinitionKey to activityId]
+                        }
                 }
                 if (link == null || callerActivityId == null) {
                     // The target version models this as a plain sub-process as well. Leave it be — but a
@@ -482,6 +507,7 @@ class AddBuildingBlockMigrationComponentExecutor(
                         caseDocumentId,
                         instructions,
                         satisfied,
+                        callActivityLinks,
                         depth + 1,
                     )
                     return@forEach
@@ -510,6 +536,7 @@ class AddBuildingBlockMigrationComponentExecutor(
                     caseDocumentId,
                     instructions,
                     satisfied,
+                    callActivityLinks,
                     depth + 1,
                 )
             }
@@ -841,6 +868,19 @@ class AddBuildingBlockMigrationComponentExecutor(
 
     private fun processDefinitionKeyOf(processInstanceId: String): String =
         repositoryService.getProcessDefinition(processDefinitionIdOf(processInstanceId)).key
+
+    /**
+     * The process definition key of [processDefinitionId], or null when the definition cannot be read — it
+     * throws for an unknown id and answers null once the deployment is gone. Either way it tells us nothing
+     * about links, which is not a reason to fail the case.
+     */
+    private fun keyOfDefinition(processDefinitionId: String): String? =
+        try {
+            repositoryService.getProcessDefinition(processDefinitionId)?.key
+        } catch (e: Exception) {
+            logger.debug(e) { "Could not resolve the key of process definition '$processDefinitionId'" }
+            null
+        }
 
     private companion object {
         private const val DOC_PREFIX = "doc"

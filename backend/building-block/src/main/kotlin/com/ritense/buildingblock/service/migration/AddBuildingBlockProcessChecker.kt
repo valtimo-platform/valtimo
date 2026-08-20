@@ -71,11 +71,14 @@ class AddBuildingBlockProcessChecker(
     fun findEntriesWithoutProcessMigration(
         target: BlueprintId,
         instructions: List<AddBuildingBlockInstruction>,
+        /** [target]'s call-activity closure when the caller already has it — see the note in [AddBuildingBlockLinkChecker.findUnlinked]. */
+        callActivityReachable: Set<BuildingBlockDefinitionId>? = null,
     ): List<String> {
         if (instructions.isEmpty()) {
             return emptyList()
         }
-        val adoptable = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
+        val adoptable = callActivityReachable
+            ?: linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
 
         return instructions
             .filter { it.processMigration.isEmpty() && blockOf(it) !in adoptable }
@@ -93,8 +96,12 @@ class AddBuildingBlockProcessChecker(
      * Fatal on purpose, like the D12 link check: the alternative is a plan that reports success on every
      * case and creates nothing.
      */
-    fun assertHijacksSomething(target: BlueprintId, instructions: List<AddBuildingBlockInstruction>) {
-        val problems = findEntriesWithoutProcessMigration(target, instructions)
+    fun assertHijacksSomething(
+        target: BlueprintId,
+        instructions: List<AddBuildingBlockInstruction>,
+        callActivityReachable: Set<BuildingBlockDefinitionId>? = null,
+    ) {
+        val problems = findEntriesWithoutProcessMigration(target, instructions, callActivityReachable)
         check(problems.isEmpty()) {
             "Migration plan for '$target' ${problems.joinToString("; and ")}"
         }

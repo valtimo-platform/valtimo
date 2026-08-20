@@ -133,14 +133,35 @@ class LinkedBuildingBlockVersionResolver(
         owner: BlueprintId,
         processDefinitionKey: String,
         activityId: String,
-    ): BuildingBlockProcessLink? =
-        blueprintsInTreeOf(owner).firstNotNullOfOrNull { blueprint ->
-            processDefinitionIdsOf(blueprint)
-                .filter { processDefinitionKeyOf(it) == processDefinitionKey }
-                .flatMap { processLinkRepository.findByProcessDefinitionId(it) }
-                .filterIsInstance<BuildingBlockProcessLink>()
-                .firstOrNull { it.activityId == activityId }
+    ): BuildingBlockProcessLink? = resolveCallActivityLinkIndex(owner)[processDefinitionKey to activityId]
+
+    /**
+     * Every call-activity link [owner]'s model declares, indexed by the pair that identifies a call
+     * activity at runtime: the **process definition key** whose BPMN contains it, and its activity id.
+     *
+     * The whole index in one walk, because a caller resolving links hop by hop pays the walk each time:
+     * [resolveCallActivityLink] reads `blueprintsInTreeOf`, which for a real configuration means a BFS over
+     * a hundred blueprints, a `findByProcessDefinitionId` per process definition and a parsed BPMN model
+     * per definition. `AddBuildingBlockMigrationComponentExecutor` needs it once per hop the plan leaves as
+     * a plain sub-process, which in the configuration this was built for is dozens per case (G31). So it
+     * takes the index once per instance it migrates and looks up in memory after that.
+     *
+     * First declarer wins, matching what the per-hop lookup returned: the blueprints are visited in the
+     * walk's breadth-first order, so the shallowest declaration of a given call activity is the one kept —
+     * the same node the runtime walk descends through first.
+     */
+    fun resolveCallActivityLinkIndex(owner: BlueprintId): Map<Pair<String, String>, BuildingBlockProcessLink> {
+        val index = LinkedHashMap<Pair<String, String>, BuildingBlockProcessLink>()
+        blueprintsInTreeOf(owner).forEach { blueprint ->
+            processDefinitionIdsOf(blueprint).forEach { processDefinitionId ->
+                val processDefinitionKey = processDefinitionKeyOf(processDefinitionId) ?: return@forEach
+                processLinkRepository.findByProcessDefinitionId(processDefinitionId)
+                    .filterIsInstance<BuildingBlockProcessLink>()
+                    .forEach { link -> index.putIfAbsent(processDefinitionKey to link.activityId, link) }
+            }
         }
+        return index
+    }
 
     private fun processDefinitionKeyOf(processDefinitionId: String): String? =
         try {
@@ -162,11 +183,14 @@ class LinkedBuildingBlockVersionResolver(
 
     private data class Tree(
         val declaredBy: Map<BuildingBlockDefinitionId, BlueprintId>,
+        /** Which blueprint declares each call activity id — see [resolveGoverningBlueprint]. */
+        val declaredByActivity: Map<String, BlueprintId>,
         val expanded: Set<BlueprintId>,
     )
 
     private fun walkTree(owner: BlueprintId): Tree {
         val declaredBy = LinkedHashMap<BuildingBlockDefinitionId, BlueprintId>()
+        val declaredByActivity = LinkedHashMap<String, BlueprintId>()
         // Expansion is deduplicated on its own set: a node reached through an *unlinked* call activity is
         // never added to `declaredBy`, so without this it would be expanded again on every visit.
         val expanded = HashSet<BlueprintId>()
@@ -189,11 +213,41 @@ class LinkedBuildingBlockVersionResolver(
             }
             callActivityLinks(current).forEach { link ->
                 declaredBy.putIfAbsent(link.buildingBlockDefinitionId, current)
+                link.activityId?.let { declaredByActivity.putIfAbsent(it, current) }
                 queue.add(link.buildingBlockDefinitionId)
             }
             queue.addAll(buildingBlockCallTargetsOf(current))
         }
-        return Tree(declaredBy, expanded)
+        return Tree(declaredBy, declaredByActivity, expanded)
+    }
+
+    /**
+     * The blueprint whose links decide which version [instance] belongs on, given that [owner] is the
+     * blueprint version of whatever owns it in the running tree.
+     *
+     * Usually that is [owner] itself, and this returns it. It is *not* [owner] for a block the adoption
+     * walk took over from under a hop the plan deliberately left as a plain sub-process: nothing became a
+     * block at that level, so the instance hangs directly off the case while the call activity that
+     * declares it belongs to the skipped block's BPMN. Ask the case and the answer is "I link nothing of
+     * the sort" — which is indistinguishable from a block whose link was withdrawn, so the block gets
+     * left alone with a warning telling the author to dissolve what their plan just deliberately created,
+     * and no later migration ever upgrades it.
+     *
+     * So the question has to be put to the blueprint that **declares** the call activity the instance
+     * came from, which the tree walk passes through anyway. Both readings of "linked" then agree: an
+     * entry is authorised because the model reaches the block through that declarer, and the same
+     * declarer is asked to maintain it afterwards.
+     *
+     * Matched on the recorded activity id, the same identity [resolveTarget] prefers, so a declarer that
+     * has re-pointed that call activity at a different version — or a different building block entirely —
+     * is still the one asked. An instance with no activity id came from a startable item, which only a
+     * case definition can offer and only one level deep, so [owner] is already the right answer. Where
+     * two blueprints in one tree declare the same activity id the shallowest wins, as it does for
+     * [resolveCallActivityDeclarers]; nothing in the instance can distinguish them.
+     */
+    fun resolveGoverningBlueprint(owner: BlueprintId, instance: BuildingBlockInstance): BlueprintId {
+        val activityId = instance.activityId ?: return owner
+        return walkTree(owner).declaredByActivity[activityId] ?: owner
     }
 
     /**
