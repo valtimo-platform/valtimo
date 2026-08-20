@@ -186,9 +186,10 @@ describe.skipIf(NODE_MAJOR < 22)("PluginManager on compiled Wasm (runInWorker)",
     expect(out.body).toMatchObject({ path: "/echo", method: "GET", query: { a: "b" } });
   });
 
-  it("serializes concurrent calls to one instance without an Extism reentrancy error", async () => {
-    // Without runExclusive these would hit "plugin is not reentrant"; with it they queue and each
-    // returns its own echoed documentId.
+  it("handles concurrent calls without an Extism reentrancy error", async () => {
+    // A single Extism instance is not reentrant, so these would hit "plugin is not reentrant" if
+    // they shared one; the pool gives each concurrent call its own instance and each returns its
+    // own echoed documentId.
     const calls = Array.from({ length: 8 }, (_, i) =>
       manager.callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "echo", actionCall({ documentId: `doc-${i}` }))
     );
@@ -224,4 +225,113 @@ describe.skipIf(NODE_MAJOR < 22)("PluginManager on compiled Wasm (runInWorker)",
       await timeoutManager.close();
     }
   }, 30_000);
+
+  /**
+   * #611: the pool is what makes two calls to one plugin overlap. The `burn` handler busy-waits in
+   * QuickJS, so wall-clock time is the only honest way to tell parallel execution from queued
+   * execution — hence the deliberately wide margins.
+   */
+  describe("instance pool", () => {
+    const BURN_MS = 1_500;
+
+    const burn = () => actionCall({ properties: { ms: BURN_MS } });
+
+    async function timeTwoBurns(poolMaxInstances: number): Promise<number> {
+      const pooled = new PluginManager(
+        storageDir,
+        noopLogger(),
+        configProviderStub as never,
+        kvRepositoryStub as never,
+        logRepositoryStub as never,
+        { poolMaxInstances, wasmTimeoutMs: 20_000 }
+      );
+      try {
+        await pooled.loadPlugin(FIXTURE_PLUGIN_ID, FIXTURE_VERSION);
+        // Warm both instances first, so instantiation cost is not counted as execution time.
+        await Promise.all([
+          pooled.callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "echo", actionCall()),
+          pooled.callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "echo", actionCall()),
+        ]);
+
+        const started = Date.now();
+        const results = await Promise.all([
+          pooled.callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "burn", burn()),
+          pooled.callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "burn", burn()),
+        ]);
+        const elapsed = Date.now() - started;
+        expect(results.every((r) => r.status === "completed")).toBe(true);
+        return elapsed;
+      } finally {
+        await pooled.close();
+      }
+    }
+
+    it("runs two calls to the same plugin in parallel", async () => {
+      const elapsed = await timeTwoBurns(2);
+      // Two 1.5 s calls finishing well inside 3 s can only mean they overlapped.
+      expect(elapsed).toBeLessThan(2 * BURN_MS);
+    }, 60_000);
+
+    it("serialises the same pair when the pool maximum is 1", async () => {
+      // The documented contrast: WASM_POOL_MAX_INSTANCES=1 restores strictly serialised calls.
+      const elapsed = await timeTwoBurns(1);
+      expect(elapsed).toBeGreaterThanOrEqual(2 * BURN_MS);
+    }, 60_000);
+  });
+
+  /**
+   * #612: Extism's own `maxPages` option bounds only the host-side blocks used to pass input and
+   * output across the boundary — the guest declares and exports its own linear memory. The host
+   * writes the cap into the module's memory declaration instead, which is what actually stops
+   * QuickJS's heap from growing past it.
+   */
+  describe("memory cap", () => {
+    /** Runs `mem-bomb` under a given page cap, folding a host rejection into the same shape. */
+    async function memBomb(wasmMaxMemoryPages: number, chunks: number) {
+      const capped = new PluginManager(
+        storageDir,
+        noopLogger(),
+        configProviderStub as never,
+        kvRepositoryStub as never,
+        logRepositoryStub as never,
+        // The wall-clock timeout is deliberately generous, so a failure here proves the *memory*
+        // cap fired rather than the timeout.
+        { wasmMaxMemoryPages, wasmTimeoutMs: 25_000 }
+      );
+      try {
+        await capped.loadPlugin(FIXTURE_PLUGIN_ID, FIXTURE_VERSION);
+        const out = await capped
+          .callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "mem-bomb", actionCall({ properties: { chunks } }))
+          .catch((err: Error) => ({ status: "host-rejected", errorMessage: err.message }));
+        // The host served the memory bomb without dying: the next call still succeeds.
+        const after = await capped.callAction(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "echo", actionCall());
+        expect(after.status).toBe("completed");
+        return out;
+      } finally {
+        await capped.close();
+      }
+    }
+
+    it("fails an allocation past the cap and keeps serving the next call", async () => {
+      // 512 pages = 32 MiB; 4000 chunks of 256 KiB ≈ 1 GiB. Documented real behaviour: the cap in
+      // the module's memory declaration makes `memory.grow` fail, QuickJS's allocator reports out
+      // of memory, and the SDK runtime returns its EXECUTION_ERROR envelope — a contained failure
+      // rather than a host crash or a 400 MiB resident process.
+      const out = await memBomb(512, 4000);
+      expect(out).toMatchObject({ status: "error", errorCode: "EXECUTION_ERROR" });
+      expect((out as { errorMessage: string }).errorMessage).toMatch(/out of memory/i);
+    }, 60_000);
+
+    it("still runs an allocation that fits inside the cap", async () => {
+      // Guards the test above against a false pass: if `mem-bomb` were missing or broken, the
+      // failing assertion would look like the cap working.
+      const out = await memBomb(512, 40); // ~10 MiB, comfortably under 32 MiB
+      expect(out).toMatchObject({ status: "completed", variables: { allocated: 40 } });
+    }, 60_000);
+
+    it("lets the same allocation through when the cap is disabled", async () => {
+      const out = await memBomb(0, 40);
+      expect(out).toMatchObject({ status: "completed" });
+    }, 60_000);
+  });
 });

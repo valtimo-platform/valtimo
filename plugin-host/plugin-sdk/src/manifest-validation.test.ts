@@ -17,6 +17,13 @@
 import {describe, expect, it} from "vitest";
 import {validatePluginManifest} from "./manifest-validation";
 
+const PLUGIN_ID_ERROR =
+  "manifest.json 'pluginId' must be 1-64 characters of lowercase letters, digits, '.', '-' or '_', starting and ending with a letter or digit (it is used as a directory and URL path segment)";
+const VERSION_ERROR =
+  "manifest.json 'version' must be 1-64 characters of letters, digits, '.', '-', '_' or '+', starting and ending with a letter or digit (it is used as a directory and URL path segment)";
+const LOGO_ERROR =
+  "manifest.json 'logo' must be a file name at the package root ending in .svg, .png, .jpg or .jpeg";
+
 /**
  * `validatePluginManifest` is the single rule set enforced at BOTH the pack tool (build-time) and
  * the host upload route (runtime). These cases pin that shared contract so the two gates
@@ -48,13 +55,103 @@ describe("validatePluginManifest", () => {
 
   it("requires a non-empty pluginId", () => {
     const errors = validatePluginManifest({ ...validManifest(), pluginId: "  " });
-    expect(errors).toContain("manifest.json must contain a non-empty 'pluginId'");
+    expect(errors).toContain(PLUGIN_ID_ERROR);
   });
 
   it("requires a non-empty version", () => {
     const m = validManifest() as Record<string, unknown>;
     delete m.version;
-    expect(validatePluginManifest(m)).toContain("manifest.json must contain a non-empty 'version'");
+    expect(validatePluginManifest(m)).toContain(VERSION_ERROR);
+  });
+
+  /**
+   * `pluginId` and `version` become directory names under the host's plugin storage and segments of
+   * public URLs. These cases are the containment boundary: anything that could name a path, escape
+   * a directory, or collide on a case-insensitive filesystem must be refused here, because this is
+   * the one rule set both the pack tool and the host upload route run.
+   */
+  describe("package identity charset", () => {
+    it.each([
+      ["a parent-directory traversal", "../../app/dist"],
+      ["a bare dot", "."],
+      ["a bare double dot", ".."],
+      ["a POSIX separator", "a/b"],
+      ["a Windows separator", "a\\b"],
+      ["a leading dot (hidden directory)", ".hidden"],
+      ["an uppercase letter", "Foo"],
+      ["an absolute path", "/etc/passwd"],
+      ["a trailing separator", "case-summary/"],
+      ["a NUL byte", "case\u0000summary"],
+      ["a trailing dot", "case-summary."],
+      ["an empty string", ""],
+      ["65 characters", "a".repeat(65)],
+      ["a non-string", 42],
+    ])("rejects a pluginId that is %s", (_label, pluginId) => {
+      expect(validatePluginManifest({ ...validManifest(), pluginId })).toContain(PLUGIN_ID_ERROR);
+    });
+
+    it.each([
+      ["case-summary"],
+      ["plugin.v2"],
+      ["a"],
+      ["my_plugin-2"],
+      ["a".repeat(64)],
+    ])("accepts the pluginId %s", (pluginId) => {
+      expect(validatePluginManifest({ ...validManifest(), pluginId })).toEqual([]);
+    });
+
+    it.each([
+      ["a traversal", "../1.0.0"],
+      ["a separator", "1.0.0/x"],
+      ["a bare double dot", ".."],
+      ["a leading dot", ".1.0.0"],
+      ["an empty string", ""],
+      ["65 characters", "1".repeat(65)],
+    ])("rejects a version that is %s", (_label, version) => {
+      expect(validatePluginManifest({ ...validManifest(), version })).toContain(VERSION_ERROR);
+    });
+
+    it.each([["0.1.0"], ["1.0.0-RC1+build.5"], ["1"], ["2.0.0_beta"]])(
+      "accepts the version %s",
+      (version) => {
+        expect(validatePluginManifest({ ...validManifest(), version })).toEqual([]);
+      }
+    );
+
+    it("reports both identity fields when both are unusable", () => {
+      const errors = validatePluginManifest({ ...validManifest(), pluginId: "..", version: ".." });
+      expect(errors).toEqual([PLUGIN_ID_ERROR, VERSION_ERROR]);
+    });
+  });
+
+  /**
+   * The logo is copied into the stored package under its own name, and therefore into the content
+   * hash GZAC pins — so it must name a plain image file at the package root and nothing else.
+   */
+  describe("logo", () => {
+    it("accepts a manifest without a logo (only the pack tool sets one)", () => {
+      expect(validatePluginManifest(validManifest())).toEqual([]);
+    });
+
+    it.each([
+      ["a traversal", "../../../etc/passwd"],
+      ["a subdirectory", "sub/logo.svg"],
+      ["a Windows separator", "sub\\logo.svg"],
+      ["a non-image extension", "logo.exe"],
+      ["no basename", ".svg"],
+      ["no extension", "logo"],
+      ["an empty string", ""],
+      ["a non-string", 42],
+    ])("rejects a logo that is %s", (_label, logo) => {
+      expect(validatePluginManifest({ ...validManifest(), logo })).toContain(LOGO_ERROR);
+    });
+
+    it.each([["logo.svg"], ["logo.PNG"], ["icon-2.jpeg"], ["a.jpg"]])(
+      "accepts the logo %s",
+      (logo) => {
+        expect(validatePluginManifest({ ...validManifest(), logo })).toEqual([]);
+      }
+    );
   });
 
   it("accepts the pack-tool-stamped sdkVersion and the frontend_data capability", () => {
@@ -123,8 +220,8 @@ describe("validatePluginManifest", () => {
       translations: { en: {}, fr: { name: "Résumé" } },
     });
     // missing pluginId, blank version, en missing name+description, fr missing description
-    expect(errors).toContain("manifest.json must contain a non-empty 'pluginId'");
-    expect(errors).toContain("manifest.json must contain a non-empty 'version'");
+    expect(errors).toContain(PLUGIN_ID_ERROR);
+    expect(errors).toContain(VERSION_ERROR);
     expect(errors).toContain("manifest.json translations.en must contain a non-empty 'name'");
     expect(errors).toContain("manifest.json translations.en must contain a non-empty 'description'");
     expect(errors).toContain("manifest.json translations.fr must contain a non-empty 'description'");

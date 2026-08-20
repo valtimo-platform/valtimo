@@ -149,6 +149,55 @@ describe("gzac_api host function", () => {
       expect(reply.status).toBe(200);
       expect(fetchMock).toHaveBeenCalledOnce();
     });
+
+    /**
+     * The allowlist must be checked against the path that is actually requested. `fetch` resolves
+     * dot segments while parsing the URL, so checking the raw string would let a grant on one
+     * prefix authorise a request to an entirely different endpoint.
+     */
+    describe("path canonicalisation", () => {
+      const documentGrant = [{ method: "GET", pattern: "/api/v1/document/**" }];
+
+      it("refuses a traversal that would match the grant but request something else", async () => {
+        const reply = await invoke({ ...baseCtx, grantedEndpoints: documentGrant }, {
+          method: "GET",
+          path: "/api/v1/document/../../../v1/case/123",
+        });
+        expect(reply.status).toBe(403);
+        // The refusal names the path that would really have been requested, not the raw string.
+        expect(reply.body.error).toContain("GET /v1/case/123");
+        expect(fetchMock).not.toHaveBeenCalled();
+      });
+
+      it("allows a call whose canonical target is granted, and fetches that canonical URL", async () => {
+        const reply = await invoke({ ...baseCtx, grantedEndpoints: documentGrant }, {
+          method: "GET",
+          path: "/api/v1/other/../document/123",
+        });
+        expect(reply.status).toBe(200);
+        expect(fetchMock.mock.calls[0][0]).toBe("http://gzac:8080/api/v1/document/123");
+      });
+
+      it("returns 400 for an encoded traversal without fetching", async () => {
+        const reply = await invoke({ ...baseCtx, grantedEndpoints: documentGrant }, {
+          method: "GET",
+          path: "/api/v1/document/%2e%2e%2f%2e%2e%2fcase/123",
+        });
+        expect(reply.status).toBe(400);
+        expect(reply.body.error).toContain("percent-encoded");
+        expect(fetchMock).not.toHaveBeenCalled();
+      });
+
+      it("keeps a query string verbatim while canonicalising the path", async () => {
+        await invoke({ ...baseCtx, grantedEndpoints: documentGrant }, {
+          method: "GET",
+          path: "/api/v1//document/123?page=0&sort=x",
+        });
+        expect(fetchMock.mock.calls[0][0]).toBe(
+          "http://gzac:8080/api/v1/document/123?page=0&sort=x"
+        );
+      });
+    });
   });
 
   describe("header handling", () => {

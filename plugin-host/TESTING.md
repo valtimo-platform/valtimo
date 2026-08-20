@@ -132,13 +132,27 @@ happen for real inside the WebAssembly sandbox:
 
 - How the SDK settles a plugin's `async`/`await` code (the sandbox uses a tiny JavaScript engine,
   QuickJS, that behaves differently from Node here — see the note at the end of this file).
-- How the host safely runs one plugin call at a time (the sandbox refuses to be called twice at once,
-  and the host has a lock to prevent that).
+- How the host runs several plugin calls at once (one sandbox instance refuses to be called twice at
+  the same time, so the host keeps a small pool of them per plugin version and hands each call its
+  own).
+- Whether the memory cap really stops a runaway plugin (only the engine can enforce that, and only
+  against a real module).
 
 The tests use a small, purpose-built **fixture plugin** at `test-fixtures/test-plugin/`. (A *fixture*
-is a fixed, reusable piece of test setup — here, a tiny real plugin with predictable handlers like
-`echo`, `boom`, and an event handler.) A setup step compiles it to `.wasm` automatically before the
-tests run, so to add a case you just add a handler to the fixture.
+is a fixed, reusable piece of test setup — here, a tiny real plugin with predictable handlers.) A
+setup step compiles it to `.wasm` automatically before the tests run, so to add a case you just add a
+handler to the fixture. The handlers it carries today:
+
+| Handler | What it proves |
+|---------|----------------|
+| `echo` | The plugin sees its input — and never the host-only service token or callback URL. |
+| `async-double` | The SDK settles a promise under QuickJS, which has no event loop. |
+| `boom` / `boom-submit` | A thrown handler becomes an error envelope, not a host crash. |
+| `spin` | The wall-clock timeout really cancels a stuck call, and the host recovers. |
+| `burn` | Busy-waits a fixed time, so a test can show two calls to one plugin overlap (and serialise again when the pool maximum is 1). |
+| `mem-bomb` | Allocates until the memory cap stops it — the call fails cleanly and the host serves the next one. |
+| `call-gzac` | The backend callback works end to end, with the token attached by the host. |
+| `/echo` request, `review` / `echo-submit` | The data route and the task-form submit hook. |
 
 ```bash
 # from plugin-host/app, with Node 22 active (the Wasm toolchain downloads itself on first use)
@@ -219,6 +233,11 @@ Concretely:
 | A web route or an auth check | a route test: the success case, every rejection, and an unsigned request → 401 | L2 |
 | Anything about auth, tokens, or permissions | the failure cases (missing / forged / tampered / expired), and confirm the default is "deny" | L1/L2 |
 | The plugin-manifest rules | validation cases; make sure the build tool and the upload endpoint still agree | L1/L5 |
+| What a package may call itself (`pluginId`, `version`, `logo`) | rejection cases for anything that could name a path, plus a check that nothing was written outside the storage directory | L1/L2 |
+| Anything that builds a path from a plugin-supplied string | a canonicalisation test proving the string you *check* is the string you *use* | L1 |
+| The Wasm memory cap | patch the module, then let `WebAssembly` judge it: the patched module must still compile and must refuse to grow past the cap | L1 (+L3) |
+| The instance pool (parallelism, limits, shutdown) | fake-factory tests for the semantics, plus one real-plugin run that shows two calls overlapping | L1 + **L3** |
+| How a package is written to disk | concurrent installs, an overwrite that drops a file, and a failed load — each checking what is actually on disk afterwards | L1 |
 | How the SDK runs a plugin's handlers | a fixture handler + checks by actually running the plugin | **L3** |
 | How the host loads/calls/guards a plugin | a plugin-manager test that runs a real plugin (Node 22) | **L3** |
 | The plugin → backend callback code | a quick unit test, plus one real-plugin run of the callback | L1 (+L3) |

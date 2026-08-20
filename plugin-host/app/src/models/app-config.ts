@@ -33,16 +33,28 @@ export const envSchema = z.object({
 
   // Wasm execution limits. Every plugin call is bounded by WASM_TIMEOUT_MS (Extism cancels the
   // call and the route reports a HOST_ERROR); WASM_MAX_MEMORY_PAGES caps the module's linear
-  // memory (64 KiB per page — the default 4096 pages = 256 MiB). Set WASM_MAX_MEMORY_PAGES=0 to
-  // remove the cap (not recommended outside local development).
+  // memory (64 KiB per page — the default 4096 pages = 256 MiB). The cap is applied by rewriting
+  // the module's own memory declaration at instantiation, which is the only bound the engine
+  // enforces on guest memory growth. Set WASM_MAX_MEMORY_PAGES=0 to remove the cap (not
+  // recommended outside local development).
   WASM_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   WASM_MAX_MEMORY_PAGES: z.coerce.number().int().min(0).default(4096),
   // Idle Extism instances are closed after this long without a call (a periodic sweep frees the
   // worker + memory; the next call transparently re-instantiates). 0 disables eviction.
   WASM_INSTANCE_IDLE_TTL_MS: z.coerce.number().int().min(0).default(10 * 60 * 1000),
 
+  // Per-plugin Wasm instance pool. Each Extism instance has its own linear memory and worker
+  // thread, so calls to one plugin run in parallel instead of queueing behind each other. Instances
+  // above the minimum are closed as soon as they finish; when every instance up to the maximum is
+  // busy, further calls wait up to WASM_POOL_ACQUIRE_TIMEOUT_MS and then fail rather than queueing
+  // without bound. The worst-case memory footprint per plugin version is WASM_POOL_MAX_INSTANCES x
+  // WASM_MAX_MEMORY_PAGES. Set WASM_POOL_MAX_INSTANCES=1 for strictly serialised calls.
+  WASM_POOL_MIN_INSTANCES: z.coerce.number().int().min(1).default(1),
+  WASM_POOL_MAX_INSTANCES: z.coerce.number().int().min(1).default(10),
+  WASM_POOL_ACQUIRE_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+
   // Upper bound on the gzac_api callback fetch — matches http_request's hard cap so a hung GZAC
-  // endpoint cannot pin a plugin call (and its per-plugin lock) forever.
+  // endpoint cannot pin a plugin call (and the pooled Wasm instance it holds) forever.
   GZAC_API_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
 
   // Upper bound on the user-token introspection call the /data route makes against GZAC before

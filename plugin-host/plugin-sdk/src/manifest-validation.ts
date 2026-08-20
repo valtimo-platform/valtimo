@@ -34,6 +34,55 @@
 import {FRONTEND_BUNDLE_TYPES, HOST_CAPABILITIES} from "./models/types.js";
 import {validateEgressEntry} from "./egress.js";
 
+/**
+ * `pluginId` and `version` become path components (`<storage>/<pluginId>/<version>/`) and URL
+ * segments, so they are restricted to a charset that cannot express a traversal or a hidden
+ * directory: alphanumerics at both ends, and `.` `-` `_` only inside. That rejects `.`, `..`,
+ * anything containing `/` or `\`, and any leading-dot name outright.
+ *
+ * `pluginId` is lowercase-only because a case-insensitive filesystem would fold `Foo` and `foo`
+ * into one package directory while the database treats them as two distinct definitions.
+ * `version` additionally allows uppercase and `+` so semver prerelease/build metadata such as
+ * `1.0.0-RC1+build.5` stays expressible.
+ */
+export const PLUGIN_ID_PATTERN = /^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/;
+export const PLUGIN_VERSION_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9._+-]*[A-Za-z0-9])?$/;
+/** A logo is a plain file at the package root, in a format a browser renders as an image. */
+export const PLUGIN_LOGO_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:svg|png|jpe?g)$/i;
+export const MAX_PLUGIN_IDENTIFIER_LENGTH = 64;
+
+/**
+ * The `..` check is redundant against the anchored patterns for the dangerous cases (`.` and `..`
+ * are already rejected because both ends must be alphanumeric), but it is kept so the rule reads as
+ * "never `..`, anywhere" without the reader having to re-derive it from the regex.
+ */
+export function isValidPluginId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= MAX_PLUGIN_IDENTIFIER_LENGTH &&
+    !value.includes("..") &&
+    PLUGIN_ID_PATTERN.test(value)
+  );
+}
+
+export function isValidPluginVersion(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= MAX_PLUGIN_IDENTIFIER_LENGTH &&
+    !value.includes("..") &&
+    PLUGIN_VERSION_PATTERN.test(value)
+  );
+}
+
+export function isValidPluginLogo(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= MAX_PLUGIN_IDENTIFIER_LENGTH &&
+    !value.includes("..") &&
+    PLUGIN_LOGO_PATTERN.test(value)
+  );
+}
+
 export function validatePluginManifest(manifest: unknown): string[] {
   const errors: string[] = [];
 
@@ -43,11 +92,22 @@ export function validatePluginManifest(manifest: unknown): string[] {
 
   const m = manifest as Record<string, unknown>;
 
-  if (typeof m.pluginId !== "string" || m.pluginId.trim() === "") {
-    errors.push("manifest.json must contain a non-empty 'pluginId'");
+  if (!isValidPluginId(m.pluginId)) {
+    errors.push(
+      `manifest.json 'pluginId' must be 1-${MAX_PLUGIN_IDENTIFIER_LENGTH} characters of lowercase letters, digits, '.', '-' or '_', starting and ending with a letter or digit (it is used as a directory and URL path segment)`
+    );
   }
-  if (typeof m.version !== "string" || m.version.trim() === "") {
-    errors.push("manifest.json must contain a non-empty 'version'");
+  if (!isValidPluginVersion(m.version)) {
+    errors.push(
+      `manifest.json 'version' must be 1-${MAX_PLUGIN_IDENTIFIER_LENGTH} characters of letters, digits, '.', '-', '_' or '+', starting and ending with a letter or digit (it is used as a directory and URL path segment)`
+    );
+  }
+  // Optional — only the pack tool sets it. When present it names a file the host copies into the
+  // stored package, so it may not name a path.
+  if (m.logo !== undefined && !isValidPluginLogo(m.logo)) {
+    errors.push(
+      "manifest.json 'logo' must be a file name at the package root ending in .svg, .png, .jpg or .jpeg"
+    );
   }
   // Written by the pack tool; optional so hand-rolled/older manifests stay valid.
   if (m.sdkVersion !== undefined && (typeof m.sdkVersion !== "string" || m.sdkVersion.trim() === "")) {

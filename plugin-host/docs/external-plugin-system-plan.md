@@ -173,9 +173,15 @@ with a 403-shaped reply before anything leaves the host — GZAC's servlet filte
 the authoritative gate; a configuration whose push carried no endpoint list is allowed with a
 warning (§8.2). A plugin-supplied `Authorization` header is **stripped** (and logged) and the
 host-controlled credential is attached last, so a plugin can never substitute its own token. The
-callback fetch is bounded by an `AbortSignal` timeout (`GZAC_API_TIMEOUT_MS`, default 60 s —
-reported as a 504-shaped reply, with a 502-shaped reply for a failed fetch), so a hung GZAC
-endpoint cannot pin the plugin call and its per-plugin lock indefinitely.
+plugin-supplied path is **canonicalised once** (`security/request-path.ts`) and that single
+canonical value is what the allowlist is checked against, what is requested, and what the audit log
+records: `fetch` resolves dot segments while parsing the URL, so checking the raw string would let
+`/api/v1/document/../../../v1/case/1` match a grant on `/api/v1/document/**` and then request
+something else entirely. Percent-encoded separators and dot segments (`%2e`, `%2f`, `%5c`) are
+refused rather than decoded, as is a path that would escape the API root. The callback fetch is
+bounded by an `AbortSignal` timeout (`GZAC_API_TIMEOUT_MS`, default 60 s — reported as a 504-shaped
+reply, with a 502-shaped reply for a failed fetch), so a hung GZAC endpoint cannot pin the plugin
+call and the pooled instance it holds indefinitely.
 
 **3.6 Token lifecycle** — operator-tunable TTL (`valtimo.external-plugin.service-token.ttl`,
 default 10m, §3.2), **no separate refresh loop**. Each healthy discovery poll re-pushes every
@@ -495,19 +501,41 @@ per consumed event per configuration, one per data/action call — don't hit Pos
 Writes through the registry (push/delete) invalidate the cache immediately; a write done by
 another replica against the shared database becomes visible after at most the TTL; the
 plugin-delete guard's `listByPlugin` reads uncached (staleness there would risk deleting a plugin
-a just-pushed configuration references). The plugin manager serialises calls per plugin (a `lock`
-promise chain to avoid Extism reentrancy — unload, delete, and idle eviction chain through the
-**same** lock, so an instance is never closed mid-execution), sets `prefetch` on the broker
-channel, and computes each loaded package's `contentHash` at load time (§11). Every Wasm call is
-bounded by a hard wall-clock limit
-(`WASM_TIMEOUT_MS`, default 30 s): Extism cancels a timed-out call, the cached instance is
-dropped and the next call starts from a fresh one. The module's linear memory is capped
-(`WASM_MAX_MEMORY_PAGES`, default 4096 pages = 256 MiB; 0 uncaps), and idle instances — each
-holding a worker thread plus Wasm memory — are evicted by a periodic sweep after
-`WASM_INSTANCE_IDLE_TTL_MS` (default 10 min) without a call; the next call transparently
-re-instantiates. All four exports (`handle_action`/`handle_event`/`handle_request`/`handle_submit`)
-funnel through one generic `callExport`; the public `callAction`/`callEvent`/`callRequest`/
-`callSubmit` wrappers only shape their input and host context.
+a just-pushed configuration references). The plugin manager keeps a **per-plugin-version instance
+pool** (`wasm-instance-pool.ts`), sets `prefetch` on the broker channel, and computes each loaded
+package's `contentHash` at load time (§11).
+
+**Concurrency.** An Extism instance is not reentrant, so parallelism comes from having several
+instances rather than from sharing one. Each call leases an instance from its version's pool:
+an idle instance is reused, otherwise one is created while below `WASM_POOL_MAX_INSTANCES`
+(default 10), otherwise the caller queues and waits up to `WASM_POOL_ACQUIRE_TIMEOUT_MS`
+(default 30 s) before the call fails rather than queueing without bound. Instances above
+`WASM_POOL_MIN_INSTANCES` (default 1) are closed as soon as they finish, so a burst does not pin
+its peak footprint afterwards. Unload, delete, and shutdown **drain** the pool — they wait for
+every in-flight call to finish before its instance is closed, so a call is never killed
+mid-execution. Set `WASM_POOL_MAX_INSTANCES=1` for strictly serialised calls. Because handlers for
+one configuration can now run concurrently, a plugin must not assume serialised execution —
+handlers already had to be idempotent because event delivery is at-least-once, and `kv` writes
+already go through the database.
+
+**Execution limits.** Every Wasm call is bounded by a hard wall-clock limit (`WASM_TIMEOUT_MS`,
+default 30 s): Extism cancels a timed-out call, and any failing call's instance is dropped rather
+than returned to the pool, since a trapped or cancelled instance is in an undefined state. Guest
+memory is capped by `WASM_MAX_MEMORY_PAGES` (default 4096 pages = 256 MiB; 0 uncaps), enforced by
+**rewriting the module's own memory declaration in memory at instantiation**
+(`wasm-memory-limit.ts`) — Extism's own `maxPages` option bounds only the host-side blocks used to
+pass input and output across the boundary, while the guest declares and exports its own linear
+memory, so a JS plugin's QuickJS heap would otherwise grow far past the configured cap. With a
+`maximum` in place `memory.grow` fails, the guest allocator reports out of memory, and the call
+fails cleanly while the host serves the next one. The patch is applied to an in-memory copy only,
+so the stored package keeps the exact bytes its `contentHash` was pinned against. The worst-case
+memory footprint per plugin version is therefore `WASM_POOL_MAX_INSTANCES × WASM_MAX_MEMORY_PAGES`.
+Idle instances — each holding a worker thread plus Wasm memory — are evicted by a periodic sweep
+after `WASM_INSTANCE_IDLE_TTL_MS` (default 10 min) without a call, including below the pool
+minimum, so a quiet host returns to zero instances; the next call transparently re-instantiates.
+All four exports (`handle_action`/`handle_event`/`handle_request`/`handle_submit`) funnel through
+one generic `callExport`; the public `callAction`/`callEvent`/`callRequest`/`callSubmit` wrappers
+only shape their input and host context.
 
 - **Action HTTP body** (GZAC→host): `{configurationId, processInstanceId, activityId, documentId?,
   properties}` — note it does **not** carry `actionKey` (URL param) or `configuration` (looked up
@@ -540,14 +568,26 @@ funnel through one generic `callExport`; the public `callAction`/`callEvent`/`ca
   directory — a crafted `../`, absolute, or drive-letter entry name rejects the whole package with
   400 — and only the files a plugin package may legitimately carry are extracted (root-level
   `manifest.json`, `plugin.wasm`, the logo, and `frontend/**`), so a hostile zip cannot plant
-  anything else even inside the temp dir. **A version is never replaced silently**: an upload
-  whose manifest names a `pluginId@version` that already exists — loaded in memory *or* present
-  on disk (`hasVersion`) — is refused with 409 carrying `code: PLUGIN_VERSION_EXISTS` and both
-  content hashes (the loaded package's and the uploaded package's, so callers can tell an
-  identical re-upload apart from different content). Only `?overwrite=true` — which GZAC sends
-  after an admin explicitly confirmed the overwrite and re-reviewed the requested permissions
-  (§11) — replaces the package (hot-reload; logged as a warn for audit). The 201 response
-  carries the stored package's `contentHash` (§11).
+  anything else even inside the temp dir. **The package's identity cannot name a path**: the shared
+  validator restricts `pluginId`/`version` to a charset that cannot express a traversal or a hidden
+  directory, and `manifest.logo` to a plain image file at the package root — the plugin manager
+  re-checks the same rules before it builds any path, so a bad identity reaching it another way
+  still cannot write outside `PLUGIN_STORAGE_DIR`. The route additionally requires the resolved
+  logo to sit directly inside the extraction directory, since it is copied into the stored package
+  and into the content hash GZAC pins. **A version is never replaced silently**: an upload whose
+  manifest names a `pluginId@version` that already exists — loaded in memory *or* present on disk
+  (`hasVersion`) — is refused with 409 carrying `code: PLUGIN_VERSION_EXISTS` and both content
+  hashes (the loaded package's and the uploaded package's, so callers can tell an identical
+  re-upload apart from different content). The existence check and the store run inside **one
+  critical section per `pluginId@version`**, so two concurrent uploads of the same version produce
+  exactly one 201 and one 409 instead of both passing the check and interleaving their writes.
+  Only `?overwrite=true` — which GZAC sends after an admin explicitly confirmed the overwrite and
+  re-reviewed the requested permissions (§11) — replaces the package (hot-reload; logged as a warn
+  for audit). The store **replaces the version directory atomically**: the package is written to a
+  staging sibling, hashed, then swapped in by renaming the previous directory aside and the staging
+  directory into place, so a partial write is never visible and an overwrite leaves no file from
+  the previous package behind. A package that fails to load rolls the swap back, restoring the
+  previous package. The 201 response carries the stored package's `contentHash` (§11).
 - **Plugin-content CSP** (`routes/plugin-bundles.ts`): every response serving plugin-authored
   content — `…/bundles/**` **and** the logo (an SVG can carry script) — carries
   `Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'
@@ -584,8 +624,10 @@ Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required — the shared sec
 HMAC key for every GZAC→host route, §3.9), `PORT` (8090),
 `PLUGIN_STORAGE_DIR` (`./plugins`), `LOG_LEVEL` (info), `HOST_ID` (defaults to the OS hostname;
 see §8.4), the execution/abuse bounds `WASM_TIMEOUT_MS` (30 s), `WASM_MAX_MEMORY_PAGES` (4096),
-`WASM_INSTANCE_IDLE_TTL_MS` (10 min), `GZAC_API_TIMEOUT_MS` (60 s), `UPLOAD_MAX_BYTES` (25 MB),
-`DATA_RATE_LIMIT_PER_MINUTE` (120) and `CONFIG_CACHE_TTL_MS` (10 s), the embedding controls
+`WASM_INSTANCE_IDLE_TTL_MS` (10 min), the instance-pool bounds `WASM_POOL_MIN_INSTANCES` (1),
+`WASM_POOL_MAX_INSTANCES` (10) and `WASM_POOL_ACQUIRE_TIMEOUT_MS` (30 s),
+`GZAC_API_TIMEOUT_MS` (60 s), `UPLOAD_MAX_BYTES` (25 MB),
+`DATA_RATE_LIMIT_PER_MINUTE` (120) and `CONFIG_CACHE_TTL_MS` (10 s), plus `DB_HOST` / `DB_PORT`
 `ALLOWED_FRAME_ANCESTORS` (unset — extra browser origins allowed to frame plugin content, on top of
 those GZAC announces) and `FRAME_ANCESTOR_STALE_MS` (7 days — how long a GZAC instance stays in the
 allowlist without re-announcing), plus `DB_HOST` / `DB_PORT`
@@ -819,8 +861,20 @@ runtime. It is the single rule set enforced at **both** gates, each importing it
 `@valtimo/plugin-sdk/manifest-validation` subpath: the pack tool (`bin/valtimo-plugin-pack.mjs`,
 build-time, self-references the package's own export) and the plugin host's upload route
 (`routes/host-management.ts`, runtime, returns HTTP 400 `{error, details[]}` on failure). It
-requires a non-empty `pluginId`/`version`, a non-empty `translations` object, and a non-empty
-`name` **and** `description` string in **every** declared locale bucket.
+requires a valid `pluginId`/`version` (see below), a non-empty `translations` object, and a
+non-empty `name` **and** `description` string in **every** declared locale bucket.
+
+**Package identity rules.** `pluginId` and `version` become directory names under
+`PLUGIN_STORAGE_DIR` and segments of public URLs, so the validator restricts them to a charset that
+cannot express a traversal or a hidden directory: 1–64 characters, a letter or digit at both ends,
+and `.`/`-`/`_` only inside. `pluginId` is **lowercase-only**, because a case-insensitive filesystem
+would fold `Foo` and `foo` into one package directory while the database treats them as two distinct
+definitions; `version` additionally allows uppercase and `+` so semver prerelease/build metadata
+such as `1.0.0-RC1+build.5` stays expressible. `logo`, when present, must be a plain file name at
+the package root ending in `.svg`, `.png`, `.jpg` or `.jpeg`. Being in the shared validator means
+these rules are enforced at pack time *and* upload time by construction; the plugin manager re-checks
+them before building any path, so no identity that reached it another way can write outside the
+storage directory.
 
 Frontend SDK (`@valtimo/plugin-sdk/frontend`):
 - `ValtimoPluginSDK` running inside the iframe communicates with the Angular parent via
@@ -854,7 +908,10 @@ Frontend SDK (`@valtimo/plugin-sdk/frontend`):
 **Logo.** Convention: drop `logo.svg`, `logo.png`, `logo.jpg`, or `logo.jpeg` next to
 `manifest.json`. The pack tool detects the first match, includes the file at the zip root, and
 writes `"logo": "logo.svg"` into the manifest *inside the zip* (the source `manifest.json` on
-disk is untouched). The host serves it at `GET /plugins/:id/:version/logo` with the right
+disk is untouched). Because the host copies that file into the stored package — and therefore into
+the content hash GZAC pins — `logo` must name a plain image file at the package root and nothing
+else (§9); the upload route additionally requires the resolved path to sit directly inside the
+extraction directory. The host serves it at `GET /plugins/:id/:version/logo` with the right
 Content-Type. `DefinitionResponse.logoUrl` exposes the absolute URL to the management UI, which
 renders it (a) in the "Configure plugin" tile (`plugin-add-select.component.html`) and (b) in the
 process-link plugin picker (`select-plugin-configuration.component.ts`) — the same surfaces that
@@ -946,7 +1003,12 @@ change that arrives without the confirmed-overwrite flow is treated as an incide
   without changing the hash. The hash is exposed in the plugin listing and the upload response.
   An upload naming an existing `pluginId@version` — loaded *or* on disk — is refused with 409
   (§7) carrying `code: PLUGIN_VERSION_EXISTS` plus the loaded and uploaded packages' hashes;
-  only an explicit `overwrite=true` replaces the package.
+  only an explicit `overwrite=true` replaces the package. The reported hash is always the hash of
+  the **exact stored package**: the upload is staged, hashed, and swapped into place by renaming
+  the version directory, so the reported value can never cover a half-written directory or a
+  concurrent upload's bytes. Because a replaced version's directory is replaced *wholesale*, files
+  from a previous package can no longer survive into the hash or keep being served — an overwrite
+  that drops a frontend bundle really drops it.
 - *Confirmed overwrite — permission re-review, re-pin, re-grant.* GZAC enriches the
   version-exists 409 with the uploaded manifest's requested endpoint/event/capability sets
   (parsed server-side from the zip by `PluginPackageInspector.readManifest`). The upload modal
@@ -1643,6 +1705,22 @@ All iframe surfaces are now implemented: case **tab** (§13.1), **task form** (�
   (strict CSP + `nosniff` + referrer policy on bundles and logo). PostgreSQL integration tests
   green — the `20260806-external-plugin-security-hardening.xml` changeset applies and matches the
   entities.
+- Containment, install atomicity, memory cap and instance pool, all green (vitest):
+  `plugin-sdk/src/manifest-validation.test.ts` (package identity and logo charset — the shared
+  contract the pack tool and the upload route both run), `app/src/security/request-path.test.ts`
+  (`gzac_api` path canonicalisation and refusals), `app/src/wasm-memory-limit.test.ts` (memory
+  section patching, clamping, and round-trip validity via `WebAssembly.compile` — the patched
+  module's `memory.grow` really fails past the cap), `app/src/wasm-instance-pool.test.ts`
+  (parallelism, the hard ceiling under a burst, FIFO waiters, destroy-above-minimum, acquire
+  timeout, drain, discard, factory failure, idle eviction), `app/src/plugin-manager.test.ts`
+  (containment refusals and non-conforming directories skipped at boot; concurrent installs of one
+  version resolve to exactly one 201 and one 409; overwrite drops stale files; a failed load rolls
+  the swap back; instantiation from patched module bytes; pool wiring), and
+  `app/src/host-functions/gzac-api.test.ts` (the traversal-bypass regression). L3
+  (`app/test/wasm/plugin-manager.wasm.test.ts`): the `burn` handler proves two calls to one plugin
+  overlap (~1.6 s for two 1.5 s calls) and serialise at `poolMaxInstances: 1` (~3.0 s); the
+  `mem-bomb` handler proves the cap fails the call with `EXECUTION_ERROR` / "out of memory" while
+  an allocation inside the cap still completes and the host serves the next call.
 - Backend `:backend:plugin:test` (`service/PluginServiceTest`): BUILD SUCCESSFUL — embedded
   `deletePluginConfiguration` proceeds when no fixed process link references the configuration,
   throws `PluginConfigurationInUseException` with the `usages` payload when one does, and a
