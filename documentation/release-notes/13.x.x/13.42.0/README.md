@@ -82,14 +82,6 @@
   until the page was reloaded. The decision table screen now always cleans up its breadcrumbs and title,
   even when the DMN editor fails to shut down.
 
-* **A draft environment is now also recognised through the default Spring profile**
-
-  Whether an environment allows drafts was determined by looking only at the active Spring profiles. An
-  environment that configured its draft profile through `spring.profiles.default`, without setting an active
-  profile, was therefore not seen as a draft environment: creating or changing case definitions and building
-  blocks was refused with the message that the environment does not support drafts. The default profiles are
-  now taken into account, exactly as Spring itself does when no active profile is set.
-
 ## Security
 
 * **Permission checks only accept known resource types**
