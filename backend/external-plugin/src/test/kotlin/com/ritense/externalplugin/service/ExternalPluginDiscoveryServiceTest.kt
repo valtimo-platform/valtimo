@@ -19,6 +19,7 @@ package com.ritense.externalplugin.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.client.ExternalPluginHostClient
+import com.ritense.externalplugin.client.ExternalPluginHostClient.HostConfigurationSummary
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
@@ -419,6 +420,135 @@ class ExternalPluginDiscoveryServiceTest {
 
         assertThat(definition.contentHash).isEqualTo("sha256:aaa")
         assertThat(definition.pendingContentHash).isNull()
+    }
+
+    @Test
+    fun `reconciliation deletes host configs this GZAC owns but no longer has — and nothing else`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        val definition = definition(hostId = host.id)
+        val live = ExternalPluginConfiguration(UUID.randomUUID(), definition.id, "Live")
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(emptyList())
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(live))
+        whenever(configurationService.pushToHost(live, definition, host)).thenReturn(true)
+
+        val orphanId = UUID.randomUUID().toString()
+        whenever(hostClient.listConfigurations(host.baseUrl, "admin-token")).thenReturn(
+            listOf(
+                // Owned and still present locally → kept.
+                HostConfigurationSummary(live.id.toString(), host.id.toString()),
+                // Owned but no longer in GZAC → the orphan this pass exists for.
+                HostConfigurationSummary(orphanId, host.id.toString()),
+                // Owned by another GZAC sharing the host → never touched.
+                HostConfigurationSummary("foreign-cfg", UUID.randomUUID().toString()),
+                // Unowned (pre-ownership pusher) → never touched.
+                HostConfigurationSummary("unowned-cfg", null),
+            ),
+        )
+        whenever(hostClient.deleteConfiguration(host.baseUrl, "admin-token", orphanId)).thenReturn(true)
+
+        service.discoverAll()
+
+        verify(hostClient).deleteConfiguration(host.baseUrl, "admin-token", orphanId)
+        verify(hostClient, never()).deleteConfiguration(any(), any(), eq(live.id.toString()))
+        verify(hostClient, never()).deleteConfiguration(any(), any(), eq("foreign-cfg"))
+        verify(hostClient, never()).deleteConfiguration(any(), any(), eq("unowned-cfg"))
+        // Reconciliation never gets in the way of the re-push or the CONNECTED flip.
+        verify(configurationService).pushToHost(live, definition, host)
+        assertThat(host.status).isEqualTo(ExternalPluginHostStatus.CONNECTED)
+    }
+
+    @Test
+    fun `reconciliation is skipped entirely for a host that predates the configuration listing`() {
+        val host = host(status = ExternalPluginHostStatus.UNREACHABLE, consecutiveFailures = failureThreshold)
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(emptyList())
+        // null = the host answered 404/405 — an older host or a minimal app.
+        whenever(hostClient.listConfigurations(host.baseUrl, "admin-token")).thenReturn(null)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        verify(hostClient, never()).deleteConfiguration(any(), any(), any())
+        // The rest of the poll (and the CONNECTED flip) proceeds as if reconciliation didn't exist.
+        assertThat(host.status).isEqualTo(ExternalPluginHostStatus.CONNECTED)
+        assertThat(host.consecutiveFailures).isEqualTo(0)
+    }
+
+    @Test
+    fun `a failed configuration listing fails the poll — no deletes, no pushes, failure counted`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        val definition = definition(hostId = host.id)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(emptyList())
+        whenever(hostClient.listConfigurations(host.baseUrl, "admin-token"))
+            .thenThrow(IllegalStateException("malformed configuration listing"))
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+
+        service.discoverAll()
+
+        // Deleting on a half-parsed listing could nuke live configs — nothing may proceed.
+        verify(hostClient, never()).deleteConfiguration(any(), any(), any())
+        verify(configurationService, never()).pushToHost(any(), any(), any())
+        assertThat(host.consecutiveFailures).isEqualTo(1)
+        // Below the threshold the previous status is kept; the counter does the flipping.
+        assertThat(host.status).isEqualTo(ExternalPluginHostStatus.CONNECTED)
+    }
+
+    @Test
+    fun `a host that answers health but rejects the admin token flips to UNREACHABLE, not CONNECTED`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED, consecutiveFailures = failureThreshold - 1)
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token"))
+            .thenThrow(RuntimeException("401 Unauthorized"))
+
+        service.discoverAll()
+
+        // Before this change the bare /health 200 flipped the host CONNECTED and the listPlugins
+        // failure was swallowed — a host with a wrong admin token advertised as usable forever.
+        assertThat(host.consecutiveFailures).isEqualTo(failureThreshold)
+        assertThat(host.status).isEqualTo(ExternalPluginHostStatus.UNREACHABLE)
+    }
+
+    @Test
+    fun `one failed orphan delete does not abort the rest of the cycle`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        val definition = definition(hostId = host.id)
+        val live = ExternalPluginConfiguration(UUID.randomUUID(), definition.id, "Live")
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(emptyList())
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(live))
+        whenever(configurationService.pushToHost(live, definition, host)).thenReturn(true)
+
+        val failingOrphan = UUID.randomUUID().toString()
+        val healthyOrphan = UUID.randomUUID().toString()
+        whenever(hostClient.listConfigurations(host.baseUrl, "admin-token")).thenReturn(
+            listOf(
+                HostConfigurationSummary(failingOrphan, host.id.toString()),
+                HostConfigurationSummary(healthyOrphan, host.id.toString()),
+            ),
+        )
+        whenever(hostClient.deleteConfiguration(host.baseUrl, "admin-token", failingOrphan)).thenReturn(false)
+        whenever(hostClient.deleteConfiguration(host.baseUrl, "admin-token", healthyOrphan)).thenReturn(true)
+
+        service.discoverAll()
+
+        // The failed delete is retried on the next cycle; everything else this cycle still happens.
+        verify(hostClient).deleteConfiguration(host.baseUrl, "admin-token", healthyOrphan)
+        verify(configurationService).pushToHost(live, definition, host)
+        assertThat(host.status).isEqualTo(ExternalPluginHostStatus.CONNECTED)
     }
 
     private fun givenPluginListing(host: ExternalPluginHost, vararg entries: JsonNode) {

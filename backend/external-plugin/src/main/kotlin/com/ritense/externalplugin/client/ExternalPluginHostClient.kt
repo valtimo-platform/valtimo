@@ -70,6 +70,52 @@ class ExternalPluginHostClient(
         }
     }
 
+    /**
+     * Lists the configurations the host currently holds, as `{configurationId, ownerId}` summaries.
+     *
+     * Returns `null` when the host does not implement the endpoint (404/405 — an older host or a
+     * minimal app): the caller must then skip reconciliation entirely. Any other failure (auth,
+     * 5xx, timeout, malformed body) throws — the discovery cycle treats the whole poll as failed.
+     * Parsing is deliberately strict: **deletion decisions** are made from this response, so a
+     * half-parsed body must abort rather than masquerade as an empty host.
+     */
+    fun listConfigurations(baseUrl: String, adminToken: String): List<HostConfigurationSummary>? {
+        val path = "/api/host/configurations"
+        val uri = buildUri(baseUrl, path)
+        val headers = hmacHeaders(adminToken, HttpMethod.GET.name(), path, EMPTY_BODY)
+        val request = RequestEntity<Void>(headers, HttpMethod.GET, uri)
+        val response = try {
+            restTemplate.exchange(request, JsonNode::class.java).body
+        } catch (_: HttpClientErrorException.NotFound) {
+            return null
+        } catch (_: HttpClientErrorException.MethodNotAllowed) {
+            return null
+        }
+        val entries = when {
+            response == null -> throw IllegalStateException(
+                "Plugin host at $baseUrl returned an empty configuration listing body"
+            )
+            response.isArray -> response.toList()
+            response.has("configurations") && response.get("configurations").isArray ->
+                response.get("configurations").toList()
+            else -> throw IllegalStateException(
+                "Plugin host at $baseUrl returned a malformed configuration listing: expected an array"
+            )
+        }
+        return entries.map { entry ->
+            val configurationId = entry.get("configurationId")
+                ?.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
+                ?: throw IllegalStateException(
+                    "Plugin host at $baseUrl returned a configuration listing entry without a configurationId"
+                )
+            // Entries from a host that predates ownership (or rows pushed by an older GZAC) carry
+            // no ownerId — they parse fine and are simply unowned, never reconciliation candidates.
+            val ownerId = entry.get("ownerId")
+                ?.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
+            HostConfigurationSummary(configurationId, ownerId)
+        }
+    }
+
     fun pushConfiguration(
         baseUrl: String,
         adminToken: String,
@@ -79,6 +125,14 @@ class ExternalPluginHostClient(
         properties: ObjectNode,
         serviceToken: String,
         gzacBaseUrl: String,
+        /**
+         * Identity of the GZAC↔host relationship pushing this configuration — the GZAC-side
+         * host-row UUID. The host persists it per configuration and echoes it in the configuration
+         * listing; the discovery reconciliation pass only ever deletes host configurations carrying
+         * this GZAC's ownerId, so multiple GZAC instances sharing one host cannot delete each
+         * other's configs.
+         */
+        ownerId: String,
         /**
          * The package content hash GZAC pinned at discovery. The host verifies its loaded package
          * still matches before accepting the push (409 otherwise), so a config and its fresh
@@ -116,6 +170,7 @@ class ExternalPluginHostClient(
             set<ObjectNode>("properties", properties)
             put("serviceToken", serviceToken)
             put("gzacBaseUrl", gzacBaseUrl)
+            put("ownerId", ownerId)
             if (!expectedContentHash.isNullOrBlank()) put("expectedContentHash", expectedContentHash)
             // Authoritative subscription list — replaces whatever the manifest declares.
             set<ObjectNode>("eventSubscriptions", objectMapper.createArrayNode().apply {
@@ -200,6 +255,10 @@ class ExternalPluginHostClient(
         val headers = hmacHeaders(adminToken, HttpMethod.DELETE.name(), path, EMPTY_BODY)
         val request = RequestEntity<Void>(headers, HttpMethod.DELETE, uri)
         restTemplate.exchange(request, Void::class.java).statusCode.is2xxSuccessful
+    } catch (_: HttpClientErrorException.NotFound) {
+        // Already gone — the goal state. Happens when the discovery reconciliation pass and the
+        // direct delete path race, or when a delete is retried after a partial failure.
+        true
     } catch (e: Exception) {
         logger.warn(e) { "Failed to delete configuration $configId from plugin host at $baseUrl" }
         false
@@ -363,6 +422,12 @@ class ExternalPluginHostClient(
     }
 
     data class ActionResponse(val status: Int, val body: JsonNode?)
+
+    /**
+     * One entry of the host's configuration listing, reduced to what reconciliation needs. The
+     * listing is deliberately a redacted summary on the host side — never full configurations.
+     */
+    data class HostConfigurationSummary(val configurationId: String, val ownerId: String?)
 
     companion object {
         /** Error code surfaced when the plugin host cannot be reached at all (no HTTP response). */

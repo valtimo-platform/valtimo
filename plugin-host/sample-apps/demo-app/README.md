@@ -87,10 +87,16 @@ Authenticated GZAC→app routes (HMAC-SHA256 over `{METHOD}\n{path}\n{timestamp}
 headers `X-Valtimo-Signature` / `X-Valtimo-Timestamp`, ±5-min replay window — see [`src/hmac.ts`](src/hmac.ts)):
 
 - `GET  /api/host/plugins` — discovery: returns `[{ pluginId, version, manifest }]`
-- `POST /api/host/configurations/:configId` — configuration push (service token, callback URL, broker)
-- `PUT  /api/host/configurations/:configId` — configuration update
+- `POST /api/host/configurations/:configId` — configuration push (service token, callback URL,
+  broker, and the pushing GZAC's `ownerId` — persist and echo it so GZAC's reconciliation pass can
+  prune its own orphaned configurations without touching another instance's)
+- `PUT  /api/host/configurations/:configId` — configuration update (preserve the stored `ownerId`
+  when the body omits it)
 - `DELETE /api/host/configurations/:configId` — configuration removal
-- `GET  /api/host/configurations` — list stored configurations
+- `GET  /api/host/configurations` — list stored configurations as
+  `[{ configurationId, pluginId, pluginVersion, ownerId }]` summaries (no tokens/properties/broker
+  — one host may serve several GZAC instances). Implementing this route is what opts an app into
+  GZAC's reconciliation; without it GZAC simply skips the pass.
 - `POST /plugins/:pluginId/:version/actions/:actionKey` — invoke an action
 
 Public routes (CORS `*`, loaded by the sandboxed iframe):

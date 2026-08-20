@@ -37,6 +37,13 @@ export interface ConfigRecord {
   gzacBaseUrl: string;
   eventSubscriptions: string[];
   eventBroker: EventBrokerConfig | null;
+  /**
+   * Identity of the GZAC↔host relationship that pushed this configuration (GZAC's host-row UUID,
+   * opaque to the app). Echoed in the configuration listing so GZAC's reconciliation pass can
+   * delete its own orphaned configs without touching another GZAC's. Null when the pushing GZAC
+   * predates ownership.
+   */
+  ownerId: string | null;
 }
 
 /** In-memory registry of pushed configurations, keyed by configuration id. */

@@ -125,6 +125,20 @@ describe("ConfigRepository against real Postgres", () => {
     expect((await repo.get("cfg-3"))?.grantedEndpoints).toEqual([]);
   });
 
+  it("round-trips the owner and keeps an absent owner absent", async () => {
+    await repo.set("cfg-1", config({ ownerId: "8a4f6f04-3f5f-4f27-9c56-6f5f0d9d2a11" }));
+    expect((await repo.get("cfg-1"))?.ownerId).toBe("8a4f6f04-3f5f-4f27-9c56-6f5f0d9d2a11");
+
+    // No owner pushed (older GZAC) → SQL NULL → undefined — excluded from reconciliation.
+    await repo.set("cfg-2", config({ configurationId: "cfg-2" }));
+    expect((await repo.get("cfg-2"))?.ownerId).toBeUndefined();
+
+    // The owner column follows the push verbatim (last push wins): a re-push without an owner
+    // unclaims the row, which then falls out of every GZAC's reconciliation scope.
+    await repo.set("cfg-1", config());
+    expect((await repo.get("cfg-1"))?.ownerId).toBeUndefined();
+  });
+
   it("returns undefined for a missing configuration", async () => {
     expect(await repo.get("nope")).toBeUndefined();
   });

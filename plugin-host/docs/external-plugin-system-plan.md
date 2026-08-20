@@ -1220,6 +1220,57 @@ in one place (matching the external edit modal). `PluginUsageModalComponent` is 
 translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
 configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
+**12.5 Host-side reconciliation & ownership ✅.** Discovery re-pushes every configuration each
+cycle but, before this, never *removed* host-side configurations GZAC no longer has — a config
+deleted while its host was down (the after-commit `deleteConfiguration` call is best-effort, no
+retry) stayed in the host's database indefinitely. Two mechanisms close this:
+
+- **Ownership.** Every push carries `ownerId` — the GZAC-side **host-row UUID**
+  (`ExternalPluginHost.id`), i.e. the identity of the GZAC↔host *relationship*. The host persists
+  it (`owner_id TEXT NULL`, migration 8) as an opaque token and echoes it in
+  `GET /api/host/configurations`, which now returns **redacted summaries**
+  (`{configurationId, pluginId, pluginVersion, ownerId}`) instead of full configs — a host serves
+  many GZAC instances, and the old full-fat listing handed every `ADMIN_TOKEN` holder the service
+  tokens / decrypted properties / broker credentials of *other* instances. `HOST_ID` (the host's
+  own event-queue identity) deliberately plays no role: it identifies the host, not the pusher.
+  Since discovery re-pushes everything each cycle, live configs self-claim within one healthy
+  cycle — no data migration. The host warns when a push *changes* an owner: the fingerprint of two
+  environments (typically DB clones) pushing the same configuration id.
+- **Reconciliation pass** (`ExternalPluginDiscoveryService.reconcileConfigurations`). Each poll
+  fetches the host's configuration listing, then reads the local set, and deletes host entries
+  that carry **this GZAC's ownerId** but are absent locally. Never deleted: entries owned by
+  another GZAC, unowned entries (`ownerId` null — pre-ownership pushers; claimed on their owner's
+  next push, or cleaned manually), and anything when the listing is unavailable. Correctness
+  invariant: the host snapshot is fetched *before* the local read, so a concurrently created
+  config is absent from the snapshot (never a candidate) and a concurrently deleted one is still
+  in the local set (pruned next cycle); config ids are GZAC-generated UUIDs and never reused.
+  Parsing is strict (`ExternalPluginHostClient.listConfigurations`): 404/405 → `null` → skip the
+  pass (older hosts / minimal apps keep working); any other failure or a malformed body throws and
+  fails the whole poll — deleting from a half-parsed listing could nuke live configs. Deletes are
+  idempotent (a 404 on DELETE counts as success) and a failed delete is retried next cycle.
+  Ownership scoping is a *safety* mechanism, not authorization — all `ADMIN_TOKEN` holders are
+  mutually trusted; the host does not enforce owners on DELETE (that would break legacy-row and
+  older-GZAC cleanup).
+- **Status semantics.** `CONNECTED` previously flipped on a bare `/health` 200 *before* anything
+  else, and post-probe failures never touched the failure counter — a host with a wrong admin
+  token stayed `CONNECTED` forever. Now the flip happens only at the end of a fully successful
+  poll (health + authenticated plugin and configuration listings fetched, reconcile + pushes run),
+  and a state-fetch failure counts toward the same `failure-threshold` as an unreachable host. No
+  new enum value: "pings but unusable" surfaces as `UNREACHABLE` (deliberate — zero frontend/i18n
+  impact; per-config push failures still don't fail the poll, they self-heal next cycle).
+- **Host deletion cleanup.** `ExternalPluginHostService.delete` now best-effort-deletes every
+  pushed config from the host after the local cascade commits — once the host row is gone GZAC
+  never polls the host again, so reconciliation could never prune these. If the host is down at
+  that moment the rows remain until cleaned manually (accepted residual; a host-side
+  stale-owner TTL GC was considered and rejected — it would delete configs of a legitimately
+  long-down GZAC).
+
+Version-skew is safe in every combination: old GZAC × new host → rows stay unowned, nobody deletes
+them; new GZAC × old host → no listing, reconciliation skipped; the mechanism only fully engages
+when both sides are current. Operational rule (README'd): never point a database-cloned GZAC
+environment at the same host as its source — clones share host-row UUIDs and configuration ids and
+will fight over the same rows.
+
 ## 13. Iframe surfaces & user-scoped access ✅ (case tab, task form, menu page, case widget)
 
 A plugin's iframe surfaces need to call GZAC **on behalf of the logged-in user** (respect what the

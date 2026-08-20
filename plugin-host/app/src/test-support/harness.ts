@@ -15,7 +15,7 @@
  */
 
 import {createHash, createHmac} from "node:crypto";
-import Fastify, {type FastifyInstance} from "fastify";
+import Fastify, {type FastifyInstance, type FastifyServerOptions} from "fastify";
 import rawBody from "fastify-raw-body";
 import multipart from "@fastify/multipart";
 import type {AppConfig} from "../models/index.js";
@@ -25,13 +25,14 @@ export const ADMIN_TOKEN = "test-admin-secret";
 
 /**
  * Builds a Fastify instance wired exactly like production (raw-body capture for HMAC + multipart for
- * uploads), then invokes the caller to register the routes under test. Logging is off so specs stay
- * quiet.
+ * uploads), then invokes the caller to register the routes under test. Logging is off by default so
+ * specs stay quiet; pass `opts.logger` (e.g. a level + capture stream) to assert on emitted lines.
  */
 export async function buildTestApp(
-  register: (app: FastifyInstance) => Promise<void>
+  register: (app: FastifyInstance) => Promise<void>,
+  opts: { logger?: FastifyServerOptions["logger"] } = {}
 ): Promise<FastifyInstance> {
-  const app = Fastify({ logger: false });
+  const app = Fastify({ logger: opts.logger ?? false });
   await app.register(rawBody, {
     field: "rawBody",
     global: false,

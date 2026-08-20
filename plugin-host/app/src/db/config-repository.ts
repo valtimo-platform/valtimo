@@ -23,8 +23,8 @@ export class ConfigRepository {
   async set(configurationId: string, config: PluginConfiguration): Promise<void> {
     await this.pool.query(
       `INSERT INTO plugin_configurations
-        (configuration_id, plugin_id, plugin_version, properties, service_token, gzac_base_url, event_subscriptions, granted_capabilities, granted_endpoints, allowed_egress, event_broker, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+        (configuration_id, plugin_id, plugin_version, properties, service_token, gzac_base_url, event_subscriptions, granted_capabilities, granted_endpoints, allowed_egress, event_broker, owner_id, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
        ON CONFLICT (configuration_id) DO UPDATE SET
         plugin_id = EXCLUDED.plugin_id,
         plugin_version = EXCLUDED.plugin_version,
@@ -36,6 +36,7 @@ export class ConfigRepository {
         granted_endpoints = EXCLUDED.granted_endpoints,
         allowed_egress = EXCLUDED.allowed_egress,
         event_broker = EXCLUDED.event_broker,
+        owner_id = EXCLUDED.owner_id,
         updated_at = NOW()`,
       [
         configurationId,
@@ -53,13 +54,15 @@ export class ConfigRepository {
         // granted" are the same thing and need no NULL to tell them apart.
         JSON.stringify(config.allowedEgress ?? []),
         config.eventBroker ? JSON.stringify(config.eventBroker) : null,
+        // NULL means "unowned" (pushed by a GZAC that predates ownership) — never auto-deleted.
+        config.ownerId ?? null,
       ]
     );
   }
 
   async get(configurationId: string): Promise<PluginConfiguration | undefined> {
     const { rows } = await this.pool.query(
-      `SELECT configuration_id, plugin_id, plugin_version, properties, service_token, gzac_base_url, event_subscriptions, granted_capabilities, granted_endpoints, allowed_egress, event_broker
+      `SELECT configuration_id, plugin_id, plugin_version, properties, service_token, gzac_base_url, event_subscriptions, granted_capabilities, granted_endpoints, allowed_egress, event_broker, owner_id
        FROM plugin_configurations WHERE configuration_id = $1`,
       [configurationId]
     );
@@ -78,7 +81,7 @@ export class ConfigRepository {
 
   async list(): Promise<PluginConfiguration[]> {
     const { rows } = await this.pool.query(
-      `SELECT configuration_id, plugin_id, plugin_version, properties, service_token, gzac_base_url, event_subscriptions, granted_capabilities, granted_endpoints, allowed_egress, event_broker
+      `SELECT configuration_id, plugin_id, plugin_version, properties, service_token, gzac_base_url, event_subscriptions, granted_capabilities, granted_endpoints, allowed_egress, event_broker, owner_id
        FROM plugin_configurations ORDER BY created_at`
     );
     return rows.map(this.mapRow);
@@ -86,7 +89,7 @@ export class ConfigRepository {
 
   async listByPlugin(pluginId: string, pluginVersion: string): Promise<PluginConfiguration[]> {
     const { rows } = await this.pool.query(
-      `SELECT configuration_id, plugin_id, plugin_version, properties, service_token, gzac_base_url, event_subscriptions, granted_capabilities, granted_endpoints, allowed_egress, event_broker
+      `SELECT configuration_id, plugin_id, plugin_version, properties, service_token, gzac_base_url, event_subscriptions, granted_capabilities, granted_endpoints, allowed_egress, event_broker, owner_id
        FROM plugin_configurations WHERE plugin_id = $1 AND plugin_version = $2 ORDER BY created_at`,
       [pluginId, pluginVersion]
     );
@@ -108,6 +111,8 @@ export class ConfigRepository {
         (row.granted_endpoints as PluginConfiguration["grantedEndpoints"] | null) ?? undefined,
       allowedEgress: (row.allowed_egress as string[] | null) ?? [],
       eventBroker: row.event_broker as PluginConfiguration["eventBroker"],
+      // NULL round-trips to undefined ("unowned" — never auto-deleted by any GZAC).
+      ownerId: (row.owner_id as string | null) ?? undefined,
     };
   }
 }

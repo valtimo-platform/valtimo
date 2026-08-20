@@ -175,6 +175,20 @@ export async function runMigrations(pool: DbPool, logger: HostLogger): Promise<v
         );
       `,
     },
+    {
+      version: 8,
+      name: "add_owner_id_to_plugin_configurations",
+      up: `
+        -- Identity of the GZAC↔host relationship that pushed the configuration (the GZAC-side
+        -- host-row UUID). GZAC's reconciliation pass only deletes configurations carrying its own
+        -- owner_id, so multiple GZAC instances sharing this host cannot delete each other's
+        -- configs. NULL means "pushed by a GZAC that predates ownership" — such rows are never
+        -- auto-deleted. TEXT, not UUID: the host treats it as an opaque token minted by the pusher.
+        ALTER TABLE plugin_configurations
+          ADD COLUMN IF NOT EXISTS owner_id TEXT;
+        CREATE INDEX IF NOT EXISTS idx_plugin_configs_owner ON plugin_configurations(owner_id);
+      `,
+    },
   ];
 
   for (const migration of migrations) {

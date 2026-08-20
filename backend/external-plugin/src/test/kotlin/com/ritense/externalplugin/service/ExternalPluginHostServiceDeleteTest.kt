@@ -20,6 +20,8 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
+import com.ritense.externalplugin.domain.ExternalPluginHost
+import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.exception.ExternalPluginHostInUseException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
@@ -34,10 +36,12 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.Optional
 import java.util.UUID
 
 class ExternalPluginHostServiceDeleteTest {
@@ -48,6 +52,8 @@ class ExternalPluginHostServiceDeleteTest {
     private lateinit var grantedEndpointRepository: ExternalPluginGrantedEndpointRepository
     private lateinit var grantedEventRepository: ExternalPluginGrantedEventRepository
     private lateinit var hostUsageResolver: ExternalPluginHostUsageResolver
+    private lateinit var encryptionService: EncryptionService
+    private lateinit var hostClient: ExternalPluginHostClient
     private lateinit var service: ExternalPluginHostService
 
     @BeforeEach
@@ -58,6 +64,8 @@ class ExternalPluginHostServiceDeleteTest {
         grantedEndpointRepository = mock()
         grantedEventRepository = mock()
         hostUsageResolver = mock()
+        encryptionService = mock()
+        hostClient = mock()
         service = ExternalPluginHostService(
             hostRepository,
             definitionRepository,
@@ -66,8 +74,8 @@ class ExternalPluginHostServiceDeleteTest {
             grantedEventRepository,
             mock(),
             mock(),
-            mock<EncryptionService>(),
-            mock<ExternalPluginHostClient>(),
+            encryptionService,
+            hostClient,
             hostUsageResolver,
         )
     }
@@ -166,5 +174,58 @@ class ExternalPluginHostServiceDeleteTest {
         verify(configurationRepository).deleteAll(listOf(configuration))
         verify(definitionRepository).deleteAll(listOf(definition))
         verify(hostRepository).deleteById(hostId)
+    }
+
+    @Test
+    fun `delete removes the pushed configurations from the host itself`() {
+        // Once the host row is gone GZAC never polls the host again, so the discovery
+        // reconciliation pass can never prune these — this cleanup is their only chance.
+        val (host, configuration) = givenDeletableHostWithOneConfiguration()
+
+        service.delete(host.id)
+
+        verify(hostRepository).deleteById(host.id)
+        // No transaction is active in this unit test, so the after-commit hook runs immediately.
+        verify(hostClient).deleteConfiguration(host.baseUrl, "admin-token", configuration.id.toString())
+    }
+
+    @Test
+    fun `a failing host-side cleanup never fails the host deletion`() {
+        val (host, configuration) = givenDeletableHostWithOneConfiguration()
+        whenever(hostClient.deleteConfiguration(any(), any(), any())).doThrow(RuntimeException("host is down"))
+
+        service.delete(host.id)
+
+        verify(hostRepository).deleteById(host.id)
+        verify(hostClient).deleteConfiguration(host.baseUrl, "admin-token", configuration.id.toString())
+    }
+
+    private fun givenDeletableHostWithOneConfiguration(): Pair<ExternalPluginHost, ExternalPluginConfiguration> {
+        val host = ExternalPluginHost(
+            id = UUID.randomUUID(),
+            name = "host",
+            baseUrl = "https://plugin-host.example.com",
+            secret = "encrypted-secret",
+            status = ExternalPluginHostStatus.CONNECTED,
+        )
+        val definition = ExternalPluginDefinition(
+            id = UUID.randomUUID(),
+            pluginId = "test-plugin",
+            version = "1.0.0",
+            hostId = host.id,
+            baseUrl = "https://plugin-host.example.com/plugins/test-plugin",
+            status = ExternalPluginDefinitionStatus.AVAILABLE,
+        )
+        val configuration = ExternalPluginConfiguration(
+            id = UUID.randomUUID(),
+            definitionId = definition.id,
+            title = "Configuration",
+        )
+        whenever(hostUsageResolver.findUsagesForHost(host.id)).thenReturn(emptyList())
+        whenever(hostRepository.findById(host.id)).thenReturn(Optional.of(host))
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        whenever(encryptionService.decrypt("encrypted-secret")).thenReturn("admin-token")
+        return host to configuration
     }
 }

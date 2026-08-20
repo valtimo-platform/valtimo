@@ -64,6 +64,7 @@ class ExternalPluginHostClientHmacTest {
     fun `pushConfiguration signs the request body and sends no bearer token`() {
         val configId = UUID.randomUUID().toString()
         val serviceToken = "eyJ-fresh-service-token"
+        val ownerId = UUID.randomUUID().toString()
         val path = "/api/host/configurations/$configId"
 
         server.expect(requestTo("$baseUrl$path"))
@@ -78,6 +79,9 @@ class ExternalPluginHostClientHmacTest {
                 // own queue; both must travel inside the signed body so they cannot be swapped.
                 assertThat(bodyString).contains("\"queueMode\":\"durable\"")
                 assertThat(bodyString).contains("\"queueTtlMs\":259200000")
+                // The ownership claim scopes the reconciliation pass, so it too must be
+                // signature-bound rather than swappable in flight.
+                assertThat(bodyString).contains("\"ownerId\":\"$ownerId\"")
                 assertSigned(request, "POST", path, request.bodyAsBytes)
             }
             .andRespond(
@@ -95,6 +99,7 @@ class ExternalPluginHostClientHmacTest {
             properties = objectMapper.createObjectNode(),
             serviceToken = serviceToken,
             gzacBaseUrl = "http://gzac:8080",
+            ownerId = ownerId,
             eventSubscriptions = listOf("com.ritense.valtimo.document.created"),
             eventBrokerUrl = "amqp://guest:guest@broker:5672",
             eventBrokerExchange = "valtimo-events",
@@ -135,6 +140,7 @@ class ExternalPluginHostClientHmacTest {
             properties = objectMapper.createObjectNode(),
             serviceToken = "service-token",
             gzacBaseUrl = "http://gzac:8080",
+            ownerId = UUID.randomUUID().toString(),
             eventSubscriptions = emptyList(),
             eventBrokerUrl = "amqp://guest:guest@broker:5672",
             eventBrokerExchange = "valtimo-events",
@@ -162,6 +168,25 @@ class ExternalPluginHostClientHmacTest {
         val deleted = client.deleteConfiguration(baseUrl, secret, configId)
 
         assertThat(deleted).isTrue()
+        server.verify()
+    }
+
+    @Test
+    fun `listConfigurations signs an empty body and sends no bearer token`() {
+        val path = "/api/host/configurations"
+
+        server.expect(requestTo("$baseUrl$path"))
+            .andExpect(method(HttpMethod.GET))
+            .andExpect { request ->
+                request as MockClientHttpRequest
+                assertSigned(request, "GET", path, ByteArray(0))
+            }
+            .andRespond(
+                withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body("[]")
+            )
+
+        assertThat(client.listConfigurations(baseUrl, secret)).isEmpty()
+
         server.verify()
     }
 

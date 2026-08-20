@@ -59,6 +59,15 @@ function normalizeEventBroker(input: unknown): EventBrokerConfig | undefined {
 }
 
 /**
+ * Normalizes the optional `ownerId` a GZAC push carries — the pushing GZAC's host-row UUID,
+ * treated as an opaque token here. Absent or malformed values mean "unowned": the configuration is
+ * then excluded from every GZAC's reconciliation pass (older GZAC instances don't send an owner).
+ */
+function normalizeOwnerId(input: unknown): string | undefined {
+  return typeof input === "string" && input.length > 0 ? input : undefined;
+}
+
+/**
  * Normalizes a string-array field from a GZAC push body (eventSubscriptions, grantedCapabilities).
  * Treats anything that isn't an array of strings as an empty list.
  */
@@ -131,6 +140,7 @@ export async function hostConfigurationRoutes(
       grantedEndpoints?: unknown;
       allowedEgress?: unknown;
       eventBroker?: unknown;
+      ownerId?: unknown;
     };
   }>("/api/host/configurations/:configId", { config: { rawBody: true } }, async (request, reply) => {
     const { configId } = request.params;
@@ -189,6 +199,18 @@ export async function hostConfigurationRoutes(
     // below when the capability is granted but the list is empty, since that combination is
     // otherwise silent.
     const allowedEgress = normalizeStringArray(request.body.allowedEgress);
+    const ownerId = normalizeOwnerId(request.body.ownerId);
+
+    // An owner change on an existing configuration is the fingerprint of two GZAC environments
+    // pushing the same configuration id (e.g. database-cloned environments pointed at the same
+    // host) — configs will flap between owners and reconciliation may ping-pong. Surface it loudly.
+    const existing = await configRegistry.get(configId);
+    if (existing?.ownerId && ownerId && existing.ownerId !== ownerId) {
+      request.log.warn(
+        { configId, previousOwnerId: existing.ownerId, ownerId },
+        "Configuration owner changed — two GZAC environments may be pushing the same configuration id"
+      );
+    }
 
     await configRegistry.set(configId, {
       configurationId: configId,
@@ -202,6 +224,7 @@ export async function hostConfigurationRoutes(
       grantedEndpoints,
       allowedEgress,
       eventBroker,
+      ownerId,
     });
     await eventConsumerManager.sync();
 
@@ -240,6 +263,7 @@ export async function hostConfigurationRoutes(
       grantedEndpoints?: unknown;
       allowedEgress?: unknown;
       eventBroker?: unknown;
+      ownerId?: unknown;
     };
   }>("/api/host/configurations/:configId", { config: { rawBody: true } }, async (request, reply) => {
     const { configId } = request.params;
@@ -271,6 +295,9 @@ export async function hostConfigurationRoutes(
       "allowedEgress" in request.body
         ? normalizeStringArray(request.body.allowedEgress)
         : existing.allowedEgress;
+    // The owner too — an update from a client that doesn't send one must not unclaim the config.
+    const ownerId =
+      "ownerId" in request.body ? normalizeOwnerId(request.body.ownerId) : existing.ownerId;
 
     await configRegistry.set(configId, {
       ...existing,
@@ -281,6 +308,7 @@ export async function hostConfigurationRoutes(
       grantedEndpoints,
       allowedEgress,
       eventBroker,
+      ownerId,
     });
     await eventConsumerManager.sync();
 
@@ -306,9 +334,21 @@ export async function hostConfigurationRoutes(
   );
 
   /**
-   * GET /api/host/configurations — list all configurations
+   * GET /api/host/configurations — list all configurations, as summaries.
+   *
+   * Deliberately redacted: a host serves multiple GZAC instances, and this listing exists so each
+   * GZAC can reconcile (delete its own orphans). Returning full configurations would hand every
+   * ADMIN_TOKEN holder the service tokens, decrypted properties and broker credentials of *other*
+   * GZAC instances. `ownerId` is `null` for configurations pushed by a GZAC that predates
+   * ownership — reconciliation never touches those.
    */
   fastify.get("/api/host/configurations", async () => {
-    return configRegistry.list();
+    const configs = await configRegistry.list();
+    return configs.map((config) => ({
+      configurationId: config.configurationId,
+      pluginId: config.pluginId,
+      pluginVersion: config.pluginVersion,
+      ownerId: config.ownerId ?? null,
+    }));
   });
 }
