@@ -36,6 +36,11 @@
 
   Picking a date in a search field, such as **Geboortedatum** under **Achternaam en geboortedatum** in a Beelden
   search, passed the date on in a format the external source did not accept, so the search stayed empty.
+* **A case with building blocks can be deleted again**
+
+  **Dossier verwijderen** failed with an error on a case that had one or more building blocks. The case is now
+  deleted together with its building blocks.
+
 * **A donut chart widget with many categories now shows its circle**
 
   A dashboard widget with the donut chart display type showed only its legend and no circle when the data source

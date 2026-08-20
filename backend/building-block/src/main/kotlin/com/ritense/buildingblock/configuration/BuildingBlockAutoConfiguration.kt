@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
 import com.ritense.buildingblock.listener.BuildingBlockContinuousSyncListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
+import com.ritense.buildingblock.listener.BuildingBlockDocumentPreDeleteListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
 import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListener
@@ -848,6 +849,13 @@ class BuildingBlockAutoConfiguration {
     fun caseDefinitionBuildingBlockLinkCaseEventListener(
         linkRepository: CaseDefinitionBuildingBlockLinkRepository,
     ) = CaseDefinitionBuildingBlockLinkCaseEventListener(linkRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDocumentPreDeleteListener::class)
+    fun buildingBlockDocumentPreDeleteListener(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        documentService: DocumentService,
+    ) = BuildingBlockDocumentPreDeleteListener(buildingBlockInstanceRepository, documentService)
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockFormFlowDefinitionService::class)
