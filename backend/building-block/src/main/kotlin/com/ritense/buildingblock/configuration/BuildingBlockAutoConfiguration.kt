@@ -856,7 +856,11 @@ class BuildingBlockAutoConfiguration {
         buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
         documentService: DocumentService,
         runtimeService: RuntimeService,
-    ) = BuildingBlockDocumentPreDeleteListener(buildingBlockInstanceRepository, documentService, runtimeService)
+    ) = BuildingBlockDocumentPreDeleteListener(
+        buildingBlockInstanceRepository,
+        documentService,
+        runtimeService
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockFormFlowDefinitionService::class)
