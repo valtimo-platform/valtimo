@@ -31,6 +31,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -38,6 +39,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.operaton.bpm.engine.repository.ProcessDefinitionQuery
 import java.util.Optional
 import java.util.UUID
 
@@ -75,10 +77,15 @@ class BuildingBlockCallActivityRemapExecutorTest {
         whenever(blueprintResolver.supports(BlueprintType.CASE)).thenReturn(true)
         whenever(blueprintResolver.resolveProcessDefinitions(caseDefinitionId))
             .thenReturn(mapOf("verhuizing" to newProcessDefinitionId))
-        // The block's recorded caller still names the pre-migration deployment of `verhuizing`.
+        // The block's recorded caller still names the pre-migration deployment of `verhuizing`. Asked with a
+        // query, so an id nothing is deployed under answers null rather than throwing (findProcessDefinitionOrNull).
         val processDefinition = mock<ProcessDefinition>()
         whenever(processDefinition.key).thenReturn("verhuizing")
-        whenever(repositoryService.getProcessDefinition(oldProcessDefinitionId)).thenReturn(processDefinition)
+        val query = mock<ProcessDefinitionQuery>()
+        whenever(query.singleResult()).thenReturn(processDefinition)
+        val processDefinitionQuery = mock<ProcessDefinitionQuery>(defaultAnswer = Mockito.RETURNS_SELF)
+        whenever(processDefinitionQuery.processDefinitionId(oldProcessDefinitionId)).thenReturn(query)
+        whenever(repositoryService.createProcessDefinitionQuery()).thenReturn(processDefinitionQuery)
     }
 
     @Test

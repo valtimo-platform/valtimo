@@ -46,6 +46,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
+import org.mockito.Mockito.RETURNS_SELF
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
@@ -56,6 +57,7 @@ import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.operaton.bpm.engine.repository.ProcessDefinitionQuery
 import org.operaton.bpm.engine.runtime.ProcessInstance
 import org.operaton.bpm.engine.runtime.ProcessInstanceQuery
 import org.springframework.jdbc.core.JdbcTemplate
@@ -82,6 +84,7 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
     private lateinit var executionRepository: OperatonExecutionRepository
     private lateinit var runtimeService: RuntimeService
     private lateinit var repositoryService: RepositoryService
+    private lateinit var processDefinitionQuery: ProcessDefinitionQuery
     private lateinit var jdbcTemplate: JdbcTemplate
     private lateinit var linkedResolver: LinkedBuildingBlockVersionResolver
     private lateinit var executor: AddBuildingBlockMigrationComponentExecutor
@@ -137,6 +140,11 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         executionRepository = mock()
         runtimeService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
         repositoryService = mock()
+        // The executor asks whether a process definition is deployed with a query, so that an id nothing is
+        // deployed under answers null instead of throwing (see RepositoryService.findProcessDefinitionOrNull). Self-returning, so an
+        // id no test declared falls through to `singleResult() == null` — "not deployed" — not an NPE.
+        processDefinitionQuery = mock(defaultAnswer = RETURNS_SELF)
+        whenever(repositoryService.createProcessDefinitionQuery()).thenReturn(processDefinitionQuery)
         jdbcTemplate = mock()
 
         // The plan's entries are read once per run, and `authorised` is mutated by `declares` afterwards,
@@ -542,6 +550,9 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         val processDefinition = mock<ProcessDefinition>()
         whenever(processDefinition.key).thenReturn(node.processDefinitionKey)
         whenever(repositoryService.getProcessDefinition(node.processDefinitionId)).thenReturn(processDefinition)
+        val idQuery = mock<ProcessDefinitionQuery>()
+        whenever(idQuery.singleResult()).thenReturn(processDefinition)
+        whenever(processDefinitionQuery.processDefinitionId(node.processDefinitionId)).thenReturn(idQuery)
 
         val execution = mock<OperatonExecution>()
         if (node.parent != null) {

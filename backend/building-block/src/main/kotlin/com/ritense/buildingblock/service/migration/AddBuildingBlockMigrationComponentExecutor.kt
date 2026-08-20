@@ -39,6 +39,7 @@ import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockConstants.Companion.BUILDING_BLOCK_DOCUMENT_ID_VARIABLE
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
+import com.ritense.valtimo.operaton.findProcessDefinitionOrNull
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -870,17 +871,12 @@ class AddBuildingBlockMigrationComponentExecutor(
         repositoryService.getProcessDefinition(processDefinitionIdOf(processInstanceId)).key
 
     /**
-     * The process definition key of [processDefinitionId], or null when the definition cannot be read — it
-     * throws for an unknown id and answers null once the deployment is gone. Either way it tells us nothing
-     * about links, which is not a reason to fail the case.
+     * The process definition key of [processDefinitionId], or null once the deployment is gone — which
+     * tells us nothing about links, and is not a reason to fail the case. Asked so that it answers rather
+     * than throws, which matters more than it looks: see [findProcessDefinitionOrNull].
      */
     private fun keyOfDefinition(processDefinitionId: String): String? =
-        try {
-            repositoryService.getProcessDefinition(processDefinitionId)?.key
-        } catch (e: Exception) {
-            logger.debug(e) { "Could not resolve the key of process definition '$processDefinitionId'" }
-            null
-        }
+        repositoryService.findProcessDefinitionOrNull(processDefinitionId)?.key
 
     private companion object {
         private const val DOC_PREFIX = "doc"

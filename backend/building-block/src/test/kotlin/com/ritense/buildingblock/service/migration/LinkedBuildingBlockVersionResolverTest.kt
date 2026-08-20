@@ -24,28 +24,28 @@ import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
-import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
+import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.operaton.bpm.engine.repository.ProcessDefinitionQuery
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.instance.CallActivity
-import org.semver4j.Semver
-import java.util.UUID
 
 class LinkedBuildingBlockVersionResolverTest {
 
@@ -55,6 +55,13 @@ class LinkedBuildingBlockVersionResolverTest {
     private lateinit var processLinkRepository: ProcessLinkRepository
     private lateinit var pathResolver: BuildingBlockMigrationPathResolver
     private lateinit var repositoryService: RepositoryService
+
+    /**
+     * The resolver asks whether a process definition is deployed with a *query*, so that an id nothing is
+     * deployed under answers null instead of throwing (see `RepositoryService.findProcessDefinitionOrNull`). Self-returning, so an
+     * id no test declared falls through to `singleResult() == null` — "not deployed" — rather than an NPE.
+     */
+    private lateinit var processDefinitionQuery: ProcessDefinitionQuery
     private lateinit var resolver: LinkedBuildingBlockVersionResolver
 
     private val caseDefinitionId = CaseDefinitionId("verhuizing", "1.0.2")
@@ -69,6 +76,8 @@ class LinkedBuildingBlockVersionResolverTest {
         processLinkRepository = mock()
         pathResolver = mock()
         repositoryService = mock()
+        processDefinitionQuery = mock(defaultAnswer = Mockito.RETURNS_SELF)
+        whenever(repositoryService.createProcessDefinitionQuery()).thenReturn(processDefinitionQuery)
         resolver = LinkedBuildingBlockVersionResolver(
             caseLinkRepository,
             processDefCaseDefRepository,
@@ -433,9 +442,7 @@ class LinkedBuildingBlockVersionResolverTest {
         bbTaggedCallActivity(processDefinitionId, "bijstand-uitvoeren", "1.0.0")
         val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
         blockCallActivityLink(uitvoeren, "uitvoeren:bb", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
-        val uitvoerenDefinition = mock<ProcessDefinition>() // built first: stubbing inside whenever() breaks Mockito
-        whenever(uitvoerenDefinition.key).thenReturn("bijstand-uitvoeren")
-        whenever(repositoryService.getProcessDefinition("uitvoeren:bb")).thenReturn(uitvoerenDefinition)
+        deployed("uitvoeren:bb", key = "bijstand-uitvoeren")
 
         val link = resolver.resolveCallActivityLink(caseDefinitionId, "bijstand-uitvoeren", "BesluitCallActivity")
 
@@ -449,9 +456,7 @@ class LinkedBuildingBlockVersionResolverTest {
         bbTaggedCallActivity(processDefinitionId, "bijstand-uitvoeren", "1.0.0")
         val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
         blockCallActivityLink(uitvoeren, "uitvoeren:bb", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
-        val uitvoerenDefinition = mock<ProcessDefinition>() // built first: stubbing inside whenever() breaks Mockito
-        whenever(uitvoerenDefinition.key).thenReturn("bijstand-uitvoeren")
-        whenever(repositoryService.getProcessDefinition("uitvoeren:bb")).thenReturn(uitvoerenDefinition)
+        deployed("uitvoeren:bb", key = "bijstand-uitvoeren")
 
         assertThat(resolver.resolveCallActivityLink(caseDefinitionId, "bijstand-uitvoeren", "AndereActivity")).isNull()
         assertThat(resolver.resolveCallActivityLink(caseDefinitionId, "ander-proces", "BesluitCallActivity")).isNull()
@@ -490,7 +495,17 @@ class LinkedBuildingBlockVersionResolverTest {
         whenever(callActivity.operatonCalledElementVersionTag).thenReturn("BB:$key:$versionTag")
         val model = mock<BpmnModelInstance>()
         whenever(model.getModelElementsByType(CallActivity::class.java)).thenReturn(listOf(callActivity))
+        deployed(processDefinitionId)
         whenever(repositoryService.getBpmnModelInstance(processDefinitionId)).thenReturn(model)
+    }
+
+    /** Operaton has a process definition under [processDefinitionId], carrying [key] when one is given. */
+    private fun deployed(processDefinitionId: String, key: String? = null) {
+        val definition = mock<ProcessDefinition>() // built first: stubbing inside whenever() breaks Mockito
+        key?.let { whenever(definition.key).thenReturn(it) }
+        val idQuery = mock<ProcessDefinitionQuery>()
+        whenever(idQuery.singleResult()).thenReturn(definition)
+        whenever(processDefinitionQuery.processDefinitionId(processDefinitionId)).thenReturn(idQuery)
     }
 
     private fun instance(versionTag: String, key: String = bbKey, activityId: String? = null) = BuildingBlockInstance(

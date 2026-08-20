@@ -25,6 +25,7 @@ import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecut
 import com.ritense.valtimo.migration.ProcessMigrationComponentDeployer
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
+import com.ritense.valtimo.operaton.findProcessDefinitionOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.core.annotation.Order
@@ -117,15 +118,12 @@ class BuildingBlockCallActivityRemapExecutor(
         buildingBlockInstanceRepository.save(instance)
     }
 
-    /** The key of a deployed process definition, or null when it is no longer deployed. */
-    private fun processDefinitionKeyOf(processDefinitionId: String): String? {
-        return try {
-            repositoryService.getProcessDefinition(processDefinitionId)?.key
-        } catch (e: Exception) {
-            logger.debug(e) { "Could not resolve process definition '$processDefinitionId'" }
-            null
-        }
-    }
+    /**
+     * The key of a deployed process definition, or null when it is no longer deployed. Asked so that it
+     * answers rather than throws, which matters more than it looks: see [findProcessDefinitionOrNull].
+     */
+    private fun processDefinitionKeyOf(processDefinitionId: String): String? =
+        repositoryService.findProcessDefinitionOrNull(processDefinitionId)?.key
 
     private companion object {
         val logger = KotlinLogging.logger {}

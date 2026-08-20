@@ -25,6 +25,8 @@ import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.operaton.findBpmnModelInstanceOrNull
+import com.ritense.valtimo.operaton.findProcessDefinitionOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.instance.CallActivity
@@ -163,13 +165,13 @@ class LinkedBuildingBlockVersionResolver(
         return index
     }
 
+    /**
+     * The key of [processDefinitionId], or null when nothing is deployed under it — which says nothing
+     * about links and is not a reason to fail a plan save or a migration. Asked so that it answers
+     * rather than throws, which matters more than it looks: see [findProcessDefinitionOrNull].
+     */
     private fun processDefinitionKeyOf(processDefinitionId: String): String? =
-        try {
-            repositoryService.getProcessDefinition(processDefinitionId)?.key
-        } catch (e: Exception) {
-            logger.debug(e) { "Could not resolve the key of process definition '$processDefinitionId'" }
-            null
-        }
+        repositoryService.findProcessDefinitionOrNull(processDefinitionId)?.key
 
     fun resolveCallActivityDeclarers(owner: BlueprintId): Map<BuildingBlockDefinitionId, BlueprintId> =
         walkTree(owner).declaredBy
@@ -257,19 +259,16 @@ class LinkedBuildingBlockVersionResolver(
      * Read from the deployed BPMN because the tag is the only place the binding exists: a link says
      * "this call activity is a building block", the tag says "this is the deployment it calls", and an
      * unlinked call activity has only the second. Operaton keeps parsed models in its deployment cache,
-     * so this is a walk over in-memory models rather than a query per activity.
+     * so this is a walk over in-memory models rather than a parse per activity.
      */
     private fun buildingBlockCallTargetsOf(owner: BlueprintId): List<BuildingBlockDefinitionId> =
         processDefinitionIdsOf(owner).flatMap { processDefinitionId ->
-            // A definition whose resource cannot be read tells us nothing about call targets, and is not
-            // a reason to fail a plan save or a migration: it throws for an unknown id and is null when
-            // the deployment is gone, so both are treated as "no call activities".
-            val model = try {
-                repositoryService.getBpmnModelInstance(processDefinitionId)
-            } catch (e: Exception) {
-                logger.debug(e) { "Could not read the BPMN of '$processDefinitionId' while walking '$owner'" }
-                null
-            } ?: return@flatMap emptyList()
+            // A definition that is no longer deployed tells us nothing about call targets, and is not a
+            // reason to fail a plan save or a migration — a link row outlives the deployment it names — so
+            // it is treated as "no call activities". Asked so that it answers rather than throws, which
+            // matters more than it looks: see findBpmnModelInstanceOrNull.
+            val model = repositoryService.findBpmnModelInstanceOrNull(processDefinitionId)
+                ?: return@flatMap emptyList()
 
             model.getModelElementsByType(CallActivity::class.java)
                 .mapNotNull { BuildingBlockDefinitionId.fromProcessVersionTag(it.operatonCalledElementVersionTag) }

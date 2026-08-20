@@ -497,7 +497,17 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         )
     }
 
-    /** Give [owner] a process definition whose [activityId] call activity starts [target]. */
+    /**
+     * Give [owner] a process definition whose [activityId] call activity starts [target].
+     *
+     * The process definition id is a plausible-looking id that nothing is deployed under — which is not
+     * only cheap but load-bearing, and worth keeping that way. It is the shape a link row has after its
+     * deployment is gone, and every read of it has to *answer* rather than throw: an Operaton command that
+     * throws marks the migrating case's transaction rollback-only from inside
+     * `SpringTransactionInterceptor`, so a caller catching it still loses the whole case at commit time
+     * (see `RepositoryService.findProcessDefinitionOrNull`). Deploying a real BPMN here would take that
+     * away silently.
+     */
     private fun linkAsCallActivity(owner: BuildingBlockDefinitionId, activityId: String, target: BuildingBlockDefinitionId) {
         // Shaped like an Operaton process definition id, but kept short: the column is varchar(64).
         val processDefinitionId = "proc-${uniqueSuffix()}:1:${uniqueSuffix()}"
