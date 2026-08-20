@@ -24,6 +24,14 @@
 
 ## Bugfixes
 
+* **A draft environment is now also recognised through the default Spring profile**
+
+  Whether an environment allows drafts was determined by looking only at the active Spring profiles. An
+  environment that configured its draft profile through `spring.profiles.default`, without setting an active
+  profile, was therefore not seen as a draft environment: creating or changing case definitions and building
+  blocks was refused with the message that the environment does not support drafts. The default profiles are
+  now taken into account, exactly as Spring itself does when no active profile is set.
+
 * **Searching on a date returns results again**
 
   Picking a date in a search field, such as **Geboortedatum** under **Achternaam en geboortedatum** in a Beelden
