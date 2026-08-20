@@ -17,12 +17,6 @@
   Widgets that show case counts used to include every case in the system. They now count only the cases you may
   view, so the numbers match what you see in the case list.
 
-* **Case inspection shows the case definition key and version**
-
-  The metadata tab of the case inspection page now shows the key and version of the case definition the case was
-  created from. Only the name of the document definition was shown before, which made it impossible to tell which
-  version of a case definition a case belongs to.
-
 ## Bugfixes
 
 * **Pages no longer break when a user has been deleted**
