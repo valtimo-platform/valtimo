@@ -2288,7 +2288,10 @@
       "overwriteTitle": "Bestaande pluginversie overschrijven?",
       "overwriteWarningTitle": "Dit overschrijft de huidige pluginversie",
       "overwriteWarning": "Versie {{version}} van '{{pluginId}}' bestaat al op de host met andere inhoud. Overschrijven kan tot onverwacht gedrag leiden voor configuraties en processen die deze versie al gebruiken. Omdat de inhoud verschilt: beoordeel hieronder de permissies die het geüploade pakket vraagt en bevestig om door te gaan — alle bestaande configuraties van deze versie worden opnieuw ingesteld op exact deze permissies.",
-      "overwriteConfirm": "Versie overschrijven"
+      "overwriteConfirm": "Versie overschrijven",
+      "successTitle": "Plugin geïnstalleerd",
+      "successMessage": "{{pluginId}} {{version}} is geïnstalleerd en kan nu geconfigureerd worden.",
+      "configureAction": "Plugin configureren"
     },
     "noDefinitions": "Geen plugin-definities gevonden.",
     "noHosts": "Geen plugin-hosts geconfigureerd.",
@@ -2319,6 +2322,7 @@
       "eventBrokerExchange": "Event broker exchange (optioneel)",
       "eventQueueMode": "Event queue-modus",
       "eventQueueTtlMs": "Event queue inactiviteits-TTL (ms)",
+      "frontendOrigins": "Toegestane frontend-origins",
       "host": "Host"
     },
     "eventQueueMode": {
@@ -2326,11 +2330,21 @@
       "durable": "Duurzaam (bewaart events gedurende de TTL als de host uitstaat)"
     },
     "hints": {
-      "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000)."
+      "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
+      "frontendOrigins": "Browser-origins (scheme://host[:poort], zonder pad) die pluginschermen van deze host mogen tonen. Voeg elke Valtimo-frontend-URL toe waarvandaan gebruikers plugins openen, inclusief een eventuele proxy-alias.",
+      "noFrontendOrigins": "Zonder origins kan geen enkele pagina de pluginschermen van deze host tonen."
     },
     "editEventQueue": "Event queue bewerken",
     "editHostEventQueueModalTitle": "Event queue bewerken voor {{name}}",
     "saveEventQueue": "Opslaan",
+    "addFrontendOrigin": "Origin toevoegen",
+    "editFrontendOrigins": "Frontend-origins bewerken",
+    "editHostFrontendOriginsModalTitle": "Frontend-origins voor {{name}}",
+    "saveFrontendOrigins": "Origins opslaan",
+    "host": {
+      "createFailedTitle": "Opslaan mislukt",
+      "createFailedFallback": "De host kon niet worden opgeslagen. Controleer de ingevulde waarden en probeer het opnieuw."
+    },
     "source": {
       "embedded": "Ingebed",
       "external": "Extern"

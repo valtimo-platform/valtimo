@@ -32,6 +32,56 @@
  */
 
 import {FRONTEND_BUNDLE_TYPES, HOST_CAPABILITIES} from "./models/types.js";
+import {validateEgressEntry} from "./egress.js";
+
+/**
+ * `pluginId` and `version` become path components (`<storage>/<pluginId>/<version>/`) and URL
+ * segments, so they are restricted to a charset that cannot express a traversal or a hidden
+ * directory: alphanumerics at both ends, and `.` `-` `_` only inside. That rejects `.`, `..`,
+ * anything containing `/` or `\`, and any leading-dot name outright.
+ *
+ * `pluginId` is lowercase-only because a case-insensitive filesystem would fold `Foo` and `foo`
+ * into one package directory while the database treats them as two distinct definitions.
+ * `version` additionally allows uppercase and `+` so semver prerelease/build metadata such as
+ * `1.0.0-RC1+build.5` stays expressible.
+ */
+export const PLUGIN_ID_PATTERN = /^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/;
+export const PLUGIN_VERSION_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9._+-]*[A-Za-z0-9])?$/;
+/** A logo is a plain file at the package root, in a format a browser renders as an image. */
+export const PLUGIN_LOGO_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:svg|png|jpe?g)$/i;
+export const MAX_PLUGIN_IDENTIFIER_LENGTH = 64;
+
+/**
+ * The `..` check is redundant against the anchored patterns for the dangerous cases (`.` and `..`
+ * are already rejected because both ends must be alphanumeric), but it is kept so the rule reads as
+ * "never `..`, anywhere" without the reader having to re-derive it from the regex.
+ */
+export function isValidPluginId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= MAX_PLUGIN_IDENTIFIER_LENGTH &&
+    !value.includes("..") &&
+    PLUGIN_ID_PATTERN.test(value)
+  );
+}
+
+export function isValidPluginVersion(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= MAX_PLUGIN_IDENTIFIER_LENGTH &&
+    !value.includes("..") &&
+    PLUGIN_VERSION_PATTERN.test(value)
+  );
+}
+
+export function isValidPluginLogo(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= MAX_PLUGIN_IDENTIFIER_LENGTH &&
+    !value.includes("..") &&
+    PLUGIN_LOGO_PATTERN.test(value)
+  );
+}
 
 export function validatePluginManifest(manifest: unknown): string[] {
   const errors: string[] = [];
@@ -42,11 +92,22 @@ export function validatePluginManifest(manifest: unknown): string[] {
 
   const m = manifest as Record<string, unknown>;
 
-  if (typeof m.pluginId !== "string" || m.pluginId.trim() === "") {
-    errors.push("manifest.json must contain a non-empty 'pluginId'");
+  if (!isValidPluginId(m.pluginId)) {
+    errors.push(
+      `manifest.json 'pluginId' must be 1-${MAX_PLUGIN_IDENTIFIER_LENGTH} characters of lowercase letters, digits, '.', '-' or '_', starting and ending with a letter or digit (it is used as a directory and URL path segment)`
+    );
   }
-  if (typeof m.version !== "string" || m.version.trim() === "") {
-    errors.push("manifest.json must contain a non-empty 'version'");
+  if (!isValidPluginVersion(m.version)) {
+    errors.push(
+      `manifest.json 'version' must be 1-${MAX_PLUGIN_IDENTIFIER_LENGTH} characters of letters, digits, '.', '-', '_' or '+', starting and ending with a letter or digit (it is used as a directory and URL path segment)`
+    );
+  }
+  // Optional — only the pack tool sets it. When present it names a file the host copies into the
+  // stored package, so it may not name a path.
+  if (m.logo !== undefined && !isValidPluginLogo(m.logo)) {
+    errors.push(
+      "manifest.json 'logo' must be a file name at the package root ending in .svg, .png, .jpg or .jpeg"
+    );
   }
   // Written by the pack tool; optional so hand-rolled/older manifests stay valid.
   if (m.sdkVersion !== undefined && (typeof m.sdkVersion !== "string" || m.sdkVersion.trim() === "")) {
@@ -114,8 +175,35 @@ export function validatePluginManifest(manifest: unknown): string[] {
           );
         }
       }
+      const egress = p.egress;
+      if (egress !== undefined) {
+        if (!Array.isArray(egress)) {
+          errors.push("manifest.json 'permissions.egress' must be an array when present");
+        } else {
+          egress.forEach((entry, i) => {
+            const reason = validateEgressEntry(entry);
+            if (reason !== null) {
+              errors.push(`manifest.json permissions.egress[${i}] ${reason}`);
+            }
+          });
+          // Same shape as the endpoints→gzac_api rule: declaring destinations without the capability
+          // that reaches them is always an authoring mistake.
+          if (
+            egress.length > 0 &&
+            capabilities !== undefined &&
+            Array.isArray(capabilities) &&
+            !capabilities.includes("http_request")
+          ) {
+            errors.push(
+              "manifest.json declares 'permissions.egress' but does not include 'http_request' in 'permissions.capabilities' — egress targets require the http_request capability"
+            );
+          }
+        }
+      }
     }
   }
+
+  errors.push(...validateEgressTargetProperties(m.configurationSchema));
 
   const actions = m.actions;
   if (actions !== undefined) {
@@ -174,6 +262,45 @@ export function validatePluginManifest(manifest: unknown): string[] {
           errors.push(`manifest.json frontendBundles[${index}] must contain a non-empty 'path'`);
         }
       });
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Checks the `x-egress-target` markers in `configurationSchema`. The keyword tells GZAC that the
+ * admin-supplied value of that property is an `http_request` destination, so GZAC derives an egress
+ * grant from it at activation — the counterpart to `permissions.egress` for targets that differ per
+ * environment. It only makes sense on a URI-shaped string property: GZAC has to parse the value into
+ * an origin, and a property that never holds a URL would contribute nothing while looking like it
+ * grants something.
+ *
+ * Only top-level properties are inspected, matching how GZAC walks the schema for `x-secret`.
+ */
+function validateEgressTargetProperties(configurationSchema: unknown): string[] {
+  const errors: string[] = [];
+  if (typeof configurationSchema !== "object" || configurationSchema === null || Array.isArray(configurationSchema)) {
+    return errors;
+  }
+  const properties = (configurationSchema as Record<string, unknown>).properties;
+  if (typeof properties !== "object" || properties === null || Array.isArray(properties)) {
+    return errors;
+  }
+
+  for (const [name, value] of Object.entries(properties as Record<string, unknown>)) {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) continue;
+    const property = value as Record<string, unknown>;
+    if (property["x-egress-target"] !== true) continue;
+    if (property.type !== "string") {
+      errors.push(
+        `manifest.json configurationSchema.properties.${name} is marked 'x-egress-target' but is not a string property`
+      );
+    }
+    if (property.format !== "uri") {
+      errors.push(
+        `manifest.json configurationSchema.properties.${name} is marked 'x-egress-target' but does not declare "format": "uri"`
+      );
     }
   }
 

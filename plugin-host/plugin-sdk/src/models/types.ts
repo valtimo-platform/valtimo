@@ -235,6 +235,18 @@ export interface PluginManifest {
   permissions?: {
     endpoints?: Endpoint[];
     capabilities?: HostCapability[];
+    /**
+     * Origins `http_request` may call, e.g. `["api.kvk.nl", "https://svc.vendor.com:8443"]`.
+     * `http_request` is deny-by-default: a destination not declared here — and not supplied by the
+     * admin through a configuration property marked `x-egress-target` — is refused by the host
+     * before the request leaves it. A scheme-less entry means https on the default port; see
+     * `@valtimo/plugin-sdk/egress` for the full matching rules.
+     *
+     * Only declare the targets that are the same in every environment. A URL that differs per
+     * customer or per environment belongs in `configurationSchema` under `x-egress-target`, so the
+     * admin supplies it at activation instead of the package being rebuilt per deployment.
+     */
+    egress?: string[];
   };
   frontendBundles?: FrontendBundle[];
   /**

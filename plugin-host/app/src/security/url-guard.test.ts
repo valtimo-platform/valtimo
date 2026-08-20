@@ -22,8 +22,10 @@ import {
   findBlockedIpLiteral,
   isPrivateAddressError,
   isPrivateOrReservedAddress,
+  parseAllowedInternalCidrs,
   rootCauseMessage,
 } from "./url-guard";
+import type {HostLogger} from "../models/index.js";
 
 /**
  * The SSRF guard behind the `http_request` capability. A plugin supplies the URL, so
@@ -84,6 +86,24 @@ describe("isPrivateOrReservedAddress", () => {
   });
 
   it.each([
+    ["::ffff:0:7f00:1", "127.0.0.1 IPv4-translated (::ffff:0:a.b.c.d, RFC 2765)"],
+    ["2002:7f00:1::", "127.0.0.1 embedded in a 6to4 address (RFC 3056)"],
+    ["2002:a9fe:a9fe::", "169.254.169.254 embedded in a 6to4 address"],
+    ["2001::1", "Teredo, which also carries an IPv4 address"],
+    ["fec0::1", "deprecated site-local — the v6 sibling of RFC1918"],
+    ["100::1", "discard-only prefix (RFC 6666)"],
+  ])("blocks IPv6 %s (%s)", (address) => {
+    // Each of these embeds or reaches an address the IPv4 rules would refuse, or is unroutable —
+    // and each bypassed both block lists before they were added.
+    expect(isPrivateOrReservedAddress(address)).toBe(true);
+  });
+
+  it("still allows a public IPv6 address just outside the Teredo /32", () => {
+    // 2001:4860:4860::8888 is Google's public resolver: inside 2001::/16, outside 2001::/32.
+    expect(isPrivateOrReservedAddress("2001:4860:4860::8888")).toBe(false);
+  });
+
+  it.each([
     ["::ffff:7f00:1", "127.0.0.1 — what the URL parser produces for [::ffff:127.0.0.1]"],
     ["::ffff:a9fe:a9fe", "169.254.169.254, the cloud metadata service"],
     ["::ffff:a00:1", "10.0.0.1"],
@@ -129,8 +149,19 @@ describe("findBlockedIpLiteral", () => {
     "https://[::ffff:127.0.0.1]/admin",
     "https://[::ffff:169.254.169.254]/latest/meta-data/",
     "https://[::127.0.0.1]/admin",
+    "https://[::ffff:0:127.0.0.1]/admin",
+    "https://[2002:7f00:1::]/admin",
+    "https://[fec0::1]/admin",
   ])("rejects %s, which the URL parser normalises to a hex mapped address", (raw) => {
     expect(findBlockedIpLiteral(new URL(raw))).toContain("private or reserved range");
+  });
+
+  it.each([
+    ["http://127.1/", "127.0.0.1 in short form"],
+    ["http://2130706433/", "127.0.0.1 as a decimal integer"],
+    ["http://0x7f.0.0.1/", "127.0.0.1 with a hex first octet"],
+  ])("rejects %s (%s) — the parser normalises it before isIP sees it", (raw) => {
+    expect(findBlockedIpLiteral(new URL(raw))).toContain("127.0.0.1");
   });
 
   it("passes a public IP literal", () => {
@@ -187,6 +218,119 @@ describe("rootCauseMessage", () => {
 
   it("stringifies a non-Error value", () => {
     expect(rootCauseMessage("plain string")).toBe("plain string");
+  });
+});
+
+/**
+ * The operator layer. `HOST_ALLOWED_INTERNAL_CIDRS` is what lets a plugin reach an in-cluster service
+ * without turning the whole guard off, so it has to narrow the block lists precisely — and it must
+ * never be able to open cloud metadata, whatever an operator types.
+ */
+describe("parseAllowedInternalCidrs", () => {
+  function recordingLogger(): {logger: HostLogger; messages: string[]} {
+    const messages: string[] = [];
+    const record = (a: unknown, b?: unknown) =>
+      messages.push(typeof a === "string" ? a : String(b ?? ""));
+    const logger = {
+      info: record,
+      warn: record,
+      error: record,
+      debug: record,
+      child: () => logger,
+    } as unknown as HostLogger;
+    return {logger, messages};
+  }
+
+  it("returns undefined when nothing is configured", () => {
+    expect(parseAllowedInternalCidrs(undefined)).toBeUndefined();
+    expect(parseAllowedInternalCidrs("")).toBeUndefined();
+    expect(parseAllowedInternalCidrs("  ,  ")).toBeUndefined();
+  });
+
+  it("carves the configured range out of the block lists", () => {
+    const allowed = parseAllowedInternalCidrs("10.4.7.0/24");
+    expect(isPrivateOrReservedAddress("10.4.7.5", allowed)).toBe(false);
+    // Everything outside it stays blocked — the carve-out is a hole, not a switch.
+    expect(isPrivateOrReservedAddress("10.4.8.5", allowed)).toBe(true);
+    expect(isPrivateOrReservedAddress("127.0.0.1", allowed)).toBe(true);
+    expect(isPrivateOrReservedAddress("192.168.1.1", allowed)).toBe(true);
+  });
+
+  it("accepts several ranges, in both families", () => {
+    const allowed = parseAllowedInternalCidrs("10.4.7.12/32, fd00:dead::/64");
+    expect(isPrivateOrReservedAddress("10.4.7.12", allowed)).toBe(false);
+    expect(isPrivateOrReservedAddress("10.4.7.13", allowed)).toBe(true);
+    expect(isPrivateOrReservedAddress("fd00:dead::5", allowed)).toBe(false);
+    expect(isPrivateOrReservedAddress("fd00:beef::5", allowed)).toBe(true);
+  });
+
+  it("also carves out the IPv4-mapped form of a carved-out v4 range", () => {
+    // A dual stack may hand back ::ffff:10.4.7.5 for the same service.
+    const allowed = parseAllowedInternalCidrs("10.4.7.0/24");
+    expect(isPrivateOrReservedAddress("::ffff:a04:705", allowed)).toBe(false);
+  });
+
+  it("applies through findBlockedIpLiteral, so both enforcement points inherit it", () => {
+    const allowed = parseAllowedInternalCidrs("10.4.7.0/24");
+    expect(findBlockedIpLiteral(new URL("https://10.4.7.5:8443/api"), allowed)).toBeNull();
+    expect(findBlockedIpLiteral(new URL("https://10.4.8.5:8443/api"), allowed)).toContain(
+      "private or reserved range"
+    );
+  });
+
+  it.each([
+    ["169.254.0.0/16", "the metadata range itself"],
+    ["169.254.169.254/32", "just the metadata address"],
+    ["169.0.0.0/8", "a range containing the metadata range"],
+    ["0.0.0.0/0", "everything"],
+  ])("refuses %s (%s) — cloud metadata is never allowlistable", (cidr) => {
+    const {logger, messages} = recordingLogger();
+    const allowed = parseAllowedInternalCidrs(cidr, logger);
+    expect(allowed).toBeUndefined();
+    expect(messages.join(" ")).toContain("169.254.0.0/16");
+    expect(isPrivateOrReservedAddress("169.254.169.254", allowed)).toBe(true);
+  });
+
+  it("keeps the metadata floor even when a legitimate range is configured alongside a refused one", () => {
+    const allowed = parseAllowedInternalCidrs("10.4.7.0/24,169.254.0.0/16");
+    expect(isPrivateOrReservedAddress("10.4.7.5", allowed)).toBe(false);
+    expect(isPrivateOrReservedAddress("169.254.169.254", allowed)).toBe(true);
+    expect(isPrivateOrReservedAddress("::ffff:a9fe:a9fe", allowed)).toBe(true);
+  });
+
+  it("refuses a v6 carve-out expressed over the IPv4-mapped metadata range", () => {
+    // ::ffff:169.254.0.0/112 is 169.254.0.0/16 written in IPv6. The overlap check has to catch it
+    // across families, and the runtime floor covers the mapped form regardless.
+    const {logger} = recordingLogger();
+    const allowed = parseAllowedInternalCidrs("::ffff:169.254.0.0/112", logger);
+    expect(allowed).toBeUndefined();
+    expect(isPrivateOrReservedAddress("169.254.169.254", allowed)).toBe(true);
+    expect(isPrivateOrReservedAddress("::ffff:a9fe:a9fe", allowed)).toBe(true);
+  });
+
+  it("accepts a v6-only range without tripping over the cross-family overlap probe", () => {
+    // The overlap check tests a v4 address against the candidate range; with a v6-only entry that
+    // has to answer false rather than throw.
+    expect(() => parseAllowedInternalCidrs("fd00:dead::/64")).not.toThrow();
+    expect(isPrivateOrReservedAddress("fd00:dead::5", parseAllowedInternalCidrs("fd00:dead::/64"))).toBe(
+      false
+    );
+  });
+
+  it.each([
+    ["10.4.7.0", "no prefix length"],
+    ["not-an-address/24", "not an address"],
+    ["10.4.7.0/33", "an out-of-range v4 prefix"],
+    ["fd00::/129", "an out-of-range v6 prefix"],
+  ])("drops the malformed entry %s (%s) with a warning — dropping fails closed", (cidr) => {
+    const {logger, messages} = recordingLogger();
+    expect(parseAllowedInternalCidrs(cidr, logger)).toBeUndefined();
+    expect(messages.join(" ")).toContain("HOST_ALLOWED_INTERNAL_CIDRS");
+  });
+
+  it("keeps the usable entries when only some are malformed", () => {
+    const allowed = parseAllowedInternalCidrs("garbage, 10.4.7.0/24");
+    expect(isPrivateOrReservedAddress("10.4.7.5", allowed)).toBe(false);
   });
 });
 

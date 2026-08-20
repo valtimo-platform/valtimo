@@ -26,6 +26,7 @@ import com.ritense.externalplugin.domain.ExternalPluginCapability
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginGrantedCapability
+import com.ritense.externalplugin.domain.ExternalPluginGrantedEgress
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import com.ritense.externalplugin.domain.ExternalPluginHost
@@ -34,6 +35,7 @@ import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
@@ -64,6 +66,7 @@ class ExternalPluginConfigurationService(
     private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
     private val grantedEventRepository: ExternalPluginGrantedEventRepository,
     private val grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository,
+    private val grantedEgressRepository: ExternalPluginGrantedEgressRepository,
     private val hostClient: ExternalPluginHostClient,
     private val propertyEncryptor: PluginPropertyEncryptor,
     private val encryptionService: EncryptionService,
@@ -102,6 +105,7 @@ class ExternalPluginConfigurationService(
         grantedEndpoints: List<GrantedEndpointEntry>,
         grantedEvents: List<GrantedEventEntry>,
         grantedCapabilities: List<String> = emptyList(),
+        grantedEgress: List<String> = emptyList(),
     ): ExternalPluginConfiguration {
         val definition = definitionRepository.findById(definitionId)
             .orElseThrow { IllegalArgumentException("External plugin definition $definitionId not found") }
@@ -113,6 +117,8 @@ class ExternalPluginConfigurationService(
         validateGrantedEndpointsCoverManifest(grantedEndpoints, definition)
         validateGrantedEventsCoverManifest(grantedEvents, definition)
         validateGrantedCapabilitiesCoverManifest(capabilities, definition)
+        validateGrantedEgressCoverManifest(grantedEgress, definition)
+        validateEgressTargetProperties(properties, definition)
 
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
 
@@ -128,6 +134,7 @@ class ExternalPluginConfigurationService(
         saveGrantedEndpoints(saved.id, grantedEndpoints)
         saveGrantedEvents(saved.id, grantedEvents)
         saveGrantedCapabilities(saved.id, capabilities)
+        saveGrantedEgress(saved.id, grantedEgress)
 
         // Push the decrypted config to the plugin host once the transaction has committed, so the
         // HTTP call never runs inside the database transaction.
@@ -213,6 +220,23 @@ class ExternalPluginConfigurationService(
         // `gzac_api` call, independent of GZAC-side token scoping.
         val grantedEndpointPairs = grantedEndpointRepository.findAllByConfigurationId(configuration.id)
             .map { it.httpMethod to it.endpointPattern }
+        // The two egress sources are unioned here and pushed as one list, so the host never has to
+        // care about provenance. Deriving the configuration-driven half *here* rather than at create
+        // time is deliberate: every path that reaches the host — create, update, discovery re-sync,
+        // token revocation — funnels through this method with the properties already decrypted, so
+        // the allowlist tracks the configuration values with nothing to keep in sync. Unlike the
+        // manifest grants, those values legitimately change when a configuration is edited.
+        val allowedEgress = (
+            grantedEgressRepository.findAllByConfigurationId(configuration.id).map { it.target } +
+                PluginEgressTargets.deriveFrom(definition.configSchema, decrypted).origins
+            ).distinct()
+        if (grantedCaps.contains(ExternalPluginCapability.HTTP_REQUEST.value) && allowedEgress.isEmpty()) {
+            logger.warn {
+                "Configuration ${configuration.id} has the http_request capability but no egress " +
+                    "targets — the host will refuse every outbound call. Declare fixed targets in the " +
+                    "manifest's 'permissions.egress', or mark the URL property 'x-egress-target'"
+            }
+        }
         val pushed = hostClient.pushConfiguration(
             baseUrl = host.baseUrl,
             adminToken = adminToken,
@@ -232,6 +256,7 @@ class ExternalPluginConfigurationService(
             eventSubscriptions = grantedEventTypes,
             grantedCapabilities = grantedCaps,
             grantedEndpoints = grantedEndpointPairs,
+            allowedEgress = allowedEgress,
             eventBrokerUrl = host.eventBrokerAmqpUrl,
             eventBrokerExchange = host.eventBrokerExchange ?: defaultEventBrokerExchange,
             eventBrokerExchangeType = "fanout",
@@ -274,6 +299,10 @@ class ExternalPluginConfigurationService(
             }
         }
         validateAgainstSchema(validationCopy, definition.configSchema)
+        // Fail closed: a property marked `x-egress-target` whose value isn't a parseable absolute URL
+        // would contribute nothing to the allowlist, leaving the admin believing they granted a
+        // destination the host refuses. Reject the edit instead.
+        validateEgressTargetProperties(validationCopy, definition)
 
         if (grantedEndpoints != null) {
             validateGrantedEndpointsCoverManifest(grantedEndpoints, definition)
@@ -354,25 +383,36 @@ class ExternalPluginConfigurationService(
         val declaredEndpoints = declaredEndpoints(manifest)
         val declaredEvents = declaredEvents(manifest)
         val declaredCapabilities = declaredCapabilities(manifest)
+        val declaredEgress = declaredEgress(manifest)
 
         configurationRepository.findAllByDefinitionId(definition.id).forEach { configuration ->
             grantedEndpointRepository.deleteAllByConfigurationId(configuration.id)
             grantedEventRepository.deleteAllByConfigurationId(configuration.id)
             grantedCapabilityRepository.deleteAllByConfigurationId(configuration.id)
+            grantedEgressRepository.deleteAllByConfigurationId(configuration.id)
             // Flush the deletes before re-inserting — same unique-constraint ordering concern as
             // in [update].
             grantedEndpointRepository.flush()
             grantedEventRepository.flush()
             grantedCapabilityRepository.flush()
+            grantedEgressRepository.flush()
             saveGrantedEndpoints(configuration.id, declaredEndpoints)
             saveGrantedEvents(configuration.id, declaredEvents)
             saveGrantedCapabilities(configuration.id, declaredCapabilities)
+            saveGrantedEgress(configuration.id, declaredEgress)
             logger.info {
                 "Re-granted configuration ${configuration.id} to the overwritten manifest of " +
                     "'$pluginId@$version' (${declaredEndpoints.size} endpoints, " +
-                    "${declaredEvents.size} events, ${declaredCapabilities.size} capabilities)"
+                    "${declaredEvents.size} events, ${declaredCapabilities.size} capabilities, " +
+                    "${declaredEgress.size} egress targets)"
             }
         }
+    }
+
+    private fun declaredEgress(manifest: JsonNode): List<String> {
+        val declared = manifest.get("permissions")?.get("egress") ?: return emptyList()
+        if (!declared.isArray) return emptyList()
+        return declared.mapNotNull { it.asText()?.trim()?.takeIf { entry -> entry.isNotEmpty() } }.distinct()
     }
 
     private fun declaredEndpoints(manifest: JsonNode): List<GrantedEndpointEntry> {
@@ -434,6 +474,7 @@ class ExternalPluginConfigurationService(
         grantedEndpointRepository.deleteAllByConfigurationId(id)
         grantedEventRepository.deleteAllByConfigurationId(id)
         grantedCapabilityRepository.deleteAllByConfigurationId(id)
+        grantedEgressRepository.deleteAllByConfigurationId(id)
         configurationRepository.delete(config)
 
         // Remove the config from the plugin host after the local delete has committed, so the HTTP
@@ -466,6 +507,23 @@ class ExternalPluginConfigurationService(
     @Transactional(readOnly = true)
     fun getGrantedCapabilities(configurationId: UUID): List<ExternalPluginGrantedCapability> =
         grantedCapabilityRepository.findAllByConfigurationId(configurationId)
+
+    @Transactional(readOnly = true)
+    fun getGrantedEgress(configurationId: UUID): List<ExternalPluginGrantedEgress> =
+        grantedEgressRepository.findAllByConfigurationId(configurationId)
+
+    /**
+     * The origins derived from this configuration's `x-egress-target` property values. Recomputed
+     * from the stored properties rather than persisted, exactly as [pushToHost] does, so the UI shows
+     * what the host is actually enforcing. Values are read from the *masked* properties, so a URL
+     * that is also marked `x-secret` is omitted here rather than leaking to the browser.
+     */
+    @Transactional(readOnly = true)
+    fun getDerivedEgress(configuration: ExternalPluginConfiguration): List<String> {
+        val definition = definitionRepository.findById(configuration.definitionId).orElse(null)
+            ?: return emptyList()
+        return PluginEgressTargets.deriveFrom(definition.configSchema, maskedProperties(configuration)).origins
+    }
 
     /**
      * Decrypted properties for **server-side use only** (the host push). Never expose the result
@@ -547,6 +605,53 @@ class ExternalPluginConfigurationService(
                     configurationId = configurationId,
                     capability = capability,
                 )
+            )
+        }
+    }
+
+    private fun saveGrantedEgress(configurationId: UUID, targets: List<String>) {
+        targets.distinct().forEach { target ->
+            grantedEgressRepository.save(
+                ExternalPluginGrantedEgress(
+                    id = UUID.randomUUID(),
+                    configurationId = configurationId,
+                    target = target,
+                )
+            )
+        }
+    }
+
+    /**
+     * All-or-nothing parity with the other three grants: the acceptance screen names every origin the
+     * manifest declares and the admin accepts the whole set. Compared on the raw manifest strings
+     * rather than normalised origins, so what is stored is what the admin saw.
+     */
+    private fun validateGrantedEgressCoverManifest(
+        grantedEgress: List<String>,
+        definition: ExternalPluginDefinition,
+    ) {
+        val manifest = definition.manifestJson ?: return
+        val requiredSet = declaredEgress(manifest).toSet()
+        val grantedSet = grantedEgress.map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+
+        requireExactGrantMatch("egress targets", requiredSet, grantedSet)
+    }
+
+    /**
+     * Rejects a configuration whose `x-egress-target` properties don't hold parseable absolute URLs.
+     * Fail closed rather than silently contributing nothing: the admin typing the value *is* the
+     * grant, so a value GZAC cannot turn into an origin has to surface as an error on the field.
+     */
+    private fun validateEgressTargetProperties(
+        properties: ObjectNode,
+        definition: ExternalPluginDefinition,
+    ) {
+        val invalid = PluginEgressTargets.deriveFrom(definition.configSchema, properties).missingOrInvalid
+        if (invalid.isNotEmpty()) {
+            throw IllegalArgumentException(
+                "Configuration propert${if (invalid.size == 1) "y" else "ies"} " +
+                    "${invalid.joinToString(", ")} must contain an absolute http(s) URL: the plugin " +
+                    "declares them as egress targets, and the host derives what it may call from them"
             )
         }
     }

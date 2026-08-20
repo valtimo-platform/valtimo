@@ -26,6 +26,10 @@
       "types": "./dist/manifest-validation.d.ts",
       "default": "./dist/manifest-validation.js"
     },
+    "./egress": {
+      "types": "./dist/egress.d.ts",
+      "default": "./dist/egress.js"
+    },
     "./toolchain": "./bin/toolchain.mjs"
   },
   "bin": {

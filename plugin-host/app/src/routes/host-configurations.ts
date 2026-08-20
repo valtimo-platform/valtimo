@@ -138,6 +138,7 @@ export async function hostConfigurationRoutes(
       eventSubscriptions?: unknown;
       grantedCapabilities?: unknown;
       grantedEndpoints?: unknown;
+      allowedEgress?: unknown;
       eventBroker?: unknown;
       ownerId?: unknown;
     };
@@ -193,6 +194,11 @@ export async function hostConfigurationRoutes(
     const eventSubscriptions = normalizeStringArray(request.body.eventSubscriptions);
     const grantedCapabilities = normalizeStringArray(request.body.grantedCapabilities);
     const grantedEndpoints = normalizeEndpoints(request.body.grantedEndpoints);
+    // No "not pushed" case for egress: http_request is deny-by-default, so an older GZAC that sends
+    // no list leaves the configuration unable to make outbound calls until it is upgraded. Logged
+    // below when the capability is granted but the list is empty, since that combination is
+    // otherwise silent.
+    const allowedEgress = normalizeStringArray(request.body.allowedEgress);
     const ownerId = normalizeOwnerId(request.body.ownerId);
 
     // An owner change on an existing configuration is the fingerprint of two GZAC environments
@@ -216,10 +222,18 @@ export async function hostConfigurationRoutes(
       eventSubscriptions,
       grantedCapabilities,
       grantedEndpoints,
+      allowedEgress,
       eventBroker,
       ownerId,
     });
     await eventConsumerManager.sync();
+
+    if (grantedCapabilities.includes("http_request") && allowedEgress.length === 0) {
+      request.log.warn(
+        { configId, pluginId, pluginVersion },
+        "Configuration has the http_request capability but no egress targets — every outbound call will be refused"
+      );
+    }
 
     request.log.info(
       {
@@ -229,6 +243,7 @@ export async function hostConfigurationRoutes(
         gzacBaseUrl,
         eventBroker: eventBroker?.exchange ?? null,
         eventSubscriptionCount: eventSubscriptions.length,
+        allowedEgressCount: allowedEgress.length,
       },
       "Configuration pushed"
     );
@@ -246,6 +261,7 @@ export async function hostConfigurationRoutes(
       gzacBaseUrl?: string;
       eventSubscriptions?: unknown;
       grantedEndpoints?: unknown;
+      allowedEgress?: unknown;
       eventBroker?: unknown;
       ownerId?: unknown;
     };
@@ -273,6 +289,12 @@ export async function hostConfigurationRoutes(
       "grantedEndpoints" in request.body
         ? normalizeEndpoints(request.body.grantedEndpoints)
         : existing.grantedEndpoints;
+    // And the egress allowlist — an update that doesn't mention it keeps the accepted set rather
+    // than silently revoking every destination.
+    const allowedEgress =
+      "allowedEgress" in request.body
+        ? normalizeStringArray(request.body.allowedEgress)
+        : existing.allowedEgress;
     // The owner too — an update from a client that doesn't send one must not unclaim the config.
     const ownerId =
       "ownerId" in request.body ? normalizeOwnerId(request.body.ownerId) : existing.ownerId;
@@ -284,6 +306,7 @@ export async function hostConfigurationRoutes(
       gzacBaseUrl: request.body.gzacBaseUrl ?? existing.gzacBaseUrl,
       eventSubscriptions,
       grantedEndpoints,
+      allowedEgress,
       eventBroker,
       ownerId,
     });

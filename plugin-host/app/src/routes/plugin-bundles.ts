@@ -16,6 +16,7 @@
 
 import { FastifyInstance } from "fastify";
 import { PluginManager } from "../plugin-manager.js";
+import type { FrameAncestorSource } from "../frame-ancestor-registry.js";
 import { join, resolve, extname } from "node:path";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -45,8 +46,11 @@ const MIME_TYPES: Record<string, string> = {
  * The `sandbox` directive mirrors the embedding iframe's `sandbox="allow-scripts allow-forms"`
  * attribute so a bundle opened directly in a top-level tab is *also* confined to an opaque origin
  * instead of running same-origin with the host.
+ *
+ * `frame-ancestors` is appended per request from the registry (see {@link bundleCsp}) — it is the
+ * one directive whose value depends on which GZAC frontends currently use this host.
  */
-const BUNDLE_CSP = [
+const BUNDLE_CSP_DIRECTIVES = [
   "default-src 'none'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
@@ -58,15 +62,40 @@ const BUNDLE_CSP = [
   "base-uri 'none'",
   "object-src 'none'",
   "sandbox allow-scripts allow-forms",
-].join("; ");
+];
 
-/** Shared hardening headers for plugin-authored content (bundles and the logo). */
-function pluginContentHeaders(reply: import("fastify").FastifyReply, contentType: string) {
+/**
+ * The full policy for a response, given the origins currently allowed to embed this host's plugin
+ * screens. With none registered the policy is `frame-ancestors 'none'` — **fail closed**: a plugin
+ * that nothing may frame is a visible, fixable misconfiguration, whereas a framable-by-anyone plugin
+ * is the vulnerability this directive exists to close.
+ */
+function bundleCsp(ancestors: string[]): string {
+  const frameAncestors = ancestors.length > 0 ? ancestors.join(" ") : "'none'";
+  return [...BUNDLE_CSP_DIRECTIVES, `frame-ancestors ${frameAncestors}`].join("; ");
+}
+
+/**
+ * Shared hardening headers for plugin-authored content (bundles and the logo).
+ *
+ * `X-Frame-Options: DENY` is added only in the empty-allowlist case: the header has no allowlist
+ * form (its `ALLOW-FROM` was removed from every browser), so it can only express "deny everything".
+ * Sending it alongside a populated `frame-ancestors` would break the legitimate embed in browsers
+ * that honour the older header.
+ */
+function pluginContentHeaders(
+  reply: import("fastify").FastifyReply,
+  contentType: string,
+  ancestors: string[]
+) {
+  if (ancestors.length === 0) {
+    reply.header("X-Frame-Options", "DENY");
+  }
   return reply
     .header("Content-Type", contentType)
     .header("Cache-Control", "public, max-age=3600")
     .header("Access-Control-Allow-Origin", "*")
-    .header("Content-Security-Policy", BUNDLE_CSP)
+    .header("Content-Security-Policy", bundleCsp(ancestors))
     .header("X-Content-Type-Options", "nosniff")
     .header("Referrer-Policy", "no-referrer");
 }
@@ -76,13 +105,31 @@ function pluginContentHeaders(reply: import("fastify").FastifyReply, contentType
  *
  * GET /plugins/:pluginId/:version/bundles/* — serves static files from the
  * plugin's frontend/ directory. No authentication — these are public assets
- * loaded in iframes. Every response carries the strict {@link BUNDLE_CSP}.
+ * loaded in iframes. Every response carries the strict CSP built by {@link bundleCsp},
+ * including the `frame-ancestors` allowlist that decides who may embed the plugin.
  */
 export async function pluginBundleRoutes(
   fastify: FastifyInstance,
-  opts: { pluginManager: PluginManager }
+  opts: { pluginManager: PluginManager; frameAncestorRegistry: FrameAncestorSource }
 ): Promise<void> {
-  const { pluginManager } = opts;
+  const { pluginManager, frameAncestorRegistry } = opts;
+  // One warning per process, not per request: an empty allowlist means every plugin screen in every
+  // GZAC is blank, so the operator needs the reason once — loudly — not on repeat.
+  let warnedAboutEmptyAllowlist = false;
+
+  async function frameAncestors(request: import("fastify").FastifyRequest): Promise<string[]> {
+    const ancestors = await frameAncestorRegistry.allowedOrigins();
+    if (ancestors.length === 0 && !warnedAboutEmptyAllowlist) {
+      warnedAboutEmptyAllowlist = true;
+      request.log.warn(
+        "Serving plugin content with frame-ancestors 'none': no GZAC instance has registered a " +
+          "frontend origin with this host, so no page may embed these plugins. Register the " +
+          "browser origin on the host in GZAC's plugin management screen, or set " +
+          "ALLOWED_FRAME_ANCESTORS on this host."
+      );
+    }
+    return ancestors;
+  }
 
   fastify.get<{ Params: { pluginId: string; version: string; "*": string } }>(
     "/plugins/:pluginId/:version/bundles/*",
@@ -121,7 +168,41 @@ export async function pluginBundleRoutes(
       const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
       const content = await readFile(fullPath);
 
-      pluginContentHeaders(reply, contentType).send(content);
+      pluginContentHeaders(reply, contentType, await frameAncestors(request)).send(content);
+    }
+  );
+
+  /**
+   * GET /plugins/:pluginId/:version/frame-policy?origin=<origin> — is this origin allowed to embed
+   * the plugin?
+   *
+   * A probe, deliberately not a listing: the caller must already know the origin it is asking
+   * about, so the route never enumerates which GZAC frontends use this host. The frontend SDK uses
+   * it as defence in depth for deployments where a proxy strips the CSP header; the
+   * `frame-ancestors` directive above remains the authoritative gate, because an embedder cannot
+   * strip that.
+   *
+   * Public and CORS-open like the manifest: the caller is a sandboxed iframe at an opaque origin,
+   * whose requests carry `Origin: null` and so cannot be allowlisted.
+   */
+  fastify.get<{ Params: { pluginId: string; version: string }; Querystring: { origin?: string } }>(
+    "/plugins/:pluginId/:version/frame-policy",
+    async (request, reply) => {
+      const { pluginId, version } = request.params;
+      if (!pluginManager.getManifest(pluginId, version)) {
+        reply.code(404).send({ error: `Plugin not found: ${pluginId}@${version}` });
+        return;
+      }
+
+      const origin = request.query.origin;
+      const allowed = typeof origin === "string" && origin.length > 0
+        ? await frameAncestorRegistry.isAllowed(origin)
+        : false;
+
+      reply
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Cache-Control", "no-store")
+        .send({ allowed });
     }
   );
 
@@ -159,7 +240,7 @@ export async function pluginBundleRoutes(
       const content = await readFile(logoPath);
       // Same policy as the bundles: a logo is plugin-authored content too (an SVG can carry
       // script, which the CSP neutralises when the file is opened directly).
-      pluginContentHeaders(reply, contentType).send(content);
+      pluginContentHeaders(reply, contentType, await frameAncestors(request)).send(content);
     }
   );
 }

@@ -148,6 +148,12 @@ class ExternalPluginHostClient(
          * were to regress.
          */
         grantedEndpoints: List<Pair<String, String>> = emptyList(),
+        /**
+         * The origins `http_request` may call, unioned from the manifest's `permissions.egress` and
+         * the configuration's `x-egress-target` property values. Deny-by-default on the host: an
+         * empty list means the configuration makes no outbound HTTP calls at all.
+         */
+        allowedEgress: List<String> = emptyList(),
         eventBrokerUrl: String?,
         eventBrokerExchange: String,
         eventBrokerExchangeType: String,
@@ -178,6 +184,9 @@ class ExternalPluginHostClient(
                     addObject().put("method", method).put("pattern", pattern)
                 }
             })
+            set<ObjectNode>("allowedEgress", objectMapper.createArrayNode().apply {
+                allowedEgress.forEach { add(it) }
+            })
             // The host learns this GZAC instance's broker from the push (it never configures one
             // itself). Omitted when no broker is configured — events are then disabled for the config.
             if (!eventBrokerUrl.isNullOrBlank()) {
@@ -200,6 +209,43 @@ class ExternalPluginHostClient(
         restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
     } catch (e: Exception) {
         logger.warn(e) { "Failed to push configuration $configId for plugin '$pluginId@$pluginVersion' to plugin host at $baseUrl" }
+        false
+    }
+
+    /**
+     * Announces this GZAC instance to the plugin host: which instance is calling ([gzacBaseUrl], the
+     * same identity key the configuration push uses) and which browser origins may embed the host's
+     * plugin screens. The host upserts on that key and serves the union of all registered instances'
+     * origins as the `frame-ancestors` CSP directive.
+     *
+     * Called on host registration, on the frontend-origins PATCH, and on every discovery poll, so it
+     * is idempotent and self-healing: a newly connected GZAC becomes framable within one poll cycle
+     * without restarting either side. Returns false on any failure — the next poll retries.
+     */
+    fun registerGzacInstance(
+        baseUrl: String,
+        adminToken: String,
+        gzacBaseUrl: String,
+        frontendOrigins: List<String>,
+    ): Boolean = try {
+        val path = "/api/host/gzac-instances"
+        val uri = buildUri(baseUrl, path)
+        val body = objectMapper.createObjectNode().apply {
+            put("gzacBaseUrl", gzacBaseUrl)
+            set<ObjectNode>("frontendOrigins", objectMapper.createArrayNode().apply {
+                frontendOrigins.forEach { add(it) }
+            })
+        }
+        // Sign the exact bytes sent: the host's HMAC check binds this body, so the allowlist it
+        // carries cannot be altered or replayed in flight.
+        val bodyBytes = objectMapper.writeValueAsBytes(body)
+        val headers = hmacHeaders(adminToken, HttpMethod.PUT.name(), path, bodyBytes).apply {
+            contentType = MediaType.APPLICATION_JSON
+        }
+        val request = RequestEntity(bodyBytes, headers, HttpMethod.PUT, uri)
+        restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
+    } catch (e: Exception) {
+        logger.warn(e) { "Failed to register GZAC instance '$gzacBaseUrl' with plugin host at $baseUrl" }
         false
     }
 

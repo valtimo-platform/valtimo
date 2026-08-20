@@ -64,7 +64,7 @@ describe("host-management routes", () => {
     getManifest: ReturnType<typeof vi.fn>;
     getContentHash: ReturnType<typeof vi.fn>;
     hasVersion: ReturnType<typeof vi.fn>;
-    storeAndLoad: ReturnType<typeof vi.fn>;
+    installPackage: ReturnType<typeof vi.fn>;
     removePlugin: ReturnType<typeof vi.fn>;
   };
   let configRegistry: { listByPlugin: ReturnType<typeof vi.fn> };
@@ -77,7 +77,11 @@ describe("host-management routes", () => {
       getManifest: vi.fn(() => ({ pluginId: "case-summary", version: "0.1.0" })),
       getContentHash: vi.fn(() => "sha256:abc123"),
       hasVersion: vi.fn(() => false),
-      storeAndLoad: vi.fn(async () => validManifest),
+      installPackage: vi.fn(async () => ({
+        outcome: "installed",
+        manifest: validManifest,
+        contentHash: "sha256:abc123",
+      })),
       removePlugin: vi.fn(async () => {}),
     };
     configRegistry = { listByPlugin: vi.fn(async () => []) };
@@ -142,43 +146,50 @@ describe("host-management routes", () => {
         version: "0.1.0",
         contentHash: "sha256:abc123",
       });
-      expect(pluginManager.storeAndLoad).toHaveBeenCalledWith(
-        "case-summary",
-        "0.1.0",
-        expect.any(String),
-        expect.any(Buffer),
-        expect.any(String),
-        undefined // no logo declared
-      );
+      expect(pluginManager.installPackage).toHaveBeenCalledWith({
+        pluginId: "case-summary",
+        version: "0.1.0",
+        manifestJson: expect.any(String),
+        wasmBuffer: expect.any(Buffer),
+        frontendDir: expect.any(String),
+        logoSourcePath: undefined, // no logo declared
+        overwrite: false,
+      });
     });
 
-    it("refuses to replace an existing version with 409 carrying both content hashes", async () => {
-      pluginManager.hasVersion.mockReturnValueOnce(true);
+    it("maps a conflict to 409 carrying both content hashes", async () => {
+      pluginManager.installPackage.mockResolvedValueOnce({
+        outcome: "conflict",
+        currentContentHash: "sha256:abc123",
+        uploadedContentHash: `sha256:${"b".repeat(64)}`,
+      });
       const res = await uploadZip(makeZip(validManifest));
       expect(res.statusCode).toBe(409);
-      const body = res.json() as Record<string, string>;
-      expect(body).toMatchObject({
+      expect(res.json()).toMatchObject({
         code: "PLUGIN_VERSION_EXISTS",
         error: "Plugin version already exists: case-summary@0.1.0",
-        currentContentHash: "sha256:abc123", // the loaded package's hash (mocked)
+        // Both hashes, so callers can tell an identical re-upload apart from different content.
+        currentContentHash: "sha256:abc123",
+        uploadedContentHash: `sha256:${"b".repeat(64)}`,
       });
-      // The would-be hash of the uploaded package, so callers can tell an identical re-upload
-      // apart from different content.
-      expect(body.uploadedContentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
-      expect(pluginManager.storeAndLoad).not.toHaveBeenCalled();
     });
 
-    it("replaces an existing version when the caller explicitly overwrites", async () => {
-      pluginManager.hasVersion.mockReturnValueOnce(true);
+    it("reports a conflict against an on-disk-but-unloaded version with a null current hash", async () => {
+      pluginManager.installPackage.mockResolvedValueOnce({
+        outcome: "conflict",
+        currentContentHash: null,
+        uploadedContentHash: `sha256:${"c".repeat(64)}`,
+      });
+      const res = await uploadZip(makeZip(validManifest));
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toMatchObject({ currentContentHash: null });
+    });
+
+    it("passes ?overwrite=true through as an explicit overwrite", async () => {
       const res = await uploadZip(makeZip(validManifest), undefined, "?overwrite=true");
       expect(res.statusCode).toBe(201);
-      expect(pluginManager.storeAndLoad).toHaveBeenCalledWith(
-        "case-summary",
-        "0.1.0",
-        expect.any(String),
-        expect.any(Buffer),
-        expect.any(String),
-        undefined
+      expect(pluginManager.installPackage).toHaveBeenCalledWith(
+        expect.objectContaining({ overwrite: true })
       );
     });
 
@@ -187,13 +198,56 @@ describe("host-management routes", () => {
       expect(res.statusCode).toBe(400);
       expect(res.json()).toMatchObject({ error: "Invalid plugin manifest" });
       expect((res.json() as { details: string[] }).details.length).toBeGreaterThan(0);
-      expect(pluginManager.storeAndLoad).not.toHaveBeenCalled();
+      expect(pluginManager.installPackage).not.toHaveBeenCalled();
+    });
+
+    /**
+     * The manifest is attacker-controlled, and `pluginId`/`version` become directory names while
+     * `logo` names a file that is copied into the package. A traversal in any of them must be
+     * refused before anything is written.
+     */
+    describe("package identity containment", () => {
+      it.each([
+        ["a traversing pluginId", { ...validManifest, pluginId: "../../app/dist" }],
+        ["an uppercase pluginId", { ...validManifest, pluginId: "Case-Summary" }],
+        ["a traversing version", { ...validManifest, version: "../../../etc" }],
+      ])("refuses %s with 400 and never installs", async (_label, manifest) => {
+        const res = await uploadZip(makeZip(manifest));
+        expect(res.statusCode).toBe(400);
+        expect(res.json()).toMatchObject({ error: "Invalid plugin manifest" });
+        expect(pluginManager.installPackage).not.toHaveBeenCalled();
+        // Nothing may have been written outside the temp extraction dir.
+        expect(existsSync(join(TMP_BASE, "..", "dist", "manifest.json"))).toBe(false);
+      });
+
+      it("refuses a traversing logo declared in the manifest with 400", async () => {
+        // Rejected by the shared validator before the route's own containment check even runs —
+        // both gates exist so neither is the single point of failure.
+        const res = await uploadZip(
+          makeZip({ ...validManifest, logo: "../../../etc/passwd" })
+        );
+        expect(res.statusCode).toBe(400);
+        expect(pluginManager.installPackage).not.toHaveBeenCalled();
+      });
+
+      it("passes a declared logo through as an absolute path inside the extraction directory", async () => {
+        const zip = new AdmZip();
+        zip.addFile("manifest.json", Buffer.from(JSON.stringify({ ...validManifest, logo: "logo.svg" })));
+        zip.addFile("plugin.wasm", Buffer.from([0x00, 0x61, 0x73, 0x6d]));
+        zip.addFile("logo.svg", Buffer.from("<svg/>"));
+
+        const res = await uploadZip(zip.toBuffer());
+
+        expect(res.statusCode).toBe(201);
+        const call = pluginManager.installPackage.mock.calls[0][0] as { logoSourcePath: string };
+        expect(call.logoSourcePath).toMatch(/[/\\]extracted[/\\]logo\.svg$/);
+      });
     });
 
     it("rejects an upload whose file bytes are not correctly signed (401)", async () => {
       const res = await uploadZip(makeZip(validManifest), "attacker-secret");
       expect(res.statusCode).toBe(401);
-      expect(pluginManager.storeAndLoad).not.toHaveBeenCalled();
+      expect(pluginManager.installPackage).not.toHaveBeenCalled();
     });
 
     it("rejects a package with a zip-slip entry (../ traversal) with 400 and never loads it", async () => {
@@ -211,7 +265,7 @@ describe("host-management routes", () => {
 
       expect(res.statusCode).toBe(400);
       expect(res.json()).toMatchObject({ error: "Invalid plugin package" });
-      expect(pluginManager.storeAndLoad).not.toHaveBeenCalled();
+      expect(pluginManager.installPackage).not.toHaveBeenCalled();
       // Nothing may have been written outside the temp extraction dir.
       const escaped = join(TMP_BASE, "evil.txt");
       expect(existsSync(escaped)).toBe(false);

@@ -148,6 +148,35 @@ export async function runMigrations(pool: DbPool, logger: HostLogger): Promise<v
     },
     {
       version: 6,
+      name: "add_allowed_egress_to_plugin_configurations",
+      up: `
+        -- Origins http_request may call. NOT NULL DEFAULT '[]' rather than nullable: http_request is
+        -- deny-by-default, so a configuration that predates egress declarations makes no outbound
+        -- calls until GZAC pushes a list. (granted_endpoints uses NULL for "not pushed" because
+        -- gzac_api has an authoritative server-side allowlist to fall back on; http_request has none.)
+        ALTER TABLE plugin_configurations
+          ADD COLUMN IF NOT EXISTS allowed_egress JSONB NOT NULL DEFAULT '[]';
+      `,
+    },
+    {
+      version: 7,
+      name: "create_gzac_instances",
+      up: `
+        -- One row per GZAC instance that has announced itself, keyed by the same gzacBaseUrl the
+        -- configuration push uses as instance identity. frontend_origins are the browser origins
+        -- that instance allows to embed this host's plugin screens; the host serves their union as
+        -- the frame-ancestors CSP directive. updated_at is what makes the allowlist self-cleaning:
+        -- an instance that stops announcing ages out (FRAME_ANCESTOR_STALE_MS) on its own, since
+        -- there is no deregistration call.
+        CREATE TABLE IF NOT EXISTS gzac_instances (
+          gzac_base_url TEXT PRIMARY KEY,
+          frontend_origins JSONB NOT NULL DEFAULT '[]',
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `,
+    },
+    {
+      version: 8,
       name: "add_owner_id_to_plugin_configurations",
       up: `
         -- Identity of the GZAC↔host relationship that pushed the configuration (the GZAC-side

@@ -49,6 +49,7 @@ class ExternalPluginDiscoveryServiceTest {
 
     private val objectMapper = ObjectMapper()
     private val failureThreshold = 3
+    private val FALLBACK_GZAC_BASE_URL = "http://localhost:8080"
 
     private lateinit var hostRepository: ExternalPluginHostRepository
     private lateinit var definitionRepository: ExternalPluginDefinitionRepository
@@ -77,6 +78,7 @@ class ExternalPluginDiscoveryServiceTest {
             hostClient,
             TransactionTemplate(transactionManager),
             failureThreshold,
+            FALLBACK_GZAC_BASE_URL,
         )
     }
 
@@ -99,6 +101,69 @@ class ExternalPluginDiscoveryServiceTest {
         assertThat(host.status).isEqualTo(ExternalPluginHostStatus.UNREACHABLE)
         // An unhealthy host is never asked for its plugin list.
         verify(hostClient, never()).listPlugins(any(), any())
+    }
+
+    @Test
+    fun `healthy poll announces this GZAC instance and its frontend origins to the host`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        host.gzacCallbackBaseUrl = "http://gzac:8080"
+        host.frontendOrigins = "https://valtimo.example.com"
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(emptyList())
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        verify(hostClient).registerGzacInstance(
+            host.baseUrl,
+            "admin-token",
+            "http://gzac:8080",
+            listOf("https://valtimo.example.com"),
+        )
+    }
+
+    @Test
+    fun `a legacy host row without a callback url is announced under the same fallback key the config push uses`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(emptyList())
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        verify(hostClient).registerGzacInstance(any(), any(), eq(FALLBACK_GZAC_BASE_URL), eq(emptyList()))
+    }
+
+    @Test
+    fun `an unhealthy host is not announced to`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(false)
+
+        service.discoverAll()
+
+        verify(hostClient, never()).registerGzacInstance(any(), any(), any(), any())
+    }
+
+    @Test
+    fun `a failed announcement does not stop the rest of the discovery cycle`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.registerGzacInstance(any(), any(), any(), any()))
+            .thenThrow(RuntimeException("host unreachable"))
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(emptyList())
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        verify(hostClient).listPlugins(host.baseUrl, "admin-token")
+        assertThat(host.status).isEqualTo(ExternalPluginHostStatus.CONNECTED)
     }
 
     @Test

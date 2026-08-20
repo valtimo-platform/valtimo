@@ -17,6 +17,7 @@
 import type {CallContext} from "@extism/extism";
 import type {Endpoint, HostLogger} from "../models/index.js";
 import {isEndpointAllowed} from "../security/endpoint-allowlist.js";
+import {normalizeGzacApiPath} from "../security/request-path.js";
 import {guardHostCall} from "./guard.js";
 
 /**
@@ -46,6 +47,14 @@ export interface GzacApiCallContext {
    * host then warns and allows, relying on GZAC's server-side allowlist filter alone.
    */
   grantedEndpoints?: Endpoint[];
+  /**
+   * Origins `http_request` may call, as accepted by the admin at activation (see
+   * `security/egress-allowlist.ts`). GZAC unions the plugin manifest's `permissions.egress` with the
+   * configuration properties marked `x-egress-target`, so the host never has to know which source an
+   * entry came from. Deny-by-default: empty or absent means the configuration makes no outbound HTTP
+   * calls at all.
+   */
+  allowedEgress?: string[];
 }
 
 interface GzacApiRequest {
@@ -93,13 +102,15 @@ export function createGzacApiHostFunction(
         JSON.stringify(errorReply(400, "Missing 'method' in gzac_api request"))
       );
     }
-    if (!req.path || typeof req.path !== "string" || !req.path.startsWith("/")) {
-      return callContext.store(
-        JSON.stringify(
-          errorReply(400, "'path' must be set and start with '/' in gzac_api request")
-        )
-      );
+    // Canonicalise once, then use only this value: `fetch` resolves dot segments while parsing the
+    // URL, so checking the raw path would let a grant on one prefix authorise a request to a
+    // completely different endpoint. Everything downstream — the allowlist check, the outgoing URL,
+    // the refusal messages, and the audit log — refers to the same string that is requested.
+    const normalized = normalizeGzacApiPath(req.path);
+    if (!normalized.ok) {
+      return callContext.store(JSON.stringify(errorReply(400, normalized.reason)));
     }
+    const path = normalized.path;
 
     // Enforce the granted-endpoint allowlist before anything leaves the host. GZAC's servlet
     // filter is the authoritative gate; this check refuses non-granted callbacks early. A config
@@ -107,19 +118,19 @@ export function createGzacApiHostFunction(
     // GzacApiCallContext.grantedEndpoints.
     if (ctx.grantedEndpoints === undefined) {
       log.warn(
-        { configurationId: ctx.configurationId, method: req.method, path: req.path },
+        { configurationId: ctx.configurationId, method: req.method, path },
         "Configuration carries no granted-endpoint list (older GZAC push) — allowing gzac_api call without host-side allowlist check"
       );
-    } else if (!isEndpointAllowed(req.method, req.path, ctx.grantedEndpoints)) {
+    } else if (!isEndpointAllowed(req.method, path, ctx.grantedEndpoints)) {
       log.warn(
-        { configurationId: ctx.configurationId, method: req.method, path: req.path },
+        { configurationId: ctx.configurationId, method: req.method, path },
         "gzac_api call refused: endpoint not in the configuration's granted allowlist"
       );
       return callContext.store(
         JSON.stringify(
           errorReply(
             403,
-            `Endpoint not granted for this configuration: ${req.method.toUpperCase()} ${req.path}`
+            `Endpoint not granted for this configuration: ${req.method.toUpperCase()} ${path}`
           )
         )
       );
@@ -139,7 +150,7 @@ export function createGzacApiHostFunction(
       token = ctx.userToken;
     }
 
-    const url = `${ctx.gzacBaseUrl.replace(/\/$/, "")}${req.path}`;
+    const url = `${ctx.gzacBaseUrl.replace(/\/$/, "")}${path}`;
     // Plugin-supplied headers first, host-controlled credentials LAST — so a plugin can never
     // override the Authorization header the host attaches. Any Authorization the plugin sends is
     // stripped explicitly (and logged) rather than silently shadowed.
@@ -147,7 +158,7 @@ export function createGzacApiHostFunction(
     for (const name of Object.keys(pluginHeaders)) {
       if (name.toLowerCase() === "authorization") {
         log.warn(
-          { configurationId: ctx.configurationId, pluginId: ctx.pluginId, path: req.path },
+          { configurationId: ctx.configurationId, pluginId: ctx.pluginId, path },
           "Stripping plugin-supplied Authorization header from gzac_api request"
         );
         delete pluginHeaders[name];
@@ -177,7 +188,7 @@ export function createGzacApiHostFunction(
         pluginId: ctx.pluginId,
         pluginVersion: ctx.pluginVersion,
         method: req.method,
-        path: req.path,
+        path,
       },
       "gzac_api call"
     );
@@ -187,8 +198,8 @@ export function createGzacApiHostFunction(
         method: req.method.toUpperCase(),
         headers,
         body: bodyInit,
-        // Bound the callback so a hung GZAC endpoint can't pin the plugin call (and its
-        // per-plugin lock) indefinitely.
+        // Bound the callback so a hung GZAC endpoint can't pin the plugin call (and the pooled
+        // Wasm instance it holds) indefinitely.
         signal: AbortSignal.timeout(timeoutMs),
       });
       const text = await res.text();
@@ -220,7 +231,7 @@ export function createGzacApiHostFunction(
       if ((err as Error).name === "TimeoutError" || (err as Error).name === "AbortError") {
         return callContext.store(
           JSON.stringify(
-            errorReply(504, `gzac_api request timed out after ${timeoutMs}ms: ${req.method.toUpperCase()} ${req.path}`)
+            errorReply(504, `gzac_api request timed out after ${timeoutMs}ms: ${req.method.toUpperCase()} ${path}`)
           )
         );
       }

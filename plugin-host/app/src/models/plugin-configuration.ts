@@ -83,6 +83,13 @@ export interface PluginConfiguration {
    */
   grantedEndpoints?: Endpoint[];
   /**
+   * Origins the `http_request` host function may call, accepted by the admin at activation. GZAC
+   * pushes the union of the manifest's `permissions.egress` and the configuration properties marked
+   * `x-egress-target`, so provenance is invisible here. Deny-by-default: an empty (or absent) list
+   * means no outbound HTTP at all — see `security/egress-allowlist.ts`.
+   */
+  allowedEgress?: string[];
+  /**
    * Event broker of the owning GZAC instance. Absent when the instance has no broker configured —
    * the configuration then receives no platform events (actions still work).
    */

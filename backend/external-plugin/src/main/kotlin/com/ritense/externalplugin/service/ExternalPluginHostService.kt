@@ -23,11 +23,13 @@ import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.exception.ExternalPluginHostInUseException
+import com.ritense.externalplugin.exception.ExternalPluginHostValidationException
 import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
+import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.plugin.service.EncryptionService
@@ -52,6 +54,7 @@ class ExternalPluginHostService(
     private val grantedEndpointRepository: ExternalPluginGrantedEndpointRepository,
     private val grantedEventRepository: ExternalPluginGrantedEventRepository,
     private val grantedCapabilityRepository: ExternalPluginGrantedCapabilityRepository,
+    private val grantedEgressRepository: ExternalPluginGrantedEgressRepository,
     private val encryptionService: EncryptionService,
     private val hostClient: ExternalPluginHostClient,
     private val hostUsageResolver: ExternalPluginHostUsageResolver,
@@ -74,19 +77,34 @@ class ExternalPluginHostService(
         eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
         eventQueueTtlMs: Long? = null,
         kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
+        /** Browser origins allowed to embed this host's plugin screens. See [updateFrontendOrigins]. */
+        frontendOrigins: List<String> = emptyList(),
     ): ExternalPluginHost {
         val normalizedBaseUrl = baseUrl.trimEnd('/')
         val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }
+        // Every rejection below throws ExternalPluginHostValidationException rather than
+        // IllegalArgumentException so it surfaces as a 400 carrying this text, which the add-host
+        // modal renders next to the fields the admin already filled in.
+        if (!isConnectableBaseUrl(normalizedBaseUrl)) {
+            throw ExternalPluginHostValidationException(
+                "'$normalizedBaseUrl' is not a reachable address for the base URL. 0.0.0.0 (and " +
+                    "the IPv6 equivalent ::) is a bind address, not a connect address — use the " +
+                    "host name or IP address GZAC can reach the plugin host on, for example " +
+                    "http://localhost:8090."
+            )
+        }
         // The config push delivers the broker AMQP URL and credentials in its body. HMAC binds and
         // authenticates that body but does not encrypt it, so a broker may only be configured on a
         // host the push can reach over a confidential transport. Registration is the single gate:
         // the base URL is immutable afterwards, so no later push can reach an insecure host.
-        require(brokerAmqpUrl == null || isSecureTransport(normalizedBaseUrl)) {
-            "Refusing to register host '$normalizedBaseUrl' with event broker credentials over an " +
-                "unencrypted transport. The configuration push carries the broker AMQP URL and " +
-                "credentials, so the host must be reachable over HTTPS (or a loopback address for " +
-                "local development). Enable TLS on the host, or leave the event broker blank to " +
-                "disable events for configurations on this host."
+        if (brokerAmqpUrl != null && !isSecureTransport(normalizedBaseUrl)) {
+            throw ExternalPluginHostValidationException(
+                "Refusing to register host '$normalizedBaseUrl' with event broker credentials over an " +
+                    "unencrypted transport. The configuration push carries the broker AMQP URL and " +
+                    "credentials, so the host must be reachable over HTTPS (or a loopback address for " +
+                    "local development). Enable TLS on the host, or leave the event broker blank to " +
+                    "disable events for configurations on this host."
+            )
         }
         val resolvedTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
         val host = ExternalPluginHost(
@@ -101,9 +119,29 @@ class ExternalPluginHostService(
             eventBrokerExchange = eventBrokerExchange?.takeIf { it.isNotBlank() },
             eventQueueMode = eventQueueMode,
             eventQueueTtlMs = resolvedTtlMs,
+            frontendOrigins = joinFrontendOrigins(normalizeFrontendOrigins(frontendOrigins)),
         )
         return hostRepository.save(host)
     }
+
+    /**
+     * Updates only the browser origins allowed to embed this host's plugin screens. Like
+     * [updateEventQueue] this is deliberately narrow: baseUrl, secret and broker fields stay
+     * immutable because the transport check that pins broker credentials to a confidential baseUrl
+     * only runs at registration.
+     *
+     * The origins reach the plugin host on the next push (registration, this update, or any
+     * discovery poll), which serves them as `frame-ancestors`. An empty list means no page may
+     * frame this host's plugins.
+     */
+    fun updateFrontendOrigins(hostId: UUID, frontendOrigins: List<String>): ExternalPluginHost {
+        val host = get(hostId)
+        host.frontendOrigins = joinFrontendOrigins(normalizeFrontendOrigins(frontendOrigins))
+        return hostRepository.save(host)
+    }
+
+    private fun joinFrontendOrigins(origins: List<String>): String? =
+        origins.joinToString(",").takeIf { it.isNotEmpty() }
 
     /**
      * Updates only the per-host event-queue declaration knobs. The base URL, secret, broker URL
@@ -166,6 +204,7 @@ class ExternalPluginHostService(
                 grantedEndpointRepository.deleteAllByConfigurationId(configuration.id)
                 grantedEventRepository.deleteAllByConfigurationId(configuration.id)
                 grantedCapabilityRepository.deleteAllByConfigurationId(configuration.id)
+                grantedEgressRepository.deleteAllByConfigurationId(configuration.id)
             }
             configurationRepository.deleteAll(configurations)
         }
@@ -233,6 +272,12 @@ class ExternalPluginHostService(
 
         private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "::1")
 
+        /**
+         * Wildcard bind addresses. A server listening on one of these is reachable on every one of
+         * its interfaces, but the address itself names none of them, so GZAC cannot dial it.
+         */
+        private val BIND_ONLY_HOSTS = setOf("0.0.0.0", "::", "0:0:0:0:0:0:0:0")
+
         /** Default queue inactivity TTL for new DURABLE hosts: 72 hours. */
         const val DEFAULT_EVENT_QUEUE_TTL_MS: Long = 72L * 60 * 60 * 1000
 
@@ -253,6 +298,65 @@ class ExternalPluginHostService(
             if (uri.scheme?.lowercase() == "https") return true
             val host = uri.host?.removeSurrounding("[", "]")?.lowercase() ?: return false
             return host in LOOPBACK_HOSTS
+        }
+
+        /**
+         * Validates and canonicalises the browser origins allowed to frame a host's plugin screens.
+         * Blank entries (the add-host form's empty repeat rows) are dropped; everything else must be
+         * a bare `scheme://host[:port]`. Duplicates collapse, so the same origin entered twice —
+         * once with and once without a trailing slash — stores once.
+         */
+        fun normalizeFrontendOrigins(origins: List<String>): List<String> =
+            origins.filter { it.isNotBlank() }.map { normalizeFrontendOrigin(it) }.distinct()
+
+        /**
+         * One origin, canonicalised to `scheme://host[:port]`. Rejects anything that is not a bare
+         * origin: a wildcard would defeat the point of the allowlist, and a path, query, fragment or
+         * userinfo means the operator pasted a full URL — the browser only ever matches the origin,
+         * so silently truncating would hide the mistake rather than surface it.
+         */
+        fun normalizeFrontendOrigin(value: String): String {
+            val trimmed = value.trim().trimEnd('/')
+            if (trimmed.isEmpty()) invalidFrontendOrigin(value, "it is empty")
+            if (trimmed.contains('*')) invalidFrontendOrigin(value, "wildcards are not allowed")
+            val uri = runCatching { URI(trimmed) }.getOrNull()
+                ?: invalidFrontendOrigin(value, "it is not a valid URL")
+            val scheme = uri.scheme?.lowercase()
+                ?: invalidFrontendOrigin(value, "it has no scheme")
+            if (scheme != "http" && scheme != "https") {
+                invalidFrontendOrigin(value, "only http and https origins are supported")
+            }
+            val host = uri.host ?: invalidFrontendOrigin(value, "it has no host name")
+            if (!uri.path.isNullOrEmpty()) invalidFrontendOrigin(value, "it must not contain a path")
+            if (uri.query != null || uri.fragment != null) {
+                invalidFrontendOrigin(value, "it must not contain a query string or fragment")
+            }
+            if (uri.userInfo != null) invalidFrontendOrigin(value, "it must not contain credentials")
+            // A bracketed IPv6 literal keeps its brackets; anything else lowercases like the browser.
+            val normalizedHost = if (host.startsWith("[")) host else host.lowercase()
+            return if (uri.port == -1) "$scheme://$normalizedHost" else "$scheme://$normalizedHost:${uri.port}"
+        }
+
+        private fun invalidFrontendOrigin(value: String, reason: String): Nothing =
+            throw ExternalPluginHostValidationException(
+                "'$value' is not a valid frontend origin: $reason. Enter the browser origin only, " +
+                    "for example https://valtimo.example.com or http://localhost:4200."
+            )
+
+        /**
+         * Whether GZAC can actually open a connection to this base URL. Catches the mistake of
+         * pasting the address the plugin host *binds* to (`0.0.0.0`, which the host logs on
+         * startup) instead of the address it is *reachable* on.
+         */
+        fun isConnectableBaseUrl(baseUrl: String): Boolean {
+            val uri = runCatching { URI(baseUrl) }.getOrNull() ?: return true
+            // `host` is null for authorities java.net.URI considers malformed — an underscore in a
+            // Docker service name, for one — so fall back to the raw authority rather than
+            // rejecting a URL that has always been accepted. This gate only refuses bind addresses.
+            val host = uri.host
+                ?: uri.authority?.substringAfterLast('@')?.substringBeforeLast(':')
+                ?: return true
+            return host.removeSurrounding("[", "]").lowercase() !in BIND_ONLY_HOSTS
         }
     }
 }

@@ -134,9 +134,11 @@ export interface ValtimoPluginSDKOptions {
    *
    * When omitted (backward-compatible default — required when the same bundle must run under
    * several Valtimo frontends whose origin isn't known at build time), the SDK pins the origin of
-   * the first `init` message it receives and ignores other origins from then on. Until that pin is
-   * established, only the credential-free handshake events (`ready`, `resize`) are posted to
-   * `"*"`; anything that carries data is queued and flushed to the pinned origin after `init`.
+   * the first `init` message it receives — after asking the plugin host that served the bundle
+   * whether that origin is a registered Valtimo frontend — and ignores other origins from then on.
+   * Until that pin is established, only the credential-free handshake events (`ready`, `resize`)
+   * are posted to `"*"`; anything that carries data is queued and flushed to the pinned origin
+   * after `init`.
    *
    * Note: the iframe itself runs at an opaque origin (sandbox without `allow-same-origin`), but
    * the *parent's* messages still carry the parent's real origin — so pinning works either way.
@@ -182,6 +184,8 @@ class ValtimoPluginSDK {
   private readonly _explicitParentOrigin: boolean;
   // Emits held back until the parent origin is established (see emit()).
   private readonly _pendingEmits: Array<{ event: string; payload: unknown }> = [];
+  // Frame-policy verdict per embedder origin, cached for the page's lifetime (see _verifyEmbedder).
+  private readonly _originVerdicts = new Map<string, Promise<boolean>>();
   // Bound once so addEventListener and removeEventListener share the same reference.
   private readonly _boundOnMessage = this._onMessage.bind(this);
   /**
@@ -392,15 +396,15 @@ class ValtimoPluginSDK {
    * resolves the translation bucket (active locale → `en` fallback → {}).
    */
   private async _loadManifest(): Promise<void> {
-    // Build the manifest URL from the full href, NOT window.location.origin: at an opaque origin
-    // (the iframe is sandboxed without allow-same-origin) `origin` serialises to "null", while
-    // `href` still reflects the document's real URL. This also makes the fetch cross-origin, so the
-    // host serves the manifest with `Access-Control-Allow-Origin: *`.
-    const base = window.location.href.match(/^(https?:\/\/[^/]+\/plugins\/[^/]+\/[^/]+)\//);
-    if (!base) return;
+    // The base comes from the full href, NOT window.location.origin: at an opaque origin (the iframe
+    // is sandboxed without allow-same-origin) `origin` serialises to "null", while `href` still
+    // reflects the document's real URL. This also makes the fetch cross-origin, so the host serves
+    // the manifest with `Access-Control-Allow-Origin: *`.
+    const base = this._bundleBaseUrl();
+    if (base === null) return;
     let manifest: { translations?: Record<string, Record<string, string>> } | null = null;
     try {
-      const res = await fetch(`${base[1]}/plugin-manifest`);
+      const res = await fetch(`${base}/plugin-manifest`);
       if (res.ok) manifest = await res.json();
     } catch {
       // Network failure: leave translations empty, t() returns the key.
@@ -450,14 +454,82 @@ class ValtimoPluginSDK {
       if (event.origin !== this._parentOrigin) return;
     } else if (eventType !== "init") {
       return;
+    } else if (this._bundleBaseUrl() !== null) {
+      // Unpinned init from a bundle served by a plugin host: ask that host whether this embedder is
+      // one GZAC registered, before letting it become the origin we trust. Asynchronous, so the pin
+      // is established in _acceptInitAfterProbe rather than below.
+      void this._acceptInitAfterProbe(event.origin, data.payload);
+      return;
     }
 
-    const payload = data.payload;
+    this._dispatch(eventType, data.payload, event.origin);
+  }
 
+  /**
+   * Base URL of this bundle on its plugin host (`{origin}/plugins/{id}/{version}`), or null when the
+   * document was not served from a plugin-host bundle path — a standalone preview, a unit test, or a
+   * bundle rehosted elsewhere. Derived from `href` rather than `origin` because the iframe runs at an
+   * opaque origin, where `origin` serialises to "null".
+   */
+  private _bundleBaseUrl(): string | null {
+    const base = window.location.href.match(/^(https?:\/\/[^/]+\/plugins\/[^/]+\/[^/]+)\//);
+    return base ? base[1] : null;
+  }
+
+  /**
+   * Asks the plugin host whether `origin` is a registered GZAC frontend, and only then treats its
+   * `init` as authentic.
+   *
+   * The CSP `frame-ancestors` header the host serves is the authoritative gate — an embedder cannot
+   * strip a header off a response it did not serve. This check is defence in depth for deployments
+   * where a proxy drops CSP: an explicit `allowed: false` refuses init, while a failed or
+   * unanswerable probe only warns, because otherwise a blocked probe would break an honest plugin
+   * that the CSP is already protecting.
+   */
+  private async _acceptInitAfterProbe(origin: string, payload: unknown): Promise<void> {
+    const allowed = await this._verifyEmbedder(origin);
+    if (!allowed) {
+      console.warn(
+        `[valtimo-plugin] Ignoring init from ${origin}: the plugin host does not list it as an ` +
+          "allowed frontend origin. If this is a legitimate Valtimo frontend, register its origin " +
+          "on the plugin host in Valtimo's plugin management screen."
+      );
+      return;
+    }
+    // Another init may have won the race and pinned a different origin while the probe was in
+    // flight; the first validated init keeps the pin, as it does in the synchronous path.
+    if (this._parentOrigin !== null && this._parentOrigin !== origin) return;
+    this._dispatch("init", payload, origin);
+  }
+
+  /**
+   * Verdict for one embedder origin, cached for the page's lifetime (the promise itself is cached,
+   * so concurrent inits for the same origin share a single request).
+   */
+  private _verifyEmbedder(origin: string): Promise<boolean> {
+    const base = this._bundleBaseUrl();
+    if (base === null) return Promise.resolve(true);
+
+    const cached = this._originVerdicts.get(origin);
+    if (cached) return cached;
+
+    const verdict = fetch(`${base}/frame-policy?origin=${encodeURIComponent(origin)}`)
+      .then(async (res) => {
+        if (!res.ok) return true;
+        const body = (await res.json()) as { allowed?: boolean };
+        return body?.allowed !== false;
+      })
+      .catch(() => true);
+    this._originVerdicts.set(origin, verdict);
+    return verdict;
+  }
+
+  /** Applies a validated message: built-in state updates first, then user handlers. */
+  private _dispatch(eventType: ParentEventType, payload: unknown, origin: string): void {
     // Handle built-in state updates
     if (eventType === "init") {
       if (this._parentOrigin === null) {
-        this._parentOrigin = event.origin;
+        this._parentOrigin = origin;
       }
       const initPayload = payload as ParentToIframeEvents["init"];
       this._accessToken = initPayload.accessToken;

