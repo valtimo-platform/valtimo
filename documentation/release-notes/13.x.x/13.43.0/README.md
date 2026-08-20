@@ -36,3 +36,9 @@
 
   Picking a date in a search field, such as **Geboortedatum** under **Achternaam en geboortedatum** in a Beelden
   search, passed the date on in a format the external source did not accept, so the search stayed empty.
+
+* **Wrapping text in case widgets no longer breaks the layout**
+
+  A field value in a compact field widget now stays right-aligned on every line, and the header row of a table
+  widget on the widget tab of a case grows to fit a column header that wraps. Previously the value jumped to the
+  left the moment it wrapped, and a wrapping column header was drawn on top of the first row of the table.
