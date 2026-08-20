@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
+import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.document.domain.impl.JsonSchema
@@ -30,10 +31,16 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.DocumentService
+import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
+import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDateTime
 import java.util.UUID
@@ -53,7 +60,20 @@ class BuildingBlockDocumentPreDeleteListenerIT : BaseIntegrationTest() {
     @Autowired
     lateinit var documentService: DocumentService
 
+    @Autowired
+    lateinit var processDocumentService: ProcessDocumentService
+
+    @Autowired
+    lateinit var processLinkRepository: ProcessLinkRepository
+
+    @Autowired
+    lateinit var repositoryService: RepositoryService
+
+    @Autowired
+    lateinit var runtimeService: RuntimeService
+
     private val createdCaseDocumentIds = mutableListOf<UUID>()
+    private val createdProcessLinkIds = mutableListOf<UUID>()
 
     @AfterEach
     fun deleteCreatedCases() {
@@ -63,6 +83,8 @@ class BuildingBlockDocumentPreDeleteListenerIT : BaseIntegrationTest() {
             })
         }
         createdCaseDocumentIds.clear()
+        createdProcessLinkIds.forEach { processLinkRepository.deleteById(it) }
+        createdProcessLinkIds.clear()
     }
 
     @Test
@@ -97,6 +119,69 @@ class BuildingBlockDocumentPreDeleteListenerIT : BaseIntegrationTest() {
         assertThat(buildingBlockInstanceRepository.findById(instance.id)).isPresent
         assertThat(findDocument(instance.documentId)).isNotNull
     }
+
+    @Test
+    fun `deleting a case should delete a building block whose process is still running`() {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
+        val processLinkId = UUID.randomUUID()
+        processLinkRepository.save(
+            BuildingBlockProcessLink(
+                id = processLinkId,
+                processDefinitionId = mainProcessDefinitionId(),
+                activityId = CALL_ACTIVITY_ID,
+                activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+                buildingBlockDefinitionId = buildingBlockDefinitionId,
+                pluginConfigurationMappings = emptyMap(),
+                inputMappings = emptyList()
+            )
+        )
+        createdProcessLinkIds.add(processLinkId)
+
+        val caseDocumentId = startCase()
+        val instance = buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId).single()
+        // The building block waits for a message, so its process is a running subprocess of the case's process
+        assertThat(runningProcessInstanceCount(instance.documentId)).isOne()
+
+        AuthorizationContext.runWithoutAuthorization(Callable {
+            documentService.deleteDocument(JsonSchemaDocumentId.existingId(caseDocumentId))
+        })
+
+        assertThat(buildingBlockInstanceRepository.findAllByCaseDocumentId(caseDocumentId)).isEmpty()
+        assertThat(findDocument(caseDocumentId)).isNull()
+        assertThat(findDocument(instance.documentId)).isNull()
+        assertThat(runningProcessInstanceCount(caseDocumentId)).isZero()
+        assertThat(runningProcessInstanceCount(instance.documentId)).isZero()
+    }
+
+    private fun startCase(): UUID = AuthorizationContext.runWithoutAuthorization(Callable {
+        processDocumentService.newDocumentAndStartProcess(
+            NewDocumentAndStartProcessRequest(
+                MAIN_PROCESS_KEY,
+                NewDocumentRequest(
+                    CASE_DOCUMENT_DEFINITION_NAME,
+                    CASE_DEFINITION_KEY,
+                    CASE_DEFINITION_VERSION,
+                    JsonNodeFactory.instance.objectNode()
+                )
+            )
+        ).resultingDocument()
+            .orElseThrow { IllegalStateException("Case document not created") }
+            .id()
+            .getId()
+    }).also { createdCaseDocumentIds.add(it) }
+
+    private fun mainProcessDefinitionId(): String =
+        repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey(MAIN_PROCESS_KEY)
+            .latestVersion()
+            .singleResult()
+            ?.id
+            ?: throw IllegalStateException("Process definition '$MAIN_PROCESS_KEY' not deployed")
+
+    private fun runningProcessInstanceCount(businessKey: UUID) =
+        runtimeService.createProcessInstanceQuery()
+            .processInstanceBusinessKey(businessKey.toString())
+            .count()
 
     private fun deployBuildingBlockDefinition(): BuildingBlockDefinitionId {
         val buildingBlockKey = "bezwaar-${UUID.randomUUID().toString().take(8)}"
@@ -166,4 +251,14 @@ class BuildingBlockDocumentPreDeleteListenerIT : BaseIntegrationTest() {
     private fun findDocument(documentId: UUID) = AuthorizationContext.runWithoutAuthorization(Callable {
         documentService.findBy(JsonSchemaDocumentId.existingId(documentId)).orElse(null)
     })
+
+    companion object {
+        private const val BUILDING_BLOCK_KEY = "bezwaar"
+        private const val BUILDING_BLOCK_VERSION = "1.0.0"
+        private const val CASE_DEFINITION_KEY = "bb-case"
+        private const val CASE_DEFINITION_VERSION = "1.0.0"
+        private const val CASE_DOCUMENT_DEFINITION_NAME = "bb-case"
+        private const val MAIN_PROCESS_KEY = "building-block-call-activity-main"
+        private const val CALL_ACTIVITY_ID = "callActivity"
+    }
 }

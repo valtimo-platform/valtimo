@@ -25,6 +25,7 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.event.DocumentPreDeleteEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.operaton.bpm.engine.RuntimeService
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,7 +35,8 @@ import org.springframework.transaction.annotation.Transactional
 @SkipComponentScan
 class BuildingBlockDocumentPreDeleteListener(
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
-    private val documentService: DocumentService
+    private val documentService: DocumentService,
+    private val runtimeService: RuntimeService
 ) {
 
     @EventListener(DocumentPreDeleteEvent::class)
@@ -47,6 +49,11 @@ class BuildingBlockDocumentPreDeleteListener(
         withLoggingContext(JsonSchemaDocument::class, event.caseDocumentId) {
             logger.info { "Deleting ${instances.size} building block instance(s) of case ${event.caseDocumentId}" }
 
+            // A building block runs as a called subprocess of the case, and a subprocess' history cannot be
+            // removed while the tree it belongs to is still running. End the case's processes first, so the
+            // clean-up of every building block document below has nothing running left to trip over.
+            deleteProcessInstances(event.caseDocumentId.toString())
+
             // Deleting a building block's own document removes the instance row with it, and gives the other
             // modules the same clean-up they get for a case: process instances, zaak, index entry, and so on.
             instances.forEach { instance ->
@@ -54,6 +61,25 @@ class BuildingBlockDocumentPreDeleteListener(
                     documentService.deleteDocument(JsonSchemaDocumentId.existingId(instance.documentId))
                 }
             }
+        }
+    }
+
+    private fun deleteProcessInstances(businessKey: String) {
+        runWithoutAuthorization {
+            runtimeService.createProcessInstanceQuery()
+                .processInstanceBusinessKey(businessKey)
+                .rootProcessInstances()
+                .list()
+                .forEach {
+                    runtimeService.deleteProcessInstance(
+                        it.processInstanceId,
+                        "Case deleted",
+                        true,
+                        true,
+                        true,
+                        false
+                    )
+                }
         }
     }
 
