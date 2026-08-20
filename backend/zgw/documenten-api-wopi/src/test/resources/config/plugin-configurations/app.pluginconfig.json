@@ -1,0 +1,11 @@
+[
+  {
+    "id": "400d9d91-a081-4d96-9e71-3a89b511062f",
+    "title": "Documenten API WOPI",
+    "pluginDefinitionKey": "documentenapiwopi",
+    "properties": {
+      "wopiClientDiscoveryUrl": "https://wopiclient.example.com/hosting/discovery",
+      "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
+    }
+  }
+]

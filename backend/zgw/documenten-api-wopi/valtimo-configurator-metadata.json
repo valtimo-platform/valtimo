@@ -1,0 +1,21 @@
+{
+  "name": "documentenapiwopi",
+  "version": 1,
+  "backend": [
+    {
+      "import": "com.ritense.valtimo:documenten-api-wopi"
+    }
+  ],
+  "frontend": {
+    "import": "@valtimo/plugin",
+    "codeAdditions": [
+      {
+        "spec": "documentenApiWopiPluginSpecification",
+        "module": "DocumentenApiWopiPluginModule"
+      }
+    ]
+  },
+  "editions": [
+    "gzac"
+  ]
+}

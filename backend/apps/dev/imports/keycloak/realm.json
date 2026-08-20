@@ -542,6 +542,16 @@
           "containerId": "iko",
           "attributes": {}
         }
+      ],
+      "cg-dmf": [
+        {
+          "id": "role-cg-dmf-dmf-admin",
+          "name": "dmf-admin",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "client-cg-dmf",
+          "attributes": {}
+        }
       ]
     }
   },
@@ -642,6 +652,9 @@
           "ROLE_ENDPOINT_BRPPERSONENENDPOINT",
           "ROLE_AGGREGATED_DATA_PROFILE_TEMP",
           "ROLE_AGGREGATED_DATA_PROFILE_BAGBEWONERS"
+        ],
+        "cg-dmf": [
+          "dmf-admin"
         ]
       },
       "notBefore": 0,
@@ -687,6 +700,9 @@
           "ROLE_ENDPOINT_BRPPERSONENENDPOINT",
           "ROLE_AGGREGATED_DATA_PROFILE_TEMP",
           "ROLE_AGGREGATED_DATA_PROFILE_BAGBEWONERS"
+        ],
+        "cg-dmf": [
+          "dmf-admin"
         ]
       },
       "notBefore": 0,
@@ -724,6 +740,9 @@
           "ROLE_ENDPOINT_BRPPERSONENENDPOINT",
           "ROLE_AGGREGATED_DATA_PROFILE_TEMP",
           "ROLE_AGGREGATED_DATA_PROFILE_BAGBEWONERS"
+        ],
+        "cg-dmf": [
+          "dmf-admin"
         ]
       },
       "notBefore": 0,
@@ -770,6 +789,9 @@
           "ROLE_ENDPOINT_BRPPERSONENENDPOINT",
           "ROLE_AGGREGATED_DATA_PROFILE_TEMP",
           "ROLE_AGGREGATED_DATA_PROFILE_BAGBEWONERS"
+        ],
+        "cg-dmf": [
+          "dmf-admin"
         ]
       },
       "notBefore": 0,
@@ -816,6 +838,9 @@
           "ROLE_ENDPOINT_BRPPERSONENENDPOINT",
           "ROLE_AGGREGATED_DATA_PROFILE_TEMP",
           "ROLE_AGGREGATED_DATA_PROFILE_BAGBEWONERS"
+        ],
+        "cg-dmf": [
+          "dmf-admin"
         ]
       },
       "notBefore": 0,
@@ -870,6 +895,9 @@
           "ROLE_ENDPOINT_BRPPERSONENENDPOINT",
           "ROLE_AGGREGATED_DATA_PROFILE_TEMP",
           "ROLE_AGGREGATED_DATA_PROFILE_BAGBEWONERS"
+        ],
+        "cg-dmf": [
+          "dmf-admin"
         ]
       },
       "notBefore": 0,
@@ -1299,15 +1327,13 @@
         "oauth2.device.authorization.grant.enabled": "false",
         "oidc.ciba.grant.enabled": "false"
       },
-      "authenticationFlowBindingOverrides": {
-      },
+      "authenticationFlowBindingOverrides": {},
       "baseUrl": "",
       "bearerOnly": false,
       "clientAuthenticatorType": "client-secret",
       "clientId": "iko",
       "consentRequired": false,
-      "defaultClientScopes": [
-      ],
+      "defaultClientScopes": [],
       "description": "",
       "directAccessGrantsEnabled": true,
       "enabled": true,
@@ -1317,8 +1343,7 @@
       "name": "IKO",
       "nodeReRegistrationTimeout": -1,
       "notBefore": 0,
-      "optionalClientScopes": [
-      ],
+      "optionalClientScopes": [],
       "protocol": "openid-connect",
       "protocolMappers": [
         {
@@ -1470,7 +1495,8 @@
         "web-origins",
         "roles",
         "profile",
-        "email"
+        "email",
+        "cg-dmf-roles-scope"
       ],
       "optionalClientScopes": [
         "address",
@@ -1620,6 +1646,24 @@
         "offline_access",
         "microprofile-jwt"
       ]
+    },
+    {
+      "id": "client-cg-dmf",
+      "clientId": "cg-dmf",
+      "name": "CG-DMF",
+      "description": "Resource server client for the CG-DMF (DRC) service; holds client roles only.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": false,
+      "redirectUris": [],
+      "webOrigins": [],
+      "attributes": {}
     }
   ],
   "clientScopes": [
@@ -2154,6 +2198,31 @@
           "protocolMapper": "oidc-allowed-origins-mapper",
           "consentRequired": false,
           "config": {}
+        }
+      ]
+    },
+    {
+      "id": "scope-cg-dmf-roles",
+      "name": "cg-dmf-roles-scope",
+      "description": "Expose CG-DMF client roles in tokens",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      },
+      "protocolMappers": [
+        {
+          "id": "mapper-cg-dmf-roles",
+          "name": "cg-dmf roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "claim.name": "resource_access.cg-dmf.roles",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
         }
       ]
     }

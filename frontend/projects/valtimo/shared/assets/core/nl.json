@@ -518,6 +518,7 @@
     "download": "Downloaden",
     "edit": "Bewerken",
     "preview": "Weergeven",
+    "editContent": "Inhoud bewerken",
     "application/octet-stream": "Onbekend",
     "application/json": "JSON",
     "application/msword": "DOC",

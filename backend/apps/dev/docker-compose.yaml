@@ -152,6 +152,8 @@ services:
             - SENDFILE_BACKEND=django_sendfile.backends.simple
             - NOTIFICATIONS_DISABLED=true
             - DISABLE_2FA=True
+        extra_hosts:
+            - "cg-dmf.localhost:host-gateway"
         ports:
             - "8001:8000"
         depends_on:
@@ -748,7 +750,99 @@ services:
         depends_on:
             - gzac-demo-backend
 
+    # CG-DMF (DRC implementation by Baseflow) - only needed to test the WOPI plugin.
+    # Enable with `docker compose --profile cg-dmf up`, or `./gradlew :backend:apps:<app>:bootRunWithDocker -Pcg-dmf`.
+    # Also point VALTIMO_DOCUMENTEN_API_URL at cg-dmf instead of OpenZaak - see .env.properties.
+
+    cg-dmf:
+        image: baseflow/cg-dmf-poc:1.1.1
+        restart: unless-stopped
+        profiles:
+            - cg-dmf
+        depends_on:
+            cg-dmf-database:
+                condition: service_healthy
+            gzac-keycloak:
+                condition: service_healthy
+        ports:
+            - "8083:8080"
+        extra_hosts:
+            - "keycloak.localhost:host-gateway"
+        environment:
+            - DB_URL=jdbc:postgresql://cg-dmf-database:5432/documenten
+            - DB_USER=cg-dmf
+            - DB_PASSWORD=cg-dmf
+            - BASE_URL=http://cg-dmf.localhost:8083
+            - OIDC_ISSUER=http://keycloak.localhost:8081/auth/realms/valtimo
+            - OIDC_RESOURCE_CLIENT_ID=cg-dmf
+            - CLIENT_CREDENTIALS=valtimo_client:e09b8bc5-5831-4618-ab28-41411304309d
+            - ENCRYPTION_SECRET_KEY=SbaUjrAaTZ9mOQk2fASXl8KcMlMP/HtKHQPGI7noFxM=
+            - ENCRYPTION_SALT=f4734b5a45e9f047d302d857e968dfd2
+            - BLOB_STORAGE_NAME1=cg-dmf-minio-local
+            - BLOB_STORAGE_TYPE1=S3
+            - BLOB_STORAGE_URL1=http://cg-dmf-minio:9000
+            - BLOB_STORAGE_ACCESS_KEY1=minioadmin
+            - BLOB_STORAGE_SECRET_KEY1=minioadmin
+            - BLOB_STORAGE_BUCKET1=documenten
+            - OPENZAAK_ENDPOINT=http://openzaak:8000
+            - OPENZAAK_CLIENT_ID=cg-dmf
+            - OPENZAAK_CLIENT_SECRET=e19ea7fbe4a0b2acf0451abe44344967
+            - OPENZAAK_VALIDATION_ENABLED=true
+            - WOPI_ENABLED=true
+            - WOPI_SLAT_SECRET=supersecretsecret
+
+    cg-dmf-database:
+        image: postgres:16
+        restart: unless-stopped
+        profiles:
+            - cg-dmf
+        ports:
+            - "54340:5432"
+        environment:
+            POSTGRES_DB: documenten
+            POSTGRES_USER: cg-dmf
+            POSTGRES_PASSWORD: cg-dmf
+        volumes:
+            - cg-dmf-database-data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U documenten"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    cg-dmf-minio:
+        image: minio/minio:latest
+        # restart: always
+        profiles:
+            - cg-dmf
+        environment:
+            # MinIO's root user/password double as both the S3 API and console credentials -
+            # must match cg-dmf's BLOB_STORAGE_ACCESS_KEY1/BLOB_STORAGE_SECRET_KEY1 above.
+            - MINIO_ROOT_USER=minioadmin
+            - MINIO_ROOT_PASSWORD=minioadmin
+        command: server --address ":9000" --console-address ":9001" /data
+        volumes:
+            - cg-dmf-minio-data:/data
+
+    # Collabora Online (CODE) — WOPI client used to view/edit cg-dmf documents in the browser.
+    collabora:
+        image: collabora/code:latest
+        container_name: gzac-docker-compose-collabora
+        profiles:
+            - cg-dmf
+        cap_add:
+            - MKNOD
+        ports:
+            - "9980:9980"
+        extra_hosts:
+            - "cg-dmf.localhost:host-gateway"
+        environment:
+            - aliasgroup1=http://cg-dmf.localhost:8083
+            - extra_params=--o:ssl.enable=false --o:ssl.termination=false
+
 volumes:
     gzac-database-data:
     gzac-database-data-mysql:
     gzac-opensearch-data:
+    cg-dmf-database-data:
+    cg-dmf-minio-data:

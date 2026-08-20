@@ -134,15 +134,17 @@
   >
     <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
     @for (action of data.actions; track action.label) {
-      <v-overflow-menu-option
-        [disabled]="action | actionItemDisabled: data.item | async"
-        [type]="action.type"
-        (selected)="action.callback(data.item)"
-      >
-        <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
+      @if (!(action | actionItemHidden: data.item | async)) {
+        <v-overflow-menu-option
+          [disabled]="action | actionItemDisabled: data.item | async"
+          [type]="action.type"
+          (selected)="action.callback(data.item)"
+        >
+          <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
 
-        {{ action.label | translate }}
-      </v-overflow-menu-option>
+          {{ action.label | translate }}
+        </v-overflow-menu-option>
+      }
     }
   </v-overflow-menu>
 </ng-template>

@@ -515,6 +515,7 @@
     "download": "Download",
     "edit": "Edit",
     "preview": "Preview",
+    "editContent": "Edit content",
     "application/octet-stream": "Unknown",
     "application/json": "JSON",
     "application/msword": "DOC",

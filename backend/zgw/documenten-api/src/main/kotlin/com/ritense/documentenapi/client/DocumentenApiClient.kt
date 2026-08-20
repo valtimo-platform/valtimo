@@ -420,10 +420,16 @@ class DocumentenApiClient(
         outboxService.send { DocumentDeleted(url.toASCIIString()) }
     }
 
-    fun modifyInformatieObject(
+    fun requireModifyPermission(
+        authentication: DocumentenApiAuthentication,
+        baseUrl: URI,
+        objectId: String,
+        caseDocumentId: UUID? = null
+    ): DocumentInformatieObject = requireModifyPermission(authentication, toObjectUrl(baseUrl, objectId), caseDocumentId)
+
+    fun requireModifyPermission(
         authentication: DocumentenApiAuthentication,
         documentUrl: URI,
-        patchDocumentRequest: PatchDocumentRequest,
         caseDocumentId: UUID? = null
     ): DocumentInformatieObject {
         val original = restClient(authentication)
@@ -445,6 +451,17 @@ class DocumentenApiClient(
                 )
             )
         )
+
+        return original
+    }
+
+    fun modifyInformatieObject(
+        authentication: DocumentenApiAuthentication,
+        documentUrl: URI,
+        patchDocumentRequest: PatchDocumentRequest,
+        caseDocumentId: UUID? = null
+    ): DocumentInformatieObject {
+        requireModifyPermission(authentication, documentUrl, caseDocumentId)
 
         val result = restClient(authentication)
             .patch()

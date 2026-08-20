@@ -44,7 +44,7 @@
             "url": "${VALTIMO_DOCUMENTEN_API_URL}",
             "bronorganisatie": "051845623",
             "authenticationPluginConfiguration": "b609a0a3-886e-4b3d-ae0d-c01effb311ee",
-            "apiVersion": "1.4.2-maykin-1.13.0"
+            "apiVersion": "1.5.0"
         }
     },
     {
@@ -53,6 +53,15 @@
         "pluginDefinitionKey": "documentenapipreview",
         "properties": {
             "pdfConversionUrl": "${VALTIMO_PDF_CONVERSION_API_URL}",
+            "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
+        }
+    },
+    {
+        "id": "400d9d91-a081-4d96-9e71-3a89b511062f",
+        "title": "Documenten API WOPI",
+        "pluginDefinitionKey": "documentenapiwopi",
+        "properties": {
+            "wopiClientDiscoveryUrl": "${VALTIMO_WOPI_CLIENT_DISCOVERY_URL}",
             "documentenApiConfigurationId": "5474fe57-532a-4050-8d89-32e62ca3e895"
         }
     },
