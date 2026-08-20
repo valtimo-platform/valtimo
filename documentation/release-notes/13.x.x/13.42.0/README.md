@@ -44,12 +44,6 @@
   that saves submission data to a document or process variable. These steps stopped working after import because part
   of the expression was cut off.
 
-* **Document schemas that refer to themselves no longer crash the application**
-
-  A case document schema in which a property refers back to the schema itself could make the server run out of stack
-  space while reading it, for example when listing the values that can be used in a mapping. Such schemas are now
-  read up to a maximum nesting depth.
-
 * **Object permissions are checked before the object is retrieved**
 
   A user without permission to view objects is now refused before anything is requested from the Objecten API.

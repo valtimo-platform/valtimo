@@ -18,4 +18,8 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Document schemas that refer to themselves no longer crash the application**
+
+  A case document schema in which a property refers back to the schema itself could make the server run out of stack
+  space while reading it, for example when listing the values that can be used in a mapping. Such schemas are now
+  read up to a maximum nesting depth.
