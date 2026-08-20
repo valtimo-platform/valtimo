@@ -16,6 +16,7 @@
 
 package com.ritense.document.domain
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.everit.json.schema.ArraySchema
 import org.everit.json.schema.CombinedSchema
 import org.everit.json.schema.JSONPointer
@@ -26,34 +27,44 @@ import org.everit.json.schema.ValidationException
 import org.everit.json.schema.regexp.Regexp
 
 /** This method is a copy from org.everit.json.schema.Schema.definesProperty(.) but returns true when the schema allows additionalProperties */
-fun Schema.allowsProperty(field: String): Boolean {
+fun Schema.allowsProperty(field: String): Boolean = allowsProperty(field, 0)
+
+/**
+ * @param depth how many schema levels have been descended into already, guarded by [MAX_SCHEMA_DEPTH] so a
+ * recursive schema does not cause a `StackOverflowError`.
+ */
+private fun Schema.allowsProperty(field: String, depth: Int): Boolean {
+    if (depth > MAX_SCHEMA_DEPTH) {
+        logger.warn { "Stopped checking whether property '$field' is allowed. The schema is nested deeper than $MAX_SCHEMA_DEPTH levels." }
+        return false
+    }
     return when (this) {
-        is ObjectSchema -> allowsProperty(field)
-        is ArraySchema -> allowsProperty(field)
-        is CombinedSchema -> allowsProperty(field)
-        is ReferenceSchema -> allowsProperty(field)
+        is ObjectSchema -> allowsProperty(field, depth)
+        is ArraySchema -> allowsProperty(field, depth)
+        is CombinedSchema -> allowsProperty(field, depth)
+        is ReferenceSchema -> allowsProperty(field, depth)
         else -> false
     }
 }
 
 /** Copied from ObjectSchema.definesProperty(.) but returns true when the schema allows additionalProperties */
-private fun ObjectSchema.allowsProperty(field: String): Boolean {
+private fun ObjectSchema.allowsProperty(field: String, depth: Int): Boolean {
     val headAndTail: Array<String?> = headAndTailOfJsonPointerFragment(field)
     val nextToken = headAndTail[0]!!
     val remaining = headAndTail[1]
     val field2 = headAndTail[2]!!
-    return field2.isNotEmpty() && (allowsSchemaProperty(nextToken, remaining)
-            || allowsPatternProperty(nextToken, remaining)
-            || allowsSchemaDependencyProperty(field2)
+    return field2.isNotEmpty() && (allowsSchemaProperty(nextToken, remaining, depth)
+            || allowsPatternProperty(nextToken, remaining, depth)
+            || allowsSchemaDependencyProperty(field2, depth)
             || permitsAdditionalProperties()) // <- This is the only line that is different from all definesProperty(.) implementations
 }
 
 /** Copied from ObjectSchema.definesSchemaProperty(.) but returns true when the schema allows additionalProperties */
-private fun ObjectSchema.allowsSchemaProperty(current: String, remaining: String?): Boolean {
+private fun ObjectSchema.allowsSchemaProperty(current: String, remaining: String?, depth: Int): Boolean {
     val currentUnescaped = jsonPointerUnescape(current)
     return if (propertySchemas.containsKey(currentUnescaped)) {
         if (remaining != null) {
-            propertySchemas[currentUnescaped]!!.allowsProperty(remaining)
+            propertySchemas[currentUnescaped]!!.allowsProperty(remaining, depth + 1)
         } else {
             true
         }
@@ -61,11 +72,11 @@ private fun ObjectSchema.allowsSchemaProperty(current: String, remaining: String
 }
 
 /** Copied from ObjectSchema.definesPatternProperty(.) but returns true when the schema allows additionalProperties */
-private fun ObjectSchema.allowsPatternProperty(current: String, remaining: String?): Boolean {
+private fun ObjectSchema.allowsPatternProperty(current: String, remaining: String?, depth: Int): Boolean {
     val patternProperties: Map<Regexp, Schema> = getPrivateField("patternProperties")
     patternProperties.entries.forEach { (pattern, value) ->
         if (!pattern.patternMatchingFailure(current).isPresent
-            && (remaining == null || value.allowsProperty(remaining))
+            && (remaining == null || value.allowsProperty(remaining, depth + 1))
         ) {
             return true
         }
@@ -74,12 +85,12 @@ private fun ObjectSchema.allowsPatternProperty(current: String, remaining: Strin
 }
 
 /** Copied from ObjectSchema.definesSchemaDependencyProperty(.) but returns true when the schema allows additionalProperties */
-private fun ObjectSchema.allowsSchemaDependencyProperty(field: String): Boolean {
+private fun ObjectSchema.allowsSchemaDependencyProperty(field: String, depth: Int): Boolean {
     if (schemaDependencies.containsKey(field)) {
         return true
     }
     for (schema in schemaDependencies.values) {
-        if (schema.allowsProperty(field)) {
+        if (schema.allowsProperty(field, depth + 1)) {
             return true
         }
     }
@@ -87,15 +98,15 @@ private fun ObjectSchema.allowsSchemaDependencyProperty(field: String): Boolean 
 }
 
 /** Copied from ArraySchema.definesProperty(.) but returns true when the schema allows additionalProperties */
-private fun ArraySchema.allowsProperty(field: String): Boolean {
+private fun ArraySchema.allowsProperty(field: String, depth: Int): Boolean {
     val headAndTail: Array<String?> = headAndTailOfJsonPointerFragment(field)
     val nextToken = headAndTail[0]!!
     val remaining = headAndTail[1]
     val hasRemaining = remaining != null
     return try {
-        tryPropertyDefinitionByNumericIndex(nextToken, remaining, hasRemaining)
+        tryPropertyDefinitionByNumericIndex(nextToken, remaining, hasRemaining, depth)
     } catch (e: NumberFormatException) {
-        tryPropertyDefinitionByMetaIndex(nextToken, remaining, hasRemaining)
+        tryPropertyDefinitionByMetaIndex(nextToken, remaining, hasRemaining, depth)
     }
 }
 
@@ -104,7 +115,8 @@ private fun ArraySchema.allowsProperty(field: String): Boolean {
 private fun ArraySchema.tryPropertyDefinitionByMetaIndex(
     nextToken: String,
     remaining: String?,
-    hasRemaining: Boolean
+    hasRemaining: Boolean,
+    depth: Int
 ): Boolean {
     val isAll = "all" == nextToken
     val isAny = "any" == nextToken
@@ -113,14 +125,14 @@ private fun ArraySchema.tryPropertyDefinitionByMetaIndex(
     }
     if (isAll) {
         return if (allItemSchema != null) {
-            allItemSchema.allowsProperty(remaining!!)
+            allItemSchema.allowsProperty(remaining!!, depth + 1)
         } else {
             val allItemSchemasDefine: Boolean = itemSchemas.stream()
-                .map { schema -> schema.allowsProperty(remaining!!) }
+                .map { schema -> schema.allowsProperty(remaining!!, depth + 1) }
                 .reduce(true) { a, b -> java.lang.Boolean.logicalAnd(a, b) }
             if (allItemSchemasDefine) {
                 return if (schemaOfAdditionalItems != null) {
-                    schemaOfAdditionalItems.allowsProperty(remaining!!)
+                    schemaOfAdditionalItems.allowsProperty(remaining!!, depth + 1)
                 } else {
                     true
                 }
@@ -129,12 +141,13 @@ private fun ArraySchema.tryPropertyDefinitionByMetaIndex(
         }
     } else if (isAny) {
         return if (allItemSchema != null) {
-            allItemSchema.allowsProperty(remaining!!)
+            allItemSchema.allowsProperty(remaining!!, depth + 1)
         } else {
             val anyItemSchemasDefine: Boolean = itemSchemas.stream()
-                .map { schema -> schema.allowsProperty(remaining!!) }
+                .map { schema -> schema.allowsProperty(remaining!!, depth + 1) }
                 .reduce(false) { a, b -> java.lang.Boolean.logicalOr(a, b) }
-            anyItemSchemasDefine || schemaOfAdditionalItems == null || schemaOfAdditionalItems.allowsProperty(remaining!!)
+            anyItemSchemasDefine || schemaOfAdditionalItems == null ||
+                    schemaOfAdditionalItems.allowsProperty(remaining!!, depth + 1)
         }
     }
     return false
@@ -144,7 +157,8 @@ private fun ArraySchema.tryPropertyDefinitionByMetaIndex(
 private fun ArraySchema.tryPropertyDefinitionByNumericIndex(
     nextToken: String,
     remaining: String?,
-    hasRemaining: Boolean
+    hasRemaining: Boolean,
+    depth: Int
 ): Boolean {
     val index = nextToken.toInt()
     if (index < 0) {
@@ -154,14 +168,14 @@ private fun ArraySchema.tryPropertyDefinitionByNumericIndex(
         return false
     }
     return if (allItemSchema != null && hasRemaining) {
-        allItemSchema.allowsProperty(remaining!!)
+        allItemSchema.allowsProperty(remaining!!, depth + 1)
     } else {
         if (hasRemaining) {
             if (index < itemSchemas.size) {
-                return itemSchemas[index].allowsProperty(remaining!!)
+                return itemSchemas[index].allowsProperty(remaining!!, depth + 1)
             }
             if (schemaOfAdditionalItems != null) {
-                return schemaOfAdditionalItems.allowsProperty(remaining!!)
+                return schemaOfAdditionalItems.allowsProperty(remaining!!, depth + 1)
             }
         }
         getPrivateField("additionalItems")
@@ -169,10 +183,10 @@ private fun ArraySchema.tryPropertyDefinitionByNumericIndex(
 }
 
 /** Copied from CombinedSchema.definesProperty(.) but returns true when the schema allows additionalProperties */
-private fun CombinedSchema.allowsProperty(field: String): Boolean {
+private fun CombinedSchema.allowsProperty(field: String, depth: Int): Boolean {
     val matching: MutableList<Schema> = ArrayList()
     for (subschema in subschemas) {
-        if (subschema.allowsProperty(field)) {
+        if (subschema.allowsProperty(field, depth + 1)) {
             matching.add(subschema)
         }
     }
@@ -185,9 +199,9 @@ private fun CombinedSchema.allowsProperty(field: String): Boolean {
 }
 
 /** Copied from ReferenceSchema.definesProperty(.) but returns true when the schema allows additionalProperties */
-private fun ReferenceSchema.allowsProperty(field: String): Boolean {
+private fun ReferenceSchema.allowsProperty(field: String, depth: Int): Boolean {
     checkNotNull(referredSchema) { "referredSchema must be injected before validation" }
-    return referredSchema.allowsProperty(field)
+    return referredSchema.allowsProperty(field, depth + 1)
 }
 
 private fun Schema.headAndTailOfJsonPointerFragment(field: String): Array<String?> {
@@ -208,3 +222,4 @@ private fun jsonPointerUnescape(token: String): String {
     return method.invoke(null, token) as String
 }
 
+private val logger = KotlinLogging.logger {}
