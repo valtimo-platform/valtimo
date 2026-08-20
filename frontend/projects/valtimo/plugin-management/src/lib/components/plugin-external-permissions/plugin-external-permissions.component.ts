@@ -101,6 +101,20 @@ export class PluginExternalPermissionsComponent implements OnChanges {
   private readonly _externalPluginService = inject(ExternalPluginService);
   private readonly _translateService = inject(TranslateService);
 
+  /**
+   * True when the manifest requests nothing — no review or acknowledgement is needed then.
+   * Derived egress is deliberately not part of this: it is not a grant (the admin typing the URL
+   * is the grant), so it is only ever displayed, never accepted.
+   */
+  public get isEmpty(): boolean {
+    return (
+      this.endpoints.length === 0 &&
+      this.eventSubscriptions.length === 0 &&
+      this.capabilities.length === 0 &&
+      this.egress.length === 0
+    );
+  }
+
   public ngOnChanges(changes: SimpleChanges): void {
     if (
       changes['endpoints'] ||

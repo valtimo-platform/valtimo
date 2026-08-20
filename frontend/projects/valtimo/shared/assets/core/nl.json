@@ -1018,8 +1018,8 @@
         "uniqueKeyError": "De key voor deze tab moet uniek zijn.",
         "invalidKeyError": "De key voor deze tab mag alleen letters, nummers en dashes bevatten.",
         "widgetsComponent": "Widgets component",
-        "externalPlugin": "Plugin",
-        "externalPluginDisabled": "Er zijn geen geactiveerde plugins met een dossiertabblad, of ze zijn allemaal al toegevoegd.",
+        "externalPlugin": "Plugins & Apps",
+        "externalPluginDisabled": "Er zijn geen geactiveerde plugins of apps met een dossiertabblad, of ze zijn allemaal al toegevoegd.",
         "visibleTitle": "Takenlijst zichtbaar op tabblad",
         "visible": "Zichtbaar",
         "invisible": "Niet zichtbaar"
@@ -1034,13 +1034,13 @@
         "formio": "Nieuw tabblad aanmaken met FormIO component",
         "standard": "Nieuw tabblad aanmaken met standaard inhoud",
         "widgets": "Nieuw tabblad met widgets aanmaken",
-        "external_plugin": "Nieuw tabblad aanmaken met een plugin"
+        "external_plugin": "Nieuw tabblad aanmaken met een plugin of app"
       },
       "contentLabels": {
         "custom": "Kies aangepaste component",
         "formio": "Kies FormIO component",
         "standard": "Kies standaard inhoud",
-        "external_plugin_config": "Kies pluginconfiguratie",
+        "external_plugin_config": "Kies plugin- of app-configuratie",
         "external_plugin_bundle": "Kies tabblad"
       },
       "editModal": {"title": "Tabblad bewerken {{name}}", "updateTab": "Tabblad updaten"},
@@ -1049,7 +1049,12 @@
         "description": "Weet u zeker dat u dit tabblad wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
       }
     },
-    "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
+    "tabType": {
+      "custom": "Inhoud",
+      "formio": "FormIO",
+      "standard": "Standaard",
+      "external_plugin": "Plugins & Apps"
+    },
     "actions": {
       "columns": {
         "name": "Naam",
@@ -1227,7 +1232,9 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit dossiertype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen status aangemaakt voor dit dossiertype."
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -1343,8 +1350,8 @@
         "description": "Toon een geüploade afbeelding"
       },
       "external-plugin": {
-        "title": "Externe plugin",
-        "description": "Toon een kaart uit de case-widget-bundle van een externe plugin"
+        "title": "Plugins & Apps",
+        "description": "Toon een kaart uit de case-widget-bundle van een plugin of app"
       },
       "text": {
         "title": "Tekst",
@@ -1403,12 +1410,12 @@
       "hideWhenEmpty": "Verbergen indien leeg",
       "column": "Kolom {{number}}",
       "externalPlugin": {
-        "configLabel": "Pluginconfiguratie",
-        "configPlaceholder": "Kies een pluginconfiguratie",
+        "configLabel": "Plugin- of app-configuratie",
+        "configPlaceholder": "Kies een plugin- of app-configuratie",
         "bundleLabel": "Widget",
         "bundlePlaceholder": "Kies een widget",
-        "unavailableTitle": "Externe plugins niet beschikbaar",
-        "unavailableMessage": "Er is geen externe plugin met een case-widget-bundle beschikbaar."
+        "unavailableTitle": "Plugins & Apps niet beschikbaar",
+        "unavailableMessage": "Er is geen plugin of app met een case-widget-bundle beschikbaar."
       },
       "fields": {
         "add": "Veld toevoegen",
@@ -2275,6 +2282,36 @@
     "add": "Plugin configureren",
     "addHost": "Plugin-host toevoegen",
     "addApp": "App toevoegen",
+    "appAdd": {
+      "steps": {
+        "connection": "Verbinden",
+        "configuration": "Gegevens invullen",
+        "permissions": "Rechten"
+      },
+      "connect": "Verbinden",
+      "connecting": "Verbinding maken met de app…",
+      "connectedTitle": "App verbonden",
+      "connectedDescription": "De app is succesvol verbonden. Ga verder om de app te configureren.",
+      "connectFailed": "Er kon geen verbinding met de app worden gemaakt. Controleer de verbindingsgegevens en probeer het opnieuw.",
+      "conflictTitle": "App is al geregistreerd",
+      "conflictDescription": "De integratie die deze app aanbiedt ({{pluginId}}) is al geregistreerd door '{{hostName}}'. Verbind een app maar één keer, of verwijder eerst de bestaande registratie.",
+      "conflictUnknownHost": "een andere registratie",
+      "discoveryTimeoutTitle": "App toegevoegd, maar nog niet gereed",
+      "discoveryTimeoutDescription": "De app is toegevoegd, maar is nog niet gereed om te configureren. Mogelijk is de app onbereikbaar. Probeer het opnieuw, of sluit dit venster en configureer de app later vanuit de lijst.",
+      "retry": "Opnieuw proberen",
+      "preparing": "Appgegevens ophalen…",
+      "continue": "Doorgaan",
+      "complete": "Configuratie opslaan",
+      "resumeLoadFailed": "De app kon niet worden geladen. Mogelijk is deze verwijderd.",
+      "refreshModal": {
+        "title": "Vernieuwen vereist",
+        "description": "Voordat deze app geconfigureerd kan worden, moet de pagina worden vernieuwd zodat het beveiligingsbeleid kan worden bijgewerkt. Na het vernieuwen ga je automatisch verder met de configuratiestap.",
+        "confirm": "Vernieuwen en doorgaan",
+        "cancel": "Later"
+      }
+    },
+    "editConfiguration": "Configuratie bewerken",
+    "notConfigured": "Niet geconfigureerd",
     "uploadPlugin": "Plugin uploaden",
     "selectHost": "Selecteer een plugin-host",
     "upload": {
@@ -2323,14 +2360,18 @@
       "eventQueueMode": "Event queue-modus",
       "eventQueueTtlMs": "Event queue inactiviteits-TTL (ms)",
       "frontendOrigins": "Toegestane frontend-origins",
-      "host": "Host"
+      "host": "Host",
+      "configuration": "Configuratie"
     },
     "eventQueueMode": {
       "live": "Live (events gaan verloren als de host uitstaat)",
-      "durable": "Duurzaam (bewaart events gedurende de TTL als de host uitstaat)"
+      "durable": "Duurzaam (bewaart events gedurende de TTL als de host uitstaat)",
+      "liveApp": "Live (events gaan verloren als de app uitstaat)",
+      "durableApp": "Duurzaam (bewaart events gedurende de TTL als de app uitstaat)"
     },
     "hints": {
       "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
+      "eventQueueTtlMsApp": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden app. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
       "frontendOrigins": "Browser-origins (scheme://host[:poort], zonder pad) die pluginschermen van deze host mogen tonen. Voeg elke Valtimo-frontend-URL toe waarvandaan gebruikers plugins openen, inclusief een eventuele proxy-alias.",
       "noFrontendOrigins": "Zonder origins kan geen enkele pagina de pluginschermen van deze host tonen."
     },
@@ -3536,7 +3577,7 @@
         "main": "Hoofdmenu-items",
         "admin": "Beheerpagina's",
         "development": "Ontwikkelpagina's",
-        "pluginPages": "Pluginpagina's"
+        "pluginPages": "Plugins & Apps"
       },
       "generic": {
         "group": "Sectie",

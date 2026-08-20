@@ -57,9 +57,19 @@ export class ExternalPluginService {
    * occurred" toast: the backend answers a fixable mistake (a bind address as base URL, a broker
    * over plaintext HTTP) with a 400 whose `detail` explains it, and the add-host modal renders that
    * next to the fields the admin filled in. A duplicate red toast would only compete with it.
+   *
+   * With `handleConflictInline` the expected 409 (`code: APP_PLUGIN_ALREADY_REGISTERED` — the
+   * app's plugin is already registered under another host) is additionally kept off the toast so
+   * the app add stepper can render the conflict inline.
    */
-  public createHost(request: ExternalPluginHostCreateRequest): Observable<ExternalPluginHost> {
-    const headers = new HttpHeaders().set(InterceptorSkip, '400');
+  public createHost(
+    request: ExternalPluginHostCreateRequest,
+    handleConflictInline = false
+  ): Observable<ExternalPluginHost> {
+    const headers = new HttpHeaders().set(
+      InterceptorSkip,
+      handleConflictInline ? '400,409' : '400'
+    );
     return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request, {headers});
   }
 
@@ -157,10 +167,9 @@ export class ExternalPluginService {
       .set('size', params.size.toString());
     if (params.level) httpParams = httpParams.set('level', params.level);
     if (params.source) httpParams = httpParams.set('source', params.source);
-    return this._http.get<PluginLogPage>(
-      `${this._baseUrl}/configuration/${configurationId}/logs`,
-      {params: httpParams}
-    );
+    return this._http.get<PluginLogPage>(`${this._baseUrl}/configuration/${configurationId}/logs`, {
+      params: httpParams,
+    });
   }
 
   /**

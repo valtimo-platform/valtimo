@@ -83,22 +83,28 @@ class ExternalPluginDiscoveryService(
      * app so its single plugin is discovered and available to configure immediately instead of on
      * the next polling tick. Best-effort: any failure is swallowed (an unreachable host is simply
      * marked as such by [pollHost]) so registration never fails because discovery could not reach
-     * the host yet.
+     * the host yet. The returned outcome (null when the host is unknown or discovery errored) lets
+     * the registration flow detect a host whose plugins are all claimed by other hosts.
      */
-    fun discoverHost(hostId: UUID) {
-        val host = hostRepository.findById(hostId).orElse(null) ?: return
-        try {
+    fun discoverHost(hostId: UUID): HostDiscoveryResult? {
+        val host = hostRepository.findById(hostId).orElse(null) ?: return null
+        return try {
             pollHost(host)
         } catch (e: Exception) {
             logger.warn(e) { "External plugin discovery failed for host ${host.id} (${host.baseUrl})" }
+            null
         }
     }
 
-    private fun pollHost(host: ExternalPluginHost) {
+    private fun pollHost(host: ExternalPluginHost): HostDiscoveryResult {
         // HTTP health probe outside any transaction.
         if (!hostClient.health(host.baseUrl)) {
             transactionTemplate.executeWithoutResult { recordFailedPoll(host.id, "health probe failed") }
-            return
+            return HostDiscoveryResult(
+                reachable = false,
+                registeredDefinitionIds = emptySet(),
+                conflicts = emptyList(),
+            )
         }
         try {
             val adminToken = hostService.decryptedSecret(host)
@@ -117,13 +123,16 @@ class ExternalPluginDiscoveryService(
             val plugins = hostClient.listPlugins(host.baseUrl, adminToken)
             val hostConfigurations = hostClient.listConfigurations(host.baseUrl, adminToken)
 
-            // Short transaction: upsert discovered definitions and mark missing ones.
+            // Short transaction: upsert discovered definitions and mark missing ones. Both
+            // collections are declared outside the lambda: they are the poll's result, read again
+            // after the transaction commits.
+            val seenDefinitionIds = mutableSetOf<UUID>()
+            val conflicts = mutableListOf<PluginRegistrationConflict>()
             transactionTemplate.executeWithoutResult {
-                val seenDefinitionIds = mutableSetOf<UUID>()
                 plugins.forEach { manifest ->
                     val pluginId = manifest.get("pluginId")?.asText()
                     if (pluginId.isNullOrBlank()) return@forEach
-                    val defId = upsertDefinition(host, pluginId, manifest)
+                    val defId = upsertDefinition(host, pluginId, manifest, conflicts)
                     if (defId != null) seenDefinitionIds += defId
                 }
                 markMissingDefinitions(host, seenDefinitionIds)
@@ -136,6 +145,12 @@ class ExternalPluginDiscoveryService(
             // CONNECTED is recorded only now: it attests "state fetched and synced with valid
             // credentials this cycle", not merely "the host answers /health".
             transactionTemplate.executeWithoutResult { recordSuccessfulPoll(host.id) }
+
+            return HostDiscoveryResult(
+                reachable = true,
+                registeredDefinitionIds = seenDefinitionIds,
+                conflicts = conflicts,
+            )
         } catch (e: Exception) {
             // A host that answers /health but fails the authenticated state fetch is just as
             // unusable as one that does not answer at all — count it toward the same threshold
@@ -271,7 +286,12 @@ class ExternalPluginDiscoveryService(
         }
     }
 
-    private fun upsertDefinition(host: ExternalPluginHost, pluginId: String, pluginEntry: JsonNode): UUID? {
+    private fun upsertDefinition(
+        host: ExternalPluginHost,
+        pluginId: String,
+        pluginEntry: JsonNode,
+        conflicts: MutableList<PluginRegistrationConflict>,
+    ): UUID? {
         // Plugin-host returns: {pluginId, version, contentHash, manifest: {pluginId, version,
         // translations, ...}}. The manifest carries no top-level name/description — those live
         // per-locale under `translations` (see localizedManifestValue).
@@ -284,6 +304,7 @@ class ExternalPluginDiscoveryService(
             logger.warn {
                 "External plugin '$pluginId@$version' already registered on host ${existing.hostId}; ignoring discovery from host ${host.id}"
             }
+            conflicts += PluginRegistrationConflict(pluginId, version, existing.hostId)
             return null
         }
 
@@ -428,3 +449,21 @@ class ExternalPluginDiscoveryService(
         private val logger = KotlinLogging.logger {}
     }
 }
+
+/**
+ * Outcome of a single on-demand host discovery. `registeredDefinitionIds` are the definitions this
+ * host now serves; `conflicts` are the plugins the host offered but that are already registered
+ * under a different host (and were therefore ignored). A reachable host with only conflicts can
+ * never become functional — the registration flow uses this to reject connecting such an app.
+ */
+data class HostDiscoveryResult(
+    val reachable: Boolean,
+    val registeredDefinitionIds: Set<UUID>,
+    val conflicts: List<PluginRegistrationConflict>,
+)
+
+data class PluginRegistrationConflict(
+    val pluginId: String,
+    val version: String,
+    val existingHostId: UUID,
+)

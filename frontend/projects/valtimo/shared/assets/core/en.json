@@ -1011,8 +1011,8 @@
         "uniqueKeyError": "The key for this tab must be unique.",
         "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
         "widgetsComponent": "Widgets component",
-        "externalPlugin": "Plugin",
-        "externalPluginDisabled": "There are no activated plugins with a case tab, or they have all been added already.",
+        "externalPlugin": "Plugins & Apps",
+        "externalPluginDisabled": "There are no activated plugins or apps with a case tab, or they have all been added already.",
         "visibleTitle": "Task list visible on tab",
         "visible": "Visible",
         "invisible": "Not visible"
@@ -1027,13 +1027,13 @@
         "formio": "Create new tab with FormIO component",
         "standard": "Create new tab with standard content",
         "widgets": "Create a new tab with widgets",
-        "external_plugin": "Create a new tab with a plugin"
+        "external_plugin": "Create a new tab with a plugin or app"
       },
       "contentLabels": {
         "custom": "Choose custom component",
         "formio": "Choose FormIO component",
         "standard": "Choose standard content",
-        "external_plugin_config": "Choose plugin configuration",
+        "external_plugin_config": "Choose plugin or app configuration",
         "external_plugin_bundle": "Choose tab"
       },
       "editModal": {"title": "Edit tab {{name}}", "updateTab": "Update tab"},
@@ -1042,7 +1042,12 @@
         "description": "Are you sure you want to delete this tab? This action cannot be undone."
       }
     },
-    "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
+    "tabType": {
+      "custom": "Custom",
+      "formio": "FormIO",
+      "standard": "Standard",
+      "external_plugin": "Plugins & Apps"
+    },
     "actions": {
       "columns": {
         "name": "Name",
@@ -1324,8 +1329,8 @@
         "description": "Show an uploaded image"
       },
       "external-plugin": {
-        "title": "External plugin",
-        "description": "Render a card from an external plugin's case-widget bundle"
+        "title": "Plugins & Apps",
+        "description": "Render a card from a plugin or app's case-widget bundle"
       },
       "text": {
         "title": "Text",
@@ -1381,12 +1386,12 @@
       "hideWhenEmpty": "Hide when empty",
       "column": "Column {{number}}",
       "externalPlugin": {
-        "configLabel": "Plugin configuration",
-        "configPlaceholder": "Choose a plugin configuration",
+        "configLabel": "Plugin or app configuration",
+        "configPlaceholder": "Choose a plugin or app configuration",
         "bundleLabel": "Widget",
         "bundlePlaceholder": "Choose a widget",
-        "unavailableTitle": "External plugins unavailable",
-        "unavailableMessage": "No external plugin exposing a case-widget bundle is available."
+        "unavailableTitle": "Plugins & Apps unavailable",
+        "unavailableMessage": "No plugin or app exposing a case-widget bundle is available."
       },
       "fields": {
         "add": "Add field",
@@ -2248,6 +2253,36 @@
     "add": "Configure plugin",
     "addHost": "Add plugin host",
     "addApp": "Add app",
+    "appAdd": {
+      "steps": {
+        "connection": "Connect",
+        "configuration": "Enter data",
+        "permissions": "Permissions"
+      },
+      "connect": "Connect",
+      "connecting": "Connecting to the app…",
+      "connectedTitle": "App connected",
+      "connectedDescription": "The app was connected successfully. Continue to configure it.",
+      "connectFailed": "The app could not be connected. Check the connection details and try again.",
+      "conflictTitle": "App already registered",
+      "conflictDescription": "The integration this app provides ({{pluginId}}) is already registered by '{{hostName}}'. Connect an app only once, or remove the existing registration first.",
+      "conflictUnknownHost": "another registration",
+      "discoveryTimeoutTitle": "App added, but not ready yet",
+      "discoveryTimeoutDescription": "The app was added, but it is not ready to be configured yet. It may be unreachable. You can retry now, or close this dialog and configure the app later from the list.",
+      "retry": "Retry",
+      "preparing": "Retrieving app details…",
+      "continue": "Continue",
+      "complete": "Save configuration",
+      "resumeLoadFailed": "The app could not be loaded. It may have been removed.",
+      "refreshModal": {
+        "title": "Refresh required",
+        "description": "Before this app can be configured, the page needs to be refreshed so that security policies can be updated. After the refresh, you will automatically continue with the configuration step.",
+        "confirm": "Refresh and continue",
+        "cancel": "Later"
+      }
+    },
+    "editConfiguration": "Edit configuration",
+    "notConfigured": "Not configured",
     "uploadPlugin": "Upload plugin",
     "selectHost": "Select a plugin host",
     "upload": {
@@ -2296,14 +2331,18 @@
       "eventQueueMode": "Event queue mode",
       "eventQueueTtlMs": "Event queue inactivity TTL (ms)",
       "frontendOrigins": "Allowed frontend origins",
-      "host": "Host"
+      "host": "Host",
+      "configuration": "Configuration"
     },
     "eventQueueMode": {
       "live": "Live (events lost while host is down)",
-      "durable": "Durable (retains events for the TTL while host is down)"
+      "durable": "Durable (retains events for the TTL while host is down)",
+      "liveApp": "Live (events lost while app is down)",
+      "durableApp": "Durable (retains events for the TTL while app is down)"
     },
     "hints": {
       "eventQueueTtlMs": "The durable queue is deleted after this many ms with no connected host. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
+      "eventQueueTtlMsApp": "The durable queue is deleted after this many ms with no connected app. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
       "frontendOrigins": "Browser origins (scheme://host[:port], no path) allowed to embed this host's plugin screens. Add every Valtimo frontend URL users open plugins from, including any proxy alias.",
       "noFrontendOrigins": "With no origins listed, no page can embed this host's plugin screens."
     },
@@ -3503,7 +3542,7 @@
         "main": "Main menu items",
         "admin": "Admin pages",
         "development": "Development pages",
-        "pluginPages": "Plugin pages"
+        "pluginPages": "Plugins & Apps"
       },
       "generic": {
         "group": "Section",

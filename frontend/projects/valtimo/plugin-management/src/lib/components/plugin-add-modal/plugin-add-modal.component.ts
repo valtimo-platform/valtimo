@@ -108,7 +108,7 @@ export class PluginAddModalComponent implements OnDestroy {
 
   public currentStepIndex = 0;
   public isExternal = false;
-  public progressSteps: Array<{label: string}> = [];
+  public progressSteps: Array<{label: string; complete: boolean}> = [];
 
   @ViewChild(PluginExternalConfigureComponent)
   private _externalConfigureComponent: PluginExternalConfigureComponent | undefined;
@@ -310,18 +310,24 @@ export class PluginAddModalComponent implements OnDestroy {
     }
   }
 
+  /**
+   * Carbon's progress indicator recomputes step completion only inside its `current` setter, so a
+   * rebuilt steps array (language change, plugin-kind change) must carry the `complete` flags
+   * itself — with an unchanged current step the rebuild would otherwise wipe the checkmarks.
+   */
   private _buildProgressSteps(): void {
-    const steps = [
-      {label: this._translateService.instant('pluginManagement.addSteps.step0')},
-      {label: this._translateService.instant('pluginManagement.addSteps.step1')},
+    const labels = [
+      this._translateService.instant('pluginManagement.addSteps.step0'),
+      this._translateService.instant('pluginManagement.addSteps.step1'),
     ];
 
     if (this.isExternal) {
-      steps.push({
-        label: this._translateService.instant('pluginManagement.addSteps.step2'),
-      });
+      labels.push(this._translateService.instant('pluginManagement.addSteps.step2'));
     }
 
-    this.progressSteps = steps;
+    this.progressSteps = labels.map((label, index) => ({
+      label,
+      complete: index < this.currentStepIndex,
+    }));
   }
 }

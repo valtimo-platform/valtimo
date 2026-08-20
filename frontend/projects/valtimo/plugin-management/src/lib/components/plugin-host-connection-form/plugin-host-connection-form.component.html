@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form [formGroup]="form" [cdsLayer]="1" class="plugin-host-connection-form">
+  <cds-label>
+    {{ 'pluginManagement.labels.name' | translate }}
+    <input cdsText formControlName="name" [placeholder]="namePlaceholder" />
+  </cds-label>
+
+  <cds-label>
+    {{ 'pluginManagement.labels.baseUrl' | translate }}
+    <input cdsText formControlName="baseUrl" [placeholder]="baseUrlPlaceholder" />
+  </cds-label>
+
+  <cds-label>
+    {{ 'pluginManagement.labels.secret' | translate }}
+    <input cdsText formControlName="secret" type="password" placeholder="admin-token" />
+  </cds-label>
+
+  <cds-label>
+    {{ 'pluginManagement.labels.gzacCallbackBaseUrl' | translate }}
+    <input cdsText formControlName="gzacCallbackBaseUrl" placeholder="http://localhost:8080" />
+  </cds-label>
+
+  <cds-label>
+    {{ 'pluginManagement.labels.eventBrokerAmqpUrl' | translate }}
+    <input
+      cdsText
+      formControlName="eventBrokerAmqpUrl"
+      placeholder="amqp://guest:guest@localhost:5672"
+    />
+  </cds-label>
+
+  <cds-label>
+    {{ 'pluginManagement.labels.eventBrokerExchange' | translate }}
+    <input cdsText formControlName="eventBrokerExchange" placeholder="valtimo-events" />
+  </cds-label>
+
+  <div class="plugin-host-connection-form__origins" formArrayName="frontendOrigins">
+    <span class="cds--label">{{ 'pluginManagement.labels.frontendOrigins' | translate }}</span>
+
+    <div
+      *ngFor="let originControl of frontendOriginControls; let i = index"
+      class="plugin-host-connection-form__origin-row"
+    >
+      <input cdsText [formControlName]="i" placeholder="https://valtimo.example.com" />
+
+      <button
+        cdsButton="ghost"
+        type="button"
+        [title]="'interface.delete' | translate"
+        (click)="removeFrontendOrigin(i)"
+      >
+        {{ 'interface.delete' | translate }}
+      </button>
+    </div>
+
+    <button cdsButton="ghost" type="button" (click)="addFrontendOrigin()">
+      {{ 'pluginManagement.addFrontendOrigin' | translate }}
+    </button>
+
+    <small>{{ 'pluginManagement.hints.frontendOrigins' | translate }}</small>
+  </div>
+
+  <v-select
+    [appendInline]="false"
+    [dropUp]="false"
+    [items]="queueModeItems"
+    [title]="'pluginManagement.labels.eventQueueMode' | translate"
+    formControlName="eventQueueMode"
+  ></v-select>
+
+  <cds-label *ngIf="form.controls.eventQueueMode.value === 'DURABLE'">
+    {{ 'pluginManagement.labels.eventQueueTtlMs' | translate }}
+    <input
+      cdsText
+      formControlName="eventQueueTtlMs"
+      [max]="maxTtlMs"
+      [min]="minTtlMs"
+      [placeholder]="defaultTtlMs"
+      type="number"
+    />
+    <small>{{ ttlHintKey | translate }}</small>
+  </cds-label>
+</form>
