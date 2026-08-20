@@ -53,9 +53,12 @@ export class CaseDetailsManagementFormFlowsPage {
   }
 
   get addFormFlowButton() {
-    // Two "Add new form flow" buttons exist when list is empty: toolbar + no-results panel.
+    // Two "Create new form flow" buttons exist when list is empty: toolbar + no-results panel.
     // Scope to toolbar to avoid strict mode violation.
-    return this.page.getByLabel('Table action bar').getByRole('button', {name: 'Add new form flow'});
+    // Label was renamed "Add new form flow" → "Create new form flow"; accept both.
+    return this.page
+      .getByLabel('Table action bar')
+      .getByRole('button', {name: /^(Create|Add) new form flow$/i});
   }
 
   // Create modal: only a key field, no data-test-ids

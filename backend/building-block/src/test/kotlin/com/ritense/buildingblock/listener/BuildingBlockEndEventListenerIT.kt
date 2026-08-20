@@ -116,6 +116,58 @@ class BuildingBlockEndEventListenerIT @Autowired constructor(
     }
 
     @Test
+    fun `should sync continuous output mappings to case document while ad-hoc building block is running`() {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
+        val caseDefinitionId = CaseDefinitionId.of(CASE_DEFINITION_KEY, CASE_DEFINITION_VERSION)
+
+        caseDefinitionBuildingBlockLinkRepository.save(
+            CaseDefinitionBuildingBlockLink(
+                caseDefinitionId = caseDefinitionId,
+                buildingBlockDefinitionId = buildingBlockDefinitionId,
+                inputMappings = emptyList(),
+                outputMappings = listOf(
+                    BuildingBlockOutputMapping(
+                        source = "doc:/beslissingBezwaar",
+                        target = "doc:/resultFromBb",
+                        syncTiming = BuildingBlockSyncTiming.CONTINUOUS
+                    )
+                ),
+            )
+        )
+
+        val caseDocumentId = createCaseDocument()
+
+        runWithoutAuthorization {
+            runtimeService.startProcessInstanceByKey(
+                BUILDING_BLOCK_PROCESS_KEY,
+                caseDocumentId.toString(),
+                emptyMap()
+            )
+        }
+
+        val instance = buildingBlockInstanceRepository.findAll().single()
+        // Sanity check: started as an ad-hoc case action, not via a call activity
+        assertThat(instance.callerProcessDefinitionId).isNull()
+
+        runWithoutAuthorization {
+            val bbDocument = documentService.get(instance.documentId.toString()) as JsonSchemaDocument
+            val updatedContent = bbDocument.content().asJson().deepCopy<ObjectNode>()
+            updatedContent.put("beslissingBezwaar", "approved")
+            documentService.modifyDocument(bbDocument, updatedContent)
+        }
+
+        // The building block is still running: the value is already synced to the case document.
+        val caseDocumentBeforeEnd = runWithoutAuthorization {
+            documentService.get(caseDocumentId.toString())
+        } as JsonSchemaDocument
+        assertThat(caseDocumentBeforeEnd.content().asJson().get("resultFromBb").asText()).isEqualTo("approved")
+
+        runWithoutAuthorization {
+            runtimeService.correlateMessage("test-ready", instance.documentId.toString())
+        }
+    }
+
+    @Test
     fun `should not throw when ad-hoc building block has no output mappings`() {
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
         val caseDefinitionId = CaseDefinitionId.of(CASE_DEFINITION_KEY, CASE_DEFINITION_VERSION)

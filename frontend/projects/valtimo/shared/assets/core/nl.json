@@ -15,7 +15,8 @@
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
-    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
+    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}",
+    "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "case": {
     "allCases": "Alle dossiers",
@@ -324,6 +325,8 @@
         "loading": "Metadata laden...",
         "documentId": "Document ID",
         "definitionName": "Definitie",
+        "definitionKey": "Dossier definitiesleutel",
+        "definitionVersionTag": "Dossier definitieversie",
         "sequence": "Volgnummer",
         "version": "Versie",
         "createdBy": "Aangemaakt door",
@@ -555,7 +558,14 @@
     "startedBy": "Gestart door",
     "startedOn": "Gestart op",
     "system": "Systeem",
-    "of": "van"
+    "of": "van",
+    "skipTimer": {
+      "action": "Timer overslaan",
+      "confirmTitle": "Timer overslaan",
+      "confirmContent": "Weet je zeker dat je deze timer wilt overslaan? Het proces gaat verder alsof de timer is verlopen. Dit kan niet ongedaan worden gemaakt.",
+      "confirmButton": "Overslaan",
+      "successToast": "Timer overgeslagen"
+    }
   },
   "dashboard": {
     "openTasks": {"title": "Alle taken"},
@@ -1322,6 +1332,10 @@
         "title": "Afbeelding",
         "description": "Toon een geüploade afbeelding"
       },
+      "text": {
+        "title": "Tekst",
+        "description": "Toon een vaste toelichting"
+      },
       "generic": {
         "title": "Generieke widgets",
         "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
@@ -1523,6 +1537,14 @@
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource.",
         "displayAsCarousel": "Weergeven als carrousel"
+      },
+      "text": {
+        "description": "",
+        "content": "Tekst",
+        "contentTooltip": "De tekst die in de widget wordt getoond. Markdown wordt ondersteund.",
+        "contentPlaceholder": "## Kop\n\nEen toelichting, met een [link](https://example.org) en een lijst:\n\n- eerste item\n- tweede item",
+        "contentHelper": "Opmaak met markdown wordt ondersteund: # voor koppen, - voor een lijst met opsommingstekens, **vet**, *cursief* en [linktekst](https://example.org). Sterretjes moeten direct tegen de tekst staan: **vet** werkt, ** vet ** niet. Links openen in een nieuw tabblad.",
+        "accentColor": "Accentkleur"
       }
     },
     "filters": {
@@ -1791,6 +1813,11 @@
   "uploadFormDefinition": "Upload formulier-definitie",
   "Process migration": "Procesmigratie",
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestarte processen krijgen de nieuwe candidate group)",
+  "Source Definition": "Bron definitie",
+  "Source Version": "Bron versie",
+  "Target Definition": "Doel definitie",
+  "Target Version": "Doel versie",
+  "Choose Target": "Kies doel",
   "Case": "Dossier",
   "Cases": "Dossiers",
   "Deployment": "Versiebeheer",

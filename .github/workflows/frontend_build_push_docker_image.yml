@@ -177,10 +177,13 @@ jobs:
 
           npm install
 
-      # The app bundles @valtimo/shared's versions.ts from source (via
-      # tsconfig.paths), so stamp the version into that source file here — the
-      # libs build's version bump happens on a different runner and never reaches
-      # this checkout. No-op when project_version is empty (keeps committed value).
+      # The libs build's version bump happens on a different runner and never
+      # reaches this checkout, so stamp the version here. Release builds resolve
+      # @valtimo/* through node_modules -> dist (see apps/*/src/tsconfig.app.prod.json),
+      # so the compiled constant in dist is what ends up in the app bundle; the
+      # source versions.ts is stamped too so branches that still bundle the
+      # libraries from source keep working.
+      # No-op when project_version is empty (keeps committed value).
       - name: Stamp frontend version
         if: ${{ inputs.project_version != '' }}
         shell: bash
@@ -188,15 +191,20 @@ jobs:
           PROJECT_VERSION: ${{ inputs.project_version }}
         run: |
           set -euo pipefail
+          stamped=0
           # versions.ts location differs per branch (shared/ on v13, config/ on
           # v12); locate the one holding frontendLibraries so this works on both.
-          f=$(grep -rl 'frontendLibraries' projects/valtimo --include='versions.ts' 2>/dev/null | head -1 || true)
-          if [ -z "$f" ]; then
-            echo "::warning::no versions.ts with frontendLibraries found; skipping frontend version stamp"
-            exit 0
+          # The compiled copy is found the same way, by grepping dist.
+          for f in \
+            $(grep -rl 'frontendLibraries' projects/valtimo --include='versions.ts' 2>/dev/null || true) \
+            $(grep -rl "frontendLibraries: *'" dist/valtimo --include='*.mjs' 2>/dev/null || true); do
+            sed -i "s/\(frontendLibraries: *'\)[^']*'/\1${PROJECT_VERSION}'/" "$f"
+            echo "Stamped $f:"; grep -o "frontendLibraries: *'[^']*'" "$f" || true
+            stamped=1
+          done
+          if [ "$stamped" -eq 0 ]; then
+            echo "::warning::no frontendLibraries constant found; skipping frontend version stamp"
           fi
-          sed -i "s/\(frontendLibraries: *'\)[^']*'/\1${PROJECT_VERSION}'/" "$f"
-          echo "Stamped $f:"; grep frontendLibraries "$f" || true
 
       - name: Build app
         run: npm run build:${{ inputs.variant }}

@@ -60,3 +60,37 @@ fun sendGlobalCatchEventMessageToAll(message: String, variables: Map<String, Any
 ```
 
 Since no business key is provided, these methods will not create a process-document association — though this is only relevant in uncommon cases where a process is started outside the normal flow, in which case managing that association is the responsibility of the caller.
+
+### Correlating to a whole case, including its building blocks
+
+The methods above correlate on a single business key. A building block runs under its own document id as business key, so `sendCatchEventMessageToAll` with the case business key does not reach the building blocks of that case. Use `sendCatchEventMessageToCase` to deliver a message to **every** running process of a case — the case's own processes and all of its building blocks, including nested ones:
+
+```kotlin
+fun sendCatchEventMessageToCase(message: String, execution: DelegateExecution): List<MessageCorrelationResult>
+fun sendCatchEventMessageToCase(message: String, execution: DelegateExecution, vararg variables: Any?): List<MessageCorrelationResult>
+fun sendCatchEventMessageToCase(message: String, execution: DelegateExecution, variables: Map<String, Any?>?): List<MessageCorrelationResult>
+
+fun sendCatchEventMessageToCase(message: String, caseDocumentId: String): List<MessageCorrelationResult>
+fun sendCatchEventMessageToCase(message: String, caseDocumentId: String, vararg variables: Any?): List<MessageCorrelationResult>
+fun sendCatchEventMessageToCase(message: String, caseDocumentId: String, variables: Map<String, Any?>?): List<MessageCorrelationResult>
+```
+
+The `execution` variants derive the case from the sending process, so they work from a case process, an ad-hoc process and from within a building block — letting a building block message its siblings and the case. The `caseDocumentId` variants target a specific case, for example a related one; a building block document id is accepted too and is resolved to the case that owns it.
+
+A building block whose main process starts with a message start event can be started for a case with `sendStartMessageToCase`:
+
+```kotlin
+fun sendStartMessageToCase(message: String, execution: DelegateExecution): List<ProcessInstance>
+fun sendStartMessageToCase(message: String, execution: DelegateExecution, vararg variables: Any?): List<ProcessInstance>
+fun sendStartMessageToCase(message: String, execution: DelegateExecution, variables: Map<String, Any?>?): List<ProcessInstance>
+
+fun sendStartMessageToCase(message: String, caseDocumentId: String): List<ProcessInstance>
+fun sendStartMessageToCase(message: String, caseDocumentId: String, vararg variables: Any?): List<ProcessInstance>
+fun sendStartMessageToCase(message: String, caseDocumentId: String, variables: Map<String, Any?>?): List<ProcessInstance>
+```
+
+Every building block linked to the case definition that declares a start event with that name is started, in the version the case link pins rather than the latest deployed one. Do not use `sendStartMessage` to start a building block: it always resolves the latest version, which may not be the one the case uses.
+
+Delivery is a fan-out, so use a distinct message name per intent and do not reuse a name between a catch event and a start event. When no process of the case is subscribed, an empty list is returned and a warning is logged; the sending process continues.
+
+See the [building block documentation](../building-blocks/README.md#send-a-message-to-a-case) for a worked example.

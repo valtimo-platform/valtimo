@@ -1,0 +1,20 @@
+{
+    "$id": "case-review.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Case review",
+    "type": "object",
+    "properties": {
+        "subject": {
+            "type": "string",
+            "description": "Subject copied from the case by the input mapping"
+        },
+        "reviewer": {
+            "type": "string",
+            "description": "Reviewer entered on the start form"
+        },
+        "approvedBy": {
+            "type": "string",
+            "description": "Filled from the variable that came along with the 'review-approved' message"
+        }
+    }
+}

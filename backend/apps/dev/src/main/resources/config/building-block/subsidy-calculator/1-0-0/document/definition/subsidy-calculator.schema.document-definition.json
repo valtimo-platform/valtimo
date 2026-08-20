@@ -87,6 +87,10 @@
         "approvalDecision": {
             "type": "string",
             "description": "Besluit van de beoordelaar (GOEDGEKEURD of AFGEKEURD)"
+        },
+        "bubbleNote": {
+            "type": "string",
+            "description": "Bubbel-notitie doorgegeven vanuit BB2 (household-verification), oorspronkelijk uit BB3"
         }
     },
     "required": ["applicantName", "householdSize"]
