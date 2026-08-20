@@ -23,11 +23,11 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
@@ -47,35 +47,44 @@ abstract class BaseIntegrationTest {
 
     companion object {
 
-        lateinit var server: MockWebServer
-
-        @JvmStatic
-        @BeforeAll
-        fun setUp() {
-            server = MockWebServer()
-            setupMockKeycloakApiServer()
-            server.start(port = 49152)
+        // Started eagerly (before the Spring context) on an OS-assigned free port, so @DynamicPropertySource can
+        // expose that port to the OIDC configuration that Spring Security resolves and validates during startup.
+        // This avoids depending on a fixed port, which could clash with an outbound socket and cause a BindException.
+        val server: MockWebServer = MockWebServer().apply {
+            dispatcher = keycloakDispatcher()
+            start()
         }
 
+        private val issuerUri: String
+            get() = server.url("/auth/realms/valtimo").toString()
+
         @JvmStatic
-        @AfterAll
-        fun tearDown() {
-            server.shutdown()
+        @DynamicPropertySource
+        fun keycloakProperties(registry: DynamicPropertyRegistry) {
+            registry.add("spring.security.oauth2.client.provider.keycloakjwt.issuer-uri") { issuerUri }
+            registry.add("spring.security.oauth2.client.provider.keycloakapi.issuer-uri") { issuerUri }
+            registry.add("spring.security.oauth2.resourceserver.jwt.jwk-set-uri") {
+                "$issuerUri/protocol/openid-connect/certs"
+            }
         }
 
-        private fun setupMockKeycloakApiServer() {
-            val dispatcher = object : Dispatcher() {
-                override fun dispatch(request: RecordedRequest): MockResponse {
-                    val response = when (request.requestLine) {
-                        "GET /auth/realms/valtimo/.well-known/openid-configuration HTTP/1.1" -> mockResponseFromFile("/data/get-openid-configuration.json")
-                        "GET /auth/admin/serverinfo HTTP/1.1" -> mockResponseFromFile("/data/get-server-info.json")
-                        "POST /auth/realms/valtimo/protocol/openid-connect/token HTTP/1.1" -> mockResponseFromFile("/data/grant-token-response.json")
-                        else -> MockResponse().setResponseCode(404)
-                    }
-                    return response
+        private fun keycloakDispatcher(): Dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                return when (request.requestLine) {
+                    "GET /auth/realms/valtimo/.well-known/openid-configuration HTTP/1.1" ->
+                        mockResponse(openIdConfiguration())
+                    "GET /auth/admin/serverinfo HTTP/1.1" -> mockResponseFromFile("/data/get-server-info.json")
+                    "POST /auth/realms/valtimo/protocol/openid-connect/token HTTP/1.1" ->
+                        mockResponseFromFile("/data/grant-token-response.json")
+                    else -> MockResponse().setResponseCode(404)
                 }
             }
-            server.dispatcher = dispatcher
+        }
+
+        private fun openIdConfiguration(): String {
+            val baseUrl = server.url("").toString().removeSuffix("/")
+            return readFileAsString("/data/get-openid-configuration.json")
+                .replace("http://localhost:19152", baseUrl)
         }
 
         private fun mockResponseFromFile(fileName: String) =

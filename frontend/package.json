@@ -274,6 +274,7 @@
     "keycloak-angular": "19.0.2",
     "keycloak-js": "26.1.5",
     "lodash": "4.18.1",
+    "marked": "15.0.7",
     "moment": "2.30.1",
     "monaco-editor": "0.50.0",
     "muuri": "0.9.5",
@@ -349,6 +350,9 @@
   },
   "overrides": {
     "swagger-client": "3.37.3",
+    "swagger-ui": {
+      "js-yaml": "4.3.1"
+    },
     "feelers": {
       "@bpmn-io/cm-theme": "0.1.0-alpha.2"
     },
@@ -358,6 +362,10 @@
     "sigstore": "4.1.1",
     "lodash": "4.18.1",
     "lodash-es": "4.18.1",
+    "postcss": "8.5.26",
+    "minimatch@9": {
+      "brace-expansion": "2.1.4"
+    },
     "@angular-devkit/build-angular": {
       "http-proxy-middleware": "3.0.7"
     },

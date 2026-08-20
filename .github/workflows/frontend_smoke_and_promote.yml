@@ -47,7 +47,21 @@ jobs:
           set -euo pipefail
           echo "Image under test: $SMOKE_IMAGE"
           docker pull "$SMOKE_IMAGE"
-          docker run -d --name fe -p 8080:8080 "$SMOKE_IMAGE"
+          # SMOKE_IMAGE is a mutable tag. Pin it to the immutable manifest digest right
+          # after the pull so the exact manifest we smoke test is the one promoted to
+          # Docker Hub — the tag can't be retargeted underneath us between the two steps.
+          DIGEST="$(docker buildx imagetools inspect "$SMOKE_IMAGE" --format '{{.Manifest.Digest}}')"
+          SMOKE_REF="${SMOKE_IMAGE%:*}@${DIGEST}"
+          echo "Pinned digest: $SMOKE_REF"
+          echo "SMOKE_REF=$SMOKE_REF" >> "$GITHUB_ENV"
+          # The nginx config proxies /api to the literal upstream host "gzac-backend"
+          # (frontend/conf/default.conf), and nginx resolves upstream hostnames at
+          # startup. Run in isolation the name does not resolve, so nginx aborts with
+          # "host not found in upstream" and the container never serves a page. This
+          # smoke test only exercises static Angular serving (index.html, config.js,
+          # a JS bundle) with no backend, so map the upstream name to localhost purely
+          # to satisfy nginx's boot-time resolution — /api is never called here.
+          docker run -d --name fe --add-host gzac-backend:127.0.0.1 -p 8080:8080 "$SMOKE_REF"
 
       - name: Smoke test served content
         run: |
@@ -113,9 +127,15 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Promote tested image to Docker Hub
+        # Pass caller-controlled inputs through env instead of interpolating them into
+        # the script body, so their values can't be parsed as shell after expansion.
+        env:
+          IMAGE_NAME: ${{ inputs.image_name }}
+          RELEASE_IMAGE_TAG: ${{ inputs.release_image_tag }}
         run: |
           set -euo pipefail
-          TARGET="docker.io/ritense/${{ inputs.image_name }}:${{ inputs.release_image_tag }}"
-          echo "Promoting $SMOKE_IMAGE -> $TARGET (multi-arch manifest copy)"
-          docker buildx imagetools create --tag "$TARGET" "$SMOKE_IMAGE"
+          TARGET="docker.io/ritense/${IMAGE_NAME}:${RELEASE_IMAGE_TAG}"
+          # Promote the exact digest that was smoke-tested (SMOKE_REF), not the tag.
+          echo "Promoting $SMOKE_REF -> $TARGET (multi-arch manifest copy)"
+          docker buildx imagetools create --tag "$TARGET" "$SMOKE_REF"
           docker buildx imagetools inspect "$TARGET"

@@ -26,6 +26,7 @@ import {
 } from '../../models';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   from,
@@ -417,9 +418,11 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     filter(([documentId, caseDefinitionKey]) => !!documentId || !!caseDefinitionKey),
     switchMap(([documentId, caseDefinitionKey, defaultValue]) => {
       if (documentId) {
-        return this.documentService
-          .getDocumentTypesForDocument(documentId)
-          .pipe(map(types => [types, defaultValue]));
+        return this.documentService.getDocumentTypesForDocument(documentId).pipe(
+          map(types => [types, defaultValue]),
+          // the user may not be allowed to view the document types (403); degrade to an empty list
+          catchError(() => of([[], defaultValue]))
+        );
       }
       if (caseDefinitionKey) {
         return this.documentService.getCaseSettings(caseDefinitionKey).pipe(
@@ -431,7 +434,9 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
                 )
               : of([])
           ),
-          map(types => [types, defaultValue])
+          map(types => [types, defaultValue]),
+          // the user may not be allowed to view the document types (403); degrade to an empty list
+          catchError(() => of([[], defaultValue]))
         );
       }
       return of([[], defaultValue]);

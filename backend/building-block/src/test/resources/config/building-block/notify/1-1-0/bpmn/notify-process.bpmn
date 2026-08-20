@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_notify_process" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.39.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.23.0">
+  <bpmn:process id="notify-process" name="Notify process v1.1" isExecutable="true">
+    <bpmn:startEvent id="messageStart" name="Case notification received (v1.1)">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_start" messageRef="Message_case_notification" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="messageStart" targetRef="waitForTest" />
+    <bpmn:intermediateCatchEvent id="waitForTest" name="Wait until test signals ready">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_wait" messageRef="Message_test_ready" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="waitForTest" targetRef="EndEvent_1" />
+    <bpmn:endEvent id="EndEvent_1">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:message id="Message_case_notification" name="case-notification" />
+  <bpmn:message id="Message_test_ready" name="test-ready" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_notify_process">
+    <bpmndi:BPMNPlane id="BPMNPlane_notify_process" bpmnElement="notify-process">
+      <bpmndi:BPMNShape id="messageStart_di" bpmnElement="messageStart">
+        <dc:Bounds x="182" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="167" y="145" width="66" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="waitForTest_di" bpmnElement="waitForTest">
+        <dc:Bounds x="292" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="277" y="145" width="66" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="422" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="218" y="120" />
+        <di:waypoint x="292" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="328" y="120" />
+        <di:waypoint x="422" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

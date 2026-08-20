@@ -1,0 +1,17 @@
+[
+    {
+        "processDefinitionKey": "case-messaging",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "send-review-approved",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "request-case-notification",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    }
+]

@@ -520,22 +520,20 @@ class ValtimoImportService(
     }
 
     private fun resolveProperties(content: String): String {
-        var resolvedContent = content
-        Regex("\\$\\{([^\\}]+)\\}").findAll(content)
-            .map { it.groupValues }
-            .forEach { (placeholder, placeholderValue) ->
-                try {
-                    whitelistedEnvironmentProperties.firstOrNull { it.matches(placeholderValue) }?.let {
-                        val resolvedValue = environment.getProperty(placeholderValue)
-                        if (!resolvedValue.isNullOrBlank()) {
-                            resolvedContent = resolvedContent.replace(placeholder, resolvedValue)
-                        }
-                    }
-                } catch (e: Exception) {
-                    // ignored
-                }
+        return PROPERTY_PLACEHOLDER_PATTERN.replace(content) { match ->
+            val name = match.groupValues[1]
+            // Only present when the placeholder actually contained a ':'
+            val default = match.groups[2]?.value
+            if (whitelistedEnvironmentProperties.none { it.matches(name) }) {
+                // Only the name is logged: a default value can hold a secret
+                logger.debug { "Property '$name' is not whitelisted. Leaving its placeholder untouched." }
+                match.value
+            } else {
+                environment.getProperty(name)?.takeIf { it.isNotBlank() }
+                    ?: default
+                    ?: match.value
             }
-        return resolvedContent
+        }
     }
 
     // change entries to be nested
@@ -577,6 +575,13 @@ class ValtimoImportService(
 
     private companion object {
         val logger = KotlinLogging.logger {}
+
+        /**
+         * Matches Spring-style property placeholders only: `${name}` or `${name:default}`, where the name is
+         * limited to property key characters. Expressions that happen to use the same delimiters, like
+         * `${valtimoFormFlow.completeTask(x, y, {'doc:/a':'/b'})}` or `${doc:someField}`, are left untouched.
+         */
+        val PROPERTY_PLACEHOLDER_PATTERN = Regex("""\$\{([A-Za-z0-9_.\-\[\]]+)(?::([^{}]*))?}""")
 
         class WrappedImporter(
 

@@ -24,6 +24,8 @@ import com.ritense.valtimo.operaton.authorization.OperatonExecutionSpecification
 import com.ritense.valtimo.operaton.authorization.OperatonIdentityLinkSpecificationFactory
 import com.ritense.valtimo.operaton.authorization.OperatonProcessDefinitionSpecificationFactory
 import com.ritense.valtimo.operaton.authorization.OperatonTaskSpecificationFactory
+import com.ritense.valtimo.operaton.authorization.OperatonTimerExecutionMapper
+import com.ritense.valtimo.operaton.authorization.OperatonTimerSpecificationFactory
 import com.ritense.valtimo.operaton.repository.OperatonBytearrayRepository
 import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionRepository
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
@@ -175,6 +177,13 @@ class ValtimoOperatonAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(OperatonTimerSpecificationFactory::class)
+    @ConditionalOnBean(AuthorizationService::class)
+    fun operatonTimerSpecificationFactory(): OperatonTimerSpecificationFactory {
+        return OperatonTimerSpecificationFactory()
+    }
+
+    @Bean
     @ConditionalOnMissingBean(OperatonProcessDefinitionSpecificationFactory::class)
     @ConditionalOnBean(AuthorizationService::class)
     fun operatonProcessDefinitionSpecificationFactory(
@@ -189,6 +198,14 @@ class ValtimoOperatonAutoConfiguration {
     @ConditionalOnBean(AuthorizationService::class)
     fun operatonExecutionProcessDefinitionMapper() = OperatonExecutionProcessDefinitionMapper()
 
+    @Bean
+    @ConditionalOnMissingBean(OperatonTimerExecutionMapper::class)
+    @ConditionalOnBean(AuthorizationService::class)
+    fun operatonTimerExecutionMapper(
+        operatonExecutionRepository: OperatonExecutionRepository
+    ): OperatonTimerExecutionMapper {
+        return OperatonTimerExecutionMapper(operatonExecutionRepository)
+    }
 
     @Bean
     @ConditionalOnMissingBean(OperatonTaskIdentityLinkMapper::class)

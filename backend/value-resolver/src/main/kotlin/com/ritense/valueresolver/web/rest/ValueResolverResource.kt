@@ -16,6 +16,7 @@
 
 package com.ritense.valueresolver.web.rest
 
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -38,11 +39,13 @@ import org.springframework.web.bind.annotation.RestController
 class ValueResolverResource(
     private val valueResolverService: ValueResolverService
 ) {
+    @RunWithoutAuthorization
     @GetMapping("/management/v1/value-resolver")
     fun getValueResolvers(): ResponseEntity<List<String>> {
         return ResponseEntity.ok(valueResolverService.getValueResolvers())
     }
 
+    @RunWithoutAuthorization
     @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/keys")
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,
@@ -51,6 +54,7 @@ class ValueResolverResource(
         return ResponseEntity.ok(valueResolverService.getResolvableKeys(request, caseDefinitionKey))
     }
 
+    @RunWithoutAuthorization
     @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/keys")
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,

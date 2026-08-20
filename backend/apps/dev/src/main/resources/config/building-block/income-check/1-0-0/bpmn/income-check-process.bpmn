@@ -5,10 +5,14 @@
   </bpmn:collaboration>
   <bpmn:process id="income-check-process" name="Inkomenstoets Process" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="StartEvent" name="Start Inkomenstoets">
-      <bpmn:outgoing>Flow_Start_To_SetStatusInkomenstoets</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Start_To_EnterBubbleNote</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:userTask id="EnterBubbleNoteTask" name="Voer Bubbel-notitie In (BB3)" camunda:candidateGroups="ROLE_USER">
+      <bpmn:incoming>Flow_Start_To_EnterBubbleNote</bpmn:incoming>
+      <bpmn:outgoing>Flow_EnterBubbleNote_To_SetStatus</bpmn:outgoing>
+    </bpmn:userTask>
     <bpmn:serviceTask id="SetStatusInkomenstoetsTask" name="Status: Inkomenstoets Gestart" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.setInternalStatus(execution, 'inkomenstoets-gestart')}">
-      <bpmn:incoming>Flow_Start_To_SetStatusInkomenstoets</bpmn:incoming>
+      <bpmn:incoming>Flow_EnterBubbleNote_To_SetStatus</bpmn:incoming>
       <bpmn:outgoing>Flow_SetStatusInkomenstoets_To_RemoveTagPriority</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="RemoveTagPriorityTask" name="Verwijder Tag: Prioriteit" camunda:asyncAfter="true" camunda:expression="${documentDelegateService.removeCaseTag(execution, 'prioriteit-hoog')}">
@@ -52,7 +56,8 @@
     <bpmn:endEvent id="EndEvent" name="Inkomenstoets Afgerond">
       <bpmn:incoming>Flow_ReadEinddatum_To_End</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_Start_To_SetStatusInkomenstoets" sourceRef="StartEvent" targetRef="SetStatusInkomenstoetsTask" />
+    <bpmn:sequenceFlow id="Flow_Start_To_EnterBubbleNote" sourceRef="StartEvent" targetRef="EnterBubbleNoteTask" />
+    <bpmn:sequenceFlow id="Flow_EnterBubbleNote_To_SetStatus" sourceRef="EnterBubbleNoteTask" targetRef="SetStatusInkomenstoetsTask" />
     <bpmn:sequenceFlow id="Flow_SetStatusInkomenstoets_To_RemoveTagPriority" sourceRef="SetStatusInkomenstoetsTask" targetRef="RemoveTagPriorityTask" />
     <bpmn:sequenceFlow id="Flow_RemoveTagPriority_To_DMN" sourceRef="RemoveTagPriorityTask" targetRef="ResolveHouseholdSizeTask" />
     <bpmn:sequenceFlow id="Flow_ResolveHouseholdSize_To_DMN" sourceRef="ResolveHouseholdSizeTask" targetRef="DetermineEligibilityDmnTask" />
@@ -66,7 +71,7 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_IncomeCheck">
       <bpmndi:BPMNShape id="Participant_IncomeCheck_di" bpmnElement="IncomeCheckParticipant" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="1630" height="200" />
+        <dc:Bounds x="160" y="60" width="1630" height="340" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
@@ -74,6 +79,10 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="200" y="185" width="81" height="27" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EnterBubbleNoteTask_di" bpmnElement="EnterBubbleNoteTask">
+        <dc:Bounds x="290" y="270" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="SetStatusInkomenstoetsTask_di" bpmnElement="SetStatusInkomenstoetsTask">
         <dc:Bounds x="290" y="120" width="100" height="80" />
@@ -117,9 +126,14 @@
           <dc:Bounds x="1468" y="185" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_Start_To_SetStatusInkomenstoets_di" bpmnElement="Flow_Start_To_SetStatusInkomenstoets">
-        <di:waypoint x="258" y="160" />
-        <di:waypoint x="290" y="160" />
+      <bpmndi:BPMNEdge id="Flow_Start_To_EnterBubbleNote_di" bpmnElement="Flow_Start_To_EnterBubbleNote">
+        <di:waypoint x="240" y="178" />
+        <di:waypoint x="240" y="310" />
+        <di:waypoint x="290" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_EnterBubbleNote_To_SetStatus_di" bpmnElement="Flow_EnterBubbleNote_To_SetStatus">
+        <di:waypoint x="340" y="270" />
+        <di:waypoint x="340" y="200" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_SetStatusInkomenstoets_To_RemoveTagPriority_di" bpmnElement="Flow_SetStatusInkomenstoets_To_RemoveTagPriority">
         <di:waypoint x="390" y="160" />
