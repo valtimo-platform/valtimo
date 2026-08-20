@@ -9,10 +9,10 @@
 
 ## Valtimo fundamentals
 
-* [What is a case?](fundamentals/case.md)
-* [What is a process?](fundamentals/process.md)
-* [What is a form?](fundamentals/form.md)
-* [Users, roles and permissions](fundamentals/roles-permissions.md)
+* What is a case?
+* What is a process?
+* What is a form?
+* Users, roles and permissions
 
 ## Tutorials
 * Setting up a case
