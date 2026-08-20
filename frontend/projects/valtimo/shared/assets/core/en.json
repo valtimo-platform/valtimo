@@ -323,6 +323,8 @@
         "loading": "Loading metadata...",
         "documentId": "Document ID",
         "definitionName": "Definition",
+        "definitionKey": "Case definition key",
+        "definitionVersionTag": "Case definition version",
         "sequence": "Sequence",
         "version": "Version",
         "createdBy": "Created by",
