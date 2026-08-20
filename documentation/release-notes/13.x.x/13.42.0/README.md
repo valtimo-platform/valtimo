@@ -82,14 +82,6 @@
   until the page was reloaded. The decision table screen now always cleans up its breadcrumbs and title,
   even when the DMN editor fails to shut down.
 
-* **Notificaties API subscriptions no longer cause a restart loop on startup**
-
-  Registering a subscription happened before Valtimo could be reached, so the Notificaties API
-  validation callback failed and the application shut itself down. Registration now runs in the
-  background and is retried with exponential backoff until it succeeds. See the
-  [Notificaties API module documentation](../../../fundamentals/getting-started/modules/zgw/notificaties-api.md)
-  for the new `valtimo.zgw.abonnement-registration` properties.
-
 ## Security
 
 * **Permission checks only accept known resource types**
