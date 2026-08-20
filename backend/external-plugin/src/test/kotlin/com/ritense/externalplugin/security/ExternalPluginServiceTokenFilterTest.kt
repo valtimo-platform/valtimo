@@ -22,6 +22,7 @@ import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Comp
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.PLUGIN_ID_CLAIM
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.PLUGIN_VERSION_CLAIM
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.TOKEN_GENERATION_CLAIM
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.HttpServletRequest
@@ -125,6 +126,10 @@ class ExternalPluginServiceTokenFilterTest {
         assertThat(principal.pluginConfigId).isEqualTo(configId)
         assertThat(principal.pluginId).isEqualTo("case-summary")
         assertThat(principal.pluginVersion).isEqualTo("0.1.0")
+        // ADMIN+USER let a *granted* endpoint pass the coarse per-URL hasAuthority rules; reach
+        // stays bounded by the allowlist filter, which runs before those rules.
+        assertThat(authentication.authorities.map { it.authority })
+            .containsExactlyInAnyOrder(AuthoritiesConstants.ADMIN, AuthoritiesConstants.USER)
 
         assertThat(chain.request).isNotNull()
         assertThat((chain.request as HttpServletRequest).getHeader("Authorization")).isNull()

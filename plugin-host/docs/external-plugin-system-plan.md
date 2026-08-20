@@ -115,7 +115,8 @@ callbacks.
 **3.2 Token (`service/ExternalPluginServiceTokenService.kt`)** — HS256 JWT:
 `sub=external-plugin:{pluginId}:{configId}`, `type=external_plugin_service`, `plugin_config_id`,
 `plugin_id`, `plugin_version`, `token_generation` (the configuration's revocation counter —
-§3.6), `iss=valtimo-gzac`, `exp=now+ttl`. **No roles.** Signed with
+§3.6), `iss=valtimo-gzac`, `exp=now+ttl`. **No roles claim** — the authenticator attaches fixed
+`ROLE_ADMIN` + `ROLE_USER` authorities at authentication time instead (§3.3). Signed with
 `SHA-256(valtimo.plugin.encryption-secret + "|service")` — the shared
 `security/ExternalPluginTokenKeyProvider.kt` base derives a **domain-separated** key per token
 kind (`|service` here, `|user` for the iframe token, §13.3), so a token of one kind can never
@@ -134,9 +135,16 @@ discovery poll (default 60s) re-pushes a fresh token every cycle (§3.6); it onl
 signature or `type` claim don't match (Keycloak tokens untouched); on match the authenticator
 first checks the token's `token_generation` claim against the configuration's current counter
 (§3.6) — a mismatch, a missing claim, or a configuration that no longer exists rejects the token —
-then sets an `ExternalPluginServicePrincipal`, **strips the `Authorization` header**, and runs the
-rest of the chain inside `AuthorizationContext.runWithoutAuthorization` (PBAC is intentionally
-bypassed for service tokens — the allowlist is the sole gate). The service- and user-token filters share the
+then sets an `ExternalPluginServicePrincipal` carrying fixed `ROLE_ADMIN` + `ROLE_USER`
+authorities, **strips the `Authorization` header**, and runs the rest of the chain inside
+`AuthorizationContext.runWithoutAuthorization` (PBAC is intentionally bypassed for service tokens —
+the allowlist is the sole gate). The authorities are not trust in the plugin: Spring Security's
+`AuthorizationFilter` applies the platform's coarse per-URL rules (`.authenticated()` /
+`hasAuthority(…)`) at the *end* of the chain, after the allowlist filter (§3.4) has already 403'd
+anything outside the granted set. Without them, every `hasAuthority`-gated endpoint — all of
+`/api/management/**` — would 403 even when explicitly granted; with them, reach is still exactly
+grants ∖ denylist (`ExternalPluginServiceTokenAccessIntTest` pins both directions through the full
+chain). The service- and user-token filters share the
 `AbstractExternalPluginTokenFilter` base, and all three plugin filters are excluded from servlet
 auto-registration (disabled `FilterRegistrationBean`s in the autoconfiguration) so they run only
 inside the Spring Security chain, never a second time as bare servlet filters.
@@ -149,7 +157,12 @@ inside the Spring Security chain, never a second time as bare servlet filters.
    can never reach `/api/management/v1/external-plugin/**` and `/api/v1/external-plugin/**`
    (external-plugin management incl. host registration, plus user-token minting — a plugin must
    not mint tokens for arbitrary users) or `/api/management/v1/roles/**` and
-   `/api/management/v1/permissions/**` (role/permission management — privilege escalation). One
+   `/api/management/v1/permissions/**` (role/permission management — privilege escalation), nor
+   issue non-`GET` requests to `/api/v1/users/**` (`DENYLIST_METHOD_PATTERNS` — user-account
+   mutations: a plugin that can create or alter accounts can escalate to a real admin login, and
+   with the ADMIN authority on the service principal (§3.3) this denylist is the only guard
+   between a grant and these surfaces; user *reads* like `GET /api/v1/users/{userId}` stay
+   grantable). One
    narrow carve-out precedes the denylist: a **user**-token principal may always `GET
    /api/v1/external-plugin/user-token/introspect` (exact path, GET only — the plugin host must be
    able to introspect the token before serving `/data`, §13.5; the endpoint is read-only and

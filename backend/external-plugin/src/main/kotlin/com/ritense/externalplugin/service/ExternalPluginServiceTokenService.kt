@@ -30,7 +30,9 @@ import java.util.Date
  * Issues short-lived JWTs that authenticate the plugin host (or a URL plugin) when calling back
  * into GZAC on behalf of a specific external plugin configuration.
  *
- * The token carries no roles. Endpoint access is gated by [com.ritense.externalplugin.security.ExternalPluginEndpointAllowlistFilter].
+ * The token carries no roles claim; the authenticator attaches fixed `ROLE_ADMIN` + `ROLE_USER`
+ * authorities so granted endpoints behind coarse `hasAuthority` URL rules are reachable. Endpoint
+ * reach is gated by [com.ritense.externalplugin.security.ExternalPluginEndpointAllowlistFilter].
  *
  * The default TTL is deliberately a small multiple of the discovery polling rate (60s): the poll
  * re-pushes a fresh token to the host on every cycle, so a leaked token is only usable for minutes
