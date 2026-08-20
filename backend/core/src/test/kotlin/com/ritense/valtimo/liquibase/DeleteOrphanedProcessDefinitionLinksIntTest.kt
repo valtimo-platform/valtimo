@@ -23,9 +23,11 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.ConnectionCallback
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
+import java.nio.ByteBuffer
 import java.util.UUID
 
 class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
@@ -44,6 +46,26 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
 
     companion object {
         const val CHANGESET_FILENAME = "13-42-0/20260813-delete-orphaned-process-definition-case-definition.xml"
+    }
+
+    /**
+     * UUID columns are declared as `uuid` on PostgreSQL/H2 but as `BINARY(16)` on MySQL. The MySQL
+     * driver binds a [UUID] as its 36 character string form, which does not fit in `BINARY(16)`, so
+     * the raw 16 bytes have to be bound instead.
+     */
+    private val isMysql: Boolean by lazy {
+        jdbcTemplate.execute(ConnectionCallback { it.metaData.databaseProductName })
+            .orEmpty()
+            .contains("mysql", ignoreCase = true)
+    }
+
+    private fun uuidParam(uuid: UUID): Any = if (isMysql) {
+        ByteBuffer.allocate(16)
+            .putLong(uuid.mostSignificantBits)
+            .putLong(uuid.leastSignificantBits)
+            .array()
+    } else {
+        uuid
     }
 
     @AfterEach
@@ -151,7 +173,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
                 (id, process_definition_id, activity_id, activity_type, process_link_type)
                 VALUES (?, ?, 'TestServiceTask', 'bpmn:ServiceTask:start', 'test')
                 """.trimIndent(),
-                validLinkId,
+                uuidParam(validLinkId),
                 validProcDefId
             )
 
@@ -161,7 +183,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
                 (id, process_definition_id, activity_id, activity_type, process_link_type)
                 VALUES (?, 'non-existent:1:12345', 'SomeTask', 'bpmn:ServiceTask:start', 'test')
                 """.trimIndent(),
-                orphanLinkId
+                uuidParam(orphanLinkId)
             )
         }
 
@@ -173,7 +195,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
         val orphanCountBefore = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM process_link WHERE id = ?",
             Int::class.java,
-            orphanLinkId
+            uuidParam(orphanLinkId)
         )
         assertThat(orphanCountBefore).isEqualTo(1)
 
@@ -191,14 +213,14 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
         val validCountAfter = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM process_link WHERE id = ?",
             Int::class.java,
-            validLinkId
+            uuidParam(validLinkId)
         )
         assertThat(validCountAfter).isEqualTo(1)
 
         val orphanCountAfter = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM process_link WHERE id = ?",
             Int::class.java,
-            orphanLinkId
+            uuidParam(orphanLinkId)
         )
         assertThat(orphanCountAfter).isEqualTo(0)
 
@@ -233,7 +255,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
                 (id, process_definition_id, activity_id, activity_type, process_link_type)
                 VALUES (?, ?, 'TestServiceTask', 'bpmn:ServiceTask:start', 'test')
                 """.trimIndent(),
-                validLinkId,
+                uuidParam(validLinkId),
                 validProcDefId
             )
             jdbcTemplate.update(
@@ -242,7 +264,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
                 (process_link_id, building_block_definition_key, building_block_definition_version_tag, plugin_configuration_mappings)
                 VALUES (?, 'test-building-block', '1.0.0', '{}')
                 """.trimIndent(),
-                validLinkId
+                uuidParam(validLinkId)
             )
 
             // Orphan process_link with building_block_process_link child
@@ -252,7 +274,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
                 (id, process_definition_id, activity_id, activity_type, process_link_type)
                 VALUES (?, 'non-existent:1:12345', 'OrphanTask', 'bpmn:ServiceTask:start', 'test')
                 """.trimIndent(),
-                orphanLinkId
+                uuidParam(orphanLinkId)
             )
             jdbcTemplate.update(
                 """
@@ -260,7 +282,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
                 (process_link_id, building_block_definition_key, building_block_definition_version_tag, plugin_configuration_mappings)
                 VALUES (?, 'test-building-block', '2.0.0', '{}')
                 """.trimIndent(),
-                orphanLinkId
+                uuidParam(orphanLinkId)
             )
         }
 
@@ -285,7 +307,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
         val validBbLinkCount = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM building_block_process_link WHERE process_link_id = ?",
             Int::class.java,
-            validLinkId
+            uuidParam(validLinkId)
         )
         assertThat(validBbLinkCount).isEqualTo(1)
 
@@ -293,7 +315,7 @@ class DeleteOrphanedProcessDefinitionLinksIntTest : BaseIntegrationTest() {
         val orphanBbLinkCount = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM building_block_process_link WHERE process_link_id = ?",
             Int::class.java,
-            orphanLinkId
+            uuidParam(orphanLinkId)
         )
         assertThat(orphanBbLinkCount).isEqualTo(0)
 
