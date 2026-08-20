@@ -31,9 +31,13 @@ import {pluginDataRoutes} from "./routes/plugin-data.js";
 import {EventConsumerManager} from "./rabbitmq/event-consumer.js";
 import {closeDbPool, createDbPool, type DbPool, runMigrations} from "./db/index.js";
 import {ConfigRepository} from "./db/config-repository.js";
+import {GzacInstanceRepository} from "./db/gzac-instance-repository.js";
+import {FrameAncestorRegistry} from "./frame-ancestor-registry.js";
+import {hostGzacInstanceRoutes} from "./routes/host-gzac-instances.js";
 import {KvRepository} from "./db/kv-repository.js";
 import {LogRepository} from "./db/log-repository.js";
 import {pluginLogRoutes} from "./routes/plugin-logs.js";
+import {parseAllowedInternalCidrs} from "./security/url-guard.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -88,14 +92,46 @@ async function main(): Promise<void> {
   const configRepository = new ConfigRepository(dbPool);
   const kvRepository = new KvRepository(dbPool);
   const logRepository = new LogRepository(dbPool);
+  const gzacInstanceRepository = new GzacInstanceRepository(dbPool);
 
   // Initialize config registry and plugin manager. The registry fronts the repository with a
   // short-TTL cache; the manager reads per-call grants through it so hot paths stay off Postgres.
   const configRegistry = new ConfigRegistry(configRepository, config.CONFIG_CACHE_TTL_MS);
+
+  // Which browser origins may frame this host's plugin screens. Same short-TTL cache trade-off as
+  // ConfigRegistry, because this sits on the bundle hot path.
+  const frameAncestorRegistry = new FrameAncestorRegistry(
+    gzacInstanceRepository,
+    (config.ALLOWED_FRAME_ANCESTORS ?? "").split(",").map((origin) => origin.trim()).filter(Boolean),
+    config.FRAME_ANCESTOR_STALE_MS,
+    config.CONFIG_CACHE_TTL_MS
+  );
   const allowHttp = (process.env.HOST_ALLOW_HTTP ?? "").toLowerCase() === "true";
-  // Lets http_request reach loopback/private-network targets. Local development only — in
-  // production this would let a plugin use the host as a proxy into the internal network (SSRF).
+  // Replaces the SSRF guard's dispatcher with a bare one — loopback, RFC1918 and 169.254.169.254 all
+  // become reachable. Local development only; use HOST_ALLOWED_INTERNAL_CIDRS to declare a specific
+  // in-cluster range in production, which keeps the guard (and the metadata floor) in place.
   const allowPrivateNetwork = (process.env.HOST_ALLOW_PRIVATE_NETWORK ?? "").toLowerCase() === "true";
+  if (allowPrivateNetwork) {
+    fastify.log.warn(
+      "HOST_ALLOW_PRIVATE_NETWORK=true — the http_request SSRF guard is DISABLED. Every plugin " +
+        "granted http_request can reach loopback, the private network and cloud metadata " +
+        "(169.254.169.254) through this host. Intended for local development only; in a deployed " +
+        "environment declare the specific ranges with HOST_ALLOWED_INTERNAL_CIDRS instead."
+    );
+  }
+  // Ranges the operator declares this host may reach even though they are private. Carves them out
+  // of the address envelope only — which origins a plugin may call is still decided per
+  // configuration by the egress allowlist GZAC pushes.
+  const allowedInternalCidrs = parseAllowedInternalCidrs(
+    process.env.HOST_ALLOWED_INTERNAL_CIDRS,
+    fastify.log
+  );
+  if (allowedInternalCidrs && allowPrivateNetwork) {
+    fastify.log.warn(
+      "HOST_ALLOWED_INTERNAL_CIDRS is ignored while HOST_ALLOW_PRIVATE_NETWORK=true — the whole " +
+        "address guard is off, so there is nothing to carve out of"
+    );
+  }
   const pluginManager = new PluginManager(
     config.PLUGIN_STORAGE_DIR,
     fastify.log,
@@ -105,6 +141,7 @@ async function main(): Promise<void> {
     {
       allowHttp,
       allowPrivateNetwork,
+      allowedInternalCidrs,
       wasmTimeoutMs: config.WASM_TIMEOUT_MS,
       wasmMaxMemoryPages: config.WASM_MAX_MEMORY_PAGES,
       gzacApiTimeoutMs: config.GZAC_API_TIMEOUT_MS,
@@ -150,8 +187,13 @@ async function main(): Promise<void> {
     configRegistry,
     config,
   });
+  await fastify.register(hostGzacInstanceRoutes, {
+    frameAncestorRegistry,
+    config,
+  });
   await fastify.register(pluginBundleRoutes, {
     pluginManager,
+    frameAncestorRegistry,
   });
   await fastify.register(pluginDataRoutes, {
     pluginManager,

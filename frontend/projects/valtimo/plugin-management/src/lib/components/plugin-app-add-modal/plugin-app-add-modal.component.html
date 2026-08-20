@@ -87,6 +87,7 @@
           [notificationObj]="{
             type: 'error',
             title: ('pluginManagement.appAdd.connectFailed' | translate),
+            message: $connectError() ?? '',
             showClose: false,
             lowContrast: true,
           }"
@@ -115,6 +116,8 @@
         <valtimo-plugin-external-configure
           [definitionId]="definition.id"
           (capabilitiesResolved)="onCapabilitiesResolved($event)"
+          (derivedEgressResolved)="onDerivedEgressResolved($event)"
+          (egressResolved)="onEgressResolved($event)"
           (endpointsResolved)="onEndpointsResolved($event)"
           (eventSubscriptionsResolved)="onEventSubscriptionsResolved($event)"
           (saveEvent)="onExternalSave($event)"
@@ -153,9 +156,12 @@
     <div [hidden]="$currentStep() !== 2">
       <valtimo-plugin-external-permissions
         [capabilities]="$capabilities()"
+        [derivedEgress]="$derivedEgress()"
+        [egress]="$egress()"
         [endpoints]="$endpoints()"
         [eventSubscriptions]="$eventSubscriptions()"
         (grantedCapabilitiesChange)="onGrantedCapabilitiesChange($event)"
+        (grantedEgressChange)="onGrantedEgressChange($event)"
         (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
         (grantedEventsChange)="onGrantedEventsChange($event)"
         (validEvent)="onPermissionsValid($event)"

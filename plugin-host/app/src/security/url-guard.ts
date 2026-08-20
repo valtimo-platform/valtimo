@@ -18,6 +18,7 @@ import { BlockList, isIP } from "node:net";
 import { lookup } from "node:dns";
 import type { LookupAddress, LookupOptions } from "node:dns";
 import { Agent } from "undici";
+import type { HostLogger } from "../models/index.js";
 
 /**
  * SSRF guard for the `http_request` host function: plugins supply arbitrary URLs, so without this
@@ -31,6 +32,14 @@ import { Agent } from "undici";
  * is no separate validate-then-resolve step for a flipping DNS record to exploit — and it covers
  * every request through the agent, including redirect hops. IP-literal hosts bypass DNS entirely,
  * so callers must additionally reject those up front via {@link findBlockedIpLiteral}.
+ *
+ * This address envelope is a safety floor, not the permission mechanism: which *origins* a plugin
+ * may call is decided by the per-configuration egress allowlist (see `security/egress-allowlist.ts`).
+ * An operator who genuinely needs a plugin to reach an in-cluster service carves the specific range
+ * out with `HOST_ALLOWED_INTERNAL_CIDRS` (see {@link parseAllowedInternalCidrs}) rather than
+ * disabling the guard; because the carve-out is applied inside
+ * {@link isPrivateOrReservedAddress} both enforcement points inherit it and the
+ * rebinding-proof property survives.
  */
 
 const PRIVATE_ADDRESS_ERROR_CODE = "EPRIVATEADDRESS";
@@ -59,6 +68,19 @@ const blockedIpv6 = new BlockList();
 // §2.5.5.1). The WHATWG URL parser normalises such a literal to its hex form (`::7f00:1`), which no
 // dotted-quad check would catch, and a dual stack routes it to the embedded IPv4 address.
 blockedIpv6.addSubnet("::", 96, "ipv6");
+// IPv4-translated (RFC 2765 `::ffff:0:a.b.c.d`, normalised to `::ffff:0:7f00:1`). Blocked wholesale:
+// the range embeds an arbitrary IPv4 address in its low bits and is unroutable on a modern stack, so
+// there is no legitimate destination in it to preserve.
+blockedIpv6.addSubnet("::ffff:0:0:0", 96, "ipv6");
+// 6to4 (RFC 3056) — embeds an IPv4 address in bits 16-48, e.g. `2002:7f00:1::` is 127.0.0.1.
+// Deprecated by RFC 7526; blocked wholesale for the same reason as IPv4-translated.
+blockedIpv6.addSubnet("2002::", 16, "ipv6");
+// Teredo (RFC 4380) — also carries an IPv4 address, in the low 32 bits.
+blockedIpv6.addSubnet("2001::", 32, "ipv6");
+// Deprecated site-local (RFC 3879). Still routed by some stacks, and the v6 sibling of RFC1918.
+blockedIpv6.addSubnet("fec0::", 10, "ipv6");
+// Discard-only prefix (RFC 6666)
+blockedIpv6.addSubnet("100::", 64, "ipv6");
 // Link-local and unique-local
 blockedIpv6.addSubnet("fe80::", 10, "ipv6");
 blockedIpv6.addSubnet("fc00::", 7, "ipv6");
@@ -67,22 +89,127 @@ blockedIpv6.addSubnet("ff00::", 8, "ipv6");
 // NAT64 well-known prefix — embeds an IPv4 address a translator would connect to
 blockedIpv6.addSubnet("64:ff9b::", 96, "ipv6");
 
-export function isPrivateOrReservedAddress(address: string): boolean {
+/**
+ * Never carve-out-able, whatever an operator configures. Cloud metadata services live on
+ * 169.254.169.254 and hand out instance credentials to anything that can reach them, which makes
+ * link-local the single highest-value target behind an SSRF — and no plugin has a legitimate reason
+ * to call it. {@link parseAllowedInternalCidrs} refuses overlapping entries up front; this list is
+ * the runtime backstop, and also covers the IPv4-mapped forms (`::ffff:169.254.169.254`) that a
+ * carve-out expressed in IPv6 could otherwise reach.
+ */
+const metadataFloor = new BlockList();
+metadataFloor.addSubnet("169.254.0.0", 16);
+
+/** Addresses an operator explicitly exempted from the block lists. */
+export type AllowedInternalCidrs = BlockList;
+
+/**
+ * Judges a *resolved* address (or an IP literal a plugin supplied) against the block lists.
+ *
+ * `allowedInternal` is the operator's carve-out from {@link parseAllowedInternalCidrs}: addresses in
+ * it are treated as reachable even though they fall inside a blocked range. The link-local floor is
+ * checked first, so a carve-out can never open cloud metadata.
+ */
+export function isPrivateOrReservedAddress(
+  address: string,
+  allowedInternal?: AllowedInternalCidrs
+): boolean {
   const family = isIP(address);
   if (family === 0) return true; // not an IP literal — only resolved addresses reach this check
   if (family === 6) {
-    // An IPv4-mapped/compatible IPv6 literal (e.g. ::ffff:127.0.0.1) connects to the embedded
-    // IPv4 address, so judge it by its IPv4 rules.
-    const embedded = /^::(?:ffff:)?(\d+\.\d+\.\d+\.\d+)$/i.exec(address);
-    if (embedded) return isPrivateOrReservedAddress(embedded[1]);
-    // The dotted form above only appears when a caller hands us the address verbatim; the URL
-    // parser normalises `[::ffff:127.0.0.1]` to the hex form `::ffff:7f00:1`. Checking the IPv4
-    // rules with family "ipv6" catches both — node resolves an IPv4-mapped address against IPv4
-    // rules — while leaving a genuinely public mapped address (`::ffff:8.8.8.8`) allowed.
+    if (metadataFloor.check(address, "ipv6")) return true;
+    if (allowedInternal?.check(address, "ipv6")) return false;
+    // The URL parser normalises `[::ffff:127.0.0.1]` to the hex form `::ffff:7f00:1`, so a
+    // dotted-quad check would never fire on anything that came through a URL. Checking the IPv4
+    // rules with family "ipv6" catches both forms — node resolves an IPv4-mapped address against
+    // IPv4 rules — while leaving a genuinely public mapped address (`::ffff:8.8.8.8`) allowed.
     if (blockedIpv4.check(address, "ipv6")) return true;
     return blockedIpv6.check(address, "ipv6");
   }
+  if (metadataFloor.check(address)) return true;
+  if (allowedInternal?.check(address)) return false;
   return blockedIpv4.check(address);
+}
+
+/**
+ * Parses `HOST_ALLOWED_INTERNAL_CIDRS` — a comma-separated list of CIDR ranges the operator declares
+ * this host may reach despite them being private, e.g. `10.4.7.12/32,10.4.7.0/24`. Returns undefined
+ * when nothing usable was configured, so callers can skip the carve-out entirely.
+ *
+ * Malformed entries are dropped with a warning rather than failing startup: an unparseable CIDR
+ * narrows what the host can reach, so skipping it fails closed. An entry overlapping
+ * 169.254.0.0/16 is refused outright — see {@link metadataFloor}.
+ *
+ * Keep these ranges as narrow as the service allows. In Kubernetes the pod CIDR (`10.42.0.0/16` or
+ * similar) reaches *every* pod in the cluster, including GZAC by IP — which also sidesteps the
+ * `gzacBaseUrl` origin check, since that compares origin strings and a pod IP won't match. A
+ * specific ClusterIP or a /32 is the useful granularity; a NetworkPolicy or an egress proxy is a
+ * better place for this policy altogether.
+ */
+export function parseAllowedInternalCidrs(
+  raw: string | undefined,
+  logger?: HostLogger
+): AllowedInternalCidrs | undefined {
+  const entries = (raw ?? "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry !== "");
+  if (entries.length === 0) return undefined;
+
+  const list = new BlockList();
+  let accepted = 0;
+  for (const entry of entries) {
+    const match = /^(.+)\/(\d{1,3})$/.exec(entry);
+    if (!match) {
+      logger?.warn(
+        { cidr: entry },
+        "Ignoring HOST_ALLOWED_INTERNAL_CIDRS entry: expected CIDR notation like 10.4.7.0/24"
+      );
+      continue;
+    }
+    const [, network, prefixText] = match;
+    const family = isIP(network);
+    const prefix = Number(prefixText);
+    if (family === 0 || prefix > (family === 6 ? 128 : 32)) {
+      logger?.warn(
+        { cidr: entry },
+        "Ignoring HOST_ALLOWED_INTERNAL_CIDRS entry: not a valid network address and prefix length"
+      );
+      continue;
+    }
+    if (overlapsMetadataFloor(network, prefix, family)) {
+      logger?.error(
+        { cidr: entry },
+        "Refusing HOST_ALLOWED_INTERNAL_CIDRS entry: 169.254.0.0/16 hosts cloud metadata services and is never allowlistable"
+      );
+      continue;
+    }
+    list.addSubnet(network, prefix, family === 6 ? "ipv6" : "ipv4");
+    accepted++;
+  }
+
+  if (accepted === 0) return undefined;
+  logger?.info(
+    { cidrCount: accepted },
+    "http_request may reach these operator-declared internal ranges when a plugin's egress allowlist names the target"
+  );
+  return list;
+}
+
+/**
+ * True when the candidate range and 169.254.0.0/16 intersect. CIDR ranges are either disjoint or
+ * nested, so it is enough to test both containment directions: whether the candidate holds either
+ * end of the floor, and whether the floor holds the candidate's own network address.
+ */
+function overlapsMetadataFloor(network: string, prefix: number, family: number): boolean {
+  const candidate = new BlockList();
+  candidate.addSubnet(network, prefix, family === 6 ? "ipv6" : "ipv4");
+  const candidateFamily = family === 6 ? "ipv6" : "ipv4";
+  return (
+    candidate.check("169.254.0.0", candidateFamily) ||
+    candidate.check("169.254.255.255", candidateFamily) ||
+    metadataFloor.check(network, candidateFamily)
+  );
 }
 
 /**
@@ -90,10 +217,13 @@ export function isPrivateOrReservedAddress(address: string): boolean {
  * else null. Complements the guarded agent: connections to IP literals skip DNS, so the agent's
  * lookup guard never sees them.
  */
-export function findBlockedIpLiteral(url: URL): string | null {
+export function findBlockedIpLiteral(
+  url: URL,
+  allowedInternal?: AllowedInternalCidrs
+): string | null {
   // URL.hostname keeps the brackets around IPv6 literals
   const host = url.hostname.replace(/^\[|\]$/g, "");
-  if (isIP(host) !== 0 && isPrivateOrReservedAddress(host)) {
+  if (isIP(host) !== 0 && isPrivateOrReservedAddress(host, allowedInternal)) {
     return `IP address ${host} is in a private or reserved range`;
   }
   return null;
@@ -125,12 +255,13 @@ export function rootCauseMessage(err: unknown): string {
 function guardedLookup(
   hostname: string,
   options: LookupOptions,
-  callback: (err: NodeJS.ErrnoException | null, address: string | LookupAddress[], family?: number) => void
+  callback: (err: NodeJS.ErrnoException | null, address: string | LookupAddress[], family?: number) => void,
+  allowedInternal?: AllowedInternalCidrs
 ): void {
   lookup(hostname, { ...options, all: true }, (err, addresses) => {
     if (err) return callback(err, []);
     const list = addresses as LookupAddress[];
-    const blocked = list.find((entry) => isPrivateOrReservedAddress(entry.address));
+    const blocked = list.find((entry) => isPrivateOrReservedAddress(entry.address, allowedInternal));
     if (list.length === 0 || blocked) {
       const reason = blocked
         ? `Hostname '${hostname}' resolves to ${blocked.address}, which is in a private or reserved range`
@@ -145,12 +276,15 @@ function guardedLookup(
 }
 
 /**
- * An undici dispatcher that refuses to open sockets towards private/reserved addresses.
+ * An undici dispatcher that refuses to open sockets towards private/reserved addresses, except for
+ * the ranges in `allowedInternal`.
  * Pass it as `dispatcher` on every fetch call (redirect hops included when redirects are
  * followed manually).
  */
-export function createGuardedAgent(): Agent {
+export function createGuardedAgent(allowedInternal?: AllowedInternalCidrs): Agent {
   // `connect` options are forwarded to net/tls.connect, which accepts a custom `lookup`;
   // undici's types don't declare it, hence the cast.
-  return new Agent({ connect: { lookup: guardedLookup } as object });
+  const lookupWithCarveOut: typeof guardedLookup = (hostname, options, callback) =>
+    guardedLookup(hostname, options, callback, allowedInternal);
+  return new Agent({ connect: { lookup: lookupWithCarveOut } as object });
 }

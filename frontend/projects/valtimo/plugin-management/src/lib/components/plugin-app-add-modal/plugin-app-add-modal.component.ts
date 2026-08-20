@@ -124,9 +124,18 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
   public readonly $endpoints = signal<Array<ExternalPluginEndpoint>>([]);
   public readonly $eventSubscriptions = signal<Array<string>>([]);
   public readonly $capabilities = signal<Array<string>>([]);
+  public readonly $egress = signal<Array<string>>([]);
+  public readonly $derivedEgress = signal<Array<string>>([]);
 
   /** Details of the conflicting registration, shown when connecting is rejected with a 409. */
   public readonly $conflict = signal<{pluginId: string; hostName: string} | null>(null);
+
+  /**
+   * Why connecting failed, rendered in the failed notification. The backend answers a fixable
+   * mistake (a bind address as base URL, a broker over plaintext HTTP) with a 400 whose `detail`
+   * explains it — `createHost` keeps that off the global error toast so it can be shown here.
+   */
+  public readonly $connectError = signal<string | null>(null);
 
   public readonly refreshModalOpen$ = new BehaviorSubject<boolean>(false);
 
@@ -179,6 +188,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
 
     this.$connectState.set('connecting');
     this.$conflict.set(null);
+    this.$connectError.set(null);
     this._externalPluginService.createHost(request, true).subscribe({
       next: host => {
         this._host = host;
@@ -201,6 +211,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
         }
 
         this.$connectState.set('failed');
+        this.$connectError.set(this._extractConnectError(response));
         this._logger.error('Something went wrong with connecting the app.');
       },
     });
@@ -255,6 +266,14 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
     this.$capabilities.set(capabilities);
   }
 
+  public onEgressResolved(targets: Array<string>): void {
+    this.$egress.set(targets);
+  }
+
+  public onDerivedEgressResolved(targets: Array<string>): void {
+    this.$derivedEgress.set(targets);
+  }
+
   public onPermissionsValid(valid: boolean): void {
     this.$permissionsValid.set(valid);
   }
@@ -269,6 +288,10 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
 
   public onGrantedCapabilitiesChange(capabilities: Array<string>): void {
     this._configureComponent?.setGrantedCapabilities(capabilities);
+  }
+
+  public onGrantedEgressChange(targets: Array<string>): void {
+    this._configureComponent?.setGrantedEgress(targets);
   }
 
   public goToPermissionsStep(): void {
@@ -287,6 +310,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
     grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
     grantedEvents: Array<ExternalPluginGrantedEventEntry>;
     grantedCapabilities: Array<string>;
+    grantedEgress: Array<string>;
   }): void {
     this.$saving.set(true);
     this._externalPluginService
@@ -297,6 +321,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
         grantedEndpoints: event.grantedEndpoints,
         grantedEvents: event.grantedEvents,
         grantedCapabilities: event.grantedCapabilities,
+        grantedEgress: event.grantedEgress,
       })
       .subscribe({
         next: () => {
@@ -388,6 +413,20 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
     return url.toString();
   }
 
+  /** See `PluginHostsPageComponent._extractHostError` — the message precedence is identical. */
+  private _extractConnectError(response: HttpErrorResponse): string {
+    const body = response?.error;
+    const candidate =
+      (typeof body?.detail === 'string' && body.detail) ||
+      (typeof body?.message === 'string' && body.message) ||
+      (typeof body?.title === 'string' && body.title) ||
+      '';
+    return (
+      candidate.trim() ||
+      this._translateService.instant('pluginManagement.host.createFailedFallback')
+    );
+  }
+
   private _resetAfterClose(): void {
     setTimeout(() => {
       this.$currentStep.set(0);
@@ -402,7 +441,10 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
       this.$endpoints.set([]);
       this.$eventSubscriptions.set([]);
       this.$capabilities.set([]);
+      this.$egress.set([]);
+      this.$derivedEgress.set([]);
       this.$conflict.set(null);
+      this.$connectError.set(null);
       this.refreshModalOpen$.next(false);
       this._host = null;
       this._stopDefinitionPoll();

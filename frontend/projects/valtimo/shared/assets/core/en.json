@@ -2296,7 +2296,10 @@
       "overwriteTitle": "Overwrite existing plugin version?",
       "overwriteWarningTitle": "This will overwrite the current plugin version",
       "overwriteWarning": "Version {{version}} of '{{pluginId}}' already exists on the host with different content. Overwriting it can lead to unexpected behavior for configurations and processes that already use this version. Since the content differs, review the permissions the uploaded package requests below and confirm to proceed — all existing configurations of this version will be reset to exactly these permissions.",
-      "overwriteConfirm": "Overwrite version"
+      "overwriteConfirm": "Overwrite version",
+      "successTitle": "Plugin installed",
+      "successMessage": "{{pluginId}} {{version}} was installed and can now be configured.",
+      "configureAction": "Configure plugin"
     },
     "noDefinitions": "No plugin definitions found.",
     "noHosts": "No plugin hosts configured.",
@@ -2327,6 +2330,7 @@
       "eventBrokerExchange": "Event broker exchange (optional)",
       "eventQueueMode": "Event queue mode",
       "eventQueueTtlMs": "Event queue inactivity TTL (ms)",
+      "frontendOrigins": "Allowed frontend origins",
       "host": "Host",
       "configuration": "Configuration"
     },
@@ -2338,11 +2342,21 @@
     },
     "hints": {
       "eventQueueTtlMs": "The durable queue is deleted after this many ms with no connected host. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
-      "eventQueueTtlMsApp": "The durable queue is deleted after this many ms with no connected app. Min 1h (3600000), max 30d (2592000000), default 72h (259200000)."
+      "eventQueueTtlMsApp": "The durable queue is deleted after this many ms with no connected app. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
+      "frontendOrigins": "Browser origins (scheme://host[:port], no path) allowed to embed this host's plugin screens. Add every Valtimo frontend URL users open plugins from, including any proxy alias.",
+      "noFrontendOrigins": "With no origins listed, no page can embed this host's plugin screens."
     },
     "editEventQueue": "Edit event queue",
     "editHostEventQueueModalTitle": "Edit event queue for {{name}}",
     "saveEventQueue": "Save",
+    "addFrontendOrigin": "Add origin",
+    "editFrontendOrigins": "Edit frontend origins",
+    "editHostFrontendOriginsModalTitle": "Frontend origins for {{name}}",
+    "saveFrontendOrigins": "Save origins",
+    "host": {
+      "createFailedTitle": "Could not save",
+      "createFailedFallback": "The host could not be saved. Check the entered values and try again."
+    },
     "source": {
       "embedded": "Embedded",
       "external": "External"

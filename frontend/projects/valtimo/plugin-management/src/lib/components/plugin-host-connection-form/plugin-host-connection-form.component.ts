@@ -27,8 +27,8 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {InputModule, LayerModule} from 'carbon-components-angular';
+import {FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular';
 import {SelectItem, SelectModule} from '@valtimo/components';
 import {
   ExternalPluginEventQueueMode,
@@ -37,6 +37,9 @@ import {
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {Subscription} from 'rxjs';
+
+/** A browser origin: `scheme://host[:port]`, no path — the shape the backend stores. */
+const ORIGIN_PATTERN = /^https?:\/\/[^/\s]+$/;
 
 /**
  * The connection details form shared by host registration (plugin-host modal) and app
@@ -54,6 +57,7 @@ import {Subscription} from 'rxjs';
     CommonModule,
     TranslateModule,
     ReactiveFormsModule,
+    ButtonModule,
     InputModule,
     LayerModule,
     SelectModule,
@@ -81,6 +85,7 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     eventBrokerExchange: new FormControl(''),
     eventQueueMode: new FormControl<ExternalPluginEventQueueMode>('LIVE', {nonNullable: true}),
     eventQueueTtlMs: new FormControl<number | null>(null),
+    frontendOrigins: new FormArray<FormControl<string>>([]),
   });
 
   public minTtlMs = 60 * 60 * 1000;
@@ -105,6 +110,10 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     return this.variant === 'app'
       ? 'pluginManagement.hints.eventQueueTtlMsApp'
       : 'pluginManagement.hints.eventQueueTtlMs';
+  }
+
+  public get frontendOriginControls(): Array<FormControl<string>> {
+    return this.form.controls.frontendOrigins.controls;
   }
 
   constructor(private readonly _externalPluginService: ExternalPluginService) {}
@@ -163,6 +172,14 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     this._subscriptions.unsubscribe();
   }
 
+  public addFrontendOrigin(): void {
+    this.form.controls.frontendOrigins.push(this._originControl(''));
+  }
+
+  public removeFrontendOrigin(index: number): void {
+    this.form.controls.frontendOrigins.removeAt(index);
+  }
+
   public buildRequest(kind: ExternalPluginHostKind): ExternalPluginHostCreateRequest | null {
     if (this.form.invalid) return null;
     const value = this.form.getRawValue();
@@ -177,10 +194,14 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
       eventBrokerExchange: value.eventBrokerExchange?.trim() || null,
       eventQueueMode: mode,
       eventQueueTtlMs: mode === 'DURABLE' ? (value.eventQueueTtlMs ?? null) : null,
+      frontendOrigins: (value.frontendOrigins ?? [])
+        .map(origin => origin?.trim() ?? '')
+        .filter(origin => origin.length > 0),
     };
   }
 
   public reset(): void {
+    this.form.controls.frontendOrigins.clear();
     this.form.reset({
       name: '',
       baseUrl: '',
@@ -203,6 +224,28 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
         eventBrokerAmqpUrl: defaults.eventBrokerAmqpUrl,
         eventBrokerExchange: defaults.eventBrokerExchange,
       });
+      this._setFrontendOrigins(
+        // The server-side default is the configured CORS allowed-origins. With none configured, the
+        // admin's own origin is the best available guess: it is literally the page that will frame
+        // the plugin, unlike gzacCallbackBaseUrl, which is a server-to-server address.
+        defaults.frontendOrigins?.length ? defaults.frontendOrigins : [window.location.origin]
+      );
+    });
+  }
+
+  private _setFrontendOrigins(origins: Array<string>): void {
+    const array = this.form.controls.frontendOrigins;
+    array.clear();
+    origins.forEach(origin => array.push(this._originControl(origin)));
+  }
+
+  private _originControl(value: string): FormControl<string> {
+    // Deliberately not `required`: a row the admin added and left blank is dropped on submit
+    // rather than blocking the save. `Validators.pattern` passes an empty value, so only a
+    // *filled-in* row has to be a well-formed origin.
+    return new FormControl<string>(value, {
+      nonNullable: true,
+      validators: [Validators.pattern(ORIGIN_PATTERN)],
     });
   }
 }

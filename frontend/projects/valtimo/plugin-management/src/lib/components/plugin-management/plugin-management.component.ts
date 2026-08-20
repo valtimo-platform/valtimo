@@ -17,17 +17,21 @@ import {AfterViewInit, Component, OnDestroy, TemplateRef, ViewChild} from '@angu
 import {HttpErrorResponse} from '@angular/common/http';
 import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ExternalPluginConfiguration,
   ExternalPluginDefinition,
   ExternalPluginHost,
   ExternalPluginHostUsage,
   ExternalPluginService,
+  ExternalPluginUploadResult,
+  getExternalPluginDescription,
   getExternalPluginDisplayName,
   isExternalPluginDefinitionIncompatible,
   PluginConfiguration,
   PluginManagementService,
   PluginTranslationService,
+  toExternalPluginKey,
 } from '@valtimo/plugin';
 import {IconService} from 'carbon-components-angular';
 import {Information16, Upload16} from '@carbon/icons';
@@ -59,6 +63,12 @@ import {PluginManagementStateService} from '../../services';
 import {UnifiedPluginConfigurationRow} from '../../models';
 import {cloneDeep, isEqual} from 'lodash';
 import {v4 as uuidv4} from 'uuid';
+
+/**
+ * How long the post-upload notification stays up. Longer than the 4 s notification default because
+ * it carries an action the admin has to read and click, not just an outcome to notice.
+ */
+const UPLOAD_NOTIFICATION_DURATION_MS = 15000;
 
 @Component({
   standalone: false,
@@ -285,7 +295,8 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     private readonly _stateService: PluginManagementStateService,
     private readonly _translateService: TranslateService,
     private readonly _externalPluginService: ExternalPluginService,
-    private readonly _iconService: IconService
+    private readonly _iconService: IconService,
+    private readonly _globalNotificationService: GlobalNotificationService
   ) {
     this._iconService.registerAll([Information16, Upload16]);
   }
@@ -515,9 +526,66 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
     this.uploadModalOpen$.next(false);
   }
 
-  public onPluginUploaded(): void {
+  /**
+   * The backend runs discovery before answering the upload, so the definition already exists by the
+   * time this fires — the refresh below shows it, and the notification names what was installed and
+   * offers the obvious next step. The fields degrade gracefully: an older host that answers without
+   * them still yields a valid message, just without the name.
+   *
+   * An actionable notification rather than a plain toast, because a toast renders no action; and a
+   * longer duration than the 4 s default, since an action the admin never gets to click is worse
+   * than no action at all.
+   */
+  public onPluginUploaded(result: ExternalPluginUploadResult): void {
     this.uploadModalOpen$.next(false);
     this._stateService.refresh();
+    this._globalNotificationService.showActionable({
+      type: 'success',
+      lowContrast: true,
+      duration: UPLOAD_NOTIFICATION_DURATION_MS,
+      title: this._translateService.instant('pluginManagement.upload.successTitle'),
+      message: this._translateService.instant('pluginManagement.upload.successMessage', {
+        pluginId: result?.pluginId ?? '',
+        version: result?.version ?? '',
+      }),
+      actions: [
+        {
+          text: this._translateService.instant('pluginManagement.upload.configureAction'),
+          click: () => this.configureUploadedPlugin(result),
+        },
+      ],
+    });
+  }
+
+  /**
+   * Opens the add-configuration flow straight on the configuration step for the plugin that was
+   * just uploaded. The definition is matched on `pluginId@version` against the freshly refreshed
+   * list; if discovery has not surfaced it yet the flow still opens, just on the plugin picker —
+   * a slower path, never a dead end.
+   */
+  public configureUploadedPlugin(result: ExternalPluginUploadResult): void {
+    this.externalDefinitions$.pipe(take(1)).subscribe(definitions => {
+      const definition = definitions.find(
+        candidate =>
+          candidate.pluginId === result?.pluginId && candidate.version === result?.version
+      );
+
+      if (definition) {
+        const lang = this._translateService.currentLang;
+        this._stateService.selectPluginDefinition({
+          key: toExternalPluginKey(definition.id),
+          title: getExternalPluginDisplayName(definition, lang),
+          description: getExternalPluginDescription(definition, lang) ?? undefined,
+        });
+      } else {
+        this._logger.debug(
+          `Uploaded plugin ${result?.pluginId}@${result?.version} is not discovered yet; opening the plugin picker instead.`
+        );
+        this._stateService.clearSelectedPluginDefinition();
+      }
+
+      this.showAddModal$.next(true);
+    });
   }
 
   // --- Usage modal ---

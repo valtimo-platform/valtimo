@@ -22,6 +22,11 @@
   </cds-modal-header>
 
   <div cdsModalContent class="plugin-host-modal__content">
+    <cds-inline-notification
+      *ngIf="errorNotification$ | async as errorNotification"
+      [notificationObj]="errorNotification"
+    ></cds-inline-notification>
+
     <valtimo-plugin-host-connection-form
       [active]="open"
       (validChange)="onFormValidChange($event)"
@@ -29,11 +34,18 @@
   </div>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onClose()">
+    <cds-loading
+      *ngIf="submitting"
+      size="sm"
+      [isActive]="true"
+      class="plugin-host-modal__spinner"
+    ></cds-loading>
+
+    <button cdsButton="secondary" [disabled]="submitting" (click)="onClose()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="!formValid" (click)="onSubmit()">
+    <button cdsButton="primary" [disabled]="!formValid || submitting" (click)="onSubmit()">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

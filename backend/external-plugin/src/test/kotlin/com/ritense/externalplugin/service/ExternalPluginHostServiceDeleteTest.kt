@@ -65,6 +65,7 @@ class ExternalPluginHostServiceDeleteTest {
             grantedEndpointRepository,
             grantedEventRepository,
             mock(),
+            mock(),
             mock<EncryptionService>(),
             mock<ExternalPluginHostClient>(),
             hostUsageResolver,

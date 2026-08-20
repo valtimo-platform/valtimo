@@ -33,6 +33,7 @@ import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {PluginHostModalComponent} from '../plugin-host-modal/plugin-host-modal.component';
 import {PluginHostEventQueueModalComponent} from '../plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
+import {PluginHostFrontendOriginsModalComponent} from '../plugin-host-frontend-origins-modal/plugin-host-frontend-origins-modal.component';
 import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-modal.component';
 
 @Component({
@@ -49,6 +50,7 @@ import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-moda
     ConfirmationModalModule,
     PluginHostModalComponent,
     PluginHostEventQueueModalComponent,
+    PluginHostFrontendOriginsModalComponent,
     PluginUsageModalComponent,
   ],
 })
@@ -65,12 +67,17 @@ export class PluginHostsPageComponent implements OnDestroy {
   public readonly hostsLoading$ = new BehaviorSubject<boolean>(true);
   public readonly hostsRefreshing$ = new BehaviorSubject<boolean>(false);
   public readonly hostModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostSubmitting$ = new BehaviorSubject<boolean>(false);
+  public readonly hostErrorMessage$ = new BehaviorSubject<string | null>(null);
   public readonly reloadModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
 
   public readonly eventQueueModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly hostToEditEventQueue$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+
+  public readonly frontendOriginsModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostToEditFrontendOrigins$ = new BehaviorSubject<ExternalPluginHost | null>(null);
 
   public readonly usageModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly usageModalUsages$ = new BehaviorSubject<Array<ExternalPluginHostUsage>>([]);
@@ -105,6 +112,10 @@ export class PluginHostsPageComponent implements OnDestroy {
     {
       callback: this.editHostEventQueue.bind(this),
       label: 'pluginManagement.editEventQueue',
+    },
+    {
+      callback: this.editHostFrontendOrigins.bind(this),
+      label: 'pluginManagement.editFrontendOrigins',
     },
     {
       callback: this.deleteHost.bind(this),
@@ -169,16 +180,70 @@ export class PluginHostsPageComponent implements OnDestroy {
     this.hostModalOpen$.next(false);
   }
 
+  /**
+   * Keeps the modal open and populated when registration fails, showing the reason inline. The
+   * backend answers a fixable mistake with a 400 carrying `detail`; the service marks that status
+   * `InterceptorSkip`, so this is the only place the admin ever sees it.
+   */
   public submitHost(request: ExternalPluginHostCreateRequest): void {
+    this.hostSubmitting$.next(true);
+    this.hostErrorMessage$.next(null);
     this._externalPluginService.createHost(request).subscribe({
       next: () => {
+        this.hostSubmitting$.next(false);
+        // Closing resets the modal, so a subsequent "add host" starts from a clean form.
         this.hostModalOpen$.next(false);
         this.reloadModalOpen$.next(true);
       },
-      error: () => {
-        this._logger.error('Something went wrong with creating the plugin host.');
+      error: (response: HttpErrorResponse) => {
+        this.hostSubmitting$.next(false);
+        this.hostErrorMessage$.next(this._extractHostError(response));
+        this._logger.error('Something went wrong with creating the plugin host.', response);
       },
     });
+  }
+
+  public editHostFrontendOrigins(host: ExternalPluginHost): void {
+    this.hostToEditFrontendOrigins$.next(host);
+    this.frontendOriginsModalOpen$.next(true);
+  }
+
+  public closeFrontendOriginsModal(): void {
+    this.frontendOriginsModalOpen$.next(false);
+    this.hostToEditFrontendOrigins$.next(null);
+  }
+
+  public submitFrontendOriginsUpdate(origins: Array<string>): void {
+    const host = this.hostToEditFrontendOrigins$.value;
+    if (!host) return;
+    this._externalPluginService.updateHostFrontendOrigins(host.id, origins).subscribe({
+      next: () => {
+        this.frontendOriginsModalOpen$.next(false);
+        this.hostToEditFrontendOrigins$.next(null);
+        this._refreshHosts$.next();
+      },
+      error: () => {
+        this._logger.error('Something went wrong with updating the plugin host frontend origins.');
+      },
+    });
+  }
+
+  /**
+   * The most specific message the response carries. `detail` is what the backend's validation
+   * mapper fills with the operator-facing reason; `message`/`title` cover the other problem shapes;
+   * the translated fallback covers a response with none of them (a gateway error, say).
+   */
+  private _extractHostError(response: HttpErrorResponse): string {
+    const body = response?.error;
+    const candidate =
+      (typeof body?.detail === 'string' && body.detail) ||
+      (typeof body?.message === 'string' && body.message) ||
+      (typeof body?.title === 'string' && body.title) ||
+      '';
+    return (
+      candidate.trim() ||
+      this._translateService.instant('pluginManagement.host.createFailedFallback')
+    );
   }
 
   public deleteHost(host: ExternalPluginHost): void {

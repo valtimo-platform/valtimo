@@ -41,6 +41,7 @@ import {
   isExternalPluginKey,
 } from '@valtimo/plugin';
 import {PluginManagementStateService} from '../../services';
+import {deriveExternalPluginEgressOrigins} from '../../utils';
 
 interface ExternalPluginSaveEvent {
   definitionId: string;
@@ -49,6 +50,7 @@ interface ExternalPluginSaveEvent {
   grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
   grantedEvents: Array<ExternalPluginGrantedEventEntry>;
   grantedCapabilities: Array<string>;
+  grantedEgress: Array<string>;
 }
 
 /**
@@ -84,6 +86,13 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   @Output() public endpointsResolved = new EventEmitter<Array<ExternalPluginEndpoint>>();
   @Output() public eventSubscriptionsResolved = new EventEmitter<Array<string>>();
   @Output() public capabilitiesResolved = new EventEmitter<Array<string>>();
+  @Output() public egressResolved = new EventEmitter<Array<string>>();
+  /**
+   * The origins GZAC will derive from the configuration values entered on this step, recomputed as
+   * they change. Not a grant — the admin supplying the URL is the grant — but the permissions step
+   * shows them so the full destination set is visible before activation.
+   */
+  @Output() public derivedEgressResolved = new EventEmitter<Array<string>>();
 
   public readonly $configBundleUrl = signal<string | null>(null);
   public readonly $loading = signal(true);
@@ -99,6 +108,8 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   private _grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry> = [];
   private _grantedEvents: Array<ExternalPluginGrantedEventEntry> = [];
   private _grantedCapabilities: Array<string> = [];
+  private _grantedEgress: Array<string> = [];
+  private _configurationSchema: unknown = null;
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -125,6 +136,9 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 this.endpointsResolved.emit([]);
                 this.eventSubscriptionsResolved.emit([]);
                 this.capabilitiesResolved.emit([]);
+                this.egressResolved.emit([]);
+                this.derivedEgressResolved.emit([]);
+                this._configurationSchema = null;
                 return [];
               }
 
@@ -163,6 +177,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   }): void {
     this._iframeConfigTitle = event.title;
     this._iframeConfigData = event.data;
+    this._emitDerivedEgress(event.data);
     this.validEvent.emit(event.valid);
   }
 
@@ -176,6 +191,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
 
   public setGrantedCapabilities(caps: Array<string>): void {
     this._grantedCapabilities = caps;
+  }
+
+  public setGrantedEgress(targets: Array<string>): void {
+    this._grantedEgress = targets;
   }
 
   private _applyDefinition(definition: ExternalPluginDefinition): void {
@@ -193,8 +212,21 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     this.eventSubscriptionsResolved.emit(eventSubscriptions);
     const capabilities = definition.manifest?.permissions?.capabilities ?? [];
     this.capabilitiesResolved.emit(capabilities);
+    const egress = definition.manifest?.permissions?.egress ?? [];
+    this._grantedEgress = [...egress];
+    this.egressResolved.emit(egress);
+    // Kept so the derived destinations can be recomputed whenever the configuration values
+    // change, without re-fetching the definition.
+    this._configurationSchema = definition.configurationSchema;
+    this._emitDerivedEgress(null);
 
     this.$loading.set(false);
+  }
+
+  private _emitDerivedEgress(properties: Record<string, unknown> | null): void {
+    this.derivedEgressResolved.emit(
+      deriveExternalPluginEgressOrigins(this._configurationSchema, properties)
+    );
   }
 
   private _validateForm(): void {
@@ -202,14 +234,17 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
 
     const titleValid = !!this._form.value.title?.trim();
     let jsonValid = true;
+    let parsed: Record<string, unknown> | null = null;
     const props = this._form.value.properties?.trim();
     if (props) {
       try {
-        JSON.parse(props);
+        parsed = JSON.parse(props) as Record<string, unknown>;
       } catch {
         jsonValid = false;
       }
     }
+    // The raw-JSON fallback (no config bundle) feeds the same derivation as the iframe path.
+    if (jsonValid) this._emitDerivedEgress(parsed);
     this.validEvent.emit(titleValid && jsonValid);
   }
 
@@ -224,6 +259,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
         grantedEndpoints: this._grantedEndpoints,
         grantedEvents: this._grantedEvents,
         grantedCapabilities: this._grantedCapabilities,
+        grantedEgress: this._grantedEgress,
       });
       return;
     }
@@ -246,6 +282,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
       grantedEndpoints: this._grantedEndpoints,
       grantedEvents: this._grantedEvents,
       grantedCapabilities: this._grantedCapabilities,
+      grantedEgress: this._grantedEgress,
     });
   }
 }

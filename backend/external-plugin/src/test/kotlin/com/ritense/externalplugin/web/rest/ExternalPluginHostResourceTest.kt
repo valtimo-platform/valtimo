@@ -34,6 +34,7 @@ import com.ritense.externalplugin.service.HostDiscoveryResult
 import com.ritense.externalplugin.service.PluginRegistrationConflict
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
+import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
@@ -63,6 +64,7 @@ class ExternalPluginHostResourceTest {
 
     private lateinit var hostService: ExternalPluginHostService
     private lateinit var discoveryService: ExternalPluginDiscoveryService
+    private lateinit var hostClient: ExternalPluginHostClient
     private lateinit var environment: MockEnvironment
     private lateinit var resource: ExternalPluginManagementResource
 
@@ -72,12 +74,13 @@ class ExternalPluginHostResourceTest {
     fun setUp() {
         hostService = mock()
         discoveryService = mock()
+        hostClient = mock()
         environment = MockEnvironment()
         resource = ExternalPluginManagementResource(
             hostService = hostService,
             definitionService = mock<ExternalPluginDefinitionService>(),
             configurationService = mock<ExternalPluginConfigurationService>(),
-            hostClient = mock<ExternalPluginHostClient>(),
+            hostClient = hostClient,
             endpointDescriptionService = mock<EndpointDescriptionService>(),
             discoveryService = discoveryService,
             environment = environment,
@@ -93,6 +96,8 @@ class ExternalPluginHostResourceTest {
         brokerUrl: String? = "amqp://guest:guest@rabbit:5672",
         mode: EventQueueMode = EventQueueMode.LIVE,
         ttlMs: Long? = null,
+        gzacCallbackBaseUrl: String? = "http://gzac:8080",
+        frontendOrigins: String? = null,
     ) = ExternalPluginHost(
         id = id,
         name = "host-$id",
@@ -100,16 +105,18 @@ class ExternalPluginHostResourceTest {
         secret = "encrypted",
         status = ExternalPluginHostStatus.CONNECTED,
         kind = kind,
-        gzacCallbackBaseUrl = "http://gzac:8080",
+        gzacCallbackBaseUrl = gzacCallbackBaseUrl,
         eventBrokerAmqpUrl = brokerUrl,
         eventBrokerExchange = "valtimo-events",
         eventQueueMode = mode,
         eventQueueTtlMs = ttlMs,
+        frontendOrigins = frontendOrigins,
     )
 
     private fun createRequest(
         brokerUrl: String? = "amqp://guest:guest@rabbit:5672",
         kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
+        frontendOrigins: List<String> = emptyList(),
     ) = HostCreateRequest(
         name = "new host",
         baseUrl = "https://plugin-host:8090",
@@ -118,6 +125,7 @@ class ExternalPluginHostResourceTest {
         eventBrokerAmqpUrl = brokerUrl,
         eventBrokerExchange = "valtimo-events",
         kind = kind,
+        frontendOrigins = frontendOrigins,
     )
 
     // ---------------------------------------------------------------- host-defaults
@@ -208,7 +216,7 @@ class ExternalPluginHostResourceTest {
         environment.setProperty("spring.rabbitmq.username", "valtimo")
         environment.setProperty("spring.rabbitmq.password", "s3cr3t")
         environment.setProperty("spring.rabbitmq.host", "rabbit")
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host())
 
         // What the UI posts back after pre-filling the form from `host-defaults`.
@@ -216,42 +224,42 @@ class ExternalPluginHostResourceTest {
 
         val brokerUrl = argumentCaptor<String>()
         verify(hostService).register(
-            any(), any(), any(), any(), brokerUrl.capture(), anyOrNull(), any(), anyOrNull(), any()
+            any(), any(), any(), any(), brokerUrl.capture(), anyOrNull(), any(), anyOrNull(), any(), any()
         )
         assertThat(brokerUrl.firstValue).isEqualTo("amqp://valtimo:s3cr3t@rabbit:5672")
     }
 
     @Test
     fun `createHost stores a genuinely edited broker url verbatim`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host())
 
         resource.createHost(createRequest(brokerUrl = "amqp://other:pw@other-broker:5672"))
 
         val brokerUrl = argumentCaptor<String>()
         verify(hostService).register(
-            any(), any(), any(), any(), brokerUrl.capture(), anyOrNull(), any(), anyOrNull(), any()
+            any(), any(), any(), any(), brokerUrl.capture(), anyOrNull(), any(), anyOrNull(), any(), any()
         )
         assertThat(brokerUrl.firstValue).isEqualTo("amqp://other:pw@other-broker:5672")
     }
 
     @Test
     fun `createHost passes a blank broker url through as-is so the service can null it`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host(brokerUrl = null))
 
         resource.createHost(createRequest(brokerUrl = ""))
 
         val brokerUrl = argumentCaptor<String>()
         verify(hostService).register(
-            any(), any(), any(), any(), brokerUrl.capture(), anyOrNull(), any(), anyOrNull(), any()
+            any(), any(), any(), any(), brokerUrl.capture(), anyOrNull(), any(), anyOrNull(), any(), any()
         )
         assertThat(brokerUrl.firstValue).isEmpty()
     }
 
     @Test
     fun `createHost returns 201 with a redacted response body`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host())
 
         val response = resource.createHost(createRequest())
@@ -262,7 +270,7 @@ class ExternalPluginHostResourceTest {
 
     @Test
     fun `createHost triggers an immediate discovery so the new host's plugins are configurable at once`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host(kind = ExternalPluginHostKind.APP))
 
         resource.createHost(createRequest(kind = ExternalPluginHostKind.APP))
@@ -272,7 +280,7 @@ class ExternalPluginHostResourceTest {
 
     @Test
     fun `createHost survives a failing discovery — registration is what must succeed`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host())
         whenever(discoveryService.discoverHost(any())).thenThrow(RuntimeException("host unreachable"))
 
@@ -283,7 +291,7 @@ class ExternalPluginHostResourceTest {
 
     @Test
     fun `createHost forwards the host kind`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host(kind = ExternalPluginHostKind.APP))
 
         resource.createHost(createRequest(kind = ExternalPluginHostKind.APP))
@@ -298,6 +306,7 @@ class ExternalPluginHostResourceTest {
             eq(EventQueueMode.LIVE),
             anyOrNull(),
             eq(ExternalPluginHostKind.APP),
+            any(),
         )
     }
 
@@ -306,7 +315,7 @@ class ExternalPluginHostResourceTest {
     @Test
     fun `createHost rejects an app whose only plugin is already registered under another host, and rolls it back`() {
         val existingHostId = UUID.randomUUID()
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host(kind = ExternalPluginHostKind.APP))
         whenever(hostService.get(existingHostId))
             .thenReturn(host(id = existingHostId, kind = ExternalPluginHostKind.APP))
@@ -334,7 +343,7 @@ class ExternalPluginHostResourceTest {
 
     @Test
     fun `createHost keeps an app that registered at least one plugin, even when another one conflicted`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host(kind = ExternalPluginHostKind.APP))
         whenever(discoveryService.discoverHost(hostId)).thenReturn(
             HostDiscoveryResult(
@@ -352,7 +361,7 @@ class ExternalPluginHostResourceTest {
 
     @Test
     fun `createHost keeps an unreachable app — discovery retries and the UI offers configuring later`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host(kind = ExternalPluginHostKind.APP))
         whenever(discoveryService.discoverHost(hostId)).thenReturn(
             HostDiscoveryResult(reachable = false, registeredDefinitionIds = emptySet(), conflicts = emptyList())
@@ -366,7 +375,7 @@ class ExternalPluginHostResourceTest {
 
     @Test
     fun `createHost stays lenient for plugin hosts serving already-registered plugins`() {
-        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()))
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
             .thenReturn(host(kind = ExternalPluginHostKind.PLUGIN_HOST))
         whenever(discoveryService.discoverHost(hostId)).thenReturn(
             HostDiscoveryResult(
@@ -426,6 +435,116 @@ class ExternalPluginHostResourceTest {
         )
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    }
+
+    // ---------------------------------------------------------------- frontend origins
+
+    @Test
+    fun `hostDefaults pre-fills the frontend origins from the configured CORS allowed origins`() {
+        environment.setProperty(
+            "valtimo.web.cors.corsConfiguration.allowedOrigins",
+            "https://Valtimo.example.com/,http://localhost:4200",
+        )
+
+        assertThat(resource.hostDefaults().body!!.frontendOrigins)
+            .containsExactly("https://valtimo.example.com", "http://localhost:4200")
+    }
+
+    @Test
+    fun `hostDefaults drops wildcard CORS entries rather than pre-filling a frame-ancestors bypass`() {
+        environment.setProperty(
+            "valtimo.web.cors.corsConfiguration.allowedOrigins",
+            "*,https://valtimo.example.com",
+        )
+
+        assertThat(resource.hostDefaults().body!!.frontendOrigins)
+            .containsExactly("https://valtimo.example.com")
+    }
+
+    @Test
+    fun `hostDefaults returns no frontend origins when CORS is unconfigured — the modal then uses the admin's own origin`() {
+        assertThat(resource.hostDefaults().body!!.frontendOrigins).isEmpty()
+    }
+
+    @Test
+    fun `createHost forwards the frontend origins and announces them to the host`() {
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
+            .thenReturn(host(frontendOrigins = "https://valtimo.example.com"))
+        whenever(hostService.decryptedSecret(any())).thenReturn("admin-token")
+
+        resource.createHost(createRequest(frontendOrigins = listOf("https://valtimo.example.com")))
+
+        val origins = argumentCaptor<List<String>>()
+        verify(hostService).register(
+            any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), origins.capture()
+        )
+        assertThat(origins.firstValue).containsExactly("https://valtimo.example.com")
+        verify(hostClient).registerGzacInstance(
+            "https://plugin-host:8090",
+            "admin-token",
+            "http://gzac:8080",
+            listOf("https://valtimo.example.com"),
+        )
+    }
+
+    @Test
+    fun `createHost still returns 201 when the host cannot be reached to receive the origins`() {
+        whenever(hostService.register(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any(), any()))
+            .thenReturn(host())
+        whenever(hostService.decryptedSecret(any())).thenReturn("admin-token")
+        whenever(hostClient.registerGzacInstance(any(), any(), any(), any()))
+            .thenThrow(RuntimeException("host unreachable"))
+
+        assertThat(resource.createHost(createRequest()).statusCode).isEqualTo(HttpStatus.CREATED)
+    }
+
+    @Test
+    fun `updateHostFrontendOrigins persists the new list and re-pushes it immediately`() {
+        whenever(hostService.updateFrontendOrigins(eq(hostId), any()))
+            .thenReturn(host(frontendOrigins = "https://valtimo.example.com,http://localhost:4200"))
+        whenever(hostService.decryptedSecret(any())).thenReturn("admin-token")
+
+        val response = resource.updateHostFrontendOrigins(
+            hostId,
+            HostFrontendOriginsUpdateRequest(listOf("https://valtimo.example.com", "http://localhost:4200")),
+        )
+
+        assertThat(response.body!!.frontendOrigins)
+            .containsExactly("https://valtimo.example.com", "http://localhost:4200")
+        // The push has to come after the row is updated, or the host re-reads the old allowlist.
+        inOrder(hostService, hostClient) {
+            verify(hostService).updateFrontendOrigins(
+                hostId,
+                listOf("https://valtimo.example.com", "http://localhost:4200"),
+            )
+            verify(hostClient).registerGzacInstance(
+                any(), any(), any(), eq(listOf("https://valtimo.example.com", "http://localhost:4200"))
+            )
+        }
+    }
+
+    @Test
+    fun `updateHostFrontendOrigins falls back to GZAC's own port as instance key for a legacy host row`() {
+        environment.setProperty("server.port", "9090")
+        whenever(hostService.updateFrontendOrigins(eq(hostId), any()))
+            .thenReturn(host(gzacCallbackBaseUrl = null))
+        whenever(hostService.decryptedSecret(any())).thenReturn("admin-token")
+
+        resource.updateHostFrontendOrigins(hostId, HostFrontendOriginsUpdateRequest(emptyList()))
+
+        verify(hostClient).registerGzacInstance(any(), any(), eq("http://localhost:9090"), any())
+    }
+
+    @Test
+    fun `updateHostFrontendOrigins survives an unreachable host — the discovery poll re-pushes`() {
+        whenever(hostService.updateFrontendOrigins(eq(hostId), any())).thenReturn(host())
+        whenever(hostService.decryptedSecret(any())).thenReturn("admin-token")
+        whenever(hostClient.registerGzacInstance(any(), any(), any(), any()))
+            .thenThrow(RuntimeException("host unreachable"))
+
+        assertThat(
+            resource.updateHostFrontendOrigins(hostId, HostFrontendOriginsUpdateRequest(emptyList())).statusCode
+        ).isEqualTo(HttpStatus.OK)
     }
 
     // ---------------------------------------------------------------- usages & delete

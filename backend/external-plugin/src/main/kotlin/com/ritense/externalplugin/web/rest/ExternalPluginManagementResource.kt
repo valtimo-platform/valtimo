@@ -24,6 +24,7 @@ import com.ritense.externalplugin.compatibility.CompatibilityResult
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
 import com.ritense.externalplugin.compatibility.PluginPackageInspector
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.EndpointQuery
@@ -39,17 +40,21 @@ import com.ritense.externalplugin.web.rest.dto.ConfigurationResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.DefinitionResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedCapabilityResponse
+import com.ritense.externalplugin.web.rest.dto.GrantedEgressResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
+import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.boot.context.properties.bind.Bindable
+import org.springframework.boot.context.properties.bind.Binder
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -110,8 +115,15 @@ class ExternalPluginManagementResource(
             request.eventQueueMode,
             request.eventQueueTtlMs,
             request.kind,
+            request.frontendOrigins,
         )
 
+        // Both are best-effort — the periodic discovery cycle reconciles either way — and only
+        // shorten the wait, so the first plugin is configurable and framable right away. The
+        // announcement is not redundant with the discovery below: discovery only announces once its
+        // health probe has succeeded, so a host that is serving but momentarily failing `/health`
+        // still gets its allowlist.
+        runCatching { pushFrontendOrigins(host) }
         val discovery = runCatching { discoveryService.discoverHost(host.id) }.getOrNull()
 
         // An app *is* its single plugin. When the app was reachable but every plugin it serves is
@@ -130,6 +142,41 @@ class ExternalPluginManagementResource(
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
+    }
+
+    /**
+     * Narrowly-scoped update for the browser origins allowed to embed this host's plugin screens,
+     * mirroring the event-queue PATCH. The new list is pushed to the host immediately so an operator
+     * fixing a wrong origin does not have to wait out a discovery cycle; the poll re-pushes anyway.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update a host's allowed frontend origins",
+        nl = "Toegestane frontend-origins van host bijwerken",
+    )
+    @PatchMapping("/host/{hostId}/frontend-origins")
+    fun updateHostFrontendOrigins(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostFrontendOriginsUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val host = hostService.updateFrontendOrigins(hostId, request.frontendOrigins)
+        runCatching { pushFrontendOrigins(host) }
+        return ResponseEntity.ok(HostResponse.from(host))
+    }
+
+    /**
+     * Announces this GZAC instance and its frontend origins to the host, so the host can serve them
+     * as `frame-ancestors`. Uses the same instance key as the configuration push
+     * (`gzacCallbackBaseUrl`, falling back to GZAC's own port for legacy rows).
+     */
+    private fun pushFrontendOrigins(host: ExternalPluginHost) {
+        val serverPort = environment.getProperty("server.port", Int::class.java, 8080)
+        hostClient.registerGzacInstance(
+            host.baseUrl,
+            hostService.decryptedSecret(host),
+            host.gzacCallbackBaseUrl ?: "http://localhost:$serverPort",
+            host.frontendOriginList,
+        )
     }
 
     /**
@@ -195,8 +242,29 @@ class ExternalPluginManagementResource(
                 defaultEventQueueTtlMs = ExternalPluginHostService.DEFAULT_EVENT_QUEUE_TTL_MS,
                 minEventQueueTtlMs = ExternalPluginHostService.MIN_EVENT_QUEUE_TTL_MS,
                 maxEventQueueTtlMs = ExternalPluginHostService.MAX_EVENT_QUEUE_TTL_MS,
+                frontendOrigins = configuredFrontendOrigins(),
             )
         )
+    }
+
+    /**
+     * The browser origins the API already trusts, from `valtimo.web.cors.corsConfiguration.
+     * allowedOrigins`. In a split frontend/backend deployment that property *is* the Angular origin
+     * set, which makes it the right server-side pre-fill for the add-host form's frontend origins.
+     *
+     * Wildcard entries — a bare `*`, or a subdomain pattern — are dropped rather than passed
+     * through: a `frame-ancestors` allowlist containing a wildcard would let any matching page embed
+     * the plugin, which is exactly what this field exists to prevent. Anything else that is not a
+     * plain origin is dropped for the same reason — this is a pre-fill, not a validation error the
+     * admin has to clear before saving.
+     */
+    private fun configuredFrontendOrigins(): List<String> {
+        val bound = Binder.get(environment)
+            .bind("valtimo.web.cors.cors-configuration.allowed-origins", Bindable.listOf(String::class.java))
+            .orElse(emptyList())
+        return bound
+            .mapNotNull { runCatching { ExternalPluginHostService.normalizeFrontendOrigin(it) }.getOrNull() }
+            .distinct()
     }
 
     /** The broker AMQP URL GZAC itself uses, built from `spring.rabbitmq.*` — full credentials. */
@@ -381,6 +449,7 @@ class ExternalPluginManagementResource(
         val grantedEndpoints = configurationService.getGrantedEndpoints(configurationId)
         val grantedEvents = configurationService.getGrantedEvents(configurationId)
         val grantedCapabilities = configurationService.getGrantedCapabilities(configurationId)
+        val grantedEgress = configurationService.getGrantedEgress(configurationId)
         return ResponseEntity.ok(
             ConfigurationDetailResponse(
                 id = configuration.id,
@@ -390,6 +459,8 @@ class ExternalPluginManagementResource(
                 grantedEndpoints = grantedEndpoints.map(GrantedEndpointResponse::from),
                 grantedEvents = grantedEvents.map(GrantedEventResponse::from),
                 grantedCapabilities = grantedCapabilities.map(GrantedCapabilityResponse::from),
+                grantedEgress = grantedEgress.map(GrantedEgressResponse::from),
+                derivedEgress = configurationService.getDerivedEgress(configuration),
                 createdAt = configuration.createdAt,
             )
         )
@@ -411,6 +482,7 @@ class ExternalPluginManagementResource(
             request.grantedEndpoints,
             request.grantedEvents,
             request.grantedCapabilities,
+            request.grantedEgress,
         )
         return ResponseEntity.status(HttpStatus.CREATED).body(ConfigurationResponse.from(configuration))
     }
@@ -533,7 +605,7 @@ class ExternalPluginManagementResource(
     /**
      * The 409 body for an upload targeting an existing pluginId@version: the host's hashes (so the
      * UI can tell an identical re-upload apart from different content) plus the uploaded
-     * manifest's requested endpoint/event/capability sets for the permission re-review screen.
+     * manifest's requested endpoint/event/capability/egress sets for the permission re-review screen.
      */
     private fun versionExistsBody(hostBody: JsonNode, fileBytes: ByteArray): JsonNode {
         val manifest = pluginPackageInspector.readManifest(fileBytes)
@@ -572,6 +644,14 @@ class ExternalPluginManagementResource(
                 objectMapper.createArrayNode().apply {
                     manifest?.get("permissions")?.get("capabilities")?.takeIf { it.isArray }?.forEach { capability ->
                         capability.asText().takeIf { it.isNotBlank() }?.let { add(it) }
+                    }
+                },
+            )
+            set<JsonNode>(
+                "requestedEgress",
+                objectMapper.createArrayNode().apply {
+                    manifest?.get("permissions")?.get("egress")?.takeIf { it.isArray }?.forEach { target ->
+                        target.asText().takeIf { it.isNotBlank() }?.let { add(it) }
                     }
                 },
             )

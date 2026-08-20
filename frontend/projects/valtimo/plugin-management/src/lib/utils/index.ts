@@ -16,3 +16,4 @@
 
 export * from './csp-allows-origin.util';
 export * from './external-plugin-compatibility.util';
+export * from './external-plugin-egress.util';

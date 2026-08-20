@@ -46,6 +46,14 @@ export interface GzacApiCallContext {
    * host then warns and allows, relying on GZAC's server-side allowlist filter alone.
    */
   grantedEndpoints?: Endpoint[];
+  /**
+   * Origins `http_request` may call, as accepted by the admin at activation (see
+   * `security/egress-allowlist.ts`). GZAC unions the plugin manifest's `permissions.egress` with the
+   * configuration properties marked `x-egress-target`, so the host never has to know which source an
+   * entry came from. Deny-by-default: empty or absent means the configuration makes no outbound HTTP
+   * calls at all.
+   */
+  allowedEgress?: string[];
 }
 
 interface GzacApiRequest {

@@ -49,6 +49,32 @@
     <input cdsText formControlName="eventBrokerExchange" placeholder="valtimo-events" />
   </cds-label>
 
+  <div class="plugin-host-connection-form__origins" formArrayName="frontendOrigins">
+    <span class="cds--label">{{ 'pluginManagement.labels.frontendOrigins' | translate }}</span>
+
+    <div
+      *ngFor="let originControl of frontendOriginControls; let i = index"
+      class="plugin-host-connection-form__origin-row"
+    >
+      <input cdsText [formControlName]="i" placeholder="https://valtimo.example.com" />
+
+      <button
+        cdsButton="ghost"
+        type="button"
+        [title]="'interface.delete' | translate"
+        (click)="removeFrontendOrigin(i)"
+      >
+        {{ 'interface.delete' | translate }}
+      </button>
+    </div>
+
+    <button cdsButton="ghost" type="button" (click)="addFrontendOrigin()">
+      {{ 'pluginManagement.addFrontendOrigin' | translate }}
+    </button>
+
+    <small>{{ 'pluginManagement.hints.frontendOrigins' | translate }}</small>
+  </div>
+
   <v-select
     [appendInline]="false"
     [dropUp]="false"

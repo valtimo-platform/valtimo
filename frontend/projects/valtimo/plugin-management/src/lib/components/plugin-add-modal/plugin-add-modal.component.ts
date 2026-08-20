@@ -43,7 +43,20 @@ import {buildExternalPluginCompatibilityMessage} from '../../utils';
   styleUrls: ['./plugin-add-modal.component.scss'],
 })
 export class PluginAddModalComponent implements OnDestroy {
-  @Input() public open = false;
+  /**
+   * Opening with a plugin already selected — the "Configure plugin" action on the upload
+   * notification does exactly that — skips the choose-a-plugin step and lands on the configuration
+   * form, which is the whole point of that shortcut.
+   */
+  @Input() public set open(value: boolean) {
+    const wasOpen = this._open;
+    this._open = value;
+    if (value && !wasOpen) this._skipSelectStepWhenPreselected();
+  }
+  public get open(): boolean {
+    return this._open;
+  }
+
   @Input() public set externalDefinitions(value: ExternalPluginDefinition[] | null) {
     this._externalDefinitions = value;
     this._externalDefinitions$.next(value ?? []);
@@ -58,6 +71,7 @@ export class PluginAddModalComponent implements OnDestroy {
   public readonly selectedPluginDefinition$ = this._stateService.selectedPluginDefinition$;
   public readonly configurationValid$ = new BehaviorSubject<boolean>(false);
 
+  private _open = false;
   private _externalDefinitions: ExternalPluginDefinition[] | null = null;
   private readonly _externalDefinitions$ = new BehaviorSubject<ExternalPluginDefinition[]>([]);
 
@@ -88,6 +102,8 @@ export class PluginAddModalComponent implements OnDestroy {
   >([]);
   public readonly eventSubscriptions$ = new BehaviorSubject<Array<string>>([]);
   public readonly capabilities$ = new BehaviorSubject<Array<string>>([]);
+  public readonly egress$ = new BehaviorSubject<Array<string>>([]);
+  public readonly derivedEgress$ = new BehaviorSubject<Array<string>>([]);
   public readonly permissionsValid$ = new BehaviorSubject<boolean>(false);
 
   public currentStepIndex = 0;
@@ -120,6 +136,19 @@ export class PluginAddModalComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  /**
+   * Lands on the configuration step when the modal is opened while a plugin is already selected.
+   * The step count itself is already right by now: `isExternal` is kept in sync from the
+   * constructor's `isExternalPlugin$` subscription, which fires synchronously off the selection.
+   */
+  private _skipSelectStepWhenPreselected(): void {
+    this.selectedPluginDefinition$
+      .pipe(take(1))
+      .subscribe(definition => {
+        if (definition) this.currentStepIndex = 1;
+      });
   }
 
   public goToNextStep(): void {
@@ -214,6 +243,23 @@ export class PluginAddModalComponent implements OnDestroy {
     this._externalConfigureComponent?.setGrantedCapabilities(caps);
   }
 
+  public onEgressResolved(targets: Array<string>): void {
+    this.egress$.next(targets);
+    this._recomputePermissionsValid();
+  }
+
+  /**
+   * Derived destinations don't gate the step — the admin already supplied them by typing the value —
+   * so this only refreshes the display.
+   */
+  public onDerivedEgressResolved(targets: Array<string>): void {
+    this.derivedEgress$.next(targets);
+  }
+
+  public onGrantedEgressChange(targets: Array<string>): void {
+    this._externalConfigureComponent?.setGrantedEgress(targets);
+  }
+
   public onExternalSave(event: {
     definitionId: string;
     title: string;
@@ -221,6 +267,7 @@ export class PluginAddModalComponent implements OnDestroy {
     grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
     grantedEvents: Array<ExternalPluginGrantedEventEntry>;
     grantedCapabilities: Array<string>;
+    grantedEgress: Array<string>;
   }): void {
     this._stateService.disableInput();
 
@@ -232,6 +279,7 @@ export class PluginAddModalComponent implements OnDestroy {
         grantedEndpoints: event.grantedEndpoints,
         grantedEvents: event.grantedEvents,
         grantedCapabilities: event.grantedCapabilities,
+        grantedEgress: event.grantedEgress,
       })
       .subscribe({
         next: () => {
@@ -248,13 +296,15 @@ export class PluginAddModalComponent implements OnDestroy {
   }
 
   /**
-   * Permissions step starts valid (no acknowledgement required) only when the plugin declared
-   * neither endpoints nor event subscriptions. The acknowledgement otherwise gates the step.
+   * Permissions step starts valid (no acknowledgement required) only when the plugin declared nothing
+   * to acknowledge — no endpoints, events, capabilities or manifest egress targets. The
+   * acknowledgement otherwise gates the step.
    */
   private _recomputePermissionsValid(): void {
     const hasNothing = this.endpoints$.value.length === 0
       && this.eventSubscriptions$.value.length === 0
-      && this.capabilities$.value.length === 0;
+      && this.capabilities$.value.length === 0
+      && this.egress$.value.length === 0;
     if (hasNothing) {
       this.permissionsValid$.next(true);
     }

@@ -31,6 +31,7 @@ import {
   ExternalPluginHostDefaults,
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
+  ExternalPluginUploadResult,
   PluginLogPage,
 } from '../models';
 
@@ -52,18 +53,24 @@ export class ExternalPluginService {
   }
 
   /**
-   * Registers a host. With `handleConflictInline` the expected 409 (`code:
-   * APP_PLUGIN_ALREADY_REGISTERED` — the app's plugin is already registered under another host)
-   * is kept off the global error toast so the caller can render it inline.
+   * `InterceptorSkip: 400` keeps a rejected registration off the generic "An unexpected error
+   * occurred" toast: the backend answers a fixable mistake (a bind address as base URL, a broker
+   * over plaintext HTTP) with a 400 whose `detail` explains it, and the add-host modal renders that
+   * next to the fields the admin filled in. A duplicate red toast would only compete with it.
+   *
+   * With `handleConflictInline` the expected 409 (`code: APP_PLUGIN_ALREADY_REGISTERED` — the
+   * app's plugin is already registered under another host) is additionally kept off the toast so
+   * the app add stepper can render the conflict inline.
    */
   public createHost(
     request: ExternalPluginHostCreateRequest,
     handleConflictInline = false
   ): Observable<ExternalPluginHost> {
-    const options = handleConflictInline
-      ? {headers: new HttpHeaders().set(InterceptorSkip, '409')}
-      : {};
-    return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request, options);
+    const headers = new HttpHeaders().set(
+      InterceptorSkip,
+      handleConflictInline ? '400,409' : '400'
+    );
+    return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request, {headers});
   }
 
   public getHostDefaults(): Observable<ExternalPluginHostDefaults> {
@@ -93,6 +100,20 @@ export class ExternalPluginService {
       `${this._baseUrl}/host/${hostId}/event-queue`,
       request
     );
+  }
+
+  /**
+   * Replaces the browser origins allowed to embed this host's plugin screens. The backend pushes
+   * the new list to the plugin host immediately, which serves it as the `frame-ancestors` CSP
+   * directive — so an empty list means no page may frame this host's plugins.
+   */
+  public updateHostFrontendOrigins(
+    hostId: string,
+    origins: Array<string>
+  ): Observable<ExternalPluginHost> {
+    return this._http.patch<ExternalPluginHost>(`${this._baseUrl}/host/${hostId}/frontend-origins`, {
+      frontendOrigins: origins,
+    });
   }
 
   public getDefinitions(): Observable<Array<ExternalPluginDefinition>> {
@@ -190,11 +211,15 @@ export class ExternalPluginService {
     file: File,
     force = false,
     overwrite = false
-  ): Observable<unknown> {
+  ): Observable<ExternalPluginUploadResult> {
     const formData = new FormData();
     formData.append('file', file, file.name);
     const params = new HttpParams().set('force', force).set('overwrite', overwrite);
     const headers = new HttpHeaders().set(InterceptorSkip, '409');
-    return this._http.post(`${this._baseUrl}/host/${hostId}/upload`, formData, {headers, params});
+    return this._http.post<ExternalPluginUploadResult>(
+      `${this._baseUrl}/host/${hostId}/upload`,
+      formData,
+      {headers, params}
+    );
   }
 }

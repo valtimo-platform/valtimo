@@ -52,6 +52,12 @@ class ExternalPluginDiscoveryService(
     private val hostClient: ExternalPluginHostClient,
     private val transactionTemplate: TransactionTemplate,
     private val failureThreshold: Int,
+    /**
+     * Instance key used when a host row pre-dates `gzac_callback_base_url`. Must match the fallback
+     * `ExternalPluginConfigurationService` uses for `gzacBaseUrl`, or the host would end up with two
+     * entries for the same GZAC.
+     */
+    private val fallbackGzacBaseUrl: String,
 ) {
 
     fun discoverAll() {
@@ -91,6 +97,15 @@ class ExternalPluginDiscoveryService(
         if (!healthy) return HostDiscoveryResult(reachable = false, registeredDefinitionIds = emptySet(), conflicts = emptyList())
 
         val adminToken = hostService.decryptedSecret(host)
+
+        // Re-announce this GZAC instance and the browser origins allowed to frame its plugin
+        // screens. Doing it on every poll — not only at registration — is what makes the host's
+        // frame-ancestors allowlist self-healing: a newly connected GZAC, a host that lost its
+        // database, or an edited origin list all converge within one cycle with neither side
+        // restarted. HTTP call, so outside any transaction; a failure is logged by the client and
+        // retried next cycle.
+        pushGzacInstance(host, adminToken)
+
         // HTTP manifest listing outside any transaction.
         val plugins = hostClient.listPlugins(host.baseUrl, adminToken)
 
@@ -115,6 +130,24 @@ class ExternalPluginDiscoveryService(
             registeredDefinitionIds = seenDefinitionIds,
             conflicts = conflicts,
         )
+    }
+
+    /**
+     * Pushes this GZAC instance's identity and frontend origins to the host. Best-effort: a failure
+     * only means the host keeps the origins it already had (or none) until the next poll, so it must
+     * never abort the rest of the discovery cycle.
+     */
+    private fun pushGzacInstance(host: ExternalPluginHost, adminToken: String) {
+        try {
+            hostClient.registerGzacInstance(
+                host.baseUrl,
+                adminToken,
+                host.gzacCallbackBaseUrl ?: fallbackGzacBaseUrl,
+                host.frontendOriginList,
+            )
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to register this GZAC instance with plugin host ${host.id} (${host.baseUrl})" }
+        }
     }
 
     private fun recordHealthCheck(hostId: UUID, healthy: Boolean) {
@@ -230,6 +263,7 @@ class ExternalPluginDiscoveryService(
 
         val newConfigSchema = manifest.get("configurationSchema") as? ObjectNode
         warnOnDroppedSecretFlags(definition, newConfigSchema)
+        warnOnDroppedEgressTargetFlags(definition, newConfigSchema)
 
         definition.name = localizedManifestValue(manifest, "name") ?: definition.name
         definition.description = localizedManifestValue(manifest, "description") ?: definition.description
@@ -261,6 +295,26 @@ class ExternalPluginDiscoveryService(
                     "previously secret propert${if (droppedSecrets.size == 1) "y" else "ies"} " +
                     "${droppedSecrets.joinToString(", ")} in its new configuration schema — these values " +
                     "will no longer be encrypted or masked"
+            }
+        }
+    }
+
+    /**
+     * A property that loses its `x-egress-target: true` flag stops contributing its URL to the
+     * configuration's egress allowlist, so the next push silently narrows what the plugin can reach
+     * and its outbound calls start failing. The mirror image of [warnOnDroppedSecretFlags]: almost
+     * always a plugin-author mistake, and invisible without this.
+     */
+    private fun warnOnDroppedEgressTargetFlags(definition: ExternalPluginDefinition, newConfigSchema: ObjectNode?) {
+        val previous = PluginEgressTargets.egressTargetFieldNames(definition.configSchema)
+        if (previous.isEmpty()) return
+        val dropped = previous - PluginEgressTargets.egressTargetFieldNames(newConfigSchema)
+        if (dropped.isNotEmpty()) {
+            logger.warn {
+                "Plugin '${definition.pluginId}@${definition.version}' dropped the x-egress-target flag from " +
+                    "propert${if (dropped.size == 1) "y" else "ies"} ${dropped.joinToString(", ")} in its new " +
+                    "configuration schema — the URLs they hold will no longer be allowed as http_request " +
+                    "destinations, and calls to them will be refused"
             }
         }
     }
