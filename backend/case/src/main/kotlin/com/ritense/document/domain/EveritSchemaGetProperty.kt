@@ -17,6 +17,7 @@
 package com.ritense.document.domain
 
 import com.fasterxml.jackson.core.type.TypeReference
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.everit.json.schema.ArraySchema
 import org.everit.json.schema.BooleanSchema
 import org.everit.json.schema.CombinedSchema
@@ -37,17 +38,27 @@ import org.everit.json.schema.TrueSchema
 import org.everit.json.schema.regexp.Regexp
 
 /** This method is similar to org.everit.json.schema.Schema.definesProperty(.)  */
-fun Schema.getProperty(field: String): Schema? {
+fun Schema.getProperty(field: String): Schema? = getProperty(field, 0)
+
+/**
+ * @param depth how many schema levels have been descended into already, guarded by [MAX_SCHEMA_DEPTH] so a
+ * recursive schema does not cause a `StackOverflowError`.
+ */
+private fun Schema.getProperty(field: String, depth: Int): Schema? {
+    if (depth > MAX_SCHEMA_DEPTH) {
+        logger.warn { "Stopped looking for property '$field'. The schema is nested deeper than $MAX_SCHEMA_DEPTH levels." }
+        return null
+    }
     return when (this) {
-        is ObjectSchema -> getProperty(field)
-        is ArraySchema -> getProperty(field)
-        is CombinedSchema -> getProperty(field)
-        is ReferenceSchema -> getProperty(field)
+        is ObjectSchema -> getProperty(field, depth)
+        is ArraySchema -> getProperty(field, depth)
+        is CombinedSchema -> getProperty(field, depth)
+        is ReferenceSchema -> getProperty(field, depth)
         else -> null
     }
 }
 
-private fun ObjectSchema.getProperty(field: String): Schema? {
+private fun ObjectSchema.getProperty(field: String, depth: Int): Schema? {
     val headAndTail: Array<String?> = headAndTailOfJsonPointerFragment(field)
     val nextToken = headAndTail[0]!!
     val remaining = headAndTail[1]
@@ -55,40 +66,40 @@ private fun ObjectSchema.getProperty(field: String): Schema? {
     return if (field2.isEmpty()) {
         null
     } else {
-        getSchemaProperty(nextToken, remaining)
-            ?: getPatternProperty(nextToken, remaining)
-            ?: getSchemaDependencyProperty(field2)
+        getSchemaProperty(nextToken, remaining, depth)
+            ?: getPatternProperty(nextToken, remaining, depth)
+            ?: getSchemaDependencyProperty(field2, depth)
     }
 }
 
-private fun ObjectSchema.getSchemaProperty(current: String, remaining: String?): Schema? {
+private fun ObjectSchema.getSchemaProperty(current: String, remaining: String?, depth: Int): Schema? {
     val currentUnescaped = jsonPointerUnescape(current)
     return if (propertySchemas.containsKey(currentUnescaped)) {
         if (remaining != null) {
-            propertySchemas[currentUnescaped]!!.getProperty(remaining)
+            propertySchemas[currentUnescaped]!!.getProperty(remaining, depth + 1)
         } else {
             propertySchemas[currentUnescaped]!!
         }
     } else null
 }
 
-private fun ObjectSchema.getPatternProperty(current: String, remaining: String?): Schema? {
+private fun ObjectSchema.getPatternProperty(current: String, remaining: String?, depth: Int): Schema? {
     val patternProperties = getPrivateField<Map<Regexp, Schema>>("patternProperties")
     patternProperties.entries.forEach { (pattern, value) ->
         if (!pattern.patternMatchingFailure(current).isPresent) {
             return if (remaining == null) {
                 value
             } else {
-                value.getProperty(remaining)
+                value.getProperty(remaining, depth + 1)
             }
         }
     }
     return null
 }
 
-private fun ObjectSchema.getSchemaDependencyProperty(field: String): Schema? {
+private fun ObjectSchema.getSchemaDependencyProperty(field: String, depth: Int): Schema? {
     for (schema in schemaDependencies.values) {
-        val property = schema.getProperty(field)
+        val property = schema.getProperty(field, depth + 1)
         if (property != null) {
             return property
         }
@@ -96,15 +107,15 @@ private fun ObjectSchema.getSchemaDependencyProperty(field: String): Schema? {
     return null
 }
 
-private fun ArraySchema.getProperty(field: String): Schema? {
+private fun ArraySchema.getProperty(field: String, depth: Int): Schema? {
     val headAndTail: Array<String?> = headAndTailOfJsonPointerFragment(field)
     val nextToken = headAndTail[0]!!
     val remaining = headAndTail[1]
     val hasRemaining = remaining != null
     return try {
-        tryGetPropertyDefinitionByNumericIndex(nextToken, remaining, hasRemaining)
+        tryGetPropertyDefinitionByNumericIndex(nextToken, remaining, hasRemaining, depth)
     } catch (e: NumberFormatException) {
-        tryGetPropertyDefinitionByMetaIndex(nextToken, remaining, hasRemaining)
+        tryGetPropertyDefinitionByMetaIndex(nextToken, remaining, hasRemaining, depth)
     }
 }
 
@@ -112,7 +123,8 @@ private fun ArraySchema.getProperty(field: String): Schema? {
 private fun ArraySchema.tryGetPropertyDefinitionByMetaIndex(
     nextToken: String,
     remaining: String?,
-    hasRemaining: Boolean
+    hasRemaining: Boolean,
+    depth: Int
 ): Schema? {
     val isAll = "all" == nextToken
     val isAny = "any" == nextToken
@@ -121,14 +133,15 @@ private fun ArraySchema.tryGetPropertyDefinitionByMetaIndex(
     }
     if (isAll) {
         return if (allItemSchema != null) {
-            allItemSchema.getProperty(remaining!!)
+            allItemSchema.getProperty(remaining!!, depth + 1)
         } else {
+            // the depth-guarded getProperty(.) is used instead of everit's definesProperty(.), which recurses unbounded
             val allItemSchemasDefine: Boolean = itemSchemas.stream()
-                .map { schema -> schema.definesProperty(remaining!!) }
+                .map { schema -> schema.getProperty(remaining!!, depth + 1) != null }
                 .reduce(true) { a, b -> java.lang.Boolean.logicalAnd(a, b) }
             if (allItemSchemasDefine) {
                 return if (schemaOfAdditionalItems != null) {
-                    schemaOfAdditionalItems.getProperty(remaining!!)
+                    schemaOfAdditionalItems.getProperty(remaining!!, depth + 1)
                 } else {
                     this
                 }
@@ -137,14 +150,14 @@ private fun ArraySchema.tryGetPropertyDefinitionByMetaIndex(
         }
     } else if (isAny) {
         return if (allItemSchema != null) {
-            allItemSchema.getProperty(remaining!!)
+            allItemSchema.getProperty(remaining!!, depth + 1)
         } else {
             val anyItemSchemasDefine: Boolean = itemSchemas.stream()
-                .map { schema -> schema.definesProperty(remaining!!) }
+                .map { schema -> schema.getProperty(remaining!!, depth + 1) != null }
                 .reduce(false) { a, b -> java.lang.Boolean.logicalOr(a, b) }
             if (anyItemSchemasDefine) {
                 return if (schemaOfAdditionalItems != null) {
-                    schemaOfAdditionalItems.getProperty(remaining!!)
+                    schemaOfAdditionalItems.getProperty(remaining!!, depth + 1)
                 } else {
                     this
                 }
@@ -158,7 +171,8 @@ private fun ArraySchema.tryGetPropertyDefinitionByMetaIndex(
 private fun ArraySchema.tryGetPropertyDefinitionByNumericIndex(
     nextToken: String,
     remaining: String?,
-    hasRemaining: Boolean
+    hasRemaining: Boolean,
+    depth: Int
 ): Schema? {
     val index = nextToken.toInt()
     if (index < 0) {
@@ -168,32 +182,28 @@ private fun ArraySchema.tryGetPropertyDefinitionByNumericIndex(
         return null
     }
     return if (allItemSchema != null && hasRemaining) {
-        allItemSchema.getProperty(remaining!!)
+        allItemSchema.getProperty(remaining!!, depth + 1)
     } else {
         if (hasRemaining) {
             if (index < itemSchemas.size) {
-                return itemSchemas[index].getProperty(remaining!!)
+                return itemSchemas[index].getProperty(remaining!!, depth + 1)
             }
             if (schemaOfAdditionalItems != null) {
-                return schemaOfAdditionalItems.getProperty(remaining!!)
+                return schemaOfAdditionalItems.getProperty(remaining!!, depth + 1)
             }
         }
         null
     }
 }
 
-private fun CombinedSchema.getProperty(field: String): Schema? {
-    for (subschema in subschemas) {
-        if (subschema.definesProperty(field)) {
-            return subschema.getProperty(field)
-        }
-    }
-    return null
+private fun CombinedSchema.getProperty(field: String, depth: Int): Schema? {
+    // the depth-guarded getProperty(.) is used instead of everit's definesProperty(.), which recurses unbounded
+    return subschemas.firstNotNullOfOrNull { it.getProperty(field, depth + 1) }
 }
 
-private fun ReferenceSchema.getProperty(field: String): Schema? {
+private fun ReferenceSchema.getProperty(field: String, depth: Int): Schema? {
     checkNotNull(referredSchema) { "referredSchema must be injected before validation" }
-    return referredSchema.getProperty(field)
+    return referredSchema.getProperty(field, depth + 1)
 }
 
 private fun Schema.headAndTailOfJsonPointerFragment(field: String): Array<String?> {
@@ -234,3 +244,5 @@ fun Schema.getTypeReference(): TypeReference<*> {
         else -> object : TypeReference<Any>() {}
     }
 }
+
+private val logger = KotlinLogging.logger {}

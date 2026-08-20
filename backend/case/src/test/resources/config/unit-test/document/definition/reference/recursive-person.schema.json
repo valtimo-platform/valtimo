@@ -1,0 +1,32 @@
+{
+    "$id": "recursive-person.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Recursive person",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "address": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "street": {
+                    "type": "string"
+                }
+            }
+        },
+        "partner": {
+            "type": "object",
+            "$ref": "/unit-test/document/definition/reference/recursive-person.schema.json"
+        },
+        "children": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "$ref": "/unit-test/document/definition/reference/recursive-person.schema.json"
+            }
+        }
+    }
+}
