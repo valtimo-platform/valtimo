@@ -163,6 +163,7 @@
                       [defaultDate]="formValues[field.key] ?? ''"
                       [enableTime]="false"
                       [showFieldLabel]="false"
+                      valueFormat="iso"
                       (valueChange)="singleValueChange(field.key, $event, field.dataType)"
                     ></valtimo-date-time-picker>
                   } @else if (field.dataType === 'date' && field.fieldType === 'range') {
@@ -174,6 +175,7 @@
                         name="start"
                         [enableTime]="false"
                         [showFieldLabel]="false"
+                        valueFormat="iso"
                       ></valtimo-date-time-picker>
 
                       <div class="to-text">
@@ -184,12 +186,14 @@
                         name="end"
                         [enableTime]="false"
                         [showFieldLabel]="false"
+                        valueFormat="iso"
                       ></valtimo-date-time-picker>
                     </v-form>
                   } @else if (field.dataType === 'datetime' && field.fieldType === 'single') {
                     <valtimo-date-time-picker
                       [enableTime]="true"
                       [showFieldLabel]="false"
+                      valueFormat="iso"
                       (valueChange)="singleValueChange(field.key, $event, field.dataType)"
                     ></valtimo-date-time-picker>
                   } @else if (field.dataType === 'datetime' && field.fieldType === 'range') {
@@ -201,6 +205,7 @@
                         name="start"
                         [enableTime]="true"
                         [showFieldLabel]="false"
+                        valueFormat="iso"
                       ></valtimo-date-time-picker>
 
                       <div class="to-text">
@@ -211,6 +216,7 @@
                         name="end"
                         [enableTime]="true"
                         [showFieldLabel]="false"
+                        valueFormat="iso"
                       ></valtimo-date-time-picker>
                     </v-form>
                   }
