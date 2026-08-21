@@ -2,10 +2,10 @@
 
 ## Introduction
 
-* [Welcome to Valtimo](introduction/welcome.md)
-* [Who is this documentation for?](introduction/audience.md)
-* [What can you build with Valtimo?](introduction/what-you-can-build.md)
-* [How to use this documentation](introduction/how-to-use-this-documentation.md)
+* Welcome to Valtimo
+* Who is this documentation for?
+* What can you build with Valtimo?
+* How to use this documentation
 
 ## Valtimo fundamentals
 
@@ -15,7 +15,7 @@
 * [Users, roles and permissions](fundamentals/roles-permissions.md)
 
 ## Tutorials
-* [Setting up a case](tutorials/setting-up-a-case.md)
+* Setting up a case
 
 ## Configuration guides
 
@@ -50,8 +50,8 @@
     * [Forms](configuration-guides/building-blocks/forms.md)
     * [Form flows](configuration-guides/building-blocks/form-flows.md)
     * [Decision tables](configuration-guides/building-blocks/decision-tables.md)
-* [🔌 Plugins](configuration-guides/plugins/README.md)
-* [📊 Dashboard](configuration-guides/dashboard/README.md)
+* 🔌 Plugins
+* 📊 Dashboard
 * [🔏 Access control](configuration-guides/access-control/README.md)
     * [Configurable elements](configuration-guides/access-control/configurable-elements.md)
     * [Roles](configuration-guides/access-control/roles.md)
@@ -59,19 +59,13 @@
     * [Conditions](configuration-guides/access-control/conditions.md)
     * [Context conditions](configuration-guides/access-control/context-conditions.md)
 
-## Examples
-
 ## Release notes
-
-## Advanced topics
-
-* [Technical overview](advanced/technical-overview.md)
-* [Configuration files and JSON](advanced/configuration-files.md)
-* [API and extension points](advanced/api.md)
+* [13.x.x](release-notes/13.x.x/)
+  * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
 
 ## Support
 
-* [Frequently asked questions](support/faq.md)
-* [Troubleshooting](support/troubleshooting.md)
-* [Training and learning resources](support/training.md)
-* [Feedback](support/feedback.md)
+* Frequently asked questions
+* Troubleshooting
+* Training and learning resources
+* Feedback
