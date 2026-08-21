@@ -20,3 +20,4 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Search fields | Date searches return results with correct date format |
 | Document schemas | Recursive schema references no longer crash the server |
 | Dashboard | Donut charts with many categories display the circle correctly |
+| Case export | Forms shown in a widget are included in the case export |
