@@ -18,6 +18,23 @@
   display: block;
 }
 
+// Carbon paints danger buttons red in their resting state. There is one delete button per condition
+// row, so a form that is merely being filled in ends up reading as a form full of errors. At rest
+// the buttons are therefore neutral - white like the fields next to them, with a grey icon - and the
+// red is kept for hover and focus, where it confirms what the button is about to do. The disabled
+// state is left to Carbon. Covers both the delete button of a group and the one per condition row.
+::ng-deep .cds--btn--danger:not(:disabled) {
+  background-color: var(--cds-layer-01);
+  color: var(--cds-icon-secondary);
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: var(--cds-button-danger-hover, var(--cds-support-error));
+    color: var(--cds-text-on-color);
+  }
+}
+
 // Without a width the content switcher stretches across its container. Shared by the root
 // operator (rendered on its own, between the section cards) and the nested group headers.
 .condition-operator {
@@ -64,12 +81,10 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid var(--cds-border-subtle);
-  // The group section sits on a grey layer, while the inputs inside it stay white.
-  // Carbon couples the layer and field tokens per level, so the field token is
-  // overridden explicitly to keep the inputs white on the grey section.
-  background-color: var(--cds-layer-01);
-  --cds-field: var(--cds-field-02);
+  // The section is set apart from the form around it by a grey background rather than by a border.
+  // Only the background of the section itself is overridden: everything inside it stays on the
+  // first layer ([cdsLayer]="0"), which is what keeps the fields - and their hover state - white.
+  background-color: var(--cds-layer-02);
 
   &__header {
     display: flex;
