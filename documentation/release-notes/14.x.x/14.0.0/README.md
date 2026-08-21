@@ -1,19 +1,12 @@
 # 14.0.0
 
-{% hint style="info" %}
-**Release date 00-00-YYYY**
-{% endhint %}
+Release date: 00-00-YYYY
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
+---
 
 ## Enhancements
 
-* **Upgraded Form.io to version 5**
+### Upgraded Form.io to version 5
 
-  Valtimo has upgraded its Form.io implementation to `@formio/js` v5.3.0 and `@formio/angular` v9.0.2.
-
-  **Main change:** The core Form.io library has been renamed from `formiojs` to `@formio/js`.
+Valtimo has upgraded its Form.io implementation to `@formio/js` v5.3.0 and `@formio/angular` v9.0.2.
+The core Form.io library has been renamed from `formiojs` to `@formio/js`.
