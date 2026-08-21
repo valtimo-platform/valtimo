@@ -1,2 +1,0 @@
-# Subject for devs
-
