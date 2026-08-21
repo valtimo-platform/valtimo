@@ -19,5 +19,6 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Draft environments | Default Spring profiles now correctly enable draft mode |
 | Search fields | Date searches return results with correct date format |
 | Document schemas | Recursive schema references no longer crash the server |
-| Dashboard | Donut charts with many categories display the circle correctly |
 | Cases | A case that cannot be found no longer stops a process, an assignment or a note |
+| Dashboard | Donut charts with many categories display the circle correctly |
+| Case export | Forms shown in a widget are included in the case export |
