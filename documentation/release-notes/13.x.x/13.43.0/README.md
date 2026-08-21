@@ -1,26 +1,16 @@
 # 13.43.0
 
-{% hint style="info" %}
-**Release date 26-08-2026**
-{% endhint %}
+Release date: 26-08-2026
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
+---
 
 ## Enhancements
 
-* **New enhancement title**
+### Case definition key and version in case inspection
 
-  New enhancement explanation.
+The metadata tab of the case inspection page now displays the case definition key and version. This makes it clear which version of a case definition a case belongs to.
 
-* **Case inspection shows the case definition key and version**
-
-  The metadata tab of the case inspection page now shows the key and version of the case definition the case was
-  created from. Only the name of the document definition was shown before, which made it impossible to tell which
-  version of a case definition a case belongs to.
+---
 
 ## Bugfixes
 
@@ -42,3 +32,10 @@
   A field value in a compact field widget now stays right-aligned on every line, and the header row of a table
   widget on the widget tab of a case grows to fit a column header that wraps. Previously the value jumped to the
   left the moment it wrapped, and a wrapping column header was drawn on top of the first row of the table.
+| Area | Fix |
+|------|-----|
+| Draft environments | Default Spring profiles now correctly enable draft mode |
+| Search fields | Date searches return results with correct date format |
+| Document schemas | Recursive schema references no longer crash the server |
+| Dashboard | Donut charts with many categories display the circle correctly |
+| Case export | Forms shown in a widget are included in the case export |

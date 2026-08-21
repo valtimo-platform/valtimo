@@ -17,10 +17,14 @@
 package com.ritense.document.domain
 
 import com.ritense.document.domain.impl.JsonSchema
+import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionType.COLLECTION
 import com.ritense.valueresolver.ValueResolverOptionType.FIELD
+import java.net.URI
 import org.assertj.core.api.Assertions.assertThat
+import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.Schema
+import org.everit.json.schema.StringSchema
 import org.junit.jupiter.api.Test
 
 class EveritSchemaResolvableOptionsTest {
@@ -124,6 +128,75 @@ class EveritSchemaResolvableOptionsTest {
         assertThat(options).hasSize(1)
         assertThat(options.single().path).isEqualTo("doc:/tags")
         assertThat(options.single().type).isEqualTo(COLLECTION)
+    }
+
+    @Test
+    fun `should stop following a recursive reference instead of overflowing the stack`() {
+        val options = schemaOf(
+            """
+            "definitions": {
+              "node": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "child": { "${'$'}ref": "#/definitions/node" }
+                }
+              }
+            },
+            "properties": {
+              "root": { "${'$'}ref": "#/definitions/node" }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.map { it.path }).contains("doc:/root", "doc:/root/name")
+        // the recursion is cut off, so the options do not grow unbounded
+        assertThat(options).hasSizeLessThan(10)
+    }
+
+    @Test
+    fun `should not endlessly expand a schema file that references itself`() {
+        // a person has a partner who is a person, and children who are persons: a legitimate but unbounded model
+        val options = JsonSchema.fromResourceUri(
+            URI.create("config/unit-test/document/definition/reference/recursive-person.schema.json")
+        ).schema.collectValueResolverOptions("doc:")
+
+        assertThat(options.map { it.path }).contains(
+            "doc:/name",
+            "doc:/partner",
+            "doc:/partner/name",
+            "doc:/partner/address/street",
+            "doc:/children"
+        )
+        // each reference is expanded at most once per path, so the person cycle cannot grow the option tree unbounded
+        assertThat(options.map { it.path }).allMatch { path -> path.split("/partner").size - 1 <= 2 }
+        assertThat(countOptions(options)).isLessThan(100)
+    }
+
+    @Test
+    fun `should stop collecting options beyond the maximum schema depth`() {
+        val options = nestedObjectSchema(MAX_SCHEMA_DEPTH + 20).collectValueResolverOptions("doc:")
+
+        val deepestOption = options.maxOf { option -> option.path.count { it == '/' } }
+        assertThat(deepestOption).isLessThanOrEqualTo(MAX_SCHEMA_DEPTH + 1)
+    }
+
+    /** Counts the options including the nested options of collections. */
+    private fun countOptions(options: List<ValueResolverOption>): Int =
+        options.sumOf { 1 + countOptions(it.children.orEmpty()) }
+
+    /**
+     * Builds an object schema whose `level` property is again such an object, [depth] levels deep, ending in a
+     * string. Built through the everit builders rather than [schemaOf], because loading a schema this deep from
+     * JSON validates it against the draft-07 meta-schema, and that validation recurses per level and overflows
+     * the stack before the walker under test is ever reached.
+     */
+    private fun nestedObjectSchema(depth: Int): Schema {
+        var schema: Schema = StringSchema.builder().build()
+        repeat(depth + 1) {
+            schema = ObjectSchema.builder().addPropertySchema("level", schema).build()
+        }
+        return schema
     }
 
     private fun schemaOf(properties: String): Schema =
