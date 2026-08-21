@@ -17,6 +17,7 @@
 package com.ritense.case_.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.ritense.exporter.request.ExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
@@ -45,4 +46,12 @@ interface CaseWidgetTabWidgetDto {
      * This method is used to validate the widget configuration when the case definition context is required.
      */
     fun validate(caseDefinitionId: CaseDefinitionId) {}
+
+    /**
+     * @param caseDefinitionId the id of the case definition that this widget is configured for
+     *
+     * This method is used to export the resources this widget refers to, like a form definition. Without them, the
+     * exported widget tab cannot be imported again.
+     */
+    fun getRelatedExportRequests(caseDefinitionId: CaseDefinitionId): Set<ExportRequest> = emptySet()
 }
