@@ -45,7 +45,7 @@ class BpmnInvisibleOrphanCleaner {
             val outgoingFlows = flowNode.outgoing.toList()
 
             for (flow in incomingFlows + outgoingFlows) {
-                if (!removedFlowIds.add(flow.id)) {
+                if (removedFlowIds.add(flow.id)) {
                     flow.parentElement.removeChildElement(flow)
                 }
             }
