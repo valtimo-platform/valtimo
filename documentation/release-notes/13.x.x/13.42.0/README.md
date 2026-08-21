@@ -6,9 +6,12 @@
 
 ## New Features
 
-* **New feature title**
+* **Look up the active process definition keys for an entire case**
 
-  New feature explanation.
+  `ProcessDocumentsService` now exposes `activeProcessDefinitionKeysForCase`, which returns the process
+  definition keys of every active process instance in a case, including those of sibling documents such as
+  building-block instances. This makes it possible to find out which processes are currently running for a
+  case without having to query each linked document separately.
 
 ## Enhancements
 
