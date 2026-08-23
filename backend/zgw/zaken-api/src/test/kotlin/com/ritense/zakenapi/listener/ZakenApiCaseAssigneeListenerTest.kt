@@ -22,6 +22,7 @@ import com.ritense.document.event.DocumentUnassignedEvent
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInstanceLink
@@ -157,6 +158,17 @@ class ZakenApiCaseAssigneeListenerTest {
             .thenThrow(ZaakInstanceLinkNotFoundException("none"))
 
         listener.handleAssigneeChanged(assigneeChangedEvent("alice"))
+
+        verifyNoInteractions(zakenApiPlugin)
+    }
+
+    @Test
+    fun `does nothing when the case document cannot be resolved`() {
+        whenever(caseDocumentResolver.resolveCaseDocumentId(documentId))
+            .thenThrow(CaseDocumentResolutionException("No building block instance found for document id $documentId"))
+
+        listener.handleAssigneeChanged(assigneeChangedEvent("alice"))
+        listener.handleUnassigned(unassignedEvent("alice"))
 
         verifyNoInteractions(zakenApiPlugin)
     }
