@@ -22,6 +22,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInstanceLink
@@ -52,7 +53,7 @@ class ZakenApiCaseAssigneeListener(
     }
 
     private fun synchroniseAssigneeRol(documentId: UUID, newAssigneeUsername: String?) {
-        val caseDefinitionId = resolveCaseDefinitionId(documentId)
+        val caseDefinitionId = resolveCaseDefinitionId(documentId) ?: return
 
         val syncConfig = caseZakenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
         if (syncConfig?.assigneeSyncEnabled != true) {
@@ -86,10 +87,15 @@ class ZakenApiCaseAssigneeListener(
         }
     }
 
-    private fun resolveCaseDefinitionId(documentId: UUID): CaseDefinitionId =
+    private fun resolveCaseDefinitionId(documentId: UUID): CaseDefinitionId? =
         runWithoutAuthorization {
-            val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
-            documentService[caseDocumentId.toString()].definitionId().caseDefinitionId()
+            try {
+                val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+                documentService[caseDocumentId.toString()].definitionId().caseDefinitionId()
+            } catch (e: CaseDocumentResolutionException) {
+                logger.debug { "Could not resolve case document for document '$documentId': ${e.message}" }
+                null
+            }
         }
 
     private fun resolveLink(documentId: UUID): ZaakInstanceLink? = try {
