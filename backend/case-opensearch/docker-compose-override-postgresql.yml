@@ -1,7 +1,7 @@
 services:
     db:
         ports:
-            - "3365:5432"
+            - "3368:5432"
         environment:
             - POSTGRES_DB=case-opensearch-test
     opensearch:
