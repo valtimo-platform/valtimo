@@ -116,7 +116,7 @@ class AddBuildingBlockMigrationComponentExecutorTest {
 
     @Test
     fun `should warn and create nothing when no running process matches the entry`() {
-        deploy(instruction(ProcessMigrationInstruction("verhuizing-process", "income-check-process")))
+        deploy(instruction(processMigration = listOf(ProcessMigrationInstruction("verhuizing-process", "income-check-process"))))
 
         executor.execute(migrationId, target, ownerDocumentId)
 
@@ -150,11 +150,15 @@ class AddBuildingBlockMigrationComponentExecutorTest {
     }
 
     @Test
-    fun `should warn when an entry the target declares on a call activity is reached by neither pass`() {
+    fun `should warn when the component creates nothing at all`() {
         // The shape §6.7 hit live: the plan authorises a nested block, the target declares it on a call
         // activity, but the walk never reaches the process — because the level above stayed a plain
         // sub-process and still runs the old deployment. Both passes created nothing; before this, both
         // also stayed silent, and the migration reported COMPLETED with no blocks and no warning.
+        //
+        // The warning is now raised once for the component rather than once per unreached entry, and
+        // still names every block that was tried — so the D13 guarantee holds while the volume no longer
+        // scales with the size of the plan.
         deploy(instruction()) // no processMigration: pass 1 defers to the walk
         whenever(linkResolver.resolveCallActivityReachable(any()))
             .thenReturn(setOf(BuildingBlockDefinitionId.of("income-check", "1.0.0")))
@@ -163,15 +167,15 @@ class AddBuildingBlockMigrationComponentExecutorTest {
 
         verify(instanceService, never()).create(any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())
         assertThat(MigrationWarnings.drain())
-            .contains("Building block 'income-check:1.0.0' was not added to '$ownerDocumentId'")
-            .contains("no running process was reached")
+            .contains("No building block was added to '$ownerDocumentId'")
+            .contains("'income-check:1.0.0'")
             .contains("left a plain sub-process")
     }
 
     @Test
     fun `should not warn about an unreached entry the target does not declare on a call activity`() {
         // That entry's failure is pass 1's to report, and it already does, naming the business key.
-        deploy(instruction(ProcessMigrationInstruction("verhuizing-process", "income-check-process")))
+        deploy(instruction(processMigration = listOf(ProcessMigrationInstruction("verhuizing-process", "income-check-process"))))
 
         executor.execute(migrationId, target, ownerDocumentId)
 
@@ -180,17 +184,44 @@ class AddBuildingBlockMigrationComponentExecutorTest {
         assertThat(warnings).doesNotContain("no running process was reached")
     }
 
+    @Test
+    fun `should warn once for the component, not once per unreached entry`() {
+        // The volume this replaced: on the configuration it was built for, a plan authorising everything
+        // the target models produced one warning per block the case was not running — 46 lines for one
+        // case, burying the one line that mattered. The report is now per component and names them all.
+        deploy(instruction(), instruction(key = "inspectie-fotos"))
+        whenever(linkResolver.resolveCallActivityReachable(any())).thenReturn(
+            setOf(
+                BuildingBlockDefinitionId.of("income-check", "1.0.0"),
+                BuildingBlockDefinitionId.of("inspectie-fotos", "1.0.0"),
+            )
+        )
+
+        executor.execute(migrationId, target, ownerDocumentId)
+
+        val warnings = MigrationWarnings.drain()
+        assertThat(warnings).isNotNull()
+        assertThat(warnings!!.lines()).hasSize(1)
+        assertThat(warnings)
+            .contains("No building block was added to '$ownerDocumentId'")
+            .contains("authorises 2 block(s)")
+            .contains("'income-check:1.0.0'")
+            .contains("'inspectie-fotos:1.0.0'")
+    }
+
     private fun deploy(vararg instructions: AddBuildingBlockInstruction) {
         whenever(configurationRepository.findById(migrationId))
             .thenReturn(Optional.of(AddBuildingBlockConfiguration(migrationId, instructions.toList())))
     }
 
-    private fun instruction(vararg processMigration: ProcessMigrationInstruction) =
-        AddBuildingBlockInstruction(
-            buildingBlockKey = "income-check",
-            buildingBlockVersionTag = "1.0.0",
-            processMigration = processMigration.toList(),
-        )
+    private fun instruction(
+        key: String = "income-check",
+        processMigration: List<ProcessMigrationInstruction> = emptyList(),
+    ) = AddBuildingBlockInstruction(
+        buildingBlockKey = key,
+        buildingBlockVersionTag = "1.0.0",
+        processMigration = processMigration,
+    )
 
     private fun noRunningProcesses() {
         val query = mock<ProcessInstanceQuery>()

@@ -207,14 +207,26 @@ class AddBuildingBlockMigrationComponentExecutor(
 
     /**
      * An entry the target declares on a call activity, that pass 1 skipped in silence and pass 2 never
-     * reached, created nothing and said nothing. Neither pass can report it alone: pass 1 cannot know
-     * whether the walk will get there, and pass 2 never sees an entry whose call activity it does not
-     * visit. So it is reported here, where both answers are in.
+     * reached, created nothing. Neither pass can report it alone: pass 1 cannot know whether the walk
+     * will get there, and pass 2 never sees an entry whose call activity it does not visit. So it is
+     * worked out here, where both answers are in.
      *
-     * The usual cause is the one recorded as G23: a call activity *above* this one was left a plain
-     * sub-process, so its process still runs the owner's old deployment, and the link declaring this block
-     * lives on the building block's deployment where the walk never looks. The message says so, because
-     * the fix is in the plan (authorise the level above) rather than in this entry.
+     * **Per entry this goes to the log only; the case is warned once, and only when the component
+     * created nothing at all.** Whether *this* owner is running *that* piece of work is ordinary runtime
+     * variation — a plan authorising everything the target models is legitimate, and a case runs a
+     * handful of it — so a warning per unreached entry scaled with the size of the plan rather than with
+     * anything wrong. On the configuration this was built for it wrote 46 lines for one case and buried
+     * the single line that mattered, which is the opposite of what D13 set out to do.
+     *
+     * What D13 actually has to catch is the plan that creates **nothing**, on every case, while reporting
+     * success. That is [satisfied] being empty, and it is reported as one line naming everything that was
+     * tried. A partial result needs no warning: the blocks that were created are the evidence, and the
+     * per-entry detail is in the log for anyone diagnosing a specific block.
+     *
+     * The usual cause of an individual miss is the one recorded as G23: a call activity *above* this one
+     * was left a plain sub-process, so its process still runs the owner's old deployment, and the link
+     * declaring this block lives on the building block's deployment where the walk never looks. The log
+     * message says so, because the fix is in the plan (authorise the level above) rather than in the entry.
      */
     private fun reportEntriesNeitherPassReached(
         instructions: List<AddBuildingBlockInstruction>,
@@ -222,21 +234,35 @@ class AddBuildingBlockMigrationComponentExecutor(
         adoptable: Set<BuildingBlockDefinitionId>,
         satisfied: Set<BuildingBlockDefinitionId>,
     ) {
-        instructions
+        val unreached = instructions
             .map { BuildingBlockDefinitionId.of(it.buildingBlockKey, it.buildingBlockVersionTag) }
             .distinct()
             .filter { it in adoptable && it !in satisfied }
-            .forEach { unreached ->
-                val message = "Building block '$unreached' was not added to '$ownerDocumentId': the plan " +
-                    "authorises it and the target declares it on a call activity, but no running process " +
-                    "was reached that the declaring call activity had started. Either this case is not (or " +
-                    "no longer) running that work, or a call activity above it was left a plain " +
-                    "sub-process — a process left behind keeps running the old deployment, and the link " +
-                    "declaring this block sits on the building block's deployment, where the walk does not " +
-                    "look. Authorising the level above as well is what makes this one reachable."
-                logger.warn { message }
-                MigrationWarnings.warn(message)
+
+        unreached.forEach { block ->
+            logger.info {
+                "Building block '$block' was not added to '$ownerDocumentId': the plan authorises it and " +
+                    "the target declares it on a call activity, but no running process was reached that " +
+                    "the declaring call activity had started. Either this owner is not (or no longer) " +
+                    "running that work, or a call activity above it was left a plain sub-process — a " +
+                    "process left behind keeps running the old deployment, and the link declaring this " +
+                    "block sits on the building block's deployment, where the walk does not look. " +
+                    "Authorising the level above as well is what makes this one reachable."
             }
+        }
+
+        if (unreached.isEmpty() || satisfied.isNotEmpty()) {
+            return
+        }
+
+        val message = "No building block was added to '$ownerDocumentId': the plan authorises " +
+            "${unreached.size} block(s) that '$ownerDocumentId' does not run, and none of them could be " +
+            "reached (" + unreached.sortedBy { it.toString() }.joinToString { "'$it'" } + "). Either this " +
+            "owner is not (or no longer) running any of that work, or a call activity above them was left " +
+            "a plain sub-process, which keeps its process on the old deployment and hides everything below " +
+            "it from the walk — authorising that level as well is what makes these reachable."
+        logger.warn { message }
+        MigrationWarnings.warn(message)
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -68,6 +68,10 @@ class RemoveBuildingBlockMigrationComponentSuggester(
 
         val instructions = modelledBy(source)
             .filterKeys { it.key !in kept }
+            .entries
+            // Sorted like the add suggester, so both components read in the same order and a plan
+            // re-suggested for the same two versions comes back identical.
+            .sortedBy { it.key.toString() }
             .map { (lost, declaredBy) ->
                 RemoveBuildingBlockInstruction(
                     buildingBlockKey = lost.key,

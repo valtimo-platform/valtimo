@@ -22,7 +22,21 @@ package com.ritense.valtimo.contract.utils
  */
 object LcsDistance {
 
-    fun between(a: String, b: String): Int {
+    fun between(a: String, b: String): Int = a.length + b.length - 2 * lengthOfLongestCommonSubsequence(a, b)
+
+    /**
+     * The same comparison as [between], normalised to `0.0`(nothing in common)`..1.0`(equal) —
+     * `2 * LCS / (len(a) + len(b))`. Use this to compare *different* pairs with each other, which
+     * [between] cannot do: its result grows with the length of the strings, so a small change to two
+     * long names scores worse than a large change to two short ones. Two empty strings are equal.
+     */
+    fun similarityOf(a: String, b: String): Double {
+        val totalLength = a.length + b.length
+        if (totalLength == 0) return 1.0
+        return 2.0 * lengthOfLongestCommonSubsequence(a, b) / totalLength
+    }
+
+    private fun lengthOfLongestCommonSubsequence(a: String, b: String): Int {
         val lcs = Array(a.length + 1) { IntArray(b.length + 1) }
         for (i in 1..a.length) {
             for (j in 1..b.length) {
@@ -33,6 +47,6 @@ object LcsDistance {
                 }
             }
         }
-        return a.length + b.length - 2 * lcs[a.length][b.length]
+        return lcs[a.length][b.length]
     }
 }

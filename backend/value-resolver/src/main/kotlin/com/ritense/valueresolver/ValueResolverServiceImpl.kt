@@ -26,6 +26,7 @@ import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCO
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.stereotype.Service
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 @Service
@@ -33,6 +34,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 class ValueResolverServiceImpl(
     valueResolverFactories: List<ValueResolverFactory>
 ) : ValueResolverService {
+
+    private val loggedKeyOptionsFailures: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     // This property is lazy because valueResolverFactories can contain Lazy proxy instances
     private val resolverFactoryMap: Map<String, ValueResolverFactory> by lazy {
@@ -269,10 +272,26 @@ class ValueResolverServiceImpl(
     ): List<ValueResolverOption> {
         val factory = resolverFactoryMap[prefix] ?: return emptyList()
         return runCatching { enumerate(factory) }.getOrElse { e ->
-            logger.warn(e) {
-                "Could not getResolvableKeyOptions for prefix '$prefix:'; it is left out of the options."
-            }
+            logKeyOptionsFailure(prefix, e)
             emptyList()
+        }
+    }
+
+    /**
+     * These failures are caused by a misconfigured definition, so they repeat on every request the
+     * editor makes. The stack trace is therefore logged only the first time a failure is seen;
+     * repeats are logged at debug level to keep them out of the way.
+     */
+    private fun logKeyOptionsFailure(prefix: String, e: Throwable) {
+        val rootCause = generateSequence(e) { it.cause }.last()
+        val message = "Could not getResolvableKeyOptions for prefix '$prefix:'; it is left out of " +
+            "the options. Cause: ${rootCause::class.simpleName}: ${rootCause.message}"
+        val firstOccurrence = loggedKeyOptionsFailures.size < MAX_LOGGED_KEY_OPTIONS_FAILURES
+            && loggedKeyOptionsFailures.add("$prefix|${rootCause::class.qualifiedName}|${rootCause.message}")
+        if (firstOccurrence) {
+            logger.warn(e) { message }
+        } else {
+            logger.debug { message }
         }
     }
 
@@ -358,6 +377,7 @@ class ValueResolverServiceImpl(
 
     companion object {
         const val DELIMITER = ":"
+        private const val MAX_LOGGED_KEY_OPTIONS_FAILURES = 100
         private val prefixRegex = Regex("^[A-Za-z_-]+$") // no numbers allowed
         private val logger = KotlinLogging.logger {}
     }

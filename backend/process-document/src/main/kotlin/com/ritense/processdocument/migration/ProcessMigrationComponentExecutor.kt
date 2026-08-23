@@ -72,30 +72,48 @@ class ProcessMigrationComponentExecutor(
             .orElse(emptyList())!!
 
         val targetCaseDefinitionId = target as CaseDefinitionId
-        instructions.forEach { instruction ->
-            migrateInstruction(instruction, targetCaseDefinitionId, caseId)
+        val unmatched = instructions.filterNot { migrateInstruction(it, targetCaseDefinitionId, caseId) }
+
+        // A single instruction that matched nothing is normal and is not reported per case (see
+        // [migrateInstruction]). The component as a whole matching nothing is not: it is the shape of a
+        // plan whose process keys are wrong, which migrates no process on any case while reporting
+        // success. One line, naming every key that was tried, instead of one line per instruction.
+        if (instructions.isNotEmpty() && unmatched.size == instructions.size) {
+            val message = "No process was migrated for '$caseId': none of the plan's " +
+                "${instructions.size} processMigration instruction(s) (" +
+                unmatched.joinToString { "'${it.sourceProcessDefinitionKey}'" } +
+                ") matched a running process with business key '$caseId'. Either this case is not (or no " +
+                "longer) running any of them, or the instructions name process keys this case never runs."
+            logger.warn { message }
+            MigrationWarnings.warn(message)
         }
     }
 
+    /** True when the instruction found instances to migrate, false when it matched nothing. */
     private fun migrateInstruction(
         instruction: ProcessMigrationInstruction,
         targetCaseDefinitionId: CaseDefinitionId,
         caseId: UUID,
-    ) {
+    ): Boolean {
         val instances = runtimeService.createProcessInstanceQuery()
             .processDefinitionKey(instruction.sourceProcessDefinitionKey)
             .processInstanceBusinessKey(caseId.toString())
             .list()
         if (instances.isEmpty()) {
-            // Not a failure: a case whose process has ended has nothing to migrate. But the same
-            // branch catches an instruction naming a process key nothing runs under this case, and
-            // that instruction is wrong for every case — so say so instead of returning in silence.
-            val skipped = "No running process '${instruction.sourceProcessDefinitionKey}' with business " +
-                "key '$caseId' was found, so it was not migrated to " +
-                "'${instruction.targetProcessDefinitionKey}' on '$targetCaseDefinitionId'."
-            logger.warn { skipped }
-            MigrationWarnings.warn(skipped)
-            return
+            // Not a failure, and deliberately **not** a per-case warning. Whether this case runs this
+            // particular process is ordinary runtime variation: a plan covering every process a case
+            // version owns is correct, and most cases run a handful of them, so warning per instruction
+            // produced one line per process the case happens not to be running — on the configuration
+            // this was built for, 12 non-actionable lines per case, which buries the ones that matter.
+            //
+            // What is worth reporting is the component doing nothing *at all*, which is the wrong-key
+            // plan D13 exists to catch. [execute] reports that once, from the collected result.
+            logger.info {
+                "No running process '${instruction.sourceProcessDefinitionKey}' with business key " +
+                    "'$caseId' was found, so it was not migrated to " +
+                    "'${instruction.targetProcessDefinitionKey}' on '$targetCaseDefinitionId'."
+            }
+            return false
         }
 
         val targetDefinitionId = findTargetProcessDefinitionId(
@@ -112,6 +130,7 @@ class ProcessMigrationComponentExecutor(
             migrate(instruction, instance.processDefinitionId, targetDefinitionId, listOf(instance.processInstanceId))
             processMigrationVariableResolver.apply(instance.processInstanceId, instruction.setProcessVariables)
         }
+        return true
     }
 
     private fun findTargetProcessDefinitionId(

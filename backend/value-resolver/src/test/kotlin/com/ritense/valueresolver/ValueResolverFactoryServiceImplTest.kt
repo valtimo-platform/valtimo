@@ -16,6 +16,10 @@
 
 package com.ritense.valueresolver
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -26,6 +30,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.delegate.DelegateTask
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.util.UUID
@@ -62,6 +67,36 @@ internal class ValueResolverFactoryServiceImplTest {
         )
 
         assertThat(options.map { it.path }).containsExactly("ok:field")
+    }
+
+    @Test
+    fun `Should log the stack trace of an unenumerable prefix once instead of on every request`() {
+        // Also seen in the field: the editor asks for the keys dozens of times per screen, so a
+        // misconfigured definition wrote a 200-frame stack trace per request and buried the log.
+        val broken = mock<ValueResolverFactory>()
+        whenever(broken.supportedPrefix()).thenReturn("broken")
+        whenever(broken.getResolvableKeyOptions(any<String>()))
+            .thenThrow(UncheckedIOException(IOException("Could not find classpath://…/persoon.schema.json")))
+
+        val service = ValueResolverServiceImpl(listOf(broken))
+        val request = ValueResolverOptionRequest(prefixes = emptyList(), type = ValueResolverOptionType.FIELD)
+
+        val targetLogger = LoggerFactory.getLogger(ValueResolverServiceImpl::class.java) as Logger
+        val listAppender = ListAppender<ILoggingEvent>().apply { start() }
+        targetLogger.addAppender(listAppender)
+        try {
+            repeat(5) { service.getResolvableKeys(request, "some-case-definition") }
+        } finally {
+            targetLogger.detachAppender(listAppender)
+            listAppender.stop()
+        }
+
+        val warnings = listAppender.list.filter { it.level == Level.WARN }
+        assertThat(warnings).hasSize(1)
+        assertThat(warnings.single().throwableProxy).isNotNull()
+        assertThat(warnings.single().formattedMessage)
+            .contains("Could not getResolvableKeyOptions for prefix 'broken:'")
+            .contains("Could not find classpath://…/persoon.schema.json")
     }
 
     @Test

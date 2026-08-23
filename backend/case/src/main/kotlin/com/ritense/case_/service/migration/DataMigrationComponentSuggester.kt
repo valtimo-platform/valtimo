@@ -38,6 +38,22 @@ import com.ritense.valueresolver.ValueResolverService
  *   so the user can point it at the right source;
  * - a source that was **matched to no target** gets a patch that sets it to `null`, clearing the
  *   stale value carried over by the verbatim copy.
+ *
+ * An object container node is itself a resolvable path (`doc:/applicant` alongside
+ * `doc:/applicant/name`), so a whole subtree the target version dropped used to yield one clearing
+ * patch per node in it — the object *and* every descendant. Only the object's own patch does any
+ * work: it removes the subtree, after which each descendant patch either finds nothing left or
+ * re-creates the object it was just removed from. So the clearing patches are collapsed to the
+ * **shallowest** removed path, which is what an author reads as "this object is gone".
+ *
+ * The patches come out **sorted by target path**, so the same two versions always suggest the same
+ * document, related fields sit together, and a plan is reviewable and diffable rather than ordered by
+ * however the schema walk happened to enumerate. Sorting is safe here even though the patches are
+ * applied in order: a copy targets a path the target version *has* and a clear targets one it has
+ * **not**, and a version cannot model `…/a/b` without modelling `…/a`, so neither can ever be an
+ * ancestor of the other and clearing can never undo a copy. Where an ancestor relation *is* possible —
+ * two copies into one new subtree — a lexicographic sort keeps the ancestor first (a prefix always
+ * sorts before its extensions), which is the order that leaves the more specific patch winning.
  */
 class DataMigrationComponentSuggester(
     private val valueResolverService: ValueResolverService,
@@ -65,12 +81,34 @@ class DataMigrationComponentSuggester(
             .filter { targetPath -> targetPath !in sourcePathSet }
             .map { targetPath -> DataMigrationPatch(source = matchedSourceByTarget[targetPath], target = targetPath) }
 
-        val removals = sourcePaths
-            .filter { sourcePath -> sourcePath !in targetPathSet && sourcePath !in matchedSources }
-            .map { removedPath -> DataMigrationPatch(value = null, target = removedPath) }
+        val removals = collapseToRemovedRoots(
+            sourcePaths.filter { sourcePath -> sourcePath !in targetPathSet && sourcePath !in matchedSources }
+        ).map { removedPath -> DataMigrationPatch(value = null, target = removedPath) }
 
-        return (copies + removals).ifEmpty { null }
+        return (copies + removals).sortedBy { it.target }.ifEmpty { null }
     }
+
+    /**
+     * Keeps only the removed paths no removed *ancestor* already covers, so a dropped object is
+     * cleared once instead of once per node beneath it.
+     *
+     * This is safe because a path is only removed when the target version does not have it, and the
+     * target cannot have `…/applicant/name` without having `…/applicant` — object containers are
+     * always offered as options too. So no patch, and nothing the target version still models, lives
+     * under a path collapsed away here. A descendant matched as the *source* of a copy is not in this
+     * list to begin with, and its value survives the surviving ancestor patch regardless: every source
+     * is resolved before any target is written.
+     */
+    private fun collapseToRemovedRoots(removedPaths: List<String>): List<String> {
+        val removed = removedPaths.toSet()
+        return removedPaths.filter { path -> ancestorsOf(path).none { it in removed } }
+    }
+
+    /** The `/`-separated paths above [path], nearest first, e.g. `doc:/a/b/c` -> `doc:/a/b`, `doc:/a`. */
+    private fun ancestorsOf(path: String): Sequence<String> =
+        generateSequence(path) { it.substringBeforeLast('/', "") }
+            .drop(1)
+            .takeWhile { it.isNotEmpty() }
 
     /**
      * Greedily pairs each target with the still-unmatched source whose field name is most similar,
@@ -109,11 +147,8 @@ class DataMigrationComponentSuggester(
     }
 
     /** LCS-based name similarity in `[0, 1]`; `1` is identical, `0` shares no subsequence. */
-    private fun similarity(a: String, b: String): Double {
-        if (a.isEmpty() && b.isEmpty()) return 1.0
-        val distance = LcsDistance.between(a.lowercase(), b.lowercase())
-        return 1.0 - distance.toDouble() / (a.length + b.length)
-    }
+    private fun similarity(a: String, b: String): Double =
+        LcsDistance.similarityOf(a.lowercase(), b.lowercase())
 
     private companion object {
         const val DOCUMENT_PREFIX = "doc"
