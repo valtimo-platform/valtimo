@@ -42,6 +42,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.data.jpa.domain.Specification
 import java.io.ByteArrayInputStream
@@ -346,6 +347,23 @@ class ProcessDefinitionImportPreviewServiceTest {
         assertThat(preview.elementsToReplace).isEmpty()
     }
 
+    @Test
+    fun `should ignore a case scoped process link when previewing a process import`() {
+        // A case export bundles its process links under config/case/.../process-link; only the global
+        // process links belong to the process being imported, so a case process link must be ignored.
+        val preview = service.preview(
+            zipOf(
+                BPMN_PATH to bpmn(),
+                CASE_PROCESS_LINK_PATH to processLinkJson(),
+            )
+        )
+
+        assertThat(preview.missingReferences).isEmpty()
+        assertThat(preview.elementsToReplace).isEmpty()
+        assertThat(preview.canImport).isTrue()
+        verifyNoInteractions(processLinkService)
+    }
+
     private fun mockDeployedSystemProcess(readOnly: Boolean) {
         whenever(repositoryService.findLatestProcessDefinition(PROCESS_DEFINITION_KEY))
             .thenReturn(mock<OperatonProcessDefinition>())
@@ -421,5 +439,7 @@ class ProcessDefinitionImportPreviewServiceTest {
         const val PROCESS_DEFINITION_KEY = "my-process"
         const val BPMN_PATH = "config/global/bpmn/$PROCESS_DEFINITION_KEY.bpmn"
         const val PROCESS_LINK_PATH = "config/global/process-link/$PROCESS_DEFINITION_KEY.process-link.json"
+        const val CASE_PROCESS_LINK_PATH =
+            "config/case/my-case/1.0.0/process-link/$PROCESS_DEFINITION_KEY.process-link.json"
     }
 }

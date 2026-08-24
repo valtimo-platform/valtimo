@@ -317,6 +317,6 @@ class ProcessDefinitionImportPreviewService(
         private val BPMN_REGEX = """.*/?global/bpmn/(?:.*/)?(.+)\.bpmn""".toRegex()
         private val DMN_REGEX = """.*/?global/dmn/(?:.*/)?(.+)\.dmn""".toRegex()
         private val FORM_REGEX = """.*/?global/form/(?:.*/)?(.+)\.form\.json""".toRegex()
-        private val PROCESS_LINK_REGEX = """.*/?process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
+        private val PROCESS_LINK_REGEX = """.*/?global/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
     }
 }
