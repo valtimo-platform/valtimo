@@ -66,7 +66,7 @@ describe('TaskCountConfigurationComponent', () => {
     });
   });
 
-  it('prefills the root group from the conditions of the stored configuration', () => {
+  it('prefills the condition tree from the stored configuration', () => {
     const component = createComponent();
     const output = captureOutput(component);
 
@@ -83,7 +83,7 @@ describe('TaskCountConfigurationComponent', () => {
     };
     component.ngOnInit();
 
-    expect(component.$rootGroup().operator).toBe('or');
+    expect(component.conditionsForm.controls.operator.value).toBe('or');
     expect(output.current?.data).toEqual({
       caseDefinitionName: 'leerlingzaken',
       conditions: [
@@ -104,7 +104,7 @@ describe('TaskCountConfigurationComponent', () => {
       queryConditions: [{queryPath: 'task:assignee', queryOperator: '==', queryValue: 'x'}],
     };
 
-    expect(component.$rootGroup().rows).toEqual([
+    expect(component.conditionsForm.controls.rows.value).toEqual([
       {key: 'task:assignee', dropdown: '==', value: 'x'},
     ]);
   });
@@ -114,40 +114,66 @@ describe('TaskCountConfigurationComponent', () => {
 
     component.prefillConfiguration = undefined as any;
 
-    expect(component.$rootGroup()).toEqual({
+    expect(component.conditionsForm.getRawValue()).toEqual({
       operator: 'and',
       rows: [],
+      rowsComplete: true,
       groups: [],
       unsupportedNodes: [],
     });
   });
 
+  it('emits the configuration on every change of the condition tree', () => {
+    const component = createComponent();
+    const output = captureOutput(component);
+    component.ngOnInit();
+
+    component.conditionsForm.controls.rows.setValue([
+      {key: 'task:name', dropdown: '==', value: 'A'},
+    ]);
+
+    expect(output.current?.data.conditions).toEqual([
+      {and: [{path: 'task:name', operator: '==', value: 'A'}]},
+    ]);
+  });
+
   it('reports whether the tree still holds unsupported conditions after every change', () => {
     const component = createComponent();
     const inLeaf = {path: 'task:name', operator: 'in', value: ['A', 'B']};
+    const reported: boolean[] = [];
 
+    component.hasUnsupportedConditions$.subscribe(value => reported.push(value));
     component.prefillConfiguration = {conditions: [{or: [inLeaf]}]};
-    component.ngOnInit();
 
-    expect(component.$hasUnsupportedConditions()).toBe(true);
+    expect(reported[reported.length - 1]).toBe(true);
 
-    // The child component mutates the group tree in place, so the flag has to be recomputed on
-    // change rather than derived once.
-    component.$rootGroup().unsupportedNodes = [];
-    component.conditionsChange();
+    component.conditionsForm.controls.unsupportedNodes.setValue([]);
 
-    expect(component.$hasUnsupportedConditions()).toBe(false);
+    expect(reported[reported.length - 1]).toBe(false);
   });
 
-  it('reports the validity of the condition rows', () => {
+  it('is invalid while a group reports an incomplete condition row', () => {
     const component = createComponent();
     const output = captureOutput(component);
+    component.ngOnInit();
 
-    component.$rootGroup().rows = [{key: 'task:name', dropdown: '', value: ''}];
-    component.conditionsChange();
+    component.conditionsForm.controls.rowsComplete.setValue(false);
 
     expect(output.current?.valid).toBe(false);
     expect(output.current?.data.conditions).toEqual([]);
+  });
+
+  it('reports a read-only configuration as valid rather than incomplete', () => {
+    const component = createComponent();
+    const output = captureOutput(component);
+    component.ngOnInit();
+    component.conditionsForm.controls.rowsComplete.setValue(false);
+
+    component.disabled = true;
+    component.caseDefinitionSelected({item: {} as any});
+
+    expect(component.conditionsForm.disabled).toBe(true);
+    expect(output.current?.valid).toBe(true);
   });
 
   it('emits the selected case definition name', () => {

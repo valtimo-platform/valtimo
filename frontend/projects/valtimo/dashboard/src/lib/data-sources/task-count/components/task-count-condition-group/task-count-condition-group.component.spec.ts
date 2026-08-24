@@ -14,142 +14,125 @@
  * limitations under the License.
  */
 
+import {MultiInputValues} from '@valtimo/components';
 import {TaskCountConditionGroupComponent} from './task-count-condition-group.component';
-import {ConditionGroupForm} from '../../models';
+import {ConditionGroupOperator} from '../../models';
+import {createConditionGroup} from '../../utils';
 
 describe('TaskCountConditionGroupComponent', () => {
   const iconServiceMock = {registerAll: () => {}};
 
-  function createComponent(group: ConditionGroupForm): {
-    component: TaskCountConditionGroupComponent;
-    changes: number;
-  } {
+  function createComponent(
+    operator: ConditionGroupOperator = 'and',
+    rows: MultiInputValues = []
+  ): {component: TaskCountConditionGroupComponent; changes: number} {
     const component = new TaskCountConditionGroupComponent(iconServiceMock as any);
     const state = {component, changes: 0};
-    component.groupChange.subscribe(() => state.changes++);
-    component.group = group;
+
+    component.group = createConditionGroup(operator, rows);
+    // The form is what reports a change to the configuration component; counting the emissions
+    // shows that the group no longer needs an output of its own.
+    component.group.valueChanges.subscribe(() => state.changes++);
 
     return state;
   }
 
-  function emptyGroup(operator: 'and' | 'or' = 'and'): ConditionGroupForm {
-    return {operator, rows: [], groups: [], unsupportedNodes: []};
-  }
-
-  it('does not feed the live rows back into the multi input', () => {
-    const state = createComponent(emptyGroup());
-
-    expect(state.component.initialRows).toBeNull();
-
-    const withRows = createComponent({
-      ...emptyGroup(),
-      rows: [{key: 'task:name', dropdown: '==', value: 'A'}],
-    });
-
-    expect(withRows.component.initialRows).toEqual([
-      {key: 'task:name', dropdown: '==', value: 'A'},
-    ]);
-    expect(withRows.component.initialRows).not.toBe(withRows.component.group.rows);
-  });
-
-  it('changes the group operator and reports the change', () => {
-    const state = createComponent(emptyGroup('and'));
+  it('changes the group operator and reports the change through the form', () => {
+    const state = createComponent('and');
 
     state.component.setOperator('or');
 
-    expect(state.component.group.operator).toBe('or');
+    expect(state.component.operator).toBe('or');
     expect(state.changes).toBe(1);
   });
 
   it('ignores a selection of the operator that is already active', () => {
-    const state = createComponent(emptyGroup('and'));
+    const state = createComponent('and');
 
     state.component.setOperator('and');
 
     expect(state.changes).toBe(0);
   });
 
-  it('stores changed rows and ignores an unchanged emission', () => {
-    const state = createComponent(emptyGroup());
-    const rows = [{key: 'task:name', dropdown: '==', value: 'A'}];
+  it('marks the group invalid while the multi input reports an incomplete row', () => {
+    const state = createComponent('and');
 
-    state.component.rowsValueChange(rows);
-    state.component.rowsValueChange([{key: 'task:name', dropdown: '==', value: 'A'}]);
+    state.component.onAllRowsValid(false);
 
-    expect(state.component.group.rows).toEqual(rows);
-    expect(state.changes).toBe(1);
+    expect(state.component.group.valid).toBe(false);
+
+    state.component.onAllRowsValid(true);
+
+    expect(state.component.group.valid).toBe(true);
   });
 
   it('adds a section with one empty row that combines its own conditions with and', () => {
-    const state = createComponent(emptyGroup('and'));
+    const state = createComponent('and');
 
     state.component.addGroup();
 
-    expect(state.component.group.groups.length).toBe(1);
-    expect(state.component.group.groups[0].operator).toBe('and');
-    expect(state.component.group.groups[0].rows).toEqual([{key: '', dropdown: '', value: ''}]);
+    expect(state.component.groups.length).toBe(1);
+    expect(state.component.groups.at(0).controls.operator.value).toBe('and');
+    expect(state.component.groups.at(0).controls.rows.value).toEqual([
+      {key: '', dropdown: '', value: ''},
+    ]);
     expect(state.changes).toBe(1);
   });
 
   it('never changes the operator of the group when a section is added', () => {
-    const state = createComponent(emptyGroup('or'));
+    const state = createComponent('or');
 
     state.component.addGroup();
     state.component.addGroup();
     state.component.addGroup();
 
-    expect(state.component.group.operator).toBe('or');
-    expect(state.component.group.groups.length).toBe(3);
+    expect(state.component.operator).toBe('or');
+    expect(state.component.groups.length).toBe(3);
   });
 
   it('changes the operator of the whole group through the connector selector only', () => {
-    const state = createComponent(emptyGroup('and'));
+    const state = createComponent('and');
     state.component.addGroup();
     state.component.addGroup();
 
     state.component.setOperator('or');
 
-    expect(state.component.group.operator).toBe('or');
+    expect(state.component.operator).toBe('or');
     // The sections keep their own operator; only the way they relate to each other changed.
-    expect(state.component.group.groups.map(group => group.operator)).toEqual(['and', 'and']);
+    expect(state.component.groups.controls.map(group => group.controls.operator.value)).toEqual([
+      'and',
+      'and',
+    ]);
   });
 
   it('removes the requested nested group only', () => {
-    const state = createComponent(emptyGroup());
+    const state = createComponent('and');
     state.component.addGroup();
     state.component.addGroup();
-    const [firstGroup, secondGroup] = state.component.group.groups;
+    const secondGroup = state.component.groups.at(1);
 
-    state.component.removeGroup(firstGroup);
+    state.component.removeGroup(0);
 
-    expect(state.component.group.groups).toEqual([secondGroup]);
+    expect(state.component.groups.length).toBe(1);
+    expect(state.component.groups.at(0)).toBe(secondGroup);
+  });
+
+  it('reports the validity of a nested group as its own', () => {
+    const state = createComponent('and');
+    state.component.addGroup();
+
+    state.component.groups.at(0).controls.rowsComplete.setValue(false);
+
+    expect(state.component.group.valid).toBe(false);
   });
 
   it('puts the interactive connector before the first section that follows something', () => {
-    const withoutRows = createComponent(emptyGroup());
+    const withoutRows = createComponent('and');
 
     expect(withoutRows.component.interactiveConnectorIndex).toBe(1);
 
-    const withRows = createComponent({
-      ...emptyGroup(),
-      rows: [{key: 'task:name', dropdown: '==', value: 'A'}],
-    });
+    const withRows = createComponent('and', [{key: 'task:name', dropdown: '==', value: 'A'}]);
 
     expect(withRows.component.interactiveConnectorIndex).toBe(0);
-  });
-
-  it('qualifies test ids with the position of the group in the tree', () => {
-    const state = createComponent(emptyGroup());
-
-    expect(state.component.testId('taskCountConditionGroup')).toBe('taskCountConditionGroup--root');
-
-    state.component.groupId = 'root-1';
-
-    expect(state.component.testId('taskCountConditionGroup')).toBe(
-      'taskCountConditionGroup--root-1'
-    );
-    expect(state.component.testId('taskCountGroupOperatorSwitcher', 2)).toBe(
-      'taskCountGroupOperatorSwitcher--root-1-2'
-    );
   });
 });

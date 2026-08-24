@@ -14,21 +14,19 @@
   ~ limitations under the License.
   -->
 
-<!--
-  The AND/OR selector for this group. Rendered once in the header of a nested group, or once as the
-  first connector between the root sections; [index] only keeps the test ids of those two apart.
--->
-<ng-template #operatorSwitcher let-index="index">
+<!-- The AND/OR selector for this group, in the header of a nested group or on the first connector
+  between the root sections. -->
+<ng-template #operatorSwitcher>
   <cds-content-switcher
     class="condition-operator"
-    [attr.data-test-id]="testId(testIds.operatorSwitcher, index)"
+    [attr.data-test-id]="testIds.operatorSwitcher"
     size="sm"
   >
     <button
       cdsContentOption
       type="button"
-      [active]="group.operator === 'and'"
-      [attr.data-test-id]="testId(testIds.operatorAndButton, index)"
+      [active]="operator === 'and'"
+      [attr.data-test-id]="testIds.operatorAndButton"
       [disabled]="disabled"
       (selected)="setOperator('and')"
     >
@@ -38,14 +36,37 @@
     <button
       cdsContentOption
       type="button"
-      [active]="group.operator === 'or'"
-      [attr.data-test-id]="testId(testIds.operatorOrButton, index)"
+      [active]="operator === 'or'"
+      [attr.data-test-id]="testIds.operatorOrButton"
       [disabled]="disabled"
       (selected)="setOperator('or')"
     >
       {{ 'or' | widgetTranslate: dataSourceKey | async }}
     </button>
   </cds-content-switcher>
+</ng-template>
+
+<!--
+  The condition rows of this group. The multi input is a form control, so the rows are written and
+  read through [rowsControl] and its disabled state follows the control - binding [disabled] here
+  would set it on the form directive as well.
+-->
+<ng-template #conditionRows let-minimumAmountOfRows="minimumAmountOfRows">
+  <valtimo-carbon-multi-input
+    [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
+    [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
+    [dropdownItems]="operatorItems"
+    [formControl]="rowsControl"
+    [fullWidth]="true"
+    [initialAmountOfRows]="minimumAmountOfRows"
+    [minimumAmountOfRows]="minimumAmountOfRows"
+    [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+    [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
+    (allValuesValidEvent)="onAllRowsValid($event)"
+    addButtonType="tertiary"
+    deleteButtonType="danger--ghost"
+    type="keyDropdownValue"
+  ></valtimo-carbon-multi-input>
 </ng-template>
 
 @if (root) {
@@ -55,37 +76,26 @@
     them - a selector on the first connector, static text on the ones after it. Connectors only
     appear once there is something to relate (two or more sections, or a section following
     root-level rows). Each section carries its own operator for the conditions inside it. "Add
-    condition group" appends a new section. Direct root-level rows only exist for configuration authored in a file;
-    they are kept editable so that saving does not drop them.
+    condition group" appends a new section. Direct root-level rows only exist for configuration
+    authored in a file; they are kept editable so that saving does not drop them.
   -->
-  <div class="condition-root" [attr.data-test-id]="testId(testIds.conditionGroup)">
-    @if (group.rows.length) {
-      <valtimo-carbon-multi-input
-        [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
-        [defaultValues]="initialRows"
-        [disabled]="disabled"
-        [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
-        [dropdownItems]="operatorItems"
-        [fullWidth]="true"
-        [initialAmountOfRows]="0"
-        [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
-        [minimumAmountOfRows]="0"
-        [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
-        addButtonType="tertiary"
-        type="keyDropdownValue"
-        (valueChange)="rowsValueChange($event)"
-      ></valtimo-carbon-multi-input>
+  <div class="condition-root" [attr.data-test-id]="testIds.conditionGroup">
+    @if (rowsControl.value.length) {
+      <ng-container
+        *ngTemplateOutlet="conditionRows; context: {minimumAmountOfRows: 0}"
+      ></ng-container>
     }
 
-    @for (nestedGroup of group.groups; track nestedGroup; let index = $index) {
+    @for (nestedGroup of groups.controls; track nestedGroup; let index = $index) {
       @if (index === interactiveConnectorIndex) {
-        <ng-container *ngTemplateOutlet="operatorSwitcher; context: {index: index}"></ng-container>
+        <ng-container *ngTemplateOutlet="operatorSwitcher"></ng-container>
       } @else if (index > interactiveConnectorIndex) {
         <p
           class="condition-root__operator-mirror"
-          [attr.data-test-id]="testId(testIds.operatorMirror, index)"
+          [attr.data-test-id]="testIds.operatorMirror"
+          aria-hidden="true"
         >
-          {{ group.operator | widgetTranslate: dataSourceKey | async }}
+          {{ operator | widgetTranslate: dataSourceKey | async }}
         </p>
       }
 
@@ -93,24 +103,16 @@
         [dataSourceKey]="dataSourceKey"
         [disabled]="disabled"
         [group]="nestedGroup"
-        [groupId]="groupId + '-' + index"
         [operatorItems]="operatorItems"
-        (deleteGroup)="removeGroup(nestedGroup)"
-        (groupChange)="groupChange.emit()"
+        (deleteGroup)="removeGroup(index)"
       ></valtimo-task-count-condition-group>
     }
 
-    <!--
-      "Add condition group" only appends a section. How the sections relate is a property of this
-      group, so it is chosen on the connector between them - the level the operator actually belongs
-      to - and never here: at the moment of the first addition there is nothing to relate it to yet,
-      and the section that appears carries its own operator for the conditions inside it.
-    -->
     <button
       class="condition-root__add-button"
       cdsButton="tertiary"
       type="button"
-      [attr.data-test-id]="testId(testIds.addGroupButton)"
+      [attr.data-test-id]="testIds.addGroupButton"
       [disabled]="disabled"
       (click)="addGroup()"
     >
@@ -120,51 +122,33 @@
     </button>
   </div>
 } @else {
-  <cds-tile
-    class="condition-group"
-    [attr.data-test-id]="testId(testIds.conditionGroup)"
-    [cdsLayer]="0"
-  >
+  <cds-tile class="condition-group" [attr.data-test-id]="testIds.conditionGroup" [cdsLayer]="0">
     <div class="condition-group__header">
       <ng-container *ngTemplateOutlet="operatorSwitcher"></ng-container>
 
       <cds-icon-button
-        [attr.data-test-id]="testId(testIds.deleteGroupButton)"
+        [attr.data-test-id]="testIds.deleteGroupButton"
         [description]="'deleteGroup' | widgetTranslate: dataSourceKey | async"
         [disabled]="disabled"
         (click)="deleteGroup.emit()"
-        kind="danger"
+        kind="danger--ghost"
         size="sm"
       >
         <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
       </cds-icon-button>
     </div>
 
-    <valtimo-carbon-multi-input
-      [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
-      [defaultValues]="initialRows"
-      [disabled]="disabled"
-      [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
-      [dropdownItems]="operatorItems"
-      [fullWidth]="true"
-      [initialAmountOfRows]="1"
-      [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
-      [minimumAmountOfRows]="1"
-      [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
-      addButtonType="tertiary"
-      type="keyDropdownValue"
-      (valueChange)="rowsValueChange($event)"
-    ></valtimo-carbon-multi-input>
+    <ng-container
+      *ngTemplateOutlet="conditionRows; context: {minimumAmountOfRows: 1}"
+    ></ng-container>
 
-    @for (nestedGroup of group.groups; track nestedGroup; let index = $index) {
+    @for (nestedGroup of groups.controls; track nestedGroup; let index = $index) {
       <valtimo-task-count-condition-group
         [dataSourceKey]="dataSourceKey"
         [disabled]="disabled"
         [group]="nestedGroup"
-        [groupId]="groupId + '-' + index"
         [operatorItems]="operatorItems"
-        (deleteGroup)="removeGroup(nestedGroup)"
-        (groupChange)="groupChange.emit()"
+        (deleteGroup)="removeGroup(index)"
       ></valtimo-task-count-condition-group>
     }
   </cds-tile>

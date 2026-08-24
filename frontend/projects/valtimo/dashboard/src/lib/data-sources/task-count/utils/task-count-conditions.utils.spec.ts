@@ -15,25 +15,39 @@
  */
 
 import {WireConditionNode} from '../../../models';
-import {createConditionGroup, serializeConditionGroup, wireNodesToRootGroup} from './index';
+import {ConditionGroupForm, ConditionGroupValue} from '../models';
+import {createConditionGroup, resetRootGroup, serializeConditionGroup} from './index';
 
 describe('task count condition utils', () => {
-  function roundTrip(nodes: WireConditionNode[]): WireConditionNode | null {
-    return serializeConditionGroup(wireNodesToRootGroup(nodes)).node;
+  function rootGroupOf(nodes: WireConditionNode[]): ConditionGroupForm {
+    const rootGroup = createConditionGroup('and');
+    resetRootGroup(rootGroup, nodes);
+
+    return rootGroup;
   }
 
-  describe('wireNodesToRootGroup', () => {
+  function serialize(group: ConditionGroupForm) {
+    return serializeConditionGroup(group.getRawValue() as ConditionGroupValue);
+  }
+
+  function roundTrip(nodes: WireConditionNode[]): WireConditionNode | null {
+    return serialize(rootGroupOf(nodes)).node;
+  }
+
+  describe('resetRootGroup', () => {
     it('reads a legacy flat list of aliased leaves as an AND root group', () => {
-      const rootGroup = wireNodesToRootGroup([
+      const rootGroup = rootGroupOf([
         {queryPath: 'task:assignee', queryOperator: '==', queryValue: 'x'},
       ]);
 
-      expect(rootGroup.operator).toBe('and');
-      expect(rootGroup.rows).toEqual([{key: 'task:assignee', dropdown: '==', value: 'x'}]);
+      expect(rootGroup.controls.operator.value).toBe('and');
+      expect(rootGroup.controls.rows.value).toEqual([
+        {key: 'task:assignee', dropdown: '==', value: 'x'},
+      ]);
     });
 
     it('adopts a single top-level group as the root group, so its operator round-trips', () => {
-      const rootGroup = wireNodesToRootGroup([
+      const rootGroup = rootGroupOf([
         {
           or: [
             {path: 'task:name', operator: '==', value: 'A'},
@@ -42,37 +56,49 @@ describe('task count condition utils', () => {
         },
       ]);
 
-      expect(rootGroup.operator).toBe('or');
-      expect(rootGroup.rows.length).toBe(2);
-      expect(rootGroup.groups.length).toBe(0);
+      expect(rootGroup.controls.operator.value).toBe('or');
+      expect(rootGroup.controls.rows.value.length).toBe(2);
+      expect(rootGroup.controls.groups.length).toBe(0);
     });
 
     it('splits a flat leaf plus a group into root rows and one nested group', () => {
-      const rootGroup = wireNodesToRootGroup([
+      const rootGroup = rootGroupOf([
         {path: 'task:assignee', operator: '!=', value: 'x'},
         {or: [{path: 'task:name', operator: '==', value: 'A'}]},
       ]);
 
-      expect(rootGroup.operator).toBe('and');
-      expect(rootGroup.rows.length).toBe(1);
-      expect(rootGroup.groups.length).toBe(1);
-      expect(rootGroup.groups[0].operator).toBe('or');
+      expect(rootGroup.controls.operator.value).toBe('and');
+      expect(rootGroup.controls.rows.value.length).toBe(1);
+      expect(rootGroup.controls.groups.length).toBe(1);
+      expect(rootGroup.controls.groups.at(0).controls.operator.value).toBe('or');
     });
 
     it('stringifies non-string scalar values so they fit the row inputs', () => {
-      const rootGroup = wireNodesToRootGroup([{path: 'task:priority', operator: '>', value: 50}]);
+      const rootGroup = rootGroupOf([{path: 'task:priority', operator: '>', value: 50}]);
 
-      expect(rootGroup.rows).toEqual([{key: 'task:priority', dropdown: '>', value: '50'}]);
+      expect(rootGroup.controls.rows.value).toEqual([
+        {key: 'task:priority', dropdown: '>', value: '50'},
+      ]);
     });
 
     it('keeps leaves the row inputs cannot represent out of the rows', () => {
       const arrayValueLeaf = {path: 'task:name', operator: 'in', value: ['A', 'B']};
       const objectValueLeaf = {path: 'task:name', operator: '==', value: {nested: true}};
 
-      const rootGroup = wireNodesToRootGroup([arrayValueLeaf, objectValueLeaf]);
+      const rootGroup = rootGroupOf([arrayValueLeaf, objectValueLeaf]);
 
-      expect(rootGroup.rows).toEqual([]);
-      expect(rootGroup.unsupportedNodes).toEqual([arrayValueLeaf, objectValueLeaf]);
+      expect(rootGroup.controls.rows.value).toEqual([]);
+      expect(rootGroup.controls.unsupportedNodes.value).toEqual([arrayValueLeaf, objectValueLeaf]);
+    });
+
+    it('replaces the previous contents of the group it is applied to', () => {
+      const rootGroup = rootGroupOf([{or: [{path: 'task:name', operator: '==', value: 'A'}]}]);
+
+      resetRootGroup(rootGroup, [{and: [{or: [{path: 'task:name', operator: '==', value: 'B'}]}]}]);
+
+      expect(rootGroup.controls.operator.value).toBe('and');
+      expect(rootGroup.controls.rows.value).toEqual([]);
+      expect(rootGroup.controls.groups.length).toBe(1);
     });
   });
 
@@ -111,8 +137,8 @@ describe('task count condition utils', () => {
     it('preserves unsupported nodes inside the group they were configured in', () => {
       const inLeaf = {path: 'task:name', operator: 'in', value: ['A', 'B']};
 
-      const result = serializeConditionGroup(
-        wireNodesToRootGroup([{or: [inLeaf, {path: 'task:name', operator: '==', value: 'A'}]}])
+      const result = serialize(
+        rootGroupOf([{or: [inLeaf, {path: 'task:name', operator: '==', value: 'A'}]}])
       );
 
       expect(result.hasUnsupportedNodes).toBe(true);
@@ -122,48 +148,65 @@ describe('task count condition utils', () => {
     });
 
     it('reports unsupported nodes nested deeper in the tree', () => {
-      const result = serializeConditionGroup(
-        wireNodesToRootGroup([{and: [{or: [{path: 'task:name', operator: 'in', value: ['A']}]}]}])
+      const result = serialize(
+        rootGroupOf([{and: [{or: [{path: 'task:name', operator: 'in', value: ['A']}]}]}])
       );
 
       expect(result.hasUnsupportedNodes).toBe(true);
     });
 
-    it('is valid and empty for a group holding nothing but empty rows', () => {
+    it('serializes a group holding nothing but empty rows to nothing', () => {
       const group = createConditionGroup('and', [{key: '', dropdown: '', value: ''}]);
 
-      expect(serializeConditionGroup(group)).toEqual({
-        node: null,
-        valid: true,
-        hasUnsupportedNodes: false,
+      expect(serialize(group)).toEqual({node: null, hasUnsupportedNodes: false});
+    });
+
+    it('leaves a partially filled row out of the node', () => {
+      const group = createConditionGroup('and', [
+        {key: 'task:name', dropdown: '==', value: 'A'},
+        {key: 'task:name', dropdown: '', value: ''},
+      ]);
+
+      expect(serialize(group).node).toEqual({
+        and: [{path: 'task:name', operator: '==', value: 'A'}],
       });
     });
 
-    it('is invalid when a condition row is partially filled', () => {
-      const group = createConditionGroup('and', [{key: 'task:name', dropdown: '', value: ''}]);
-
-      const result = serializeConditionGroup(group);
-
-      expect(result.valid).toBe(false);
-      expect(result.node).toBeNull();
-    });
-
-    it('is invalid when a row of a nested group is partially filled', () => {
-      const group = createConditionGroup('and');
-      group.groups = [createConditionGroup('or', [{key: '', dropdown: '==', value: ''}])];
-
-      expect(serializeConditionGroup(group).valid).toBe(false);
-    });
-
-    it('drops a nested group without complete conditions and stays valid', () => {
+    it('drops a nested group without complete conditions', () => {
       const group = createConditionGroup('and', [{key: 'task:name', dropdown: '==', value: 'A'}]);
-      group.groups = [createConditionGroup('or', [{key: '', dropdown: '', value: ''}])];
+      group.controls.groups.push(createConditionGroup('or', [{key: '', dropdown: '', value: ''}]));
 
-      expect(serializeConditionGroup(group)).toEqual({
+      expect(serialize(group)).toEqual({
         node: {and: [{path: 'task:name', operator: '==', value: 'A'}]},
-        valid: true,
         hasUnsupportedNodes: false,
       });
+    });
+  });
+
+  describe('validity', () => {
+    it('is valid while every row of every group is complete', () => {
+      const group = createConditionGroup('and', [{key: 'task:name', dropdown: '==', value: 'A'}]);
+      group.controls.groups.push(createConditionGroup('or'));
+
+      expect(group.valid).toBe(true);
+    });
+
+    it('is invalid while a group reports an incomplete row', () => {
+      const group = createConditionGroup('and');
+
+      group.controls.rowsComplete.setValue(false);
+
+      expect(group.valid).toBe(false);
+    });
+
+    it('is invalid while a nested group reports an incomplete row', () => {
+      const group = createConditionGroup('and');
+      const nestedGroup = createConditionGroup('or');
+      group.controls.groups.push(nestedGroup);
+
+      nestedGroup.controls.rowsComplete.setValue(false);
+
+      expect(group.valid).toBe(false);
     });
   });
 });

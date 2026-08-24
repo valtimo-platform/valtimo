@@ -16,6 +16,7 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {ReactiveFormsModule} from '@angular/forms';
 import {DATA_SOURCE_TOKEN} from '../../constants';
 import {taskCountSpecification} from './task-count.specification';
 import {TaskCountConditionGroupComponent, TaskCountConfigurationComponent} from './components';
@@ -36,6 +37,7 @@ import {CarbonMultiInputModule} from '@valtimo/components';
   declarations: [TaskCountConditionGroupComponent, TaskCountConfigurationComponent],
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     WidgetTranslatePipeModule,
     InputModule,
     DropdownModule,

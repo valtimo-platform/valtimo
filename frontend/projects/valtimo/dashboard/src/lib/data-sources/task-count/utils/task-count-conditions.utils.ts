@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MultiInputKeyValue, MultiInputValues} from '@valtimo/components';
 import {ExpressionOperator} from '@valtimo/shared';
 import {
@@ -24,7 +25,12 @@ import {
   WireConditionNode,
   WireOrConditionGroup,
 } from '../../../models';
-import {ConditionGroupForm, ConditionGroupOperator, SerializedConditionGroup} from '../models';
+import {
+  ConditionGroupForm,
+  ConditionGroupOperator,
+  ConditionGroupValue,
+  SerializedConditionGroup,
+} from '../models';
 
 /** The operators the condition rows offer. Anything else is preserved but not editable. */
 export const EDITABLE_CONDITION_OPERATORS: Array<ExpressionOperator> = [
@@ -38,9 +44,21 @@ export const EDITABLE_CONDITION_OPERATORS: Array<ExpressionOperator> = [
 
 export function createConditionGroup(
   operator: ConditionGroupOperator,
-  rows: MultiInputValues = []
+  rows: MultiInputValues = [],
+  unsupportedNodes: WireConditionNode[] = []
 ): ConditionGroupForm {
-  return {operator, rows, groups: [], unsupportedNodes: []};
+  return new FormGroup({
+    operator: new FormControl<ConditionGroupOperator>(operator, {nonNullable: true}),
+    rows: new FormControl<MultiInputValues>(rows, {nonNullable: true}),
+    // The multi input drops incomplete rows from its value, so a group that is still being filled
+    // in can only be recognised through the event the multi input emits for it.
+    rowsComplete: new FormControl<boolean>(true, {
+      nonNullable: true,
+      validators: [Validators.requiredTrue],
+    }),
+    groups: new FormArray<ConditionGroupForm>([]),
+    unsupportedNodes: new FormControl<WireConditionNode[]>(unsupportedNodes, {nonNullable: true}),
+  });
 }
 
 export function createEmptyConditionRow(): MultiInputKeyValue {
@@ -48,44 +66,42 @@ export function createEmptyConditionRow(): MultiInputKeyValue {
 }
 
 /**
- * Turns the conditions of a stored configuration into the root group of the editor.
+ * Applies the conditions of a stored configuration to [root], leaving the form instance itself
+ * intact so that subscriptions on it survive a prefill.
  *
  * A single group at the top level is adopted as the root group itself, so that its operator
  * survives a save/reload round-trip. Anything else - including a legacy flat list of conditions -
  * becomes a set of children combined with AND, matching the backend's list semantics.
  */
-export function wireNodesToRootGroup(nodes: WireConditionNode[]): ConditionGroupForm {
+export function resetRootGroup(root: ConditionGroupForm, nodes: WireConditionNode[]): void {
   const [firstNode] = nodes;
 
-  return nodes.length === 1 && isWireGroup(firstNode)
-    ? wireGroupToForm(firstNode)
-    : {operator: 'and', ...wireChildrenToForm(nodes)};
+  if (nodes.length === 1 && isWireGroup(firstNode)) {
+    applyWireGroup(root, firstNode);
+
+    return;
+  }
+
+  root.controls.operator.setValue('and');
+  applyWireChildren(root, nodes);
 }
 
 /**
- * Walks [group] once and collects the wire node to emit, whether the tree is valid, and whether it
- * holds nodes the editor cannot render.
+ * Walks [group] once and collects the wire node to emit and whether the tree holds nodes the editor
+ * cannot render.
  *
- * Groups without a single complete condition serialize to `null`: the backend rejects empty
- * `and`/`or` groups, because `cb.or()` without predicates evaluates to false and would silently
- * zero out the count.
+ * Groups without a single condition serialize to `null`: the backend rejects empty `and`/`or`
+ * groups, because `cb.or()` without predicates evaluates to false and would silently zero out the
+ * count.
  */
-export function serializeConditionGroup(group: ConditionGroupForm): SerializedConditionGroup {
+export function serializeConditionGroup(group: ConditionGroupValue): SerializedConditionGroup {
   const children: WireConditionNode[] = [];
-  let valid = true;
   let hasUnsupportedNodes = group.unsupportedNodes.length > 0;
 
-  group.rows.forEach(row => {
-    if (isRowComplete(row)) {
-      children.push(rowToLeaf(row));
-    } else if (!isRowEmpty(row)) {
-      valid = false;
-    }
-  });
+  group.rows.filter(isRowComplete).forEach(row => children.push(rowToLeaf(row)));
 
   group.groups.forEach(nestedGroup => {
     const nested = serializeConditionGroup(nestedGroup);
-    valid = valid && nested.valid;
     hasUnsupportedNodes = hasUnsupportedNodes || nested.hasUnsupportedNodes;
 
     if (nested.node) {
@@ -97,7 +113,6 @@ export function serializeConditionGroup(group: ConditionGroupForm): SerializedCo
 
   return {
     node: children.length ? toWireGroup(group.operator, children) : null,
-    valid,
     hasUnsupportedNodes,
   };
 }
@@ -109,26 +124,36 @@ function toWireGroup(
   return operator === 'or' ? {or: children} : {and: children};
 }
 
-function wireGroupToForm(group: WireConditionGroup): ConditionGroupForm {
-  return isWireOrGroup(group)
-    ? {operator: 'or', ...wireChildrenToForm(group.or)}
-    : {operator: 'and', ...wireChildrenToForm(group.and)};
+function applyWireGroup(group: ConditionGroupForm, wireGroup: WireConditionGroup): void {
+  if (isWireOrGroup(wireGroup)) {
+    group.controls.operator.setValue('or');
+    applyWireChildren(group, wireGroup.or);
+  } else {
+    group.controls.operator.setValue('and');
+    applyWireChildren(group, wireGroup.and);
+  }
 }
 
-function wireChildrenToForm(nodes: WireConditionNode[]): Omit<ConditionGroupForm, 'operator'> {
-  const form: Omit<ConditionGroupForm, 'operator'> = {rows: [], groups: [], unsupportedNodes: []};
+function applyWireChildren(group: ConditionGroupForm, nodes: WireConditionNode[]): void {
+  const rows: MultiInputValues = [];
+  const unsupportedNodes: WireConditionNode[] = [];
+
+  group.controls.groups.clear();
 
   nodes.forEach(node => {
     if (isWireGroup(node)) {
-      form.groups.push(wireGroupToForm(node));
+      const nestedGroup = createConditionGroup('and');
+      applyWireGroup(nestedGroup, node);
+      group.controls.groups.push(nestedGroup);
     } else if (isEditableLeaf(node)) {
-      form.rows.push(wireLeafToRow(node));
+      rows.push(wireLeafToRow(node));
     } else {
-      form.unsupportedNodes.push(node);
+      unsupportedNodes.push(node);
     }
   });
 
-  return form;
+  group.controls.rows.setValue(rows);
+  group.controls.unsupportedNodes.setValue(unsupportedNodes);
 }
 
 function isWireOrGroup(node: WireConditionNode): node is WireOrConditionGroup {
@@ -174,8 +199,4 @@ function rowToLeaf(row: MultiInputKeyValue): ConditionLeaf {
 
 function isRowComplete(row: MultiInputKeyValue): boolean {
   return !!row.key && !!row.dropdown && !!row.value;
-}
-
-function isRowEmpty(row: MultiInputKeyValue): boolean {
-  return !row.key && !row.dropdown && !row.value;
 }

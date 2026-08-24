@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {FormArray, FormControl, FormGroup} from '@angular/forms';
 import {MultiInputValues} from '@valtimo/components';
 import {WireConditionNode} from '../../../models';
 
@@ -26,31 +27,46 @@ interface TaskCountConfiguration {
 
 type ConditionGroupOperator = 'and' | 'or';
 
-/**
- * Editor state for a single condition group. Mirrors the backend `AndConditionGroup` /
- * `OrConditionGroup`: the group combines its own condition rows and its nested groups with
- * [operator]. Groups nest to arbitrary depth.
- *
- * [unsupportedNodes] holds children that the editor cannot render (array values for the `in`
- * operator, operators outside the dropdown). They are emitted unchanged so that configuration
- * authored in a file survives an edit in the admin UI.
- */
-interface ConditionGroupForm {
-  operator: ConditionGroupOperator;
-  rows: MultiInputValues;
-  groups: ConditionGroupForm[];
-  unsupportedNodes: WireConditionNode[];
+interface ConditionGroupControls {
+  /** Combines the rows and the nested groups of this group, mirroring `and`/`or` on the backend. */
+  operator: FormControl<ConditionGroupOperator>;
+  /**
+   * The conditions of this group. Held as a single control because the multi input writes the whole
+   * set of rows at once; it only ever contains complete rows, incomplete ones are reported through
+   * [rowsComplete].
+   */
+  rows: FormControl<MultiInputValues>;
+  /** False while the multi input holds a row that is not filled in completely. */
+  rowsComplete: FormControl<boolean>;
+  groups: FormArray<ConditionGroupForm>;
+  /**
+   * Children the editor cannot render (array values for the `in` operator, operators outside the
+   * dropdown). Kept so that configuration authored in a file survives an edit in the admin UI.
+   */
+  unsupportedNodes: FormControl<WireConditionNode[]>;
 }
 
 /**
- * The result of walking a [ConditionGroupForm] tree once: everything the configuration component
- * needs to emit, gathered in a single traversal.
+ * A single condition group as a form. Groups nest to arbitrary depth through [groups], so the
+ * validity of the whole tree is the validity of this form.
+ *
+ * Declared as an interface rather than a type alias, so that the group can reference itself.
  */
+interface ConditionGroupForm extends FormGroup<ConditionGroupControls> {}
+
+/** The raw value of a [ConditionGroupForm], which is what the serializer walks. */
+interface ConditionGroupValue {
+  operator: ConditionGroupOperator;
+  rows: MultiInputValues;
+  rowsComplete: boolean;
+  groups: ConditionGroupValue[];
+  unsupportedNodes: WireConditionNode[];
+}
+
+/** The result of walking a [ConditionGroupValue] tree once. */
 interface SerializedConditionGroup {
-  /** The group as a wire node, or null when it holds no complete condition at all. */
+  /** The group as a wire node, or null when it holds no condition at all. */
   node: WireConditionNode | null;
-  /** False when a condition row is partially filled in. */
-  valid: boolean;
   /** True when the tree holds nodes the editor cannot render. */
   hasUnsupportedNodes: boolean;
 }
@@ -58,6 +74,8 @@ interface SerializedConditionGroup {
 export {
   TaskCountConfiguration,
   ConditionGroupOperator,
+  ConditionGroupControls,
   ConditionGroupForm,
+  ConditionGroupValue,
   SerializedConditionGroup,
 };

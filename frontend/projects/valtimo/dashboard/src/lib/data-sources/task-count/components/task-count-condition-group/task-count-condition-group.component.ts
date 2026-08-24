@@ -15,10 +15,10 @@
  */
 
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {FormArray, FormControl} from '@angular/forms';
 import {ListItemWithId, MultiInputValues} from '@valtimo/components';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
-import {isEqual} from 'lodash';
 import {ConditionGroupForm, ConditionGroupOperator} from '../../models';
 import {TASK_COUNT_TEST_IDS} from '../../constants';
 import {createConditionGroup, createEmptyConditionRow} from '../../utils';
@@ -28,8 +28,9 @@ import {createConditionGroup, createEmptyConditionRow} from '../../utils';
  * condition rows, and its nested groups. The component renders itself recursively, so groups can
  * be nested to any depth - matching the backend `AndConditionGroup`/`OrConditionGroup` tree.
  *
- * The group object is mutated in place and [groupChange] is emitted so the root configuration
- * component can re-serialize the whole tree.
+ * All state lives in the [group] form: the rows are bound to the multi input as a control, and a
+ * nested group is a form in the `groups` array. Changes therefore reach the configuration component
+ * through the form itself, without this component reporting them.
  */
 @Component({
   standalone: false,
@@ -39,34 +40,28 @@ import {createConditionGroup, createEmptyConditionRow} from '../../utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TaskCountConditionGroupComponent {
-  @Input() public set group(groupValue: ConditionGroupForm) {
-    this._group = groupValue;
-    // Captured once per group instance: binding the live rows back into the multi-input would
-    // overwrite the user's input on every keystroke.
-    this.initialRows = groupValue?.rows?.length ? [...groupValue.rows] : null;
-  }
-
-  public get group(): ConditionGroupForm {
-    return this._group;
-  }
-
+  @Input() public group: ConditionGroupForm;
   @Input() public dataSourceKey: string;
   @Input() public disabled = false;
   @Input() public operatorItems: Array<ListItemWithId> = [];
   /** The outermost group cannot be deleted and starts out without condition rows. */
   @Input() public root = false;
-  /**
-   * Position of this group in the tree ('root', 'root-0', 'root-0-1', ...). Only used to keep the
-   * test ids unique across the recursion, so that a test can target one specific group.
-   */
-  @Input() public groupId = 'root';
 
-  @Output() public groupChange = new EventEmitter<void>();
   @Output() public deleteGroup = new EventEmitter<void>();
 
-  public initialRows: MultiInputValues | null = null;
+  protected readonly testIds = TASK_COUNT_TEST_IDS;
 
-  public readonly testIds = TASK_COUNT_TEST_IDS;
+  public get operator(): ConditionGroupOperator {
+    return this.group.controls.operator.value;
+  }
+
+  public get rowsControl(): FormControl<MultiInputValues> {
+    return this.group.controls.rows;
+  }
+
+  public get groups(): FormArray<ConditionGroupForm> {
+    return this.group.controls.groups;
+  }
 
   /**
    * Index of the connector that carries the interactive operator selector.
@@ -76,39 +71,28 @@ export class TaskCountConditionGroupComponent {
    * static text, to avoid suggesting that the sections can be joined by different operators.
    */
   public get interactiveConnectorIndex(): number {
-    return this._group.rows.length ? 0 : 1;
+    return this.rowsControl.value.length ? 0 : 1;
   }
-
-  private _group: ConditionGroupForm;
 
   constructor(private readonly iconService: IconService) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
-  /**
-   * Qualifies a test id with this group's position, plus an index for the elements that a single
-   * group renders more than once (the root operator repeats between every pair of sections).
-   */
-  public testId(base: string, index?: number): string {
-    return index === undefined ? `${base}--${this.groupId}` : `${base}--${this.groupId}-${index}`;
-  }
-
   public setOperator(operator: ConditionGroupOperator): void {
-    if (this._group.operator === operator) {
+    if (this.operator === operator) {
       return;
     }
 
-    this._group.operator = operator;
-    this.groupChange.emit();
+    this.group.controls.operator.setValue(operator);
   }
 
-  public rowsValueChange(values: MultiInputValues): void {
-    if (isEqual(this._group.rows, values)) {
-      return;
-    }
-
-    this._group.rows = values;
-    this.groupChange.emit();
+  /**
+   * The multi input drops rows that are not filled in completely, so its value alone cannot tell a
+   * half-filled group apart from a complete one. This event does, and marks the group invalid until
+   * every row is either complete or removed.
+   */
+  public onAllRowsValid(allRowsValid: boolean): void {
+    this.group.controls.rowsComplete.setValue(allRowsValid);
   }
 
   /**
@@ -121,15 +105,10 @@ export class TaskCountConditionGroupComponent {
    * own conditions with 'and'; that operator is changed in the header of the section itself.
    */
   public addGroup(): void {
-    this._group.groups = [
-      ...this._group.groups,
-      createConditionGroup('and', [createEmptyConditionRow()]),
-    ];
-    this.groupChange.emit();
+    this.groups.push(createConditionGroup('and', [createEmptyConditionRow()]));
   }
 
-  public removeGroup(group: ConditionGroupForm): void {
-    this._group.groups = this._group.groups.filter(nestedGroup => nestedGroup !== group);
-    this.groupChange.emit();
+  public removeGroup(index: number): void {
+    this.groups.removeAt(index);
   }
 }

@@ -19,12 +19,13 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   signal,
 } from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {combineLatest, map, Observable, shareReplay} from 'rxjs';
+import {combineLatest, map, Observable, shareReplay, startWith, Subscription} from 'rxjs';
 import {ListItem, NotificationContent} from 'carbon-components-angular';
 import {ListItemWithId} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
@@ -32,12 +33,12 @@ import {TranslateService} from '@ngx-translate/core';
 import {ConfigurationOutput, DataSourceConfigurationComponent} from '../../../../models';
 import {WidgetTranslationService} from '../../../../services';
 import {TASK_COUNT_TEST_IDS} from '../../constants';
-import {TaskCountConfiguration} from '../../models';
+import {ConditionGroupValue, TaskCountConfiguration} from '../../models';
 import {
   createConditionGroup,
   EDITABLE_CONDITION_OPERATORS,
+  resetRootGroup,
   serializeConditionGroup,
-  wireNodesToRootGroup,
 } from '../../utils';
 
 @Component({
@@ -46,11 +47,18 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./task-count-configuration.component.scss'],
 })
-export class TaskCountConfigurationComponent implements OnInit, DataSourceConfigurationComponent {
+export class TaskCountConfigurationComponent
+  implements OnInit, OnDestroy, DataSourceConfigurationComponent
+{
   @Input() public dataSourceKey: string;
 
   @Input() public set disabled(disabledValue: boolean) {
     this.$disabled.set(disabledValue);
+    // The rows of a group are a form control, so the multi input follows the form rather than a
+    // [disabled] binding of its own.
+    disabledValue
+      ? this.conditionsForm.disable({emitEvent: false})
+      : this.conditionsForm.enable({emitEvent: false});
   }
 
   @Input() public set prefillConfiguration(configurationValue: TaskCountConfiguration) {
@@ -59,10 +67,9 @@ export class TaskCountConfigurationComponent implements OnInit, DataSourceConfig
     }
 
     this._$selectedCaseDefinitionName.set(configurationValue.caseDefinitionName ?? undefined);
-    this.$rootGroup.set(
-      wireNodesToRootGroup(
-        configurationValue.conditions ?? configurationValue.queryConditions ?? []
-      )
+    resetRootGroup(
+      this.conditionsForm,
+      configurationValue.conditions ?? configurationValue.queryConditions ?? []
     );
   }
 
@@ -71,13 +78,27 @@ export class TaskCountConfigurationComponent implements OnInit, DataSourceConfig
   >();
 
   public readonly $disabled = signal<boolean>(false);
-  public readonly $rootGroup = signal(createConditionGroup('and'));
-  public readonly $hasUnsupportedConditions = signal<boolean>(false);
 
-  public readonly testIds = TASK_COUNT_TEST_IDS;
+  /**
+   * The whole condition tree. Kept for the lifetime of the component - a prefill resets its
+   * contents - so that the subscription below survives it.
+   */
+  public readonly conditionsForm = createConditionGroup('and');
+
+  protected readonly testIds = TASK_COUNT_TEST_IDS;
 
   // Declared before the observables below, which read it at field-initialization time.
   private readonly _$selectedCaseDefinitionName = signal<string | undefined>(undefined);
+
+  private readonly _serializedConditions$ = this.conditionsForm.valueChanges.pipe(
+    startWith(null),
+    map(() => serializeConditionGroup(this.conditionsForm.getRawValue() as ConditionGroupValue)),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  public readonly hasUnsupportedConditions$: Observable<boolean> = this._serializedConditions$.pipe(
+    map(serialized => serialized.hasUnsupportedNodes)
+  );
 
   /**
    * Emits once and then on every language change. Subscribing to a translation is the only way to
@@ -129,6 +150,8 @@ export class TaskCountConfigurationComponent implements OnInit, DataSourceConfig
       }))
     );
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
@@ -136,7 +159,12 @@ export class TaskCountConfigurationComponent implements OnInit, DataSourceConfig
   ) {}
 
   public ngOnInit(): void {
+    this._subscriptions.add(this.conditionsForm.valueChanges.subscribe(() => this.emit()));
     this.emit();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public caseDefinitionSelected(event: {item?: ListItem}): void {
@@ -148,18 +176,15 @@ export class TaskCountConfigurationComponent implements OnInit, DataSourceConfig
     this.emit();
   }
 
-  public conditionsChange(): void {
-    this.emit();
-  }
-
   private emit(): void {
-    // The group tree is walked once: the condition groups are mutated in place by the child
-    // component, so the derived state has to be refreshed here rather than in a computed.
-    const {node, valid, hasUnsupportedNodes} = serializeConditionGroup(this.$rootGroup());
-    this.$hasUnsupportedConditions.set(hasUnsupportedNodes);
+    const {node} = serializeConditionGroup(
+      this.conditionsForm.getRawValue() as ConditionGroupValue
+    );
 
     this.configurationEvent.emit({
-      valid,
+      // A disabled form is neither valid nor invalid, so a read-only configuration is not reported
+      // as an incomplete one.
+      valid: !this.conditionsForm.invalid,
       data: {
         caseDefinitionName: this._$selectedCaseDefinitionName() ?? undefined,
         // Emitted as a single root node so that the operator of the outermost group survives a

@@ -18,23 +18,6 @@
   display: block;
 }
 
-// Carbon paints danger buttons red in their resting state. There is one delete button per condition
-// row, so a form that is merely being filled in ends up reading as a form full of errors. At rest
-// the buttons are therefore neutral - white like the fields next to them, with a grey icon - and the
-// red is kept for hover and focus, where it confirms what the button is about to do. The disabled
-// state is left to Carbon. Covers both the delete button of a group and the one per condition row.
-::ng-deep .cds--btn--danger:not(:disabled) {
-  background-color: var(--cds-layer-01);
-  color: var(--cds-icon-secondary);
-
-  &:hover,
-  &:focus,
-  &:active {
-    background-color: var(--cds-button-danger-hover, var(--cds-support-error));
-    color: var(--cds-text-on-color);
-  }
-}
-
 // Without a width the content switcher stretches across its container. Shared by the root
 // operator (rendered on its own, between the section cards) and the nested group headers.
 .condition-operator {

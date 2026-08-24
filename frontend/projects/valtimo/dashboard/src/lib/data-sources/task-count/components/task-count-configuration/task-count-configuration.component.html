@@ -28,7 +28,7 @@
     </cds-dropdown>
   </div>
 
-  @if ($hasUnsupportedConditions()) {
+  @if (hasUnsupportedConditions$ | async) {
     <div class="form__element">
       <cds-inline-notification
         [notificationObj]="unsupportedConditionsNotification$ | async"
@@ -45,9 +45,8 @@
   <valtimo-task-count-condition-group
     [dataSourceKey]="dataSourceKey"
     [disabled]="$disabled()"
-    [group]="$rootGroup()"
+    [group]="conditionsForm"
     [operatorItems]="(operatorItems$ | async) || []"
     [root]="true"
-    (groupChange)="conditionsChange()"
   ></valtimo-task-count-condition-group>
 </div>
