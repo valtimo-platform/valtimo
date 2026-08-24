@@ -214,6 +214,38 @@ class ExternalPluginEndpointAllowlistFilterTest {
     }
 
     @Test
+    fun `denylist blocks user-account mutations even when a catch-all endpoint is granted`() {
+        val configId = UUID.randomUUID()
+        authenticateAsPlugin(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId))
+            .thenReturn(listOf(grantedEndpoint(configId, "POST", "/**")))
+        val request = request("POST", "/api/v1/users")
+        val response = MockHttpServletResponse()
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, response, chain)
+
+        assertThat(response.status).isEqualTo(403)
+        assertThat(chain.request).isNull()
+    }
+
+    @Test
+    fun `user-account reads are not denylisted and follow the grants`() {
+        val configId = UUID.randomUUID()
+        authenticateAsPlugin(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId))
+            .thenReturn(listOf(grantedEndpoint(configId, "GET", "/api/v1/users/**")))
+        val request = request("GET", "/api/v1/users/123")
+        val response = MockHttpServletResponse()
+        val chain = MockFilterChain()
+
+        filter.doFilter(request, response, chain)
+
+        assertThat(response.status).isEqualTo(200)
+        assertThat(chain.request).isNotNull()
+    }
+
+    @Test
     fun `denylist blocks permission management endpoints for user principals too`() {
         val configId = UUID.randomUUID()
         authenticateAsUser(configId)

@@ -20,8 +20,11 @@ import com.ritense.valtimo.contract.authentication.SystemPrincipal
 import java.util.UUID
 
 /**
- * Spring Security principal representing an external plugin service-token caller. Carries no roles —
- * endpoint access is enforced by [ExternalPluginEndpointAllowlistFilter]. Marked as a
+ * Spring Security principal representing an external plugin service-token caller. Endpoint access
+ * is enforced by [ExternalPluginEndpointAllowlistFilter]; the authentication carries the fixed
+ * `ROLE_ADMIN` + `ROLE_USER` authorities only so that *granted* endpoints behind the platform's
+ * coarse per-URL `hasAuthority` rules (the entire management API) are reachable — the allowlist
+ * filter runs before those rules and remains the gate that decides reach. Marked as a
  * [SystemPrincipal] so user-scoped operations it triggers (e.g. creating a note) attribute to the
  * system user rather than failing on a user lookup — the token has no Keycloak user.
  */

@@ -21,10 +21,12 @@ import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Comp
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.PLUGIN_ID_CLAIM
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.PLUGIN_VERSION_CLAIM
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService.Companion.TOKEN_GENERATION_CLAIM
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.contract.security.jwt.TokenAuthenticator
 import io.jsonwebtoken.Claims
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.util.UUID
 
 class ExternalPluginServiceTokenAuthenticator(
@@ -50,7 +52,20 @@ class ExternalPluginServiceTokenAuthenticator(
             pluginId = pluginId,
             pluginVersion = pluginVersion,
         )
-        return UsernamePasswordAuthenticationToken(principal, jwt, emptyList())
+        // The ADMIN+USER authorities exist solely to pass the coarse per-URL `hasAuthority` rules
+        // (Spring Security's AuthorizationFilter, at the end of the chain) on endpoints the
+        // administrator explicitly granted. They do not widen reach: the allowlist filter runs
+        // earlier in the chain and 403s anything outside the granted set (and its hard denylist),
+        // so the effective surface stays grants minus denylist. Without them, every
+        // `hasAuthority`-gated endpoint — all of `/api/management/**` — would 403 even when granted.
+        return UsernamePasswordAuthenticationToken(
+            principal,
+            jwt,
+            listOf(
+                SimpleGrantedAuthority(AuthoritiesConstants.ADMIN),
+                SimpleGrantedAuthority(AuthoritiesConstants.USER),
+            ),
+        )
     }
 
     companion object {

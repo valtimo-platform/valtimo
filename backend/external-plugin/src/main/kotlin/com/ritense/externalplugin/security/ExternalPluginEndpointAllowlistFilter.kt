@@ -33,16 +33,20 @@ import java.util.concurrent.ConcurrentHashMap
  * configuration. Applies to **both** token kinds:
  *
  * - [ExternalPluginServicePrincipal] — the host's system credential. Reach is *only* the allowlist
- *   (PBAC is bypassed for the service token).
+ *   (PBAC is bypassed for the service token). Its authentication carries fixed `ROLE_ADMIN` +
+ *   `ROLE_USER` authorities purely to pass the coarse per-URL `hasAuthority` rules that run *after*
+ *   this filter — because this filter decides first, those authorities never widen reach beyond
+ *   the granted set, but they do make the denylist below the sole guard for sensitive surfaces.
  * - [ExternalPluginUserPrincipal] — the downscoped user token used by the iframe parent-proxy. Reach
  *   is **PBAC ∩ allowlist**: PBAC is enforced upstream (the recognising filter does not run without
  *   authorization) and this filter narrows it further to the granted set.
  *
  * Other authenticated principals (interactive Keycloak users, etc.) are unaffected.
  *
- * On top of the grants, a hard denylist ([DENYLIST_PATTERNS]) shields sensitive surfaces — external-
- * plugin management (incl. host registration), user-token minting and role/permission management —
- * from plugin tokens **regardless of what was granted**. One narrow exception: a **user** token may
+ * On top of the grants, a hard denylist ([DENYLIST_PATTERNS] plus the method-specific
+ * [DENYLIST_METHOD_PATTERNS]) shields sensitive surfaces — external-plugin management (incl. host
+ * registration), user-token minting, role/permission management and user-account mutations — from
+ * plugin tokens **regardless of what was granted**. One narrow exception: a **user** token may
  * always `GET` the user-token introspection endpoint, which the plugin host needs to validate the
  * token before executing Wasm (see the carve-out in [doFilterInternal]).
  *
@@ -157,7 +161,17 @@ class ExternalPluginEndpointAllowlistFilter(
             "/api/management/v1/permissions/**",
         )
 
-        private val DENYLIST_MATCHERS = DENYLIST_PATTERNS.map { AntPathRequestMatcher(it) }
+        /**
+         * Method-specific denylist entries: user-account mutations. A plugin that can create or
+         * alter user accounts can escalate to a real admin login, so writes are blocked regardless
+         * of grants — reads (e.g. `GET /api/v1/users/{userId}` for assignee lookups) stay grantable.
+         */
+        val DENYLIST_METHOD_PATTERNS: List<Pair<String, String>> =
+            listOf("POST", "PUT", "PATCH", "DELETE").map { it to "/api/v1/users/**" }
+
+        private val DENYLIST_MATCHERS =
+            DENYLIST_PATTERNS.map { AntPathRequestMatcher(it) } +
+                DENYLIST_METHOD_PATTERNS.map { (method, pattern) -> AntPathRequestMatcher(pattern, method) }
 
         /** Exact-path, GET-only carve-out for user-token introspection (see [doFilterInternal]). */
         private val USER_TOKEN_INTROSPECT_MATCHER =
