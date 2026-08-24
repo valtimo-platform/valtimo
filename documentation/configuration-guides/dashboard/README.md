@@ -1,10 +1,10 @@
 # Dashboard
 
-Dashboards show aggregated numbers about the cases and tasks in Valtimo, such as how many cases have a certain status or how many tasks are still unassigned. A dashboard contains one or more widgets, and every widget combines a **data source**, which produces the numbers, with a **display type**, which determines how those numbers are shown.
+Dashboards show aggregated numbers about the cases and tasks in Valtimo, such as the number of cases with a certain status or the number of tasks that are still unassigned.
 
-This section covers:
+This includes:
 
-- **[Widget data sources](widget-data-sources.md)** — The data sources included in Valtimo and the properties they accept
+- **[Widgets](widgets.md)** — Adding widgets to a dashboard and configuring what they count
 
 ---
 
@@ -15,27 +15,15 @@ This section covers:
 Go to **Admin** > **Dashboard**
 {% endstep %}
 {% step %}
-Create a dashboard, or open an existing dashboard to configure its widgets
-{% endstep %}
-{% step %}
-Add a widget, choose its data source and display type, and fill in the configuration of both
+Select a dashboard from the list, or click **Add new dashboard** to create one
 {% endstep %}
 {% endstepper %}
 
-Dashboards can also be provided as configuration files (`*.dashboard.json`) on the classpath of the application, which is the way to configure widget properties that the admin screen does not offer.
-
----
-
-## Display types
-
-| Display type | Key |
-|--------------|-----|
-| Bar chart | `bar-chart` |
-| Donut | `donut` |
-| Gauge | `gauge` |
-| Meter | `meter` |
-| Number | `number` |
+| Property | Description |
+|----------|-------------|
+| Dashboard name | The name shown to the users of the dashboard |
+| Description | An explanation of the dashboard, only visible in the dashboard configuration page |
 
 {% hint style="info" %}
-Not every display type fits every data source: a display type that shows multiple values (such as the bar chart and the donut) needs a data source that returns multiple counts.
+A dashboard only shows the cases and tasks that the user viewing it is allowed to see. Two users with different roles can therefore see different numbers on the same dashboard.
 {% endhint %}

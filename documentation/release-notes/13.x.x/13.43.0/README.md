@@ -12,7 +12,7 @@ The metadata tab of the case inspection page now displays the case definition ke
 
 ### More filter options for the task count widget
 
-A task count widget can now be limited to a single case type, so a dashboard can show the tasks of one case type instead of all tasks a user is allowed to see. The conditions of the widget can also be grouped: every group combines its conditions with `AND` or `OR`, and groups can be nested. This makes counts possible that could not be configured before, such as the tasks that are assigned and have one of two names. Existing task count widgets keep working unchanged.
+A task count widget can now be limited to a single case type, and its conditions can be combined with **AND** or **OR** in groups that can be nested. Counts that previously could not be configured, such as the assigned tasks of one case type that have one of two names, now take a single widget. Existing task count widgets keep working unchanged.
 
 ---
 

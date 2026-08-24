@@ -52,7 +52,7 @@
     * [Decision tables](configuration-guides/building-blocks/decision-tables.md)
 * 🔌 Plugins
 * [📊 Dashboard](configuration-guides/dashboard/README.md)
-    * [Widget data sources](configuration-guides/dashboard/widget-data-sources.md)
+    * [Widgets](configuration-guides/dashboard/widgets.md)
 * [🔏 Access control](configuration-guides/access-control/README.md)
     * [Configurable elements](configuration-guides/access-control/configurable-elements.md)
     * [Roles](configuration-guides/access-control/roles.md)
@@ -63,6 +63,10 @@
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
   * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
+
+## Advanced
+
+* [Dashboard widget data sources](advanced/dashboard-widget-data-sources.md)
 
 ## Support
 
