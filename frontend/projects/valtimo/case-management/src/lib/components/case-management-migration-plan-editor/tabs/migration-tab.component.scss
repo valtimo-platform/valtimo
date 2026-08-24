@@ -25,6 +25,13 @@
     color: var(--cds-text-secondary);
   }
 
+  &__loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cds-text-secondary);
+  }
+
   &__items {
     display: flex;
     flex-direction: column;
@@ -49,6 +56,41 @@
   &__card-index {
     font-weight: 600;
     color: var(--cds-text-secondary);
+  }
+
+  // The header doubles as the expand/collapse control, so it is a real <button> for the keyboard and
+  // for screen readers, stripped back to look like the row it replaced.
+  &__card-toggle {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 4px;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--cds-layer-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--cds-focus);
+      outline-offset: -2px;
+    }
+  }
+
+  // A collapsed card is identified by this line alone, so it may not wrap the header onto two rows
+  // when a building block key is long.
+  &__card-summary {
+    overflow: hidden;
+    color: var(--cds-text-secondary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__grid {

@@ -27,7 +27,7 @@ import {
 } from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {Add16, TrashCan16} from '@carbon/icons';
+import {Add16, ChevronDown16, ChevronUp16, TrashCan16} from '@carbon/icons';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {SelectItem, SelectModule as ValtimoSelectModule} from '@valtimo/components';
 import {ProcessLinkBuildingBlockApiService} from '@valtimo/process-link';
@@ -121,6 +121,13 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   // Entries whose data/process migration is being (re)suggested — their nested tabs are collapsed.
   private readonly _suggesting = new Set<FormGroup>();
 
+  // The entries whose body is open. A suggested plan authorises every reachable building block — 53 of
+  // them on the configuration this was reported from — and each entry embeds a whole data-migration and
+  // process-migration editor, so the tab is unreadable with every body expanded. Collapsed is therefore
+  // the default and this set starts empty; an entry the author adds by hand opens, because they added
+  // it in order to fill it in.
+  private readonly _expanded = new Set<FormGroup>();
+
   public get instructionsArray(): FormArray {
     return this.form.get('instructions') as FormArray;
   }
@@ -136,7 +143,7 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     private readonly buildingBlockApiService: ProcessLinkBuildingBlockApiService,
     private readonly caseMigrationApiService: CaseMigrationApiService
   ) {
-    this.iconService.registerAll([Add16, TrashCan16]);
+    this.iconService.registerAll([Add16, ChevronDown16, ChevronUp16, TrashCan16]);
   }
 
   public ngOnInit(): void {
@@ -176,14 +183,43 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
+  /** Whether this entry's body is shown. Collapsed unless the author opened it — see [_expanded]. */
+  public isExpanded(group: FormGroup): boolean {
+    return this._expanded.has(group);
+  }
+
+  public toggleExpanded(group: FormGroup): void {
+    if (!this._expanded.delete(group)) this._expanded.add(group);
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * What a collapsed entry says about itself: the building block it acts on, at the version it names.
+   * That pair is the entry's whole identity — everything else in the body describes how data and
+   * processes move, not which block moves them. Empty for an entry that names no block yet, so the
+   * header falls back to a placeholder.
+   */
+  public summaryOf(group: FormGroup): string {
+    const key = group.get('buildingBlockKey')?.value || '';
+    const version = group.get('buildingBlockVersionTag')?.value || '';
+    if (!key) return '';
+    return version ? `${key}:${version}` : key;
+  }
+
   public addInstruction(): void {
     this._dataMigrations.push([]);
     this._processMigrations.push([]);
-    this.instructionsArray.push(this.createInstructionGroup());
+    const group = this.createInstructionGroup();
+    // Opened on purpose: an author adds an entry in order to fill it in, and a new one names no
+    // building block yet, so a collapsed one would be an unlabelled empty row.
+    this._expanded.add(group);
+    this.instructionsArray.push(group);
   }
 
   public removeInstruction(index: number): void {
-    this._suggesting.delete(this.instructionsArray.at(index) as FormGroup);
+    const group = this.instructionsArray.at(index) as FormGroup;
+    this._suggesting.delete(group);
+    this._expanded.delete(group);
     this._dataMigrations.splice(index, 1);
     this._processMigrations.splice(index, 1);
     this.instructionsArray.removeAt(index);
@@ -202,7 +238,10 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     this.emit();
   }
 
-  public onProcessMigrationChange(index: number, instructions: ProcessMigrationInstruction[]): void {
+  public onProcessMigrationChange(
+    index: number,
+    instructions: ProcessMigrationInstruction[]
+  ): void {
     this._processMigrations[index] = instructions;
     this.emit();
   }
@@ -261,7 +300,12 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     this.caseMigrationApiService
-      .suggestBuildingBlockEntry({caseDefinitionKey, caseDefinitionVersionTag}, key, version, this.mode)
+      .suggestBuildingBlockEntry(
+        {caseDefinitionKey, caseDefinitionVersionTag},
+        key,
+        version,
+        this.mode
+      )
       .subscribe({
         next: suggestion => {
           const index = this.instructionsArray.controls.indexOf(group);
@@ -436,6 +480,9 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     this._dataMigrations = instructions.map(instruction => instruction.dataMigration ?? []);
     this._processMigrations = instructions.map(instruction => instruction.processMigration ?? []);
 
+    // The groups below are new instances, so anything still held here refers to a form that no longer
+    // exists — cleared rather than left to keep those groups alive.
+    this._expanded.clear();
     this.instructionsArray.clear({emitEvent: false});
     instructions.forEach(instruction => {
       const group = this.createInstructionGroup(instruction);

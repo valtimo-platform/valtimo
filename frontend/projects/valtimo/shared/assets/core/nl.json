@@ -802,6 +802,7 @@
       "editor": {
         "createTitle": "Nieuw migratieplan",
         "editTitle": "Migratieplan bewerken",
+        "card": {"unnamed": "Nieuwe regel"},
         "tabs": {
           "general": "Algemeen",
           "dataMigration": "Datamigratie",
@@ -822,6 +823,7 @@
           "sourceKeyPlaceholder": "Kies een zaakdefinitie",
           "sourceVersion": "Bronversie",
           "sourceVersionPlaceholder": "Kies een versie",
+          "suggesting": "Bezig met het samenstellen van een voorgesteld plan op basis van deze versie en de versie waarvan gemigreerd wordt…",
           "triggers": "Triggers",
           "triggersHint": "Bepaal wanneer dit plan draait: handmatig via de UI-knop, op een ingepland moment, of nadat een ander plan is voltooid.",
           "triggeredByButton": "Handmatig starten via de UI-knop",

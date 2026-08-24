@@ -36,7 +36,7 @@ import {
 } from '@valtimo/components';
 import {CaseManagementParams} from '@valtimo/shared';
 import {ButtonModule, TabsModule} from 'carbon-components-angular';
-import {map, Observable, Subscription, take} from 'rxjs';
+import {finalize, map, Observable, Subscription, take} from 'rxjs';
 import {
   CaseManagementService,
   CaseMigrationApiService,
@@ -84,6 +84,11 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
   public readonly $plan = signal<MigrationPlan>({});
   public readonly $valid = signal<boolean>(false);
   public readonly $saving = signal<boolean>(false);
+  // True while the backend is composing the pre-filled plan. That request compares two whole blueprint
+  // versions, and on a large case definition it takes ten seconds — during which the title, the key and
+  // both source pickers are empty and Save is disabled, so the screen is indistinguishable from one that
+  // simply does not pre-fill anything. It fills itself; this is what says so.
+  public readonly $suggesting = signal<boolean>(false);
   public readonly $isEdit = signal<boolean>(false);
   public readonly $caseDefinitionKey = signal<string | null>(null);
   public readonly $caseDefinitionVersionTag = signal<string | null>(null);
@@ -211,9 +216,13 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
       // Start a new plan from a best-effort suggestion (data/process pre-filled),
       // falling back to the empty template if the backend can't produce one.
       this.setValue(this.NEW_PLAN_TEMPLATE);
+      this.$suggesting.set(true);
       this.caseMigrationApiService
         .getPlanSuggestion(this._params)
-        .pipe(take(1))
+        .pipe(
+          take(1),
+          finalize(() => this.$suggesting.set(false))
+        )
         .subscribe({
           next: suggestion => {
             // Record what the suggestion was built for before applying it, so the resulting source
@@ -427,9 +436,13 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     if (this.$isEdit() || !sourceId || sourceId === this._suggestedForSource) return;
 
     this._suggestedForSource = sourceId;
+    this.$suggesting.set(true);
     this.caseMigrationApiService
       .getPlanSuggestion(this._params, source)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => this.$suggesting.set(false))
+      )
       .subscribe({
         next: suggestion =>
           this.patchPlan({
