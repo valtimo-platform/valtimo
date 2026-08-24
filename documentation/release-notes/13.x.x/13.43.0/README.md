@@ -22,4 +22,5 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Cases | A case that cannot be found no longer stops a process, an assignment or a note |
 | Dashboard | Donut charts with many categories display the circle correctly |
 | Process links | Links no longer leak into another case definition or building block |
+| Notificaties API | Subscription registration no longer causes a restart loop on startup |
 | Case export | Forms shown in a widget are included in the case export |
