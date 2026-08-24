@@ -24,3 +24,4 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Process links | Links no longer leak into another case definition or building block |
 | Notificaties API | Subscription registration no longer causes a restart loop on startup |
 | Case export | Forms shown in a widget are included in the case export |
+| Case notes | The options menu of a note is now correctly translated |
