@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,10 @@ interface ProcessDefinitionValidationError {
   errorCode?: string;
   expression?: string;
   severity?: 'ERROR' | 'WARNING';
+  invalidFields?: string[];
+  invalidArguments?: number[];
+  listenerType?: string;
+  listenerIndex?: number;
 }
 
 interface ProcessDefinitionValidationResult {
@@ -59,6 +63,16 @@ interface ProcessDefinitionValidationResult {
 interface ProcessDefinitionValidateRequest {
   bpmnXml: string;
   processLinks: any[];
+  canInitializeDocument?: boolean;
+  startableByUser?: boolean;
+}
+
+interface ActivityMarkerInfo {
+  hasExecutionListener: boolean;
+  hasTaskListener: boolean;
+  hasProcessLink: boolean;
+  executionListenerCount: number;
+  taskListenerCount: number;
 }
 
 export {
@@ -70,4 +84,5 @@ export {
   ProcessDefinitionValidationError,
   ProcessDefinitionValidationResult,
   ProcessDefinitionValidateRequest,
+  ActivityMarkerInfo,
 };

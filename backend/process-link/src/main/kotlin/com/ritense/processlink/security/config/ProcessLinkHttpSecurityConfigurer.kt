@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,6 +124,12 @@ class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
                         antMatcher(
                             POST,
                             "/api/management/v1/process-definition/validate"
+                        )
+                    ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(
+                            DELETE,
+                            "/api/management/v1/process-definition/{processDefinitionId}/autofill/{activityId}"
                         )
                     ).hasAuthority(ADMIN)
             }

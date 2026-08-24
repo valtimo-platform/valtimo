@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-package com.ritense.processlink.validation
+package com.ritense.valtimo.processbean.dto
 
-enum class ExpressionValidationErrorCode {
-    MISSING_EL_MARKERS,
-    UNCLOSED_PARENTHESIS,
-    UNCLOSED_BRACE,
-    UNCLOSED_BRACKET,
-    MISMATCHED_DELIMITER,
-    INCOMPLETE_EXPRESSION,
-    INVALID_SYNTAX,
-    BEAN_NOT_FOUND
-}
+data class ProcessBeanMethodParameterDto(
+    val name: String,
+    val type: String
+)

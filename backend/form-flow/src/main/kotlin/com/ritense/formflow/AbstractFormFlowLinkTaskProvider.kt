@@ -24,7 +24,7 @@ import com.ritense.valtimo.operaton.domain.OperatonTask
 import org.operaton.bpm.engine.RuntimeService
 
 abstract class AbstractFormFlowLinkTaskProvider(
-    private val documentService: DocumentService,
+    protected val documentService: DocumentService,
     private val runtimeService: RuntimeService,
 ) {
 
