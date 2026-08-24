@@ -34,7 +34,7 @@
     [placeholder]="datePlaceholder || 'dd-mm-yyyy'"
     [dateFormat]="dateFormat"
     [disabled]="disabled"
-    [ngModel]="dateValue$ | async"
+    [ngModel]="pickerDates$ | async"
     (ngModelChange)="onDateSelected($event)"
   ></cds-date-picker>
 

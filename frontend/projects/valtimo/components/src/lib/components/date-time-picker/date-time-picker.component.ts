@@ -32,7 +32,7 @@ import {
   LayerModule,
   TimePickerModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription} from 'rxjs';
 import {InputLabelModule} from '../input-label/input-label.module';
 
 @Component({
@@ -79,6 +79,12 @@ export class DateTimePickerComponent implements AfterViewInit, OnDestroy {
   @Input() timePlaceholder = 'hh:mm';
   @Input() labelText = '';
 
+  /**
+   * Format of the emitted value. Use `iso` when the value is passed on to an API. Defaults to the
+   * localised format the input shows, which is what existing consumers expect.
+   */
+  @Input() valueFormat: 'display' | 'iso' = 'display';
+
   @Input() set defaultDate(value: string | null) {
     const dateTimeValue = value ?? '';
     const {date, time} = this.splitDateTime(dateTimeValue);
@@ -91,8 +97,17 @@ export class DateTimePickerComponent implements AfterViewInit, OnDestroy {
 
   @Output() valueChange = new EventEmitter<string>();
 
+  /** Holds the date as `yyyy-mm-dd`, independent of how `dateFormat` renders it. */
   public readonly dateValue$ = new BehaviorSubject<string>('');
   public readonly timeValue$ = new BehaviorSubject<string>('');
+
+  /** The Carbon date picker parses strings with `dateFormat`, so it is fed a date object instead. */
+  public readonly pickerDates$: Observable<Array<Date>> = this.dateValue$.pipe(
+    map(date => (date ? [new Date(`${date}T00:00:00`)] : []))
+  );
+
+  private readonly ISO_DATE_PATTERN = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+  private readonly DAY_FIRST_DATE_PATTERN = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/;
 
   private readonly subscriptions = new Subscription();
 
@@ -117,7 +132,8 @@ export class DateTimePickerComponent implements AfterViewInit, OnDestroy {
           this.valueChange.emit('');
           return;
         }
-        const fullValue = this.enableTime && time ? `${date} ${time}` : date;
+        const emittedDate = this.valueFormat === 'iso' ? date : this.formatDisplayDate(date);
+        const fullValue = this.enableTime && time ? `${emittedDate} ${time}` : emittedDate;
         this.valueChange.emit(fullValue);
       })
     );
@@ -149,20 +165,43 @@ export class DateTimePickerComponent implements AfterViewInit, OnDestroy {
     const trimmed = (value ?? '').trim();
     if (!trimmed) return {date: '', time: ''};
 
-    const parts = trimmed.split(' ');
+    const parts = trimmed.split(/[ T]/);
     if (parts.length >= 2) {
-      return {date: parts[0] ?? '', time: parts.slice(1).join(' ') ?? ''};
+      return {date: this.normalizeDate(parts[0]), time: parts.slice(1).join(' ') ?? ''};
     }
-    return {date: trimmed, time: ''};
+    return {date: this.normalizeDate(trimmed), time: ''};
   }
 
   private normalizeDate(date: unknown): string {
-    if (typeof date === 'string') return date;
     if (date instanceof Date) return this.formatDate(date);
+    if (typeof date !== 'string') return '';
+
+    const trimmed = date.trim();
+    const isoMatch = this.ISO_DATE_PATTERN.exec(trimmed);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return this.joinDate(year, month, day);
+    }
+
+    const dayFirstMatch = this.DAY_FIRST_DATE_PATTERN.exec(trimmed);
+    if (dayFirstMatch) {
+      const [, day, month, year] = dayFirstMatch;
+      return this.joinDate(year, month, day);
+    }
+
     return '';
   }
 
   private formatDate(date: Date): string {
-    return date.toLocaleDateString('nl-NL');
+    return this.joinDate(`${date.getFullYear()}`, `${date.getMonth() + 1}`, `${date.getDate()}`);
+  }
+
+  private formatDisplayDate(isoDate: string): string {
+    const [year, month, day] = isoDate.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('nl-NL');
+  }
+
+  private joinDate(year: string, month: string, day: string): string {
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 }
