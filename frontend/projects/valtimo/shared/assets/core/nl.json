@@ -325,6 +325,8 @@
         "loading": "Metadata laden...",
         "documentId": "Document ID",
         "definitionName": "Definitie",
+        "definitionKey": "Dossier definitiesleutel",
+        "definitionVersionTag": "Dossier definitieversie",
         "sequence": "Volgnummer",
         "version": "Versie",
         "createdBy": "Aangemaakt door",

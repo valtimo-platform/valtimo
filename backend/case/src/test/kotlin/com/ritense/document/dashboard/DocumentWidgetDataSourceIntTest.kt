@@ -17,12 +17,19 @@
 package com.ritense.document.dashboard
 
 import com.ritense.BaseIntegrationTest
+import com.ritense.BaseTest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.permission.ConditionContainer
+import com.ritense.authorization.permission.Permission
+import com.ritense.authorization.permission.condition.ExpressionPermissionCondition
+import com.ritense.authorization.permission.condition.PermissionConditionOperator
+import com.ritense.authorization.role.Role
 import com.ritense.document.domain.impl.JsonDocumentContent
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.result.CreateDocumentResult
-import com.ritense.valtimo.contract.Constants
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.valtimo.contract.repository.ExpressionOperator
@@ -32,9 +39,15 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
+
+private const val SESAME_STREET_ROLE = "sesame street role"
+private const val SESAME_STREET = "Sesame Street"
 
 @Transactional
+@WithMockUser(username = BaseTest.USERNAME, authorities = [BaseIntegrationTest.FULL_ACCESS_ROLE])
 class DocumentWidgetDataSourceIntTest @Autowired constructor(
     private val documentWidgetDataSource: DocumentWidgetDataSource
 ) : BaseIntegrationTest() {
@@ -95,7 +108,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
                 Condition(
                     "case:createdBy",
                     ExpressionOperator.EQUAL_TO,
-                    Constants.SYSTEM_ACCOUNT
+                    USERNAME
                 ),
                 Condition(
                     "doc:street",
@@ -499,6 +512,117 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val result = documentWidgetDataSource.getCaseCount(properties)
 
         assertThat(result.value).isEqualTo(1)
+    }
+
+    @Test
+    @WithMockUser(username = BaseTest.USERNAME, authorities = [SESAME_STREET_ROLE])
+    fun `should only count cases the user is allowed to view`() {
+        documentRepository.deleteAll()
+        val definition = definition()
+        createSesameStreetPermission()
+
+        repeat(2) {
+            createDocument(definition, SESAME_STREET)
+        }
+        repeat(3) {
+            createDocument(definition, "Main Street")
+        }
+
+        val properties = DocumentCountDataSourceProperties(definition.id().name())
+
+        val result = documentWidgetDataSource.getCaseCount(properties)
+
+        assertThat(result.value).isEqualTo(2)
+        assertThat(result.total).isEqualTo(2)
+    }
+
+    @Test
+    @WithMockUser(username = BaseTest.USERNAME, authorities = [SESAME_STREET_ROLE])
+    fun `should only resolve multiple case counts for cases the user is allowed to view`() {
+        documentRepository.deleteAll()
+        val definition = definition()
+        createSesameStreetPermission()
+
+        repeat(2) {
+            createDocument(definition, SESAME_STREET)
+        }
+        val street2 = "Main Street"
+        repeat(3) {
+            createDocument(definition, street2)
+        }
+
+        val properties = DocumentCountsDataSourceProperties(
+            definition.id().name(),
+            queryItems = listOf(
+                DocumentCountsQueryItem(
+                    SESAME_STREET,
+                    listOf(Condition("doc:street", ExpressionOperator.EQUAL_TO, SESAME_STREET))
+                ),
+                DocumentCountsQueryItem(
+                    street2,
+                    listOf(Condition("doc:street", ExpressionOperator.EQUAL_TO, street2))
+                )
+            )
+        )
+
+        val result = documentWidgetDataSource.getCaseCounts(properties)
+
+        assertThat(result.values).hasSize(2)
+        assertThat(result.values[0].value).isEqualTo(2)
+        assertThat(result.values[1].value).isEqualTo(0)
+    }
+
+    @Test
+    @WithMockUser(username = BaseTest.USERNAME, authorities = [SESAME_STREET_ROLE])
+    fun `should only group by cases the user is allowed to view`() {
+        documentRepository.deleteAll()
+        val definition = definition()
+        createSesameStreetPermission()
+
+        repeat(2) {
+            createDocument(definition, SESAME_STREET)
+        }
+        repeat(3) {
+            createDocument(definition, "Main Street")
+        }
+
+        val properties = DocumentGroupByDataSourceProperties(
+            definition.id().name(),
+            path = "doc:street",
+            queryConditions = null,
+            enum = null
+        )
+
+        val result = documentWidgetDataSource.getCaseGroupBy(properties)
+
+        assertThat(result.values).hasSize(1)
+        assertThat(result.values[0].label).isEqualTo(SESAME_STREET)
+        assertThat(result.values[0].value).isEqualTo(2)
+    }
+
+    private fun createSesameStreetPermission() {
+        val role = roleRepository.findByKey(SESAME_STREET_ROLE)
+            ?: roleRepository.save(Role(UUID.randomUUID(), SESAME_STREET_ROLE))
+
+        permissionRepository.save(
+            Permission(
+                UUID.randomUUID(),
+                JsonSchemaDocument::class.java,
+                mutableListOf(JsonSchemaDocumentActionProvider.VIEW_LIST),
+                ConditionContainer(
+                    listOf(
+                        ExpressionPermissionCondition(
+                            "content.content",
+                            "$.street",
+                            PermissionConditionOperator.EQUAL_TO,
+                            SESAME_STREET,
+                            String::class.java
+                        )
+                    )
+                ),
+                role
+            )
+        )
     }
 
     private fun createDocument(
