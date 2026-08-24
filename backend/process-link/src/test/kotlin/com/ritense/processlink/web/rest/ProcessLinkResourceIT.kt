@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -241,15 +241,36 @@ internal class ProcessLinkResourceIT @Autowired constructor(
             MediaType.APPLICATION_XML_VALUE,
             """
         <?xml version="1.0" encoding="UTF-8"?>
-        <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                     xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"
-                     targetNamespace="http://camunda.org/examples">
-            <process id="test-process" name="Test Process">
-                <startEvent id="start" />
-                <endEvent id="end" />
-            </process>
-        </definitions>
+        <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                          xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                          xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                          id="Definitions_1"
+                          targetNamespace="http://bpmn.io/schema/bpmn">
+            <bpmn:process id="test-process" name="Test Process" isExecutable="true">
+                <bpmn:startEvent id="start">
+                    <bpmn:outgoing>flow1</bpmn:outgoing>
+                </bpmn:startEvent>
+                <bpmn:sequenceFlow id="flow1" sourceRef="start" targetRef="end" />
+                <bpmn:endEvent id="end">
+                    <bpmn:incoming>flow1</bpmn:incoming>
+                </bpmn:endEvent>
+            </bpmn:process>
+            <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+                <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="test-process">
+                    <bpmndi:BPMNShape id="start_di" bpmnElement="start">
+                        <dc:Bounds x="179" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNShape id="end_di" bpmnElement="end">
+                        <dc:Bounds x="432" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNEdge id="flow1_di" bpmnElement="flow1">
+                        <di:waypoint x="215" y="117" />
+                        <di:waypoint x="432" y="117" />
+                    </bpmndi:BPMNEdge>
+                </bpmndi:BPMNPlane>
+            </bpmndi:BPMNDiagram>
+        </bpmn:definitions>
         """.trimIndent().toByteArray()
         )
 
@@ -320,6 +341,27 @@ internal class ProcessLinkResourceIT @Autowired constructor(
                     <bpmn:outgoing>Flow_2</bpmn:outgoing>
                 </bpmn:userTask>
             </bpmn:process>
+            <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+                <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="non-exec-process">
+                    <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+                        <dc:Bounds x="179" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNShape id="Activity_1_di" bpmnElement="Activity_1">
+                        <dc:Bounds x="270" y="77" width="100" height="80" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+                        <dc:Bounds x="432" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+                        <di:waypoint x="215" y="117" />
+                        <di:waypoint x="270" y="117" />
+                    </bpmndi:BPMNEdge>
+                    <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+                        <di:waypoint x="370" y="117" />
+                        <di:waypoint x="432" y="117" />
+                    </bpmndi:BPMNEdge>
+                </bpmndi:BPMNPlane>
+            </bpmndi:BPMNDiagram>
         </bpmn:definitions>
         """.trimIndent()
 
@@ -366,6 +408,9 @@ internal class ProcessLinkResourceIT @Autowired constructor(
         <?xml version="1.0" encoding="UTF-8"?>
         <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                           xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                          xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                          xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                           id="Definitions_1"
                           targetNamespace="http://bpmn.io/schema/bpmn">
             <bpmn:process id="suspended-process" name="Suspended Process" isExecutable="false">
@@ -382,6 +427,27 @@ internal class ProcessLinkResourceIT @Autowired constructor(
                     <bpmn:outgoing>Flow_2</bpmn:outgoing>
                 </bpmn:userTask>
             </bpmn:process>
+            <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+                <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="suspended-process">
+                    <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+                        <dc:Bounds x="179" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNShape id="Activity_1_di" bpmnElement="Activity_1">
+                        <dc:Bounds x="270" y="77" width="100" height="80" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+                        <dc:Bounds x="432" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+                        <di:waypoint x="215" y="117" />
+                        <di:waypoint x="270" y="117" />
+                    </bpmndi:BPMNEdge>
+                    <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+                        <di:waypoint x="370" y="117" />
+                        <di:waypoint x="432" y="117" />
+                    </bpmndi:BPMNEdge>
+                </bpmndi:BPMNPlane>
+            </bpmndi:BPMNDiagram>
         </bpmn:definitions>
         """.trimIndent()
 
@@ -500,6 +566,9 @@ internal class ProcessLinkResourceIT @Autowired constructor(
         <?xml version="1.0" encoding="UTF-8"?>
         <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                           xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                          xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                          xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                           id="Definitions_1"
                           targetNamespace="http://bpmn.io/schema/bpmn">
             <bpmn:process id="redeploy-process" name="Redeploy Process" isExecutable="false">
@@ -511,6 +580,20 @@ internal class ProcessLinkResourceIT @Autowired constructor(
                     <bpmn:incoming>Flow_1</bpmn:incoming>
                 </bpmn:endEvent>
             </bpmn:process>
+            <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+                <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="redeploy-process">
+                    <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+                        <dc:Bounds x="179" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+                        <dc:Bounds x="432" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+                        <di:waypoint x="215" y="117" />
+                        <di:waypoint x="432" y="117" />
+                    </bpmndi:BPMNEdge>
+                </bpmndi:BPMNPlane>
+            </bpmndi:BPMNDiagram>
         </bpmn:definitions>
         """.trimIndent()
 
@@ -532,6 +615,9 @@ internal class ProcessLinkResourceIT @Autowired constructor(
         <?xml version="1.0" encoding="UTF-8"?>
         <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                           xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                          xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                          xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                           id="Definitions_1"
                           targetNamespace="http://bpmn.io/schema/bpmn">
             <bpmn:process id="redeploy-process" name="Redeploy Process Modified" isExecutable="false">
@@ -548,6 +634,27 @@ internal class ProcessLinkResourceIT @Autowired constructor(
                     <bpmn:outgoing>Flow_2</bpmn:outgoing>
                 </bpmn:userTask>
             </bpmn:process>
+            <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+                <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="redeploy-process">
+                    <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+                        <dc:Bounds x="179" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNShape id="Activity_1_di" bpmnElement="Activity_1">
+                        <dc:Bounds x="270" y="77" width="100" height="80" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+                        <dc:Bounds x="432" y="99" width="36" height="36" />
+                    </bpmndi:BPMNShape>
+                    <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+                        <di:waypoint x="215" y="117" />
+                        <di:waypoint x="270" y="117" />
+                    </bpmndi:BPMNEdge>
+                    <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+                        <di:waypoint x="370" y="117" />
+                        <di:waypoint x="432" y="117" />
+                    </bpmndi:BPMNEdge>
+                </bpmndi:BPMNPlane>
+            </bpmndi:BPMNDiagram>
         </bpmn:definitions>
         """.trimIndent()
 

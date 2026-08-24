@@ -16,14 +16,26 @@
 
 package com.ritense.resource.service
 
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
+
+@ProcessBean(description = "Accesses temporary resource storage metadata and deletion")
 class ResourceStorageDelegate(
     private val service: TemporaryResourceStorageService
 ) {
 
+    @ProcessBeanMethod(
+        description = "Gets metadata value from a temporary resource",
+        example = "\${resourceStorageDelegate.getMetadata(fileId, 'filename')}"
+    )
     fun getMetadata(resourceStorageFileId: String, metadataKey: String): String {
         return service.getMetadataValue(resourceStorageFileId, metadataKey)
     }
 
+    @ProcessBeanMethod(
+        description = "Deletes a temporary resource",
+        example = "\${resourceStorageDelegate.deleteResource(fileId)}"
+    )
     fun deleteResource(resourceStorageFileId: String): Boolean {
         return service.deleteResource(resourceStorageFileId)
     }

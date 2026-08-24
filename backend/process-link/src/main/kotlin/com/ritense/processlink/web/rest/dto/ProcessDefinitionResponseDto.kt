@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 
 package com.ritense.processlink.web.rest.dto
 
+import com.ritense.valtimo.processautofill.web.rest.dto.AutofilledElementDto
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 
 data class ProcessDefinitionResponseDto(
     val processDefinition: ProcessDefinitionWithPropertiesDto,
     val processLinks: List<ProcessLinkResponseDto>,
     val bpmn20Xml: String,
-    val draft: Boolean = false
+    val draft: Boolean = false,
+    val autofilledElements: List<AutofilledElementDto> = emptyList()
 )
