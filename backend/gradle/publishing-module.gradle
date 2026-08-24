@@ -63,7 +63,7 @@ publishing {
             groupId = 'com.ritense.valtimo'
 
             pom {
-                url = 'https://github.com/valtimo-platform/valtimo-backend-libraries'
+                url = 'https://github.com/valtimo-platform/valtimo'
                 licenses {
                     license {
                         name = 'Licensed under EUPL, Version 1.2 (the "License");'
@@ -71,9 +71,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection = "git@github.com:valtimo-platform/valtimo-backend-libraries.git"
-                    developerConnection = "git@github.com:valtimo-platform/valtimo-backend-libraries.git"
-                    url = "https://github.com/valtimo-platform/valtimo-backend-libraries"
+                    connection = "git@github.com:valtimo-platform/valtimo.git"
+                    developerConnection = "git@github.com:valtimo-platform/valtimo.git"
+                    url = "https://github.com/valtimo-platform/valtimo"
                 }
             }
 
