@@ -126,16 +126,18 @@
         flex-direction: row;
         justify-content: space-between;
 
+        &-label {
+          margin: auto 0 !important;
+          display: flex;
+          height: min-content;
+        }
+
         &-value {
           padding: 0;
           border: none;
+          text-align: right;
+          overflow-wrap: anywhere;
         }
-      }
-
-      &-label {
-        margin: auto 0 !important;
-        display: flex;
-        height: min-content;
       }
 
       &__render > * {
