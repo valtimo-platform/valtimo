@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.notificatiesapi.NotificatiesApiPluginFactory
 import com.ritense.notificatiesapi.PluginsDeployedEventListener
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
+import com.ritense.notificatiesapi.config.NotificatiesApiAbonnementRegistrationProperties
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
 import com.ritense.notificatiesapi.health.NotificatiesApiInboundEventHealthIndicator
 import com.ritense.notificatiesapi.listener.NotificatiesApiNotificationProcessLinkListener
@@ -59,7 +60,10 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.web.client.RestClient
 
 @AutoConfiguration
-@EnableConfigurationProperties(NotificatiesApiProcessingProperties::class)
+@EnableConfigurationProperties(
+    NotificatiesApiProcessingProperties::class,
+    NotificatiesApiAbonnementRegistrationProperties::class
+)
 @EnableJpaRepositories(basePackages = ["com.ritense.notificatiesapi.repository"])
 @EntityScan("com.ritense.notificatiesapi.domain")
 @EnableScheduling
@@ -91,14 +95,37 @@ class NotificatiesApiAutoConfiguration {
         client: NotificatiesApiClient,
         notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
         pluginService: PluginService,
-        @Value("\${valtimo.zgw.register-abonnementen:true}") registerAbonnementen: Boolean
+        @Value("\${valtimo.zgw.register-abonnementen:true}") registerAbonnementen: Boolean,
+        registrationProperties: NotificatiesApiAbonnementRegistrationProperties,
+        @Qualifier("notificatiesApiAbonnementRegistrationExecutor") registrationExecutor: TaskExecutor
     ): PluginsDeployedEventListener {
         return PluginsDeployedEventListener(
             client,
             notificatiesApiAbonnementLinkRepository,
             pluginService,
-            registerAbonnementen
+            registerAbonnementen,
+            registrationProperties,
+            registrationExecutor
         )
+    }
+
+    /**
+     * Dedicated single-threaded executor for the startup abonnement registration. Kept separate from
+     * [notificatiesApiTaskExecutor] because the retry loop sleeps between attempts and would
+     * otherwise occupy a thread that inbound event processing needs. Daemon threads that are not
+     * awaited on shutdown, so a pending retry never delays JVM exit.
+     */
+    @Bean("notificatiesApiAbonnementRegistrationExecutor")
+    fun notificatiesApiAbonnementRegistrationExecutor(): TaskExecutor {
+        return ThreadPoolTaskExecutor().apply {
+            threadNamePrefix = "notificaties-api-abonnement-registration-"
+            corePoolSize = 1
+            maxPoolSize = 1
+            queueCapacity = 10
+            setDaemon(true)
+            setWaitForTasksToCompleteOnShutdown(false)
+            initialize()
+        }
     }
 
     @Bean
