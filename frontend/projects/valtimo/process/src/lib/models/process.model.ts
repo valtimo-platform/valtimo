@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,11 +152,18 @@ interface IdentityLink {
   type: string;
 }
 
+interface AutofilledElement {
+  activityId: string;
+  modificationType: string;
+  appliedValue: string;
+}
+
 interface ProcessDefinitionXml {
   bpmn20Xml: string;
   id: string;
   readOnly: boolean;
   systemProcess: boolean;
+  autofilledElements?: AutofilledElement[];
 }
 
 interface FlowNodeMigration {
@@ -186,4 +193,5 @@ export {
   ProcessDefinitionXml,
   FlowNodeMigration,
   SkippableTimer,
+  AutofilledElement,
 };

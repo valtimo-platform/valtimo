@@ -16,6 +16,8 @@
 
 package com.ritense.mail.service
 
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.basictype.EmailAddress
 import com.ritense.valtimo.contract.basictype.SimpleName
@@ -32,12 +34,14 @@ import org.springframework.stereotype.Service
 import java.util.Optional
 import java.util.regex.Pattern
 
+@ProcessBean(description = "Sends templated emails from process tasks")
 @Service
 @SkipComponentScan
 class MailService(
     private val mailSender: MailSender
 ) {
 
+    @ProcessBeanMethod(description = "Sends an email using the element template configuration")
     fun sendElementTemplateTaskMail(
         delegateExecution: DelegateExecution
     ): Optional<List<MailMessageStatus>>? {
@@ -45,6 +49,7 @@ class MailService(
         return mailSender.send(mailSettings.getTemplatedMailMessage())
     }
 
+    @ProcessBeanMethod(description = "Gets the mail settings from the element template configuration")
     fun getMailSettings(delegateExecution: DelegateExecution): MailSettings {
         var operatonPropertiesMap = mutableMapOf<String, Any>()
         operatonPropertiesMap = delegateExecution

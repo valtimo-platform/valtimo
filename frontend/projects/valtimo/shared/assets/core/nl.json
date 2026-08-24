@@ -2060,20 +2060,56 @@
     },
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten",
-    "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expressie {{expression}} moet ${...} of #{...} syntax gebruiken",
-      "UNCLOSED_PARENTHESIS": "Expressie {{expression}} heeft een niet-gesloten haakje '('",
-      "UNCLOSED_BRACE": "Expressie {{expression}} mist een sluitende accolade '}'",
-      "UNCLOSED_BRACKET": "Expressie {{expression}} heeft een niet-gesloten blokhaak '['",
-      "MISMATCHED_DELIMITER": "Expressie {{expression}} heeft niet-overeenkomende haakjes of accolades",
-      "INCOMPLETE_EXPRESSION": "Expressie {{expression}} is onvolledig",
-      "INVALID_SYNTAX": "Expressie {{expression}} heeft ongeldige syntax",
-      "BEAN_NOT_FOUND": "Geen bean gevonden met deze naam: {{expression}}. Als u een procesvariabele gebruikt, zorg dat deze tijdens runtime bestaat"
+    "validationErrorCodes": {
+      "NO_START_EVENT": "Proces heeft geen start event",
+      "NO_END_EVENT": "Proces heeft geen end event",
+      "MULTIPLE_NONE_START_EVENTS": "Proces heeft meerdere lege start events",
+      "NO_OUTGOING_FLOW": "Element heeft geen uitgaande flow",
+      "NO_INCOMING_FLOW": "Element heeft geen inkomende flow",
+      "UNREACHABLE_ELEMENT": "Element is niet bereikbaar vanaf een start event",
+      "NO_PATH_TO_END_EVENT": "Start event heeft geen pad naar een end event",
+      "SERVICE_TASK_NO_IMPLEMENTATION": "Service task heeft geen process link, implementatie of execution listener",
+      "USER_TASK_NO_FORM": "User task heeft geen process link of formulier",
+      "SEND_TASK_NO_IMPLEMENTATION": "Send task heeft geen process link of implementatie",
+      "RECEIVE_TASK_NO_MESSAGE": "Receive task heeft geen process link of message referentie",
+      "BUSINESS_RULE_TASK_NO_IMPLEMENTATION": "Business rule task heeft geen DMN decision referentie",
+      "CALL_ACTIVITY_NO_CALLED_ELEMENT": "Call activity heeft geen process link of called element",
+      "SEQUENCE_FLOW_NO_CONDITION": "Sequence flow van exclusive gateway heeft geen conditie",
+      "MESSAGE_EVENT_NO_MESSAGE": "Message event heeft geen process link of message referentie",
+      "TIMER_EVENT_NO_CONFIG": "Timer event heeft geen timer configuratie",
+      "SIGNAL_EVENT_NO_SIGNAL": "Signal event heeft geen signal referentie",
+      "CONDITIONAL_EVENT_NO_CONDITION": "Conditional event heeft geen condition",
+      "ERROR_EVENT_NO_ERROR": "Error event heeft geen error referentie",
+      "ESCALATION_EVENT_NO_ESCALATION": "Escalation event heeft geen escalation referentie",
+      "START_EVENT_NO_FORM": "Start event heeft geen process link of formulier",
+      "EXPRESSION_MISSING_EL_MARKERS": "Expression {{expression}} moet ${...} of #{...} syntax gebruiken",
+      "EXPRESSION_UNCLOSED_PARENTHESIS": "Expression {{expression}} heeft een niet-gesloten haakje",
+      "EXPRESSION_UNCLOSED_BRACE": "Expression {{expression}} mist een sluitende accolade",
+      "EXPRESSION_UNCLOSED_BRACKET": "Expression {{expression}} heeft een niet-gesloten blokhaak",
+      "EXPRESSION_MISMATCHED_DELIMITER": "Expression {{expression}} heeft niet-overeenkomende haakjes of accolades",
+      "EXPRESSION_INCOMPLETE": "Expression {{expression}} is onvolledig",
+      "EXPRESSION_INVALID_SYNTAX": "Expression {{expression}} heeft ongeldige syntax",
+      "EXPRESSION_BEAN_NOT_FOUND": "Geen bean '{{expression}}' gevonden. Als u een process variable gebruikt, zorg dat deze tijdens runtime bestaat",
+      "EXPRESSION_METHOD_NOT_FOUND": "Methode niet gevonden op bean. Controleer de expression {{expression}}",
+      "EXPRESSION_ARGUMENT_COUNT_MISMATCH": "Verkeerd aantal argumenten in expression",
+      "EXPRESSION_EMPTY_ARGUMENTS": "Een of meer argumenten zijn leeg in expression"
     },
     "warningConfirmation": {
       "title": "Proces bevat waarschuwingen",
       "content": "De procesdefinitie bevat waarschuwingen. Weet u zeker dat u wilt opslaan zonder de waarschuwingen op te lossen?",
       "confirm": "Toch opslaan"
+    },
+    "markers": {
+      "processLink": "Proceskoppeling",
+      "executionListener": "Uitvoeringslistener",
+      "taskListener": "Taaklistener",
+      "toggleTooltip": "Schakel zichtbaarheid van proceskoppeling, uitvoeringslistener en taaklistener markers",
+      "hide": "Markers verbergen",
+      "show": "Markers tonen"
+    },
+    "autofilled": {
+      "generic": "Automatisch ingevulde waarde aanwezig",
+      "sidebarMessage": "Dit veld is automatisch ingevuld. Sluit dit bericht om het niet meer te zien."
     }
   },
   "processCaseConnection": {

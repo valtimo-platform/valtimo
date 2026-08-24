@@ -16,14 +16,25 @@
 
 package com.ritense.valtimo.service
 
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import org.operaton.bpm.engine.delegate.DelegateExecution
 
+@ProcessBean(description = "Manages job timers and due dates")
 interface JobService {
+    @ProcessBeanMethod(
+        description = "Adds milliseconds to a timer's due date by activity ID",
+        example = "\${jobService.addOffsetInMillisToTimerDueDateByActivityId(3600000, 'timerActivityId', execution)}"
+    )
     fun addOffsetInMillisToTimerDueDateByActivityId(
         millisecondsToAdd: Long, activityId: String,
         execution: DelegateExecution
     )
 
+    @ProcessBeanMethod(
+        description = "Updates a timer's due date to a specific ISO-8601 datetime",
+        example = "\${jobService.updateTimerDueDateByActivityId('2024-12-31T23:59:59Z', 'timerActivityId', execution)}"
+    )
     fun updateTimerDueDateByActivityId(
         dueDateString: String, activityId: String,
         execution: DelegateExecution

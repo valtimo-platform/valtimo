@@ -41,9 +41,11 @@ import com.ritense.processlink.web.rest.error.ProcessDefinitionValidationExcepti
 import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
+import com.ritense.valtimo.processbean.ProcessBeanService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.service.ProcessPropertyService
@@ -144,7 +146,8 @@ class ProcessLinkAutoConfiguration {
         repositoryService: RepositoryService,
         processDeploymentService: ProcessDeploymentService,
         processDefinitionValidator: ProcessDefinitionValidator,
-        processPropertyService: ProcessPropertyService
+        processPropertyService: ProcessPropertyService,
+        processDefinitionAutofillService: ProcessDefinitionAutofillService
     ): ProcessLinkResource {
         return ProcessLinkResource(
             processLinkService,
@@ -154,7 +157,8 @@ class ProcessLinkAutoConfiguration {
             repositoryService,
             processDeploymentService,
             processDefinitionValidator,
-            processPropertyService
+            processPropertyService,
+            processDefinitionAutofillService
         )
     }
 
@@ -233,11 +237,13 @@ class ProcessLinkAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ProcessDefinitionValidator::class)
     fun processDefinitionValidator(
-        applicationContext: ApplicationContext
+        applicationContext: ApplicationContext,
+        processBeanService: ProcessBeanService?
     ): ProcessDefinitionValidator {
-        return ProcessDefinitionValidator {
-            applicationContext.getBeansWithAnnotation(ProcessBean::class.java)
-        }
+        return ProcessDefinitionValidator(
+            processBeansSupplier = { applicationContext.getBeansWithAnnotation(ProcessBean::class.java) },
+            processBeanService = processBeanService
+        )
     }
 
     @Bean

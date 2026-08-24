@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,8 @@ import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService;
+import com.ritense.valtimo.processautofill.web.rest.dto.AutofilledElementDto;
 import com.ritense.valtimo.web.rest.dto.CommentDto;
 import com.ritense.valtimo.web.rest.dto.DefinitionDeploymentResponseDto;
 import com.ritense.valtimo.web.rest.dto.FlowNodeMigrationDTO;
@@ -128,6 +130,7 @@ public class ProcessResource extends AbstractProcessResource {
     private final ProcessShortTimerService processShortTimerService;
     private final OperatonSearchProcessInstanceRepository operatonSearchProcessInstanceRepository;
     private final ProcessPropertyService processPropertyService;
+    private final ProcessDefinitionAutofillService processDefinitionAutofillService;
 
     public ProcessResource(
             final HistoryService historyService,
@@ -139,7 +142,8 @@ public class ProcessResource extends AbstractProcessResource {
             final OperatonProcessService operatonProcessService,
             final ProcessShortTimerService processShortTimerService,
             final OperatonSearchProcessInstanceRepository operatonSearchProcessInstanceRepository,
-            final ProcessPropertyService processPropertyService
+            final ProcessPropertyService processPropertyService,
+            final ProcessDefinitionAutofillService processDefinitionAutofillService
     ) {
         super(operatonHistoryService, repositoryService, operatonRepositoryService, operatonTaskService);
         this.historyService = historyService;
@@ -150,6 +154,7 @@ public class ProcessResource extends AbstractProcessResource {
         this.processShortTimerService = processShortTimerService;
         this.operatonSearchProcessInstanceRepository = operatonSearchProcessInstanceRepository;
         this.processPropertyService = processPropertyService;
+        this.processDefinitionAutofillService = processDefinitionAutofillService;
     }
 
     @GetMapping("/v1/process/definition")
@@ -202,10 +207,16 @@ public class ProcessResource extends AbstractProcessResource {
             if (definitionDiagramDto == null) {
                 return ResponseEntity.notFound().build();
             }
+            final var autofilledElements = processDefinitionAutofillService
+                .findByProcessDefinitionId(processDefinitionId)
+                .stream()
+                .map(autofill -> AutofilledElementDto.Companion.from(autofill))
+                .toList();
             final var definitionWithDiagramAndProperties = new ProcessDefinitionDiagramWithPropertyDto(
                     definitionDiagramDto,
                     processPropertyService.isReadOnlyById(processDefinitionId),
-                    processPropertyService.isSystemProcessById(processDefinitionId)
+                    processPropertyService.isSystemProcessById(processDefinitionId),
+                    autofilledElements
             );
             return ResponseEntity.ok(definitionWithDiagramAndProperties);
         } catch (UnsupportedEncodingException e) {
