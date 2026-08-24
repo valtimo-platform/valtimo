@@ -51,7 +51,8 @@
     * [Form flows](configuration-guides/building-blocks/form-flows.md)
     * [Decision tables](configuration-guides/building-blocks/decision-tables.md)
 * 🔌 Plugins
-* 📊 Dashboard
+* [📊 Dashboard](configuration-guides/dashboard/README.md)
+    * [Widget data sources](configuration-guides/dashboard/widget-data-sources.md)
 * [🔏 Access control](configuration-guides/access-control/README.md)
     * [Configurable elements](configuration-guides/access-control/configurable-elements.md)
     * [Roles](configuration-guides/access-control/roles.md)
