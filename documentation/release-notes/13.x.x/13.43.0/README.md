@@ -52,3 +52,4 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Case export | Forms shown in a widget are included in the case export |
 | Tasks | Tasks of cases that were already running before the upgrade to 13 can be opened again |
 | Case widgets | Long texts wrap correctly, without overlapping other content |
+| Widgets | The image widget no longer offers `task:` fields it cannot show |
