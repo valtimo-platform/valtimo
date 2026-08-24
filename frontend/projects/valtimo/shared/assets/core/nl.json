@@ -2389,6 +2389,8 @@
     "sortableNo": "Nee",
     "exportField": "Exporteerbaar",
     "exportTooltip": "Alleen velden van het document of het dossier kunnen geëxporteerd worden. Als er een ander type veld wordt gekozen, dan wordt de export knop op 'disabled' staat gezet.",
+    "defaultVisibleField": "Standaard zichtbaar",
+    "defaultVisibleTooltip": "Bepaalt of deze kolom standaard in de lijst wordt getoond. Staat dit uit, dan blijft de kolom beschikbaar en kunnen gebruikers deze zelf aanzetten via de kolomselectie. Gebruikers die al een kolomselectie hebben gemaakt, behouden hun eigen keuze.",
     "sortableAsc": "Oplopend",
     "sortableDesc": "Aflopend",
     "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolom-configuratie",

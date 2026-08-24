@@ -2362,6 +2362,8 @@
     "sortableNo": "No",
     "exportField": "Exportable",
     "exportTooltip": "Only fields from the document or the case can be exported. If another type of field is selected, the export button will be set to ‘disabled’.",
+    "defaultVisibleField": "Visible by default",
+    "defaultVisibleTooltip": "Determines whether this column is shown in the list by default. If it is switched off, the column stays available and users can show it themselves through the column selection. Users who already made a column selection keep their own choice.",
     "sortableAsc": "Ascending",
     "sortableDesc": "Descending",
     "hasEnvConfigWarningTitle": "Case type already has a column configuration",
