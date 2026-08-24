@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ internal class ProcessLinkResourceTest {
     lateinit var processDeploymentService: ProcessDeploymentService
     lateinit var processDefinitionValidator: ProcessDefinitionValidator
     lateinit var processPropertyService: ProcessPropertyService
+    lateinit var processDefinitionAutofillService: com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
 
     @BeforeEach
     fun init() {
@@ -80,6 +81,7 @@ internal class ProcessLinkResourceTest {
         processDeploymentService = mock()
         processDefinitionValidator = mock()
         processPropertyService = mock()
+        processDefinitionAutofillService = mock()
         processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
         processLinkResource = ProcessLinkResource(
             processLinkService,
@@ -89,7 +91,8 @@ internal class ProcessLinkResourceTest {
             repositoryService,
             processDeploymentService,
             processDefinitionValidator,
-            processPropertyService
+            processPropertyService,
+            processDefinitionAutofillService
         )
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
@@ -301,7 +304,7 @@ internal class ProcessLinkResourceTest {
             .andDo(print())
             .andExpect(status().isNoContent)
 
-        verify(processDeploymentService).deployProcessDefinitionAndProcessLinks(anyOrNull(), anyOrNull(), any(), anyOrNull())
+        verify(processDeploymentService).deployProcessDefinitionAndProcessLinks(anyOrNull(), anyOrNull(), any(), anyOrNull(), any())
     }
 
     private fun operatonProcessDefinition(id: String, key: String, name: String?) = OperatonProcessDefinition(
