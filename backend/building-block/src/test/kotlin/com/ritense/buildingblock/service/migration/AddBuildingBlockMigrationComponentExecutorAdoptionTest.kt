@@ -31,6 +31,8 @@ import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
+import com.ritense.processdocument.domain.ProcessDocumentInstance
+import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
@@ -87,6 +89,7 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
     private lateinit var processDefinitionQuery: ProcessDefinitionQuery
     private lateinit var jdbcTemplate: JdbcTemplate
     private lateinit var linkedResolver: LinkedBuildingBlockVersionResolver
+    private lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
     private lateinit var executor: AddBuildingBlockMigrationComponentExecutor
 
     private val target = CaseDefinitionId("bijstand", "1.0.1")
@@ -146,6 +149,8 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         processDefinitionQuery = mock(defaultAnswer = RETURNS_SELF)
         whenever(repositoryService.createProcessDefinitionQuery()).thenReturn(processDefinitionQuery)
         jdbcTemplate = mock()
+        // A plain mock, not a deep stub: the name the association is recreated with is asserted on.
+        processDocumentAssociationService = mock()
 
         // The plan's entries are read once per run, and `authorised` is mutated by `declares` afterwards,
         // so the answer has to be computed at call time rather than captured here.
@@ -183,7 +188,7 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
             repositoryService,
             executionRepository,
             mock<ProcessMigrationVariableResolver>(),
-            mock<ProcessDocumentAssociationService>(defaultAnswer = RETURNS_DEEP_STUBS),
+            processDocumentAssociationService,
             valueResolverService,
             dataPatchApplier,
             mock<AddBuildingBlockLinkChecker>(),
@@ -221,6 +226,54 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         // the running process moved from the case's deployment onto the block's
         verify(runtimeService).createMigrationPlan("bijstand-uitvoeren:cd", "bijstand-uitvoeren:bb")
         verify(jdbcTemplate).update(any<String>(), eq(created[0].documentId.toString()), eq(uitvoerenPi))
+    }
+
+    /**
+     * G43. Adoption repoints the process-document association from the case document onto the block's,
+     * and the association carries the name the progress tab labels the process with. Recreating it
+     * without that name left the process dropdown showing '-' for every adopted process — and since
+     * adopted blocks are the ones still running, they sort first and so are what the tab opens on.
+     */
+    @Test
+    fun `should keep the process name when moving the association onto the block document`() {
+        running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
+        running(
+            Node(
+                uitvoerenPi, "bijstand-uitvoeren:cd", "bijstand-uitvoeren",
+                parent = rootPi, callerActivityId = "UitvoerenCallActivity",
+                callerProcessDefinitionId = "bijstand-process:1",
+            )
+        )
+        declares("bijstand-process:1", "UitvoerenCallActivity", "bijstand-uitvoeren", "1.0.0")
+        deploys("bijstand-uitvoeren", "1.0.0", "bijstand-uitvoeren", "bijstand-uitvoeren:bb")
+        associated(uitvoerenPi, "Uitvoeren business services")
+
+        executor.execute(migrationId, target, caseDocumentId)
+
+        verify(processDocumentAssociationService).createProcessDocumentInstance(
+            eq(uitvoerenPi), eq(created[0].documentId), eq("Uitvoeren business services")
+        )
+    }
+
+    @Test
+    fun `should name the moved association after the process definition when it had no name`() {
+        running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
+        running(
+            Node(
+                uitvoerenPi, "bijstand-uitvoeren:cd", "bijstand-uitvoeren",
+                parent = rootPi, callerActivityId = "UitvoerenCallActivity",
+                callerProcessDefinitionId = "bijstand-process:1",
+            )
+        )
+        declares("bijstand-process:1", "UitvoerenCallActivity", "bijstand-uitvoeren", "1.0.0")
+        deploys("bijstand-uitvoeren", "1.0.0", "bijstand-uitvoeren", "bijstand-uitvoeren:bb")
+        // No association at all — a process the case never recorded, so there is no name to carry over.
+
+        executor.execute(migrationId, target, caseDocumentId)
+
+        verify(processDocumentAssociationService).createProcessDocumentInstance(
+            eq(uitvoerenPi), eq(created[0].documentId), eq(bpmnNameOf("bijstand-uitvoeren"))
+        )
     }
 
     @Test
@@ -543,12 +596,25 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         deploys("bijstand-besluit", "1.0.0", "bijstand-besluit", "bijstand-besluit:bb")
     }
 
+    /** The BPMN `name` a deployed definition carries, as opposed to its key. */
+    private fun bpmnNameOf(processDefinitionKey: String) = "Proces: $processDefinitionKey"
+
+    /** [processInstanceId] already has a process-document association, labelled [processName]. */
+    private fun associated(processInstanceId: String, processName: String) {
+        val existing = mock<ProcessDocumentInstance>()
+        whenever(existing.processName()).thenReturn(processName)
+        whenever(existing.processDocumentInstanceId()).thenReturn(mock())
+        whenever(processDocumentAssociationService.findProcessDocumentInstance(OperatonProcessInstanceId(processInstanceId)))
+            .thenReturn(Optional.of(existing))
+    }
+
     /** Adds a node to the running tree, its calling execution and its process definition. */
     private fun running(node: Node) {
         nodes += node
 
         val processDefinition = mock<ProcessDefinition>()
         whenever(processDefinition.key).thenReturn(node.processDefinitionKey)
+        whenever(processDefinition.name).thenReturn(bpmnNameOf(node.processDefinitionKey))
         whenever(repositoryService.getProcessDefinition(node.processDefinitionId)).thenReturn(processDefinition)
         val idQuery = mock<ProcessDefinitionQuery>()
         whenever(idQuery.singleResult()).thenReturn(processDefinition)

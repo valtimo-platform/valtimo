@@ -143,11 +143,30 @@ class MigrationSuggestionService(
         return BlueprintMigrationId.blueprintIdOf(target.blueprintType(), key, version)
     }
 
-    /** The predecessor blueprint of [target] (its `basedOnVersionTag`), or null when there is none. */
-    private fun predecessorOf(target: BlueprintId): BlueprintId? =
-        lineageOf(target)
-            ?.basedOnVersionTag(target)
-            ?.let { BlueprintMigrationId.blueprintIdOf(target.blueprintType(), target.getIdKey(), it) }
+    /**
+     * The version of [target]'s own key that a new plan most likely migrates from: the predecessor
+     * [target] records (`basedOnVersionTag`), and failing that the **newest deployed version below
+     * it**. Null when [target] is the only version there is.
+     *
+     * The fallback is what makes the pre-filled plan arrive on a real upgrade. Only a version drafted
+     * from another one in the admin UI records a predecessor; a version that arrives by file
+     * auto-deploy records none, and neither does the `<version>-migrated` definition a platform
+     * upgrade parks the instances it could not carry over on. Both of those are the *normal* shape of
+     * a version someone writes a migration plan for, and for them `basedOnVersionTag` is null — so
+     * the whole plan came back as a bare skeleton with no source, and therefore no title, no key and
+     * no suggested components either, since every component suggestion is a comparison against a
+     * source. Ordering is Semver's, not the version tag's as text, so `1.0.0-migrated` correctly
+     * sorts *below* `1.0.0` rather than after it.
+     */
+    private fun predecessorOf(target: BlueprintId): BlueprintId? {
+        val lineage = lineageOf(target) ?: return null
+        val versionTag = lineage.basedOnVersionTag(target)
+            ?: lineage.deployedVersionTags(target)
+                .filter { it.isLowerThan(target.blueprintVersionTag()) }
+                .maxOrNull()
+            ?: return null
+        return BlueprintMigrationId.blueprintIdOf(target.blueprintType(), target.getIdKey(), versionTag)
+    }
 
     private fun lineageOf(target: BlueprintId): BlueprintVersionLineage? =
         versionLineages.firstOrNull { it.supports(target.blueprintType()) }

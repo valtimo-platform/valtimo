@@ -49,4 +49,9 @@ class BuildingBlockVersionLineage(
     override fun exists(blueprintId: BlueprintId): Boolean {
         return buildingBlockDefinitionRepository.existsById(blueprintId as BuildingBlockDefinitionId)
     }
+
+    override fun deployedVersionTags(blueprintId: BlueprintId): List<Semver> {
+        return buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(blueprintId.getIdKey())
+            .map { it.id.versionTag }
+    }
 }

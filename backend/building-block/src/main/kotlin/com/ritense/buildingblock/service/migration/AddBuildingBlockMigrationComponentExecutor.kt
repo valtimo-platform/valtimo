@@ -821,16 +821,24 @@ class AddBuildingBlockMigrationComponentExecutor(
      * Repoints the process-document association of [processInstanceId] to the building block document.
      * A taken-over process still carries the owner's association; [ProcessDocumentAssociationService.createProcessDocumentInstance]
      * refuses to overwrite an association pointing at a different document, so the stale one is removed first.
+     *
+     * The association carries the label the progress tab puts on the process, so the name has to survive
+     * the delete/recreate. Dropping it left every adopted process nameless in the process dropdown (G43);
+     * the process itself did not change identity here, only which document owns it.
      */
     private fun associateWithBuildingBlockDocument(processInstanceId: String, buildingBlockDocumentId: UUID) {
         runWithoutAuthorization {
             val operatonProcessInstanceId = OperatonProcessInstanceId(processInstanceId)
-            processDocumentAssociationService.findProcessDocumentInstance(operatonProcessInstanceId)
-                .ifPresent { existing ->
-                    processDocumentAssociationService.deleteProcessDocumentInstance(existing.processDocumentInstanceId())
-                }
+            val existing = processDocumentAssociationService
+                .findProcessDocumentInstance(operatonProcessInstanceId)
+                .orElse(null)
+            val processName = existing?.processName()?.takeIf { it.isNotBlank() }
+                ?: nameOfRunningProcess(processInstanceId)?.takeIf { it.isNotBlank() }
+            if (existing != null) {
+                processDocumentAssociationService.deleteProcessDocumentInstance(existing.processDocumentInstanceId())
+            }
             processDocumentAssociationService.createProcessDocumentInstance(
-                processInstanceId, buildingBlockDocumentId, null
+                processInstanceId, buildingBlockDocumentId, processName
             )
         }
     }
@@ -886,6 +894,17 @@ class AddBuildingBlockMigrationComponentExecutor(
         processLinkService.getProcessLinks(processDefinitionId, activityId)
             .filterIsInstance<BuildingBlockProcessLink>()
             .firstOrNull()
+
+    /**
+     * The BPMN name of the definition [processInstanceId] currently runs, or null when the instance or
+     * its deployment is gone. Only a fallback: an association that already carries a name keeps it.
+     */
+    private fun nameOfRunningProcess(processInstanceId: String): String? =
+        runtimeService.createProcessInstanceQuery()
+            .processInstanceId(processInstanceId)
+            .singleResult()
+            ?.processDefinitionId
+            ?.let { repositoryService.findProcessDefinitionOrNull(it)?.name }
 
     private fun processDefinitionIdOf(processInstanceId: String): String =
         runtimeService.createProcessInstanceQuery()

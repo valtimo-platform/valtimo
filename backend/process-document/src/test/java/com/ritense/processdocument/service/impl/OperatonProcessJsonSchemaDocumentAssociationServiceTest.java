@@ -233,4 +233,66 @@ public class OperatonProcessJsonSchemaDocumentAssociationServiceTest extends Bas
         assertThat(dto.getStartedOn()).isNotNull();
     }
 
+    /**
+     * The associations a case migration wrote before it kept the process name have none, and the progress
+     * tab has nothing to label the process with — it showed '-'. The process definition answers for them.
+     */
+    @Test
+    public void shouldFallBackToTheProcessDefinitionNameWhenTheAssociationHasNone() {
+        final var documentId = documentId();
+        final var processInstanceId = processInstanceId();
+        final var document = mock(JsonSchemaDocument.class);
+        final var processDocumentInstance = mock(OperatonProcessJsonSchemaDocumentInstance.class);
+        final var processDocumentInstanceId = OperatonProcessJsonSchemaDocumentInstanceId.existingId(processInstanceId, documentId);
+        final var historicProcessInstanceQuery = mock(org.operaton.bpm.engine.history.HistoricProcessInstanceQuery.class);
+        final var historicProcessInstance = mock(org.operaton.bpm.engine.history.HistoricProcessInstance.class);
+        final var operatonProcessDefinition = mock(com.ritense.valtimo.operaton.domain.OperatonProcessDefinition.class);
+
+        doReturn(Optional.of(document)).when(documentService).findBy(any());
+        when(document.definitionId()).thenReturn(mock());
+
+        when(processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentIdIncludingBuildingBlocks(documentId.getId()))
+            .thenReturn(List.of(processDocumentInstance));
+        when(processDocumentInstance.getId()).thenReturn(processDocumentInstanceId);
+        when(processDocumentInstance.processName()).thenReturn(null);
+
+        when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historicProcessInstanceQuery);
+        when(historicProcessInstanceQuery.processInstanceIds(Set.of(processInstanceId.toString()))).thenReturn(historicProcessInstanceQuery);
+        when(historicProcessInstanceQuery.list()).thenReturn(List.of(historicProcessInstance));
+        when(historicProcessInstance.getId()).thenReturn(processInstanceId.toString());
+        when(historicProcessInstance.getProcessDefinitionKey()).thenReturn("uitvoeren-business-services");
+        when(historicProcessInstance.getStartTime()).thenReturn(java.util.Date.from(java.time.Instant.now()));
+        when(historicProcessInstance.getProcessDefinitionVersion()).thenReturn(1);
+
+        when(repositoryService.findProcessDefinitions(any())).thenReturn(List.of(operatonProcessDefinition));
+        when(operatonProcessDefinition.getKey()).thenReturn("uitvoeren-business-services");
+        when(operatonProcessDefinition.getName()).thenReturn("Uitvoeren business services");
+        when(operatonProcessDefinition.getVersion()).thenReturn(1);
+
+        final var result = service.findProcessDocumentInstanceDtos(documentId);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).processName()).isEqualTo("Uitvoeren business services");
+    }
+
+    @Test
+    public void shouldNameAnExistingAssociationThatHasNoName() {
+        final var processInstanceId = processInstanceId();
+        final var documentId = documentId();
+        final var existing = new OperatonProcessJsonSchemaDocumentInstance(
+            OperatonProcessJsonSchemaDocumentInstanceId.existingId(processInstanceId, documentId),
+            null
+        );
+
+        when(processDocumentInstanceRepository.findByProcessInstanceId(any())).thenReturn(Optional.of(existing));
+
+        var association = service.createProcessDocumentInstance(
+            processInstanceId.toString(), documentId.getId(), "Uitvoeren business services"
+        );
+
+        assertThat(association).isPresent();
+        assertThat(association.get().processName()).isEqualTo("Uitvoeren business services");
+        verify(processDocumentInstanceRepository).save(existing);
+    }
+
 }

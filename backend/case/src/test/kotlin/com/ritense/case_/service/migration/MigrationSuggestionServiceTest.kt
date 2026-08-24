@@ -90,6 +90,64 @@ class MigrationSuggestionServiceTest {
     }
 
     @Test
+    fun `an unasked-for source defaults to the predecessor the target records`() {
+        val service = suggestionService(
+            lineage = lineage(basedOn = "1.0.1", deployed = listOf("1.0.0", "1.0.1", "1.0.2")),
+        )
+
+        val plan = service.suggestPlan(target = target)
+
+        assertThat(plan.get("source").get("key").asText()).isEqualTo("verhuizing")
+        assertThat(plan.get("source").get("versionTag").asText()).isEqualTo("1.0.1")
+    }
+
+    @Test
+    fun `a target that records no predecessor falls back to the newest deployed version below it`() {
+        // The shape of every version that was not drafted from another one in the admin UI: a file
+        // auto-deploy records no `basedOnVersionTag`, and neither does the `-migrated` definition a
+        // platform upgrade parks unmigrated instances on. Without the fallback the whole plan came
+        // back as a skeleton with no source — and so no title, no key and no suggested components.
+        val service = suggestionService(
+            dataMigration = listOf(mapOf("target" to "doc:/adres")),
+            lineage = lineage(basedOn = null, deployed = listOf("0.1.0-migrated", "1.0.0", "1.0.2")),
+        )
+
+        val plan = service.suggestPlan(target = target)
+
+        assertThat(plan.get("source").get("versionTag").asText()).isEqualTo("1.0.0")
+        // The point of finding a source at all: every component suggestion is a comparison with one.
+        assertThat(plan.get("dataMigration")).hasSize(1)
+    }
+
+    @Test
+    fun `the fallback orders versions as Semver, so a prerelease of the target sorts below it`() {
+        // `aanvraag-algemene-bijstand-dcm` on the customer configuration: 1.0.0 alongside the
+        // 0.1.0-migrated the upgrade left behind. As text `1.0.0-migrated` sorts *after* `1.0.0`.
+        val service = suggestionService(
+            lineage = lineage(basedOn = null, deployed = listOf("1.0.2-migrated", "1.0.2")),
+        )
+
+        val plan = service.suggestPlan(target = target)
+
+        assertThat(plan.get("source").get("versionTag").asText()).isEqualTo("1.0.2-migrated")
+    }
+
+    @Test
+    fun `a target that is the only version there is gets no source, and no components either`() {
+        val service = suggestionService(
+            dataMigration = listOf(mapOf("target" to "doc:/adres")),
+            lineage = lineage(basedOn = null, deployed = listOf("1.0.2", "2.0.0")),
+        )
+
+        val plan = service.suggestPlan(target = target)
+
+        assertThat(plan.has("source")).isFalse()
+        assertThat(plan.has("dataMigration")).isFalse()
+        // The skeleton still arrives, so the author can name a source themselves.
+        assertThat(plan.get("migrationTriggers").get("triggeredByButton").asBoolean()).isTrue()
+    }
+
+    @Test
     fun `a plan that declares no source cannot be saved`() {
         val service = suggestionService()
 
@@ -197,10 +255,15 @@ class MigrationSuggestionServiceTest {
         override fun suggest(source: BlueprintId, target: BlueprintId) = suggestion
     }
 
-    private fun lineage(exists: Boolean) = object : BlueprintVersionLineage {
+    private fun lineage(
+        exists: Boolean = true,
+        basedOn: String? = null,
+        deployed: List<String> = emptyList(),
+    ) = object : BlueprintVersionLineage {
         override fun supports(blueprintType: BlueprintType) = blueprintType == BlueprintType.CASE
-        override fun basedOnVersionTag(blueprintId: BlueprintId): Semver? = null
+        override fun basedOnVersionTag(blueprintId: BlueprintId): Semver? = basedOn?.let { Semver.parse(it) }
         override fun exists(blueprintId: BlueprintId) = exists
+        override fun deployedVersionTags(blueprintId: BlueprintId) = deployed.map { Semver.parse(it)!! }
     }
 
     private fun validator(componentKey: String, onValidate: (BlueprintId) -> Unit) =

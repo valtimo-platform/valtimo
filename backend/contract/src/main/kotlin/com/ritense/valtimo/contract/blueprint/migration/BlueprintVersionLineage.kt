@@ -62,4 +62,20 @@ interface BlueprintVersionLineage {
      * saved.
      */
     fun exists(blueprintId: BlueprintId): Boolean
+
+    /**
+     * Every deployed version of the blueprint [blueprintId] names — its key, not its version, is what
+     * is read here — in no particular order.
+     *
+     * The second half of "which version would an author most likely want to migrate from?".
+     * [basedOnVersionTag] answers it only for a version that *records* a predecessor, which is a
+     * version someone drafted in the admin UI from another one. A version that arrived any other way
+     * records nothing: a file auto-deploy names no predecessor, and neither does the version an
+     * upgrade leaves behind for the instances it could not carry over. Those are precisely the
+     * versions a migration plan is written for, so the suggestion falls back to the newest deployed
+     * version below the target — see `MigrationSuggestionService.suggestPlan`.
+     *
+     * Defaults to none, which leaves the fallback off and [basedOnVersionTag] as the only answer.
+     */
+    fun deployedVersionTags(blueprintId: BlueprintId): List<Semver> = emptyList()
 }

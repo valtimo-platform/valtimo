@@ -58,6 +58,13 @@ class CaseMigrationCandidateProvider(
         }
     }
 
+    override fun deployedVersionTags(blueprintId: BlueprintId): List<Semver> {
+        return runWithoutAuthorization {
+            caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc(blueprintId.getIdKey())
+                .map { it.id.versionTag }
+        }
+    }
+
     override fun findCandidateIds(source: BlueprintId, pageable: Pageable): Slice<UUID> {
         return runWithoutAuthorization {
             documentRepository.findCaseIdsByBlueprintVersion(

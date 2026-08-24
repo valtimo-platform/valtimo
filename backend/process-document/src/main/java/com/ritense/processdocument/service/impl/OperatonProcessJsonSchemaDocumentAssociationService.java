@@ -284,7 +284,9 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
             if (!existing.processDocumentInstanceId().documentId().getId().equals(documentId)) {
                 throw new IllegalStateException("Process was already associated with another document: " + documentId);
             }
-            if (processName != null && !processName.isEmpty() && !existing.processName().equals(processName)) {
+            // processName is nullable on an existing association, so the comparison starts from the
+            // argument: naming a process whose association has no name is exactly the case to handle.
+            if (processName != null && !processName.isEmpty() && !processName.equals(existing.processName())) {
                 existing.setProcessName(processName);
                 processDocumentInstanceRepository.save(existing);
                 return existingOpt;
@@ -431,13 +433,29 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
         );
         return new ProcessDocumentInstanceDto(
             process.getId(),
-            process.processName(),
+            processNameOf(process, processDefinition),
             process.isActive(),
             operatonProcess.getProcessDefinitionVersion(),
             processDefinition.getVersion(),
             startedBy,
             startDateTime
         );
+    }
+
+    /**
+     * The label to show for a process. The association's own name is authoritative, but it is nullable and
+     * associations written before Valtimo kept the name across a case migration have none, so the process
+     * definition it runs answers for them rather than the UI falling back to a placeholder.
+     */
+    private String processNameOf(
+        OperatonProcessJsonSchemaDocumentInstance process,
+        OperatonProcessDefinition processDefinition
+    ) {
+        var processName = process.processName();
+        if (processName != null && !processName.isBlank()) {
+            return processName;
+        }
+        return processDefinition == null ? null : processDefinition.getName();
     }
 
     private <T> void denyAuthorization(Class<T> clazz) {

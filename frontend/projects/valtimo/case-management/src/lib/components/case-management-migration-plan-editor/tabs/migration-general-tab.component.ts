@@ -269,8 +269,14 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
       title: plan.title ?? '',
       key: plan.key ?? '',
       source: {
-        key: plan.source?.key ?? this.caseDefinitionKey ?? '',
-        versionTag: plan.source?.versionTag ?? '',
+        // `||`, not `??`: a plan that names no source at all and one whose `source.key` is blank mean
+        // the same thing — this case definition — and [serialize] already reads them that way. With
+        // `??` only the first of the two fell back, so the two disagreed: the blank string stayed in
+        // the picker while [_lastEmitted] recorded the case definition key. The next write then
+        // matched that record and returned early, leaving the picker empty for good — which is what
+        // the new-plan template does, since it starts the form off with `source: {key: ''}`.
+        key: this.asText(plan.source?.key) || this.caseDefinitionKey || '',
+        versionTag: this.asText(plan.source?.versionTag),
       },
       migrationTriggers: {
         triggeredByButton: plan.migrationTriggers?.triggeredByButton ?? false,

@@ -38,6 +38,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
@@ -518,34 +519,38 @@ internal class DocumentJsonValueResolverTest {
 
     @Test
     fun `should get array property with nested properties`() {
-        val definitionName = "nested-array-example"
-        mockDefinition(definitionName)
-
-        val options = documentValueResolver.getResolvableKeyOptions(definitionName)
-
-        assertEquals(3, options.size)
-        assertEquals(ValueResolverOptionType.COLLECTION, options[2].type)
-        assertEquals("doc:/object1/object2/array1", options[2].path)
-        assertNotNull(options[2].children)
-        assertEquals(3, options[2].children?.size)
-        assertEquals(ValueResolverOptionType.FIELD, options[2].children?.get(2)?.type)
-        assertEquals("/object3/object4/text1", options[2].children?.get(2)?.path)
+        assertArrayOptions("nested-array-example")
     }
 
     @Test
     fun `should get array property with nested properties when using reference`() {
-        val definitionName = "nested-array-reference-example"
+        assertArrayOptions("nested-array-reference-example")
+    }
+
+    /**
+     * An array yields **two** options at its own path: the COLLECTION the collection and table widgets
+     * iterate, carrying the item fields, and the FIELD container every field-typed picker offers so the
+     * array itself can be selected — the same way an object node is offered alongside its properties.
+     * Asserted by content rather than by index, since the two arrive together and either order is fine.
+     */
+    private fun assertArrayOptions(definitionName: String) {
         mockDefinition(definitionName)
 
         val options = documentValueResolver.getResolvableKeyOptions(definitionName)
 
-        assertEquals(3, options.size)
-        assertEquals(ValueResolverOptionType.COLLECTION, options[2].type)
-        assertEquals("doc:/object1/object2/array1", options[2].path)
-        assertNotNull(options[2].children)
-        assertEquals(3, options[2].children?.size)
-        assertEquals(ValueResolverOptionType.FIELD, options[2].children?.get(2)?.type)
-        assertEquals("/object3/object4/text1", options[2].children?.get(2)?.path)
+        assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "doc:/object1" to ValueResolverOptionType.FIELD,
+            "doc:/object1/object2" to ValueResolverOptionType.FIELD,
+            "doc:/object1/object2/array1" to ValueResolverOptionType.FIELD,
+            "doc:/object1/object2/array1" to ValueResolverOptionType.COLLECTION,
+        )
+
+        val collection = options.single { it.type == ValueResolverOptionType.COLLECTION }
+        assertEquals(3, collection.children?.size)
+        assertEquals(ValueResolverOptionType.FIELD, collection.children?.get(2)?.type)
+        assertEquals("/object3/object4/text1", collection.children?.get(2)?.path)
+        // Only the collection half carries the item fields; the container resolves to the array itself.
+        assertNull(options.single { it.path.endsWith("array1") && it.type == ValueResolverOptionType.FIELD }.children)
     }
 
     @Test

@@ -413,16 +413,22 @@ class RemoveBuildingBlockMigrationComponentExecutor(
      * `ProcessDocumentDeletedEventListener` walk that document's associations and delete the *historic*
      * process instance of each — which Operaton refuses for a process that is still running, failing the
      * whole case. A handed-back process is exactly that: still running.
+     *
+     * The process name rides along, the same way it does on the way in: it is the label the progress tab
+     * puts on the process, and handing a process back does not rename it (G43).
      */
     private fun associateWithOwnerDocument(processInstanceId: String, ownerDocumentId: UUID) {
         runWithoutAuthorization {
             val operatonProcessInstanceId = OperatonProcessInstanceId(processInstanceId)
-            processDocumentAssociationService.findProcessDocumentInstance(operatonProcessInstanceId)
-                .ifPresent { existing ->
-                    processDocumentAssociationService.deleteProcessDocumentInstance(existing.processDocumentInstanceId())
-                }
+            val existing = processDocumentAssociationService
+                .findProcessDocumentInstance(operatonProcessInstanceId)
+                .orElse(null)
+            val processName = existing?.processName()?.takeIf { it.isNotBlank() }
+            if (existing != null) {
+                processDocumentAssociationService.deleteProcessDocumentInstance(existing.processDocumentInstanceId())
+            }
             processDocumentAssociationService.createProcessDocumentInstance(
-                processInstanceId, ownerDocumentId, null
+                processInstanceId, ownerDocumentId, processName
             )
         }
     }

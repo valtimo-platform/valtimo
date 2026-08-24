@@ -69,23 +69,41 @@ private fun Schema.allowsRemovalOf(jsonPointer: JsonPointer): Boolean {
     val propertyName = jsonPointer.last()?.matchingProperty ?: return false
     val parentPointer = jsonPointer.head()?.toString().orEmpty()
     val parentSchema = if (parentPointer.isEmpty()) this else getProperty(parentPointer)
-    val objectSchema = parentSchema?.unwrapObjectSchema() ?: return false
-    return !objectSchema.requiredProperties.contains(propertyName)
+    return parentSchema?.permitsRemovalOf(propertyName) ?: false
 }
 
 /**
+ * Whether the parent schema this is called on allows [propertyName] to be absent, or null when it says
+ * nothing about the matter (it is not, and does not wrap, an object schema).
+ *
+ * Every branch of a combined schema is consulted rather than the first one that happens to be an object,
+ * because which branch that was depended on the order the author wrote them in: a parent declared
+ * `oneOf: [{required: [v]}, {}]` reported `v` as un-removable when the requiring branch came first and
+ * removable when it came second. The criterion decides how the branches combine, which is the same rule
+ * validation itself applies — under `allOf` the value has to satisfy every branch, so the property may only
+ * go if **all** of them permit it; under `anyOf` / `oneOf` satisfying **one** branch is enough, and a
+ * document that drops the property is still valid as long as some branch does not require it.
+ *
  * @param depth how many schema levels have been descended into already, guarded by [MAX_SCHEMA_DEPTH] so a
  * recursive schema does not cause a `StackOverflowError`.
  */
-private fun Schema.unwrapObjectSchema(depth: Int = 0): ObjectSchema? {
+private fun Schema.permitsRemovalOf(propertyName: String, depth: Int = 0): Boolean? {
     if (depth > MAX_SCHEMA_DEPTH) {
         logger.warn { "Stopped unwrapping the object schema. The schema is nested deeper than $MAX_SCHEMA_DEPTH levels." }
         return null
     }
     return when (this) {
-        is ObjectSchema -> this
-        is ReferenceSchema -> referredSchema?.unwrapObjectSchema(depth + 1)
-        is CombinedSchema -> subschemas.firstNotNullOfOrNull { it.unwrapObjectSchema(depth + 1) }
+        is ObjectSchema -> !requiredProperties.contains(propertyName)
+        is ReferenceSchema -> referredSchema?.permitsRemovalOf(propertyName, depth + 1)
+        is CombinedSchema -> {
+            val answers = subschemas.mapNotNull { it.permitsRemovalOf(propertyName, depth + 1) }
+            when {
+                answers.isEmpty() -> null
+                criterion == CombinedSchema.ALL_CRITERION -> answers.all { it }
+                else -> answers.any { it }
+            }
+        }
+
         else -> null
     }
 }
