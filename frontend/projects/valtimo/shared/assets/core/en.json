@@ -795,6 +795,7 @@
       "editor": {
         "createTitle": "New migration plan",
         "editTitle": "Edit migration plan",
+        "card": {"unnamed": "New entry"},
         "tabs": {
           "general": "General",
           "dataMigration": "Data migration",
@@ -815,6 +816,7 @@
           "sourceKeyPlaceholder": "Select a case definition",
           "sourceVersion": "Source version",
           "sourceVersionPlaceholder": "Select a version",
+          "suggesting": "Preparing a suggested plan from this version and the one it migrates from…",
           "triggers": "Triggers",
           "triggersHint": "Decide when this plan runs: manually from the UI button, at a scheduled moment, or after another plan finishes.",
           "triggeredByButton": "Run manually from the UI button",

@@ -16,14 +16,45 @@
 
 <div class="migration-tab" [formGroup]="form">
   <p class="migration-tab__description">
-    {{ 'caseManagement.migration.editor.' + (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') + '.description' | translate }}
+    {{
+      'caseManagement.migration.editor.' +
+        (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') +
+        '.description' | translate
+    }}
   </p>
 
   <div class="migration-tab__items" formArrayName="instructions">
     @for (instruction of instructionsArray.controls; track instruction) {
       <div class="migration-tab__card" [formGroupName]="$index">
         <div class="migration-tab__card-header">
-          <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
+          <!--
+            The whole header is the toggle, not just the chevron: a suggested plan authorises every
+            reachable building block, and hunting for a 16px target on each of them is the opposite of
+            what collapsing is for.
+          -->
+          <button
+            type="button"
+            class="migration-tab__card-toggle"
+            [attr.aria-expanded]="isExpanded(instruction)"
+            [title]="
+              (isExpanded(instruction) ? 'interface.collapse' : 'interface.expand') | translate
+            "
+            (click)="toggleExpanded(instruction)"
+          >
+            <svg
+              [cdsIcon]="isExpanded(instruction) ? 'chevron--up' : 'chevron--down'"
+              size="16"
+            ></svg>
+
+            <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
+
+            <span class="migration-tab__card-summary">
+              {{
+                summaryOf(instruction) ||
+                  ('caseManagement.migration.editor.card.unnamed' | translate)
+              }}
+            </span>
+          </button>
 
           <button
             cdsButton="danger--ghost"
@@ -36,69 +67,93 @@
           </button>
         </div>
 
-        <div class="migration-tab__grid">
-          <v-select
-            formControlName="buildingBlockKey"
-            [clearable]="false"
-            [items]="keyItems"
-            [required]="true"
-            [titleTranslationKey]="'caseManagement.migration.editor.buildingBlock.buildingBlockKey'"
-            [placeholder]="'caseManagement.migration.editor.buildingBlock.buildingBlockKeyPlaceholder' | translate"
-          ></v-select>
+        @if (isExpanded(instruction)) {
+          <div class="migration-tab__grid">
+            <v-select
+              formControlName="buildingBlockKey"
+              [clearable]="false"
+              [items]="keyItems"
+              [required]="true"
+              [titleTranslationKey]="
+                'caseManagement.migration.editor.buildingBlock.buildingBlockKey'
+              "
+              [placeholder]="
+                'caseManagement.migration.editor.buildingBlock.buildingBlockKeyPlaceholder'
+                  | translate
+              "
+            ></v-select>
 
-          <!-- Required in both modes: an entry acts on one version, whichever direction it runs in -->
-          <v-select
-            formControlName="buildingBlockVersionTag"
-            [clearable]="false"
-            [items]="versionItemsFor(instruction)"
-            [required]="true"
-            [titleTranslationKey]="'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTag'"
-            [placeholder]="'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTagPlaceholder' | translate"
-          ></v-select>
-        </div>
+            <!-- Required in both modes: an entry acts on one version, whichever direction it runs in -->
+            <v-select
+              formControlName="buildingBlockVersionTag"
+              [clearable]="false"
+              [items]="versionItemsFor(instruction)"
+              [required]="true"
+              [titleTranslationKey]="
+                'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTag'
+              "
+              [placeholder]="
+                'caseManagement.migration.editor.buildingBlock.buildingBlockVersionTagPlaceholder'
+                  | translate
+              "
+            ></v-select>
+          </div>
 
-        @if (isSuggesting(instruction)) {
-          <p class="migration-tab__hint">{{ 'interface.loading' | translate }}</p>
-        } @else {
-          <!-- Data migration (fills the new / drains the removed building block document) -->
-          <h5 class="migration-tab__subheading">
-            {{ 'caseManagement.migration.editor.tabs.dataMigration' | translate }}
-          </h5>
-          <p class="migration-tab__hint">
-            {{ 'caseManagement.migration.editor.' + (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') + '.dataMigrationHint' | translate }}
-          </p>
+          @if (isSuggesting(instruction)) {
+            <p class="migration-tab__hint">{{ 'interface.loading' | translate }}</p>
+          } @else {
+            <!-- Data migration (fills the new / drains the removed building block document) -->
+            <h5 class="migration-tab__subheading">
+              {{ 'caseManagement.migration.editor.tabs.dataMigration' | translate }}
+            </h5>
+            <p class="migration-tab__hint">
+              {{
+                'caseManagement.migration.editor.' +
+                  (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') +
+                  '.dataMigrationHint' | translate
+              }}
+            </p>
 
-          <valtimo-migration-data-migration-tab
-            [descriptionKey]="null"
-            [sourceContext]="sourceContextOf(instruction)"
-            [targetContext]="targetContextOf(instruction)"
-            [patches]="dataMigrationOf($index)"
-            (patchesChange)="onDataMigrationChange($index, $event)"
-          ></valtimo-migration-data-migration-tab>
+            <valtimo-migration-data-migration-tab
+              [descriptionKey]="null"
+              [sourceContext]="sourceContextOf(instruction)"
+              [targetContext]="targetContextOf(instruction)"
+              [patches]="dataMigrationOf($index)"
+              (patchesChange)="onDataMigrationChange($index, $event)"
+            ></valtimo-migration-data-migration-tab>
 
-          <!-- Process migration (hijacks / hands back the process) -->
-          <h5 class="migration-tab__subheading">
-            {{ 'caseManagement.migration.editor.tabs.processMigration' | translate }}
-          </h5>
-          <p class="migration-tab__hint">
-            {{ 'caseManagement.migration.editor.' + (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') + '.processMigrationHint' | translate }}
-          </p>
+            <!-- Process migration (hijacks / hands back the process) -->
+            <h5 class="migration-tab__subheading">
+              {{ 'caseManagement.migration.editor.tabs.processMigration' | translate }}
+            </h5>
+            <p class="migration-tab__hint">
+              {{
+                'caseManagement.migration.editor.' +
+                  (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') +
+                  '.processMigrationHint' | translate
+              }}
+            </p>
 
-          <valtimo-migration-process-migration-tab
-            [descriptionKey]="null"
-            [caseDefinitionKey]="caseDefinitionKey"
-            [caseDefinitionVersionTag]="caseDefinitionVersionTag"
-            [sourceContext]="sourceContextOf(instruction)"
-            [sourceProcessDefinitions]="sourceProcessDefinitionsOf(instruction)"
-            [targetProcessDefinitions]="targetProcessDefinitionsOf(instruction)"
-            [instructions]="processMigrationOf($index)"
-            (instructionsChange)="onProcessMigrationChange($index, $event)"
-          ></valtimo-migration-process-migration-tab>
+            <valtimo-migration-process-migration-tab
+              [descriptionKey]="null"
+              [caseDefinitionKey]="caseDefinitionKey"
+              [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+              [sourceContext]="sourceContextOf(instruction)"
+              [sourceProcessDefinitions]="sourceProcessDefinitionsOf(instruction)"
+              [targetProcessDefinitions]="targetProcessDefinitionsOf(instruction)"
+              [instructions]="processMigrationOf($index)"
+              (instructionsChange)="onProcessMigrationChange($index, $event)"
+            ></valtimo-migration-process-migration-tab>
+          }
         }
       </div>
     } @empty {
       <p class="migration-tab__empty">
-        {{ 'caseManagement.migration.editor.' + (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') + '.empty' | translate }}
+        {{
+          'caseManagement.migration.editor.' +
+            (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') +
+            '.empty' | translate
+        }}
       </p>
     }
   </div>
@@ -109,7 +164,11 @@
     [attr.data-test-id]="isAdd ? testIds.addBuildingBlockButton : testIds.removeBuildingBlockButton"
     (click)="addInstruction()"
   >
-    {{ 'caseManagement.migration.editor.' + (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') + '.addEntry' | translate }}
+    {{
+      'caseManagement.migration.editor.' +
+        (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') +
+        '.addEntry' | translate
+    }}
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
 </div>
