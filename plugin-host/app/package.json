@@ -14,16 +14,18 @@
     "test:int": "vitest run -c vitest.int.config.ts",
     "start": "node dist/index.js",
     "dev": "node scripts/dev.mjs",
+    "migrate": "node dist/migrate.js",
+    "migrate:create": "node-pg-migrate create --migrations-dir migrations --migration-file-language sql --migration-filename-format utc",
     "clean": "node -e \"const fs=require('fs');for(const d of ['dist','.tmp','plugins'])fs.rmSync(d,{recursive:true,force:true})\"",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d db",
     "db:logs": "docker compose logs -f db",
     "db:shell": "docker compose exec db psql -U pluginhost -d pluginhost",
-    "docker:build": "npm run build && docker compose build app",
+    "docker:build": "npm run build && docker compose build plugin-host",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f app"
+    "docker:logs": "docker compose logs -f plugin-host"
   },
   "dependencies": {
     "@extism/extism": "^2.0.0-rc13",
@@ -33,6 +35,7 @@
     "amqplib": "^0.10.9",
     "fastify": "^5.8.5",
     "fastify-raw-body": "^5.0.0",
+    "node-pg-migrate": "^9.0.0",
     "pg": "^8.21.0",
     "pino": "^9.6.0",
     "undici": "^7.28.0",

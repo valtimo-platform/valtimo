@@ -92,6 +92,17 @@ export const envSchema = z.object({
   DB_NAME: z.string().default("pluginhost"),
   DB_USER: z.string().default("pluginhost"),
   DB_PASSWORD: z.string().default("pluginhost"),
+  // Whether the app applies pending migrations during boot. Default true keeps `docker compose up`
+  // and `npm run dev` zero-step. Set false when migrations run as a pre-deploy job or init container
+  // (`node dist/migrate.js`), so a rolling deploy puts the schema ahead of every replica at a known
+  // moment rather than whichever pod wins the advisory lock.
+  //
+  // An explicit two-value enum rather than a looser truthy check: this flag decides whether the
+  // schema gets maintained, so a typo should fail the boot rather than silently pick a default.
+  DB_MIGRATE_ON_BOOT: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((v) => v === "true"),
 
   // Optional TLS termination. Set TLS_CERT_PATH and TLS_KEY_PATH (PEM files) together to make the
   // host serve HTTPS, so the GZAC→host configuration push — which carries the broker AMQP URL,
@@ -105,3 +116,19 @@ export const envSchema = z.object({
 });
 
 export type AppConfig = z.infer<typeof envSchema>;
+
+/**
+ * The subset of the environment the standalone migrate entry point needs. Narrower than envSchema on
+ * purpose: that schema requires ADMIN_TOKEN, and a migration job has no business being handed the
+ * HMAC admin secret. Picking keeps one definition of each variable's type and default.
+ */
+export const migrateEnvSchema = envSchema.pick({
+  DB_HOST: true,
+  DB_PORT: true,
+  DB_NAME: true,
+  DB_USER: true,
+  DB_PASSWORD: true,
+  LOG_LEVEL: true,
+});
+
+export type MigrateConfig = z.infer<typeof migrateEnvSchema>;
