@@ -20,6 +20,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processlink.event.ProcessLinksDeployedEvent
 import com.ritense.processlink.validation.ProcessDefinitionValidationError
 import com.ritense.processlink.validation.ProcessDefinitionValidationException
 import com.ritense.processlink.validation.ProcessDefinitionValidator
@@ -31,6 +32,7 @@ import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.ParseException
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
@@ -44,6 +46,7 @@ class ProcessDeploymentService(
     private val processLinkService: ProcessLinkService,
     private val processDefinitionValidator: ProcessDefinitionValidator,
     private val repositoryService: RepositoryService,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     fun findExistingProcessDefinitionForCaseDefinition(
         caseDefinitionId: CaseDefinitionId,
@@ -146,6 +149,7 @@ class ProcessDeploymentService(
                         processLinkService.deleteProcessLinksForProcessDefinition(previouslyDeployProcess.id)
                         createProcessLinks(processLinks = processLinks, blueprintId = blueprintId)
                         updateSuspensionState(previouslyDeployProcess.id, validationResult.isExecutable)
+                        publishProcessLinksDeployed(previouslyDeployProcess.id, blueprintId)
                     }
                     return null
                 }
@@ -190,8 +194,18 @@ class ProcessDeploymentService(
             }
         }
         createProcessLinks(processLinks, deployedProcessDefinitionId, blueprintId)
+        publishProcessLinksDeployed(deployedProcessDefinitionId, blueprintId)
 
         return ProcessDefinitionId(deployedProcessDefinitionId)
+    }
+
+    /**
+     * Signals that the process links of this process definition are now exactly the ones that were submitted.
+     * Needed on top of the per-process-link events, because a deployment that leaves the process definition
+     * without any process links writes no process link at all and would otherwise be silent.
+     */
+    private fun publishProcessLinksDeployed(processDefinitionId: String, blueprintId: BlueprintId?) {
+        applicationEventPublisher.publishEvent(ProcessLinksDeployedEvent(processDefinitionId, blueprintId))
     }
 
     private fun createProcessLinks(

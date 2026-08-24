@@ -252,13 +252,15 @@ class ProcessLinkAutoConfiguration {
         processLinkService: ProcessLinkService,
         processDefinitionValidator: ProcessDefinitionValidator,
         repositoryService: RepositoryService,
+        applicationEventPublisher: ApplicationEventPublisher,
     ): ProcessDeploymentService {
         return ProcessDeploymentService(
             operatonProcessService,
             processDefinitionCaseDefinitionService,
             processLinkService,
             processDefinitionValidator,
-            repositoryService
+            repositoryService,
+            applicationEventPublisher
         )
     }
 }

@@ -23,3 +23,4 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Dashboard | Donut charts with many categories display the circle correctly |
 | Notificaties API | Subscription registration no longer causes a restart loop on startup |
 | Case export | Forms shown in a widget are included in the case export |
+| Case definitions | Configuration warnings disappear when the offending process links or process are removed |
