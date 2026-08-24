@@ -855,6 +855,7 @@
           "description": "Migreer lopende procesinstanties naar de procesdefinities van deze zaakversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit.",
           "empty": "Nog geen procesmigraties geconfigureerd.",
           "addInstruction": "Procesmigratie toevoegen",
+          "unmappedBlocksSave": "Geef {{processes}} een doelproces, of verwijder de instructie, voordat je opslaat.",
           "sourceProcess": "Bronproces",
           "targetProcess": "Doelproces",
           "selectProcess": "Kies een proces",

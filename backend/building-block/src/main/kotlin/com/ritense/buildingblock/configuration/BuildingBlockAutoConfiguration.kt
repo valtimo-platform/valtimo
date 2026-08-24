@@ -53,6 +53,7 @@ import com.ritense.buildingblock.service.migration.BuildingBlockOwnershipResolve
 import com.ritense.buildingblock.service.migration.BuildingBlockVersionAlignmentExecutor
 import com.ritense.buildingblock.service.migration.LinkedBuildingBlockVersionResolver
 import com.ritense.buildingblock.service.migration.BuildingBlockProcessDefinitionBlueprintResolver
+import com.ritense.buildingblock.service.migration.BuildingBlockProcessOwnership
 import com.ritense.buildingblock.service.migration.BuildingBlockProcessMigrationComponentExecutor
 import com.ritense.buildingblock.service.migration.BuildingBlockProcessVersionChecker
 import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentDeployer
@@ -1253,6 +1254,16 @@ class BuildingBlockAutoConfiguration {
         objectMapper,
         linkedBuildingBlockVersionResolver,
         dataMigrationComponentSuggester,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessOwnership::class)
+    fun buildingBlockProcessOwnership(
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        buildingBlockProcessDefinitionBlueprintResolver: BuildingBlockProcessDefinitionBlueprintResolver,
+    ) = BuildingBlockProcessOwnership(
+        linkedBuildingBlockVersionResolver,
+        buildingBlockProcessDefinitionBlueprintResolver,
     )
 
     @Bean

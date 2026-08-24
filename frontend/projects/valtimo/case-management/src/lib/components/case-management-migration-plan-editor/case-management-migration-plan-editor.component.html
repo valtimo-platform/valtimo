@@ -109,6 +109,19 @@
 <ng-container renderInPageHeader>
   <ng-template>
     <div *ngIf="{compactMode: compactMode$ | async} as obs" class="migration-plan-editor__actions">
+      <!--
+        A disabled Save with no reason is the worst of both worlds, and this is the one reason an author
+        cannot see from here: the blank target sits on another tab.
+      -->
+      @if ($unmappedProcesses().length) {
+        <span class="migration-plan-editor__blocked">
+          {{
+            'caseManagement.migration.editor.processMigration.unmappedBlocksSave'
+              | translate: {processes: $unmappedProcesses().join(', ')}
+          }}
+        </span>
+      }
+
       <button
         cdsButton="ghost"
         [size]="obs.compactMode ? 'sm' : 'md'"

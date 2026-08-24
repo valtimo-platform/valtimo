@@ -139,9 +139,22 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
       this.$valid() &&
       !this.$saving() &&
       !!this.asText(plan.key) &&
-      !!this.asText(plan.source?.versionTag)
+      !!this.asText(plan.source?.versionTag) &&
+      !this.$unmappedProcesses().length
     );
   });
+  /**
+   * The `processMigration` sources whose target is still blank. The suggestion deliberately leaves one
+   * blank for a process it cannot account for — visible work rather than a silent omission — and the
+   * backend refuses to store it, so Save waits until the author has either named a target or removed
+   * the row. Listed rather than counted, because "which ones" is what turns a disabled button into
+   * something the author can act on.
+   */
+  public readonly $unmappedProcesses = computed(() =>
+    (this.$plan().processMigration ?? [])
+      .filter(instruction => !this.asText(instruction?.targetProcessDefinitionKey))
+      .map(instruction => this.asText(instruction?.sourceProcessDefinitionKey) ?? '?')
+  );
 
   private _params!: CaseManagementParams;
   private _migrationKey: string | null = null;

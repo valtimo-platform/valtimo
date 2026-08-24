@@ -79,6 +79,44 @@ class ProcessMigrationComponentValidatorTest {
     }
 
     @Test
+    fun `should refuse an instruction that names no target, rather than answering 500`() {
+        // `targetProcessDefinitionKey` is not nullable, so deserializing this threw out of the
+        // validator and the save answered an internal server error for what is an ordinary mistake.
+        val nullTarget = objectMapper.readTree(
+            """[{"sourceProcessDefinitionKey": "verhuizing-process", "targetProcessDefinitionKey": null}]"""
+        )
+
+        assertThat(validator.validate(source, target, nullTarget))
+            .singleElement().asString()
+            .contains("the instruction for 'verhuizing-process' names no 'targetProcessDefinitionKey'")
+            .contains("remove the instruction to leave instances of 'verhuizing-process' where they are")
+            .contains("Available: 'verhuizing-process'")
+    }
+
+    @Test
+    fun `should refuse an instruction whose target field is absent entirely`() {
+        val absentTarget = objectMapper.readTree("""[{"sourceProcessDefinitionKey": "verhuizing-process"}]""")
+
+        assertThat(validator.validate(source, target, absentTarget))
+            .singleElement().asString()
+            .contains("names no 'targetProcessDefinitionKey'")
+    }
+
+    @Test
+    fun `should report every instruction that names no target, not only the first`() {
+        val twoNulls = objectMapper.readTree(
+            """
+            [
+                {"sourceProcessDefinitionKey": "a", "targetProcessDefinitionKey": null},
+                {"sourceProcessDefinitionKey": "b"}
+            ]
+            """.trimIndent()
+        )
+
+        assertThat(validator.validate(source, target, twoNulls)).hasSize(2)
+    }
+
+    @Test
     fun `should stay silent when the blueprint type has no resolver`() {
         val validatorWithoutResolvers = ProcessMigrationComponentValidator(
             emptyList(), activityValidator, objectMapper

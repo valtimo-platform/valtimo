@@ -132,7 +132,12 @@ interface ProcessVariablePatch {
 /** A single instruction of the `processMigration` block, translated 1:1 into an Operaton MigrationPlan. */
 interface ProcessMigrationInstruction {
   sourceProcessDefinitionKey: string;
-  targetProcessDefinitionKey: string;
+  /**
+   * Null only while authoring. The suggester leaves it blank for a source process it cannot account
+   * for, so the row shows up as work; the backend refuses to store one, and Save stays disabled until
+   * the author names a target or deletes the row.
+   */
+  targetProcessDefinitionKey: string | null;
   /** Source activity id -> target activity id. */
   mapActivities: {[sourceActivityId: string]: string};
   /** GZAC-layer value-resolver patches applied to the migrated process instance. */

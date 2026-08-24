@@ -79,6 +79,7 @@ import com.ritense.processdocument.web.TaskListResource
 import com.ritense.search.repository.SearchFieldV2Repository
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintProcessOwnership
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
@@ -469,10 +470,14 @@ class ProcessDocumentsAutoConfiguration {
     fun processMigrationComponentSuggester(
         processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
         processActivityMapper: ProcessActivityMapper,
+        // Contributed by `building-block` when that module is on the classpath; absent otherwise, which
+        // simply means nothing can have been relocated into a block.
+        blueprintProcessOwnerships: List<BlueprintProcessOwnership>,
     ): ProcessMigrationComponentSuggester {
         return ProcessMigrationComponentSuggester(
             processDefinitionBlueprintResolvers,
             processActivityMapper,
+            blueprintProcessOwnerships,
         )
     }
 

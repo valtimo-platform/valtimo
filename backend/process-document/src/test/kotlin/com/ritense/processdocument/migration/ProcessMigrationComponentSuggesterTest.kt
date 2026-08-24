@@ -16,7 +16,10 @@
 
 package com.ritense.processdocument.migration
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintProcessOwnership
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
@@ -37,6 +40,8 @@ class ProcessMigrationComponentSuggesterTest {
     private val target = CaseDefinitionId("aanvraag-algemene-bijstand-dcm", "1.0.0")
 
     private val deployedProcesses = mutableMapOf<BlueprintId, Map<String, String>>()
+    private val reachable = mutableMapOf<BlueprintId, Set<String>>()
+    private val objectMapper = ObjectMapper()
 
     @BeforeEach
     fun setUp() {
@@ -46,12 +51,13 @@ class ProcessMigrationComponentSuggesterTest {
         whenever(processActivityMapper.processDefinitionName(any())).thenReturn(null)
         whenever(processActivityMapper.suggestActivityMapping(any(), any())).thenReturn(emptyMap())
         suggester = ProcessMigrationComponentSuggester(
-            listOf(object : ProcessDefinitionBlueprintResolver {
-                override fun supports(blueprintType: BlueprintType) = true
-                override fun resolveProcessDefinitions(blueprintId: BlueprintId) =
-                    deployedProcesses[blueprintId].orEmpty()
-            }),
+            resolvers(),
             processActivityMapper,
+            listOf(object : BlueprintProcessOwnership {
+                override fun supports(blueprintType: BlueprintType) = true
+                override fun processesOfReachableBlueprints(blueprintId: BlueprintId) =
+                    reachable[blueprintId].orEmpty()
+            }),
         )
     }
 
@@ -70,20 +76,20 @@ class ProcessMigrationComponentSuggesterTest {
     }
 
     @Test
-    fun `should map a renamed process onto its rename`() {
+    fun `should not guess at a rename within one blueprint, however close the names are`() {
+        // The cost of this rule, stated as a test rather than left to be discovered: a process genuinely
+        // renamed between two versions is no longer paired, even at 98% similarity. It is the same
+        // evidence a wrong pairing offers, and only the author knows which of the two it is. The log
+        // line names this candidate and its score, so adding the instruction by hand is one line.
         processes(source, "generic-update-zaakstatus-en-interne-status-plugin-v2")
         processes(target, "generic-update-zaakstatus-en-interne-status-plugin-v3")
 
-        assertThat(suggest()).containsExactly(
-            instruction(
-                "generic-update-zaakstatus-en-interne-status-plugin-v2",
-                "generic-update-zaakstatus-en-interne-status-plugin-v3",
-            )
-        )
+        assertThat(suggestedPairs())
+            .containsExactly("generic-update-zaakstatus-en-interne-status-plugin-v2" to null)
     }
 
     @Test
-    fun `should suggest nothing for a source process the next version of the same blueprint does not have`() {
+    fun `should surface the three live mispairings as blank targets instead of pairing them`() {
         // The three pairings a live run produced and an author would have accepted, each of which
         // would migrate a whole running process onto an unrelated one. Measured similarity 39-50%.
         processes(
@@ -94,16 +100,109 @@ class ProcessMigrationComponentSuggesterTest {
         )
         processes(target, "ab-verversen-brongegevens", "ab-start-intrekken-aanvraag", "ab-taak-opnieuw-starten")
 
-        assertThat(suggest()).isNull()
+        // Surfaced with no target rather than paired: nothing here accounts for them, and an author who
+        // sees three blank rows is being told the truth about what the plan does not know.
+        assertThat(suggestedPairs()).containsExactly(
+            "generic-informeren-betrokkenen" to null,
+            "generic-update-zaakstatus-en-interne-status-plugin-v2" to null,
+            "uitvoeren-business-services" to null,
+        )
     }
 
     @Test
-    fun `should keep the processes that do have a counterpart and drop only the one that does not`() {
-        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
-        processes(target, "ab-afhandelen-aanvraag-dcm", "ab-verversen-brongegevens")
+    fun `should say nothing about a process a building block the target declares now owns`() {
+        // The relocated case: 87 of the 89 on `aanvraag-ioaw-uitkering-dcm`. The plan adopts it with an
+        // addBuildingBlock entry, so a processMigration row for it would be work that fights that entry.
+        reachableFromTarget("bs-opbouwen-uitgebreide-motivering")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "bs-opbouwen-uitgebreide-motivering")
+        processes(target, "ab-afhandelen-aanvraag-dcm")
 
         assertThat(suggest())
             .containsExactly(instruction("ab-afhandelen-aanvraag-dcm", "ab-afhandelen-aanvraag-dcm"))
+    }
+
+    @Test
+    fun `should suggest a process nobody accounts for with no target, so the author has to decide`() {
+        // The other 2. Nothing owns it, so instances running it would be left behind in silence.
+        processes(source, "ab-afhandelen-aanvraag-dcm", "bs-overwegen-uitzetten-informatieverzoek-v2")
+        processes(target, "ab-afhandelen-aanvraag-dcm")
+
+        assertThat(suggestedJson()).isEqualTo(
+            """
+            [
+              {"sourceProcessDefinitionKey":"ab-afhandelen-aanvraag-dcm","targetProcessDefinitionKey":"ab-afhandelen-aanvraag-dcm","mapActivities":{},"setProcessVariables":[],"skipCustomListeners":false,"skipIoMappings":false},
+              {"sourceProcessDefinitionKey":"bs-overwegen-uitzetten-informatieverzoek-v2","targetProcessDefinitionKey":null,"mapActivities":{}}
+            ]
+            """.compactJson()
+        )
+    }
+
+    @Test
+    fun `should treat everything as unaccounted for when nothing answers for building blocks`() {
+        // No BlueprintProcessOwnership bean — a deployment with no building blocks. Relocation cannot
+        // have happened, so every unmatched source is a genuine hole.
+        suggester = ProcessMigrationComponentSuggester(resolvers(), processActivityMapper)
+        processes(source, "bs-opbouwen-uitgebreide-motivering")
+        processes(target, "ab-afhandelen-aanvraag-dcm")
+
+        assertThat(suggestedJson()).contains("\"targetProcessDefinitionKey\":null")
+    }
+
+    @Test
+    fun `should not pair a process that moved into a building block with the case process that starts it`() {
+        // `aanvraag-ioaw-uitkering-dcm`, measured: the source version links 102 processes and the target
+        // 13, because the upgrade moved the rest into building blocks. These eight pairings are what a
+        // similarity threshold produced — they score 0.70 to 0.80, the band the previous calibration
+        // read as "renamed" — and two of them failed 14 of 20 cases with Operaton ENGINE-23004. None of
+        // the eight sources is a key the target owns, and all eight belong to blocks the target declares,
+        // so all eight are accounted for by adoption and none of them is paired or surfaced.
+        reachableFromTarget(
+            "bs-opbouwen-uitgebreide-motivering",
+            "bs-verwerken-buiten-behandeling-stelling",
+            "bsb-behandeling-aanvraag-opnieuw-starten",
+            "bsb-opbouwen-uitgebreide-motivering",
+            "bsb-verwerken-buiten-behandeling-stelling",
+            "generic-annuleren-informatieverzoek",
+            "generic-vastleggen-reactie-informatieverzoek",
+            "generic-verlengen-deadline-informatieverzoek",
+        )
+        processes(
+            source,
+            "bs-opbouwen-uitgebreide-motivering",
+            "bs-verwerken-buiten-behandeling-stelling",
+            "bsb-behandeling-aanvraag-opnieuw-starten",
+            "bsb-opbouwen-uitgebreide-motivering",
+            "bsb-verwerken-buiten-behandeling-stelling",
+            "generic-annuleren-informatieverzoek",
+            "generic-vastleggen-reactie-informatieverzoek",
+            "generic-verlengen-deadline-informatieverzoek",
+            // The one source that IS a case process, so the one instruction that should survive.
+            "ioaw-afhandelen-aanvraag-dcm",
+        )
+        processes(
+            target,
+            "ioaw-afhandelen-aanvraag-dcm",
+            "ioaw-start-uitgebreide-motivering",
+            "ioaw-start-buiten-behandeling-stellen",
+            "ioaw-start-behandeling-gehele-aanvraag-opnieuw",
+            "ioaw-start-annuleren-informatieverzoek-dcm",
+            "ioaw-start-reactie-informatieverzoek-dcm",
+            "ioaw-start-verlengen-deadline-informatieverzoek-dcm",
+        )
+
+        assertThat(suggest())
+            .containsExactly(instruction("ioaw-afhandelen-aanvraag-dcm", "ioaw-afhandelen-aanvraag-dcm"))
+    }
+
+    @Test
+    fun `should pair the process that has a counterpart and leave the other one's target blank`() {
+        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(target, "ab-afhandelen-aanvraag-dcm", "ab-verversen-brongegevens")
+
+        assertThat(suggestedPairs()).containsExactly(
+            "ab-afhandelen-aanvraag-dcm" to "ab-afhandelen-aanvraag-dcm",
+            "uitvoeren-business-services" to null,
+        )
     }
 
     @Test
@@ -163,6 +262,31 @@ class ProcessMigrationComponentSuggesterTest {
         targetProcessDefinitionKey = targetKey,
         mapActivities = emptyMap(),
     )
+
+    private fun resolvers() = listOf(object : ProcessDefinitionBlueprintResolver {
+        override fun supports(blueprintType: BlueprintType) = true
+        override fun resolveProcessDefinitions(blueprintId: BlueprintId) =
+            deployedProcesses[blueprintId].orEmpty()
+    })
+
+    /** Processes the target reaches through the building blocks it declares. */
+    private fun reachableFromTarget(vararg keys: String) {
+        reachable[target] = keys.toSet()
+    }
+
+    /** (source, target) of every suggested row, target null where the suggester left it blank. */
+    private fun suggestedPairs(): List<Pair<String, String?>> =
+        objectMapper.valueToTree<JsonNode>(suggester.suggest(source, target)).map { node ->
+            node.get("sourceProcessDefinitionKey").asText() to
+                node.get("targetProcessDefinitionKey")?.takeIf { it.isTextual }?.asText()
+        }
+
+    /** The suggestion as the editor receives it — the shape is the point, a null target included. */
+    private fun suggestedJson(): String =
+        objectMapper.writeValueAsString(objectMapper.valueToTree<JsonNode>(suggester.suggest(source, target)))
+
+    private fun String.compactJson(): String =
+        objectMapper.writeValueAsString(objectMapper.readTree(this))
 
     private fun processes(blueprintId: BlueprintId, vararg keys: String) {
         deployedProcesses[blueprintId] = keys.associateWith { "$it:1:${keys.indexOf(it)}" }

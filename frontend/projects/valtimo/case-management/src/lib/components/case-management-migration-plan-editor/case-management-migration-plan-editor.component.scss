@@ -25,6 +25,15 @@
     justify-self: flex-end;
     gap: 16px;
   }
+
+  // Sits beside a disabled Save, so it has to read as an explanation rather than as an error.
+  &__blocked {
+    max-width: 40rem;
+    overflow: hidden;
+    color: var(--cds-text-secondary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 // Contained tabs render their content panel on the grey layer by default, which clashes with the

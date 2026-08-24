@@ -848,6 +848,7 @@
           "description": "Migrate running process instances onto the process definitions of this case version. For each instruction pick the source process — the definition the running instances currently use, from the version being migrated away from — and the target process — the definition in this version they move onto — then map each source activity onto a target activity.",
           "empty": "No process migrations configured yet.",
           "addInstruction": "Add process migration",
+          "unmappedBlocksSave": "Give a target process to {{processes}}, or remove the instruction, before saving.",
           "sourceProcess": "Source process",
           "targetProcess": "Target process",
           "selectProcess": "Select a process",

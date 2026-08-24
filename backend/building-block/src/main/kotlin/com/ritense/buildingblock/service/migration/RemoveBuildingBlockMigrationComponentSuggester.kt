@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.service.migration
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.domain.CaseDefinitionBuildingBlockLink
 import com.ritense.buildingblock.domain.migration.RemoveBuildingBlockInstruction
@@ -128,7 +129,17 @@ class RemoveBuildingBlockMigrationComponentSuggester(
         else objectMapper.convertValue(suggestion, object : TypeReference<List<DataMigrationPatch>>() {})
             .filter { it.source != null }
 
-    private fun toProcessInstructions(suggestion: Any?): List<ProcessMigrationInstruction> =
-        if (suggestion == null) emptyList()
-        else objectMapper.convertValue(suggestion, object : TypeReference<List<ProcessMigrationInstruction>>() {})
+    /**
+     * Entries with no target are dropped before conversion. The process suggester leaves a target blank
+     * when it cannot work one out, and [ProcessMigrationInstruction] has no room for that — but a block
+     * and its owner are two *different* blueprints, and across blueprints the suggester always names its
+     * nearest match, so this is a guard against a shape that does not arise here rather than a case that
+     * does. It matters because the alternative is a deserialization failure inside a suggestion.
+     */
+    private fun toProcessInstructions(suggestion: Any?): List<ProcessMigrationInstruction> {
+        if (suggestion == null) return emptyList()
+        val node = objectMapper.valueToTree<JsonNode>(suggestion)
+        val named = node.filter { it.hasNonNull("targetProcessDefinitionKey") }
+        return named.map { objectMapper.convertValue(it, ProcessMigrationInstruction::class.java) }
+    }
 }
