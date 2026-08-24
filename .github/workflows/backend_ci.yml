@@ -11,6 +11,14 @@ on:
       - .github/workflows/backend_*.yml
       - backend/**
 
+# Superseded PR runs are cancelled: a new push to the same PR makes the previous
+# run's full test matrix pointless, and leaving it running starves the queue.
+# Pushes group by SHA instead of PR number, so next-minor runs neither cancel nor
+# queue behind each other -- they publish snapshots and tag test-env images.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   actions: write
   contents: read

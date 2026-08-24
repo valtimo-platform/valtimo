@@ -37,9 +37,10 @@ fun IntermediateSubmissionDomain.toResponse(): IntermediateSubmission {
     return IntermediateSubmission(
         submission = this.content,
         taskInstanceId = this.taskInstanceId,
-        createdBy = this.createdBy.let { runWithoutAuthorization { userManagementService.findByUsername(it).fullName } },
+        // Fall back to the username when the user no longer exists in the identity provider.
+        createdBy = this.createdBy.let { runWithoutAuthorization { userManagementService.findByUsername(it)?.fullName ?: it } },
         createdOn = this.createdOn,
-        editedBy = this.editedBy?.let { runWithoutAuthorization { userManagementService.findByUsername(it).fullName } },
+        editedBy = this.editedBy?.let { runWithoutAuthorization { userManagementService.findByUsername(it)?.fullName ?: it } },
         editedOn = this.editedOn
     )
 }

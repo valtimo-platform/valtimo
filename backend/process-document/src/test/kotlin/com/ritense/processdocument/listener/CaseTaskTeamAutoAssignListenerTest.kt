@@ -27,6 +27,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.event.OperatonTaskEvent
 import com.ritense.valtimo.operaton.domain.OperatonTask
@@ -215,6 +216,17 @@ class CaseTaskTeamAutoAssignListenerTest {
     }
 
     @Test
+    fun `should not assign team when the case document cannot be resolved`() {
+        whenever(processDocumentService.getCaseDocument(any(), any()))
+            .thenThrow(CaseDocumentResolutionException("No building block instance found for document id $documentId"))
+
+        val delegateTask = mockDelegateTask(candidateGroupIds = listOf("INTAKE_TEAM"))
+        listener.assignTeamFromCandidateGroup(OperatonTaskEvent(delegateTask, "create"))
+
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any())
+    }
+
+    @Test
     fun `should not assign team when assignedTeamKey is null and no candidate resolves to a team`() {
         whenever(caseDefinitionService.getCaseDefinition(any())).thenReturn(caseDefinitionWithSettings())
         whenever(caseDocument.assignedTeamKey()).thenReturn(null)
@@ -368,6 +380,34 @@ class CaseTaskTeamAutoAssignListenerTest {
         listenerWithoutTeams.removeTeamFromTasksForDocument(event)
 
         verify(operatonTaskService, never()).findTasks(any())
+    }
+
+    @Test
+    fun `should not update tasks when the case document cannot be resolved`() {
+        whenever(caseDocumentResolver.resolveCaseDocumentId(any()))
+            .thenThrow(CaseDocumentResolutionException("No building block instance found for document id $documentId"))
+
+        val event = DocumentAssigneeChangedEvent(
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, null, "Intake Team"
+        )
+        listener.updateTeamOnTasksForDocument(event)
+
+        verify(operatonTaskService, never()).findTasks(any())
+        verify(operatonTaskService, never()).assignTeamToTask(any(), any())
+    }
+
+    @Test
+    fun `should not remove team from tasks when the case document cannot be resolved`() {
+        whenever(caseDocumentResolver.resolveCaseDocumentId(any()))
+            .thenThrow(CaseDocumentResolutionException("No building block instance found for document id $documentId"))
+
+        val event = DocumentUnassignedEvent(
+            UUID.randomUUID(), "test", LocalDateTime.now(), "admin", documentId, null, "team-key"
+        )
+        listener.removeTeamFromTasksForDocument(event)
+
+        verify(operatonTaskService, never()).findTasks(any())
+        verify(operatonTaskService, never()).unassignTeamFromTask(any())
     }
 
     @Test

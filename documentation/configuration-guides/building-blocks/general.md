@@ -1,0 +1,74 @@
+# General
+
+The General tab contains core configuration for a building block: metadata (name, key, description), plugin dependencies, and artwork. This tab is always the first one displayed when opening a building block.
+
+---
+
+## Configuring general information
+
+{% stepper %}
+{% step %}
+Navigate to **Admin** in the sidebar
+{% endstep %}
+{% step %}
+Click **Building blocks**
+{% endstep %}
+{% step %}
+Select a building block from the list
+{% endstep %}
+{% step %}
+The **General** tab is selected by default
+{% endstep %}
+{% endstepper %}
+
+<figure><img src="../../assets/configuration-guides/building-blocks/general/01-general-tab-editable.png" alt="General tab in editable state"><figcaption></figcaption></figure>
+
+---
+
+### General information
+
+The metadata section contains the building block's identity fields.
+
+| Property | Description |
+|----------|-------------|
+| Name | Display name shown in the UI (required) |
+| Key | Unique identifier for the building block (read-only after creation) |
+| Description | Optional text explaining the building block's purpose |
+
+Click **Save** after making changes to the name or description.
+
+---
+
+### Plugins used
+
+This read-only section displays which plugins the building block depends on. Plugin dependencies are determined by the processes and configurations within the building block.
+
+For more information about plugins, see [Plugins](../plugins/).
+
+---
+
+### Artwork
+
+Upload a PNG image to visually represent the building block.
+
+| Requirement | Value |
+|-------------|-------|
+| Format | PNG only |
+| Maximum size | 10 MB |
+| Recommendation | Use a transparent background |
+
+To upload artwork:
+
+{% stepper %}
+{% step %}
+Click **Choose file**
+{% endstep %}
+{% step %}
+Select a PNG image
+{% endstep %}
+{% step %}
+Click **Upload**
+{% endstep %}
+{% endstepper %}
+
+If artwork is already uploaded, it will be displayed as a preview. Use the **Delete** button to remove existing artwork.

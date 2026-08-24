@@ -76,7 +76,8 @@ class CorrelationServiceImplTest {
             documentService,
             operatonRepositoryService,
             repositoryService,
-            associationService
+            associationService,
+            mock()
         )
 
         builder = mock()

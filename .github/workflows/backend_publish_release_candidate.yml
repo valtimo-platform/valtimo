@@ -28,6 +28,11 @@ jobs:
       PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      # Required: backend/gradle/publishing-module.gradle only applies the 'signing'
+      # plugin when both of these are set. Without them nothing produces .asc files
+      # and Sonatype rejects every component with "Missing signature for file".
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
       JRELEASER_MAVENCENTRAL_sonatype_STAGE: UPLOAD
 
     steps:
@@ -77,13 +82,14 @@ jobs:
             fi
           fi
 
-      # Sonatype sunset guard: stop dual-publishing to Sonatype from 10 Aug 2026.
-      # After the cutoff only the S3 publish runs. Adjust CUTOFF to move the boundary.
+      # Sonatype sunset guard: stop dual-publishing to Sonatype a day before the
+      # 1 Oct 2026 limit (30 Sep 2026) to be safe. After the cutoff only the S3
+      # publish runs. Adjust CUTOFF to move the boundary.
       - name: Determine whether Sonatype publishing is still open
         id: sonatype_window
         run: |
           set -euo pipefail
-          CUTOFF="2026-08-10"
+          CUTOFF="2026-09-30"
           TODAY="$(date -u +%F)"
           if [[ "$TODAY" < "$CUTOFF" ]]; then
             echo "open=true" >> "$GITHUB_OUTPUT"
@@ -114,7 +120,7 @@ jobs:
           name: build-reports
           path: backend/build/reports
 
-  # Second leg of the dual publish: push the same RC artifacts to the OVHcloud S3 bucket
+  # Second leg of the dual publish: push the same RC artifacts to the AWS S3 bucket
   # (RCs share the valtimo-releases bucket with releases).
   publish_s3:
     name: Publish to S3
