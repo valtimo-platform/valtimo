@@ -32,13 +32,13 @@ import org.springframework.context.annotation.Bean
 class ProcessBeanAutoConfiguration {
 
     @Bean
-    @ProcessBean
+    @ProcessBean(description = "Manages job timers and due dates")
     @ConditionalOnMissingBean(JobService::class)
     fun jobService(managementService: ManagementService): JobService =
         JobServiceImpl(managementService)
 
     @Bean
-    @ProcessBean
+    @ProcessBean(description = "Updates active timers for cases")
     @ConditionalOnMissingBean(TimerService::class)
     fun timerService(managementService: ManagementService, runtimeService: RuntimeService): TimerService =
         TimerServiceImpl(managementService, runtimeService)

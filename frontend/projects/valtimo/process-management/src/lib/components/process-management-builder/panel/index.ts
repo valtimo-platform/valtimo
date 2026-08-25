@@ -15,3 +15,4 @@
  */
 
 export * from './valtimo-properties-provider';
+export * from './expression-autocomplete';
