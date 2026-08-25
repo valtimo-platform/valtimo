@@ -51,8 +51,10 @@ export function createConditionGroup(
     operator: new FormControl<ConditionGroupOperator>(operator, {nonNullable: true}),
     rows: new FormControl<MultiInputValues>(rows, {nonNullable: true}),
     // The multi input drops incomplete rows from its value, so a group that is still being filled
-    // in can only be recognised through the event the multi input emits for it.
-    rowsComplete: new FormControl<boolean>(true, {
+    // in can only be recognised through the event the multi input emits for it. Until that event
+    // arrives - and for a group that is never rendered - the rows themselves decide, so that a
+    // group created with an empty row does not report itself as complete in the meantime.
+    rowsComplete: new FormControl<boolean>(rows.every(isRowComplete), {
       nonNullable: true,
       validators: [Validators.requiredTrue],
     }),
@@ -153,6 +155,9 @@ function applyWireChildren(group: ConditionGroupForm, nodes: WireConditionNode[]
   });
 
   group.controls.rows.setValue(rows);
+  // The rows that were reported as incomplete are gone, and a group whose rows are all removed no
+  // longer renders a multi input to report on them, so the flag is reset here rather than waited on.
+  group.controls.rowsComplete.setValue(rows.every(isRowComplete));
   group.controls.unsupportedNodes.setValue(unsupportedNodes);
 }
 

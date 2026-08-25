@@ -79,6 +79,16 @@ describe('TaskCountConditionGroupComponent', () => {
     expect(state.changes).toBe(1);
   });
 
+  it('marks the group invalid the moment a section with an empty row is added', () => {
+    const state = createComponent('and');
+
+    state.component.addGroup();
+
+    // The multi input of the new section has not reported on its row yet, so the row itself has to
+    // keep the configuration from being saved as one without the section.
+    expect(state.component.group.valid).toBe(false);
+  });
+
   it('never changes the operator of the group when a section is added', () => {
     const state = createComponent('or');
 

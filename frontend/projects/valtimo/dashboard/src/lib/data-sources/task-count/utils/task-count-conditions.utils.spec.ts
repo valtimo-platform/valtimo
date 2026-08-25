@@ -208,5 +208,31 @@ describe('task count condition utils', () => {
 
       expect(group.valid).toBe(false);
     });
+
+    it('is invalid from the moment a group is created with an empty row', () => {
+      const group = createConditionGroup('and', [{key: '', dropdown: '', value: ''}]);
+
+      expect(group.valid).toBe(false);
+    });
+
+    it('is valid again once a prefill has replaced the rows reported as incomplete', () => {
+      const rootGroup = createConditionGroup('and');
+      rootGroup.controls.rowsComplete.setValue(false);
+
+      resetRootGroup(rootGroup, [{or: [{path: 'task:name', operator: '==', value: 'A'}]}]);
+
+      expect(rootGroup.valid).toBe(true);
+    });
+
+    it('stays invalid when a prefill leaves an incomplete row in place', () => {
+      const rootGroup = createConditionGroup('and');
+
+      resetRootGroup(rootGroup, [
+        {path: 'task:name', operator: '==', value: 'A'},
+        {path: 'task:name', operator: '==', value: ''},
+      ]);
+
+      expect(rootGroup.valid).toBe(false);
+    });
   });
 });

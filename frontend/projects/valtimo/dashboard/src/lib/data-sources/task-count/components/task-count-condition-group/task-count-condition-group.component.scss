@@ -64,6 +64,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+
   // The section is set apart from the form around it by a grey background rather than by a border.
   // Only the background of the section itself is overridden: everything inside it stays on the
   // first layer ([cdsLayer]="0"), which is what keeps the fields - and their hover state - white.

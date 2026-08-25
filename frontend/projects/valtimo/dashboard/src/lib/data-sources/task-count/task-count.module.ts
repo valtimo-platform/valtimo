@@ -34,7 +34,7 @@ import {
 import {CarbonMultiInputModule} from '@valtimo/components';
 
 @NgModule({
-  declarations: [TaskCountConditionGroupComponent, TaskCountConfigurationComponent],
+  declarations: [TaskCountConfigurationComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -48,6 +48,7 @@ import {CarbonMultiInputModule} from '@valtimo/components';
     LayerModule,
     NotificationModule,
     TilesModule,
+    TaskCountConditionGroupComponent,
   ],
   exports: [TaskCountConditionGroupComponent, TaskCountConfigurationComponent],
   providers: [{provide: DATA_SOURCE_TOKEN, useValue: taskCountSpecification, multi: true}],

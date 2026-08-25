@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
+import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {FormArray, FormControl} from '@angular/forms';
-import {ListItemWithId, MultiInputValues} from '@valtimo/components';
+import {FormArray, FormControl, ReactiveFormsModule} from '@angular/forms';
+import {CarbonMultiInputModule, ListItemWithId, MultiInputValues} from '@valtimo/components';
 import {Add16, TrashCan16} from '@carbon/icons';
-import {IconService} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  ContentSwitcherModule,
+  IconModule,
+  IconService,
+  LayerModule,
+  TilesModule,
+} from 'carbon-components-angular';
 import {ConditionGroupForm, ConditionGroupOperator} from '../../models';
+import {WidgetTranslatePipeModule} from '../../../../pipes';
 import {TASK_COUNT_TEST_IDS} from '../../constants';
 import {createConditionGroup, createEmptyConditionRow} from '../../utils';
 
@@ -33,11 +42,22 @@ import {createConditionGroup, createEmptyConditionRow} from '../../utils';
  * through the form itself, without this component reporting them.
  */
 @Component({
-  standalone: false,
+  standalone: true,
   selector: 'valtimo-task-count-condition-group',
   templateUrl: './task-count-condition-group.component.html',
   styleUrls: ['./task-count-condition-group.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ButtonModule,
+    CarbonMultiInputModule,
+    CommonModule,
+    ContentSwitcherModule,
+    IconModule,
+    LayerModule,
+    ReactiveFormsModule,
+    TilesModule,
+    WidgetTranslatePipeModule,
+  ],
 })
 export class TaskCountConditionGroupComponent {
   @Input() public group: ConditionGroupForm;
@@ -47,7 +67,7 @@ export class TaskCountConditionGroupComponent {
   /** The outermost group cannot be deleted and starts out without condition rows. */
   @Input() public root = false;
 
-  @Output() public deleteGroup = new EventEmitter<void>();
+  @Output() public deleteGroupEvent = new EventEmitter<void>();
 
   protected readonly testIds = TASK_COUNT_TEST_IDS;
 

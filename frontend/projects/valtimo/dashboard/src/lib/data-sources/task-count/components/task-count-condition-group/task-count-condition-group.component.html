@@ -104,7 +104,7 @@
         [disabled]="disabled"
         [group]="nestedGroup"
         [operatorItems]="operatorItems"
-        (deleteGroup)="removeGroup(index)"
+        (deleteGroupEvent)="removeGroup(index)"
       ></valtimo-task-count-condition-group>
     }
 
@@ -130,7 +130,7 @@
         [attr.data-test-id]="testIds.deleteGroupButton"
         [description]="'deleteGroup' | widgetTranslate: dataSourceKey | async"
         [disabled]="disabled"
-        (click)="deleteGroup.emit()"
+        (click)="deleteGroupEvent.emit()"
         kind="danger--ghost"
         size="sm"
       >
@@ -148,7 +148,7 @@
         [disabled]="disabled"
         [group]="nestedGroup"
         [operatorItems]="operatorItems"
-        (deleteGroup)="removeGroup(index)"
+        (deleteGroupEvent)="removeGroup(index)"
       ></valtimo-task-count-condition-group>
     }
   </cds-tile>
