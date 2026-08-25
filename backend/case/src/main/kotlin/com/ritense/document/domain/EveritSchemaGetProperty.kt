@@ -209,16 +209,24 @@ private fun ArraySchema.tryGetPropertyDefinitionByNumericIndex(
  * answer depend on the order the author happened to write the branches in — `DocumentMigrationService`
  * compares a source property's schema with the target's and would report "Type changed" for a reordering
  * alone, and `getTypeReference()` would coerce a value to whichever type came first. So the branches that
- * do answer are combined into an `anyOf`, which is what the path genuinely permits, and are sorted into a
- * canonical order first so that two declarations of the same set compare equal. Identical branches
- * collapse, and the ordinary single-match case returns that match untouched.
+ * do answer are recombined, and are sorted into a canonical order first so that two declarations of the
+ * same set compare equal. Identical branches collapse, and the ordinary single-match case returns that
+ * match untouched.
+ *
+ * The **source criterion is preserved** rather than always recombining as `anyOf`: under `allOf` a value
+ * has to satisfy every branch, so weakening that to "any of them" would accept values the schema itself
+ * rejects — `allOf: [{minLength: 5}, {maxLength: 3}]` describes a property nothing can satisfy, and an
+ * `anyOf` of the two accepts a five-character string. Everything built on this walk validates against the
+ * schema it returns, so the recombined schema has to accept exactly what the original accepts.
  */
 private fun CombinedSchema.getProperty(field: String, depth: Int): Schema? {
     val matches = subschemas.mapNotNull { it.getProperty(field, depth + 1) }.distinct()
     return when (matches.size) {
         0 -> null
         1 -> matches.single()
-        else -> CombinedSchema.anyOf(matches.sortedBy { it.toString() }).build()
+        else -> CombinedSchema.builder(matches.sortedBy { it.toString() })
+            .criterion(criterion)
+            .build()
     }
 }
 

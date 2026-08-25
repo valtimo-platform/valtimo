@@ -19,10 +19,12 @@ package com.ritense.document.domain
 import com.ritense.document.domain.impl.JsonSchema
 import java.net.URI
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.everit.json.schema.CombinedSchema
 import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.Schema
 import org.everit.json.schema.StringSchema
+import org.everit.json.schema.ValidationException
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 
@@ -113,6 +115,38 @@ class EveritSchemaGetPropertyTest {
         )
 
         assertThat(schema.getProperty("/p/v")).isInstanceOf(StringSchema::class.java)
+    }
+
+    /**
+     * `allOf` means every branch has to be satisfied. Recombining the branches as `anyOf` weakened that
+     * to "any of them", so the recombined schema accepted values the original rejects — and everything
+     * built on this walk validates against what it returns.
+     */
+    @Test
+    fun `should recombine allOf branches with the allOf criterion`() {
+        val schema = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string", "minLength": 5 } } },
+               { "type": "object", "properties": { "v": { "type": "string", "maxLength": 3 } } }""",
+            criterion = "allOf"
+        )
+
+        val property = schema.getProperty("/p/v")
+        assertThat(property).isInstanceOf(CombinedSchema::class.java)
+        assertThat((property as CombinedSchema).criterion).isEqualTo(CombinedSchema.ALL_CRITERION)
+        // Nothing satisfies both minLength 5 and maxLength 3. Recombined as anyOf, this string passed.
+        assertThatThrownBy { property.validate("Ada Lovelace") }
+            .isInstanceOf(ValidationException::class.java)
+    }
+
+    @Test
+    fun `should recombine oneOf branches with the oneOf criterion`() {
+        val schema = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string" } } },
+               { "type": "object", "properties": { "v": { "type": "number" } } }"""
+        )
+
+        assertThat((schema.getProperty("/p/v") as CombinedSchema).criterion)
+            .isEqualTo(CombinedSchema.ONE_CRITERION)
     }
 
     @Test
@@ -241,10 +275,10 @@ class EveritSchemaGetPropertyTest {
     )
 
     /** A root with one property `p` whose schema is a `oneOf` of the given branches. */
-    private fun combinedSchemaOf(branches: String): Schema = schemaOf(
+    private fun combinedSchemaOf(branches: String, criterion: String = "oneOf"): Schema = schemaOf(
         """
         "properties": {
-          "p": { "oneOf": [$branches] }
+          "p": { "$criterion": [$branches] }
         }
         """.trimIndent()
     )
