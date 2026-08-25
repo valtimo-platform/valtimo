@@ -50,6 +50,7 @@ dependencies {
     testImplementation(project(":backend:building-block")) {
         exclude(group: "com.ritense.valtimo", module: "plugin-valtimo")
     }
+    testImplementation project(":backend:case")
     testImplementation project(":backend:test-utils-common")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"

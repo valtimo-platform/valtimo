@@ -1867,6 +1867,7 @@
     },
     "successNotification": "Proces succesvol gepubliceerd",
     "errorNotification": "Er ging iets mis bij het publiceren van het proces",
+    "exportErrorNotification": "Het exporteren van het proces is mislukt. Controleer of de subprocessen, beslistabellen en formulieren waarnaar het verwijst beschikbaar zijn op deze omgeving.",
     "validate": "Valideren",
     "validationSuccessNotification": "Procesdefinitie is geldig",
     "validationWarningNotification": "Procesdefinitie bevat waarschuwingen",
@@ -1881,7 +1882,7 @@
     "upload": {
       "modalTitle": "Upload procesdefinitie",
       "title": "Upload bestand",
-      "description": "Alleen BPMN-bestanden worden ondersteund.",
+      "description": "BPMN-bestanden en geëxporteerde procespakketten (.zip) worden ondersteund.",
       "buttonText": "Selecteer bestand",
       "success": "Deployment succesvol",
       "failure": "Deployment mislukt",
@@ -1889,8 +1890,51 @@
       "replaceTitle": "Bestaand proces vervangen?",
       "replaceContent": "Er bestaat al een proces met dezelfde sleutel. Wilt u dit vervangen?",
       "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel: {{duplicates}}. Wilt u dit vervangen?",
-      "replaceConfirm": "Vervangen"
+      "replaceConfirm": "Vervangen",
+      "invalidZip": {
+        "title": "Ongeldig bestand",
+        "text": "Dit bestand is geen geldig procespakket."
+      },
+      "pluginsDescription": "Kies per pluginconfiguratie uit het pakket de configuratie van deze omgeving.",
+      "summaryDescription": "De volgende onderdelen waarnaar het proces verwijst, ontbreken op deze omgeving. Importeer deze apart.",
+      "missingReference": {
+        "SUB_PROCESS": {
+          "title": "Subprocessen niet meegenomen",
+          "message": "Deze aangeroepen processen konden niet in het pakket worden meegenomen en bestaan niet op deze omgeving. Ze gebruiken een dynamische of deployment-binding, importeer ze daarom apart:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Beslistabellen niet meegenomen",
+          "message": "Deze beslistabellen konden niet in het pakket worden meegenomen en bestaan niet op deze omgeving. Ze gebruiken een dynamische of deployment-binding, importeer ze daarom apart:"
+        },
+        "FORM": {
+          "title": "Ontbrekende formulieren",
+          "message": "Importeer deze formulieren eerst:"
+        },
+        "FORM_FLOW": {
+          "title": "Formulierstromen niet ondersteund",
+          "message": "Formulierstromen kunnen niet worden gekoppeld aan een proces buiten een dossierdefinitie:"
+        },
+        "READ_ONLY_SYSTEM_PROCESS": {
+          "title": "Proces wordt beheerd via configuratie",
+          "message": "Dit proces kan niet worden overschreven, omdat het via de applicatieconfiguratie wordt beheerd:"
+        }
+      },
+      "willBeReplaced": {
+        "PROCESS_DEFINITION": {
+          "title": "Processen worden vervangen",
+          "message": "Deze processen bestaan al op deze omgeving en worden vervangen door de import:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Beslistabellen worden vervangen",
+          "message": "Deze beslistabellen bestaan al op deze omgeving en worden vervangen door de import:"
+        },
+        "FORM": {
+          "title": "Formulieren worden vervangen",
+          "message": "Deze formulieren bestaan al op deze omgeving en worden vervangen door de import:"
+        }
+      }
     },
+    "exportBpmn": "BPMN-definitie exporteren",
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten",
     "validationErrorCodes": {
@@ -2075,6 +2119,7 @@
     "create": "Aanmaken",
     "save": "Opslaan",
     "more": "Meer",
+    "options": "Opties",
     "export": "Exporteren",
     "list": {
       "itemsPerPage": "Items per pagina",
@@ -2275,6 +2320,18 @@
     "noConfigurationComponent": "Er is geen configuratie-component beschikbaar.",
     "configurationId": "Configuratie ID",
     "configurationIdTooltip": "Onder deze ID zal de plugin worden opgeslagen. Het ID moet het format van een UUID hebben"
+  },
+  "pluginConfigurationMapping": {
+    "unknownPlugin": "Onbekende plugin",
+    "source": "Uit het pakket",
+    "target": "Op deze omgeving",
+    "selectPlaceholder": "Selecteer een configuratie",
+    "notInstalled": "Plugin niet geïnstalleerd",
+    "noConfigurations": "Geen configuraties beschikbaar",
+    "unidentifiable": {
+      "title": "Pluginconfiguraties onbekend",
+      "message": "Van sommige pluginconfiguraties kan niet worden vastgesteld om welke plugin het gaat. Deze koppelingen moeten na het importeren handmatig worden ingesteld."
+    }
   },
   "pluginManagement": {
     "tableItemsText": "plugin-configuraties",

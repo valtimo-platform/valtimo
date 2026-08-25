@@ -50,6 +50,7 @@
     * [Forms](configuration-guides/building-blocks/forms.md)
     * [Form flows](configuration-guides/building-blocks/form-flows.md)
     * [Decision tables](configuration-guides/building-blocks/decision-tables.md)
+* [🔀 System processes](configuration-guides/system-processes/README.md)
 * 🔌 Plugins
 * 📊 Dashboard
 * [🔏 Access control](configuration-guides/access-control/README.md)

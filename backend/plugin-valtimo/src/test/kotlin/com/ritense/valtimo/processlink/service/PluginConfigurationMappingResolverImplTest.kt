@@ -283,6 +283,58 @@ class PluginConfigurationMappingResolverImplTest {
         verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
     }
 
+    @Test
+    fun `recheckIssuesForProcessDefinition emits no event when the process is no longer linked to a case definition`() {
+        whenever(
+            processDefinitionCaseDefinitionService.findByProcessDefinitionIdOrNull(eq(ProcessDefinitionId.of("pd-1")))
+        ).thenReturn(null)
+
+        resolver.recheckIssuesForProcessDefinition("pd-1")
+
+        verify(applicationEventPublisher, never()).publishEvent(any())
+    }
+
+    @Test
+    fun `recheckIssuesForCaseDefinition emits resolved event when the case definition has no process definitions`() {
+        whenever(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(eq(caseDefinitionId)))
+            .thenReturn(emptyList())
+
+        resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
+
+        verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
+    }
+
+    @Test
+    fun `recheckIssuesForCaseDefinition emits resolved event when no dangling links remain`() {
+        val link = pluginLink(
+            pluginConfigurationId = PluginConfigurationId.existingId(UUID.randomUUID()),
+            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
+        )
+        stubProcessDefinitions("pd-1")
+        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
+        whenever(pluginConfigurationRepository.existsById(any())).thenReturn(true)
+
+        resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
+
+        verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
+    }
+
+    @Test
+    fun `recheckIssuesForCaseDefinition emits detected event when another process still has dangling links`() {
+        val danglingLink = pluginLink(
+            pluginConfigurationId = PluginConfigurationId.existingId(UUID.randomUUID()),
+            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
+        )
+        stubProcessDefinitions("pd-1", "pd-2")
+        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
+        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-2")).thenReturn(listOf(danglingLink))
+        whenever(pluginConfigurationRepository.existsById(any())).thenReturn(false)
+
+        resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
+
+        verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueDetectedEvent>())
+    }
+
     private fun stubProcessDefinitions(vararg processDefinitionIds: String) {
         val links = processDefinitionIds.map { processDefinitionCaseDefinition(it) }
         whenever(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(eq(caseDefinitionId)))
