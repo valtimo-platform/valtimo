@@ -31,6 +31,7 @@ class BuildingBlockDefinitionSpecificationHelper {
         const val ACTIVE: String = "active"
         const val FINAL: String = "final"
         const val NAME: String = "name"
+        private const val LIKE_ESCAPE_CHARACTER: Char = '\\'
 
         @JvmStatic
         fun query() = Specification<BuildingBlockDefinition> { _, _, cb ->
@@ -71,12 +72,22 @@ class BuildingBlockDefinitionSpecificationHelper {
             if (searchTerm.isNullOrBlank()) {
                 cb.conjunction()
             } else {
-                val pattern = "%${searchTerm.trim().lowercase()}%"
+                val pattern = "%${escapeLikeWildcards(searchTerm.trim().lowercase())}%"
                 cb.or(
-                    cb.like(cb.lower(root.get(NAME)), pattern),
-                    cb.like(cb.lower(root.get<Any>(ID).get(KEY)), pattern)
+                    cb.like(cb.lower(root.get(NAME)), pattern, LIKE_ESCAPE_CHARACTER),
+                    cb.like(cb.lower(root.get<Any>(ID).get(KEY)), pattern, LIKE_ESCAPE_CHARACTER)
                 )
             }
         }
+
+        /**
+         * `%` and `_` are LIKE wildcards, so a term containing them would otherwise match far more
+         * than the user typed - searching for `100%` would match any name starting with `100`.
+         * Escaped here and paired with the explicit escape-character overload of `like`.
+         */
+        private fun escapeLikeWildcards(term: String): String = term
+            .replace(LIKE_ESCAPE_CHARACTER.toString(), "$LIKE_ESCAPE_CHARACTER$LIKE_ESCAPE_CHARACTER")
+            .replace("%", "$LIKE_ESCAPE_CHARACTER%")
+            .replace("_", "${LIKE_ESCAPE_CHARACTER}_")
     }
 }

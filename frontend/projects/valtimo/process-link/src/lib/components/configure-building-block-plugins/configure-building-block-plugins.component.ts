@@ -192,9 +192,15 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         this.buildingBlockStateService.requiredPluginKeys$,
         this.buildingBlockStateService.mappingsComplete$,
         this.buildingBlockStateService.requirementsLoading$,
+        /*
+          Changing the version keeps the existing mappings and prunes them only once the new
+          version's fields have loaded. Without this, the fields of the previous version could
+          still be in play on the next step, and a save would send mappings that no longer exist.
+        */
+        this.buildingBlockStateService.fieldsLoading$,
         this.definitionVersionTag$,
-      ]).subscribe(([keys, complete, loading, version]) => {
-        if (loading || !version) {
+      ]).subscribe(([keys, complete, requirementsLoading, fieldsLoading, version]) => {
+        if (requirementsLoading || fieldsLoading || !version) {
           this.buttonService.disableNextButton();
           return;
         }

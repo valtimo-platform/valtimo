@@ -146,6 +146,50 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
         assertThat(names(search("$prefix New name"))).containsExactly("New name")
     }
 
+    /*
+       A key is restricted to alphanumerics and dashes, so these characters can only ever reach the
+       query through a name - which is exactly where they have to stay literal.
+     */
+    @Test
+    fun `treats LIKE wildcards in the search term as literal characters`() {
+        store("discount", "1.0.0", "100% discount")
+        store("plain", "1.0.0", "100 percent")
+        store("underscore", "1.0.0", "Under_score")
+        store("underxscore", "1.0.0", "UnderXscore")
+
+        // '%' would otherwise match anything following "100"
+        assertThat(names(search("$prefix 100%"))).containsExactly("100% discount")
+        // '_' would otherwise match any single character, pulling in "UnderXscore"
+        assertThat(names(search("$prefix Under_s"))).containsExactly("Under_score")
+    }
+
+    @Test
+    fun `treats a backslash in the search term as a literal character`() {
+        store("backslash", "1.0.0", "back\\slash")
+
+        assertThat(names(search("$prefix back\\s"))).containsExactly("back\\slash")
+        assertThat(search("$prefix back\\\\s").content).isEmpty()
+    }
+
+    @Test
+    fun `reports the requested sort, not the entity path it maps to`() {
+        store("a", "1.0.0", "Alpha")
+
+        val page = search(pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "key")))
+
+        // 'id.key' is internal - the endpoint refuses it as input, so it must not come back either.
+        assertThat(page.pageable.sort.map { it.property }).containsExactly("key")
+    }
+
+    @Test
+    fun `reports the default sort when none was requested`() {
+        store("a", "1.0.0", "Alpha")
+
+        val page = search(pageable = PageRequest.of(0, 50))
+
+        assertThat(page.pageable.sort.map { it.property }).containsExactly("name")
+    }
+
     @Test
     fun `pages the filtered result`() {
         (1..5).forEach { store("block-$it", "1.0.0", "Block $it") }

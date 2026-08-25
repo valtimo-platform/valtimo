@@ -59,8 +59,7 @@ class BuildingBlockManagementService(
     fun getLatestPerKey(includeArtwork: Boolean = false): List<BuildingBlockDefinitionDto> {
         denyAuthorization()
 
-        val all = buildingBlockDefinitionRepository.findAll()
-        val latestPerKey = all
+        return buildingBlockDefinitionRepository.findAll()
             .groupBy { it.id.key }
             .values
             .mapNotNull { defsForKey ->
@@ -68,19 +67,7 @@ class BuildingBlockManagementService(
                     a.id.versionTag.compareTo(b.id.versionTag)
                 }
             }
-        return latestPerKey.map {
-            BuildingBlockDefinitionDto(
-                key = it.id.key,
-                versionTag = it.id.versionTag.toString(),
-                name = it.name,
-                description = it.description,
-                createdBy = it.createdBy,
-                createdDate = it.createdDate,
-                basedOnVersionTag = it.basedOnVersionTag?.toString(),
-                final = it.final,
-                imageBase64 = if (includeArtwork) it.artwork?.imageBase64 else null,
-            )
-        }
+            .map { BuildingBlockDefinitionDto.from(it, includeArtwork) }
     }
 
     /**
@@ -105,17 +92,33 @@ class BuildingBlockManagementService(
         denyAuthorization()
 
         // Validate the sort before anything else, so a bad sort is refused even on an empty table.
-        val sortedPageable = withEntitySort(pageable)
+        val requestedSort = if (pageable.sort.isSorted) pageable.sort else BY_NAME_ASCENDING
+        val entitySort = toEntitySort(requestedSort)
+
+        /*
+           The returned page reports the sort the caller asked for, not the entity paths it was
+           translated to. Reporting 'id.key' would hand back a property this endpoint refuses as
+           input, so a client could not feed its own page metadata back to it.
+         */
+        val responsePageable = pageable.withSort(requestedSort)
 
         val latestIds = latestIdPerKey()
         if (latestIds.isEmpty()) {
-            return PageImpl(emptyList(), pageable, 0)
+            return PageImpl(emptyList(), responsePageable, 0)
         }
 
-        return buildingBlockDefinitionRepository
-            .findAll(byIds(latestIds).and(bySearchTerm(searchTerm)), sortedPageable)
-            .map { BuildingBlockDefinitionDto.from(it, includeArtwork) }
+        val page = buildingBlockDefinitionRepository
+            .findAll(byIds(latestIds).and(bySearchTerm(searchTerm)), pageable.withSort(entitySort))
+
+        return PageImpl(
+            page.content.map { BuildingBlockDefinitionDto.from(it, includeArtwork) },
+            responsePageable,
+            page.totalElements
+        )
     }
+
+    private fun Pageable.withSort(sort: Sort): Pageable =
+        if (isUnpaged) Pageable.unpaged(sort) else PageRequest.of(pageNumber, pageSize, sort)
 
     private fun latestIdPerKey(): List<BuildingBlockDefinitionId> {
         return buildingBlockDefinitionRepository.findAllIds()
@@ -130,22 +133,16 @@ class BuildingBlockManagementService(
      * Translates the requested sort onto entity paths, refusing anything not in [SORT_PROPERTIES].
      * Orders are case-insensitive so that the result does not depend on database collation.
      */
-    private fun withEntitySort(pageable: Pageable): Pageable {
-        val orders = pageable.sort.map { order ->
-            val property = requireNotNull(SORT_PROPERTIES[order.property]) {
-                "Cannot sort building block definitions on '${order.property}'. " +
-                    "Sortable properties are: ${SORT_PROPERTIES.keys.joinToString()}."
-            }
-            Sort.Order(order.direction, property).ignoreCase()
-        }.toList()
-
-        val sort = if (orders.isEmpty()) BY_NAME_ASCENDING else Sort.by(orders)
-
-        return if (pageable.isUnpaged) {
-            Pageable.unpaged(sort)
-        } else {
-            PageRequest.of(pageable.pageNumber, pageable.pageSize, sort)
-        }
+    private fun toEntitySort(sort: Sort): Sort {
+        return Sort.by(
+            sort.map { order ->
+                val property = requireNotNull(SORT_PROPERTIES[order.property]) {
+                    "Cannot sort building block definitions on '${order.property}'. " +
+                        "Sortable properties are: ${SORT_PROPERTIES.keys.joinToString()}."
+                }
+                Sort.Order(order.direction, property).ignoreCase()
+            }.toList()
+        )
     }
 
     @Transactional
@@ -319,6 +316,6 @@ class BuildingBlockManagementService(
             "key" to "id.key",
         )
 
-        private val BY_NAME_ASCENDING: Sort = Sort.by(Sort.Order.asc("name").ignoreCase())
+        private val BY_NAME_ASCENDING: Sort = Sort.by(Sort.Order.asc("name"))
     }
 }
