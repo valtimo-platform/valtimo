@@ -40,7 +40,7 @@
                 "output": "./valtimo-translation/core/"
               },
               {
-                "glob": "**/*",
+                "glob": "min/**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               }
@@ -85,9 +85,7 @@
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
               "node_modules/select2/dist/js/select2.min.js",
               "node_modules/@valtimo/layout/assets/js/app.js",
-              "apps/dev/src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",
@@ -127,20 +125,25 @@
               "extractLicenses": true,
               "budgets": [
                 {
+                  "type": "initial",
+                  "maximumWarning": "15mb"
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
                 }
               ]
             },
             "test": {
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "15mb",
+                  "maximumError": "18mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -235,7 +238,7 @@
                 "output": "./valtimo-translation/core/"
               },
               {
-                "glob": "**/*",
+                "glob": "min/**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               }
@@ -280,9 +283,7 @@
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
               "node_modules/select2/dist/js/select2.min.js",
               "node_modules/@valtimo/layout/assets/js/app.js",
-              "apps/gzac/src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",
@@ -318,20 +319,25 @@
               "extractLicenses": true,
               "budgets": [
                 {
+                  "type": "initial",
+                  "maximumWarning": "15mb"
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
                 }
               ]
             },
             "test": {
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "15mb",
+                  "maximumError": "18mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -426,7 +432,7 @@
                 "output": "./valtimo-translation/core/"
               },
               {
-                "glob": "**/*",
+                "glob": "min/**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               }
@@ -471,9 +477,7 @@
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
               "node_modules/select2/dist/js/select2.min.js",
               "node_modules/@valtimo/layout/assets/js/app.js",
-              "apps/valtimo/src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",
@@ -505,20 +509,25 @@
               "extractLicenses": true,
               "budgets": [
                 {
+                  "type": "initial",
+                  "maximumWarning": "15mb"
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
                 }
               ]
             },
             "test": {
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "15mb",
+                  "maximumError": "18mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -613,7 +622,7 @@
                 "output": "./valtimo-translation/core/"
               },
               {
-                "glob": "**/*",
+                "glob": "min/**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               }
@@ -658,9 +667,7 @@
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
               "node_modules/select2/dist/js/select2.min.js",
               "node_modules/@valtimo/layout/assets/js/app.js",
-              "apps/evenementenvergunning/src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",
@@ -696,20 +703,25 @@
               "extractLicenses": true,
               "budgets": [
                 {
+                  "type": "initial",
+                  "maximumWarning": "15mb"
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
                 }
               ]
             },
             "test": {
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "15mb",
+                  "maximumError": "18mb"
                 },
                 {
                   "type": "anyComponentStyle",

@@ -34,6 +34,10 @@ Validation messages now use a consistent error code format, making it easier to 
 
 The metadata tab of the case inspection page now displays the case definition key and version. This makes it clear which version of a case definition a case belongs to.
 
+### Faster first page load
+
+The JavaScript that a browser has to download before the application starts has been reduced by roughly a third. The Swagger viewer, the DMN editor, the JSON schema editor and the map widget are now fetched only when the screen that uses them is opened, and two large scripts that were loaded on every page but never used have been removed. The deployed image is also considerably smaller, because only the part of the code editor that is actually used is shipped.
+
 ---
 
 ## Bugfixes
