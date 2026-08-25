@@ -1072,6 +1072,7 @@ class BuildingBlockAutoConfiguration {
         buildingBlockMigrationPathResolver: BuildingBlockMigrationPathResolver,
         buildingBlockProcessVersionChecker: BuildingBlockProcessVersionChecker,
         caseMigrationCaseRepository: CaseMigrationCaseRepository,
+        runtimeService: RuntimeService,
         migrationPlanApplier: ObjectProvider<MigrationPlanApplier>,
     ) = BuildingBlockVersionAlignmentExecutor(
         buildingBlockOwnershipResolver,
@@ -1079,6 +1080,7 @@ class BuildingBlockAutoConfiguration {
         buildingBlockMigrationPathResolver,
         buildingBlockProcessVersionChecker,
         caseMigrationCaseRepository,
+        runtimeService,
         migrationPlanApplier,
     )
 

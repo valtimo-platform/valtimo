@@ -36,15 +36,19 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
  * Two failures, both loud, both for the same reason: a running building block is being moved, and
  * moving it the wrong way is worse than not moving it.
  *
- * - **No path.** Nothing connects the two versions. The instance cannot be brought up to what its
- *   owner links, so the migration fails rather than leaving it behind on a version the owner no longer
- *   knows about. A version the instance would only travel *through* still needs its own plan: it
+ * - **No path.** Nothing connects the two versions. A *running* instance cannot be brought up to what
+ *   its owner links, so the migration fails rather than leaving it behind on a version the owner no
+ *   longer knows about. A version the instance would only travel *through* still needs its own plan: it
  *   deploys its own document schema and its own BPMN under its own `BB:<key>:<versionTag>` version tag,
- *   so there is always a token to move and possibly a document to fit — and inferring that work would
- *   mean guessing.
- * - **More than one path.** Two chains of plans lead to the same place. Which transformations a running
+ *   so there is a token to move and possibly a document to fit — and inferring that work would mean
+ *   guessing. Whether that refusal is the right answer is the *caller's* to decide, because it rests on
+ *   there being a token at all: [resolvePath] refuses, [findPath] answers null and lets a caller that
+ *   knows nothing is running tolerate it (G49).
+ * - **More than one path.** Two chains of plans lead to the same place. Which transformations an
  *   instance goes through would then depend on a tie-break nobody chose, so it is a configuration
- *   error to be resolved by removing an edge, not something to pick a winner for.
+ *   error to be resolved by removing an edge, not something to pick a winner for. Fatal either way:
+ *   unlike a missing path, an ambiguous one is wrong for every instance on every run, and it decides
+ *   which patches reach a document whether or not a process is running.
  */
 class BuildingBlockMigrationPathResolver(
     private val caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
@@ -60,7 +64,8 @@ class BuildingBlockMigrationPathResolver(
     )
 
     /**
-     * The plans to apply, in order, to get an instance from [current] to [target].
+     * The plans to apply, in order, to get an instance from [current] to [target] — for a caller that
+     * cannot do without them.
      *
      * Empty when [current] and [target] are the same version — there is nothing to do.
      *
@@ -71,13 +76,8 @@ class BuildingBlockMigrationPathResolver(
         current: BuildingBlockDefinitionId,
         target: BuildingBlockDefinitionId,
     ): List<MigrationStep> {
-        if (current == target) {
-            return emptyList()
-        }
-
-        val paths = findPaths(current, target, stopAfter = 2)
-        if (paths.isEmpty()) {
-            throw IllegalStateException(
+        return findPath(current, target)
+            ?: throw IllegalStateException(
                 "No migration plan connects building block version '$current' to '$target', which its " +
                     "owner links. Every version an instance travels through needs a plan, including one " +
                     "that changes nothing: a building block version deploys its own BPMN under its own " +
@@ -85,6 +85,34 @@ class BuildingBlockMigrationPathResolver(
                     "'*.building-block-migration.json' whose 'source' leads from '$current' to '$target' " +
                     "— either one plan declaring the whole jump, or one per step."
             )
+    }
+
+    /**
+     * The same chain as [resolvePath], but **null** rather than a refusal when nothing connects the two
+     * versions.
+     *
+     * For the caller that can live without a plan: a building block with no running process. The whole
+     * force of the "no path" refusal is that a version owns its BPMN exclusively, so a token left on the
+     * old definition is a token nobody will ever move — and a block that has finished, or never started,
+     * has no token. Failing its case there fails a migration over work that does not exist, so the
+     * decision belongs to whoever knows whether anything is running ([BuildingBlockVersionAlignmentExecutor]).
+     *
+     * Ambiguity is *not* softened the same way, and still throws: two chains reaching one version is a
+     * configuration error rather than a property of this instance.
+     *
+     * @throws IllegalStateException when more than one chain of deployed plans connects the two versions.
+     */
+    fun findPath(
+        current: BuildingBlockDefinitionId,
+        target: BuildingBlockDefinitionId,
+    ): List<MigrationStep>? {
+        if (current == target) {
+            return emptyList()
+        }
+
+        val paths = findPaths(current, target, stopAfter = 2)
+        if (paths.isEmpty()) {
+            return null
         }
         if (paths.size > 1) {
             throw IllegalStateException(

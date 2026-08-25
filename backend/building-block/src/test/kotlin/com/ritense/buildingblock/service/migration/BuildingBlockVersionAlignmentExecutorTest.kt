@@ -38,6 +38,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.RuntimeService
+import org.operaton.bpm.engine.runtime.ProcessInstanceQuery
 import org.springframework.beans.factory.ObjectProvider
 import java.util.UUID
 
@@ -48,6 +50,8 @@ class BuildingBlockVersionAlignmentExecutorTest {
     private lateinit var pathResolver: BuildingBlockMigrationPathResolver
     private lateinit var processVersionChecker: BuildingBlockProcessVersionChecker
     private lateinit var caseMigrationCaseRepository: CaseMigrationCaseRepository
+    private lateinit var runtimeService: RuntimeService
+    private lateinit var processInstanceQuery: ProcessInstanceQuery
     private lateinit var planApplier: MigrationPlanApplier
     private lateinit var executor: BuildingBlockVersionAlignmentExecutor
 
@@ -56,6 +60,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
     private val caseDocumentId = UUID.randomUUID()
     private val blockDocumentId = UUID.randomUUID()
     private val bbKey = "verhuizing-inspectie"
+    private val processInstanceId = "process-instance-id"
 
     @BeforeEach
     fun setUp() {
@@ -64,6 +69,8 @@ class BuildingBlockVersionAlignmentExecutorTest {
         pathResolver = mock()
         processVersionChecker = mock()
         caseMigrationCaseRepository = mock()
+        runtimeService = mock()
+        processInstanceQuery = mock()
         planApplier = mock()
 
         val applierProvider = mock<ObjectProvider<MigrationPlanApplier>>()
@@ -75,6 +82,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
             pathResolver,
             processVersionChecker,
             caseMigrationCaseRepository,
+            runtimeService,
             applierProvider,
         )
 
@@ -83,6 +91,15 @@ class BuildingBlockVersionAlignmentExecutorTest {
         // ...and by default the owner's own version is what governs its blocks. The redirection to a
         // declaring blueprint is the exception (G33) and is set up per test.
         whenever(linkedVersionResolver.resolveGoverningBlueprint(any(), any())).thenAnswer { it.getArgument(0) }
+        // ...and by default a block is running, which is the state that makes a missing chain of plans
+        // fatal (G49). The dormant cases stub this out per test.
+        whenever(runtimeService.createProcessInstanceQuery()).thenReturn(processInstanceQuery)
+        whenever(processInstanceQuery.processInstanceId(any())).thenReturn(processInstanceQuery)
+        whenever(processInstanceQuery.singleResult()).thenReturn(mock())
+
+        // Warnings live on the thread (MigrationWarnings), so one test's leftovers are the next one's
+        // assertion failure.
+        MigrationWarnings.clear()
     }
 
     @Test
@@ -250,7 +267,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
     }
 
     @Test
-    fun `should fail the migration when no chain of plans reaches the linked version`() {
+    fun `should fail the migration when no chain of plans reaches the version a running block is linked to`() {
         val block = block("1.0.0")
         caseOwns(block)
         linked(block, bb("3.0.0"))
@@ -261,6 +278,74 @@ class BuildingBlockVersionAlignmentExecutorTest {
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessageContaining("No migration plan connects building block version")
         verify(planApplier, never()).apply(any(), any(), any())
+    }
+
+    /**
+     * G49. The refusal above rests on there being a token to strand: a version owns its BPMN
+     * exclusively, so a running process left on the old definition is one nobody will ever move. A block
+     * that never started has no such token, and failing its case refuses work that does not exist.
+     */
+    @Test
+    fun `should leave a block that never started a process where it is when no chain of plans reaches it`() {
+        val block = block("1.0.0", runningProcess = null)
+        caseOwns(block)
+        linked(block, bb("3.0.0"))
+        // Nothing connects the two versions: findPath answers null rather than refusing.
+        whenever(pathResolver.findPath(bb("1.0.0"), bb("3.0.0"))).thenReturn(null)
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        verifyNothingMigrated()
+        // And the running block's refusal was never even asked for.
+        verify(pathResolver, never()).resolvePath(any(), any())
+    }
+
+    /**
+     * G49, the other half — and the one a long-lived case is far more likely to be in: the instance row
+     * outlives the process, so a block finished years ago still carries a process instance id.
+     */
+    @Test
+    fun `should leave a block whose process has already finished where it is when no chain of plans reaches it`() {
+        val block = block("1.0.0")
+        caseOwns(block)
+        linked(block, bb("3.0.0"))
+        whenever(processInstanceQuery.singleResult()).thenReturn(null)
+        whenever(pathResolver.findPath(bb("1.0.0"), bb("3.0.0"))).thenReturn(null)
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        verifyNothingMigrated()
+        verify(pathResolver, never()).resolvePath(any(), any())
+    }
+
+    @Test
+    fun `should warn about a block it left behind for want of a plan`() {
+        val block = block("1.0.0", runningProcess = null)
+        caseOwns(block)
+        linked(block, bb("3.0.0"))
+        whenever(pathResolver.findPath(bb("1.0.0"), bb("3.0.0"))).thenReturn(null)
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        assertThat(MigrationWarnings.drain())
+            .contains("is not running a process")
+            .contains("no migration plan connects it to '$bbKey:3.0.0'")
+            .contains("'*.building-block-migration.json'")
+    }
+
+    @Test
+    fun `should still migrate a block with no running process when a plan does connect it`() {
+        // Only the *refusal* is softened. A dormant block's document still belongs on the version its
+        // owner links, and a plan that says how is applied exactly as it is for a running one.
+        val block = block("1.0.0", runningProcess = null)
+        caseOwns(block)
+        linked(block, bb("1.0.1"))
+        val only = step("herinspectie", bb("1.0.1"))
+        whenever(pathResolver.findPath(bb("1.0.0"), bb("1.0.1"))).thenReturn(listOf(only))
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        verify(planApplier).apply(only.planId, bb("1.0.1"), blockDocumentId)
     }
 
     @Test
@@ -278,6 +363,23 @@ class BuildingBlockVersionAlignmentExecutorTest {
     }
 
     @Test
+    fun `should fail the migration on an ambiguous chain even when the block is not running`() {
+        // Two chains reaching one version is a configuration error rather than a property of this
+        // instance: it is wrong for every case on every run, and it decides which patches reach the
+        // block's document whether or not a process is running.
+        val block = block("1.0.0", runningProcess = null)
+        caseOwns(block)
+        linked(block, bb("1.0.2"))
+        whenever(pathResolver.findPath(bb("1.0.0"), bb("1.0.2")))
+            .thenThrow(IllegalStateException("more than one chain of migration plans"))
+
+        assertThatThrownBy { executor.execute(casePlanId, caseDefinitionId, caseDocumentId) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("more than one chain of migration plans")
+        verify(planApplier, never()).apply(any(), any(), any())
+    }
+
+    @Test
     fun `should align the nested blocks of a building block owner`() {
         // A building block plan is being applied to the parent block; its own child must follow.
         val parent = block("2.0.0")
@@ -285,6 +387,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
         val child = BuildingBlockInstance(
             documentId = childDocumentId,
             caseDocumentId = caseDocumentId,
+            processInstanceId = "child-process-instance-id",
             parentBuildingBlockInstanceId = parent.id,
             definition = BuildingBlockDefinition(
                 id = BuildingBlockDefinitionId.of("photo-upload", "1.0.0"),
@@ -355,10 +458,16 @@ class BuildingBlockVersionAlignmentExecutorTest {
     private fun step(migrationKey: String, target: BuildingBlockDefinitionId) =
         MigrationStep(BlueprintMigrationId.from(target, migrationKey), target)
 
-    private fun block(versionTag: String, activityId: String? = null) = BuildingBlockInstance(
+    /** A block running a process, unless a test says otherwise by passing a null [runningProcess]. */
+    private fun block(
+        versionTag: String,
+        activityId: String? = null,
+        runningProcess: String? = processInstanceId,
+    ) = BuildingBlockInstance(
         documentId = blockDocumentId,
         caseDocumentId = caseDocumentId,
         activityId = activityId,
+        processInstanceId = runningProcess,
         definition = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId.of(bbKey, versionTag),
             name = bbKey,

@@ -72,6 +72,8 @@ import java.util.UUID
  *   through the version chain, in a single run.
  * - **R5, atomicity.** A building block step that fails takes the whole case down with it: nothing
  *   the cascade did — not the case's own re-home, not the block it had already migrated — survives.
+ * - **G49, and the limit of that.** A *missing* chain of plans is not such a failure when nothing is
+ *   running under the block: the case migrates and the block is left behind with a warning.
  * - **Dry run.** The same cascade simulated: reported, and persisted nowhere — so a real run
  *   afterwards still migrates everything, rather than skipping a case the simulation "already did".
  * - **R1, no independent trigger.** The hourly sweep never starts a building block plan, even one
@@ -85,7 +87,10 @@ import java.util.UUID
  *
  * The building block instances have no running process, which keeps the fixtures to data alone:
  * [BuildingBlockProcessVersionChecker] has nothing to check without one, and the process migration
- * that would satisfy it is covered by its own tests.
+ * that would satisfy it is covered by its own tests. Since G49 that is also a property under test
+ * rather than only a convenience — a block with nothing running is treated differently from a live one,
+ * and the difference between the two is pinned in `BuildingBlockVersionAlignmentExecutorTest`, where a
+ * running process can be had for the price of a mock.
  */
 class BuildingBlockMigrationCascadeIT @Autowired constructor(
     private val caseMigrationService: CaseMigrationService,
@@ -134,9 +139,12 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
 
     @Test
     fun `a failing building block step rolls back the whole case migration`() {
-        // No plan on the nested block's target version: the chain step it has to travel through
-        // cannot be applied, and the alignment executor refuses rather than improvising (R3).
-        val fixture = createCascadeFixture(deployInnerPlan = false)
+        // The failure is a second plan over the same pair of versions on the nested block: two chains
+        // reach the version its owner links, so which transformations run would be a coin toss and the
+        // alignment executor refuses rather than improvising (R3). A *missing* chain no longer serves
+        // here — with nothing running under these blocks it is not a failure at all (G49, below).
+        val fixture = createCascadeFixture()
+        deployPlan(BlueprintMigrationId.from(fixture.innerV2, "cascade-inner-shortcut"))
 
         caseMigrationService.startMigration(fixture.casePlanId)
 
@@ -149,7 +157,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         val failure = status.errors.single()
         assertThat(failure.caseId).isEqualTo(fixture.caseDocumentId.toString())
         assertThat(failure.message)
-            .contains("No migration plan connects building block version")
+            .contains("more than one chain of migration plans")
             .contains("${fixture.innerKey}:$V2")
 
         // Nothing survived: not the case's own re-home, and not the outer block the cascade had
@@ -160,6 +168,41 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         assertThat(definitionIdOf(fixture.outerDocumentId)).isEqualTo(fixture.outerV1)
         assertThat(definitionIdOf(fixture.innerDocumentId)).isEqualTo(fixture.innerV1)
         assertThat(migratedCount(fixture.outerPlanId)).isZero()
+    }
+
+    /**
+     * G49. The same fixture as the rollback test above, minus the nested block's plan: nothing connects
+     * the version the inner block is on to the one its owner now links. It used to fail the whole case.
+     * Nothing is running under the block, so there is no token to strand and no work to refuse — the
+     * case migrates, the block stays where it is, and the author is told.
+     */
+    @Test
+    fun `a case migration leaves a block with no running process behind rather than failing over a missing plan`() {
+        val fixture = createCascadeFixture(deployInnerPlan = false)
+
+        caseMigrationService.startMigration(fixture.casePlanId)
+
+        val status = caseMigrationService.getStatus(fixture.casePlanId)
+        assertThat(status.status).isEqualTo(CaseMigrationStatus.COMPLETED)
+        assertThat(status.casesMigrated).isEqualTo(1)
+        assertThat(status.errors).isEmpty()
+
+        // The case and the block that *could* migrate did; the one no plan reaches stayed put, document
+        // and instance alike — the whole point of not failing is that the rest of the work stands.
+        assertThat(documentVersionOf(fixture.caseDocumentId)).isEqualTo(V2)
+        assertThat(documentVersionOf(fixture.outerDocumentId)).isEqualTo(V2)
+        assertThat(documentVersionOf(fixture.innerDocumentId)).isEqualTo(V1)
+        assertThat(definitionIdOf(fixture.outerDocumentId)).isEqualTo(fixture.outerV2)
+        assertThat(definitionIdOf(fixture.innerDocumentId)).isEqualTo(fixture.innerV1)
+        assertThat(migratedCount(fixture.outerPlanId)).isEqualTo(1)
+        assertThat(migratedCount(fixture.innerPlanId)).isZero()
+
+        // And it is not silent: the case now differs from one started on the target version.
+        val warning = status.warnings.single()
+        assertThat(warning.caseId).isEqualTo(fixture.caseDocumentId.toString())
+        assertThat(warning.message)
+            .contains("is not running a process")
+            .contains("no migration plan connects it to '${fixture.innerV2}'")
     }
 
     @Test
@@ -203,7 +246,8 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
 
     @Test
     fun `a dry run reports a broken building block chain as WOULD_FAIL`() {
-        val fixture = createCascadeFixture(deployInnerPlan = false)
+        val fixture = createCascadeFixture()
+        deployPlan(BlueprintMigrationId.from(fixture.innerV2, "cascade-inner-shortcut"))
 
         val dryRun = caseMigrationService.startDryRun(fixture.casePlanId)
 
@@ -215,7 +259,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         val failure = dryRun.errors.single()
         assertThat(failure.caseId).isEqualTo(fixture.caseDocumentId.toString())
         assertThat(failure.message)
-            .contains("No migration plan connects building block version")
+            .contains("more than one chain of migration plans")
             .contains("${fixture.innerKey}:$V2")
 
         // A dry run that found a problem still persists nothing.
@@ -267,7 +311,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
             .contains("cascade-inner-plan")
             .contains("cascade-inner-shortcut")
 
-        // And the refusal rolled the whole cascade back, exactly as a missing chain does.
+        // And the refusal rolled the whole cascade back.
         assertThat(documentVersionOf(fixture.caseDocumentId)).isEqualTo(V1)
         assertThat(documentVersionOf(fixture.outerDocumentId)).isEqualTo(V1)
         assertThat(migratedCount(fixture.outerPlanId)).isZero()

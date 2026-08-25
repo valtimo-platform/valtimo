@@ -17,6 +17,7 @@
 package com.ritense.processdocument.migration
 
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintProcessOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.utils.LcsDistance
@@ -47,7 +48,8 @@ import kotlin.math.roundToInt
  *   the author to complete or delete. See [unmapped].
  * - **Two different blueprints** — an owner and its building block, or a cross-key case migration. Keys
  *   have nothing in common by nature there, so the nearest match is kept whatever it scores: the author
- *   declared that pairing by writing the entry, and there is no better signal to go on.
+ *   declared that pairing by writing the entry, and there is no better signal to go on. Except where
+ *   the answer is already known — see [adoptionAccountsFor].
  *
  * **Why matching by similarity within one blueprint had to go.** It replaced a rule with no threshold
  * at all, and a threshold turned out not to exist. Calibrated on one case definition, 0.7 sat in a wide
@@ -98,6 +100,17 @@ class ProcessMigrationComponentSuggester(
         }
 
         val sameBlueprint = isSameBlueprint(source, target)
+        if (!sameBlueprint && adoptionAccountsFor(source, target, targetProcessDefinitions)) {
+            logger.info {
+                "'$target' is a building block '$source' declares on a call activity, so `addBuildingBlock` " +
+                    "adopts the running sub-process the link already names and no 'processMigration' is " +
+                    "suggested for the entry. An author who means a *hijack* — a process the owner runs " +
+                    "outside that link — adds the instruction by hand; that case cannot be told apart from " +
+                    "the outside."
+            }
+            return null
+        }
+
         val targetsByKey = targetProcessDefinitions.associateBy { it.key }
         // Resolved once per suggestion rather than per source process: it walks the whole link graph.
         val relocated = if (sameBlueprint) processesReachableFrom(target) else emptySet()
@@ -174,6 +187,60 @@ class ProcessMigrationComponentSuggester(
                 "remove. Left as it is, instances running it stay where they are."
         }
         return UnmappedProcess(sourceProcessDefinitionKey = sourceKey)
+    }
+
+    /**
+     * Whether [target] is a building block [owner] already reaches through its **call-activity** links, so
+     * an `addBuildingBlock` entry for it needs no `processMigration` at all and the honest suggestion is
+     * none.
+     *
+     * A block gets its process by one of two mechanisms, and only one of them is written in the plan:
+     *
+     * - **adoption** — the owner's BPMN declares the block on a call activity, so the sub-process is
+     *   *already running* and `AddBuildingBlockMigrationComponentExecutor` walks the running tree and gives
+     *   it the block's identity. The link says which process; the entry does not have to.
+     * - **hijack** — nothing declares it, so a process the owner runs has to be taken over, which is what
+     *   the entry's `processMigration` is for.
+     *
+     * The executor decides between them on the **links**, never on what the plan names: a process started
+     * by a call activity, for a block the target declares, is filtered out of the hijack
+     * (`ownedByTheWalk`), because an entry naming a process key only to carry `mapActivities` for an
+     * adopted node would flatten the block it was trying to configure. So a suggestion for an adopted block
+     * is not merely a bad guess — most of it is discarded at execution, and the part that is not is worse
+     * than the part that is: the owner's **top-level** process has no calling execution and so survives the
+     * filter, which means an accepted suggestion hands the case's main process to a building block.
+     *
+     * Without this, the two suggesters contradicted each other on the same entry. The whole-plan
+     * `AddBuildingBlockMigrationComponentSuggester` collects blocks from exactly this call-activity closure
+     * and deliberately writes **no** `processMigration`; the per-entry endpoint behind the editor's
+     * building-block tab (`MigrationSuggestionService.suggestBuildingBlockEntry`) came through here and got
+     * one instruction per *owner* process, all pointing at the block's nearest process — on a case linking
+     * 13 processes and a block deploying 1, thirteen rows with the same target, every one of which passes
+     * validation. Suggest the plan and the entry is empty; add the same entry by hand and it is thirteen
+     * hijacks.
+     *
+     * Note this does **not** mean a renamed process or activity needs no instruction. Adoption resolves the
+     * link from the *running* caller at execution time, so it depends on the plan's **top-level**
+     * `processMigration` having carried that caller onto the target definition and mapped the call
+     * activity's id; left out, the child is walked past as a plain sub-process (G23). That instruction
+     * belongs to the plan, not to this entry, which is why suggesting one here would not have fixed it.
+     *
+     * Read through the [BlueprintProcessOwnership] hook already used for `relocated`, whose implementation
+     * is the same call-activity closure the executor authorises from — so this cannot suppress a suggestion
+     * for a block adoption would not in fact reach. Requiring **every** target process to be covered keeps
+     * a cross-key *block-to-block* plan (a block migrating to its successor, which the owner reaches
+     * through neither link) on the ordinary nearest-match rule.
+     */
+    private fun adoptionAccountsFor(
+        owner: BlueprintId,
+        target: BlueprintId,
+        targets: List<ProcessDefinitionRef>,
+    ): Boolean {
+        if (target.blueprintType() != BlueprintType.BUILDING_BLOCK) {
+            return false
+        }
+        val adopted = processesReachableFrom(owner)
+        return adopted.isNotEmpty() && targets.all { it.key in adopted }
     }
 
     /** Processes owned by the building blocks [blueprintId] reaches, via the first ownership that answers. */

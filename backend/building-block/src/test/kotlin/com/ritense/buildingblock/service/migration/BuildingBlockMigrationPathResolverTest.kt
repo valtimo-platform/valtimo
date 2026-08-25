@@ -159,6 +159,46 @@ class BuildingBlockMigrationPathResolverTest {
             .hasMessageContaining("No migration plan connects building block version")
     }
 
+    /**
+     * G49. The "no path" refusal is only right for a caller that cannot do without a plan — a *running*
+     * block, whose token nothing else will ever move. `findPath` is the same search for the caller that
+     * can: it answers, and lets the alignment executor decide.
+     */
+    @Test
+    fun `findPath should answer null when no plan connects the two versions`() {
+        plan("controle", from = block("1.0.0"), to = block("1.0.1"))
+
+        assertThat(resolver.findPath(block("1.0.0"), block("3.0.0"))).isNull()
+    }
+
+    @Test
+    fun `findPath should resolve the same chain resolvePath does`() {
+        plan("two", from = block("1.0.0"), to = block("2.0.0"))
+        plan("three", from = block("2.0.0"), to = block("3.0.0"))
+
+        assertThat(resolver.findPath(block("1.0.0"), block("3.0.0")))
+            .containsExactly(step("two", block("2.0.0")), step("three", block("3.0.0")))
+    }
+
+    @Test
+    fun `findPath should resolve nothing to do when the instance is already on the linked version`() {
+        // Empty, not null: there is a way from here to there and it is to do nothing.
+        assertThat(resolver.findPath(block("2.0.0"), block("2.0.0"))).isEmpty()
+    }
+
+    @Test
+    fun `findPath should still fail when more than one chain of plans leads to the linked version`() {
+        // Softening the missing-path refusal says nothing about ambiguity: two chains reaching one
+        // version is a configuration error whatever the instance is doing.
+        plan("sprong", from = block("1.0.0"), to = block("1.0.2"))
+        plan("een", from = block("1.0.0"), to = block("1.0.1"))
+        plan("twee", from = block("1.0.1"), to = block("1.0.2"))
+
+        assertThatThrownBy { resolver.findPath(block("1.0.0"), block("1.0.2")) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("more than one chain of migration plans")
+    }
+
     @Test
     fun `isReachable should be true for a version the plans lead to, over any number of steps`() {
         plan("two", from = block("1.0.0"), to = block("2.0.0"))

@@ -210,12 +210,65 @@ class ProcessMigrationComponentSuggesterTest {
         // `suggestBuildingBlockEntry` maps the owner's running process onto the block's process. Those
         // keys have nothing in common by nature (this pair scores 26%), and the author declared the
         // pairing by writing the entry, so the nearest match is kept whatever it scores.
+        //
+        // Nothing declares this block on a call activity, so a *hijack* is the only way it can get a
+        // process and the pairing is the whole content of the entry. Contrast the adopted block below.
         val block = buildingBlock("uitvoeren-business-services", "1.0.0")
         processes(source, "ab-afhandelen-aanvraag-dcm")
         processes(block, "uitvoeren-business-services")
 
         assertThat(suggester.suggest(source, block))
             .isEqualTo(listOf(instruction("ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")))
+    }
+
+    @Test
+    fun `should suggest no process migration for a building block the owner declares on a call activity`() {
+        // Adoption takes the running sub-process from the link, so the entry needs no process key at all —
+        // the same answer the whole-plan `AddBuildingBlockMigrationComponentSuggester` gives for the very
+        // same block, which is the point: the two paths used to contradict each other on one entry.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        reachableFrom(source, "uitvoeren-business-services")
+        processes(source, "ab-afhandelen-aanvraag-dcm")
+        processes(block, "uitvoeren-business-services")
+
+        assertThat(suggester.suggest(source, block)).isNull()
+    }
+
+    @Test
+    fun `should not suggest a hijack per owner process onto the one process an adopted block deploys`() {
+        // The measured shape: an owner linking 13 processes and a block deploying 1. Every source paired
+        // with the block's only process, so the entry came back with 13 rows carrying the same target,
+        // all of which validate. The executor discards the call-activity-started ones (`ownedByTheWalk`)
+        // but NOT the owner's top-level process, so accepting the suggestion handed the case's main
+        // process to the building block.
+        val block = buildingBlock("bs-ophalen-brp", "1.0.0")
+        reachableFrom(source, "bs-ophalen-brp-persoonsgegevens")
+        processes(
+            source,
+            "ioaw-afhandelen-aanvraag-dcm",
+            "ioaw-start-uitgebreide-motivering",
+            "ioaw-start-buiten-behandeling-stellen",
+            "ioaw-start-annuleren-informatieverzoek-dcm",
+        )
+        processes(block, "bs-ophalen-brp-persoonsgegevens")
+
+        assertThat(suggester.suggest(source, block)).isNull()
+    }
+
+    @Test
+    fun `should keep pairing for a block migrating to a successor block, which no link reaches`() {
+        // Why every target process has to be covered rather than any: a cross-key block-to-block plan
+        // moves a block onto its replacement, which the source reaches through no call activity. That is
+        // an ordinary migration and stays on the nearest-match rule, even though its target is a block.
+        val nested = buildingBlock("bs-ophalen-brp", "1.0.0")
+        val successor = buildingBlock("bs-raadplegen-brp", "1.0.0")
+        reachableFrom(nested, "bs-nested-proces")
+        processes(nested, "bs-ophalen-brp-persoonsgegevens")
+        processes(successor, "bs-raadplegen-brp-persoonsgegevens")
+
+        assertThat(suggester.suggest(nested, successor)).isEqualTo(
+            listOf(instruction("bs-ophalen-brp-persoonsgegevens", "bs-raadplegen-brp-persoonsgegevens"))
+        )
     }
 
     @Test
@@ -272,6 +325,11 @@ class ProcessMigrationComponentSuggesterTest {
     /** Processes the target reaches through the building blocks it declares. */
     private fun reachableFromTarget(vararg keys: String) {
         reachable[target] = keys.toSet()
+    }
+
+    /** The same, for an owner other than [target] — an entry's owner is the version the plan is deployed under. */
+    private fun reachableFrom(owner: BlueprintId, vararg keys: String) {
+        reachable[owner] = keys.toSet()
     }
 
     /** (source, target) of every suggested row, target null where the suggester left it blank. */
