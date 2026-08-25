@@ -32,6 +32,7 @@ import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
@@ -122,12 +123,12 @@ class FormFlowProcessLinkActivityHandlerTest {
     @Test
     fun `should resolve definition by the building block in the process definition version tag`() {
         whenever(processDefinition.getBlueprintId()).thenReturn(BUILDING_BLOCK_DEFINITION_ID)
-        whenever(formFlowService.findDefinitionOrNull(FORM_FLOW_KEY, BUILDING_BLOCK_DEFINITION_ID))
+        whenever(formFlowService.findDefinitionOrNull(FORM_FLOW_KEY, BUILDING_BLOCK_DEFINITION_ID as BlueprintId))
             .thenReturn(formFlowDefinition)
 
         handler.openTask(task, processLink())
 
-        verify(formFlowService).findDefinitionOrNull(FORM_FLOW_KEY, BUILDING_BLOCK_DEFINITION_ID)
+        verify(formFlowService).findDefinitionOrNull(FORM_FLOW_KEY, BUILDING_BLOCK_DEFINITION_ID as BlueprintId)
         verify(documentService, never()).findBy(any())
         verify(processDefinitionCaseDefinitionService, never()).findByProcessDefinitionIdOrNull(any())
     }
@@ -139,13 +140,13 @@ class FormFlowProcessLinkActivityHandlerTest {
         val document = document(CASE_DEFINITION_ID)
         whenever(documentService.findBy(JsonSchemaDocumentId.existingId(DOCUMENT_ID)))
             .thenReturn(Optional.of(document))
-        whenever(formFlowService.findDefinitionOrNull(FORM_FLOW_KEY, CASE_DEFINITION_ID))
+        whenever(formFlowService.findDefinitionOrNull(FORM_FLOW_KEY, CASE_DEFINITION_ID as BlueprintId))
             .thenReturn(formFlowDefinition)
 
         val result = handler.openTask(task, processLink())
 
         assertEquals(FORM_FLOW_TASK_TYPE, result.type)
-        verify(formFlowService).findDefinitionOrNull(FORM_FLOW_KEY, CASE_DEFINITION_ID)
+        verify(formFlowService).findDefinitionOrNull(FORM_FLOW_KEY, CASE_DEFINITION_ID as BlueprintId)
         verify(processDefinitionCaseDefinitionService, never()).findByProcessDefinitionIdOrNull(any())
     }
 
@@ -155,12 +156,12 @@ class FormFlowProcessLinkActivityHandlerTest {
         whenever(documentService.findBy(any())).thenReturn(Optional.empty())
         whenever(processDefinitionCaseDefinitionService.findByProcessDefinitionIdOrNull(processDefinitionId()))
             .thenReturn(processDefinitionCaseDefinition(CASE_DEFINITION_ID))
-        whenever(formFlowService.findDefinitionOrNull(FORM_FLOW_KEY, CASE_DEFINITION_ID))
+        whenever(formFlowService.findDefinitionOrNull(FORM_FLOW_KEY, CASE_DEFINITION_ID as BlueprintId))
             .thenReturn(formFlowDefinition)
 
         handler.openTask(task, processLink())
 
-        verify(formFlowService).findDefinitionOrNull(FORM_FLOW_KEY, CASE_DEFINITION_ID)
+        verify(formFlowService).findDefinitionOrNull(FORM_FLOW_KEY, CASE_DEFINITION_ID as BlueprintId)
     }
 
     @Test

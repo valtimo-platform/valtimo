@@ -203,6 +203,14 @@ class ValtimoImportService(
 
     @Transactional
     override fun importGlobal(inputStream: InputStream) {
+        importGlobal(inputStream, null)
+    }
+
+    @Transactional
+    override fun importGlobal(
+        inputStream: InputStream,
+        pluginConfigurationMappings: Map<UUID, UUID?>?,
+    ) {
         runImporter {
             val entries = readZipEntries(inputStream)
             val importerEntriesList = getEntriesByImporter(
@@ -213,12 +221,24 @@ class ValtimoImportService(
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
                     logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
-                    importer.import(ImportRequest(entry.fileName, entry.content))
+                    importer.import(
+                        ImportRequest(
+                            entry.fileName,
+                            entry.content,
+                            pluginConfigurationMappings = pluginConfigurationMappings,
+                        )
+                    )
                 }
             }
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
-                    importer.afterImport(ImportRequest(entry.fileName, entry.content))
+                    importer.afterImport(
+                        ImportRequest(
+                            entry.fileName,
+                            entry.content,
+                            pluginConfigurationMappings = pluginConfigurationMappings,
+                        )
+                    )
                 }
             }
         }
@@ -455,7 +475,7 @@ class ValtimoImportService(
                 normalizedPath
             }
         } else if (normalizedPath.startsWith("config/global")) {
-            return normalizedPath.substringAfter("config")
+            normalizedPath.substringAfter("config")
         } else {
             normalizedPath
         }

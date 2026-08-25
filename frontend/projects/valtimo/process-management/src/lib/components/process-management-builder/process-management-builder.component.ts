@@ -15,7 +15,7 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {HttpErrorResponse} from '@angular/common/http';
+import {HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {AfterViewInit, Component, ElementRef, OnDestroy, signal, ViewChild} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -352,18 +352,59 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.breadcrumbService.clearFourthBreadcrumb();
   }
 
-  public export(isReadOnlyProcess: boolean): void {
+  public exportBpmn(isReadOnlyProcess: boolean): void {
     (isReadOnlyProcess ? from(this._bpmnViewer.saveXML()) : from(this._bpmnModeler.saveXML()))
       .pipe(take(1))
       .subscribe(result => {
         const file = new Blob([result.xml ?? ''], {type: 'text/xml'});
-        const link = document.createElement('a');
-        link.download = 'diagram.bpmn';
-        link.href = window.URL.createObjectURL(file);
-        link.click();
-        window.URL.revokeObjectURL(link.href);
-        link.remove();
+        const processDefinitionKey =
+          this.processManagementEditorService.selectionProcessDefinition?.key;
+
+        this.downloadFile(
+          file,
+          processDefinitionKey ? `${processDefinitionKey}.bpmn` : 'diagram.bpmn'
+        );
       });
+  }
+
+  public export(): void {
+    const processDefinitionId = this.processManagementEditorService.selectionProcessDefinition?.id;
+
+    if (!processDefinitionId) {
+      this.showNotification('exportError');
+      return;
+    }
+
+    this.processManagementService
+      .exportProcessDefinition(processDefinitionId)
+      .pipe(take(1))
+      .subscribe({
+        next: response => {
+          const blob = response.body;
+          if (!blob) {
+            this.showNotification('exportError');
+            return;
+          }
+          this.downloadFile(blob, this.getFileName(response));
+        },
+        error: () => {
+          this.showNotification('exportError');
+        },
+      });
+  }
+
+  private getFileName(response: HttpResponse<Blob>): string {
+    const contentDisposition = response.headers.get('Content-Disposition') ?? '';
+    return contentDisposition.split('filename=')[1]?.replace(/"/g, '').trim() || 'process.zip';
+  }
+
+  private downloadFile(file: Blob, fileName: string): void {
+    const link = document.createElement('a');
+    link.download = fileName;
+    link.href = window.URL.createObjectURL(file);
+    link.click();
+    window.URL.revokeObjectURL(link.href);
+    link.remove();
   }
 
   public validateProcessDefinition(isReadOnlyProcess: boolean): void {
@@ -637,6 +678,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       | null
       | 'success'
       | 'error'
+      | 'exportError'
       | 'alreadyExists'
       | 'validationError'
       | 'validationWarning'
@@ -648,6 +690,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     if (
       notification === 'alreadyExists' ||
       notification === 'validationError' ||
+      notification === 'exportError' ||
       notification === 'error'
     ) {
       type = 'error';
