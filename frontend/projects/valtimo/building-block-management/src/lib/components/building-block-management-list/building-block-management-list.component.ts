@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, signal} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {CarbonListModule, ColumnConfig, Pagination, ViewType} from '@valtimo/components';
 import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
-import {switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {isEqual} from 'lodash';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
 import {
@@ -30,6 +31,7 @@ import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 import {
   BuildingBlockManagementUploadModalComponent,
 } from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
+import {BuildingBlockDefinitionQuery} from '../../models';
 
 @Component({
   standalone: true,
@@ -47,16 +49,49 @@ import {
   ],
   providers: [BuildingBlockManagementService],
 })
-export class BuildingBlockManagementListComponent {
+export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
   public readonly $loading = signal<boolean>(true);
 
-  public readonly buildingBlockDefinitions$ = this.buildingBlockManagementService.reload$.pipe(
-    switchMap(() => this.buildingBlockManagementApiService.getBuildingBlockDefinitions()),
-    tap(res => {
-      this.buildingBlockManagementService.setUsedKeys(res.map(item => item.key));
-      this.$loading.set(false);
-    })
+  private readonly _collectionSize$ = new BehaviorSubject<number>(0);
+
+  /*
+    Page, size and search term live in a single subject so that a search - which also resets the
+    page - results in one request rather than two.
+  */
+  private readonly _query$ = new BehaviorSubject<BuildingBlockDefinitionQuery>({
+    page: 1,
+    searchTerm: '',
+    size: 10,
+  });
+
+  private get _query(): BuildingBlockDefinitionQuery {
+    return this._query$.getValue();
+  }
+
+  public readonly pagination$: Observable<Pagination> = combineLatest([
+    this._collectionSize$,
+    this._query$,
+  ]).pipe(
+    map(([collectionSize, {page, size}]) => ({collectionSize, page, size}) as Pagination)
   );
+
+  public readonly buildingBlockDefinitions$: Observable<BuildingBlockDefinitionDto[]> =
+    combineLatest([this.buildingBlockManagementService.reload$, this._query$]).pipe(
+      tap(() => this.$loading.set(true)),
+      switchMap(([, {page, searchTerm, size}]) =>
+        this.buildingBlockManagementApiService.searchBuildingBlockDefinitions({
+          page: page - 1,
+          size,
+          ...(searchTerm && {searchTerm}),
+        })
+      ),
+      map(res => {
+        this._collectionSize$.next(res?.totalElements ?? 0);
+        this.$loading.set(false);
+
+        return res?.content ?? [];
+      })
+    );
 
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'name', label: 'buildingBlockManagement.listColumns.name'},
@@ -68,6 +103,8 @@ export class BuildingBlockManagementListComponent {
     },
   ];
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly buildingBlockManagementService: BuildingBlockManagementService,
@@ -75,6 +112,48 @@ export class BuildingBlockManagementListComponent {
     private readonly router: Router
   ) {
     this.iconService.registerAll([Upload16]);
+  }
+
+  public ngOnInit(): void {
+    /*
+      The create modal validates that a key is not taken yet, so it needs every key rather than the
+      keys on the current page. Kept separate from the paginated list request for that reason.
+    */
+    this._subscriptions.add(
+      this.buildingBlockManagementService.reload$
+        .pipe(switchMap(() => this.buildingBlockManagementApiService.getBuildingBlockDefinitions()))
+        .subscribe(definitions =>
+          this.buildingBlockManagementService.setUsedKeys(definitions.map(item => item.key))
+        )
+    );
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  public paginationClicked(page: number): void {
+    this.updateQuery({page});
+  }
+
+  public paginationSet(size: number): void {
+    this.updateQuery({size, page: 1});
+  }
+
+  public searchTermEntered(searchTerm: string): void {
+    this.updateQuery({searchTerm, page: 1});
+  }
+
+  private updateQuery(update: Partial<BuildingBlockDefinitionQuery>): void {
+    const query = {...this._query, ...update};
+
+    /*
+      The list emits paginationSet once on init with the size it restored from local storage, which
+      is usually the size we already hold. Ignoring no-op updates keeps that from costing a request.
+    */
+    if (isEqual(query, this._query)) return;
+
+    this._query$.next(query);
   }
 
   public showCreateModal(): void {

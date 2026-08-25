@@ -24,6 +24,8 @@ import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionSpecificationHelper.Companion.byIds
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionSpecificationHelper.Companion.bySearchTerm
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
@@ -36,7 +38,9 @@ import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -79,6 +83,71 @@ class BuildingBlockManagementService(
         }
     }
 
+    /**
+     * The latest version per key, narrowed by [searchTerm] (matched against name and key),
+     * ordered by [Pageable.getSort] and cut into a page.
+     *
+     * Only the "which version of a key is the latest" step happens in Kotlin - it is SemVer
+     * precedence, which the version tag column, a string, cannot express in SQL. That step reads
+     * identifiers only; the search, the ordering and the paging are all done by the database
+     * against exactly the rows it selected. Resolving the latest versions first also keeps the
+     * search honest: a name may differ between versions of the same key, so filtering before
+     * narrowing would match an old version and surface a latest version that does not match.
+     *
+     * @throws IllegalArgumentException when [Pageable.getSort] names a property that is not sortable
+     */
+    @Transactional(readOnly = true)
+    fun searchLatestPerKey(
+        searchTerm: String?,
+        pageable: Pageable,
+        includeArtwork: Boolean = false
+    ): Page<BuildingBlockDefinitionDto> {
+        denyAuthorization()
+
+        // Validate the sort before anything else, so a bad sort is refused even on an empty table.
+        val sortedPageable = withEntitySort(pageable)
+
+        val latestIds = latestIdPerKey()
+        if (latestIds.isEmpty()) {
+            return PageImpl(emptyList(), pageable, 0)
+        }
+
+        return buildingBlockDefinitionRepository
+            .findAll(byIds(latestIds).and(bySearchTerm(searchTerm)), sortedPageable)
+            .map { BuildingBlockDefinitionDto.from(it, includeArtwork) }
+    }
+
+    private fun latestIdPerKey(): List<BuildingBlockDefinitionId> {
+        return buildingBlockDefinitionRepository.findAllIds()
+            .groupBy { it.key }
+            .values
+            .mapNotNull { idsForKey ->
+                idsForKey.maxWithOrNull { a, b -> a.versionTag.compareTo(b.versionTag) }
+            }
+    }
+
+    /**
+     * Translates the requested sort onto entity paths, refusing anything not in [SORT_PROPERTIES].
+     * Orders are case-insensitive so that the result does not depend on database collation.
+     */
+    private fun withEntitySort(pageable: Pageable): Pageable {
+        val orders = pageable.sort.map { order ->
+            val property = requireNotNull(SORT_PROPERTIES[order.property]) {
+                "Cannot sort building block definitions on '${order.property}'. " +
+                    "Sortable properties are: ${SORT_PROPERTIES.keys.joinToString()}."
+            }
+            Sort.Order(order.direction, property).ignoreCase()
+        }.toList()
+
+        val sort = if (orders.isEmpty()) BY_NAME_ASCENDING else Sort.by(orders)
+
+        return if (pageable.isUnpaged) {
+            Pageable.unpaged(sort)
+        } else {
+            PageRequest.of(pageable.pageNumber, pageable.pageSize, sort)
+        }
+    }
+
     @Transactional
     fun create(dto: CreateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto {
         denyAuthorization()
@@ -113,16 +182,7 @@ class BuildingBlockManagementService(
             )
         )
 
-        return BuildingBlockDefinitionDto(
-            key = saved.id.key,
-            versionTag = saved.id.versionTag.toString(),
-            name = saved.name,
-            description = saved.description,
-            createdBy = saved.createdBy,
-            createdDate = saved.createdDate,
-            basedOnVersionTag = saved.basedOnVersionTag?.toString(),
-            final = saved.final
-        )
+        return BuildingBlockDefinitionDto.from(saved)
     }
 
     @Transactional
@@ -164,7 +224,7 @@ class BuildingBlockManagementService(
             )
         )
 
-        return savedDraft.toDto()
+        return BuildingBlockDefinitionDto.from(savedDraft)
     }
 
     @Transactional
@@ -189,16 +249,7 @@ class BuildingBlockManagementService(
 
         val saved = buildingBlockDefinitionRepository.save(updated)
 
-        return BuildingBlockDefinitionDto(
-            key = saved.id.key,
-            versionTag = saved.id.versionTag.toString(),
-            name = saved.name,
-            description = saved.description,
-            createdBy = saved.createdBy,
-            createdDate = saved.createdDate,
-            basedOnVersionTag = saved.basedOnVersionTag?.toString(),
-            final = saved.final
-        )
+        return BuildingBlockDefinitionDto.from(saved)
     }
 
     @Transactional
@@ -210,11 +261,11 @@ class BuildingBlockManagementService(
             ?: throw UnknownBuildingBlockDefinitionException(id)
 
         if (existing.final) {
-            return existing.toDto()
+            return BuildingBlockDefinitionDto.from(existing)
         }
 
         val finalized = buildingBlockDefinitionRepository.save(existing.copy(final = true))
-        return finalized.toDto()
+        return BuildingBlockDefinitionDto.from(finalized)
     }
 
     @Transactional(readOnly = true)
@@ -254,5 +305,20 @@ class BuildingBlockManagementService(
                 Action.deny()
             )
         )
+    }
+
+    companion object {
+        /**
+         * Requested sort property -> entity path. The version tag is deliberately absent: it is
+         * stored as a string, so the database would order it lexicographically rather than by
+         * SemVer (`1.9.0` would outrank `1.10.0`). Asking for any other property is refused rather
+         * than silently ignored, so a caller is never handed an order it did not ask for.
+         */
+        private val SORT_PROPERTIES: Map<String, String> = mapOf(
+            "name" to "name",
+            "key" to "id.key",
+        )
+
+        private val BY_NAME_ASCENDING: Sort = Sort.by(Sort.Order.asc("name").ignoreCase())
     }
 }

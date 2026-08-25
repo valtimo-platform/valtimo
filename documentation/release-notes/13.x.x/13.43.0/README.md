@@ -34,6 +34,10 @@ Validation messages now use a consistent error code format, making it easier to 
 
 The metadata tab of the case inspection page now displays the case definition key and version. This makes it clear which version of a case definition a case belongs to.
 
+### Searchable building block overview
+
+The building block overview is now sorted by name, paginated, and searchable by name or key, so a large collection of building blocks stays workable.
+
 ---
 
 ## Bugfixes

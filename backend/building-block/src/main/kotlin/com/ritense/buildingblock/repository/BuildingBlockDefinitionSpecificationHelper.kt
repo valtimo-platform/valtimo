@@ -18,6 +18,7 @@ package com.ritense.buildingblock.repository
 
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.case.repository.CaseTabSpecificationHelper.Companion.ID
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
 import org.springframework.data.jpa.domain.Specification
 
@@ -29,6 +30,7 @@ class BuildingBlockDefinitionSpecificationHelper {
         const val VERSION_TAG: String = "versionTag"
         const val ACTIVE: String = "active"
         const val FINAL: String = "final"
+        const val NAME: String = "name"
 
         @JvmStatic
         fun query() = Specification<BuildingBlockDefinition> { _, _, cb ->
@@ -55,5 +57,26 @@ class BuildingBlockDefinitionSpecificationHelper {
             cb.equal(root.get<Any>(ID).get<Any>(VERSION_TAG), caseDefinitionVersionTag)
         }
 
+        @JvmStatic
+        fun byIds(ids: Collection<BuildingBlockDefinitionId>) = Specification<BuildingBlockDefinition> { root, _, _ ->
+            root.get<Any>(ID).`in`(ids)
+        }
+
+        /**
+         * Matches [searchTerm] against the name and the key, case-insensitively. A blank term
+         * matches everything, so it composes without the caller branching on it.
+         */
+        @JvmStatic
+        fun bySearchTerm(searchTerm: String?) = Specification<BuildingBlockDefinition> { root, _, cb ->
+            if (searchTerm.isNullOrBlank()) {
+                cb.conjunction()
+            } else {
+                val pattern = "%${searchTerm.trim().lowercase()}%"
+                cb.or(
+                    cb.like(cb.lower(root.get(NAME)), pattern),
+                    cb.like(cb.lower(root.get<Any>(ID).get(KEY)), pattern)
+                )
+            }
+        }
     }
 }
