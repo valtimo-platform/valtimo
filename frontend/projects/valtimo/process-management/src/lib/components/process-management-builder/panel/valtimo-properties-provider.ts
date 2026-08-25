@@ -24,7 +24,7 @@ import {
   ProcessDefinitionValidationError,
   ProcessManagementWindow,
 } from '../../../models';
-import {ModalParams, ProcessLink} from '@valtimo/process-link';
+import {ModalParams, ProcessLink, ProcessLinkService} from '@valtimo/process-link';
 import {TranslateService} from '@ngx-translate/core';
 import {mapActivityTypeToActivityListenerType} from '../../../utils';
 import {VNode} from 'preact';
@@ -43,6 +43,10 @@ class ValtimoPropertiesProvider {
 
   private get pluginTranslationService(): PluginTranslationService {
     return (window as any as ProcessManagementWindow).pluginTranslationService;
+  }
+
+  private get processLinkService(): ProcessLinkService {
+    return (window as any as ProcessManagementWindow).processLinkService;
   }
 
   constructor(propertiesPanel: any) {
@@ -67,6 +71,9 @@ class ValtimoPropertiesProvider {
     const elementErrors = this.processManagementEditorService.validationErrors.filter(
       error => error.elementId === element.id
     );
+
+    const autofillInfo = this.processManagementEditorService.getAutofillForActivity(element.id);
+    const isAutofillDismissed = this.processManagementEditorService.isAutofillDismissed(element.id);
 
     return (groups: any[]) => {
       const generalGroup = groups.find((g: any) => g.id === 'general');
@@ -93,6 +100,24 @@ class ValtimoPropertiesProvider {
         groups.unshift(errorGroup);
       }
 
+      if (autofillInfo && !isAutofillDismissed) {
+        const targetGroupId = this.getGroupIdForModificationType(autofillInfo.modificationType);
+        const targetGroup = groups.find((g: any) => g.id === targetGroupId);
+        if (targetGroup) {
+          const notificationEntry = {
+            id: 'autofilledNotificationEntry',
+            activityId: element.id,
+            element,
+            translateService: this.translateService,
+            processManagementEditorService: this.processManagementEditorService,
+            processLinkService: this.processLinkService,
+            component: AutofilledNotificationElement,
+          };
+          targetGroup.entries.unshift(notificationEntry);
+          targetGroup.shouldOpen = true;
+        }
+      }
+
       if (
         is(element, 'bpmn:UserTask') ||
         is(element, 'bpmn:StartEvent') ||
@@ -115,6 +140,17 @@ class ValtimoPropertiesProvider {
     };
   }
 
+  private getGroupIdForModificationType(modificationType: string): string {
+    const groupMapping: Record<string, string> = {
+      SERVICE_TASK_EXPRESSION: 'CamundaPlatform__Implementation',
+      SEND_TASK_EXPRESSION: 'CamundaPlatform__Implementation',
+      MESSAGE_EVENT_EXPRESSION: 'message',
+      TIMER_DURATION: 'timer',
+      CALL_ACTIVITY_BUSINESS_KEY: 'CamundaPlatform__BusinessKey',
+    };
+    return groupMapping[modificationType] || 'general';
+  }
+
   public createCustomRootElement(element: any, processLink: ProcessLink | null): any {
     return {
       translateService: this.translateService,
@@ -124,7 +160,7 @@ class ValtimoPropertiesProvider {
       processLink,
       element,
       component: CustomRootElement,
-      isEdited: () => false,
+      isEdited: (node: HTMLInputElement) => node && !!node.value,
     };
   }
 }
@@ -202,8 +238,11 @@ const CustomRootElement = (props: {
     option => option.id === processLinkFormDefinitionId
   )?.name;
 
+  const hiddenInput = html`<input type="hidden" class="bio-properties-panel-input" value=${processLink ? 'configured' : ''} />`;
+  const wrapEntry = (content: any) => html`<div data-entry-id=${props.id}>${hiddenInput}${content}</div>`;
+
   if (processLinkFormDefinitionName) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
 
@@ -230,13 +269,13 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const processLinkFormFlowDefinitionKey = processLink?.formFlowDefinitionKey;
 
   if (processLinkFormFlowDefinitionKey) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title"
           >${processLinkFormFlowDefinitionKey}</span
@@ -265,14 +304,14 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const buildingBlockDefinitionKey = processLink?.buildingBlockDefinitionKey;
   const buildingBlockDefinitionVersion = processLink?.buildingBlockDefinitionVersionTag;
 
   if (buildingBlockDefinitionKey) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title"
           >${buildingBlockDefinitionKey} (${buildingBlockDefinitionVersion})</span
@@ -301,7 +340,7 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const pluginActionKey = processLink?.pluginActionDefinitionKey;
@@ -311,7 +350,7 @@ const CustomRootElement = (props: {
     pluginTranslationService.instantPluginTitleByPluginActionKey(pluginActionKey);
 
   if (pluginActionKey) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title-container">
           <span class="process-link-properties-panel__title">${pluginTitleTranslation}</span>
@@ -342,13 +381,13 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const uiComponentKey = processLink?.componentKey;
 
   if (uiComponentKey) {
-    return html`<div class="process-link-properties-panel">
+    return wrapEntry(html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title">${uiComponentKey}</span>
 
@@ -375,7 +414,7 @@ const CustomRootElement = (props: {
           ${editProcessLinkText}
         </button>
       </div>
-    </div>`;
+    </div>`);
   }
 
   const genericLinkedPanel = html`<div class="process-link-properties-panel">
@@ -407,7 +446,7 @@ const CustomRootElement = (props: {
     </div>
   </div>`;
 
-  return processLink ? genericLinkedPanel : genericCreatePanel;
+  return wrapEntry(processLink ? genericLinkedPanel : genericCreatePanel);
 };
 
 const ValidationErrorsElement = (props: {
@@ -416,8 +455,8 @@ const ValidationErrorsElement = (props: {
 }): VNode => {
   const getErrorMessage = (error: ProcessDefinitionValidationError): string => {
     if (error.errorCode) {
-      const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
-      const translated = props.translateService.instant(translationKey, {expression: error.expression ? `'${error.expression}'` : ''});
+      const translationKey = `processManagement.validationErrorCodes.${error.errorCode}`;
+      const translated = props.translateService.instant(translationKey, {expression: error.expression ?? ''});
       if (translated !== translationKey) {
         return translated;
       }
@@ -433,6 +472,36 @@ const ValidationErrorsElement = (props: {
           <span class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}">${getErrorMessage(error)}</span>
         </div>`
     )}
+  </div>`;
+};
+
+const AutofilledNotificationElement = (props: {
+  activityId: string;
+  element: BpmnElement;
+  translateService: TranslateService;
+  processManagementEditorService: ProcessManagementEditorService;
+  processLinkService: ProcessLinkService;
+}): VNode => {
+  const handleDismiss = (event: Event): void => {
+    const processDefinitionId = props.processManagementEditorService.selectionProcessDefinition?.id;
+    if (processDefinitionId) {
+      props.processLinkService.deleteAutofill(processDefinitionId, props.activityId).subscribe();
+    }
+    props.processManagementEditorService.dismissAutofill(props.activityId);
+
+    const target = event.currentTarget as HTMLElement;
+    const panel = target.closest('.autofilled-notification-panel') as HTMLElement;
+    if (panel) {
+      panel.style.display = 'none';
+    }
+  };
+
+  return html`<div class="autofilled-notification-panel">
+    <span class="autofilled-notification-panel__icon">!</span>
+    <span class="autofilled-notification-panel__message">
+      ${props.translateService.instant('processManagement.autofilled.sidebarMessage')}
+    </span>
+    <button class="autofilled-notification-panel__dismiss" onClick=${handleDismiss}>×</button>
   </div>`;
 };
 

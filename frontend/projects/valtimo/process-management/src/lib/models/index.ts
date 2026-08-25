@@ -16,6 +16,7 @@
 
 export * from './window.model';
 export * from './bpmn.model';
+export * from './process-bean.model';
 export * from './process-definition-import.model';
 export * from './process-management.model';
 export * from './process.model';

@@ -28,6 +28,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.processlink.service.ProcessDefinitionImportPreviewService
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.processlink.validation.ProcessDefinitionValidationOptions
 import com.ritense.processlink.validation.ProcessDefinitionValidator
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionConflictResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionImportPreviewResponseDto
@@ -39,6 +40,7 @@ import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateResponseDto
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.ProcessPropertyService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
@@ -78,6 +80,7 @@ class ProcessDefinitionManagementResource(
     private val processLinkService: ProcessLinkService,
     private val processDeploymentService: ProcessDeploymentService,
     private val processDefinitionValidator: ProcessDefinitionValidator,
+    private val processDefinitionAutofillService: ProcessDefinitionAutofillService,
     private val exportService: ExportService,
     private val importService: ImportService,
     private val processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService,
@@ -97,7 +100,8 @@ class ProcessDefinitionManagementResource(
                         toReadOnlyAwareDto(definition),
                         assembler.processLinks(definition),
                         assembler.bpmnXml(definition),
-                        definition.isSuspended()
+                        definition.isSuspended(),
+                        assembler.autofilledElements(definition)
                     )
                 }
                 .collect(Collectors.toList())
@@ -120,7 +124,8 @@ class ProcessDefinitionManagementResource(
                 toReadOnlyAwareDto(definition),
                 assembler.processLinks(definition),
                 assembler.bpmnXml(definition),
-                definition.isSuspended()
+                definition.isSuspended(),
+                assembler.autofilledElements(definition)
             )
         }.sortedBy { it.processDefinition.version }
 
@@ -138,7 +143,8 @@ class ProcessDefinitionManagementResource(
             ProcessDefinitionResponseDto(
                 ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
                 assembler.processLinks(definition),
-                assembler.bpmnXml(definition)
+                assembler.bpmnXml(definition),
+                autofilledElements = assembler.autofilledElements(definition)
             )
         }.sortedBy { it.processDefinition.version }
 
@@ -218,7 +224,11 @@ class ProcessDefinitionManagementResource(
         @RequestBody request: ProcessDefinitionValidateRequestDto
     ): ResponseEntity<ProcessDefinitionValidateResponseDto> {
         val bpmnModel = Bpmn.readModelFromStream(request.bpmnXml.byteInputStream())
-        val result = processDefinitionValidator.validate(bpmnModel, request.processLinks)
+        val options = ProcessDefinitionValidationOptions(
+            canInitializeDocument = request.canInitializeDocument,
+            startableByUser = request.startableByUser
+        )
+        val result = processDefinitionValidator.validate(bpmnModel, request.processLinks, options)
         return ResponseEntity.ok(
             ProcessDefinitionValidateResponseDto(
                 isValid = result.isValid,
@@ -292,6 +302,17 @@ class ProcessDefinitionManagementResource(
             logger.info(exception) { "Process definition import failed" }
             ResponseEntity.badRequest().build()
         }
+    }
+
+    @DeleteMapping("/management/v1/process-definition/{processDefinitionId}/autofill/{activityId}")
+    fun deleteAutofill(
+        @LoggableResource(resourceType = OperatonProcessDefinition::class) @PathVariable processDefinitionId: String,
+        @PathVariable activityId: String
+    ): ResponseEntity<Void> {
+        processDefinitionAutofillService.deleteByProcessDefinitionIdAndActivityId(
+            processDefinitionId, activityId
+        )
+        return ResponseEntity.noContent().build()
     }
 
     private fun toReadOnlyAwareDto(definition: OperatonProcessDefinition): ProcessDefinitionWithPropertiesDto {

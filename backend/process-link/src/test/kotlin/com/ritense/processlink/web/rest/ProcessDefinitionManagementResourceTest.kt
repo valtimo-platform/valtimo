@@ -30,6 +30,7 @@ import com.ritense.processlink.web.rest.dto.MissingReferenceType
 import com.ritense.processlink.web.rest.dto.ProcessDefinitionImportPreviewResponseDto
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.ProcessPropertyService
 import org.hamcrest.Matchers.matchesRegex
@@ -74,6 +75,7 @@ internal class ProcessDefinitionManagementResourceTest {
     lateinit var exportService: ExportService
     lateinit var importService: ImportService
     lateinit var processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService
+    lateinit var processDefinitionAutofillService: ProcessDefinitionAutofillService
     lateinit var objectMapper: ObjectMapper
 
     @BeforeEach
@@ -88,14 +90,20 @@ internal class ProcessDefinitionManagementResourceTest {
         exportService = mock()
         importService = mock()
         processDefinitionImportPreviewService = mock()
+        processDefinitionAutofillService = mock()
 
-        val assembler = ProcessDefinitionResponseAssembler(processLinkService, repositoryService)
+        val assembler = ProcessDefinitionResponseAssembler(
+            processLinkService,
+            repositoryService,
+            processDefinitionAutofillService,
+        )
         val resource = ProcessDefinitionManagementResource(
             operatonProcessService,
             processPropertyService,
             processLinkService,
             processDeploymentService,
             processDefinitionValidator,
+            processDefinitionAutofillService,
             exportService,
             importService,
             processDefinitionImportPreviewService,
@@ -162,7 +170,7 @@ internal class ProcessDefinitionManagementResourceTest {
             .andDo(print())
             .andExpect(status().isNoContent)
 
-        verify(processDeploymentService).deployProcessDefinitionAndProcessLinks(anyOrNull(), anyOrNull(), any(), anyOrNull())
+        verify(processDeploymentService).deployProcessDefinitionAndProcessLinks(anyOrNull(), anyOrNull(), any(), anyOrNull(), any())
     }
 
     @Test

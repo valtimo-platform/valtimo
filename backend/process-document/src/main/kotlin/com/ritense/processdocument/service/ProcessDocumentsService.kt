@@ -25,6 +25,8 @@ import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstance
 import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.service.OperatonProcessService
@@ -33,6 +35,7 @@ import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.stereotype.Service
 import java.util.UUID
 
+@ProcessBean(description = "Starts processes and manages process-document associations")
 @Service
 @SkipComponentScan
 class ProcessDocumentsService(
@@ -43,6 +46,10 @@ class ProcessDocumentsService(
     private val operatonRuntimeService: OperatonRuntimeService,
 ) {
 
+    @ProcessBeanMethod(
+        description = "Deletes all process instances associated with the current document",
+        example = "\${processService.deleteAllProcessInstancesForThisDocument(execution, 'Case cancelled')}"
+    )
     fun deleteAllProcessInstancesForThisDocument(execution: DelegateExecution, reason: String) {
         val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
         withLoggingContext(JsonSchemaDocument::class, documentId.toString()) {
@@ -63,10 +70,15 @@ class ProcessDocumentsService(
         }
     }
 
+    @ProcessBeanMethod(
+        description = "Starts a process by definition key for a case",
+        example = "\${processService.startProcessByProcessDefinitionKey('my-process', businessKey)}"
+    )
     fun startProcessByProcessDefinitionKey(processDefinitionKey: String, businessKey: String) {
         startProcessByProcessDefinitionKey(processDefinitionKey, businessKey, null)
     }
 
+    @ProcessBeanMethod(description = "Starts a process without case definition lookup")
     fun startProcessByProcessDefinitionKeyWithoutCaseDefinition(
         processDefinitionKey: String,
         businessKey: String,
@@ -86,6 +98,7 @@ class ProcessDocumentsService(
         )
     }
 
+    @ProcessBeanMethod(description = "Starts a process by definition key with variables")
     fun startProcessByProcessDefinitionKey(
         processDefinitionKey: String,
         businessKey: String,
@@ -115,6 +128,7 @@ class ProcessDocumentsService(
         )
     }
 
+    @ProcessBeanMethod(description = "Gets all active process instance IDs for the current document")
     fun getActiveProcessInstanceIds(execution: DelegateExecution): List<String> {
         val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
 
@@ -128,6 +142,7 @@ class ProcessDocumentsService(
             }
     }
 
+    @ProcessBeanMethod(description = "Gets process definition keys from all active processes for the current document")
     fun getProcessDefinitionKeysFromActiveProcessInstances(execution: DelegateExecution): List<String> {
         var activeProcessInstances = getActiveProcessInstanceIds(execution)
 

@@ -22,6 +22,7 @@ import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
 import com.ritense.valtimo.service.OperatonProcessService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -54,6 +55,7 @@ internal class CaseProcessDefinitionManagementResourceTest {
     lateinit var processLinkService: ProcessLinkService
     lateinit var repositoryService: RepositoryService
     lateinit var processDeploymentService: ProcessDeploymentService
+    lateinit var processDefinitionAutofillService: ProcessDefinitionAutofillService
     lateinit var objectMapper: ObjectMapper
 
     @BeforeEach
@@ -64,8 +66,13 @@ internal class CaseProcessDefinitionManagementResourceTest {
         processLinkService = mock()
         repositoryService = mock()
         processDeploymentService = mock()
+        processDefinitionAutofillService = mock()
 
-        val assembler = ProcessDefinitionResponseAssembler(processLinkService, repositoryService)
+        val assembler = ProcessDefinitionResponseAssembler(
+            processLinkService,
+            repositoryService,
+            processDefinitionAutofillService,
+        )
         val resource = CaseProcessDefinitionManagementResource(
             operatonProcessService,
             processDefinitionCaseDefinitionService,

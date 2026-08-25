@@ -32,6 +32,26 @@
     [style.display]="obs.isReadOnlyProcess || !obs.hasEditPermissions ? 'none' : 'flex'"
   >
     <div class="bpmn__modeler-canvas" #modeler>
+      <cds-tooltip
+        align="top-right"
+        [autoAlign]="true"
+        [description]="'processManagement.markers.toggleTooltip' | translate"
+        class="markers-visibility-toggle-wrapper"
+      >
+        <button
+          type="button"
+          class="markers-visibility-toggle"
+          (click)="toggleMarkerVisibility()"
+          [attr.data-test-id]="testIds.markersVisibilityToggle"
+        >
+          <svg cdsIcon="view" *ngIf="$markersVisible()" size="16"></svg>
+          <svg cdsIcon="view--off" *ngIf="!$markersVisible()" size="16"></svg>
+          <span class="markers-visibility-toggle__label">
+            {{ ($markersVisible() ? 'processManagement.markers.hide' : 'processManagement.markers.show') | translate }}
+          </span>
+        </button>
+      </cds-tooltip>
+
       <div
         class="validation-errors-list"
         *ngIf="validationErrors$ | async as validationErrors"
@@ -93,7 +113,27 @@
     class="bpmn__modeler"
     [style.display]="obs.isReadOnlyProcess || !obs.hasEditPermissions ? 'flex' : 'none'"
   >
-    <div class="bpmn__modeler-canvas" #viewer></div>
+    <div class="bpmn__modeler-canvas" #viewer>
+      <cds-tooltip
+        align="top-right"
+        [autoAlign]="true"
+        [description]="'processManagement.markers.toggleTooltip' | translate"
+        class="markers-visibility-toggle-wrapper"
+      >
+        <button
+          type="button"
+          class="markers-visibility-toggle"
+          (click)="toggleMarkerVisibility()"
+          [attr.data-test-id]="testIds.markersVisibilityToggle"
+        >
+          <svg cdsIcon="view" *ngIf="$markersVisible()" size="16"></svg>
+          <svg cdsIcon="view--off" *ngIf="!$markersVisible()" size="16"></svg>
+          <span class="markers-visibility-toggle__label">
+            {{ ($markersVisible() ? 'processManagement.markers.hide' : 'processManagement.markers.show') | translate }}
+          </span>
+        </button>
+      </cds-tooltip>
+    </div>
 
     <div class="bpmn__modeler-panel" #viewerPanel></div>
   </div>

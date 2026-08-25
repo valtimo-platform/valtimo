@@ -46,6 +46,9 @@ class ProcessDefinitionManagementHttpSecurityConfigurer : HttpSecurityConfigurer
                     .requestMatchers(antMatcher(DELETE, "$PROCESS_DEFINITION_URL/key/{processDefinitionKey}"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$PROCESS_DEFINITION_URL/validate")).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(DELETE, "$PROCESS_DEFINITION_URL/{processDefinitionId}/autofill/{activityId}")
+                    ).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$PROCESS_DEFINITION_URL/{processDefinitionId}/export"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$PROCESS_DEFINITION_URL/import/preview")).hasAuthority(ADMIN)

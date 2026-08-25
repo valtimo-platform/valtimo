@@ -83,7 +83,8 @@ class CaseProcessDefinitionManagementResource(
                         ),
                         assembler.processLinks(definition),
                         assembler.bpmnXml(definition),
-                        definition.isSuspended()
+                        definition.isSuspended(),
+                        assembler.autofilledElements(definition)
                     )
                 }
                 .collect(Collectors.toList())
@@ -116,7 +117,9 @@ class CaseProcessDefinitionManagementResource(
                 ProcessDefinitionId(definition.id)
             ),
             assembler.processLinks(definition),
-            assembler.bpmnXml(definition)
+            assembler.bpmnXml(definition),
+            definition.isSuspended(),
+            assembler.autofilledElements(definition)
         )
 
         return ResponseEntity.ok(responseDto)

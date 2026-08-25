@@ -51,10 +51,12 @@ import com.ritense.processlink.web.rest.error.ProcessDefinitionValidationExcepti
 import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
+import com.ritense.valtimo.processbean.ProcessBeanService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.service.ProcessPropertyService
@@ -171,7 +173,12 @@ class ProcessLinkAutoConfiguration {
     fun processDefinitionWithLinksAssembler(
         processLinkService: ProcessLinkService,
         repositoryService: RepositoryService,
-    ) = ProcessDefinitionResponseAssembler(processLinkService, repositoryService)
+        processDefinitionAutofillService: ProcessDefinitionAutofillService,
+    ) = ProcessDefinitionResponseAssembler(
+        processLinkService,
+        repositoryService,
+        processDefinitionAutofillService,
+    )
 
     @Bean
     @ConditionalOnMissingBean(ProcessLinkResource::class)
@@ -203,6 +210,7 @@ class ProcessLinkAutoConfiguration {
         processLinkService: ProcessLinkService,
         processDeploymentService: ProcessDeploymentService,
         processDefinitionValidator: ProcessDefinitionValidator,
+        processDefinitionAutofillService: ProcessDefinitionAutofillService,
         exportService: ExportService,
         importService: ImportService,
         processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService,
@@ -214,6 +222,7 @@ class ProcessLinkAutoConfiguration {
         processLinkService,
         processDeploymentService,
         processDefinitionValidator,
+        processDefinitionAutofillService,
         exportService,
         importService,
         processDefinitionImportPreviewService,
@@ -226,10 +235,12 @@ class ProcessLinkAutoConfiguration {
     @ConditionalOnClass(ProcessDefinitionDeployedEvent::class)
     fun copyProcessLinkOnProcessDeploymentListener(
         processLinkRepository: ProcessLinkRepository,
+        operatonRepositoryService: OperatonRepositoryService,
         applicationEventPublisher: ApplicationEventPublisher
     ): CopyProcessLinkOnProcessDeploymentListener {
         return CopyProcessLinkOnProcessDeploymentListener(
             processLinkRepository,
+            operatonRepositoryService,
             applicationEventPublisher
         )
     }
@@ -322,11 +333,13 @@ class ProcessLinkAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ProcessDefinitionValidator::class)
     fun processDefinitionValidator(
-        applicationContext: ApplicationContext
+        applicationContext: ApplicationContext,
+        processBeanService: ProcessBeanService?
     ): ProcessDefinitionValidator {
-        return ProcessDefinitionValidator {
-            applicationContext.getBeansWithAnnotation(ProcessBean::class.java)
-        }
+        return ProcessDefinitionValidator(
+            processBeansSupplier = { applicationContext.getBeansWithAnnotation(ProcessBean::class.java) },
+            processBeanService = processBeanService
+        )
     }
 
     @Bean
