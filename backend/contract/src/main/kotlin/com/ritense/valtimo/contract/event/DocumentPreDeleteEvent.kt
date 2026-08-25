@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.processlink.validation
+package com.ritense.valtimo.contract.event
 
-enum class ExpressionValidationErrorCode {
-    MISSING_EL_MARKERS,
-    UNCLOSED_PARENTHESIS,
-    UNCLOSED_BRACE,
-    UNCLOSED_BRACKET,
-    MISMATCHED_DELIMITER,
-    INCOMPLETE_EXPRESSION,
-    INVALID_SYNTAX,
-    BEAN_NOT_FOUND
-}
+import java.util.UUID
+
+/**
+ * Published just before a document is removed, so that modules owning rows which reference the document can remove
+ * them first. Fires inside the deleting transaction.
+ */
+class DocumentPreDeleteEvent(
+    val caseDocumentId: UUID
+)
