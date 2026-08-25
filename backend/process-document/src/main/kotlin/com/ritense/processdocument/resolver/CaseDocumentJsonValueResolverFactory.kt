@@ -19,6 +19,7 @@ package com.ritense.processdocument.resolver
 import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.jayway.jsonpath.InvalidPathException
 import com.jayway.jsonpath.JsonPath
@@ -27,11 +28,15 @@ import com.jayway.jsonpath.internal.path.PathCompiler
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.config.DocumentProperties
 import com.ritense.document.domain.Document
+import com.ritense.document.domain.NullWriteStrategy
 import com.ritense.document.domain.collectValueResolverOptions
+import com.ritense.document.domain.determineNullWriteStrategy
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.domain.patch.JsonPatchFilterFlag.allowRemovalOperations
+import com.ritense.document.domain.patch.JsonPatchFilterFlag.defaultPatchFlags
 import com.ritense.document.domain.patch.JsonPatchService
 import com.ritense.document.exception.ModifyDocumentException
 import com.ritense.document.exception.UnknownDocumentDefinitionException
@@ -45,6 +50,7 @@ import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.exception.ValueResolverValidationException
+import org.everit.json.schema.Schema
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.dao.OptimisticLockingFailureException
 import java.util.UUID
@@ -118,11 +124,11 @@ class CaseDocumentJsonValueResolverFactory(
 
         AuthorizationContext.runWithoutAuthorization {
             documentService.modifyDocumentAtomic(documentId) { lockedDocument ->
-                val documentContent = lockedDocument.content().asJson()
-                buildJsonPatch(documentContent, values)
-
                 val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
                 val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
+                val documentContent = lockedDocument.content().asJson()
+                buildJsonPatch(documentContent, values) { documentDefinition.schema.schema }
+
                 val modifiedContent = JsonDocumentContent.build(
                     jsonSchemaDoc.content().asJson(),
                     documentContent,
@@ -148,7 +154,7 @@ class CaseDocumentJsonValueResolverFactory(
                     processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
                 }
                 val documentContent = document.content().asJson()
-                buildJsonPatch(documentContent, values)
+                buildJsonPatch(documentContent, values) { getSchema(document) }
 
                 //TODO: PBAC MODIFY check
                 AuthorizationContext.runWithoutAuthorization {
@@ -182,12 +188,12 @@ class CaseDocumentJsonValueResolverFactory(
     private fun handleValuesWithAtomicUpdate(documentId: UUID, values: Map<String, Any?>) {
         AuthorizationContext.runWithoutAuthorization {
             documentService.modifyDocumentAtomic(JsonSchemaDocumentId.existingId(documentId)) { lockedDocument ->
-                val documentContent = lockedDocument.content().asJson()
-                buildJsonPatch(documentContent, values)
-
                 // Return the document with modified content
                 val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
                 val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
+                val documentContent = lockedDocument.content().asJson()
+                buildJsonPatch(documentContent, values) { documentDefinition.schema.schema }
+
                 val modifiedContent = JsonDocumentContent.build(
                     jsonSchemaDoc.content().asJson(),
                     documentContent,
@@ -207,7 +213,7 @@ class CaseDocumentJsonValueResolverFactory(
             try {
                 val document = AuthorizationContext.runWithoutAuthorization { documentService.get(documentId.toString()) }
                 val documentContent = document.content().asJson()
-                buildJsonPatch(documentContent, values)
+                buildJsonPatch(documentContent, values) { getSchema(document) }
 
                 AuthorizationContext.runWithoutAuthorization { documentService.modifyDocument(document, documentContent) }
                 return // Success, exit retry loop
@@ -227,9 +233,21 @@ class CaseDocumentJsonValueResolverFactory(
         }
     }
 
+    @Deprecated("Replaced by preProcessValuesForNewDocument", level = DeprecationLevel.WARNING)
     override fun preProcessValuesForNewCase(values: Map<String, Any?>): ObjectNode {
         val emptyDocumentContent = objectMapper.createObjectNode()
         buildJsonPatch(emptyDocumentContent, values)
+        return emptyDocumentContent
+    }
+
+    override fun preProcessValuesForNewDocument(values: Map<String, Any?>, documentDefinitionName: String): ObjectNode {
+        val emptyDocumentContent = objectMapper.createObjectNode()
+        // Resolve the schema so 'null' values are written according to what the definition allows. When the
+        // definition can't be found we fall back to the legacy behavior of always writing JSON null.
+        val definition = AuthorizationContext.runWithoutAuthorization {
+            documentDefinitionService.findActiveByName(documentDefinitionName).orElse(null)
+        }
+        buildJsonPatch(emptyDocumentContent, values) { definition?.schema?.schema }
         return emptyDocumentContent
     }
 
@@ -248,14 +266,72 @@ class CaseDocumentJsonValueResolverFactory(
         return documentDefinition.schema.schema.collectValueResolverOptions("$PREFIX:")
     }
 
-    private fun buildJsonPatch(jsonNode: JsonNode, values: Map<String, Any?>) {
+    /**
+     * @param schemaSupplier resolves the document schema, used to decide how to write 'null' values.
+     * It is only invoked when a null value is actually encountered (and may return null to keep the
+     * legacy behavior of always writing JSON null, e.g. for a not-yet-existing case).
+     */
+    private fun buildJsonPatch(
+        jsonNode: JsonNode,
+        values: Map<String, Any?>,
+        schemaSupplier: () -> Schema? = { null }
+    ) {
+        val schema by lazy(schemaSupplier)
         values.forEach {
             val jsonPointer = toJsonPointer(it.key.substringAfter(":"))
-            val valueNode = toValueNode(it.value)
             val jsonPatchBuilder = JsonPatchBuilder()
-            jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, valueNode)
-            JsonPatchService.apply(jsonPatchBuilder.build(), jsonNode)
+            // 'schema' (lazy) is only resolved when a null value is actually written
+            val isRemoval = if (it.value == null) {
+                applyNullValue(jsonNode, jsonPointer, schema, jsonPatchBuilder, it.key)
+            } else {
+                jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, toValueNode(it.value))
+                false
+            }
+            // removals are skipped by the default flags, so they need to be explicitly allowed
+            val flags = if (isRemoval) allowRemovalOperations() else defaultPatchFlags()
+            JsonPatchService.apply(jsonPatchBuilder.build(), jsonNode, flags)
         }
+    }
+
+    /**
+     * Writes a 'null' value depending on what the document [schema] allows at [jsonPointer]:
+     * write JSON null when null is allowed, remove the node when null is not allowed but the
+     * property is not required, otherwise fail. When [schema] is null the legacy behavior of always
+     * writing JSON null is kept. Returns true when a remove operation was added to [jsonPatchBuilder].
+     */
+    private fun applyNullValue(
+        jsonNode: JsonNode,
+        jsonPointer: JsonPointer,
+        schema: Schema?,
+        jsonPatchBuilder: JsonPatchBuilder,
+        key: String,
+    ): Boolean {
+        val strategy = schema?.determineNullWriteStrategy(jsonPointer.toString()) ?: NullWriteStrategy.WRITE_NULL
+        return when (strategy) {
+            NullWriteStrategy.WRITE_NULL -> {
+                jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, NullNode.instance)
+                false
+            }
+
+            NullWriteStrategy.REMOVE -> {
+                val exists = !jsonNode.at(jsonPointer).isMissingNode
+                if (exists) {
+                    jsonPatchBuilder.remove(jsonPointer)
+                }
+                exists
+            }
+
+            NullWriteStrategy.NOT_ALLOWED ->
+                throw IllegalStateException(
+                    "Cannot write 'null' to '$key': the document schema does not allow null at this " +
+                        "location and the property is required, so the node cannot be removed."
+                )
+        }
+    }
+
+    private fun getSchema(document: Document): Schema {
+        val jsonSchemaDocument = document as JsonSchemaDocument
+        return documentDefinitionService.findBy(jsonSchemaDocument.definitionId()).orElseThrow().schema.schema
     }
 
     private fun toJsonPointer(path: String): JsonPointer {
@@ -323,7 +399,11 @@ class CaseDocumentJsonValueResolverFactory(
     }
 
     private fun toValueNode(value: Any?): JsonNode {
-        return objectMapper.valueToTree(value)
+        return if (value == null) {
+            NullNode.instance
+        } else {
+            objectMapper.valueToTree(value)
+        }
     }
 
     companion object {

@@ -108,9 +108,25 @@ interface ValueResolverService {
         values: Map<String, Any?>
     )
 
+    @Deprecated(
+        message = "Replaced by preProcessValuesForNewDocument(values, documentDefinitionName), which lets resolvers " +
+            "make schema-aware decisions such as how to write 'null' values.",
+        replaceWith = ReplaceWith("preProcessValuesForNewDocument(values, documentDefinitionName)")
+    )
     fun preProcessValuesForNewCase(
         values: Map<String, Any?>
     ): Map<String, Any?>
+
+    /**
+     * Like [preProcessValuesForNewCase], but passes the target document-definition name to the resolvers so they can
+     * make schema-aware decisions (e.g. how to write 'null' values). Defaults to [preProcessValuesForNewCase] to remain
+     * backwards compatible.
+     */
+    @Suppress("DEPRECATION") // intentional backwards-compatible bridge
+    fun preProcessValuesForNewDocument(
+        values: Map<String, Any?>,
+        documentDefinitionName: String
+    ): Map<String, Any?> = preProcessValuesForNewCase(values)
 
     fun supportsValue(value: String): Boolean
 
