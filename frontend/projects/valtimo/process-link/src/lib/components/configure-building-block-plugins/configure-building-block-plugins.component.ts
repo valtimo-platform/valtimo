@@ -298,8 +298,7 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     const normalizedValue = versionTag || null;
     const currentVersion = this.buildingBlockStateService.getDefinitionSnapshot().versionTag;
     if (normalizedValue === currentVersion) return;
-    this.buildingBlockStateService.setPluginConfigurationMappings(undefined);
-    this.buildingBlockStateService.setDefinitionVersionTag(normalizedValue);
+    this.buildingBlockStateService.changeDefinitionVersionTag(normalizedValue);
   }
 
   private createProcessLink(): void {

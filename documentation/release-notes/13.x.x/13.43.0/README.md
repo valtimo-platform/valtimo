@@ -57,3 +57,4 @@ The building block overview is now sorted by name, paginated, and searchable by 
 | Tasks | Tasks of cases that were already running before the upgrade to 13 can be opened again |
 | Case widgets | Long texts wrap correctly, without overlapping other content |
 | Widgets | The image widget no longer offers `task:` fields it cannot show |
+| Process links | Changing the building block version keeps the configuration that still applies to the new version |
