@@ -90,7 +90,26 @@ class ProcessMigrationComponentSuggester(
 
     override fun componentKey() = ProcessMigrationComponentDeployer.PROCESS_MIGRATION_COMPONENT_KEY
 
-    override fun suggest(source: BlueprintId, target: BlueprintId): Any? {
+    /** A plan migrating instances between two blueprint versions — the ordinary case. */
+    override fun suggest(source: BlueprintId, target: BlueprintId): Any? =
+        suggest(source, target, buildingBlockEntry = false)
+
+    /**
+     * The `processMigration` of an `addBuildingBlock` / `removeBuildingBlock` **entry** — a *hijack*: a
+     * process one side is running, taken over by a process on the other. Nothing is suggested for a block
+     * adoption already accounts for ([adoptionAccountsFor]), and what is left is paired strictly rather
+     * than by nearest match ([pairForEntry]).
+     *
+     * **Told, not inferred**, for the same reason as
+     * `DataMigrationComponentSuggester.suggestForBuildingBlockEntry`: a nested entry and a cross-key
+     * building-block *plan* are both `block -> block`, and only the caller knows which it is asking for.
+     * Inferring it from the ids would put a plan migrating a block onto its successor — an ordinary
+     * migration, where nearest match is the right and only rule — through the entry rules instead.
+     */
+    override fun suggestForBuildingBlockEntry(source: BlueprintId, target: BlueprintId): Any? =
+        suggest(source, target, buildingBlockEntry = true)
+
+    private fun suggest(source: BlueprintId, target: BlueprintId, buildingBlockEntry: Boolean): Any? {
         val sourceProcessDefinitions = resolveProcessDefinitions(source) ?: return null
         val targetProcessDefinitions = resolveProcessDefinitions(target)?.map { (key, definitionId) ->
             ProcessDefinitionRef(key, processActivityMapper.processDefinitionName(definitionId) ?: key, definitionId)
@@ -100,7 +119,7 @@ class ProcessMigrationComponentSuggester(
         }
 
         val sameBlueprint = isSameBlueprint(source, target)
-        if (!sameBlueprint && adoptionAccountsFor(source, target, targetProcessDefinitions)) {
+        if (buildingBlockEntry && adoptionAccountsFor(source, target, targetProcessDefinitions)) {
             logger.info {
                 "'$target' is a building block '$source' declares on a call activity, so `addBuildingBlock` " +
                     "adopts the running sub-process the link already names and no 'processMigration' is " +
@@ -114,6 +133,11 @@ class ProcessMigrationComponentSuggester(
         val targetsByKey = targetProcessDefinitions.associateBy { it.key }
         // Resolved once per suggestion rather than per source process: it walks the whole link graph.
         val relocated = if (sameBlueprint) processesReachableFrom(target) else emptySet()
+        val entryPairs = if (buildingBlockEntry) {
+            pairForEntry(sourceProcessDefinitions, targetProcessDefinitions, targetsByKey, source, target)
+        } else {
+            emptyMap()
+        }
 
         // Sorted, so the same two versions always suggest the same plan whatever order the resolver
         // happened to answer in, and a 16-instruction component stays reviewable.
@@ -122,7 +146,9 @@ class ProcessMigrationComponentSuggester(
             .mapNotNull { (sourceKey, sourceDefinitionId) ->
                 val sourceName = processActivityMapper.processDefinitionName(sourceDefinitionId) ?: sourceKey
 
-                val counterpart = if (sameBlueprint) {
+                val counterpart = if (buildingBlockEntry) {
+                    entryPairs[sourceKey] ?: return@mapNotNull null
+                } else if (sameBlueprint) {
                     targetsByKey[sourceKey] ?: return@mapNotNull unmapped(
                         sourceKey, sourceName, target, targetProcessDefinitions, relocated,
                     )
@@ -190,6 +216,67 @@ class ProcessMigrationComponentSuggester(
     }
 
     /**
+     * `sourceKey -> counterpart` for a building-block entry, pairing only where something says so. Empty
+     * where nothing does, which is the answer an entry with no hijack should give.
+     *
+     * A hijack takes over **one** running process, so the fan-out nearest match produces is not a rough
+     * edge here — it is the whole error. Measured on the customer configuration: dissolving
+     * `uitvoeren-business-services` out of `aanvraag-ioaw-uitkering-dcm:1.0.0` suggested **44 instructions
+     * onto 11 distinct targets**, 18 of the block's processes all aimed at
+     * `ioaw-start-behandeling-gehele-aanvraag-opnieuw`, every one of which passes validation because both
+     * keys resolve. That is the same class of guess G46 deleted *within* a blueprint after eight pairings
+     * scored 0.70–0.80 and failed 14 of 20 cases with `ENGINE-23004`; across blueprints the argument for
+     * keeping it was that the author declared the pairing by writing the entry, which is true of a 1→1
+     * entry and says nothing about which of 13 owner processes a block takes over.
+     *
+     * So two rules, and no third:
+     *
+     * 1. **An exact key match.** A process relocated into a block keeps its key, which is the one signal
+     *    that means something rather than resembling something.
+     * 2. **A forced choice** — exactly one process on each side. Then there is nothing to guess: this is
+     *    the 1→1 shape the entry endpoint was written for and the only one its tests ever covered.
+     *
+     * Anything else is left out and logged with the closest candidate and its score, so an author can add
+     * by hand what the suggester would not invent — G46's rule, that refusing to guess is no use to an
+     * author who cannot see what was refused.
+     *
+     * Note this cannot suggest two sources onto one target, which the executor does allow: `hijack` keeps
+     * only the instructions whose source has a *running* process, so "whichever of these is running gets
+     * taken over" is a legitimate hand-written pattern. It is legitimate and unguessable, which is why it
+     * is left to the author rather than refused on save.
+     */
+    private fun pairForEntry(
+        sources: Map<String, String>,
+        targets: List<ProcessDefinitionRef>,
+        targetsByKey: Map<String, ProcessDefinitionRef>,
+        source: BlueprintId,
+        target: BlueprintId,
+    ): Map<String, ProcessDefinitionRef> {
+        val byKey = sources.keys.mapNotNull { sourceKey -> targetsByKey[sourceKey]?.let { sourceKey to it } }
+        if (byKey.isNotEmpty()) {
+            return byKey.toMap()
+        }
+        if (sources.size == 1 && targets.size == 1) {
+            return mapOf(sources.keys.single() to targets.single())
+        }
+
+        sources.forEach { (sourceKey, sourceDefinitionId) ->
+            val sourceName = processActivityMapper.processDefinitionName(sourceDefinitionId) ?: sourceKey
+            val nearest = bestMatchFor(sourceKey, sourceName, targets)
+                ?.let { (best, score) -> "the closest is '${best.key}' at ${percentage(score)} similarity" }
+                ?: "it owns no processes at all"
+            logger.info {
+                "No process of '$target' has the key '$sourceKey', and '$source' has ${sources.size} " +
+                    "process(es) against ${targets.size} on the other side, so which one this entry takes " +
+                    "over cannot be worked out and no instruction is suggested for it ($nearest). Name the " +
+                    "pair by hand if this process is the one the entry hijacks; left as it is, instances " +
+                    "running it stay where they are."
+            }
+        }
+        return emptyMap()
+    }
+
+    /**
      * Whether [target] is a building block [owner] already reaches through its **call-activity** links, so
      * an `addBuildingBlock` entry for it needs no `processMigration` at all and the honest suggestion is
      * none.
@@ -227,9 +314,11 @@ class ProcessMigrationComponentSuggester(
      *
      * Read through the [BlueprintProcessOwnership] hook already used for `relocated`, whose implementation
      * is the same call-activity closure the executor authorises from — so this cannot suppress a suggestion
-     * for a block adoption would not in fact reach. Requiring **every** target process to be covered keeps
-     * a cross-key *block-to-block* plan (a block migrating to its successor, which the owner reaches
-     * through neither link) on the ordinary nearest-match rule.
+     * for a block adoption would not in fact reach.
+     *
+     * Only asked on the entry path, and only where the **target** is the block: that is the `add`
+     * direction, where adoption is what would create it. Dissolving a block hands its process back to the
+     * owner, which no link does for you, so `remove` goes on to [pairForEntry] like any other hijack.
      */
     private fun adoptionAccountsFor(
         owner: BlueprintId,

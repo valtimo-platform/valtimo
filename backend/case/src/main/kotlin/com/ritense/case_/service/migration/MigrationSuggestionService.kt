@@ -207,16 +207,25 @@ class MigrationSuggestionService(
      */
     fun suggestBuildingBlockEntry(source: BlueprintId, target: BlueprintId): ObjectNode {
         val node = objectMapper.createObjectNode()
-        node.set<JsonNode>("dataMigration", copyPatches(suggestComponent(DATA_MIGRATION, source, target)))
+        node.set<JsonNode>("dataMigration", copyPatches(suggestEntryComponent(DATA_MIGRATION, source, target)))
         node.set<JsonNode>(
             "processMigration",
-            objectMapper.valueToTree(suggestComponent(PROCESS_MIGRATION, source, target) ?: emptyList<Any>())
+            objectMapper.valueToTree(suggestEntryComponent(PROCESS_MIGRATION, source, target) ?: emptyList<Any>())
         )
         return node
     }
 
     private fun suggestComponent(componentKey: String, source: BlueprintId, target: BlueprintId): Any? =
         componentSuggesters.firstOrNull { it.componentKey() == componentKey }?.suggest(source, target)
+
+    /**
+     * The same component, asked for as an **entry** rather than as a plan — see
+     * [MigrationComponentSuggester.suggestForBuildingBlockEntry] for why that distinction cannot be
+     * derived from the two blueprint ids and has to be asked for.
+     */
+    private fun suggestEntryComponent(componentKey: String, source: BlueprintId, target: BlueprintId): Any? =
+        componentSuggesters.firstOrNull { it.componentKey() == componentKey }
+            ?.suggestForBuildingBlockEntry(source, target)
 
     /** Keep only the copy patches (those with a non-null `source`) from a data-migration suggestion. */
     private fun copyPatches(suggestion: Any?): ArrayNode {

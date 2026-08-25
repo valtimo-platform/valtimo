@@ -80,8 +80,22 @@
       ></valtimo-migration-process-migration-tab>
     </cds-tab>
 
+    <!-- Same warning as the process-migration tab, for the instructions nested in these entries. -->
+    <ng-template #addBuildingBlockHeading>
+      {{ 'caseManagement.migration.editor.tabs.addBuildingBlock' | translate }}
+      @if ($unmappedAddBuildingBlockProcesses().length) {
+        <span
+          class="migration-plan-editor__tab-warning"
+          [title]="'caseManagement.migration.editor.processMigration.missingTargetTab' | translate"
+        >
+          <svg cdsIcon="warning--filled" size="16"></svg>
+        </span>
+      }
+    </ng-template>
+
     <cds-tab
-      [heading]="'caseManagement.migration.editor.tabs.addBuildingBlock' | translate"
+      [heading]="addBuildingBlockHeading"
+      [title]="'caseManagement.migration.editor.tabs.addBuildingBlock' | translate"
       [attr.data-test-id]="testIds.addBuildingBlockTab"
     >
       <valtimo-migration-building-block-tab
@@ -94,8 +108,22 @@
       ></valtimo-migration-building-block-tab>
     </cds-tab>
 
+    <!-- Same warning as the process-migration tab, for the instructions nested in these entries. -->
+    <ng-template #removeBuildingBlockHeading>
+      {{ 'caseManagement.migration.editor.tabs.removeBuildingBlock' | translate }}
+      @if ($unmappedRemoveBuildingBlockProcesses().length) {
+        <span
+          class="migration-plan-editor__tab-warning"
+          [title]="'caseManagement.migration.editor.processMigration.missingTargetTab' | translate"
+        >
+          <svg cdsIcon="warning--filled" size="16"></svg>
+        </span>
+      }
+    </ng-template>
+
     <cds-tab
-      [heading]="'caseManagement.migration.editor.tabs.removeBuildingBlock' | translate"
+      [heading]="removeBuildingBlockHeading"
+      [title]="'caseManagement.migration.editor.tabs.removeBuildingBlock' | translate"
       [attr.data-test-id]="testIds.removeBuildingBlockTab"
     >
       <valtimo-migration-building-block-tab

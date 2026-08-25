@@ -48,20 +48,12 @@ class ProcessMigrationComponentValidator(
         val sourceProcessDefinitions = resolveProcessDefinitions(source) ?: return emptyList()
         val targetProcessDefinitions = resolveProcessDefinitions(target) ?: return emptyList()
 
-        // An instruction with no target is refused here, before the component is deserialized, because
-        // `targetProcessDefinitionKey` is not nullable and Jackson answers a *500* for it — an internal
-        // error for what is an ordinary mistake in a hand-edited plan, and the one thing an author is
-        // most likely to leave behind when they know a process has to move but not yet where to. Save
-        // is where "I have not decided yet" has to stop: the engine has nothing to migrate onto, so a
-        // stored plan carrying one would silently skip that process for every case.
-        val missingTarget = component.filter { it.isObject && !it.hasNonNull(TARGET_KEY) }
+        // Refused before the component is deserialized, and shared with the two building-block validators
+        // so the copies nested in their entries are refused the same way — see [ProcessMigrationTargetChecker].
+        val missingTarget = ProcessMigrationTargetChecker.sourcesWithoutTarget(component)
         if (missingTarget.isNotEmpty()) {
-            return missingTarget.map { instruction ->
-                val sourceKey = instruction.get(SOURCE_KEY)?.takeIf { it.isTextual }?.asText()
-                "the instruction for '${sourceKey ?: "?"}' names no '$TARGET_KEY', so there is nothing to " +
-                    "migrate it onto. Every process this plan migrates has to name the process it migrates " +
-                    "to; remove the instruction to leave instances of '${sourceKey ?: "it"}' where they are. " +
-                    "Available: ${targetProcessDefinitions.keys.sorted().joinToString { "'$it'" }}."
+            return missingTarget.map { sourceKey ->
+                ProcessMigrationTargetChecker.describe(sourceKey, targetProcessDefinitions.keys)
             }
         }
 
@@ -108,8 +100,4 @@ class ProcessMigrationComponentValidator(
             .firstOrNull { it.supports(blueprintId.blueprintType()) }
             ?.resolveProcessDefinitions(blueprintId)
 
-    private companion object {
-        const val SOURCE_KEY = "sourceProcessDefinitionKey"
-        const val TARGET_KEY = "targetProcessDefinitionKey"
-    }
 }

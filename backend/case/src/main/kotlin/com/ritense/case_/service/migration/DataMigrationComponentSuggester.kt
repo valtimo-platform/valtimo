@@ -26,9 +26,10 @@ import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.ValueResolverService
 
 /**
- * Best-effort `dataMigration` suggestion. The document JSON is copied verbatim from the source to
- * the target version by default, so fields present at the **same path** in both versions need no
- * patch. Each remaining target is paired with the source whose **field name** (the segment after
+ * Best-effort `dataMigration` suggestion. Where the migration keeps **one document** the JSON is
+ * carried over verbatim, so fields present at the **same path** in both versions need no patch; where
+ * it fills a **separate** document they are the whole job, and are suggested as identity copies — see
+ * [suggestForBuildingBlockEntry]. Each remaining target is paired with the source whose **field name** (the segment after
  * the last `/`) is most similar — the full path may be restructured (`doc:/path/to/value` →
  * `doc:/path/to/new/value`), only the name is expected to survive a rename, so a source is only
  * considered a match when its name is at least [SIMILARITY_THRESHOLD] similar. The pairing is
@@ -46,6 +47,10 @@ import com.ritense.valueresolver.ValueResolverService
  * re-creates the object it was just removed from. So the clearing patches are collapsed to the
  * **shallowest** removed path, which is what an author reads as "this object is gone".
  *
+ * Identity copies are collapsed the same way and for the same reason: copying `doc:/applicant` carries
+ * its whole subtree, so `doc:/applicant/name` beside it is a patch that re-does what the one above it
+ * already did. On a real building block this is the difference between 1480 rows and 10.
+ *
  * The patches come out **sorted by target path**, so the same two versions always suggest the same
  * document, related fields sit together, and a plan is reviewable and diffable rather than ordered by
  * however the schema walk happened to enumerate. Sorting is safe here even though the patches are
@@ -61,7 +66,28 @@ class DataMigrationComponentSuggester(
 
     override fun componentKey() = DataMigrationComponentDeployer.DATA_MIGRATION_COMPONENT_KEY
 
-    override fun suggest(source: BlueprintId, target: BlueprintId): Any? {
+    /** A plan migrating one document between two blueprint versions — the ordinary case. */
+    override fun suggest(source: BlueprintId, target: BlueprintId): Any? =
+        suggest(source, target, separateDocument = false)
+
+    /**
+     * The `dataMigration` of an `addBuildingBlock` / `removeBuildingBlock` **entry**, which moves data
+     * between two documents rather than carrying one over: a building block has a document of its own, and
+     * `MigrationDataPatchApplier.resolveToContent` builds it from the patches alone, returning a bare
+     * object when there are none. So a path both sides have is the whole job here, where in [suggest] it
+     * is free.
+     *
+     * **This has to be told, not inferred.** The first version of this read the blueprint ids — different
+     * blueprints, one of them a building block — and that is wrong in both directions for the same pair.
+     * A *nested* entry is `block -> block` with two documents; a cross-key building-block **plan** is also
+     * `block -> block`, migrating one document from one key to another, and `DataMigrationComponentExecutor`
+     * applies its patches with the document id as both source and target. Nothing in the two ids
+     * distinguishes them — only the caller knows which it is asking for.
+     */
+    override fun suggestForBuildingBlockEntry(owner: BlueprintId, block: BlueprintId): Any? =
+        suggest(owner, block, separateDocument = true)
+
+    private fun suggest(source: BlueprintId, target: BlueprintId, separateDocument: Boolean): Any? {
         val request =
             ValueResolverOptionRequest(prefixes = listOf(DOCUMENT_PREFIX), type = ValueResolverOptionType.FIELD)
         val sourcePaths = fieldPaths(valueResolverService.getResolvableKeys(request, source))
@@ -69,39 +95,61 @@ class DataMigrationComponentSuggester(
         val sourcePathSet = sourcePaths.toSet()
         val targetPathSet = targetPaths.toSet()
 
-        // Identical paths are copied verbatim by the migration engine, so they need no patch. They
-        // still consume their source, so it is not later cleared as an unmatched leftover.
+        // A path both sides have is either free (one document, carried over verbatim) or the entire
+        // point (a separate document, which starts empty). Either way it consumes its source, so it is
+        // not later cleared as an unmatched leftover.
         val matchedSourceByTarget = matchByName(
             targets = targetPaths.filterNot { it in sourcePathSet },
             sources = sourcePaths.filterNot { it in targetPathSet },
         )
         val matchedSources = matchedSourceByTarget.values.toSet()
 
+        // Collapsed among the shared paths only. A name-matched copy *into* a collapsed subtree reads a
+        // different source and has to survive — `doc:/a` carrying the subtree, then `doc:/a/b` set from
+        // `doc:/x/y` — which the lexicographic sort below already orders correctly.
+        val identityCopies = if (!separateDocument) {
+            emptyList()
+        } else {
+            collapseToRoots(targetPaths.filter { targetPath -> targetPath in sourcePathSet })
+                .map { sharedPath -> DataMigrationPatch(source = sharedPath, target = sharedPath) }
+        }
+
         val copies = targetPaths
             .filter { targetPath -> targetPath !in sourcePathSet }
             .map { targetPath -> DataMigrationPatch(source = matchedSourceByTarget[targetPath], target = targetPath) }
 
-        val removals = collapseToRemovedRoots(
-            sourcePaths.filter { sourcePath -> sourcePath !in targetPathSet && sourcePath !in matchedSources }
-        ).map { removedPath -> DataMigrationPatch(value = null, target = removedPath) }
+        // A separate document starts empty (`MigrationDataPatchApplier.resolveToContent` returns a bare
+        // object when no patch targets `doc:`), so there is no carried-over value to clear and a removal
+        // would be a patch that does nothing. Both building-block suggesters drop these anyway.
+        val removals = if (separateDocument) {
+            emptyList()
+        } else {
+            collapseToRoots(
+                sourcePaths.filter { sourcePath -> sourcePath !in targetPathSet && sourcePath !in matchedSources }
+            ).map { removedPath -> DataMigrationPatch(value = null, target = removedPath) }
+        }
 
-        return (copies + removals).sortedBy { it.target }.ifEmpty { null }
+        return (identityCopies + copies + removals).sortedBy { it.target }.ifEmpty { null }
     }
 
     /**
-     * Keeps only the removed paths no removed *ancestor* already covers, so a dropped object is
-     * cleared once instead of once per node beneath it.
+     * Keeps only the paths no *ancestor* in the same list already covers, so a subtree is patched once
+     * instead of once per node beneath it — a dropped object cleared once, a carried-over object copied
+     * once.
      *
-     * This is safe because a path is only removed when the target version does not have it, and the
-     * target cannot have `…/applicant/name` without having `…/applicant` — object containers are
+     * This is safe for a removal because a path is only removed when the target version does not have it,
+     * and the target cannot have `…/applicant/name` without having `…/applicant` — object containers are
      * always offered as options too. So no patch, and nothing the target version still models, lives
      * under a path collapsed away here. A descendant matched as the *source* of a copy is not in this
      * list to begin with, and its value survives the surviving ancestor patch regardless: every source
      * is resolved before any target is written.
+     *
+     * It is safe for an identity copy for the mirror reason: the ancestor is present on **both** sides, so
+     * copying it moves the whole subtree the descendants would each have moved a piece of.
      */
-    private fun collapseToRemovedRoots(removedPaths: List<String>): List<String> {
-        val removed = removedPaths.toSet()
-        return removedPaths.filter { path -> ancestorsOf(path).none { it in removed } }
+    private fun collapseToRoots(paths: List<String>): List<String> {
+        val all = paths.toSet()
+        return paths.filter { path -> ancestorsOf(path).none { it in all } }
     }
 
     /** The `/`-separated paths above [path], nearest first, e.g. `doc:/a/b/c` -> `doc:/a/b`, `doc:/a`. */

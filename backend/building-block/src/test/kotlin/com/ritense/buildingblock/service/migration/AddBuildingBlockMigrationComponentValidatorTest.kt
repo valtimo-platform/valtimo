@@ -165,6 +165,57 @@ class AddBuildingBlockMigrationComponentValidatorTest {
             .contains("activity 'BeoordeelTask': ENGINE-23001 no such activity")
     }
 
+    @Test
+    fun `should refuse a nested instruction whose target is null, rather than answering 500`() {
+        // G47 fixed this for the top-level component by checking the raw JSON before deserializing.
+        // `findPlanProblems` dispatches on top-level keys only, so these copies never reached that
+        // validator and kept failing Jackson on a non-nullable String — an internal error for the most
+        // ordinary mistake in a hand-edited plan.
+        linksOn(linked("income-check", "1.0.0"))
+        val withNullTarget = component(
+            """"processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing-process",
+                    "targetProcessDefinitionKey": null
+                }
+            ]"""
+        )
+
+        assertThat(validator.validate(source, target, withNullTarget)).singleElement().asString()
+            .contains("adds building block 'income-check'")
+            .contains("the instruction for 'verhuizing-process' names no 'targetProcessDefinitionKey'")
+    }
+
+    @Test
+    fun `should refuse a nested instruction whose target is absent`() {
+        linksOn(linked("income-check", "1.0.0"))
+        val withoutTarget = component(
+            """"processMigration": [{"sourceProcessDefinitionKey": "verhuizing-process"}]"""
+        )
+
+        assertThat(validator.validate(source, target, withoutTarget)).singleElement().asString()
+            .contains("the instruction for 'verhuizing-process' names no 'targetProcessDefinitionKey'")
+    }
+
+    @Test
+    fun `should refuse a nested instruction whose target is blank, naming the field not the empty key`() {
+        // What the editor's empty select writes. Left to the checks downstream it was reported as
+        // "'' is not a process of ..." — a sentence about a key the author never typed.
+        linksOn(linked("income-check", "1.0.0"))
+        val blankTarget = component(
+            """"processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing-process",
+                    "targetProcessDefinitionKey": ""
+                }
+            ]"""
+        )
+
+        assertThat(validator.validate(source, target, blankTarget)).singleElement().asString()
+            .contains("names no 'targetProcessDefinitionKey'")
+            .doesNotContain("'' is not a process")
+    }
+
     private fun component(section: String) = objectMapper.readTree(
         """
         [

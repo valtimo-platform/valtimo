@@ -78,7 +78,9 @@ class AddBuildingBlockMigrationComponentSuggester(
                     buildingBlockKey = block.key,
                     buildingBlockVersionTag = block.versionTag.toString(),
                     // Data flows owner -> block on the way in, the mirror of removal's block -> owner.
-                    dataMigration = toDataPatches(dataMigrationComponentSuggester.suggest(source, block)),
+                    dataMigration = toDataPatches(
+                        dataMigrationComponentSuggester.suggestForBuildingBlockEntry(source, block)
+                    ),
                 )
             }
 

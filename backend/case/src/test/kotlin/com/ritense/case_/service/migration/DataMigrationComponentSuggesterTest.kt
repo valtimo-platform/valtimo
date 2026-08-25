@@ -18,6 +18,7 @@ package com.ritense.case_.service.migration
 
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionRequest
@@ -113,6 +114,117 @@ class DataMigrationComponentSuggesterTest {
 
         assertThat(suggest().map { it.target })
             .containsExactly("doc:/adres", "doc:/bsn", "doc:/naam", "doc:/straat_naam")
+    }
+
+    @Test
+    fun `should copy the paths both sides have when the entry fills a separate document`() {
+        // An `addBuildingBlock` entry moves data between two documents, and the block's starts empty, so
+        // a shared path is the whole job rather than free. Read as one document it was skipped, and the
+        // entry filled nothing — measured on `uitvoeren-business-services`, all 1480 of its paths shared.
+        val block = BuildingBlockDefinitionId("uitvoeren-business-services", "1.0.0")
+        paths(source, "doc:/adres", "doc:/naam")
+        paths(block, "doc:/adres", "doc:/naam")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block)).isEqualTo(
+            listOf(
+                DataMigrationPatch(source = "doc:/adres", target = "doc:/adres"),
+                DataMigrationPatch(source = "doc:/naam", target = "doc:/naam"),
+            )
+        )
+    }
+
+    @Test
+    fun `should copy a shared subtree once at its root rather than once per node beneath it`() {
+        // Copying `doc:/adres` carries the subtree with it, so a row per leaf re-does what the row above
+        // already did. This is the difference between 1480 rows and 10 on a real building block.
+        val block = BuildingBlockDefinitionId("uitvoeren-business-services", "1.0.0")
+        paths(source, "doc:/adres", "doc:/adres/straat", "doc:/adres/plaats", "doc:/naam")
+        paths(block, "doc:/adres", "doc:/adres/straat", "doc:/adres/plaats", "doc:/naam")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block)).isEqualTo(
+            listOf(
+                DataMigrationPatch(source = "doc:/adres", target = "doc:/adres"),
+                DataMigrationPatch(source = "doc:/naam", target = "doc:/naam"),
+            )
+        )
+    }
+
+    @Test
+    fun `should keep a renamed copy into a subtree that is copied wholesale, and apply it after`() {
+        // `doc:/adres` carries the shared subtree, then `doc:/adres/plaats` overwrites one field from a
+        // differently-named source. The lexicographic sort is what puts the ancestor first.
+        val block = BuildingBlockDefinitionId("uitvoeren-business-services", "1.0.0")
+        paths(source, "doc:/adres", "doc:/adres/straat", "doc:/woonplaats")
+        paths(block, "doc:/adres", "doc:/adres/straat", "doc:/adres/woonplaats")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block)).isEqualTo(
+            listOf(
+                DataMigrationPatch(source = "doc:/adres", target = "doc:/adres"),
+                DataMigrationPatch(source = "doc:/woonplaats", target = "doc:/adres/woonplaats"),
+            )
+        )
+    }
+
+    @Test
+    fun `should clear nothing when filling a separate document, which starts empty`() {
+        val block = BuildingBlockDefinitionId("uitvoeren-business-services", "1.0.0")
+        paths(source, "doc:/adres", "doc:/naam")
+        paths(block, "doc:/naam")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block))
+            .isEqualTo(listOf(DataMigrationPatch(source = "doc:/naam", target = "doc:/naam")))
+    }
+
+    @Test
+    fun `should suggest nothing for a building block that declares no fields`() {
+        // Deliberate configuration: 52 of the 53 blocks on `aanvraag-ioaw-uitkering-dcm` ship
+        // `"properties": {}`. There is nothing to fill and nothing to say about it — an empty tab.
+        val block = BuildingBlockDefinitionId("bs-211-vaststelling-persoon", "1.0.0")
+        paths(source, "doc:/adres", "doc:/naam")
+        paths(block)
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block)).isNull()
+    }
+
+    @Test
+    fun `should treat a cross-key case migration as one document, not two`() {
+        // The sharp edge of the rule: a different blueprint, but `DataMigrationComponentExecutor` applies
+        // the patches with the case id as both source and target, so the content is carried over and a
+        // shared path still needs no patch. Read as two documents, every plan would gain a redundant row.
+        val other = CaseDefinitionId("woningdossier", "1.0.0")
+        paths(source, "doc:/adres", "doc:/naam")
+        paths(other, "doc:/adres", "doc:/naam")
+
+        assertThat(suggester.suggest(source, other)).isNull()
+    }
+
+    @Test
+    fun `should treat a building block migrating to its own next version as one document`() {
+        val from = BuildingBlockDefinitionId("uitvoeren-business-services", "1.0.0")
+        val to = BuildingBlockDefinitionId("uitvoeren-business-services", "1.0.1")
+        paths(from, "doc:/adres", "doc:/naam")
+        paths(to, "doc:/adres", "doc:/naam")
+
+        assertThat(suggester.suggest(from, to)).isNull()
+    }
+
+    @Test
+    fun `should treat a cross-key building block plan as one document, unlike a nested entry`() {
+        // The pair the blueprint ids cannot separate, and the reason the caller has to say which it means:
+        // this is `block -> block` and so is a nested entry, but a *plan* migrates one document from one
+        // key to another and its patches are applied with that document id as both source and target.
+        val from = BuildingBlockDefinitionId("bs-ophalen-brp", "1.0.0")
+        val to = BuildingBlockDefinitionId("bs-raadplegen-brp", "1.0.0")
+        paths(from, "doc:/adres", "doc:/naam")
+        paths(to, "doc:/adres", "doc:/naam")
+
+        assertThat(suggester.suggest(from, to)).isNull()
+        assertThat(suggester.suggestForBuildingBlockEntry(from, to)).isEqualTo(
+            listOf(
+                DataMigrationPatch(source = "doc:/adres", target = "doc:/adres"),
+                DataMigrationPatch(source = "doc:/naam", target = "doc:/naam"),
+            )
+        )
     }
 
     @Suppress("UNCHECKED_CAST")

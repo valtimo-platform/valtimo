@@ -217,7 +217,7 @@ class ProcessMigrationComponentSuggesterTest {
         processes(source, "ab-afhandelen-aanvraag-dcm")
         processes(block, "uitvoeren-business-services")
 
-        assertThat(suggester.suggest(source, block))
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block))
             .isEqualTo(listOf(instruction("ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")))
     }
 
@@ -231,7 +231,7 @@ class ProcessMigrationComponentSuggesterTest {
         processes(source, "ab-afhandelen-aanvraag-dcm")
         processes(block, "uitvoeren-business-services")
 
-        assertThat(suggester.suggest(source, block)).isNull()
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block)).isNull()
     }
 
     @Test
@@ -252,7 +252,7 @@ class ProcessMigrationComponentSuggesterTest {
         )
         processes(block, "bs-ophalen-brp-persoonsgegevens")
 
-        assertThat(suggester.suggest(source, block)).isNull()
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block)).isNull()
     }
 
     @Test
@@ -305,6 +305,59 @@ class ProcessMigrationComponentSuggesterTest {
         processes(target)
 
         assertThat(suggest()).isNull()
+    }
+
+    @Test
+    fun `should not spread a hijack across every process when nothing says which one it takes over`() {
+        // The measured shape, in the `remove` direction: dissolving `uitvoeren-business-services` out of
+        // `aanvraag-ioaw-uitkering-dcm:1.0.0` suggested 44 instructions onto 11 targets, 18 of the block's
+        // processes all aimed at one. A hijack takes over ONE running process; nearest match cannot say
+        // which, so it says nothing and logs the closest candidate for each.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        processes(block, "alo-annuleren-business-services", "bsb-211-vaststelling-persoon-aanvrager")
+        processes(target, "ioaw-start-annuleren-informatieverzoek-dcm", "ioaw-start-intrekken-aanvraag")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(block, target)).isNull()
+    }
+
+    @Test
+    fun `should pair an entry on an exact key match, which is what a relocated process keeps`() {
+        // The one signal that means something rather than resembling something: a process moved into a
+        // block keeps its key. Note `ab-afhandelen-aanvraag-dcm` would out-score it on similarity.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(block, "ab-afhandelen-aanvraag", "uitvoeren-business-services")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block))
+            .isEqualTo(listOf(instruction("uitvoeren-business-services", "uitvoeren-business-services")))
+    }
+
+    @Test
+    fun `should pair an entry when the choice is forced, one process against one`() {
+        // The 1-1 shape the entry endpoint was written for, and the only one its tests ever covered:
+        // nothing is guessed because there is nothing to choose between.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        processes(source, "ab-afhandelen-aanvraag-dcm")
+        processes(block, "uitvoeren-business-services")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block))
+            .isEqualTo(listOf(instruction("ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")))
+    }
+
+    @Test
+    fun `should keep nearest match for a plan migrating a block onto its successor`() {
+        // Same two blueprint types and two different keys as a nested entry, opposite meaning — which is
+        // why the caller says which it wants instead of the suggester reading the ids.
+        val from = buildingBlock("bs-ophalen-brp", "1.0.0")
+        val to = buildingBlock("bs-raadplegen-brp", "1.0.0")
+        processes(from, "bs-ophalen-brp-persoonsgegevens", "bs-ophalen-brp-adres")
+        processes(to, "bs-raadplegen-brp-persoonsgegevens", "bs-raadplegen-brp-adres")
+
+        @Suppress("UNCHECKED_CAST")
+        val asPlan = suggester.suggest(from, to) as List<ProcessMigrationInstruction>
+        assertThat(asPlan.map { it.sourceProcessDefinitionKey })
+            .containsExactly("bs-ophalen-brp-adres", "bs-ophalen-brp-persoonsgegevens")
+        assertThat(suggester.suggestForBuildingBlockEntry(from, to)).isNull()
     }
 
     @Suppress("UNCHECKED_CAST")

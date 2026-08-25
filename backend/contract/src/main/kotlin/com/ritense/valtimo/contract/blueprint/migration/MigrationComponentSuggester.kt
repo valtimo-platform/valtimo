@@ -41,4 +41,23 @@ interface MigrationComponentSuggester {
      * nothing meaningful to suggest (or this suggester does not apply to the blueprint types).
      */
     fun suggest(source: BlueprintId, target: BlueprintId): Any?
+
+    /**
+     * The same component, suggested for one `addBuildingBlock` / `removeBuildingBlock` **entry** rather
+     * than for a whole plan. [source] and [target] are then a building block and its owner (in whichever
+     * direction the entry moves), not two versions of one thing.
+     *
+     * It is a genuinely different question, and both suggesters that override it answer differently: a
+     * document path present on both sides is *free* between two versions of one document and is the whole
+     * job when filling a block's own document, and a process pairing between two versions is a rename
+     * where between an owner and its block it is a hijack of one running process.
+     *
+     * **Why it is asked rather than worked out.** The blueprint ids cannot answer it. A nested entry is
+     * `block -> block`, and so is a cross-key building-block *plan* migrating a block onto its successor —
+     * same two types, same two keys, opposite meanings. Only the caller knows which it wants.
+     *
+     * Defaults to [suggest], so a component contributed from outside these two keeps working and simply
+     * makes no distinction.
+     */
+    fun suggestForBuildingBlockEntry(source: BlueprintId, target: BlueprintId): Any? = suggest(source, target)
 }

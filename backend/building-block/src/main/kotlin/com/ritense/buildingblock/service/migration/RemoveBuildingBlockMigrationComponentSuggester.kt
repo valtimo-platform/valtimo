@@ -82,10 +82,14 @@ class RemoveBuildingBlockMigrationComponentSuggester(
                     // and `target` is the version the owner will be on, so the owner's side of the mapping
                     // is resolved against the target where that is what it means.
                     dataMigration = toDataPatches(
-                        dataMigrationComponentSuggester.suggest(lost, ownerSideOf(declaredBy, source, target))
+                        dataMigrationComponentSuggester.suggestForBuildingBlockEntry(
+                            lost, ownerSideOf(declaredBy, source, target)
+                        )
                     ),
                     processMigration = toProcessInstructions(
-                        processMigrationComponentSuggester.suggest(lost, ownerSideOf(declaredBy, source, target))
+                        processMigrationComponentSuggester.suggestForBuildingBlockEntry(
+                            lost, ownerSideOf(declaredBy, source, target)
+                        )
                     ),
                 )
             }

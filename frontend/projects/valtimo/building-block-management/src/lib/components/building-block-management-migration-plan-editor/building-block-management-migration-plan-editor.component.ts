@@ -140,7 +140,8 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
       !this.$saving() &&
       !!this.asText(plan.key) &&
       !!this.asText(plan.source?.versionTag) &&
-      !this.$unmappedProcesses().length
+      !this.$unmappedProcesses().length &&
+      !this.$unmappedEntryProcesses().length
     );
   });
   /**
@@ -158,6 +159,28 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     (this.$plan().processMigration ?? [])
       .filter(instruction => !this.asText(instruction?.targetProcessDefinitionKey))
       .map(instruction => this.asText(instruction?.sourceProcessDefinitionKey) ?? '?')
+  );
+
+  /**
+   * The same, for the `processMigration` copies nested inside an `addBuildingBlock` /
+   * `removeBuildingBlock` entry. They are edited by the very same component, so they carry the same blank
+   * target and the backend refuses them the same way — but they were counted by nothing, so Save stayed
+   * enabled and the refusal arrived from the server.
+   *
+   * Kept separate from [$unmappedProcesses] so each tab's heading warns about its own instructions only.
+   */
+  public readonly $unmappedEntryProcesses = computed(() => [
+    ...this.unmappedIn(this.$plan().addBuildingBlock),
+    ...this.unmappedIn(this.$plan().removeBuildingBlock),
+  ]);
+
+  /** The blank-target sources of every entry's nested `processMigration`, for one component. */
+  public readonly $unmappedAddBuildingBlockProcesses = computed(() =>
+    this.unmappedIn(this.$plan().addBuildingBlock)
+  );
+
+  public readonly $unmappedRemoveBuildingBlockProcesses = computed(() =>
+    this.unmappedIn(this.$plan().removeBuildingBlock)
   );
 
   private _params!: BuildingBlockMigrationParams;
@@ -553,6 +576,15 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
   private navigateBack(): void {
     this.router.navigateByUrl(
       `building-block-management/building-block/${this._params.buildingBlockDefinitionKey}/version/${this._params.buildingBlockDefinitionVersionTag}/${BUILDING_BLOCK_MANAGEMENT_TABS.MIGRATION}`
+    );
+  }
+
+  /** Blank-target sources across every entry's nested `processMigration`. */
+  private unmappedIn(entries: any[] | null | undefined): string[] {
+    return (entries ?? []).flatMap(entry =>
+      (entry?.processMigration ?? [])
+        .filter((instruction: any) => !this.asText(instruction?.targetProcessDefinitionKey))
+        .map((instruction: any) => this.asText(instruction?.sourceProcessDefinitionKey) ?? '?')
     );
   }
 }

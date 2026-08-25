@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.domain.migration.AddBuildingBlockInstruction
+import com.ritense.processdocument.migration.ProcessMigrationTargetChecker
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 
@@ -48,6 +49,13 @@ class AddBuildingBlockMigrationComponentValidator(
     override fun componentKey() = AddBuildingBlockMigrationComponentDeployer.ADD_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun validate(source: BlueprintId, target: BlueprintId, component: JsonNode): List<String> {
+        // Before `convertValue`, because that is what a nested null target answers 500 from — G47's fix
+        // for the top-level component, which never reached these copies (see the class note above).
+        val missingTarget = nestedInstructionsWithoutTarget(component)
+        if (missingTarget.isNotEmpty()) {
+            return missingTarget
+        }
+
         val instructions: List<AddBuildingBlockInstruction> = objectMapper.convertValue(
             component,
             object : TypeReference<List<AddBuildingBlockInstruction>>() {},
@@ -56,4 +64,16 @@ class AddBuildingBlockMigrationComponentValidator(
             addBuildingBlockProcessChecker.findEntriesWithoutProcessMigration(target, instructions) +
             addBuildingBlockProcessChecker.findUnresolvableProcesses(source, target, instructions)
     }
+
+    /**
+     * Every nested `processMigration` instruction naming no target, said in terms of the entry it belongs
+     * to. No `Available:` list: resolving the block's processes needs a deployment lookup this check
+     * deliberately runs before, and the author is being told the field is empty, not that it is wrong.
+     */
+    private fun nestedInstructionsWithoutTarget(component: JsonNode): List<String> =
+        component.filter { it.isObject }.flatMap { entry ->
+            val block = entry.get("buildingBlockKey")?.takeIf { it.isTextual }?.asText() ?: "?"
+            ProcessMigrationTargetChecker.sourcesWithoutTarget(entry.get("processMigration"))
+                .map { sourceKey -> "adds building block '$block': ${ProcessMigrationTargetChecker.describe(sourceKey)}" }
+        }
 }

@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.service.migration
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.processdocument.migration.ProcessMigrationTargetChecker
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 
@@ -36,6 +37,22 @@ class RemoveBuildingBlockMigrationComponentValidator(
     override fun componentKey() = RemoveBuildingBlockMigrationComponentDeployer.REMOVE_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun validate(source: BlueprintId, target: BlueprintId, component: JsonNode): List<String> {
-        return removeBuildingBlockVersionChecker.findVersionless(component)
+        return removeBuildingBlockVersionChecker.findVersionless(component) +
+            nestedInstructionsWithoutTarget(component)
     }
+
+    /**
+     * Every nested `processMigration` instruction naming no target, said in terms of the entry it belongs
+     * to. The twin of the check in [AddBuildingBlockMigrationComponentValidator]: these copies reach no
+     * other validator either, so a blank target would otherwise be stored and silently skip that process
+     * for every case — a process the entry is dissolving a block around, which is worse than leaving it.
+     */
+    private fun nestedInstructionsWithoutTarget(component: JsonNode): List<String> =
+        component.filter { it.isObject }.flatMap { entry ->
+            val block = entry.get("buildingBlockKey")?.takeIf { it.isTextual }?.asText() ?: "?"
+            ProcessMigrationTargetChecker.sourcesWithoutTarget(entry.get("processMigration"))
+                .map { sourceKey ->
+                    "removes building block '$block': ${ProcessMigrationTargetChecker.describe(sourceKey)}"
+                }
+        }
 }

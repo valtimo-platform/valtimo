@@ -61,8 +61,8 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         processSuggester = mock()
         whenever(caseLinkRepository.findAllByCaseDefinitionId(any())).thenReturn(emptyList())
         whenever(linkResolver.resolveCallActivityDeclarers(any())).thenReturn(emptyMap())
-        whenever(dataSuggester.suggest(any(), any())).thenReturn(null)
-        whenever(processSuggester.suggest(any(), any())).thenReturn(null)
+        whenever(dataSuggester.suggestForBuildingBlockEntry(any(), any())).thenReturn(null)
+        whenever(processSuggester.suggestForBuildingBlockEntry(any(), any())).thenReturn(null)
         suggester = RemoveBuildingBlockMigrationComponentSuggester(
             ObjectMapper(), caseLinkRepository, linkResolver, dataSuggester, processSuggester,
         )
@@ -92,10 +92,10 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         suggester.suggest(source, target)
 
         // The nested block hands back one level, to uitvoeren.
-        verify(dataSuggester).suggest(eq(besluit), eq(uitvoeren))
-        verify(processSuggester).suggest(eq(besluit), eq(uitvoeren))
+        verify(dataSuggester).suggestForBuildingBlockEntry(eq(besluit), eq(uitvoeren))
+        verify(processSuggester).suggestForBuildingBlockEntry(eq(besluit), eq(uitvoeren))
         // The first-level block hands back to the owner on the version it ends up on.
-        verify(dataSuggester).suggest(eq(uitvoeren), eq(target))
+        verify(dataSuggester).suggestForBuildingBlockEntry(eq(uitvoeren), eq(target))
     }
 
     @Test
