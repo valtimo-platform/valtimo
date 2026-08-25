@@ -248,6 +248,75 @@ describe('ExternalPluginIframeComponent', () => {
     });
   });
 
+  /**
+   * The iframe is at an opaque origin, so a reported height is the only way the parent can size it —
+   * and it is untrusted input from plugin-authored code. These cover both halves: that an opted-in
+   * surface grows, and that a bad value cannot push the surrounding page around.
+   */
+  describe('auto height', () => {
+    let iframe: HTMLIFrameElement;
+
+    beforeEach(() => {
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    const sendResizeFrom = (payload: unknown, source: MessageEventSource | null): void =>
+      (component as any)._onMessage({
+        data: {source: 'valtimo-plugin', event: 'resize', payload},
+        source,
+      } as MessageEvent);
+
+    const sendResize = (payload: unknown): void => sendResizeFrom(payload, iframe.contentWindow);
+
+    it('leaves the height to CSS unless the surface opted in', () => {
+      sendResize({height: 640});
+
+      expect(iframe.style.height).toBe('');
+    });
+
+    it('grows the iframe to the reported height when opted in', () => {
+      component.autoHeight = true;
+
+      sendResize({height: 640});
+
+      expect(iframe.style.height).toBe('640px');
+    });
+
+    it('clamps a height that would turn the page into an endless scroll', () => {
+      component.autoHeight = true;
+
+      sendResize({height: 10000000});
+
+      expect(iframe.style.height).toBe('20000px');
+    });
+
+    it('ignores a height that is not a usable number', () => {
+      component.autoHeight = true;
+
+      for (const height of [0, -100, NaN, Infinity, '600', null, undefined]) {
+        sendResize({height});
+        expect(iframe.style.height).toBe('');
+      }
+
+      sendResize(null);
+      expect(iframe.style.height).toBe('');
+    });
+
+    it('ignores a resize posted by a window that is not the iframe', () => {
+      component.autoHeight = true;
+
+      sendResizeFrom({height: 900}, window);
+
+      expect(iframe.style.height).toBe('');
+    });
+  });
+
   describe('bundle URL validation', () => {
     afterEach(() => {
       component.ngOnDestroy();

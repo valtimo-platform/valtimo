@@ -2429,6 +2429,13 @@
       "methodHeading": "Methode",
       "endpointHeading": "Endpoint",
       "descriptionHeading": "Omschrijving",
+      "egressHeading": "Externe verbindingen",
+      "egressDescription": "Deze plugin kan verbinding maken met de onderstaande adressen, en met niets anders. Controleer of u elk adres herkent en of u verwacht dat de plugin daarmee communiceert.",
+      "egressTargetHeading": "Adres",
+      "egressSourceHeading": "Herkomst",
+      "egressWildcard": "Elk adres onder dit domein — de plugin bepaalt zelf met welk adres verbinding wordt gemaakt",
+      "egressFromManifest": "Vereist door de plugin",
+      "egressFromConfiguration": "Uit een URL die u in deze configuratie heeft ingevuld",
       "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten"
     },
     "logs": {
@@ -2495,7 +2502,8 @@
       },
       "caseTab": "Dossiertabblad",
       "caseWidget": "Dossierwidget",
-      "buildingBlockMapping": "Plugin-koppeling van bouwblok"
+      "buildingBlockMapping": "Plugin-koppeling van bouwblok",
+      "menuPage": "Menupagina"
     },
     "compatibility": {
       "incompatibleTag": "Incompatibel",

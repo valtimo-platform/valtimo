@@ -47,6 +47,9 @@ enum class PluginUsageParentType {
  *   the configuration; [buildingBlockKey] names the building block. On a call-activity link the
  *   process-link fields are populated too; on a case-definition ↔ BB link only [parentKey]/
  *   [parentVersionTag] (the case) are.
+ * - **Menu-page usage**: a `plugin-page` node in the application menu references the configuration;
+ *   [menuItemTitle] names the menu item and [parentType] is `GLOBAL` (a menu page is
+ *   application-wide, not case- or process-scoped), with every process-link and tab field null.
  * - **Definition-reference usage** (host deletion only): a `BUILDING_BLOCK`-reference process link
  *   pins a plugin *definition* rather than a configuration — [configurationId] then carries the
  *   definition id and [configurationTitle] the pinned `pluginId@version` pair.
@@ -67,4 +70,5 @@ data class PluginUsageDto(
     val tabName: String? = null,
     val buildingBlockKey: String? = null,
     val widgetKey: String? = null,
+    val menuItemTitle: String? = null,
 )

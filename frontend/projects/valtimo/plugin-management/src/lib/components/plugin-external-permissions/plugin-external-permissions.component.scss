@@ -30,6 +30,14 @@
   margin-block-end: var(--cds-spacing-03);
 }
 
+// Granted events render as a wrapping row of tags rather than one row per event. No `gap`: Carbon's
+// `.cds--tag` already carries `margin: $spacing-02` (and zeroes its inline-start margin on every tag
+// but the first), so a gap here would double the spacing Carbon has already decided on.
+.plugin-external-permissions__tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .plugin-external-permissions__helper {
   margin-block-start: var(--cds-spacing-02);
   color: var(--cds-text-secondary);

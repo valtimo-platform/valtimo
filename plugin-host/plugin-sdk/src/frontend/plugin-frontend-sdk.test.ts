@@ -563,3 +563,144 @@ describe("task-form submission", () => {
     await expect(promise).resolves.toMatchObject({ ok: true });
   });
 });
+
+/**
+ * Height reporting lives in the SDK rather than in each bundle because the parent cannot measure an
+ * opaque-origin iframe itself. These cover the part a bundle author never sees: that it happens at
+ * all, that it does not flood the parent, and that a bad value cannot escape.
+ */
+describe("automatic height reporting", () => {
+  let triggerResize: () => void;
+  let pendingFrames: FrameRequestCallback[];
+
+  /** Runs the rAF callbacks the SDK scheduled, so coalescing is observable. */
+  function flushFrames(): void {
+    const frames = pendingFrames;
+    pendingFrames = [];
+    for (const frame of frames) frame(0);
+  }
+
+  function setDocumentHeight(height: number): void {
+    Object.defineProperty(document.documentElement, "scrollHeight", {
+      configurable: true,
+      value: height,
+    });
+  }
+
+  function heightEmits(): PostedMessage[] {
+    return postedMessages.filter((m) => m.event === "resize");
+  }
+
+  beforeEach(() => {
+    pendingFrames = [];
+    // Captured rather than real so the test decides when the document "changes size". `disconnect`
+    // has to actually stop callbacks, or a teardown test would pass against the stub's leniency
+    // rather than against the SDK.
+    let observer: {callback: () => void; disconnected: boolean} | null = null;
+    triggerResize = () => {
+      if (observer && !observer.disconnected) observer.callback();
+    };
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: () => void) {
+          observer = { callback, disconnected: false };
+        }
+        observe = vi.fn();
+        disconnect = (): void => {
+          if (observer) observer.disconnected = true;
+        };
+      }
+    );
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      pendingFrames.push(cb);
+      return pendingFrames.length;
+    });
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    setDocumentHeight(0);
+  });
+
+  it("reports the document height without the bundle emitting anything itself", async () => {
+    sdk = new ValtimoPluginSDK();
+    await initFromParent();
+
+    setDocumentHeight(420);
+    triggerResize();
+    flushFrames();
+
+    expect(heightEmits()).toHaveLength(1);
+    expect(heightEmits()[0].payload).toEqual({ height: 420 });
+  });
+
+  it("coalesces a burst of layout changes into a single emit", async () => {
+    sdk = new ValtimoPluginSDK();
+    await initFromParent();
+
+    setDocumentHeight(300);
+    triggerResize();
+    triggerResize();
+    triggerResize();
+    flushFrames();
+
+    expect(heightEmits()).toHaveLength(1);
+  });
+
+  it("stays silent when a reflow does not change the height", async () => {
+    sdk = new ValtimoPluginSDK();
+    await initFromParent();
+
+    setDocumentHeight(250);
+    triggerResize();
+    flushFrames();
+    expect(heightEmits()).toHaveLength(1);
+
+    // Same height reported again — nothing for the parent to act on.
+    triggerResize();
+    flushFrames();
+    expect(heightEmits()).toHaveLength(1);
+
+    setDocumentHeight(275);
+    triggerResize();
+    flushFrames();
+    expect(heightEmits()).toHaveLength(2);
+  });
+
+  it("clamps a runaway height instead of forwarding it", async () => {
+    sdk = new ValtimoPluginSDK();
+    await initFromParent();
+
+    setDocumentHeight(10_000_000);
+    triggerResize();
+    flushFrames();
+
+    expect(heightEmits()[0].payload).toEqual({ height: 20000 });
+  });
+
+  /**
+   * A config form is measurable before the handshake completes, and its height carries nothing an
+   * eavesdropper could use — so it must not sit in the pre-init queue waiting for an origin.
+   */
+  it("reports height before the parent origin is pinned", () => {
+    sdk = new ValtimoPluginSDK();
+
+    setDocumentHeight(180);
+    triggerResize();
+    flushFrames();
+
+    expect(heightEmits()).toHaveLength(1);
+    expect(heightEmits()[0].targetOrigin).toBe("*");
+  });
+
+  it("stops observing once destroyed", async () => {
+    sdk = new ValtimoPluginSDK();
+    await initFromParent();
+    sdk.destroy();
+    sdk = undefined;
+
+    setDocumentHeight(500);
+    triggerResize();
+    flushFrames();
+
+    expect(heightEmits()).toHaveLength(0);
+  });
+});

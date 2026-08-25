@@ -59,6 +59,8 @@ interface ExternalData {
   todo: { id: number; title: string; completed: boolean } | null;
   viewCount: number;
   fetchStatus: number;
+  /** Result of calling the admin-configured URL (`x-egress-target`); null when none is set. */
+  configured: { url: string; status: number; reached: boolean } | null;
 }
 
 interface BackendScopeResult {
@@ -245,6 +247,25 @@ function CaseTab() {
         )}
         {externalData.state === "ready" && !externalData.data.todo && (
           <div style={errorStyle}>{sdk.t("caseTab.external.error")}</div>
+        )}
+        {/* The admin-configured destination, shown next to the manifest-declared one so the two
+            provenances are visible side by side. A URL outside the allowlist is refused by the
+            host, which shows up here as a non-2xx status rather than as data. */}
+        {externalData.state === "ready" && externalData.data.configured && (
+          <div>
+            <div style={rowStyle}>
+              <span>{sdk.t("caseTab.external.configuredUrl")}</span>
+              <span>{externalData.data.configured.url}</span>
+            </div>
+            <div style={rowStyle}>
+              <span>{sdk.t("caseTab.external.configuredStatus")}</span>
+              <span style={externalData.data.configured.reached ? undefined : errorStyle}>
+                {externalData.data.configured.reached
+                  ? externalData.data.configured.status
+                  : sdk.t("caseTab.external.configuredBlocked")}
+              </span>
+            </div>
+          </div>
         )}
       </div>
 

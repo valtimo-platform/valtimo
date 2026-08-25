@@ -20,6 +20,7 @@
   <ng-container *ngIf="$configBundleUrl() as bundleUrl; else jsonFallback">
     <valtimo-external-plugin-iframe
       [bundleUrl]="bundleUrl"
+      [autoHeight]="true"
       (configurationChangedEvent)="onIframeConfigurationChanged($event)"
     ></valtimo-external-plugin-iframe>
   </ng-container>

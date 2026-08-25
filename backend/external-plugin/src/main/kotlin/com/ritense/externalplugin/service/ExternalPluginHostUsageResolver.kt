@@ -31,6 +31,7 @@ import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.plugin.MenuPagePluginUsageFinder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.Optional
@@ -62,6 +63,13 @@ class ExternalPluginHostUsageResolver(
      * mapping usages simply don't block deletion — matching a deployment without building blocks.
      */
     private val buildingBlockMappingUsageFinder: Optional<BuildingBlockPluginMappingUsageFinder> = Optional.empty(),
+    /**
+     * Optional for the same reason: implemented by the `admin-settings` module, which owns the
+     * persisted menu JSON and which external-plugin cannot depend on directly (the SPI lives in
+     * `:backend:contract`). Without it, menu pages simply don't block deletion — matching a
+     * deployment without `admin-settings`.
+     */
+    private val menuPagePluginUsageFinder: Optional<MenuPagePluginUsageFinder> = Optional.empty(),
 ) {
 
     fun findUsagesForHost(hostId: UUID): List<PluginUsageDto> {
@@ -71,6 +79,7 @@ class ExternalPluginHostUsageResolver(
             buildCaseTabUsageDtos(configurations) +
             buildCaseWidgetUsageDtos(configurations) +
             buildBuildingBlockMappingUsageDtos(configurations) +
+            buildMenuPageUsageDtos(configurations) +
             buildDefinitionReferenceUsageDtos(definitions)
     }
 
@@ -80,7 +89,8 @@ class ExternalPluginHostUsageResolver(
         return buildUsageDtos(listOf(configuration)) +
             buildCaseTabUsageDtos(listOf(configuration)) +
             buildCaseWidgetUsageDtos(listOf(configuration)) +
-            buildBuildingBlockMappingUsageDtos(listOf(configuration))
+            buildBuildingBlockMappingUsageDtos(listOf(configuration)) +
+            buildMenuPageUsageDtos(listOf(configuration))
     }
 
     /**
@@ -124,6 +134,29 @@ class ExternalPluginHostUsageResolver(
                     tabKey = usage.tabKey,
                     tabName = usage.tabName,
                     widgetKey = usage.widgetKey,
+                )
+            }
+        }
+    }
+
+    /**
+     * A `plugin-page` node in the application menu references the configuration without a process
+     * link and without a case, so it counts as a usage that blocks deletion — the menu sibling of
+     * [buildCaseTabUsageDtos]. `GLOBAL` because a menu page is application-wide rather than case- or
+     * process-scoped.
+     */
+    private fun buildMenuPageUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {
+        val finder = menuPagePluginUsageFinder.orElse(null) ?: return emptyList()
+        if (configurations.isEmpty()) return emptyList()
+        return configurations.flatMap { configuration ->
+            finder.findUsages(configuration.id).map { usage ->
+                PluginUsageDto(
+                    configurationId = configuration.id,
+                    configurationTitle = configuration.title,
+                    parentType = PluginUsageParentType.GLOBAL,
+                    parentKey = null,
+                    parentVersionTag = null,
+                    menuItemTitle = usage.title,
                 )
             }
         }

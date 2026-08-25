@@ -85,11 +85,31 @@ request("/reports", () => {
 // http_request scenario: fetch from a trusted public test API (JSONPlaceholder) and combine with
 // KV-stored metadata. Demonstrates outbound HTTP, KV persistence, and structured logging — all
 // three results visible in the case tab.
+//
+// Two destinations, two provenances. JSONPlaceholder is fixed in `permissions.egress`, so it is part
+// of the grant the admin accepts once. `configuration.externalApiUrl` is marked `x-egress-target`,
+// so GZAC derives its origin from whatever the admin typed and pushes that alongside — the plugin
+// never has to know which of the two it is calling, but a wrong URL is refused by the allowlist.
 request("/external-data", (input: RequestInput) => {
   const res = httpRequest.get<{id: number; title: string; completed: boolean}>(
     "https://jsonplaceholder.typicode.com/todos/1"
   );
   log.info("Fetched external data", {status: res.status, title: res.body?.title});
+
+  const configuredUrl = (input.configuration.externalApiUrl as string | undefined)?.trim();
+  let configured: {url: string; status: number; reached: boolean} | null = null;
+  if (configuredUrl) {
+    const configuredRes = httpRequest.get<unknown>(configuredUrl);
+    log.info("Fetched admin-configured external data", {
+      url: configuredUrl,
+      status: configuredRes.status,
+    });
+    configured = {
+      url: configuredUrl,
+      status: configuredRes.status,
+      reached: configuredRes.status >= 200 && configuredRes.status < 300,
+    };
+  }
 
   const docKey = "view-count:" + (input.context?.documentId ?? "global");
   const viewCount = kv.get<number>(docKey).value ?? 0;
@@ -100,6 +120,7 @@ request("/external-data", (input: RequestInput) => {
       todo: res.status === 200 ? res.body : null,
       viewCount,
       fetchStatus: res.status,
+      configured,
     },
   };
 });

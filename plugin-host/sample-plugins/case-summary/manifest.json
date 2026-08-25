@@ -15,6 +15,9 @@
       "config.currency.label": "Currency code",
       "config.currency.placeholder": "EUR",
       "config.currency.help": "Currency code used when formatting amounts (e.g. EUR, USD, GBP)",
+      "config.externalApiUrl.label": "External API URL",
+      "config.externalApiUrl.placeholder": "https://dummyjson.com/todos/1",
+      "config.externalApiUrl.help": "The plugin fetches extra case details from this URL. Whatever you enter here becomes an outbound destination the plugin is allowed to reach.",
       "action.titleField.label": "Title field (JSON Pointer) *",
       "action.titleField.placeholder": "/applicantName",
       "action.titleField.help": "JSON Pointer path to the title field in the case document (e.g. /applicantName)",
@@ -85,6 +88,9 @@
       "caseTab.external.todoTitle": "Todo",
       "caseTab.external.todoCompleted": "Completed",
       "caseTab.external.error": "Could not load external data.",
+      "caseTab.external.configuredUrl": "Configured URL",
+      "caseTab.external.configuredStatus": "Response",
+      "caseTab.external.configuredBlocked": "Refused — this address is not one the plugin is allowed to reach",
       "caseTab.viewCount": "Tab views",
       "caseWidget.title": "Case summary",
       "caseWidget.hello": "This card is rendered by the case-summary plugin's case-widget bundle.",
@@ -108,6 +114,9 @@
       "config.currency.label": "Valutacode",
       "config.currency.placeholder": "EUR",
       "config.currency.help": "Valutacode gebruikt bij het opmaken van bedragen (bv. EUR, USD, GBP)",
+      "config.externalApiUrl.label": "URL externe API",
+      "config.externalApiUrl.placeholder": "https://dummyjson.com/todos/1",
+      "config.externalApiUrl.help": "De plugin haalt aanvullende zaakgegevens op via deze URL. Wat u hier invult, wordt een uitgaande bestemming die de plugin mag bereiken.",
       "action.titleField.label": "Titelveld (JSON Pointer) *",
       "action.titleField.placeholder": "/applicantName",
       "action.titleField.help": "JSON Pointer-pad naar het titelveld in het zaakdocument (bv. /applicantName)",
@@ -178,6 +187,9 @@
       "caseTab.external.todoTitle": "Todo",
       "caseTab.external.todoCompleted": "Voltooid",
       "caseTab.external.error": "Kon externe gegevens niet laden.",
+      "caseTab.external.configuredUrl": "Ingestelde URL",
+      "caseTab.external.configuredStatus": "Antwoord",
+      "caseTab.external.configuredBlocked": "Geweigerd — dit adres mag de plugin niet bereiken",
       "caseTab.viewCount": "Tabbladweergaven",
       "caseWidget.title": "Zaaksamenvatting",
       "caseWidget.hello": "Deze kaart wordt weergegeven door de case-widget-bundle van de case-summary plugin.",
@@ -202,6 +214,13 @@
         "type": "string",
         "title": "Currency code",
         "default": "EUR"
+      },
+      "externalApiUrl": {
+        "type": "string",
+        "format": "uri",
+        "title": "External API URL",
+        "default": "https://dummyjson.com/todos/1",
+        "x-egress-target": true
       }
     },
     "additionalProperties": false

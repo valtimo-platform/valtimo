@@ -152,6 +152,14 @@ export interface ValtimoPluginSDKOptions {
  */
 const HANDSHAKE_SAFE_EVENTS: ReadonlySet<string> = new Set(["ready", "resize"]);
 
+/**
+ * Upper bound on an auto-reported height, in CSS pixels. A runaway layout (a percentage-height
+ * element inside an auto-height document can feed back on itself) would otherwise report a height
+ * that grows every frame; the parent clamps too, but reporting an absurd value is not something a
+ * correct bundle ever needs to do.
+ */
+const MAX_REPORTED_HEIGHT = 20000;
+
 // ---- SDK class ----
 
 class ValtimoPluginSDK {
@@ -197,11 +205,18 @@ class ValtimoPluginSDK {
   private readonly _readyPromise: Promise<void>;
   private _resolveInit: () => void = () => {};
   private readonly _initPromise: Promise<void>;
+  /** Watches the document so height is reported without the bundle having to ask (see below). */
+  private _heightObserver: ResizeObserver | null = null;
+  /** rAF handle coalescing a burst of layout changes into one emit. */
+  private _heightFrame: number | null = null;
+  /** Last height posted, so a reflow that does not change height stays silent. */
+  private _lastReportedHeight = 0;
 
   constructor(options: ValtimoPluginSDKOptions = {}) {
     this._parentOrigin = options.parentOrigin ?? null;
     this._explicitParentOrigin = options.parentOrigin != null;
     window.addEventListener("message", this._boundOnMessage);
+    this._observeHeight();
     this._initPromise = new Promise<void>((resolve) => {
       this._resolveInit = resolve;
     });
@@ -582,9 +597,67 @@ class ValtimoPluginSDK {
     }
   }
 
+  /**
+   * Report the document's height to the parent whenever it changes, so the embedding iframe can be
+   * sized to its content.
+   *
+   * This lives in the SDK rather than in each bundle on purpose. The iframe runs at an opaque origin
+   * (sandbox without `allow-same-origin`), so the parent cannot measure `contentDocument` itself —
+   * the height has to come from inside. But "inside" need not mean the plugin author's code: every
+   * bundle constructs this class already, so observing here means a bundle gets correct auto-height
+   * without writing anything, and cannot get it wrong by forgetting to.
+   *
+   * A `ResizeObserver` rather than a manual measure-on-render: it also catches the changes a bundle
+   * would not think to hook — late-loading fonts, images settling, a validation message appearing,
+   * async content arriving after the initial paint.
+   */
+  private _observeHeight(): void {
+    // Guard for non-browser environments (SSR, unit tests) and browsers without the observer.
+    if (typeof ResizeObserver === "undefined" || typeof document === "undefined") return;
+    const root = document.documentElement;
+    if (!root) return;
+
+    this._heightObserver = new ResizeObserver(() => this._scheduleHeightEmit());
+    this._heightObserver.observe(root);
+  }
+
+  /**
+   * Coalesce a burst of observer callbacks into a single emit on the next frame. A layout that
+   * settles over several reflows would otherwise post a message per step, and each one crosses a
+   * postMessage boundary and triggers a parent-side style write.
+   */
+  private _scheduleHeightEmit(): void {
+    if (this._heightFrame !== null) return;
+    const schedule =
+      typeof requestAnimationFrame === "function"
+        ? requestAnimationFrame
+        : (cb: FrameRequestCallback) => setTimeout(() => cb(0), 16) as unknown as number;
+
+    this._heightFrame = schedule(() => {
+      this._heightFrame = null;
+      this._emitHeight();
+    });
+  }
+
+  private _emitHeight(): void {
+    // scrollHeight rather than the observer's contentRect: the latter reports the element's own box,
+    // which for a `height: auto` <html> excludes margin-collapsed and overflowing children — the
+    // exact content a too-short iframe would clip.
+    const height = Math.min(Math.ceil(document.documentElement.scrollHeight), MAX_REPORTED_HEIGHT);
+    if (height <= 0 || height === this._lastReportedHeight) return;
+    this._lastReportedHeight = height;
+    this.emit("resize", { height });
+  }
+
   /** Clean up event listener. Call this if you need to destroy the SDK instance. */
   public destroy(): void {
     window.removeEventListener("message", this._boundOnMessage);
+    this._heightObserver?.disconnect();
+    this._heightObserver = null;
+    if (this._heightFrame !== null && typeof cancelAnimationFrame === "function") {
+      cancelAnimationFrame(this._heightFrame);
+      this._heightFrame = null;
+    }
   }
 }
 

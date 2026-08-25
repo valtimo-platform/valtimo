@@ -44,14 +44,21 @@ const helpTextStyle: React.CSSProperties = {
   marginTop: "4px",
 };
 
+// Prefilled so a fresh configuration already has a working destination — and so the permissions
+// step has a derived egress entry to show without the admin having to think one up. The property is
+// marked `x-egress-target` in the manifest, so whatever ends up here is what the plugin may reach.
+const DEFAULT_EXTERNAL_API_URL = "https://dummyjson.com/todos/1";
+
 function ConfigForm() {
   const [title, setTitle] = useState("");
   const [currency, setCurrency] = useState("EUR");
+  const [externalApiUrl, setExternalApiUrl] = useState(DEFAULT_EXTERNAL_API_URL);
 
   useEffect(() => {
     sdk.onPrefillConfiguration(({ title: prefillTitle, configuration }) => {
       if (prefillTitle) setTitle(prefillTitle);
       if (configuration.currency) setCurrency(configuration.currency as string);
+      if (configuration.externalApiUrl) setExternalApiUrl(configuration.externalApiUrl as string);
     });
 
     sdk.onSave(() => {
@@ -61,23 +68,30 @@ function ConfigForm() {
     sdk.emit("ready", {});
   }, []);
 
-  const emitConfig = useCallback((newTitle: string, newCurrency: string) => {
+  const emitConfig = useCallback((newTitle: string, newCurrency: string, newUrl: string) => {
     const valid = newTitle.trim().length > 0;
     sdk.setConfiguration(valid, newTitle.trim(), {
       currency: newCurrency.trim() || "EUR",
+      externalApiUrl: newUrl.trim() || DEFAULT_EXTERNAL_API_URL,
     });
   }, []);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setTitle(val);
-    emitConfig(val, currency);
+    emitConfig(val, currency, externalApiUrl);
   };
 
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setCurrency(val);
-    emitConfig(title, val);
+    emitConfig(title, val, externalApiUrl);
+  };
+
+  const handleExternalApiUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setExternalApiUrl(val);
+    emitConfig(title, currency, val);
   };
 
   return (
@@ -103,6 +117,18 @@ function ConfigForm() {
           style={inputStyle}
         />
         <p style={helpTextStyle}>{sdk.t("config.currency.help")}</p>
+      </div>
+
+      <div style={{ marginBottom: "16px" }}>
+        <label style={labelStyle}>{sdk.t("config.externalApiUrl.label")}</label>
+        <input
+          type="url"
+          value={externalApiUrl}
+          onChange={handleExternalApiUrlChange}
+          placeholder={sdk.t("config.externalApiUrl.placeholder")}
+          style={inputStyle}
+        />
+        <p style={helpTextStyle}>{sdk.t("config.externalApiUrl.help")}</p>
       </div>
     </div>
   );

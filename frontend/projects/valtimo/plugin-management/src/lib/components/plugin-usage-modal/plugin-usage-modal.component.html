@@ -48,7 +48,8 @@
       <cds-list-row
         *ngFor="let usage of usages; trackBy: trackByUsage"
         [attr.data-test-id]="
-          'plugin-usage-' + (usage.processLinkId || usage.widgetKey || usage.tabKey)
+          'plugin-usage-' +
+          (usage.processLinkId || usage.widgetKey || usage.tabKey || usage.menuItemTitle)
         "
       >
         <cds-list-column nowrap="true">
@@ -58,7 +59,8 @@
                 usage.activityId ||
                 usage.tabName ||
                 usage.tabKey ||
-                usage.buildingBlockKey
+                usage.buildingBlockKey ||
+                usage.menuItemTitle
             }}
           </div>
           <div *ngIf="usage.activityName" class="plugin-usage-modal__cell-sub">
@@ -79,6 +81,14 @@
             class="plugin-usage-modal__cell-sub"
           >
             {{ 'pluginManagement.usageModal.buildingBlockMapping' | translate }}
+          </div>
+          <div
+            *ngIf="
+              usage.menuItemTitle && !usage.activityId && !usage.tabKey && !usage.buildingBlockKey
+            "
+            class="plugin-usage-modal__cell-sub"
+          >
+            {{ 'pluginManagement.usageModal.menuPage' | translate }}
           </div>
         </cds-list-column>
 
@@ -134,7 +144,7 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="primary" [attr.modal-primary-focus]="true" (click)="onClose()">
+    <button cdsButton="ghost" [attr.modal-primary-focus]="true" (click)="onClose()">
       {{ 'interface.close' | translate }}
     </button>
   </cds-modal-footer>

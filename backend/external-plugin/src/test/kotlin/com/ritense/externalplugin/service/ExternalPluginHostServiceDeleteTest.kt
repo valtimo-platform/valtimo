@@ -121,6 +121,45 @@ class ExternalPluginHostServiceDeleteTest {
     }
 
     @Test
+    fun `delete throws when the only usage is a menu page, and deletes nothing`() {
+        // The host-delete sibling of the configuration guard: a `plugin-page` menu node on any
+        // configuration under this host keeps the whole host alive, because deleting the host
+        // cascades away the configuration the page is built on.
+        val hostId = UUID.randomUUID()
+        val usages = listOf(
+            PluginUsageDto(
+                configurationId = UUID.randomUUID(),
+                configurationTitle = "Primary CRM",
+                parentType = PluginUsageParentType.GLOBAL,
+                parentKey = null,
+                parentVersionTag = null,
+                menuItemTitle = "CRM overview",
+            )
+        )
+        whenever(hostUsageResolver.findUsagesForHost(hostId)).thenReturn(usages)
+
+        assertThatThrownBy { service.delete(hostId) }
+            .isInstanceOf(ExternalPluginHostInUseException::class.java)
+            .satisfies({ thrown ->
+                val problem = thrown as ExternalPluginHostInUseException
+                assertThat(problem.parameters["hostId"]).isEqualTo(hostId.toString())
+                @Suppress("UNCHECKED_CAST")
+                val payloadUsages = problem.parameters["usages"] as Collection<PluginUsageDto>
+                assertThat(payloadUsages).hasSize(1)
+                assertThat(payloadUsages.first().menuItemTitle).isEqualTo("CRM overview")
+            })
+
+        verify(definitionRepository, never()).findAllByHostId(any())
+        verify(configurationRepository, never()).findAllByDefinitionId(any())
+        verify(grantedEndpointRepository, never()).deleteAllByConfigurationId(any())
+        verify(grantedEventRepository, never()).deleteAllByConfigurationId(any())
+        verify(configurationRepository, never()).deleteAll(any<Iterable<ExternalPluginConfiguration>>())
+        verify(definitionRepository, never()).deleteAll(any<Iterable<ExternalPluginDefinition>>())
+        verify(hostRepository, never()).deleteById(any())
+        verify(hostClient, never()).deleteConfiguration(any(), any(), any())
+    }
+
+    @Test
     fun `findUsages delegates to the resolver and never deletes`() {
         val hostId = UUID.randomUUID()
         val expected = listOf(

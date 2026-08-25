@@ -32,6 +32,13 @@ import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/shared';
 import {ExternalPluginEndpoint} from '../../models';
 
+/**
+ * Ceiling for an iframe height reported from inside the sandbox. High enough for any legitimate
+ * form or report, low enough that a bad value cannot turn the surrounding page into an endless
+ * scroll.
+ */
+const MAX_IFRAME_HEIGHT = 20000;
+
 @Component({
   standalone: true,
   selector: 'valtimo-external-plugin-iframe',
@@ -60,6 +67,14 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   @Input() public allowedEndpoints?: ExternalPluginEndpoint[];
   /** External-plugin configuration id, forwarded to the plugin host for `target: "plugin"` calls. */
   @Input() public configurationId: string | null = null;
+  /**
+   * Grow the iframe to the height its content reports, instead of leaving it to CSS.
+   *
+   * Opt-in rather than always-on: the SDK reports height from every bundle, so switching this on for
+   * a surface changes how that surface lays out. Surfaces are moved over one at a time so each can
+   * be looked at, rather than all of them shifting at once.
+   */
+  @Input() public autoHeight = false;
 
   @Output() public configurationChangedEvent = new EventEmitter<{
     valid: boolean;
@@ -181,10 +196,35 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
       case 'submitTask':
         this.submitTaskEvent.emit(data.payload);
         break;
+      case 'resize':
+        this._applyReportedHeight(data.payload);
+        break;
       case 'proxyRequest':
         void this._handleProxyRequest(data.payload);
         break;
     }
+  }
+
+  /**
+   * Size the iframe to the height its content reported. The iframe is at an opaque origin, so this
+   * is the only way the parent can learn how tall the content is — `contentDocument` is inaccessible
+   * by design (sandbox without `allow-same-origin`).
+   *
+   * The value comes from inside the iframe and is therefore untrusted: a buggy or hostile bundle
+   * could report a height that pushes the surrounding page around. Clamped to
+   * {@link MAX_IFRAME_HEIGHT} so the worst case is an over-tall panel rather than a page whose
+   * layout a plugin controls.
+   */
+  private _applyReportedHeight(payload: unknown): void {
+    if (!this.autoHeight) return;
+
+    const reported = (payload as {height?: unknown} | null)?.height;
+    if (typeof reported !== 'number' || !Number.isFinite(reported) || reported <= 0) return;
+
+    const iframe = this.iframeRef?.nativeElement;
+    if (!iframe) return;
+
+    iframe.style.height = `${Math.min(Math.ceil(reported), MAX_IFRAME_HEIGHT)}px`;
   }
 
   /**
