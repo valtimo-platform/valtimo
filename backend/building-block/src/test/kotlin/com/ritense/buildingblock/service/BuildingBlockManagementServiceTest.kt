@@ -37,7 +37,13 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.argumentCaptor
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
+import org.springframework.data.domain.Sort
 import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
@@ -137,6 +143,74 @@ class BuildingBlockManagementServiceTest {
             buildingBlockManagementService.update(definitionId.key, definitionId.versionTag.toString(), UpdateBuildingBlockDefinitionDto("t", null))
         }
         verify(buildingBlockDefinitionChecker, never()).assertCanUpdateBuildingBlockDefinition(definitionId)
+    }
+
+    @Test
+    fun `searchLatestPerKey refuses to sort on the version tag`() {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            buildingBlockManagementService.searchLatestPerKey(
+                null,
+                PageRequest.of(0, 10, Sort.by("versionTag"))
+            )
+        }
+
+        assertTrue(exception.message!!.contains("versionTag"))
+        assertTrue(exception.message!!.contains("name"))
+        assertTrue(exception.message!!.contains("key"))
+    }
+
+    @Test
+    fun `searchLatestPerKey refuses an unknown sort property rather than silently ignoring it`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            buildingBlockManagementService.searchLatestPerKey(
+                null,
+                PageRequest.of(0, 10, Sort.by("description"))
+            )
+        }
+    }
+
+    @Test
+    fun `searchLatestPerKey refuses a bad sort even when there is nothing to return`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            buildingBlockManagementService.searchLatestPerKey(
+                null,
+                PageRequest.of(0, 10, Sort.by("versionTag"))
+            )
+        }
+
+        verify(buildingBlockDefinitionRepository, never()).findAllIds()
+    }
+
+    @Test
+    fun `searchLatestPerKey queries only the latest id per key, by SemVer`() {
+        whenever(buildingBlockDefinitionRepository.findAllIds()).thenReturn(
+            listOf(
+                BuildingBlockDefinitionId("alpha", "1.2.0"),
+                BuildingBlockDefinitionId("alpha", "1.9.0"),
+                BuildingBlockDefinitionId("alpha", "1.10.0"),
+                BuildingBlockDefinitionId("bravo", "2.0.0"),
+            )
+        )
+        whenever(buildingBlockDefinitionRepository.findAll(any<Specification<BuildingBlockDefinition>>(), any<Pageable>()))
+            .thenReturn(PageImpl(emptyList()))
+
+        buildingBlockManagementService.searchLatestPerKey(null, PageRequest.of(0, 10))
+
+        val ids = argumentCaptor<Specification<BuildingBlockDefinition>>()
+        verify(buildingBlockDefinitionRepository).findAll(ids.capture(), any<Pageable>())
+        assertNotNull(ids.firstValue)
+    }
+
+    @Test
+    fun `searchLatestPerKey returns an empty page without querying when there are no definitions`() {
+        whenever(buildingBlockDefinitionRepository.findAllIds()).thenReturn(emptyList())
+
+        val page = buildingBlockManagementService.searchLatestPerKey(null, PageRequest.of(0, 10))
+
+        assertTrue(page.content.isEmpty())
+        assertEquals(0, page.totalElements)
+        verify(buildingBlockDefinitionRepository, never())
+            .findAll(any<Specification<BuildingBlockDefinition>>(), any<Pageable>())
     }
 
     @Test

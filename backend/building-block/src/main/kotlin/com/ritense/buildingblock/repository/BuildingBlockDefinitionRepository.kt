@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.jpa.repository.Query
 
 interface BuildingBlockDefinitionRepository :
     JpaRepository<BuildingBlockDefinition, BuildingBlockDefinitionId>,
@@ -29,4 +30,12 @@ interface BuildingBlockDefinitionRepository :
 
     fun findAllByIdKeyOrderByIdVersionTag(key: String): List<BuildingBlockDefinition>
     fun findAllByIdKey(key: String, pageable: Pageable): Page<BuildingBlockDefinition>
+
+    /**
+     * Identifiers only. Deciding which version of a key is the latest is SemVer precedence, which
+     * the version tag column - a string - cannot express, so that one step happens in Kotlin. This
+     * keeps the rows it has to read down to two varchar columns; everything after it is a query.
+     */
+    @Query("select definition.id from BuildingBlockDefinition definition")
+    fun findAllIds(): List<BuildingBlockDefinitionId>
 }

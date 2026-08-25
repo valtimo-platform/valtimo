@@ -26,13 +26,19 @@
     gap: 16px;
   }
 
-  // Sits beside a disabled Save, so it has to read as an explanation rather than as an error.
-  &__blocked {
-    max-width: 40rem;
-    overflow: hidden;
-    color: var(--cds-text-secondary);
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  // Matches the tab warning on the case-management detail screen, in error red rather than warning
+  // yellow because this one blocks Save. The inner path is the glyph on the filled disc, so it is
+  // painted back to the layer colour instead of inheriting the fill.
+  &__tab-warning {
+    display: inline-flex;
+    margin-left: 4px;
+    vertical-align: middle;
+    fill: var(--cds-support-error);
+
+    ::ng-deep [data-icon-path='inner-path'] {
+      fill: var(--cds-layer);
+      opacity: 1;
+    }
   }
 }
 

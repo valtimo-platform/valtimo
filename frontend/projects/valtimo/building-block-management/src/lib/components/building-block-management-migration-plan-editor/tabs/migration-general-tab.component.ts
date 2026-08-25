@@ -27,7 +27,7 @@ import {
 } from '@angular/core';
 import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {InputModule} from 'carbon-components-angular';
+import {InputModule, LoadingModule} from 'carbon-components-angular';
 import {
   AutoKeyInputComponent,
   SelectItem,
@@ -56,6 +56,7 @@ interface GeneralValue {
     TranslateModule,
     AutoKeyInputComponent,
     InputModule,
+    LoadingModule,
     ValtimoSelectModule,
   ],
 })
@@ -68,6 +69,12 @@ export class BbMigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Input() public sourceVersionOptions: SelectItem[] = [];
   /** The migration keys this building block version already has, so a generated key stays unique. */
   @Input() public usedKeys: string[] = [];
+  /**
+   * Whether the backend is still composing the pre-filled plan. The fields below fill themselves from
+   * it, and on a large building block that takes long enough that an author reasonably concludes
+   * nothing is going to arrive — so the wait is shown rather than left to be guessed at.
+   */
+  @Input() public suggesting = false;
 
   @Input() public set isEdit(value: boolean) {
     // The key identifies the plan; changing it while editing would create a new one. `edit` also puts

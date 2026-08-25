@@ -30,7 +30,9 @@
           >
             @for (mode of MODES; track mode) {
               <option [value]="mode">
-                {{ 'buildingBlockManagement.migration.editor.dataMigration.mode_' + mode | translate }}
+                {{
+                  'buildingBlockManagement.migration.editor.dataMigration.mode_' + mode | translate
+                }}
               </option>
             }
           </cds-select>
@@ -41,7 +43,9 @@
                 formControlName="source"
                 [buildingBlockDefinitionKey]="sourceContext?.buildingBlockKey ?? null"
                 [buildingBlockDefinitionVersionTag]="sourceContext?.buildingBlockVersionTag ?? null"
-                [label]="'buildingBlockManagement.migration.editor.dataMigration.source' | translate"
+                [label]="
+                  'buildingBlockManagement.migration.editor.dataMigration.source' | translate
+                "
                 [prefixes]="SOURCE_PREFIXES"
                 [notation]="'slashes'"
               ></valtimo-value-path-selector>
@@ -52,7 +56,10 @@
                 <input
                   cdsText
                   formControlName="value"
-                  [placeholder]="'buildingBlockManagement.migration.editor.dataMigration.valuePlaceholder' | translate"
+                  [placeholder]="
+                    'buildingBlockManagement.migration.editor.dataMigration.valuePlaceholder'
+                      | translate
+                  "
                 />
               </cds-text-label>
             }
@@ -81,10 +88,15 @@
           @if (patch.get('mode')?.value !== 'null') {
             <cds-select
               formControlName="targetType"
-              [label]="'buildingBlockManagement.migration.editor.dataMigration.targetType' | translate"
+              [label]="
+                'buildingBlockManagement.migration.editor.dataMigration.targetType' | translate
+              "
             >
               <option value="">
-                {{ 'buildingBlockManagement.migration.editor.dataMigration.targetTypeAuto' | translate }}
+                {{
+                  'buildingBlockManagement.migration.editor.dataMigration.targetTypeAuto'
+                    | translate
+                }}
               </option>
               @for (type of TARGET_TYPES; track type) {
                 <option [value]="type">{{ type }}</option>

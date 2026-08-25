@@ -21,7 +21,11 @@
 
   <div class="migration-tab__items" formArrayName="instructions">
     @for (instruction of instructionsArray.controls; track instruction) {
-      <div class="migration-tab__card" [formGroupName]="$index">
+      <div
+        class="migration-tab__card"
+        [class.migration-tab__card--incomplete]="isIncomplete(instruction)"
+        [formGroupName]="$index"
+      >
         <div class="migration-tab__card-header">
           <!--
             The whole header is the toggle, not just the chevron: a suggested plan carries one
@@ -44,7 +48,27 @@
 
             <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
 
-            <span class="migration-tab__card-summary">
+            <!--
+              A collapsed card shows nothing but this header, so the missing target is marked here —
+              an icon and a colour, found by scanning a column of thirteen. The sentence stays on the
+              field inside, where it is acted on: spelling it out on one line beside a process key
+              this long is what produced the truncated message this replaced.
+            -->
+            @if (isIncomplete(instruction)) {
+              <span
+                class="migration-tab__card-warning"
+                [title]="
+                  'caseManagement.migration.editor.processMigration.missingTarget' | translate
+                "
+              >
+                <svg cdsIcon="warning--filled" size="16"></svg>
+              </span>
+            }
+
+            <span
+              class="migration-tab__card-summary"
+              [class.migration-tab__card-summary--incomplete]="isIncomplete(instruction)"
+            >
               {{
                 summaryOf(instruction) ||
                   ('caseManagement.migration.editor.card.unnamed' | translate)
@@ -79,6 +103,10 @@
 
             <cds-select
               formControlName="targetProcessDefinitionKey"
+              [invalid]="isIncomplete(instruction)"
+              [invalidText]="
+                'caseManagement.migration.editor.processMigration.missingTarget' | translate
+              "
               [label]="'caseManagement.migration.editor.processMigration.targetProcess' | translate"
             >
               <option value="">

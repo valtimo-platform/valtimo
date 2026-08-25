@@ -848,7 +848,8 @@
           "description": "Migrate running process instances onto the process definitions of this case version. For each instruction pick the source process — the definition the running instances currently use, from the version being migrated away from — and the target process — the definition in this version they move onto — then map each source activity onto a target activity.",
           "empty": "No process migrations configured yet.",
           "addInstruction": "Add process migration",
-          "unmappedBlocksSave": "Give a target process to {{processes}}, or remove the instruction, before saving.",
+          "missingTarget": "Pick a target process, or remove this instruction, before saving.",
+          "missingTargetTab": "One or more instructions have no target process yet.",
           "sourceProcess": "Source process",
           "targetProcess": "Target process",
           "selectProcess": "Select a process",
@@ -3681,6 +3682,7 @@
       "editor": {
         "createTitle": "New migration plan",
         "editTitle": "Edit migration plan",
+        "card": {"unnamed": "New entry"},
         "tabs": {
           "general": "General",
           "dataMigration": "Data migration",
@@ -3701,6 +3703,7 @@
           "sourceKeyPlaceholder": "Select a building block",
           "sourceVersion": "Source version",
           "sourceVersionPlaceholder": "Select a version",
+          "suggesting": "Preparing a suggested plan from this version and the one it migrates from…",
           "whenItRuns": "When this plan runs",
           "whenItRunsHint": "This plan has no trigger and no conditions of its own. It runs automatically when a case migrates to a case definition version that links {{key}} at version {{versionTag}}, and it is applied to every building block instance that case migration brings onto this version. It is simulated as part of that case migration’s dry run.",
           "chainOfPlansHint": "A chain of migration plans has to connect the version a building block instance is on to the version a case links it at. One plan may declare the whole jump \u2014 its source is the version the instance is actually on \u2014 or there may be one plan per step, including a step that changes nothing: each version of {{key}} publishes its own process model, so a running building block has to be moved onto it explicitly. If nothing connects the two, or if more than one chain does, the case migration fails rather than guess. Run the case migration as a dry run to check the whole chain before starting it."
@@ -3725,6 +3728,8 @@
           "description": "Migrate running process instances to the target process definition. Map the activities of the source process onto the target process.",
           "empty": "No process migrations configured yet.",
           "addInstruction": "Add process migration",
+          "missingTarget": "Pick a target process, or remove this instruction, before saving.",
+          "missingTargetTab": "One or more instructions have no target process yet.",
           "sourceProcess": "Source process",
           "targetProcess": "Target process",
           "selectProcess": "Select a process",

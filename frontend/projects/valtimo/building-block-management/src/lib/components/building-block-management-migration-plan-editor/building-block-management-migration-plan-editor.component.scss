@@ -25,6 +25,21 @@
     justify-self: flex-end;
     gap: 16px;
   }
+
+  // Matches the tab warning on the case-management detail screen, in error red rather than warning
+  // yellow because this one blocks Save. The inner path is the glyph on the filled disc, so it is
+  // painted back to the layer colour instead of inheriting the fill.
+  &__tab-warning {
+    display: inline-flex;
+    margin-left: 4px;
+    vertical-align: middle;
+    fill: var(--cds-support-error);
+
+    ::ng-deep [data-icon-path='inner-path'] {
+      fill: var(--cds-layer);
+      opacity: 1;
+    }
+  }
 }
 
 // Contained tabs render their content panel on the grey layer by default, which clashes with the

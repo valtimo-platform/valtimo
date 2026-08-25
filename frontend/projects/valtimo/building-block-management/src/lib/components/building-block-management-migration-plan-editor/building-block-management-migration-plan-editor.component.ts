@@ -34,8 +34,9 @@ import {
   RenderInPageHeaderDirective,
   SelectItem,
 } from '@valtimo/components';
-import {ButtonModule, TabsModule} from 'carbon-components-angular';
-import {map, Observable, Subscription, take} from 'rxjs';
+import {WarningFilled16} from '@carbon/icons';
+import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
+import {finalize, map, Observable, Subscription, take} from 'rxjs';
 import {
   BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_TABS,
@@ -66,6 +67,7 @@ import {BbMigrationBuildingBlockTabComponent} from './tabs/migration-building-bl
     TranslateModule,
     EditorModule,
     ButtonModule,
+    IconModule,
     TabsModule,
     RenderInPageHeaderDirective,
     BbMigrationGeneralTabComponent,
@@ -83,6 +85,11 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
   public readonly $plan = signal<MigrationPlan>({});
   public readonly $valid = signal<boolean>(false);
   public readonly $saving = signal<boolean>(false);
+  // True while the backend is composing the pre-filled plan. That request compares two whole blueprint
+  // versions, and on a large building block it takes ten seconds — during which the title, the key and
+  // both source pickers are empty and Save is disabled, so the screen is indistinguishable from one that
+  // simply does not pre-fill anything. It fills itself; this is what says so.
+  public readonly $suggesting = signal<boolean>(false);
   public readonly $isEdit = signal<boolean>(false);
   public readonly $buildingBlockDefinitionKey = signal<string | null>(null);
   public readonly $buildingBlockDefinitionVersionTag = signal<string | null>(null);
@@ -132,9 +139,26 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
       this.$valid() &&
       !this.$saving() &&
       !!this.asText(plan.key) &&
-      !!this.asText(plan.source?.versionTag)
+      !!this.asText(plan.source?.versionTag) &&
+      !this.$unmappedProcesses().length
     );
   });
+  /**
+   * The `processMigration` sources whose target is still blank. The suggestion deliberately leaves one
+   * blank for a process it cannot account for — visible work rather than a silent omission — and the
+   * backend refuses to store it, so Save waits until the author has either named a target or removed
+   * the row.
+   *
+   * Only its length is used, to mark the process-migration tab. Naming them here was tried and had to
+   * go: a suggested plan leaves several blank at once, and process keys are long, so the line beside
+   * Save was an ellipsis with no way to read the rest. The instruction itself carries the message now
+   * — its card is flagged in place, which is also where the author has to act.
+   */
+  public readonly $unmappedProcesses = computed(() =>
+    (this.$plan().processMigration ?? [])
+      .filter(instruction => !this.asText(instruction?.targetProcessDefinitionKey))
+      .map(instruction => this.asText(instruction?.sourceProcessDefinitionKey) ?? '?')
+  );
 
   private _params!: BuildingBlockMigrationParams;
   private _migrationKey: string | null = null;
@@ -163,10 +187,12 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly iconService: IconService,
     private readonly translateService: TranslateService,
     private readonly buildingBlockMigrationApiService: BuildingBlockMigrationApiService,
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService
   ) {
+    this.iconService.registerAll([WarningFilled16]);
     this.pageTitleService.disableReset();
   }
 
@@ -206,9 +232,13 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
       // Start a new plan from a best-effort suggestion (data/process pre-filled),
       // falling back to the empty template if the backend can't produce one.
       this.setValue(this.NEW_PLAN_TEMPLATE);
+      this.$suggesting.set(true);
       this.buildingBlockMigrationApiService
         .getPlanSuggestion(this._params)
-        .pipe(take(1))
+        .pipe(
+          take(1),
+          finalize(() => this.$suggesting.set(false))
+        )
         .subscribe({
           next: suggestion => {
             // Record what the suggestion was built for before applying it, so the resulting source
@@ -426,9 +456,13 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     if (this.$isEdit() || !sourceId || sourceId === this._suggestedForSource) return;
 
     this._suggestedForSource = sourceId;
+    this.$suggesting.set(true);
     this.buildingBlockMigrationApiService
       .getPlanSuggestion(this._params, source)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        finalize(() => this.$suggesting.set(false))
+      )
       .subscribe({
         next: suggestion =>
           this.patchPlan({

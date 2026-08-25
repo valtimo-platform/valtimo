@@ -183,6 +183,24 @@ export class BuildingBlockStateService implements OnDestroy {
     }
   }
 
+  /**
+   * Switches to another version of the same building block without throwing away the
+   * configuration the user already entered. Plugin configuration mappings, input mappings and
+   * output mappings are kept; only the parts that no longer exist in the new version are dropped
+   * once its plugin requirements and fields have been loaded.
+   */
+  public changeDefinitionVersionTag(versionTag: string | null): void {
+    this._definitionVersionTag$.next(versionTag);
+    this.clearPluginRequirements({preserveMappings: true});
+    this.clearFields();
+
+    const key = this._definitionKey$.getValue();
+    if (!key || !versionTag) return;
+
+    this.loadPluginRequirements(key, versionTag);
+    this.loadFields(key, versionTag, {pruneMappingsToFields: true});
+  }
+
   public setPluginConfigurationMapping(
     pluginDefinitionKey: string,
     configurationId: string | null
@@ -300,16 +318,25 @@ export class BuildingBlockStateService implements OnDestroy {
     this._pluginMappings$.next(normalized);
   }
 
-  private loadFields(key: string, versionTag: string): void {
+  private loadFields(
+    key: string,
+    versionTag: string,
+    options: {pruneMappingsToFields?: boolean} = {}
+  ): void {
     this._loadingFields$.next(true);
     this._fieldsSubscription?.unsubscribe();
     this._fieldsSubscription = this.processLinkBuildingBlockApiService
       .getFieldsForBuildingBlock(key, versionTag)
       .subscribe({
         next: fields => {
-          this._buildingBlockFields$.next(
-            (fields ?? []).map(field => ({...field, name: ensureDocPrefix(field.name)}))
-          );
+          const buildingBlockFields = (fields ?? []).map(field => ({
+            ...field,
+            name: ensureDocPrefix(field.name),
+          }));
+          this._buildingBlockFields$.next(buildingBlockFields);
+          if (options.pruneMappingsToFields) {
+            this.pruneMappingsToFields(buildingBlockFields);
+          }
           this._loadingFields$.next(false);
         },
         error: () => {
@@ -317,6 +344,27 @@ export class BuildingBlockStateService implements OnDestroy {
           this._loadingFields$.next(false);
         },
       });
+  }
+
+  /**
+   * Drops the mappings that point at a building block field which is not part of the given field
+   * set. Mappings referring to a field that still exists are left untouched, so switching between
+   * two versions with the same fields keeps the configuration intact.
+   */
+  private pruneMappingsToFields(fields: Array<BuildingBlockField>): void {
+    const fieldNames = new Set(fields.map(field => field.name));
+
+    const inputMappings = this._inputMappings$.getValue();
+    const prunedInputMappings = inputMappings.filter(mapping => fieldNames.has(mapping.target));
+    if (prunedInputMappings.length !== inputMappings.length) {
+      this._inputMappings$.next(prunedInputMappings);
+    }
+
+    const outputMappings = this._outputMappings$.getValue();
+    const prunedOutputMappings = outputMappings.filter(mapping => fieldNames.has(mapping.source));
+    if (prunedOutputMappings.length !== outputMappings.length) {
+      this._outputMappings$.next(prunedOutputMappings);
+    }
   }
 
   private clearPluginRequirements(options: {preserveMappings?: boolean} = {}): void {

@@ -35,6 +35,25 @@ data class BuildingBlockDefinitionDto(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val imageBase64: String? = null,
 ) {
+    companion object {
+        /**
+         * Pass `includeArtwork = true` only when the artwork is actually needed: it is a lazy
+         * relation, so reading it costs a query per definition.
+         */
+        fun from(definition: BuildingBlockDefinition, includeArtwork: Boolean = false) =
+            BuildingBlockDefinitionDto(
+                key = definition.id.key,
+                versionTag = definition.id.versionTag.toString(),
+                name = definition.name,
+                description = definition.description,
+                createdBy = definition.createdBy,
+                createdDate = definition.createdDate,
+                basedOnVersionTag = definition.basedOnVersionTag?.toString(),
+                final = definition.final,
+                imageBase64 = if (includeArtwork) definition.artwork?.imageBase64 else null,
+            )
+    }
+
     @JsonIgnore
     fun getBuildingBlockDefinitionId(): BuildingBlockDefinitionId =
         BuildingBlockDefinitionId(key, versionTag)

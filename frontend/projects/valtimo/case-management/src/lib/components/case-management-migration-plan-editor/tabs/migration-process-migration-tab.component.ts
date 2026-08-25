@@ -35,7 +35,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {Add16, ChevronDown16, ChevronUp16, TrashCan16} from '@carbon/icons';
+import {Add16, ChevronDown16, ChevronUp16, TrashCan16, WarningFilled16} from '@carbon/icons';
 import {
   ButtonModule,
   CheckboxModule,
@@ -166,7 +166,7 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     private readonly processService: ProcessService,
     private readonly caseMigrationApiService: CaseMigrationApiService
   ) {
-    this.iconService.registerAll([Add16, ChevronDown16, ChevronUp16, TrashCan16]);
+    this.iconService.registerAll([Add16, ChevronDown16, ChevronUp16, TrashCan16, WarningFilled16]);
   }
 
   public ngOnInit(): void {
@@ -243,6 +243,17 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
   public toggleExpanded(group: FormGroup): void {
     if (!this._expanded.delete(group)) this._expanded.add(group);
     this.cdr.markForCheck();
+  }
+
+  /**
+   * Whether this instruction still names no target process. The suggester deliberately leaves the
+   * target blank for a source it cannot account for, and the backend refuses to store one, so this is
+   * the single thing that holds Save. It is reported on the card rather than beside Save: a suggested
+   * plan leaves several blank at once and process keys are long, so a list of them next to the button
+   * only ever showed its first two before running out of room — and the card is where the fix is made.
+   */
+  public isIncomplete(group: FormGroup): boolean {
+    return !group.get('targetProcessDefinitionKey')?.value;
   }
 
   /**

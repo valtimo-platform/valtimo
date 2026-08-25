@@ -194,7 +194,9 @@ export class BbMigrationDataMigrationTabComponent implements OnInit, OnDestroy {
     if (JSON.stringify(patches) === this._lastEmitted) return;
 
     this.patchesArray.clear({emitEvent: false});
-    patches.forEach(patch => this.patchesArray.push(this.createPatchGroup(patch), {emitEvent: false}));
+    patches.forEach(patch =>
+      this.patchesArray.push(this.createPatchGroup(patch), {emitEvent: false})
+    );
     this._lastEmitted = JSON.stringify(this.serialize());
   }
 }

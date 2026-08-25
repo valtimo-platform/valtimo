@@ -35,7 +35,8 @@ import {
   SelectItem,
 } from '@valtimo/components';
 import {CaseManagementParams} from '@valtimo/shared';
-import {ButtonModule, TabsModule} from 'carbon-components-angular';
+import {WarningFilled16} from '@carbon/icons';
+import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import {finalize, map, Observable, Subscription, take} from 'rxjs';
 import {
   CaseManagementService,
@@ -67,6 +68,7 @@ import {MigrationBuildingBlockTabComponent} from './tabs/migration-building-bloc
     TranslateModule,
     EditorModule,
     ButtonModule,
+    IconModule,
     TabsModule,
     RenderInPageHeaderDirective,
     MigrationGeneralTabComponent,
@@ -147,8 +149,12 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
    * The `processMigration` sources whose target is still blank. The suggestion deliberately leaves one
    * blank for a process it cannot account for — visible work rather than a silent omission — and the
    * backend refuses to store it, so Save waits until the author has either named a target or removed
-   * the row. Listed rather than counted, because "which ones" is what turns a disabled button into
-   * something the author can act on.
+   * the row.
+   *
+   * Only its length is used, to mark the process-migration tab. Naming them here was tried and had to
+   * go: a suggested plan leaves several blank at once, and process keys are long, so the line beside
+   * Save was an ellipsis with no way to read the rest. The instruction itself carries the message now
+   * — its card is flagged in place, which is also where the author has to act.
    */
   public readonly $unmappedProcesses = computed(() =>
     (this.$plan().processMigration ?? [])
@@ -185,11 +191,13 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly iconService: IconService,
     private readonly translateService: TranslateService,
     private readonly caseMigrationApiService: CaseMigrationApiService,
     private readonly startableItemApiService: StartableItemApiService,
     private readonly caseManagementService: CaseManagementService
   ) {
+    this.iconService.registerAll([WarningFilled16]);
     this.pageTitleService.disableReset();
   }
 

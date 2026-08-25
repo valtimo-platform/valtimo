@@ -855,7 +855,8 @@
           "description": "Migreer lopende procesinstanties naar de procesdefinities van deze zaakversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit.",
           "empty": "Nog geen procesmigraties geconfigureerd.",
           "addInstruction": "Procesmigratie toevoegen",
-          "unmappedBlocksSave": "Geef {{processes}} een doelproces, of verwijder de instructie, voordat je opslaat.",
+          "missingTarget": "Kies een doelproces, of verwijder deze instructie, voordat je opslaat.",
+          "missingTargetTab": "Een of meer instructies hebben nog geen doelproces.",
           "sourceProcess": "Bronproces",
           "targetProcess": "Doelproces",
           "selectProcess": "Kies een proces",
@@ -3714,6 +3715,7 @@
       "editor": {
         "createTitle": "Nieuw migratieplan",
         "editTitle": "Migratieplan bewerken",
+        "card": {"unnamed": "Nieuwe regel"},
         "tabs": {
           "general": "Algemeen",
           "dataMigration": "Datamigratie",
@@ -3734,6 +3736,7 @@
           "sourceKeyPlaceholder": "Kies een bouwsteen",
           "sourceVersion": "Bronversie",
           "sourceVersionPlaceholder": "Kies een versie",
+          "suggesting": "Bezig met het samenstellen van een voorgesteld plan op basis van deze versie en de versie waarvan gemigreerd wordt…",
           "whenItRuns": "Wanneer dit plan draait",
           "whenItRunsHint": "Dit plan heeft geen eigen trigger en geen eigen condities. Het draait automatisch wanneer een zaak migreert naar een zaakdefinitieversie die {{key}} op versie {{versionTag}} koppelt, en wordt toegepast op elke bouwblokinstantie die die zaakmigratie naar deze versie brengt. Het wordt gesimuleerd als onderdeel van de dry run van die zaakmigratie.",
           "chainOfPlansHint": "Een keten van migratieplannen moet de versie waarop een bouwblokinstantie staat verbinden met de versie die een zaak koppelt. E\u00e9n plan kan de hele sprong dekken \u2014 de source is dan de versie waarop de instantie werkelijk staat \u2014 of er is een plan per stap, ook een stap die niets wijzigt: elke versie van {{key}} publiceert zijn eigen procesmodel, dus een lopend bouwblok moet er expliciet naartoe worden verplaatst. Verbindt niets de twee, of verbindt meer dan \u00e9\u00e9n keten ze, dan mislukt de zaakmigratie in plaats van te gokken. Draai de zaakmigratie eerst als dry run om de hele keten te controleren."
@@ -3758,6 +3761,8 @@
           "description": "Migreer lopende procesinstanties naar de doel-procesdefinitie. Koppel de activiteiten van het bronproces aan die van het doelproces.",
           "empty": "Nog geen procesmigraties geconfigureerd.",
           "addInstruction": "Procesmigratie toevoegen",
+          "missingTarget": "Kies een doelproces, of verwijder deze instructie, voordat je opslaat.",
+          "missingTargetTab": "Een of meer instructies hebben nog geen doelproces.",
           "sourceProcess": "Bronproces",
           "targetProcess": "Doelproces",
           "selectProcess": "Kies een proces",

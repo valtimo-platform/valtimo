@@ -27,9 +27,15 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {Add16, TrashCan16} from '@carbon/icons';
+import {Add16, ChevronDown16, ChevronUp16, TrashCan16, WarningFilled16} from '@carbon/icons';
 import {
   ButtonModule,
   CheckboxModule,
@@ -136,6 +142,11 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
   });
 
   private readonly _keyToLatestId = new Map<string, string>();
+  // The instructions whose body is open. A plan the suggester filled carries one instruction per
+  // process of the building block — each with its own activity mapping and process variables — so the
+  // tab is unreadable with every body expanded. Collapsed is therefore the default and this set starts
+  // empty; an instruction the author adds by hand opens, because they added it in order to fill it in.
+  private readonly _expanded = new Set<FormGroup>();
   private readonly _activities = new Map<FormGroup, InstructionActivities>();
   // Per instruction: incompatible source activity id -> engine failure messages (as judged live).
   private readonly _invalidMappings = new Map<FormGroup, Record<string, string[]>>();
@@ -153,7 +164,7 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
     private readonly processService: ProcessService,
     private readonly buildingBlockMigrationApiService: BuildingBlockMigrationApiService
   ) {
-    this.iconService.registerAll([Add16, TrashCan16]);
+    this.iconService.registerAll([Add16, ChevronDown16, ChevronUp16, TrashCan16, WarningFilled16]);
   }
 
   public ngOnInit(): void {
@@ -207,7 +218,8 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
    * own stored key so a restored plan referencing a now-unlinked process still shows its selection.
    */
   public processKeyOptions(group: FormGroup, side: 'source' | 'target'): string[] {
-    const scoped = side === 'source' ? this.sourceProcessDefinitions : this.targetProcessDefinitions;
+    const scoped =
+      side === 'source' ? this.sourceProcessDefinitions : this.targetProcessDefinitions;
     const base = scoped ? Object.keys(scoped) : this.processDefinitionKeys;
     const stored = group.get(`${side}ProcessDefinitionKey`)?.value;
     return stored ? Array.from(new Set([...base, stored])) : Array.from(new Set(base));
@@ -221,12 +233,52 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
     return group.get('setProcessVariables') as FormArray;
   }
 
+  /** Whether this instruction's body is shown. Collapsed unless the author opened it — see [_expanded]. */
+  public isExpanded(group: FormGroup): boolean {
+    return this._expanded.has(group);
+  }
+
+  public toggleExpanded(group: FormGroup): void {
+    if (!this._expanded.delete(group)) this._expanded.add(group);
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Whether this instruction still names no target process. The suggester deliberately leaves the
+   * target blank for a source it cannot account for, and the backend refuses to store one, so this is
+   * the single thing that holds Save. It is reported on the card rather than beside Save: a suggested
+   * plan leaves several blank at once and process keys are long, so a list of them next to the button
+   * only ever showed its first two before running out of room — and the card is where the fix is made.
+   */
+  public isIncomplete(group: FormGroup): boolean {
+    return !group.get('targetProcessDefinitionKey')?.value;
+  }
+
+  /**
+   * What a collapsed instruction says about itself: the pair of processes it moves instances between.
+   * A plain key when both sides agree, which is what an ordinary same-blueprint migration looks like,
+   * and an arrow only when they genuinely differ. Empty for an instruction that names neither yet, so
+   * the header falls back to a placeholder rather than showing a bare arrow.
+   */
+  public summaryOf(group: FormGroup): string {
+    const source = group.get('sourceProcessDefinitionKey')?.value || '';
+    const target = group.get('targetProcessDefinitionKey')?.value || '';
+    if (!source && !target) return '';
+    if (source === target) return source;
+    return `${source || '–'} → ${target || '–'}`;
+  }
+
   public addInstruction(): void {
-    this.instructionsArray.push(this.createInstructionGroup());
+    const group = this.createInstructionGroup();
+    // Opened on purpose: an author adds an instruction in order to fill it in, and a new one has no
+    // summary to identify it by, so a collapsed one would be an unlabelled empty row.
+    this._expanded.add(group);
+    this.instructionsArray.push(group);
   }
 
   public removeInstruction(index: number): void {
     const group = this.instructionsArray.at(index) as FormGroup;
+    this._expanded.delete(group);
     this._activities.delete(group);
     this._invalidMappings.delete(group);
     this.instructionsArray.removeAt(index);
@@ -278,7 +330,9 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
         else this.onProcessChanged(group);
       })
     );
-    this._subscriptions.add(targetControl.valueChanges.subscribe(() => this.onProcessChanged(group)));
+    this._subscriptions.add(
+      targetControl.valueChanges.subscribe(() => this.onProcessChanged(group))
+    );
 
     // Re-check compatibility (debounced) whenever the mapping rows change, so incompatible pairs are
     // flagged as the user edits. Suggestion/restore apply rows with emitEvent:false and validate
@@ -365,7 +419,9 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
 
     this._subscriptions.add(
       forkJoin({
-        flowNodes: this.processService.getFlowNodes(sourceId, targetId).pipe(catchError(() => of(null))),
+        flowNodes: this.processService
+          .getFlowNodes(sourceId, targetId)
+          .pipe(catchError(() => of(null))),
         mapping: mapping$,
       }).subscribe(({flowNodes, mapping}) => {
         this._activities.set(group, {
@@ -394,7 +450,8 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
   /** The version-correct process definition id for the group's source (or target) process key. */
   private definitionIdFor(group: FormGroup, side: 'source' | 'target'): string | undefined {
     const key = group.get(`${side}ProcessDefinitionKey`)?.value;
-    const scoped = side === 'source' ? this.sourceProcessDefinitions : this.targetProcessDefinitions;
+    const scoped =
+      side === 'source' ? this.sourceProcessDefinitions : this.targetProcessDefinitions;
     return scoped?.[key] ?? this._keyToLatestId.get(key);
   }
 
@@ -551,6 +608,9 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
     // Ignore the echo of our own emission to avoid rebuilding the form on every keystroke.
     if (JSON.stringify(instructions) === this._lastEmitted) return;
 
+    // The groups below are new instances, so anything still held here refers to a form that no longer
+    // exists — cleared rather than left to keep those groups alive.
+    this._expanded.clear();
     this._activities.clear();
     this._invalidMappings.clear();
     this.instructionsArray.clear({emitEvent: false});

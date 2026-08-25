@@ -47,8 +47,26 @@
       ></valtimo-migration-data-migration-tab>
     </cds-tab>
 
+    <!--
+      The heading is a template rather than a string so it can carry the warning: an instruction with
+      no target blocks Save from another tab, and the tab strip is the only place that can point at it
+      while the author is not looking at it.
+    -->
+    <ng-template #processMigrationHeading>
+      {{ 'caseManagement.migration.editor.tabs.processMigration' | translate }}
+      @if ($unmappedProcesses().length) {
+        <span
+          class="migration-plan-editor__tab-warning"
+          [title]="'caseManagement.migration.editor.processMigration.missingTargetTab' | translate"
+        >
+          <svg cdsIcon="warning--filled" size="16"></svg>
+        </span>
+      }
+    </ng-template>
+
     <cds-tab
-      [heading]="'caseManagement.migration.editor.tabs.processMigration' | translate"
+      [heading]="processMigrationHeading"
+      [title]="'caseManagement.migration.editor.tabs.processMigration' | translate"
       [attr.data-test-id]="testIds.processMigrationTab"
     >
       <valtimo-migration-process-migration-tab
@@ -109,19 +127,6 @@
 <ng-container renderInPageHeader>
   <ng-template>
     <div *ngIf="{compactMode: compactMode$ | async} as obs" class="migration-plan-editor__actions">
-      <!--
-        A disabled Save with no reason is the worst of both worlds, and this is the one reason an author
-        cannot see from here: the blank target sits on another tab.
-      -->
-      @if ($unmappedProcesses().length) {
-        <span class="migration-plan-editor__blocked">
-          {{
-            'caseManagement.migration.editor.processMigration.unmappedBlocksSave'
-              | translate: {processes: $unmappedProcesses().join(', ')}
-          }}
-        </span>
-      }
-
       <button
         cdsButton="ghost"
         [size]="obs.compactMode ? 'sm' : 'md'"
