@@ -44,7 +44,7 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
     size: number = 5,
     all: boolean = false
   ): Observable<Page<BuildingBlockVersionDto>> {
-    const allParam: string = all ? 'all=true' : '';
+    const allParam: string = all ? '&all=true' : '';
     return this.httpClient.get<Page<BuildingBlockVersionDto>>(
       this.getApiUrl(
         `management/v1/building-block/${key}/version?page=${page}&size=${size}${allParam}`
