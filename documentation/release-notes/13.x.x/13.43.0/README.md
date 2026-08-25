@@ -51,6 +51,7 @@ The metadata tab of the case inspection page now displays the case definition ke
 |------|-----|
 | BPMN modeler | Orphaned invisible elements cleaned up on save |
 | Case export | Forms shown in a widget are included in the case export |
+| Case notes | The options menu of a note is now correctly translated |
 | Case widgets | Long texts wrap correctly without overlapping other content |
 | Cases | A case that cannot be found no longer stops a process, an assignment, or a note |
 | Cases | A case with building blocks can be deleted again |
@@ -62,5 +63,5 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Process links | Links no longer leak into another case definition or building block |
 | Process upload | File dialog filters on supported types again; drag-and-drop works for BPMN files and packages |
 | Search fields | Date searches return results with correct date format |
-| Tasks | Tasks of cases running before the upgrade to 13 can be opened again |
+| Tasks | Tasks of cases that were already running before the upgrade to 13 can be opened again |
 | Widgets | Image widget no longer offers `task:` fields it cannot show |
