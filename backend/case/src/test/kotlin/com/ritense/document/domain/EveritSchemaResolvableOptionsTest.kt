@@ -113,7 +113,10 @@ class EveritSchemaResolvableOptionsTest {
     }
 
     @Test
-    fun `should still expose an array as a single collection option`() {
+    fun `should expose an array as both a collection and a field option`() {
+        // Two options at one path, on purpose: getResolvableKeys filters by the requested type, so the
+        // collection widget sees the iterable and every field-typed picker sees the container. Without
+        // the FIELD half an array was unreachable from every field picker in the application.
         val options = schemaOf(
             """
             "properties": {
@@ -125,9 +128,105 @@ class EveritSchemaResolvableOptionsTest {
             """.trimIndent()
         ).collectValueResolverOptions("doc:")
 
-        assertThat(options).hasSize(1)
-        assertThat(options.single().path).isEqualTo("doc:/tags")
-        assertThat(options.single().type).isEqualTo(COLLECTION)
+        assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "doc:/tags" to FIELD,
+            "doc:/tags" to COLLECTION
+        )
+        // Only the collection half carries the item fields; the container resolves to the array itself.
+        assertThat(options.single { it.type == COLLECTION }.children).isNotEmpty()
+        assertThat(options.single { it.type == FIELD }.children).isNull()
+    }
+
+    @Test
+    fun `should expose an array nested inside an object, and the objects inside its items`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "applicant": {
+                "type": "object",
+                "properties": {
+                  "children": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.filter { it.type == FIELD }.map { it.path }).containsExactlyInAnyOrder(
+            "doc:/applicant",
+            "doc:/applicant/children"
+        )
+        // The item fields stay inside the collection option, keyed relative to the array.
+        val collection = options.single { it.type == COLLECTION }
+        assertThat(collection.path).isEqualTo("doc:/applicant/children")
+        assertThat(collection.children?.map { it.path }).contains("/name")
+    }
+
+    @Test
+    fun `should keep both answers for a node that is either a list or a single value`() {
+        // Deduplicating by path alone let the branch the author happened to write first decide whether such
+        // a node was a field or a collection. Asserted in both declaration orders, since that is exactly
+        // what used to change the answer.
+        listOf(
+            """{ "type": "array", "items": { "type": "string" } }, { "type": "string" }""",
+            """{ "type": "string" }, { "type": "array", "items": { "type": "string" } }""",
+        ).forEach { branches ->
+            val options = schemaOf(
+                """
+                "properties": {
+                  "incomeTypes": { "oneOf": [$branches] }
+                }
+                """.trimIndent()
+            ).collectValueResolverOptions("doc:")
+
+            assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+                "doc:/incomeTypes" to FIELD,
+                "doc:/incomeTypes" to COLLECTION
+            )
+        }
+    }
+
+    @Test
+    fun `should keep both answers for a node declared with a list of types`() {
+        // `type: ["array", "string"]` is loaded as an anyOf of one schema per type, so it takes the same path.
+        val options = schemaOf(
+            """
+            "properties": {
+              "incomeTypes": { "type": ["array", "string"], "items": { "type": "string" } }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "doc:/incomeTypes" to FIELD,
+            "doc:/incomeTypes" to COLLECTION
+        )
+    }
+
+    @Test
+    fun `should still collapse two branches that describe the same field`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "reference": {
+                "oneOf": [
+                  { "type": "string", "minLength": 1 },
+                  { "type": "string", "maxLength": 9 }
+                ]
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.map { it.path to it.type }).containsExactly("doc:/reference" to FIELD)
     }
 
     @Test

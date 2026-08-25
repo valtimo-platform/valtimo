@@ -19,6 +19,8 @@ package com.ritense.document.domain
 import com.ritense.document.domain.impl.JsonSchema
 import java.net.URI
 import org.assertj.core.api.Assertions.assertThat
+import org.everit.json.schema.CombinedSchema
+import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.Schema
 import org.everit.json.schema.StringSchema
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -64,6 +66,89 @@ class EveritSchemaGetPropertyTest {
     }
 
     @Test
+    fun `should resolve the item schema of an array element the pointer stops at`() {
+        // The pointer ends at the index, so the answer is the item's own schema. It used to be null, which
+        // made an array element's parent unresolvable and every property inside one impossible to clear.
+        val schema = arraySchema()
+
+        assertThat(schema.getProperty("/items/0")).isInstanceOf(ObjectSchema::class.java)
+        assertThat(schema.getProperty("/items/0/value")).isInstanceOf(StringSchema::class.java)
+    }
+
+    @Test
+    fun `should refuse an array index the schema cannot have`() {
+        val schema = arraySchema()
+
+        assertThat(schema.getProperty("/items/5")).isNull()
+        assertThat(schema.getProperty("/items/-1")).isNull()
+    }
+
+    @Test
+    fun `should answer a path its combined branches disagree about with all of them`() {
+        // No single branch is the schema of `/p/v`, and returning the first match made the answer depend on
+        // the order the branches were written in — which is what DocumentMigrationService compares and what
+        // getTypeReference() coerces from.
+        val stringFirst = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string" } } },
+               { "type": "object", "properties": { "v": { "type": "number" } } }"""
+        )
+        val numberFirst = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "number" } } },
+               { "type": "object", "properties": { "v": { "type": "string" } } }"""
+        )
+
+        assertThat(stringFirst.getProperty("/p/v")).isInstanceOf(CombinedSchema::class.java)
+        // Canonically ordered, so the same set of branches compares equal however it was declared — the
+        // comparison DocumentMigrationService makes to decide whether a property's type changed.
+        assertThat(stringFirst.getProperty("/p/v")).isEqualTo(numberFirst.getProperty("/p/v"))
+        // And nothing is coerced to the type that happened to come first.
+        assertThat(stringFirst.getProperty("/p/v")?.getTypeReference()?.type).isEqualTo(Any::class.java)
+    }
+
+    @Test
+    fun `should answer with the branch itself when only one describes the path`() {
+        val schema = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string" } } },
+               { "type": "object", "properties": { "other": { "type": "number" } } }"""
+        )
+
+        assertThat(schema.getProperty("/p/v")).isInstanceOf(StringSchema::class.java)
+    }
+
+    @Test
+    fun `should collapse combined branches that describe the path identically`() {
+        val schema = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string" } } },
+               { "type": "object", "properties": { "v": { "type": "string" } } }"""
+        )
+
+        assertThat(schema.getProperty("/p/v")).isInstanceOf(StringSchema::class.java)
+    }
+
+    @Test
+    fun `should not let a permissive ancestor answer for a schema that refuses additional properties`() {
+        val schema = schemaOf(
+            """
+            "additionalProperties": true,
+            "properties": {
+              "a": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": { "x": { "type": "string" } }
+              }
+            }
+            """.trimIndent()
+        )
+
+        assertThat(schema.allowsProperty("/a/x")).isTrue()
+        // `a` declares no `b` and refuses additional properties; the root's permission is not `a`'s to give.
+        assertThat(schema.allowsProperty("/a/b")).isFalse()
+        // A token the root itself does not describe is what "additional" means, and is still allowed.
+        assertThat(schema.allowsProperty("/zzz")).isTrue()
+        assertThat(schema.allowsProperty("/zzz/deeper")).isTrue()
+    }
+
+    @Test
     fun `should stop resolving beyond the maximum schema depth instead of overflowing the stack`() {
         val schema = recursiveSchema()
         val tooDeep = "/root" + "/child".repeat(MAX_SCHEMA_DEPTH + 20) + "/name"
@@ -89,8 +174,11 @@ class EveritSchemaGetPropertyTest {
 
         // without the depth guard both walkers recurse through the cycle until the JVM throws a StackOverflowError
         assertThat(schema.getProperty("/root/name")).isNull()
-        // the cycle resolves nothing, so the property is only allowed because the root permits additional properties
-        assertThat(schema.allowsProperty("/root/name")).isTrue()
+        // `root` is a declared property, so its own schema answers for everything below it — and that schema
+        // is a cycle that establishes nothing. The root permitting additional properties does not make
+        // `/root/name` allowed; "additional" is about tokens the root does not describe, and it describes
+        // `root`. (This answered true until that fallback was scoped to undescribed tokens.)
+        assertThat(schema.allowsProperty("/root/name")).isFalse()
     }
 
     @Test
@@ -133,6 +221,30 @@ class EveritSchemaGetPropertyTest {
         },
         "properties": {
           "root": { "${'$'}ref": "#/definitions/node" }
+        }
+        """.trimIndent()
+    )
+
+    private fun arraySchema(): Schema = schemaOf(
+        """
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "properties": { "value": { "type": "string" } }
+            }
+          }
+        }
+        """.trimIndent()
+    )
+
+    /** A root with one property `p` whose schema is a `oneOf` of the given branches. */
+    private fun combinedSchemaOf(branches: String): Schema = schemaOf(
+        """
+        "properties": {
+          "p": { "oneOf": [$branches] }
         }
         """.trimIndent()
     )

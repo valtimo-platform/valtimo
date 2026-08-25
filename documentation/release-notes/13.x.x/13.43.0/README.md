@@ -66,3 +66,6 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Search fields | Date searches return results with correct date format |
 | Tasks | Tasks of cases that were already running before the upgrade to 13 can be opened again |
 | Widgets | Image widget no longer offers `task:` fields it cannot show |
+| Field pickers | A case model with an unreadable reference no longer stops every field picker from loading |
+| Field pickers | Lists in a case can be picked as a field, not only as a collection |
+| Case configuration | A field path the case model does not allow is rejected instead of accepted |

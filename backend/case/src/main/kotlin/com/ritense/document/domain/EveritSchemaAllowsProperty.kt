@@ -47,7 +47,17 @@ private fun Schema.allowsProperty(field: String, depth: Int): Boolean {
     }
 }
 
-/** Copied from ObjectSchema.definesProperty(.) but returns true when the schema allows additionalProperties */
+/**
+ * Copied from ObjectSchema.definesProperty(.) but returns true when the schema allows additionalProperties.
+ *
+ * The `additionalProperties` fallback applies **only to a token this schema does not describe**, which is
+ * what "additional" means. It used to be OR'd in unconditionally, and since it is evaluated at every level
+ * of the descent, one permissive ancestor answered for the whole subtree below it: a root with
+ * `additionalProperties: true` reported `/a/b` as allowed even where `a` itself declared
+ * `additionalProperties: false` and no property `b`. A token the schema *does* describe — through
+ * `properties` or `patternProperties` — is answered by that description alone, so a refusal further down
+ * the path is final.
+ */
 private fun ObjectSchema.allowsProperty(field: String, depth: Int): Boolean {
     val headAndTail: Array<String?> = headAndTailOfJsonPointerFragment(field)
     val nextToken = headAndTail[0]!!
@@ -56,7 +66,14 @@ private fun ObjectSchema.allowsProperty(field: String, depth: Int): Boolean {
     return field2.isNotEmpty() && (allowsSchemaProperty(nextToken, remaining, depth)
             || allowsPatternProperty(nextToken, remaining, depth)
             || allowsSchemaDependencyProperty(field2, depth)
-            || permitsAdditionalProperties()) // <- This is the only line that is different from all definesProperty(.) implementations
+            || (!describesProperty(nextToken) && permitsAdditionalProperties()))
+}
+
+/** Whether this schema describes [token] itself, through either `properties` or `patternProperties`. */
+private fun ObjectSchema.describesProperty(token: String): Boolean {
+    if (propertySchemas.containsKey(jsonPointerUnescape(token))) return true
+    val patternProperties: Map<Regexp, Schema> = getPrivateField("patternProperties")
+    return patternProperties.keys.any { pattern -> !pattern.patternMatchingFailure(token).isPresent }
 }
 
 /** Copied from ObjectSchema.definesSchemaProperty(.) but returns true when the schema allows additionalProperties */
