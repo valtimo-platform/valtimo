@@ -51,6 +51,7 @@ The metadata tab of the case inspection page now displays the case definition ke
 |------|-----|
 | BPMN modeler | Orphaned invisible elements cleaned up on save |
 | Case export | Forms shown in a widget are included in the case export |
+| Case definitions | Configuration warnings disappear when the offending process links or process are removed |
 | Case notes | The options menu of a note is now correctly translated |
 | Case widgets | Long texts wrap correctly without overlapping other content |
 | Cases | A case that cannot be found no longer stops a process, an assignment, or a note |
