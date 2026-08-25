@@ -4,6 +4,7 @@
 /classes/
 !gradle/wrapper/gradle-wrapper.jar
 .claude
+/CLAUDE.md
 .playwright-mcp
 .env.properties
 # ...except the public demo env files shipped with each app variant.
