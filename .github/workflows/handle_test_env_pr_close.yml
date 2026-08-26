@@ -12,6 +12,17 @@ permissions:
   pull-requests: write
 
 jobs:
+  print_something:
+    runs-on: ubuntu-latest
+    steps:
+      - id: printStep
+        shell: bash
+        env:
+          EVENT_STRING: ${{ toJson(github.event.pull_request) }}
+        run: |
+          echo "This is the github.event.pull_request JSON payload:"
+          echo "$EVENT_STRING"
+
   delete_test_env_if_labeled:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test env') }}
     uses: ./.github/workflows/delete_test_env.yml
