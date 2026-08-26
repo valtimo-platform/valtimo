@@ -97,7 +97,7 @@ class ProcessDefinitionManagementResource(
                 .stream()
                 .map { definition ->
                     ProcessDefinitionResponseDto(
-                        toReadOnlyAwareDto(definition),
+                        toDto(definition),
                         assembler.processLinks(definition),
                         assembler.bpmnXml(definition),
                         definition.isSuspended(),
@@ -121,7 +121,7 @@ class ProcessDefinitionManagementResource(
 
         val responseDtos = definitions.map { definition ->
             ProcessDefinitionResponseDto(
-                toReadOnlyAwareDto(definition),
+                toDto(definition),
                 assembler.processLinks(definition),
                 assembler.bpmnXml(definition),
                 definition.isSuspended(),
@@ -141,7 +141,7 @@ class ProcessDefinitionManagementResource(
 
         val responseDto = definitions.map { definition ->
             ProcessDefinitionResponseDto(
-                ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition),
+                toDto(definition),
                 assembler.processLinks(definition),
                 assembler.bpmnXml(definition),
                 autofilledElements = assembler.autofilledElements(definition)
@@ -315,9 +315,9 @@ class ProcessDefinitionManagementResource(
         return ResponseEntity.noContent().build()
     }
 
-    private fun toReadOnlyAwareDto(definition: OperatonProcessDefinition): ProcessDefinitionWithPropertiesDto {
+    private fun toDto(definition: OperatonProcessDefinition): ProcessDefinitionWithPropertiesDto {
         val dto = ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition)
-        dto.setReadOnly(processPropertyService.isReadOnly(definition.key))
+        dto.setSystemProcess(processPropertyService.isSystemProcessOrUnknown(definition.key))
         return dto
     }
 

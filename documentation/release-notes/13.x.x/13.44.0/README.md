@@ -14,9 +14,13 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### System processes can always be edited
 
-New enhancement explanation.
+A process marked as a system process can now be changed and saved like any other process, which creates a new version of it. Case definitions keep using the version of the system process they were configured with, so an existing case is not affected by the change.
+
+### Refreshed process migration screen
+
+Admin > Other > Process migration has the standard Valtimo look and feel, with clearer labels for the source and target process, the versions, and the activities to map.
 
 ---
 
@@ -24,4 +28,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Process migration | A system process can be migrated after it was changed |

@@ -22,13 +22,28 @@ import org.operaton.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
 public class ProcessDefinitionWithPropertiesDto extends ProcessDefinitionDto {
 
     protected boolean isReadOnly;
+    protected boolean systemProcess;
 
+    @Deprecated(since = "13.43.0", forRemoval = true)
     public void setReadOnly(boolean isReadOnly) {
         this.isReadOnly = isReadOnly;
     }
 
+    /**
+     * @deprecated no process definition is read-only anymore. The field is kept so existing clients
+     *     keep receiving it, but it is always {@code false}.
+     */
+    @Deprecated(since = "13.43.0", forRemoval = true)
     public boolean isReadOnly() {
         return isReadOnly;
+    }
+
+    public void setSystemProcess(boolean systemProcess) {
+        this.systemProcess = systemProcess;
+    }
+
+    public boolean isSystemProcess() {
+        return systemProcess;
     }
 
     public static ProcessDefinitionWithPropertiesDto fromProcessDefinition(OperatonProcessDefinition definition) {

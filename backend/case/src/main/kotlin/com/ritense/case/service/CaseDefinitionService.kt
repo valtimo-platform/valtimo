@@ -459,10 +459,17 @@ class CaseDefinitionService(
             .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
     }
 
+    /**
+     * With [allVersions] the caller gets every version of every case definition instead of one
+     * representative per key, and the `VIEW_LIST` row filter is not applied. Case migration needs
+     * that: it migrates *between* two versions, so one representative per key leaves nothing to pick,
+     * and an administrator has to be able to migrate a case they themselves cannot open.
+     */
     fun getCaseDefinitionsForManagement(
         caseDefinitionKey: String? = null,
         active: Boolean? = null,
         final: Boolean? = null,
+        allVersions: Boolean = false,
         pageable: Pageable,
     ): Page<CaseDefinition> {
         denyManagementOperation()
@@ -470,18 +477,23 @@ class CaseDefinitionService(
             caseDefinitionKey = caseDefinitionKey,
             active = active,
             final = final,
+            applyAuthorization = !allVersions,
         )
         val allCaseDefinitions = caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name"), Sort.Order.desc("active"), Sort.Order.desc("id.versionTag")))
-        val representativePerKey = allCaseDefinitions
-            .groupBy { it.id.key }
-            .map { (_, versions) ->
-                versions.find { it.active } ?: versions.maxBy { it.id.versionTag }
-            }
-            .sortedBy { it.name.lowercase() }
+        val result = if (allVersions) {
+            allCaseDefinitions.sortedWith(compareBy({ it.name.lowercase() }, { it.id.versionTag }))
+        } else {
+            allCaseDefinitions
+                .groupBy { it.id.key }
+                .map { (_, versions) ->
+                    versions.find { it.active } ?: versions.maxBy { it.id.versionTag }
+                }
+                .sortedBy { it.name.lowercase() }
+        }
 
-        val start = pageable.offset.toInt().coerceAtMost(representativePerKey.size)
-        val end = (start + pageable.pageSize).coerceAtMost(representativePerKey.size)
-        return PageImpl(representativePerKey.subList(start, end), pageable, representativePerKey.size.toLong())
+        val start = pageable.offset.toInt().coerceAtMost(result.size)
+        val end = (start + pageable.pageSize).coerceAtMost(result.size)
+        return PageImpl(result.subList(start, end), pageable, result.size.toLong())
     }
 
     fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult {
@@ -498,13 +510,18 @@ class CaseDefinitionService(
         caseDefinitionVersionTag: Semver? = null,
         active: Boolean? = null,
         final: Boolean? = null,
+        applyAuthorization: Boolean = true,
     ): Specification<CaseDefinition> {
-        var spec: Specification<CaseDefinition> = authorizationService.getAuthorizationSpecification(
-            EntityAuthorizationRequest(
-                CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW_LIST
+        var spec: Specification<CaseDefinition> = if (applyAuthorization) {
+            authorizationService.getAuthorizationSpecification(
+                EntityAuthorizationRequest(
+                    CaseDefinition::class.java,
+                    CaseDefinitionActionProvider.VIEW_LIST
+                )
             )
-        )
+        } else {
+            Specification { _, _, criteriaBuilder -> criteriaBuilder.conjunction() }
+        }
 
         if (caseDefinitionKey != null) {
             spec = spec.and(byCaseDefinitionKey(caseDefinitionKey))

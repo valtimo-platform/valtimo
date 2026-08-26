@@ -167,6 +167,7 @@ class CaseDefinitionResource(
         @RequestParam caseDefinitionKey: String?,
         @RequestParam active: Boolean?,
         @RequestParam final: Boolean?,
+        @RequestParam(defaultValue = "false") allVersions: Boolean,
         @SortDefaults(
             SortDefault(sort = ["name"]),
             SortDefault(sort = ["active", "id.versionTag"], direction = Sort.Direction.DESC)
@@ -176,6 +177,7 @@ class CaseDefinitionResource(
             caseDefinitionKey = caseDefinitionKey,
             active = active,
             final = final,
+            allVersions = allVersions,
             pageable = pageable
         )
         val caseDefinitionIds = caseDefinitions.content.map { it.id }

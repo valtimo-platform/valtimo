@@ -22,6 +22,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.event.CaseDefinitionCreatedEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -54,6 +55,13 @@ class ProcessDocumentLinkEventListener(
     @EventListener(CaseDefinitionPreDeleteEvent::class)
     fun handleCaseDefinitionPreDeleteEvent(event: CaseDefinitionPreDeleteEvent) {
         caseDefinitionProcessLinkService.deleteDocumentDefinitionProcesses(event.caseDefinitionId)
+    }
+
+    // The earliest point at which both the case definitions and the global processes are deployed
+    @RunWithoutAuthorization
+    @EventListener(ApplicationReadyEvent::class)
+    fun handleApplicationReadyEvent() {
+        caseDefinitionProcessLinkService.pinLinksThatCanNoLongerChange()
     }
 
     companion object {

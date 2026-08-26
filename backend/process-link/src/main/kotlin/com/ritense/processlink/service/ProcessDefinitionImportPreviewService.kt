@@ -34,7 +34,6 @@ import com.ritense.processlink.web.rest.dto.ReplacedElementType
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionSpecificationHelper
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.service.ProcessPropertyService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask
@@ -52,7 +51,6 @@ class ProcessDefinitionImportPreviewService(
     private val importPreviewContributors: List<ImportPreviewContributor>,
     private val processLinkService: ProcessLinkService,
     private val repositoryService: OperatonRepositoryService,
-    private val processPropertyService: ProcessPropertyService,
 ) {
 
     fun preview(inputStream: InputStream): ProcessDefinitionImportPreviewResponseDto {
@@ -92,8 +90,7 @@ class ProcessDefinitionImportPreviewService(
                 processDefinitionKeys = processDefinitionKeys,
                 existingProcessDefinitionKeys = existingProcessDefinitionKeys,
                 pluginConfigurations = pluginConfigurations,
-                missingReferences = findReadOnlySystemProcesses(existingProcessDefinitionKeys) +
-                    findMissingBpmnReferences(bpmnEntries, processDefinitionKeys, zipEntries) +
+                missingReferences = findMissingBpmnReferences(bpmnEntries, processDefinitionKeys, zipEntries) +
                     findMissingProcessLinkReferences(zipEntries, bundledFormNames),
                 elementsToReplace = findElementsToReplace(
                     existingProcessDefinitionKeys,
@@ -152,28 +149,6 @@ class ProcessDefinitionImportPreviewService(
         return processLinkService.getProcessLinkMapper(deployDto.processLinkType)
             // A process definition outside a case definition has no blueprint
             .getReplacedReference(deployDto, null)
-    }
-
-    /**
-     * A process that is present here as a system process that may not be updated is managed by the
-     * application configuration, which stays authoritative. Note that autodeployment of
-     * `config/global` deliberately does overwrite it.
-     */
-    private fun findReadOnlySystemProcesses(existingProcessDefinitionKeys: List<String>): List<MissingReferenceDto> {
-        return existingProcessDefinitionKeys.filter { isReadOnly(it) }
-            .map {
-                MissingReferenceDto(
-                    type = MissingReferenceType.READ_ONLY_SYSTEM_PROCESS,
-                    reference = it,
-                    processDefinitionKey = it,
-                )
-            }
-    }
-
-    private fun isReadOnly(processDefinitionKey: String): Boolean {
-        // isReadOnly throws when there are no properties for the key, which is the case for a new process
-        processPropertyService.findByProcessDefinitionKey(processDefinitionKey) ?: return false
-        return processPropertyService.isReadOnly(processDefinitionKey)
     }
 
     private fun findMissingBpmnReferences(

@@ -1025,6 +1025,7 @@ export interface ProcessDefinitionDiagramWithPropertyDto {
 
 export interface ProcessDefinitionWithPropertiesDto extends ProcessDefinitionDto {
     readOnly: boolean;
+    systemProcess: boolean;
 }
 
 export interface ProcessInstanceDiagramDto {

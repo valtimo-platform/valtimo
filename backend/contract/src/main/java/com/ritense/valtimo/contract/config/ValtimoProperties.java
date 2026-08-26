@@ -207,13 +207,21 @@ public class ValtimoProperties {
     }
 
     public static class Process {
-        private boolean systemProcessUpdatable = false;
+        private boolean systemProcessUpdatable = true;
         private int callDepthWarningThreshold = 50;
 
+        /**
+         * @deprecated a system process is always updatable, so this property no longer has any
+         *     effect. Case definitions are protected from a new system process version by the
+         *     process definition version their process link pins, not by making the process
+         *     read-only.
+         */
+        @Deprecated(since = "13.43.0", forRemoval = true)
         public boolean isSystemProcessUpdatable() {
             return systemProcessUpdatable;
         }
 
+        @Deprecated(since = "13.43.0", forRemoval = true)
         public void setSystemProcessUpdatable(boolean systemProcessUpdatable) {
             this.systemProcessUpdatable = systemProcessUpdatable;
         }

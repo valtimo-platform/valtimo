@@ -27,9 +27,11 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byBlueprintId
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersion
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.maxVersionOf
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byNotLinkedToCaseDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -42,9 +44,13 @@ open class CaseDefinitionProcessLinkService(
         val link = caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(caseDefinitionId, type)
 
         return link?.let {
-            val processDefinition = findProcessDefinition(link.id.processDefinitionKey, caseDefinitionId)
+            val processDefinition = findProcessDefinition(
+                link.id.processDefinitionKey,
+                caseDefinitionId,
+                link.processDefinitionVersion
+            )
 
-            CaseDefinitionProcess(processDefinition!!.key, processDefinition.name!!)
+            CaseDefinitionProcess(processDefinition!!.key, processDefinition.name!!, processDefinition.version)
         }
     }
 
@@ -59,6 +65,11 @@ open class CaseDefinitionProcessLinkService(
         return caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(caseDefinitionId, type)
     }
 
+    /**
+     * Used when a case definition is copied into a new draft and when a link is imported: both take
+     * up the system process version available right now, which is what freezes the resulting case
+     * definition once it is finalized.
+     */
     fun saveDocumentDefinitionProcessLink(
         caseDefinitionId: CaseDefinitionId,
         processDefinitionKey: String,
@@ -70,7 +81,8 @@ open class CaseDefinitionProcessLinkService(
                     caseDefinitionId,
                     processDefinitionKey
                 ),
-                linkType
+                linkType,
+                findVersionToPin(processDefinitionKey, caseDefinitionId)
             )
         )
     }
@@ -81,9 +93,14 @@ open class CaseDefinitionProcessLinkService(
     ): DocumentDefinitionProcessLinkResponse {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
 
-        val processDefinition = findProcessDefinition(request.processDefinitionKey, caseDefinitionId)
+        val ownedProcessDefinition = findOwnedProcessDefinition(request.processDefinitionKey, caseDefinitionId)
+        // Needed when linking the 'document-upload' process:
+        val processDefinition = ownedProcessDefinition
+            ?: findUnownedProcessDefinition(request.processDefinitionKey, null)
 
         requireNotNull(processDefinition) { "Unknown process definition with key: " + request.getProcessDefinitionKey() }
+
+        val versionToPin = if (ownedProcessDefinition == null) processDefinition.version else null
 
         val currentLink = caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(
             caseDefinitionId,
@@ -103,20 +120,46 @@ open class CaseDefinitionProcessLinkService(
                 caseDefinitionId,
                 request.processDefinitionKey
             ),
-            request.linkType
+            request.linkType,
+            versionToPin
         )
 
         caseDefinitionProcessLinkRepository.save(link)
 
         return DocumentDefinitionProcessLinkResponse(
             processDefinition.key,
-            processDefinition.name
+            processDefinition.name,
+            processDefinition.version
         )
     }
 
     fun deleteDocumentDefinitionProcess(caseDefinitionId: CaseDefinitionId, type: String) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
         caseDefinitionProcessLinkRepository.deleteByIdCaseDefinitionIdAndType(caseDefinitionId, type)
+    }
+
+    /**
+     * Needed because a link deployed from the `config/case` folder is imported before the global
+     * process definitions are — CaseDefinitionDeploymentService deploys cases first — so at import
+     * time there is often no system process version to pin yet. A case definition that ships as
+     * final is skipped on every later boot, so without this its link would stay unpinned forever.
+     */
+    fun pinLinksThatCanNoLongerChange() {
+        caseDefinitionProcessLinkRepository.findAll()
+            .filter { it.processDefinitionVersion == null }
+            .filter { !caseDefinitionChecker.canUpdateCaseDefinition(it.id.caseDefinitionId) }
+            .forEach { link ->
+                val version = findVersionToPin(link.id.processDefinitionKey, link.id.caseDefinitionId)
+                if (version != null) {
+                    logger.info {
+                        "Pinning case-definition-process-link ${link.type} of ${link.id.caseDefinitionId} " +
+                            "to ${link.id.processDefinitionKey} version $version"
+                    }
+                    caseDefinitionProcessLinkRepository.save(
+                        CaseDefinitionProcessLink(link.id, link.type, version)
+                    )
+                }
+            }
     }
 
     fun deleteDocumentDefinitionProcesses(caseDefinitionId: CaseDefinitionId) {
@@ -126,6 +169,27 @@ open class CaseDefinitionProcessLinkService(
 
     private fun findProcessDefinition(
         processDefinitionKey: String,
+        caseDefinitionId: CaseDefinitionId?,
+        pinnedVersion: Int?
+    ): OperatonProcessDefinition? {
+        return findOwnedProcessDefinition(processDefinitionKey, caseDefinitionId)
+            // Needed when linking the 'document-upload' process:
+            ?: findUnownedProcessDefinition(processDefinitionKey, pinnedVersion)
+    }
+
+    /**
+     * `null` for a process the case definition owns: that is resolved by the case definition's own
+     * version tag, so pinning it would only duplicate what the tag already says.
+     */
+    private fun findVersionToPin(processDefinitionKey: String, caseDefinitionId: CaseDefinitionId): Int? {
+        if (findOwnedProcessDefinition(processDefinitionKey, caseDefinitionId) != null) {
+            return null
+        }
+        return findUnownedProcessDefinition(processDefinitionKey, null)?.version
+    }
+
+    private fun findOwnedProcessDefinition(
+        processDefinitionKey: String,
         caseDefinitionId: CaseDefinitionId?
     ): OperatonProcessDefinition? {
         return runWithoutAuthorization {
@@ -133,11 +197,29 @@ open class CaseDefinitionProcessLinkService(
                 byKey(processDefinitionKey)
                     .and(byBlueprintId(caseDefinitionId))
             )
-                // Needed when linking the 'document-upload' process:
-                ?: repositoryService.findProcessDefinition(
+        }
+    }
+
+    /**
+     * A pinned version that is no longer in the engine falls back to the latest, rather than leaving
+     * the case definition without a process at all.
+     */
+    private fun findUnownedProcessDefinition(
+        processDefinitionKey: String,
+        pinnedVersion: Int?
+    ): OperatonProcessDefinition? {
+        return runWithoutAuthorization {
+            val pinned = pinnedVersion?.let {
+                repositoryService.findProcessDefinition(byKey(processDefinitionKey).and(byVersion(it)))
+            }
+            pinned ?: repositoryService.findProcessDefinition(
                 byKey(processDefinitionKey)
                     .and(maxVersionOf(byNotLinkedToCaseDefinition()))
             )
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

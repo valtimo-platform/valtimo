@@ -74,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -420,9 +419,18 @@ public class OperatonProcessService {
     }
 
     public List<OperatonProcessDefinition> getDeployedDefinitions() {
+        return getDeployedDefinitions(false);
+    }
+
+    /**
+     * A suspended process still has running instances, so process migration has to be able to offer
+     * it even though nothing else should.
+     */
+    public List<OperatonProcessDefinition> getDeployedDefinitions(boolean includeSuspended) {
         denyAuthorization();
+        var specification = includeSuspended ? byLatestVersion() : byActive().and(byLatestVersion());
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
-            byActive().and(byLatestVersion()),
+            specification,
             Sort.by(NAME)
         ));
     }
@@ -568,10 +576,6 @@ public class OperatonProcessService {
 
         if (fileName.endsWith(".bpmn")) {
             BpmnModelInstance bpmnModel = Bpmn.readModelFromStream(fileInput);
-
-            if (!isDeployable(bpmnModel) && !skipIsDeployableCheck) {
-                throw new ProcessNotDeployableException(fileName);
-            }
 
             updateCaseDefinitionProcessesVersionTags(bpmnModel, blueprintId);
             updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, blueprintId);
@@ -1212,41 +1216,6 @@ public class OperatonProcessService {
                 yield null;
             }
         };
-    }
-
-    private boolean isDeployable(BpmnModelInstance model) {
-        AtomicBoolean isDeployable = new AtomicBoolean(true);
-        if (valtimoProperties.getProcess().isSystemProcessUpdatable()) {
-            return isDeployable.get();
-        }
-        model.getDefinitions().getChildElementsByType(Process.class).forEach(
-            process -> {
-                String processDefinitionKey = process.getId();
-                String versionTag = process.getOperatonVersionTag();
-                if (processDefinitionKey == null || processDefinitionKey.isEmpty() || isSystemProcess(
-                    AuthorizationContext
-                        .runWithoutAuthorization(
-                            () -> operatonRepositoryService.findProcessDefinition(
-                                byKey(processDefinitionKey)
-                                    .and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(versionTag != null ? byVersionTag(versionTag) : byNotLinkedToCaseDefinition()))
-                            )
-                        )
-                )) {
-                    isDeployable.set(false);
-                }
-            });
-        return isDeployable.get();
-    }
-
-    private boolean isSystemProcess(OperatonProcessDefinition processDefinition) {
-        if (processDefinition == null) {
-            return false;
-        }
-        var processProperties = processPropertyService.findByProcessDefinitionKey(processDefinition.getKey());
-        if (processProperties != null) {
-            return processProperties.isSystemProcess();
-        }
-        return false;
     }
 
     ByteArrayInputStream normalizeToCamundaNamespace(BpmnModelInstance bpmnModel) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CaseDefinition, DocumentService} from '@valtimo/document';
 import {MultiInputValues} from '@valtimo/components';
 import {
@@ -24,6 +24,7 @@ import {
   Observable,
   shareReplay,
   startWith,
+  Subscription,
   switchMap,
   take,
 } from 'rxjs';
@@ -40,7 +41,7 @@ import {TranslateService} from '@ngx-translate/core';
   selector: 'valtimo-case-migration',
   templateUrl: './case-migration.component.html',
 })
-export class CaseMigrationComponent {
+export class CaseMigrationComponent implements OnInit, OnDestroy {
   public readonly sourceCaseDefinitionKeySelected$ = new BehaviorSubject<string | null>(null);
   public readonly sourceCaseDefinitionVersionTagSelected$ = new BehaviorSubject<string | null>(
     null
@@ -53,6 +54,8 @@ export class CaseMigrationComponent {
   public readonly errors$ = new BehaviorSubject<Array<string> | null>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly caseMigrationService: CaseMigrationService,
@@ -64,7 +67,7 @@ export class CaseMigrationComponent {
   }
 
   public readonly caseDefinitions$: Observable<Array<CaseDefinition>> = this.documentService
-    .getCaseDefinitionsManagement({sort: 'name,id.versionTag', size: 100000})
+    .getCaseDefinitionsManagement({sort: 'name,id.versionTag', size: 100000, allVersions: true})
     .pipe(
       map(caseDefinitionsPage => caseDefinitionsPage.content),
       shareReplay(1)
@@ -113,17 +116,14 @@ export class CaseMigrationComponent {
     )
   );
   public readonly targetCaseDefinitionKeyItems$: Observable<LoadedValue<Array<ListItem>>> =
-    this.caseDefinitions$.pipe(
-      map(caseDefinitions => [
-        ...new Map(caseDefinitions.map(item => [item.caseDefinitionKey, item])).values(),
-      ]),
-      map(caseDefinitions =>
-        caseDefinitions.map(
+    combineLatest([this.caseDefinitions$, this.targetCaseDefinitionKeySelected$]).pipe(
+      map(([caseDefinitions, targetCaseDefinitionKeySelected]) =>
+        [...new Map(caseDefinitions.map(item => [item.caseDefinitionKey, item])).values()].map(
           caseDefinition =>
             ({
               caseDefinitionKey: caseDefinition.caseDefinitionKey,
               content: caseDefinition.name,
-              selected: false,
+              selected: caseDefinition.caseDefinitionKey === targetCaseDefinitionKeySelected,
             }) as ListItem
         )
       ),
@@ -134,25 +134,32 @@ export class CaseMigrationComponent {
       startWith({isLoading: true})
     );
   public readonly targetCaseDefinitionVersionTagItems$: Observable<Array<ListItem>> = combineLatest(
-    [this.targetCaseDefinitionKeySelected$, this.caseDefinitions$]
+    [
+      this.targetCaseDefinitionKeySelected$,
+      this.targetCaseDefinitionVersionTagSelected$,
+      this.caseDefinitions$,
+    ]
   ).pipe(
-    map(([targetCaseDefinitionKeySelected, caseDefinitions]) =>
-      caseDefinitions.filter(
-        caseDefinition => caseDefinition.caseDefinitionKey === targetCaseDefinitionKeySelected
-      )
-    ),
-    map(caseDefinitions =>
-      caseDefinitions.map(caseDefinition => caseDefinition.caseDefinitionVersionTag)
-    ),
-    map(versions =>
-      versions.map(
-        version =>
-          ({
-            caseDefinitionVersionTag: version,
-            content: version.toString(),
-            selected: false,
-          }) as ListItem
-      )
+    map(
+      ([
+        targetCaseDefinitionKeySelected,
+        targetCaseDefinitionVersionTagSelected,
+        caseDefinitions,
+      ]) =>
+        caseDefinitions
+          .filter(
+            caseDefinition => caseDefinition.caseDefinitionKey === targetCaseDefinitionKeySelected
+          )
+          .map(
+            caseDefinition =>
+              ({
+                caseDefinitionVersionTag: caseDefinition.caseDefinitionVersionTag,
+                content: caseDefinition.caseDefinitionVersionTag.toString(),
+                selected:
+                  caseDefinition.caseDefinitionVersionTag ===
+                  targetCaseDefinitionVersionTagSelected,
+              }) as ListItem
+          )
     )
   );
   public readonly patches$: Observable<Array<DocumentMigrationPatch>> = this.patchItems$.pipe(
@@ -166,6 +173,25 @@ export class CaseMigrationComponent {
       )
     )
   );
+
+  public ngOnInit(): void {
+    // Migrating to the latest version of the same case is what this screen is used for, so the
+    // target is prefilled. The source version is not: that is the one thing only the user knows.
+    this._subscriptions.add(
+      combineLatest([this.sourceCaseDefinitionKeySelected$, this.caseDefinitions$]).subscribe(
+        ([sourceCaseDefinitionKeySelected, caseDefinitions]) => {
+          this.targetCaseDefinitionKeySelected$.next(sourceCaseDefinitionKeySelected);
+          this.targetCaseDefinitionVersionTagSelected$.next(
+            this.latestVersionTagOf(caseDefinitions, sourceCaseDefinitionKeySelected)
+          );
+        }
+      )
+    );
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
 
   mappingValueChange(patches: MultiInputValues): void {
     this.patchItems$.next(patches);
@@ -264,6 +290,22 @@ export class CaseMigrationComponent {
         },
         error: error => this.errors$.next([error.message]),
       });
+  }
+
+  /**
+   * Relies on the backend returning the versions of a key in ascending semver order, which a string
+   * sort here would get wrong for 1.9.0 versus 1.10.0.
+   */
+  private latestVersionTagOf(
+    caseDefinitions: Array<CaseDefinition>,
+    caseDefinitionKey: string | null
+  ): string | null {
+    return (
+      caseDefinitions
+        .filter(caseDefinition => caseDefinition.caseDefinitionKey === caseDefinitionKey)
+        .map(caseDefinition => caseDefinition.caseDefinitionVersionTag)
+        .pop() ?? null
+    );
   }
 
   protected readonly CARBON_THEME = 'g10';
