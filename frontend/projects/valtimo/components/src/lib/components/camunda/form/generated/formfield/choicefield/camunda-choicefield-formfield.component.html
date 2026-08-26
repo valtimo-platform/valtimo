@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -21,15 +21,13 @@
   <div class="col-12 col-sm-8 col-lg-6">
     <select class="form-control" id="{{ formField.id }}" [formControlName]="formField.id">
       <option selected="selected" value=""></option>
-      <ng-container *ngFor="let choicefieldValue of choicefieldValues">
-        <option
-          *ngIf="!choicefieldValue.deprecated"
-          [value]="choicefieldValue.value"
-          id="option_{{ choicefieldValue.value }}"
-        >
-          {{ choicefieldValue.name }}
-        </option>
-      </ng-container>
+      <option
+        *ngFor="let choicefieldValue of choicefieldValues"
+        [value]="choicefieldValue.value"
+        id="option_{{ choicefieldValue.value }}"
+      >
+        {{ choicefieldValue.name }}
+      </option>
     </select>
     <valtimo-camunda-formfield-validation [formGroup]="formGroup" [formField]="formField">
     </valtimo-camunda-formfield-validation>
