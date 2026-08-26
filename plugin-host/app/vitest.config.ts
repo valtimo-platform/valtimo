@@ -35,6 +35,8 @@ export default defineConfig({
         "src/models/plugin-manifest.ts",
         // Bootstrap wiring; buildHttpsOptions was extracted to https-options.ts for testing.
         "src/index.ts",
+        // Bootstrap wiring for the standalone migrate entry point; same rationale as src/index.ts.
+        "src/migrate.ts",
       ],
       reporter: ["text", "html"],
     },

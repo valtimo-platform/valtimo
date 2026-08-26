@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { runner } from "node-pg-migrate";
 import pg from "pg";
 import type { HostLogger } from "../models/index.js";
 
@@ -60,149 +63,45 @@ export async function createDbPool(
   return pool;
 }
 
+/**
+ * Directory holding the .sql migration files. Resolved from this module's own location rather than
+ * cwd() so it works both from src/ under tsx and from dist/ in the image — the relative offset to
+ * app/migrations/ is the same in both, since tsconfig maps src/db/ to dist/db/.
+ */
+const MIGRATIONS_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "migrations");
+
 export async function runMigrations(pool: DbPool, logger: HostLogger): Promise<void> {
   const log = logger.child({ component: "migrations" });
 
-  // Create migrations tracking table
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS schema_migrations (
-      version INTEGER PRIMARY KEY,
-      applied_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-
-  const migrations = [
-    {
-      version: 1,
-      name: "create_plugin_configurations",
-      up: `
-        CREATE TABLE IF NOT EXISTS plugin_configurations (
-          configuration_id TEXT PRIMARY KEY,
-          plugin_id TEXT NOT NULL,
-          plugin_version TEXT NOT NULL,
-          properties JSONB NOT NULL DEFAULT '{}',
-          service_token TEXT NOT NULL,
-          gzac_base_url TEXT NOT NULL,
-          event_broker JSONB,
-          created_at TIMESTAMPTZ DEFAULT NOW(),
-          updated_at TIMESTAMPTZ DEFAULT NOW()
-        );
-        CREATE INDEX IF NOT EXISTS idx_plugin_configs_plugin ON plugin_configurations(plugin_id, plugin_version);
-      `,
-    },
-    {
-      version: 2,
-      name: "add_event_subscriptions_to_plugin_configurations",
-      up: `
-        ALTER TABLE plugin_configurations
-          ADD COLUMN IF NOT EXISTS event_subscriptions JSONB NOT NULL DEFAULT '[]';
-      `,
-    },
-    {
-      version: 3,
-      name: "add_granted_capabilities_to_plugin_configurations",
-      up: `
-        ALTER TABLE plugin_configurations
-          ADD COLUMN IF NOT EXISTS granted_capabilities JSONB NOT NULL DEFAULT '[]';
-      `,
-    },
-    {
-      version: 4,
-      name: "create_plugin_kv_and_logs",
-      up: `
-        CREATE TABLE IF NOT EXISTS plugin_kv (
-          configuration_id TEXT NOT NULL,
-          key TEXT NOT NULL,
-          value JSONB NOT NULL,
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          PRIMARY KEY (configuration_id, key)
-        );
-        CREATE INDEX IF NOT EXISTS idx_plugin_kv_prefix ON plugin_kv (configuration_id, key text_pattern_ops);
-
-        CREATE TABLE IF NOT EXISTS plugin_logs (
-          id BIGSERIAL PRIMARY KEY,
-          configuration_id TEXT NOT NULL,
-          plugin_id TEXT NOT NULL,
-          plugin_version TEXT NOT NULL,
-          level VARCHAR(8) NOT NULL,
-          message TEXT NOT NULL,
-          data JSONB,
-          source VARCHAR(32) NOT NULL,
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
-        CREATE INDEX IF NOT EXISTS idx_plugin_logs_config ON plugin_logs (configuration_id, created_at DESC);
-        CREATE INDEX IF NOT EXISTS idx_plugin_logs_level ON plugin_logs (configuration_id, level, created_at DESC);
-      `,
-    },
-    {
-      version: 5,
-      name: "add_granted_endpoints_to_plugin_configurations",
-      up: `
-        -- NULL (default) means "not pushed" — older GZAC instances don't send granted endpoints,
-        -- and the host then skips its side of the gzac_api allowlist check (GZAC still enforces
-        -- it server-side). A pushed empty list ('[]') denies every endpoint.
-        ALTER TABLE plugin_configurations
-          ADD COLUMN IF NOT EXISTS granted_endpoints JSONB;
-      `,
-    },
-    {
-      version: 6,
-      name: "add_allowed_egress_to_plugin_configurations",
-      up: `
-        -- Origins http_request may call. NOT NULL DEFAULT '[]' rather than nullable: http_request is
-        -- deny-by-default, so a configuration that predates egress declarations makes no outbound
-        -- calls until GZAC pushes a list. (granted_endpoints uses NULL for "not pushed" because
-        -- gzac_api has an authoritative server-side allowlist to fall back on; http_request has none.)
-        ALTER TABLE plugin_configurations
-          ADD COLUMN IF NOT EXISTS allowed_egress JSONB NOT NULL DEFAULT '[]';
-      `,
-    },
-    {
-      version: 7,
-      name: "create_gzac_instances",
-      up: `
-        -- One row per GZAC instance that has announced itself, keyed by the same gzacBaseUrl the
-        -- configuration push uses as instance identity. frontend_origins are the browser origins
-        -- that instance allows to embed this host's plugin screens; the host serves their union as
-        -- the frame-ancestors CSP directive. updated_at is what makes the allowlist self-cleaning:
-        -- an instance that stops announcing ages out (FRAME_ANCESTOR_STALE_MS) on its own, since
-        -- there is no deregistration call.
-        CREATE TABLE IF NOT EXISTS gzac_instances (
-          gzac_base_url TEXT PRIMARY KEY,
-          frontend_origins JSONB NOT NULL DEFAULT '[]',
-          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
-      `,
-    },
-    {
-      version: 8,
-      name: "add_owner_id_to_plugin_configurations",
-      up: `
-        -- Identity of the GZAC↔host relationship that pushed the configuration (the GZAC-side
-        -- host-row UUID). GZAC's reconciliation pass only deletes configurations carrying its own
-        -- owner_id, so multiple GZAC instances sharing this host cannot delete each other's
-        -- configs. NULL means "pushed by a GZAC that predates ownership" — such rows are never
-        -- auto-deleted. TEXT, not UUID: the host treats it as an opaque token minted by the pusher.
-        ALTER TABLE plugin_configurations
-          ADD COLUMN IF NOT EXISTS owner_id TEXT;
-        CREATE INDEX IF NOT EXISTS idx_plugin_configs_owner ON plugin_configurations(owner_id);
-      `,
-    },
-  ];
-
-  for (const migration of migrations) {
-    const { rows } = await pool.query(
-      "SELECT 1 FROM schema_migrations WHERE version = $1",
-      [migration.version]
-    );
-
-    if (rows.length === 0) {
-      log.info({ version: migration.version, name: migration.name }, "Running migration");
-      await pool.query(migration.up);
-      await pool.query("INSERT INTO schema_migrations (version) VALUES ($1)", [migration.version]);
-      log.info({ version: migration.version, name: migration.name }, "Migration complete");
-    }
+  // A dedicated connection, not the pool: the advisory lock below is session-scoped, so lock and
+  // unlock have to reach the same backend. Handing runner() the pool would route them to arbitrary
+  // connections. runner() does not close a client it was given (it tracks externally supplied
+  // clients as such), so releasing it here is both safe and required.
+  const client = await pool.connect();
+  try {
+    await runner({
+      dbClient: client,
+      dir: MIGRATIONS_DIR,
+      direction: "up",
+      migrationsTable: "pgmigrations",
+      // Serialise concurrent boots instead of failing them. The default ('fail') uses
+      // pg_try_advisory_lock, which would crash-loop every replica that lost the race — and
+      // replicas of one logical host booting together is the documented deployment shape.
+      advisoryLockMode: "wait",
+      // All pending migrations in one transaction: a partial upgrade never becomes visible. A future
+      // migration needing CREATE INDEX CONCURRENTLY has to opt out of this.
+      singleTransaction: true,
+      // Refuse to run a migration whose timestamp predates one already applied — catches two
+      // branches that each added a migration and merged out of order.
+      checkOrder: true,
+      logger: {
+        info: (msg) => log.info(msg),
+        warn: (msg) => log.warn(msg),
+        error: (msg) => log.error(msg),
+      },
+    });
+  } finally {
+    client.release();
   }
 }
 

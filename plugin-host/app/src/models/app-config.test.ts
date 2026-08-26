@@ -16,7 +16,7 @@
 
 import {hostname} from "node:os";
 import {describe, expect, it} from "vitest";
-import {envSchema} from "./app-config";
+import {envSchema, migrateEnvSchema} from "./app-config";
 
 describe("envSchema", () => {
   it("requires ADMIN_TOKEN", () => {
@@ -87,5 +87,48 @@ describe("envSchema", () => {
     expect(cfg.TLS_CERT_PATH).toBeUndefined();
     expect(cfg.TLS_KEY_PATH).toBeUndefined();
     expect(cfg.TLS_CA_PATH).toBeUndefined();
+  });
+
+  it("migrates on boot by default and accepts both explicit values", () => {
+    expect(envSchema.parse({ ADMIN_TOKEN: "secret" }).DB_MIGRATE_ON_BOOT).toBe(true);
+    expect(
+      envSchema.parse({ ADMIN_TOKEN: "secret", DB_MIGRATE_ON_BOOT: "true" }).DB_MIGRATE_ON_BOOT
+    ).toBe(true);
+    expect(
+      envSchema.parse({ ADMIN_TOKEN: "secret", DB_MIGRATE_ON_BOOT: "false" }).DB_MIGRATE_ON_BOOT
+    ).toBe(false);
+  });
+
+  it("rejects a DB_MIGRATE_ON_BOOT typo instead of falling back to a default", () => {
+    // Whether the schema gets maintained is not something to guess at: "yes", "1" and "False" all
+    // fail the boot rather than silently resolving to true or false.
+    for (const value of ["yes", "1", "False", "", "TRUE"]) {
+      expect(() => envSchema.parse({ ADMIN_TOKEN: "secret", DB_MIGRATE_ON_BOOT: value })).toThrow();
+    }
+  });
+});
+
+describe("migrateEnvSchema", () => {
+  it("parses with no ADMIN_TOKEN present", () => {
+    // The entire reason this schema exists: a migration job must not need the HMAC admin secret.
+    const cfg = migrateEnvSchema.parse({});
+    expect(cfg).not.toHaveProperty("ADMIN_TOKEN");
+  });
+
+  it("applies the same DB_* and LOG_LEVEL defaults as envSchema", () => {
+    const migrate = migrateEnvSchema.parse({});
+    const app = envSchema.parse({ ADMIN_TOKEN: "secret" });
+
+    expect(migrate.DB_HOST).toBe(app.DB_HOST);
+    expect(migrate.DB_PORT).toBe(app.DB_PORT);
+    expect(migrate.DB_NAME).toBe(app.DB_NAME);
+    expect(migrate.DB_USER).toBe(app.DB_USER);
+    expect(migrate.DB_PASSWORD).toBe(app.DB_PASSWORD);
+    expect(migrate.LOG_LEVEL).toBe(app.LOG_LEVEL);
+  });
+
+  it("coerces DB_PORT and rejects an out-of-enum LOG_LEVEL", () => {
+    expect(migrateEnvSchema.parse({ DB_PORT: "6000" }).DB_PORT).toBe(6000);
+    expect(() => migrateEnvSchema.parse({ LOG_LEVEL: "trace" })).toThrow();
   });
 });

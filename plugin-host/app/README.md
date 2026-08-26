@@ -16,7 +16,7 @@ Node.js + Fastify sidecar that manages and executes external Wasm plugins via [E
 ```
 src/
   db/
-    index.ts              # Database pool, migrations
+    index.ts              # Database pool, migration runner
     config-repository.ts  # CRUD for plugin_configurations table
     plugin-repository.ts  # CRUD for plugins table
   models/
@@ -39,6 +39,8 @@ src/
   plugin-manager.ts       # Wasm lifecycle: load, store, call actions/events via Extism
   config-registry.ts      # Database-backed configuration store
   index.ts                # Fastify entry point
+  migrate.ts              # Standalone migration entry point (dist/migrate.js)
+migrations/               # .sql schema migrations (node-pg-migrate)
 docker-compose.yml        # PostgreSQL + app containers
 Dockerfile                # App container image
 ```
@@ -95,6 +97,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `DB_NAME` | no | `pluginhost` | PostgreSQL database name |
 | `DB_USER` | no | `pluginhost` | PostgreSQL username |
 | `DB_PASSWORD` | no | `pluginhost` | PostgreSQL password |
+| `DB_MIGRATE_ON_BOOT` | no | `true` | Whether the app applies pending migrations at boot. Set `false` when a pre-deploy job or init container runs `node dist/migrate.js` instead (see [Database migrations](#database-migrations)). Only `true`/`false` are accepted; anything else fails the boot. |
 | `WASM_TIMEOUT_MS` | no | `30000` | Hard wall-clock limit per Wasm plugin call; Extism cancels the call when exceeded and the route reports a `HOST_ERROR`. |
 | `WASM_MAX_MEMORY_PAGES` | no | `4096` | Cap on a plugin's linear memory in 64 KiB pages (default 256 MiB). `0` removes the cap. |
 | `WASM_INSTANCE_IDLE_TTL_MS` | no | `600000` | Idle Extism instances are closed after this long without a call (freed worker + memory; next call re-instantiates). `0` disables eviction. |
@@ -178,6 +181,8 @@ may still be registered over plain HTTP.
 | `npm run db:reset` | Stop, remove volume, and restart (fresh database) |
 | `npm run db:logs` | Follow PostgreSQL logs |
 | `npm run db:shell` | Connect to psql shell |
+| `npm run migrate` | Apply pending migrations and exit (needs `npm run build` first) |
+| `npm run migrate:create <name>` | Generate a timestamped `.sql` migration in `migrations/` |
 
 ### Docker
 
@@ -198,6 +203,187 @@ may still be registered over plain HTTP.
 
 Configurations persist across host restarts. Event consumers automatically reconnect to brokers
 referenced by persisted configurations on startup.
+
+## Reconciliation & ownership
+
+One host serves many GZAC instances, so every configuration row records **which** GZAC↔host
+relationship pushed it: GZAC sends its host-row UUID as `ownerId` with every push, and the host
+persists it (`owner_id` column) and echoes it in the configuration listing. The host treats the
+value as an opaque token — it never interprets or enforces it.
+
+Each GZAC's discovery cycle uses this to **reconcile**: it fetches
+`GET /api/host/configurations` and deletes host configurations that carry *its own* `ownerId` but
+no longer exist on its side — healing the case where a configuration was deleted while the host was
+down or unreachable (the direct delete call is best-effort and does not retry). The never-delete
+rules:
+
+- a configuration owned by **another** GZAC is never touched, whatever its state;
+- an **unowned** configuration (`ownerId` null — pushed by a GZAC that predates ownership) is never
+  auto-deleted by anyone; it is claimed on the owner's next push, or must be removed manually;
+- when the listing request fails, or a host does not implement it, reconciliation is skipped
+  entirely for that cycle.
+
+Ownership scoping is a *safety* mechanism against accidental cross-instance deletion, not an
+authorization boundary: every GZAC connecting to a host shares the same `ADMIN_TOKEN` and is fully
+trusted (any of them could overwrite or delete any configuration directly).
+
+**Owner-change warning.** When a push changes an existing configuration's owner, the host logs a
+warning — this is the fingerprint of two GZAC environments pushing the same configuration id.
+The usual cause is a **database-cloned GZAC environment pointed at the same host as its source**:
+clones share host-row UUIDs and configuration ids, so their pushes and reconciliation passes fight
+over the same rows. Never point a cloned environment at the same host — register a fresh host entry
+(new UUID) instead.
+
+## Database migrations
+
+The schema lives in `migrations/` as plain `.sql` files, applied by
+[node-pg-migrate](https://salsita.github.io/node-pg-migrate/). Which migrations have run is recorded
+in the `pgmigrations` table — that ledger is the source of truth, which is why the migration files
+are **not** written with `IF NOT EXISTS` guards.
+
+### Two ways to run them
+
+**At boot (default).** Every host boot applies pending migrations before serving traffic, so
+`npm run dev` and `docker compose up` need no extra step. A session advisory lock in `wait` mode
+serialises concurrent boots: when several replicas start together, one applies the migrations and the
+others block until it finishes, then find nothing to do. All pending migrations run in a single
+transaction, so a partial upgrade never becomes visible.
+
+**As a pre-deploy job.** The same image also exposes a migrate-only entry point:
+
+```bash
+docker run --rm <image> node dist/migrate.js
+```
+
+It reads the same `DB_*` variables as the app but **not** `ADMIN_TOKEN` — a migration job has no
+business holding the HMAC admin secret. It exits non-zero on failure, so a broken migration fails the
+deploy instead of letting the app roll out against a stale schema.
+
+This is the recommended shape in production. Pair it with `DB_MIGRATE_ON_BOOT=false` so the schema
+moves ahead of every replica at one known moment, rather than whenever the pod that happens to win
+the advisory lock gets there. It also avoids the boot-time trade-off: with migrate-on-boot, a long
+migration holds every other replica's boot for its duration (the alternative — failing instead of
+waiting — would crash-loop them, so waiting is the right default, but a pre-deploy job avoids the
+choice).
+
+As a Kubernetes Job before the rollout:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: plugin-host-migrate
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: <plugin-host-image>
+          command: ["node", "dist/migrate.js"]
+          envFrom:
+            - secretRef:
+                name: plugin-host-db   # DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
+```
+
+or as an `initContainer` on the Deployment, using the identical `command` and `envFrom`. Either way,
+set `DB_MIGRATE_ON_BOOT=false` on the app container.
+
+Note that with `DB_MIGRATE_ON_BOOT=false` the app does **not** verify the schema is current. If you
+skip the job, the host boots and listens, then fails on the first query with
+`relation "plugin_configurations" does not exist`.
+
+Run migrations over a **direct** Postgres connection. The advisory lock is session-scoped, so
+PgBouncer in transaction or statement pooling mode will not keep it on one backend and the lock stops
+serialising anything.
+
+### Adding a migration
+
+```bash
+npm run migrate:create add-my-column
+```
+
+This writes `migrations/20260915143022891_add-my-column.sql` with `-- Up Migration` /
+`-- Down Migration` markers. Put the forward DDL under Up and its inverse under Down.
+
+The prefix is a UTC timestamp, `yyyymmddhhmmssSSS` — the same date-first shape as the backend's
+Liquibase changelogs, so the creation date is readable at a glance. It also makes parallel branches
+conflict-free: two people adding a migration on the same day never collide on a filename. If a branch
+merges late, `checkOrder` refuses to run a migration whose timestamp predates one already applied;
+regenerate or rename the file to a current timestamp. That is the guard doing its job, not a bug.
+
+Always generate the filename rather than hand-writing the prefix. The runner sorts migrations by this
+prefix, and it reads a **17-digit** prefix as `yyyymmddhhmmssSSS` while treating any other length as a
+plain number. A hand-shortened `20260915_add-my-column.sql` is therefore taken as the number
+20,260,915 — ordering *before* every properly generated migration, and quietly breaking `checkOrder`.
+
+**Merged migrations are immutable.** Add a new migration; never edit one that has already been
+applied anywhere. This is not process hygiene — editing the file does nothing to databases that
+already ran the old version, and **nothing at runtime detects the divergence**. `node-pg-migrate`
+records only the migration's name and a timestamp, no content checksum, and the up path simply
+computes "files not yet in the ledger" — so a migration whose content changed, or which was deleted
+outright, is silently ignored. The two databases drift apart with no error anywhere.
+
+**Additive / expand-contract only.** During a rolling deploy, old and new code run against one
+schema simultaneously, so a migration must not break the version still running. A column rename is
+four steps across releases — add the new column, backfill it, dual-write to both, drop the old one —
+not a single `ALTER`.
+
+Two further constraints:
+
+- All pending migrations share one transaction, so a migration needing `CREATE INDEX CONCURRENTLY`
+  cannot be a `.sql` file. Author it as `.ts` in the same directory and call `pgm.noTransaction()`;
+  both languages coexist and `jiti` already ships with `node-pg-migrate`.
+- The migrations directory is not searched recursively — a file in a subdirectory is silently never
+  applied.
+
+To roll back locally, use `npm run db:reset` (drop the volume and re-migrate from scratch) rather
+than a down migration. It is more reliable, and it is why there is no `migrate:down` script. The Down
+sections exist for completeness and for an ad-hoc rollback via the `node-pg-migrate` CLI.
+
+### Before first release
+
+The immutability rule above is currently **unenforced**, deliberately: while `plugin-host` is
+pre-release, editing a migration on a story branch that targets an unshipped feature branch is
+legitimate, and a check would fire on exactly the PRs in use today. When `plugin-host` first merges
+to `next-minor`, add a `migrations-immutable` job to `.github/workflows/plugin_host_ci.yml`:
+
+- Scope it with
+  `if: github.event_name == 'pull_request' && github.base_ref == 'next-minor'`, so story → feature
+  PRs are unaffected.
+- The check itself, failing if the output is non-empty:
+
+  ```bash
+  git diff --no-renames --diff-filter=MD --name-only "origin/$BASE...HEAD" -- plugin-host/app/migrations/
+  ```
+
+  - `--no-renames` is required. Git detects renames by default, so a rename — **or a move into a
+    subdirectory** — reports as `R` and slips past a bare `--diff-filter=MD`. Without the flag both
+    decompose into delete + add, and the delete is caught.
+  - Three dots, not two. `origin/$BASE..HEAD` flags migrations added on the base branch after the
+    fork as deletions. A three-dot diff runs from the merge base and ignores pure additions, so the
+    eventual `feature/external-plugin-system` → `next-minor` PR passes on its own: `plugin-host/`
+    does not exist on `next-minor`, so from that merge base every migration is an addition and the
+    intra-feature churn is invisible.
+  - Needs `fetch-depth: 0` on `actions/checkout` for the merge base.
+  - Pass the branch through `env:` rather than interpolating `${{ github.base_ref }}` into `run:` —
+    on a fork PR the branch name is attacker-controlled text going into bash.
+- Add an escape hatch for a deliberate fix:
+  `&& !contains(github.event.pull_request.labels.*.name, 'migration-override')`. This requires
+  `types: [labeled, unlabeled, opened, synchronize, reopened]` on the `pull_request` trigger, which
+  `plugin_host_ci.yml` does not currently declare — `.github/workflows/check-tested-label.yml` is the
+  in-repo example.
+- The guard only runs on `pull_request`, so it is meaningful only with branch protection on
+  `next-minor`; a direct push bypasses it. Also, making it a *required* check interacts badly with
+  the workflow's `paths: plugin-host/**` filter — GitHub leaves a path-skipped required check pending
+  forever.
+
+Runtime checksum verification is deliberately not part of this. `node-pg-migrate` does not offer it,
+and hashing raw file bytes has a real false-positive mode: CRLF and LF checkouts of the same file
+differ, and this repo supports Windows development (the CI bootstrap job runs on `windows-latest`).
+A custom checksum table would reintroduce the bespoke migration machinery that adopting a library
+removed. Revisit only if a real desync actually occurs.
 
 ## Reconciliation & ownership
 

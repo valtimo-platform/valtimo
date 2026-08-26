@@ -31,12 +31,15 @@ function noopLogger(): HostLogger {
 }
 
 /**
- * L4 — the host's own migration runner. Every host boot calls `runMigrations`, so
- * "applies on an empty database" and "is a no-op on an already-migrated one" are both production
- * paths. The column-level assertions pin the defaults the code depends on: `granted_capabilities`
- * defaults to `[]` (no implicit capability grant) while `granted_endpoints` stays nullable, because
- * NULL and `[]` mean different things to the gzac_api allowlist.
+ * L4 — the migration runner. Every host boot calls `runMigrations`, so "applies on an empty
+ * database" and "is a no-op on an already-migrated one" are both production paths. The column-level
+ * assertions pin the defaults the code depends on: `granted_capabilities` defaults to `[]` (no
+ * implicit capability grant) while `granted_endpoints` stays nullable, because NULL and `[]` mean
+ * different things to the gzac_api allowlist. They also double as the proof that the squashed
+ * baseline in `migrations/` is equivalent to the eight incremental migrations it replaced.
  */
+const BASELINE = "20260820000000000_initial-schema";
+
 describe("runMigrations against real Postgres", () => {
   let container: StartedPostgreSqlContainer;
   let pool: DbPool;
@@ -75,17 +78,17 @@ describe("runMigrations against real Postgres", () => {
     );
   }
 
-  it("records every migration version exactly once", async () => {
-    const {rows} = await pool.query("SELECT version FROM schema_migrations ORDER BY version");
-    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+  it("records every applied migration exactly once", async () => {
+    const {rows} = await pool.query("SELECT name FROM pgmigrations ORDER BY id");
+    expect(rows.map((r: {name: string}) => r.name)).toEqual([BASELINE]);
   });
 
   it("is idempotent — a second run on the same database changes nothing", async () => {
     // Every host boot runs migrations; a re-run must not duplicate bookkeeping or error out.
     await runMigrations(pool, noopLogger());
 
-    const {rows} = await pool.query("SELECT version FROM schema_migrations ORDER BY version");
-    expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    const {rows} = await pool.query("SELECT name FROM pgmigrations ORDER BY id");
+    expect(rows.map((r: {name: string}) => r.name)).toEqual([BASELINE]);
   });
 
   it("creates plugin_configurations with the capability and endpoint columns", async () => {
@@ -95,15 +98,15 @@ describe("runMigrations against real Postgres", () => {
     expect(cols.event_subscriptions).toMatchObject({type: "jsonb", nullable: "NO"});
     expect(cols.event_subscriptions.default).toContain("'[]'");
 
-    // Migration 3: no implicit grant — an unlisted capability is denied.
+    // No implicit grant — an unlisted capability is denied.
     expect(cols.granted_capabilities).toMatchObject({type: "jsonb", nullable: "NO"});
     expect(cols.granted_capabilities.default).toContain("'[]'");
 
-    // Migration 5: nullable on purpose — NULL means "no allowlist pushed", [] means "deny all".
+    // Nullable on purpose — NULL means "no allowlist pushed", [] means "deny all".
     expect(cols.granted_endpoints).toMatchObject({type: "jsonb", nullable: "YES", default: null});
 
-    // Migration 8: nullable on purpose — NULL means "unowned" (pushed by a pre-ownership GZAC);
-    // such rows are excluded from every GZAC's reconciliation pass.
+    // Nullable on purpose — NULL means "unowned" (pushed by a pre-ownership GZAC); such rows are
+    // excluded from every GZAC's reconciliation pass.
     expect(cols.owner_id).toMatchObject({type: "text", nullable: "YES", default: null});
   });
 
@@ -156,8 +159,8 @@ describe("runMigrations against real Postgres", () => {
     );
     try {
       await runMigrations(freshPool, noopLogger());
-      const {rows} = await freshPool.query("SELECT version FROM schema_migrations ORDER BY version");
-      expect(rows.map((r: {version: number}) => r.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+      const {rows} = await freshPool.query("SELECT name FROM pgmigrations ORDER BY id");
+      expect(rows.map((r: {name: string}) => r.name)).toEqual([BASELINE]);
 
       const {rows: tables} = await freshPool.query(
         `SELECT table_name FROM information_schema.tables
@@ -165,13 +168,47 @@ describe("runMigrations against real Postgres", () => {
       );
       expect(tables.map((r: {table_name: string}) => r.table_name)).toEqual([
         "gzac_instances",
+        "pgmigrations",
         "plugin_configurations",
         "plugin_kv",
         "plugin_logs",
-        "schema_migrations",
       ]);
     } finally {
       await closeDbPool(freshPool);
+    }
+  });
+
+  it("serialises concurrent runners instead of racing them", async () => {
+    // Two replicas of one host booting together both call runMigrations. The lock in `wait` mode has
+    // to make one of them block and then find nothing to do — not fail, and not apply the baseline
+    // twice. This is the defect the previous runner papered over with IF NOT EXISTS.
+    await pool.query("CREATE DATABASE concurrent_boot");
+    const dbConfig = {
+      host: container.getHost(),
+      port: container.getPort(),
+      database: "concurrent_boot",
+      user: container.getUsername(),
+      password: container.getPassword(),
+    };
+
+    // Two independent pools, not two calls on one pool: advisory locks are re-entrant within a
+    // session, so two calls that happened to share a connection would both "acquire" the lock and the
+    // test would pass without proving anything.
+    const [first, second] = await Promise.all([
+      createDbPool(dbConfig, noopLogger()),
+      createDbPool(dbConfig, noopLogger()),
+    ]);
+    try {
+      await Promise.all([
+        runMigrations(first, noopLogger()),
+        runMigrations(second, noopLogger()),
+      ]);
+
+      const {rows} = await first.query("SELECT name FROM pgmigrations ORDER BY id");
+      expect(rows.map((r: {name: string}) => r.name)).toEqual([BASELINE]);
+    } finally {
+      await closeDbPool(first);
+      await closeDbPool(second);
     }
   });
 });

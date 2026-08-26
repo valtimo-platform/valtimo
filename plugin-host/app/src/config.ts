@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-import { envSchema } from "./models/index.js";
-import type { AppConfig } from "./models/index.js";
+import { envSchema, migrateEnvSchema } from "./models/index.js";
+import type { AppConfig, MigrateConfig } from "./models/index.js";
 
-export type { AppConfig };
+export type { AppConfig, MigrateConfig };
 
 export function loadConfig(): AppConfig {
   return envSchema.parse(process.env);
+}
+
+export function loadMigrateConfig(): MigrateConfig {
+  return migrateEnvSchema.parse(process.env);
 }

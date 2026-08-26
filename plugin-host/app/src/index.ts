@@ -66,7 +66,13 @@ async function main(): Promise<void> {
       },
       fastify.log
     );
-    await runMigrations(dbPool, fastify.log);
+    if (config.DB_MIGRATE_ON_BOOT) {
+      await runMigrations(dbPool, fastify.log);
+    } else {
+      // Operator runs `node dist/migrate.js` from a pre-deploy job instead. The app does not verify
+      // the schema is current — a mismatch surfaces as a query error, not a boot failure.
+      fastify.log.info("DB_MIGRATE_ON_BOOT=false — skipping migrations");
+    }
   } catch (err) {
     fastify.log.error({ error: (err as Error).message }, "Failed to connect to database");
     process.exit(1);
