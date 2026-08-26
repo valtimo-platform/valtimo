@@ -97,7 +97,7 @@ class TemporaryResourceStorageAutoConfiguration {
     }
 
     @Bean
-    @ProcessBean
+    @ProcessBean(description = "Accesses temporary resource storage metadata and deletion")
     @ConditionalOnMissingBean(ResourceStorageDelegate::class)
     fun resourceStorageDelegate(
         service: TemporaryResourceStorageService

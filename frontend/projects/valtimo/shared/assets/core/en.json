@@ -1839,6 +1839,7 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
+    "exportErrorNotification": "Failed to export the process. Check that the sub-processes, decision tables and forms it references are available on this environment.",
     "validate": "Validate",
     "validationSuccessNotification": "Process definition is valid",
     "validationWarningNotification": "Process definition has warnings",
@@ -1853,7 +1854,7 @@
     "upload": {
       "modalTitle": "Upload process definition",
       "title": "Upload file",
-      "description": "Only BPMN files are supported.",
+      "description": "BPMN files and exported process packages (.zip) are supported.",
       "buttonText": "Select file",
       "success": "Deployment successful",
       "failure": "Deployment failed",
@@ -1861,24 +1862,103 @@
       "replaceTitle": "Replace existing process?",
       "replaceContent": "A process with the same key already exists. Do you want to replace it?",
       "replaceContentWithDuplicates": "A process with the same key already exists: {{duplicates}}. Do you want to replace it?",
-      "replaceConfirm": "Replace"
+      "replaceConfirm": "Replace",
+      "invalidZip": {
+        "title": "Invalid file",
+        "text": "This file is not a valid process package."
+      },
+      "pluginsDescription": "For each plugin configuration in the package, choose the configuration of this environment.",
+      "summaryDescription": "The following items the process refers to are missing on this environment. Import them separately.",
+      "missingReference": {
+        "SUB_PROCESS": {
+          "title": "Sub-processes not included",
+          "message": "These called processes could not be included in the package and do not exist on this environment. They use a dynamic or deployment binding, so import them separately:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Decision tables not included",
+          "message": "These decision tables could not be included in the package and do not exist on this environment. They use a dynamic or deployment binding, so import them separately:"
+        },
+        "FORM": {
+          "title": "Missing forms",
+          "message": "Import these forms first:"
+        },
+        "FORM_FLOW": {
+          "title": "Form flows are not supported",
+          "message": "Form flows cannot be linked to a process outside a case definition:"
+        },
+        "READ_ONLY_SYSTEM_PROCESS": {
+          "title": "Process is managed by configuration",
+          "message": "This process cannot be overwritten because it is managed by the application configuration:"
+        }
+      },
+      "willBeReplaced": {
+        "PROCESS_DEFINITION": {
+          "title": "Processes will be replaced",
+          "message": "These processes already exist on this environment and will be replaced by the import:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Decision tables will be replaced",
+          "message": "These decision tables already exist on this environment and will be replaced by the import:"
+        },
+        "FORM": {
+          "title": "Forms will be replaced",
+          "message": "These forms already exist on this environment and will be replaced by the import:"
+        }
+      }
     },
+    "exportBpmn": "Export BPMN definition",
     "canInitializeDocument": "Starts case",
     "startableByUser": "Startable by user",
-    "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expression {{expression}} must use ${...} or #{...} syntax",
-      "UNCLOSED_PARENTHESIS": "Expression {{expression}} has an unclosed parenthesis '('",
-      "UNCLOSED_BRACE": "Expression {{expression}} is missing a closing brace '}'",
-      "UNCLOSED_BRACKET": "Expression {{expression}} has an unclosed bracket '['",
-      "MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
-      "INCOMPLETE_EXPRESSION": "Expression {{expression}} is incomplete",
-      "INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
-      "BEAN_NOT_FOUND": "No bean found with this name: {{expression}}. If using a process variable, ensure it exists at runtime"
+    "validationErrorCodes": {
+      "NO_START_EVENT": "Process has no start event",
+      "NO_END_EVENT": "Process has no end event",
+      "MULTIPLE_NONE_START_EVENTS": "Process has multiple none start events",
+      "NO_OUTGOING_FLOW": "Element has no outgoing flow",
+      "NO_INCOMING_FLOW": "Element has no incoming flow",
+      "UNREACHABLE_ELEMENT": "Element is not reachable from any start event",
+      "NO_PATH_TO_END_EVENT": "Start event has no path to an end event",
+      "SERVICE_TASK_NO_IMPLEMENTATION": "Service task has no process link, implementation, or execution listener",
+      "USER_TASK_NO_FORM": "User task has no process link or form",
+      "SEND_TASK_NO_IMPLEMENTATION": "Send task has no process link or implementation",
+      "RECEIVE_TASK_NO_MESSAGE": "Receive task has no process link or message",
+      "BUSINESS_RULE_TASK_NO_IMPLEMENTATION": "Business rule task has no DMN decision reference",
+      "CALL_ACTIVITY_NO_CALLED_ELEMENT": "Call activity has no process link or called element",
+      "SEQUENCE_FLOW_NO_CONDITION": "Sequence flow from exclusive gateway has no condition",
+      "MESSAGE_EVENT_NO_MESSAGE": "Message event has no process link or message reference",
+      "TIMER_EVENT_NO_CONFIG": "Timer event has no timer configuration",
+      "SIGNAL_EVENT_NO_SIGNAL": "Signal event has no signal reference",
+      "CONDITIONAL_EVENT_NO_CONDITION": "Conditional event has no condition",
+      "ERROR_EVENT_NO_ERROR": "Error event has no error reference",
+      "ESCALATION_EVENT_NO_ESCALATION": "Escalation event has no escalation reference",
+      "START_EVENT_NO_FORM": "Start event has no process link or form",
+      "EXPRESSION_MISSING_EL_MARKERS": "Expression {{expression}} must use ${...} or #{...} syntax",
+      "EXPRESSION_UNCLOSED_PARENTHESIS": "Expression {{expression}} has an unclosed parenthesis",
+      "EXPRESSION_UNCLOSED_BRACE": "Expression {{expression}} is missing a closing brace",
+      "EXPRESSION_UNCLOSED_BRACKET": "Expression {{expression}} has an unclosed bracket",
+      "EXPRESSION_MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
+      "EXPRESSION_INCOMPLETE": "Expression {{expression}} is incomplete",
+      "EXPRESSION_INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
+      "EXPRESSION_BEAN_NOT_FOUND": "No bean '{{expression}}' found. If using a process variable, ensure it exists at runtime",
+      "EXPRESSION_METHOD_NOT_FOUND": "Method not found on bean. Check the expression {{expression}}",
+      "EXPRESSION_ARGUMENT_COUNT_MISMATCH": "Wrong number of arguments in expression",
+      "EXPRESSION_EMPTY_ARGUMENTS": "One or more arguments are empty in expression"
     },
     "warningConfirmation": {
       "title": "Process has warnings",
       "content": "The process definition contains warnings. Are you sure you want to save it without resolving the warnings?",
       "confirm": "Save anyway"
+    },
+    "markers": {
+      "processLink": "Process link attached",
+      "executionListener": "Execution listener",
+      "taskListener": "Task listener",
+      "toggleTooltip": "Toggle visibility of process link, execution listener, and task listener markers",
+      "hide": "Hide markers",
+      "show": "Show markers"
+    },
+    "autofilled": {
+      "generic": "Auto-filled values present",
+      "sidebarMessage": "This field was auto-filled. Dismiss to not see this message again."
     }
   },
   "processCaseConnection": {
@@ -2011,6 +2091,7 @@
     "create": "Create",
     "save": "Save",
     "more": "More",
+    "options": "Options",
     "export": "Export",
     "defaultSort": "Default sort",
     "list": {
@@ -2212,6 +2293,18 @@
     "noConfigurationComponent": "No configuration component is available.",
     "configurationId": "Configuration ID",
     "configurationIdTooltip": "The plugin will be saved under this ID. The ID must be in the format of a UUID"
+  },
+  "pluginConfigurationMapping": {
+    "unknownPlugin": "Unknown plugin",
+    "source": "From the package",
+    "target": "On this environment",
+    "selectPlaceholder": "Select a configuration",
+    "notInstalled": "Plugin not installed",
+    "noConfigurations": "No configurations available",
+    "unidentifiable": {
+      "title": "Plugin configurations unknown",
+      "message": "For some plugin configurations it cannot be determined which plugin they belong to. Those links have to be set manually after importing."
+    }
   },
   "pluginManagement": {
     "tableItemsText": "plugin configurations",

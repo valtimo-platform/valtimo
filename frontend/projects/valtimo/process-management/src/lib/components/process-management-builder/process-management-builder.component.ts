@@ -15,20 +15,17 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {HttpErrorResponse} from '@angular/common/http';
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {HttpErrorResponse, HttpResponse} from '@angular/common/http';
+import {AfterViewInit, Component, ElementRef, OnDestroy, signal, ViewChild} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Deploy16, ListChecked16, Return16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
   ConfirmationModalModule,
   FitPageDirective,
   ModalService,
-  OverflowMenuComponent,
-  OverflowMenuOptionComponent,
-  OverflowMenuTriggerComponent,
+  OverflowMenuModule,
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
@@ -44,7 +41,7 @@ import {
   ManagementContext,
   ProcessDefinitionWithPropertiesDto,
 } from '@valtimo/shared';
-import {ProcessService} from '@valtimo/process';
+import {AutofilledElement, ProcessService} from '@valtimo/process';
 import {
   BuildingBlockProcessDefinitionConflictResponse,
   BuildingBlockProcessLinkCreateDto,
@@ -100,6 +97,7 @@ import {
 import {distinctUntilChanged} from 'rxjs/operators';
 import {EMPTY_BPMN, PROCESS_MANAGEMENT_BUILDER_TEST_IDS} from '../../constants';
 import {
+  ActivityMarkerInfo,
   OpenProcessLinkModalEvent,
   ProcessDefinitionResult,
   ProcessDefinitionValidationError,
@@ -116,8 +114,10 @@ import {
   getLatestProcessDefinition,
   initBreadcrumbsForContext,
 } from '../../utils';
-import {ValtimoPropertiesProviderModule} from './panel';
+import {ValtimoPropertiesProviderModule, ExpressionAutocompleteModule, ExpressionAutocomplete} from './panel';
 import {PluginTranslationService} from '@valtimo/plugin';
+import {ProcessBeanService} from '../../services';
+import {View16, ViewOff16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -137,13 +137,10 @@ import {PluginTranslationService} from '@valtimo/plugin';
     TranslateModule,
     TagModule,
     ProcessLinkModule,
-    ProcessLinkModule,
-    OverflowMenuComponent,
-    OverflowMenuOptionComponent,
-    OverflowMenuTriggerComponent,
     ToggleModule,
     TooltipModule,
     ConfirmationModalModule,
+    OverflowMenuModule,
   ],
   providers: [
     ProcessManagementEditorService,
@@ -169,6 +166,13 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private _validationErrorElementIds: string[] = [];
   private _validationHoverHandler: ((event: any) => void) | null = null;
   private _validationOutHandler: ((event: any) => void) | null = null;
+  private _selectionChangedHandler: ((event: any) => void) | null = null;
+  private _fieldInputCleanupFns: (() => void)[] = [];
+  private _expressionAutocomplete: ExpressionAutocomplete | null = null;
+  private _activityMarkerElementIds: string[] = [];
+  private _activityMarkerUpdateTimeout: any = null;
+  private _autofilledElements: AutofilledElement[] = [];
+  private _autofilledElementIds: string[] = [];
 
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public readonly isSystemProcess$ = new BehaviorSubject<boolean>(false);
@@ -177,6 +181,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   public readonly canInitializeDocument$ = new BehaviorSubject<boolean>(false);
   public readonly startableByUser$ = new BehaviorSubject<boolean>(false);
   public readonly validationErrors$ = this.processManagementEditorService.validationErrors$;
+
+  public readonly $markersVisible = signal<boolean>(true);
 
   protected readonly testIds = PROCESS_MANAGEMENT_BUILDER_TEST_IDS;
 
@@ -193,9 +199,14 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       ),
       tap(result => {
         this.cleanUpListenersOnModeler();
-        this._bpmnModeler?.importXML(result.bpmn20Xml);
-        this._bpmnViewer?.importXML(result.bpmn20Xml);
-        this.draft$.next(this.parseDraftFromXml(result.bpmn20Xml));
+        this._autofilledElements = result.autofilledElements ?? [];
+        this.processManagementEditorService.setAutofilledElements(this._autofilledElements);
+        this._bpmnModeler?.importXML(result.bpmn20Xml).then(() => {
+          this.highlightAutofilledElements();
+        });
+        this._bpmnViewer?.importXML(result.bpmn20Xml).then(() => {
+          this.highlightAutofilledElements();
+        });
         this.isReadOnlyProcess$.next(result.readOnly);
         this.isSystemProcess$.next(result.systemProcess);
         this.loading$.next(false);
@@ -304,9 +315,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     private readonly translateService: TranslateService,
     private readonly pluginTranslationService: PluginTranslationService,
     private readonly editPermissionsService: EditPermissionsService,
-    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService
+    private readonly processLinkBuildingBlockApiService: ProcessLinkBuildingBlockApiService,
+    private readonly processBeanService: ProcessBeanService
   ) {
-    this.iconService.registerAll([Deploy16, ListChecked16, Return16]);
+    this.iconService.registerAll([View16, ViewOff16]);
     this.setProcessManagementWindow();
   }
 
@@ -320,11 +332,16 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.subscribeToProcessLinkUpdateEvents();
     this.subscribeToProcessLinkCreateEvents();
     this.subscribeToProcessLinkDeleteEvents();
+    this.subscribeToAutofillDismissEvents();
     this.initEditing();
   }
 
   public ngOnDestroy(): void {
     this.clearValidationErrors();
+    this.clearActivityMarkers();
+    if (this._activityMarkerUpdateTimeout) {
+      clearTimeout(this._activityMarkerUpdateTimeout);
+    }
     this._bpmnModeler?.destroy();
     this._bpmnViewer?.destroy();
     this._subscriptions.unsubscribe();
@@ -335,18 +352,59 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.breadcrumbService.clearFourthBreadcrumb();
   }
 
-  public export(isReadOnlyProcess: boolean): void {
+  public exportBpmn(isReadOnlyProcess: boolean): void {
     (isReadOnlyProcess ? from(this._bpmnViewer.saveXML()) : from(this._bpmnModeler.saveXML()))
       .pipe(take(1))
       .subscribe(result => {
         const file = new Blob([result.xml ?? ''], {type: 'text/xml'});
-        const link = document.createElement('a');
-        link.download = 'diagram.bpmn';
-        link.href = window.URL.createObjectURL(file);
-        link.click();
-        window.URL.revokeObjectURL(link.href);
-        link.remove();
+        const processDefinitionKey =
+          this.processManagementEditorService.selectionProcessDefinition?.key;
+
+        this.downloadFile(
+          file,
+          processDefinitionKey ? `${processDefinitionKey}.bpmn` : 'diagram.bpmn'
+        );
       });
+  }
+
+  public export(): void {
+    const processDefinitionId = this.processManagementEditorService.selectionProcessDefinition?.id;
+
+    if (!processDefinitionId) {
+      this.showNotification('exportError');
+      return;
+    }
+
+    this.processManagementService
+      .exportProcessDefinition(processDefinitionId)
+      .pipe(take(1))
+      .subscribe({
+        next: response => {
+          const blob = response.body;
+          if (!blob) {
+            this.showNotification('exportError');
+            return;
+          }
+          this.downloadFile(blob, this.getFileName(response));
+        },
+        error: () => {
+          this.showNotification('exportError');
+        },
+      });
+  }
+
+  private getFileName(response: HttpResponse<Blob>): string {
+    const contentDisposition = response.headers.get('Content-Disposition') ?? '';
+    return contentDisposition.split('filename=')[1]?.replace(/"/g, '').trim() || 'process.zip';
+  }
+
+  private downloadFile(file: Blob, fileName: string): void {
+    const link = document.createElement('a');
+    link.download = fileName;
+    link.href = window.URL.createObjectURL(file);
+    link.click();
+    window.URL.revokeObjectURL(link.href);
+    link.remove();
   }
 
   public validateProcessDefinition(isReadOnlyProcess: boolean): void {
@@ -364,6 +422,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
               ...link,
               processDefinitionId: '-',
             })),
+            canInitializeDocument: this.canInitializeDocument$.getValue(),
+            startableByUser: this.startableByUser$.getValue(),
           });
         })
       )
@@ -434,6 +494,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       .subscribe({
         next: context => {
           this.clearValidationErrors();
+          this.processManagementEditorService.clearDismissedAutofills();
           if (context === 'independent') {
             this.reload();
             this.showNotification('success');
@@ -473,7 +534,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
           switch (context) {
             case 'independent':
-              return this.processLinkService.createProcessDefinition(mappedProcessLinks, xml);
+              return this.processLinkService.createProcessDefinition(mappedProcessLinks, xml
+              );
             case 'buildingBlock':
               const buildingBlockParams = params as BuildingBlockManagementParams;
               return this.processLinkService.createProcessDefinitionForBuildingBlock(
@@ -498,6 +560,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       .subscribe({
         next: () => {
           this.clearValidationErrors();
+          this.processManagementEditorService.clearDismissedAutofills();
           this.navigateBack('success');
         },
         error: (error: unknown) => {
@@ -535,28 +598,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.showNotification(notification);
   }
 
-  public onValidationErrorClick(elementId: string): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
-    const elementRegistry = modeler.get('elementRegistry') as any;
-    const canvas = modeler.get('canvas') as any;
-
-    const element = elementRegistry.get(elementId);
-    if (!element) return;
-
-    try {
-      const selection = modeler.get('selection') as any;
-      selection?.select?.(element);
-    } catch {
-      // Viewer may not expose the selection service.
-    }
-
-    try {
-      canvas.scrollToElement(element);
-    } catch {
-      // ignore
-    }
-  }
-
   public onProcessToggleChange(
     field: keyof UpdateProcessDefinitionCaseDefinitionRequest | 'draft',
     value: boolean
@@ -579,7 +620,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private validateAndDeploy(isReadOnlyProcess: boolean, deployAction: () => void): void {
-    // Skip validation for draft processes
     if (this.draft$.getValue()) {
       deployAction();
       return;
@@ -599,26 +639,24 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
               ...link,
               processDefinitionId: '-',
             })),
+            canInitializeDocument: this.canInitializeDocument$.getValue(),
+            startableByUser: this.startableByUser$.getValue(),
           });
         })
       )
       .subscribe({
         next: validationResult => {
           if (!validationResult.isValid) {
-            // Has errors - show them and block deployment
             this.highlightValidationErrors(validationResult.errors);
           } else if (validationResult.hasWarnings) {
-            // Only warnings - show confirmation dialog
             this.highlightValidationErrors(validationResult.errors);
             this._pendingDeployAction = deployAction;
             this.showWarningConfirmationModal$.next(true);
           } else {
-            // No issues - proceed with deployment
             deployAction();
           }
         },
         error: () => {
-          // Validation endpoint failed - proceed with deployment anyway (server will validate again)
           deployAction();
         },
       });
@@ -632,6 +670,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     processManagementWindow.processManagementEditorService = this.processManagementEditorService;
     processManagementWindow.translateService = this.translateService;
     processManagementWindow.pluginTranslationService = this.pluginTranslationService;
+    processManagementWindow.processLinkService = this.processLinkService;
   }
 
   private showNotification(
@@ -639,6 +678,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       | null
       | 'success'
       | 'error'
+      | 'exportError'
       | 'alreadyExists'
       | 'validationError'
       | 'validationWarning'
@@ -650,6 +690,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     if (
       notification === 'alreadyExists' ||
       notification === 'validationError' ||
+      notification === 'exportError' ||
       notification === 'error'
     ) {
       type = 'error';
@@ -801,6 +842,11 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     eventBus.on('element.hover', this._validationHoverHandler);
     eventBus.on('element.out', this._validationOutHandler);
 
+    this._selectionChangedHandler = (event: any) => {
+      this.highlightInvalidFieldsInPropertiesPanel(event.newSelection, errors);
+    };
+    eventBus.on('selection.changed', this._selectionChangedHandler);
+
     const selection = modeler.get('selection') as any;
     const selected = selection.get();
     if (selected?.length > 0) {
@@ -808,6 +854,104 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       selection.deselect(current);
       selection.select(current);
     }
+  }
+
+  private highlightInvalidFieldsInPropertiesPanel(
+    newSelection: any[],
+    errors: ProcessDefinitionValidationError[]
+  ): void {
+    document.querySelectorAll('.validation-error-field').forEach(el => {
+      el.classList.remove('validation-error-field');
+    });
+    document.querySelectorAll('.validation-error-param').forEach(el => {
+      el.classList.remove('validation-error-param');
+    });
+
+    if (!newSelection?.length) return;
+
+    const selectedId = newSelection[0]?.id;
+    if (!selectedId) return;
+
+    const elementErrors = errors.filter(e => e.elementId === selectedId);
+
+    setTimeout(() => {
+      for (const error of elementErrors) {
+        const listenerEntryId =
+          error.listenerType != null && error.listenerIndex != null
+            ? `${selectedId}-${error.listenerType}-${error.listenerIndex}`
+            : null;
+
+        if (error.invalidFields) {
+          for (const fieldId of error.invalidFields) {
+            let entry: Element | null = null;
+
+            if (listenerEntryId) {
+              const listenerEntry = document.querySelector(
+                `[data-entry-id="${listenerEntryId}"]`
+              );
+              if (listenerEntry) {
+                entry = listenerEntry.querySelector(`[data-entry-id="${fieldId}"]`);
+              }
+            }
+
+            if (!entry) {
+              entry = document.querySelector(`[data-entry-id="${fieldId}"]`);
+            }
+
+            if (entry) {
+              entry.classList.add('validation-error-field');
+              const input = entry.querySelector('input, textarea, select');
+              if (input) {
+                const handler = (): void => {
+                  entry!.classList.remove('validation-error-field');
+                  input.removeEventListener('input', handler);
+                  input.removeEventListener('change', handler);
+                };
+                input.addEventListener('input', handler);
+                input.addEventListener('change', handler);
+                this._fieldInputCleanupFns.push(() => {
+                  input.removeEventListener('input', handler);
+                  input.removeEventListener('change', handler);
+                });
+              }
+            }
+          }
+        }
+
+        if (error.invalidArguments && error.invalidArguments.length > 0) {
+          let scopeElement: Element | null = null;
+
+          if (listenerEntryId) {
+            scopeElement = document.querySelector(`[data-entry-id="${listenerEntryId}"]`);
+          }
+
+          const wrapper = scopeElement
+            ? scopeElement.querySelector('.expression-editor-wrapper') as HTMLElement
+            : document.querySelector('.expression-editor-wrapper') as HTMLElement;
+          if (wrapper) {
+            wrapper.dataset.invalidArgs = JSON.stringify(error.invalidArguments);
+          }
+
+          for (const idx of error.invalidArguments) {
+            const paramInput = scopeElement
+              ? scopeElement.querySelector(`.expression-editor-param input[data-param-index="${idx}"]`)
+              : document.querySelector(`.expression-editor-param input[data-param-index="${idx}"]`);
+
+            if (paramInput) {
+              paramInput.classList.add('validation-error-param');
+              const handler = (): void => {
+                paramInput!.classList.remove('validation-error-param');
+                paramInput!.removeEventListener('input', handler);
+              };
+              paramInput.addEventListener('input', handler);
+              this._fieldInputCleanupFns.push(() => {
+                paramInput!.removeEventListener('input', handler);
+              });
+            }
+          }
+        }
+      }
+    }, 50);
   }
 
   private clearValidationErrors(): void {
@@ -829,6 +973,23 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       eventBus.off('element.out', this._validationOutHandler);
       this._validationOutHandler = null;
     }
+    if (this._selectionChangedHandler) {
+      eventBus.off('selection.changed', this._selectionChangedHandler);
+      this._selectionChangedHandler = null;
+    }
+
+    this._fieldInputCleanupFns.forEach(fn => fn());
+    this._fieldInputCleanupFns = [];
+
+    document.querySelectorAll('.validation-error-field').forEach(el => {
+      el.classList.remove('validation-error-field');
+    });
+    document.querySelectorAll('.validation-error-param').forEach(el => {
+      el.classList.remove('validation-error-param');
+    });
+    document.querySelectorAll('.expression-editor-wrapper[data-invalid-args]').forEach(el => {
+      delete (el as HTMLElement).dataset.invalidArgs;
+    });
 
     for (const elementId of this._validationErrorElementIds) {
       try {
@@ -845,6 +1006,254 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     } catch (e) {
       // ignore
     }
+  }
+
+  private highlightAutofilledElements(): void {
+    this.clearAutofilledHighlights();
+
+    if (!this._autofilledElements?.length) return;
+
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+
+    for (const element of this._autofilledElements) {
+      try {
+        this._autofilledElementIds.push(element.activityId);
+
+        const tooltipText = this.getAutofilledTooltip();
+        overlays.add(element.activityId, 'autofilled-indicator', {
+          position: {top: -12, left: -12},
+          html: this.buildAutofilledOverlayElement(element.activityId, tooltipText),
+        });
+      } catch (e) {
+        // Element may not exist on the canvas
+      }
+    }
+  }
+
+  private clearAutofilledHighlights(): void {
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+
+    this._autofilledElementIds = [];
+
+    try {
+      overlays.remove({type: 'autofilled-indicator'});
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  private buildAutofilledOverlayElement(elementId: string, tooltipText: string): HTMLElement {
+    const container = document.createElement('div');
+    container.className = 'autofilled-indicator-overlay';
+    container.dataset.elementId = elementId;
+
+    const icon = document.createElement('span');
+    icon.className = 'autofilled-indicator-icon';
+    icon.innerHTML = '!';
+    container.appendChild(icon);
+
+    const tooltip = document.createElement('span');
+    tooltip.className = 'autofilled-indicator-tooltip';
+    tooltip.textContent = tooltipText;
+    container.appendChild(tooltip);
+
+    return container;
+  }
+
+  private getAutofilledTooltip(): string {
+    return this.translateService.instant('processManagement.autofilled.generic');
+  }
+
+  private getElementListeners(element: any): {
+    hasExecutionListener: boolean;
+    hasTaskListener: boolean;
+    executionListenerCount: number;
+    taskListenerCount: number;
+  } {
+    const extensionElements = element?.businessObject?.extensionElements;
+    const values = extensionElements?.values || [];
+
+    const executionListeners = values.filter(
+      (v: any) => v.$type === 'camunda:ExecutionListener'
+    );
+    const taskListeners = values.filter((v: any) => v.$type === 'camunda:TaskListener');
+
+    return {
+      hasExecutionListener: executionListeners.length > 0,
+      hasTaskListener: taskListeners.length > 0,
+      executionListenerCount: executionListeners.length,
+      taskListenerCount: taskListeners.length,
+    };
+  }
+
+  public toggleMarkerVisibility(): void {
+    this.$markersVisible.update(v => !v);
+    if (this.$markersVisible()) {
+      this.updateActivityMarkers();
+    } else {
+      this.clearActivityMarkers();
+    }
+  }
+
+  private updateActivityMarkers(): void {
+    this.clearActivityMarkers();
+
+    if (!this.$markersVisible()) return;
+
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+    const elementRegistry = modeler.get('elementRegistry') as any;
+
+    const processLinks = this.processManagementEditorService.processLinksForSelectedDefinition;
+    const processLinkActivityIds = new Set(processLinks.map(pl => pl.activityId));
+
+    const elementMarkers = new Map<string, ActivityMarkerInfo>();
+
+    elementRegistry.forEach((element: any) => {
+      if (!element.id || element.type === 'label') return;
+
+      const listeners = this.getElementListeners(element);
+      const hasProcessLink = processLinkActivityIds.has(element.id);
+
+      if (listeners.hasExecutionListener || listeners.hasTaskListener || hasProcessLink) {
+        elementMarkers.set(element.id, {
+          hasExecutionListener: listeners.hasExecutionListener,
+          hasTaskListener: listeners.hasTaskListener,
+          hasProcessLink,
+          executionListenerCount: listeners.executionListenerCount,
+          taskListenerCount: listeners.taskListenerCount,
+        });
+      }
+    });
+
+    for (const [elementId, info] of elementMarkers) {
+      this._activityMarkerElementIds.push(elementId);
+
+      const badges = this.buildActivityMarkerBadges(info, elementId);
+      if (badges) {
+        try {
+          const element = elementRegistry.get(elementId);
+          const position = this.calculateMarkerPosition(element);
+          overlays.add(elementId, 'activity-marker', {
+            position,
+            html: badges,
+          });
+        } catch (e) {
+          // Element may not exist on canvas
+        }
+      }
+    }
+  }
+
+  private calculateMarkerPosition(element: any): {top: number; left?: number; right?: number} {
+    if (element?.waypoints?.length > 1) {
+      const waypoints = element.waypoints;
+      const lastPoint = waypoints[waypoints.length - 1];
+      const secondLastPoint = waypoints[waypoints.length - 2];
+
+      // Compute bounding box from waypoints (same as diagram-js getBBox)
+      const minX = Math.min(...waypoints.map((wp: any) => wp.x));
+      const minY = Math.min(...waypoints.map((wp: any) => wp.y));
+
+      // Direction of the final segment
+      const dx = lastPoint.x - secondLastPoint.x;
+      const dy = lastPoint.y - secondLastPoint.y;
+      const len = Math.sqrt(dx * dx + dy * dy);
+
+      // Offset back from arrow tip along the line
+      const backOffset = 30;
+      const backX = len > 0 ? (-dx / len) * backOffset : 0;
+      const backY = len > 0 ? (-dy / len) * backOffset : 0;
+
+      // Perpendicular offset: above for horizontal lines, right for vertical lines
+      const perpOffset = 20;
+      const isMoreHorizontal = Math.abs(dx) > Math.abs(dy);
+      const perpX = isMoreHorizontal ? 0 : perpOffset;
+      const perpY = isMoreHorizontal ? -perpOffset : 0;
+
+      return {
+        top: lastPoint.y - minY + backY + perpY - 11,
+        left: lastPoint.x - minX + backX + perpX - 11,
+      };
+    }
+    return {top: -12, right: 12};
+  }
+
+  private buildActivityMarkerBadges(info: ActivityMarkerInfo, elementId: string): HTMLElement | null {
+    const container = document.createElement('div');
+    container.className = 'activity-marker-overlay';
+    container.dataset.elementId = elementId;
+
+    if (info.hasProcessLink) {
+      const tooltip = this.translateService.instant('processManagement.markers.processLink');
+      container.appendChild(this.buildMarkerBadge('process-link', 'P', tooltip));
+    }
+    if (info.hasExecutionListener) {
+      const countSuffix = info.executionListenerCount > 1 ? ` (${info.executionListenerCount})` : '';
+      const tooltip =
+        this.translateService.instant('processManagement.markers.executionListener') + countSuffix;
+      container.appendChild(this.buildMarkerBadge('execution-listener', 'E', tooltip));
+    }
+    if (info.hasTaskListener) {
+      const countSuffix = info.taskListenerCount > 1 ? ` (${info.taskListenerCount})` : '';
+      const tooltip =
+        this.translateService.instant('processManagement.markers.taskListener') + countSuffix;
+      container.appendChild(this.buildMarkerBadge('task-listener', 'T', tooltip));
+    }
+
+    if (container.children.length === 0) return null;
+
+    return container;
+  }
+
+  private buildMarkerBadge(type: string, label: string, tooltip: string): HTMLElement {
+    const badge = document.createElement('div');
+    badge.className = `activity-marker-badge activity-marker-badge--${type}`;
+
+    const icon = document.createElement('span');
+    icon.className = 'activity-marker-badge__icon';
+    icon.textContent = label;
+    badge.appendChild(icon);
+
+    const text = document.createElement('span');
+    text.className = 'activity-marker-badge__text';
+    text.textContent = tooltip;
+    badge.appendChild(text);
+
+    return badge;
+  }
+
+  private clearActivityMarkers(): void {
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+
+    this._activityMarkerElementIds = [];
+
+    try {
+      overlays.remove({type: 'activity-marker'});
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  private scheduleActivityMarkerUpdate(): void {
+    if (this._activityMarkerUpdateTimeout) {
+      clearTimeout(this._activityMarkerUpdateTimeout);
+    }
+    this._activityMarkerUpdateTimeout = setTimeout(() => {
+      this.updateActivityMarkers();
+      this._activityMarkerUpdateTimeout = null;
+    }, 300);
   }
 
   private setSelectedProcessDefinitionToLatest(
@@ -865,12 +1274,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         CamundaPlatformPropertiesProviderModule,
         camundaPlatformBehaviors,
         ValtimoPropertiesProviderModule,
+        ExpressionAutocompleteModule,
       ],
       moddleExtensions: {camunda: CamundaBpmnModdle},
       propertiesPanel: {parent: this.modelerPanelElementRef.nativeElement},
     });
 
     this._bpmnModeler?.attachTo(this.modelerElementRef.nativeElement);
+
+    // Initialize expression autocomplete
+    this._expressionAutocomplete = this._bpmnModeler.get('expressionAutocomplete') as ExpressionAutocomplete;
+    this._expressionAutocomplete?.setPanelContainer(this.modelerPanelElementRef.nativeElement);
+    this.loadProcessBeansForAutocomplete();
 
     this._bpmnModeler.on('commandStack.changed', () => {
       this.changesPending$.next(true);
@@ -891,6 +1306,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
       this.processManagementEditorService.setActivityIdBusinessIdMap(idMap);
       this.listenToActivityChangesOnModeler();
+      this.updateActivityMarkers();
+    });
+  }
+
+  private loadProcessBeansForAutocomplete(): void {
+    this.processBeanService.getProcessBeans().subscribe({
+      next: beans => {
+        this._expressionAutocomplete?.setProcessBeans(beans);
+      },
+      error: err => {
+        this.logger.warn('Failed to load process beans for autocomplete', err);
+      },
     });
   }
 
@@ -913,6 +1340,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     this._bpmnViewer.on('import.done', () => {
       disableCommands(this._bpmnViewer);
+      this.updateActivityMarkers();
     });
   }
 
@@ -981,6 +1409,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.processManagementEditorService.createProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+        this.updateActivityMarkers();
 
         const buildingBlockProcessLinkCreateDto = event as BuildingBlockProcessLinkCreateDto;
 
@@ -1007,10 +1436,36 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.processManagementEditorService.deleteProcessLink(event);
         this.processLinkStateService.stopSaving();
         this.processLinkStateService.closeModal();
+        this.updateActivityMarkers();
 
         this.unsetCalledElementForBuildingBlockProcessLink(event.activityId);
       })
     );
+  }
+
+  private subscribeToAutofillDismissEvents(): void {
+    this._subscriptions.add(
+      this.processManagementEditorService.autofillDismissed$.subscribe(activityId => {
+        this.removeAutofillOverlay(activityId);
+      })
+    );
+  }
+
+  private removeAutofillOverlay(activityId: string): void {
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    if (!modeler) return;
+
+    const overlays = modeler.get('overlays') as any;
+    try {
+      overlays.remove({element: activityId, type: 'autofilled-indicator'});
+    } catch (e) {
+      // ignore
+    }
+
+    const idx = this._autofilledElementIds.indexOf(activityId);
+    if (idx > -1) {
+      this._autofilledElementIds.splice(idx, 1);
+    }
   }
 
   private initIfCreate(): void {
@@ -1046,6 +1501,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     if (!activityId || !businessId) return;
 
     this.processManagementEditorService.updateProcessLinksOnIdChange(activityId, businessId);
+    this.scheduleActivityMarkerUpdate();
   };
 
   private listenToActivityChangesOnModeler(): void {
@@ -1080,18 +1536,21 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           const processDefinitionResult = result as ProcessDefinitionResult;
 
           this.cleanUpListenersOnModeler();
+          this._autofilledElements = processDefinitionResult.autofilledElements ?? [];
+          this.processManagementEditorService.setAutofilledElements(this._autofilledElements);
 
-          this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml);
-          this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml);
+          this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
+            this.highlightAutofilledElements();
+          });
+          this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
+            this.highlightAutofilledElements();
+          });
 
-          this.draft$.next(
-            processDefinitionResult.draft ??
-              this.parseDraftFromXml(processDefinitionResult.bpmn20Xml)
-          );
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
           );
           this.startableByUser$.next(!!processDefinitionResult?.processCaseLink?.startableByUser);
+          this.draft$.next(!!processDefinitionResult?.draft);
 
           this.loading$.next(false);
         })
@@ -1222,15 +1681,28 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     clearBuildingBlockCalledElement(editor, activityId);
   }
 
+  public onValidationErrorClick(elementId: string): void {
+    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const canvas = modeler.get('canvas') as any;
+    const selection = modeler.get('selection') as any;
+    const elementRegistry = modeler.get('elementRegistry') as any;
+
+    const element = elementRegistry.get(elementId);
+    if (!element) return;
+
+    canvas.scrollToElement(element, {top: 100, bottom: 100, left: 100, right: 100});
+    selection.select(element);
+  }
+
   public getValidationErrorMessage(error: {
     reason: string;
     errorCode?: string;
     expression?: string;
   }): string {
     if (error.errorCode) {
-      const translationKey = `processManagement.expressionErrors.${error.errorCode}`;
+      const translationKey = `processManagement.validationErrorCodes.${error.errorCode}`;
       const translated = this.translateService.instant(translationKey, {
-        expression: error.expression ? `'${error.expression}'` : '',
+        expression: error.expression ?? '',
       });
       if (translated !== translationKey) {
         return translated;
