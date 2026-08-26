@@ -221,22 +221,47 @@ class ProcessDeploymentService(
         deployedProcessDefinitionId: String? = null,
         blueprintId: BlueprintId?= null
     ) {
-        try {
-            processLinks.map { originalLink ->
-                if (deployedProcessDefinitionId != null) {
-                    copyWithNewProcessDefinitionId(originalLink, deployedProcessDefinitionId)
-                } else {
-                    originalLink
-                }
-            }.forEach { link ->
+        val validationErrors = mutableListOf<ProcessDefinitionValidationError>()
+        processLinks.map { originalLink ->
+            if (deployedProcessDefinitionId != null) {
+                copyWithNewProcessDefinitionId(originalLink, deployedProcessDefinitionId)
+            } else {
+                originalLink
+            }
+        }.forEach { link ->
+            try {
                 runWithoutAuthorization {
                     processLinkService.createProcessLink(link, blueprintId)
                 }
+            } catch (e: IllegalArgumentException) {
+                validationErrors += toValidationError(link, e)
+            } catch (e: IllegalStateException) {
+                validationErrors += toValidationError(link, e)
+            } catch (e: Exception) {
+                throw RuntimeException("Failed to create process links. Rolling back deployment.", e)
             }
-        } catch (e: Exception) {
-            throw RuntimeException("Failed to create process links. Rolling back deployment.", e)
+        }
+        if (validationErrors.isNotEmpty()) {
+            throw ProcessDefinitionValidationException(validationErrors)
         }
     }
+
+    /**
+     * Process-link mappers signal an invalid link configuration with IllegalArgumentException or
+     * IllegalStateException (Kotlin's require/check/error). Anchor those to the linked activity so
+     * the process editor can show them, instead of failing the deployment with an opaque server
+     * error. Any other exception is a genuine server failure and still fails the deployment as-is.
+     */
+    private fun toValidationError(
+        link: ProcessLinkCreateRequestDto,
+        e: Exception
+    ) = ProcessDefinitionValidationError(
+        elementId = link.activityId,
+        // activityType values look like 'bpmn:CallActivity:start'; the middle segment is the element type
+        elementType = link.activityType.value.split(":").getOrElse(1) { "Activity" },
+        elementName = null,
+        reason = e.message ?: "Invalid process link configuration"
+    )
 
     private fun updateSuspensionState(processDefinitionId: String, isExecutable: Boolean) {
         if (isExecutable) {

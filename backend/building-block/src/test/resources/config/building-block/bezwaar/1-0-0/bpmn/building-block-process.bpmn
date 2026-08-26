@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0yk60qs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.39.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.23.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0yk60qs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.39.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.23.0">
   <bpmn:process id="building-block-process" name="Building block process" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0lmxbfr</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="Flow_0lmxbfr" sourceRef="StartEvent_1" targetRef="Event_04x4r47" />
+    <bpmn:sequenceFlow id="Flow_0lmxbfr" sourceRef="StartEvent_1" targetRef="SendMailTask" />
+    <bpmn:serviceTask id="SendMailTask" name="Send mail" camunda:expression="${null}">
+      <bpmn:incoming>Flow_0lmxbfr</bpmn:incoming>
+      <bpmn:outgoing>Flow_0sendml</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0sendml" sourceRef="SendMailTask" targetRef="Event_04x4r47" />
     <bpmn:endEvent id="Event_0ltydlb">
       <bpmn:incoming>Flow_1h70eh0</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1h70eh0" sourceRef="Event_04x4r47" targetRef="Event_0ltydlb" />
     <bpmn:intermediateCatchEvent id="Event_04x4r47" name="Wait until test signals ready">
-      <bpmn:incoming>Flow_0lmxbfr</bpmn:incoming>
+      <bpmn:incoming>Flow_0sendml</bpmn:incoming>
       <bpmn:outgoing>Flow_1h70eh0</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0e9v8zi" messageRef="Message_30936nr" />
     </bpmn:intermediateCatchEvent>

@@ -43,6 +43,18 @@ Validation messages use a consistent error code format for easier troubleshootin
 
 The metadata tab of the case inspection page now displays the case definition key and version.
 
+### Building block call activities are now validated
+
+The configuration of a building block call activity is checked when the process is saved and when the call activity starts. Mistakes that previously made a building block silently work on the wrong case data — such as a missing or wrong business key mapping — now block the save, and the process editor highlights the call activity with a message that explains how to fix it. See the [building block documentation](../../../configuration-guides/building-blocks/processes.md) for the call activity requirements.
+
+### Clearer rules for building block input and output mappings
+
+Values passed to a building block are stored in its document, and results are read back from it. Mappings that do not follow this are now rejected when the process is saved, with the offending activity highlighted in the process editor, instead of being silently ignored at runtime. How data flows in and out of a building block is described in the [building block documentation](../../../configuration-guides/building-blocks/processes.md).
+
+### Better diagnostics for plugin actions
+
+When a plugin action property resolves to no value, a debug log entry now names the property, the activity and the process definition, making it easier to trace why an action behaves as if a value was never provided.
+
 ---
 
 ## Bugfixes
@@ -58,9 +70,11 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Cases | A case with building blocks can be deleted again |
 | Cases | The case list title and breadcrumb show the name of the active case version, matching the menu |
 | Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
+| Choice fields | Deprecated choice field values no longer appear in form dropdowns |
 | Dashboard | Donut charts with many categories display the circle correctly |
 | Document schemas | Recursive schema references no longer crash the server |
 | Draft environments | Default Spring profiles now correctly enable draft mode |
+| Forms | The IBAN component keeps the entered value when the IBAN is invalid |
 | Notificaties API | Subscription registration no longer causes a restart loop on startup |
 | Process editor | Exported process definition now named after the process instead of `diagram.bpmn` |
 | Process links | Links no longer leak into another case definition or building block |
