@@ -70,7 +70,8 @@
 ## Release notes
 
 * [13.x.x](release-notes/13.x.x/)
-    * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
+  * [13.44.0](release-notes/13.x.x/13.44.0/README.md)
+  * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
 
 ## Support
 

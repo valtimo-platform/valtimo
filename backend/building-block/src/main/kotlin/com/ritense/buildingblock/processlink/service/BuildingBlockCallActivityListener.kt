@@ -34,6 +34,7 @@ import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
@@ -61,6 +62,11 @@ class BuildingBlockCallActivityListener(
         val buildingBlockProcessLink = links.getOrNull(0)
 
         buildingBlockProcessLink?.let {
+            // Fail fast, before any building block state is created: with a wrong or shadowed
+            // business key mapping the building block would run against the wrong document and all
+            // doc: references inside it would silently resolve to null.
+            validateBusinessKeyMapping(execution)
+
             val parentBuildingBlockInstance = findParentBuildingBlockInstance(execution)
             val isIndependentProcess = parentBuildingBlockInstance == null && isIndependentProcess(execution)
 
@@ -80,6 +86,15 @@ class BuildingBlockCallActivityListener(
             // Used by BPMN #{buildingBlockDocumentId} expression and onCallActivityEnd for output mappings
             execution.setVariableLocal(BUILDING_BLOCK_DOCUMENT_ID_VARIABLE, buildingBlockInstance.documentId.toString())
         }
+    }
+
+    private fun validateBusinessKeyMapping(execution: DelegateExecution) {
+        val callActivity = execution.bpmnModelElementInstance as? CallActivity ?: return
+        val processDefinitionKey = operatonRepositoryService
+            .findProcessDefinitionById(execution.processDefinitionId)
+            ?.key
+            ?: execution.processDefinitionId
+        BuildingBlockCallActivityBusinessKeyValidator.validate(callActivity, processDefinitionKey)
     }
 
     /**
@@ -190,7 +205,21 @@ class BuildingBlockCallActivityListener(
         }
         if (endSyncOutputMappings.isEmpty()) return
 
-        val sourceMappings = endSyncOutputMappings.map { mapping ->
+        // The building block process instance has already ended here; only its document is still
+        // readable, so output values can only be sourced from building block fields.
+        val (fieldSourcedMappings, unsupportedSourceMappings) = endSyncOutputMappings.partition {
+            it.getPrefixedSource().startsWith("$DOC_PREFIX:")
+        }
+        if (unsupportedSourceMappings.isNotEmpty()) {
+            logger.warn {
+                "Skipping output mappings with sources [${unsupportedSourceMappings.joinToString { it.source }}] " +
+                    "for building block document '$buildingBlockDocumentId': when a building block completes, " +
+                    "output values can only be read from building block fields (doc:)."
+            }
+        }
+        if (fieldSourcedMappings.isEmpty()) return
+
+        val sourceMappings = fieldSourcedMappings.map { mapping ->
             mapping.getPrefixedSource() to mapping.target
         }
 
@@ -234,9 +263,21 @@ class BuildingBlockCallActivityListener(
         activityId: String,
         parentBuildingBlockInstanceId: UUID?
     ): BuildingBlockInstance {
-        val inputSources = buildingBlockProcessLink.inputMappings.map { it.source }
+        // Values can only be delivered to building block fields: the building block process instance
+        // does not exist yet at this point, so any other target has no destination.
+        val (fieldMappings, unsupportedMappings) = buildingBlockProcessLink.inputMappings.partition {
+            it.getPrefixedTarget().startsWith("$DOC_PREFIX:")
+        }
+        if (unsupportedMappings.isNotEmpty()) {
+            logger.warn {
+                "Skipping input mappings with targets [${unsupportedMappings.joinToString { it.target }}] for " +
+                    "building block '${buildingBlockProcessLink.buildingBlockDefinitionId}': values passed to a " +
+                    "building block can only be delivered to building block fields (doc:)."
+            }
+        }
+        val inputSources = fieldMappings.map { it.source }
         val resolvedValues = valueResolverService.resolveValues(execution.processInstanceId, execution, inputSources)
-        val valuesToHandle = buildingBlockProcessLink.inputMappings.associate {
+        val valuesToHandle = fieldMappings.associate {
             it.getPrefixedTarget() to resolvedValues[it.source]
         }
         val preProcessValues = valueResolverService.preProcessValuesForNewDocument(
@@ -254,20 +295,13 @@ class BuildingBlockCallActivityListener(
             documentContent,
         )
 
-        val buildingBlockInstance =  buildingBlockInstanceService.create(
+        return buildingBlockInstanceService.create(
             documentRequest,
             rootCaseDocumentId,
             activityId,
             parentBuildingBlockInstanceId,
             callerProcessDefinitionId = execution.processDefinitionId
         )
-
-        valueResolverService.handleValues(
-            buildingBlockInstance.documentId,
-            preProcessValues.filterKeys { !it.startsWith(DOC_PREFIX) }
-        )
-
-        return buildingBlockInstance
     }
 
     private companion object {

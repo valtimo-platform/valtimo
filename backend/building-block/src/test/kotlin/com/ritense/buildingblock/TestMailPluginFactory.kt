@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,11 @@ package com.ritense.buildingblock
 
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
 
-@SpringBootApplication
-class TestApplication {
-
-    fun main(args: Array<String>) {
-        runApplication<TestApplication>(*args)
-    }
-
-    @TestConfiguration
-    class TestConfig {
-        @Bean
-        fun testMailPluginFactory(pluginService: PluginService): PluginFactory<TestMailPlugin> {
-            return TestMailPluginFactory(pluginService)
-        }
+class TestMailPluginFactory(
+    pluginService: PluginService
+) : PluginFactory<TestMailPlugin>(pluginService) {
+    override fun create(): TestMailPlugin {
+        return TestMailPlugin()
     }
 }

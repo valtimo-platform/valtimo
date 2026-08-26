@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,5 +85,68 @@ class ChoiceFieldValueResourceIntTest extends BaseIntegrationTest {
         .andExpect(jsonPath("$[0].choiceField.id").isNumber())
         .andExpect(jsonPath("$[0].choiceField.keyName").value("keyName"))
         .andExpect(jsonPath("$[0].choiceField.title").value("title"));
+    }
+
+    @Test
+    void shouldExcludeDeprecatedValuesFromV2ByDefault() throws Exception {
+        ChoiceField choiceField = new ChoiceField();
+        choiceField.setKeyName("test-field");
+        choiceField.setTitle("Test Field");
+        choiceFieldRepository.save(choiceField);
+
+        ChoiceFieldValue activeValue = new ChoiceFieldValue();
+        activeValue.setChoiceField(choiceField);
+        activeValue.setValue("active-value");
+        activeValue.setName("Active");
+        activeValue.setDeprecated(false);
+        choiceFieldValueRepository.save(activeValue);
+
+        ChoiceFieldValue deprecatedValue = new ChoiceFieldValue();
+        deprecatedValue.setChoiceField(choiceField);
+        deprecatedValue.setValue("deprecated-value");
+        deprecatedValue.setName("Deprecated");
+        deprecatedValue.setDeprecated(true);
+        choiceFieldValueRepository.save(deprecatedValue);
+
+        mockMvc.perform(
+            get("/api/v2/choice-field-values/{choice_field_name}/values", "test-field")
+                .accept(APPLICATION_JSON_VALUE)
+        )
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].value").value("active-value"))
+        .andExpect(jsonPath("$.content[0].deprecated").value(false));
+    }
+
+    @Test
+    void shouldIncludeDeprecatedValuesWhenRequested() throws Exception {
+        ChoiceField choiceField = new ChoiceField();
+        choiceField.setKeyName("test-field-2");
+        choiceField.setTitle("Test Field 2");
+        choiceFieldRepository.save(choiceField);
+
+        ChoiceFieldValue activeValue = new ChoiceFieldValue();
+        activeValue.setChoiceField(choiceField);
+        activeValue.setValue("active-value");
+        activeValue.setName("Active");
+        activeValue.setDeprecated(false);
+        choiceFieldValueRepository.save(activeValue);
+
+        ChoiceFieldValue deprecatedValue = new ChoiceFieldValue();
+        deprecatedValue.setChoiceField(choiceField);
+        deprecatedValue.setValue("deprecated-value");
+        deprecatedValue.setName("Deprecated");
+        deprecatedValue.setDeprecated(true);
+        choiceFieldValueRepository.save(deprecatedValue);
+
+        mockMvc.perform(
+            get("/api/v2/choice-field-values/{choice_field_name}/values", "test-field-2")
+                .param("includeDeprecated", "true")
+                .accept(APPLICATION_JSON_VALUE)
+        )
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(2));
     }
 }
