@@ -26,7 +26,7 @@ import {
   SearchOperator,
   TeamResponseDto,
 } from '@valtimo/shared';
-import {BehaviorSubject, catchError, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, catchError, map, Observable, of, switchMap, tap} from 'rxjs';
 
 import {
   AssignHandlerToDocumentResult,
@@ -370,6 +370,25 @@ export class DocumentService {
     return this.http.get<CaseDefinition[]>(`${this.valtimoEndpointUri}v1/case-definition`, {
       params,
     });
+  }
+
+  /**
+   * The globally active case definition of a key. Its `name` is what the left menu and the
+   * user-facing case pages are labelled with, so it should be preferred over the document
+   * definition schema title, which is not kept in sync with it. Resolves to `null` when there is
+   * no active version, so consumers can fall back to the schema title.
+   */
+  public getActiveCaseDefinition(caseDefinitionKey: string): Observable<CaseDefinition | null> {
+    return this.getCaseDefinitions({caseDefinitionKey, active: true}).pipe(
+      map(
+        (caseDefinitions: CaseDefinition[]) =>
+          caseDefinitions.find(
+            (caseDefinition: CaseDefinition) =>
+              caseDefinition.caseDefinitionKey === caseDefinitionKey
+          ) ?? null
+      ),
+      catchError(() => of(null))
+    );
   }
 
   public getCaseDefinitionsManagement(params: any): Observable<Page<CaseDefinition>> {
