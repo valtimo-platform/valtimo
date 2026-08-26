@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
