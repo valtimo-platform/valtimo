@@ -81,4 +81,3 @@ When a plugin action property resolves to no value, a debug log entry now names 
 | Search fields | Date searches return results with correct date format |
 | Tasks | Tasks of cases that were already running before the upgrade to 13 can be opened again |
 | Widgets | Image widget no longer offers `task:` fields it cannot show |
-| Cases | The progress tab shows the name of every process, instead of leaving some blank |
