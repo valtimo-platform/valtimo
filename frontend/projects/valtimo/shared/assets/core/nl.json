@@ -2840,7 +2840,7 @@
     }
   },
   "processLinkType": {
-    "plugin": "Plugin",
+    "plugin": "Plugins & Apps",
     "form": "Formulier",
     "form-flow": "FormFlow",
     "url": "URL",
@@ -2919,7 +2919,7 @@
     "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
-    "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een plugin-configuratie aan om deze te kunnen koppelen aan een processtap.",
+    "plugin": "Er zijn geen plugin- of app-configuraties beschikbaar. Maak een plugin-configuratie aan of verbind een app om deze te kunnen koppelen aan een processtap.",
     "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
     "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap.",
     "ui-component": "Er zijn geen maatwerkcomponenten geregistreerd. Maak er een aan om deze optie te kunnen gebruiken.",

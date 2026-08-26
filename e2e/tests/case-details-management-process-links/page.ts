@@ -160,7 +160,7 @@ export class CaseDetailsProcessLinksPage {
     return this.page.locator('valtimo-choose-process-link-type');
   }
 
-  typeButton(label: 'Form' | 'FormFlow' | 'Plugin' | 'Building block') {
+  typeButton(label: 'Form' | 'FormFlow' | 'Plugins & Apps' | 'Building block') {
     return this.typeChooserDescription.getByRole('button', {name: label, exact: true});
   }
 
@@ -373,7 +373,7 @@ export class CaseDetailsProcessLinksPage {
 
   // ─── Interactions ─────────────────────────────────────────────────
 
-  async chooseLinkType(type: 'Form' | 'FormFlow' | 'Plugin' | 'Building block') {
+  async chooseLinkType(type: 'Form' | 'FormFlow' | 'Plugins & Apps' | 'Building block') {
     await this.typeButton(type).click();
   }
 
