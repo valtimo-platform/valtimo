@@ -21,15 +21,15 @@
        the leave-page confirmation is resolved. -->
   <cds-tabs type="contained">
     <cds-tab
-      [active]="$activeTab() === FormFlowEditorTab.EDITOR"
-      [heading]="'formFlow.tabs.editor' | translate"
-      (selected)="setActiveTab(FormFlowEditorTab.EDITOR)"
-    ></cds-tab>
-
-    <cds-tab
       [active]="$activeTab() === FormFlowEditorTab.JSON_EDITOR"
       [heading]="'formFlow.tabs.jsonEditor' | translate"
       (selected)="setActiveTab(FormFlowEditorTab.JSON_EDITOR)"
+    ></cds-tab>
+
+    <cds-tab
+      [active]="$activeTab() === FormFlowEditorTab.EDITOR"
+      [heading]="'formFlow.tabs.editor' | translate"
+      (selected)="setActiveTab(FormFlowEditorTab.EDITOR)"
     ></cds-tab>
   </cds-tabs>
 

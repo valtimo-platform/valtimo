@@ -135,7 +135,7 @@ export class CaseDetailsManagementFormFlowsPage {
     return this.page.locator('.monaco-editor').first();
   }
 
-  // The editor page opens on the visual editor tab; the JSON (Monaco) editor lives in its own tab.
+  // The editor page opens on the JSON (Monaco) editor tab; the visual editor lives in its own tab.
   async openJsonEditorTab() {
     await this.page.getByRole('tab', {name: 'JSON editor'}).click();
     await expect(this.monacoEditor).toBeVisible();
@@ -186,7 +186,7 @@ export class CaseDetailsManagementFormFlowsPage {
   // ─── Visual Editor Actions ─────────────────────────────────────────
 
   async openVisualEditorTab() {
-    await this.page.getByRole('tab', {name: 'Editor', exact: true}).click();
+    await this.page.getByRole('tab', {name: 'Editor (beta)', exact: true}).click();
     await expect(this.visualStepList).toBeVisible();
   }
 

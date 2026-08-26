@@ -76,7 +76,7 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
-  public readonly $activeTab = signal<FormFlowEditorTab>(FormFlowEditorTab.EDITOR);
+  public readonly $activeTab = signal<FormFlowEditorTab>(FormFlowEditorTab.JSON_EDITOR);
   // Validate-on-save: while the admin is modelling nothing is flagged. Clicking Save on an invalid
   // definition flips this instead of calling the backend, which reveals the errors in the active
   // tab and — from then on — gates the Save button on validity until the definition is fixed.
@@ -325,15 +325,15 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
   private restoreActiveTabFromUrl(): void {
     const url = this.route.snapshot.url;
     const lastSegment = url[url.length - 1]?.path;
-    if (lastSegment === 'json-editor') {
-      this.$activeTab.set(FormFlowEditorTab.JSON_EDITOR);
+    if (lastSegment === 'editor') {
+      this.$activeTab.set(FormFlowEditorTab.EDITOR);
     }
   }
 
   // The Carbon tab header highlights the clicked tab immediately; if the leave-page prompt is
   // cancelled, restore the highlight to the tab that is actually still active.
   private syncTabHeaders(): void {
-    const order = [FormFlowEditorTab.EDITOR, FormFlowEditorTab.JSON_EDITOR];
+    const order = [FormFlowEditorTab.JSON_EDITOR, FormFlowEditorTab.EDITOR];
     this._tabs?.forEach((tab, index) => {
       tab.active = order[index] === this.$activeTab();
     });
@@ -346,7 +346,7 @@ export class FormFlowEditorComponent extends PendingChangesComponent implements 
   ): string[] {
     const segments = [...this.overviewRouteSegments(params, context), params.formFlowDefinitionKey];
 
-    return tab === FormFlowEditorTab.JSON_EDITOR ? [...segments, 'json-editor'] : segments;
+    return tab === FormFlowEditorTab.EDITOR ? [...segments, 'editor'] : segments;
   }
 
   private overviewRouteSegments(

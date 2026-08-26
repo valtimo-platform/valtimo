@@ -94,7 +94,7 @@ const routes: Routes = [
     },
   },
   {
-    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.FORM_FLOWS}/:formFlowDefinitionKey/json-editor`,
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.FORM_FLOWS}/:formFlowDefinitionKey/editor`,
     component: FormFlowEditorComponent,
     canActivate: [AuthGuardService],
     canDeactivate: [pendingChangesGuard],

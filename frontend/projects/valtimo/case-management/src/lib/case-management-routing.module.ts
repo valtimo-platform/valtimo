@@ -166,7 +166,7 @@ const routes: Routes = [
     data: {title: 'Form flow details', roles: [ROLE_ADMIN], customPageTitle: true},
   },
   {
-    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.FORM_FLOWS}/:formFlowDefinitionKey/json-editor`,
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.FORM_FLOWS}/:formFlowDefinitionKey/editor`,
     component: FormFlowEditorComponent,
     canActivate: [AuthGuardService],
     canDeactivate: [pendingChangesGuard],

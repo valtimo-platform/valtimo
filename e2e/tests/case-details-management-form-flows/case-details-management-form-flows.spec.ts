@@ -123,11 +123,14 @@ test.describe('Case details management — Form Flows', () => {
     });
 
     test.describe('Failure scenarios', () => {
-      test('Save button is disabled when JSON is invalid', async () => {
+      test('Saving invalid JSON reveals errors and disables the button until fixed', async () => {
         // Act
         await formFlowsPage.pasteRawTextInEditor('{ this is not valid json }');
 
-        // Assert
+        // Assert — validate-on-save: the button stays enabled while modelling, a save attempt
+        // on an invalid definition reveals the errors and gates the button on validity
+        await expect(formFlowsPage.saveButton).toBeEnabled();
+        await formFlowsPage.saveButton.click();
         await expect(formFlowsPage.saveButton).toBeDisabled({timeout: 10_000});
 
         // Restore valid JSON so subsequent tests (delete) can proceed
@@ -157,8 +160,10 @@ test.describe('Case details management — Form Flows', () => {
       await formFlowsPage.openVisualEditorTab();
 
       // Assert — the step saved through the JSON editor is listed and selected; its form key is
-      // preserved in the form dropdown even though no form with that name exists
-      await expect(formFlowsPage.visualStepListItems).toHaveCount(1);
+      // preserved in the form dropdown even though no form with that name exists. The editor can
+      // briefly show a stale definition while the reload after the tab switch settles, so allow
+      // a generous timeout.
+      await expect(formFlowsPage.visualStepListItems).toHaveCount(1, {timeout: 15_000});
       await expect(formFlowsPage.visualStepListItems.first()).toContainText('step1');
       await expect(formFlowsPage.visualStepKeyInput).toHaveValue('step1');
       await expect(formFlowsPage.visualFormDefinitionDropdown).toContainText('test-form');
