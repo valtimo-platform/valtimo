@@ -31,10 +31,6 @@ Elements with values auto-filled by Valtimo show a blue indicator on the canvas 
 
 ## Enhancements
 
-### Clearing a case field follows the case model
-
-Emptying a field now follows what the case model allows: the field is either set to empty or removed, and a field the model requires is refused instead of silently leaving the case invalid.
-
 ### Smarter start event validation
 
 Start events without forms no longer trigger warnings when the process is not user-startable.
