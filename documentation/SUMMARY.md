@@ -98,6 +98,7 @@
   * [Forms](features/case/forms/README.md)
     * [Prefilling data](features/case/forms/creating-forms-in-valtimo.md)
     * [Interpolating data](features/case/forms/interpolating-data-in-formio.md)
+    * [E-mail preview component](features/case/forms/email-preview-component.md)
     * [For developers](features/case/forms/forms/README.md)
       * [Custom value resolvers](features/case/forms/forms/custom-value-resolvers.md)
       * [Custom form flow component](features/case/forms/forms/create-custom-component.md)
