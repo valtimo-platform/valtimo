@@ -26,15 +26,15 @@
 
 /*
 Process names are configured per implementation and commonly run past 30 characters, which Carbon's
-default select width already truncates. The select therefore takes the row's spare space, while
-min-width keeps it able to shrink once the row runs out of room.
+default select width already truncates. The select therefore fills whatever the rest of the row
+leaves over, so even the longest names fit, while min-width keeps it able to shrink once the row
+runs out of room.
 */
 .process-select {
   flex: 1 1 auto;
   min-width: 0;
-  max-width: 560px;
 
-  // Wrap rather than ellipsize, so a name too long even for the widened select stays readable.
+  // Wrap rather than ellipsize, so a name too long even for the filled row stays readable.
   ::ng-deep .cds--list-box__menu-item__option {
     height: auto;
     overflow-wrap: anywhere;
