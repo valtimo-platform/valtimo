@@ -128,13 +128,18 @@ class ValtimoPropertiesProvider {
         is(element, 'bpmn:IntermediateCatchEvent') ||
         is(element, 'bpmn:CallActivity')
       ) {
-        const customGroup = {
-          id: 'customRootGroup',
-          label: 'Process link',
-          entries: [this.createCustomRootElement(element, processLink)],
-          groupType: 'root',
-        };
-        this.addAsSecondOrFirst(groups, customGroup);
+        const editingAllowed = this.processManagementEditorService.editingAllowed;
+
+        // Without a link there is nothing to view, so drop the group rather than offer to create one
+        if (editingAllowed || processLink) {
+          const customGroup = {
+            id: 'customRootGroup',
+            label: 'Process link',
+            entries: [this.createCustomRootElement(element, processLink, editingAllowed)],
+            groupType: 'root',
+          };
+          this.addAsSecondOrFirst(groups, customGroup);
+        }
       }
       return groups;
     };
@@ -151,7 +156,11 @@ class ValtimoPropertiesProvider {
     return groupMapping[modificationType] || 'general';
   }
 
-  public createCustomRootElement(element: any, processLink: ProcessLink | null): any {
+  public createCustomRootElement(
+    element: any,
+    processLink: ProcessLink | null,
+    editingAllowed: boolean
+  ): any {
     return {
       translateService: this.translateService,
       processManagementEditorService: this.processManagementEditorService,
@@ -159,6 +168,7 @@ class ValtimoPropertiesProvider {
       id: 'customRootElement',
       processLink,
       element,
+      editingAllowed,
       component: CustomRootElement,
       isEdited: (node: HTMLInputElement) => node && !!node.value,
     };
@@ -172,6 +182,7 @@ const CustomRootElement = (props: {
   id: string;
   processLink: ProcessLink;
   element: BpmnElement;
+  editingAllowed: boolean;
 }): VNode => {
   const {
     element,
@@ -179,12 +190,14 @@ const CustomRootElement = (props: {
     translateService,
     processManagementEditorService,
     pluginTranslationService,
+    editingAllowed,
   } = props;
   const modeling = useService('modeling');
   const elementRegistry = useService('elementRegistry');
   const editProcessLinkText = translateService.instant('interface.edit');
   const unlinkText = translateService.instant('processLink.unlink');
   const createText = translateService.instant('processLink.create');
+  const viewText = translateService.instant('interface.view');
 
   const getModalParams = (): ModalParams => {
     const currentElement = elementRegistry.get(element.id) || element;
@@ -241,20 +254,17 @@ const CustomRootElement = (props: {
   const hiddenInput = html`<input type="hidden" class="bio-properties-panel-input" value=${processLink ? 'configured' : ''} />`;
   const wrapEntry = (content: any) => html`<div data-entry-id=${props.id}>${hiddenInput}${content}</div>`;
 
-  if (processLinkFormDefinitionName) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
-
-        <cds-tag
-          class="cds--tag cds--tag--blue cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.form')}
-          </span>
-        </cds-tag>
-      </div>
-
-      <div class="process-link-properties-panel__buttons">
+  // Without edit rights the link can only be opened to view how it is configured
+  const linkedButtons = !editingAllowed
+    ? html`<div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${viewText}
+        </button>
+      </div>`
+    : html`<div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
           onClick=${handleUnlinkClick}
@@ -268,7 +278,22 @@ const CustomRootElement = (props: {
         >
           ${editProcessLinkText}
         </button>
+      </div>`;
+
+  if (processLinkFormDefinitionName) {
+    return wrapEntry(html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
+
+        <cds-tag
+          class="cds--tag cds--tag--blue cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.form')}
+          </span>
+        </cds-tag>
       </div>
+
+      ${linkedButtons}
     </div>`);
   }
 
@@ -289,21 +314,7 @@ const CustomRootElement = (props: {
         </cds-tag>
       </div>
 
-      <div class="process-link-properties-panel__buttons">
-        <button
-          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
-          onClick=${handleUnlinkClick}
-        >
-          ${unlinkText}
-        </button>
-
-        <button
-          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
-          onClick=${handleEditClick}
-        >
-          ${editProcessLinkText}
-        </button>
-      </div>
+      ${linkedButtons}
     </div>`);
   }
 
@@ -325,21 +336,7 @@ const CustomRootElement = (props: {
         </cds-tag>
       </div>
 
-      <div class="process-link-properties-panel__buttons">
-        <button
-          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
-          onClick=${handleUnlinkClick}
-        >
-          ${unlinkText}
-        </button>
-
-        <button
-          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
-          onClick=${handleEditClick}
-        >
-          ${editProcessLinkText}
-        </button>
-      </div>
+      ${linkedButtons}
     </div>`);
   }
 
@@ -366,21 +363,7 @@ const CustomRootElement = (props: {
         </cds-tag>
       </div>
 
-      <div class="process-link-properties-panel__buttons">
-        <button
-          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
-          onClick=${handleUnlinkClick}
-        >
-          ${unlinkText}
-        </button>
-
-        <button
-          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
-          onClick=${handleEditClick}
-        >
-          ${editProcessLinkText}
-        </button>
-      </div>
+      ${linkedButtons}
     </div>`);
   }
 
@@ -399,40 +382,12 @@ const CustomRootElement = (props: {
         </cds-tag>
       </div>
 
-      <div class="process-link-properties-panel__buttons">
-        <button
-          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
-          onClick=${handleUnlinkClick}
-        >
-          ${unlinkText}
-        </button>
-
-        <button
-          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
-          onClick=${handleEditClick}
-        >
-          ${editProcessLinkText}
-        </button>
-      </div>
+      ${linkedButtons}
     </div>`);
   }
 
   const genericLinkedPanel = html`<div class="process-link-properties-panel">
-    <div class="process-link-properties-panel__buttons">
-      <button
-        class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
-        onClick=${handleUnlinkClick}
-      >
-        ${unlinkText}
-      </button>
-
-      <button
-        class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
-        onClick=${handleEditClick}
-      >
-        ${editProcessLinkText}
-      </button>
-    </div>
+    ${linkedButtons}
   </div>`;
 
   const genericCreatePanel = html`<div class="process-link-properties-panel">

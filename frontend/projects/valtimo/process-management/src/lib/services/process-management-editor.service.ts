@@ -145,6 +145,20 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._autofilledElements$.getValue().find(e => e.activityId === activityId);
   }
 
+  private readonly _editingAllowed$ = new BehaviorSubject<boolean>(true);
+
+  /**
+   * False for a case version that has been made final, where the process and its links can only be
+   * viewed. Read from the properties panel, which is rendered outside of Angular.
+   */
+  public get editingAllowed(): boolean {
+    return this._editingAllowed$.getValue();
+  }
+
+  public setEditingAllowed(editingAllowed: boolean): void {
+    this._editingAllowed$.next(editingAllowed);
+  }
+
   private _updateBpmnViewFunction!: () => void;
 
   private _updatingBpmnView = false;

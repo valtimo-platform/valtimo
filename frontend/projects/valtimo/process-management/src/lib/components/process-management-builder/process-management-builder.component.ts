@@ -114,7 +114,12 @@ import {
   getLatestProcessDefinition,
   initBreadcrumbsForContext,
 } from '../../utils';
-import {ValtimoPropertiesProviderModule, ExpressionAutocompleteModule, ExpressionAutocomplete} from './panel';
+import {
+  ValtimoPropertiesProviderModule,
+  ReadOnlyPropertiesPanelModule,
+  ExpressionAutocompleteModule,
+  ExpressionAutocomplete,
+} from './panel';
 import {PluginTranslationService} from '@valtimo/plugin';
 import {ProcessBeanService} from '../../services';
 import {View16, ViewOff16} from '@carbon/icons';
@@ -173,6 +178,16 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private _activityMarkerUpdateTimeout: any = null;
   private _autofilledElements: AutofilledElement[] = [];
   private _autofilledElementIds: string[] = [];
+  private _viewerActive = false;
+
+  /**
+   * The editor that is on screen. Both are kept loaded with the same diagram, so anything drawn on
+   * top of it - markers, validation highlights, autofill badges - has to go to this one, or it ends
+   * up on the hidden editor. Mirrors the condition the template switches on.
+   */
+  private get activeEditor(): Modeler | NavigatedViewer {
+    return this._viewerActive ? this._bpmnViewer : this._bpmnModeler;
+  }
 
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public readonly isSystemProcess$ = new BehaviorSubject<boolean>(false);
@@ -251,6 +266,15 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         )
       );
     })
+  );
+
+  // The same condition the template switches the two editors on
+  public readonly viewerActive$: Observable<boolean> = combineLatest([
+    this.isReadOnlyProcess$,
+    this.hasEditPermissions$,
+  ]).pipe(
+    map(([isReadOnlyProcess, hasEditPermissions]) => isReadOnlyProcess || !hasEditPermissions),
+    distinctUntilChanged()
   );
 
   private readonly _reload$ = new Subject<null>();
@@ -333,6 +357,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.subscribeToProcessLinkCreateEvents();
     this.subscribeToProcessLinkDeleteEvents();
     this.subscribeToAutofillDismissEvents();
+    this.subscribeToViewerActive();
     this.initEditing();
   }
 
@@ -758,7 +783,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.clearValidationErrors();
     this.processManagementEditorService.setValidationErrors(errors);
 
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     const canvas = modeler.get('canvas') as any;
     const overlays = modeler.get('overlays') as any;
 
@@ -955,7 +980,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private clearValidationErrors(): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
 
     if (!modeler) return;
 
@@ -1013,7 +1038,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     if (!this._autofilledElements?.length) return;
 
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1034,7 +1059,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private clearAutofilledHighlights(): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1106,7 +1131,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     if (!this.$markersVisible()) return;
 
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1232,7 +1257,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private clearActivityMarkers(): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1326,7 +1351,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       additionalModules: [
         DisableBpmnWriteModule,
         BpmnPropertiesPanelModule,
+        BpmnPropertiesProviderModule,
+        CamundaPlatformPropertiesProviderModule,
         ValtimoPropertiesProviderModule,
+        ReadOnlyPropertiesPanelModule,
       ],
       moddleExtensions: {camunda: CamundaBpmnModdle},
       propertiesPanel: {parent: this.viewerPanelElementRef.nativeElement},
@@ -1353,6 +1381,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.processLinkStateService.setModalParams(event?.modalParams);
     this.processLinkStateService.setElementName(event?.modalParams?.element?.name ?? '');
     this.processLinkStateService.selectProcessLink(event.processLink);
+    this.processLinkStateService.setReadOnly(!this.processManagementEditorService.editingAllowed);
     this.processLinkStateService.showModal();
   }
 
@@ -1443,6 +1472,27 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     );
   }
 
+  private subscribeToViewerActive(): void {
+    this._subscriptions.add(
+      this.viewerActive$.subscribe(viewerActive => {
+        this._viewerActive = viewerActive;
+
+        // Which editor is on screen is only known once the edit permissions have resolved, which is
+        // after the diagram was imported, so redraw whatever was drawn on the other one.
+        this.updateActivityMarkers();
+        this.highlightAutofilledElements();
+      })
+    );
+
+    // Deliberately not tied to isReadOnlyProcess: the diagram of a read-only process cannot be
+    // changed, but its process links still can, as long as the case version is not final.
+    this._subscriptions.add(
+      this.hasEditPermissions$.subscribe(hasEditPermissions =>
+        this.processManagementEditorService.setEditingAllowed(hasEditPermissions)
+      )
+    );
+  }
+
   private subscribeToAutofillDismissEvents(): void {
     this._subscriptions.add(
       this.processManagementEditorService.autofillDismissed$.subscribe(activityId => {
@@ -1452,7 +1502,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private removeAutofillOverlay(activityId: string): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1682,7 +1732,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   public onValidationErrorClick(elementId: string): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     const canvas = modeler.get('canvas') as any;
     const selection = modeler.get('selection') as any;
     const elementRegistry = modeler.get('elementRegistry') as any;
