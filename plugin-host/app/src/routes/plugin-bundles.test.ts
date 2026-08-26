@@ -24,11 +24,16 @@ import {pluginBundleRoutes} from "./plugin-bundles";
 
 const PLUGIN = "case-summary";
 const VERSION = "0.1.0";
+const PACKAGE_HASH = "sha256:aaaa1111";
 
 describe("plugin-bundles routes", () => {
   let pluginDir: string;
   let app: FastifyInstance;
-  let pluginManager: { getManifest: ReturnType<typeof vi.fn>; getPluginDir: ReturnType<typeof vi.fn> };
+  let pluginManager: {
+    getManifest: ReturnType<typeof vi.fn>;
+    getPluginDir: ReturnType<typeof vi.fn>;
+    getContentHash: ReturnType<typeof vi.fn>;
+  };
 
   beforeAll(() => {
     pluginDir = mkdtempSync(join(tmpdir(), "plugin-bundles-"));
@@ -52,6 +57,9 @@ describe("plugin-bundles routes", () => {
     pluginManager = {
       getManifest: vi.fn(() => ({ logo: "logo.svg" })),
       getPluginDir: vi.fn(() => pluginDir),
+      // Recomputed by the manager on every install, so a re-upload of the same version reports a
+      // different hash — that is what the cache validator hangs off.
+      getContentHash: vi.fn(() => PACKAGE_HASH),
     };
     const frameAncestorRegistry = {
       allowedOrigins: async () => allowedOrigins,
@@ -141,6 +149,115 @@ describe("plugin-bundles routes", () => {
       pluginManager.getManifest.mockReturnValueOnce({ logo: "ghost.svg" });
       const res = await app.inject({ method: "GET", url: `/plugins/${PLUGIN}/${VERSION}/logo` });
       expect(res.statusCode).toBe(404);
+    });
+  });
+
+  /**
+   * A plugin version can be re-uploaded in place (`overwrite=true`), which changes the bytes without
+   * changing the URL. The validator has to be derived from the content for that to be visible to a
+   * browser — a TTL would keep serving the superseded bundle, and the URL cannot be cache-busted
+   * from outside because a bundle's HTML references its script by a bare relative path.
+   */
+  describe("caching", () => {
+    const bundleUrl = `/plugins/${PLUGIN}/${VERSION}/bundles/case-tab.bundle.js`;
+    const logoUrl = `/plugins/${PLUGIN}/${VERSION}/logo`;
+
+    it("requires revalidation and sends a validator on both the bundle and the logo", async () => {
+      for (const url of [bundleUrl, logoUrl]) {
+        const res = await app.inject({ method: "GET", url });
+        expect(res.statusCode).toBe(200);
+        expect(res.headers["cache-control"]).toBe("public, no-cache");
+        expect(res.headers["etag"]).toBe(`"${PACKAGE_HASH}"`);
+      }
+    });
+
+    it("answers 304 with no body when the client already has the current entity", async () => {
+      const first = await app.inject({ method: "GET", url: bundleUrl });
+      const etag = first.headers["etag"] as string;
+
+      const second = await app.inject({
+        method: "GET",
+        url: bundleUrl,
+        headers: { "if-none-match": etag },
+      });
+
+      expect(second.statusCode).toBe(304);
+      expect(second.body).toBe("");
+      // Kept on the 304 so a cache that revalidates repeatedly retains a usable entry.
+      expect(second.headers["etag"]).toBe(etag);
+    });
+
+    /**
+     * The validator is the package hash, not a digest of the response body — so revalidating an
+     * unchanged bundle never opens the file. Asserting the value is how this test pins that down:
+     * a body-derived validator could not equal the hash the manager reports.
+     */
+    it("derives the validator from the package hash rather than the bytes", async () => {
+      const res = await app.inject({ method: "GET", url: bundleUrl });
+
+      expect(res.headers["etag"]).toBe(`"${PACKAGE_HASH}"`);
+      expect(pluginManager.getContentHash).toHaveBeenCalledWith(PLUGIN, VERSION);
+    });
+
+    it("serves the new bytes with a new validator after the version is overwritten in place", async () => {
+      const before = await app.inject({ method: "GET", url: bundleUrl });
+      const staleEtag = before.headers["etag"] as string;
+
+      // Same plugin, same version, same URL — an overwrite replaced the package, so the manager
+      // reports the hash of the new content.
+      writeFileSync(join(pluginDir, "frontend", "case-tab.bundle.js"), "console.log('v2');");
+      pluginManager.getContentHash.mockReturnValue("sha256:bbbb2222");
+
+      const revalidated = await app.inject({
+        method: "GET",
+        url: bundleUrl,
+        headers: { "if-none-match": staleEtag },
+      });
+
+      expect(revalidated.statusCode).toBe(200);
+      expect(revalidated.body).toContain("v2");
+      expect(revalidated.headers["etag"]).toBe('"sha256:bbbb2222"');
+
+      writeFileSync(join(pluginDir, "frontend", "case-tab.bundle.js"), "console.log('bundle');");
+    });
+
+    /**
+     * The hash is not optional on a loaded plugin, so it is missing only when the version is gone
+     * from the manager — which is what the manifest check reports as a 404. Serving the file with
+     * no validator, or hashing its bytes to invent one, would both be answers to a question that
+     * has already been settled: this version is no longer loaded.
+     */
+    it("404s rather than serving unvalidated content when the version is not loaded", async () => {
+      pluginManager.getContentHash.mockReturnValue(null);
+
+      for (const url of [bundleUrl, logoUrl]) {
+        const res = await app.inject({ method: "GET", url });
+        expect(res.statusCode).toBe(404);
+      }
+    });
+
+    it("accepts the list form, the weak prefix and the wildcard in If-None-Match", async () => {
+      const etag = (await app.inject({ method: "GET", url: bundleUrl })).headers["etag"] as string;
+
+      for (const header of [`"other", ${etag}`, `W/${etag}`, "*"]) {
+        const res = await app.inject({
+          method: "GET",
+          url: bundleUrl,
+          headers: { "if-none-match": header },
+        });
+        expect(res.statusCode).toBe(304);
+      }
+    });
+
+    it("serves the body when If-None-Match names a different entity", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: bundleUrl,
+        headers: { "if-none-match": '"not-the-current-entity"' },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toContain("console.log('bundle')");
     });
   });
 

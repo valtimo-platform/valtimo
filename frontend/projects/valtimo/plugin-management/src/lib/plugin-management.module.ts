@@ -52,7 +52,6 @@ import {
   ProgressIndicatorModule,
   TagModule,
   TilesModule,
-  TooltipModule,
 } from 'carbon-components-angular';
 
 @NgModule({
@@ -82,7 +81,6 @@ import {
     IconModule,
     NotificationModule,
     TagModule,
-    TooltipModule,
     ValtimoCdsModalDirective,
     LayerModule,
     TilesModule,

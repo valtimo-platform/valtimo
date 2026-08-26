@@ -34,6 +34,8 @@ import com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder
 import com.ritense.plugin.service.ProcessDefinitionUsageMetaResolver
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.valtimo.contract.plugin.MenuPagePluginUsage
+import com.ritense.valtimo.contract.plugin.MenuPagePluginUsageFinder
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.assertj.core.api.Assertions.assertThat
@@ -685,6 +687,108 @@ class ExternalPluginHostUsageResolverTest {
         assertThat(usage.widgetKey).isEqualTo("summary-widget")
         assertThat(usage.processDefinitionId).isNull()
     }
+
+    @Test
+    fun `configuration referenced only by a menu page still blocks deletion`() {
+        val configuration = configuration(definitionId = UUID.randomUUID(), title = "CRM")
+        val menuPageFinder = mock<MenuPagePluginUsageFinder>()
+        val resolverWithMenuPages = resolverWithMenuPageFinder(menuPageFinder)
+
+        whenever(configurationRepository.findById(configuration.id))
+            .thenReturn(java.util.Optional.of(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(menuPageFinder.findUsages(configuration.id)).thenReturn(
+            listOf(
+                MenuPagePluginUsage(
+                    configurationId = configuration.id,
+                    title = "CRM overview",
+                    bundleKey = "overview",
+                ),
+            )
+        )
+
+        val usages = resolverWithMenuPages.findUsagesForConfiguration(configuration.id)
+
+        assertThat(usages).hasSize(1)
+        val usage = usages.single()
+        assertThat(usage.configurationId).isEqualTo(configuration.id)
+        assertThat(usage.configurationTitle).isEqualTo("CRM")
+        assertThat(usage.menuItemTitle).isEqualTo("CRM overview")
+        // A menu page is application-wide, so it has no case or process parent at all.
+        assertThat(usage.parentType).isEqualTo(PluginUsageParentType.GLOBAL)
+        assertThat(usage.parentKey).isNull()
+        assertThat(usage.parentVersionTag).isNull()
+        assertThat(usage.processDefinitionId).isNull()
+        assertThat(usage.processLinkId).isNull()
+        assertThat(usage.activityId).isNull()
+        assertThat(usage.tabKey).isNull()
+        assertThat(usage.widgetKey).isNull()
+        assertThat(usage.buildingBlockKey).isNull()
+    }
+
+    @Test
+    fun `host deletion is blocked by a menu page referencing any of its configurations`() {
+        val hostId = UUID.randomUUID()
+        val definition = definition(hostId = hostId)
+        val configuration = configuration(definitionId = definition.id, title = "Paged CRM")
+        val menuPageFinder = mock<MenuPagePluginUsageFinder>()
+        val resolverWithMenuPages = resolverWithMenuPageFinder(menuPageFinder)
+
+        whenever(definitionRepository.findAllByHostId(hostId)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(menuPageFinder.findUsages(configuration.id)).thenReturn(
+            listOf(
+                MenuPagePluginUsage(
+                    configurationId = configuration.id,
+                    title = "CRM overview",
+                    bundleKey = "overview",
+                ),
+            )
+        )
+
+        val usages = resolverWithMenuPages.findUsagesForHost(hostId)
+
+        assertThat(usages).hasSize(1)
+        assertThat(usages[0].configurationId).isEqualTo(configuration.id)
+        assertThat(usages[0].menuItemTitle).isEqualTo("CRM overview")
+        assertThat(usages[0].parentType).isEqualTo(PluginUsageParentType.GLOBAL)
+    }
+
+    @Test
+    fun `without a menu-page finder a configuration used only by a menu page is deletable`() {
+        // Guards the deployment that has no admin-settings module on the classpath: the SPI is absent
+        // and menu pages simply don't participate in the guard, exactly like the other Optional
+        // sources. `resolver` is built with Optional.empty() for all of them.
+        val configuration = configuration(definitionId = UUID.randomUUID())
+        whenever(configurationRepository.findById(configuration.id))
+            .thenReturn(java.util.Optional.of(configuration))
+        whenever(processLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+        whenever(taskFormProcessLinkRepository.findAllByExternalPluginConfigurationIdIn(setOf(configuration.id)))
+            .thenReturn(emptyList())
+
+        assertThat(resolver.findUsagesForConfiguration(configuration.id)).isEmpty()
+    }
+
+    private fun resolverWithMenuPageFinder(
+        menuPageFinder: MenuPagePluginUsageFinder,
+    ): ExternalPluginHostUsageResolver =
+        ExternalPluginHostUsageResolver(
+            definitionRepository,
+            configurationRepository,
+            processLinkRepository,
+            taskFormProcessLinkRepository,
+            ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
+            java.util.Optional.empty(),
+            java.util.Optional.empty(),
+            java.util.Optional.empty(),
+            java.util.Optional.of(menuPageFinder),
+        )
 
     private fun resolverWith(finder: BuildingBlockPluginMappingUsageFinder): ExternalPluginHostUsageResolver =
         ExternalPluginHostUsageResolver(

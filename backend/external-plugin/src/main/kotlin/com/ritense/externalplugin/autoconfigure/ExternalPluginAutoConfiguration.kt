@@ -146,6 +146,7 @@ class ExternalPluginAutoConfiguration {
         caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
         caseExternalPluginWidgetService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginWidgetService>,
         buildingBlockMappingUsageFinder: java.util.Optional<com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder>,
+        menuPagePluginUsageFinder: java.util.Optional<com.ritense.valtimo.contract.plugin.MenuPagePluginUsageFinder>,
     ) = ExternalPluginHostUsageResolver(
         definitionRepository,
         configurationRepository,
@@ -155,6 +156,7 @@ class ExternalPluginAutoConfiguration {
         caseExternalPluginTabService,
         caseExternalPluginWidgetService,
         buildingBlockMappingUsageFinder,
+        menuPagePluginUsageFinder,
     )
 
     @Bean

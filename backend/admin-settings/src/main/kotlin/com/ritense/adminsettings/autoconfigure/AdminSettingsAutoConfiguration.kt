@@ -28,6 +28,7 @@ import com.ritense.adminsettings.security.config.AdminSettingsHttpSecurityConfig
 import com.ritense.adminsettings.service.AccentColorsService
 import com.ritense.adminsettings.service.AdminSettingsLogoService
 import com.ritense.adminsettings.service.FeatureToggleOverridesService
+import com.ritense.adminsettings.service.MenuConfigurationPluginUsageFinder
 import com.ritense.adminsettings.service.MenuConfigurationService
 import com.ritense.adminsettings.web.rest.AccentColorsResource
 import com.ritense.adminsettings.web.rest.AdminSettingsLogoResource
@@ -123,6 +124,14 @@ class AdminSettingsAutoConfiguration {
             menuConfigurationRepository,
             objectMapper,
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(MenuConfigurationPluginUsageFinder::class)
+    fun menuConfigurationPluginUsageFinder(
+        menuConfigurationService: MenuConfigurationService,
+    ): MenuConfigurationPluginUsageFinder {
+        return MenuConfigurationPluginUsageFinder(menuConfigurationService)
     }
 
     @Bean

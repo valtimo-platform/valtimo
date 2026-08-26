@@ -102,7 +102,7 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="primary" (click)="onClose()">
+    <button cdsButton="ghost" [attr.modal-primary-focus]="true" (click)="onClose()">
       {{ 'pluginManagement.logs.close' | translate }}
     </button>
   </cds-modal-footer>

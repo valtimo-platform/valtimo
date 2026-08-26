@@ -152,15 +152,20 @@
         {{ 'pluginManagement.compatibility.incompatibleTag' | translate }}
       </cds-tag>
 
-      <cds-tooltip
-        [align]="'top'"
-        [caret]="true"
-        [description]="data.item.compatibilityMessage"
+      <!--
+        vTooltip, not cds-tooltip: Carbon's popover is absolutely positioned inside the trigger, so
+        `valtimo-carbon-list`'s `overflow-y: hidden` on cds-table clips it — on the first row there is
+        only the 48px header above the icon. vTooltip renders through a body-level CDK overlay, which
+        no ancestor can clip, and is already the tooltip this toolbar uses for its upload button.
+      -->
+      <span
         class="plugin-management__incompatible-tooltip"
+        [vTooltip]="data.item.compatibilityMessage"
+        [attr.aria-label]="data.item.compatibilityMessage"
         (click)="$event.stopPropagation()"
       >
         <svg cdsIcon="information" size="16"></svg>
-      </cds-tooltip>
+      </span>
     }
   </div>
 </ng-template>

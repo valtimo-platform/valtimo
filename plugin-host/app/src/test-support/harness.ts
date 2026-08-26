@@ -16,30 +16,25 @@
 
 import {createHash, createHmac} from "node:crypto";
 import Fastify, {type FastifyInstance, type FastifyServerOptions} from "fastify";
-import rawBody from "fastify-raw-body";
-import multipart from "@fastify/multipart";
+import {registerBodyParsing} from "../body-parsing.js";
 import type {AppConfig} from "../models/index.js";
 
 /** Shared secret used across route tests — the HMAC key for GZAC→host authentication. */
 export const ADMIN_TOKEN = "test-admin-secret";
 
 /**
- * Builds a Fastify instance wired exactly like production (raw-body capture for HMAC + multipart for
- * uploads), then invokes the caller to register the routes under test. Logging is off by default so
- * specs stay quiet; pass `opts.logger` (e.g. a level + capture stream) to assert on emitted lines.
+ * Builds a Fastify instance wired exactly like production — the body parsing comes from the very
+ * same `registerBodyParsing` production calls, so a spec sees production's parser set (including
+ * which content types are refused) — then invokes the caller to register the routes under test.
+ * Logging is off by default so specs stay quiet; pass `opts.logger` (e.g. a level + capture stream)
+ * to assert on emitted lines.
  */
 export async function buildTestApp(
   register: (app: FastifyInstance) => Promise<void>,
   opts: { logger?: FastifyServerOptions["logger"] } = {}
 ): Promise<FastifyInstance> {
   const app = Fastify({ logger: opts.logger ?? false });
-  await app.register(rawBody, {
-    field: "rawBody",
-    global: false,
-    encoding: false,
-    runFirst: true,
-  });
-  await app.register(multipart, { limits: { fileSize: 25 * 1024 * 1024 } });
+  await registerBodyParsing(app, { uploadMaxBytes: 25 * 1024 * 1024 });
   await register(app);
   await app.ready();
   return app;

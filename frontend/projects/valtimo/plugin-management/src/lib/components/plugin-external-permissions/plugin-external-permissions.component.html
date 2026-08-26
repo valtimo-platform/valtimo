@@ -118,16 +118,16 @@
     {{ 'pluginManagement.permissions.eventsHeading' | translate }}
   </h6>
 
-  <cds-structured-list>
-    <cds-list-row
+  <div class="plugin-external-permissions__tag-cloud">
+    <cds-tag
       *ngFor="let eventType of $eventTypes()"
+      type="teal"
+      size="sm"
       [attr.data-test-id]="'external-plugin-permission-event-' + eventType"
     >
-      <cds-list-column>
-        <cds-tag type="teal" size="sm">{{ eventType }}</cds-tag>
-      </cds-list-column>
-    </cds-list-row>
-  </cds-structured-list>
+      {{ eventType }}
+    </cds-tag>
+  </div>
 </section>
 
 <section

@@ -330,6 +330,9 @@ interface ExternalPluginHostUsage {
   // Populated only for a building-block mapping usage (the BB's pluginConfigurationMappings
   // reference the configuration); names the building block holding the mapping.
   buildingBlockKey?: string | null;
+  // Populated only for a menu-page usage: an external-plugin `page` bundle placed in the
+  // application menu references the configuration. Names the menu item.
+  menuItemTitle?: string | null;
 }
 
 const EXTERNAL_PLUGIN_KEY_PREFIX = 'external:';

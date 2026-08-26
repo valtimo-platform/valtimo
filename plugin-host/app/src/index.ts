@@ -15,8 +15,7 @@
  */
 
 import Fastify, {type FastifyServerOptions} from "fastify";
-import rawBody from "fastify-raw-body";
-import multipart from "@fastify/multipart";
+import {registerBodyParsing} from "./body-parsing.js";
 import {loadConfig} from "./config.js";
 import {buildHttpsOptions} from "./https-options.js";
 import {PluginManager} from "./plugin-manager.js";
@@ -53,6 +52,19 @@ async function main(): Promise<void> {
     ...(httpsOptions ? { https: httpsOptions } : {}),
   } as FastifyServerOptions);
 
+  // A single request-scoped throw must not take the whole sidecar down: it serves every configured
+  // plugin for every connected GZAC. Both handlers log and keep serving — the in-flight request is
+  // lost (Fastify's own error path never saw it), everything else keeps working. Node's docs advise
+  // exiting after uncaughtException because process state may be corrupt; the throws this guards
+  // against originate in isolated stream callbacks with no shared mutable state, and the
+  // alternative is an unauthenticated remote kill switch.
+  process.on("uncaughtException", (err) => {
+    fastify.log.error({ err }, "Uncaught exception — request dropped, host still serving");
+  });
+  process.on("unhandledRejection", (reason) => {
+    fastify.log.error({ err: reason }, "Unhandled promise rejection — host still serving");
+  });
+
   // Initialize database connection
   let dbPool: DbPool;
   try {
@@ -78,21 +90,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Register raw body plugin for HMAC verification on action routes
-  await fastify.register(rawBody, {
-    field: "rawBody",
-    global: false, // Only enable on routes that request it via config.rawBody
-    encoding: false, // Return Buffer, not string
-    runFirst: true, // Run before JSON parsing
-  });
-
-  // Register multipart for file uploads. The cap applies BEFORE the upload route buffers the file
-  // for its HMAC check, so an unauthenticated caller can't make the host buffer huge payloads.
-  await fastify.register(multipart, {
-    limits: {
-      fileSize: config.UPLOAD_MAX_BYTES,
-    },
-  });
+  // Raw-body capture for HMAC verification on the signed routes, plus multipart for plugin
+  // uploads. Shared with the test harness so route tests meet the same parsers.
+  await registerBodyParsing(fastify, {uploadMaxBytes: config.UPLOAD_MAX_BYTES});
 
   // Initialize repositories
   const configRepository = new ConfigRepository(dbPool);

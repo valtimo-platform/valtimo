@@ -98,3 +98,11 @@
     overflow-y: auto;
   }
 }
+
+// Carbon's modal footer is `justify-content: flex-end` with `.cds--btn { flex: 0 1 50% }`, so a lone
+// button fills the right half and reads as the modal's primary action. "Close" dismisses rather than
+// commits, so it sits bottom-left as a ghost button instead. Scoped to this host, unlike the global
+// override in case-management-select-version-modal, so no other modal's footer shifts.
+:host ::ng-deep .cds--modal-footer {
+  justify-content: flex-start;
+}

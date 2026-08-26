@@ -2400,6 +2400,13 @@
       "methodHeading": "Method",
       "endpointHeading": "Endpoint",
       "descriptionHeading": "Description",
+      "egressHeading": "External connections",
+      "egressDescription": "This plugin can connect to the addresses listed below, and to nothing else. Check that you recognise each one and expect the plugin to communicate with it.",
+      "egressTargetHeading": "Address",
+      "egressSourceHeading": "Source",
+      "egressWildcard": "Any address under this domain — the plugin chooses which one it connects to",
+      "egressFromManifest": "Required by the plugin",
+      "egressFromConfiguration": "From a URL you entered in this configuration",
       "accept": "I trust this plugin and accept the requested permissions"
     },
     "logs": {
@@ -2466,7 +2473,8 @@
       },
       "caseTab": "Case tab",
       "caseWidget": "Case widget",
-      "buildingBlockMapping": "Building block plugin mapping"
+      "buildingBlockMapping": "Building block plugin mapping",
+      "menuPage": "Menu page"
     },
     "compatibility": {
       "incompatibleTag": "Incompatible",

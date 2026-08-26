@@ -82,6 +82,15 @@ function bundleCsp(ancestors: string[]): string {
  * form (its `ALLOW-FROM` was removed from every browser), so it can only express "deny everything".
  * Sending it alongside a populated `frame-ancestors` would break the legitimate embed in browsers
  * that honour the older header.
+ *
+ * `no-cache` rather than a TTL: uploading with `overwrite=true` replaces a package in place, so the
+ * bytes behind `/plugins/:pluginId/:version/bundles/*` can change while the URL does not. Under a
+ * `max-age` the browser would keep serving the superseded bundle for the rest of the window with no
+ * signal that it is stale — and the URL cannot be cache-busted from the outside, because a bundle's
+ * HTML references its script with a bare relative path (`<script src="config.bundle.js">`), which
+ * would leave the new shell running the old script. `no-cache` still permits storing; it just makes
+ * reuse conditional on the {@link contentEtag} validator, so an unchanged bundle costs a 304 instead
+ * of a re-transfer.
  */
 function pluginContentHeaders(
   reply: import("fastify").FastifyReply,
@@ -93,11 +102,66 @@ function pluginContentHeaders(
   }
   return reply
     .header("Content-Type", contentType)
-    .header("Cache-Control", "public, max-age=3600")
+    .header("Cache-Control", "public, no-cache")
     .header("Access-Control-Allow-Origin", "*")
     .header("Content-Security-Policy", bundleCsp(ancestors))
     .header("X-Content-Type-Options", "nosniff")
     .header("Referrer-Policy", "no-referrer");
+}
+
+/**
+ * Validator built from the package content hash the manager computed at install time. Free per
+ * request — no file read, no hashing — and it changes whenever a version is replaced, which is the
+ * only way the bytes behind one of these URLs can change.
+ *
+ * An ETag is scoped to its own URL, so the package hash alone is enough to tell two generations of
+ * a given bundle apart. Sharing one validator across a package does mean editing one bundle
+ * invalidates its siblings, which is deliberate: a published version is immutable in practice, so
+ * the only time the bytes behind a fixed version change is while a plugin is being developed, and
+ * re-downloading the sibling bundles is a development cost rather than a production one. Narrowing
+ * it to a per-file validator would also mean maintaining a second hash alongside the package one,
+ * which GZAC pins as its tamper-evidence signal (see `computeContentHash`) and needs at package
+ * granularity.
+ */
+function packageEtag(contentHash: string): string {
+  return `"${contentHash}"`;
+}
+
+/**
+ * Whether the request's `If-None-Match` covers this entity. Handles the list form and the weak
+ * prefix a proxy may add; `*` matches because the entity exists at all.
+ */
+function etagMatches(header: string | undefined, etag: string): boolean {
+  if (!header) return false;
+  return header
+    .split(",")
+    .map(candidate => candidate.trim())
+    .some(candidate => candidate === "*" || candidate === etag || candidate === `W/${etag}`);
+}
+
+/**
+ * Serve plugin-authored bytes with the hardening headers and a conditional-request short circuit.
+ * The validator is set before the branch, so it is present on the 304 too and a cache that
+ * revalidates repeatedly keeps a usable entry instead of dropping back to an unconditional fetch.
+ *
+ * `load` is a thunk rather than a buffer so that revalidation never opens the file: these bundles run
+ * to megabytes, and reading one only to discard it would be the entire cost of answering a 304.
+ */
+async function sendPluginContent(
+  request: import("fastify").FastifyRequest,
+  reply: import("fastify").FastifyReply,
+  contentType: string,
+  ancestors: string[],
+  etag: string,
+  load: () => Promise<Buffer>
+): Promise<void> {
+  pluginContentHeaders(reply, contentType, ancestors).header("ETag", etag);
+
+  if (etagMatches(request.headers["if-none-match"], etag)) {
+    reply.code(304).send();
+    return;
+  }
+  reply.send(await load());
 }
 
 /**
@@ -142,9 +206,12 @@ export async function pluginBundleRoutes(
         return;
       }
 
-      // Verify plugin exists
+      // Verify plugin exists. The hash is read here rather than next to its use so that both come
+      // from the same tick: they are backed by the same in-memory record, so reading them without an
+      // await in between means an unload cannot land in the gap and leave one of them missing.
       const manifest = pluginManager.getManifest(pluginId, version);
-      if (!manifest) {
+      const contentHash = pluginManager.getContentHash(pluginId, version);
+      if (!manifest || !contentHash) {
         reply.code(404).send({ error: `Plugin not found: ${pluginId}@${version}` });
         return;
       }
@@ -166,9 +233,15 @@ export async function pluginBundleRoutes(
 
       const ext = extname(fullPath);
       const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
-      const content = await readFile(fullPath);
 
-      pluginContentHeaders(reply, contentType, await frameAncestors(request)).send(content);
+      await sendPluginContent(
+        request,
+        reply,
+        contentType,
+        await frameAncestors(request),
+        packageEtag(contentHash),
+        () => readFile(fullPath)
+      );
     }
   );
 
@@ -217,8 +290,10 @@ export async function pluginBundleRoutes(
     async (request, reply) => {
       const { pluginId, version } = request.params;
 
+      // Read together, for the same reason as the bundle route above.
       const manifest = pluginManager.getManifest(pluginId, version);
-      if (!manifest) {
+      const contentHash = pluginManager.getContentHash(pluginId, version);
+      if (!manifest || !contentHash) {
         reply.code(404).send({ error: `Plugin not found: ${pluginId}@${version}` });
         return;
       }
@@ -237,10 +312,17 @@ export async function pluginBundleRoutes(
 
       const ext = extname(logoPath);
       const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
-      const content = await readFile(logoPath);
       // Same policy as the bundles: a logo is plugin-authored content too (an SVG can carry
-      // script, which the CSP neutralises when the file is opened directly).
-      pluginContentHeaders(reply, contentType, await frameAncestors(request)).send(content);
+      // script, which the CSP neutralises when the file is opened directly), and it is replaced by
+      // an overwrite under the same URL just like a bundle is.
+      await sendPluginContent(
+        request,
+        reply,
+        contentType,
+        await frameAncestors(request),
+        packageEtag(contentHash),
+        () => readFile(logoPath)
+      );
     }
   );
 }

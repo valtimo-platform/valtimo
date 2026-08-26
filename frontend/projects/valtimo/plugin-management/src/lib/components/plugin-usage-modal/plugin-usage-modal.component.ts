@@ -75,6 +75,11 @@ export class PluginUsageModalComponent {
     if (usage.tabKey) {
       return `tab:${usage.parentKey}:${usage.tabKey}`;
     }
+    // Menu-page usage: a `plugin-page` node in the application menu (no process link, no tab, no
+    // case — the configuration id plus the item's title is what distinguishes it).
+    if (usage.menuItemTitle) {
+      return `page:${usage.configurationId}:${usage.menuItemTitle}`;
+    }
     // Building-block mapping usage on a case-definition ↔ BB link (no process link, no tab).
     return `bb:${usage.parentKey}:${usage.buildingBlockKey}:${usage.configurationId}`;
   }

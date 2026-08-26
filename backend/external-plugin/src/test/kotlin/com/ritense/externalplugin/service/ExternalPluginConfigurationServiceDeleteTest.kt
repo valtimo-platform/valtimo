@@ -110,6 +110,34 @@ class ExternalPluginConfigurationServiceDeleteTest {
     }
 
     @Test
+    fun `delete throws when the only usage is a menu page, and deletes nothing`() {
+        // A `plugin-page` menu node references the configuration without any process link, tab or
+        // case, so the usage DTO carries nothing but the menu item's title. The guard must still
+        // refuse — otherwise the menu keeps a page whose configuration no longer exists.
+        val configId = UUID.randomUUID()
+        val configuration = configuration(configId)
+        whenever(configurationRepository.findById(configId)).thenReturn(Optional.of(configuration))
+        whenever(hostUsageResolver.findUsagesForConfiguration(configId))
+            .thenReturn(listOf(menuPageUsageDto(configId)))
+
+        assertThatThrownBy { service.delete(configId) }
+            .isInstanceOf(ExternalPluginConfigurationInUseException::class.java)
+            .satisfies({ thrown ->
+                val problem = thrown as ExternalPluginConfigurationInUseException
+                @Suppress("UNCHECKED_CAST")
+                val payloadUsages = problem.parameters["usages"] as Collection<PluginUsageDto>
+                assertThat(payloadUsages).hasSize(1)
+                assertThat(payloadUsages.first().menuItemTitle).isEqualTo("CRM overview")
+                assertThat(payloadUsages.first().parentType).isEqualTo(PluginUsageParentType.GLOBAL)
+            })
+
+        verify(grantedEndpointRepository, never()).deleteAllByConfigurationId(any())
+        verify(grantedEventRepository, never()).deleteAllByConfigurationId(any())
+        verify(configurationRepository, never()).delete(any<ExternalPluginConfiguration>())
+        verify(hostClient, never()).deleteConfiguration(any(), any(), any())
+    }
+
+    @Test
     fun `delete proceeds when no usages exist`() {
         val configId = UUID.randomUUID()
         val configuration = configuration(configId)
@@ -179,5 +207,15 @@ class ExternalPluginConfigurationServiceDeleteTest {
         activityId = "SendLetter",
         activityName = "Send letter to citizen",
         processLinkId = UUID.randomUUID(),
+    )
+
+    /** A menu-page usage: application-wide, so no case/process parent and no process-link fields. */
+    private fun menuPageUsageDto(configurationId: UUID): PluginUsageDto = PluginUsageDto(
+        configurationId = configurationId,
+        configurationTitle = "Primary CRM",
+        parentType = PluginUsageParentType.GLOBAL,
+        parentKey = null,
+        parentVersionTag = null,
+        menuItemTitle = "CRM overview",
     )
 }
