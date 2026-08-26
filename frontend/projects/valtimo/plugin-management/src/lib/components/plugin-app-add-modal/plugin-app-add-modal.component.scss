@@ -36,6 +36,11 @@
   margin-top: var(--cds-spacing-05);
 }
 
+.plugin-app-add-modal__notification--top {
+  margin-top: 0;
+  margin-bottom: var(--cds-spacing-05);
+}
+
 // Carbon caps inline notifications at a narrow max-width; stretch them to fill the modal so the
 // full message reads as one block instead of a cramped column.
 :host ::ng-deep .plugin-app-add-modal__notification {
