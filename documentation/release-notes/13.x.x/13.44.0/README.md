@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Searchable building block overview
 
-New enhancement explanation.
+The building block overview is now sorted by name, paginated, and searchable by name or key, so a large collection of building blocks stays workable.
 
 ---
 
@@ -24,4 +24,5 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Building blocks | Selecting a field for a mapping works again when the document schema refers to itself |
+| Process links | Changing the building block version keeps the configuration that still applies to the new version |

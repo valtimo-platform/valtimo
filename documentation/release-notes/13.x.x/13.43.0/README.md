@@ -55,10 +55,6 @@ Values passed to a building block are stored in its document, and results are re
 
 When a plugin action property resolves to no value, a debug log entry now names the property, the activity and the process definition, making it easier to trace why an action behaves as if a value was never provided.
 
-### Searchable building block overview
-
-The building block overview is now sorted by name, paginated, and searchable by name or key, so a large collection of building blocks stays workable.
-
 ---
 
 ## Bugfixes
@@ -66,7 +62,6 @@ The building block overview is now sorted by name, paginated, and searchable by 
 | Area | Fix |
 |------|-----|
 | BPMN modeler | Orphaned invisible elements cleaned up on save |
-| Building blocks | Selecting a field for a mapping works again when the document schema refers to itself |
 | Case export | Forms shown in a widget are included in the case export |
 | Case definitions | Configuration warnings disappear when the offending process links or process are removed |
 | Case notes | The options menu of a note is now correctly translated |
@@ -82,7 +77,6 @@ The building block overview is now sorted by name, paginated, and searchable by 
 | Notificaties API | Subscription registration no longer causes a restart loop on startup |
 | Process editor | Exported process definition now named after the process instead of `diagram.bpmn` |
 | Process links | Links no longer leak into another case definition or building block |
-| Process links | Changing the building block version keeps the configuration that still applies to the new version |
 | Process upload | File dialog filters on supported types again; drag-and-drop works for BPMN files and packages |
 | Search fields | Date searches return results with correct date format |
 | Tasks | Tasks of cases that were already running before the upgrade to 13 can be opened again |
