@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import java.net.URI;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -90,7 +92,7 @@ class JsonSchemaTest {
             .isEqualTo("Funenpark");
     }
 
-    /** Concurrent misses may build twice; every caller must still get an equivalent schema. */
+    /** Concurrent misses may build more than once, but every caller must end up on one instance. */
     @Test
     void shouldSettleOnOneSchemaUnderConcurrentFirstUse() throws Exception {
         var schemas = IntStream.range(0, 8)
@@ -102,11 +104,10 @@ class JsonSchemaTest {
                 .map(s -> (Callable<Schema>) s::getSchema)
                 .collect(Collectors.toList());
 
-            Set<Schema> distinct = executor.invokeAll(calls).stream()
-                .map(JsonSchemaTest::get)
-                .collect(Collectors.toCollection(java.util.LinkedHashSet::new));
+            Set<Schema> byIdentity = Collections.newSetFromMap(new IdentityHashMap<>());
+            executor.invokeAll(calls).stream().map(JsonSchemaTest::get).forEach(byIdentity::add);
 
-            assertThat(distinct).hasSize(1);
+            assertThat(byIdentity).hasSize(1);
         } finally {
             executor.shutdownNow();
         }

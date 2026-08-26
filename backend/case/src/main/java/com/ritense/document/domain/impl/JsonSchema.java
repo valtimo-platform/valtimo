@@ -118,11 +118,19 @@ public final class JsonSchema {
         if (cached != null) {
             return cached;
         }
+        // Built outside the lock, so a cold start never serialises builds on one thread. Only admission
+        // is atomic: concurrent callers converge on one schema and the cap cannot be overshot.
         final Schema built = buildSchema();
-        if (BUILT_SCHEMAS.size() >= MAX_BUILT_SCHEMAS) {
-            evictOne();
+        synchronized (BUILT_SCHEMAS) {
+            final Schema raced = BUILT_SCHEMAS.get(schema);
+            if (raced != null) {
+                return raced;
+            }
+            if (BUILT_SCHEMAS.size() >= MAX_BUILT_SCHEMAS) {
+                evictOne();
+            }
+            BUILT_SCHEMAS.put(schema, built);
         }
-        BUILT_SCHEMAS.put(schema, built);
         return built;
     }
 
