@@ -28,6 +28,7 @@ export type {
   SubmitOutput,
   SubmitHandler,
   PluginManifest,
+  PluginTranslations,
   ManifestAction,
   ManifestActionProperty,
   Endpoint,

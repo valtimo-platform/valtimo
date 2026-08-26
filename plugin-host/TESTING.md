@@ -78,11 +78,18 @@ expect(verifyHmac(secret, "POST", path, signature, timestamp, body).valid).toBe(
 Where you'll find these: `security/hmac.test.ts`, `host-functions/gzac-api.test.ts` (with a fake
 plugin call-context and a stubbed `fetch`), `rabbitmq/event-consumer.test.ts` (with a fake message
 library), `models/app-config.test.ts`, `https-options.test.ts`, and in the SDK
-`manifest-validation.test.ts` and `frontend/plugin-frontend-sdk.test.ts`.
+`manifest-validation.test.ts`, `frontend/plugin-frontend-sdk.test.ts` and `scaffold/*.test.ts`.
 
 > **"happy-dom".** The browser-side SDK code expects browser globals like `window`. Node doesn't have
 > those, so that one test file runs in **happy-dom**, a lightweight fake browser. It's switched on per
 > file with a one-line comment at the top (`// @vitest-environment happy-dom`).
+
+> **Two fake terminals.** The scaffold wizard has two prompt harnesses, because it has two
+> front-ends for its bundle question. `scaffold/prompts.test.ts` scripts a stream of *lines*, one per
+> question as it is asked. `scaffold/checkbox.test.ts` fakes a `tty.ReadStream` (`isTTY`, `isRaw`,
+> `setRawMode`) and writes *key sequences* — `ESC [ B` for down, `0x03` for Ctrl-C — one per
+> redraw. In both, feeding the next answer only when the previous prompt has been written is what
+> keeps them deterministic; pushing everything in up front loses all but the first.
 
 ### L2 — Component: send a fake request into a route
 
@@ -209,6 +216,7 @@ Concretely:
 | `app/src/test-support/harness.ts` | Helpers for L2 route tests: build a test app, sign a request, make a config. |
 | `test-fixtures/hmac-vectors.json` | The saved signature examples for the L5 contract tests. |
 | `test-fixtures/test-plugin/` | The small real plugin compiled and run by the L3 tests. |
+| `plugin-sdk/src/test-support/scaffold-fixtures.ts` | Resolved options, and all 64 bundle subsets, for the scaffold generator's tests. |
 | `app/test/wasm/` | The L3 setup that compiles the fixture plugin before the tests. |
 
 ## Conventions
@@ -233,6 +241,7 @@ Concretely:
 | A web route or an auth check | a route test: the success case, every rejection, and an unsigned request → 401 | L2 |
 | Anything about auth, tokens, or permissions | the failure cases (missing / forged / tampered / expired), and confirm the default is "deny" | L1/L2 |
 | The plugin-manifest rules | validation cases; make sure the build tool and the upload endpoint still agree | L1/L5 |
+| The plugin scaffold or its templates | generator unit tests (manifests must pass validatePluginManifest) + the CI scaffold-and-build job | L1 + CI |
 | What a package may call itself (`pluginId`, `version`, `logo`) | rejection cases for anything that could name a path, plus a check that nothing was written outside the storage directory | L1/L2 |
 | Anything that builds a path from a plugin-supplied string | a canonicalisation test proving the string you *check* is the string you *use* | L1 |
 | The Wasm memory cap | patch the module, then let `WebAssembly` judge it: the patched module must still compile and must refuse to grow past the cap | L1 (+L3) |
@@ -270,6 +279,11 @@ proven until a real plugin runs them (L3).
 - **`wasm`** — builds the SDK and fixture, runs the L3 tests. The Wasm toolchain (extism-js +
   binaryen) is downloaded automatically at the versions pinned in `plugin-sdk/bin/toolchain.mjs`;
   bump those pins together with the `@extism/js-pdk` version in the fixture.
+- **`scaffold`** — runs `valtimo-plugin-init` and then builds and packs the generated project, twice:
+  once with `--bundles all` (all six bundle types: `config`, `process-link-action`, `case-tab`,
+  `case-widget`, `task-form`, `page`) and once with `--minimal`. This is the only job that compiles
+  the `plugin-sdk/templates/` sources, which sit outside the SDK's `tsconfig` on purpose, so the
+  `--bundles all` leg is what proves every bundle template still type-checks.
 - **`integration`** — runs the L4 tests against the Docker daemon that comes with the CI runner.
 - **`bootstrap`** — runs the documented one-command setup (`npm run setup -- --ci`) on Linux,
   Windows, and macOS and checks that the sample plugin package is produced.

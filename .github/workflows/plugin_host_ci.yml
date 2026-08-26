@@ -96,6 +96,71 @@ jobs:
         working-directory: plugin-host/app
         run: npm run test:wasm
 
+  # Proves the documented "zero to buildable plugin in one command" path: scaffold a project with
+  # every bundle type, install it, type-check it, and compile + pack it into an uploadable zip.
+  # Also the only place the scaffold's template sources (plugin-sdk/templates/**) are type-checked
+  # and bundled at all — they sit outside the SDK's tsconfig `include` on purpose, because they are
+  # payload rather than compiled code. Ubuntu only: cross-OS toolchain behaviour is already covered
+  # by `bootstrap`, and this job's value is the scaffold path, not the platform matrix.
+  scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: plugin-host/plugin-sdk/package-lock.json
+
+      - name: SDK - install & build
+        working-directory: plugin-host/plugin-sdk
+        run: npm ci && npm run build
+
+      # --sdk file: because @valtimo/plugin-sdk is resolved from this checkout, not the registry.
+      # --yes keeps it non-interactive; --no-install keeps generation and install separate in the log.
+      # --bundles all is spelled out rather than relying on the default, which is `config` alone:
+      # this leg exists to compile all six bundle templates, so it has to name all six.
+      - name: Scaffold a plugin (all bundle types)
+        run: |
+          node plugin-host/plugin-sdk/bin/valtimo-plugin-init.mjs "$RUNNER_TEMP/scaffolded" \
+            --plugin-id ci-scaffold --yes --bundles all --locales en,nl \
+            --sdk "file:$GITHUB_WORKSPACE/plugin-host/plugin-sdk" --no-install
+
+      - name: Scaffolded plugin - install
+        working-directory: ${{ runner.temp }}/scaffolded
+        run: npm install
+
+      # esbuild only transpiles, so without this step nothing would ever type-check the templates.
+      - name: Scaffolded plugin - type-check
+        working-directory: ${{ runner.temp }}/scaffolded
+        run: npx tsc --noEmit
+
+      # Downloads extism-js + binaryen into the toolchain dir on first use, like every other build.
+      - name: Scaffolded plugin - build & pack
+        working-directory: ${{ runner.temp }}/scaffolded
+        run: npm run build:pack
+
+      - name: Verify the package was produced
+        run: test -f "$RUNNER_TEMP/scaffolded/dist/ci-scaffold-0.1.0.zip"
+
+      # The base template is what most authors start from, and it is the only variant that exercises
+      # the no-React, no-frontend dependency set.
+      - name: Scaffold a plugin (--minimal)
+        run: |
+          node plugin-host/plugin-sdk/bin/valtimo-plugin-init.mjs "$RUNNER_TEMP/scaffolded-minimal" \
+            --plugin-id ci-scaffold-minimal --yes --minimal \
+            --sdk "file:$GITHUB_WORKSPACE/plugin-host/plugin-sdk" --no-install
+
+      - name: Scaffolded plugin (--minimal) - install, type-check, build & pack
+        working-directory: ${{ runner.temp }}/scaffolded-minimal
+        run: npm install && npx tsc --noEmit && npm run build:pack
+
+      - name: Verify the minimal package was produced
+        run: test -f "$RUNNER_TEMP/scaffolded-minimal/dist/ci-scaffold-minimal-0.1.0.zip"
+
   # L4 (integration) tests: real Postgres + RabbitMQ via Testcontainers. The ubuntu runner ships a
   # working Docker daemon, which Testcontainers uses directly.
   integration:

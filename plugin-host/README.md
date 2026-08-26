@@ -80,6 +80,37 @@ needed), run `npm run setup`.
 Each package also remains usable on its own — see [`app/README.md`](./app/README.md) and
 [`plugin-sdk/README.md`](./plugin-sdk/README.md) — as long as the SDK is installed and built first.
 
+### Starting a new plugin
+
+The SDK scaffolds a complete, buildable plugin project in one command — `manifest.json`,
+`package.json`, `tsconfig.json`, and `src/plugin.ts` with a registered action, plus an optional
+`onEvent` handler and any of the six frontend bundle types:
+
+```bash
+# from plugin-host/, with the SDK already built (npm run setup does that)
+node plugin-sdk/bin/valtimo-plugin-init.mjs ~/tmp/my-plugin --sdk "file:$PWD/plugin-sdk"
+cd ~/tmp/my-plugin && npm run build:pack        # -> dist/my-plugin-0.1.0.zip
+```
+
+On a terminal it asks which bundles to generate; non-interactively, `--bundles` says the same thing:
+
+```bash
+node plugin-sdk/bin/valtimo-plugin-init.mjs ~/tmp/my-plugin --yes \
+  --bundles config,case-tab,page --sdk "file:$PWD/plugin-sdk"
+```
+
+`--bundles all` gives one of every type, `--bundles none` gives a backend-only plugin, and the
+default is `config` alone. `--sdk file:…` is needed for in-repo work because `@valtimo/plugin-sdk`
+is not on npm yet; from a published SDK the command is
+`npx --package @valtimo/plugin-sdk valtimo-plugin-init my-plugin` and the default `^<version>` range
+resolves on its own. Upload the result with `npm run plugin:upload -- <zip>`. See the
+[SDK README](./plugin-sdk/README.md#valtimo-plugin-init) for the wizard, the flags, and what each
+bundle generates.
+
+`sample-plugins/case-summary` is the reference for everything the scaffold deliberately leaves out:
+`gzacApi` callbacks into GZAC, outbound `http_request` with egress grants, the `kv` store, several
+bundles of the same type, and the other two levels of task-form submission.
+
 ### Calling the admin API by hand
 
 `npm run plugin:upload` performs the signed upload for you on any OS. When you want to explore the
@@ -143,4 +174,5 @@ This starts both PostgreSQL and the Plugin Host. Plugin binaries persist to a Do
 
 - [Plugin Host README](./app/README.md) — API reference, configuration, events
 - [Plugin SDK README](./plugin-sdk/README.md) — Building plugins, SDK API
+- [`valtimo-plugin-init`](./plugin-sdk/README.md#valtimo-plugin-init) — Scaffolding a new plugin project
 - [Case Summary Plugin](./sample-plugins/case-summary/README.md) — Example with GZAC callbacks
