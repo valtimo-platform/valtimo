@@ -147,7 +147,7 @@ class ProcessMigrationComponentSuggester(
                 val sourceName = processActivityMapper.processDefinitionName(sourceDefinitionId) ?: sourceKey
 
                 val counterpart = if (buildingBlockEntry) {
-                    entryPairs[sourceKey] ?: return@mapNotNull null
+                    entryPairs[sourceKey] ?: return@mapNotNull unpairedEntryProcess(sourceKey, source, target)
                 } else if (sameBlueprint) {
                     targetsByKey[sourceKey] ?: return@mapNotNull unmapped(
                         sourceKey, sourceName, target, targetProcessDefinitions, relocated,
@@ -211,6 +211,37 @@ class ProcessMigrationComponentSuggester(
             "Process '$sourceKey' has no counterpart in '$target' ($nearest) and no building block it " +
                 "declares owns it either, so it is suggested with no target for the author to complete or " +
                 "remove. Left as it is, instances running it stay where they are."
+        }
+        return UnmappedProcess(sourceProcessDefinitionKey = sourceKey)
+    }
+
+    /**
+     * What to say about a process of an entry [pairForEntry] would not pair: a blank-target row when the
+     * entry is **dissolving** the blueprint that owns it, and nothing otherwise.
+     *
+     * The asymmetry is the executor's. A `removeBuildingBlock` entry has to hand every process of the
+     * block back to the owner or `RemoveBuildingBlockMigrationComponentExecutor` refuses to dissolve it —
+     * *"its process is still running and was not handed back"* — so an unpaired process is a case that
+     * will fail, from an entry that reads as complete. A blank target is refused on save instead, by a
+     * validator that names the entry, which is the difference between work an author can see and a run
+     * that dies. The other direction has no such consequence: `addBuildingBlock` takes over a process the
+     * owner is running *if* one is named, and creates the block by adoption otherwise, so an owner
+     * process nobody paired is simply a process that stays where it is — and there are as many of them
+     * as the owner has processes, which is the fan-out G46 removed.
+     */
+    private fun unpairedEntryProcess(
+        sourceKey: String,
+        source: BlueprintId,
+        target: BlueprintId,
+    ): UnmappedProcess? {
+        if (source.blueprintType() != BlueprintType.BUILDING_BLOCK) {
+            return null
+        }
+        logger.info {
+            "No process of '$target' could be paired with '$sourceKey' of '$source', which this entry " +
+                "dissolves, so it is suggested with no target. A building block whose process is not " +
+                "handed back cannot be dissolved, so this is work the plan needs rather than a blank to " +
+                "leave: name the owner process it should be migrated onto, or drop the entry."
         }
         return UnmappedProcess(sourceProcessDefinitionKey = sourceKey)
     }

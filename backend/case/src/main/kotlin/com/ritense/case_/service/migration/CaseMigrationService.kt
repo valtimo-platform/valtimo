@@ -37,6 +37,7 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
+import com.ritense.valtimo.contract.blueprint.migration.MigrationRunCache
 import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
@@ -369,23 +370,27 @@ class CaseMigrationService(
         var matchedCount = 0
         var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
 
-        while (true) {
-            val page = provider.findCandidateIds(source, pageable)
+        // The scan is the run: `target` is fixed here and every case below asks the same questions of it
+        // (G31). Wrapped around the loop, not startMigration, so finalize() stays outside it.
+        MigrationRunCache.inRun {
+            while (true) {
+                val page = provider.findCandidateIds(source, pageable)
 
-            page.content.forEach { caseId ->
-                if (matchesConditions(migrationId, plan, caseId, runToken)) {
-                    matchedCount++
-                    migrateCase(migrationId, target, caseId, runToken)
+                page.content.forEach { caseId ->
+                    if (matchesConditions(migrationId, plan, caseId, runToken)) {
+                        matchedCount++
+                        migrateCase(migrationId, target, caseId, runToken)
+                    }
+                    if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
+                        renewLease(migrationId, runToken)
+                        leaseRenewedAt = LocalDateTime.now()
+                    }
                 }
-                if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
-                    renewLease(migrationId, runToken)
-                    leaseRenewedAt = LocalDateTime.now()
-                }
+
+                updateExecution(migrationId, runToken) { it.casesToMigrate = matchedCount }
+                if (!page.hasNext()) break
+                pageable = page.nextPageable()
             }
-
-            updateExecution(migrationId, runToken) { it.casesToMigrate = matchedCount }
-            if (!page.hasNext()) break
-            pageable = page.nextPageable()
         }
     }
 
@@ -613,21 +618,25 @@ class CaseMigrationService(
         var leaseRenewedAt = LocalDateTime.now()
         var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
 
-        while (true) {
-            val page = provider.findCandidateIds(source, pageable)
+        // Cached for the scan, as in migrateMatchingCases. In memory rather than in the transaction, so a
+        // dry run's per-case rollback neither undoes it nor is affected by it.
+        MigrationRunCache.inRun {
+            while (true) {
+                val page = provider.findCandidateIds(source, pageable)
 
-            page.content.forEach { caseId ->
-                if (matchesConditionsForDryRun(migrationId, plan, caseId, runToken)) {
-                    simulateCase(migrationId, target, caseId, runToken)
+                page.content.forEach { caseId ->
+                    if (matchesConditionsForDryRun(migrationId, plan, caseId, runToken)) {
+                        simulateCase(migrationId, target, caseId, runToken)
+                    }
+                    if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
+                        renewDryRunLease(migrationId, runToken)
+                        leaseRenewedAt = LocalDateTime.now()
+                    }
                 }
-                if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
-                    renewDryRunLease(migrationId, runToken)
-                    leaseRenewedAt = LocalDateTime.now()
-                }
+
+                if (!page.hasNext()) break
+                pageable = page.nextPageable()
             }
-
-            if (!page.hasNext()) break
-            pageable = page.nextPageable()
         }
     }
 

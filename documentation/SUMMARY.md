@@ -15,6 +15,7 @@
 * [Users, roles and permissions](fundamentals/roles-permissions.md)
 
 ## Tutorials
+
 * Setting up a case
 
 ## Configuration guides
@@ -25,7 +26,11 @@
     * [Actions](configuration-guides/cases/actions.md)
     * [Decision tables](configuration-guides/cases/decision-tables.md)
     * [Document](configuration-guides/cases/document.md)
-    * [Migration](configuration-guides/cases/migration.md)
+    * [Migration](configuration-guides/cases/migration/README.md)
+        * [Conditions](configuration-guides/cases/migration/conditions.md)
+        * [Source and target](configuration-guides/cases/migration/source-and-target.md)
+        * [Building blocks](configuration-guides/cases/migration/building-blocks.md)
+        * [Running a plan](configuration-guides/cases/migration/running-a-plan.md)
     * [Forms](configuration-guides/cases/forms.md)
     * [Form flows](configuration-guides/cases/form-flows.md)
     * [Tasks](configuration-guides/cases/tasks/README.md)
@@ -47,6 +52,7 @@
 * [🧱 Building blocks](configuration-guides/building-blocks/README.md)
     * [General](configuration-guides/building-blocks/general.md)
     * [Document](configuration-guides/building-blocks/document.md)
+    * [Migration](configuration-guides/building-blocks/migration.md)
     * [Processes](configuration-guides/building-blocks/processes.md)
     * [Forms](configuration-guides/building-blocks/forms.md)
     * [Form flows](configuration-guides/building-blocks/form-flows.md)
@@ -62,8 +68,9 @@
     * [Context conditions](configuration-guides/access-control/context-conditions.md)
 
 ## Release notes
+
 * [13.x.x](release-notes/13.x.x/)
-  * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
+    * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
 
 ## Support
 

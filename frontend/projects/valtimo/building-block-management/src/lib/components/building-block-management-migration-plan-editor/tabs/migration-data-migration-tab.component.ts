@@ -152,15 +152,20 @@ export class BbMigrationDataMigrationTabComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Derive the edit mode from a stored patch: a source copy, a literal value, or null. A patch with
-   * no source and no value (e.g. a target-only suggestion `{target: 'doc:/x'}`) clears the target, so
-   * it is 'null' — only a brand-new, empty patch defaults to 'path'.
+   * Derive the edit mode from a stored patch: a source copy, a literal value, or null.
+   *
+   * An explicit `value: null` is a clearing patch — the target version does not have this field — and
+   * a patch with **neither** a source nor a `value` key is a copy whose source is not filled in yet,
+   * which is what the suggester returns for a field it could not pair. The engine applies both as a
+   * null write, so they were the same three bytes on the wire and read as the same finished row; they
+   * are now told apart, and the unfinished one opens on the source selector it is waiting for.
    */
   private modeOf(patch?: DataMigrationPatch): PatchMode {
     if (!patch) return 'path';
     if (patch.source) return 'path';
-    if (patch.value !== undefined && patch.value !== null) return 'value';
-    return 'null';
+    if (patch.value === null) return 'null';
+    if (patch.value !== undefined) return 'value';
+    return 'path';
   }
 
   private emit(): void {

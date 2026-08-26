@@ -312,12 +312,28 @@ class ProcessMigrationComponentSuggesterTest {
         // The measured shape, in the `remove` direction: dissolving `uitvoeren-business-services` out of
         // `aanvraag-ioaw-uitkering-dcm:1.0.0` suggested 44 instructions onto 11 targets, 18 of the block's
         // processes all aimed at one. A hijack takes over ONE running process; nearest match cannot say
-        // which, so it says nothing and logs the closest candidate for each.
+        // which, so it pairs nothing — and says so per process, since a block whose process is not handed
+        // back cannot be dissolved at all.
         val block = buildingBlock("uitvoeren-business-services", "1.0.0")
         processes(block, "alo-annuleren-business-services", "bsb-211-vaststelling-persoon-aanvrager")
         processes(target, "ioaw-start-annuleren-informatieverzoek-dcm", "ioaw-start-intrekken-aanvraag")
 
-        assertThat(suggester.suggestForBuildingBlockEntry(block, target)).isNull()
+        assertThat(entryPairs(block, target)).containsExactly(
+            "alo-annuleren-business-services" to null,
+            "bsb-211-vaststelling-persoon-aanvrager" to null,
+        )
+    }
+
+    @Test
+    fun `should say nothing about an owner process no entry could be paired with`() {
+        // The mirror of the case above, and deliberately not symmetric: an owner process nobody paired is
+        // a process that stays where it is, whereas a block process nobody paired is a case that fails.
+        // There are also as many of them as the owner has processes — the fan-out G46 removed.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "ab-verversen-brongegevens")
+        processes(block, "alo-annuleren-business-services", "bsb-211-vaststelling-persoon-aanvrager")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block)).isNull()
     }
 
     @Test
@@ -357,7 +373,12 @@ class ProcessMigrationComponentSuggesterTest {
         val asPlan = suggester.suggest(from, to) as List<ProcessMigrationInstruction>
         assertThat(asPlan.map { it.sourceProcessDefinitionKey })
             .containsExactly("bs-ophalen-brp-adres", "bs-ophalen-brp-persoonsgegevens")
-        assertThat(suggester.suggestForBuildingBlockEntry(from, to)).isNull()
+        // Read as an entry it pairs nothing — and, the source being the block the entry dissolves, says
+        // so per process instead of leaving the entry looking finished.
+        assertThat(entryPairs(from, to)).containsExactly(
+            "bs-ophalen-brp-adres" to null,
+            "bs-ophalen-brp-persoonsgegevens" to null,
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -391,6 +412,14 @@ class ProcessMigrationComponentSuggesterTest {
             node.get("sourceProcessDefinitionKey").asText() to
                 node.get("targetProcessDefinitionKey")?.takeIf { it.isTextual }?.asText()
         }
+
+    /** (source, target) of every row suggested for one building-block entry. */
+    private fun entryPairs(entrySource: BlueprintId, entryTarget: BlueprintId): List<Pair<String, String?>> =
+        objectMapper.valueToTree<JsonNode>(suggester.suggestForBuildingBlockEntry(entrySource, entryTarget))
+            .map { node ->
+                node.get("sourceProcessDefinitionKey").asText() to
+                    node.get("targetProcessDefinitionKey")?.takeIf { it.isTextual }?.asText()
+            }
 
     /** The suggestion as the editor receives it — the shape is the point, a null target included. */
     private fun suggestedJson(): String =

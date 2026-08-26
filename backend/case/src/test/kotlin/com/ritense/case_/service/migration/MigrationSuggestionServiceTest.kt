@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
+import com.ritense.valtimo.contract.blueprint.migration.BuildingBlockEntryOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -225,6 +226,30 @@ class MigrationSuggestionServiceTest {
         assertThat(plan.get("migrationTriggers").get("triggeredByButton").asBoolean()).isTrue()
     }
 
+    @Test
+    fun `a nested entry's owner is the block that declares it, not the blueprint being migrated`() {
+        val case = CaseDefinitionId("woninginspectie", "1.0.4")
+        val parent = BuildingBlockDefinitionId("verhuizing-inspectie", "1.0.5")
+        val nested = BuildingBlockDefinitionId("inspectie-dossier", "1.0.0")
+        val service = suggestionService(entryOwners = mapOf(nested to parent))
+
+        assertThat(service.entryOwnerOf(case, nested)).isEqualTo(parent)
+        assertThat(service.describeEntryOwner(parent).get("type").asText()).isEqualTo("BUILDING_BLOCK")
+        assertThat(service.describeEntryOwner(parent).get("key").asText()).isEqualTo("verhuizing-inspectie")
+        assertThat(service.describeEntryOwner(parent).get("versionTag").asText()).isEqualTo("1.0.5")
+    }
+
+    @Test
+    fun `an entry's owner is the migrating blueprint when nothing above the block declares it`() {
+        // Also the answer for a deployment with no building blocks at all, where nothing implements the
+        // ownership contract — which is what the endpoint did before it asked.
+        val case = CaseDefinitionId("woninginspectie", "1.0.4")
+        val block = BuildingBlockDefinitionId("verhuizing-inspectie", "1.0.5")
+
+        assertThat(suggestionService().entryOwnerOf(case, block)).isEqualTo(case)
+        assertThat(suggestionService(entryOwners = emptyMap()).entryOwnerOf(case, block)).isEqualTo(case)
+    }
+
     private fun throwingSuggester(componentKey: String) = object : MigrationComponentSuggester {
         override fun componentKey() = componentKey
         override fun suggest(source: BlueprintId, target: BlueprintId): Any =
@@ -238,6 +263,7 @@ class MigrationSuggestionServiceTest {
         processMigration: Any? = null,
         lineage: BlueprintVersionLineage? = null,
         componentValidator: MigrationComponentValidator? = null,
+        entryOwners: Map<BuildingBlockDefinitionId, BlueprintId>? = null,
     ) = MigrationSuggestionService(
         objectMapper = objectMapper,
         versionLineages = listOfNotNull(lineage),
@@ -248,7 +274,15 @@ class MigrationSuggestionServiceTest {
         activityMappingSuggesters = emptyList(),
         activityMappingValidators = emptyList(),
         componentValidators = listOfNotNull(componentValidator),
+        buildingBlockEntryOwnerships = entryOwners?.let { listOf(entryOwnership(it)) } ?: emptyList(),
     )
+
+    private fun entryOwnership(owners: Map<BuildingBlockDefinitionId, BlueprintId>) =
+        object : BuildingBlockEntryOwnership {
+            override fun supports(blueprintType: BlueprintType) = true
+            override fun entryOwnerOf(migratingOwner: BlueprintId, block: BuildingBlockDefinitionId) =
+                owners[block] ?: migratingOwner
+        }
 
     private fun suggester(componentKey: String, suggestion: Any) = object : MigrationComponentSuggester {
         override fun componentKey() = componentKey

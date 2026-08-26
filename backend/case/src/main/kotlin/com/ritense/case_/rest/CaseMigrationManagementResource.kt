@@ -122,9 +122,24 @@ class CaseMigrationManagementResource(
     }
 
     /**
-     * A best-effort `{ dataMigration, processMigration }` for one building-block entry of this case
-     * plan. `mode=add` moves data/process from the owner case into the building block; `mode=remove`
-     * moves them back from the building block to the owner case.
+     * A best-effort `{ dataMigration, processMigration, owner }` for one building-block entry of this
+     * case plan. `mode=add` moves data/process from the entry's owner into the building block;
+     * `mode=remove` moves them back out of it.
+     *
+     * **That owner is not always the case.** A nested block is filled from, and handed back to, the
+     * block above it, and the executors read that from the running tree rather than from the plan — so
+     * this asks the same walk the plan-level suggesters use ([MigrationSuggestionService.entryOwnerOf])
+     * instead of assuming the case. It used to assume, and the two suggestion paths then contradicted
+     * each other on the same entry: the plan proposed patches against the parent block's document while
+     * re-suggesting that entry in the editor proposed the case's, whose processes the executor refuses.
+     *
+     * The tree is read against the version that still models the block: the plan's **source** for a
+     * removal ([sourceKey] / [sourceVersionTag], which the editor knows and passes), and this version
+     * for an addition. Without a source the target's tree is the best available answer.
+     *
+     * `owner` is echoed back because the editor cannot work it out either: it scopes the value-path and
+     * process pickers, which were showing the case's fields for an entry whose patches address a
+     * building block's document.
      */
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block")
@@ -134,12 +149,20 @@ class CaseMigrationManagementResource(
         @RequestParam buildingBlockKey: String,
         @RequestParam buildingBlockVersionTag: String,
         @RequestParam(defaultValue = "add") mode: String,
+        @RequestParam(required = false) sourceKey: String?,
+        @RequestParam(required = false) sourceVersionTag: String?,
     ): ResponseEntity<JsonNode> {
-        val owner = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        val target = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        val source = sourceVersionTag?.takeUnless { it.isBlank() }?.let {
+            CaseDefinitionId(sourceKey?.takeUnless { key -> key.isBlank() } ?: caseDefinitionKey, it)
+        }
         val block = BuildingBlockDefinitionId(buildingBlockKey, buildingBlockVersionTag)
+        val removing = mode == "remove"
+        val owner = migrationSuggestionService.entryOwnerOf(if (removing) source ?: target else target, block)
         val suggestion =
-            if (mode == "remove") migrationSuggestionService.suggestBuildingBlockEntry(block, owner)
+            if (removing) migrationSuggestionService.suggestBuildingBlockEntry(block, owner)
             else migrationSuggestionService.suggestBuildingBlockEntry(owner, block)
+        suggestion.set<JsonNode>("owner", migrationSuggestionService.describeEntryOwner(owner))
         return ResponseEntity.ok(suggestion)
     }
 

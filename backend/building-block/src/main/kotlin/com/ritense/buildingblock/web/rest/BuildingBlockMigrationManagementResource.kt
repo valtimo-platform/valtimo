@@ -122,9 +122,14 @@ class BuildingBlockMigrationManagementResource(
     }
 
     /**
-     * A best-effort `{ dataMigration, processMigration }` for one building-block entry of this
+     * A best-effort `{ dataMigration, processMigration, owner }` for one building-block entry of this
      * building block plan — a block *nested* inside the one the plan targets. `mode=add` moves
-     * data/process from the owner building block into the nested one; `mode=remove` moves them back.
+     * data/process from the entry's owner into the nested block; `mode=remove` moves them back.
+     *
+     * The twin of the case resource's endpoint, including its correction: the owner is the blueprint
+     * whose call activity **declares** the block, which for a block two levels down is the block in
+     * between rather than the one this plan targets. See that endpoint for the argument, and
+     * [MigrationSuggestionService.entryOwnerOf] for the walk.
      */
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block")
@@ -134,12 +139,20 @@ class BuildingBlockMigrationManagementResource(
         @RequestParam buildingBlockKey: String,
         @RequestParam buildingBlockVersionTag: String,
         @RequestParam(defaultValue = "add") mode: String,
+        @RequestParam(required = false) sourceKey: String?,
+        @RequestParam(required = false) sourceVersionTag: String?,
     ): ResponseEntity<JsonNode> {
-        val owner = BuildingBlockDefinitionId(key, versionTag)
+        val target = BuildingBlockDefinitionId(key, versionTag)
+        val source = sourceVersionTag?.takeUnless { it.isBlank() }?.let {
+            BuildingBlockDefinitionId(sourceKey?.takeUnless { candidate -> candidate.isBlank() } ?: key, it)
+        }
         val nested = BuildingBlockDefinitionId(buildingBlockKey, buildingBlockVersionTag)
+        val removing = mode == "remove"
+        val owner = migrationSuggestionService.entryOwnerOf(if (removing) source ?: target else target, nested)
         val suggestion =
-            if (mode == "remove") migrationSuggestionService.suggestBuildingBlockEntry(nested, owner)
+            if (removing) migrationSuggestionService.suggestBuildingBlockEntry(nested, owner)
             else migrationSuggestionService.suggestBuildingBlockEntry(owner, nested)
+        suggestion.set<JsonNode>("owner", migrationSuggestionService.describeEntryOwner(owner))
         return ResponseEntity.ok(suggestion)
     }
 

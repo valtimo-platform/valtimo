@@ -19,6 +19,7 @@ import {Injectable} from '@angular/core';
 import {BaseApiService, CaseManagementParams, ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
+  BuildingBlockEntrySuggestion,
   DataMigrationPatch,
   DryRunStatus,
   MigrationExecutionStatus,
@@ -139,19 +140,34 @@ export class CaseMigrationApiService extends BaseApiService {
     );
   }
 
-  /** A best-effort `dataMigration` + `processMigration` suggestion for one building-block entry. */
+  /**
+   * A best-effort `dataMigration` + `processMigration` suggestion for one building-block entry, with
+   * the `owner` it was computed against.
+   *
+   * The owner is not always this case: a nested building block exchanges data and processes with the
+   * block that declares it, which is what the executors read from the running tree. The plan's source
+   * is passed because a `remove` entry names a block the *source* version still models, and it is that
+   * version's tree the owner has to be resolved in.
+   */
   public suggestBuildingBlockEntry(
     params: CaseManagementParams,
     buildingBlockKey: string,
     buildingBlockVersionTag: string,
-    mode: 'add' | 'remove'
-  ): Observable<{dataMigration: DataMigrationPatch[]; processMigration: ProcessMigrationInstruction[]}> {
-    return this.httpClient.get<{
-      dataMigration: DataMigrationPatch[];
-      processMigration: ProcessMigrationInstruction[];
-    }>(`${this.getMigrationUrl(params)}/suggestion/building-block`, {
-      params: {buildingBlockKey, buildingBlockVersionTag, mode},
-    });
+    mode: 'add' | 'remove',
+    source?: MigrationPlanSource | null
+  ): Observable<BuildingBlockEntrySuggestion> {
+    return this.httpClient.get<BuildingBlockEntrySuggestion>(
+      `${this.getMigrationUrl(params)}/suggestion/building-block`,
+      {
+        params: {
+          buildingBlockKey,
+          buildingBlockVersionTag,
+          mode,
+          ...(source?.key ? {sourceKey: source.key} : {}),
+          ...(source?.versionTag ? {sourceVersionTag: source.versionTag} : {}),
+        },
+      }
+    );
   }
 
   public deletePlan(params: CaseManagementParams, migrationKey: string): Observable<void> {

@@ -180,6 +180,25 @@ interface RemoveBuildingBlockInstruction {
 }
 
 /**
+ * The blueprint an `addBuildingBlock` / `removeBuildingBlock` entry exchanges data and processes with:
+ * the case being migrated for a block it links itself, and the **parent building block** for a nested
+ * one — which is what the executors read from the running tree, and therefore which document a nested
+ * entry's patches address.
+ */
+interface BuildingBlockEntryOwner {
+  type: 'CASE' | 'BUILDING_BLOCK';
+  key: string;
+  versionTag: string;
+}
+
+/** One building-block entry as suggested, with the owner the suggestion was computed against. */
+interface BuildingBlockEntrySuggestion {
+  dataMigration: DataMigrationPatch[];
+  processMigration: ProcessMigrationInstruction[];
+  owner?: BuildingBlockEntryOwner;
+}
+
+/**
  * The blueprint version a plan migrates instances FROM. Required on every plan: the target is implied
  * by the definition version the plan is deployed under, but the source never is. It may name any
  * earlier version, and a different `key` altogether — which is how a case definition is replaced by a
@@ -225,5 +244,7 @@ export {
   ProcessMigrationInstruction,
   AddBuildingBlockInstruction,
   RemoveBuildingBlockInstruction,
+  BuildingBlockEntryOwner,
+  BuildingBlockEntrySuggestion,
   MigrationPlan,
 };

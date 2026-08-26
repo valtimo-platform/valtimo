@@ -104,6 +104,7 @@
         [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
         [caseProcessDefinitions]="$targetProcessDefs()"
         [instructions]="$plan().addBuildingBlock"
+        [planSource]="$plan().source ?? null"
         (instructionsChange)="onAddBuildingBlockChange($event)"
       ></valtimo-migration-building-block-tab>
     </cds-tab>
@@ -132,6 +133,7 @@
         [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
         [caseProcessDefinitions]="$targetProcessDefs()"
         [instructions]="$plan().removeBuildingBlock"
+        [planSource]="$plan().source ?? null"
         (instructionsChange)="onRemoveBuildingBlockChange($event)"
       ></valtimo-migration-building-block-tab>
     </cds-tab>

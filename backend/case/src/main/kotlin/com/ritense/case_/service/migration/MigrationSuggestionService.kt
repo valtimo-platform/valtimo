@@ -27,8 +27,10 @@ import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingSuggester
 import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingValidator
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
+import com.ritense.valtimo.contract.blueprint.migration.BuildingBlockEntryOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -44,6 +46,7 @@ class MigrationSuggestionService(
     private val activityMappingSuggesters: List<ActivityMappingSuggester>,
     private val activityMappingValidators: List<ActivityMappingValidator>,
     private val componentValidators: List<MigrationComponentValidator>,
+    private val buildingBlockEntryOwnerships: List<BuildingBlockEntryOwnership> = emptyList(),
 ) {
 
     /**
@@ -214,6 +217,28 @@ class MigrationSuggestionService(
         )
         return node
     }
+
+    /**
+     * The blueprint version an entry for [block] exchanges data and processes with, when the entry is
+     * read against [migratingOwner]'s tree — the parent block for a nested block, [migratingOwner]
+     * itself otherwise. See [BuildingBlockEntryOwnership]; without an implementation (a deployment with
+     * no building blocks) the answer is always [migratingOwner], which is what it was before this was
+     * asked at all.
+     */
+    fun entryOwnerOf(migratingOwner: BlueprintId, block: BuildingBlockDefinitionId): BlueprintId =
+        buildingBlockEntryOwnerships
+            .firstOrNull { it.supports(migratingOwner.blueprintType()) }
+            ?.entryOwnerOf(migratingOwner, block)
+            ?: migratingOwner
+
+    /**
+     * [entryOwnerOf] as the editor reads it: the type tells it which pickers to build — a case document
+     * and the case's processes, or a building block's.
+     */
+    fun describeEntryOwner(owner: BlueprintId): ObjectNode = objectMapper.createObjectNode()
+        .put("type", owner.blueprintType().name)
+        .put("key", owner.getIdKey())
+        .put("versionTag", owner.blueprintVersionTag().toString())
 
     private fun suggestComponent(componentKey: String, source: BlueprintId, target: BlueprintId): Any? =
         componentSuggesters.firstOrNull { it.componentKey() == componentKey }?.suggest(source, target)

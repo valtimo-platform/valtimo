@@ -96,6 +96,25 @@ interface MigrationPlanSource {
 }
 
 /**
+ * The blueprint an `addBuildingBlock` / `removeBuildingBlock` entry exchanges data and processes with:
+ * the building block this plan targets for a block it declares itself, and the **block in between**
+ * for one nested deeper — which is what the executors read from the running tree, and therefore which
+ * document a nested entry's patches address.
+ */
+interface BuildingBlockEntryOwner {
+  type: 'CASE' | 'BUILDING_BLOCK';
+  key: string;
+  versionTag: string;
+}
+
+/** One building-block entry as suggested, with the owner the suggestion was computed against. */
+interface BuildingBlockEntrySuggestion {
+  dataMigration: DataMigrationPatch[];
+  processMigration: ProcessMigrationInstruction[];
+  owner?: BuildingBlockEntryOwner;
+}
+
+/**
  * One `addBuildingBlock` entry: a building block to create *inside* the migrating building block,
  * filled from the owner by its own `dataMigration` and taking over one of the owner's processes by
  * its own `processMigration`.
@@ -134,6 +153,8 @@ interface MigrationPlan {
 }
 
 export {
+  BuildingBlockEntryOwner,
+  BuildingBlockEntrySuggestion,
   BuildingBlockMigrationStatus,
   BuildingBlockMigrationParams,
   MigrationExecutionError,

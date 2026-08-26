@@ -16,6 +16,7 @@
 
 package com.ritense.case_.service.migration
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
@@ -24,6 +25,7 @@ import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionRequest
 import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.ValueResolverService
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Best-effort `dataMigration` suggestion. Where the migration keeps **one document** the JSON is
@@ -38,7 +40,11 @@ import com.ritense.valueresolver.ValueResolverService
  * - a target that **found no source** gets a copy patch with a `null` source, surfacing the field
  *   so the user can point it at the right source;
  * - a source that was **matched to no target** gets a patch that sets it to `null`, clearing the
- *   stale value carried over by the verbatim copy.
+ *   stale value carried over by the verbatim copy — written out as an explicit `value: null` so the
+ *   two are not the same row on the wire, see [ClearingPatch].
+ *
+ * Nothing at all is suggested when the **source** resolves no path: the only patches left to make
+ * would be bare targets, which the applier writes as nulls.
  *
  * An object container node is itself a resolvable path (`doc:/applicant` alongside
  * `doc:/applicant/name`), so a whole subtree the target version dropped used to yield one clearing
@@ -60,6 +66,27 @@ import com.ritense.valueresolver.ValueResolverService
  * two copies into one new subtree — a lexicographic sort keeps the ancestor first (a prefix always
  * sorts before its extensions), which is the order that leaves the more specific patch winning.
  */
+/**
+ * A clearing patch — "the target version does not have this field, so empty it" — as it is
+ * *suggested*, with its `value: null` written out.
+ *
+ * [DataMigrationPatch] is `@JsonInclude(NON_NULL)`, so a clearing patch and a copy patch whose source
+ * could not be worked out both serialise to `{"target": "doc:/x"}`, and neither the editor nor the
+ * author can tell which one they are looking at. They read as opposites — one says "this field is
+ * going away", the other "point me at the field this came from" — and only one of them is finished
+ * work. The applier treats both as a literal null write (`MigrationDataPatchApplier` resolves a patch
+ * with no `source` to its `value`), so an accepted suggestion does the right thing for a clear and
+ * quietly writes a null for an unfinished copy.
+ *
+ * Suggestion-only, like `ProcessMigrationComponentSuggester.UnmappedProcess`: a saved plan
+ * deserialises both back into [DataMigrationPatch], where the two are the same instruction and always
+ * were.
+ */
+internal data class ClearingPatch(
+    val target: String,
+    @get:JsonInclude(JsonInclude.Include.ALWAYS) val value: Any? = null,
+)
+
 class DataMigrationComponentSuggester(
     private val valueResolverService: ValueResolverService,
 ) : MigrationComponentSuggester {
@@ -92,6 +119,21 @@ class DataMigrationComponentSuggester(
             ValueResolverOptionRequest(prefixes = listOf(DOCUMENT_PREFIX), type = ValueResolverOptionType.FIELD)
         val sourcePaths = fieldPaths(valueResolverService.getResolvableKeys(request, source))
         val targetPaths = fieldPaths(valueResolverService.getResolvableKeys(request, target))
+
+        // A source that offers no path at all has nothing to copy and nothing to clear, so every patch
+        // that could be suggested would be a bare target — which the applier writes as a literal null.
+        // For a plan naming a source version that was never deployed (`verhuizing:9.9.9`) that is a
+        // suggestion which empties the document field by field, and the author cannot see it coming:
+        // the rows look like the ordinary "fill this in" rows. Nothing is the honest answer.
+        if (sourcePaths.isEmpty()) {
+            logger.info {
+                "'$source' resolves no document path, so no 'dataMigration' is suggested for '$target'. " +
+                    "Either it is not deployed — a plan that names it migrates nothing (G16) — or its " +
+                    "schema is empty, and either way there is no value to carry over."
+            }
+            return null
+        }
+
         val sourcePathSet = sourcePaths.toSet()
         val targetPathSet = targetPaths.toSet()
 
@@ -126,11 +168,17 @@ class DataMigrationComponentSuggester(
         } else {
             collapseToRoots(
                 sourcePaths.filter { sourcePath -> sourcePath !in targetPathSet && sourcePath !in matchedSources }
-            ).map { removedPath -> DataMigrationPatch(value = null, target = removedPath) }
+            ).map { removedPath -> ClearingPatch(target = removedPath) }
         }
 
-        return (identityCopies + copies + removals).sortedBy { it.target }.ifEmpty { null }
+        // Sorted by target across all three kinds, which is why they are carried with their target
+        // rather than sorted as one list: a clearing patch is a different shape on the wire.
+        val suggested = identityCopies.map { it.target to it } +
+            copies.map { it.target to it } +
+            removals.map { it.target to it }
+        return suggested.sortedBy { (target, _) -> target }.map { (_, patch) -> patch }.ifEmpty { null }
     }
+
 
     /**
      * Keeps only the paths no *ancestor* in the same list already covers, so a subtree is patched once
@@ -199,6 +247,8 @@ class DataMigrationComponentSuggester(
         LcsDistance.similarityOf(a.lowercase(), b.lowercase())
 
     private companion object {
+        val logger = KotlinLogging.logger {}
+
         const val DOCUMENT_PREFIX = "doc"
 
         /** Field-name delimiters, tried in priority order to isolate the segment after the last one. */

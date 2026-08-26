@@ -23,12 +23,13 @@ import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefini
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationRunCache
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.operaton.findBpmnModelInstanceOrNull
 import com.ritense.valtimo.operaton.findProcessDefinitionOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.operaton.bpm.model.bpmn.instance.CallActivity
 
 /**
@@ -142,60 +143,105 @@ class LinkedBuildingBlockVersionResolver(
      * activity at runtime: the **process definition key** whose BPMN contains it, and its activity id.
      *
      * The whole index in one walk, because a caller resolving links hop by hop pays the walk each time:
-     * [resolveCallActivityLink] reads `blueprintsInTreeOf`, which for a real configuration means a BFS over
-     * a hundred blueprints, a `findByProcessDefinitionId` per process definition and a parsed BPMN model
-     * per definition. `AddBuildingBlockMigrationComponentExecutor` needs it once per hop the plan leaves as
-     * a plain sub-process, which in the configuration this was built for is dozens per case (G31). So it
-     * takes the index once per instance it migrates and looks up in memory after that.
+     * for a real configuration that is a BFS over a hundred blueprints, a `findByProcessDefinitionId` per
+     * process definition and a parsed BPMN model per definition.
+     * `AddBuildingBlockMigrationComponentExecutor` needs it once per hop the plan leaves as a plain
+     * sub-process, which in the configuration this was built for is dozens per case (G31). So it takes the
+     * index once per instance it migrates and looks up in memory after that.
      *
-     * First declarer wins, matching what the per-hop lookup returned: the blueprints are visited in the
-     * walk's breadth-first order, so the shallowest declaration of a given call activity is the one kept —
-     * the same node the runtime walk descends through first.
+     * The index is built **by** [walkTree] rather than from its result. The walk already reads every
+     * building-block process link of every blueprint it passes through, so a second pass over the same
+     * tree re-issued the queries whose answers it had just discarded — and paid for a second full walk to
+     * find the blueprints again. Measured on the customer configuration that pass was 15.9% of a
+     * migration's wall clock and the extra walk another 26.1% (§6.25).
+     *
+     * First declarer wins, matching what the per-hop lookup returned: the walk visits blueprints
+     * breadth-first, so the shallowest declaration of a given call activity is the one kept — the same
+     * node the runtime walk descends through first. That is what this has always claimed and, until the
+     * index moved into the walk, not quite what it did: it iterated the walk's `expanded` set, a
+     * `HashSet`, so where two blueprints in one tree declared the same activity id the winner was
+     * whichever hash order happened to offer first rather than the shallowest.
      */
-    fun resolveCallActivityLinkIndex(owner: BlueprintId): Map<Pair<String, String>, BuildingBlockProcessLink> {
-        val index = LinkedHashMap<Pair<String, String>, BuildingBlockProcessLink>()
-        blueprintsInTreeOf(owner).forEach { blueprint ->
-            processDefinitionIdsOf(blueprint).forEach { processDefinitionId ->
-                val processDefinitionKey = processDefinitionKeyOf(processDefinitionId) ?: return@forEach
-                processLinkRepository.findByProcessDefinitionId(processDefinitionId)
-                    .filterIsInstance<BuildingBlockProcessLink>()
-                    .forEach { link -> index.putIfAbsent(processDefinitionKey to link.activityId, link) }
-            }
-        }
-        return index
-    }
-
-    /**
-     * The key of [processDefinitionId], or null when nothing is deployed under it — which says nothing
-     * about links and is not a reason to fail a plan save or a migration. Asked so that it answers
-     * rather than throws, which matters more than it looks: see [findProcessDefinitionOrNull].
-     */
-    private fun processDefinitionKeyOf(processDefinitionId: String): String? =
-        repositoryService.findProcessDefinitionOrNull(processDefinitionId)?.key
+    fun resolveCallActivityLinkIndex(owner: BlueprintId): Map<Pair<String, String>, BuildingBlockProcessLink> =
+        walkTree(owner).callActivityLinkIndex
 
     fun resolveCallActivityDeclarers(owner: BlueprintId): Map<BuildingBlockDefinitionId, BlueprintId> =
         walkTree(owner).declaredBy
 
     /**
-     * Every blueprint the walk passes *through*, [owner] included — the linked blocks plus the ones only
-     * called by version tag. Wider than what the walk returns as declared, which is the point: a process
-     * running under one of these is part of what [owner] models even when nothing links it.
+     * Which building block version each call activity in [owner]'s tree declares, by activity id — the
+     * same walk read the other way round.
+     *
+     * What it answers is "did *this hop* change what it points at", which is a different question from
+     * "does this version model that block" and the one the add/remove suggesters need: a call activity
+     * re-pointed from one building block key to another is a **key change**, carried by version
+     * alignment and a building-block plan from the old key to the new one ([resolveTarget] matches on
+     * the activity id precisely so that it can), not by dissolving one block and creating another. Read
+     * by key alone the two versions merely lose one block and gain another, which is the same evidence
+     * and the wrong conclusion.
+     *
+     * Keyed by activity id alone, like [declaredByActivity] and for the same reason: that is all a
+     * running instance records. Where two blueprints in one tree declare the same activity id the
+     * shallowest wins.
      */
-    private fun blueprintsInTreeOf(owner: BlueprintId): Set<BlueprintId> = walkTree(owner).expanded
+    fun resolveCallActivityDeclaredBlocks(owner: BlueprintId): Map<String, BuildingBlockDefinitionId> =
+        walkTree(owner).declaredBlockByActivity
 
     private data class Tree(
         val declaredBy: Map<BuildingBlockDefinitionId, BlueprintId>,
         /** Which blueprint declares each call activity id — see [resolveGoverningBlueprint]. */
         val declaredByActivity: Map<String, BlueprintId>,
+        /** Which building block version each call activity id names — see [resolveCallActivityDeclaredBlocks]. */
+        val declaredBlockByActivity: Map<String, BuildingBlockDefinitionId>,
+        /**
+         * Every blueprint the walk passed *through*, [walkTree]'s owner included — the linked blocks plus
+         * the ones only called by version tag. Wider than [declaredBy], which is the point: a process
+         * running under one of these is part of what the owner models even when nothing links it.
+         */
         val expanded: Set<BlueprintId>,
+        /** See [resolveCallActivityLinkIndex], which is the only reader. */
+        val callActivityLinkIndex: Map<Pair<String, String>, BuildingBlockProcessLink>,
     )
 
-    private fun walkTree(owner: BlueprintId): Tree {
+    /** One process definition of one blueprint, with everything the walk reads about it. */
+    private data class WalkedProcess(
+        val processDefinitionId: String,
+        /**
+         * What Operaton has deployed under [processDefinitionId], or null when nothing is — which says
+         * nothing about links and is not a reason to fail a plan save or a migration, since a link row
+         * outlives the deployment it names. Asked with a query so that it answers rather than throws,
+         * which matters more than it looks: see [findProcessDefinitionOrNull].
+         */
+        val definition: ProcessDefinition?,
+        val links: List<BuildingBlockProcessLink>,
+    )
+
+    /**
+     * One breadth-first pass over [owner]'s tree, answering everything the walk can answer from a single
+     * read of each blueprint's process definitions, their process links and their parsed models.
+     *
+     * The reads are shared deliberately: `processDefinitionIdsOf` used to be issued three times per node
+     * and `findByProcessDefinitionId` twice per process definition, for the same rows (G31).
+     *
+     * Memoized for the length of a migration run: the answer depends only on [owner], and the three call
+     * sites that ask all pass the same target for every case in the run. Outside a run the cache is
+     * transparent — see [MigrationRunCache.computeIfAbsent].
+     */
+    private fun walkTree(owner: BlueprintId): Tree =
+        MigrationRunCache.computeIfAbsent(TreeKey(owner)) { walk(owner) }
+
+    /** Private, so no other user of [MigrationRunCache]'s shared keyspace can collide with this one. */
+    private data class TreeKey(val owner: BlueprintId)
+
+    private fun walk(owner: BlueprintId): Tree {
         val declaredBy = LinkedHashMap<BuildingBlockDefinitionId, BlueprintId>()
         val declaredByActivity = LinkedHashMap<String, BlueprintId>()
+        val declaredBlockByActivity = LinkedHashMap<String, BuildingBlockDefinitionId>()
+        val callActivityLinkIndex = LinkedHashMap<Pair<String, String>, BuildingBlockProcessLink>()
         // Expansion is deduplicated on its own set: a node reached through an *unlinked* call activity is
-        // never added to `declaredBy`, so without this it would be expanded again on every visit.
-        val expanded = HashSet<BlueprintId>()
+        // never added to `declaredBy`, so without this it would be expanded again on every visit. Ordered,
+        // so that `Tree.expanded` reports the walk's own breadth-first order rather than a hash order.
+        val expanded = LinkedHashSet<BlueprintId>()
         val queue = ArrayDeque<BlueprintId>().apply { add(owner) }
         while (queue.isNotEmpty()) {
             val current = queue.removeFirst()
@@ -213,14 +259,31 @@ class LinkedBuildingBlockVersionResolver(
                 }
                 break
             }
-            callActivityLinks(current).forEach { link ->
-                declaredBy.putIfAbsent(link.buildingBlockDefinitionId, current)
-                link.activityId?.let { declaredByActivity.putIfAbsent(it, current) }
-                queue.add(link.buildingBlockDefinitionId)
+            val processes = processDefinitionIdsOf(current).map { processDefinitionId ->
+                WalkedProcess(
+                    processDefinitionId = processDefinitionId,
+                    definition = repositoryService.findProcessDefinitionOrNull(processDefinitionId),
+                    links = processLinkRepository.findByProcessDefinitionId(processDefinitionId)
+                        .filterIsInstance<BuildingBlockProcessLink>(),
+                )
             }
-            queue.addAll(buildingBlockCallTargetsOf(current))
+
+            // Links across every process definition of this node before call targets across every one of
+            // them: that is the breadth-first order "first declarer wins" is defined against.
+            processes.forEach { process ->
+                process.links.forEach { link ->
+                    declaredBy.putIfAbsent(link.buildingBlockDefinitionId, current)
+                    declaredByActivity.putIfAbsent(link.activityId, current)
+                    declaredBlockByActivity.putIfAbsent(link.activityId, link.buildingBlockDefinitionId)
+                    // Only the index needs the key; a definition that is gone still declares its links.
+                    process.definition?.key
+                        ?.let { key -> callActivityLinkIndex.putIfAbsent(key to link.activityId, link) }
+                    queue.add(link.buildingBlockDefinitionId)
+                }
+            }
+            processes.forEach { process -> queue.addAll(buildingBlockCallTargetsOf(process)) }
         }
-        return Tree(declaredBy, declaredByActivity, expanded)
+        return Tree(declaredBy, declaredByActivity, declaredBlockByActivity, expanded, callActivityLinkIndex)
     }
 
     /**
@@ -253,26 +316,25 @@ class LinkedBuildingBlockVersionResolver(
     }
 
     /**
-     * The building block versions the processes of [owner] call by version tag — `BB:<key>:<version>` on
-     * a call activity — whether or not that call activity carries a building-block process link.
+     * The building block versions [process] calls by version tag — `BB:<key>:<version>` on a call
+     * activity — whether or not that call activity carries a building-block process link.
      *
      * Read from the deployed BPMN because the tag is the only place the binding exists: a link says
      * "this call activity is a building block", the tag says "this is the deployment it calls", and an
      * unlinked call activity has only the second. Operaton keeps parsed models in its deployment cache,
      * so this is a walk over in-memory models rather than a parse per activity.
+     *
+     * Takes the [WalkedProcess] the walk already read, so nothing is resolved twice — see [walkTree].
      */
-    private fun buildingBlockCallTargetsOf(owner: BlueprintId): List<BuildingBlockDefinitionId> =
-        processDefinitionIdsOf(owner).flatMap { processDefinitionId ->
-            // A definition that is no longer deployed tells us nothing about call targets, and is not a
-            // reason to fail a plan save or a migration — a link row outlives the deployment it names — so
-            // it is treated as "no call activities". Asked so that it answers rather than throws, which
-            // matters more than it looks: see findBpmnModelInstanceOrNull.
-            val model = repositoryService.findBpmnModelInstanceOrNull(processDefinitionId)
-                ?: return@flatMap emptyList()
-
-            model.getModelElementsByType(CallActivity::class.java)
-                .mapNotNull { BuildingBlockDefinitionId.fromProcessVersionTag(it.operatonCalledElementVersionTag) }
-        }
+    private fun buildingBlockCallTargetsOf(process: WalkedProcess): List<BuildingBlockDefinitionId> {
+        // A definition that is no longer deployed is treated as "no call activities" rather than failing.
+        // Keyed on the definition *existing*, not on its key: an unlinked `BB:`-tagged hop has no key the
+        // index wants, and reading its model is what makes everything below it visible.
+        process.definition ?: return emptyList()
+        val model = repositoryService.getBpmnModelInstance(process.processDefinitionId) ?: return emptyList()
+        return model.getModelElementsByType(CallActivity::class.java)
+            .mapNotNull { BuildingBlockDefinitionId.fromProcessVersionTag(it.operatonCalledElementVersionTag) }
+    }
 
     /**
      * The building block version [instance] should be on according to [owner], or null when [owner]

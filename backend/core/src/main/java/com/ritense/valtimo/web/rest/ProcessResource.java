@@ -568,13 +568,6 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(new ResultCount(count));
     }
 
-    /**
-     * Migrate all running process instances from one process definition to another.
-     *
-     * @deprecated Only used by the 'Process migration' admin screen, which has been removed from
-     *     the admin menu and replaced by the case migration feature.
-     */
-    @Deprecated(forRemoval = true)
     @PostMapping("/v1/process/definition/{sourceProcessDefinitionId}/{targetProcessDefinitionId}/migrate")
     @ResponseBody
     @Transactional

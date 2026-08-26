@@ -18,7 +18,6 @@ package com.ritense.buildingblock.service.migration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.domain.CaseDefinitionBuildingBlockLink
-import com.ritense.buildingblock.domain.migration.RemoveBuildingBlockInstruction
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.case_.service.migration.DataMigrationComponentSuggester
 import com.ritense.processdocument.migration.ProcessMigrationComponentSuggester
@@ -63,8 +62,15 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         whenever(linkResolver.resolveCallActivityDeclarers(any())).thenReturn(emptyMap())
         whenever(dataSuggester.suggestForBuildingBlockEntry(any(), any())).thenReturn(null)
         whenever(processSuggester.suggestForBuildingBlockEntry(any(), any())).thenReturn(null)
+        // The real level rules over the mocked resolver: an unstubbed walk answers empty, so they are
+        // inert unless a test says otherwise.
         suggester = RemoveBuildingBlockMigrationComponentSuggester(
-            ObjectMapper(), caseLinkRepository, linkResolver, dataSuggester, processSuggester,
+            ObjectMapper(),
+            caseLinkRepository,
+            linkResolver,
+            BuildingBlockEntryLevel(linkResolver),
+            dataSuggester,
+            processSuggester,
         )
     }
 
@@ -78,7 +84,7 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         // source models uitvoeren (its own call activity) and besluit (declared by uitvoeren); target neither.
         declares(source, uitvoeren to source, besluit to uitvoeren)
 
-        val suggestion = suggester.suggest(source, target) as List<RemoveBuildingBlockInstruction>
+        val suggestion = suggester.suggest(source, target) as List<SuggestedRemoveBuildingBlockEntry>
 
         assertThat(suggestion.map { it.buildingBlockKey })
             .containsExactlyInAnyOrder("bijstand-uitvoeren", "bijstand-besluit")
@@ -103,7 +109,7 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         declares(source, uitvoeren to source, besluit to uitvoeren)
         declares(target, uitvoeren to target)
 
-        val suggestion = suggester.suggest(source, target) as List<RemoveBuildingBlockInstruction>
+        val suggestion = suggester.suggest(source, target) as List<SuggestedRemoveBuildingBlockEntry>
 
         assertThat(suggestion.map { it.buildingBlockKey }).containsExactly("bijstand-besluit")
     }
@@ -116,7 +122,7 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         whenever(startableLink.buildingBlockDefinitionId).thenReturn(besluit)
         whenever(caseLinkRepository.findAllByCaseDefinitionId(source)).thenReturn(listOf(startableLink))
 
-        val suggestion = suggester.suggest(source, target) as List<RemoveBuildingBlockInstruction>
+        val suggestion = suggester.suggest(source, target) as List<SuggestedRemoveBuildingBlockEntry>
 
         assertThat(suggestion.map { it.buildingBlockKey }).containsExactly("bijstand-besluit")
     }
@@ -129,7 +135,70 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         assertThat(suggester.suggest(source, target)).isNull()
     }
 
+    @Test
+    fun `should not suggest dissolving a block whose call activity now names another key`() {
+        // `verhuizing-inspectie` 1.0.4 -> 1.0.5: one call activity, re-pointed at a different building
+        // block. Version alignment carries the running instance across with a plan from the one key to
+        // the other; dissolving it at @400 would take it away before @500 ever looks.
+        declares(source, uitvoeren to source)
+        onActivity(source, "CallUitvoerenActivity" to uitvoeren)
+        onActivity(target, "CallUitvoerenActivity" to besluit)
+
+        assertThat(suggester.suggest(source, target)).isNull()
+    }
+
+    @Test
+    fun `should not suggest dissolving a block below a parent block both versions model`() {
+        // The nested block is the parent's own change, written in the parent's own plan and run by
+        // alignment at @500 — after this plan's @400 would have dissolved it against the parent's *old*
+        // schema, which does not have the fields the new version added to receive it.
+        declares(source, uitvoeren to source, besluit to uitvoeren)
+        declares(target, uitvoeren to target)
+        reaches(source, uitvoeren, besluit)
+        reaches(target, uitvoeren)
+
+        assertThat(suggester.suggest(source, target)).isNull()
+    }
+
+    @Test
+    fun `should still suggest dissolving a nested block whose parent is dissolved too`() {
+        // The parent is going as well, so nothing below it survives to carry the child (G25 cascades it
+        // bare and warns). Both entries belong in this plan.
+        declares(source, uitvoeren to source, besluit to uitvoeren)
+        reaches(source, uitvoeren, besluit)
+
+        val suggestion = suggester.suggest(source, target) as List<SuggestedRemoveBuildingBlockEntry>
+
+        assertThat(suggestion.map { it.buildingBlockKey })
+            .containsExactlyInAnyOrder("bijstand-uitvoeren", "bijstand-besluit")
+    }
+
+    @Test
+    fun `should keep a process row the suggester could not pair, rather than dropping it`() {
+        // A block whose process is not handed back cannot be dissolved at all, so an entry that drops the
+        // row fails every case it applies to — from an entry that reads as complete and is collapsed in
+        // the editor. Kept, and refused on save by the validator that names the block.
+        declares(source, uitvoeren to source)
+        whenever(processSuggester.suggestForBuildingBlockEntry(eq(uitvoeren), any())).thenReturn(
+            listOf(mapOf("sourceProcessDefinitionKey" to "bijstand-uitvoeren-process", "mapActivities" to emptyMap<String, String>()))
+        )
+
+        val suggestion = suggester.suggest(source, target) as List<SuggestedRemoveBuildingBlockEntry>
+
+        assertThat(suggestion.single().processMigration.single().get("sourceProcessDefinitionKey").asText())
+            .isEqualTo("bijstand-uitvoeren-process")
+        assertThat(suggestion.single().processMigration.single().hasNonNull("targetProcessDefinitionKey")).isFalse()
+    }
+
     private fun declares(owner: BlueprintId, vararg edges: Pair<BuildingBlockDefinitionId, BlueprintId>) {
         whenever(linkResolver.resolveCallActivityDeclarers(owner)).thenReturn(edges.toMap())
+    }
+
+    private fun onActivity(owner: BlueprintId, vararg edges: Pair<String, BuildingBlockDefinitionId>) {
+        whenever(linkResolver.resolveCallActivityDeclaredBlocks(owner)).thenReturn(edges.toMap())
+    }
+
+    private fun reaches(owner: BlueprintId, vararg blocks: BuildingBlockDefinitionId) {
+        whenever(linkResolver.resolveCallActivityReachable(owner)).thenReturn(blocks.toSet())
     }
 }

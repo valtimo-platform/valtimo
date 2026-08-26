@@ -315,17 +315,18 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         ownerDocumentId: UUID,
         instance: BuildingBlockInstance,
     ) {
-        // 1. Hand the process(es) back to the owner (business key → owner document id).
-        instruction.processMigration.forEach { processInstruction ->
-            handBackProcesses(processInstruction, ownerBlueprint, ownerDocumentId, instance)
-        }
+        // 1. Hand the process(es) back to the owner (business key → owner document id). `map` rather than
+        // `forEach` because every instruction has to run — the answer is only read afterwards, by step 3.
+        val handedBack = instruction.processMigration
+            .map { handBackProcesses(it, ownerBlueprint, ownerDocumentId, instance) }
+            .any { it }
 
         // 2. Transfer data back: read from the building block, write into the owner.
         dataPatchApplier.apply(instruction.dataMigration, instance.documentId, ownerDocumentId)
 
         // 3. Delete the building block instance, then its JSON document (last).
         val documentId = instance.documentId
-        assertNothingIsStillRunningOn(instruction, instance)
+        assertNothingIsStillRunningOn(instruction, instance, handedBack)
         buildingBlockInstanceService.delete(instance.id)
         runWithoutAuthorization {
             documentService.deleteDocument(JsonSchemaDocumentId.existingId(documentId))
@@ -348,11 +349,23 @@ class RemoveBuildingBlockMigrationComponentExecutor(
      *
      * Not a save-path check: whether a block still has a running process is a per-case runtime fact, so an
      * entry with no `processMigration` is perfectly valid for a block whose work has finished.
+     *
+     * **[handedBack] is what makes this a refusal rather than a blanket ban on dissolving a block that is
+     * doing something.** Handing a process back does not end it — it migrates it onto the owner's own
+     * definition and leaves the token where it is, which is the entire point — so "still running" on its
+     * own describes a *successful* hand-back just as well as a missing one. What makes deleting the
+     * document unsafe is the process-document association still pointing at the block, and
+     * [handBackProcesses] repoints that (and the business key) for every process it moves. So a hand-back
+     * that happened is the answer, and the check is only about the case where none did.
      */
     private fun assertNothingIsStillRunningOn(
         instruction: RemoveBuildingBlockInstruction,
         instance: BuildingBlockInstance,
+        handedBack: Boolean,
     ) {
+        if (handedBack) {
+            return
+        }
         val processInstanceId = instance.processInstanceId ?: return
         val stillRunning = runtimeService.createProcessInstanceQuery()
             .processInstanceId(processInstanceId)
@@ -370,19 +383,25 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         }
     }
 
+    /**
+     * @return whether this instruction moved the block's process back to the owner — read by
+     * [assertNothingIsStillRunningOn], which must not mistake a handed-back process that is still running
+     * for one nothing took care of. `false` covers both misses: the block has no process at all, and the
+     * process it has is not the one this instruction names.
+     */
     private fun handBackProcesses(
         instruction: ProcessMigrationInstruction,
         ownerBlueprint: BlueprintId,
         ownerDocumentId: UUID,
         instance: BuildingBlockInstance,
-    ) {
-        val processInstanceId = instance.processInstanceId ?: return
+    ): Boolean {
+        val processInstanceId = instance.processInstanceId ?: return false
         val processInstances = runtimeService.createProcessInstanceQuery()
             .processInstanceId(processInstanceId)
             .processDefinitionKey(instruction.sourceProcessDefinitionKey)
             .list()
         if (processInstances.isEmpty()) {
-            return
+            return false
         }
 
         val targetDefinitionId = findOwnerTargetProcessDefinitionId(
@@ -401,6 +420,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
             updateBusinessKey(processInstance.processInstanceId, ownerDocumentId.toString())
             associateWithOwnerDocument(processInstance.processInstanceId, ownerDocumentId)
         }
+        return true
     }
 
     /**

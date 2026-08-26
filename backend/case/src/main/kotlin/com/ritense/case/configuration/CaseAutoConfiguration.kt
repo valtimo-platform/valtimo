@@ -100,6 +100,7 @@ import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
+import com.ritense.valtimo.contract.blueprint.migration.BuildingBlockEntryOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
@@ -624,6 +625,7 @@ class CaseAutoConfiguration {
         activityMappingSuggesters: List<ActivityMappingSuggester>,
         activityMappingValidators: List<ActivityMappingValidator>,
         migrationComponentValidators: List<MigrationComponentValidator>,
+        buildingBlockEntryOwnerships: List<BuildingBlockEntryOwnership>,
     ) = MigrationSuggestionService(
         objectMapper,
         blueprintVersionLineages,
@@ -631,6 +633,7 @@ class CaseAutoConfiguration {
         activityMappingSuggesters,
         activityMappingValidators,
         migrationComponentValidators,
+        buildingBlockEntryOwnerships,
     )
 
     @Bean

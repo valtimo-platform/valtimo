@@ -30,6 +30,7 @@ import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSugges
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Best-effort `removeBuildingBlock` suggestion: the building blocks the [source] owner modelled that the
@@ -54,10 +55,23 @@ import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
  * make sense against the version they were derived from. Suggestions are advisory — the user edits before
  * saving.
  */
+/**
+ * A `removeBuildingBlock` entry as it is *suggested*: [RemoveBuildingBlockInstruction] with its
+ * `processMigration` left as JSON, so a row whose target the suggester would not guess survives to the
+ * editor rather than being dropped as unrepresentable.
+ */
+internal data class SuggestedRemoveBuildingBlockEntry(
+    val buildingBlockKey: String,
+    val buildingBlockVersionTag: String,
+    val dataMigration: List<DataMigrationPatch>,
+    val processMigration: List<JsonNode>,
+)
+
 class RemoveBuildingBlockMigrationComponentSuggester(
     private val objectMapper: ObjectMapper,
     private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
     private val linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    private val buildingBlockEntryLevel: BuildingBlockEntryLevel,
     private val dataMigrationComponentSuggester: DataMigrationComponentSuggester,
     private val processMigrationComponentSuggester: ProcessMigrationComponentSuggester,
 ) : MigrationComponentSuggester {
@@ -73,8 +87,16 @@ class RemoveBuildingBlockMigrationComponentSuggester(
             // Sorted like the add suggester, so both components read in the same order and a plan
             // re-suggested for the same two versions comes back identical.
             .sortedBy { it.key.toString() }
-            .map { (lost, declaredBy) ->
-                RemoveBuildingBlockInstruction(
+            .mapNotNull { (lost, declaredBy) ->
+                // A key lost is not always this plan's to dissolve — see [BuildingBlockEntryLevel].
+                buildingBlockEntryLevel.handledElsewhere(lost, declaredBy, source, target)?.let { reason ->
+                    logger.info {
+                        "No 'removeBuildingBlock' entry is suggested for '$lost' on the plan migrating " +
+                            "'$source' to '$target': $reason."
+                    }
+                    return@mapNotNull null
+                }
+                SuggestedRemoveBuildingBlockEntry(
                     buildingBlockKey = lost.key,
                     buildingBlockVersionTag = lost.versionTag.toString(),
                     // Back to the blueprint that declared it — the parent block for a nested one, the owner
@@ -86,7 +108,7 @@ class RemoveBuildingBlockMigrationComponentSuggester(
                             lost, ownerSideOf(declaredBy, source, target)
                         )
                     ),
-                    processMigration = toProcessInstructions(
+                    processMigration = toProcessRows(
                         processMigrationComponentSuggester.suggestForBuildingBlockEntry(
                             lost, ownerSideOf(declaredBy, source, target)
                         )
@@ -134,16 +156,28 @@ class RemoveBuildingBlockMigrationComponentSuggester(
             .filter { it.source != null }
 
     /**
-     * Entries with no target are dropped before conversion. The process suggester leaves a target blank
-     * when it cannot work one out, and [ProcessMigrationInstruction] has no room for that — but a block
-     * and its owner are two *different* blueprints, and across blueprints the suggester always names its
-     * nearest match, so this is a guard against a shape that does not arise here rather than a case that
-     * does. It matters because the alternative is a deserialization failure inside a suggestion.
+     * The suggested rows as they came, **including the ones with no target**.
+     *
+     * They used to be dropped, on the reasoning that across blueprints the process suggester always
+     * names its nearest match so the shape could not arise. G46 ended that: an entry is now paired only
+     * on an exact key match or a forced 1↔1 choice, and everything else comes back unpaired — which for
+     * a `removeBuildingBlock` entry is not a blank to hide. A block's process has to be handed back to
+     * the owner or the executor refuses to dissolve it (`Cannot dissolve building block … its process is
+     * still running and was not handed back`), so a dropped row turns into a case that fails at the
+     * moment the plan runs, from an entry that looked complete — and the entries are collapsed in the
+     * editor by default, so there was nothing to look at either.
+     *
+     * Kept as a JSON row rather than a [ProcessMigrationInstruction], which has no room for a null
+     * target. That is the same shape the plan-level component already uses for an unpaired process, and
+     * `RemoveBuildingBlockMigrationComponentValidator.nestedInstructionsWithoutTarget` already refuses
+     * it on save, naming the entry — visible work rather than a silent skip.
      */
-    private fun toProcessInstructions(suggestion: Any?): List<ProcessMigrationInstruction> {
+    private fun toProcessRows(suggestion: Any?): List<JsonNode> {
         if (suggestion == null) return emptyList()
-        val node = objectMapper.valueToTree<JsonNode>(suggestion)
-        val named = node.filter { it.hasNonNull("targetProcessDefinitionKey") }
-        return named.map { objectMapper.convertValue(it, ProcessMigrationInstruction::class.java) }
+        return objectMapper.valueToTree<JsonNode>(suggestion).toList()
+    }
+
+    private companion object {
+        val logger = KotlinLogging.logger {}
     }
 }

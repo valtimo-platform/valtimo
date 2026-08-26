@@ -19,6 +19,7 @@ import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
+  BuildingBlockEntrySuggestion,
   BuildingBlockMigrationParams,
   DataMigrationPatch,
   MigrationExecutionStatus,
@@ -132,17 +133,21 @@ export class BuildingBlockMigrationApiService extends BaseApiService {
     params: BuildingBlockMigrationParams,
     buildingBlockKey: string,
     buildingBlockVersionTag: string,
-    mode: 'add' | 'remove'
-  ): Observable<{
-    dataMigration: DataMigrationPatch[];
-    processMigration: ProcessMigrationInstruction[];
-  }> {
-    return this.httpClient.get<{
-      dataMigration: DataMigrationPatch[];
-      processMigration: ProcessMigrationInstruction[];
-    }>(`${this.getMigrationUrl(params)}/suggestion/building-block`, {
-      params: {buildingBlockKey, buildingBlockVersionTag, mode},
-    });
+    mode: 'add' | 'remove',
+    source?: MigrationPlanSource | null
+  ): Observable<BuildingBlockEntrySuggestion> {
+    return this.httpClient.get<BuildingBlockEntrySuggestion>(
+      `${this.getMigrationUrl(params)}/suggestion/building-block`,
+      {
+        params: {
+          buildingBlockKey,
+          buildingBlockVersionTag,
+          mode,
+          ...(source?.key ? {sourceKey: source.key} : {}),
+          ...(source?.versionTag ? {sourceVersionTag: source.versionTag} : {}),
+        },
+      }
+    );
   }
 
   public deletePlan(

@@ -64,6 +64,7 @@ export const environment: ValtimoConfig = {
             sequence: 17,
             includeFunction: IncludeFunction.OpenSearchEnabled,
           },
+          {link: ['/process-migration'], title: 'Process migration', sequence: 18},
         ],
       },
       {

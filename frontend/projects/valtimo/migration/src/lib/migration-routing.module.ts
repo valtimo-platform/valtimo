@@ -34,9 +34,4 @@ const routes: Routes = [
   imports: [CommonModule, RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-/**
- * @deprecated The 'Process migration' admin screen has been removed from the admin menu and is
- * replaced by the case migration feature in `@valtimo/case-management`. This module will be removed
- * in a future release.
- */
 export class MigrationRoutingModule {}

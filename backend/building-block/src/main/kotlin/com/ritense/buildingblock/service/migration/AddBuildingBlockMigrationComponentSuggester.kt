@@ -24,6 +24,7 @@ import com.ritense.case_.service.migration.DataMigrationComponentSuggester
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Suggests the `addBuildingBlock` component: an entry per building block the [target] version models
@@ -54,6 +55,7 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 class AddBuildingBlockMigrationComponentSuggester(
     private val objectMapper: ObjectMapper,
     private val linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    private val buildingBlockEntryLevel: BuildingBlockEntryLevel,
     private val dataMigrationComponentSuggester: DataMigrationComponentSuggester,
 ) : MigrationComponentSuggester {
 
@@ -70,22 +72,50 @@ class AddBuildingBlockMigrationComponentSuggester(
         val keysBefore = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(source)
             .map { it.key }
             .toSet()
-        val instructions = linkedBuildingBlockVersionResolver.resolveCallActivityReachable(target)
+        val declaredBy = linkedBuildingBlockVersionResolver.resolveCallActivityDeclarers(target)
+        val instructions = declaredBy.keys
             .filter { it.key !in keysBefore }
             .sortedBy { it.toString() }
-            .map { block ->
+            .mapNotNull { block ->
+                // A key gained is not always this plan's to create — see [BuildingBlockEntryLevel].
+                buildingBlockEntryLevel.handledElsewhere(block, declaredBy[block], source, target)?.let { reason ->
+                    logger.info {
+                        "No 'addBuildingBlock' entry is suggested for '$block' on the plan migrating " +
+                            "'$source' to '$target': $reason."
+                    }
+                    return@mapNotNull null
+                }
                 AddBuildingBlockInstruction(
                     buildingBlockKey = block.key,
                     buildingBlockVersionTag = block.versionTag.toString(),
                     // Data flows owner -> block on the way in, the mirror of removal's block -> owner.
                     dataMigration = toDataPatches(
-                        dataMigrationComponentSuggester.suggestForBuildingBlockEntry(source, block)
+                        dataMigrationComponentSuggester.suggestForBuildingBlockEntry(
+                            ownerSideOf(declaredBy[block], target), block
+                        )
                     ),
                 )
             }
 
         return instructions.ifEmpty { null }
     }
+
+    /**
+     * The blueprint whose document this block is filled **from**: the parent block for a nested one, and
+     * the migrating owner *at its target version* for a block it declares itself.
+     *
+     * The mirror of `RemoveBuildingBlockMigrationComponentSuggester.ownerSideOf`, which this had never
+     * been: it read the migrating owner for every entry, however deep. A nested block is created from
+     * the document of the block above it (`AddBuildingBlockMigrationComponentExecutor` resolves the
+     * owner from the running tree, not from the plan), so patches suggested against the case propose
+     * copying out of a document the entry never reads — on `woninginspectie:1.0.4` that produced an
+     * empty `dataMigration` for a nested block whose parent shares four of its fields.
+     *
+     * The target version, not the source, because `dataMigration` runs at @100 and this at @300: by the
+     * time an entry is filled, the owner's document is already on the version this plan migrates to.
+     */
+    private fun ownerSideOf(declaredBy: BlueprintId?, target: BlueprintId): BlueprintId =
+        declaredBy?.takeIf { it is BuildingBlockDefinitionId } ?: target
 
     /**
      * Copy patches only. The standalone suggester's `value: null` removals clear stale fields on a
@@ -96,4 +126,8 @@ class AddBuildingBlockMigrationComponentSuggester(
         if (suggestion == null) emptyList()
         else objectMapper.convertValue(suggestion, object : TypeReference<List<DataMigrationPatch>>() {})
             .filter { it.source != null }
+
+    private companion object {
+        val logger = KotlinLogging.logger {}
+    }
 }

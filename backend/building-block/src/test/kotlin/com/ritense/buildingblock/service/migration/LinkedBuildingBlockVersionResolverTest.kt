@@ -30,6 +30,7 @@ import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.ProcessLinkRepository
+import com.ritense.valtimo.contract.blueprint.migration.MigrationRunCache
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.util.UUID
@@ -40,6 +41,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.repository.ProcessDefinition
@@ -327,6 +330,79 @@ class LinkedBuildingBlockVersionResolverTest {
         val declarers = resolver.resolveCallActivityDeclarers(caseDefinitionId)
 
         assertThat(declarers).containsExactly(java.util.Map.entry(herhaling, caseDefinitionId))
+    }
+
+    /** Counted, not asserted on the result: repeating the reads changes nothing but the bill (G31). */
+    @Test
+    fun `should read each process definition's links once while building the link index`() {
+        callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockCallActivityLink(uitvoeren, "uitvoeren:bb", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
+        deployed(processDefinitionId, key = "bijstand")
+        deployed("uitvoeren:bb", key = "bijstand-uitvoeren")
+        // `callActivityLink` reads the repository itself while stubbing, so start the count from zero.
+        Mockito.clearInvocations(processLinkRepository)
+
+        val index = resolver.resolveCallActivityLinkIndex(caseDefinitionId)
+
+        assertThat(index.keys).containsExactly(
+            "bijstand" to "UitvoerenCallActivity",
+            "bijstand-uitvoeren" to "BesluitCallActivity",
+        )
+        verify(processLinkRepository, times(1)).findByProcessDefinitionId(processDefinitionId)
+        verify(processLinkRepository, times(1)).findByProcessDefinitionId("uitvoeren:bb")
+    }
+
+    /**
+     * First-declarer-wins means *shallowest*. Two blueprints declare `SharedCallActivity` on processes
+     * sharing a definition key, which is what collides in the index.
+     */
+    @Test
+    fun `should keep the shallowest declarer when two blueprints declare the same call activity`() {
+        callActivityLink("SharedCallActivity", "1.0.0", key = "bijstand-uitvoeren")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockCallActivityLink(uitvoeren, "uitvoeren:bb", "SharedCallActivity", "bijstand-besluit", "1.0.0")
+        // Both are deployed under the same key, so both links compete; the case is shallower and wins.
+        deployed(processDefinitionId, key = "gedeeld")
+        deployed("uitvoeren:bb", key = "gedeeld")
+
+        val link = resolver.resolveCallActivityLink(caseDefinitionId, "gedeeld", "SharedCallActivity")
+
+        assertThat(link?.buildingBlockDefinitionId).isEqualTo(uitvoeren)
+    }
+
+    /** The three call sites all pass the same target for every case in a run (G31). */
+    @Test
+    fun `should walk the tree once per run however many times it is asked`() {
+        callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        blockCallActivityLink(uitvoeren, "uitvoeren:bb", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
+        deployed(processDefinitionId, key = "bijstand")
+        deployed("uitvoeren:bb", key = "bijstand-uitvoeren")
+        Mockito.clearInvocations(processLinkRepository)
+
+        MigrationRunCache.inRun {
+            repeat(3) {
+                resolver.resolveCallActivityReachable(caseDefinitionId)
+                resolver.resolveCallActivityLinkIndex(caseDefinitionId)
+                resolver.resolveGoverningBlueprint(caseDefinitionId, instance("1.0.0"))
+            }
+        }
+
+        verify(processLinkRepository, times(1)).findByProcessDefinitionId(processDefinitionId)
+        verify(processLinkRepository, times(1)).findByProcessDefinitionId("uitvoeren:bb")
+    }
+
+    /** Outside a run nothing is cached, so a stale tree can never outlive the run that built it. */
+    @Test
+    fun `should walk the tree again for each call outside a run`() {
+        callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
+        deployed(processDefinitionId, key = "bijstand")
+        Mockito.clearInvocations(processLinkRepository)
+
+        repeat(3) { resolver.resolveCallActivityReachable(caseDefinitionId) }
+
+        verify(processLinkRepository, times(3)).findByProcessDefinitionId(processDefinitionId)
     }
 
     @Test

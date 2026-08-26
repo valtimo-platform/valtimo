@@ -35,11 +35,6 @@ import {from, take} from 'rxjs';
   templateUrl: './migration-process-diagram.component.html',
   styleUrls: ['./migration-process-diagram.component.scss'],
 })
-/**
- * @deprecated Only used by the 'Process migration' admin screen, which has been removed from the
- * admin menu and is replaced by the case migration feature in `@valtimo/case-management`. This
- * component will be removed in a future release.
- */
 export class MigrationProcessDiagramComponent implements AfterViewInit, OnDestroy {
   private bpmnViewer: NavigatedViewer;
   public flowNodeMap: any = null;

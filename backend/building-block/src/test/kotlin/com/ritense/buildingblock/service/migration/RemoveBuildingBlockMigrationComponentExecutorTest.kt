@@ -24,6 +24,9 @@ import com.ritense.buildingblock.repository.RemoveBuildingBlockConfigurationRepo
 import com.ritense.buildingblock.service.BuildingBlockInstanceService
 import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.document.service.DocumentService
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
+import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
@@ -31,6 +34,7 @@ import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -54,6 +58,11 @@ import java.util.UUID
  * the subtree walk, deepest-first ordering (G25) and the required version tag, including the refusal
  * for a version no entry names — rather than the hand-back mechanics, which the cascade IT and the
  * dev-app fixtures cover against a real engine.
+ *
+ * The one exception is deliberate: the two tests about a **running** process pin *whether* a hand-back
+ * happened, because that is what decides between dissolving the block and refusing to. Neither the
+ * cascade IT nor any other test covers it — the IT's fixtures carry no running process at all, which is
+ * how a refusal that fired on every successful hand-back went unnoticed until a fixture ran it.
  */
 class RemoveBuildingBlockMigrationComponentExecutorTest {
 
@@ -63,6 +72,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
     private lateinit var documentService: DocumentService
     private lateinit var dataPatchApplier: MigrationDataPatchApplier
     private lateinit var runtimeService: RuntimeService
+    private lateinit var processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository
     private lateinit var executor: RemoveBuildingBlockMigrationComponentExecutor
 
     private val target = CaseDefinitionId("verhuizing", "1.0.8")
@@ -83,6 +93,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
         documentService = mock()
         dataPatchApplier = mock()
         runtimeService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
+        processDefinitionCaseDefinitionRepository = mock()
 
         whenever(configurationRepository.findById(migrationId))
             .thenAnswer { Optional.of(RemoveBuildingBlockConfiguration(migrationId, instructions.toList())) }
@@ -93,7 +104,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
             configurationRepository,
             instanceService,
             ownershipResolver,
-            mock<ProcessDefinitionCaseDefinitionRepository>(),
+            processDefinitionCaseDefinitionRepository,
             mock(),
             documentService,
             runtimeService,
@@ -275,6 +286,34 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
     }
 
     @Test
+    fun `should dissolve a block whose still-running process the entry handed back`() {
+        // A hand-back does not end the process — it migrates it onto the owner's definition and leaves the
+        // token where it is. So "still running" describes a hand-back that worked just as well as one that
+        // never happened, and the refusal above must not read the first as the second: every
+        // removeBuildingBlock of a block that is actually doing something would fail, which is the only
+        // shape the component exists for. Found on the verhuizing 1.0.8 fixture, which does exactly this.
+        val processInstanceId = UUID.randomUUID().toString()
+        val block = block("case-notification", "1.0.0", processInstanceId = processInstanceId)
+        givenSubtree(owned(block, null, 0))
+        givenHandedBack(processInstanceId, sourceProcessKey = "case-notification-process", targetProcessKey = "verhuizing")
+        instructions += RemoveBuildingBlockInstruction(
+            buildingBlockKey = "case-notification",
+            buildingBlockVersionTag = "1.0.0",
+            processMigration = listOf(
+                ProcessMigrationInstruction(
+                    sourceProcessDefinitionKey = "case-notification-process",
+                    targetProcessDefinitionKey = "verhuizing",
+                )
+            ),
+        )
+
+        executor.execute(migrationId, target, caseDocumentId)
+
+        assertThat(deleted).containsExactly(block.id)
+        verify(documentService).deleteDocument(any())
+    }
+
+    @Test
     fun `should dissolve a block whose process has already finished without a processMigration`() {
         // The same entry shape is legitimate here: nothing is running, so nothing needs handing back.
         val block = block("inspectie-dossier", "1.0.0", processInstanceId = "finished")
@@ -336,6 +375,31 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
     ) = BuildingBlockOwnershipResolver.OwnedBuildingBlock(instance, parent, depth)
 
     private fun givenStillRunning(processInstanceId: String) = stubRunningQuery(processInstanceId, running = true)
+
+    /**
+     * The block's process runs [sourceProcessKey] and the owner deploys [targetProcessKey], so the entry's
+     * `processMigration` matches and the hand-back goes through — leaving the process **running**, on the
+     * owner's definition.
+     */
+    private fun givenHandedBack(processInstanceId: String, sourceProcessKey: String, targetProcessKey: String) {
+        val query = mock<ProcessInstanceQuery>()
+        whenever(runtimeService.createProcessInstanceQuery()).thenReturn(query)
+        whenever(query.processInstanceId(processInstanceId)).thenReturn(query)
+        whenever(query.processDefinitionKey(sourceProcessKey)).thenReturn(query)
+        val processInstance = mock<ProcessInstance>()
+        whenever(processInstance.processInstanceId).thenReturn(processInstanceId)
+        whenever(processInstance.processDefinitionId).thenReturn("$sourceProcessKey:1:src")
+        whenever(query.list()).thenReturn(listOf(processInstance))
+        whenever(query.singleResult()).thenReturn(processInstance)
+
+        whenever(processDefinitionCaseDefinitionRepository.findByIdCaseDefinitionId(target)).thenReturn(
+            listOf(
+                ProcessDefinitionCaseDefinition(
+                    ProcessDefinitionCaseDefinitionId(ProcessDefinitionId("$targetProcessKey:1:tgt"), target)
+                ).apply { processDefinitionKey = targetProcessKey }
+            )
+        )
+    }
 
     private fun givenNotRunning(processInstanceId: String) = stubRunningQuery(processInstanceId, running = false)
 

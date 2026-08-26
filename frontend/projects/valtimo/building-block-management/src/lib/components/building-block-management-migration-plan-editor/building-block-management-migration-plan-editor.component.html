@@ -105,6 +105,7 @@
         [instructions]="$plan().addBuildingBlock"
         [mode]="'add'"
         [ownerProcessDefinitions]="$targetProcessDefs()"
+        [planSource]="$plan().source ?? null"
         (instructionsChange)="onAddBuildingBlockChange($event)"
       ></valtimo-bb-migration-building-block-tab>
     </cds-tab>
@@ -133,6 +134,7 @@
         [instructions]="$plan().removeBuildingBlock"
         [mode]="'remove'"
         [ownerProcessDefinitions]="$targetProcessDefs()"
+        [planSource]="$plan().source ?? null"
         (instructionsChange)="onRemoveBuildingBlockChange($event)"
       ></valtimo-bb-migration-building-block-tab>
     </cds-tab>

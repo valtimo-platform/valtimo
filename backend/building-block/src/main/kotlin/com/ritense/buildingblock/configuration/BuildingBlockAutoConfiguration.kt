@@ -44,6 +44,8 @@ import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComp
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentExecutor
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentValidator
 import com.ritense.buildingblock.service.migration.AddBuildingBlockProcessChecker
+import com.ritense.buildingblock.service.migration.BuildingBlockEntryLevel
+import com.ritense.buildingblock.service.migration.CallActivityBuildingBlockEntryOwnership
 import com.ritense.buildingblock.service.migration.BuildingBlockInstanceRehomeExecutor
 import com.ritense.buildingblock.service.migration.BuildingBlockInstanceRehomer
 import com.ritense.buildingblock.service.migration.BuildingBlockVersionLineage
@@ -1231,17 +1233,31 @@ class BuildingBlockAutoConfiguration {
     )
 
     @Bean
+    @ConditionalOnMissingBean(CallActivityBuildingBlockEntryOwnership::class)
+    fun callActivityBuildingBlockEntryOwnership(
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    ) = CallActivityBuildingBlockEntryOwnership(linkedBuildingBlockVersionResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockEntryLevel::class)
+    fun buildingBlockEntryLevel(
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    ) = BuildingBlockEntryLevel(linkedBuildingBlockVersionResolver)
+
+    @Bean
     @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentSuggester::class)
     fun removeBuildingBlockMigrationComponentSuggester(
         objectMapper: ObjectMapper,
         caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
         linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        buildingBlockEntryLevel: BuildingBlockEntryLevel,
         dataMigrationComponentSuggester: DataMigrationComponentSuggester,
         processMigrationComponentSuggester: ProcessMigrationComponentSuggester,
     ) = RemoveBuildingBlockMigrationComponentSuggester(
         objectMapper,
         caseDefinitionBuildingBlockLinkRepository,
         linkedBuildingBlockVersionResolver,
+        buildingBlockEntryLevel,
         dataMigrationComponentSuggester,
         processMigrationComponentSuggester,
     )
@@ -1251,10 +1267,12 @@ class BuildingBlockAutoConfiguration {
     fun addBuildingBlockMigrationComponentSuggester(
         objectMapper: ObjectMapper,
         linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        buildingBlockEntryLevel: BuildingBlockEntryLevel,
         dataMigrationComponentSuggester: DataMigrationComponentSuggester,
     ) = AddBuildingBlockMigrationComponentSuggester(
         objectMapper,
         linkedBuildingBlockVersionResolver,
+        buildingBlockEntryLevel,
         dataMigrationComponentSuggester,
     )
 

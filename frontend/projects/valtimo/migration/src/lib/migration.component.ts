@@ -27,11 +27,6 @@ import {ComboBox, ListItem} from 'carbon-components-angular';
   templateUrl: './migration.component.html',
   styleUrls: ['./migration.component.scss'],
 })
-/**
- * @deprecated The 'Process migration' admin screen has been removed from the admin menu and is
- * replaced by the case migration feature in `@valtimo/case-management`. This component will be
- * removed in a future release.
- */
 export class MigrationComponent implements AfterViewInit, AfterViewInit {
   public processDefinitions: ProcessDefinition[] = [];
   public selectedVersions = {

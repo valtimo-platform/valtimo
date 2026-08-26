@@ -31,7 +31,10 @@ import jakarta.persistence.Embeddable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import org.everit.json.schema.ReadWriteContext;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.Validator;
@@ -54,6 +57,12 @@ public final class JsonSchema {
     private static final Validator VALIDATOR = Validator.builder()
         .readWriteContext(ReadWriteContext.WRITE)
         .build();
+
+    @Transient
+    private static final Map<String, Schema> BUILT_SCHEMAS = new ConcurrentHashMap<>();
+
+    @Transient
+    private static final int MAX_BUILT_SCHEMAS = 100;
 
     @Type(value = JsonType.class)
     @Column(name = "json_schema", columnDefinition = "json")
@@ -105,6 +114,34 @@ public final class JsonSchema {
 
     @JsonIgnore
     public Schema getSchema() {
+        final Schema cached = BUILT_SCHEMAS.get(schema);
+        if (cached != null) {
+            return cached;
+        }
+        // Built outside the lock, so a cold start never serialises builds on one thread. Only admission
+        // is atomic: concurrent callers converge on one schema and the cap cannot be overshot.
+        final Schema built = buildSchema();
+        synchronized (BUILT_SCHEMAS) {
+            final Schema raced = BUILT_SCHEMAS.get(schema);
+            if (raced != null) {
+                return raced;
+            }
+            if (BUILT_SCHEMAS.size() >= MAX_BUILT_SCHEMAS) {
+                evictOne();
+            }
+            BUILT_SCHEMAS.put(schema, built);
+        }
+        return built;
+    }
+
+    private static void evictOne() {
+        final Iterator<String> keys = BUILT_SCHEMAS.keySet().iterator();
+        if (keys.hasNext()) {
+            BUILT_SCHEMAS.remove(keys.next());
+        }
+    }
+
+    private Schema buildSchema() {
         final SchemaLoader schemaLoader = getSchemaLoaderBuilder()
             .schemaJson(new JSONObject(new JSONTokener(schema)))
             .build();

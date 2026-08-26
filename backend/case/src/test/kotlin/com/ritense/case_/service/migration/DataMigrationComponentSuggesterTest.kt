@@ -16,6 +16,7 @@
 
 package com.ritense.case_.service.migration
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -66,7 +67,7 @@ class DataMigrationComponentSuggesterTest {
         paths(source, "doc:/adres", "doc:/adres/straat", "doc:/adres/plaats", "doc:/naam")
         paths(target, "doc:/naam")
 
-        assertThat(suggest()).containsExactly(DataMigrationPatch(value = null, target = "doc:/adres"))
+        assertThat(suggest()).containsExactly(ClearingPatch(target = "doc:/adres"))
     }
 
     @Test
@@ -74,7 +75,7 @@ class DataMigrationComponentSuggesterTest {
         paths(source, "doc:/aanvrager", "doc:/aanvrager/adres", "doc:/aanvrager/adres/straat", "doc:/naam")
         paths(target, "doc:/naam")
 
-        assertThat(suggest()).containsExactly(DataMigrationPatch(value = null, target = "doc:/aanvrager"))
+        assertThat(suggest()).containsExactly(ClearingPatch(target = "doc:/aanvrager"))
     }
 
     @Test
@@ -83,7 +84,7 @@ class DataMigrationComponentSuggesterTest {
         paths(source, "doc:/adres", "doc:/adres/straat", "doc:/adres/postcode")
         paths(target, "doc:/adres", "doc:/adres/straat")
 
-        assertThat(suggest()).containsExactly(DataMigrationPatch(value = null, target = "doc:/adres/postcode"))
+        assertThat(suggest()).containsExactly(ClearingPatch(target = "doc:/adres/postcode"))
     }
 
     @Test
@@ -101,7 +102,7 @@ class DataMigrationComponentSuggesterTest {
         paths(target, "doc:/woonplaats")
 
         assertThat(suggest()).containsExactly(
-            DataMigrationPatch(value = null, target = "doc:/adres"),
+            ClearingPatch(target = "doc:/adres"),
             DataMigrationPatch(source = null, target = "doc:/woonplaats"),
         )
     }
@@ -112,8 +113,30 @@ class DataMigrationComponentSuggesterTest {
         paths(source, "doc:/zaak", "doc:/naam", "doc:/adres", "doc:/straatnaam")
         paths(target, "doc:/zaak", "doc:/bsn", "doc:/straat_naam")
 
-        assertThat(suggest().map { it.target })
+        assertThat(suggest().map { targetOf(it) })
             .containsExactly("doc:/adres", "doc:/bsn", "doc:/naam", "doc:/straat_naam")
+    }
+
+    @Test
+    fun `should write a clearing patch's null value out, so it is not the same row as an unfinished copy`() {
+        // Both are "no source" to the applier, and that is fine — but only one of them is work the
+        // author still has to do, and with `NON_NULL` on both they were the same three bytes on the wire.
+        paths(source, "doc:/adres")
+        paths(target, "doc:/woonplaats")
+
+        assertThat(ObjectMapper().writeValueAsString(suggest()))
+            .isEqualTo("""[{"target":"doc:/adres","value":null},{"target":"doc:/woonplaats"}]""")
+    }
+
+    @Test
+    fun `should suggest nothing when the source resolves no path at all`() {
+        // `verhuizing:9.9.9` — a source version that was never deployed. Every target path would come
+        // back as a bare target, which the applier writes as a null: a plan that empties the document
+        // field by field, dressed as the ordinary "fill this in" rows.
+        paths(source)
+        paths(target, "doc:/adres", "doc:/naam", "doc:/status")
+
+        assertThat(suggester.suggest(source, target)).isNull()
     }
 
     @Test
@@ -228,7 +251,14 @@ class DataMigrationComponentSuggesterTest {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun suggest() = suggester.suggest(source, target) as List<DataMigrationPatch>
+    private fun suggest() = suggester.suggest(source, target) as List<Any>
+
+    /** The target of either kind of suggested patch — a copy, or a clear. */
+    private fun targetOf(patch: Any): String = when (patch) {
+        is DataMigrationPatch -> patch.target
+        is ClearingPatch -> patch.target
+        else -> error("Unexpected suggestion '$patch'")
+    }
 
     private fun paths(blueprintId: BlueprintId, vararg paths: String) {
         whenever(valueResolverService.getResolvableKeys(any<ValueResolverOptionRequest>(), eq(blueprintId)))
