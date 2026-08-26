@@ -61,6 +61,7 @@ The building block overview is now sorted by name, paginated, and searchable by 
 | Case widgets | Long texts wrap correctly without overlapping other content |
 | Cases | A case that cannot be found no longer stops a process, an assignment, or a note |
 | Cases | A case with building blocks can be deleted again |
+| Cases | The case list title and breadcrumb show the name of the active case version, matching the menu |
 | Dashboard | Donut charts with many categories display the circle correctly |
 | Document schemas | Recursive schema references no longer crash the server |
 | Draft environments | Default Spring profiles now correctly enable draft mode |
