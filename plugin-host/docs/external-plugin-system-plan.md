@@ -861,6 +861,68 @@ string when present) — and compiles each
 `frontend/*.tsx` referenced by a `frontend/*.html` `<script>` into a `*.bundle.js` (e.g. the
 `config`, `process-link-action`, and `case-tab` bundles).
 
+**Scaffold (`valtimo-plugin-init`).** The third bin, and the first one an author touches: it writes
+a complete, buildable project (`manifest.json`, `package.json`, `tsconfig.json`, `.gitignore`, a
+README and `src/plugin.ts` with a registered `action()`), so `npm run build:pack` produces an
+uploadable zip with no edits. Nine questions: the identity fields (id, version, which of the `en`/`nl`
+translation buckets to create — each asked separately, with declining both refused because
+`name`/`description` are per-locale — then name, description and provider), a `Y/n` for an
+`onEvent()` handler, and one multi-select covering **all six** frontend bundle types.
+
+That last question has two front-ends over one list (`src/scaffold/checkbox.ts` and
+`askNumberedList` in `prompts.ts`), which must answer it identically. With a terminal on **both**
+ends it is an arrow-key checkbox: raw mode via `readline.emitKeypressEvents`, redrawn through
+`readline`'s own `moveCursor`/`clearScreenDown` with `>` and `[x]` markers, so no escape sequence is
+written by hand and there is no terminal-capability guessing. Otherwise — output redirected, raw
+mode unavailable, or a scripted stream in a test — it is a one-line numbered list taking `1,3,6`,
+names, `all` or `none`. Two rules keep the pair honest: the shared `readline.Interface` is paused
+while the checkbox owns the stream (both read the same fd, and only one may listen at a time), and
+raw mode is **restored to what it was** rather than switched off, because an `Interface` built with
+`terminal: true` holds raw mode for its whole lifetime and only drops it on `close()`.
+
+**All six bundle types are peers.** `config`, `process-link-action`, `case-tab`, `case-widget`,
+`task-form` and `page` each cost one entry in the numbered list, and each contributes its own
+manifest keys, translation keys, two `frontend/` files and — where it has one — a backend handler
+(`config` → `configurationSchema`; `task-form` → `submit()` and `submitHandler: true`; `case-tab`,
+`case-widget` and `page` → a shared `request()` handler and one `frontend_data` declaration however
+many of the three are chosen). The default is `config` **alone**, because it is the only type with a
+structural claim to being one: unkeyed, at most one per plugin, and admin-facing plumbing rather
+than a choice about which product surface to build.
+
+An earlier revision offered only `config` and `case-tab`, as two `Y/n` questions. That asymmetry was
+an artefact of *this document*, not of the platform: §13.1 built `case-tab` first and used it to
+explain the parent-proxy transport and the downscoped user token, so it became the reference
+surface, and the reference surface became the surface to scaffold. There was never a technical basis
+for it — `case-tab`, `case-widget` and `page` run on identical machinery and differ only in where
+they mount and what context they receive.
+
+Flags cover the non-interactive path (`--yes`, `--minimal`, `--bundles <list>` taking names or
+`all`/`none`, `--sdk <spec>`, …), so CI and wrapper scripts are deterministic; `--bundles` is a set,
+so the order it is written in cannot change the generated project. `--with-frontend` was retired
+when the four types were added, because "the frontend" stopped naming one thing. Deliberately *not*
+scaffolded: `gzacApi`, `httpRequest`, `kv`, `actions[].outputs`, and second instances of a bundle
+type — `sample-plugins/case-summary` stays the reference for those.
+
+Per-part knowledge lives in **one** table, `src/scaffold/parts.ts`: one descriptor per part naming
+its SDK imports, backend fragment, templates, capabilities, translation strings and manifest effect,
+consumed generically by the manifest builder, the renderer and the file writer. Six types across six
+decision sites would otherwise be thirty-six places to keep in step; here a seventh type is a new
+descriptor plus a template directory.
+
+The generator's rule set is the same one both existing gates use: it validates identities with
+`@valtimo/plugin-sdk/manifest-validation` (sharing the rule sentences, so an author is never told
+two different rules), and its unit tests assert that the manifest it emits for **all sixty-four**
+subsets of the six bundle types passes `validatePluginManifest` with zero errors — the scaffold and
+the pack tool cannot disagree about what a valid plugin is. The logic lives in `src/scaffold/` (unit-tested,
+exposed as the `@valtimo/plugin-sdk/scaffold` subpath export, and deliberately *not* re-exported
+from `src/index.ts`, whose exports are all bundled into Wasm), while `bin/valtimo-plugin-init.mjs`
+only parses argv, decides whether to prompt, runs `npm install`, and prints the next steps. The
+copied files live in `templates/` as published package payload (`files: ["dist", "bin",
+"templates"]`), with `.gitignore` shipped as `_gitignore` because npm drops the dotfile from a
+tarball. Because `templates/` sits outside the SDK's `tsconfig` and vitest globs on purpose, the
+`scaffold` CI job — scaffold → install → `tsc --noEmit` → `build:pack` → assert the zip, for
+`--bundles all` and for `--minimal` — is the only thing that type-checks and compiles them.
+
 `PluginManifest` is defined once in `@valtimo/plugin-sdk/src/models/types.ts`; the host app's
 `models/plugin-manifest.ts` re-exports from the SDK so there is a single source of truth. The
 manifest has **no top-level `name`/`description`** — those live per-locale under `translations`
@@ -1339,10 +1401,20 @@ will fight over the same rows.
 
 A plugin's iframe surfaces need to call GZAC **on behalf of the logged-in user** (respect what the
 user can see/do), and the plugin **backend** may call GZAC either as the user or as the system.
-Three iframe surfaces exist — the **case-detail tab** (§13.1), the **task form** (§13.6) and the
-routed **menu page** (`ExternalPluginMenuPageService` ↔ `ExternalPluginPageComponent`); case
-widgets remain ⛔. The iframe holds **no token** and routes calls through the Angular parent
-(the **parent-proxy** model, §13.2) rather than being handed the token via `init`.
+Four iframe surfaces exist: the **case-detail tab** (§13.1), the **task form** (§13.6), the
+**case widget** (§13.7) and the routed **menu page** (`ExternalPluginMenuPageService` ↔
+`ExternalPluginPageComponent`). The iframe holds **no token** and routes calls through the Angular
+parent (the **parent-proxy** model, §13.2) rather than being handed the token via `init`.
+
+> **The menu page has no subsection of its own**, and that is the only reason it looks less
+> supported than the other three: it was built without one, and §13.1–13.5 happened to use the case
+> tab to explain the shared transport. It is documented instead by
+> `sample-plugins/case-summary/frontend/page-overview.tsx` and by the scaffold's `page` bundle
+> (`--bundles page`). Two things about it *are* specific and are easy to get wrong from the type
+> alone: GZAC reads **`icon`** for the menu icon, and it resolves a page bundle's **`title` as a
+> translation key** across every locale bucket — every other bundle type renders its title
+> literally. `FrontendBundle` declared a `menuIcon`/`menuPosition` pair that nothing ever read; both
+> were removed in favour of `icon` when the scaffold gained a `page` bundle.
 
 ### 13.1 Case-tab surface (`EXTERNAL_PLUGIN` tab type) ✅
 

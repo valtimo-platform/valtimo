@@ -30,15 +30,21 @@
       "types": "./dist/egress.d.ts",
       "default": "./dist/egress.js"
     },
+    "./scaffold": {
+      "types": "./dist/scaffold/index.d.ts",
+      "default": "./dist/scaffold/index.js"
+    },
     "./toolchain": "./bin/toolchain.mjs"
   },
   "bin": {
     "valtimo-plugin-build": "./bin/valtimo-plugin-build.mjs",
-    "valtimo-plugin-pack": "./bin/valtimo-plugin-pack.mjs"
+    "valtimo-plugin-pack": "./bin/valtimo-plugin-pack.mjs",
+    "valtimo-plugin-init": "./bin/valtimo-plugin-init.mjs"
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "templates"
   ],
   "dependencies": {
     "@extism/js-pdk": "^1.1.0",

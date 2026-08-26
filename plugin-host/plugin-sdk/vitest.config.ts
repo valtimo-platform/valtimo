@@ -40,6 +40,7 @@ export default defineConfig({
         "src/models/**",
         "src/index.ts",
         "src/frontend/index.ts",
+        "src/scaffold/index.ts",
       ],
       reporter: ["text", "html"],
     },

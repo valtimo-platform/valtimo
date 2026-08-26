@@ -189,11 +189,15 @@ export type FrontendBundleType = (typeof FRONTEND_BUNDLE_TYPES)[number];
 export interface FrontendBundle {
   type: FrontendBundleType;
   key?: string;
+  /**
+   * For `page` bundles this is a **translation key**, which GZAC resolves against every locale
+   * bucket to build the menu label; for every other type it is a literal string.
+   */
   title?: string;
   path: string;
   activityTypes?: string[];
-  menuIcon?: string;
-  menuPosition?: string;
+  /** `page` bundles only: the menu icon class, e.g. `icon mdi mdi-view-dashboard`. */
+  icon?: string;
   renderMode?: "bundle" | "htmx";
   /**
    * For `task-form` bundles only: when true, GZAC invokes the plugin's `submit(key, …)` hook during

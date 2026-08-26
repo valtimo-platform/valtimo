@@ -74,6 +74,15 @@ export function isValidPluginVersion(value: unknown): value is string {
   );
 }
 
+/**
+ * The identifier rules in prose, as a sentence that reads on from whatever names the offending
+ * field. They are constants rather than inline strings because a third caller states them outside
+ * a manifest context: `valtimo-plugin-init` rejects a bad `--plugin-id` before any manifest exists,
+ * and an author who then fixes it must not be told a *different* rule by the pack tool.
+ */
+export const PLUGIN_ID_RULE = `must be 1-${MAX_PLUGIN_IDENTIFIER_LENGTH} characters of lowercase letters, digits, '.', '-' or '_', starting and ending with a letter or digit (it is used as a directory and URL path segment)`;
+export const PLUGIN_VERSION_RULE = `must be 1-${MAX_PLUGIN_IDENTIFIER_LENGTH} characters of letters, digits, '.', '-', '_' or '+', starting and ending with a letter or digit (it is used as a directory and URL path segment)`;
+
 export function isValidPluginLogo(value: unknown): value is string {
   return (
     typeof value === "string" &&
@@ -93,14 +102,10 @@ export function validatePluginManifest(manifest: unknown): string[] {
   const m = manifest as Record<string, unknown>;
 
   if (!isValidPluginId(m.pluginId)) {
-    errors.push(
-      `manifest.json 'pluginId' must be 1-${MAX_PLUGIN_IDENTIFIER_LENGTH} characters of lowercase letters, digits, '.', '-' or '_', starting and ending with a letter or digit (it is used as a directory and URL path segment)`
-    );
+    errors.push(`manifest.json 'pluginId' ${PLUGIN_ID_RULE}`);
   }
   if (!isValidPluginVersion(m.version)) {
-    errors.push(
-      `manifest.json 'version' must be 1-${MAX_PLUGIN_IDENTIFIER_LENGTH} characters of letters, digits, '.', '-', '_' or '+', starting and ending with a letter or digit (it is used as a directory and URL path segment)`
-    );
+    errors.push(`manifest.json 'version' ${PLUGIN_VERSION_RULE}`);
   }
   // Optional — only the pack tool sets it. When present it names a file the host copies into the
   // stored package, so it may not name a path.
