@@ -14,9 +14,11 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Faster document handling
 
-New enhancement explanation.
+Document schemas are now parsed once and reused instead of on every use, and process links are indexed on
+their process definition. Creating and updating cases, resolving document values and opening task forms are
+all faster, most noticeably on configurations with large document schemas or many process links.
 
 ---
 
