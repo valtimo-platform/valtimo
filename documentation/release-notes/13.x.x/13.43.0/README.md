@@ -69,7 +69,6 @@ When a plugin action property resolves to no value, a debug log entry now names 
 | Cases | A case that cannot be found no longer stops a process, an assignment, or a note |
 | Cases | A case with building blocks can be deleted again |
 | Cases | The case list title and breadcrumb show the name of the active case version, matching the menu |
-| Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
 | Choice fields | Deprecated choice field values no longer appear in form dropdowns |
 | Dashboard | Donut charts with many categories display the circle correctly |
 | Document schemas | Recursive schema references no longer crash the server |
