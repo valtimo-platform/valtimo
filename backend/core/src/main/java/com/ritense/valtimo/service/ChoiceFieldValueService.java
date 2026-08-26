@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,12 +143,16 @@ public class ChoiceFieldValueService {
      * Get all the choiceFieldValues.
      *
      * @param pageable the pagination information
+     * @param includeDeprecated whether to include deprecated values
      * @return the list of entities
      */
     @Transactional(readOnly = true)
-    public Page<ChoiceFieldValue> findAllByChoiceFieldKeyName(Pageable pageable, String choiceFieldName) {
-        logger.debug("Request to get all ChoiceFieldValues for choiceField witd name {}", choiceFieldName);
-        return choiceFieldValueRepository.findByChoiceField_KeyName(pageable, choiceFieldName);
+    public Page<ChoiceFieldValue> findAllByChoiceFieldKeyName(Pageable pageable, String choiceFieldName, boolean includeDeprecated) {
+        logger.debug("Request to get ChoiceFieldValues for choiceField with name {}, includeDeprecated={}", choiceFieldName, includeDeprecated);
+        if (includeDeprecated) {
+            return choiceFieldValueRepository.findByChoiceField_KeyName(pageable, choiceFieldName);
+        }
+        return choiceFieldValueRepository.findByChoiceField_KeyNameAndDeprecatedIsFalse(pageable, choiceFieldName);
     }
 
     /**

@@ -57,6 +57,7 @@ The metadata tab of the case inspection page now displays the case definition ke
 | Cases | A case that cannot be found no longer stops a process, an assignment, or a note |
 | Cases | A case with building blocks can be deleted again |
 | Cases | The case list title and breadcrumb show the name of the active case version, matching the menu |
+| Choice fields | Deprecated choice field values no longer appear in form dropdowns |
 | Dashboard | Donut charts with many categories display the circle correctly |
 | Document schemas | Recursive schema references no longer crash the server |
 | Draft environments | Default Spring profiles now correctly enable draft mode |
