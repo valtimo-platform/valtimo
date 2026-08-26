@@ -4,8 +4,10 @@
 /classes/
 !gradle/wrapper/gradle-wrapper.jar
 .claude
+/CLAUDE.md
 .playwright-mcp
 .env.properties
+/thoughts/
 # ...except the public demo env files shipped with each app variant.
 !backend/apps/*/.env.properties
 
@@ -20,3 +22,4 @@
 
 # Riptide artifacts (cloud-synced)
 .humanlayer/tasks/
+.mcp.json

@@ -27,6 +27,7 @@ import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.TeamManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.event.OperatonTaskEvent
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
@@ -67,8 +68,14 @@ class CaseTaskTeamAutoAssignListener(
 
         val delegateTask = event.delegateTask
         val processInstanceId = OperatonProcessInstanceId(delegateTask.processInstanceId)
-        val caseDocument = processDocumentService.getCaseDocument(processInstanceId, delegateTask.execution)
-            ?: return
+        val caseDocument = try {
+            processDocumentService.getCaseDocument(processInstanceId, delegateTask.execution)
+        } catch (e: CaseDocumentResolutionException) {
+            logger.debug {
+                "Could not resolve case document for task '${delegateTask.id}': ${e.message}"
+            }
+            return
+        } ?: return
 
         val caseDefinition = caseDefinitionService.getCaseDefinition(
             caseDocument.definitionId().caseDefinitionId()
@@ -144,7 +151,12 @@ class CaseTaskTeamAutoAssignListener(
     }
 
     private fun getEligibleCaseDocument(documentId: UUID): Document? {
-        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+        val caseDocumentId = try {
+            caseDocumentResolver.resolveCaseDocumentId(documentId)
+        } catch (e: CaseDocumentResolutionException) {
+            logger.debug { "Could not resolve case document for document $documentId: ${e.message}" }
+            return null
+        }
 
         val caseDocument = documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId))
             .orElse(null)

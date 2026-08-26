@@ -21,12 +21,14 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
 import com.ritense.buildingblock.listener.BuildingBlockContinuousSyncListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
+import com.ritense.buildingblock.listener.BuildingBlockDocumentPreDeleteListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
 import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListener
 import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
+import com.ritense.buildingblock.processlink.service.BuildingBlockProcessLinkCopyValidator
 import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
@@ -561,6 +563,14 @@ class BuildingBlockAutoConfiguration {
     )
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkCopyValidator::class)
+    fun buildingBlockProcessLinkCopyValidator(
+        repositoryService: RepositoryService,
+    ) = BuildingBlockProcessLinkCopyValidator(
+        repositoryService
+    )
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockStartEventListener::class)
     fun buildingBlockStartEventListener(
         buildingBlockInstanceService: BuildingBlockInstanceService,
@@ -848,6 +858,18 @@ class BuildingBlockAutoConfiguration {
     fun caseDefinitionBuildingBlockLinkCaseEventListener(
         linkRepository: CaseDefinitionBuildingBlockLinkRepository,
     ) = CaseDefinitionBuildingBlockLinkCaseEventListener(linkRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDocumentPreDeleteListener::class)
+    fun buildingBlockDocumentPreDeleteListener(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        documentService: DocumentService,
+        runtimeService: RuntimeService,
+    ) = BuildingBlockDocumentPreDeleteListener(
+        buildingBlockInstanceRepository,
+        documentService,
+        runtimeService
+    )
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockFormFlowDefinitionService::class)

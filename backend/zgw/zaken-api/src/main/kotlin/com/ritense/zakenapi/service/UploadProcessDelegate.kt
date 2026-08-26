@@ -18,14 +18,18 @@ package com.ritense.zakenapi.service
 
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.logging.withLoggingContext
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import com.ritense.zakenapi.event.ResourceStorageDocumentMetadataAvailableEvent
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.ApplicationEventPublisher
 
+@ProcessBean(description = "Publishes ZGW file upload events")
 class UploadProcessDelegate(
     private val eventPublisher: ApplicationEventPublisher
 ) {
 
+    @ProcessBeanMethod(description = "Publishes an event when a file has been uploaded to ZGW")
     fun publishFileUploadedEvent(execution: DelegateExecution) {
         withLoggingContext(JsonSchemaDocument::class, execution.processBusinessKey) {
             val event = ResourceStorageDocumentMetadataAvailableEvent(

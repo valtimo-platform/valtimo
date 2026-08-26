@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,42 @@
   &__modeler-canvas {
     width: 100%;
     position: relative;
+
+    .markers-visibility-toggle-wrapper {
+      position: absolute;
+      bottom: 55px;
+      right: 15px;
+      z-index: 100;
+    }
+
+    .markers-visibility-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 10px;
+      border: none;
+      border-radius: 2px;
+      background-color: var(--cds-layer);
+      cursor: pointer;
+      color: var(--cds-text-secondary);
+      transition: background-color 0.15s, color 0.15s;
+
+      &:hover {
+        background-color: var(--cds-layer-hover);
+        color: var(--cds-text-primary);
+      }
+
+      &:focus {
+        outline: 2px solid var(--cds-focus);
+        outline-offset: -2px;
+      }
+
+      &__label {
+        font-size: 12px;
+        white-space: nowrap;
+      }
+    }
   }
 
   &__modeler-panel {
@@ -343,6 +379,89 @@
   }
 }
 
+::ng-deep .djs-overlay-activity-marker {
+  overflow: visible !important;
+  pointer-events: all !important;
+}
+
+::ng-deep .activity-marker-overlay {
+  display: flex;
+  gap: 2px;
+}
+
+::ng-deep .activity-marker-badge {
+  position: relative;
+  cursor: pointer;
+  pointer-events: all;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 0;
+  }
+
+  &__text {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    white-space: nowrap;
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 10;
+  }
+
+  &:hover &__text,
+  &--active &__text {
+    display: block;
+  }
+
+  &--process-link &__icon {
+    background-color: var(--cds-support-info, #0043ce);
+    color: var(--cds-text-on-color, #ffffff);
+  }
+
+  &--process-link &__text {
+    border: 1px solid var(--cds-support-info, #0043ce);
+    color: var(--cds-text-primary, #161616);
+    background-color: var(--cds-layer, #ffffff);
+  }
+
+  &--execution-listener &__icon {
+    background-color: var(--cds-purple-60, #8a3ffc);
+    color: var(--cds-text-on-color, #ffffff);
+  }
+
+  &--execution-listener &__text {
+    border: 1px solid var(--cds-purple-60, #8a3ffc);
+    color: var(--cds-text-primary, #161616);
+    background-color: var(--cds-layer, #ffffff);
+  }
+
+  &--task-listener &__icon {
+    background-color: var(--cds-teal-50, #009d9a);
+    color: var(--cds-text-on-color, #ffffff);
+  }
+
+  &--task-listener &__text {
+    border: 1px solid var(--cds-teal-50, #009d9a);
+    color: var(--cds-text-primary, #161616);
+    background-color: var(--cds-layer, #ffffff);
+  }
+}
+
 ::ng-deep .validation-errors-panel {
   padding: 8px 12px;
   display: flex;
@@ -388,6 +507,24 @@
     font-size: 13px;
     line-height: 18px;
   }
+}
+
+::ng-deep .bio-properties-panel-entry.validation-error-field {
+  .bio-properties-panel-input,
+  .bio-properties-panel-textfield,
+  .bio-properties-panel-feel-editor-container {
+    border: 2px solid var(--cds-support-error, #da1e28) !important;
+    background-color: var(--cds-notification-error-background, #fff1f1) !important;
+  }
+}
+
+::ng-deep .expression-editor-param input.validation-error-param,
+::ng-deep input.expression-editor-input.validation-error-param,
+::ng-deep .expression-editor-technical input.validation-error-param,
+::ng-deep .expression-editor-technical textarea.validation-error-param {
+  border: 2px solid #da1e28 !important;
+  background-color: #fff1f1 !important;
+  border-color: #da1e28 !important;
 }
 
 ::ng-deep .process-link-properties-panel {
@@ -442,5 +579,97 @@
     width: 100%;
     display: flex;
     align-items: center;
+  }
+}
+
+::ng-deep .djs-overlay-autofilled-indicator {
+  overflow: visible !important;
+  pointer-events: all !important;
+}
+
+::ng-deep .autofilled-indicator-overlay {
+  position: relative;
+  cursor: pointer;
+  pointer-events: all;
+
+  .autofilled-indicator-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--cds-support-info, #0043ce);
+    color: var(--cds-text-on-color, #ffffff);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 0;
+  }
+
+  .autofilled-indicator-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    border: 1px solid var(--cds-support-info, #0043ce);
+    color: var(--cds-text-primary, #161616);
+    background-color: var(--cds-layer, #ffffff);
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    white-space: nowrap;
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 10;
+  }
+
+  &:hover .autofilled-indicator-tooltip {
+    display: block;
+  }
+}
+
+::ng-deep .autofilled-notification-panel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--cds-layer-02, #f4f4f4);
+  border-left: 3px solid var(--cds-support-info, #0043ce);
+  margin-bottom: 8px;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: var(--cds-support-info, #0043ce);
+    color: var(--cds-text-on-color, #ffffff);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  &__message {
+    flex: 1;
+    font-size: 12px;
+    color: var(--cds-text-primary, #161616);
+  }
+
+  &__dismiss {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 16px;
+    color: var(--cds-text-secondary, #525252);
+    line-height: 1;
+
+    &:hover {
+      color: var(--cds-text-primary, #161616);
+    }
   }
 }

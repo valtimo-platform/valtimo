@@ -23,5 +23,9 @@ data class ProcessDefinitionValidationError(
     val reason: String,
     val errorCode: String? = null,
     val expression: String? = null,
-    val severity: ValidationSeverity = ValidationSeverity.ERROR
+    val severity: ValidationSeverity = ValidationSeverity.ERROR,
+    val invalidFields: List<String>? = null,
+    val invalidArguments: List<Int>? = null,
+    val listenerType: String? = null,
+    val listenerIndex: Int? = null
 )
