@@ -28,4 +28,5 @@ Admin > Other > Process migration has the standard Valtimo look and feel, with c
 
 | Area | Fix |
 |------|-----|
+| Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
 | Process migration | A system process can be migrated after it was changed |
