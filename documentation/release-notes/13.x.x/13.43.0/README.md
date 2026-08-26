@@ -81,6 +81,3 @@ When a plugin action property resolves to no value, a debug log entry now names 
 | Search fields | Date searches return results with correct date format |
 | Tasks | Tasks of cases that were already running before the upgrade to 13 can be opened again |
 | Widgets | Image widget no longer offers `task:` fields it cannot show |
-| Admin screens | Dropdown lists open in the right place, instead of on top of their own search box |
-| Admin screens | Field pickers no longer come up empty when more than one is shown on a screen |
-| Process links | Every version of a building block is offered when picking one |

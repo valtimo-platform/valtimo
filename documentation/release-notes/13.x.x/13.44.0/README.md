@@ -24,4 +24,6 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Admin screens | Dropdown lists open in the right place, instead of on top of their own search box |
+| Admin screens | Field pickers no longer come up empty when more than one is shown on a screen |
+| Process links | Every version of a building block is offered when picking one |
