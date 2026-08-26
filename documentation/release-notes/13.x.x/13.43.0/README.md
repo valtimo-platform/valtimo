@@ -75,7 +75,6 @@ When a plugin action property resolves to no value, a debug log entry now names 
 | Draft environments | Default Spring profiles now correctly enable draft mode |
 | Forms | The IBAN component keeps the entered value when the IBAN is invalid |
 | Notificaties API | Subscription registration no longer causes a restart loop on startup |
-| Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
 | Process editor | Exported process definition now named after the process instead of `diagram.bpmn` |
 | Process links | Links no longer leak into another case definition or building block |
 | Process upload | File dialog filters on supported types again; drag-and-drop works for BPMN files and packages |

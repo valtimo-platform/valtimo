@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
