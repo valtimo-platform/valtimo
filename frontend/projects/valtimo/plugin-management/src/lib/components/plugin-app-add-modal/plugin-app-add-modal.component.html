@@ -36,6 +36,19 @@
 
   <section cdsModalContent [cdsLayer]="1">
     <div [hidden]="$currentStep() !== 0">
+      @if ($connectState() === 'connected') {
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'success',
+            title: ('pluginManagement.appAdd.connectedTitle' | translate),
+            message: ('pluginManagement.appAdd.connectedDescription' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-app-add-modal__notification plugin-app-add-modal__notification--top"
+        ></cds-inline-notification>
+      }
+
       <valtimo-plugin-host-connection-form
         [active]="open && !resumeHostId"
         [disabled]="connectionLocked"
@@ -54,19 +67,6 @@
             ) | translate
           }}</span>
         </div>
-      }
-
-      @if ($connectState() === 'connected') {
-        <cds-inline-notification
-          [notificationObj]="{
-            type: 'success',
-            title: ('pluginManagement.appAdd.connectedTitle' | translate),
-            message: ('pluginManagement.appAdd.connectedDescription' | translate),
-            showClose: false,
-            lowContrast: true,
-          }"
-          class="plugin-app-add-modal__notification"
-        ></cds-inline-notification>
       }
 
       @if ($connectState() === 'timeout') {
