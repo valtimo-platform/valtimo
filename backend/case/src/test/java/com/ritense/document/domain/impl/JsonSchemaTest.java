@@ -25,19 +25,22 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.everit.json.schema.Schema;
 import org.junit.jupiter.api.Test;
 
-/** Caching a built schema is only observable as identity: an uncached build returns an equal schema. */
 class JsonSchemaTest {
 
     private static final URI HOUSE = URI.create("config/unit-test/document/definition/house.schema.json");
     private static final URI PERSON = URI.create("config/unit-test/document/definition/person.schema.json");
+
+    private static final int CONCURRENT_CALLERS = 8;
 
     @Test
     void shouldBuildTheSchemaOnceForRepeatedCalls() {
@@ -49,7 +52,6 @@ class JsonSchemaTest {
         assertThat(jsonSchema.getSchema()).isSameAs(first);
     }
 
-    /** Keyed by the schema JSON, not per instance: Hibernate hands back a fresh definition each time. */
     @Test
     void shouldShareABuiltSchemaBetweenSeparateInstancesOfTheSameSchema() {
         var one = JsonSchema.fromResourceUri(HOUSE);
@@ -67,7 +69,6 @@ class JsonSchemaTest {
         assertThat(person.getSchema().getId()).isNotEqualTo(house.getSchema().getId());
     }
 
-    /** An edited schema is a different key, which is why the cache cannot go stale. */
     @Test
     void shouldBuildAgainWhenTheSchemaJsonDiffers() {
         var original = JsonSchema.fromResourceUri(HOUSE);
@@ -75,14 +76,14 @@ class JsonSchemaTest {
             original.asJson().toString().replace("\"maxLength\":100", "\"maxLength\":99")
         );
 
-        assertThat(edited.asJson()).isNotEqualTo(original.asJson()); // the edit really took
+        assertThat(edited.asJson()).isNotEqualTo(original.asJson());
         assertThat(edited.getSchema()).isNotSameAs(original.getSchema());
     }
 
     @Test
     void shouldStillValidateDocumentsAgainstACachedSchema() {
         var jsonSchema = JsonSchema.fromResourceUri(HOUSE);
-        jsonSchema.getSchema(); // prime the cache
+        jsonSchema.getSchema();
 
         var content = JsonDocumentContent.build(
             MapperSingleton.INSTANCE.get().createObjectNode().put("street", "Funenpark")
@@ -92,25 +93,61 @@ class JsonSchemaTest {
             .isEqualTo("Funenpark");
     }
 
-    /** Concurrent misses may build more than once, but every caller must end up on one instance. */
     @Test
     void shouldSettleOnOneSchemaUnderConcurrentFirstUse() throws Exception {
-        var schemas = IntStream.range(0, 8)
-            .mapToObj(i -> JsonSchema.fromResourceUri(HOUSE))
+        var neverBuiltBefore = uniqueSchemaJson("concurrent-first-use");
+        var schemas = IntStream.range(0, CONCURRENT_CALLERS)
+            .mapToObj(i -> JsonSchema.fromString(neverBuiltBefore))
             .toList();
-        ExecutorService executor = Executors.newFixedThreadPool(8);
+        var startTogether = new CyclicBarrier(CONCURRENT_CALLERS);
+        ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_CALLERS);
         try {
             List<Callable<Schema>> calls = schemas.stream()
-                .map(s -> (Callable<Schema>) s::getSchema)
+                .map(jsonSchema -> (Callable<Schema>) () -> {
+                    startTogether.await(10, TimeUnit.SECONDS);
+                    return jsonSchema.getSchema();
+                })
                 .collect(Collectors.toList());
 
             Set<Schema> byIdentity = Collections.newSetFromMap(new IdentityHashMap<>());
             executor.invokeAll(calls).stream().map(JsonSchemaTest::get).forEach(byIdentity::add);
 
             assertThat(byIdentity).hasSize(1);
+            assertThat(JsonSchema.fromString(neverBuiltBefore).getSchema())
+                .isSameAs(byIdentity.iterator().next());
         } finally {
             executor.shutdownNow();
         }
+    }
+
+    /** The cap is a backstop against unforeseen growth, so passing it drops what was built before. */
+    @Test
+    void shouldNotHoldOnToSchemasPastTheCap() {
+        var jsonSchema = JsonSchema.fromString(uniqueSchemaJson("dropped-past-the-cap"));
+        var builtOnce = jsonSchema.getSchema();
+
+        IntStream.rangeClosed(0, 100)
+            .forEach(i -> JsonSchema.fromString(uniqueSchemaJson("filler-" + i)).getSchema());
+
+        assertThat(jsonSchema.getSchema()).isNotSameAs(builtOnce);
+    }
+
+    private static String uniqueSchemaJson(String name) {
+        return """
+            {
+              "$id": "%s.schema",
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "title": "%s",
+              "type": "object",
+              "properties": {
+                "street": {
+                  "type": "string",
+                  "maxLength": 100
+                }
+              },
+              "additionalProperties": false
+            }
+            """.formatted(name, name);
     }
 
     private static Schema get(Future<Schema> future) {
