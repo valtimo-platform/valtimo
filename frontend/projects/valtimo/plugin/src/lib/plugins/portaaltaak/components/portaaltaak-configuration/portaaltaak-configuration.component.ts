@@ -107,7 +107,8 @@ export class PortaaltaakConfigurationComponent
     const valid = !!(
       formValue.configurationTitle &&
       formValue.notificatiesApiPluginConfiguration &&
-      formValue.objectManagementConfigurationId
+      formValue.objectManagementConfigurationId &&
+      formValue.completeTaakProcess
     );
 
     this.valid$.next(valid);
