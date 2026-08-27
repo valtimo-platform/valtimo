@@ -60,7 +60,9 @@ export class OpenZaakService {
 
   private getResourceMetadata(resourceId: string, metadataKey: string): Observable<string> {
     return this.http
-      .get<{value: string}>(`${this.valtimoApiConfig.endpointUri}v1/resource-storage/${resourceId}/metadata/${metadataKey}`)
+      .get<{
+        value: string;
+      }>(`${this.valtimoApiConfig.endpointUri}v1/resource-storage/${resourceId}/metadata/${metadataKey}`)
       .pipe(
         map(response => response?.value || ''),
         catchError(() => of(''))
@@ -117,8 +119,12 @@ export class OpenZaakService {
     );
   }
 
-  public upload(file: File, caseDefinitionKey: string): Observable<DocumentenApiFileReference> {
-    return this.uploadTempFileWithMetadata(file, {caseDefinitionKey});
+  public upload(
+    file: File,
+    caseDefinitionKey: string,
+    documentId?: string
+  ): Observable<DocumentenApiFileReference> {
+    return this.uploadTempFileWithMetadata(file, {caseDefinitionKey, documentId});
   }
 
   public uploadWithMetadata(

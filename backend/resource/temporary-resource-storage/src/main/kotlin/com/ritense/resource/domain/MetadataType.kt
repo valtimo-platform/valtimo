@@ -18,7 +18,7 @@ package com.ritense.resource.domain
 
 enum class MetadataType(val key: String) {
     CONTENT_TYPE("contentType"),
-    DOCUMENT_ID("documentId"), // case document id
+    DOCUMENT_ID("documentId"), // Json document id
     FILE_NAME("filename"),
     FILE_PATH("filePath"),
     FILE_SIZE("fileSize"),

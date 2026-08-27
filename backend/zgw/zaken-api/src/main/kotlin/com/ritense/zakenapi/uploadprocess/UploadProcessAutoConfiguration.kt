@@ -24,6 +24,7 @@ import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -49,12 +50,16 @@ class UploadProcessAutoConfiguration {
         uploadProcessService: UploadProcessService,
         authorizationService: AuthorizationService,
         catalogiService: CatalogiService,
+        caseDocumentResolver: CaseDocumentResolver,
+        runtimeService: OperatonRuntimeService,
     ): ResourceUploadedToDocumentEventListener {
         return ResourceUploadedToDocumentEventListener(
             resourceService,
             uploadProcessService,
             authorizationService,
             catalogiService,
+            caseDocumentResolver,
+            runtimeService,
         )
     }
 

@@ -290,6 +290,7 @@ export class DocumentenApiUploaderComponent
         switchMap(file =>
           this.uploadProviderService.uploadTempFileWithMetadata(file, {
             ...metadata,
+            documentId: this.stateService.documentId || null,
             processInstanceId: this.stateService.processInstanceId,
             documentUrlProcessVariable: this.documentUrlProcessVariable || null,
           })
