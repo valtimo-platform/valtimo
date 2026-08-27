@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.CaseListColumnId
+import com.ritense.case.exception.CaseDefinitionHasConfigurationIssuesException
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
@@ -120,6 +121,16 @@ class CaseDefinitionService(
             val basedOnCaseDefinition = getCaseDefinition(basedOnCaseDefinitionId)
             require(basedOnCaseDefinition.final) {
                 "Failed to create case-definition-draft. Case-definition with id: '$basedOnCaseDefinitionId' is not final."
+            }
+            // A draft copies the configuration of the version it is based on. Copying a broken
+            // configuration would carry the issue into the new version, so refuse up front instead
+            // of failing halfway through the copy.
+            val unresolvedIssues = configurationIssueRepository.findUnresolvedByCaseDefinitionId(basedOnCaseDefinitionId)
+            if (unresolvedIssues.isNotEmpty()) {
+                throw CaseDefinitionHasConfigurationIssuesException(
+                    basedOnCaseDefinitionId,
+                    unresolvedIssues.map { it.issueType }
+                )
             }
             basedOnCaseDefinition.copy(
                 id = caseDefinitionId,

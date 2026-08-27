@@ -21,7 +21,9 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.domain.CaseListColumnId
+import com.ritense.case.domain.CaseDefinitionConfigurationIssue
 import com.ritense.case.domain.ColumnDefaultSort
+import com.ritense.case.exception.CaseDefinitionHasConfigurationIssuesException
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
@@ -58,6 +60,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.zalando.problem.Status
 import org.springframework.data.domain.Sort
 import java.util.Optional
 import java.util.stream.Stream
@@ -681,6 +684,39 @@ class CaseDefinitionServiceTest : BaseTest() {
         assertEquals("Layout Test - EDIT", draft.name)
         assertEquals(basedOnCaseDefinition.description, draft.description)
         assertFalse(draft.final)
+    }
+
+    @Test
+    fun `should refuse a draft when the based on version has unresolved configuration issues`() {
+        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"))
+        val request = CaseDefinitionDraftCreateRequest(
+            caseDefinitionKey = "key",
+            caseDefinitionVersion = "2.0.0",
+            basedOnCaseDefinitionVersion = "1.0.0"
+        )
+
+        whenever(caseDefinitionRepository.findById(basedOnCaseDefinition.id))
+            .thenReturn(Optional.of(basedOnCaseDefinition))
+        whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionId(basedOnCaseDefinition.id))
+            .thenReturn(
+                listOf(
+                    CaseDefinitionConfigurationIssue(
+                        caseDefinitionId = basedOnCaseDefinition.id,
+                        issueType = "zaakdetail-sync"
+                    )
+                )
+            )
+
+        val exception = assertThrows<CaseDefinitionHasConfigurationIssuesException> {
+            service.createCaseDefinitionDraft(request)
+        }
+
+        assertEquals(Status.BAD_REQUEST, exception.status)
+        assertTrue(exception.title!!.contains("Failed to create case-definition-draft"))
+        // The detail is what the frontend renders next to the title
+        assertTrue(exception.detail!!.contains("zaakdetail-sync"))
+        assertTrue(exception.detail!!.contains("key:1.0.0"))
+        verify(caseDefinitionRepository, never()).save(any())
     }
 
     @Test
