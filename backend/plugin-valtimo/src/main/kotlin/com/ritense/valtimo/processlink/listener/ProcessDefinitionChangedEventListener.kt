@@ -32,7 +32,7 @@ import org.springframework.transaction.event.TransactionalEventListener
  * definition id. The case definition is taken from the event instead.
  */
 class ProcessDefinitionChangedEventListener(
-    private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolver
+    private val pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -49,10 +49,12 @@ class ProcessDefinitionChangedEventListener(
         if (caseDefinitionId == null) {
             return
         }
-        try {
-            pluginConfigurationMappingResolver.recheckIssuesForCaseDefinition(caseDefinitionId)
-        } catch (e: Exception) {
-            logger.warn(e) { "Could not recheck plugin configuration issues for case definition $caseDefinitionId" }
+        pluginConfigurationMappingResolvers.forEach { resolver ->
+            try {
+                resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
+            } catch (e: Exception) {
+                logger.warn(e) { "Could not recheck plugin configuration issues for case definition $caseDefinitionId" }
+            }
         }
     }
 
