@@ -35,6 +35,7 @@ import {WatsonHealthStackedMove16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {TranslateService} from '@ngx-translate/core';
+import {gt, valid} from 'semver';
 
 @Component({
   standalone: false,
@@ -178,13 +179,20 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
     // Migrating to the latest version of the same case is what this screen is used for, so the
     // target is prefilled. The source version is not: that is the one thing only the user knows.
     this._subscriptions.add(
-      combineLatest([this.sourceCaseDefinitionKeySelected$, this.caseDefinitions$]).subscribe(
-        ([sourceCaseDefinitionKeySelected, caseDefinitions]) => {
-          this.targetCaseDefinitionKeySelected$.next(sourceCaseDefinitionKeySelected);
+      this.sourceCaseDefinitionKeySelected$.subscribe(sourceCaseDefinitionKeySelected =>
+        this.targetCaseDefinitionKeySelected$.next(sourceCaseDefinitionKeySelected)
+      )
+    );
+
+    // Keyed off the target rather than the source so that picking a different target case replaces
+    // the tag as well. Left alone it would keep the previous case's tag, which the target case need
+    // not even have, and both buttons only check that a tag is set.
+    this._subscriptions.add(
+      combineLatest([this.targetCaseDefinitionKeySelected$, this.caseDefinitions$]).subscribe(
+        ([targetCaseDefinitionKeySelected, caseDefinitions]) =>
           this.targetCaseDefinitionVersionTagSelected$.next(
-            this.latestVersionTagOf(caseDefinitions, sourceCaseDefinitionKeySelected)
-          );
-        }
+            this.latestVersionTagOf(caseDefinitions, targetCaseDefinitionKeySelected)
+          )
       )
     );
   }
@@ -293,19 +301,22 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Relies on the backend returning the versions of a key in ascending semver order, which a string
-   * sort here would get wrong for 1.9.0 versus 1.10.0.
+   * Compares the tags rather than trusting their position in the list. The backend sorts on name
+   * before version tag, and a name can be changed per version, so two versions of the same key can
+   * come back in an order that does not follow their version.
    */
   private latestVersionTagOf(
     caseDefinitions: Array<CaseDefinition>,
     caseDefinitionKey: string | null
   ): string | null {
-    return (
-      caseDefinitions
-        .filter(caseDefinition => caseDefinition.caseDefinitionKey === caseDefinitionKey)
-        .map(caseDefinition => caseDefinition.caseDefinitionVersionTag)
-        .pop() ?? null
-    );
+    return caseDefinitions
+      .filter(caseDefinition => caseDefinition.caseDefinitionKey === caseDefinitionKey)
+      .map(caseDefinition => caseDefinition.caseDefinitionVersionTag)
+      .reduce((latest: string | null, current: string) => {
+        if (latest === null) return current;
+        if (!valid(current)) return latest;
+        return !valid(latest) || gt(current, latest) ? current : latest;
+      }, null);
   }
 
   protected readonly CARBON_THEME = 'g10';

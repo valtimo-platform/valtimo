@@ -55,7 +55,7 @@ public class ProcessPropertyService {
      * {@link #isSystemProcess(String)} this does not throw for such a key, which a listing endpoint
      * cannot afford.
      */
-    public boolean isSystemProcessOrUnknown(String processDefinitionKey) {
+    public boolean isKnownSystemProcess(String processDefinitionKey) {
         final var processProperties = processDefinitionPropertiesRepository.findByProcessDefinitionKey(processDefinitionKey);
         return processProperties != null && processProperties.isSystemProcess();
     }
@@ -66,12 +66,12 @@ public class ProcessPropertyService {
      *     definition version and leaves every case definition that pinned an earlier version
      *     untouched.
      */
-    @Deprecated(since = "13.43.0", forRemoval = true)
+    @Deprecated(since = "13.44.0", forRemoval = true)
     public boolean isReadOnlyById(String processDefinitionId) {
         return false;
     }
 
-    @Deprecated(since = "13.43.0", forRemoval = true)
+    @Deprecated(since = "13.44.0", forRemoval = true)
     public boolean isReadOnly(String processDefinitionKey) {
         return false;
     }

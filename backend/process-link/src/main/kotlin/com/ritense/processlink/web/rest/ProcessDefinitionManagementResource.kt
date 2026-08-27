@@ -317,7 +317,7 @@ class ProcessDefinitionManagementResource(
 
     private fun toDto(definition: OperatonProcessDefinition): ProcessDefinitionWithPropertiesDto {
         val dto = ProcessDefinitionWithPropertiesDto.fromProcessDefinition(definition)
-        dto.setSystemProcess(processPropertyService.isSystemProcessOrUnknown(definition.key))
+        dto.setSystemProcess(processPropertyService.isKnownSystemProcess(definition.key))
         return dto
     }
 

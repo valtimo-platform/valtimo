@@ -202,7 +202,8 @@
             >{{ 'processManagement.readOnly' | translate }}</cds-tag
           >
 
-          <cds-tag *ngIf="actionsObs.isSystemProcess" type="red">{{
+          <!-- Blue to match the process list, where red already means draft -->
+          <cds-tag *ngIf="actionsObs.isSystemProcess" type="blue">{{
             'processManagement.systemProcess' | translate
           }}</cds-tag>
         </div>

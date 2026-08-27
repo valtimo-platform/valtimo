@@ -24,6 +24,13 @@ interface CaseDefinitionChecker {
 
     fun canUpdateCaseDefinition(caseDefinitionId: CaseDefinitionId): Boolean = false
 
+    /**
+     * Answers whether the case definition itself is final, which [canUpdateCaseDefinition] does not:
+     * that one is also false for a draft that merely cannot be edited here, either because the
+     * environment has drafts disabled or because an import is in progress.
+     */
+    fun isCaseDefinitionFinal(caseDefinitionId: CaseDefinitionId): Boolean = false
+
     fun canUpdateGlobalConfiguration(): Boolean = false
 
     fun assertCaseDefinitionExists(caseDefinitionId: CaseDefinitionId) {

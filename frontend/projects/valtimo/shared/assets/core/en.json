@@ -1797,7 +1797,7 @@
     "targetActivity": "Activity in the target version",
     "selectPlaceholder": "Select...",
     "migrate": "Migrate",
-    "instanceCount": "{{count}} running case(s)",
+    "instanceCount": "{{count}} running process instance(s)",
     "success": "The process was migrated.",
     "failure": "The process could not be migrated."
   },

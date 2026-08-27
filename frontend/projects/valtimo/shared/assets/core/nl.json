@@ -1825,7 +1825,7 @@
     "targetActivity": "Activiteit in de doelversie",
     "selectPlaceholder": "Selecteer...",
     "migrate": "Migreren",
-    "instanceCount": "{{count}} lopende zaak/zaken",
+    "instanceCount": "{{count}} lopende procesinstantie(s)",
     "success": "Het proces is gemigreerd.",
     "failure": "Het proces kon niet gemigreerd worden."
   },

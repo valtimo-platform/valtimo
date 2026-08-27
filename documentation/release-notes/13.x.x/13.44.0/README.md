@@ -16,7 +16,9 @@ New feature explanation.
 
 ### System processes can always be edited
 
-A process marked as a system process can now be changed and saved like any other process, which creates a new version of it. Case definitions keep using the version of the system process they were configured with, so an existing case is not affected by the change.
+A process marked as a system process can now be changed and saved like any other process, which creates a new version of it. Importing a process package also overwrites an existing system process instead of being refused. Finalised case definitions keep using the version of the system process they were configured with, so an existing case is not affected by the change.
+
+The `valtimo.process.systemProcessUpdatable` property no longer does anything and will be removed. If your installation set it to `false` to keep system processes unchanged, that protection is gone — the application logs a warning at startup when it is still set.
 
 ### Refreshed process migration screen
 

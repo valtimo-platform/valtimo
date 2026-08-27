@@ -66,9 +66,9 @@ open class CaseDefinitionProcessLinkService(
     }
 
     /**
-     * Used when a case definition is copied into a new draft and when a link is imported: both take
-     * up the system process version available right now, which is what freezes the resulting case
-     * definition once it is finalized.
+     * Used when a case definition is copied into a new draft and when a link is imported. The
+     * resulting link follows the latest system process version for as long as the case definition
+     * is a draft, and is frozen when it is finalized.
      */
     fun saveDocumentDefinitionProcessLink(
         caseDefinitionId: CaseDefinitionId,
@@ -100,7 +100,10 @@ open class CaseDefinitionProcessLinkService(
 
         requireNotNull(processDefinition) { "Unknown process definition with key: " + request.getProcessDefinitionKey() }
 
-        val versionToPin = if (ownedProcessDefinition == null) processDefinition.version else null
+        // Always null: the assert above rejects a final case definition, so this only ever runs
+        // against a draft, whose links follow the latest version until finalization pins them. Kept
+        // as a call so the rule stays in one place if that assert is ever relaxed.
+        val versionToPin = findVersionToPin(request.processDefinitionKey, caseDefinitionId)
 
         val currentLink = caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(
             caseDefinitionId,
@@ -145,9 +148,24 @@ open class CaseDefinitionProcessLinkService(
      * final is skipped on every later boot, so without this its link would stay unpinned forever.
      */
     fun pinLinksThatCanNoLongerChange() {
-        caseDefinitionProcessLinkRepository.findAll()
+        pinUnpinnedLinks(caseDefinitionProcessLinkRepository.findAll())
+    }
+
+    /**
+     * Freezes the links of a case definition that has just been finalized. Needed because its links
+     * were left unpinned for as long as it was a draft, and [pinLinksThatCanNoLongerChange] would
+     * not get to them until the next startup.
+     */
+    fun pinLinksOf(caseDefinitionId: CaseDefinitionId) {
+        pinUnpinnedLinks(caseDefinitionProcessLinkRepository.findAllByIdCaseDefinitionId(caseDefinitionId))
+    }
+
+    private fun pinUnpinnedLinks(links: List<CaseDefinitionProcessLink>) {
+        links
             .filter { it.processDefinitionVersion == null }
-            .filter { !caseDefinitionChecker.canUpdateCaseDefinition(it.id.caseDefinitionId) }
+            // Finality rather than `canUpdateCaseDefinition`: that one is also false for a draft on
+            // an environment where drafts are disabled, which would pin a draft at startup.
+            .filter { caseDefinitionChecker.isCaseDefinitionFinal(it.id.caseDefinitionId) }
             .forEach { link ->
                 val version = findVersionToPin(link.id.processDefinitionKey, link.id.caseDefinitionId)
                 if (version != null) {
@@ -180,8 +198,18 @@ open class CaseDefinitionProcessLinkService(
     /**
      * `null` for a process the case definition owns: that is resolved by the case definition's own
      * version tag, so pinning it would only duplicate what the tag already says.
+     *
+     * `null` too while the case definition is a draft: it follows the latest system process version
+     * and is pinned to whatever that is once it is finalized.
+     *
+     * Finality is asked for directly rather than through `canUpdateCaseDefinition`, which is also
+     * false for a draft on an environment where drafts are disabled — there every draft would be
+     * pinned instead of following the latest version.
      */
     private fun findVersionToPin(processDefinitionKey: String, caseDefinitionId: CaseDefinitionId): Int? {
+        if (!caseDefinitionChecker.isCaseDefinitionFinal(caseDefinitionId)) {
+            return null
+        }
         if (findOwnedProcessDefinition(processDefinitionKey, caseDefinitionId) != null) {
             return null
         }

@@ -24,7 +24,7 @@ public class ProcessDefinitionWithPropertiesDto extends ProcessDefinitionDto {
     protected boolean isReadOnly;
     protected boolean systemProcess;
 
-    @Deprecated(since = "13.43.0", forRemoval = true)
+    @Deprecated(since = "13.44.0", forRemoval = true)
     public void setReadOnly(boolean isReadOnly) {
         this.isReadOnly = isReadOnly;
     }
@@ -33,7 +33,7 @@ public class ProcessDefinitionWithPropertiesDto extends ProcessDefinitionDto {
      * @deprecated no process definition is read-only anymore. The field is kept so existing clients
      *     keep receiving it, but it is always {@code false}.
      */
-    @Deprecated(since = "13.43.0", forRemoval = true)
+    @Deprecated(since = "13.44.0", forRemoval = true)
     public boolean isReadOnly() {
         return isReadOnly;
     }

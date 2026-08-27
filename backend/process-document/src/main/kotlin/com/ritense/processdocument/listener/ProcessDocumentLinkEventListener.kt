@@ -20,6 +20,7 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.event.CaseDefinitionCreatedEvent
+import com.ritense.valtimo.contract.event.CaseDefinitionFinalizedEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -52,6 +53,12 @@ class ProcessDocumentLinkEventListener(
     }
 
     @RunWithoutAuthorization
+    @EventListener(CaseDefinitionFinalizedEvent::class)
+    fun handleCaseDefinitionFinalizedEvent(event: CaseDefinitionFinalizedEvent) {
+        caseDefinitionProcessLinkService.pinLinksOf(event.caseDefinitionId)
+    }
+
+    @RunWithoutAuthorization
     @EventListener(CaseDefinitionPreDeleteEvent::class)
     fun handleCaseDefinitionPreDeleteEvent(event: CaseDefinitionPreDeleteEvent) {
         caseDefinitionProcessLinkService.deleteDocumentDefinitionProcesses(event.caseDefinitionId)
@@ -61,7 +68,14 @@ class ProcessDocumentLinkEventListener(
     @RunWithoutAuthorization
     @EventListener(ApplicationReadyEvent::class)
     fun handleApplicationReadyEvent() {
-        caseDefinitionProcessLinkService.pinLinksThatCanNoLongerChange()
+        // A backfill for links that could not be pinned when they were deployed. An exception from
+        // an ApplicationReadyEvent listener stops the application, and failing to pin is not worth
+        // refusing to boot over: the links stay resolvable, they just follow the latest version.
+        try {
+            caseDefinitionProcessLinkService.pinLinksThatCanNoLongerChange()
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to pin case-definition-process-links that can no longer change" }
+        }
     }
 
     companion object {

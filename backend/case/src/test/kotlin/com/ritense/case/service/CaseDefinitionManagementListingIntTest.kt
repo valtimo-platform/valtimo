@@ -54,6 +54,18 @@ class CaseDefinitionManagementListingIntTest @Autowired constructor(
         ).containsExactly("0.0.1", "1.2.3")
     }
 
+    @Test
+    fun `should return an empty page for a page index beyond the result set`() {
+        // A page index this high makes the offset exceed Int.MAX_VALUE, which used to wrap negative
+        // and throw out of subList rather than paging past the end.
+        val caseDefinitions = runWithoutAuthorization {
+            caseDefinitionService.getCaseDefinitionsForManagement(pageable = PageRequest.of(3_000_000, 1000))
+        }
+
+        assertThat(caseDefinitions.content).isEmpty()
+        assertThat(caseDefinitions.totalElements).isGreaterThan(0)
+    }
+
     private companion object {
         const val CASE_DEFINITION_KEY = "some-case-type"
     }

@@ -561,6 +561,11 @@ public class OperatonProcessService {
 
     }
 
+    /**
+     * @param skipIsDeployableCheck ignored. There is no longer a deployability check to skip: a
+     *     system process may always be updated. Kept on every {@code deploy} overload so callers
+     *     outside this repository keep compiling; due for removal in the next major version.
+     */
     @Transactional
     public DeploymentWithDefinitions deploy(
         BlueprintId blueprintId,

@@ -17,6 +17,7 @@
 package com.ritense.valtimo.contract.config;
 
 import com.ritense.valtimo.contract.OauthConfigHolder;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
@@ -216,13 +217,22 @@ public class ValtimoProperties {
          *     process definition version their process link pins, not by making the process
          *     read-only.
          */
-        @Deprecated(since = "13.43.0", forRemoval = true)
+        @Deprecated(since = "13.44.0", forRemoval = true)
         public boolean isSystemProcessUpdatable() {
             return systemProcessUpdatable;
         }
 
-        @Deprecated(since = "13.43.0", forRemoval = true)
+        @Deprecated(since = "13.44.0", forRemoval = true)
         public void setSystemProcessUpdatable(boolean systemProcessUpdatable) {
+            if (!systemProcessUpdatable) {
+                // Worth a warning rather than silence: an installation that set this did so to stop
+                // system processes being changed, and that protection is gone.
+                LoggerFactory.getLogger(Process.class).warn(
+                    "valtimo.process.systemProcessUpdatable=false no longer has any effect. "
+                        + "System processes can always be updated. Case definitions are protected by "
+                        + "the process definition version their process link pins instead."
+                );
+            }
             this.systemProcessUpdatable = systemProcessUpdatable;
         }
 

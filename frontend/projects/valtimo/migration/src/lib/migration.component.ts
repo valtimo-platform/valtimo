@@ -208,6 +208,10 @@ export class MigrationComponent implements AfterViewInit {
 
   loadProcessDefinitionXML(id: string, type: string) {
     this.processService.getProcessDefinitionXml(id).subscribe(xml => {
+      // Selecting a version while the automatic latest-version load is still in flight leaves two
+      // requests running. Without this guard the slower one wins and migrateProcess() would use a
+      // version the user never picked, since it reads selectedId.
+      if (this.fields[type].version !== id) return;
       if (!xml.bpmn20Xml) return;
       this.diagram[type].loadXml(xml['bpmn20Xml']);
       this.selectedId[type] = id;

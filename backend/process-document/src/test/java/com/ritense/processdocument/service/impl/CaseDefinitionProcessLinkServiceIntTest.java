@@ -18,6 +18,7 @@ package com.ritense.processdocument.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.ritense.importer.ImportContext;
 import com.ritense.processdocument.BaseIntegrationTest;
 import com.ritense.processdocument.domain.CaseDefinitionProcessLink;
 import com.ritense.processdocument.domain.CaseDefinitionProcessLinkId;
@@ -26,10 +27,12 @@ import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepositor
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService;
 import com.ritense.case_.repository.CaseDefinitionRepository;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
+import com.ritense.valtimo.contract.event.CaseDefinitionFinalizedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.operaton.bpm.engine.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -52,6 +55,9 @@ class CaseDefinitionProcessLinkServiceIntTest extends BaseIntegrationTest {
 
     @Autowired
     private CaseDefinitionRepository caseDefinitionRepository;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @BeforeEach
     public void beforeEach() {
@@ -104,7 +110,7 @@ class CaseDefinitionProcessLinkServiceIntTest extends BaseIntegrationTest {
     }
 
     @Test
-    void shouldPinTheCurrentVersionOfASystemProcess() {
+    void shouldNotPinASystemProcessWhileTheCaseDefinitionIsADraft() {
         deploySystemProcess();
         deploySystemProcess();
 
@@ -118,17 +124,53 @@ class CaseDefinitionProcessLinkServiceIntTest extends BaseIntegrationTest {
             DOCUMENT_UPLOAD
         );
 
-        assertThat(link.getProcessDefinitionVersion()).isEqualTo(2);
+        assertThat(link.getProcessDefinitionVersion()).isNull();
     }
 
     @Test
-    void shouldKeepResolvingThePinnedVersionAfterANewSystemProcessVersionIsDeployed() {
+    void shouldFollowTheLatestSystemProcessVersionWhileTheCaseDefinitionIsADraft() {
         deploySystemProcess();
 
         caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
             CASE_DEFINITION_ID,
             new DocumentDefinitionProcessRequest(SYSTEM_PROCESS_KEY, DOCUMENT_UPLOAD)
         );
+        deploySystemProcess();
+
+        var caseDefinitionProcess = caseDefinitionProcessLinkService.getDocumentDefinitionProcess(
+            CASE_DEFINITION_ID,
+            DOCUMENT_UPLOAD
+        );
+
+        assertThat(caseDefinitionProcess).isNotNull();
+        assertThat(caseDefinitionProcess.getProcessDefinitionVersion()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldPinTheCurrentSystemProcessVersionWhenTheCaseDefinitionIsFinalized() {
+        deploySystemProcess();
+        deploySystemProcess();
+        caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
+            CASE_DEFINITION_ID,
+            new DocumentDefinitionProcessRequest(SYSTEM_PROCESS_KEY, DOCUMENT_UPLOAD)
+        );
+
+        finalizeCaseDefinition();
+        applicationEventPublisher.publishEvent(new CaseDefinitionFinalizedEvent(CASE_DEFINITION_ID));
+
+        assertThat(systemProcessLink().getProcessDefinitionVersion()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldKeepResolvingThePinnedVersionAfterANewSystemProcessVersionIsDeployed() {
+        deploySystemProcess();
+        caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
+            CASE_DEFINITION_ID,
+            new DocumentDefinitionProcessRequest(SYSTEM_PROCESS_KEY, DOCUMENT_UPLOAD)
+        );
+        finalizeCaseDefinition();
+        applicationEventPublisher.publishEvent(new CaseDefinitionFinalizedEvent(CASE_DEFINITION_ID));
+
         deploySystemProcess();
 
         var caseDefinitionProcess = caseDefinitionProcessLinkService.getDocumentDefinitionProcess(
@@ -153,6 +195,57 @@ class CaseDefinitionProcessLinkServiceIntTest extends BaseIntegrationTest {
         finalizeCaseDefinition();
 
         caseDefinitionProcessLinkService.pinLinksThatCanNoLongerChange();
+
+        assertThat(systemProcessLink().getProcessDefinitionVersion()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldFallBackToTheLatestVersionWhenThePinnedVersionIsNoLongerInTheEngine() {
+        deploySystemProcess();
+        // Replaces the link beforeEach made, so that only one DOCUMENT_UPLOAD link exists
+        caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
+            CASE_DEFINITION_ID,
+            new DocumentDefinitionProcessRequest(SYSTEM_PROCESS_KEY, DOCUMENT_UPLOAD)
+        );
+        caseDefinitionProcessLinkRepository.save(
+            new CaseDefinitionProcessLink(
+                CaseDefinitionProcessLinkId.newId(CASE_DEFINITION_ID, SYSTEM_PROCESS_KEY),
+                DOCUMENT_UPLOAD,
+                // A version that was pinned once but has since been removed from the engine
+                99
+            )
+        );
+
+        var caseDefinitionProcess = caseDefinitionProcessLinkService.getDocumentDefinitionProcess(
+            CASE_DEFINITION_ID,
+            DOCUMENT_UPLOAD
+        );
+
+        // Falling back beats leaving the case definition with no process at all
+        assertThat(caseDefinitionProcess).isNotNull();
+        assertThat(caseDefinitionProcess.getProcessDefinitionVersion()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldPinTheLinkOfACaseDefinitionThatIsImportedAsFinal() {
+        deploySystemProcess();
+
+        ImportContext.runImporter(() -> {
+            // The case definition importer saves the case definition as a draft first, so that the
+            // importers depending on it can still write to it. The link is unpinned at this point.
+            caseDefinitionProcessLinkService.saveDocumentDefinitionProcessLink(
+                CASE_DEFINITION_ID,
+                SYSTEM_PROCESS_KEY,
+                DOCUMENT_UPLOAD
+            );
+            assertThat(systemProcessLink().getProcessDefinitionVersion()).isNull();
+
+            // Its afterImport then flips the case definition to final, which has to pin the link:
+            // the only other moment that would is the next application startup.
+            finalizeCaseDefinition();
+            applicationEventPublisher.publishEvent(new CaseDefinitionFinalizedEvent(CASE_DEFINITION_ID));
+            return null;
+        });
 
         assertThat(systemProcessLink().getProcessDefinitionVersion()).isEqualTo(1);
     }

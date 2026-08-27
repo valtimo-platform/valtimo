@@ -166,7 +166,7 @@ public class ProcessResource extends AbstractProcessResource {
                 .map(ProcessDefinitionWithPropertiesDto::fromProcessDefinition)
                 .collect(Collectors.toList()));
         definitions.forEach(definition ->
-                definition.setSystemProcess(processPropertyService.isSystemProcessOrUnknown(definition.getKey()))
+                definition.setSystemProcess(processPropertyService.isKnownSystemProcess(definition.getKey()))
         );
         return ResponseEntity.ok(definitions);
     }

@@ -51,6 +51,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.event.CaseDefinitionCreatedEvent
+import com.ritense.valtimo.contract.event.CaseDefinitionFinalizedEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import com.ritense.valueresolver.ValueResolverService
@@ -264,7 +265,9 @@ class CaseDefinitionService(
             "Failed to finalize case-definition. Case-definition with id: '$caseDefinitionId' is already final."
         }
 
-        return caseDefinitionRepository.save(caseDefinition.copy(final = true))
+        val finalized = caseDefinitionRepository.save(caseDefinition.copy(final = true))
+        applicationEventPublisher.publishEvent(CaseDefinitionFinalizedEvent(caseDefinitionId))
+        return finalized
     }
 
     fun getCaseDefinitionsBasedOnVersion(caseDefinitionKey: String, basedOnVersionTag: Semver): List<CaseDefinition> {
@@ -459,12 +462,6 @@ class CaseDefinitionService(
             .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
     }
 
-    /**
-     * With [allVersions] the caller gets every version of every case definition instead of one
-     * representative per key, and the `VIEW_LIST` row filter is not applied. Case migration needs
-     * that: it migrates *between* two versions, so one representative per key leaves nothing to pick,
-     * and an administrator has to be able to migrate a case they themselves cannot open.
-     */
     fun getCaseDefinitionsForManagement(
         caseDefinitionKey: String? = null,
         active: Boolean? = null,
@@ -477,7 +474,6 @@ class CaseDefinitionService(
             caseDefinitionKey = caseDefinitionKey,
             active = active,
             final = final,
-            applyAuthorization = !allVersions,
         )
         val allCaseDefinitions = caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name"), Sort.Order.desc("active"), Sort.Order.desc("id.versionTag")))
         val result = if (allVersions) {
@@ -491,8 +487,8 @@ class CaseDefinitionService(
                 .sortedBy { it.name.lowercase() }
         }
 
-        val start = pageable.offset.toInt().coerceAtMost(result.size)
-        val end = (start + pageable.pageSize).coerceAtMost(result.size)
+        val start = pageable.offset.coerceIn(0, result.size.toLong()).toInt()
+        val end = (start.toLong() + pageable.pageSize).coerceAtMost(result.size.toLong()).toInt()
         return PageImpl(result.subList(start, end), pageable, result.size.toLong())
     }
 
@@ -510,18 +506,13 @@ class CaseDefinitionService(
         caseDefinitionVersionTag: Semver? = null,
         active: Boolean? = null,
         final: Boolean? = null,
-        applyAuthorization: Boolean = true,
     ): Specification<CaseDefinition> {
-        var spec: Specification<CaseDefinition> = if (applyAuthorization) {
-            authorizationService.getAuthorizationSpecification(
-                EntityAuthorizationRequest(
-                    CaseDefinition::class.java,
-                    CaseDefinitionActionProvider.VIEW_LIST
-                )
+        var spec: Specification<CaseDefinition> = authorizationService.getAuthorizationSpecification(
+            EntityAuthorizationRequest(
+                CaseDefinition::class.java,
+                CaseDefinitionActionProvider.VIEW_LIST
             )
-        } else {
-            Specification { _, _, criteriaBuilder -> criteriaBuilder.conjunction() }
-        }
+        )
 
         if (caseDefinitionKey != null) {
             spec = spec.and(byCaseDefinitionKey(caseDefinitionKey))

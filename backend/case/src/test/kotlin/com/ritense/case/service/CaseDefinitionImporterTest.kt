@@ -22,26 +22,37 @@ import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ImportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.event.CaseDefinitionFinalizedEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.springframework.context.ApplicationEventPublisher
 
 @ExtendWith(MockitoExtension::class)
 class CaseDefinitionImporterTest(
     @Mock private val caseDefinitionRepository: CaseDefinitionRepository
 ) {
     private val objectMapper = jacksonObjectMapper()
+    private lateinit var applicationEventPublisher: ApplicationEventPublisher
     private lateinit var importer: CaseDefinitionImporter
 
     @BeforeEach
     fun before() {
-        importer = CaseDefinitionImporter(objectMapper, caseDefinitionRepository, mock(), mock())
+        applicationEventPublisher = mock()
+        importer = CaseDefinitionImporter(
+            objectMapper,
+            caseDefinitionRepository,
+            mock(),
+            applicationEventPublisher
+        )
     }
 
     @Test
@@ -114,6 +125,21 @@ class CaseDefinitionImporterTest(
         verify(caseDefinitionRepository).save(captor.capture())
         assertThat(captor.firstValue.id.key).isEqualTo("overridden-key")
         assertThat(captor.firstValue.name).isEqualTo("Overridden Name")
+        // This is the only moment an imported case definition becomes final, and the links that
+        // followed the latest process version while it was a draft are pinned off the back of it.
+        verify(applicationEventPublisher).publishEvent(
+            CaseDefinitionFinalizedEvent(CaseDefinitionId("overridden-key", "1.0.0"))
+        )
+    }
+
+    @Test
+    fun `should not report a definition that is imported as a draft as finalized`() {
+        val content = objectMapper.writeValueAsBytes(CASE_DEFINITION_DTO)
+        val caseDefinitionId = CaseDefinitionId("original-key", "1.0.0")
+
+        importer.afterImport(ImportRequest(FILENAME, content, caseDefinitionId))
+
+        verify(applicationEventPublisher, never()).publishEvent(any<CaseDefinitionFinalizedEvent>())
     }
 
     private companion object {
