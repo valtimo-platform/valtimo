@@ -25,5 +25,6 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
+| Cases | The progress tab shows the name of every process, instead of leaving some blank |
 | Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
 | Case management | A process in a finalised case version shows all of its settings, read-only, instead of only the process link |
