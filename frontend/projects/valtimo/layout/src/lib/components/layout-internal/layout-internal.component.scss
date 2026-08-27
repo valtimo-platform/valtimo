@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-// `.cds--content` carries Carbon's 3rem top margin to clear the fixed header. With no border,
-// padding or block formatting context between it and `<body>`, that margin collapsed all the way
-// out and moved the body box 48px down the document while `getComputedStyle(body).marginTop` stayed
-// `0px`. Carbon positions body-appended dropdown menus against `document.body.getBoundingClientRect()`
-// and only compensates for *computed* margins, so every combo box opened its menu 48px too high —
-// on top of its own search input. Containing the margin here leaves the rendered layout unchanged.
 :host {
   display: flow-root;
 }

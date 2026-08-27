@@ -38,10 +38,6 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  /**
-   * Returns every version in one response. `all=true` makes the backend bypass paging, so the
-   * page and size arguments have no effect here.
-   */
   public getAllVersionsForBuildingBlock(key: string): Observable<Page<BuildingBlockVersionDto>> {
     return this.getVersionsForBuildingBlock(key, 0, 5, true);
   }
@@ -132,10 +128,7 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
       .pipe(catchError(() => of(null)));
   }
 
-  public getCaseDefinition(
-    key: string,
-    versionTag: string
-  ): Observable<{name: string} | null> {
+  public getCaseDefinition(key: string, versionTag: string): Observable<{name: string} | null> {
     return this.httpClient
       .get<{name: string}>(
         this.getApiUrl(`management/v1/case-definition/${key}/version/${versionTag}`),
