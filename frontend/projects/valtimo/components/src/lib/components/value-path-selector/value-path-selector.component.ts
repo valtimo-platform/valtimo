@@ -462,14 +462,6 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     setTimeout(() => this.changeDetectorRef.detectChanges(), 1);
   }
 
-  /**
-   * Text a user typed into the combo box without picking a suggestion lives only in the combo box's
-   * own input element: `selectedValue` stays empty, so the `[value]="selectedValue"` binding never
-   * goes dirty and neither clearing this component's form control nor refreshing `[items]` wipes the
-   * text (on new items the combo box even re-applies the stale text as its filter). It therefore has
-   * to be cleared explicitly, or a reopened modal shows the path from the cancelled attempt while
-   * the underlying control is empty.
-   */
   private clearComboBoxSearch(): void {
     const comboBoxInput = this._comboBox?.input?.nativeElement;
 
