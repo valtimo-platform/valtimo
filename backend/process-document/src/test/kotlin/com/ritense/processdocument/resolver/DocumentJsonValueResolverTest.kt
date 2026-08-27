@@ -527,12 +527,6 @@ internal class DocumentJsonValueResolverTest {
         assertArrayOptions("nested-array-reference-example")
     }
 
-    /**
-     * An array yields **two** options at its own path: the COLLECTION the collection and table widgets
-     * iterate, carrying the item fields, and the FIELD container every field-typed picker offers so the
-     * array itself can be selected — the same way an object node is offered alongside its properties.
-     * Asserted by content rather than by index, since the two arrive together and either order is fine.
-     */
     private fun assertArrayOptions(definitionName: String) {
         mockDefinition(definitionName)
 
@@ -549,7 +543,6 @@ internal class DocumentJsonValueResolverTest {
         assertEquals(3, collection.children?.size)
         assertEquals(ValueResolverOptionType.FIELD, collection.children?.get(2)?.type)
         assertEquals("/object3/object4/text1", collection.children?.get(2)?.path)
-        // Only the collection half carries the item fields; the container resolves to the array itself.
         assertNull(options.single { it.path.endsWith("array1") && it.type == ValueResolverOptionType.FIELD }.children)
     }
 

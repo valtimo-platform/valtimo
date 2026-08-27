@@ -168,16 +168,6 @@ private fun ArraySchema.tryGetPropertyDefinitionByMetaIndex(
     return null
 }
 
-/**
- * The schema of the item at a numeric index, or of a property beneath it.
- *
- * The item schema is resolved **before** the remaining path is considered, so a pointer that stops *at*
- * the index (`/items/0`) answers with the item's own schema rather than with null. It used to answer null,
- * which made an array element invisible to everything built on this walk: `determineNullWriteStrategy`
- * asks for the schema of a property's *parent* to read its `required` list, so `/items/0/value` could
- * never be cleared — the parent came back null and an unresolvable parent is reported as `NOT_ALLOWED`,
- * whether or not the item schema requires the property.
- */
 private fun ArraySchema.tryGetPropertyDefinitionByNumericIndex(
     nextToken: String,
     remaining: String?,
@@ -198,28 +188,8 @@ private fun ArraySchema.tryGetPropertyDefinitionByNumericIndex(
     return if (hasRemaining) itemSchema.getProperty(remaining!!, depth + 1) else itemSchema
 }
 
-/**
- * The schema the branches of an `allOf` / `anyOf` / `oneOf` give this path.
- *
- * The depth-guarded `getProperty(.)` is used instead of everit's `definesProperty(.)`, which recurses
- * unbounded.
- *
- * Every branch is asked, not just the first one that answers. A node declared
- * `oneOf: [{v: string}, {v: number}]` has no single schema at `/v`, and returning the first match made the
- * answer depend on the order the author happened to write the branches in — `DocumentMigrationService`
- * compares a source property's schema with the target's and would report "Type changed" for a reordering
- * alone, and `getTypeReference()` would coerce a value to whichever type came first. So the branches that
- * do answer are recombined, and are sorted into a canonical order first so that two declarations of the
- * same set compare equal. Identical branches collapse, and the ordinary single-match case returns that
- * match untouched.
- *
- * The **source criterion is preserved** rather than always recombining as `anyOf`: under `allOf` a value
- * has to satisfy every branch, so weakening that to "any of them" would accept values the schema itself
- * rejects — `allOf: [{minLength: 5}, {maxLength: 3}]` describes a property nothing can satisfy, and an
- * `anyOf` of the two accepts a five-character string. Everything built on this walk validates against the
- * schema it returns, so the recombined schema has to accept exactly what the original accepts.
- */
 private fun CombinedSchema.getProperty(field: String, depth: Int): Schema? {
+    // the depth-guarded getProperty(.) is used instead of everit's definesProperty(.), which recurses unbounded
     val matches = subschemas.mapNotNull { it.getProperty(field, depth + 1) }.distinct()
     return when (matches.size) {
         0 -> null

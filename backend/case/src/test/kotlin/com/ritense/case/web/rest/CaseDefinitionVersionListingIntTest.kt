@@ -35,16 +35,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 
-/**
- * What `GET /api/management/v1/case-definition/{key}/version` answers when a case definition has more
- * versions than one default page.
- *
- * The migration plan editor's source-version picker is filled from this endpoint, and a report that it
- * "does not show all version tags" had no fixture to check it against — every key on the environment it
- * was reported from has two versions. `verhuizing` in the dev fixtures has nine, which is the shape
- * these tests build. `CaseDefinitionResourceIntTest`, the obvious home for them, is commented out in its
- * entirety and does not run.
- */
 @Transactional
 class CaseDefinitionVersionListingIntTest : BaseIntegrationTest() {
 
@@ -64,7 +54,6 @@ class CaseDefinitionVersionListingIntTest : BaseIntegrationTest() {
     @Test
     @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `should list every version when the caller asks for a page big enough to hold them`() {
-        // The request the editor actually makes: one page of 100.
         val key = "version-listing-all"
         deployVersions(key, count = 9)
 
@@ -79,10 +68,6 @@ class CaseDefinitionVersionListingIntTest : BaseIntegrationTest() {
     @Test
     @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `should silently truncate a version list for a caller that asks no size`() {
-        // Documents the trap rather than endorsing it: `@PageableDefault(size = 5)` caps an
-        // unparameterised request at five, and the endpoint answers a bare array — no total, no next
-        // page — so a caller that forgets `size` cannot tell that it is seeing a prefix. Newest first,
-        // at least, so the five it does show are the most useful ones.
         val key = "version-listing-default-page"
         deployVersions(key, count = 9)
 

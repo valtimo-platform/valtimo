@@ -114,9 +114,6 @@ class EveritSchemaResolvableOptionsTest {
 
     @Test
     fun `should expose an array as both a collection and a field option`() {
-        // Two options at one path, on purpose: getResolvableKeys filters by the requested type, so the
-        // collection widget sees the iterable and every field-typed picker sees the container. Without
-        // the FIELD half an array was unreachable from every field picker in the application.
         val options = schemaOf(
             """
             "properties": {
@@ -132,7 +129,6 @@ class EveritSchemaResolvableOptionsTest {
             "doc:/tags" to FIELD,
             "doc:/tags" to COLLECTION
         )
-        // Only the collection half carries the item fields; the container resolves to the array itself.
         assertThat(options.single { it.type == COLLECTION }.children).isNotEmpty()
         assertThat(options.single { it.type == FIELD }.children).isNull()
     }
@@ -164,7 +160,6 @@ class EveritSchemaResolvableOptionsTest {
             "doc:/applicant",
             "doc:/applicant/children"
         )
-        // The item fields stay inside the collection option, keyed relative to the array.
         val collection = options.single { it.type == COLLECTION }
         assertThat(collection.path).isEqualTo("doc:/applicant/children")
         assertThat(collection.children?.map { it.path }).contains("/name")
@@ -172,9 +167,6 @@ class EveritSchemaResolvableOptionsTest {
 
     @Test
     fun `should keep both answers for a node that is either a list or a single value`() {
-        // Deduplicating by path alone let the branch the author happened to write first decide whether such
-        // a node was a field or a collection. Asserted in both declaration orders, since that is exactly
-        // what used to change the answer.
         listOf(
             """{ "type": "array", "items": { "type": "string" } }, { "type": "string" }""",
             """{ "type": "string" }, { "type": "array", "items": { "type": "string" } }""",
@@ -196,7 +188,6 @@ class EveritSchemaResolvableOptionsTest {
 
     @Test
     fun `should keep both answers for a node declared with a list of types`() {
-        // `type: ["array", "string"]` is loaded as an anyOf of one schema per type, so it takes the same path.
         val options = schemaOf(
             """
             "properties": {
@@ -227,6 +218,96 @@ class EveritSchemaResolvableOptionsTest {
         ).collectValueResolverOptions("doc:")
 
         assertThat(options.map { it.path to it.type }).containsExactly("doc:/reference" to FIELD)
+    }
+
+    @Test
+    fun `should keep the item fields of every branch of a node that is a list either way`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "contacts": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": { "type": "object", "properties": { "email": { "type": "string" } } }
+                  },
+                  {
+                    "type": "array",
+                    "items": { "type": "object", "properties": { "phoneNumber": { "type": "string" } } }
+                  }
+                ]
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "doc:/contacts" to FIELD,
+            "doc:/contacts" to COLLECTION
+        )
+        assertThat(options.single { it.type == COLLECTION }.children?.map { it.path to it.type })
+            .containsExactlyInAnyOrder("/email" to FIELD, "/phoneNumber" to FIELD)
+    }
+
+    @Test
+    fun `should keep the item fields of every branch of a list nested inside the items of a list`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "contacts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "addresses": {
+                      "oneOf": [
+                        {
+                          "type": "array",
+                          "items": { "type": "object", "properties": { "city": { "type": "string" } } }
+                        },
+                        {
+                          "type": "array",
+                          "items": { "type": "object", "properties": { "postalCode": { "type": "string" } } }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        val addresses = options.single { it.type == COLLECTION }.children
+            .orEmpty().single { it.type == COLLECTION }
+        assertThat(addresses.path).isEqualTo("/addresses")
+        assertThat(addresses.children?.map { it.path })
+            .containsExactlyInAnyOrder("/city", "/postalCode")
+    }
+
+    @Test
+    fun `should offer an array inside the items of a collection as both a field and a collection child`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "contacts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "emails": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        val children = options.single { it.path == "doc:/contacts" && it.type == COLLECTION }.children
+        assertThat(children?.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "/emails" to FIELD,
+            "/emails" to COLLECTION
+        )
     }
 
     @Test

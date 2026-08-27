@@ -45,10 +45,6 @@ internal class ValueResolverFactoryServiceImplTest {
 
     @Test
     fun `Should leave out a prefix whose keys cannot be enumerated and still return the others`() {
-        // Seen in the field: a document schema `$ref`d a file absent from the deployment, the everit loader
-        // threw UncheckedIOException from inside schema loading, and every caller of getResolvableKeys got a
-        // 500 — the editor's field pickers and the migration plan suggestion alike. Enumerating keys is a
-        // best-effort listing, so a resolver that cannot read its own configuration must cost only itself.
         val working = mock<ValueResolverFactory>()
         whenever(working.supportedPrefix()).thenReturn("ok")
         whenever(working.getResolvableKeyOptions(any<String>()))
@@ -70,9 +66,24 @@ internal class ValueResolverFactoryServiceImplTest {
     }
 
     @Test
+    fun `Should let an Error from a prefix travel up instead of leaving the prefix out`() {
+        val broken = mock<ValueResolverFactory>()
+        whenever(broken.supportedPrefix()).thenReturn("broken")
+        whenever(broken.getResolvableKeyOptions(any<String>())).thenThrow(AssertionError("boom"))
+
+        val service = ValueResolverServiceImpl(listOf(broken))
+
+        val error = assertThrows<AssertionError> {
+            service.getResolvableKeys(
+                ValueResolverOptionRequest(prefixes = emptyList(), type = ValueResolverOptionType.FIELD),
+                "some-case-definition",
+            )
+        }
+        assertThat(error).hasMessage("boom")
+    }
+
+    @Test
     fun `Should log the stack trace of an unenumerable prefix once instead of on every request`() {
-        // Also seen in the field: the editor asks for the keys dozens of times per screen, so a
-        // misconfigured definition wrote a 200-frame stack trace per request and buried the log.
         val broken = mock<ValueResolverFactory>()
         whenever(broken.supportedPrefix()).thenReturn("broken")
         whenever(broken.getResolvableKeyOptions(any<String>()))

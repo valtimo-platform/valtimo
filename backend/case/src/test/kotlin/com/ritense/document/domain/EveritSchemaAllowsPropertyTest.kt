@@ -64,10 +64,6 @@ class EveritSchemaAllowsPropertyTest {
         assertThat(schema.allowsProperty("/lastName")).isTrue()
     }
 
-    /**
-     * `additionalProperties` is evaluated at every level of the descent, so a permissive root used to
-     * answer for the whole subtree beneath it: the check never reached `applicant`'s own refusal.
-     */
     @Test
     fun `should not let a permissive root answer for a nested object that refuses the property`() {
         val schema = schemaOf(
@@ -87,12 +83,10 @@ class EveritSchemaAllowsPropertyTest {
 
         assertThat(schema.allowsProperty("/applicant/city")).isTrue()
         assertThat(schema.allowsProperty("/applicant/street")).isFalse()
+        assertThat(schema.allowsProperty("/zzz")).isTrue()
+        assertThat(schema.allowsProperty("/zzz/deeper")).isTrue()
     }
 
-    /**
-     * The counterpart: a nested object that does permit additional properties still answers for itself,
-     * so the refusal above is about the *described* token, not about nesting as such.
-     */
     @Test
     fun `should allow an undescribed property under a nested object that permits additional properties`() {
         val schema = schemaOf(
@@ -135,6 +129,43 @@ class EveritSchemaAllowsPropertyTest {
 
         assertThat(schema.allowsProperty("/extraNotes")).isTrue()
         assertThat(schema.allowsProperty("/applicant/street")).isFalse()
+    }
+
+    @Test
+    fun `should allow any path under a property whose schema accepts anything`() {
+        val schema = schemaOf(
+            """
+            "properties": {
+              "metadata": {},
+              "anything": true
+            }
+            """.trimIndent()
+        )
+
+        assertThat(schema.allowsProperty("/metadata")).isTrue()
+        assertThat(schema.allowsProperty("/metadata/whatever")).isTrue()
+        assertThat(schema.allowsProperty("/anything")).isTrue()
+        assertThat(schema.allowsProperty("/anything/whatever")).isTrue()
+    }
+
+    @Test
+    fun `should allow an array index the schema has an item schema for`() {
+        val schema = schemaOf(
+            """
+            "properties": {
+              "tuple": {
+                "type": "array",
+                "items": [ { "type": "string" } ],
+                "additionalItems": false
+              }
+            }
+            """.trimIndent()
+        )
+
+        assertThat(schema.allowsProperty("/tuple/0")).isTrue()
+        assertThat(schema.getProperty("/tuple/0")).isNotNull()
+        assertThat(schema.allowsProperty("/tuple/1")).isFalse()
+        assertThat(schema.getProperty("/tuple/1")).isNull()
     }
 
     private fun schemaOf(properties: String): Schema =
