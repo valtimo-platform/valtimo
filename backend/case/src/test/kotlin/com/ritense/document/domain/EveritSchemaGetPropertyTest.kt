@@ -65,7 +65,6 @@ class EveritSchemaGetPropertyTest {
 
         assertThat(schema.getProperty("/partner/children/0/partner/name")).isInstanceOf(StringSchema::class.java)
         assertThat(schema.allowsProperty("/partner/children/0/partner/name")).isTrue()
-        assertThat(schema.determineNullWriteStrategy("/partner/partner/name")).isEqualTo(NullWriteStrategy.REMOVE)
     }
 
     @Test
@@ -74,7 +73,6 @@ class EveritSchemaGetPropertyTest {
 
         assertThat(schema.getProperty("/items/0")).isInstanceOf(ObjectSchema::class.java)
         assertThat(schema.getProperty("/items/0/value")).isInstanceOf(StringSchema::class.java)
-        assertThat(schema.determineNullWriteStrategy("/items/0/value")).isEqualTo(NullWriteStrategy.REMOVE)
     }
 
     @Test

@@ -31,10 +31,12 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.exception.ValueResolverValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -115,10 +117,66 @@ internal class CaseDocumentJsonValueResolverNullWriteTest {
         )
 
         assertThatThrownBy { resolver.handleValues(documentId, mapOf("doc:/firstName" to null)) }
-            .isInstanceOf(RuntimeException::class.java)
+            .isInstanceOf(ValueResolverValidationException::class.java)
             .hasMessageContaining("doc:/firstName")
 
-        verify(documentService, never()).modifyDocument(eq(document), org.mockito.kotlin.any())
+        verify(documentService, never()).modifyDocument(eq(document), any())
+    }
+
+    @Test
+    fun `should write nothing at all when one of several values is refused`() {
+        mockDocument(
+            schemaProperties = """"firstName": { "type": "string" }, "lastName": { "type": "string" }""",
+            required = """"lastName"""",
+            content = """{"firstName":"John","lastName":"Doe"}"""
+        )
+
+        assertThatThrownBy {
+            resolver.handleValues(documentId, mapOf("doc:/firstName" to null, "doc:/lastName" to null))
+        }.isInstanceOf(ValueResolverValidationException::class.java)
+            .hasMessageContaining("doc:/lastName")
+
+        verify(documentService, never()).modifyDocument(eq(document), any())
+    }
+
+    @Test
+    fun `should apply a mix of null and non-null values in one call`() {
+        mockDocument(
+            schemaProperties = """"firstName": { "type": "string" }, "lastName": { "type": "string" }""",
+            content = """{"firstName":"John","lastName":"Doe"}"""
+        )
+
+        resolver.handleValues(documentId, mapOf("doc:/firstName" to null, "doc:/lastName" to "Lovelace"))
+
+        val content = capturedContent()
+        assertThat(content.at("/firstName")).isEqualTo(MissingNode.getInstance())
+        assertThat(content.at("/lastName")).isEqualTo(TextNode.valueOf("Lovelace"))
+    }
+
+    @Test
+    fun `should write null for a path the schema does not describe`() {
+        mockDocument(
+            schemaProperties = """"firstName": { "type": "string" }""",
+            content = """{"extra":{"child":"value"}}"""
+        )
+
+        resolver.handleValues(documentId, mapOf("doc:/extra/child" to null))
+
+        assertThat(capturedContent().at("/extra/child")).isEqualTo(NullNode.instance)
+    }
+
+    @Test
+    fun `should write null for an array element, which its parent has no say over`() {
+        mockDocument(
+            schemaProperties = """"items": { "type": "array", "items": { "type": "string" } }""",
+            content = """{"items":["a","b"]}"""
+        )
+
+        resolver.handleValues(documentId, mapOf("doc:/items/0" to null))
+
+        val content = capturedContent()
+        assertThat(content.at("/items/0")).isEqualTo(NullNode.instance)
+        assertThat(content.at("/items/1")).isEqualTo(TextNode.valueOf("b"))
     }
 
     @Test
@@ -144,7 +202,7 @@ internal class CaseDocumentJsonValueResolverNullWriteTest {
         mockActiveDefinition(""""firstName": { "type": "string" }""", required = """"firstName"""")
 
         assertThatThrownBy { resolver.preProcessValuesForNewDocument(mapOf("doc:/firstName" to null), "test") }
-            .isInstanceOf(IllegalStateException::class.java)
+            .isInstanceOf(ValueResolverValidationException::class.java)
             .hasMessageContaining("doc:/firstName")
     }
 

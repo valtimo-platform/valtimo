@@ -59,9 +59,6 @@ class EveritSchemaNullWriteStrategyTest {
 
     @Test
     fun `should not let the order of oneOf branches decide whether a property can be cleared`() {
-        // A document that drops `v` still validates against the branch that does not require it, so it can
-        // go. Reading only the first object branch made the answer NOT_ALLOWED or REMOVE depending on which
-        // branch the author wrote first.
         val requiredFirst = combinedParentOf(
             """{ "type": "object", "required": ["v"], "properties": { "v": { "type": "string" } } },
                { "type": "object", "properties": { "v": { "type": "string" } } }""",
@@ -79,8 +76,6 @@ class EveritSchemaNullWriteStrategyTest {
 
     @Test
     fun `should refuse to clear a property an allOf requires in any of its branches`() {
-        // Under allOf the value has to satisfy every branch, so one branch requiring the property is enough
-        // to keep it — the opposite rule to anyOf/oneOf, and the same one validation applies.
         val schema = combinedParentOf(
             """{ "type": "object", "required": ["v"], "properties": { "v": { "type": "string" } } },
                { "type": "object", "properties": { "v": { "type": "string" } } }""",
@@ -103,9 +98,6 @@ class EveritSchemaNullWriteStrategyTest {
 
     @Test
     fun `should clear an optional property of an array element`() {
-        // The parent of `/items/0/value` is the item schema, which the pointer walk could not resolve at all
-        // until it learned to answer a pointer that stops at an index — and an unresolvable parent is
-        // reported as NOT_ALLOWED, whatever its required list says.
         val schema = schemaOf(
             """
             "properties": {
@@ -123,6 +115,33 @@ class EveritSchemaNullWriteStrategyTest {
 
         assertThat(schema.determineNullWriteStrategy("/items/0/value")).isEqualTo(REMOVE)
         assertThat(schema.determineNullWriteStrategy("/items/0/id")).isEqualTo(NOT_ALLOWED)
+    }
+
+    @Test
+    fun `should write null for an array element itself, which the array cannot require`() {
+        val schema = schemaOf(
+            """
+            "properties": {
+              "items": { "type": "array", "items": { "type": "string" } }
+            }
+            """.trimIndent()
+        )
+
+        assertThat(schema.determineNullWriteStrategy("/items/0")).isEqualTo(WRITE_NULL)
+    }
+
+    @Test
+    fun `should write null for a path the schema does not describe`() {
+        val schema = schemaOf(
+            """
+            "properties": {
+              "firstName": { "type": "string" }
+            }
+            """.trimIndent()
+        )
+
+        assertThat(schema.determineNullWriteStrategy("/undeclared")).isEqualTo(REMOVE)
+        assertThat(schema.determineNullWriteStrategy("/undeclared/child")).isEqualTo(WRITE_NULL)
     }
 
     @Test
@@ -230,7 +249,6 @@ class EveritSchemaNullWriteStrategyTest {
         assertThat(schema.determineNullWriteStrategy("/root/child/name")).isEqualTo(NOT_ALLOWED)
     }
 
-    /** A root with one property `p` whose schema combines the given branches under [criterion]. */
     private fun combinedParentOf(branches: String, criterion: String): Schema = schemaOf(
         """
         "properties": {
