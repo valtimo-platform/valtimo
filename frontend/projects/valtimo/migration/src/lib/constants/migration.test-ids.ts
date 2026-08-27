@@ -19,7 +19,7 @@ export const MIGRATION_TEST_IDS = {
   sourceVersionSelect: 'migrationSourceVersionSelect',
   targetDefinitionSelect: 'migrationTargetDefinitionSelect',
   targetVersionSelect: 'migrationTargetVersionSelect',
-  activityMappingSelect: 'migrationActivityMappingSelect',
+  activityMappingSelectPrefix: 'migrationActivityMappingSelect-',
   processInstanceCountTag: 'migrationProcessInstanceCountTag',
   migrateButton: 'migrationMigrateButton',
 } as const;

@@ -113,7 +113,7 @@
           [items]="getFilteredTargetFlowNodeMapItems(node)"
           [placeholder]="'processMigration.selectPlaceholder' | translate"
           (selected)="onTaskMappingSelected($event, node.id)"
-          [attr.data-test-id]="testIds.activityMappingSelect"
+          [attr.data-test-id]="testIds.activityMappingSelectPrefix + node.id"
         >
           <cds-dropdown-list></cds-dropdown-list>
         </cds-combo-box>
