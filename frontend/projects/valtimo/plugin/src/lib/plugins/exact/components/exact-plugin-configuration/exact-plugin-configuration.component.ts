@@ -103,6 +103,7 @@ export class ExactPluginConfigurationComponent
 
   private handleValid(formValue: ExactPluginConfig): void {
     const valid = !!(
+      formValue.configurationTitle &&
       formValue.clientId &&
       formValue.clientSecret &&
       formValue.accessToken &&
