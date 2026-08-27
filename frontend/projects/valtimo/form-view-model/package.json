@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "@formio/angular": "11.0.5",
-    "@formio/js": "5.5.1"
+    "@formio/js": "5.5.2"
   }
 }
