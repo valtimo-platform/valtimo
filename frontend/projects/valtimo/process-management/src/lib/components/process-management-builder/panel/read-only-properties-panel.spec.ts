@@ -77,7 +77,6 @@ describe('ReadOnlyPropertiesProvider', () => {
 describe('ReadOnlyPropertiesPanel', () => {
   let parent: HTMLElement;
 
-  // The panel marks the controls from a MutationObserver callback, which runs after the render
   const rendered = (html: string): Promise<void> => {
     parent.innerHTML = html;
     return new Promise(resolve => setTimeout(resolve));
@@ -119,7 +118,6 @@ describe('ReadOnlyPropertiesPanel', () => {
 
     const input = parent.querySelector('input') as HTMLInputElement;
 
-    // readonly rather than disabled, so the expression can still be selected and copied
     expect(input.readOnly).toBe(true);
     expect(input.disabled).toBe(false);
   });

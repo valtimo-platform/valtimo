@@ -171,9 +171,6 @@ export class ProcessLinkStateService implements OnDestroy {
     this._showModal$.next(true);
   }
 
-  /**
-   * Opens the modal for viewing only: the configuration is shown, but cannot be changed or saved.
-   */
   public setReadOnly(readOnly: boolean): void {
     this._readOnly$.next(readOnly);
   }

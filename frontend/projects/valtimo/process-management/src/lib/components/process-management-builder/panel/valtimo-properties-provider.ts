@@ -130,7 +130,6 @@ class ValtimoPropertiesProvider {
       ) {
         const editingAllowed = this.processManagementEditorService.editingAllowed;
 
-        // Without a link there is nothing to view, so drop the group rather than offer to create one
         if (editingAllowed || processLink) {
           const customGroup = {
             id: 'customRootGroup',
@@ -254,7 +253,6 @@ const CustomRootElement = (props: {
   const hiddenInput = html`<input type="hidden" class="bio-properties-panel-input" value=${processLink ? 'configured' : ''} />`;
   const wrapEntry = (content: any) => html`<div data-entry-id=${props.id}>${hiddenInput}${content}</div>`;
 
-  // Without edit rights the link can only be opened to view how it is configured
   const linkedButtons = !editingAllowed
     ? html`<div class="process-link-properties-panel__buttons">
         <button

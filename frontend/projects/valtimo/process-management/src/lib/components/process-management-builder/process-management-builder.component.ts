@@ -180,13 +180,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private _autofilledElementIds: string[] = [];
   private _viewerActive = false;
 
-  /**
-   * The editor that is on screen. Both are kept loaded with the same diagram, so anything drawn on
-   * top of it - markers, validation highlights, autofill badges - has to go to this one, or it ends
-   * up on the hidden editor. Mirrors the condition the template switches on.
-   */
   private get activeEditor(): Modeler | NavigatedViewer {
     return this._viewerActive ? this._bpmnViewer : this._bpmnModeler;
+  }
+
+  private get loadedEditors(): (Modeler | NavigatedViewer)[] {
+    return [this._bpmnModeler, this._bpmnViewer].filter(editor => !!editor);
   }
 
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
@@ -268,7 +267,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     })
   );
 
-  // The same condition the template switches the two editors on
   public readonly viewerActive$: Observable<boolean> = combineLatest([
     this.isReadOnlyProcess$,
     this.hasEditPermissions$,
@@ -1477,15 +1475,11 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       this.viewerActive$.subscribe(viewerActive => {
         this._viewerActive = viewerActive;
 
-        // Which editor is on screen is only known once the edit permissions have resolved, which is
-        // after the diagram was imported, so redraw whatever was drawn on the other one.
         this.updateActivityMarkers();
         this.highlightAutofilledElements();
       })
     );
 
-    // Deliberately not tied to isReadOnlyProcess: the diagram of a read-only process cannot be
-    // changed, but its process links still can, as long as the case version is not final.
     this._subscriptions.add(
       this.hasEditPermissions$.subscribe(hasEditPermissions =>
         this.processManagementEditorService.setEditingAllowed(hasEditPermissions)
@@ -1701,9 +1695,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     buildingBlockDefinitionKey: string,
     buildingBlockDefinitionVersionTag: string
   ): void {
-    const editor = this._bpmnModeler || this._bpmnViewer;
+    const editors = this.loadedEditors;
 
-    if (!editor) {
+    if (!editors.length) {
       return;
     }
 
@@ -1716,19 +1710,15 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         next: (mainProcessDefinitionKey: string) => {
           const versionTag = `BB:${buildingBlockDefinitionKey}:${buildingBlockDefinitionVersionTag}`;
 
-          applyBuildingBlockCalledElement(editor, activityId, mainProcessDefinitionKey, versionTag);
+          editors.forEach(editor =>
+            applyBuildingBlockCalledElement(editor, activityId, mainProcessDefinitionKey, versionTag)
+          );
         },
       });
   }
 
   private unsetCalledElementForBuildingBlockProcessLink(activityId: string): void {
-    const editor = this._bpmnModeler || this._bpmnViewer;
-
-    if (!editor) {
-      return;
-    }
-
-    clearBuildingBlockCalledElement(editor, activityId);
+    this.loadedEditors.forEach(editor => clearBuildingBlockCalledElement(editor, activityId));
   }
 
   public onValidationErrorClick(elementId: string): void {

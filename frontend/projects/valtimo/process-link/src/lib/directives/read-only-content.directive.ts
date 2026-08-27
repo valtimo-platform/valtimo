@@ -16,24 +16,20 @@
 
 import {Directive, ElementRef, Input, OnDestroy, OnInit} from '@angular/core';
 
-// Input types that support the readonly attribute. The remaining ones - checkboxes and radios
-// above all - have to be disabled instead, or they can still be toggled through their label.
 const READ_ONLY_INPUT_TYPES = ['email', 'number', 'password', 'search', 'tel', 'text', 'url'];
 
 const FOCUSABLE =
   'a[href], area[href], button, input, select, textarea, iframe, [tabindex], [contenteditable]';
 
-/**
- * Makes the content of the host read-only, and keeps doing so while that content changes. Used for
- * the process link modal, whose configuration step is rendered by components that are contributed
- * by plugins and cannot be asked for a read-only mode of their own.
- *
- * Two things happen, and both are needed. Marking the individual controls as readonly or disabled
- * is what makes them *look* unavailable and what a screen reader announces. Taking the host out of
- * reach of the mouse and the tab order is what actually *guarantees* it: composite widgets such as
- * the Carbon combo box open their menu from a plain div, which has no disabled state to set, and
- * a plugin can contribute any widget at all.
- */
+interface OriginalState {
+  tabindex: string | null;
+  contenteditable: string | null;
+  ariaDisabled: string | null;
+  pointerEvents: string;
+  readOnly: boolean | null;
+  disabled: boolean | null;
+}
+
 @Directive({
   standalone: true,
   selector: '[valtimoReadOnlyContent]',
@@ -46,6 +42,7 @@ export class ReadOnlyContentDirective implements OnInit, OnDestroy {
 
   private _readOnly = false;
   private _observer: MutationObserver | null = null;
+  private readonly _originalStates = new Map<HTMLElement, OriginalState>();
 
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
 
@@ -57,6 +54,7 @@ export class ReadOnlyContentDirective implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._observer?.disconnect();
+    this._originalStates.clear();
   }
 
   private apply(): void {
@@ -65,50 +63,82 @@ export class ReadOnlyContentDirective implements OnInit, OnDestroy {
     if (!host) return;
 
     if (!this._readOnly) {
-      this.setContentPointerEvents('');
+      this.restore();
       return;
     }
 
-    // Nothing inside can be clicked, which covers both the widgets that have no disabled state of
-    // their own and the ones whose disabled state Angular rebinds on every change detection run.
-    // Applied to the children rather than to the host, so that the host itself keeps receiving the
-    // wheel events that scroll a long configuration. Deliberately not `inert`, which would also
-    // hide the configuration from screen readers.
-    this.setContentPointerEvents('none');
+    Array.from(host.children).forEach(child => {
+      this.remember(child as HTMLElement).style.pointerEvents = 'none';
+    });
 
-    // ...and nothing inside can be tabbed to either
     host.querySelectorAll<HTMLElement>(FOCUSABLE).forEach(element => {
-      element.setAttribute('tabindex', '-1');
+      this.remember(element).setAttribute('tabindex', '-1');
     });
 
     host.querySelectorAll('input').forEach(input => {
       if (READ_ONLY_INPUT_TYPES.includes(input.type)) {
-        input.readOnly = true;
+        this.remember(input).readOnly = true;
       } else {
-        input.disabled = true;
+        this.remember(input).disabled = true;
       }
     });
 
-    host.querySelectorAll('textarea').forEach(textarea => (textarea.readOnly = true));
+    host
+      .querySelectorAll('textarea')
+      .forEach(textarea => (this.remember(textarea).readOnly = true));
 
     host
       .querySelectorAll<HTMLSelectElement | HTMLButtonElement>('select, button')
-      .forEach(control => (control.disabled = true));
+      .forEach(control => (this.remember(control).disabled = true));
 
     host
-      .querySelectorAll('[contenteditable="true"]')
-      .forEach(editor => editor.setAttribute('contenteditable', 'false'));
+      .querySelectorAll<HTMLElement>('[contenteditable="true"]')
+      .forEach(editor => this.remember(editor).setAttribute('contenteditable', 'false'));
 
-    // Carbon renders the clear and expand affordances of a combo box as divs, which have no
-    // disabled state of their own
     host
       .querySelectorAll<HTMLElement>('[role="button"], [role="combobox"], [role="listbox"]')
-      .forEach(element => element.setAttribute('aria-disabled', 'true'));
+      .forEach(element => this.remember(element).setAttribute('aria-disabled', 'true'));
   }
 
-  private setContentPointerEvents(value: string): void {
-    Array.from(this.elementRef.nativeElement.children).forEach(child => {
-      (child as HTMLElement).style.pointerEvents = value;
+  private remember<T extends HTMLElement>(element: T): T {
+    if (!this._originalStates.has(element)) {
+      const control = element as Partial<HTMLInputElement>;
+
+      this._originalStates.set(element, {
+        tabindex: element.getAttribute('tabindex'),
+        contenteditable: element.getAttribute('contenteditable'),
+        ariaDisabled: element.getAttribute('aria-disabled'),
+        pointerEvents: element.style.pointerEvents,
+        readOnly: 'readOnly' in element ? !!control.readOnly : null,
+        disabled: 'disabled' in element ? !!control.disabled : null,
+      });
+    }
+
+    return element;
+  }
+
+  private restore(): void {
+    this._originalStates.forEach((original, element) => {
+      this.restoreAttribute(element, 'tabindex', original.tabindex);
+      this.restoreAttribute(element, 'contenteditable', original.contenteditable);
+      this.restoreAttribute(element, 'aria-disabled', original.ariaDisabled);
+
+      element.style.pointerEvents = original.pointerEvents;
+
+      const control = element as Partial<HTMLInputElement>;
+
+      if (original.readOnly !== null) control.readOnly = original.readOnly;
+      if (original.disabled !== null) control.disabled = original.disabled;
     });
+
+    this._originalStates.clear();
+  }
+
+  private restoreAttribute(element: HTMLElement, name: string, value: string | null): void {
+    if (value === null) {
+      element.removeAttribute(name);
+    } else {
+      element.setAttribute(name, value);
+    }
   }
 }

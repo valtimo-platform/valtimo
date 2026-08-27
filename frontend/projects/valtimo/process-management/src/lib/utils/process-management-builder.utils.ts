@@ -98,11 +98,10 @@ const DisableBpmnWriteModule = {
   ],
   move: ['value', null],
   resizeHandles: ['value', {addResizer: () => {}, removeResizers: () => {}}],
-  // Without these, the waypoints of a sequence flow can still be dragged to a different position
   bendpoints: ['value', {}],
-  bendpointMove: ['value', {}],
+  bendpointMove: ['value', {start: () => {}}],
   bendpointMovePreview: ['value', {}],
-  connectionSegmentMove: ['value', {}],
+  connectionSegmentMove: ['value', {start: () => {}}],
 };
 
 const disableCommands = (editor: Modeler | NavigatedViewer): void => {

@@ -21,7 +21,6 @@ describe('ReadOnlyContentDirective', () => {
   let host: HTMLElement;
   let directive: ReadOnlyContentDirective;
 
-  // The directive marks the controls from a MutationObserver callback, which runs after the render
   const rendered = (html: string): Promise<void> => {
     host.innerHTML = html;
     return new Promise(resolve => setTimeout(resolve));
@@ -49,7 +48,6 @@ describe('ReadOnlyContentDirective', () => {
 
       const input = host.querySelector('input') as HTMLInputElement;
 
-      // readonly rather than disabled, so the value can still be selected and copied
       expect(input.readOnly).toBe(true);
       expect(input.disabled).toBe(false);
       expect(input.value).toBe('start-form-bezwaar');
@@ -91,8 +89,6 @@ describe('ReadOnlyContentDirective', () => {
     });
 
     it('should put the content out of reach of the mouse, but keep the host scrollable', async () => {
-      // a combo box opens its menu from a div, Angular rebinds the disabled state of others, and a
-      // plugin can contribute any widget at all - so the guarantee cannot rely on knowing them
       await rendered('<div class="step"><button>Configuratie importeren</button></div>');
 
       expect((host.firstElementChild as HTMLElement).style.pointerEvents).toBe('none');
@@ -102,7 +98,6 @@ describe('ReadOnlyContentDirective', () => {
     it('should keep the content unclickable when Angular rebinds a disabled state', async () => {
       await rendered('<div><button id="import">Configuratie importeren</button></div>');
 
-      // what a change detection run does to a [disabled]-bound button
       (host.querySelector('#import') as HTMLButtonElement).disabled = false;
 
       expect((host.firstElementChild as HTMLElement).style.pointerEvents).toBe('none');
@@ -127,6 +122,58 @@ describe('ReadOnlyContentDirective', () => {
       await rendered('<span></span><input type="text" />');
 
       expect((host.querySelector('input') as HTMLInputElement).readOnly).toBe(true);
+    });
+  });
+
+  describe('when read-only ends', () => {
+    beforeEach(() => {
+      directive.readOnly = true;
+      directive.ngOnInit();
+    });
+
+    it('should give the controls their original state back', async () => {
+      await rendered(`
+        <div class="step">
+          <input type="text" />
+          <input type="checkbox" />
+          <button>Configuratie importeren</button>
+          <select></select>
+          <textarea></textarea>
+          <div contenteditable="true"></div>
+          <div role="button" tabindex="0"></div>
+        </div>
+      `);
+
+      directive.readOnly = false;
+
+      expect((host.querySelector('input[type="text"]') as HTMLInputElement).readOnly).toBe(false);
+      expect((host.querySelector('input[type="checkbox"]') as HTMLInputElement).disabled).toBe(
+        false
+      );
+      expect((host.querySelector('button') as HTMLButtonElement).disabled).toBe(false);
+      expect((host.querySelector('select') as HTMLSelectElement).disabled).toBe(false);
+      expect((host.querySelector('textarea') as HTMLTextAreaElement).readOnly).toBe(false);
+      expect(host.querySelector('[contenteditable]')?.getAttribute('contenteditable')).toBe('true');
+      expect(host.querySelector('[role="button"]')?.getAttribute('tabindex')).toBe('0');
+      expect(host.querySelector('[role="button"]')?.hasAttribute('aria-disabled')).toBe(false);
+      expect((host.firstElementChild as HTMLElement).style.pointerEvents).toBe('');
+    });
+
+    it('should not hand back a state the content never had', async () => {
+      await rendered('<div class="step"><button disabled>Opslaan</button></div>');
+
+      directive.readOnly = false;
+
+      expect((host.querySelector('button') as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('should leave content that appears afterwards alone', async () => {
+      await rendered('<span></span>');
+      directive.readOnly = false;
+
+      await rendered('<span></span><input type="text" />');
+
+      expect((host.querySelector('input') as HTMLInputElement).readOnly).toBe(false);
     });
   });
 

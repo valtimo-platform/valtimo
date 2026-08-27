@@ -147,10 +147,6 @@ export class ProcessManagementEditorService implements OnDestroy {
 
   private readonly _editingAllowed$ = new BehaviorSubject<boolean>(true);
 
-  /**
-   * False for a case version that has been made final, where the process and its links can only be
-   * viewed. Read from the properties panel, which is rendered outside of Angular.
-   */
   public get editingAllowed(): boolean {
     return this._editingAllowed$.getValue();
   }

@@ -90,8 +90,6 @@
     box-sizing: border-box;
   }
 
-  // The viewer reuses the modeler's properties panel, so the configuration stays visible. Its
-  // controls are set to readonly or disabled by ReadOnlyPropertiesPanel; dim them to match.
   &__modeler-panel--read-only {
     ::ng-deep .bio-properties-panel-entry {
       input,

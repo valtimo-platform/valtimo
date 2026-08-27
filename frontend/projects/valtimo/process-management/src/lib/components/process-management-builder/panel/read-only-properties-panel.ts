@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-// Runs after every other properties provider, so that all groups they contributed are covered.
 const READ_ONLY_PRIORITY = 1;
 
-/**
- * Strips the actions that add or delete list items - listeners, input/output mappings, extension
- * properties and the like. Both sit in a group or list item header, outside of any entry, so they
- * are not covered by the read-only pass over the entries below.
- */
 const removeEditActions = (node: any): void => {
   if (!node || typeof node !== 'object') return;
 
-  // Hides the "create new list item" button on a list group
   if (node.add) node.add = null;
 
-  // Hides the "delete item" button on a list item
   if (node.remove) node.remove = null;
 
   if (Array.isArray(node.entries)) {
@@ -57,16 +49,8 @@ class ReadOnlyPropertiesProvider {
 
 const ENTRY = '.bio-properties-panel-entry';
 
-// Input types that support the readonly attribute. The remaining ones - checkboxes above all -
-// have to be disabled instead, or they can still be toggled through their label or the keyboard.
 const READ_ONLY_INPUT_TYPES = ['email', 'number', 'password', 'search', 'tel', 'text', 'url'];
 
-/**
- * Marks the rendered controls of every entry as non-editable. The providers of
- * bpmn-js-properties-panel do not pass a disabled flag on to their entry components, so there is
- * no way to ask for this while the groups are being built. Text fields are made readonly rather
- * than disabled, so that their value can still be selected and copied.
- */
 const makeControlsReadOnly = (container: HTMLElement): void => {
   container.querySelectorAll<HTMLInputElement>(`${ENTRY} input`).forEach(input => {
     if (READ_ONLY_INPUT_TYPES.includes(input.type)) {
@@ -84,7 +68,6 @@ const makeControlsReadOnly = (container: HTMLElement): void => {
     .querySelectorAll<HTMLSelectElement | HTMLButtonElement>(`${ENTRY} select, ${ENTRY} button`)
     .forEach(control => (control.disabled = true));
 
-  // FEEL expressions are edited in a contenteditable rather than in a form control
   container
     .querySelectorAll(`${ENTRY} [contenteditable="true"]`)
     .forEach(editor => editor.setAttribute('contenteditable', 'false'));
@@ -100,8 +83,6 @@ class ReadOnlyPropertiesPanel {
 
     if (!parent) return;
 
-    // The panel is re-rendered on every selection change and whenever a group is opened, so the
-    // controls have to be marked again each time they reappear.
     this._observer = new MutationObserver(() => makeControlsReadOnly(parent));
     this._observer.observe(parent, {childList: true, subtree: true});
 
