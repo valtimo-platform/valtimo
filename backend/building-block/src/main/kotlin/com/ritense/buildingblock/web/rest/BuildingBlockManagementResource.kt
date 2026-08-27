@@ -79,12 +79,11 @@ class BuildingBlockManagementResource(
     @GetMapping("/search")
     fun searchBuildingBlockDefinitions(
         @RequestParam(value = "searchTerm", required = false) searchTerm: String?,
-        @RequestParam(value = "includeArtwork", required = false) includeArtwork: Boolean = false,
         @PageableDefault(sort = ["name"]) pageable: Pageable,
     ): ResponseEntity<Page<BuildingBlockDefinitionDto>> {
         return try {
             val page = runWithoutAuthorization {
-                buildingBlockManagementService.searchLatestPerKey(searchTerm, pageable, includeArtwork)
+                buildingBlockManagementService.searchLatestPerKey(searchTerm, pageable)
             }
             ResponseEntity.ok(page)
         } catch (ex: IllegalArgumentException) {

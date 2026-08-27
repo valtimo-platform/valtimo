@@ -127,7 +127,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         val charlie = dto.copy(key = "charlie", name = "Charlie")
         doReturn(PageImpl(listOf(alpha, charlie), PageRequest.of(0, 10), 2))
             .whenever(buildingBlockManagementService)
-            .searchLatestPerKey(anyOrNull(), any(), any())
+            .searchLatestPerKey(anyOrNull(), any())
 
         mockMvc.get("$base/search")
             .andExpect {
@@ -143,7 +143,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     fun `should pass the search term and pageable through to the service`() {
         doReturn(PageImpl(emptyList<BuildingBlockDefinitionDto>(), PageRequest.of(1, 5), 0))
             .whenever(buildingBlockManagementService)
-            .searchLatestPerKey(anyOrNull(), any(), any())
+            .searchLatestPerKey(anyOrNull(), any())
 
         mockMvc.get("$base/search") {
             param("searchTerm", "invoice")
@@ -152,7 +152,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         }.andExpect { status { isOk() } }
 
         val pageable = argumentCaptor<Pageable>()
-        verify(buildingBlockManagementService).searchLatestPerKey(eq("invoice"), pageable.capture(), eq(false))
+        verify(buildingBlockManagementService).searchLatestPerKey(eq("invoice"), pageable.capture())
         assertEquals(1, pageable.firstValue.pageNumber)
         assertEquals(5, pageable.firstValue.pageSize)
         assertEquals(Sort.by(Sort.Order.asc("name")), pageable.firstValue.sort)
@@ -173,7 +173,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     fun `should return an empty page rather than 404 when nothing matches`() {
         doReturn(PageImpl(emptyList<BuildingBlockDefinitionDto>(), PageRequest.of(0, 10), 0))
             .whenever(buildingBlockManagementService)
-            .searchLatestPerKey(anyOrNull(), any(), any())
+            .searchLatestPerKey(anyOrNull(), any())
 
         mockMvc.get("$base/search")
             .andExpect {

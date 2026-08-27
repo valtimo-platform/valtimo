@@ -191,12 +191,17 @@ export class BuildingBlockStateService implements OnDestroy {
    */
   public changeDefinitionVersionTag(versionTag: string | null): void {
     this._definitionVersionTag$.next(versionTag);
-    this.clearPluginRequirements({preserveMappings: true});
     this.clearFields();
 
     const key = this._definitionKey$.getValue();
-    if (!key || !versionTag) return;
+    if (!key || !versionTag) {
+      // Without a version there are no fields to prune the mappings against, so clear them.
+      this.clearPluginRequirements();
+      this.clearMappings();
+      return;
+    }
 
+    this.clearPluginRequirements({preserveMappings: true});
     this.loadPluginRequirements(key, versionTag);
     this.loadFields(key, versionTag, {pruneMappingsToFields: true});
   }

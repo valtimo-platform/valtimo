@@ -15,22 +15,34 @@
  */
 import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CarbonListModule, ColumnConfig, Pagination, ViewType} from '@valtimo/components';
+import {
+  CarbonListModule,
+  ColumnConfig,
+  DEFAULT_PAGINATION,
+  Pagination,
+  ViewType,
+} from '@valtimo/components';
 import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {isEqual} from 'lodash';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
-import {
-  BuildingBlockManagementCreateModalComponent,
-} from '../building-block-management-create-modal/building-block-management-create-modal.component';
+import {BuildingBlockManagementCreateModalComponent} from '../building-block-management-create-modal/building-block-management-create-modal.component';
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
-import {
-  BuildingBlockManagementUploadModalComponent,
-} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
+import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
 import {BuildingBlockDefinitionQuery} from '../../models';
 
 @Component({
@@ -59,9 +71,9 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
     page - results in one request rather than two.
   */
   private readonly _query$ = new BehaviorSubject<BuildingBlockDefinitionQuery>({
-    page: 1,
+    page: DEFAULT_PAGINATION.page,
     searchTerm: '',
-    size: 10,
+    size: DEFAULT_PAGINATION.size,
   });
 
   private get _query(): BuildingBlockDefinitionQuery {
@@ -71,26 +83,27 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
   public readonly pagination$: Observable<Pagination> = combineLatest([
     this._collectionSize$,
     this._query$,
-  ]).pipe(
-    map(([collectionSize, {page, size}]) => ({collectionSize, page, size}) as Pagination)
-  );
+  ]).pipe(map(([collectionSize, {page, size}]) => ({collectionSize, page, size}) as Pagination));
 
   public readonly buildingBlockDefinitions$: Observable<BuildingBlockDefinitionDto[]> =
     combineLatest([this.buildingBlockManagementService.reload$, this._query$]).pipe(
       tap(() => this.$loading.set(true)),
       switchMap(([, {page, searchTerm, size}]) =>
-        this.buildingBlockManagementApiService.searchBuildingBlockDefinitions({
-          page: page - 1,
-          size,
-          ...(searchTerm && {searchTerm}),
-        })
+        this.buildingBlockManagementApiService
+          .searchBuildingBlockDefinitions({
+            page: page - 1,
+            size,
+            ...(searchTerm && {searchTerm}),
+          })
+          // Caught inside the switchMap: an error reaching the outer stream would terminate it and
+          // leave the list stuck on its skeleton.
+          .pipe(catchError(() => of(null)))
       ),
-      map(res => {
+      tap(res => {
         this._collectionSize$.next(res?.totalElements ?? 0);
         this.$loading.set(false);
-
-        return res?.content ?? [];
-      })
+      }),
+      map(res => res?.content ?? [])
     );
 
   public readonly FIELDS: ColumnConfig[] = [
@@ -136,12 +149,12 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
     this.updateQuery({page});
   }
 
-  public paginationSet(size: number): void {
-    this.updateQuery({size, page: 1});
+  public paginationSet(size: number | string): void {
+    this.updateQuery({size: Number(size), page: 1});
   }
 
-  public searchTermEntered(searchTerm: string): void {
-    this.updateQuery({searchTerm, page: 1});
+  public searchTermEntered(searchTerm: string | null): void {
+    this.updateQuery({searchTerm: searchTerm ?? '', page: 1});
   }
 
   private updateQuery(update: Partial<BuildingBlockDefinitionQuery>): void {

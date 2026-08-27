@@ -59,14 +59,7 @@ class BuildingBlockManagementService(
     fun getLatestPerKey(includeArtwork: Boolean = false): List<BuildingBlockDefinitionDto> {
         denyAuthorization()
 
-        return buildingBlockDefinitionRepository.findAll()
-            .groupBy { it.id.key }
-            .values
-            .mapNotNull { defsForKey ->
-                defsForKey.maxWithOrNull { a, b ->
-                    a.id.versionTag.compareTo(b.id.versionTag)
-                }
-            }
+        return latestPerKey(buildingBlockDefinitionRepository.findAll()) { it.id }
             .map { BuildingBlockDefinitionDto.from(it, includeArtwork) }
     }
 
@@ -86,14 +79,13 @@ class BuildingBlockManagementService(
     @Transactional(readOnly = true)
     fun searchLatestPerKey(
         searchTerm: String?,
-        pageable: Pageable,
-        includeArtwork: Boolean = false
+        pageable: Pageable
     ): Page<BuildingBlockDefinitionDto> {
         denyAuthorization()
 
         // Validate the sort before anything else, so a bad sort is refused even on an empty table.
         val requestedSort = if (pageable.sort.isSorted) pageable.sort else BY_NAME_ASCENDING
-        val entitySort = toEntitySort(requestedSort)
+        val entitySort = withStableTieBreaker(toEntitySort(requestedSort))
 
         /*
            The returned page reports the sort the caller asked for, not the entity paths it was
@@ -111,7 +103,7 @@ class BuildingBlockManagementService(
             .findAll(byIds(latestIds).and(bySearchTerm(searchTerm)), pageable.withSort(entitySort))
 
         return PageImpl(
-            page.content.map { BuildingBlockDefinitionDto.from(it, includeArtwork) },
+            page.content.map { BuildingBlockDefinitionDto.from(it) },
             responsePageable,
             page.totalElements
         )
@@ -120,14 +112,28 @@ class BuildingBlockManagementService(
     private fun Pageable.withSort(sort: Sort): Pageable =
         if (isUnpaged) Pageable.unpaged(sort) else PageRequest.of(pageNumber, pageSize, sort)
 
-    private fun latestIdPerKey(): List<BuildingBlockDefinitionId> {
-        return buildingBlockDefinitionRepository.findAllIds()
-            .groupBy { it.key }
+    private fun latestIdPerKey(): List<BuildingBlockDefinitionId> =
+        latestPerKey(buildingBlockDefinitionRepository.findAllIds()) { it }
+
+    /**
+     * The entry with the highest version tag per key, by SemVer precedence. Shared by the id-only
+     * and the entity variant so that the two cannot drift apart.
+     */
+    private fun <T> latestPerKey(items: Iterable<T>, id: (T) -> BuildingBlockDefinitionId): List<T> {
+        return items
+            .groupBy { id(it).key }
             .values
-            .mapNotNull { idsForKey ->
-                idsForKey.maxWithOrNull { a, b -> a.versionTag.compareTo(b.versionTag) }
+            .mapNotNull { forKey ->
+                forKey.maxWithOrNull { a, b -> id(a).versionTag.compareTo(id(b).versionTag) }
             }
     }
+
+    private fun withStableTieBreaker(entitySort: Sort): Sort =
+        if (entitySort.getOrderFor(KEY_PATH) != null) {
+            entitySort
+        } else {
+            entitySort.and(Sort.by(Sort.Order.asc(KEY_PATH)))
+        }
 
     /**
      * Translates the requested sort onto entity paths, refusing anything not in [SORT_PROPERTIES].
@@ -305,6 +311,8 @@ class BuildingBlockManagementService(
     }
 
     companion object {
+        private const val KEY_PATH: String = "id.key"
+
         /**
          * Requested sort property -> entity path. The version tag is deliberately absent: it is
          * stored as a string, so the database would order it lexicographically rather than by
@@ -313,7 +321,7 @@ class BuildingBlockManagementService(
          */
         private val SORT_PROPERTIES: Map<String, String> = mapOf(
             "name" to "name",
-            "key" to "id.key",
+            "key" to KEY_PATH,
         )
 
         private val BY_NAME_ASCENDING: Sort = Sort.by(Sort.Order.asc("name"))

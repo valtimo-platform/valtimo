@@ -24,6 +24,9 @@ import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
+import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Path
+import jakarta.persistence.criteria.Root
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -34,16 +37,17 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.mockito.kotlin.argumentCaptor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
@@ -196,9 +200,54 @@ class BuildingBlockManagementServiceTest {
 
         buildingBlockManagementService.searchLatestPerKey(null, PageRequest.of(0, 10))
 
-        val ids = argumentCaptor<Specification<BuildingBlockDefinition>>()
-        verify(buildingBlockDefinitionRepository).findAll(ids.capture(), any<Pageable>())
-        assertNotNull(ids.firstValue)
+        val specification = argumentCaptor<Specification<BuildingBlockDefinition>>()
+        verify(buildingBlockDefinitionRepository).findAll(specification.capture(), any<Pageable>())
+
+        // '1.10.0' outranks '1.9.0' by SemVer, where a string comparison would pick '1.9.0'.
+        assertEquals(
+            setOf(
+                BuildingBlockDefinitionId("alpha", "1.10.0"),
+                BuildingBlockDefinitionId("bravo", "2.0.0"),
+            ),
+            idsRestrictedTo(specification.firstValue)
+        )
+    }
+
+    /**
+     * Runs the specification against a mocked criteria API and reports the identifiers it restricted
+     * the query to, so the assertion is about which versions were selected rather than about a
+     * specification merely existing.
+     */
+    private fun idsRestrictedTo(
+        specification: Specification<BuildingBlockDefinition>
+    ): Set<BuildingBlockDefinitionId> {
+        val root: Root<BuildingBlockDefinition> = mock()
+        val idPath: Path<Any> = mock()
+        whenever(root.get<Any>("id")).thenReturn(idPath)
+
+        specification.toPredicate(root, mock<CriteriaQuery<Any>>(), mock())
+
+        val ids = argumentCaptor<Collection<*>>()
+        verify(idPath).`in`(ids.capture())
+        return ids.firstValue.filterIsInstance<BuildingBlockDefinitionId>().toSet()
+    }
+
+    @Test
+    fun `searchLatestPerKey adds the key to the order so that equal names cannot shuffle between pages`() {
+        whenever(buildingBlockDefinitionRepository.findAllIds())
+            .thenReturn(listOf(BuildingBlockDefinitionId("alpha", "1.0.0")))
+        whenever(buildingBlockDefinitionRepository.findAll(any<Specification<BuildingBlockDefinition>>(), any<Pageable>()))
+            .thenReturn(PageImpl(emptyList()))
+
+        buildingBlockManagementService.searchLatestPerKey(null, PageRequest.of(0, 10))
+
+        val pageable = argumentCaptor<Pageable>()
+        verify(buildingBlockDefinitionRepository)
+            .findAll(any<Specification<BuildingBlockDefinition>>(), pageable.capture())
+        assertEquals(
+            listOf("name", "id.key"),
+            pageable.firstValue.sort.map { it.property }.toList()
+        )
     }
 
     @Test

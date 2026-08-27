@@ -202,6 +202,20 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
     }
 
     @Test
+    fun `pages definitions with the same name without repeating or skipping one`() {
+        // Sorting on name alone leaves these five in an order the database does not have to keep
+        // stable between the two page requests, so a key would sooner or later land on both pages.
+        (1..5).forEach { store("block-$it", "1.0.0", "Same name") }
+
+        val firstPage = search(pageable = PageRequest.of(0, 2))
+        val secondPage = search(pageable = PageRequest.of(1, 2))
+        val lastPage = search(pageable = PageRequest.of(2, 2))
+
+        val paged = (firstPage.content + secondPage.content + lastPage.content).map { it.key }
+        assertThat(paged).containsExactlyInAnyOrderElementsOf((1..5).map { "$prefix-block-$it" })
+    }
+
+    @Test
     fun `returns an empty page past the last page`() {
         store("a", "1.0.0", "Alpha")
 
