@@ -19,10 +19,12 @@ package com.ritense.document.domain
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.everit.json.schema.ArraySchema
 import org.everit.json.schema.CombinedSchema
+import org.everit.json.schema.EmptySchema
 import org.everit.json.schema.JSONPointer
 import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.ReferenceSchema
 import org.everit.json.schema.Schema
+import org.everit.json.schema.TrueSchema
 import org.everit.json.schema.ValidationException
 import org.everit.json.schema.regexp.Regexp
 
@@ -43,6 +45,7 @@ private fun Schema.allowsProperty(field: String, depth: Int): Boolean {
         is ArraySchema -> allowsProperty(field, depth)
         is CombinedSchema -> allowsProperty(field, depth)
         is ReferenceSchema -> allowsProperty(field, depth)
+        is EmptySchema, is TrueSchema -> true
         else -> false
     }
 }
@@ -56,7 +59,13 @@ private fun ObjectSchema.allowsProperty(field: String, depth: Int): Boolean {
     return field2.isNotEmpty() && (allowsSchemaProperty(nextToken, remaining, depth)
             || allowsPatternProperty(nextToken, remaining, depth)
             || allowsSchemaDependencyProperty(field2, depth)
-            || permitsAdditionalProperties()) // <- This is the only line that is different from all definesProperty(.) implementations
+            || (!describesProperty(nextToken) && permitsAdditionalProperties()))
+}
+
+private fun ObjectSchema.describesProperty(token: String): Boolean {
+    if (propertySchemas.containsKey(jsonPointerUnescape(token))) return true
+    val patternProperties: Map<Regexp, Schema> = getPrivateField("patternProperties")
+    return patternProperties.keys.any { pattern -> !pattern.patternMatchingFailure(token).isPresent }
 }
 
 /** Copied from ObjectSchema.definesSchemaProperty(.) but returns true when the schema allows additionalProperties */
@@ -167,18 +176,12 @@ private fun ArraySchema.tryPropertyDefinitionByNumericIndex(
     if (maxItems != null && maxItems <= index) {
         return false
     }
-    return if (allItemSchema != null && hasRemaining) {
-        allItemSchema.allowsProperty(remaining!!, depth + 1)
+    val additionalItems: Boolean = getPrivateField("additionalItems")
+    val itemSchema = allItemSchema ?: itemSchemas.getOrNull(index) ?: schemaOfAdditionalItems
+    return if (hasRemaining) {
+        itemSchema?.allowsProperty(remaining!!, depth + 1) ?: additionalItems
     } else {
-        if (hasRemaining) {
-            if (index < itemSchemas.size) {
-                return itemSchemas[index].allowsProperty(remaining!!, depth + 1)
-            }
-            if (schemaOfAdditionalItems != null) {
-                return schemaOfAdditionalItems.allowsProperty(remaining!!, depth + 1)
-            }
-        }
-        getPrivateField("additionalItems")
+        itemSchema != null || additionalItems
     }
 }
 

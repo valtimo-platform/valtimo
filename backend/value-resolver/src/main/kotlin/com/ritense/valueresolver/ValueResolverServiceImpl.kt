@@ -23,15 +23,19 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.stereotype.Service
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 @SkipComponentScan
 class ValueResolverServiceImpl(
     valueResolverFactories: List<ValueResolverFactory>
 ) : ValueResolverService {
+
+    private val loggedKeyOptionsFailures: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     // This property is lazy because valueResolverFactories can contain Lazy proxy instances
     private val resolverFactoryMap: Map<String, ValueResolverFactory> by lazy {
@@ -61,7 +65,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionKey) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(caseDefinitionKey) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -74,7 +78,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionId) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(caseDefinitionId) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -87,7 +91,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(blueprintId) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(blueprintId) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -115,7 +119,6 @@ class ValueResolverServiceImpl(
             requestedValues = requestedValues
         )
     }
-
 
     /**
      * This method provides a way of validating a propertyName using defined resolvers.
@@ -247,6 +250,32 @@ class ValueResolverServiceImpl(
         }
     }
 
+    private fun optionsOf(
+        prefix: String,
+        enumerate: (ValueResolverFactory) -> List<ValueResolverOption>,
+    ): List<ValueResolverOption> {
+        val factory = resolverFactoryMap[prefix] ?: return emptyList()
+        return try {
+            enumerate(factory)
+        } catch (e: Exception) {
+            logKeyOptionsFailure(prefix, e)
+            emptyList()
+        }
+    }
+
+    private fun logKeyOptionsFailure(prefix: String, e: Exception) {
+        val rootCause = generateSequence<Throwable>(e) { it.cause }.take(MAX_CAUSE_CHAIN_LENGTH).last()
+        val message = "Could not getResolvableKeyOptions for prefix '$prefix:'; it is left out of " +
+            "the options. Cause: ${rootCause::class.simpleName}: ${rootCause.message}"
+        val firstOccurrence = loggedKeyOptionsFailures.size < MAX_LOGGED_KEY_OPTIONS_FAILURES
+            && loggedKeyOptionsFailures.add("$prefix|${rootCause::class.qualifiedName}|${rootCause.message}")
+        if (firstOccurrence) {
+            logger.warn(e) { message }
+        } else {
+            logger.debug { message }
+        }
+    }
+
     private fun mapPropertyPaths(
         propertyPaths: List<String>,
         values: Map<String, Any?>
@@ -329,6 +358,9 @@ class ValueResolverServiceImpl(
 
     companion object {
         const val DELIMITER = ":"
+        private const val MAX_LOGGED_KEY_OPTIONS_FAILURES = 100
+        private const val MAX_CAUSE_CHAIN_LENGTH = 20
         private val prefixRegex = Regex("^[A-Za-z_-]+$") // no numbers allowed
+        private val logger = KotlinLogging.logger {}
     }
 }
