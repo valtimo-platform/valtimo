@@ -19,11 +19,10 @@ package com.ritense.case.service
 import com.ritense.BaseTest
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.specification.AuthorizationSpecification
+import com.ritense.case.domain.CaseDefinitionConfigurationIssue
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.domain.CaseListColumnId
-import com.ritense.case.domain.CaseDefinitionConfigurationIssue
 import com.ritense.case.domain.ColumnDefaultSort
-import com.ritense.case.exception.CaseDefinitionHasConfigurationIssuesException
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
@@ -60,7 +59,6 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
-import org.zalando.problem.Status
 import org.springframework.data.domain.Sort
 import java.util.Optional
 import java.util.stream.Stream
@@ -687,7 +685,7 @@ class CaseDefinitionServiceTest : BaseTest() {
     }
 
     @Test
-    fun `should refuse a draft when the based on version has unresolved configuration issues`() {
+    fun `should create case definition draft when the based on version has unresolved configuration issues`() {
         val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"))
         val request = CaseDefinitionDraftCreateRequest(
             caseDefinitionKey = "key",
@@ -697,26 +695,23 @@ class CaseDefinitionServiceTest : BaseTest() {
 
         whenever(caseDefinitionRepository.findById(basedOnCaseDefinition.id))
             .thenReturn(Optional.of(basedOnCaseDefinition))
+        whenever(caseDefinitionRepository.save(any())).thenAnswer { it.arguments[0] as CaseDefinition }
         whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionId(basedOnCaseDefinition.id))
             .thenReturn(
                 listOf(
                     CaseDefinitionConfigurationIssue(
                         caseDefinitionId = basedOnCaseDefinition.id,
-                        issueType = "zaakdetail-sync"
+                        issueType = "plugin-process-link"
                     )
                 )
             )
 
-        val exception = assertThrows<CaseDefinitionHasConfigurationIssuesException> {
-            service.createCaseDefinitionDraft(request)
-        }
+        // A broken version can only be repaired in a draft, so the draft has to be created. The
+        // issues are re-detected on the draft and block finalization until they are resolved.
+        val draft = service.createCaseDefinitionDraft(request)
 
-        assertEquals(Status.BAD_REQUEST, exception.status)
-        assertTrue(exception.title!!.contains("Failed to create case-definition-draft"))
-        // The detail is what the frontend renders next to the title
-        assertTrue(exception.detail!!.contains("zaakdetail-sync"))
-        assertTrue(exception.detail!!.contains("key:1.0.0"))
-        verify(caseDefinitionRepository, never()).save(any())
+        assertEquals(CaseDefinitionId.of("key", "2.0.0"), draft.id)
+        assertFalse(draft.final)
     }
 
     @Test
