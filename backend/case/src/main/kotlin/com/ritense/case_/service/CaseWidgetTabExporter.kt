@@ -51,18 +51,20 @@ class CaseWidgetTabExporter(
             "${it.major}-${it.minor}-${it.patch}"
         }
 
+        val widgetTabs = caseTabs
+            .filter { it.type == CaseTabType.WIDGETS }
+            .map { caseWidgetService.getWidgetTab(it.id.caseDefinitionId, it.id.key)!! }
+
         val caseWidgetTabExport = ExportFile(
             PATH.format(caseDefinitionKey, formattedCaseDefinitionVersion, caseDefinitionKey),
             objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(
-                caseTabs
-                    .filter { it.type == CaseTabType.WIDGETS }
-                    .map { caseWidgetService.getWidgetTab(it.id.caseDefinitionId, it.id.key)!! }
-                    .map(::enrichExternalPluginWidgets)
+                widgetTabs.map(::enrichExternalPluginWidgets)
             )
         )
 
         return ExportResult(
-            caseWidgetTabExport
+            caseWidgetTabExport,
+            widgetTabs.flatMap { it.getRelatedExportRequests(request.caseDefinitionId) }.toSet()
         )
     }
 

@@ -196,12 +196,18 @@ public class KeycloakUserManagementService implements UserManagementService {
     @Override
     public ValtimoUser findById(String userId) {
         UserRepresentation user;
-        if (userId.equals(SYSTEM_ACCOUNT)) {
+        if (userId == null || userId.isBlank()) {
+            return null;
+        } else if (userId.equals(SYSTEM_ACCOUNT)) {
             requireUserPermission(VIEW, SYSTEM_VALTIMO_USER);
             return SYSTEM_VALTIMO_USER;
         } else {
             try (Keycloak keycloak = keycloakService.keycloak()) {
                 user = keycloakService.usersResource(keycloak).get(userId).toRepresentation();
+            } catch (NotFoundException e) {
+                // The user no longer exists in Keycloak, for instance because it was deleted.
+                logger.debug("No user found in Keycloak with id {}. Error: {}", userId, e.getMessage());
+                return null;
             }
             ValtimoUser valtimoUser = Boolean.TRUE.equals(user.isEnabled()) ? toValtimoUserByRetrievingRolesWithoutAuthorization(user) : null;
             requireUserPermission(VIEW, valtimoUser);
@@ -428,6 +434,11 @@ public class KeycloakUserManagementService implements UserManagementService {
                 roles.addAll(clientRoles);
             }
             return roles;
+        } catch (NotFoundException e) {
+            // The user was removed from Keycloak while its roles were being retrieved. Fail closed by
+            // reporting no roles at all, rather than breaking the request this user is part of.
+            logger.warn("No roles found in Keycloak for user with id {}. Error: {}", userRepresentation.getId(), e.getMessage());
+            return List.of();
         }
     }
 

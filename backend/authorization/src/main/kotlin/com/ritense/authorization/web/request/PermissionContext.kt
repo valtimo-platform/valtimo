@@ -16,14 +16,14 @@
 
 package com.ritense.authorization.web.request
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.ritense.authorization.web.request.PermissionResourceConstraints.RESOURCE_MAX_LENGTH
+import com.ritense.authorization.web.request.PermissionResourceConstraints.RESOURCE_NAME_PATTERN
+import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
 
 class PermissionContext(
+    @field:Size(max = RESOURCE_MAX_LENGTH)
+    @field:Pattern(regexp = RESOURCE_NAME_PATTERN)
     val resource: String,
     val identifier: String
-) {
-    @JsonIgnore
-    fun getResourceAsClass(): Class<*> {
-        return Class.forName(resource)
-    }
-}
+)

@@ -285,6 +285,22 @@ class KeycloakUserManagementServiceTest {
     }
 
     @Test
+    void shouldReturnNullWhenUserNoLongerExistsInKeycloak() {
+        when(keycloakService.usersResource(any()).get(eq("deleted-user-id")).toRepresentation())
+            .thenThrow(new NotFoundException("HTTP 404 Not Found"));
+
+        var user = userManagementService.findById("deleted-user-id");
+
+        assertThat(user).isNull();
+    }
+
+    @Test
+    void shouldReturnNullWhenFindingUserByBlankId() {
+        assertThat(userManagementService.findById(null)).isNull();
+        assertThat(userManagementService.findById("")).isNull();
+    }
+
+    @Test
     void shouldThrowExceptionWhenUserViewPermissionIsDenied() {
         // Set current user as non-admin
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

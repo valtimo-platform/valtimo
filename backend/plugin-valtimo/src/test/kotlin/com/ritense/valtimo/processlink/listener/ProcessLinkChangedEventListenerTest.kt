@@ -19,6 +19,8 @@ package com.ritense.valtimo.processlink.listener
 import com.ritense.processlink.event.ProcessLinkCreatedEvent
 import com.ritense.processlink.event.ProcessLinkDeletedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
+import com.ritense.processlink.event.ProcessLinksDeployedEvent
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
@@ -26,8 +28,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -63,6 +67,22 @@ class ProcessLinkChangedEventListenerTest {
         listener.onProcessLinkDeleted(ProcessLinkDeletedEvent("plugin", "pd-1"))
 
         verify(pluginConfigurationMappingResolver).recheckIssuesForProcessDefinition("pd-1")
+    }
+
+    @Test
+    fun `rechecks the case definition on process links deployed`() {
+        val caseDefinitionId = CaseDefinitionId("my-case", "1.0.0")
+
+        listener.onProcessLinksDeployed(ProcessLinksDeployedEvent("pd-1", caseDefinitionId))
+
+        verify(pluginConfigurationMappingResolver).recheckIssuesForCaseDefinition(caseDefinitionId)
+    }
+
+    @Test
+    fun `ignores process links deployed without a case definition blueprint`() {
+        listener.onProcessLinksDeployed(ProcessLinksDeployedEvent("pd-1", null))
+
+        verify(pluginConfigurationMappingResolver, never()).recheckIssuesForCaseDefinition(any())
     }
 
     @Test

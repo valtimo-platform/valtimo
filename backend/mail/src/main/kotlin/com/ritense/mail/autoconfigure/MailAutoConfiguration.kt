@@ -42,7 +42,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 class MailAutoConfiguration {
 
     @Bean
-    @ProcessBean
+    @ProcessBean(description = "Sends templated emails from process tasks")
     @ConditionalOnMissingBean(MailService::class)
     fun mailService(mailSender: MailSender): MailService {
         return MailService(mailSender)

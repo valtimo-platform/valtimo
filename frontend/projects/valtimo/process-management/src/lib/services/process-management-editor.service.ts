@@ -30,6 +30,7 @@ import {
   OpenProcessLinkModalEvent,
   ProcessDefinitionValidationError,
 } from '../models';
+import {AutofilledElement} from '@valtimo/process';
 import {
   BuildingBlockManagementParams,
   CaseManagementParams,
@@ -102,6 +103,46 @@ export class ProcessManagementEditorService implements OnDestroy {
 
   public setValidationErrors(errors: ProcessDefinitionValidationError[]): void {
     this._validationErrors$.next(errors);
+  }
+
+  private readonly _dismissedAutofills$ = new BehaviorSubject<Set<string>>(new Set());
+  private readonly _autofillDismissed$ = new Subject<string>();
+
+  public get dismissedAutofills(): Set<string> {
+    return this._dismissedAutofills$.getValue();
+  }
+
+  public get autofillDismissed$(): Observable<string> {
+    return this._autofillDismissed$.asObservable();
+  }
+
+  public dismissAutofill(activityId: string): void {
+    const current = this._dismissedAutofills$.getValue();
+    current.add(activityId);
+    this._dismissedAutofills$.next(new Set(current));
+    this._autofillDismissed$.next(activityId);
+  }
+
+  public clearDismissedAutofills(): void {
+    this._dismissedAutofills$.next(new Set());
+  }
+
+  public isAutofillDismissed(activityId: string): boolean {
+    return this._dismissedAutofills$.getValue().has(activityId);
+  }
+
+  private readonly _autofilledElements$ = new BehaviorSubject<AutofilledElement[]>([]);
+
+  public get autofilledElements(): AutofilledElement[] {
+    return this._autofilledElements$.getValue();
+  }
+
+  public setAutofilledElements(elements: AutofilledElement[]): void {
+    this._autofilledElements$.next(elements);
+  }
+
+  public getAutofillForActivity(activityId: string): AutofilledElement | undefined {
+    return this._autofilledElements$.getValue().find(e => e.activityId === activityId);
   }
 
   private _updateBpmnViewFunction!: () => void;

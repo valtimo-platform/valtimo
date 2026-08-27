@@ -61,6 +61,7 @@ import {
   combineLatest,
   debounceTime,
   filter,
+  forkJoin,
   map,
   merge,
   Observable,
@@ -666,9 +667,12 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   private initBreadcrumb(): void {
-    this.documentService.getDocumentDefinition(this.caseDefinitionKey).subscribe(definition => {
-      this.documentDefinitionTitle = definition.schema.title;
-      this.caseDefinitionVersionTag = definition.id.blueprintId.blueprintVersionTag;
+    forkJoin({
+      documentDefinition: this.documentService.getDocumentDefinition(this.caseDefinitionKey),
+      activeCaseDefinition: this.documentService.getActiveCaseDefinition(this.caseDefinitionKey),
+    }).subscribe(({documentDefinition, activeCaseDefinition}) => {
+      this.documentDefinitionTitle = activeCaseDefinition?.name || documentDefinition.schema.title;
+      this.caseDefinitionVersionTag = documentDefinition.id.blueprintId.blueprintVersionTag;
       this.setBreadcrumb();
     });
   }

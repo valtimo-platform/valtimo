@@ -29,5 +29,13 @@ data class TeamUserResponseDto(
             fullName = user.fullName,
             email = user.email,
         )
+
+        /**
+         * Builds a response for a team member that is known by username only. The user may no longer exist in the
+         * identity provider, in which case the username is shown as its name instead of failing the whole request.
+         * That keeps the member identifiable, so it can still be removed from the team.
+         */
+        fun from(username: String, user: ManageableUser?) = user?.let { from(it) }
+            ?: TeamUserResponseDto(username = username, fullName = username, email = null)
     }
 }

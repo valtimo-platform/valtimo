@@ -79,7 +79,12 @@ open class CaseAssigneeTaskCreatedListener(
                     && caseDefinition.autoAssignTasks
                     && !caseDocument.assigneeId().isNullOrEmpty()
                 ) {
-                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(caseDocument.assigneeId()) }
+                    val assigneeUsername = caseDocument.assigneeId()
+                    val assignee = runWithoutAuthorization { userManagementService.findByUsername(assigneeUsername) }
+                    if (assignee == null) {
+                        logger.warn { "Not auto assigning task ${delegateTask.id}. User '$assigneeUsername' could not be found." }
+                        return
+                    }
                     val taskId = delegateTask.id
 
                     TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {

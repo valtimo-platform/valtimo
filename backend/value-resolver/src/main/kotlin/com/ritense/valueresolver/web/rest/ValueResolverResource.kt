@@ -16,6 +16,7 @@
 
 package com.ritense.valueresolver.web.rest
 
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -42,6 +43,7 @@ class ValueResolverResource(
         en = "List value resolvers",
         nl = "Waarde-resolvers ophalen",
     )
+    @RunWithoutAuthorization
     @GetMapping("/management/v1/value-resolver")
     fun getValueResolvers(): ResponseEntity<List<String>> {
         return ResponseEntity.ok(valueResolverService.getValueResolvers())
@@ -51,6 +53,7 @@ class ValueResolverResource(
         en = "Get resolvable keys for case definition",
         nl = "Opvraagbare sleutels voor dossierdefinitie ophalen",
     )
+    @RunWithoutAuthorization
     @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/keys")
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,
@@ -63,6 +66,7 @@ class ValueResolverResource(
         en = "Get resolvable keys for case definition version",
         nl = "Opvraagbare sleutels voor dossierdefinitieversie ophalen",
     )
+    @RunWithoutAuthorization
     @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/keys")
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,

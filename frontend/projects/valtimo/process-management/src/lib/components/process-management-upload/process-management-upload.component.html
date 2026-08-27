@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,32 +19,144 @@
     <h3 cdsModalHeaderHeading>{{ 'processManagement.upload.modalTitle' | translate }}</h3>
   </cds-modal-header>
 
-  <section cdsModalContent [cdsLayer]="1" [formGroup]="form">
-    <cds-file-uploader
-      [accept]="ACCEPTED_FILES"
-      [buttonText]="'processManagement.upload.buttonText' | translate"
-      [description]="'processManagement.upload.description' | translate"
-      [multiple]="false"
-      [title]="'processManagement.upload.title' | translate"
-      buttonType="primary"
-      formControlName="file"
-    >
-    </cds-file-uploader>
-  </section>
+  <ng-container
+    *ngIf="{
+      activeStep: activeStep$ | async,
+      preview: preview$ | async,
+      missingReferences: missingReferences$ | async,
+      importing: importing$ | async,
+    } as obs"
+  >
+    <section cdsModalContent [cdsLayer]="1" [formGroup]="form" [ngSwitch]="obs.activeStep">
+      <cds-file-uploader
+        *ngSwitchCase="UPLOAD_STEP.FILE_SELECT"
+        [accept]="ACCEPTED_FILES"
+        [buttonText]="'processManagement.upload.buttonText' | translate"
+        [description]="'processManagement.upload.description' | translate"
+        [multiple]="false"
+        [title]="'processManagement.upload.title' | translate"
+        buttonType="primary"
+        formControlName="file"
+      >
+      </cds-file-uploader>
 
-  <cds-modal-footer>
-    <button cdsButton="secondary" (click)="closeModal()">
-      {{ 'interface.cancel' | translate }}
-    </button>
+      <div *ngSwitchCase="UPLOAD_STEP.REVIEW" class="process-management-upload__review">
+        <ng-container *ngFor="let group of getMissingReferenceGroups(obs.missingReferences)">
+          <cds-inline-notification
+            [notificationObj]="{
+              type:
+                group.type === 'SUB_PROCESS' || group.type === 'DECISION_DEFINITION'
+                  ? 'warning'
+                  : 'error',
+              title:
+                'processManagement.upload.missingReference.' + group.type + '.title' | translate,
+              message:
+                ('processManagement.upload.missingReference.' + group.type + '.message'
+                  | translate) +
+                ' ' +
+                group.references.join(', '),
+              showClose: false,
+              lowContrast: true,
+            }"
+          ></cds-inline-notification>
+        </ng-container>
 
-    <button
-      cdsButton="primary"
-      [disabled]="(fileSelected$ | async) === false"
-      (click)="uploadProcessBpmn()"
-    >
-      {{ 'interface.upload' | translate }}
-    </button>
-  </cds-modal-footer>
+        <ng-container
+          *ngFor="let group of getReplacedElementGroups(obs.preview?.elementsToReplace ?? [])"
+        >
+          <cds-inline-notification
+            [notificationObj]="{
+              type: 'warning',
+              title: 'processManagement.upload.willBeReplaced.' + group.type + '.title' | translate,
+              message:
+                ('processManagement.upload.willBeReplaced.' + group.type + '.message' | translate) +
+                ' ' +
+                group.keys.join(', '),
+              showClose: false,
+              lowContrast: true,
+            }"
+          ></cds-inline-notification>
+        </ng-container>
+
+        <ng-container *ngIf="obs.preview?.pluginConfigurations?.length">
+          <p class="process-management-upload__description">
+            {{ 'processManagement.upload.pluginsDescription' | translate }}
+          </p>
+
+          <valtimo-plugin-configuration-mapping
+            [pluginConfigurations]="obs.preview.pluginConfigurations"
+          ></valtimo-plugin-configuration-mapping>
+        </ng-container>
+      </div>
+
+      <div *ngSwitchCase="UPLOAD_STEP.SUMMARY" class="process-management-upload__review">
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'success',
+            title: 'processManagement.upload.success' | translate,
+            message: 'processManagement.upload.summaryDescription' | translate,
+            showClose: false,
+            lowContrast: true,
+          }"
+        ></cds-inline-notification>
+
+        <ng-container *ngFor="let group of getMissingReferenceGroups(obs.missingReferences)">
+          <cds-inline-notification
+            [notificationObj]="{
+              type: 'warning',
+              title:
+                'processManagement.upload.missingReference.' + group.type + '.title' | translate,
+              message:
+                ('processManagement.upload.missingReference.' + group.type + '.message'
+                  | translate) +
+                ' ' +
+                group.references.join(', '),
+              showClose: false,
+              lowContrast: true,
+            }"
+          ></cds-inline-notification>
+        </ng-container>
+      </div>
+    </section>
+
+    <cds-modal-footer>
+      <ng-container *ngIf="obs.activeStep === UPLOAD_STEP.FILE_SELECT">
+        <button cdsButton="secondary" (click)="closeModal()">
+          {{ 'interface.cancel' | translate }}
+        </button>
+
+        <button
+          cdsButton="primary"
+          [disabled]="(fileSelected$ | async) === false || obs.importing"
+          (click)="uploadProcessBpmn()"
+        >
+          {{ 'interface.upload' | translate }}
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="obs.activeStep === UPLOAD_STEP.REVIEW">
+        <button cdsButton="secondary" (click)="onBackClick()">
+          {{ 'interface.back' | translate }}
+        </button>
+
+        <button
+          cdsButton="primary"
+          [disabled]="obs.preview?.canImport === false || obs.importing"
+          (click)="importProcessPackage()"
+        >
+          {{ 'interface.upload' | translate }}
+        </button>
+      </ng-container>
+
+      <button
+        *ngIf="obs.activeStep === UPLOAD_STEP.SUMMARY"
+        cdsButton="primary"
+        (click)="closeModal()"
+      >
+        {{ 'interface.close' | translate }}
+      </button>
+    </cds-modal-footer>
+  </ng-container>
 </cds-modal>
 
 <valtimo-render-in-body>

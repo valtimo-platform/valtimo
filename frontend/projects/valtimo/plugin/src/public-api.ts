@@ -31,6 +31,8 @@ export * from './lib/components/external-plugin-iframe/external-plugin-iframe.co
 /* external plugin routed page */
 export * from './lib/components/external-plugin-page/external-plugin-page.component';
 export * from './lib/external-plugin-page-routing.module';
+/* plugin configuration mapping */
+export * from './lib/components/plugin-configuration-mapping/plugin-configuration-mapping.component';
 /* open-zaak plugin */
 export * from './lib/plugins/open-zaak/open-zaak-plugin.module';
 export * from './lib/plugins/open-zaak/components/open-zaak-configuration/open-zaak-configuration.component';

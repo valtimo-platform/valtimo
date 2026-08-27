@@ -17,6 +17,7 @@
 package com.ritense.form.mapper
 
 import com.ritense.exporter.request.FormDefinitionExportRequest
+import com.ritense.exporter.request.GlobalFormDefinitionExportRequest
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormIoFormDefinition
@@ -28,11 +29,15 @@ import com.ritense.form.web.rest.dto.FormProcessLinkCreateRequestDto
 import com.ritense.form.web.rest.dto.FormProcessLinkResponseDto
 import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
+import com.ritense.processlink.web.rest.dto.MissingReferenceType
+import com.ritense.processlink.web.rest.dto.ReplacedElementDto
+import com.ritense.processlink.web.rest.dto.ReplacedElementType
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -219,6 +224,84 @@ internal class FormProcessLinkMapperTest {
     }
 
     @Test
+    fun `should return global related export request for form process links`() {
+        val formDefinition = FormIoFormDefinition(
+            UUID.randomUUID(),
+            "testing",
+            "{}",
+            null,
+            true
+        )
+        val formProcessLink = FormProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "processDefinitionId",
+            activityId = "activityId",
+            activityType = USER_TASK_CREATE,
+            formDefinitionId = formDefinition.id,
+            viewModelEnabled = false
+        )
+
+        whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
+            .thenReturn(Optional.of(formDefinition))
+
+        val relatedExportRequests = formProcessLinkMapper.createGlobalRelatedExportRequests(formProcessLink)
+
+        assertThat(relatedExportRequests).containsExactly(GlobalFormDefinitionExportRequest("testing"))
+    }
+
+    @Test
+    fun `should fail with the activity and process when the form of a global process link is gone`() {
+        val formProcessLink = FormProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "my-process:1:abc",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionId = UUID.randomUUID(),
+            viewModelEnabled = false
+        )
+        whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
+            .thenReturn(Optional.empty())
+
+        assertThatThrownBy { formProcessLinkMapper.createGlobalRelatedExportRequests(formProcessLink) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("userTask1")
+            .hasMessageContaining("my-process:1:abc")
+            .hasMessageContaining(formProcessLink.formDefinitionId.toString())
+    }
+
+    @Test
+    fun `should report a replaced reference when the form exists globally`() {
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "process-def:1:123",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "my-form",
+            subtitles = null
+        )
+        whenever(formDefinitionService.getFormDefinitionByName("my-form")).thenReturn(
+            Optional.of(FormIoFormDefinition(UUID.randomUUID(), "my-form", "{}", null, false))
+        )
+
+        val replaced = formProcessLinkMapper.getReplacedReference(deployDto, null)
+
+        assertThat(replaced).isEqualTo(ReplacedElementDto(ReplacedElementType.FORM, "my-form"))
+    }
+
+    @Test
+    fun `should not report a replaced reference when the form does not exist globally`() {
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "process-def:1:123",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "my-form",
+            subtitles = null
+        )
+        whenever(formDefinitionService.getFormDefinitionByName("my-form")).thenReturn(Optional.empty())
+
+        assertThat(formProcessLinkMapper.getReplacedReference(deployDto, null)).isNull()
+    }
+
+    @Test
     fun `should resolve form definition by case blueprint for deploy dto`() {
         val formDefinitionId = UUID.randomUUID()
         val formDefinition = FormIoFormDefinition(
@@ -353,6 +436,67 @@ internal class FormProcessLinkMapperTest {
 
         assertTrue(result is FormProcessLinkCreateRequestDto)
         assertEquals(formDefinitionId, result.formDefinitionId)
+    }
+
+    @Test
+    fun `should report a missing reference when the form does not exist globally`() {
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "process-def:1:123",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "my-form",
+            subtitles = null
+        )
+        whenever(formDefinitionService.getFormDefinitionByName("my-form")).thenReturn(Optional.empty())
+
+        val missingReference = formProcessLinkMapper.getMissingReference(deployDto, null)
+
+        assertThat(missingReference).isNotNull
+        assertThat(missingReference!!.type).isEqualTo(MissingReferenceType.FORM)
+        assertThat(missingReference.reference).isEqualTo("my-form")
+        assertThat(missingReference.activityId).isEqualTo("userTask1")
+        assertThat(missingReference.blocksImport).isTrue()
+    }
+
+    @Test
+    fun `should not report a missing reference when the form exists globally`() {
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "process-def:1:123",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "my-form",
+            subtitles = null
+        )
+        whenever(formDefinitionService.getFormDefinitionByName("my-form")).thenReturn(
+            Optional.of(
+                FormIoFormDefinition(
+                    UUID.randomUUID(),
+                    "my-form",
+                    "{}",
+                    FormDefinitionBlueprintId.forCase(caseDefinitionId),
+                    false
+                )
+            )
+        )
+
+        assertThat(formProcessLinkMapper.getMissingReference(deployDto, null)).isNull()
+    }
+
+    @Test
+    fun `should look up the form of a case definition when importing for a case`() {
+        val deployDto = FormProcessLinkDeployDto(
+            processDefinitionId = "process-def:1:123",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionName = "my-case-form",
+            subtitles = null
+        )
+        whenever(formDefinitionService.getFormDefinitionByName("my-case-form", caseDefinitionId as BlueprintId))
+            .thenReturn(Optional.empty())
+
+        val missingReference = formProcessLinkMapper.getMissingReference(deployDto, caseDefinitionId)
+
+        assertThat(missingReference!!.reference).isEqualTo("my-case-form")
     }
 
     companion object {

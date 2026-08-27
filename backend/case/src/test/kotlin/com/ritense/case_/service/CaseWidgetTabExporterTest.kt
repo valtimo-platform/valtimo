@@ -16,18 +16,24 @@
 
 package com.ritense.case_.service
 
+import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.service.CaseTabService
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
+import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.case_.widget.custom.CustomCaseWidgetDto
 import com.ritense.case_.widget.custom.CustomWidgetProperties
 import com.ritense.case_.widget.externalplugin.ExternalPluginCaseWidgetDto
 import com.ritense.case_.widget.externalplugin.ExternalPluginWidgetProperties
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
+import com.ritense.exporter.request.ExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.widget.domain.WidgetAction
+import com.ritense.widget.domain.WidgetColor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -43,6 +49,27 @@ class CaseWidgetTabExporterTest {
     private val resolver = mock<ExternalPluginCaseWidgetResolver>()
 
     private val caseDefinitionId = CaseDefinitionId("my-case", "1.0.0")
+
+    @Test
+    fun `should export the resources referred to by the widgets`() {
+        val exportCaseDefinitionId = CaseDefinitionId.of("some-case-type", "1.1.1")
+        val exporter = CaseWidgetTabExporter(objectMapper, caseTabService, caseWidgetService)
+
+        whenever(caseTabService.getCaseTabs(exportCaseDefinitionId)).thenReturn(
+            listOf(
+                CaseTab(CaseTabId(exportCaseDefinitionId, "my-widget-tab"), "My widget tab", 0, CaseTabType.WIDGETS, "-"),
+                CaseTab(CaseTabId(exportCaseDefinitionId, "my-standard-tab"), "Notes", 1, CaseTabType.STANDARD, "notes"),
+            )
+        )
+        whenever(caseWidgetService.getWidgetTab(exportCaseDefinitionId, "my-widget-tab")).thenReturn(
+            CaseWidgetTabDto(key = "my-widget-tab", widgets = listOf(TestCaseWidgetDto()))
+        )
+
+        val exportResult = exporter.export(DocumentDefinitionExportRequest("some-case-type", exportCaseDefinitionId))
+
+        assertThat(exportResult.exportFiles).singleElement()
+        assertThat(exportResult.relatedRequests).containsExactly(TestExportRequest(exportCaseDefinitionId))
+    }
 
     @Test
     fun `stamps the plugin id and version on external-plugin widgets in the export`() {
@@ -157,4 +184,24 @@ class CaseWidgetTabExporterTest {
         displayConditions = emptyList(),
         properties = CustomWidgetProperties(componentKey = "my-component"),
     )
+
+    @JsonTypeName("test")
+    private data class TestCaseWidgetDto(
+        override val key: String = "my-widget",
+        override val title: String = "My widget",
+        override val icon: String? = null,
+        override val color: WidgetColor? = null,
+        override val width: Int = 1,
+        override val highContrast: Boolean = false,
+        override val isCompact: Boolean? = false,
+        override val actions: List<WidgetAction>? = emptyList(),
+        override val displayConditions: List<Condition<*>> = emptyList(),
+    ) : CaseWidgetTabWidgetDto {
+        override fun getRelatedExportRequests(caseDefinitionId: CaseDefinitionId) =
+            setOf<ExportRequest>(TestExportRequest(caseDefinitionId))
+    }
+
+    private data class TestExportRequest(
+        override val caseDefinitionId: CaseDefinitionId
+    ) : ExportRequest()
 }

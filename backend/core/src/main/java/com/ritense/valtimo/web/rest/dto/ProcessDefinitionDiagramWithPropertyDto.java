@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 
 package com.ritense.valtimo.web.rest.dto;
 
+import com.ritense.valtimo.processautofill.web.rest.dto.AutofilledElementDto;
 import org.operaton.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
+
+import java.util.List;
 
 public class ProcessDefinitionDiagramWithPropertyDto {
 
@@ -24,6 +27,7 @@ public class ProcessDefinitionDiagramWithPropertyDto {
     private String bpmn20Xml;
     private boolean readOnly;
     private boolean systemProcess;
+    private List<AutofilledElementDto> autofilledElements;
 
     public String getId() {
         return id;
@@ -41,11 +45,21 @@ public class ProcessDefinitionDiagramWithPropertyDto {
         return systemProcess;
     }
 
-    public ProcessDefinitionDiagramWithPropertyDto(ProcessDefinitionDiagramDto processDefinitionDiagramDto, boolean readOnly, boolean systemProcess) {
+    public List<AutofilledElementDto> getAutofilledElements() {
+        return autofilledElements;
+    }
+
+    public ProcessDefinitionDiagramWithPropertyDto(
+        ProcessDefinitionDiagramDto processDefinitionDiagramDto,
+        boolean readOnly,
+        boolean systemProcess,
+        List<AutofilledElementDto> autofilledElements
+    ) {
         this.id = processDefinitionDiagramDto.getId();
         this.bpmn20Xml = processDefinitionDiagramDto.getBpmn20Xml();
         this.readOnly = readOnly;
         this.systemProcess = systemProcess;
+        this.autofilledElements = autofilledElements;
     }
 
 }

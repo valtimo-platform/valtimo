@@ -165,6 +165,9 @@ public class UserResource {
     public ResponseEntity<ManageableUser> getUser(@PathVariable String userId) {
         logger.debug("Request to get user by id : {}", userId);
         final ManageableUser manageableUser = userManagementService.findByUsername(userId);
+        if (manageableUser == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(manageableUser);
     }
 
