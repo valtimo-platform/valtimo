@@ -74,5 +74,7 @@ services:
 #   url: jdbc:mysql://localhost:3365/admin-settings-test
 #   url: jdbc:mysql://localhost:3366/documenten-api-preview-test
 #   url: jdbc:mysql://localhost:3367/aws-test
+#   url: jdbc:mysql://localhost:3368/case-opensearch-test
+#   url: jdbc:mysql://localhost:3369/catalogi-api-test
 #   url: localhost:55672 <--outbox rabbitmq
 #   url: localhost:55673 <--inbox rabbitmq
