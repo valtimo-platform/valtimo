@@ -119,6 +119,78 @@ services:
               rabbitmq-server
             "
 
+    # External plugin system
+
+    plugin-host-database:
+        image: postgres:17.4
+        container_name: gzac-docker-compose-plugin-host-database
+        profiles:
+            - plugin-host
+        ports:
+            - "5434:5432"
+        environment:
+            POSTGRES_USER: pluginhost
+            POSTGRES_PASSWORD: pluginhost
+            POSTGRES_DB: pluginhost
+        volumes:
+            - plugin-host-database-data:/var/lib/postgresql/data
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U pluginhost -d pluginhost" ]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    plugin-host:
+        build:
+            context: ../../../plugin-host
+            dockerfile: app/Dockerfile
+        container_name: gzac-docker-compose-plugin-host
+        profiles:
+            - plugin-host
+        ports:
+            - "8090:8090"
+        environment:
+            # Must match the "secret" in dev.externalplugin.json.
+            ADMIN_TOKEN: ${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:-test-secret}
+            DB_HOST: plugin-host-database
+            DB_PORT: 5432
+            DB_NAME: pluginhost
+            DB_USER: pluginhost
+            DB_PASSWORD: pluginhost
+            PLUGIN_STORAGE_DIR: /data/plugins
+            PLUGIN_PREINSTALL_DIR: /data/preinstalled
+            HOST_ID: dev-plugin-host
+            LOG_LEVEL: ${PLUGIN_HOST_LOG_LEVEL:-info}
+            # Local development only: HOST_ALLOW_PRIVATE_NETWORK disables the SSRF address guard.
+            # Never set either in a deployed environment.
+            HOST_ALLOW_HTTP: "true"
+            HOST_ALLOW_PRIVATE_NETWORK: "true"
+        volumes:
+            - plugin-host-storage:/data/plugins
+            - ../../../plugin-host/sample-plugins/case-summary/dist:/data/preinstalled:ro
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        depends_on:
+            plugin-host-database:
+                condition: service_healthy
+
+    # Dev-only image — never published.
+    demo-app:
+        build:
+            context: ../../../plugin-host
+            dockerfile: sample-apps/demo-app/Dockerfile
+        container_name: gzac-docker-compose-demo-app
+        profiles:
+            - plugin-host
+        ports:
+            - "8095:8095"
+        environment:
+            ADMIN_TOKEN: ${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:-test-secret}
+            HOST_ID: dev-demo-app
+            LOG_LEVEL: ${PLUGIN_HOST_LOG_LEVEL:-info}
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+
     # Gotenberg (PDF conversion API)
     gotenberg:
         image: gotenberg/gotenberg:8
@@ -755,3 +827,5 @@ volumes:
     gzac-database-data-mysql:
     gzac-rabbitmq-data:
     gzac-opensearch-data:
+    plugin-host-database-data:
+    plugin-host-storage:

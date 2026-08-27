@@ -82,6 +82,25 @@ describe("envSchema", () => {
     expect(() => envSchema.parse({ ADMIN_TOKEN: "secret", UPLOAD_MAX_BYTES: "-1" })).toThrow();
   });
 
+  it("defaults the pre-install directory and keeps overwrite off", () => {
+    const cfg = envSchema.parse({ ADMIN_TOKEN: "secret" });
+    expect(cfg.PLUGIN_PREINSTALL_DIR).toBe("./preinstalled");
+    expect(cfg.PLUGIN_PREINSTALL_OVERWRITE).toBe(false);
+  });
+
+  it("only enables the pre-install overwrite for the literal string 'true'", () => {
+    const enabled = (value: string) =>
+      envSchema.parse({ ADMIN_TOKEN: "secret", PLUGIN_PREINSTALL_OVERWRITE: value })
+        .PLUGIN_PREINSTALL_OVERWRITE;
+    expect(enabled("true")).toBe(true);
+    expect(enabled("TRUE")).toBe(true);
+    // The trap z.coerce.boolean() would fall into: every non-empty string becomes true, so
+    // "false" would silently enable replacing a package an admin already accepted.
+    expect(enabled("false")).toBe(false);
+    expect(enabled("0")).toBe(false);
+    expect(enabled("")).toBe(false);
+  });
+
   it("leaves TLS paths undefined when not set", () => {
     const cfg = envSchema.parse({ ADMIN_TOKEN: "secret" });
     expect(cfg.TLS_CERT_PATH).toBeUndefined();

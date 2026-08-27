@@ -30,3 +30,14 @@
   margin-top: 16px;
   margin-bottom: 8px;
 }
+
+.plugin-external-edit-modal__awaiting-host {
+  display: block;
+  margin-bottom: var(--cds-spacing-05);
+}
+
+:host ::ng-deep .plugin-external-edit-modal__awaiting-host {
+  max-width: 100%;
+  width: 100%;
+  max-inline-size: unset;
+}

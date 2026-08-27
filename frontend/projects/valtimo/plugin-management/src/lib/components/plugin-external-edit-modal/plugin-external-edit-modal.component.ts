@@ -32,6 +32,7 @@ import {
   ButtonModule,
   LoadingModule,
   ModalModule,
+  NotificationModule,
   ProgressIndicatorModule,
 } from 'carbon-components-angular';
 import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
@@ -59,6 +60,7 @@ import {PluginExternalPermissionsComponent} from '../plugin-external-permissions
     ModalModule,
     ButtonModule,
     LoadingModule,
+    NotificationModule,
     ProgressIndicatorModule,
     ValtimoCdsModalDirective,
     ExternalPluginIframeComponent,
@@ -98,6 +100,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   public readonly $permissionsValid = signal(false);
   public readonly $hasPermissionsStep = signal(false);
   public readonly $definitionName = signal<string>('');
+  public readonly $awaitingHost = signal(false);
 
   public currentStepIndex = 0;
   public progressSteps: Array<{label: string; complete: boolean}> = [];
@@ -206,6 +209,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   }
 
   public get configValid(): boolean {
+    if (this.$awaitingHost()) return false;
     if (this.$configBundleUrl()) {
       return this._$iframeValid();
     }
@@ -259,6 +263,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$hasPermissionsStep.set(false);
     this._$definition.set(null);
     this.$definitionName.set('');
+    this.$awaitingHost.set(false);
 
     const configId = this.configuration?.id;
     const definitionId = this.configuration?.externalDefinitionId;
@@ -365,6 +370,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
   private _setDefinition(definition: ExternalPluginDefinition): void {
     this._$definition.set(definition);
+    this.$awaitingHost.set(definition.awaitingDiscovery);
     this._updateDefinitionName();
   }
 
@@ -417,6 +423,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$hasPermissionsStep.set(false);
     this._$definition.set(null);
     this.$definitionName.set('');
+    this.$awaitingHost.set(false);
     this._buildProgressSteps();
   }
 }

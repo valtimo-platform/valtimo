@@ -18,7 +18,10 @@ package com.ritense.externalplugin.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case.repository.CaseTabRepository
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.CaseExternalPluginTabRepository
+import com.ritense.externalplugin.autodeployment.ExternalPluginImporter
+import com.ritense.externalplugin.autodeployment.ExternalPluginPackageDeployer
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.compatibility.DefaultGzacVersionProvider
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
@@ -63,6 +66,7 @@ import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
 import com.ritense.externalplugin.service.ExternalPluginHostUsageResolver
 import com.ritense.externalplugin.service.ExternalPluginMenuPageService
+import com.ritense.externalplugin.service.ExternalPluginPackageInstaller
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
@@ -72,6 +76,7 @@ import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenIntrospectionResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
 import com.ritense.externalplugin.web.rest.error.ExternalPluginHostValidationExceptionMapper
+import com.ritense.importer.Importer
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginActionResultHandler
@@ -84,6 +89,7 @@ import com.ritense.valueresolver.ValueResolverService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.convert.DurationStyle
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -91,6 +97,8 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
+import org.springframework.core.env.Environment
+import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.transaction.PlatformTransactionManager
@@ -412,6 +420,7 @@ class ExternalPluginAutoConfiguration {
         hostService: ExternalPluginHostService,
         hostClient: ExternalPluginHostClient,
         transactionManager: PlatformTransactionManager,
+        packageInstaller: ExternalPluginPackageInstaller,
         @Value("\${valtimo.external-plugin.polling.failure-threshold:3}") failureThreshold: Int,
         @Value("\${server.port:8080}") serverPort: Int,
     ) = ExternalPluginDiscoveryService(
@@ -424,12 +433,45 @@ class ExternalPluginAutoConfiguration {
         TransactionTemplate(transactionManager),
         failureThreshold,
         "http://localhost:$serverPort",
+        packageInstaller,
     )
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginPackageInstaller::class)
+    fun externalPluginPackageDeployer(
+        resourceLoader: ResourceLoader,
+        hostService: ExternalPluginHostService,
+        objectMapper: ObjectMapper,
+    ) = ExternalPluginPackageDeployer(resourceLoader, hostService, objectMapper)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDiscoveryJob::class)
     fun externalPluginDiscoveryJob(discoveryService: ExternalPluginDiscoveryService) =
         ExternalPluginDiscoveryJob(discoveryService)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginImporter::class)
+    fun externalPluginImporter(
+        environment: Environment,
+        objectMapper: ObjectMapper,
+        hostService: ExternalPluginHostService,
+        configurationService: ExternalPluginConfigurationService,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        packageDeployer: ExternalPluginPackageDeployer,
+        caseDefinitionRepository: CaseDefinitionRepository,
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
+    ): Importer = ExternalPluginImporter(
+        environment,
+        objectMapper,
+        hostService,
+        configurationService,
+        definitionRepository,
+        configurationRepository,
+        packageDeployer,
+        caseDefinitionRepository,
+        pluginConfigurationMappingResolvers,
+    )
 
     @Bean
     @ConditionalOnMissingBean(EndpointDescriptionService::class)

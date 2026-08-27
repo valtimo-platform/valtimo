@@ -18,45 +18,12 @@ import { FastifyInstance } from "fastify";
 import { PluginManager } from "../plugin-manager.js";
 import { ConfigRegistry } from "../config-registry.js";
 import { AppConfig } from "../config.js";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { join, dirname, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
-import AdmZip from "adm-zip";
-import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
+import { installPluginZip, pluginInstallTmpBase } from "../plugin-package-install.js";
 import { createHmacAuthHook, verifyDeferredHmac } from "../security/hmac-auth.js";
 import { InvalidPluginPackageError } from "../errors.js";
 
 // Re-exported so the existing import sites keep working now that the plugin manager raises it too.
 export { InvalidPluginPackageError };
-
-/**
- * Extracts a plugin package entry-by-entry, defending against zip-slip: every entry's resolved
- * destination must stay inside `extractDir` (a crafted `../`, absolute, or drive-letter entry name
- * rejects the whole package). Additionally only the files a plugin package may legitimately carry
- * are extracted — root-level files (manifest.json, plugin.wasm, the logo) and `frontend/**` — so a
- * hostile zip cannot plant anything else even inside the temp dir.
- */
-async function safeExtractPluginZip(zip: AdmZip, extractDir: string): Promise<void> {
-  const root = resolve(extractDir);
-  for (const entry of zip.getEntries()) {
-    if (entry.isDirectory) continue;
-    const name = entry.entryName;
-    const destination = resolve(root, name);
-    if (destination !== root && !destination.startsWith(root + sep)) {
-      throw new InvalidPluginPackageError(
-        `Zip entry escapes the extraction directory: ${name}`
-      );
-    }
-    // Allowlist: root-level files or frontend assets only.
-    const isRootFile = !name.includes("/") && !name.includes("\\");
-    const isFrontendAsset = name.startsWith("frontend/");
-    if (!isRootFile && !isFrontendAsset) {
-      continue;
-    }
-    await mkdir(dirname(destination), { recursive: true });
-    await writeFile(destination, entry.getData());
-  }
-}
 
 /**
  * Admin-authenticated plugin management routes.
@@ -115,12 +82,6 @@ export async function hostManagementRoutes(
       return;
     }
 
-    // Write uploaded file to temp directory inside plugin-host/app/.tmp/
-    const appRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-    const tmpBase = join(appRoot, ".tmp");
-    await mkdir(tmpBase, { recursive: true });
-    const tempDir = await mkdtemp(join(tmpBase, "plugin-upload-"));
-
     try {
       // Collect the stream into a buffer
       const chunks: Buffer[] = [];
@@ -143,67 +104,24 @@ export async function hostManagementRoutes(
         return;
       }
 
-      // Extract zip — per entry, with zip-slip protection (see safeExtractPluginZip).
-      const extractDir = join(tempDir, "extracted");
-      const zip = new AdmZip(zipBuffer);
-      await safeExtractPluginZip(zip, extractDir);
+      // Same pipeline the boot-time pre-install runs, so both meet identical containment checks.
+      const result = await installPluginZip(pluginManager, zipBuffer, {
+        overwrite: (request.query as {overwrite?: string}).overwrite === "true",
+        tmpBase: pluginInstallTmpBase(),
+      });
 
-      // Read manifest
-      const manifestPath = join(extractDir, "manifest.json");
-      const manifestJson = await readFile(manifestPath, "utf-8");
-      const manifest = JSON.parse(manifestJson);
-
-      const validationErrors = validatePluginManifest(manifest);
-      if (validationErrors.length > 0) {
+      if (result.outcome === "invalid-manifest") {
         reply
           .code(400)
-          .send({ error: "Invalid plugin manifest", details: validationErrors });
+          .send({ error: "Invalid plugin manifest", details: result.details });
         return;
       }
-
-      // Read wasm
-      const wasmPath = join(extractDir, "plugin.wasm");
-      const wasmBuffer = await readFile(wasmPath);
-
-      // Check for frontend directory
-      const frontendDir = join(extractDir, "frontend");
-
-      // The logo file name comes from the untrusted manifest. Require a plain file directly inside
-      // the extraction directory: a value like `../../../etc/passwd` would otherwise be copied into
-      // the package, and into the content hash GZAC pins.
-      let logoPath: string | undefined;
-      if (manifest.logo !== undefined) {
-        const extractRoot = resolve(extractDir);
-        const resolvedLogo = resolve(extractRoot, manifest.logo);
-        if (dirname(resolvedLogo) !== extractRoot) {
-          throw new InvalidPluginPackageError(
-            `manifest.logo must be a file at the package root: ${manifest.logo}`
-          );
-        }
-        logoPath = resolvedLogo;
-      }
-
-      // A version is never replaced *silently*: re-uploading an existing pluginId@version without
-      // the explicit overwrite flag is refused, because different code would hot-reload under an
-      // already-accepted identity. The existence check and the store run inside one critical
-      // section in the plugin manager, so two concurrent uploads of the same version cannot both
-      // pass the check. The 409 carries both content hashes so the caller can tell an identical
-      // re-upload (nothing to do) apart from genuinely different content (review required).
-      const result = await pluginManager.installPackage({
-        pluginId: manifest.pluginId,
-        version: manifest.version,
-        manifestJson,
-        wasmBuffer,
-        frontendDir,
-        logoSourcePath: logoPath,
-        overwrite: (request.query as {overwrite?: string}).overwrite === "true",
-      });
 
       if (result.outcome === "conflict") {
         reply.code(409).send({
           // Machine-readable so GZAC's upload UI can branch without string-matching English text.
           code: "PLUGIN_VERSION_EXISTS",
-          error: `Plugin version already exists: ${manifest.pluginId}@${manifest.version}`,
+          error: `Plugin version already exists: ${result.pluginId}@${result.version}`,
           message:
             "This version already exists on the host. Overwriting requires explicit admin confirmation.",
           currentContentHash: result.currentContentHash,
@@ -213,8 +131,8 @@ export async function hostManagementRoutes(
       }
 
       reply.code(201).send({
-        pluginId: manifest.pluginId,
-        version: manifest.version,
+        pluginId: result.pluginId,
+        version: result.version,
         contentHash: result.contentHash,
         manifest: result.manifest,
       });
@@ -234,9 +152,6 @@ export async function hostManagementRoutes(
         error: "Plugin upload failed",
         message: (err as Error).message,
       });
-    } finally {
-      // Cleanup temp directory
-      await rm(tempDir, { recursive: true, force: true }).catch(() => {});
     }
   });
 

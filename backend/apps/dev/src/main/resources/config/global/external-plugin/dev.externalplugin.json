@@ -1,0 +1,74 @@
+{
+    "integrations": [
+        {
+            "id": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d0001",
+            "name": "Local plugin host",
+            "kind": "PLUGIN_HOST",
+            "baseUrl": "http://localhost:8090",
+            "secret": "${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:test-secret}",
+            "gzacCallbackBaseUrl": "http://host.docker.internal:8080",
+            "eventBrokerAmqpUrl": "amqp://guest:guest@gzac-rabbitmq:5672",
+            "eventBrokerExchange": "valtimo-events",
+            "frontendOrigins": ["http://localhost:4200"],
+            "configurations": [
+                {
+                    "id": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d1001",
+                    "title": "Case summary",
+                    "pluginId": "case-summary",
+                    "pluginVersion": "0.1.0",
+                    "properties": {
+                        "currency": "EUR",
+                        "externalApiUrl": "https://jsonplaceholder.typicode.com/todos/1"
+                    },
+                    "grantedCapabilities": [
+                        "gzac_api",
+                        "http_request",
+                        "kv",
+                        "log",
+                        "frontend_data"
+                    ],
+                    "grantedEgress": ["jsonplaceholder.typicode.com"],
+                    "grantedEndpoints": [
+                        {"method": "GET", "pattern": "/api/v1/document/*"},
+                        {"method": "POST", "pattern": "/api/v1/document/*/note"},
+                        {"method": "POST", "pattern": "/api/v1/case/*/search"},
+                        {"method": "POST", "pattern": "/api/v1/task/*/complete"}
+                    ],
+                    "grantedEvents": [
+                        "com.ritense.valtimo.document.created",
+                        "com.ritense.valtimo.task.completed",
+                        "com.ritense.valtimo.document.viewed"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d0002",
+            "name": "Demo app",
+            "kind": "APP",
+            "baseUrl": "http://localhost:8095",
+            "secret": "${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:test-secret}",
+            "gzacCallbackBaseUrl": "http://host.docker.internal:8080",
+            "eventBrokerAmqpUrl": "amqp://guest:guest@gzac-rabbitmq:5672",
+            "eventBrokerExchange": "valtimo-events",
+            "frontendOrigins": ["http://localhost:4200"],
+            "configurations": [
+                {
+                    "id": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d1002",
+                    "title": "Demo app",
+                    "pluginId": "demo-app",
+                    "pluginVersion": "1.0.0",
+                    "properties": {
+                        "greetingPrefix": "Hello"
+                    },
+                    "grantedEndpoints": [
+                        {"method": "GET", "pattern": "/api/v1/document/*"},
+                        {"method": "POST", "pattern": "/api/v1/document/*/note"},
+                        {"method": "POST", "pattern": "/api/v1/case/*/search"}
+                    ],
+                    "grantedEvents": ["com.ritense.valtimo.document.created"]
+                }
+            ]
+        }
+    ]
+}

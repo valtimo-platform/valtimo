@@ -164,11 +164,41 @@ curl -X POST http://localhost:8090/plugins/case-summary/0.1.0/actions/case-summa
 
 ```bash
 cd app
-npm run build
 ADMIN_TOKEN=your-secret npm run docker:up
 ```
 
 This starts both PostgreSQL and the Plugin Host. Plugin binaries persist to a Docker volume.
+
+The image compiles itself — no local `npm run build` first. Its build context is this directory
+(`plugin-host/`), not `app/`, because the app depends on the SDK through `file:../plugin-sdk` and
+the SDK is built inside the image:
+
+```bash
+docker build -f app/Dockerfile -t valtimo/plugin-host .
+```
+
+### Shipping plugins with the host
+
+The image contains **no plugins**: `/data/preinstalled` is empty. Every `.zip` found in that
+directory at boot is installed, so an operator provisions a host without any admin clicking Upload —
+either by mounting a directory of packages over it:
+
+```yaml
+volumes:
+  - ./my-plugins:/data/preinstalled:ro
+```
+
+or by baking them into a derived image:
+
+```dockerfile
+FROM valtimo/plugin-host
+COPY my-plugin-1.0.0.zip /data/preinstalled/
+```
+
+A version already installed with identical content is a no-op on restart. A version already
+installed with *different* content is kept, not replaced — GZAC pins the content hash an admin
+accepted, so replacing it is an explicit decision (`PLUGIN_PREINSTALL_OVERWRITE=true` opts out, for
+throwaway environments only). See [`app/README.md`](./app/README.md) for both settings.
 
 ## Documentation
 
