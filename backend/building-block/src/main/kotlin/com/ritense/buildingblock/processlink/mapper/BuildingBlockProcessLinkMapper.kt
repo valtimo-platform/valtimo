@@ -46,6 +46,7 @@ import java.util.UUID
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.operaton.bpm.model.bpmn.instance.Process
+import org.operaton.bpm.model.xml.instance.ModelElementInstance
 import org.springframework.stereotype.Component
 
 @Component
@@ -310,7 +311,9 @@ class BuildingBlockProcessLinkMapper(
     private fun verifyBuildingBlockDocumentIdBusinessKey(processDefinitionId: String, activityId: String) {
         val bpmnModel = repositoryService.getBpmnModelInstance(processDefinitionId)
             ?: error("BPMN model not found for process definition '$processDefinitionId'")
-        val callActivity = bpmnModel.getModelElementById<CallActivity>(activityId)
+        // Cast safely: the typed overload compiles to a checkcast, so an activity id belonging to
+        // another element type would throw instead of reaching the message below.
+        val callActivity = bpmnModel.getModelElementById<ModelElementInstance>(activityId) as? CallActivity
             ?: error(
                 "Activity '$activityId' in process definition '$processDefinitionId' " +
                     "must be a call activity for a building-block process link."

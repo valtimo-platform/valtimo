@@ -19,8 +19,8 @@ package com.ritense.buildingblock.processlink.service
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.processlink.domain.ProcessLinksCopiedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.instance.CallActivity
+import org.operaton.bpm.model.xml.instance.ModelElementInstance
 import org.springframework.context.event.EventListener
 
 /**
@@ -32,9 +32,7 @@ import org.springframework.context.event.EventListener
  * starting. [BuildingBlockCallActivityListener] re-validates at runtime and fails the call
  * activity with the same message before any building block state is created.
  */
-class BuildingBlockProcessLinkCopyValidator(
-    private val repositoryService: RepositoryService,
-) {
+class BuildingBlockProcessLinkCopyValidator {
 
     @EventListener(ProcessLinksCopiedEvent::class)
     fun validateCopiedBuildingBlockLinks(event: ProcessLinksCopiedEvent) {
@@ -42,10 +40,15 @@ class BuildingBlockProcessLinkCopyValidator(
         if (buildingBlockLinks.isEmpty()) {
             return
         }
-        val bpmnModel = repositoryService.getBpmnModelInstance(event.processDefinitionId) ?: return
+        // The model has to come from the event: the deployment that triggered it is still in
+        // progress, so its resources cannot be read back through the repository service yet.
+        val bpmnModel = event.processDefinitionModelInstance ?: return
 
         buildingBlockLinks.forEach { link ->
-            val callActivity = bpmnModel.getModelElementById<CallActivity>(link.activityId)
+            // Resolve as ModelElementInstance and cast safely: the typed overload compiles to a
+            // checkcast, which throws when the id belongs to another element type instead of
+            // returning null - a morphed call activity keeps its id.
+            val callActivity = bpmnModel.getModelElementById<ModelElementInstance>(link.activityId) as? CallActivity
             if (callActivity == null) {
                 logger.error {
                     "Building block process link '${link.id}' was copied to process definition " +

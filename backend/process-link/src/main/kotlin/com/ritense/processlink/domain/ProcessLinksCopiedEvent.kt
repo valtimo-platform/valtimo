@@ -17,11 +17,18 @@
 package com.ritense.processlink.domain
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.operaton.bpm.model.bpmn.BpmnModelInstance
 
 data class ProcessLinksCopiedEvent(
     val copiedProcessLinks: List<ProcessLink>,
     val processDefinitionId: String,
     val caseDefinitionId: CaseDefinitionId? = null,
     val basedOnProcessDefinitionId: String? = null,
-    val basedOnCaseDefinitionId: CaseDefinitionId? = null
+    val basedOnCaseDefinitionId: CaseDefinitionId? = null,
+    /**
+     * The BPMN model of the process definition the links were copied to. This event is published
+     * while the deployment is still in progress, so the model cannot be read back from the
+     * repository service: its resources have not been flushed to the database yet.
+     */
+    val processDefinitionModelInstance: BpmnModelInstance? = null,
 )

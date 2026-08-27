@@ -26,6 +26,7 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService.DETACHED_PROCESS_DEFINITION_PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.model.bpmn.instance.FlowNode
+import org.operaton.bpm.model.xml.instance.ModelElementInstance
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import java.util.UUID
@@ -49,7 +50,9 @@ class CopyProcessLinkOnProcessDeploymentListener(
             val modelInstance = event.processDefinitionModelInstance
 
             val newLinks = processLinkRepository.findByProcessDefinitionId(originalProcessDefinitionId)
-                .filter { link -> modelInstance.getModelElementById<FlowNode>(link.activityId) != null }
+                // Cast safely: the typed overload compiles to a checkcast, so an activity id that
+                // now belongs to a non-flow-node element would throw instead of filtering the link out.
+                .filter { link -> modelInstance.getModelElementById<ModelElementInstance>(link.activityId) is FlowNode }
                 .filter { link ->
                     processLinkRepository.findByProcessDefinitionIdAndActivityId(
                         event.processDefinitionId,
@@ -71,6 +74,7 @@ class CopyProcessLinkOnProcessDeploymentListener(
                     event.caseDefinitionId,
                     event.source.originalProcessDefinitionId,
                     CaseDefinitionId.fromProcessVersionTag(event.source.originalVersionTag),
+                    modelInstance,
                 )
             )
         }
