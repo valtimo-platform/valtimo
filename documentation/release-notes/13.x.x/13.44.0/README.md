@@ -27,4 +27,5 @@ New enhancement explanation.
 | Admin screens | Dropdown lists open in the right place, instead of on top of their own search box |
 | Admin screens | Field pickers no longer come up empty when more than one is shown on a screen |
 | Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
+| Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
 | Process links | Every version of a building block is offered when picking one |
