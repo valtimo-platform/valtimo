@@ -52,21 +52,19 @@ class ObjectenApiClient(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI
     ): ObjectWrapper {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                Object::class.java,
+                ObjectActionProvider.VIEW,
+                Object()
+            )
+        )
+
         val result = buildRestClient(authentication)
             .get()
             .uri(objectUrl)
             .retrieve()
             .body<ObjectWrapper>()!!
-
-        if (authorizationEnabled) {
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(
-                    Object::class.java,
-                    ObjectActionProvider.VIEW,
-                    Object()
-                )
-            )
-        }
 
         outboxService.send {
             ObjectViewed(
@@ -82,6 +80,16 @@ class ObjectenApiClient(
         objectUrl: URI,
         index: Int
     ): ObjectRecord {
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.VIEW,
+                    Object()
+                )
+            )
+        }
+
         val recordUrl = UriComponentsBuilder
             .fromUri(objectUrl)
             .pathSegment(index.toString())
@@ -93,16 +101,6 @@ class ObjectenApiClient(
             .uri(recordUrl)
             .retrieve()
             .body<ObjectRecord>()!!
-
-        if (authorizationEnabled) {
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(
-                    Object::class.java,
-                    ObjectActionProvider.VIEW,
-                    Object()
-                )
-            )
-        }
 
         outboxService.send {
             ObjectViewed(
@@ -121,6 +119,16 @@ class ObjectenApiClient(
         ordering: String? = "",
         pageable: Pageable
     ): ObjectsList {
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.VIEW_LIST,
+                    Object()
+                )
+            )
+        }
+
         val objectTypeUrl = UriComponentsBuilder.newInstance()
             .uri(objecttypesApiUrl)
             .host(objecttypesApiUrl.host)
@@ -142,16 +150,6 @@ class ObjectenApiClient(
             .retrieve()
             .body<ObjectsList>()!!
 
-        if (authorizationEnabled) {
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(
-                    Object::class.java,
-                    ObjectActionProvider.VIEW_LIST,
-                    Object()
-                )
-            )
-        }
-
         outboxService.send {
             ObjectsListed(
                 objectMapper.valueToTree(result.results)
@@ -169,6 +167,16 @@ class ObjectenApiClient(
         ordering: String? = "",
         pageable: Pageable
     ): ObjectsList {
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.VIEW_LIST,
+                    Object()
+                )
+            )
+        }
+
         val objectTypeUrl = UriComponentsBuilder.newInstance()
             .uri(objecttypesApiUrl)
             .host(objecttypesApiUrl.host)
@@ -190,16 +198,6 @@ class ObjectenApiClient(
             .header(ACCEPT_CRS, EPSG_4326)
             .retrieve()
             .body<ObjectsList>()!!
-
-        if (authorizationEnabled) {
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(
-                    Object::class.java,
-                    ObjectActionProvider.VIEW_LIST,
-                    Object()
-                )
-            )
-        }
 
         outboxService.send {
             ObjectsListed(
