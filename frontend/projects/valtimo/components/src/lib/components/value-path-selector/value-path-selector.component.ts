@@ -342,9 +342,6 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
         this._filteredItems$.pipe(startWith(this._filteredItems$.getValue())),
       ])
     ),
-    // Destructured inside the body on purpose: a three-element pattern in the parameter position
-    // lets the tuple emitted by the combineLatest above be inferred as a three-element tuple, after
-    // which the four-element pattern of the map below no longer matches.
     tap(combined => {
       const [options, selectedPath, inputModeIsDropdown] = combined;
       const formattedOptions = options.map(option => option.formattedPath);
