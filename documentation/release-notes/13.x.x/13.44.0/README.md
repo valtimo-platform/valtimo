@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Clearing a case field follows the case model
 
-New enhancement explanation.
+Emptying a field now follows what the case model allows: the field is either set to empty or removed, and a field the model requires is refused instead of silently leaving the case invalid.
 
 ---
 
