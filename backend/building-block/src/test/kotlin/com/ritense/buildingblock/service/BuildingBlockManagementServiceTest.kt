@@ -158,4 +158,24 @@ class BuildingBlockManagementServiceTest {
         assertTrue(!result.final)
         verify(applicationEventPublisher).publishEvent(any<BuildingBlockDefinitionCreatedEvent>())
     }
+
+    @Test
+    fun `getAllVersionsWithFinalFlag returns every version newest first by semver precedence`() {
+        // Returned in the order the query produces: the version tag column holds the Semver as a
+        // string, so the database orders it lexicographically and 1.10.0 lands before 1.9.0.
+        val versionTags = listOf("1.0.0", "1.1.0", "1.10.0", "1.2.0", "1.9.0", "2.0.0")
+        whenever(buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(definitionId.key))
+            .thenReturn(versionTags.map { versionOf(it) })
+
+        val result = buildingBlockManagementService.getAllVersionsWithFinalFlag(definitionId.key)
+
+        assertEquals(
+            listOf("2.0.0", "1.10.0", "1.9.0", "1.2.0", "1.1.0", "1.0.0"),
+            result.content.map { it.versionTag }
+        )
+    }
+
+    private fun versionOf(versionTag: String) = draftDefinition.copy(
+        id = BuildingBlockDefinitionId(definitionId.key, versionTag)
+    )
 }
