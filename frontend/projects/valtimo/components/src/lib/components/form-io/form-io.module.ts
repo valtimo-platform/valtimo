@@ -38,6 +38,7 @@ import {FormIoCurrencyComponent} from './components/form-io-currency/currency.co
 import bootstrap4 from '@formio/bootstrap/bootstrap4';
 import {applyDataGridPatch} from './patches/patched-datagrid';
 import {registerFormioFlatpickr, setFormioFlatpickrLocale} from './formio-flatpickr';
+import { FormIoMailPreviewComponent } from './components/form-io-mail-preview/mail-preview.component';
 
 // Apply FormIO patches before any form renders
 applyDataGridPatch();
@@ -63,6 +64,7 @@ applyDataGridPatch();
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
     FormIoCurrencyComponent,
+    FormIoMailPreviewComponent,
     FormioDummyComponent,
   ],
   exports: [
@@ -72,6 +74,7 @@ applyDataGridPatch();
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
     FormIoCurrencyComponent,
+    FormIoMailPreviewComponent,
     FormioDummyComponent,
   ],
   providers: [
