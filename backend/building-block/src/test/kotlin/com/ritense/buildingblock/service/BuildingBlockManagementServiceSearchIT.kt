@@ -30,8 +30,7 @@ import org.springframework.data.domain.Sort
 import java.util.UUID
 
 /**
- * The search, the ordering and the paging are done by the database, so they are exercised against a
- * real one rather than a mocked repository.
+ * Search, ordering and paging are done by the database, so they run against a real one, not a mock.
  */
 class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
 
@@ -40,15 +39,14 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        // Definitions deployed from the classpath share the table, so scope every assertion to
-        // rows this test created by giving them a unique key and name prefix.
+        // Classpath definitions share the table, so a unique key/name prefix scopes every assertion.
         prefix = "srch${UUID.randomUUID().toString().take(8)}"
         stored.clear()
     }
 
     @AfterEach
     fun tearDown() {
-        // The table is shared with every other test in this context - leave it as we found it.
+        // Shared table - leave it as we found it.
         stored.forEach { buildingBlockDefinitionRepository.deleteById(it) }
         buildingBlockDefinitionRepository.flush()
     }
@@ -140,7 +138,7 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
         store("renamed", "1.0.0", "Old name")
         store("renamed", "2.0.0", "New name")
 
-        // The old version's name must not pull its key into the result...
+        // The old version's name must not pull its key in...
         assertThat(search("$prefix Old name").content).isEmpty()
         // ...and the latest version's name must still find it.
         assertThat(names(search("$prefix New name"))).containsExactly("New name")
@@ -177,7 +175,7 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
 
         val page = search(pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "key")))
 
-        // 'id.key' is internal - the endpoint refuses it as input, so it must not come back either.
+        // 'id.key' is internal - refused as input, so it must not come back either.
         assertThat(page.pageable.sort.map { it.property }).containsExactly("key")
     }
 
@@ -203,8 +201,7 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
 
     @Test
     fun `pages definitions with the same name without repeating or skipping one`() {
-        // Sorting on name alone leaves these five in an order the database does not have to keep
-        // stable between the two page requests, so a key would sooner or later land on both pages.
+        // Name alone is not a stable order across page requests, so a key could land on both pages.
         (1..5).forEach { store("block-$it", "1.0.0", "Same name") }
 
         val firstPage = search(pageable = PageRequest.of(0, 2))

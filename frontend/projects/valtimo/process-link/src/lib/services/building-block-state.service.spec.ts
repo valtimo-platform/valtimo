@@ -30,8 +30,7 @@ describe('BuildingBlockStateService', () => {
   ];
 
   /**
-   * Building blocks report their fields without the doc: prefix; the service adds it, which is what
-   * the mappings are matched against.
+   * Building blocks report fields without the doc: prefix; the service adds it, and mappings match on that.
    */
   const fields = (...names: string[]): BuildingBlockField[] =>
     names.map(name => ({name, required: false}));

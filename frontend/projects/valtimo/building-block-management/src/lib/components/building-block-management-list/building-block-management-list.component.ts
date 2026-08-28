@@ -95,8 +95,7 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
             size,
             ...(searchTerm && {searchTerm}),
           })
-          // Caught inside the switchMap: an error reaching the outer stream would terminate it and
-          // leave the list stuck on its skeleton.
+          // Caught inside the switchMap: an error on the outer stream would terminate it, stranding the skeleton.
           .pipe(catchError(() => of(null)))
       ),
       tap(res => {

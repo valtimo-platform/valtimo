@@ -60,8 +60,7 @@ class BuildingBlockFieldService(
         requiredInParent: Boolean,
         ancestors: List<Schema> = emptyList()
     ): List<BuildingBlockFieldDto> {
-        // A schema may refer to itself (directly or through an array or a $ref), which would make
-        // this walk recurse forever. Stop as soon as a schema reappears on its own ancestor chain.
+        // A self-referencing schema would recurse forever, so stop when one reappears on its ancestor chain.
         if (ancestors.any { it === this }) {
             return emptyList()
         }

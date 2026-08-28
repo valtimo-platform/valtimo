@@ -184,10 +184,8 @@ export class BuildingBlockStateService implements OnDestroy {
   }
 
   /**
-   * Switches to another version of the same building block without throwing away the
-   * configuration the user already entered. Plugin configuration mappings, input mappings and
-   * output mappings are kept; only the parts that no longer exist in the new version are dropped
-   * once its plugin requirements and fields have been loaded.
+   * Switches building block version, keeping the plugin, input and output mappings the user entered;
+   * only the parts absent from the new version are dropped once its requirements and fields load.
    */
   public changeDefinitionVersionTag(versionTag: string | null): void {
     this._definitionVersionTag$.next(versionTag);
@@ -195,7 +193,7 @@ export class BuildingBlockStateService implements OnDestroy {
 
     const key = this._definitionKey$.getValue();
     if (!key || !versionTag) {
-      // Without a version there are no fields to prune the mappings against, so clear them.
+      // No version means no fields to prune against, so clear the mappings.
       this.clearPluginRequirements();
       this.clearMappings();
       return;
@@ -352,9 +350,8 @@ export class BuildingBlockStateService implements OnDestroy {
   }
 
   /**
-   * Drops the mappings that point at a building block field which is not part of the given field
-   * set. Mappings referring to a field that still exists are left untouched, so switching between
-   * two versions with the same fields keeps the configuration intact.
+   * Drops mappings pointing at fields outside the given set, so switching between versions with the
+   * same fields keeps the configuration intact.
    */
   private pruneMappingsToFields(fields: Array<BuildingBlockField>): void {
     const fieldNames = new Set(fields.map(field => field.name));

@@ -64,15 +64,10 @@ class BuildingBlockManagementService(
     }
 
     /**
-     * The latest version per key, narrowed by [searchTerm] (matched against name and key),
-     * ordered by [Pageable.getSort] and cut into a page.
+     * Latest version per key, narrowed by [searchTerm], ordered by [Pageable.getSort] and paged.
      *
-     * Only the "which version of a key is the latest" step happens in Kotlin - it is SemVer
-     * precedence, which the version tag column, a string, cannot express in SQL. That step reads
-     * identifiers only; the search, the ordering and the paging are all done by the database
-     * against exactly the rows it selected. Resolving the latest versions first also keeps the
-     * search honest: a name may differ between versions of the same key, so filtering before
-     * narrowing would match an old version and surface a latest version that does not match.
+     * Only the SemVer ranking happens in Kotlin; search, ordering and paging are left to the database.
+     * Resolving latest versions first keeps the search honest, since a name may differ between versions.
      *
      * @throws IllegalArgumentException when [Pageable.getSort] names a property that is not sortable
      */
@@ -83,7 +78,7 @@ class BuildingBlockManagementService(
     ): Page<BuildingBlockDefinitionDto> {
         denyAuthorization()
 
-        // Validate the sort before anything else, so a bad sort is refused even on an empty table.
+        // Validated first, so a bad sort is refused even on an empty table.
         val requestedSort = if (pageable.sort.isSorted) pageable.sort else BY_NAME_ASCENDING
         val entitySort = withStableTieBreaker(toEntitySort(requestedSort))
 
@@ -116,8 +111,7 @@ class BuildingBlockManagementService(
         latestPerKey(buildingBlockDefinitionRepository.findAllIds()) { it }
 
     /**
-     * The entry with the highest version tag per key, by SemVer precedence. Shared by the id-only
-     * and the entity variant so that the two cannot drift apart.
+     * Highest version tag per key by SemVer; shared by the id-only and entity variants so they cannot drift.
      */
     private fun <T> latestPerKey(items: Iterable<T>, id: (T) -> BuildingBlockDefinitionId): List<T> {
         return items
@@ -136,8 +130,7 @@ class BuildingBlockManagementService(
         }
 
     /**
-     * Translates the requested sort onto entity paths, refusing anything not in [SORT_PROPERTIES].
-     * Orders are case-insensitive so that the result does not depend on database collation.
+     * Maps the requested sort onto entity paths, refusing anything outside [SORT_PROPERTIES]; case-insensitive.
      */
     private fun toEntitySort(sort: Sort): Sort {
         return Sort.by(
@@ -314,10 +307,8 @@ class BuildingBlockManagementService(
         private const val KEY_PATH: String = "id.key"
 
         /**
-         * Requested sort property -> entity path. The version tag is deliberately absent: it is
-         * stored as a string, so the database would order it lexicographically rather than by
-         * SemVer (`1.9.0` would outrank `1.10.0`). Asking for any other property is refused rather
-         * than silently ignored, so a caller is never handed an order it did not ask for.
+         * Sort property -> entity path. The version tag is absent by design: sorting it in SQL would be
+         * lexicographic, not SemVer. Anything else is refused rather than silently ignored.
          */
         private val SORT_PROPERTIES: Map<String, String> = mapOf(
             "name" to "name",

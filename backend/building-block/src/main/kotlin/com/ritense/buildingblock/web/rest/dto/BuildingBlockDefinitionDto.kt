@@ -37,8 +37,7 @@ data class BuildingBlockDefinitionDto(
 ) {
     companion object {
         /**
-         * Pass `includeArtwork = true` only when the artwork is actually needed: it is a lazy
-         * relation, so reading it costs a query per definition.
+         * Pass `includeArtwork = true` only when needed: it is lazy, costing a query per definition.
          */
         fun from(definition: BuildingBlockDefinition, includeArtwork: Boolean = false) =
             BuildingBlockDefinitionDto(

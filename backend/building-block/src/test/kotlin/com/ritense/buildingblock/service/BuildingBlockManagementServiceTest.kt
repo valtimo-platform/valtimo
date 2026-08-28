@@ -214,9 +214,8 @@ class BuildingBlockManagementServiceTest {
     }
 
     /**
-     * Runs the specification against a mocked criteria API and reports the identifiers it restricted
-     * the query to, so the assertion is about which versions were selected rather than about a
-     * specification merely existing.
+     * Runs the specification against a mocked criteria API and reports which identifiers it restricted
+     * the query to, so the assertion is about the versions selected, not about a specification existing.
      */
     private fun idsRestrictedTo(
         specification: Specification<BuildingBlockDefinition>
