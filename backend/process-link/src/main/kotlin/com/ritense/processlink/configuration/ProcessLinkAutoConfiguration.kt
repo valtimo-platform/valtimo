@@ -19,22 +19,32 @@ package com.ritense.processlink.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.DocumentService
+import com.ritense.exporter.ExportService
+import com.ritense.importer.ImportService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
+import com.ritense.processlink.exporter.GlobalProcessLinkExporter
 import com.ritense.processlink.exporter.ProcessLinkExporter
+import com.ritense.processlink.service.ProcessDefinitionImportPreviewService
 import com.ritense.processlink.importer.GlobalProcessLinkImporter
 import com.ritense.processlink.importer.ProcessLinkImporter
 import com.ritense.processlink.listener.ProcessDefinitionDeletedEventListener
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ProcessLinkRepository
+import com.ritense.processlink.security.config.CaseProcessDefinitionManagementHttpSecurityConfigurer
+import com.ritense.processlink.security.config.ProcessDefinitionManagementHttpSecurityConfigurer
 import com.ritense.processlink.security.config.ProcessLinkHttpSecurityConfigurer
+import com.ritense.processlink.security.config.ProcessLinkTaskHttpSecurityConfigurer
 import com.ritense.processlink.service.CopyProcessLinkOnProcessDeploymentListener
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkActivityHandler
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.validation.ProcessDefinitionValidator
+import com.ritense.processlink.web.rest.CaseProcessDefinitionManagementResource
+import com.ritense.processlink.web.rest.ProcessDefinitionManagementResource
+import com.ritense.processlink.web.rest.ProcessDefinitionResponseAssembler
 import com.ritense.processlink.web.rest.ProcessLinkResource
 import com.ritense.processlink.web.rest.ProcessLinkTaskResource
 import com.ritense.processlink.web.rest.error.ProcessDefinitionValidationExceptionMapper
@@ -43,6 +53,7 @@ import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.processbean.ProcessBeanService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
@@ -78,6 +89,27 @@ class ProcessLinkAutoConfiguration {
     @ConditionalOnMissingBean(ProcessLinkHttpSecurityConfigurer::class)
     fun processLinkHttpSecurityConfigurer(): ProcessLinkHttpSecurityConfigurer {
         return ProcessLinkHttpSecurityConfigurer()
+    }
+
+    @Order(421)
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkTaskHttpSecurityConfigurer::class)
+    fun processLinkTaskHttpSecurityConfigurer(): ProcessLinkTaskHttpSecurityConfigurer {
+        return ProcessLinkTaskHttpSecurityConfigurer()
+    }
+
+    @Order(422)
+    @Bean
+    @ConditionalOnMissingBean(CaseProcessDefinitionManagementHttpSecurityConfigurer::class)
+    fun caseProcessDefinitionManagementHttpSecurityConfigurer(): CaseProcessDefinitionManagementHttpSecurityConfigurer {
+        return CaseProcessDefinitionManagementHttpSecurityConfigurer()
+    }
+
+    @Order(423)
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionManagementHttpSecurityConfigurer::class)
+    fun processDefinitionManagementHttpSecurityConfigurer(): ProcessDefinitionManagementHttpSecurityConfigurer {
+        return ProcessDefinitionManagementHttpSecurityConfigurer()
     }
 
     @Bean
@@ -137,30 +169,66 @@ class ProcessLinkAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ProcessLinkResource::class)
-    fun processLinkProcessLinkResource(
+    @ConditionalOnMissingBean(ProcessDefinitionResponseAssembler::class)
+    fun processDefinitionWithLinksAssembler(
         processLinkService: ProcessLinkService,
-        processLinkMappers: List<ProcessLinkMapper>,
+        repositoryService: RepositoryService,
+        processDefinitionAutofillService: ProcessDefinitionAutofillService,
+    ) = ProcessDefinitionResponseAssembler(
+        processLinkService,
+        repositoryService,
+        processDefinitionAutofillService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessLinkResource::class)
+    fun processLinkResource(
+        processLinkService: ProcessLinkService,
+    ) = ProcessLinkResource(processLinkService)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseProcessDefinitionManagementResource::class)
+    fun caseProcessDefinitionManagementResource(
         operatonProcessService: OperatonProcessService,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-        repositoryService: RepositoryService,
+        processLinkService: ProcessLinkService,
+        processDeploymentService: ProcessDeploymentService,
+        assembler: ProcessDefinitionResponseAssembler,
+    ) = CaseProcessDefinitionManagementResource(
+        operatonProcessService,
+        processDefinitionCaseDefinitionService,
+        processLinkService,
+        processDeploymentService,
+        assembler,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionManagementResource::class)
+    fun processDefinitionManagementResource(
+        operatonProcessService: OperatonProcessService,
+        processPropertyService: ProcessPropertyService,
+        processLinkService: ProcessLinkService,
         processDeploymentService: ProcessDeploymentService,
         processDefinitionValidator: ProcessDefinitionValidator,
-        processPropertyService: ProcessPropertyService,
-        processDefinitionAutofillService: ProcessDefinitionAutofillService
-    ): ProcessLinkResource {
-        return ProcessLinkResource(
-            processLinkService,
-            processLinkMappers,
-            operatonProcessService,
-            processDefinitionCaseDefinitionService,
-            repositoryService,
-            processDeploymentService,
-            processDefinitionValidator,
-            processPropertyService,
-            processDefinitionAutofillService
-        )
-    }
+        processDefinitionAutofillService: ProcessDefinitionAutofillService,
+        exportService: ExportService,
+        importService: ImportService,
+        processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService,
+        objectMapper: ObjectMapper,
+        assembler: ProcessDefinitionResponseAssembler,
+    ) = ProcessDefinitionManagementResource(
+        operatonProcessService,
+        processPropertyService,
+        processLinkService,
+        processDeploymentService,
+        processDefinitionValidator,
+        processDefinitionAutofillService,
+        exportService,
+        importService,
+        processDefinitionImportPreviewService,
+        objectMapper,
+        assembler,
+    )
 
     @Bean
     @ConditionalOnMissingBean(CopyProcessLinkOnProcessDeploymentListener::class)
@@ -189,6 +257,34 @@ class ProcessLinkAutoConfiguration {
         processLinkService,
         repositoryService,
         buildingBlockMapper,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionImportPreviewService::class)
+    fun processDefinitionImportPreviewService(
+        objectMapper: ObjectMapper,
+        importPreviewContributors: List<ImportPreviewContributor>,
+        processLinkService: ProcessLinkService,
+        repositoryService: OperatonRepositoryService,
+        processPropertyService: ProcessPropertyService,
+    ) = ProcessDefinitionImportPreviewService(
+        objectMapper,
+        importPreviewContributors,
+        processLinkService,
+        repositoryService,
+        processPropertyService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(GlobalProcessLinkExporter::class)
+    fun globalProcessLinkExporter(
+        objectMapper: ObjectMapper,
+        processLinkService: ProcessLinkService,
+        repositoryService: OperatonRepositoryService,
+    ) = GlobalProcessLinkExporter(
+        objectMapper,
+        processLinkService,
+        repositoryService,
     )
 
     @Bean
@@ -260,13 +356,15 @@ class ProcessLinkAutoConfiguration {
         processLinkService: ProcessLinkService,
         processDefinitionValidator: ProcessDefinitionValidator,
         repositoryService: RepositoryService,
+        applicationEventPublisher: ApplicationEventPublisher,
     ): ProcessDeploymentService {
         return ProcessDeploymentService(
             operatonProcessService,
             processDefinitionCaseDefinitionService,
             processLinkService,
             processDefinitionValidator,
-            repositoryService
+            repositoryService,
+            applicationEventPublisher
         )
     }
 }

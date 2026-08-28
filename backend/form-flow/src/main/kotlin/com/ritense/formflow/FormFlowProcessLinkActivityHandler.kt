@@ -34,8 +34,6 @@ import com.ritense.processlink.service.ProcessLinkActivityHandler
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -179,19 +177,11 @@ class FormFlowProcessLinkActivityHandler(
                 .findByProcessDefinitionIdOrNull(ProcessDefinitionId(processDefinition.id))
                 ?.id?.caseDefinitionId
 
-        return blueprintId?.let { findDefinitionOrNull(formFlowDefinitionKey, it) }
+        return blueprintId?.let { formFlowService.findDefinitionOrNull(formFlowDefinitionKey, it) }
             ?: throw IllegalStateException(
                 "FormFlow definition '$formFlowDefinitionKey' not found for process definition " +
                         "'${processDefinition.id}' and blueprint '${blueprintId ?: "unknown"}'"
             )
-    }
-
-    private fun findDefinitionOrNull(formFlowDefinitionKey: String, blueprintId: BlueprintId): FormFlowDefinition? {
-        return when (blueprintId) {
-            is BuildingBlockDefinitionId -> formFlowService.findDefinitionOrNull(formFlowDefinitionKey, blueprintId)
-            is CaseDefinitionId -> formFlowService.findDefinitionOrNull(formFlowDefinitionKey, blueprintId)
-            else -> null
-        }
     }
 
     private fun findBlueprintIdByDocumentId(documentId: UUID): BlueprintId? {
