@@ -31,7 +31,6 @@ import jakarta.persistence.Embeddable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -118,27 +117,10 @@ public final class JsonSchema {
         if (cached != null) {
             return cached;
         }
-        // Built outside the lock, so a cold start never serialises builds on one thread. Only admission
-        // is atomic: concurrent callers converge on one schema and the cap cannot be overshot.
-        final Schema built = buildSchema();
-        synchronized (BUILT_SCHEMAS) {
-            final Schema raced = BUILT_SCHEMAS.get(schema);
-            if (raced != null) {
-                return raced;
-            }
-            if (BUILT_SCHEMAS.size() >= MAX_BUILT_SCHEMAS) {
-                evictOne();
-            }
-            BUILT_SCHEMAS.put(schema, built);
+        if (BUILT_SCHEMAS.size() >= MAX_BUILT_SCHEMAS) {
+            BUILT_SCHEMAS.clear();
         }
-        return built;
-    }
-
-    private static void evictOne() {
-        final Iterator<String> keys = BUILT_SCHEMAS.keySet().iterator();
-        if (keys.hasNext()) {
-            BUILT_SCHEMAS.remove(keys.next());
-        }
+        return BUILT_SCHEMAS.computeIfAbsent(schema, ignored -> buildSchema());
     }
 
     private Schema buildSchema() {

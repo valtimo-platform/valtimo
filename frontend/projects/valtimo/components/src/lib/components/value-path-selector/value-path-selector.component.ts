@@ -25,6 +25,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  ViewChild,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -37,6 +38,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {
+  ComboBox,
   ComboBoxModule,
   InputModule,
   LayerModule,
@@ -107,6 +109,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   public onBlur(): void {
     this.onBlurEvent();
   }
+
+  @ViewChild(ComboBox) private _comboBox?: ComboBox;
 
   public readonly formGroup = this.formBuilder.group({
     selectedPath: new FormControl(''),
@@ -372,7 +376,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
         this._filteredItems$.pipe(startWith(this._filteredItems$.getValue())),
       ])
     ),
-    tap(([options, selectedPath, inputModeIsDropdown]) => {
+    tap(combined => {
+      const [options, selectedPath, inputModeIsDropdown] = combined;
       const formattedOptions = options.map(option => option.formattedPath);
       if (!formattedOptions.includes(selectedPath) && !!selectedPath && inputModeIsDropdown) {
         this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
@@ -425,6 +430,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
     if (!value) {
       this._inputMode$.next(ValuePathSelectorInputMode.DROPDOWN);
+      this.clearComboBoxSearch();
     }
   }
 
@@ -466,6 +472,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     const selectedDef = event?.item?.id;
     if (!selectedDef) return;
     this.selectedPath.setValue('');
+    this.clearComboBoxSearch();
     this._caseDefinitionKeySubject$.next(selectedDef);
   }
 
@@ -484,6 +491,16 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
 
     setTimeout(() => this.changeDetectorRef.detectChanges(), 1);
+  }
+
+  private clearComboBoxSearch(): void {
+    const comboBoxInput = this._comboBox?.input?.nativeElement;
+
+    if (!comboBoxInput || !this._comboBox?.view) return;
+
+    comboBoxInput.value = '';
+    // Resets `selectedValue`, the clear button and the filtered item list, without emitting a search.
+    this._comboBox.onSearch('', false);
   }
 
   private getFormattedPath(unformattedPath: string): string {
