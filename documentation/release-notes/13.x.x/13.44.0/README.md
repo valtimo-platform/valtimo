@@ -23,6 +23,11 @@ for configuration details.
 
 Emptying a field now follows what the case model allows: the field is either set to empty or removed, and a field the model requires is refused instead of silently leaving the case invalid.
 
+### Faster document handling
+
+Creating and updating cases, resolving document values and opening task forms are all faster, most
+noticeably on configurations with large document schemas or many process links.
+
 ---
 
 ## Bugfixes
@@ -30,6 +35,7 @@ Emptying a field now follows what the case model allows: the field is either set
 | Area | Fix |
 |------|-----|
 | Case configuration | A field path the case model does not allow is rejected instead of accepted |
+| Case definitions | A new draft based on an existing version of a case with building blocks can be created again |
 | Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
 | Cases | The progress tab shows the name of every process, instead of leaving some blank |
 | Plugins | Re-saving a plugin configuration removes settings from older versions that are no longer used |
