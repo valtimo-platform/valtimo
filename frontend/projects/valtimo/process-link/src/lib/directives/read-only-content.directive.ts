@@ -21,13 +21,39 @@ const READ_ONLY_INPUT_TYPES = ['email', 'number', 'password', 'search', 'tel', '
 const FOCUSABLE =
   'a[href], area[href], button, input, select, textarea, iframe, [tabindex], [contenteditable]';
 
+// Carbon draws a control read-only through a modifier class on its wrapper.
+const CARBON_READ_ONLY_MODIFIERS: ReadonlyArray<[string, string]> = [
+  ['.cds--checkbox-group', 'cds--checkbox-group--readonly'],
+  ['.cds--checkbox-wrapper', 'cds--checkbox-wrapper--readonly'],
+  ['.cds--combo-box', 'cds--combo-box--readonly'],
+  ['.cds--dropdown', 'cds--dropdown--readonly'],
+  ['.cds--multi-select', 'cds--multi-select--readonly'],
+  ['.cds--number', 'cds--number--readonly'],
+  ['.cds--radio-button-group', 'cds--radio-button-group--readonly'],
+  ['.cds--select', 'cds--select--readonly'],
+  ['.cds--slider-container', 'cds--slider-container--readonly'],
+  ['.cds--text-area__wrapper', 'cds--text-area__wrapper--readonly'],
+  ['.cds--text-input-wrapper', 'cds--text-input-wrapper--readonly'],
+  ['.cds--time-picker', 'cds--time-picker--readonly'],
+  ['.cds--toggle', 'cds--toggle--readonly'],
+];
+
+// Fields used without their Carbon wrapper need their parent to carry the modifier instead.
+const CARBON_UNWRAPPED_FIELDS: ReadonlyArray<[string, string, string]> = [
+  ['.cds--text-area', '.cds--text-area__wrapper', 'cds--text-area__wrapper--readonly'],
+  ['.cds--text-input', '.cds--text-input-wrapper', 'cds--text-input-wrapper--readonly'],
+];
+
+// Carbon buttons change the content, so read-only content leaves them out instead of disabling them.
+const EDIT_ACTIONS = '.cds--btn:not(.cds--text-input--password__visibility__toggle)';
+
+type StyleProperty = 'display' | 'pointerEvents';
+
 interface OriginalState {
-  tabindex: string | null;
-  contenteditable: string | null;
-  ariaDisabled: string | null;
-  pointerEvents: string;
+  addedClasses: string[];
+  attributes: Map<string, string | null>;
   readOnly: boolean | null;
-  disabled: boolean | null;
+  styles: Map<StyleProperty, string>;
 }
 
 @Directive({
@@ -44,16 +70,25 @@ export class ReadOnlyContentDirective implements OnInit, OnDestroy {
   private _observer: MutationObserver | null = null;
   private readonly _originalStates = new Map<HTMLElement, OriginalState>();
 
+  private readonly _blockActivation = (event: Event): void => {
+    if (!this._readOnly) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
 
   public ngOnInit(): void {
     this._observer = new MutationObserver(() => this.apply());
     this._observer.observe(this.elementRef.nativeElement, {childList: true, subtree: true});
+    this.elementRef.nativeElement.addEventListener('click', this._blockActivation, true);
     this.apply();
   }
 
   public ngOnDestroy(): void {
     this._observer?.disconnect();
+    this.elementRef.nativeElement.removeEventListener('click', this._blockActivation, true);
     this._originalStates.clear();
   }
 
@@ -67,78 +102,120 @@ export class ReadOnlyContentDirective implements OnInit, OnDestroy {
       return;
     }
 
-    Array.from(host.children).forEach(child => {
-      this.remember(child as HTMLElement).style.pointerEvents = 'none';
-    });
+    Array.from(host.children).forEach(child =>
+      this.setStyle(child as HTMLElement, 'pointerEvents', 'none')
+    );
 
-    host.querySelectorAll<HTMLElement>(FOCUSABLE).forEach(element => {
-      this.remember(element).setAttribute('tabindex', '-1');
-    });
+    host
+      .querySelectorAll<HTMLElement>(FOCUSABLE)
+      .forEach(element => this.setAttribute(element, 'tabindex', '-1'));
 
     host.querySelectorAll('input').forEach(input => {
-      if (READ_ONLY_INPUT_TYPES.includes(input.type)) {
-        this.remember(input).readOnly = true;
-      } else {
-        this.remember(input).disabled = true;
-      }
+      if (READ_ONLY_INPUT_TYPES.includes(input.type)) this.setReadOnly(input);
     });
 
-    host
-      .querySelectorAll('textarea')
-      .forEach(textarea => (this.remember(textarea).readOnly = true));
-
-    host
-      .querySelectorAll<HTMLSelectElement | HTMLButtonElement>('select, button')
-      .forEach(control => (this.remember(control).disabled = true));
+    host.querySelectorAll('textarea').forEach(textarea => this.setReadOnly(textarea));
 
     host
       .querySelectorAll<HTMLElement>('[contenteditable="true"]')
-      .forEach(editor => this.remember(editor).setAttribute('contenteditable', 'false'));
+      .forEach(editor => this.setAttribute(editor, 'contenteditable', 'false'));
 
     host
-      .querySelectorAll<HTMLElement>('[role="button"], [role="combobox"], [role="listbox"]')
-      .forEach(element => this.remember(element).setAttribute('aria-disabled', 'true'));
+      .querySelectorAll<HTMLElement>('[role="combobox"], [role="listbox"]')
+      .forEach(element => this.setAttribute(element, 'aria-readonly', 'true'));
+
+    host
+      .querySelectorAll<HTMLElement>('[role="button"]')
+      .forEach(element => this.setAttribute(element, 'aria-disabled', 'true'));
+
+    host
+      .querySelectorAll<HTMLElement>(EDIT_ACTIONS)
+      .forEach(action => this.setStyle(action, 'display', 'none'));
+
+    this.applyCarbonReadOnlyStyling(host);
   }
 
-  private remember<T extends HTMLElement>(element: T): T {
-    if (!this._originalStates.has(element)) {
-      const control = element as Partial<HTMLInputElement>;
+  private applyCarbonReadOnlyStyling(host: HTMLElement): void {
+    CARBON_READ_ONLY_MODIFIERS.forEach(([selector, modifier]) =>
+      host
+        .querySelectorAll<HTMLElement>(selector)
+        .forEach(wrapper => this.addClass(wrapper, modifier))
+    );
 
-      this._originalStates.set(element, {
-        tabindex: element.getAttribute('tabindex'),
-        contenteditable: element.getAttribute('contenteditable'),
-        ariaDisabled: element.getAttribute('aria-disabled'),
-        pointerEvents: element.style.pointerEvents,
-        readOnly: 'readOnly' in element ? !!control.readOnly : null,
-        disabled: 'disabled' in element ? !!control.disabled : null,
-      });
-    }
+    CARBON_UNWRAPPED_FIELDS.forEach(([field, wrapper, modifier]) =>
+      host.querySelectorAll<HTMLElement>(field).forEach(control => {
+        const parent = control.parentElement;
 
-    return element;
+        if (!parent || control.closest(wrapper)) return;
+
+        this.addClass(parent, modifier);
+      })
+    );
+  }
+
+  private addClass(element: HTMLElement, className: string): void {
+    if (element.classList.contains(className)) return;
+
+    element.classList.add(className);
+    this.stateOf(element).addedClasses.push(className);
+  }
+
+  private setAttribute(element: HTMLElement, name: string, value: string): void {
+    const attributes = this.stateOf(element).attributes;
+
+    if (!attributes.has(name)) attributes.set(name, element.getAttribute(name));
+
+    element.setAttribute(name, value);
+  }
+
+  private setReadOnly(control: HTMLInputElement | HTMLTextAreaElement): void {
+    const state = this.stateOf(control);
+
+    if (state.readOnly === null) state.readOnly = control.readOnly;
+
+    control.readOnly = true;
+  }
+
+  private setStyle(element: HTMLElement, property: StyleProperty, value: string): void {
+    const styles = this.stateOf(element).styles;
+
+    if (!styles.has(property)) styles.set(property, element.style[property]);
+
+    element.style[property] = value;
+  }
+
+  private stateOf(element: HTMLElement): OriginalState {
+    const state = this._originalStates.get(element) ?? {
+      addedClasses: [],
+      attributes: new Map<string, string | null>(),
+      readOnly: null,
+      styles: new Map<StyleProperty, string>(),
+    };
+
+    this._originalStates.set(element, state);
+
+    return state;
   }
 
   private restore(): void {
     this._originalStates.forEach((original, element) => {
-      this.restoreAttribute(element, 'tabindex', original.tabindex);
-      this.restoreAttribute(element, 'contenteditable', original.contenteditable);
-      this.restoreAttribute(element, 'aria-disabled', original.ariaDisabled);
+      original.attributes.forEach((value, name) => {
+        if (value === null) {
+          element.removeAttribute(name);
+        } else {
+          element.setAttribute(name, value);
+        }
+      });
 
-      element.style.pointerEvents = original.pointerEvents;
+      original.styles.forEach((value, property) => (element.style[property] = value));
 
-      const control = element as Partial<HTMLInputElement>;
+      original.addedClasses.forEach(className => element.classList.remove(className));
 
-      if (original.readOnly !== null) control.readOnly = original.readOnly;
-      if (original.disabled !== null) control.disabled = original.disabled;
+      if (original.readOnly !== null) {
+        (element as HTMLInputElement | HTMLTextAreaElement).readOnly = original.readOnly;
+      }
     });
 
     this._originalStates.clear();
-  }
-
-  private restoreAttribute(element: HTMLElement, name: string, value: string | null): void {
-    if (value === null) {
-      element.removeAttribute(name);
-    } else {
-      element.setAttribute(name, value);
-    }
   }
 }

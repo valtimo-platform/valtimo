@@ -53,26 +53,82 @@ describe('ReadOnlyContentDirective', () => {
       expect(input.value).toBe('start-form-bezwaar');
     });
 
-    it('should disable a checkbox so its label cannot toggle it', async () => {
-      await rendered('<input id="toggle" type="checkbox" /><label for="toggle">On</label>');
+    it('should keep a checkbox read-only rather than disabled', async () => {
+      await rendered(`
+        <div class="cds--checkbox-wrapper">
+          <input class="cds--checkbox" id="check" type="checkbox" />
+          <label for="check">On</label>
+        </div>
+      `);
 
       const checkbox = host.querySelector('input') as HTMLInputElement;
       (host.querySelector('label') as HTMLLabelElement).click();
 
-      expect(checkbox.disabled).toBe(true);
+      expect(checkbox.disabled).toBe(false);
       expect(checkbox.checked).toBe(false);
+      expect(
+        host
+          .querySelector('.cds--checkbox-wrapper')
+          ?.classList.contains('cds--checkbox-wrapper--readonly')
+      ).toBe(true);
     });
 
-    it('should disable buttons, selects and contenteditables', async () => {
+    it('should give a Carbon toggle its read-only appearance', async () => {
       await rendered(`
-        <button class="cds--list-box__menu-icon"></button>
+        <div class="cds--toggle cds--form-item">
+          <button class="cds--toggle__button" role="switch" type="button"></button>
+          <label class="cds--toggle__label"><div class="cds--toggle__appearance"></div></label>
+        </div>
+      `);
+
+      const toggle = host.querySelector('.cds--toggle') as HTMLElement;
+
+      expect(toggle.classList.contains('cds--toggle--readonly')).toBe(true);
+      expect((host.querySelector('button') as HTMLButtonElement).disabled).toBe(false);
+      expect(toggle.classList.contains('cds--toggle--disabled')).toBe(false);
+    });
+
+    it('should give a Carbon combo box its read-only appearance', async () => {
+      await rendered(`
+        <div class="cds--list-box cds--combo-box">
+          <div class="cds--list-box__field" role="button"></div>
+          <input class="cds--text-input" role="combobox" type="text" />
+        </div>
+      `);
+
+      const comboBox = host.querySelector('.cds--combo-box') as HTMLElement;
+
+      expect(comboBox.classList.contains('cds--combo-box--readonly')).toBe(true);
+      expect(host.querySelector('[role="combobox"]')?.getAttribute('aria-readonly')).toBe('true');
+    });
+
+    it('should give a field used without its Carbon wrapper a wrapper that is read-only', async () => {
+      await rendered('<div class="v-input-container"><input class="cds--text-input" /></div>');
+
+      expect(
+        host
+          .querySelector('.v-input-container')
+          ?.classList.contains('cds--text-input-wrapper--readonly')
+      ).toBe(true);
+    });
+
+    it('should leave out the actions that change the content', async () => {
+      await rendered('<button class="cds--btn cds--btn--primary">Ondertitel toevoegen</button>');
+
+      expect((host.querySelector('.cds--btn') as HTMLElement).style.display).toBe('none');
+    });
+
+    it('should keep selects and contenteditables from being edited', async () => {
+      await rendered(`
         <select></select>
         <textarea></textarea>
         <div contenteditable="true"></div>
       `);
 
-      expect((host.querySelector('button') as HTMLButtonElement).disabled).toBe(true);
-      expect((host.querySelector('select') as HTMLSelectElement).disabled).toBe(true);
+      expect((host.querySelector('select') as HTMLSelectElement).disabled).toBe(false);
+      expect((host.querySelector('select') as HTMLSelectElement).getAttribute('tabindex')).toBe(
+        '-1'
+      );
       expect((host.querySelector('textarea') as HTMLTextAreaElement).readOnly).toBe(true);
       expect(host.querySelector('[contenteditable]')?.getAttribute('contenteditable')).toBe(
         'false'
@@ -89,10 +145,19 @@ describe('ReadOnlyContentDirective', () => {
     });
 
     it('should put the content out of reach of the mouse, but keep the host scrollable', async () => {
-      await rendered('<div class="step"><button>Configuratie importeren</button></div>');
+      await rendered('<div class="step"><a href="#">Configuratie importeren</a></div>');
 
       expect((host.firstElementChild as HTMLElement).style.pointerEvents).toBe('none');
       expect(host.style.pointerEvents).toBe('');
+    });
+
+    it('should swallow clicks that reach the content anyway', async () => {
+      await rendered('<div class="step"><input id="check" type="checkbox" /></div>');
+
+      const checkbox = host.querySelector('#check') as HTMLInputElement;
+      checkbox.click();
+
+      expect(checkbox.checked).toBe(false);
     });
 
     it('should keep the content unclickable when Angular rebinds a disabled state', async () => {
@@ -135,36 +200,61 @@ describe('ReadOnlyContentDirective', () => {
       await rendered(`
         <div class="step">
           <input type="text" />
-          <input type="checkbox" />
-          <button>Configuratie importeren</button>
-          <select></select>
           <textarea></textarea>
+          <select></select>
           <div contenteditable="true"></div>
           <div role="button" tabindex="0"></div>
+          <div class="cds--toggle"><button class="cds--toggle__button"></button></div>
+          <div class="v-input-container"><input class="cds--text-input" /></div>
+          <button class="cds--btn">Ondertitel toevoegen</button>
         </div>
       `);
 
       directive.readOnly = false;
 
       expect((host.querySelector('input[type="text"]') as HTMLInputElement).readOnly).toBe(false);
-      expect((host.querySelector('input[type="checkbox"]') as HTMLInputElement).disabled).toBe(
-        false
-      );
-      expect((host.querySelector('button') as HTMLButtonElement).disabled).toBe(false);
-      expect((host.querySelector('select') as HTMLSelectElement).disabled).toBe(false);
       expect((host.querySelector('textarea') as HTMLTextAreaElement).readOnly).toBe(false);
+      expect((host.querySelector('select') as HTMLSelectElement).disabled).toBe(false);
       expect(host.querySelector('[contenteditable]')?.getAttribute('contenteditable')).toBe('true');
       expect(host.querySelector('[role="button"]')?.getAttribute('tabindex')).toBe('0');
       expect(host.querySelector('[role="button"]')?.hasAttribute('aria-disabled')).toBe(false);
+      expect(host.querySelector('.cds--toggle')?.classList.contains('cds--toggle--readonly')).toBe(
+        false
+      );
+      expect(
+        host
+          .querySelector('.v-input-container')
+          ?.classList.contains('cds--text-input-wrapper--readonly')
+      ).toBe(false);
+      expect((host.querySelector('.cds--btn') as HTMLElement).style.display).toBe('');
       expect((host.firstElementChild as HTMLElement).style.pointerEvents).toBe('');
     });
 
-    it('should not hand back a state the content never had', async () => {
-      await rendered('<div class="step"><button disabled>Opslaan</button></div>');
+    it('should let the content be used again', async () => {
+      await rendered('<div class="step"><input id="check" type="checkbox" /></div>');
 
       directive.readOnly = false;
 
-      expect((host.querySelector('button') as HTMLButtonElement).disabled).toBe(true);
+      const checkbox = host.querySelector('#check') as HTMLInputElement;
+      checkbox.click();
+
+      expect(checkbox.checked).toBe(true);
+    });
+
+    it('should not hand back a state the content never had', async () => {
+      await rendered(`
+        <div class="step">
+          <input readonly type="text" />
+          <div class="cds--toggle cds--toggle--readonly"></div>
+        </div>
+      `);
+
+      directive.readOnly = false;
+
+      expect((host.querySelector('input') as HTMLInputElement).readOnly).toBe(true);
+      expect(host.querySelector('.cds--toggle')?.classList.contains('cds--toggle--readonly')).toBe(
+        true
+      );
     });
 
     it('should leave content that appears afterwards alone', async () => {
@@ -184,11 +274,17 @@ describe('ReadOnlyContentDirective', () => {
     });
 
     it('should leave the controls alone', async () => {
-      await rendered('<input type="text" /><button></button><select></select>');
+      await rendered(
+        '<input type="text" /><button class="cds--btn"></button><select></select>' +
+          '<div class="cds--toggle"></div>'
+      );
 
       expect((host.querySelector('input') as HTMLInputElement).readOnly).toBe(false);
-      expect((host.querySelector('button') as HTMLButtonElement).disabled).toBe(false);
+      expect((host.querySelector('button') as HTMLButtonElement).style.display).toBe('');
       expect((host.querySelector('select') as HTMLSelectElement).disabled).toBe(false);
+      expect(host.querySelector('.cds--toggle')?.classList.contains('cds--toggle--readonly')).toBe(
+        false
+      );
       expect(
         [...host.children].every(child => (child as HTMLElement).style.pointerEvents === '')
       ).toBe(true);
