@@ -1,7 +1,7 @@
 spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3326/catalogi-api-test
+        url: jdbc:mysql://localhost:3369/catalogi-api-test
         username: valtimo
         password: password
         hikari:

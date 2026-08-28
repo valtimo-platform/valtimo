@@ -1,0 +1,44 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.mail-preview__header {
+  text-align: center;
+}
+
+.mail-preview__title {
+  color: var(--cds-text-secondary, #525252);
+  font-size: 1.5rem;
+}
+
+.mail-preview__key {
+  color: var(--cds-text-placeholder, #a8a8a8);
+  display: none;
+  font-size: 0.75rem;
+}
+
+:host-context(.builder-component) .mail-preview__key {
+  display: block;
+}
+
+// E-mail HTML is authored against a light background. The template pins this element
+// to Carbon's white theme (data-carbon-theme="white"), so the tokens below resolve to
+// light values and the e-mail keeps rendering correctly when the app is in dark mode.
+.mail-preview__content {
+  background-color: var(--cds-background, #ffffff);
+  border: 1px solid var(--cds-border-subtle-01, #c6c6c6);
+  color: var(--cds-text-primary, #161616);
+  padding: 1rem;
+}
