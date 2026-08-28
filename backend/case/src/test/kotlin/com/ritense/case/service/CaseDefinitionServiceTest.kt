@@ -19,6 +19,7 @@ package com.ritense.case.service
 import com.ritense.BaseTest
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.specification.AuthorizationSpecification
+import com.ritense.case.domain.CaseDefinitionConfigurationIssue
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.domain.CaseListColumnId
 import com.ritense.case.domain.ColumnDefaultSort
@@ -686,6 +687,35 @@ class CaseDefinitionServiceTest : BaseTest() {
 
         assertEquals("Layout Test - EDIT", draft.name)
         assertEquals(basedOnCaseDefinition.description, draft.description)
+        assertFalse(draft.final)
+    }
+
+    @Test
+    fun `should create case definition draft when the based on version has unresolved configuration issues`() {
+        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"))
+        val request = CaseDefinitionDraftCreateRequest(
+            caseDefinitionKey = "key",
+            caseDefinitionVersion = "2.0.0",
+            basedOnCaseDefinitionVersion = "1.0.0"
+        )
+
+        whenever(caseDefinitionRepository.findById(basedOnCaseDefinition.id))
+            .thenReturn(Optional.of(basedOnCaseDefinition))
+        whenever(caseDefinitionRepository.save(any())).thenAnswer { it.arguments[0] as CaseDefinition }
+        whenever(configurationIssueRepository.findUnresolvedByCaseDefinitionId(basedOnCaseDefinition.id))
+            .thenReturn(
+                listOf(
+                    CaseDefinitionConfigurationIssue(
+                        caseDefinitionId = basedOnCaseDefinition.id,
+                        issueType = "plugin-process-link"
+                    )
+                )
+            )
+
+        // A broken version is only repairable in a draft, so it is created; the issues block finalization until resolved.
+        val draft = service.createCaseDefinitionDraft(request)
+
+        assertEquals(CaseDefinitionId.of("key", "2.0.0"), draft.id)
         assertFalse(draft.final)
     }
 
