@@ -133,8 +133,7 @@ export class MigrationComponent implements AfterViewInit {
 
     this.loadProcessDefinitionVersions(key, type);
     if (type === 'source') {
-      // Migrating to the latest version of the same process is what this screen is used for, so it
-      // is prefilled. The source version is not: that is the one thing only the user knows.
+      // Prefilled to the latest version, this screen's usual case; only the user knows the source.
       this.loadProcessDefinitionVersions(key, 'target', true);
     }
   }
@@ -208,9 +207,8 @@ export class MigrationComponent implements AfterViewInit {
 
   loadProcessDefinitionXML(id: string, type: string) {
     this.processService.getProcessDefinitionXml(id).subscribe(xml => {
-      // Selecting a version while the automatic latest-version load is still in flight leaves two
-      // requests running. Without this guard the slower one wins and migrateProcess() would use a
-      // version the user never picked, since it reads selectedId.
+      // Guards against the in-flight latest-version load winning the race and leaving migrateProcess()
+      // on a version the user never picked.
       if (this.fields[type].version !== id) return;
       if (!xml.bpmn20Xml) return;
       this.diagram[type].loadXml(xml['bpmn20Xml']);

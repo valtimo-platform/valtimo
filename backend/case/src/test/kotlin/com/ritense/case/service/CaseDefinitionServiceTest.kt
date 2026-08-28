@@ -610,8 +610,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         assertTrue(saved.final)
         assertTrue(captor.firstValue.final)
         assertEquals(caseDefinitionId, captor.firstValue.id)
-        // Anything following the latest version while the case definition was a draft is pinned off
-        // the back of this event, so losing it silently unfreezes finalized case definitions.
+        // This event pins the draft's links, so losing it silently unfreezes finalized case definitions.
         verify(applicationEventPublisher).publishEvent(CaseDefinitionFinalizedEvent(caseDefinitionId))
     }
 

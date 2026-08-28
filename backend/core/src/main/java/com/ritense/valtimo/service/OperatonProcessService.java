@@ -423,8 +423,7 @@ public class OperatonProcessService {
     }
 
     /**
-     * A suspended process still has running instances, so process migration has to be able to offer
-     * it even though nothing else should.
+     * A suspended process still has running instances, so migration must offer it even though nothing else should.
      */
     public List<OperatonProcessDefinition> getDeployedDefinitions(boolean includeSuspended) {
         denyAuthorization();
@@ -562,9 +561,8 @@ public class OperatonProcessService {
     }
 
     /**
-     * @param skipIsDeployableCheck ignored. There is no longer a deployability check to skip: a
-     *     system process may always be updated. Kept on every {@code deploy} overload so callers
-     *     outside this repository keep compiling; due for removal in the next major version.
+     * @param skipIsDeployableCheck ignored - a system process may always be updated. Kept so external
+     *     callers keep compiling; due for removal in the next major version.
      */
     @Transactional
     public DeploymentWithDefinitions deploy(

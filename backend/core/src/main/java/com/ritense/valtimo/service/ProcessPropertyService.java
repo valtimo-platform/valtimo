@@ -51,9 +51,8 @@ public class ProcessPropertyService {
     }
 
     /**
-     * A process that has no properties row yet is not a system process. Unlike
-     * {@link #isSystemProcess(String)} this does not throw for such a key, which a listing endpoint
-     * cannot afford.
+     * A process with no properties row is not a system process. Unlike {@link #isSystemProcess(String)}
+     * this does not throw for such a key, which a listing endpoint cannot afford.
      */
     public boolean isKnownSystemProcess(String processDefinitionKey) {
         final var processProperties = processDefinitionPropertiesRepository.findByProcessDefinitionKey(processDefinitionKey);
@@ -61,10 +60,8 @@ public class ProcessPropertyService {
     }
 
     /**
-     * @deprecated no process definition is read-only anymore, so this always returns
-     *     {@code false}. A system process may always be edited; doing so deploys a new process
-     *     definition version and leaves every case definition that pinned an earlier version
-     *     untouched.
+     * @deprecated no process definition is read-only anymore, so this always returns {@code false}.
+     *     Editing a system process deploys a new version and leaves earlier pinned case definitions untouched.
      */
     @Deprecated(since = "13.44.0", forRemoval = true)
     public boolean isReadOnlyById(String processDefinitionId) {

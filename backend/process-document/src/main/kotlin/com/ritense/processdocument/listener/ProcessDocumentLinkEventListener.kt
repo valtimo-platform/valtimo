@@ -68,9 +68,8 @@ class ProcessDocumentLinkEventListener(
     @RunWithoutAuthorization
     @EventListener(ApplicationReadyEvent::class)
     fun handleApplicationReadyEvent() {
-        // A backfill for links that could not be pinned when they were deployed. An exception from
-        // an ApplicationReadyEvent listener stops the application, and failing to pin is not worth
-        // refusing to boot over: the links stay resolvable, they just follow the latest version.
+        // Backfills links that could not be pinned at deployment. Swallowed because an ApplicationReadyEvent
+        // exception stops the application, and an unpinned link still resolves - it just follows the latest.
         try {
             caseDefinitionProcessLinkService.pinLinksThatCanNoLongerChange()
         } catch (e: Exception) {

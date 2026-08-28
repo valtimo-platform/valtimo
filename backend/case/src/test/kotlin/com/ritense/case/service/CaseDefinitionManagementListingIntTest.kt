@@ -56,8 +56,7 @@ class CaseDefinitionManagementListingIntTest @Autowired constructor(
 
     @Test
     fun `should return an empty page for a page index beyond the result set`() {
-        // A page index this high makes the offset exceed Int.MAX_VALUE, which used to wrap negative
-        // and throw out of subList rather than paging past the end.
+        // An offset past Int.MAX_VALUE used to wrap negative and throw out of subList instead of paging past the end.
         val caseDefinitions = runWithoutAuthorization {
             caseDefinitionService.getCaseDefinitionsForManagement(pageable = PageRequest.of(3_000_000, 1000))
         }

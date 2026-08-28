@@ -61,8 +61,7 @@ class CaseDefinitionProcessLinkImporter(
             }
 
             logger.info { "Deploying case-definition-process-link: ${item.linkType} -> ${item.processDefinitionKey} for case ${caseDefinitionId.key}" }
-            // A version number is local to an engine, so the pin is taken from this environment
-            // rather than carried over from the exporting one.
+            // Version numbers are engine-local, so the pin comes from this environment, not the exporting one.
             caseDefinitionProcessLinkService.saveDocumentDefinitionProcessLink(
                 caseDefinitionId,
                 item.processDefinitionKey,

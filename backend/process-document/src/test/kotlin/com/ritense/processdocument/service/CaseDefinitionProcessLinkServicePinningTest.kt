@@ -34,9 +34,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
- * Whether a link is pinned follows the finality of its case definition and nothing else. Covered
- * here rather than in the integration test because the interesting case — a draft that cannot be
- * edited because the environment has drafts disabled — needs a different application context.
+ * Pinning follows case definition finality and nothing else. Covered here rather than in the integration
+ * test because the interesting case - a draft with drafts disabled - needs a different application context.
  */
 class CaseDefinitionProcessLinkServicePinningTest {
 
@@ -91,8 +90,7 @@ class CaseDefinitionProcessLinkServicePinningTest {
     }
 
     /**
-     * Both lookups go through the same method with a different specification, so they are told apart
-     * by call order: the owned one first, the unowned one second.
+     * Both lookups share a method with different specifications, so they are told apart by call order.
      */
     private fun stubProcessDefinitionLookups(
         owned: OperatonProcessDefinition?,

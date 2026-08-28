@@ -202,7 +202,7 @@ class CaseDefinitionProcessLinkServiceIntTest extends BaseIntegrationTest {
     @Test
     void shouldFallBackToTheLatestVersionWhenThePinnedVersionIsNoLongerInTheEngine() {
         deploySystemProcess();
-        // Replaces the link beforeEach made, so that only one DOCUMENT_UPLOAD link exists
+        // Replaces the link beforeEach made, leaving one DOCUMENT_UPLOAD link
         caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
             CASE_DEFINITION_ID,
             new DocumentDefinitionProcessRequest(SYSTEM_PROCESS_KEY, DOCUMENT_UPLOAD)
@@ -221,7 +221,7 @@ class CaseDefinitionProcessLinkServiceIntTest extends BaseIntegrationTest {
             DOCUMENT_UPLOAD
         );
 
-        // Falling back beats leaving the case definition with no process at all
+        // Falling back beats leaving no process at all
         assertThat(caseDefinitionProcess).isNotNull();
         assertThat(caseDefinitionProcess.getProcessDefinitionVersion()).isEqualTo(1);
     }
@@ -231,8 +231,7 @@ class CaseDefinitionProcessLinkServiceIntTest extends BaseIntegrationTest {
         deploySystemProcess();
 
         ImportContext.runImporter(() -> {
-            // The case definition importer saves the case definition as a draft first, so that the
-            // importers depending on it can still write to it. The link is unpinned at this point.
+            // Saved as a draft first so dependent importers can still write to it; the link is unpinned here.
             caseDefinitionProcessLinkService.saveDocumentDefinitionProcessLink(
                 CASE_DEFINITION_ID,
                 SYSTEM_PROCESS_KEY,
@@ -240,8 +239,7 @@ class CaseDefinitionProcessLinkServiceIntTest extends BaseIntegrationTest {
             );
             assertThat(systemProcessLink().getProcessDefinitionVersion()).isNull();
 
-            // Its afterImport then flips the case definition to final, which has to pin the link:
-            // the only other moment that would is the next application startup.
+            // afterImport then flips it to final, which must pin the link - the only alternative is the next startup.
             finalizeCaseDefinition();
             applicationEventPublisher.publishEvent(new CaseDefinitionFinalizedEvent(CASE_DEFINITION_ID));
             return null;

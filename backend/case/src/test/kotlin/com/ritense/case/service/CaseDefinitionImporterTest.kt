@@ -125,8 +125,7 @@ class CaseDefinitionImporterTest(
         verify(caseDefinitionRepository).save(captor.capture())
         assertThat(captor.firstValue.id.key).isEqualTo("overridden-key")
         assertThat(captor.firstValue.name).isEqualTo("Overridden Name")
-        // This is the only moment an imported case definition becomes final, and the links that
-        // followed the latest process version while it was a draft are pinned off the back of it.
+        // The only moment an imported case definition becomes final, which is what pins its draft links.
         verify(applicationEventPublisher).publishEvent(
             CaseDefinitionFinalizedEvent(CaseDefinitionId("overridden-key", "1.0.0"))
         )

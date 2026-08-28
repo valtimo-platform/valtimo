@@ -212,10 +212,8 @@ public class ValtimoProperties {
         private int callDepthWarningThreshold = 50;
 
         /**
-         * @deprecated a system process is always updatable, so this property no longer has any
-         *     effect. Case definitions are protected from a new system process version by the
-         *     process definition version their process link pins, not by making the process
-         *     read-only.
+         * @deprecated a system process is always updatable, so this has no effect. Case definitions are
+         *     protected by the version their process link pins, not by making the process read-only.
          */
         @Deprecated(since = "13.44.0", forRemoval = true)
         public boolean isSystemProcessUpdatable() {
@@ -225,8 +223,7 @@ public class ValtimoProperties {
         @Deprecated(since = "13.44.0", forRemoval = true)
         public void setSystemProcessUpdatable(boolean systemProcessUpdatable) {
             if (!systemProcessUpdatable) {
-                // Worth a warning rather than silence: an installation that set this did so to stop
-                // system processes being changed, and that protection is gone.
+                // Warned rather than ignored: whoever set this wanted that protection, and it is gone.
                 LoggerFactory.getLogger(Process.class).warn(
                     "valtimo.process.systemProcessUpdatable=false no longer has any effect. "
                         + "System processes can always be updated. Case definitions are protected by "

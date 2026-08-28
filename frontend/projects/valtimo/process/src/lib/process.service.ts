@@ -42,8 +42,7 @@ export class ProcessService {
   }
 
   /**
-   * A suspended process still has running instances, so process migration needs them offered even
-   * though nothing else should.
+   * A suspended process still has running instances, so migration needs them offered even though nothing else should.
    */
   getProcessDefinitions(includeSuspended = false): Observable<ProcessDefinition[]> {
     return this.http.get<ProcessDefinition[]>(

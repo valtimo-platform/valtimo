@@ -176,17 +176,14 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
   );
 
   public ngOnInit(): void {
-    // Migrating to the latest version of the same case is what this screen is used for, so the
-    // target is prefilled. The source version is not: that is the one thing only the user knows.
+    // The target is prefilled to the latest version, this screen's usual case; only the user knows the source.
     this._subscriptions.add(
       this.sourceCaseDefinitionKeySelected$.subscribe(sourceCaseDefinitionKeySelected =>
         this.targetCaseDefinitionKeySelected$.next(sourceCaseDefinitionKeySelected)
       )
     );
 
-    // Keyed off the target rather than the source so that picking a different target case replaces
-    // the tag as well. Left alone it would keep the previous case's tag, which the target case need
-    // not even have, and both buttons only check that a tag is set.
+    // Keyed off the target so a different target case replaces the tag, which it need not otherwise have.
     this._subscriptions.add(
       combineLatest([this.targetCaseDefinitionKeySelected$, this.caseDefinitions$]).subscribe(
         ([targetCaseDefinitionKeySelected, caseDefinitions]) =>
@@ -301,9 +298,8 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Compares the tags rather than trusting their position in the list. The backend sorts on name
-   * before version tag, and a name can be changed per version, so two versions of the same key can
-   * come back in an order that does not follow their version.
+   * Compares tags rather than list position: the backend sorts on name first, and a name can change per
+   * version, so two versions of a key can come back out of version order.
    */
   private latestVersionTagOf(
     caseDefinitions: Array<CaseDefinition>,
