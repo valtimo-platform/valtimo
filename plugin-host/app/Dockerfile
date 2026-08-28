@@ -41,7 +41,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 # Migration files live outside dist/ (they are .sql, not compiled), so they need their own COPY —
 # both `node dist/index.js` and `node dist/migrate.js` resolve them relative to dist/.
-COPY migrations/ ./migrations/
+COPY app/migrations/ ./migrations/
 
 COPY --from=builder /build/app/dist ./dist
 
