@@ -32,6 +32,7 @@
         * [Building blocks](configuration-guides/cases/migration/building-blocks.md)
         * [Running a plan](configuration-guides/cases/migration/running-a-plan.md)
     * [Forms](configuration-guides/cases/forms.md)
+        * [E-mail preview component](configuration-guides/cases/forms/email-preview-component.md)
     * [Form flows](configuration-guides/cases/form-flows.md)
     * [Tasks](configuration-guides/cases/tasks/README.md)
         * [Columns](configuration-guides/cases/tasks/columns.md)
