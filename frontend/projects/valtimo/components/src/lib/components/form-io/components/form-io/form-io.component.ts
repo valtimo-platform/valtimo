@@ -90,9 +90,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public refreshForm = new EventEmitter<FormioRefreshValue>();
 
-  // Annotated explicitly: FormioSubmission defaults its second type parameter to
-  // FormioSubmissionState, which @formio/angular declares but does not export. An
-  // inferred type here resolves that default and fails declaration emit with TS4029.
+  // Annotated explicitly: inferring resolves FormioSubmission's unexported default type param and fails declaration emit (TS4029).
   public readonly submission$: BehaviorSubject<FormioSubmission> = new BehaviorSubject<FormioSubmission>(
     {}
   );
