@@ -34,8 +34,8 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -100,8 +100,9 @@ class BuildingBlockCallActivityListenerTest {
                 eq(inputMappings.map { it.source })
             )
         ).thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
-        whenever(valueResolverService.preProcessValuesForNewDocument(mapOf("doc:name" to "Ada Lovelace"), "bb"))
-            .thenReturn(mapOf("doc" to mapOf("name" to "Ada Lovelace")))
+        whenever(
+            valueResolverService.preProcessValuesForNewDocument(eq(mapOf("doc:name" to "Ada Lovelace")), any())
+        ).thenReturn(mapOf("doc" to mapOf("name" to "Ada Lovelace")))
 
         whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
 
@@ -192,8 +193,9 @@ class BuildingBlockCallActivityListenerTest {
                 eq(inputMappings.map { it.source })
             )
         ).thenReturn(mapOf("doc:/data" to "parent data"))
-        whenever(valueResolverService.preProcessValuesForNewDocument(mapOf("doc:input" to "parent data"), "nested-bb"))
-            .thenReturn(mapOf("doc" to mapOf("input" to "parent data")))
+        whenever(
+            valueResolverService.preProcessValuesForNewDocument(eq(mapOf("doc:input" to "parent data")), any())
+        ).thenReturn(mapOf("doc" to mapOf("input" to "parent data")))
 
         // Parent BB instance is found because we're calling from a BB process
         whenever(buildingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)

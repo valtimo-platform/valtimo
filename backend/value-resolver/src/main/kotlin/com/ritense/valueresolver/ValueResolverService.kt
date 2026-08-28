@@ -117,12 +117,7 @@ interface ValueResolverService {
         values: Map<String, Any?>
     ): Map<String, Any?>
 
-    /**
-     * Like [preProcessValuesForNewCase], but passes the target document-definition name to the resolvers so they can
-     * make schema-aware decisions (e.g. how to write 'null' values). Defaults to [preProcessValuesForNewCase] to remain
-     * backwards compatible.
-     */
-    @Suppress("DEPRECATION") // intentional backwards-compatible bridge
+    @Suppress("DEPRECATION")
     fun preProcessValuesForNewDocument(
         values: Map<String, Any?>,
         documentDefinitionName: String

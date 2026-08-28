@@ -444,8 +444,8 @@ public class OperatonProcessJsonSchemaDocumentAssociationService implements Proc
 
     /**
      * The label to show for a process. The association's own name is authoritative, but it is nullable and
-     * associations written before Valtimo kept the name across a case migration have none, so the process
-     * definition it runs answers for them rather than the UI falling back to a placeholder.
+     * an association written without one has none, so the process definition it runs answers for those
+     * rather than the UI falling back to a placeholder.
      */
     private String processNameOf(
         OperatonProcessJsonSchemaDocumentInstance process,

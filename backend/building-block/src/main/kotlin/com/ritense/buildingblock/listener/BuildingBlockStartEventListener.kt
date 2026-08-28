@@ -106,7 +106,10 @@ class BuildingBlockStartEventListener(
         val inputSources = link.inputMappings.map { it.source }
         val resolvedValues = valueResolverService.resolveValues(caseDocumentId.toString(), inputSources)
         val valuesToHandle = link.inputMappings.associate { it.getPrefixedTarget() to resolvedValues[it.source] }
-        val preProcessValues = valueResolverService.preProcessValuesForNewDocument(valuesToHandle, buildingBlockDefinitionId.key)
+        val preProcessValues = valueResolverService.preProcessValuesForNewDocument(
+            valuesToHandle,
+            buildingBlockDefinitionId.key
+        )
         val documentContent = objectMapper.valueToTree<JsonNode>(preProcessValues[DOC_PREFIX])
 
         val documentRequest = NewDocumentRequest(

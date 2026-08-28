@@ -40,6 +40,7 @@ import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.repository.DeploymentWithDefinitions
 import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.mock.web.MockMultipartFile
 
 class ProcessDeploymentServiceTest {
@@ -49,6 +50,7 @@ class ProcessDeploymentServiceTest {
     private lateinit var processLinkService: ProcessLinkService
     private lateinit var processDefinitionValidator: ProcessDefinitionValidator
     private lateinit var repositoryService: RepositoryService
+    private lateinit var applicationEventPublisher: ApplicationEventPublisher
     private lateinit var processDeploymentService: ProcessDeploymentService
 
     @BeforeEach
@@ -58,12 +60,14 @@ class ProcessDeploymentServiceTest {
         processLinkService = mock()
         processDefinitionValidator = mock()
         repositoryService = mock()
+        applicationEventPublisher = mock()
         processDeploymentService = ProcessDeploymentService(
             operatonProcessService,
             processDefinitionCaseDefinitionService,
             processLinkService,
             processDefinitionValidator,
-            repositoryService
+            repositoryService,
+            applicationEventPublisher
         )
 
         whenever(processDefinitionValidator.validate(any(), any(), any()))

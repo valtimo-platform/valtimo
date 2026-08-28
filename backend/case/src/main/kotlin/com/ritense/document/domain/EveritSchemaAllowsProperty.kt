@@ -19,10 +19,12 @@ package com.ritense.document.domain
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.everit.json.schema.ArraySchema
 import org.everit.json.schema.CombinedSchema
+import org.everit.json.schema.EmptySchema
 import org.everit.json.schema.JSONPointer
 import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.ReferenceSchema
 import org.everit.json.schema.Schema
+import org.everit.json.schema.TrueSchema
 import org.everit.json.schema.ValidationException
 import org.everit.json.schema.regexp.Regexp
 
@@ -43,21 +45,12 @@ private fun Schema.allowsProperty(field: String, depth: Int): Boolean {
         is ArraySchema -> allowsProperty(field, depth)
         is CombinedSchema -> allowsProperty(field, depth)
         is ReferenceSchema -> allowsProperty(field, depth)
+        is EmptySchema, is TrueSchema -> true
         else -> false
     }
 }
 
-/**
- * Copied from ObjectSchema.definesProperty(.) but returns true when the schema allows additionalProperties.
- *
- * The `additionalProperties` fallback applies **only to a token this schema does not describe**, which is
- * what "additional" means. It used to be OR'd in unconditionally, and since it is evaluated at every level
- * of the descent, one permissive ancestor answered for the whole subtree below it: a root with
- * `additionalProperties: true` reported `/a/b` as allowed even where `a` itself declared
- * `additionalProperties: false` and no property `b`. A token the schema *does* describe — through
- * `properties` or `patternProperties` — is answered by that description alone, so a refusal further down
- * the path is final.
- */
+/** Copied from ObjectSchema.definesProperty(.) but returns true when the schema allows additionalProperties */
 private fun ObjectSchema.allowsProperty(field: String, depth: Int): Boolean {
     val headAndTail: Array<String?> = headAndTailOfJsonPointerFragment(field)
     val nextToken = headAndTail[0]!!
@@ -69,7 +62,6 @@ private fun ObjectSchema.allowsProperty(field: String, depth: Int): Boolean {
             || (!describesProperty(nextToken) && permitsAdditionalProperties()))
 }
 
-/** Whether this schema describes [token] itself, through either `properties` or `patternProperties`. */
 private fun ObjectSchema.describesProperty(token: String): Boolean {
     if (propertySchemas.containsKey(jsonPointerUnescape(token))) return true
     val patternProperties: Map<Regexp, Schema> = getPrivateField("patternProperties")
@@ -184,18 +176,12 @@ private fun ArraySchema.tryPropertyDefinitionByNumericIndex(
     if (maxItems != null && maxItems <= index) {
         return false
     }
-    return if (allItemSchema != null && hasRemaining) {
-        allItemSchema.allowsProperty(remaining!!, depth + 1)
+    val additionalItems: Boolean = getPrivateField("additionalItems")
+    val itemSchema = allItemSchema ?: itemSchemas.getOrNull(index) ?: schemaOfAdditionalItems
+    return if (hasRemaining) {
+        itemSchema?.allowsProperty(remaining!!, depth + 1) ?: additionalItems
     } else {
-        if (hasRemaining) {
-            if (index < itemSchemas.size) {
-                return itemSchemas[index].allowsProperty(remaining!!, depth + 1)
-            }
-            if (schemaOfAdditionalItems != null) {
-                return schemaOfAdditionalItems.allowsProperty(remaining!!, depth + 1)
-            }
-        }
-        getPrivateField("additionalItems")
+        itemSchema != null || additionalItems
     }
 }
 

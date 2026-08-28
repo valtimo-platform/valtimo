@@ -171,8 +171,6 @@ open class ValtimoFormFlow(
             .associate { it.key to getValue(submission, it.value) }
             .filter { it.value !is MissingNode }
         valueResolverService.handleValues(UUID.fromString(documentId), submissionValues)
-        // The document already exists (its values were just handled above); this call only splits out the
-        // process-variable values, so there is no new document to be schema-aware about.
         @Suppress("DEPRECATION")
         val submittedByType = valueResolverService.preProcessValuesForNewCase(submissionValues)
 

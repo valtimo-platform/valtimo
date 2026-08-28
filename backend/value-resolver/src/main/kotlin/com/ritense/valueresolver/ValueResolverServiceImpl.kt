@@ -23,11 +23,11 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.stereotype.Service
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 @Service
 @SkipComponentScan
@@ -271,19 +271,16 @@ class ValueResolverServiceImpl(
         enumerate: (ValueResolverFactory) -> List<ValueResolverOption>,
     ): List<ValueResolverOption> {
         val factory = resolverFactoryMap[prefix] ?: return emptyList()
-        return runCatching { enumerate(factory) }.getOrElse { e ->
+        return try {
+            enumerate(factory)
+        } catch (e: Exception) {
             logKeyOptionsFailure(prefix, e)
             emptyList()
         }
     }
 
-    /**
-     * These failures are caused by a misconfigured definition, so they repeat on every request the
-     * editor makes. The stack trace is therefore logged only the first time a failure is seen;
-     * repeats are logged at debug level to keep them out of the way.
-     */
-    private fun logKeyOptionsFailure(prefix: String, e: Throwable) {
-        val rootCause = generateSequence(e) { it.cause }.last()
+    private fun logKeyOptionsFailure(prefix: String, e: Exception) {
+        val rootCause = generateSequence<Throwable>(e) { it.cause }.take(MAX_CAUSE_CHAIN_LENGTH).last()
         val message = "Could not getResolvableKeyOptions for prefix '$prefix:'; it is left out of " +
             "the options. Cause: ${rootCause::class.simpleName}: ${rootCause.message}"
         val firstOccurrence = loggedKeyOptionsFailures.size < MAX_LOGGED_KEY_OPTIONS_FAILURES
@@ -378,6 +375,7 @@ class ValueResolverServiceImpl(
     companion object {
         const val DELIMITER = ":"
         private const val MAX_LOGGED_KEY_OPTIONS_FAILURES = 100
+        private const val MAX_CAUSE_CHAIN_LENGTH = 20
         private val prefixRegex = Regex("^[A-Za-z_-]+$") // no numbers allowed
         private val logger = KotlinLogging.logger {}
     }

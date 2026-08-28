@@ -242,8 +242,6 @@ class CaseDocumentJsonValueResolverFactory(
 
     override fun preProcessValuesForNewDocument(values: Map<String, Any?>, documentDefinitionName: String): ObjectNode {
         val emptyDocumentContent = objectMapper.createObjectNode()
-        // Resolve the schema so 'null' values are written according to what the definition allows. When the
-        // definition can't be found we fall back to the legacy behavior of always writing JSON null.
         val definition = AuthorizationContext.runWithoutAuthorization {
             documentDefinitionService.findActiveByName(documentDefinitionName).orElse(null)
         }
@@ -266,67 +264,57 @@ class CaseDocumentJsonValueResolverFactory(
         return documentDefinition.schema.schema.collectValueResolverOptions("$PREFIX:")
     }
 
-    /**
-     * @param schemaSupplier resolves the document schema, used to decide how to write 'null' values.
-     * It is only invoked when a null value is actually encountered (and may return null to keep the
-     * legacy behavior of always writing JSON null, e.g. for a not-yet-existing case).
-     */
     private fun buildJsonPatch(
         jsonNode: JsonNode,
         values: Map<String, Any?>,
         schemaSupplier: () -> Schema? = { null }
     ) {
-        val schema by lazy(schemaSupplier)
-        values.forEach {
-            val jsonPointer = toJsonPointer(it.key.substringAfter(":"))
+        val nullStrategies = determineNullWriteStrategies(values, schemaSupplier)
+        values.forEach { (key, value) ->
+            val jsonPointer = toJsonPointer(key.substringAfter(":"))
             val jsonPatchBuilder = JsonPatchBuilder()
-            // 'schema' (lazy) is only resolved when a null value is actually written
-            val isRemoval = if (it.value == null) {
-                applyNullValue(jsonNode, jsonPointer, schema, jsonPatchBuilder, it.key)
-            } else {
-                jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, toValueNode(it.value))
-                false
+            val isRemoval = when {
+                value != null -> {
+                    jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, toValueNode(value))
+                    false
+                }
+
+                nullStrategies[key] == NullWriteStrategy.REMOVE -> {
+                    val exists = !jsonNode.at(jsonPointer).isMissingNode
+                    if (exists) {
+                        jsonPatchBuilder.remove(jsonPointer)
+                    }
+                    exists
+                }
+
+                else -> {
+                    jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, NullNode.instance)
+                    false
+                }
             }
-            // removals are skipped by the default flags, so they need to be explicitly allowed
             val flags = if (isRemoval) allowRemovalOperations() else defaultPatchFlags()
             JsonPatchService.apply(jsonPatchBuilder.build(), jsonNode, flags)
         }
     }
 
-    /**
-     * Writes a 'null' value depending on what the document [schema] allows at [jsonPointer]:
-     * write JSON null when null is allowed, remove the node when null is not allowed but the
-     * property is not required, otherwise fail. When [schema] is null the legacy behavior of always
-     * writing JSON null is kept. Returns true when a remove operation was added to [jsonPatchBuilder].
-     */
-    private fun applyNullValue(
-        jsonNode: JsonNode,
-        jsonPointer: JsonPointer,
-        schema: Schema?,
-        jsonPatchBuilder: JsonPatchBuilder,
-        key: String,
-    ): Boolean {
-        val strategy = schema?.determineNullWriteStrategy(jsonPointer.toString()) ?: NullWriteStrategy.WRITE_NULL
-        return when (strategy) {
-            NullWriteStrategy.WRITE_NULL -> {
-                jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, NullNode.instance)
-                false
+    private fun determineNullWriteStrategies(
+        values: Map<String, Any?>,
+        schemaSupplier: () -> Schema?
+    ): Map<String, NullWriteStrategy> {
+        val schema by lazy(schemaSupplier)
+        val strategies = values.filterValues { it == null }
+            .mapValues { (key, _) ->
+                schema?.determineNullWriteStrategy(toJsonPointer(key.substringAfter(":")).toString())
+                    ?: NullWriteStrategy.WRITE_NULL
             }
-
-            NullWriteStrategy.REMOVE -> {
-                val exists = !jsonNode.at(jsonPointer).isMissingNode
-                if (exists) {
-                    jsonPatchBuilder.remove(jsonPointer)
-                }
-                exists
-            }
-
-            NullWriteStrategy.NOT_ALLOWED ->
-                throw IllegalStateException(
-                    "Cannot write 'null' to '$key': the document schema does not allow null at this " +
-                        "location and the property is required, so the node cannot be removed."
-                )
+        val refused = strategies.filterValues { it == NullWriteStrategy.NOT_ALLOWED }.keys
+        if (refused.isNotEmpty()) {
+            throw ValueResolverValidationException(
+                "Cannot write 'null' to ${refused.joinToString { "'$it'" }}: the document schema requires the " +
+                    "property, so it can neither be set to null nor removed."
+            )
         }
+        return strategies
     }
 
     private fun getSchema(document: Document): Schema {
@@ -398,12 +386,8 @@ class CaseDocumentJsonValueResolverFactory(
         }
     }
 
-    private fun toValueNode(value: Any?): JsonNode {
-        return if (value == null) {
-            NullNode.instance
-        } else {
-            objectMapper.valueToTree(value)
-        }
+    private fun toValueNode(value: Any): JsonNode {
+        return objectMapper.valueToTree(value)
     }
 
     companion object {
