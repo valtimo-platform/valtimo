@@ -14,10 +14,6 @@
     <bpmn:startEvent id="StartEvent" name="Start">
       <bpmn:outgoing>Flow_To_Summary</bpmn:outgoing>
     </bpmn:startEvent>
-    <!--
-      asyncBefore is required: the plugin reads the document over HTTP, and run synchronously this
-      executes inside the transaction still creating that document, so the callback gets a 404.
-    -->
     <bpmn:serviceTask id="BuildCaseSummary" name="Build case summary" camunda:asyncBefore="true">
       <bpmn:incoming>Flow_To_Summary</bpmn:incoming>
       <bpmn:outgoing>Flow_To_End</bpmn:outgoing>
