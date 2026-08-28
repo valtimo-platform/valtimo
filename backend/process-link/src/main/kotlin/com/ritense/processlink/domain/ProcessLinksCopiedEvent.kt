@@ -26,9 +26,8 @@ data class ProcessLinksCopiedEvent(
     val basedOnProcessDefinitionId: String? = null,
     val basedOnCaseDefinitionId: CaseDefinitionId? = null,
     /**
-     * The BPMN model of the process definition the links were copied to. This event is published
-     * while the deployment is still in progress, so the model cannot be read back from the
-     * repository service: its resources have not been flushed to the database yet.
+     * BPMN model of the target process definition. Published mid-deployment, so it cannot be read back
+     * from the repository service - its resources are not flushed yet.
      */
     val processDefinitionModelInstance: BpmnModelInstance? = null,
 )

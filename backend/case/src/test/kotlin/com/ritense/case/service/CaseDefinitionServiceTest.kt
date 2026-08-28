@@ -706,8 +706,7 @@ class CaseDefinitionServiceTest : BaseTest() {
                 )
             )
 
-        // A broken version can only be repaired in a draft, so the draft has to be created. The
-        // issues are re-detected on the draft and block finalization until they are resolved.
+        // A broken version is only repairable in a draft, so it is created; the issues block finalization until resolved.
         val draft = service.createCaseDefinitionDraft(request)
 
         assertEquals(CaseDefinitionId.of("key", "2.0.0"), draft.id)

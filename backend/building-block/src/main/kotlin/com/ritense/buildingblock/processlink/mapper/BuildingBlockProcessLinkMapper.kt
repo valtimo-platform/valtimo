@@ -311,8 +311,7 @@ class BuildingBlockProcessLinkMapper(
     private fun verifyBuildingBlockDocumentIdBusinessKey(processDefinitionId: String, activityId: String) {
         val bpmnModel = repositoryService.getBpmnModelInstance(processDefinitionId)
             ?: error("BPMN model not found for process definition '$processDefinitionId'")
-        // Cast safely: the typed overload compiles to a checkcast, so an activity id belonging to
-        // another element type would throw instead of reaching the message below.
+        // Typed overload compiles to a checkcast, so a mismatched element type throws rather than reaching the message below.
         val callActivity = bpmnModel.getModelElementById<ModelElementInstance>(activityId) as? CallActivity
             ?: error(
                 "Activity '$activityId' in process definition '$processDefinitionId' " +

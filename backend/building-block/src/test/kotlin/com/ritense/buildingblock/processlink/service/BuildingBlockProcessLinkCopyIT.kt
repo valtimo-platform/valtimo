@@ -33,10 +33,8 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 /**
- * Guards the deployment-time half of the building block process link copy. The unit tests cover the
- * validator in isolation; only a real deployment catches a validator that reads the BPMN back from
- * the repository service, because the deployment's resources are not flushed while its command
- * context is still open.
+ * Guards the deployment-time half of the copy: only a real deployment catches a validator reading the BPMN
+ * back from the repository service, whose resources are unflushed while the command context is open.
  */
 @Transactional
 class BuildingBlockProcessLinkCopyIT @Autowired constructor(

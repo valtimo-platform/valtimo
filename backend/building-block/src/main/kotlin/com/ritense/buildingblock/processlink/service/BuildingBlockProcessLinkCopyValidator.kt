@@ -40,14 +40,11 @@ class BuildingBlockProcessLinkCopyValidator {
         if (buildingBlockLinks.isEmpty()) {
             return
         }
-        // The model has to come from the event: the deployment that triggered it is still in
-        // progress, so its resources cannot be read back through the repository service yet.
+        // Model comes from the event: the triggering deployment is still open, so its resources are not readable yet.
         val bpmnModel = event.processDefinitionModelInstance ?: return
 
         buildingBlockLinks.forEach { link ->
-            // Resolve as ModelElementInstance and cast safely: the typed overload compiles to a
-            // checkcast, which throws when the id belongs to another element type instead of
-            // returning null - a morphed call activity keeps its id.
+            // Typed overload compiles to a checkcast, which throws rather than returning null - a morphed call activity keeps its id.
             val callActivity = bpmnModel.getModelElementById<ModelElementInstance>(link.activityId) as? CallActivity
             if (callActivity == null) {
                 logger.error {

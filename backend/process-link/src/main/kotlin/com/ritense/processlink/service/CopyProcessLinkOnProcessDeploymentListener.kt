@@ -50,8 +50,7 @@ class CopyProcessLinkOnProcessDeploymentListener(
             val modelInstance = event.processDefinitionModelInstance
 
             val newLinks = processLinkRepository.findByProcessDefinitionId(originalProcessDefinitionId)
-                // Cast safely: the typed overload compiles to a checkcast, so an activity id that
-                // now belongs to a non-flow-node element would throw instead of filtering the link out.
+                // Typed overload compiles to a checkcast, so a non-flow-node id throws rather than filtering the link out.
                 .filter { link -> modelInstance.getModelElementById<ModelElementInstance>(link.activityId) is FlowNode }
                 .filter { link ->
                     processLinkRepository.findByProcessDefinitionIdAndActivityId(

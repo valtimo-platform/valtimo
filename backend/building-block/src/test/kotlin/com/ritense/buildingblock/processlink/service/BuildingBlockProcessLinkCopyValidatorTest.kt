@@ -62,8 +62,7 @@ class BuildingBlockProcessLinkCopyValidatorTest {
 
     @Test
     fun `should log an error when the activity id belongs to another element type`() {
-        // A call activity that was morphed into another element type keeps its id, so the copied
-        // link still resolves - to something that is not a call activity.
+        // A morphed call activity keeps its id, so the copied link still resolves - to a non-call-activity.
         val errors = errorsLoggedBy(
             event(
                 links = listOf(buildingBlockProcessLink(activityId = CALL_ACTIVITY_ID)),
