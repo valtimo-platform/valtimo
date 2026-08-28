@@ -23,6 +23,11 @@ for configuration details.
 
 Emptying a field now follows what the case model allows: the field is either set to empty or removed, and a field the model requires is refused instead of silently leaving the case invalid.
 
+### Faster document handling
+
+Creating and updating cases, resolving document values and opening task forms are all faster, most
+noticeably on configurations with large document schemas or many process links.
+
 ---
 
 ## Bugfixes
