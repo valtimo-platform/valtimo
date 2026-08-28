@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,6 +188,44 @@ internal class PluginConfigurationTest {
         configuration.updateProperties(MapperSingleton.get().readTree(input) as ObjectNode)
 
         assertTrue(configuration.properties?.get("property3")!!.isNull)
+    }
+
+    @Test
+    fun `should remove properties no longer defined by plugin`() {
+        val deprecatedPropertyJson = """
+            {
+                "property1": "value",
+                "property2": false,
+                "property3": 123,
+                "deprecatedProperty": "should-be-removed",
+                "anotherOldProperty": true
+            }
+        """.trimMargin()
+
+        val configWithDeprecatedProps = PluginConfiguration(
+            PluginConfigurationId.newId(),
+            "title",
+            MapperSingleton.get().readTree(deprecatedPropertyJson) as ObjectNode,
+            configuration.pluginDefinition
+        )
+        configWithDeprecatedProps.objectMapper = MapperSingleton.get()
+        configWithDeprecatedProps.encryptionService = configuration.encryptionService
+
+        val updateInput = """
+            {
+                "property1": "new-value",
+                "property2": true,
+                "property3": 456
+            }
+        """.trimMargin()
+
+        configWithDeprecatedProps.updateProperties(MapperSingleton.get().readTree(updateInput) as ObjectNode)
+
+        assertEquals("new-value", configWithDeprecatedProps.properties?.get("property1")?.textValue())
+        assertEquals(true, configWithDeprecatedProps.properties?.get("property2")?.booleanValue())
+        assertEquals(456, configWithDeprecatedProps.properties?.get("property3")?.intValue())
+        assertTrue(configWithDeprecatedProps.properties?.has("deprecatedProperty") == false)
+        assertTrue(configWithDeprecatedProps.properties?.has("anotherOldProperty") == false)
     }
 
 }
