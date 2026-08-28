@@ -52,13 +52,15 @@ class ObjectenApiClient(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI
     ): ObjectWrapper {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.VIEW,
-                Object()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.VIEW,
+                    Object()
+                )
             )
-        )
+        }
 
         val result = buildRestClient(authentication)
             .get()
