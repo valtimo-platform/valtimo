@@ -24,6 +24,7 @@ import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.BuildingBlockEntryOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
+import com.ritense.valtimo.contract.blueprint.migration.MigrationRunCache
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
@@ -249,6 +250,105 @@ class MigrationSuggestionServiceTest {
         assertThat(suggestionService().entryOwnerOf(case, block)).isEqualTo(case)
         assertThat(suggestionService(entryOwners = emptyMap()).entryOwnerOf(case, block)).isEqualTo(case)
     }
+
+    @Test
+    fun `every suggester shares one answer to the same question about the same blueprints`() {
+        // The suggesters ask the same deployment-time questions over and over — "which building blocks
+        // does this version's tree declare", "which doc paths does this version model" — once per
+        // component and again per suggested entry, and each answer is a walk over a whole blueprint tree
+        // or schema. They memoize through MigrationRunCache, which is transparent unless a scope is open,
+        // so a suggestion that opened none recomputed all of it: on a case definition whose suggestion
+        // holds 53 addBuildingBlock entries, 45 seconds of repeating two walks a hundred times over.
+        val computed = mutableListOf<BlueprintId>()
+        val service = MigrationSuggestionService(
+            objectMapper = objectMapper,
+            versionLineages = emptyList(),
+            componentSuggesters = listOf(
+                memoizingSuggester("dataMigration", computed),
+                memoizingSuggester("processMigration", computed),
+            ),
+            activityMappingSuggesters = emptyList(),
+            activityMappingValidators = emptyList(),
+            componentValidators = emptyList(),
+        )
+
+        service.suggestPlan(target = target, source = CaseDefinitionId("verhuizing", "1.0.1"))
+
+        // Four asks — two suggesters, each about both blueprints — answered by two computations.
+        assertThat(computed).containsExactly(CaseDefinitionId("verhuizing", "1.0.1"), target)
+    }
+
+    @Test
+    fun `a building block entry suggestion shares its answers too`() {
+        val computed = mutableListOf<BlueprintId>()
+        val service = MigrationSuggestionService(
+            objectMapper = objectMapper,
+            versionLineages = emptyList(),
+            componentSuggesters = listOf(
+                memoizingSuggester("dataMigration", computed),
+                memoizingSuggester("processMigration", computed),
+            ),
+            activityMappingSuggesters = emptyList(),
+            activityMappingValidators = emptyList(),
+            componentValidators = emptyList(),
+        )
+        val owner = BuildingBlockDefinitionId("verhuizing-inspectie", "1.0.4")
+        val nested = BuildingBlockDefinitionId("inspectie-fotos", "1.0.1")
+
+        service.suggestBuildingBlockEntry(owner, nested)
+
+        assertThat(computed).containsExactly(owner, nested)
+    }
+
+    @Test
+    fun `plan validation shares its answers across validators`() {
+        val computed = mutableListOf<BlueprintId>()
+        val service = MigrationSuggestionService(
+            objectMapper = objectMapper,
+            versionLineages = listOf(lineage(exists = true)),
+            componentSuggesters = emptyList(),
+            activityMappingSuggesters = emptyList(),
+            activityMappingValidators = emptyList(),
+            componentValidators = listOf(
+                memoizingValidator("dataMigration", computed),
+                memoizingValidator("processMigration", computed),
+            ),
+        )
+        val plan = objectMapper.readTree(
+            """{"key": "x", "source": {"versionTag": "1.0.1"}, "dataMigration": [], "processMigration": []}"""
+        )
+
+        service.findPlanProblems(target, plan)
+
+        assertThat(computed).containsExactly(CaseDefinitionId("verhuizing", "1.0.1"), target)
+    }
+
+    /** Records, in [computed], every blueprint the run cache actually had to work out an answer for. */
+    private fun memoize(blueprintId: BlueprintId, computed: MutableList<BlueprintId>): String =
+        MigrationRunCache.computeIfAbsent(blueprintId to "walk") {
+            computed += blueprintId
+            blueprintId.toString()
+        }
+
+    private fun memoizingSuggester(componentKey: String, computed: MutableList<BlueprintId>) =
+        object : MigrationComponentSuggester {
+            override fun componentKey() = componentKey
+            override fun suggest(source: BlueprintId, target: BlueprintId): Any =
+                listOf(memoize(source, computed), memoize(target, computed))
+
+            override fun suggestForBuildingBlockEntry(source: BlueprintId, target: BlueprintId): Any =
+                suggest(source, target)
+        }
+
+    private fun memoizingValidator(componentKey: String, computed: MutableList<BlueprintId>) =
+        object : MigrationComponentValidator {
+            override fun componentKey() = componentKey
+            override fun validate(source: BlueprintId, target: BlueprintId, component: JsonNode): List<String> {
+                memoize(source, computed)
+                memoize(target, computed)
+                return emptyList()
+            }
+        }
 
     private fun throwingSuggester(componentKey: String) = object : MigrationComponentSuggester {
         override fun componentKey() = componentKey

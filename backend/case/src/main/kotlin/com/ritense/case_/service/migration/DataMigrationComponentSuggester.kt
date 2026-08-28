@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
+import com.ritense.valtimo.contract.blueprint.migration.MigrationRunCache
 import com.ritense.valtimo.contract.utils.LcsDistance
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionRequest
@@ -115,10 +116,8 @@ class DataMigrationComponentSuggester(
         suggest(owner, block, separateDocument = true)
 
     private fun suggest(source: BlueprintId, target: BlueprintId, separateDocument: Boolean): Any? {
-        val request =
-            ValueResolverOptionRequest(prefixes = listOf(DOCUMENT_PREFIX), type = ValueResolverOptionType.FIELD)
-        val sourcePaths = fieldPaths(valueResolverService.getResolvableKeys(request, source))
-        val targetPaths = fieldPaths(valueResolverService.getResolvableKeys(request, target))
+        val sourcePaths = fieldPathsOf(source)
+        val targetPaths = fieldPathsOf(target)
 
         // A source that offers no path at all has nothing to copy and nothing to clear, so every patch
         // that could be suggested would be a bare target — which the applier writes as a literal null.
@@ -229,6 +228,25 @@ class DataMigrationComponentSuggester(
         return matched
     }
 
+    /**
+     * Every `doc:` field path [blueprintId]'s version models, memoized for the caller's run.
+     *
+     * A whole-plan suggestion asks this for the same blueprint over and over: once for the plan's own
+     * `dataMigration`, and again as the owner side of every `addBuildingBlock` / `removeBuildingBlock`
+     * entry — 53 of them on the case definition this was measured against, all naming the same case
+     * document. Each ask builds the resolvable options afresh by walking the whole everit schema, which
+     * for a case definition with 1330 paths and a `$ref` graph over a hundred files is not free.
+     * Deployment-time configuration, so it cannot go stale within a run; outside one [MigrationRunCache]
+     * is transparent and this is the plain call it always was.
+     */
+    private fun fieldPathsOf(blueprintId: BlueprintId): List<String> =
+        MigrationRunCache.computeIfAbsent(FieldPathsKey(blueprintId)) {
+            fieldPaths(valueResolverService.getResolvableKeys(FIELD_OPTIONS, blueprintId))
+        }
+
+    /** Private, so no other user of [MigrationRunCache]'s shared keyspace can collide with this one. */
+    private data class FieldPathsKey(val blueprintId: BlueprintId)
+
     private fun fieldPaths(options: List<ValueResolverOption>): List<String> =
         options.flatMap { option -> listOf(option.path) + fieldPaths(option.children ?: emptyList()) }
 
@@ -250,6 +268,12 @@ class DataMigrationComponentSuggester(
         val logger = KotlinLogging.logger {}
 
         const val DOCUMENT_PREFIX = "doc"
+
+        /** The one request this suggester ever makes: every `doc:` field of a blueprint version. */
+        val FIELD_OPTIONS = ValueResolverOptionRequest(
+            prefixes = listOf(DOCUMENT_PREFIX),
+            type = ValueResolverOptionType.FIELD,
+        )
 
         /** Field-name delimiters, tried in priority order to isolate the segment after the last one. */
         val NAME_DELIMITERS = listOf('/', '.', ':')

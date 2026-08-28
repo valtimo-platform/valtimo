@@ -19,9 +19,14 @@ package com.ritense.valtimo.contract.blueprint.migration
 /**
  * A memo for values that are constant for a whole migration run but were being recomputed per instance.
  *
+ * "Run" is the unit of work, not necessarily a migration: composing or validating a migration plan asks
+ * the same deployment-time questions about the same two blueprints just as repetitively — once per
+ * suggested entry rather than once per migrated instance — so those open a scope too.
+ *
  * Lives here because `CaseMigrationService` owns the run boundary but is in `case`, while the values are
  * computed in `building-block`, which depends on `case` and not the reverse. Thread-confined, like
- * [MigrationWarnings]: a migration applies one instance at a time on the caller's thread.
+ * [MigrationWarnings]: a migration applies one instance at a time on the caller's thread, and a plan is
+ * composed on the request thread that asked for it.
  *
  * Safe for the length of a run because everything memoized is deployment-time configuration that a
  * migration reads and never writes.

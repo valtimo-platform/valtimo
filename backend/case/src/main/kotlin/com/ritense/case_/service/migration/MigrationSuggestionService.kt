@@ -30,6 +30,7 @@ import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.BuildingBlockEntryOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
+import com.ritense.valtimo.contract.blueprint.migration.MigrationRunCache
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -58,8 +59,17 @@ class MigrationSuggestionService(
      * The suggested `source` is written into the plan, because a plan's source is required and is never
      * re-derived once saved. Each [MigrationComponentSuggester] then fills its own component by
      * comparing that source with the target.
+     *
+     * Wrapped in [MigrationRunCache.inRun] for the same reason a migration is: the suggesters ask the
+     * same deployment-time questions about the same two blueprints over and over — the building-block
+     * suggesters ask "which blocks does this version's tree declare" once for the component and again
+     * per candidate entry, and each of those answers is a breadth-first walk over the whole blueprint
+     * tree, issuing a definition lookup and a link query per process definition it passes. Without a
+     * scope open the cache is transparent and every one of them is recomputed: on a case definition
+     * whose suggestion holds 53 `addBuildingBlock` entries that was two walks repeated a hundred times
+     * over, and 45 seconds of the editor showing an empty screen.
      */
-    fun suggestPlan(target: BlueprintId, source: BlueprintId? = null): ObjectNode {
+    fun suggestPlan(target: BlueprintId, source: BlueprintId? = null): ObjectNode = MigrationRunCache.inRun {
         val resolvedSource = source ?: predecessorOf(target)
 
         val plan = objectMapper.createObjectNode()
@@ -104,7 +114,7 @@ class MigrationSuggestionService(
             }
         }
 
-        return plan
+        plan
     }
 
     /**
@@ -117,16 +127,19 @@ class MigrationSuggestionService(
      * [MigrationPlanImporter]: on this path every definition is already deployed, whereas file
      * auto-deploy visits definition folders in no guaranteed order and would reject a perfectly good
      * plan for arriving before the version it migrates from.
+     *
+     * Scoped like [suggestPlan], and for the same reason: each validator puts the same tree walks to the
+     * same two blueprints, once per entry it checks.
      */
-    fun findPlanProblems(target: BlueprintId, plan: JsonNode): List<String> {
+    fun findPlanProblems(target: BlueprintId, plan: JsonNode): List<String> = MigrationRunCache.inRun {
         val source = declaredSourceOf(target, plan)
-            ?: return listOf(
+            ?: return@inRun listOf(
                 "the plan declares no valid 'source' (the blueprint version it migrates instances from)"
             )
         if (lineageOf(target)?.exists(source) == false) {
-            return listOf("its source '$source' is not deployed, so the plan would migrate no instances")
+            return@inRun listOf("its source '$source' is not deployed, so the plan would migrate no instances")
         }
-        return componentValidators.flatMap { validator ->
+        componentValidators.flatMap { validator ->
             plan.get(validator.componentKey())
                 ?.takeUnless { it.isNull }
                 ?.let { component -> validator.validate(source, target, component) }
@@ -208,14 +221,14 @@ class MigrationSuggestionService(
      * Reuses the `dataMigration` / `processMigration` component suggesters; only copy patches are kept
      * (a `value: null` removal clears fields on a verbatim copy, which does not apply across documents).
      */
-    fun suggestBuildingBlockEntry(source: BlueprintId, target: BlueprintId): ObjectNode {
+    fun suggestBuildingBlockEntry(source: BlueprintId, target: BlueprintId): ObjectNode = MigrationRunCache.inRun {
         val node = objectMapper.createObjectNode()
         node.set<JsonNode>("dataMigration", copyPatches(suggestEntryComponent(DATA_MIGRATION, source, target)))
         node.set<JsonNode>(
             "processMigration",
             objectMapper.valueToTree(suggestEntryComponent(PROCESS_MIGRATION, source, target) ?: emptyList<Any>())
         )
-        return node
+        node
     }
 
     /**
