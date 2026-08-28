@@ -30,6 +30,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -47,7 +48,7 @@ class PermissionResource(
 
     @Transactional(readOnly = true)
     @PostMapping("/v1/permissions")
-    fun userHasPermission(@RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)
+    fun userHasPermission(@Valid @RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)
         : ResponseEntity<List<PermissionAvailableResult>> {
 
         val permissionResponse: List<PermissionAvailableResult> = permissionsPresentRequest.map {

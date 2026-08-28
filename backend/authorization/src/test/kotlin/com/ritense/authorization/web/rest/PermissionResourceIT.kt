@@ -32,6 +32,7 @@ import com.ritense.authorization.testimpl.TestEntity
 import com.ritense.authorization.testimpl.TestEntityActionProvider
 import com.ritense.authorization.web.request.PermissionAvailableRequest
 import com.ritense.authorization.web.request.PermissionContext
+import com.ritense.authorization.web.request.PermissionResourceConstraints
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -488,5 +489,93 @@ class PermissionResourceIT: BaseIntegrationTest() {
             .andExpect { jsonPath("$[0].resource").value("java.lang.String") }
             .andExpect { jsonPath("$[0].action").value("view") }
             .andExpect { jsonPath("$[0].available").value(false) }
+    }
+
+    @Test
+    fun `requesting permission with resource exceeding max length returns bad request`() {
+        val tooLongResource = "a".repeat(PermissionResourceConstraints.RESOURCE_MAX_LENGTH + 1)
+
+        val permissionRequests = listOf(
+            PermissionAvailableRequest(
+                tooLongResource,
+                "view"
+            )
+        )
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/api/v1/permissions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(permissionRequests))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    fun `requesting permission with context resource exceeding max length returns bad request`() {
+        val tooLongResource = "a".repeat(PermissionResourceConstraints.RESOURCE_MAX_LENGTH + 1)
+
+        val permissionRequests = listOf(
+            PermissionAvailableRequest(
+                "com.ritense.authorization.testimpl.TestEntity",
+                "view",
+                PermissionContext(
+                    tooLongResource,
+                    "123"
+                )
+            )
+        )
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/api/v1/permissions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(permissionRequests))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    fun `requesting permission with resource matching invalid pattern returns bad request`() {
+        val permissionRequests = listOf(
+            PermissionAvailableRequest(
+                "invalid-class-name!",
+                "view"
+            )
+        )
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/api/v1/permissions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(permissionRequests))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    fun `requesting permission with context resource matching invalid pattern returns bad request`() {
+        val permissionRequests = listOf(
+            PermissionAvailableRequest(
+                "com.ritense.authorization.testimpl.TestEntity",
+                "view",
+                PermissionContext(
+                    "invalid-class-name!",
+                    "123"
+                )
+            )
+        )
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/api/v1/permissions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(permissionRequests))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 }

@@ -22,7 +22,7 @@ import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 class PermissionContext(
-    @field:Size(max = RESOURCE_MAX_LENGTH)
+@field:Size(max = RESOURCE_MAX_LENGTH)
     @field:Pattern(regexp = RESOURCE_NAME_PATTERN)
     val resource: String,
     val identifier: String
