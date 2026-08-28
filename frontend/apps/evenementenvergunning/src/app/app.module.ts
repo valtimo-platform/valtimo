@@ -19,8 +19,9 @@ import {
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
+  registerFormioMailPreviewComponent,
   registerFormioUploadComponent,
-  registerFormioValueResolverSelectorComponent,
+  registerFormioValueResolverSelectorComponent
 } from '@valtimo/components';
 import {
   CaseDetailTabAuditComponent,
@@ -218,5 +219,6 @@ export class AppModule {
     registerFormioIbanComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
     registerIkoSearchFormioComponent(injector);
+    registerFormioMailPreviewComponent(injector);
   }
 }
