@@ -3121,6 +3121,11 @@
   "widgets": {
     "noData": "No data found",
     "emptyFields": "Nothing here",
+    "action": {
+      "errorTitle": "An unexpected error occurred",
+      "navigationError": "Unable to navigate to {{navigateTo}}",
+      "unsupported": "Unsupported action: {{action}}"
+    },
     "noWidgets": "No widgets",
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",

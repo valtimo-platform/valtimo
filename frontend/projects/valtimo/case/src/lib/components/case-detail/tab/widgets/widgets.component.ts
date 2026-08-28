@@ -35,6 +35,7 @@ import {CaseWidgetFieldComponent} from './components/field/case-widget-field.com
 import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.component';
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
+import {CaseWidgetInteractiveTableComponent} from './components/interactive-table/case-widget-interactive-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
 import {CaseWidgetMapComponent} from './components/map/case-widget-map.component';
 import {CaseWidgetPersonCardComponent} from './components/person-card/case-widget-person-card.component';
@@ -109,7 +110,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     [WidgetType.CUSTOM]: CaseWidgetCustomComponent,
     [WidgetType.FORMIO]: CaseWidgetFormioComponent,
     [WidgetType.TABLE]: CaseWidgetTableComponent,
-    [WidgetType.INTERACTIVE_TABLE]: CaseWidgetTableComponent,
+    [WidgetType.INTERACTIVE_TABLE]: CaseWidgetInteractiveTableComponent,
     [WidgetType.COLLECTION]: CaseWidgetCollectionComponent,
     [WidgetType.MAP]: CaseWidgetMapComponent,
     [WidgetType.PERSON_CARD]: CaseWidgetPersonCardComponent,
