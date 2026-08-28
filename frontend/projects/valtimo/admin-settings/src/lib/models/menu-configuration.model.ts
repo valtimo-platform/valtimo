@@ -21,6 +21,8 @@ import {ExternalPluginMenuPage} from '@valtimo/plugin';
 interface PaletteItem {
   paletteType: 'catalog' | 'group' | 'section-header' | 'custom-link' | 'plugin-page';
   label: string;
+  /** Secondary line under the label, for entries whose label alone does not identify them. */
+  sublabel?: string;
   icon?: string;
   itemId?: string;
   page?: ExternalPluginMenuPage;

@@ -166,6 +166,16 @@ describe("host-configurations routes", () => {
       expect(configRegistry.set).toHaveBeenCalled();
     });
 
+    it("persists the pushed hash so every later call can re-check it", async () => {
+      await postConfig("cfg-1", validBody({ expectedContentHash: "sha256:abc123" }));
+      expect(configRegistry.set.mock.calls[0][1].expectedContentHash).toBe("sha256:abc123");
+    });
+
+    it("stores no pin when the push carries none", async () => {
+      await postConfig("cfg-1", validBody());
+      expect(configRegistry.set.mock.calls[0][1].expectedContentHash).toBeUndefined();
+    });
+
     it("refuses a push with 409 when the package content no longer matches the pinned hash", async () => {
       pluginManager.getContentHash.mockReturnValueOnce("sha256:tampered");
       const res = await postConfig("cfg-1", validBody({ expectedContentHash: "sha256:abc123" }));
@@ -321,6 +331,46 @@ describe("host-configurations routes", () => {
       configRegistry.get.mockResolvedValueOnce(undefined);
       const res = await putConfig("missing", { properties: {} });
       expect(res.statusCode).toBe(404);
+    });
+
+    it("refuses the update with 409 when the stored pin no longer matches the package", async () => {
+      configRegistry.get.mockResolvedValueOnce({
+        configurationId: "cfg-1",
+        pluginId: "case-summary",
+        pluginVersion: "0.1.0",
+        properties: {},
+        serviceToken: "old-token",
+        gzacBaseUrl: "http://gzac:8080",
+        eventSubscriptions: [],
+        expectedContentHash: "sha256:accepted",
+      });
+
+      const res = await putConfig("cfg-1", { properties: {} });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toMatchObject({
+        errorCode: "EXTERNAL_PLUGIN_CONTENT_CHANGED",
+        actualContentHash: "sha256:abc123",
+      });
+      expect(configRegistry.set).not.toHaveBeenCalled();
+      expect(eventConsumerManager.sync).not.toHaveBeenCalled();
+    });
+
+    it("retains the stored pin across an update", async () => {
+      configRegistry.get.mockResolvedValueOnce({
+        configurationId: "cfg-1",
+        pluginId: "case-summary",
+        pluginVersion: "0.1.0",
+        properties: {},
+        serviceToken: "old-token",
+        gzacBaseUrl: "http://gzac:8080",
+        eventSubscriptions: [],
+        expectedContentHash: "sha256:abc123",
+      });
+
+      await putConfig("cfg-1", { properties: {} });
+
+      expect(configRegistry.set.mock.calls[0][1].expectedContentHash).toBe("sha256:abc123");
     });
   });
 

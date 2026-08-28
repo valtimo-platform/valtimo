@@ -116,9 +116,14 @@ spring:
         basename: i18n/messages
     main.allow-bean-definition-overriding: true
     servlet:
+        # Applies to every multipart endpoint, document upload included. Sized for the external
+        # plugin package upload, whose own gate is MAX_PLUGIN_UPLOAD_BYTES (100 MiB). Both values
+        # here must stay strictly ABOVE that gate: Spring rejects during multipart parsing, before
+        # the handler runs, so a servlet cap equal to the endpoint cap makes the endpoint's designed
+        # 413 unreachable and the caller gets a generic "Maximum upload size exceeded" instead.
         multipart:
-            max-file-size: 10MB
-            max-request-size: 10MB
+            max-file-size: 110MB
+            max-request-size: 115MB
     jersey:
         application-path: /api/operaton-rest
     autoconfigure:

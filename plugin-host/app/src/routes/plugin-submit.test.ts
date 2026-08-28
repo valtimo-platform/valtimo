@@ -32,7 +32,11 @@ const SUBMIT_KEY = "review";
  */
 describe("plugin-submit route", () => {
   let app: FastifyInstance;
-  let pluginManager: {getManifest: ReturnType<typeof vi.fn>; callSubmit: ReturnType<typeof vi.fn>};
+  let pluginManager: {
+    getManifest: ReturnType<typeof vi.fn>;
+    callSubmit: ReturnType<typeof vi.fn>;
+    getContentHash: ReturnType<typeof vi.fn>;
+  };
   let configRegistry: {get: ReturnType<typeof vi.fn>};
 
   const storedConfig = (overrides: Record<string, unknown> = {}) => ({
@@ -57,6 +61,7 @@ describe("plugin-submit route", () => {
         variables: {approved: true},
         documentContent: {"/reviewComment": "ok"},
       })),
+      getContentHash: vi.fn(() => "sha256:pinned"),
     };
     configRegistry = {get: vi.fn(async () => storedConfig())};
     app = await buildTestApp((a) =>
@@ -267,6 +272,31 @@ describe("plugin-submit route", () => {
         errorCode: "HOST_ERROR",
         errorMessage: "wasm call timed out",
       });
+    });
+  });
+
+  describe("content pin", () => {
+    it("runs the hook when the stored pin matches the loaded package", async () => {
+      configRegistry.get.mockResolvedValueOnce(storedConfig({expectedContentHash: "sha256:pinned"}));
+      const res = await submit(submitBody());
+      expect(res.statusCode).toBe(200);
+      expect(pluginManager.callSubmit).toHaveBeenCalled();
+    });
+
+    it("refuses a mismatch with 409 and never runs the hook", async () => {
+      configRegistry.get.mockResolvedValueOnce(
+        storedConfig({expectedContentHash: "sha256:accepted"})
+      );
+      const res = await submit(submitBody());
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toMatchObject({errorCode: "EXTERNAL_PLUGIN_CONTENT_CHANGED"});
+      expect(pluginManager.callSubmit).not.toHaveBeenCalled();
+    });
+
+    it("runs the hook when no pin was pushed (older GZAC)", async () => {
+      const res = await submit(submitBody());
+      expect(res.statusCode).toBe(200);
+      expect(pluginManager.getContentHash).not.toHaveBeenCalled();
     });
   });
 });

@@ -207,8 +207,11 @@ valtimo-plugin-pack [--wasm plugin.wasm] [--manifest manifest.json] [--output .]
 ```
 
 Reads `pluginId` and `version` from `manifest.json` and produces `{pluginId}-{version}.zip` containing:
-- `manifest.json` — with the packing SDK's version stamped on as `sdkVersion`, so the host can
-  tell which SDK/ABI a stored plugin targets
+- `manifest.json` — with `sdkVersion` stamped on, so the host can tell which SDK/ABI a stored plugin
+  targets. The value is the version the **plugin project** resolves for `@valtimo/plugin-sdk`
+  (self-reported by the SDK, resolved from the plugin's `cwd` exactly as esbuild is) — i.e. the SDK
+  the wasm was compiled against, not the one that happens to be running the pack tool. Those differ
+  under `npx`, a global install, or two hoisted copies; the pack tool warns and stamps the plugin's
 - `plugin.wasm`
 - `frontend/` (if the directory exists)
 

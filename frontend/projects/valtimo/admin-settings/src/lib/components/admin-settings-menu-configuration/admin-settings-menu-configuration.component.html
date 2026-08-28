@@ -141,8 +141,8 @@
         >{{ displayTitle(node) }}</span
       >
 
-      @if (routeOf(node)) {
-        <span class="menu-configuration__row-route">{{ routeOf(node) }}</span>
+      @if (configurationTitleOf(node)) {
+        <span class="menu-configuration__row-subtitle">{{ configurationTitleOf(node) }}</span>
       }
 
       @if (isRequired(node)) {
@@ -218,12 +218,20 @@
 
 <!-- A row in the available-items palette -->
 <ng-template #paletteItemTpl let-item>
-  <div class="menu-configuration__palette-item">
+  <div
+    class="menu-configuration__palette-item"
+    [title]="item.label + (item.sublabel ? ' — ' + item.sublabel : '')"
+  >
     @if (item.icon) {
       <i class="menu-configuration__row-icon" [ngClass]="item.icon"></i>
     }
 
-    <span class="menu-configuration__palette-label">{{ item.label }}</span>
+    <span class="menu-configuration__palette-text">
+      <span class="menu-configuration__palette-label">{{ item.label }}</span>
+      @if (item.sublabel) {
+        <span class="menu-configuration__palette-sublabel">{{ item.sublabel }}</span>
+      }
+    </span>
 
     <button
       cdsButton="ghost"

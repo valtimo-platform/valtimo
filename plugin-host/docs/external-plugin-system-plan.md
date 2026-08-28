@@ -575,8 +575,12 @@ only shape their input and host context.
   configurations on the host reference the plugin version
   (`configRegistry.listByPlugin(pluginId, version)`), returning the offending `configurationIds`.
 - **Upload safety** (`POST /api/host/plugins`): the package size is capped (`UPLOAD_MAX_BYTES`,
-  default 25 MB; a truncated multipart stream is rejected explicitly with 413 rather than slipping
-  through as a corrupt zip), and the zip is extracted **entry by entry** with zip-slip protection
+  default 100 MiB; a truncated multipart stream is rejected explicitly with 413 rather than slipping
+  through as a corrupt zip — the 413 body names no byte count, since the check runs before the
+  deferred HMAC verification and would otherwise disclose the cap to an unauthenticated caller).
+  GZAC applies its own 100 MB gate before forwarding, and the bundled apps raise
+  `spring.servlet.multipart.*` to match. The zip is extracted **entry by entry** with zip-slip
+  protection
   (`safeExtractPluginZip`): every entry's resolved destination must stay inside the extraction
   directory — a crafted `../`, absolute, or drive-letter entry name rejects the whole package with
   400 — and only the files a plugin package may legitimately carry are extracted (root-level
@@ -639,7 +643,7 @@ HMAC key for every GZAC→host route, §3.9), `PORT` (8090),
 see §8.4), the execution/abuse bounds `WASM_TIMEOUT_MS` (30 s), `WASM_MAX_MEMORY_PAGES` (4096),
 `WASM_INSTANCE_IDLE_TTL_MS` (10 min), the instance-pool bounds `WASM_POOL_MIN_INSTANCES` (1),
 `WASM_POOL_MAX_INSTANCES` (10) and `WASM_POOL_ACQUIRE_TIMEOUT_MS` (30 s),
-`GZAC_API_TIMEOUT_MS` (60 s), `UPLOAD_MAX_BYTES` (25 MB),
+`GZAC_API_TIMEOUT_MS` (60 s), `UPLOAD_MAX_BYTES` (100 MiB),
 `DATA_RATE_LIMIT_PER_MINUTE` (120) and `CONFIG_CACHE_TTL_MS` (10 s), plus `DB_HOST` / `DB_PORT`
 `ALLOWED_FRAME_ANCESTORS` (unset — extra browser origins allowed to frame plugin content, on top of
 those GZAC announces) and `FRAME_ANCESTOR_STALE_MS` (7 days — how long a GZAC instance stays in the
@@ -751,26 +755,35 @@ defaults unknown/absent values to `"live"`, so older GZACs that don't push it st
 
 ### 8.3 Consume (host, `rabbitmq/event-consumer.ts`)
 
-`EventConsumerManager` keeps one `BrokerConsumer` per **distinct broker**
-(`brokerKey = amqpUrl + exchange + exchangeType`). Note: `queueMode`/`queueTtlMs` are intentionally
-**not** in the broker key — they are queue-level concerns, not connection-level, so two
-configurations on the same broker still share a single connection while the queue arguments come
-from the host-wide mode. After any configuration mutation the route calls `sync()` (serialised via
-a promise chain): it opens consumers for newly referenced brokers and closes consumers no
-configuration references any more. A `BrokerConsumer`:
+`EventConsumerManager` keeps one `BrokerConsumer` per **distinct queue identity**
+(`brokerKey = amqpUrl + exchange + exchangeType + queueMode + queueTtlMs`). The queue declaration is
+part of the key, not just the connection details: a consumer captures its `EventBrokerConfig` for
+its whole lifetime, so a key that ignored the mode would let `sync()` treat a mode change as
+already-desired and never restart the consumer — a LIVE→DURABLE flip would then only take effect on
+a host restart. It also means two configurations on one broker that disagree about the mode each get
+their own consumer, rather than whichever was stored last silently deciding for both. After any
+configuration mutation the route calls `sync()` (serialised via a promise chain): it opens consumers
+for newly referenced brokers and closes consumers no configuration references any more. A
+`BrokerConsumer`:
 - `assertExchange(exchange, exchangeType, { durable: true })`,
-- `assertQueue("valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>", …)` with arguments
-  switched per mode:
+- `assertQueue("valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>[.t<queueTtlMs>]", …)` with
+  arguments switched per mode:
   - **`live`** (default): `{ durable: false, autoDelete: true }` — queue evaporates when the host
     disconnects; events while the host is fully down are lost (live-subscription semantics).
   - **`durable`**: `{ durable: true, autoDelete: false, arguments: { "x-expires": queueTtlMs } }` —
     queue survives host restarts; `x-expires` deletes the queue after `queueTtlMs` of no-consumer
     inactivity, so a host that vanishes permanently doesn't accumulate events forever.
 
-  The mode suffix in the queue name means flipping `queueMode` produces a different queue and so
-  never collides with the previous queue's `assertQueue` arguments — the old `.live` queue
-  auto-deletes on disconnect; an orphan `.durable` queue lingers until its `x-expires` fires or an
-  operator deletes it from the management UI.
+  The mode — and, for a durable queue, the TTL — is part of the queue name, so changing either
+  declares a *different* queue and can never collide with the previous queue's `assertQueue`
+  arguments. That is what makes a TTL change safe: re-asserting an existing durable queue with a
+  different `x-expires` is a RabbitMQ 406 PRECONDITION_FAILED, which the naming rules out
+  structurally. Combined with the key change above, a mode or TTL flip is reconciled by `sync()`
+  alone — the add loop starts the new consumer, the remove loop closes the old one, and no host
+  restart is involved. The superseded `.live` queue auto-deletes once its consumer closes; an orphan
+  `.durable` queue lingers until its `x-expires` fires or an operator deletes it from the management
+  UI. Both queues are briefly bound to the same exchange during the changeover, but dispatch is
+  partitioned by broker key and a configuration has exactly one key, so nothing is delivered twice.
 - `bindQueue(queue, exchange, "")` (fanout ignores the routing key),
 - `consume(..., { noAck: false })` — ack on success; a malformed message is `nack`-dropped (not
   requeued) to avoid a poison loop. There is **no DLQ** today; expired or dropped messages are
@@ -855,9 +868,16 @@ DX done: the build auto-generates the Wasm interface (`handle_action` + `handle_
 `handle_request` exports + `gzac_api` import) so authors write only `src/plugin.ts`; the runtime
 settles returned promises and never serialises a pending `Promise`; the pack copies `manifest.json`
 verbatim so `eventSubscriptions`, `permissions`, and `translations` carry through — additionally
-stamping the SDK package's own version onto the in-zip manifest as `sdkVersion`, so the host can
-tell which SDK/ABI a stored plugin targets (the upload validator requires it to be a non-empty
-string when present) — and compiles each
+stamping `sdkVersion` onto the in-zip manifest, so the host can tell which SDK/ABI a stored plugin
+targets (the upload validator requires it to be a non-empty string when present). That value is
+**self-reported by the SDK** through its Node-only `@valtimo/plugin-sdk/version` subpath export
+(`SDK_VERSION`, read from the SDK's own `package.json` at runtime, so the two can never disagree),
+and the pack tool resolves that export from the **plugin's** `cwd` — the same resolution esbuild
+gets — so the stamped value names the SDK the wasm was compiled against rather than whichever copy
+supplied the `valtimo-plugin-pack` binary. Those differ under `npx`, a global install, or two
+hoisted copies; the tool warns and stamps the plugin's. The export is deliberately not re-exported
+from `src/index.ts`, which esbuild bundles into `plugin.wasm` with platform `neutral`, where an
+import of `node:module` would fail to resolve. The pack tool also compiles each
 `frontend/*.tsx` referenced by a `frontend/*.html` `<script>` into a `*.bundle.js` (e.g. the
 `config`, `process-link-action`, and `case-tab` bundles).
 
@@ -938,6 +958,20 @@ build-time, self-references the package's own export) and the plugin host's uplo
 (`routes/host-management.ts`, runtime, returns HTTP 400 `{error, details[]}` on failure). It
 requires a valid `pluginId`/`version` (see below), a non-empty `translations` object, and a
 non-empty `name` **and** `description` string in **every** declared locale bucket.
+
+**Compatibility bounds.** `compatibility`, when present, must be an object, and each of
+`minGzacVersion`/`maxGzacVersion` must be a **strict semver** string (`SEMVER_PATTERN`, the official
+semver.org pattern, inlined so the module stays dependency-free). Both present ⇒ min must not exceed
+max, compared on the numeric `major.minor.patch` core and skipped when either carries a prerelease.
+These are errors, not warnings: GZAC's `GzacCompatibilityChecker` drops any bound its semver parser
+rejects and reports `compatible = true`, so `"13"`, `"v13.1.3"` or a number would read as a guard
+while enforcing nothing. Validating in the shared module covers the pack gate and the upload gate at
+once. The plugin's own `version` field stays on the looser `PLUGIN_VERSION_PATTERN` charset rule —
+only the bounds require strict semver, because only they are fed to a semver parser. The comparator
+itself stays lenient (warn-never-block) for bounds already persisted on existing definitions; what
+changed is that no new package can carry one. The remaining silent no-op is an unparseable *current*
+version, which disables the check wholesale — `DefaultGzacVersionProvider` now warns once at
+resolution and names the `valtimo.external-plugin.gzac-version` override as the fix.
 
 **Package identity rules.** `pluginId` and `version` become directory names under
 `PLUGIN_STORAGE_DIR` and segments of public URLs, so the validator restricts them to a charset that
@@ -1105,9 +1139,24 @@ change that arrives without the confirmed-overwrite flow is treated as an incide
 - *While flagged, the plugin is dark on every surface:* configuration pushes are withheld
   (`pushToHost` refuses — §8.2 — so the host's last service token expires within its 10-minute
   TTL), process-link actions fail with `EXTERNAL_PLUGIN_CONTENT_CHANGED`, task-form submissions
-  are refused with a user-visible error, and user tokens are not minted (409 — §13.3). Every push
-  additionally carries `expectedContentHash`, which the host verifies against its loaded package
-  (409 on mismatch), closing the window between GZAC's discovery cycle and the push.
+  are refused with a user-visible error, and user tokens are not minted (409 — §13.3).
+- *The host enforces the pin where the Wasm runs, not only at push.* All of the GZAC-side guards
+  above key off `requiresReacceptance`, which is only set once the discovery job has polled — up to
+  one polling interval of executing swapped bytes, and for `/data` up to the full user-token TTL,
+  since `ExternalPluginUserTokenIntrospectionResource` validates the token rather than the
+  definition's state. So the host persists the `expectedContentHash` every push carries
+  (`plugin_configurations.expected_content_hash`) and re-compares it against
+  `pluginManager.getContentHash()` on **every** call that executes Wasm — the action, submit and
+  data routes, plus both configuration-push routes — refusing with 409 and
+  `errorCode: EXTERNAL_PLUGIN_CONTENT_CHANGED` (`security/content-pin.ts`). That closes the window
+  entirely: a package changed on disk stops serving on the next call, with no restart and without
+  waiting for a poll. The `errorCode` is load-bearing — `actionFailed` reads it off the body, and a
+  bare 409 would surface in the process incident as `EXTERNAL_PLUGIN_409`. The public `/data` route
+  echoes **neither** hash (its refusals stay uninformative, like its 403, so the endpoint cannot be
+  used to read back the expected value); the HMAC-authenticated routes carry both. The pin comes
+  from the stored push rather than the request, because `/data` is browser-facing: a client-supplied
+  hash could simply be omitted to switch the check off. A configuration with no stored pin executes
+  (an owning GZAC that predates the field), mirroring `granted_endpoints`.
 - *Recovery is a deliberate, API-only administrative act.* `POST
   /api/management/v1/external-plugin/definition/{id}/accept-content` (ADMIN) re-pins after an
   operator has investigated the change: the request echoes the exact pending hash under review —
@@ -1888,13 +1937,22 @@ All iframe surfaces are now implemented: case **tab** (§13.1), **task form** (�
   `plugin-manager.test.ts` (stable content hash, changes with any packaged file, `hasVersion` on
   disk and in memory), `routes/host-management.test.ts` (duplicate-version upload → 409 with both
   content hashes; explicit `overwrite=true` replaces),
-  `routes/host-configurations.test.ts` (push hash mismatch → 409), `routes/plugin-bundles.test.ts`
+  `routes/host-configurations.test.ts` (push hash mismatch → 409; the pushed hash is persisted; an
+  update against a stale pin → 409), the execution-time pin on all three Wasm routes
+  (`routes/plugin-actions.test.ts`, `routes/plugin-submit.test.ts`, `routes/plugin-data.test.ts` —
+  match executes, mismatch is a 409 that never invokes the plugin, an unpushed pin executes, and
+  `/data`'s refusal carries neither hash), and `test/integration/config-repository.int.test.ts`
+  (`expected_content_hash` round-trip, NULL staying NULL). Plus `routes/plugin-bundles.test.ts`
   (strict CSP + `nosniff` + referrer policy on bundles and logo). PostgreSQL integration tests
   green — the `20260806-external-plugin-security-hardening.xml` changeset applies and matches the
   entities.
 - Containment, install atomicity, memory cap and instance pool, all green (vitest):
-  `plugin-sdk/src/manifest-validation.test.ts` (package identity and logo charset — the shared
-  contract the pack tool and the upload route both run), `app/src/security/request-path.test.ts`
+  `plugin-sdk/src/manifest-validation.test.ts` (package identity and logo charset, plus the
+  compatibility-bound rules — the shared contract the pack tool and the upload route both run),
+  `plugin-sdk/src/version.test.ts` (`SDK_VERSION` equals the SDK's own `package.json` version, the
+  invariant the `sdkVersion` stamp rests on), `app/src/routes/host-management.test.ts` (an oversized
+  upload → 413 naming no byte count; a malformed compatibility bound → 400 with the rule in
+  `details[]`), `app/src/security/request-path.test.ts`
   (`gzac_api` path canonicalisation and refusals), `app/src/wasm-memory-limit.test.ts` (memory
   section patching, clamping, and round-trip validity via `WebAssembly.compile` — the patched
   module's `memory.grow` really fails past the cap), `app/src/wasm-instance-pool.test.ts`
@@ -1964,6 +2022,14 @@ All iframe surfaces are now implemented: case **tab** (§13.1), **task form** (�
   `variables` applied to the execution, and the 4xx→`BpmnError` path) is not verified end-to-end; the
   HMAC handshake is confirmed coherent by code reading (§3.9), but an end-to-end action run is not in
   the record.
+- The **queue-mode switch** (§8.3) is covered by vitest reconciliation cases (a LIVE→DURABLE flip
+  starts a consumer on the `.durable.t<ttl>` queue with the right `x-expires` and closes the live
+  one; a TTL-only change names a new queue; two configurations on one broker with different modes
+  get one consumer each, dispatching only their own) **and** by a real-RabbitMQ testcontainers case
+  in `test/integration/event-consumer.int.test.ts` (after the flip the durable queue exists with the
+  declared `x-expires`, the superseded live queue is gone, and an event published afterwards is
+  delivered). Still not in the live record: a host restart proving buffered events replay from the
+  durable queue.
 - The **broker self-healing reconnect** (§8.3) — kill the broker container under a connected host,
   observe `"Broker connection closed; scheduling reconnect"` log lines with growing backoff, bring
   the broker back, observe `"Broker consumer reconnected"`, and confirm events published after the

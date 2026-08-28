@@ -19,6 +19,7 @@ import {PluginManager} from "../plugin-manager.js";
 import {ConfigRegistry} from "../config-registry.js";
 import type {AppConfig} from "../config.js";
 import {createHmacAuthHook} from "../security/hmac-auth.js";
+import {checkContentPin} from "../security/content-pin.js";
 
 /**
  * Plugin task-form submit endpoint (Level 1).
@@ -90,6 +91,12 @@ export async function pluginSubmitRoutes(
         reply.code(400).send({
           error: `Configuration ${configurationId} targets ${pluginConfig.pluginId}@${pluginConfig.pluginVersion}, not ${pluginId}@${version}`,
         });
+        return;
+      }
+
+      const contentRefusal = checkContentPin(pluginConfig, pluginManager, request.log);
+      if (contentRefusal) {
+        reply.code(409).send(contentRefusal);
         return;
       }
 

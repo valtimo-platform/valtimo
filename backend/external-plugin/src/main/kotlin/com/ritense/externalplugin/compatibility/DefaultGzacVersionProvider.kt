@@ -16,6 +16,10 @@
 
 package com.ritense.externalplugin.compatibility
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.semver4j.Semver
+import java.util.concurrent.atomic.AtomicBoolean
+
 /**
  * Resolves the running GZAC version from, in order of precedence:
  *
@@ -35,8 +39,26 @@ class DefaultGzacVersionProvider(
     private val libraryVersion: String?,
 ) : GzacVersionProvider {
 
+    private val warned = AtomicBoolean(false)
+
     override fun getCurrentVersion(): String? {
-        versionOverride?.takeIf { it.isNotBlank() }?.let { return it }
-        return libraryVersion?.takeIf { it.isNotBlank() }
+        val resolved = versionOverride?.takeIf { it.isNotBlank() }
+            ?: libraryVersion?.takeIf { it.isNotBlank() }
+
+        // An unparseable version turns the compatibility gate off wholesale and every plugin then
+        // reports as compatible, so say so. Once, not per check — the gate runs on every listing.
+        if ((resolved == null || Semver.parse(resolved) == null) && warned.compareAndSet(false, true)) {
+            logger.warn {
+                "Could not determine a semver GZAC version (resolved: ${resolved ?: "none"}). External " +
+                    "plugin compatibility ranges will not be enforced. Set the " +
+                    "'valtimo.external-plugin.gzac-version' property to enable the check."
+            }
+        }
+
+        return resolved
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

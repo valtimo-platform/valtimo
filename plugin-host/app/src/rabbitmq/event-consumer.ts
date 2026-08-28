@@ -37,9 +37,16 @@ interface CloudEventJson {
   };
 }
 
-/** Stable identity of a broker connection — connections are shared across configs that match it. */
+/**
+ * Stable identity of a broker connection — connections are shared across configs that match it.
+ *
+ * Mode and TTL belong in the key: a consumer captures its `EventBrokerConfig` for its whole
+ * lifetime, so a key that ignored them would leave `reconcile()` seeing a changed configuration as
+ * already-desired and never restarting the consumer.
+ */
 function brokerKey(b: EventBrokerConfig): string {
-  return `${b.amqpUrl} ${b.exchange} ${b.exchangeType}`;
+  const mode = b.queueMode ?? "live";
+  return `${b.amqpUrl} ${b.exchange} ${b.exchangeType} ${mode} ${b.queueTtlMs ?? ""}`;
 }
 
 /**
@@ -47,14 +54,16 @@ function brokerKey(b: EventBrokerConfig): string {
  * its own copy of each event; replicas sharing a `hostId` bind the same queue and load-balance. The
  * exchange is included so distinct exchanges on one broker don't collide.
  *
- * The mode suffix means flipping `queueMode` produces a different queue name and so never collides
- * with the previous queue's `assertQueue` arguments. The orphaned LIVE queue auto-deletes on
- * disconnect; an orphaned DURABLE queue lingers until its `x-expires` fires (or an operator deletes
- * it from the RabbitMQ management UI).
+ * Mode, and for durable queues the TTL, are part of the name, so a change declares a *new* queue.
+ * Re-asserting an existing durable queue with a different `x-expires` is a RabbitMQ 406
+ * PRECONDITION_FAILED, which this makes structurally impossible. The superseded `.live` queue
+ * auto-deletes once its consumer closes; an orphaned `.durable` queue lingers until its `x-expires`
+ * fires (or an operator deletes it from the RabbitMQ management UI).
  */
 function queueName(b: EventBrokerConfig, hostId: string): string {
   const mode = b.queueMode ?? "live";
-  return `valtimo-external-plugins.${b.exchange}.${hostId}.${mode}`;
+  const base = `valtimo-external-plugins.${b.exchange}.${hostId}.${mode}`;
+  return mode === "durable" ? `${base}.t${b.queueTtlMs}` : base;
 }
 
 type Router = (key: string, event: CloudEventJson) => Promise<void>;

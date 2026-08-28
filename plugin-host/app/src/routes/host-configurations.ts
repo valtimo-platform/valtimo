@@ -21,6 +21,7 @@ import {AppConfig} from "../config.js";
 import {EventConsumerManager} from "../rabbitmq/event-consumer.js";
 import type {Endpoint, EventBrokerConfig} from "../models/index.js";
 import {createHmacAuthHook} from "../security/hmac-auth.js";
+import {checkContentPin} from "../security/content-pin.js";
 
 const EXCHANGE_TYPES = ["fanout", "topic", "direct"] as const;
 const QUEUE_MODES = ["live", "durable"] as const;
@@ -173,8 +174,12 @@ export async function hostConfigurationRoutes(
     // mismatch here means a config (and its fresh service token) can never be handed to plugin
     // code that differs from what the admin accepted — even in the window between GZAC's
     // discovery cycle and this push.
-    const expectedContentHash = request.body.expectedContentHash;
-    if (typeof expectedContentHash === "string" && expectedContentHash.length > 0) {
+    const expectedContentHash =
+      typeof request.body.expectedContentHash === "string" &&
+      request.body.expectedContentHash.length > 0
+        ? request.body.expectedContentHash
+        : undefined;
+    if (expectedContentHash) {
       const actualContentHash = pluginManager.getContentHash(pluginId, pluginVersion);
       if (actualContentHash !== expectedContentHash) {
         request.log.warn(
@@ -225,6 +230,7 @@ export async function hostConfigurationRoutes(
       allowedEgress,
       eventBroker,
       ownerId,
+      expectedContentHash,
     });
     await eventConsumerManager.sync();
 
@@ -271,6 +277,14 @@ export async function hostConfigurationRoutes(
 
     if (!existing) {
       reply.code(404).send({ error: `Configuration not found: ${configId}` });
+      return;
+    }
+
+    // Checked against the stored pin, not a body field: re-reading it from an update body would
+    // let a caller switch the check off by omitting it.
+    const contentRefusal = checkContentPin(existing, pluginManager, request.log);
+    if (contentRefusal) {
+      reply.code(409).send(contentRefusal);
       return;
     }
 

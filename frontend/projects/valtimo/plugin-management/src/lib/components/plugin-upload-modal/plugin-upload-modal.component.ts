@@ -67,6 +67,13 @@ interface OverwriteReview {
   warning: NotificationContent;
 }
 
+/**
+ * Mirrors `ExternalPluginManagementResource.MAX_PLUGIN_UPLOAD_BYTES`, so an oversized package is
+ * refused on selection rather than after transferring it. The backend stays the authority: its 413
+ * is handled too, and its `maxBytes` wins when the two disagree.
+ */
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
+
 @Component({
   standalone: true,
   selector: 'valtimo-plugin-upload-modal',
@@ -125,6 +132,7 @@ export class PluginUploadModalComponent implements OnChanges {
   });
 
   public readonly $fileSelected = signal(false);
+  public readonly $fileTooLarge = signal(false);
 
   private readonly _destroyRef = inject(DestroyRef);
 
@@ -138,6 +146,12 @@ export class PluginUploadModalComponent implements OnChanges {
       .valueChanges.pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe(value => {
         this.$fileSelected.set(value instanceof Set && value.size > 0);
+        const file = this._selectedFile(value);
+        const tooLarge = !!file && file.size > MAX_UPLOAD_BYTES;
+        this.$fileTooLarge.set(tooLarge);
+        this.$uploadNotification.set(
+          tooLarge ? this._buildTooLargeNotification(file!.size, MAX_UPLOAD_BYTES) : null
+        );
       });
   }
 
@@ -160,10 +174,9 @@ export class PluginUploadModalComponent implements OnChanges {
 
   public onUpload(force = false, overwrite = false): void {
     const hostId = this.$selectedHostId();
-    const fileSet = this._fileForm.value.file;
-    const file: File | undefined = fileSet?.values()?.next()?.value?.file;
+    const file = this._selectedFile(this._fileForm.value.file);
 
-    if (!hostId || !file) return;
+    if (!hostId || !file || this.$fileTooLarge()) return;
 
     this.$uploading.set(true);
     this.$uploadNotification.set(null);
@@ -185,6 +198,10 @@ export class PluginUploadModalComponent implements OnChanges {
           this._handleVersionExists(error.error);
         } else if (error.status === 409) {
           this.$uploadNotification.set(this._buildUploadErrorNotification(error));
+        } else if (error.status === 413) {
+          this.$uploadNotification.set(
+            this._buildTooLargeNotification(file.size, error.error?.maxBytes ?? MAX_UPLOAD_BYTES)
+          );
         }
       },
     });
@@ -223,6 +240,7 @@ export class PluginUploadModalComponent implements OnChanges {
     this.closeEvent.emit();
     this.$selectedHostId.set(null);
     this.$fileSelected.set(false);
+    this.$fileTooLarge.set(false);
     this.$uploadNotification.set(null);
     this.$overwriteReview.set(null);
     this.$overwriteAcknowledged.set(false);
@@ -280,6 +298,28 @@ export class PluginUploadModalComponent implements OnChanges {
         lowContrast: true,
       },
     });
+  }
+
+  private _selectedFile(value: Set<any> | null | undefined): File | undefined {
+    return value?.values()?.next()?.value?.file;
+  }
+
+  private _buildTooLargeNotification(sizeBytes: number, maxBytes: number): NotificationContent {
+    // The size rounds UP and the limit rounds DOWN, so a package only just over the cap can never
+    // render as "is 100.0 MB, maximum is 100.0 MB" — which reads as though nothing were wrong.
+    const MB = 1024 * 1024;
+    const toMb = (bytes: number, round: (n: number) => number): string =>
+      (round((bytes / MB) * 10) / 10).toFixed(1);
+    return {
+      type: 'error',
+      title: this._translateService.instant('pluginManagement.upload.tooLargeTitle'),
+      message: this._translateService.instant('pluginManagement.upload.tooLarge', {
+        sizeMb: toMb(sizeBytes, Math.ceil),
+        maxMb: toMb(maxBytes, Math.floor),
+      }),
+      showClose: false,
+      lowContrast: true,
+    };
   }
 
   private _buildUploadErrorNotification(error: HttpErrorResponse): NotificationContent {

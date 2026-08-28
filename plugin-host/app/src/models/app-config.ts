@@ -65,7 +65,7 @@ export const envSchema = z.object({
 
   // Maximum accepted plugin package (.zip) upload size in bytes. The multipart parser enforces
   // this before the file is buffered for the HMAC check.
-  UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(25 * 1024 * 1024),
+  UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(100 * 1024 * 1024),
 
   // Per-configuration rate limit for the public /plugins/:id/:version/data route (requests per
   // minute per configurationId). 0 disables the limit.

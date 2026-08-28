@@ -2415,6 +2415,8 @@
       "description": "Alleen .zip-bestanden worden geaccepteerd",
       "failedTitle": "Uploaden mislukt",
       "rejected": "De plugin-host heeft de upload geweigerd.",
+      "tooLargeTitle": "Pakket te groot",
+      "tooLarge": "Dit pluginpakket is {{sizeMb}} MB. De maximaal geaccepteerde grootte is {{maxMb}} MB.",
       "identicalTitle": "Al up-to-date",
       "identicalMessage": "Exact dit pakket staat al op de host — de inhoud is identiek, dus er valt niets te overschrijven.",
       "overwriteTitle": "Bestaande pluginversie overschrijven?",

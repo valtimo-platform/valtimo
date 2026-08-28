@@ -139,6 +139,19 @@ describe("ConfigRepository against real Postgres", () => {
     expect((await repo.get("cfg-1"))?.ownerId).toBeUndefined();
   });
 
+  it("round-trips the expected content hash and keeps an absent one absent", async () => {
+    await repo.set("cfg-1", config({ expectedContentHash: "sha256:abc123" }));
+    expect((await repo.get("cfg-1"))?.expectedContentHash).toBe("sha256:abc123");
+
+    // No pin pushed (older GZAC) → SQL NULL → undefined, which skips the execution-time check.
+    await repo.set("cfg-2", config({ configurationId: "cfg-2" }));
+    expect((await repo.get("cfg-2"))?.expectedContentHash).toBeUndefined();
+
+    // Follows the push verbatim, like owner_id: a re-push without a pin clears it.
+    await repo.set("cfg-1", config());
+    expect((await repo.get("cfg-1"))?.expectedContentHash).toBeUndefined();
+  });
+
   it("returns undefined for a missing configuration", async () => {
     expect(await repo.get("nope")).toBeUndefined();
   });

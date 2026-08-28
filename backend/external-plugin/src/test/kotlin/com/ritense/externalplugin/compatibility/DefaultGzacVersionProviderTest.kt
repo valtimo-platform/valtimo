@@ -16,8 +16,13 @@
 
 package com.ritense.externalplugin.compatibility
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 
 class DefaultGzacVersionProviderTest {
 
@@ -47,5 +52,44 @@ class DefaultGzacVersionProviderTest {
         val provider = DefaultGzacVersionProvider(versionOverride = null, libraryVersion = null)
 
         assertThat(provider.getCurrentVersion()).isNull()
+    }
+
+    @Test
+    fun `warns once, naming the override property, when no version resolves`() {
+        val provider = DefaultGzacVersionProvider(versionOverride = null, libraryVersion = null)
+
+        val warnings = captureWarnings { repeat(3) { provider.getCurrentVersion() } }
+
+        assertThat(warnings).hasSize(1)
+        assertThat(warnings.single()).contains("valtimo.external-plugin.gzac-version")
+    }
+
+    @Test
+    fun `warns when the resolved version is not semver`() {
+        val provider = DefaultGzacVersionProvider(versionOverride = "13-SNAPSHOT-local", libraryVersion = null)
+
+        val warnings = captureWarnings { provider.getCurrentVersion() }
+
+        assertThat(warnings).hasSize(1)
+    }
+
+    @Test
+    fun `does not warn for a semver version`() {
+        val provider = DefaultGzacVersionProvider(versionOverride = null, libraryVersion = "13.1.3")
+
+        assertThat(captureWarnings { provider.getCurrentVersion() }).isEmpty()
+    }
+
+    private fun captureWarnings(block: () -> Unit): List<String> {
+        val targetLogger = LoggerFactory.getLogger(DefaultGzacVersionProvider::class.java) as Logger
+        val appender = ListAppender<ILoggingEvent>().apply { start() }
+        targetLogger.addAppender(appender)
+        try {
+            block()
+        } finally {
+            targetLogger.detachAppender(appender)
+            appender.stop()
+        }
+        return appender.list.filter { it.level == Level.WARN }.map { it.formattedMessage }
     }
 }

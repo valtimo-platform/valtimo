@@ -16,11 +16,6 @@
 
 -- Up Migration
 
--- Baseline schema for the plugin host, squashed from the eight incremental migrations the host's
--- previous hand-rolled runner applied. The host has not been released, so no database anywhere holds
--- a partial version of this schema and the statements below are deliberately unguarded: the
--- pgmigrations ledger is the source of truth for what has been applied, not IF NOT EXISTS.
-
 CREATE TABLE plugin_configurations (
   configuration_id TEXT PRIMARY KEY,
   plugin_id TEXT NOT NULL,
@@ -31,21 +26,10 @@ CREATE TABLE plugin_configurations (
   event_broker JSONB,
   event_subscriptions JSONB NOT NULL DEFAULT '[]',
   granted_capabilities JSONB NOT NULL DEFAULT '[]',
-  -- NULL (default) means "not pushed" — older GZAC instances don't send granted endpoints, and the
-  -- host then skips its side of the gzac_api allowlist check (GZAC still enforces it server-side).
-  -- A pushed empty list ('[]') denies every endpoint.
   granted_endpoints JSONB,
-  -- Origins http_request may call. NOT NULL DEFAULT '[]' rather than nullable: http_request is
-  -- deny-by-default, so a configuration that predates egress declarations makes no outbound calls
-  -- until GZAC pushes a list. (granted_endpoints uses NULL for "not pushed" because gzac_api has an
-  -- authoritative server-side allowlist to fall back on; http_request has none.)
   allowed_egress JSONB NOT NULL DEFAULT '[]',
-  -- Identity of the GZAC↔host relationship that pushed the configuration (the GZAC-side host-row
-  -- UUID). GZAC's reconciliation pass only deletes configurations carrying its own owner_id, so
-  -- multiple GZAC instances sharing this host cannot delete each other's configs. NULL means "pushed
-  -- by a GZAC that predates ownership" — such rows are never auto-deleted. TEXT, not UUID: the host
-  -- treats it as an opaque token minted by the pusher.
   owner_id TEXT,
+  expected_content_hash TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -60,8 +44,7 @@ CREATE TABLE plugin_kv (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (configuration_id, key)
 );
--- text_pattern_ops so the KV prefix scan (`key LIKE 'prefix%'`) can use the index under any
--- collation.
+
 CREATE INDEX idx_plugin_kv_prefix ON plugin_kv (configuration_id, key text_pattern_ops);
 
 CREATE TABLE plugin_logs (
@@ -78,12 +61,6 @@ CREATE TABLE plugin_logs (
 CREATE INDEX idx_plugin_logs_config ON plugin_logs (configuration_id, created_at DESC);
 CREATE INDEX idx_plugin_logs_level ON plugin_logs (configuration_id, level, created_at DESC);
 
--- One row per GZAC instance that has announced itself, keyed by the same gzacBaseUrl the
--- configuration push uses as instance identity. frontend_origins are the browser origins that
--- instance allows to embed this host's plugin screens; the host serves their union as the
--- frame-ancestors CSP directive. updated_at is what makes the allowlist self-cleaning: an instance
--- that stops announcing ages out (FRAME_ANCESTOR_STALE_MS) on its own, since there is no
--- deregistration call.
 CREATE TABLE gzac_instances (
   gzac_base_url TEXT PRIMARY KEY,
   frontend_origins JSONB NOT NULL DEFAULT '[]',
@@ -92,7 +69,6 @@ CREATE TABLE gzac_instances (
 
 -- Down Migration
 
--- DROP TABLE takes the table's indexes with it.
 DROP TABLE gzac_instances;
 DROP TABLE plugin_logs;
 DROP TABLE plugin_kv;

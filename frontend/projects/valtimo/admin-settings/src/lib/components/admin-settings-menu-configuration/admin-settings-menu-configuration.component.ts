@@ -369,7 +369,9 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit, OnDestro
 
     this.editorForm.reset({
       title: this._editableTitle(node),
-      link: node.kind === 'custom-link' ? node.link : this._displayRoute(node),
+      // Only a custom link has an editable URL; every other kind's control is disabled and
+      // unrendered, so it is seeded empty — matching openNewItemEditor.
+      link: node.kind === 'custom-link' ? node.link : '',
       icon: this._mdiKeyFromIconClass(this._displayIconClass(node)),
       // Empty string (not null) so the "Geen" option (value="") is selected on open when the item
       // carries no include function — a null value would leave the native select blank. The stored
@@ -569,8 +571,17 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit, OnDestro
     return this._displayIconClass(node);
   }
 
-  public routeOf(node: BuilderNode): string {
-    return this._displayRoute(node);
+  /**
+   * Which plugin configuration a placed page belongs to. Every configuration of one plugin
+   * contributes a page with the same title, so the row is otherwise indistinguishable from its
+   * siblings. Empty for every other kind, and for a page whose configuration no longer exists.
+   */
+  public configurationTitleOf(node: BuilderNode): string {
+    if (node.kind !== 'plugin-page') return '';
+    return (
+      this.$pluginPages().find(page => page.configurationId === node.configurationId)
+        ?.configurationTitle ?? ''
+    );
   }
 
   public trackByUid = (_: number, node: BuilderNode): string => node._uid;
@@ -584,19 +595,6 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit, OnDestro
       return node.icon ?? null;
     }
     return null;
-  }
-
-  private _displayRoute(node: BuilderNode): string {
-    switch (node.kind) {
-      case 'catalog':
-        return getMenuCatalogEntry(node.itemId)?.link ?? '';
-      case 'custom-link':
-        return node.link;
-      case 'plugin-page':
-        return `/plugin-pages/${node.configurationId}${node.bundleKey ? `/${node.bundleKey}` : ''}`;
-      default:
-        return '';
-    }
   }
 
   private _editableTitle(node: BuilderNode): string {
@@ -733,6 +731,7 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit, OnDestro
         paletteType: 'plugin-page',
         page,
         label: this._localizedPluginTitle(page),
+        sublabel: page.configurationTitle,
         icon: page.icon ?? undefined,
       }));
 

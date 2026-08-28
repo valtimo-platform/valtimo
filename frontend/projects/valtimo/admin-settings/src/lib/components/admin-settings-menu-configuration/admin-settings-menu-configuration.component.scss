@@ -129,10 +129,15 @@
     }
   }
 
-  &__row-route {
+  &__row-subtitle {
     color: var(--cds-text-secondary);
-    font-size: var(--cds-code-01-font-size, var(--cds-body-compact-01-font-size));
-    font-family: var(--cds-code-01-font-family, monospace);
+    font-size: var(--cds-label-01-font-size);
+    letter-spacing: var(--cds-label-01-letter-spacing);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    // See __row-title: keep the line box tall enough that descenders are not clipped by overflow.
+    line-height: 1.4;
   }
 
   &__row-actions {
@@ -189,13 +194,30 @@
     min-width: 0;
   }
 
-  &__palette-label {
+  &__palette-text {
+    display: flex;
     flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__palette-label {
     color: var(--cds-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     // See __row-title: keep the line box tall enough that descenders are not clipped by overflow.
+    line-height: 1.4;
+  }
+
+  &__palette-sublabel {
+    color: var(--cds-text-secondary);
+    font-size: var(--cds-label-01-font-size);
+    letter-spacing: var(--cds-label-01-letter-spacing);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    // Same reason as __palette-label: overflow: hidden clips descenders on a tight line box.
     line-height: 1.4;
   }
 

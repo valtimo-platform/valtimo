@@ -103,7 +103,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `WASM_INSTANCE_IDLE_TTL_MS` | no | `600000` | Idle Extism instances are closed after this long without a call (freed worker + memory; next call re-instantiates). `0` disables eviction. |
 | `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` callback fetch into GZAC. |
 | `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | no | `10000` | Timeout on the user-token introspection call the `/plugins/:id/:version/data` route makes against GZAC before executing Wasm. GZAC not answering within it fails the request with a 503 (fail closed). |
-| `UPLOAD_MAX_BYTES` | no | `26214400` | Maximum plugin package (.zip) upload size (25 MiB), enforced before the file is buffered for the HMAC check. |
+| `UPLOAD_MAX_BYTES` | no | `104857600` | Maximum plugin package (.zip) upload size (100 MiB), enforced before the file is buffered for the HMAC check. GZAC applies its own 100 MB gate and its servlet multipart limit before forwarding, so raising this alone does not widen the end-to-end limit. |
 | `DATA_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-configuration request budget for the public `/plugins/:id/:version/data` route. `0` disables the limit. |
 | `CONFIG_CACHE_TTL_MS` | no | `10000` | How long configurations are served from the in-memory cache before re-reading Postgres. Writes through this host invalidate immediately. `0` disables caching. Also caps how long the frame-ancestor allowlist is cached. |
 | `ALLOWED_FRAME_ANCESTORS` | no | — | Extra browser origins allowed to embed plugin screens, on top of those GZAC instances register. Comma-separated `scheme://host[:port]`. Escape hatch for local development, and for frontends no GZAC announces (see [Embedding](#embedding-frame-ancestors)). |
@@ -462,9 +462,15 @@ routed only to configurations carrying that same broker.
 | `live` (default) | `durable:false, autoDelete:true` | Queue evaporates when the host disconnects. Events published while the host is fully down are **lost**. |
 | `durable` | `durable:true, autoDelete:false`, `x-expires=queueTtlMs` | Queue survives host restarts. Buffered events are replayed on reconnect, up to `queueTtlMs` of no-consumer inactivity (then the queue is deleted). |
 
-The mode is included in the queue name, so flipping the mode never collides with the previous
-queue's arguments — the old `.live` queue auto-deletes on disconnect, while an orphan `.durable`
-queue lingers until `x-expires` fires or an operator deletes it.
+The mode — and, for a durable queue, the TTL — is part of both the queue name and the host's broker
+key, so changing either declares a *new* queue and starts a new consumer on the next configuration
+push; no host restart is needed. Re-asserting an existing durable queue with a different `x-expires`
+would be a RabbitMQ 406 PRECONDITION_FAILED, which the naming makes structurally impossible. The
+superseded `.live` queue auto-deletes once its consumer closes, while an orphaned `.durable` queue
+lingers until `x-expires` fires or an operator deletes it.
+
+Because the mode is part of the key, two configurations on one broker that disagree about the mode
+each get their own consumer, rather than whichever was pushed last deciding for both.
 
 `queueTtlMs` is validated on the GZAC side between 1 hour and 30 days; default 72 hours. Use a
 short value (e.g. 1h) for fast local feedback when testing the durability flow; pick a longer one in

@@ -204,7 +204,8 @@ export class ExternalPluginService {
    * the version details and is retried with `force=true` after the operator confirms, and an
    * already-existing pluginId@version returns `code=PLUGIN_VERSION_EXISTS` plus the package's
    * requested permissions and is retried with `overwrite=true` after the operator re-reviews the
-   * permissions and confirms the overwrite.
+   * permissions and confirms the overwrite. A 413 (package over the size cap) is skipped too, so
+   * the modal can render it inline next to the file picker.
    */
   public uploadPlugin(
     hostId: string,
@@ -215,7 +216,7 @@ export class ExternalPluginService {
     const formData = new FormData();
     formData.append('file', file, file.name);
     const params = new HttpParams().set('force', force).set('overwrite', overwrite);
-    const headers = new HttpHeaders().set(InterceptorSkip, '409');
+    const headers = new HttpHeaders().set(InterceptorSkip, '409,413');
     return this._http.post<ExternalPluginUploadResult>(
       `${this._baseUrl}/host/${hostId}/upload`,
       formData,

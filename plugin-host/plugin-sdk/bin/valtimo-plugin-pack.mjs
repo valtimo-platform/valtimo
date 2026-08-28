@@ -37,7 +37,9 @@
 import { existsSync, readFileSync, readdirSync, mkdirSync, unlinkSync } from "node:fs";
 import { resolve, join, basename, extname } from "node:path";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
+import { SDK_VERSION as PACK_TOOL_SDK_VERSION } from "@valtimo/plugin-sdk/version";
 import { runEsbuild } from "./toolchain.mjs";
 
 const require = createRequire(import.meta.url);
@@ -162,17 +164,42 @@ for (const ext of LOGO_EXTENSIONS) {
   }
 }
 
+// ---- Resolve the SDK the plugin was compiled against ----
+
+/**
+ * `sdkVersion` must name the SDK the wasm was built with, not the one running this script. esbuild
+ * and the rest of the `@valtimo/plugin-sdk` import graph resolve from the plugin's cwd (see
+ * toolchain.mjs), so resolve the version the same way. A mismatch warns rather than fails, so a
+ * monorepo mid-upgrade still builds.
+ */
+async function resolveSdkVersion() {
+  const projectRequire = createRequire(join(cwd, "package.json"));
+  let resolved;
+  try {
+    const versionModule = projectRequire.resolve("@valtimo/plugin-sdk/version");
+    ({ SDK_VERSION: resolved } = await import(pathToFileURL(versionModule).href));
+  } catch {
+    return PACK_TOOL_SDK_VERSION;
+  }
+  if (resolved !== PACK_TOOL_SDK_VERSION) {
+    console.warn(
+      `[valtimo-plugin-pack] Warning: packed with @valtimo/plugin-sdk ${PACK_TOOL_SDK_VERSION} but ` +
+        `the plugin resolves ${resolved}; stamping sdkVersion ${resolved}`
+    );
+  }
+  return resolved;
+}
+
+const sdkVersion = await resolveSdkVersion();
+
 // ---- Create zip ----
 
 try {
   const zip = new AdmZip();
   // If a logo was found, set its filename on the manifest so the host knows what file to serve
   // at GET /plugins/:id/:version/logo. We write the modified manifest into the zip rather than
-  // touching the user's source manifest.json. The SDK version the plugin was packed with is
-  // stamped on as `sdkVersion` so the host can tell which SDK/ABI a stored plugin targets.
-  const sdkVersion = JSON.parse(
-    readFileSync(new URL("../package.json", import.meta.url), "utf-8")
-  ).version;
+  // touching the user's source manifest.json. `sdkVersion` names the SDK the plugin resolves, so
+  // the host can tell which SDK/ABI a stored plugin targets.
   const manifestForZip = {
     ...manifest,
     sdkVersion,

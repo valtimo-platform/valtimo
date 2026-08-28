@@ -284,6 +284,48 @@ describe("host-management routes", () => {
       });
       expect(res.statusCode).toBe(400);
     });
+
+    it("rejects a malformed compatibility bound with 400 and the rule in details", async () => {
+      const res = await uploadZip(
+        makeZip({ ...validManifest, compatibility: { minGzacVersion: "13" } })
+      );
+      expect(res.statusCode).toBe(400);
+      expect(res.json()).toMatchObject({ error: "Invalid plugin manifest" });
+      expect((res.json() as { details: string[] }).details.join(" ")).toContain("minGzacVersion");
+      expect(pluginManager.installPackage).not.toHaveBeenCalled();
+    });
+
+    it("refuses an oversized package with 413 without naming the configured cap", async () => {
+      const cap = 1024;
+      const smallApp = await buildTestApp(
+        (a) =>
+          hostManagementRoutes(a, {
+            pluginManager: pluginManager as never,
+            configRegistry: configRegistry as never,
+            config: testConfig({ UPLOAD_MAX_BYTES: cap }),
+          }),
+        { uploadMaxBytes: cap }
+      );
+      try {
+        const boundary = "----vitestboundary";
+        const oversized = Buffer.alloc(cap * 4, 0x41);
+        const res = await smallApp.inject({
+          method: "POST",
+          url: PLUGINS_PATH,
+          headers: {
+            "content-type": `multipart/form-data; boundary=${boundary}`,
+            ...signHeaders("POST", PLUGINS_PATH, oversized),
+          },
+          payload: multipartBody(boundary, oversized),
+        });
+        expect(res.statusCode).toBe(413);
+        expect(res.json()).toEqual({ error: "Plugin package exceeds the maximum upload size" });
+        expect(JSON.stringify(res.json())).not.toContain(String(cap));
+        expect(pluginManager.installPackage).not.toHaveBeenCalled();
+      } finally {
+        await smallApp.close();
+      }
+    });
   });
 
   describe("DELETE plugin", () => {

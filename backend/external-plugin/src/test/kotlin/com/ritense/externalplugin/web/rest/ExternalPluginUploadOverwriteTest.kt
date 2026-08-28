@@ -173,6 +173,23 @@ class ExternalPluginUploadOverwriteTest {
         assertThat(response.body!!.has("code")).isFalse()
     }
 
+    @Test
+    fun `refuses a package over the size cap with 413 without reading its bytes`() {
+        // getSize() is overridden rather than allocating 100 MiB: the gate must fire on the
+        // reported size alone, before anything touches file.bytes.
+        val oversized = object : MockMultipartFile("file", "plugin.zip", "application/zip", ByteArray(0)) {
+            override fun getSize(): Long = ExternalPluginManagementResource.MAX_PLUGIN_UPLOAD_BYTES + 1
+        }
+
+        val response = resource.uploadPlugin(hostId, oversized, force = false)
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE)
+        assertThat(response.body!!.get("error").asText()).isEqualTo("Plugin package is too large")
+        assertThat(response.body!!.get("maxBytes").asLong())
+            .isEqualTo(ExternalPluginManagementResource.MAX_PLUGIN_UPLOAD_BYTES)
+        verify(hostService, never()).uploadPlugin(any(), any(), any(), any())
+    }
+
     private fun versionExistsException(
         currentContentHash: String,
         uploadedContentHash: String,
