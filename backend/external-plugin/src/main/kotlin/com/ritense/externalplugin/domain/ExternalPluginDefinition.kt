@@ -100,9 +100,52 @@ class ExternalPluginDefinition(
      */
     @Column(name = "pending_content_hash")
     var pendingContentHash: String? = null,
+
+    /** The manifest served alongside [pendingContentHash], kept so the two can be compared. */
+    @Type(value = JsonType::class)
+    @Column(name = "pending_manifest_json", columnDefinition = "JSON")
+    var pendingManifestJson: ObjectNode? = null,
 ) {
 
     /** True when the host's package changed after acceptance and an admin has not re-accepted it. */
     val requiresReacceptance: Boolean
         get() = pendingContentHash != null
+
+    /**
+     * Whether the pending package asks for a different permission footprint than the accepted one.
+     * False means only the code changed — a weaker prompt, but still one an admin must answer,
+     * because the pin exists to detect a host serving something other than what was accepted.
+     */
+    val pendingPermissionsChanged: Boolean
+        get() {
+            val pending = pendingManifestJson ?: return false
+            return declaredPermissions(pending) != declaredPermissions(manifestJson)
+        }
+
+    private fun declaredPermissions(manifest: ObjectNode?): Set<String> {
+        if (manifest == null) return emptySet()
+        val permissions = manifest.get("permissions")
+        val capabilities = permissions?.get("capabilities")?.mapNotNull { it.asText() }.orEmpty()
+        val egress = permissions?.get("egress")?.mapNotNull { it.asText() }.orEmpty()
+        val endpoints = permissions?.get("endpoints")?.mapNotNull {
+            val method = it.get("method")?.asText() ?: return@mapNotNull null
+            val pattern = it.get("pattern")?.asText() ?: return@mapNotNull null
+            "endpoint:${method.uppercase()}:$pattern"
+        }.orEmpty()
+        val events = manifest.get("eventSubscriptions")?.mapNotNull { it.asText() }.orEmpty()
+        return (capabilities.map { "capability:$it" } +
+            egress.map { "egress:$it" } +
+            endpoints +
+            events.map { "event:$it" }).toSet()
+        }
+
+    /**
+     * Declared by a deployment descriptor, never served by a host. All three conditions, not
+     * `manifestJson == null` alone: a row with a null manifest because it predates that column must
+     * keep being pushed.
+     */
+    val isPlaceholder: Boolean
+        get() = manifestJson == null &&
+            contentHash == null &&
+            status == ExternalPluginDefinitionStatus.UNAVAILABLE
 }

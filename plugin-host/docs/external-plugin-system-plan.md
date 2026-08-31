@@ -39,6 +39,7 @@ Status legend: ✅ implemented & verified · 🟡 implemented, POC-level · ⛔ 
 | Building-block support (shared `PluginConfigurationReference`, namespaced config mappings, required-plugins endpoint, BB-context admin UX) | `backend/external-plugin/.../processlink/ExternalPluginServiceTaskStartListener.kt` + `backend/building-block/.../service/BuildingBlockPluginDefinitionService.kt` ↔ frontend `process-link/.../{select-plugin-configuration,configure-building-block-plugins}` (§19) | ✅ |
 | Case-definition import/export parity (preview contributor, mapper remap hook, dangling repair, `EXTERNAL_PLUGIN` case-tab import) | `backend/external-plugin/.../{preview/ExternalPluginImportPreviewContributor,service/ExternalPluginConfigurationMappingResolver}.kt`, `backend/case/.../service/CaseTabImporter.kt` ↔ frontend `case-management/.../{case-management-upload,case-management-missing-plugin-configurations}` (§20) | ✅ |
 | Action result write-back (`action_result_mappings` + `result` output channel), embedded **and** external | `backend/plugin/.../service/PluginActionResultHandler.kt` ↔ frontend `process-link/.../plugin-action-result-mappings` (§21) | ✅ |
+| Auto-deployment — descriptor-driven provisioning of integrations, packages and configurations at startup; boot-time package pre-install on the host; self-building host image (§22) | `backend/external-plugin/.../autodeployment/{ExternalPluginImporter,ExternalPluginPackageDeployer,ExternalPluginDeploymentDto}.kt` ↔ `plugin-host/app/src/{preinstall,plugin-package-install}.ts`, `plugin-host/app/Dockerfile` | ✅ |
 | Per-host broker / callback config + defaults endpoint | `backend/external-plugin/.../web/rest/ExternalPluginManagementResource.kt#hostDefaults` | ✅ |
 | Per-host durable event queue mode + TTL (live/durable, `x-expires`) + narrow PATCH endpoint | `backend/external-plugin/.../domain/EventQueueMode.kt`, `service/ExternalPluginHostService.updateEventQueue`, `web/rest/...#updateHostEventQueue` ↔ `plugin-host/app/src/rabbitmq/event-consumer.ts` | ✅ |
 | Plugin assets (logo + i18n bundle in manifest, served by host) | `plugin-host/plugin-sdk/bin/valtimo-plugin-pack.mjs`, `plugin-host/app/src/routes/plugin-bundles.ts` | ✅ |
@@ -1856,6 +1857,21 @@ All iframe surfaces are now implemented: case **tab** (§13.1), **task form** (�
 
 - Host `tsc` build and `@valtimo/plugin-sdk` build: clean (including the optional-TLS
   `buildHttpsOptions` wiring in `plugin-host/app/src/index.ts`).
+- Auto-deployment (§22): host unit suite covers the pre-install decision table
+  (`src/preinstall.test.ts` — installed / unchanged / conflicting-hash-kept / overwritten /
+  corrupt-skipped / invalid-manifest-skipped / non-zip-ignored / missing-directory-no-op) and
+  `routes/host-management.test.ts` passes **unchanged** through the `installPluginZip` extraction,
+  which is what makes that refactor provably behaviour-preserving. `docker build -f app/Dockerfile
+  plugin-host` succeeds from a context with no `dist/`, and `/data/preinstalled` in the resulting
+  image is empty. Backend: `ExternalPluginImporterTest` pins the full matrix
+  (apply-in-order, second-run no-op, immutable-field drift reported without mutation, frontend-origin
+  and event-queue reconciliation, duplicate-baseUrl skip, unreachable-host skip, 409-same-hash vs
+  409-different-hash, `APP`-with-packages refusal, missing/foreign definition skip, malformed
+  malformed-descriptor failure, `afterImport` issue recheck, placeholder resolution + default);
+  `ExternalPluginAutoDeploymentIntTest` runs the whole path against a real database and a real
+  (stubbed) host over HTTP — host row, definition, configuration and all four grant tables — and
+  asserts the second run changes nothing. `:backend:apps:dev:test` deserializes every shipped
+  descriptor and pins its ids and base URLs unique.
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist **for both the service and the
   user principal** + service-token-filter + service-token-ttl + **user-token suites** +
   **task-form-submission suite** + endpoint-
@@ -2862,6 +2878,307 @@ actions, with no hand-coded `resultProcessVariable` action property needed.
   source/target rows with a free-text JSON-pointer input and a `ValuePathSelectorComponent` target
   (`doc:`/`case:` browsing with case/BB context; free-text `pv:` fallback for independent
   processes).
+
+---
+
+## 22. Auto-deployment ✅
+
+Everything §2 promises about zero-configuration deployment, made real: an environment comes up with
+its hosts and apps registered, its plugin packages installed and its configurations active, with no
+clicks in the admin UI. Two halves that meet in the middle — the host installs what an operator
+shipped with it, and the core app applies what an application's descriptor declares.
+
+> **Note for #654** (converting this document into `.claude/context/` files): this section belongs in
+> the external-plugin module context, with the host-side half cross-referenced from the plugin-host
+> context.
+
+### 22.1 Host side — boot-time package pre-install
+
+`PLUGIN_PREINSTALL_DIR` (default `./preinstalled`, `/data/preinstalled` in the image) is scanned once
+at boot, after `loadAllFromDisk()` and before any route is registered — so the host never answers a
+discovery poll with a half-provisioned plugin list. Every `*.zip` in it is installed through the same
+pipeline the upload route uses (`installPluginZip` in `plugin-host/app/src/plugin-package-install.ts`,
+extracted from `routes/host-management.ts` so the two cannot drift): zip-slip-guarded extraction,
+manifest validation, logo containment, `pluginManager.installPackage`.
+
+Outcomes, in the order they are decided:
+
+| Situation | Result |
+|---|---|
+| Version not installed | Installed, logged at info |
+| Installed, identical content hash | No-op, logged at debug |
+| Installed, **different** content | Kept, logged at **warn** — GZAC pins the hash an admin accepted (§11), so replacing plugin code is an explicit act |
+| Installed, different content, `PLUGIN_PREINSTALL_OVERWRITE=true` | Replaced, logged at warn. Throwaway environments only |
+| Corrupt zip / invalid manifest / unreadable file | Skipped, logged at warn — the remaining packages still install |
+| Directory absent | No-op |
+
+Nothing here is fatal: a bad package can never stop the host from starting. Zips are processed in
+sorted filename order so the log reads the same on every boot, and a single summary line reports
+`installed / unchanged / skipped`.
+
+Shipping packages is therefore either a bind mount over `/data/preinstalled` or a two-line derived
+image (`FROM valtimo/plugin-host` + `COPY my-plugin.zip /data/preinstalled/`). The published image
+ships the directory **empty** — no sample plugin, ever.
+
+### 22.2 Host side — the image builds itself
+
+`plugin-host/app/Dockerfile` is multi-stage and its build context is `plugin-host/`, not `app/`: the
+app depends on the SDK through `file:../plugin-sdk`, so the builder stage compiles the SDK first and
+then the app. A clean checkout builds without any prior `npm run build`, which is what makes the
+host publishable (#652) and reproducible in CI. `plugin-host/.dockerignore` excludes `node_modules`
+and `dist` from the context, so a stale local build can never leak into an image.
+
+`sample-apps/demo-app/Dockerfile` has the same shape for the reference app. It exists so the local
+compose stack can bring up a working `kind: APP` integration and is **never published**.
+
+### 22.3 Core-app side — `*.externalplugin.json` descriptors
+
+`ExternalPluginImporter` is an `Importer` on the shared import SPI, claiming
+`/global/external-plugin/**/*.externalplugin.json`. Startup autodeployment (`deployGlobal()`) and an
+admin-supplied global import therefore run the same code — deliberately *not* a fourth bespoke
+classpath scanner. Content is `${property:default}`-resolved against the Spring `Environment` before
+parsing (the same rule `ChangelogDeployer` uses), so secrets and per-environment URLs come from env
+vars rather than a file in a repository.
+
+Global imports run **after** case definitions (`deployOnStartup()` calls `deployCase()` first), so a
+case tab or process link referencing one of these configurations is written before the configuration
+exists. That is tolerated by design: `validateReference` for `FIXED` is an explicit no-op ("may be
+null during import (dangling)"), `CaseTabImporter` saves the tab regardless, and the reference
+carries the descriptor's stable id — so it resolves the moment the importer runs. `afterImport`
+rechecks every case definition, republishing each surface's verdict and retiring the issues raised in
+the meantime (`publishIssue` emits `CaseConfigurationIssueResolvedEvent` once the issue is gone). A
+process link should still declare `pluginDefinitionKey`/`pluginVersion`, which `createReference`
+falls back to while the configuration is not yet resolvable.
+
+Schema (`ExternalPluginDeploymentDto`):
+
+```json
+{
+  "integrations": [{
+    "id": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d0001",
+    "name": "Local plugin host",
+    "kind": "PLUGIN_HOST",
+    "baseUrl": "http://localhost:8090",
+    "secret": "${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:test-secret}",
+    "gzacCallbackBaseUrl": "http://host.docker.internal:8080",
+    "eventBrokerAmqpUrl": "amqp://guest:guest@gzac-rabbitmq:5672",
+    "eventBrokerExchange": "valtimo-events",
+    "eventQueueMode": "LIVE",
+    "frontendOrigins": ["http://localhost:4200"],
+    "packages": [{"resource": "classpath:config/external-plugin/my-plugin-1.0.0.zip", "overwrite": false}],
+    "configurations": [{
+      "id": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d1001",
+      "title": "Case summary",
+      "pluginId": "case-summary",
+      "pluginVersion": "0.1.0",
+      "properties": {"currency": "EUR"},
+      "grantedCapabilities": ["gzac_api", "log"],
+      "grantedEndpoints": [{"method": "GET", "pattern": "/api/v1/document/*"}],
+      "grantedEvents": ["com.ritense.valtimo.document.created"],
+      "grantedEgress": ["jsonplaceholder.typicode.com"]
+    }]
+  }]
+}
+```
+
+**Startup never waits on a host.** Every step below is a local database write. The one host contact
+is the best-effort push `create`/`update` schedule for after the import commits — suppressed while
+the definition is a placeholder or awaiting re-acceptance, and a warning rather than a failure when
+the host is unreachable. So a host that is down, slow, or simply not started yet never delays boot
+and never holds back readiness. The two steps that genuinely need a reachable host are moved to the
+discovery cycle (§22.4).
+
+Ordering per integration:
+
+1. **Host.** `findById(id)` — absent → `register(…, id = descriptor.id)`; present → reconcile.
+   `findByBaseUrl` returning a *different* id means a second row for one host (a hand-added host, or
+   #634 in action): the whole integration is skipped with a warn rather than duplicated.
+2. **Packages.** Handed to `ExternalPluginPackageDeployer`, which uploads them later — nothing is
+   sent here. `kind: APP` with a non-empty `packages` list is a descriptor error: an app serves its
+   own plugin and accepts no uploads (§17).
+3. **Configurations.** Present by id → `title` and `properties` upserted from the descriptor,
+   grants untouched (§23.2 rows 10–11). Absent → resolve the definition by `pluginId@pluginVersion`
+   and `create(…, id = descriptor.id)`.
+
+### 22.3.1 Placeholder definitions
+
+A configuration needs a definition, and a definition's manifest only exists once a host has served
+it. Waiting for that would make provisioning depend on boot ordering and leave process links, case
+tabs and menu pages pointing at configurations that do not exist.
+
+So when the plugin has not been discovered yet, the deployer creates a **placeholder** definition
+from the `pluginId` and `pluginVersion` the descriptor names: the row exists, carries no manifest,
+no schema and no content hash, and is `UNAVAILABLE`. `ExternalPluginDefinition.isPlaceholder` is the
+conjunction of no manifest, no content hash and `UNAVAILABLE` — deliberately all three, so a row
+that merely lacks one of them (a discovered plugin gone unavailable, say) is never mistaken for a
+placeholder. Configurations are created against it immediately.
+
+`upsertDefinition` later finds the same row by `(pluginId, version)` and fills it in **in place**, so
+every id already handed out stays valid. Content pinning is untouched: `contentHash` is still null at
+that point, so §11 pins on first real sight exactly as before.
+
+While a definition is a placeholder, `pushToHost` refuses to push it and the discovery cycle skips it
+— there is nothing on the host to push to, and no service token is ever minted for it.
+
+### 22.3.2 Deferred grant validation — the price of placeholders
+
+Grants declared against a placeholder cannot be checked against a manifest that does not exist yet,
+so the exact-match rule (§3.1) is *deferred*, not dropped. When discovery is about to fill a
+placeholder in, `ExternalPluginConfigurationService.findGrantMismatches` re-runs the check for every
+configuration attached to it. On any mismatch the row **stays a placeholder** — no manifest, no
+pinned hash, still `UNAVAILABLE` — so pushes and service tokens keep being withheld, and an error
+naming the exact difference is logged once per run.
+
+Deliberately not self-healing: narrowing to the manifest would discard a permission the descriptor
+author wrote down, and widening would grant something nobody accepted. The repair is to correct the
+descriptor, delete the affected configuration, and restart. Note that this is *not* the
+`pendingContentHash` re-acceptance flow — `acceptContent` re-pins without re-granting, so routing a
+grant mismatch through it would let an admin unblock pushing grants that were never validated.
+
+**Idempotency keys.** Both `ExternalPluginHost.id` and `ExternalPluginConfiguration.id` are
+caller-supplied, so the descriptor's UUIDs *are* the row ids and a redeployment recognises its own
+rows. `register(…)` and `create(…)` gained a trailing `id: UUID = UUID.randomUUID()` parameter;
+every existing caller is unaffected.
+
+**Grants are verbatim, never derived.** A descriptor states the full granted sets, and the same
+`requireExactGrantMatch` validation the activation screen runs still applies (§3.1). Deriving them
+from the manifest would let a manifest change silently widen an existing environment's grants; the
+descriptor author reviewing the declared set *is* the acceptance step.
+
+**What redeployment does not do.** `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` and the broker
+fields are immutable after registration by design — the confidential-transport check that pins broker
+credentials to a safe base URL only runs at registration (§6) — so a changed value is reported by
+name and the row left alone (#618). Only `frontendOrigins` and the event-queue mode/TTL are
+reconciled. An activated configuration is likewise never re-granted: that set is what an admin
+accepted. Its `title` and `properties` *are* upserted from the descriptor on every start.
+
+**Failure.** Errors propagate, like every other importer and like the embedded plugin
+autodeployment (which rethrows). A malformed descriptor or a rejected registration fails the import
+rather than leaving an environment silently unprovisioned. Conditions that are *expected* rather than
+wrong — an unreachable host, a duplicate base URL, a plugin already registered on another host — stay
+warn-and-skip.
+
+### 22.4 What the discovery cycle finishes
+
+`ExternalPluginDiscoveryService.pollHost` already knows the moment a host becomes reachable, and
+already runs under a ShedLock so only one node acts. Two steps hang off it, both after the health
+probe succeeds:
+
+- **Package upload**, via `ExternalPluginPackageDeployer.deployPending`, deliberately *before* the
+  plugin listing is fetched so a package uploaded now is discovered in the very same poll. Packages
+  settle at most once per JVM run per `(host, resource)` — a 60-second loop must not re-POST tens of
+  megabytes. A successful upload settles; so does any 409 (matching hashes at debug, mismatching at
+  warn — replacing accepted content takes an explicit `overwrite: true`) and a missing classpath
+  resource (reported once as an error). An outright failure is retried next cycle; nothing thrown
+  here can fail the poll.
+- **Placeholder fill-in**, gated on the deferred grant check (§22.3.2).
+
+Consequence worth knowing: descriptor-declared packages land within one discovery cycle of the host
+becoming reachable, not instantly at startup. Packages shipped through the host's own pre-install
+directory (§22.1) are unaffected — the host installs those itself before it serves anything.
+
+A host that is down when the application starts therefore costs nothing and loses nothing: the
+integration, its placeholder definitions and its configurations all exist immediately, and the
+remainder completes on its own whenever the host turns up. No restart.
+
+### 22.5 Properties
+
+| Property | Default | Meaning |
+|---|---|---|
+| `valtimo.external-plugin.polling.rate` | `PT60S` | How often the discovery cycle runs, and so how quickly a host that appears late is finished off |
+| `PLUGIN_PREINSTALL_DIR` (host) | `./preinstalled` | Directory scanned at boot for `*.zip` packages |
+| `PLUGIN_PREINSTALL_OVERWRITE` (host) | `false` | Replace an installed version whose content differs |
+
+### 22.6 Known limitation — containerised core app to containerised host
+
+`isSecureTransport()` accepts only `https` or a loopback host, so under the compose `gzac`/`demo`
+profiles (core app in a container, host at `http://plugin-host:8090`) a descriptor may register the
+integration for **actions only**; declaring a broker URL is refused. Events there require TLS on the
+host (`TLS_CERT_PATH`/`TLS_KEY_PATH`) or an `https://` base URL. `bootRunWithDocker` — the daily
+driver — runs the core app on the developer's machine and reaches both integrations on `localhost`,
+which is loopback, so events work unchanged.
+
+### 22.7 Development environment
+
+`backend/apps/dev/docker-compose.yaml` gained a `plugin-host` profile (`plugin-host-database`,
+`plugin-host`, `demo-app`), added to `bootRunWithDocker`'s compose arguments. The descriptor at
+`backend/apps/dev/src/main/resources/config/global/external-plugin/dev.externalplugin.json` registers both
+integrations and activates one configuration of each. The plugin host mounts
+`plugin-host/sample-plugins/case-summary/dist` over `/data/preinstalled`, so
+`npm --prefix plugin-host run setup` once is all that is needed for the sample plugin to be installed
+at boot; without it the directory is empty and the host simply starts with no plugins.
+
+---
+
+## 23. Permission acceptance model ✅
+
+When is an admin asked to approve, and when does the system just proceed? The rules are spread
+across §3.1 (exact grant matching), §11 (content pinning) and §22 (auto-deployment); this section
+is the consolidated answer.
+
+Two questions are kept deliberately separate:
+
+- **Did the plugin developer's declared footprint change?** That always needs a human.
+- **Did anything else change?** Provenance decides. Descriptor content is authored by the
+  implementation developer, reviewed in git and enforced against the manifest at runtime, so it
+  applies without a click.
+
+The trust boundary is the *plugin developer*, who is not fully trusted. The descriptor author is the
+same party as the administrator, so approval-by-review is treated as equivalent to
+approval-by-clicking — and is arguably stronger, being peer-reviewed and enforced.
+
+### 23.1 Plugin package / code
+
+| # | Scenario | Acceptance? | Why |
+|---|---|---|---|
+| 1 | Plugin discovered on a host for the first time | **No** (pinned) | Nothing accepted yet — `contentHash` is pinned on first sight. Acceptance happens at *activation* (rows 8–9), not discovery. |
+| 2 | Host serves the same content hash | **No** | Identical bytes ⇒ identical manifest ⇒ identical declared permissions. |
+| 3 | Host serves a different hash, **permissions identical** | **Yes — admin click** | Not a permissions question: the code changed under an identity an admin already accepted. Tamper-evidence against a semi-trusted host. Message: *"code changed, permissions unchanged."* |
+| 4 | Host serves a different hash, **permissions differ** | **Yes — admin click** | New footprint. Message: *"permissions changed"*, with a diff of what was added. |
+| 5 | Admin uploads over an existing version via the UI (`overwrite=true`) | **Yes — at upload** | The upload flow re-reviews the requested permissions; `applyApprovedOverwrite` then re-pins and re-grants every configuration to the new manifest's declared sets. |
+| 6 | Admin uploads a **new version** (`pluginVersion` differs) | **Yes — at activation** | A different `pluginId@version` is a separate definition; its configurations are new (rows 8–9). |
+| 7 | Plugin temporarily absent (host down, volume wiped) and returns with the same hash | **No** | `markMissingDefinitions` only bumps `consecutiveMisses` and flips status; the manifest and pin are retained, so it returns to `AVAILABLE` untouched. |
+
+### 23.2 Configuration
+
+| # | Scenario | Acceptance? | Why |
+|---|---|---|---|
+| 8 | First deployment from a descriptor | **No — descriptor review** | The `granted*` arrays *are* the approval, and `requireExactGrantMatch` enforces set equality in both directions: a plugin asking for anything not listed will not activate. Reviewable in git, enforced at runtime. |
+| 9 | First activation through the UI | **Yes — admin click** | No prior artifact states the footprint, so the permissions step is the acceptance. |
+| 10 | Descriptor `title` / `properties` changed | **No** | Code unchanged ⇒ manifest permissions unchanged, and the descriptor is trusted by provenance. The importer upserts the new values. |
+| 11 | Descriptor changes an `x-egress-target` property value | **No** | This genuinely alters the outbound allowlist, so it *is* a permission change — but it is authored by the implementation developer, not the plugin developer, and the resulting origins are already rendered as "derived egress" on the permissions step. Reliability outweighs a click here; the change is logged explicitly. |
+| 12 | Admin edits a configuration in the UI | **No** | `update()` leaves grants untouched (`grantedEndpoints = null` ⇒ unchanged); only title and properties move. |
+| 13 | Restart with nothing changed | **No** | No guard engages. The importer does re-upsert `title`/`properties` (row 10 with equal values) and the discovery cycle keeps re-pushing every configuration with a fresh service token — but grants and the content pin are untouched, so running processes are unaffected. |
+
+### 23.3 Placeholder definitions
+
+| # | Scenario | Acceptance? | Why |
+|---|---|---|---|
+| 14 | Descriptor deployed before the host is reachable | **No — deferred** | The configuration is created against a placeholder so process links and case tabs resolve. Grants are stored but unvalidated; nothing is pushed and no service token is minted until a manifest arrives. |
+| 15 | Placeholder's manifest arrives, grants **match** | **No** | The deferred exact-match check passes; the descriptor review already covered it (row 8). |
+| 16 | Placeholder's manifest arrives, grants **do not match** | **Neither — it is a defect** | Not an acceptance decision: the descriptor asserted something false. The definition stays unusable and the error names the difference. The fix is to correct the descriptor, not to approve. |
+
+### 23.4 Host level (no plugin permissions involved)
+
+| # | Scenario | Acceptance? | Why |
+|---|---|---|---|
+| 17 | New integration registered from a descriptor | **No** | Host registration is not a plugin permission. The gate that matters is the confidential-transport check on broker credentials at registration (§6). |
+| 18 | Descriptor changes `baseUrl` / secret / broker fields | **No — refused** | Immutable after registration; reported and left unchanged. Changing them means delete and re-register. |
+
+### 23.5 Out of scope
+
+Package **provenance** — "is this zip the artifact its publisher shipped?" — is not addressed. The
+content hash proves immutability *since acceptance*, not origin. Answering it properly means
+publisher signatures verified against a configured trust store. The working assumption is a low
+baseline of trust in the package, on the grounds that any interaction with the outside world has to
+surface in the permissions the admin sees: a suspicious egress target shows up in the allowlist.
+
+### 23.6 Implementation status
+
+| Row | State |
+|---|---|
+| 3, 4 | 🟡 Distinguished by `ExternalPluginDefinition.pendingPermissionsChanged`, which compares the pending manifest's declared footprint against the accepted one, and surfaced as a "Review required" tag with the matching message. Accepting is still API-only (`POST /definition/{id}/accept-content`) — there is no confirm-and-diff screen. |
+| all others | ✅ |
 
 ---
 

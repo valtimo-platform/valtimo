@@ -2602,6 +2602,17 @@
       "buildingBlockMapping": "Plugin-koppeling van bouwblok",
       "menuPage": "Menupagina"
     },
+    "reviewRequired": {
+      "tag": "Beoordeling vereist",
+      "permissionsChanged": "Het pluginpakket op de host is gewijzigd en vraagt nu andere rechten dan de rechten die zijn geaccepteerd. Er wordt niets naar de host gestuurd totdat een beheerder de nieuwe rechten beoordeelt en accepteert.",
+      "codeChanged": "Het pluginpakket op de host is gewijzigd. Het vraagt dezelfde rechten als voorheen, maar de code is niet de code die is geaccepteerd. Er wordt niets naar de host gestuurd totdat een beheerder het nieuwe pakket bevestigt."
+    },
+    "awaitingHost": {
+      "modalTitle": "Pluginhost nog niet beschikbaar",
+      "modalMessage": "Deze configuratie is aangemaakt vanuit een deployment-descriptor, maar de pluginhost heeft de plugin nog niet aangeboden — de instellingen en rechten zijn daardoor onbekend en niet te bewerken. Zodra de host beschikbaar is, wordt bewerken automatisch mogelijk. Verwijderen kan wel.",
+      "tag": "Wacht op host",
+      "tooltip": "Deze plugin is gedeclareerd door een deployment-descriptor, maar de host heeft hem nog niet aangeboden. De configuratie bestaat en alles wat ernaar verwijst werkt, maar de plugin kan pas draaien als de host beschikbaar is."
+    },
     "compatibility": {
       "incompatibleTag": "Incompatibel",
       "warningTitle": "Mogelijk compatibiliteitsprobleem",

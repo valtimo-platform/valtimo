@@ -20,4 +20,7 @@ import com.ritense.externalplugin.domain.ExternalPluginHost
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
-interface ExternalPluginHostRepository : JpaRepository<ExternalPluginHost, UUID>
+interface ExternalPluginHostRepository : JpaRepository<ExternalPluginHost, UUID> {
+
+    fun findByBaseUrl(baseUrl: String): ExternalPluginHost?
+}

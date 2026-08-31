@@ -65,6 +65,13 @@ class ExternalPluginHostService(
     fun get(id: UUID): ExternalPluginHost = hostRepository.findById(id)
         .orElseThrow { ExternalPluginNotFoundException("External plugin host", id) }
 
+    @Transactional(readOnly = true)
+    fun findById(id: UUID): ExternalPluginHost? = hostRepository.findById(id).orElse(null)
+
+    @Transactional(readOnly = true)
+    fun findByBaseUrl(baseUrl: String): ExternalPluginHost? =
+        hostRepository.findByBaseUrl(baseUrl.trimEnd('/'))
+
     fun decryptedSecret(host: ExternalPluginHost): String = encryptionService.decrypt(host.secret)
 
     fun register(
@@ -79,6 +86,7 @@ class ExternalPluginHostService(
         kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
         /** Browser origins allowed to embed this host's plugin screens. See [updateFrontendOrigins]. */
         frontendOrigins: List<String> = emptyList(),
+        id: UUID = UUID.randomUUID(),
     ): ExternalPluginHost {
         val normalizedBaseUrl = baseUrl.trimEnd('/')
         val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }
@@ -108,7 +116,7 @@ class ExternalPluginHostService(
         }
         val resolvedTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
         val host = ExternalPluginHost(
-            id = UUID.randomUUID(),
+            id = id,
             name = name,
             baseUrl = normalizedBaseUrl,
             secret = encryptionService.encrypt(secret),

@@ -1,0 +1,37 @@
+{
+    "integrations": [
+        {
+            "id": "5f0b1a10-0000-4000-8000-00000000f001",
+            "name": "Integration test plugin host",
+            "kind": "PLUGIN_HOST",
+            "baseUrl": "${test.external-plugin.base-url}",
+            "secret": "${test.external-plugin.admin-token:test-secret}",
+            "gzacCallbackBaseUrl": "http://localhost:8080",
+            "eventBrokerAmqpUrl": "amqp://guest:guest@localhost:5672",
+            "eventBrokerExchange": "valtimo-events",
+            "frontendOrigins": ["http://localhost:4200"],
+            "packages": [
+                {
+                    "resource": "classpath:config/external-plugin-test/case-summary-0.1.0.zip"
+                }
+            ],
+            "configurations": [
+                {
+                    "id": "5f0b1a10-0000-4000-8000-00000000c001",
+                    "title": "Case summary (deployed)",
+                    "pluginId": "case-summary",
+                    "pluginVersion": "0.1.0",
+                    "properties": {
+                        "currency": "EUR"
+                    },
+                    "grantedCapabilities": ["gzac_api", "log"],
+                    "grantedEndpoints": [
+                        {"method": "GET", "pattern": "/api/v1/document/*"}
+                    ],
+                    "grantedEvents": ["com.ritense.valtimo.document.created"],
+                    "grantedEgress": ["jsonplaceholder.typicode.com"]
+                }
+            ]
+        }
+    ]
+}

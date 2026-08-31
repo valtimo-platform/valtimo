@@ -2573,6 +2573,17 @@
       "buildingBlockMapping": "Building block plugin mapping",
       "menuPage": "Menu page"
     },
+    "reviewRequired": {
+      "tag": "Review required",
+      "permissionsChanged": "The plugin package on the host changed and now requests different permissions than the ones that were accepted. Nothing is sent to the host until an administrator reviews and accepts the new permissions.",
+      "codeChanged": "The plugin package on the host changed. It requests the same permissions as before, but the code is not the one that was accepted. Nothing is sent to the host until an administrator confirms the new package."
+    },
+    "awaitingHost": {
+      "modalTitle": "Plugin host not available yet",
+      "modalMessage": "This configuration was created from a deployment descriptor, but its plugin host has not served the plugin yet — so its settings and permissions are not known and cannot be edited. It becomes editable automatically once the host is available. You can still delete it.",
+      "tag": "Awaiting host",
+      "tooltip": "This plugin was declared by a deployment descriptor but its host has not served it yet. The configuration exists and everything referencing it resolves, but the plugin cannot run until its host is available."
+    },
     "compatibility": {
       "incompatibleTag": "Incompatible",
       "warningTitle": "Possible compatibility issue",

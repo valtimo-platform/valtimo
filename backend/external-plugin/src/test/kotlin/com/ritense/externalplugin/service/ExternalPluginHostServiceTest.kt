@@ -407,6 +407,56 @@ class ExternalPluginHostServiceTest {
     }
 
     @Test
+    fun `register persists a caller-supplied id`() {
+        val id = UUID.fromString("11111111-2222-3333-4444-555555555555")
+
+        val host = service.register(
+            name = "local",
+            baseUrl = "http://localhost:8090",
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "http://localhost:8080",
+            eventBrokerAmqpUrl = null,
+            eventBrokerExchange = null,
+            id = id,
+        )
+
+        assertThat(host.id).isEqualTo(id)
+    }
+
+    @Test
+    fun `register without an explicit id still generates one`() {
+        val first = registerMinimal()
+        val second = registerMinimal()
+
+        assertThat(first.id).isNotNull()
+        assertThat(first.id).isNotEqualTo(second.id)
+    }
+
+    @Test
+    fun `findById returns null instead of throwing for an unknown host`() {
+        val missingId = UUID.randomUUID()
+        whenever(hostRepository.findById(missingId)).thenReturn(Optional.empty())
+
+        assertThat(service.findById(missingId)).isNull()
+    }
+
+    @Test
+    fun `findByBaseUrl normalises the trailing slash before looking up`() {
+        val existing = registerMinimal()
+        whenever(hostRepository.findByBaseUrl("http://localhost:8090")).thenReturn(existing)
+
+        assertThat(service.findByBaseUrl("http://localhost:8090/")).isSameAs(existing)
+        assertThat(service.findByBaseUrl("http://localhost:8090")).isSameAs(existing)
+    }
+
+    @Test
+    fun `findByBaseUrl returns null when no host is registered at that address`() {
+        whenever(hostRepository.findByBaseUrl(any())).thenReturn(null)
+
+        assertThat(service.findByBaseUrl("http://localhost:9999")).isNull()
+    }
+
+    @Test
     fun `updateEventQueue throws when the host does not exist`() {
         val missingId = UUID.randomUUID()
         whenever(hostRepository.findById(missingId)).thenReturn(Optional.empty())

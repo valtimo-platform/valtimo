@@ -42,6 +42,17 @@ interface UnifiedPluginConfigurationRow {
    */
   incompatible?: boolean;
   compatibilityMessage?: string;
+  /**
+   * Drives the "Awaiting host" tag: the configuration is real and everything referencing it
+   * resolves, but its plugin cannot run until its host serves it.
+   */
+  awaitingHost?: boolean;
+  /**
+   * Drives the "Review required" tag: the plugin's package changed after acceptance, so nothing is
+   * pushed and no service token is issued until an admin accepts it.
+   */
+  reviewRequired?: boolean;
+  reviewMessage?: string;
   hostName?: string;
 }
 

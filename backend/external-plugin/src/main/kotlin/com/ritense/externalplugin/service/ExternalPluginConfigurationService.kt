@@ -106,9 +106,21 @@ class ExternalPluginConfigurationService(
         grantedEvents: List<GrantedEventEntry>,
         grantedCapabilities: List<String> = emptyList(),
         grantedEgress: List<String> = emptyList(),
+        id: UUID = UUID.randomUUID(),
+        /**
+         * Only the descriptor importer passes true. With no manifest every check below silently
+         * passes, so any other caller's grants would be stored unvalidated and discovery would then
+         * refuse to activate the plugin at all.
+         */
+        allowPlaceholder: Boolean = false,
     ): ExternalPluginConfiguration {
         val definition = definitionRepository.findById(definitionId)
             .orElseThrow { IllegalArgumentException("External plugin definition $definitionId not found") }
+        require(allowPlaceholder || !definition.isPlaceholder) {
+            "External plugin '${definition.pluginId}@${definition.version}' has not been discovered on " +
+                "its host yet, so its permissions are unknown and a configuration cannot be validated. " +
+                "Wait until the host serves the plugin and it becomes available."
+        }
 
         // Rejects unknown capability names before anything is persisted.
         val capabilities = grantedCapabilities.map(ExternalPluginCapability::fromValue)
@@ -123,7 +135,7 @@ class ExternalPluginConfigurationService(
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
 
         val configuration = ExternalPluginConfiguration(
-            id = UUID.randomUUID(),
+            id = id,
             definitionId = definitionId,
             title = title,
             properties = encrypted,
@@ -196,6 +208,13 @@ class ExternalPluginConfigurationService(
         definition: ExternalPluginDefinition,
         host: ExternalPluginHost,
     ): Boolean {
+        if (definition.isPlaceholder) {
+            logger.debug {
+                "Skipping push of configuration ${configuration.id}: plugin " +
+                    "'${definition.pluginId}@${definition.version}' has not been discovered on its host yet"
+            }
+            return false
+        }
         if (definition.requiresReacceptance) {
             // Central guard — every push path (create, update, discovery re-sync, token revocation)
             // funnels through here. No push means no fresh service token for plugin code that
@@ -406,6 +425,59 @@ class ExternalPluginConfigurationService(
                     "${declaredEvents.size} events, ${declaredCapabilities.size} capabilities, " +
                     "${declaredEgress.size} egress targets)"
             }
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun findGrantMismatches(definition: ExternalPluginDefinition): List<String> {
+        val manifest = definition.manifestJson ?: return emptyList()
+        val requiredEndpoints = declaredEndpoints(manifest).map { "${it.method.uppercase()}:${it.pattern}" }.toSet()
+        val requiredEvents = declaredEvents(manifest).map { it.eventType }.toSet()
+        val requiredCapabilities = declaredCapabilities(manifest).map { it.value }.toSet()
+        val requiredEgress = declaredEgress(manifest).toSet()
+
+        return configurationRepository.findAllByDefinitionId(definition.id).mapNotNull { configuration ->
+            val problems = listOfNotNull(
+                difference(
+                    "endpoints",
+                    requiredEndpoints,
+                    grantedEndpointRepository.findAllByConfigurationId(configuration.id)
+                        .map { "${it.httpMethod.uppercase()}:${it.endpointPattern}" }.toSet(),
+                ),
+                difference(
+                    "event subscriptions",
+                    requiredEvents,
+                    grantedEventRepository.findAllByConfigurationId(configuration.id)
+                        .map { it.eventType }.toSet(),
+                ),
+                difference(
+                    "capabilities",
+                    requiredCapabilities,
+                    grantedCapabilityRepository.findAllByConfigurationId(configuration.id)
+                        .map { it.capability.value }.toSet(),
+                ),
+                difference(
+                    "egress targets",
+                    requiredEgress,
+                    grantedEgressRepository.findAllByConfigurationId(configuration.id)
+                        .map { it.target }.toSet(),
+                ),
+            )
+            if (problems.isEmpty()) null else "configuration ${configuration.id} " +
+                "('${configuration.title}'): ${problems.joinToString("; ")}"
+        }
+    }
+
+    private fun difference(subject: String, required: Set<String>, granted: Set<String>): String? {
+        val missing = required - granted
+        val undeclared = granted - required
+        if (missing.isEmpty() && undeclared.isEmpty()) return null
+        return buildString {
+            append(subject)
+            append(" ")
+            if (missing.isNotEmpty()) append("declared but not granted: ${missing.joinToString(", ")}")
+            if (missing.isNotEmpty() && undeclared.isNotEmpty()) append("; ")
+            if (undeclared.isNotEmpty()) append("granted but not declared: ${undeclared.joinToString(", ")}")
         }
     }
 

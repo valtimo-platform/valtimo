@@ -76,9 +76,10 @@ The database starts automatically and the host listens on port 8090.
 For production or isolated testing, run everything in Docker:
 
 ```bash
-npm run build
 ADMIN_TOKEN=my-secret npm run docker:up
 ```
+
+The image compiles the SDK and the app itself, so no local build is needed.
 
 Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` using
 `host.docker.internal` instead of `localhost` to reach the host machine's RabbitMQ.
@@ -90,6 +91,8 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)) |
 | `PORT` | no | `8090` | HTTP listen port |
 | `PLUGIN_STORAGE_DIR` | no | `./plugins` (local), `/data/plugins` (Docker) | Directory for persisted plugin binaries |
+| `PLUGIN_PREINSTALL_DIR` | no | `./preinstalled` (local), `/data/preinstalled` (Docker) | Directory scanned once at boot; every `*.zip` in it is installed (see [Pre-installed plugins](#pre-installed-plugins)). Empty in the published image. |
+| `PLUGIN_PREINSTALL_OVERWRITE` | no | `false` | Let a pre-install package replace an installed version whose content **differs**. Only the literal string `true` enables it. Throwaway environments only — GZAC pins the content hash an admin accepted. |
 | `LOG_LEVEL` | no | `info` | `debug`, `info`, `warn`, or `error` |
 | `HOST_ID` | no | OS hostname | Identity of this logical host; names its per-host event queue. Replicas of the **same** host must share one value (see [Events](#events)). |
 | `DB_HOST` | no | `localhost` | PostgreSQL host |
@@ -188,10 +191,14 @@ may still be registered over plain HTTP.
 
 | Script | Description |
 |--------|-------------|
-| `npm run docker:build` | Build TypeScript and Docker image |
-| `npm run docker:up` | Start full stack (db + app) |
+| `npm run docker:build` | Build the image (it compiles the SDK and the app itself — no local `npm run build` needed) |
+| `npm run docker:up` | Start full stack (db + host) |
 | `npm run docker:down` | Stop all containers |
-| `npm run docker:logs` | Follow app container logs |
+| `npm run docker:logs` | Follow host container logs |
+
+The image is multi-stage and its build context is `plugin-host/`, not `plugin-host/app/`: the app
+depends on the SDK through `file:../plugin-sdk`, so the SDK is built first inside the image. To
+build it directly: `docker build -f app/Dockerfile -t valtimo/plugin-host .` from `plugin-host/`.
 
 ## Persistence
 
@@ -203,6 +210,42 @@ may still be registered over plain HTTP.
 
 Configurations persist across host restarts. Event consumers automatically reconnect to brokers
 referenced by persisted configurations on startup.
+
+## Pre-installed plugins
+
+A host does not have to be provisioned by an admin uploading zips. At boot — after the packages
+already on disk are loaded, and before any route is served — the host scans
+`PLUGIN_PREINSTALL_DIR` and installs every `*.zip` it finds, through the same pipeline the upload
+route uses (zip-slip-guarded extraction, manifest validation, logo containment). Ship packages
+either by mounting a directory:
+
+```yaml
+volumes:
+  - ./my-plugins:/data/preinstalled:ro
+```
+
+or by baking them into a derived image:
+
+```dockerfile
+FROM valtimo/plugin-host
+COPY my-plugin-1.0.0.zip /data/preinstalled/
+```
+
+What happens per package, in this order:
+
+| Situation | Result |
+|---|---|
+| Version not installed | Installed |
+| Installed, identical content hash | No-op (logged at `debug`) |
+| Installed, **different** content | **Kept**, logged at `warn` — GZAC pins the content hash an admin accepted, so replacing plugin code is an explicit act: upload the new package through GZAC, or set `PLUGIN_PREINSTALL_OVERWRITE=true` |
+| Installed, different content, `PLUGIN_PREINSTALL_OVERWRITE=true` | Replaced, logged at `warn` |
+| Corrupt zip, invalid manifest, unreadable file | Skipped — the remaining packages still install |
+| Directory absent | Nothing happens |
+
+Nothing here is fatal: a bad package can never stop the host from starting. Packages are processed
+in sorted filename order, and a single summary line reports `installed / unchanged / skipped`.
+
+The published image ships `/data/preinstalled` **empty** — it contains no plugins.
 
 ## Reconciliation & ownership
 

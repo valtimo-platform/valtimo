@@ -163,6 +163,15 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
                   source: 'external' as const,
                   sourceLabel: this._translateService.instant('pluginManagement.source.external'),
                   externalDefinitionId: config.definitionId,
+                  awaitingHost: definition?.awaitingDiscovery ?? false,
+                  reviewRequired: definition?.requiresReacceptance ?? false,
+                  reviewMessage: definition?.requiresReacceptance
+                    ? this._translateService.instant(
+                        definition.pendingPermissionsChanged
+                          ? 'pluginManagement.reviewRequired.permissionsChanged'
+                          : 'pluginManagement.reviewRequired.codeChanged'
+                      )
+                    : undefined,
                   incompatible,
                   compatibilityMessage:
                     incompatible && definition
@@ -283,7 +292,13 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
   ]).pipe(
     map(([definitions, hosts]) => {
       const appHostIds = new Set(hosts.filter(h => h.kind === 'APP').map(h => h.id));
-      return definitions.filter(definition => !appHostIds.has(definition.hostId));
+      return definitions.filter(
+        definition =>
+          !appHostIds.has(definition.hostId) &&
+          // No manifest, so no permissions to accept and no schema to fill in; the backend refuses
+          // a configuration for one. It appears here by itself once its host serves it.
+          !definition.awaitingDiscovery
+      );
     }),
     distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
