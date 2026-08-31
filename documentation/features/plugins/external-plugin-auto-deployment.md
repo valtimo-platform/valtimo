@@ -67,9 +67,12 @@ For each integration:
 1. **Register the host or app** if it does not exist yet.
 2. **Activate** each declared configuration.
 
-That is all, and none of it contacts the host — so a plugin host that is down, slow, or not started
-yet never delays startup. Configurations exist from the first boot, which is what process links,
-case tabs and menu pages that reference them need.
+That is all, and none of it waits on the host — so a plugin host that is down, slow, or not started
+yet never delays startup. On a first boot nothing contacts the host at all; on a redeploy of a
+configuration whose plugin was already discovered, the new title and properties are pushed to the
+host after the import commits, and a failed push is a warning, never a startup failure.
+Configurations exist from the first boot, which is what process links, case tabs and menu pages
+that reference them need.
 
 To make step 2 possible before a host has ever been reached, Valtimo creates a **placeholder**
 definition for a plugin it has not discovered yet: a row with no manifest, marked unavailable. Your
@@ -83,7 +86,8 @@ The discovery cycle (every 60 seconds by default) finishes the job on its own, w
 
 1. **Uploads** each declared package. Apps serve their own plugin and accept no packages.
 2. **Fills in** the placeholder definition with the real manifest and marks the plugin available.
-3. **Pushes** the configuration and a fresh service token to the host.
+3. **Pushes** the configuration and a fresh service token to the host — and keeps re-pushing them
+   every cycle, which is what heals a host that lost its state.
 
 So a descriptor-declared package lands within one discovery cycle of the host becoming reachable,
 rather than instantly at startup.
@@ -118,7 +122,7 @@ the manifest at runtime — so changing it never prompts.
 | An administrator edits a configuration in the UI | **No.** Grants are untouched. |
 | The plugin package on the host changes, same permissions | **Yes.** The code is no longer the code that was accepted. |
 | The plugin package changes and asks for different permissions | **Yes**, and this is the one to read carefully. |
-| A restart with nothing changed | **No.** Nothing is re-pushed and no guard engages, so running processes are unaffected. |
+| A restart with nothing changed | **No.** No guard engages — the importer re-applies the descriptor and the discovery cycle keeps re-pushing configurations as always, but grants and pinned content are untouched, so running processes are unaffected. |
 
 A configuration whose plugin is awaiting approval keeps its previously accepted settings and shows a
 **Review required** tag; nothing is pushed to the host and no service token is issued until an
@@ -126,14 +130,15 @@ administrator accepts.
 
 ## Redeployment
 
-Restarting changes nothing. Beyond that:
+Restarting is safe: rows are recognised by their descriptor ids and nothing an administrator
+accepted is altered. In detail:
 
 * `frontendOrigins` and the event-queue settings are brought in line with the descriptor.
 * `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` and the broker fields are **immutable** after
   registration. A changed value is logged as a warning and the integration is left as it is; to
   repoint an integration, delete it and let it be registered again.
-* An active configuration is never re-granted or re-titled — that set is what an administrator
-  accepted.
+* An active configuration is never re-granted — that set is what an administrator accepted. Its
+  `title` and `properties` are brought in line with the descriptor on every start.
 * An integration whose `baseUrl` is already registered under a *different* id is skipped rather than
   registered twice. To adopt descriptors in an environment where the host was added by hand, use
   that host's existing id in the descriptor (or delete it first).

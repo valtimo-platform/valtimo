@@ -2915,11 +2915,14 @@ Schema (`ExternalPluginDeploymentDto`):
 }
 ```
 
-**Startup does no I/O at all.** Every step below is a local database write, so a host that is down,
-slow, or simply not started yet never delays boot and never holds back readiness. The two steps that
-genuinely need a reachable host are moved to the discovery cycle (§22.4).
+**Startup never waits on a host.** Every step below is a local database write. The one host contact
+is the best-effort push `create`/`update` schedule for after the import commits — suppressed while
+the definition is a placeholder or awaiting re-acceptance, and a warning rather than a failure when
+the host is unreachable. So a host that is down, slow, or simply not started yet never delays boot
+and never holds back readiness. The two steps that genuinely need a reachable host are moved to the
+discovery cycle (§22.4).
 
-Ordering per integration, all of it non-fatal:
+Ordering per integration:
 
 1. **Host.** `findById(id)` — absent → `register(…, id = descriptor.id)`; present → reconcile.
    `findByBaseUrl` returning a *different* id means a second row for one host (a hand-added host, or
@@ -2927,8 +2930,9 @@ Ordering per integration, all of it non-fatal:
 2. **Packages.** Handed to `ExternalPluginPackageDeployer`, which uploads them later — nothing is
    sent here. `kind: APP` with a non-empty `packages` list is a descriptor error: an app serves its
    own plugin and accepts no uploads (§17).
-3. **Configurations.** Present by id → skipped. Absent → resolve the definition by
-   `pluginId@pluginVersion` and `create(…, id = descriptor.id)`.
+3. **Configurations.** Present by id → `title` and `properties` upserted from the descriptor,
+   grants untouched (§23.2 rows 10–11). Absent → resolve the definition by `pluginId@pluginVersion`
+   and `create(…, id = descriptor.id)`.
 
 ### 22.3.1 Placeholder definitions
 
@@ -2937,10 +2941,11 @@ it. Waiting for that would make provisioning depend on boot ordering and leave p
 tabs and menu pages pointing at configurations that do not exist.
 
 So when the plugin has not been discovered yet, the deployer creates a **placeholder** definition
-from the `pluginId` and `pluginVersion` the descriptor names: the row exists, carries no manifest, no
-schema and no content hash, and is `UNAVAILABLE`. `ExternalPluginDefinition.isPlaceholder` is exactly
-that combination — deliberately all three conditions, so a legacy row that merely predates the
-`manifest_json` column is never mistaken for one. Configurations are created against it immediately.
+from the `pluginId` and `pluginVersion` the descriptor names: the row exists, carries no manifest,
+no schema and no content hash, and is `UNAVAILABLE`. `ExternalPluginDefinition.isPlaceholder` is the
+conjunction of no manifest, no content hash and `UNAVAILABLE` — deliberately all three, so a row
+that merely lacks one of them (a discovered plugin gone unavailable, say) is never mistaken for a
+placeholder. Configurations are created against it immediately.
 
 `upsertDefinition` later finds the same row by `(pluginId, version)` and fills it in **in place**, so
 every id already handed out stays valid. Content pinning is untouched: `contentHash` is still null at
@@ -2978,8 +2983,8 @@ descriptor author reviewing the declared set *is* the acceptance step.
 fields are immutable after registration by design — the confidential-transport check that pins broker
 credentials to a safe base URL only runs at registration (§6) — so a changed value is reported by
 name and the row left alone (#618). Only `frontendOrigins` and the event-queue mode/TTL are
-reconciled. An activated configuration is likewise never re-granted or re-titled: that set is what an
-admin accepted.
+reconciled. An activated configuration is likewise never re-granted: that set is what an admin
+accepted. Its `title` and `properties` *are* upserted from the descriptor on every start.
 
 **Failure.** Errors propagate, like every other importer and like the embedded plugin
 autodeployment (which rethrows). A malformed descriptor or a rejected registration fails the import
@@ -2995,9 +3000,11 @@ probe succeeds:
 
 - **Package upload**, via `ExternalPluginPackageDeployer.deployPending`, deliberately *before* the
   plugin listing is fetched so a package uploaded now is discovered in the very same poll. Packages
-  are attempted once per JVM run per `(host, resource)` — a 60-second loop must not re-POST tens of
-  megabytes — and a 409 with matching hashes counts as settled. An outright failure is retried next
-  cycle; nothing thrown here can fail the poll.
+  settle at most once per JVM run per `(host, resource)` — a 60-second loop must not re-POST tens of
+  megabytes. A successful upload settles; so does any 409 (matching hashes at debug, mismatching at
+  warn — replacing accepted content takes an explicit `overwrite: true`) and a missing classpath
+  resource (reported once as an error). An outright failure is retried next cycle; nothing thrown
+  here can fail the poll.
 - **Placeholder fill-in**, gated on the deferred grant check (§22.3.2).
 
 Consequence worth knowing: descriptor-declared packages land within one discovery cycle of the host
@@ -3075,7 +3082,7 @@ approval-by-clicking — and is arguably stronger, being peer-reviewed and enfor
 | 10 | Descriptor `title` / `properties` changed | **No** | Code unchanged ⇒ manifest permissions unchanged, and the descriptor is trusted by provenance. The importer upserts the new values. |
 | 11 | Descriptor changes an `x-egress-target` property value | **No** | This genuinely alters the outbound allowlist, so it *is* a permission change — but it is authored by the implementation developer, not the plugin developer, and the resulting origins are already rendered as "derived egress" on the permissions step. Reliability outweighs a click here; the change is logged explicitly. |
 | 12 | Admin edits a configuration in the UI | **No** | `update()` leaves grants untouched (`grantedEndpoints = null` ⇒ unchanged); only title and properties move. |
-| 13 | Restart with nothing changed | **No** | No update, no push, no guard — running processes are unaffected. |
+| 13 | Restart with nothing changed | **No** | No guard engages. The importer does re-upsert `title`/`properties` (row 10 with equal values) and the discovery cycle keeps re-pushing every configuration with a fresh service token — but grants and the content pin are untouched, so running processes are unaffected. |
 
 ### 23.3 Placeholder definitions
 
