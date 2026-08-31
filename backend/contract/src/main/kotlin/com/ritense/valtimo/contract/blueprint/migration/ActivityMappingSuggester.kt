@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract
+package com.ritense.valtimo.contract.blueprint.migration
 
-import com.ritense.valtimo.contract.blueprint.BlueprintType
-import org.semver4j.Semver
+/** Suggests a best-effort activity mapping between two process definitions, so the heuristic lives in one place and serves both the whole-plan and the on-the-fly suggestion. */
+interface ActivityMappingSuggester {
 
-interface BlueprintId {
-
-    fun getTagPrefix(): String
-    fun getIdKey(): String
-
-    fun blueprintType(): BlueprintType
-
-    fun blueprintVersionTag(): Semver
-
-    override fun toString(): String
+    /** A best-effort `sourceActivityId -> targetActivityId` mapping, or empty when nothing can be suggested. */
+    fun suggestActivityMapping(
+        sourceProcessDefinitionId: String,
+        targetProcessDefinitionId: String,
+    ): Map<String, String>
 }
