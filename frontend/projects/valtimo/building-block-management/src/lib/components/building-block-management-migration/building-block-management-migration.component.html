@@ -1,0 +1,115 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    plans: plans$ | async,
+    loading: loading$ | async
+  } as obs"
+>
+  <valtimo-carbon-list
+    [actionItems]="ACTION_ITEMS"
+    [fields]="fields$ | async"
+    [items]="obs.plans"
+    [loading]="obs.loading"
+    (rowClicked)="onRowClicked($event)"
+  >
+    <ng-container carbonToolbarContent>
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.addButton"
+        (click)="onAddPlan()"
+      >
+        {{ 'buildingBlockManagement.migration.addPlan' | translate }}
+      </button>
+    </ng-container>
+
+    <valtimo-no-results
+      [title]="'buildingBlockManagement.migration.noResults.title' | translate"
+      [description]="'buildingBlockManagement.migration.noResults.description' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+</ng-container>
+
+<valtimo-confirmation-modal
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [contentTranslationKey]="'buildingBlockManagement.migration.deleteModal.content'"
+  [outputOnConfirm]="$planToDelete()"
+  [showModalSubject$]="showDeleteModal$"
+  [titleTranslationKey]="'buildingBlockManagement.migration.deleteModal.title'"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>
+
+<cds-modal
+  valtimoCdsModal
+  *ngIf="{show: showDetailModal$ | async, plan: selectedPlan$ | async} as obs"
+  size="md"
+  [open]="!!obs.show"
+  (close)="onCloseDetail()"
+>
+  @if (obs.plan; as plan) {
+    <cds-modal-header [cdsLayer]="1" (closeSelect)="onCloseDetail()">
+      <h3 cdsModalHeaderHeading>{{ plan.name }}</h3>
+    </cds-modal-header>
+
+    <section cdsModalContent [cdsLayer]="1">
+      <p class="migration-detail__hint">
+        {{
+          'buildingBlockManagement.migration.detailHint'
+            | translate: {source: plan.source, target: plan.target}
+        }}
+      </p>
+
+      <dl class="migration-metrics">
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'buildingBlockManagement.migration.fields.status' | translate }}
+          </dt>
+          <dd class="migration-metric__value">
+            <cds-tag class="cds-tag--no-margin" [type]="statusTagType(plan.status.status)">
+              {{ 'buildingBlockManagement.migration.status.' + plan.status.status | translate }}
+            </cds-tag>
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'buildingBlockManagement.migration.fields.instancesMigrated' | translate }}
+          </dt>
+          <dd class="migration-metric__value migration-metric__value--number">
+            {{ plan.status.casesMigrated }}
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <cds-modal-footer [cdsLayer]="1">
+      <button cdsButton="ghost" (click)="onCloseDetail()">
+        {{ 'interface.close' | translate }}
+      </button>
+    </cds-modal-footer>
+  }
+</cds-modal>
+
+<ng-template #statusColumn let-data="data">
+  <cds-tag class="cds-tag--no-margin" [type]="statusTagType(data.item.status.status)">
+    {{ 'buildingBlockManagement.migration.status.' + data.item.status.status | translate }}
+  </cds-tag>
+</ng-template>
+
+<ng-template #progressColumn let-data="data">
+  <span class="migration-progress">{{ data.item.status.casesMigrated }}</span>
+</ng-template>

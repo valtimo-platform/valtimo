@@ -34,6 +34,7 @@ import {BuildingBlockManagementDetailActionsComponent} from '../building-block-m
 import {BuildingBlockManagementFormsComponent} from '../building-block-management-forms/building-block-management-forms.component';
 import {BuildingBlockManagementFormFlowsComponent} from '../building-block-management-form-flows/building-block-management-form-flows.component';
 import {BuildingBlockManagementDecisionsComponent} from '../building-block-management-decisions/building-block-management-decisions.component';
+import {BuildingBlockManagementMigrationComponent} from '../building-block-management-migration/building-block-management-migration.component';
 
 @Component({
   standalone: true,
@@ -53,6 +54,7 @@ import {BuildingBlockManagementDecisionsComponent} from '../building-block-manag
     BuildingBlockManagementFormsComponent,
     BuildingBlockManagementFormFlowsComponent,
     BuildingBlockManagementDecisionsComponent,
+    BuildingBlockManagementMigrationComponent,
     RenderInPageHeaderDirective,
     BuildingBlockManagementDetailActionsComponent,
     DialogModule,
