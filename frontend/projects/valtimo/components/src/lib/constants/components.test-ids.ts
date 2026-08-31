@@ -26,6 +26,15 @@ export const VALUE_PATH_SELECTOR_TEST_IDS = {
   input: 'valuePathSelectorInput',
 } as const;
 
+export const VALUE_CONDITION_TREE_TEST_IDS = {
+  addConditionButton: 'valueConditionTreeAddCondition',
+  addGroupButton: 'valueConditionTreeAddGroup',
+  groupModeSelect: 'valueConditionTreeGroupMode',
+  operatorSelect: 'valueConditionTreeOperator',
+  removeButton: 'valueConditionTreeRemove',
+  valueInput: 'valueConditionTreeValue',
+} as const;
+
 export const STEPPER_FOOTER_STEP_TEST_IDS = {
   cancelButton: 'stepperFooterCancelButton',
 } as const;
