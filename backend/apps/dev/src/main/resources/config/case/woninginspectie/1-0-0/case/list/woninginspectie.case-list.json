@@ -1,0 +1,49 @@
+[
+    {
+        "title": "Aanvrager",
+        "key": "aanvrager",
+        "path": "doc:aanvrager.naam",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": false,
+        "order": 0
+    },
+    {
+        "title": "Adres",
+        "key": "adres",
+        "path": "doc:adres",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": false,
+        "order": 1
+    },
+    {
+        "title": "Status",
+        "key": "status",
+        "path": "doc:status",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "order": 2
+    },
+    {
+        "title": "Aangemaakt",
+        "key": "createdOn",
+        "path": "case:createdOn",
+        "displayType": {
+            "type": "date",
+            "displayTypeParameters": {
+                "dateFormat": "DD-MM-YYYY"
+            }
+        },
+        "sortable": true,
+        "defaultSort": "DESC",
+        "order": 3
+    }
+]

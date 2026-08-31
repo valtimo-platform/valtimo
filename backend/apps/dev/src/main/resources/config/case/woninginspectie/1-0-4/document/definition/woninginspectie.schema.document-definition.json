@@ -1,0 +1,44 @@
+{
+    "$id": "woninginspectie.schema",
+    "type": "object",
+    "title": "Woninginspectie",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+        "aanvrager",
+        "status"
+    ],
+    "properties": {
+        "aanvrager": {
+            "type": "object",
+            "required": [
+                "naam"
+            ],
+            "properties": {
+                "naam": {
+                    "type": "string"
+                }
+            }
+        },
+        "adres": {
+            "type": ["string", "null"]
+        },
+        "status": {
+            "type": "string"
+        },
+        "aantalKamers": {
+            "type": ["integer", "null"]
+        },
+        "opmerking": {
+            "type": ["string", "null"]
+        },
+        "migratedFrom": {
+            "type": "string"
+        },
+        "inspectieAangevraagd": {
+            "type": "boolean"
+        },
+        "inspectieStatus": {
+            "type": "string"
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "title": "Inspectie van startbaar item naar call activity",
+    "key": "woninginspectie-inspectie-in-proces",
+    "source": {
+        "key": "woninginspectie",
+        "versionTag": "1.0.1"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.1",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "woninginspectie",
+            "targetProcessDefinitionKey": "woninginspectie",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

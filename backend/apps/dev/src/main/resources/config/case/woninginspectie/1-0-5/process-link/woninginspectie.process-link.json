@@ -1,0 +1,42 @@
+[
+    {
+        "activityId": "StartEvent_1",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-woninginspectie"
+    },
+    {
+        "activityId": "behandelen_aanvraag",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "behandelen-woninginspectie"
+    },
+    {
+        "activityId": "CallInspectieActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "verhuizing-inspectie",
+        "buildingBlockDefinitionVersionTag": "1.0.6",
+        "inputMappings": [
+            {
+                "source": "doc:aanvrager.naam",
+                "target": "aanvragerNaam"
+            },
+            {
+                "source": "doc:adres",
+                "target": "nieuwAdres"
+            },
+            {
+                "source": "doc:status",
+                "target": "inspectieStatus"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "inspectieStatus",
+                "target": "doc:inspectieStatus",
+                "syncTiming": "END"
+            }
+        ]
+    }
+]

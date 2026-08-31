@@ -1,0 +1,70 @@
+{
+    "title": "Inspectie-bouwsteen toevoegen",
+    "key": "woninginspectie-bouwsteen-toevoegen",
+    "source": {
+        "key": "woninginspectie",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/status",
+            "operator": "!=",
+            "value": "afgehandeld"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/inspectieAangevraagd",
+            "value": true,
+            "targetType": "boolean"
+        },
+        {
+            "target": "doc:/inspectieStatus",
+            "source": "doc:/status"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "addBuildingBlock": [
+        {
+            "buildingBlockKey": "verhuizing-inspectie",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/aanvragerNaam",
+                    "source": "doc:/aanvrager/naam"
+                },
+                {
+                    "target": "doc:/nieuwAdres",
+                    "source": "doc:/adres"
+                },
+                {
+                    "target": "doc:/inspectieStatus",
+                    "source": "doc:/status"
+                },
+                {
+                    "target": "doc:/aantalKamers",
+                    "source": "doc:/aantalKamers"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "woninginspectie",
+                    "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+                    "mapActivities": {
+                        "behandelen_aanvraag": "InspectieUitvoerenTask"
+                    },
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ]
+}

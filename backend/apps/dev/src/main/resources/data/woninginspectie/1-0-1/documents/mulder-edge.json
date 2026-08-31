@@ -1,0 +1,12 @@
+{
+    "aanvrager": {
+        "naam": "Rick Mulder"
+    },
+    "adres": "",
+    "status": "ingediend",
+    "aantalKamers": 0,
+    "opmerking": "",
+    "migratedFrom": "",
+    "inspectieAangevraagd": false,
+    "inspectieStatus": ""
+}

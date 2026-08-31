@@ -1,0 +1,11 @@
+{
+    "aanvrager": {
+        "naam": "Deniz Aydin"
+    },
+    "adres": "Stationsweg 45, 3511 EE Utrecht",
+    "status": "in_behandeling",
+    "aantalKamers": 5,
+    "opmerking": "Zaak met een lopende inspectiebouwsteen die zelf een lopende fotobouwsteen heeft",
+    "inspectieAangevraagd": true,
+    "inspectieStatus": "gepland"
+}

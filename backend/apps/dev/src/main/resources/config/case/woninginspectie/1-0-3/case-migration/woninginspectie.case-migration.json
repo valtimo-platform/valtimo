@@ -1,0 +1,28 @@
+{
+    "title": "Bouwstenen bijwerken naar de nieuwste versie",
+    "key": "woninginspectie-bouwstenen-bijwerken",
+    "source": {
+        "key": "woninginspectie",
+        "versionTag": "1.0.2"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.2",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "woninginspectie",
+            "targetProcessDefinitionKey": "woninginspectie",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}
