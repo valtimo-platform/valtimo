@@ -16,6 +16,7 @@
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}",
+    "CaseMigratedEvent": "Zaak gemigreerd van {{fromVersionTag}} naar {{toVersionTag}}",
     "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "case": {
@@ -54,8 +55,14 @@
       "cancel": "Annuleren"
     },
     "noResults": {
-      "ALL": {"description": "Er is hier niets te doen.", "title": "Er zijn geen dossiers"},
-      "MINE": {"description": "Even pauze.", "title": "Er zijn geen dossiers aan jou toegewezen"},
+      "ALL": {
+        "description": "Er is hier niets te doen.",
+        "title": "Er zijn geen dossiers"
+      },
+      "MINE": {
+        "description": "Even pauze.",
+        "title": "Er zijn geen dossiers aan jou toegewezen"
+      },
       "OPEN": {
         "description": "Kom later nog eens terug.",
         "title": "Alle dossiers hebben een behandelaar"
@@ -69,14 +76,23 @@
         "title": "Geen dossiers gevonden"
       }
     },
-    "noAccess": {"description": "Je hebt geen toegang tot dit dossier", "title": "Geen toegang"},
+    "noAccess": {
+      "description": "Je hebt geen toegang tot dit dossier",
+      "title": "Geen toegang"
+    },
     "pagination": {
       "itemsPerPage": "Dossiers per pagina",
       "totalItem": "{{start}}-{{end}} van {{total}} dossier",
       "totalItems": "{{start}}-{{end}} van {{total}} dossiers"
     },
-    "select": {"single": "1 dossier geselecteerd", "multiple": "{{count}} dossiers geselecteerd"},
-    "title": {"single": "Dossier", "plural": "Dossiers"},
+    "select": {
+      "single": "1 dossier geselecteerd",
+      "multiple": "{{count}} dossiers geselecteerd"
+    },
+    "title": {
+      "single": "Dossier",
+      "plural": "Dossiers"
+    },
     "tabs": {
       "noResults": "Geen tabbladen geconfigureerd",
       "noResultsDescription": "Er zijn geen tabbladen geconfigureerd voor dit dossiertype.",
@@ -97,7 +113,10 @@
       "componentNotFound": "Tab-component niet gevonden",
       "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeembeheerder."
     },
-    "forms": {"globalSearchPlaceHolder": "Alles", "referenceNumberPlaceHolder": "Referentienummer"},
+    "forms": {
+      "globalSearchPlaceHolder": "Alles",
+      "referenceNumberPlaceHolder": "Referentienummer"
+    },
     "sendEmailExtension": {
       "buttonText": "Verstuur e-mail",
       "title": "Een e-mail versturen",
@@ -123,13 +142,17 @@
       "title": "Titel",
       "noFormDefinitionComponent": "Geen formulierdefinitie voor dit object gevonden.",
       "noObjectType": "Geen objecten gevonden voor dit objecttype.",
-      "objectType": {"viewObject": "Object bekijken"}
+      "objectType": {
+        "viewObject": "Object bekijken"
+      }
     },
     "notes": {
       "addNote": "Notitie toevoegen",
       "modifyNote": "Notitie bewerken",
       "tableItemsText": "Notities",
-      "input": {"content": "Notitie"},
+      "input": {
+        "content": "Notitie"
+      },
       "deleteConfirmation": {
         "title": "Notitie verwijderen",
         "description": "Weet je zeker dat je deze notitie wilt verwijderen?",
@@ -451,7 +474,10 @@
     }
   },
   "document": {
-    "title": {"single": "Document", "plural": "Document's"},
+    "title": {
+      "single": "Document",
+      "plural": "Document's"
+    },
     "id": "Referentie ID",
     "createdBy": "Aangemaakt door",
     "createdOn": "Aanmaakdatum",
@@ -568,23 +594,50 @@
     }
   },
   "dashboard": {
-    "openTasks": {"title": "Alle taken"},
-    "openTask": {"title": "Open taak"},
-    "activeProcess": {"title": "Actieve proces"},
-    "activeProcesses": {"title": "Actieve processen"},
-    "tasksCompleted": {"title": "Afgeronde taken"},
-    "taskCompleted": {"title": "Afgeronde taak"},
-    "statistics": {"title": "Statistieken"},
-    "processes": {"title": "Processen"},
-    "process": {"title": "Proces", "details": "Proces details"},
-    "startProcess": {"title": "Start"},
-    "version": {"title": "Versie"},
+    "openTasks": {
+      "title": "Alle taken"
+    },
+    "openTask": {
+      "title": "Open taak"
+    },
+    "activeProcess": {
+      "title": "Actieve proces"
+    },
+    "activeProcesses": {
+      "title": "Actieve processen"
+    },
+    "tasksCompleted": {
+      "title": "Afgeronde taken"
+    },
+    "taskCompleted": {
+      "title": "Afgeronde taak"
+    },
+    "statistics": {
+      "title": "Statistieken"
+    },
+    "processes": {
+      "title": "Processen"
+    },
+    "process": {
+      "title": "Proces",
+      "details": "Proces details"
+    },
+    "startProcess": {
+      "title": "Start"
+    },
+    "version": {
+      "title": "Versie"
+    },
     "processingLeadTime": {
       "title": "Doorlooptijd verwerken",
       "description": "gemiddeld over de laatste 30 dagen"
     },
-    "tasks": {"title": "Taken"},
-    "task": {"title": "Taak"},
+    "tasks": {
+      "title": "Taken"
+    },
+    "task": {
+      "title": "Taak"
+    },
     "noDashboards": "Geen dashboards",
     "noDashboardsDescription": "Het kan zijn dat de systeembeheerder nog geen dashboards heeft geconfigureerd, of je hebt niet de juiste rechten om dashboards te zien.",
     "noWidgets": "Geen widgets",
@@ -672,11 +725,17 @@
     "title": "Instellingen",
     "language": {
       "title": "Taal",
-      "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
+      "options": {
+        "nl": "Nederlands",
+        "en": "English",
+        "de": "Deutsch"
+      }
     },
     "notification": {
       "title": "Notificaties",
-      "frequency": {"title": "Frequentie van notificaties"},
+      "frequency": {
+        "title": "Frequentie van notificaties"
+      },
       "taskNotifications": "Taakmeldingen",
       "taskNotificationsIntro": "Ontvang een e-mail wanneer een taak aan jou is toegewezen",
       "emailNotifications": "Dagelijks taakoverzicht",
@@ -689,11 +748,17 @@
       "emailNotificationOnSaturday": "Zaterdag",
       "emailNotificationOnSunday": "Zondag"
     },
-    "version": {"title": "Versie-informatie"},
+    "version": {
+      "title": "Versie-informatie"
+    },
     "interface": {
       "title": "Interface",
       "themePreference": "Thema",
-      "themes": {"light": "Licht", "dark": "Donker (Beta)", "system": "Systeem (Beta)"},
+      "themes": {
+        "light": "Licht",
+        "dark": "Donker (Beta)",
+        "system": "Systeem (Beta)"
+      },
       "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
       "compactMode": "Compacte modus",
       "showUserName": "Toon naam van gebruiker"
@@ -736,9 +801,18 @@
       "content": "Weet u zeker dat u deze beslistabel wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     }
   },
-  "message": {"empty": "Geen resultaat gevonden"},
-  "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
-  "carousel": {"previous": "Vorige", "next": "Volgende", "goToSlide": "Ga naar dia"},
+  "message": {
+    "empty": "Geen resultaat gevonden"
+  },
+  "cta": {
+    "close": "Sluiten",
+    "moreDetails": "Meer details"
+  },
+  "carousel": {
+    "previous": "Vorige",
+    "next": "Volgende",
+    "goToSlide": "Ga naar dia"
+  },
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
@@ -793,6 +867,109 @@
     }
   },
   "caseManagement": {
+    "migration": {
+      "addPlan": "Migratieplan toevoegen",
+      "startNow": "Migratie nu starten",
+      "errorCount": "{{count}} fouten",
+      "warningCount": "{{count}} waarschuwingen",
+      "editor": {
+        "general": {
+          "titlePlaceholder": "Migreer dossiers met status 'aanvraag-ontvangen'",
+          "sourceHint": "De versie van de zaakdefinitie waarvan dit plan de zaken migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die zaken in één stap hierheen, en een andere sleutel kiezen brengt zaken van die zaakdefinitie over naar deze.",
+          "sourceKey": "Bronzaakdefinitie",
+          "sourceKeyPlaceholder": "Kies een zaakdefinitie",
+          "triggers": "Triggers",
+          "triggersHint": "Bepaal wanneer dit plan draait: handmatig via de UI-knop, op een ingepland moment, of nadat een ander plan is voltooid.",
+          "triggeredByButton": "Handmatig starten via de UI-knop",
+          "scheduledAtDate": "Ingepland op",
+          "runAfter": "Draai na plan",
+          "runAfterPlaceholder": "Kies een migratieplan",
+          "runAfterEmpty": "Geen andere migratieplannen in deze versie",
+          "conditions": "Condities",
+          "conditionsHint": "Het plan migreert alleen dossiers die aan alle condities voldoen. Laat leeg om op alle dossiers toe te passen. Voeg een groep toe om condities te combineren met 'één van' (OR) of 'alle van' (AND); groepen mogen genest worden. Voer bij 'in' de waarden gescheiden door komma's in. Laat bij 'exists' de waarde leeg — of vul 'false' in om te eisen dat het veld leeg is.",
+          "noConditions": "Geen condities — van toepassing op alle dossiers."
+        },
+        "dataMigration": {
+          "description": "Herstructureer dossiergegevens tijdens de migratie. Elke regel vult één doelveld (rechts) vanuit een bron (links): kopieer de waarde van een bestaand veld ('Pad'), zet een vaste 'Waarde', of maak het leeg ('Null'). De bron leest een waarde uit het zaakdocument; het doel is het veld waar die waarde naartoe wordt geschreven. Het doelveld is altijd verplicht."
+        },
+        "processMigration": {
+          "description": "Migreer lopende procesinstanties naar de procesdefinities van deze zaakversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit.",
+          "activityMappingHint": "Koppel elke activiteit van het bronproces aan een activiteit van het doelproces — dit vertelt de engine waar elke lopende token naartoe gaat. Zowel de naam als de technische id worden getoond, zodat activiteiten met dezelfde naam te onderscheiden zijn."
+        },
+        "addBuildingBlock": {
+          "description": "Maak één of meer bouwblokken aan op elke gemigreerde zaak. Elke regel maakt een (in eerste instantie leeg) bouwblokdocument aan, vult dit met de onderstaande datamigratie en neemt het/de zaakproces(sen) over in het bouwblok.",
+          "dataMigrationHint": "Vult het nieuwe bouwblokdocument: elke bron leest uit het zaakdocument, elk doel schrijft naar het nieuwe bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een zaakproces; het doelproces is een proces van het nieuwe bouwblok. Het/de vermelde zaakproces(sen) worden overgenomen in het bouwblok en de business key wordt altijd op de document-id van het nieuwe bouwblok gezet."
+        },
+        "removeBuildingBlock": {
+          "description": "Verwijder één of meer bouwblokken van elke gemigreerde zaak. Alle direct aan de zaak gekoppelde bouwblokken met de opgegeven sleutel worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar de zaak.",
+          "dataMigrationHint": "Zet data terug naar de zaak voordat het bouwblok wordt verwijderd: elke bron leest uit het bouwblokdocument, elk doel schrijft naar het zaakdocument.",
+          "processMigrationHint": "Het bronproces is een bouwblokproces; het doelproces is een zaakproces. Het/de bouwblokproces(sen) worden teruggegeven aan de zaak en de business key wordt altijd teruggezet op de document-id van de zaak."
+        }
+      },
+      "deleteModal": {
+        "title": "Migratieplan verwijderen",
+        "content": "Weet je zeker dat je dit migratieplan wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      },
+      "startModal": {
+        "title": "Migratie starten",
+        "content": "Weet je zeker dat je deze migratie nu wilt starten? De overeenkomende dossiers worden gemigreerd."
+      },
+      "dryRun": "Testrun",
+      "dryRunModal": {
+        "title": "Testrun starten",
+        "content": "Simuleer dit migratieplan voor alle overeenkomende dossiers zonder er ook maar één te migreren? Er wordt niets gewijzigd; je krijgt een overzicht van welke dossiers zouden migreren en welke zouden mislukken."
+      },
+      "dryRunResults": {
+        "heading": "Laatste testrun",
+        "casesChecked": "Gecontroleerde dossiers",
+        "casesWouldMigrate": "Zouden migreren",
+        "casesWouldFail": "Zouden mislukken",
+        "errorsHeading": "Dossiers die zouden mislukken"
+      },
+      "duplicateSuffix": "kopie",
+      "columns": {
+        "plan": "Migratieplan",
+        "source": "Bron",
+        "target": "Doel",
+        "status": "Status",
+        "progress": "Voortgang"
+      },
+      "noResults": {
+        "title": "Geen migratieplannen",
+        "description": "Er zijn geen migratieplannen uitgerold voor deze versie van dit zaaktype."
+      },
+      "status": {
+        "NOT_STARTED": "Niet gestart",
+        "RUNNING": "Bezig",
+        "COMPLETED": "Voltooid",
+        "COMPLETED_WITH_ERRORS": "Voltooid met fouten"
+      },
+      "fields": {
+        "status": "Migratiestatus",
+        "casesToMigrate": "Te migreren dossiers",
+        "casesMigrated": "Gemigreerde dossiers",
+        "casesWithErrors": "Dossiers met fouten",
+        "casesWithWarnings": "Dossiers met waarschuwingen",
+        "startedOn": "Gestart op",
+        "finishedOn": "Voltooid op"
+      },
+      "errors": {
+        "heading": "Dossiers met fouten",
+        "caseId": "Dossier",
+        "message": "Fout",
+        "copyFullError": "Volledige stacktrace kopiëren",
+        "copied": "Stacktrace gekopieerd naar klembord",
+        "showStacktrace": "Volledige stacktrace tonen",
+        "hideStacktrace": "Stacktrace verbergen"
+      },
+      "warnings": {
+        "heading": "Dossiers met waarschuwingen",
+        "dryRunHeading": "Waarschuwingen bij de proefmigratie",
+        "description": "Deze dossiers zijn gemigreerd, maar het plan heeft niet alles gedaan wat erin staat. Meestal was er geen lopend proces om over te nemen.",
+        "message": "Waarschuwing"
+      }
+    },
     "version": "Versie: ",
     "preparingDownload": "Download aan het voorbereiden",
     "more": "Meer",
@@ -839,7 +1016,11 @@
     "allVersionsModal": {
       "title": "Alle {{value}} versies",
       "closeButton": "Sluiten",
-      "columns": {"version": "Versie", "release": "Uitgebracht op", "description": "Beschrijving"},
+      "columns": {
+        "version": "Versie",
+        "release": "Uitgebracht op",
+        "description": "Beschrijving"
+      },
       "noResults": {
         "title": "Er zijn geen dossierversies",
         "description": "Er is geen versie geconfigureerd voor dit dossier"
@@ -884,7 +1065,10 @@
       },
       "releaseVersion": {
         "title": "Releaseversie",
-        "fields": {"caseDefinitionVersionTag": "Versie", "basedOnVersionTag": "Gebaseerd op"},
+        "fields": {
+          "caseDefinitionVersionTag": "Versie",
+          "basedOnVersionTag": "Gebaseerd op"
+        },
         "warning": {
           "title": "Waarschuwing",
           "description": "Er is een ander concept gebaseerd op {{ basedOnVersionTag }} concept, met de versie {{ conflictingVersions }}"
@@ -965,6 +1149,7 @@
       "decision": "Beslistabellen",
       "formFlows": "Form flows",
       "tasks": "Taken",
+      "migration": "Migratie",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
@@ -980,7 +1165,10 @@
           "canHaveHandler": "Dossiertype kan een behandelaar hebben",
           "assignUser": "Gebruikerstaken automatisch toewijzen aan dossierbehandelaar",
           "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de dossierbehandelaar kan alleen worden ingeschakeld als de dossier zelf een behandelaar kan hebben.",
-          "toggle": {"onText": "Ja", "offText": "Nee"}
+          "toggle": {
+            "onText": "Ja",
+            "offText": "Nee"
+          }
         }
       },
       "caseListTab": {
@@ -1035,13 +1223,20 @@
         "formio": "Kies FormIO component",
         "standard": "Kies standaard inhoud"
       },
-      "editModal": {"title": "Tabblad bewerken {{name}}", "updateTab": "Tabblad updaten"},
+      "editModal": {
+        "title": "Tabblad bewerken {{name}}",
+        "updateTab": "Tabblad updaten"
+      },
       "deleteModal": {
         "title": "Tabblad verwijderen?",
         "description": "Weet u zeker dat u dit tabblad wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
       }
     },
-    "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
+    "tabType": {
+      "custom": "Inhoud",
+      "formio": "FormIO",
+      "standard": "Standaard"
+    },
     "actions": {
       "columns": {
         "name": "Naam",
@@ -1217,7 +1412,9 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit dossiertype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen status aangemaakt voor dit dossiertype."
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -1238,7 +1435,9 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit dossiertype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen tags aangemaakt voor dit dossiertype."
+      }
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
@@ -1252,7 +1451,9 @@
       "editWidgetTab": "Bewerk widget tab",
       "cancel": "Annuleren",
       "save": "Opslaan",
-      "form": {"tabName": "Tab naam"}
+      "form": {
+        "tabName": "Tab naam"
+      }
     },
     "columns": {
       "highContrast": "Hoog contrast",
@@ -1305,17 +1506,37 @@
     },
     "type": {
       "description": "Kies het widget-type dat je wilt configureren.",
-      "fields": {"title": "Velden", "description": "Tekstgegevens met inhoud en een label"},
-      "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},
-      "formio": {"title": "Form.io", "description": "Ingevuld Form.io-formulier"},
-      "table": {"title": "Tabel", "description": "Maak een tabel aan"},
+      "fields": {
+        "title": "Velden",
+        "description": "Tekstgegevens met inhoud en een label"
+      },
+      "custom": {
+        "title": "Eigen component",
+        "description": "Voor complexe inhoud"
+      },
+      "formio": {
+        "title": "Form.io",
+        "description": "Ingevuld Form.io-formulier"
+      },
+      "table": {
+        "title": "Tabel",
+        "description": "Maak een tabel aan"
+      },
       "interactive-table": {
         "title": "Interactieve tabel",
         "description": "Maak een interactieve tabel"
       },
-      "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
-      "divider": {"title": "Scheidingslijn"},
-      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
+      "collection": {
+        "title": "Collectie",
+        "description": "Maak een collectie aan"
+      },
+      "divider": {
+        "title": "Scheidingslijn"
+      },
+      "map": {
+        "title": "Kaart",
+        "description": "Maak een kaart widget aan"
+      },
       "person-card": {
         "title": "Persoonskaart",
         "description": "Een persoon met de belangrijkste gegevens en contactinformatie"
@@ -1349,10 +1570,22 @@
       "description": "Selecteer de gewenste breedte voor de widget.",
       "fullWidth": "Volle-breedte",
       "half": "Half",
-      "small": {"title": "Klein", "subtitle": "Bevat 1 kolom met inhoud"},
-      "medium": {"title": "Medium", "subtitle": "Bevat maximaal 2 kolommen met inhoud"},
-      "large": {"title": "Groot", "subtitle": "Bevat maximaal 3 kolommen met inhoud"},
-      "xtraLarge": {"title": "Xtra Groot", "subtitle": "Bevat maximaal 4 kolommen met inhoud"}
+      "small": {
+        "title": "Klein",
+        "subtitle": "Bevat 1 kolom met inhoud"
+      },
+      "medium": {
+        "title": "Medium",
+        "subtitle": "Bevat maximaal 2 kolommen met inhoud"
+      },
+      "large": {
+        "title": "Groot",
+        "subtitle": "Bevat maximaal 3 kolommen met inhoud"
+      },
+      "xtraLarge": {
+        "title": "Xtra Groot",
+        "subtitle": "Bevat maximaal 4 kolommen met inhoud"
+      }
     },
     "appearance": {
       "description": "Selecteer het uiterlijk voor de widget.",
@@ -1375,7 +1608,10 @@
     },
     "density": {
       "description": "Selecteer de gewenste dichtheid voor de widget",
-      "default": {"title": "Standaard", "description": "Voor reguliere inhoud"},
+      "default": {
+        "title": "Standaard",
+        "description": "Voor reguliere inhoud"
+      },
       "compact": {
         "title": "Compact",
         "description": "Voor een overzicht met hogere gegevensdichtheid"
@@ -1684,7 +1920,9 @@
       "add": "Trefwoord aanmaken",
       "deleteText": "Weet je zeker dat je dit trefwoord wilt verwijderen?",
       "deleteMultipleText": "Weet je zeker dat je deze trefwoorden wilt verwijderen?",
-      "addModal": {"header": "Trefwoord aanmaken"},
+      "addModal": {
+        "header": "Trefwoord aanmaken"
+      },
       "list": {
         "noResultsTitle": "Geen trefwoorden",
         "noResultsDescription": "Voeg een trefwoord toe om te beginnen"
@@ -1704,8 +1942,12 @@
       "add": "Uploadveld toevoegen",
       "deleteText": "Weet je zeker dat je dit uploadveld wilt verwijderen?",
       "deleteMultipleText": "Weet je zeker dat je deze upload-velden wilt verwijderen?",
-      "addModal": {"header": "Uploadveld toevoegen"},
-      "editModal": {"header": "Uploadveld bewerken"},
+      "addModal": {
+        "header": "Uploadveld toevoegen"
+      },
+      "editModal": {
+        "header": "Uploadveld bewerken"
+      },
       "list": {
         "noResultsTitle": "Geen upload-velden",
         "noResultsDescription": "Voeg een uploadveld toe om te beginnen"
@@ -2169,13 +2411,19 @@
       "outline": "Omlijnd",
       "orange": "Oranje"
     },
-    "labels": {"dateCreationFrom": "Aanmaakdatum van", "dateCreationTo": "Aanmaakdatum tot"},
+    "labels": {
+      "dateCreationFrom": "Aanmaakdatum van",
+      "dateCreationTo": "Aanmaakdatum tot"
+    },
     "sorting": {
       "ascending": "Oplopend",
       "descending": "Aflopend",
       "noDefault": "Geen standaardsortering"
     },
-    "editor": {"visualEditor": "Visuele editor", "jsonEditor": "JSON editor"},
+    "editor": {
+      "visualEditor": "Visuele editor",
+      "jsonEditor": "JSON editor"
+    },
     "jsonEditor": {
       "cancelModal": {
         "title": "De editor verlaten",
@@ -2283,7 +2531,11 @@
     "globalSearchFilter": "Zoek in geheel document",
     "globalSearchFilterPlaceholder": "Zoek in alle documentvelden..."
   },
-  "webcam": {"takePicture": "Foto maken", "save": "Opslaan", "redo": "Opnieuw"},
+  "webcam": {
+    "takePicture": "Foto maken",
+    "save": "Opslaan",
+    "redo": "Opnieuw"
+  },
   "customers": {
     "name": "Naam",
     "citizenServiceNumber": "Burgerservicenummer",
@@ -2303,7 +2555,10 @@
     "completeButtonText": "Voltooien"
   },
   "pages": {
-    "plugins": {"title": "Plugins", "noResults": "Er zijn geen plugins geconfigureerd"},
+    "plugins": {
+      "title": "Plugins",
+      "noResults": "Er zijn geen plugins geconfigureerd"
+    },
     "customercases": {
       "title": "Zaken",
       "description": "Op deze pagina kun je de zaken van een specifieke klant inzien."
@@ -2352,7 +2607,11 @@
   },
   "customerCases": {
     "tableItemsText": "zaken",
-    "labels": {"zaakNummer": "Zaaknummer", "zaakStatus": "Status", "zaakType": "Type"}
+    "labels": {
+      "zaakNummer": "Zaaknummer",
+      "zaakStatus": "Status",
+      "zaakType": "Type"
+    }
   },
   "processLink": {
     "create": "Proceskoppeling aanmaken",
@@ -2458,8 +2717,12 @@
     "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten.",
     "required": "Bepaalt of de gebruiker een waarde moet invullen voordat er gezocht kan worden."
   },
-  "searchFieldDataType": {"select": "Selecteer een datatype"},
-  "searchFieldFieldType": {"select": "Selecteer een veldtype"},
+  "searchFieldDataType": {
+    "select": "Selecteer een datatype"
+  },
+  "searchFieldFieldType": {
+    "select": "Selecteer een veldtype"
+  },
   "listColumn": {
     "title": "Titel",
     "titleTitle": "Titel (optioneel)",
@@ -2521,9 +2784,14 @@
     "createObject": "Nieuw object",
     "editObject": "Wijzig object",
     "deleteObject": "Verwijder object",
-    "labels": {"recordIndex": "Record index", "objectUrl": "Object URL"},
+    "labels": {
+      "recordIndex": "Record index",
+      "objectUrl": "Object URL"
+    },
     "header": "Object informatie",
-    "tabs": {"general": "Algemeen"},
+    "tabs": {
+      "general": "Algemeen"
+    },
     "close": "Sluiten",
     "save": "Object opslaan",
     "delete": "Object verwijderen",
@@ -2568,7 +2836,11 @@
     "edit": "Object wijzigen",
     "download": "Download",
     "visibleInMenu": "Zichtbaar in het menu",
-    "tabs": {"general": "Algemeen", "searchFields": "Zoekvelden", "list": "Lijst"},
+    "tabs": {
+      "general": "Algemeen",
+      "searchFields": "Zoekvelden",
+      "list": "Lijst"
+    },
     "underscoresToSpaces": "Lage streepjes naar spaties",
     "select": "Selecteer een weergavetype"
   },
@@ -2583,11 +2855,15 @@
     "Value Resolver": "Value Resolver",
     "Source key": "Bronsleutel",
     "Target key": "Doelsleutel",
-    "formioIbanComponent": {"errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."},
+    "formioIbanComponent": {
+      "errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."
+    },
     "formioCurrencyComponent": {
       "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
     },
-    "formioFormViewModelComponent": {"submitError": "Ongeldige submissie"}
+    "formioFormViewModelComponent": {
+      "submitError": "Ongeldige submissie"
+    }
   },
   "viewTypeConverter": {
     "Yes": "Ja",
@@ -2679,7 +2955,10 @@
     "displayType": {
       "label": "Selecteer het weergavetype van het formulier",
       "placeholder": "Selecteer hoe het formulier moet worden weergegeven",
-      "options": {"modal": "Modaal", "panel": "Panel"}
+      "options": {
+        "modal": "Modaal",
+        "panel": "Panel"
+      }
     },
     "formSize": {
       "label": "Selecteer formuliergrootte",
@@ -3122,8 +3401,23 @@
     "manual": "Handmatig",
     "selectCaseDefPlaceholder": "Kies een dossier"
   },
+  "valueConditionTree": {
+    "path": "Veld",
+    "operator": "Operator",
+    "value": "Waarde",
+    "addCondition": "Conditie toevoegen",
+    "addGroup": "Groep toevoegen",
+    "groupMode": "De groep geldt wanneer",
+    "anyOf": "Aan één van deze wordt voldaan",
+    "allOf": "Aan alle van deze wordt voldaan",
+    "emptyGroup": "Lege groep — voeg een conditie toe of verwijder de groep."
+  },
   "logging": {
-    "columns": {"timestamp": "Tijd", "formattedMessage": "Bericht", "level": "Log-niveau"},
+    "columns": {
+      "timestamp": "Tijd",
+      "formattedMessage": "Bericht",
+      "level": "Log-niveau"
+    },
     "search": {
       "addProperty": "Eigenschap toevoegen",
       "afterTimestamp": "Van tijd",
@@ -3208,8 +3502,12 @@
     "configureIkoServer": "IKO-server configureren",
     "dataUrl": "Gegevens-URL",
     "list": "Lijst",
-    "tabs": {"title": "Tabbladen"},
-    "widgets": {"title": "Widgets"},
+    "tabs": {
+      "title": "Tabbladen"
+    },
+    "widgets": {
+      "title": "Widgets"
+    },
     "importDefinition": {
       "title": "Importeer IKO-definitie",
       "overwriteWarning": "Als je IKO-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
@@ -3581,7 +3879,66 @@
       "processes": "Processen",
       "forms": "Formulieren",
       "formFlows": "Form flows",
-      "decisions": "Beslistabellen"
+      "decisions": "Beslistabellen",
+      "migration": "Migratie"
+    },
+    "migration": {
+      "addPlan": "Migratieplan toevoegen",
+      "duplicateSuffix": "kopie",
+      "editor": {
+        "general": {
+          "titlePlaceholder": "Migreer bouwblokken met status 'aanvraag-ontvangen'",
+          "sourceHint": "De bouwsteenversie waarvan dit plan de instanties migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die instanties in één stap hierheen. Een andere bouwsteen kiezen maakt dit plan de brug die de lopende instanties daarvan hierheen brengt — en dat is het enige dat dat kan, want niets anders verbindt twee verschillende bouwstenen.",
+          "sourceKey": "Bronbouwsteen",
+          "sourceKeyPlaceholder": "Kies een bouwsteen",
+          "whenItRuns": "Wanneer dit plan draait",
+          "whenItRunsHint": "Dit plan heeft geen eigen trigger en geen eigen condities. Het draait automatisch wanneer een zaak migreert naar een zaakdefinitieversie die {{key}} op versie {{versionTag}} koppelt, en wordt toegepast op elke bouwblokinstantie die die zaakmigratie naar deze versie brengt. Het wordt gesimuleerd als onderdeel van de dry run van die zaakmigratie.",
+          "chainOfPlansHint": "Een keten van migratieplannen moet de versie waarop een bouwblokinstantie staat verbinden met de versie die een zaak koppelt. Eén plan kan de hele sprong dekken — de source is dan de versie waarop de instantie werkelijk staat — of er is een plan per stap, ook een stap die niets wijzigt: elke versie van {{key}} publiceert zijn eigen procesmodel, dus een lopend bouwblok moet er expliciet naartoe worden verplaatst. Verbindt niets de twee, of verbindt meer dan één keten ze, dan mislukt de zaakmigratie in plaats van te gokken. Draai de zaakmigratie eerst als dry run om de hele keten te controleren."
+        },
+        "dataMigration": {
+          "description": "Verplaats of stel bouwblokgegevens in tijdens de migratie. Elke patch kopieert een waarde van een bronlocatie naar de doellocatie, zet een vaste waarde op het doel, of zet het doel op null. Het doelveld is verplicht."
+        },
+        "processMigration": {
+          "description": "Migreer lopende procesinstanties naar de doel-procesdefinitie. Koppel de activiteiten van het bronproces aan die van het doelproces.",
+          "activityMappingHint": "Koppel elke bronactiviteit aan een doelactiviteit. Zowel de naam als de technische id worden getoond, zodat activiteiten met dezelfde naam te onderscheiden zijn."
+        },
+        "addBuildingBlock": {
+          "description": "Maak één of meer geneste bouwblokken aan binnen elk gemigreerd bouwblok. Elke regel maakt een (in eerste instantie leeg) bouwblokdocument aan, vult dit met de onderstaande datamigratie en neemt het/de proces(sen) van het bovenliggende bouwblok over in het nieuwe bouwblok.",
+          "dataMigrationHint": "Vult het nieuwe bouwblokdocument: elke bron leest uit het bovenliggende bouwblokdocument, elk doel schrijft naar het nieuwe bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een proces van het bovenliggende bouwblok; het doelproces is een proces van het nieuwe bouwblok. Het/de vermelde proces(sen) worden overgenomen in het nieuwe bouwblok en de business key wordt altijd op de document-id van het nieuwe bouwblok gezet."
+        },
+        "removeBuildingBlock": {
+          "description": "Verwijder één of meer geneste bouwblokken uit elk gemigreerd bouwblok. Alle bouwblokken met de opgegeven sleutel die direct onder het migrerende bouwblok hangen worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar dat bouwblok.",
+          "dataMigrationHint": "Zet data terug naar het bovenliggende bouwblok voordat het geneste bouwblok wordt verwijderd: elke bron leest uit het geneste bouwblokdocument, elk doel schrijft naar het bovenliggende bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een proces van het geneste bouwblok; het doelproces is een proces van het bovenliggende bouwblok. Het/de proces(sen) van het geneste bouwblok worden teruggegeven en de business key wordt altijd teruggezet op de document-id van het bovenliggende bouwblok."
+        }
+      },
+      "deleteModal": {
+        "title": "Migratieplan verwijderen",
+        "content": "Weet je zeker dat je dit migratieplan wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      },
+      "columns": {
+        "plan": "Migratieplan",
+        "source": "Bron",
+        "target": "Doel",
+        "status": "Status",
+        "instancesMigrated": "Instanties gemigreerd"
+      },
+      "noResults": {
+        "title": "Geen migratieplannen",
+        "description": "Er zijn geen migratieplannen uitgerold voor deze versie van dit bouwblok."
+      },
+      "status": {
+        "NOT_STARTED": "Niet gestart",
+        "RUNNING": "Bezig",
+        "COMPLETED": "Voltooid",
+        "COMPLETED_WITH_ERRORS": "Voltooid met fouten"
+      },
+      "fields": {
+        "status": "Migratiestatus",
+        "instancesMigrated": "Instanties gemigreerd"
+      },
+      "detailHint": "Wordt toegepast op een bouwblokinstantie zodra een zaakmigratie deze van {{source}} naar {{target}} verplaatst."
     },
     "formDefinition": {
       "name": "Naam"
@@ -3645,6 +4002,85 @@
       "export": "Exporteer \"{{value}}\"",
       "exportSuccessTitle": "Download start binnenkort",
       "preparingDownload": "Download aan het voorbereiden"
+    }
+  },
+  "migrationEditor": {
+    "createTitle": "Nieuw migratieplan",
+    "card": {
+      "unnamed": "Nieuwe regel"
+    },
+    "tabs": {
+      "general": "Algemeen",
+      "dataMigration": "Datamigratie",
+      "processMigration": "Procesmigratie",
+      "addBuildingBlock": "Bouwblok toevoegen",
+      "removeBuildingBlock": "Bouwblok verwijderen",
+      "jsonEditor": "JSON-editor"
+    },
+    "general": {
+      "title": "Titel",
+      "titleSuggestion": "Migratieplan {{source}} naar {{target}}",
+      "key": "Sleutel",
+      "keyPlaceholder": "migration-plan-aanvraag-indienen",
+      "source": "Bron",
+      "sourceVersion": "Bronversie",
+      "sourceVersionPlaceholder": "Kies een versie",
+      "suggesting": "Bezig met het samenstellen van een voorgesteld plan op basis van deze versie en de versie waarvan gemigreerd wordt…"
+    },
+    "dataMigration": {
+      "empty": "Nog geen datapatches geconfigureerd.",
+      "addPatch": "Patch toevoegen",
+      "mode": "Bron",
+      "mode_path": "Pad",
+      "mode_value": "Waarde",
+      "mode_null": "Null",
+      "nullHint": "Het doel wordt leeggemaakt.",
+      "source": "Bronveld",
+      "value": "Vaste waarde",
+      "valuePlaceholder": "Henk",
+      "target": "Doelveld",
+      "targetType": "Doeltype",
+      "targetTypeAuto": "Auto"
+    },
+    "processMigration": {
+      "empty": "Nog geen procesmigraties geconfigureerd.",
+      "addInstruction": "Procesmigratie toevoegen",
+      "missingTarget": "Kies een doelproces, of verwijder deze instructie, voordat je opslaat.",
+      "missingTargetTab": "Een of meer instructies hebben nog geen doelproces.",
+      "sourceProcess": "Bronproces",
+      "targetProcess": "Doelproces",
+      "selectProcess": "Kies een proces",
+      "activityMapping": "Activiteitkoppeling",
+      "incompatibleMapping": "Deze activiteitstypen kunnen niet naar elkaar gemigreerd worden. Kies een doelactiviteit van een compatibel type.",
+      "sourceActivity": "Bronactiviteit",
+      "targetActivity": "Doelactiviteit",
+      "addMapping": "Koppeling toevoegen",
+      "setProcessVariables": "Procesvariabelen instellen",
+      "setProcessVariablesHint": "Stel procesvariabelen in op de gemigreerde instantie. Elke patch kopieert een waarde van een bronpad of zet een vaste waarde. Het doel is de procesvariabele waarnaar wordt geschreven (bijv. pv:naam of een geneste pv:/config/enabled).",
+      "variableMode": "Bron",
+      "variableSource": "Bronpad",
+      "variableValue": "Vaste waarde",
+      "variableValuePlaceholder": "Henk",
+      "variableTarget": "Doelvariabele",
+      "variableTargetPlaceholder": "pv:aanvragerNaam",
+      "variableTargetType": "Doeltype",
+      "addVariable": "Variabele toevoegen",
+      "skipCustomListeners": "Custom listeners overslaan",
+      "skipIoMappings": "Input/output-mappings overslaan"
+    },
+    "buildingBlock": {
+      "buildingBlockKey": "Bouwblok",
+      "buildingBlockKeyPlaceholder": "Kies een bouwblok",
+      "buildingBlockVersionTag": "Versie",
+      "buildingBlockVersionTagPlaceholder": "Kies een versie"
+    },
+    "addBuildingBlock": {
+      "empty": "Nog geen toe te voegen bouwblokken geconfigureerd.",
+      "addEntry": "Bouwblok toevoegen"
+    },
+    "removeBuildingBlock": {
+      "empty": "Nog geen te verwijderen bouwblokken geconfigureerd.",
+      "addEntry": "Bouwblok toevoegen"
     }
   },
   "mdiIcons": {
