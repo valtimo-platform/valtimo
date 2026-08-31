@@ -41,6 +41,7 @@ import com.ritense.valtimo.contract.blueprint.migration.MigrationRunCache
 import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
+import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
@@ -153,23 +154,60 @@ class CaseMigrationService(
      * check [isTriggeredByButton] — the manual entry point does that before calling here.
      */
     fun startMigration(migrationId: BlueprintMigrationId): CaseDefinitionMigrationExecution {
+        val runToken = claimMigration(migrationId)
+            ?: return executionRepository.findById(migrationId).orElseThrow()
+        return runClaimedMigration(migrationId, runToken)
+    }
+
+    /**
+     * Validate the plan and become its single active runner, without migrating anything yet. Returns
+     * the fencing token to hand to [runClaimedMigration], or null when a run already owns the plan.
+     *
+     * Split from the run itself so a caller that cannot wait for the run — an HTTP request, since a
+     * migration of tens of thousands of cases takes hours — can claim on its own thread and hand the
+     * token to a background one. Claiming here rather than there is what keeps that safe: everything
+     * that should answer the caller (an unknown plan, a building block plan, an undeployed source, a
+     * plan already running) is decided before the response, and the execution is already RUNNING when
+     * the caller returns, so a status poll cannot mistake a not-yet-started run for a finished one.
+     */
+    fun claimMigration(migrationId: BlueprintMigrationId): String? {
         assertNotBuildingBlockPlan(migrationId)
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
             NoSuchElementException("No migration plan found for '$migrationId'")
         }
         assertSourceIsDeployed(plan)
 
-        val runToken = claim(migrationId)
+        val runToken = claim(migrationId, AuditHelper.getActor())
         if (runToken == null) {
             logger.debug { "Migration plan '$migrationId' is already being executed; skipping" }
-            return executionRepository.findById(migrationId).orElseThrow()
+            return null
         }
 
         // A real run makes the latest dry run stale (it simulated the pre-migration state), so drop it.
         clearDryRun(migrationId)
+        return runToken
+    }
+
+    /**
+     * Migrate every matching case of an already-claimed plan, then finish it. [runToken] must be the
+     * token [claimMigration] returned; the run stops cleanly if a takeover fences it mid-way.
+     *
+     * The actor is read from the execution row rather than the current thread, so a run continues to be
+     * attributed to whoever claimed it — including after a crash, when it is resumed by the trigger
+     * sweep on a thread that has no user at all.
+     */
+    fun runClaimedMigration(
+        migrationId: BlueprintMigrationId,
+        runToken: String,
+    ): CaseDefinitionMigrationExecution {
+        val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
+            NoSuchElementException("No migration plan found for '$migrationId'")
+        }
+        val actor = executionRepository.findById(migrationId).orElseThrow().runActor
+            ?: AuditHelper.getActor()
 
         return try {
-            migrateMatchingCases(migrationId, plan, runToken)
+            migrateMatchingCases(migrationId, plan, runToken, actor)
             finalize(migrationId, runToken)
         } catch (e: MigrationOwnershipLostException) {
             logger.info { "Stopped running migration plan '$migrationId': ${e.message}" }
@@ -225,25 +263,42 @@ class CaseMigrationService(
      * run is already in progress elsewhere (a live lease), and stops cleanly if fenced by a takeover.
      */
     fun startDryRun(migrationId: BlueprintMigrationId): DryRunStatusDto {
+        val runToken = claimDryRun(migrationId) ?: return getDryRunStatus(migrationId)
+        runClaimedDryRun(migrationId, runToken)
+        return getDryRunStatus(migrationId)
+    }
+
+    /**
+     * Validate the plan and become its single active dry runner, without simulating anything yet.
+     * Returns the fencing token to hand to [runClaimedDryRun], or null when a dry run already owns the
+     * plan. Split from the run for the same reason as [claimMigration]: a dry run does the same work as
+     * a real one, so it takes the same hours and cannot be held open by an HTTP request either.
+     */
+    fun claimDryRun(migrationId: BlueprintMigrationId): String? {
         assertNotBuildingBlockPlan(migrationId)
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
             NoSuchElementException("No migration plan found for '$migrationId'")
         }
         assertSourceIsDeployed(plan)
 
-        val runToken = claimDryRun(migrationId)
+        val runToken = claimDryRun(migrationId, AuditHelper.getActor())
         if (runToken == null) {
             logger.debug { "Dry run for migration plan '$migrationId' is already in progress; skipping" }
-            return getDryRunStatus(migrationId)
+            return null
         }
+        return runToken
+    }
 
-        return try {
+    /** Simulate every matching case of an already-claimed dry run, then finish it. */
+    fun runClaimedDryRun(migrationId: BlueprintMigrationId, runToken: String) {
+        val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
+            NoSuchElementException("No migration plan found for '$migrationId'")
+        }
+        try {
             dryRunMatchingCases(migrationId, plan, runToken)
             finalizeDryRun(migrationId, runToken)
-            getDryRunStatus(migrationId)
         } catch (e: MigrationOwnershipLostException) {
             logger.info { "Stopped dry run for migration plan '$migrationId': ${e.message}" }
-            getDryRunStatus(migrationId)
         }
     }
 
@@ -418,6 +473,7 @@ class CaseMigrationService(
         migrationId: BlueprintMigrationId,
         plan: CaseDefinitionMigration,
         runToken: String,
+        actor: String,
     ) {
         val target = plan.targetBlueprintId()
         var matchedCount = 0
@@ -431,7 +487,7 @@ class CaseMigrationService(
             },
             onMatch = { caseId ->
                 matchedCount++
-                migrateCase(migrationId, target, caseId, runToken)
+                migrateCase(migrationId, target, caseId, runToken, actor)
             },
             onPageComplete = { updateExecution(migrationId, runToken) { it.casesToMigrate = matchedCount } },
         )
@@ -441,8 +497,12 @@ class CaseMigrationService(
      * Become the single active runner: move the execution to RUNNING with a fresh fencing token and
      * lease, unless another run holds it with a live lease. Returns the token, or null when it is
      * already owned or a concurrent claim won the optimistic-lock/insert race.
+     *
+     * [actor] is recorded as the run's actor, except when taking over a run that was already RUNNING —
+     * a crashed run being reclaimed keeps whoever started it, since resuming someone's migration is not
+     * the same act as starting one.
      */
-    private fun claim(migrationId: BlueprintMigrationId): String? {
+    private fun claim(migrationId: BlueprintMigrationId, actor: String): String? {
         var runToken: String? = null
         try {
             transactionTemplate.executeWithoutResult {
@@ -451,9 +511,11 @@ class CaseMigrationService(
                 if (execution.status == CaseMigrationStatus.RUNNING && isLeaseLive(execution)) {
                     return@executeWithoutResult // another node is actively running it
                 }
+                val isReclaim = execution.status == CaseMigrationStatus.RUNNING
                 val token = UUID.randomUUID().toString()
                 execution.status = CaseMigrationStatus.RUNNING
                 execution.runToken = token
+                execution.runActor = if (isReclaim) execution.runActor ?: actor else actor
                 if (execution.startedOn == null) {
                     execution.startedOn = LocalDateTime.now()
                 }
@@ -469,7 +531,13 @@ class CaseMigrationService(
         return runToken
     }
 
-    private fun migrateCase(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID, runToken: String) {
+    private fun migrateCase(
+        migrationId: BlueprintMigrationId,
+        target: BlueprintId,
+        caseId: UUID,
+        runToken: String,
+        actor: String,
+    ) {
         val caseRecordId = CaseMigrationCaseId(migrationId, caseId.toString())
         // Warnings are collected on the thread for the duration of this one case (MigrationWarnings),
         // so start from a clean slate and hold on to whatever the components raise — the same set is
@@ -493,6 +561,9 @@ class CaseMigrationService(
                 // present exactly when the case is recorded migrated — and rolled back if it is not).
                 applicationEventPublisher.publishEvent(
                     CaseMigratedEvent(
+                        // Explicit: the run outlives the request, so the thread has no user to infer
+                        // the actor from and would otherwise audit every case as "System".
+                        user = actor,
                         caseId = caseId,
                         blueprintKey = target.getIdKey(),
                         fromBlueprintKey = from.getIdKey(),
@@ -542,6 +613,32 @@ class CaseMigrationService(
 
     private fun renewLease(migrationId: BlueprintMigrationId, runToken: String) {
         updateExecution(migrationId, runToken) { it.leaseExpiresAt = LocalDateTime.now().plus(leaseDuration) }
+    }
+
+    /**
+     * Give up a claim that was taken but never run — the background pool had no capacity for it.
+     *
+     * Drops the lease while leaving the status RUNNING, which is precisely the state a node that died
+     * mid-run leaves behind, and therefore already means "reclaimable" to
+     * [CaseDefinitionMigrationExecutionRepository.findReclaimable]: the trigger sweep resumes it on its
+     * next pass. The alternative — finishing it — would report a plan that migrated nothing as
+     * COMPLETED, and reverting it to NOT_STARTED would strand the cases a resumed run had left to do.
+     */
+    fun abandonClaim(migrationId: BlueprintMigrationId, runToken: String) {
+        updateExecution(migrationId, runToken) { execution ->
+            execution.leaseExpiresAt = null
+            execution.runToken = null
+        }
+    }
+
+    /** As [abandonClaim], for a dry run. A dry run always starts fresh, so it is simply not started. */
+    fun abandonDryRunClaim(migrationId: BlueprintMigrationId, runToken: String) {
+        updateDryRun(migrationId, runToken) { dryRun ->
+            dryRun.status = CaseMigrationStatus.NOT_STARTED
+            dryRun.leaseExpiresAt = null
+            dryRun.runToken = null
+            dryRun.startedOn = null
+        }
     }
 
     private fun finalize(
@@ -652,7 +749,7 @@ class CaseMigrationService(
      * results so this run starts fresh. Returns the token, or null when it is already owned or a
      * concurrent claim won the optimistic-lock/insert race.
      */
-    private fun claimDryRun(migrationId: BlueprintMigrationId): String? {
+    private fun claimDryRun(migrationId: BlueprintMigrationId, actor: String): String? {
         var runToken: String? = null
         try {
             transactionTemplate.executeWithoutResult {
@@ -664,6 +761,7 @@ class CaseMigrationService(
                 val token = UUID.randomUUID().toString()
                 dryRun.status = CaseMigrationStatus.RUNNING
                 dryRun.runToken = token
+                dryRun.runActor = actor
                 dryRun.startedOn = LocalDateTime.now()
                 dryRun.finishedOn = null
                 dryRun.leaseExpiresAt = LocalDateTime.now().plus(leaseDuration)

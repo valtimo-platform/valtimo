@@ -44,6 +44,7 @@ import java.util.Optional
 class MigrationTriggerSchedulerTest(
     @Mock private val migrationRepository: CaseDefinitionMigrationRepository,
     @Mock private val executionRepository: CaseDefinitionMigrationExecutionRepository,
+    @Mock private val caseMigrationRunner: CaseMigrationRunner,
     @Mock private val caseMigrationService: CaseMigrationService,
 ) {
 
@@ -53,7 +54,7 @@ class MigrationTriggerSchedulerTest(
 
     @BeforeEach
     fun setUp() {
-        scheduler = MigrationTriggerScheduler(migrationRepository, executionRepository, caseMigrationService)
+        scheduler = MigrationTriggerScheduler(migrationRepository, executionRepository, caseMigrationRunner, caseMigrationService)
         whenever(executionRepository.findReclaimable(any())).thenReturn(emptyList())
         whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any())).thenReturn(emptyList())
     }
@@ -76,7 +77,7 @@ class MigrationTriggerSchedulerTest(
 
         scheduler.checkTriggers()
 
-        verify(caseMigrationService).startMigration(migrationId("crashed"))
+        verify(caseMigrationRunner).startMigration(migrationId("crashed"))
     }
 
     @Test
@@ -86,7 +87,7 @@ class MigrationTriggerSchedulerTest(
 
         scheduler.checkTriggers()
 
-        verify(caseMigrationService).startMigration(migrationId("scheduled"))
+        verify(caseMigrationRunner).startMigration(migrationId("scheduled"))
     }
 
     @Test
@@ -96,7 +97,7 @@ class MigrationTriggerSchedulerTest(
 
         scheduler.checkTriggers()
 
-        verify(caseMigrationService, never()).startMigration(any())
+        verify(caseMigrationRunner, never()).startMigration(any())
     }
 
     @Test
@@ -108,7 +109,7 @@ class MigrationTriggerSchedulerTest(
 
         scheduler.checkTriggers()
 
-        verify(caseMigrationService).startMigration(migrationId("successor"))
+        verify(caseMigrationRunner).startMigration(migrationId("successor"))
     }
 
     @Test
@@ -120,7 +121,7 @@ class MigrationTriggerSchedulerTest(
 
         scheduler.checkTriggers()
 
-        verify(caseMigrationService, never()).startMigration(any())
+        verify(caseMigrationRunner, never()).startMigration(any())
     }
 
     @Test
@@ -131,7 +132,7 @@ class MigrationTriggerSchedulerTest(
         scheduler.checkTriggers()
 
         verify(caseMigrationService).refreshCaseCountEstimate(migrationId("manual"))
-        verify(caseMigrationService, never()).startMigration(any())
+        verify(caseMigrationRunner, never()).startMigration(any())
     }
 
     @Test
@@ -141,7 +142,7 @@ class MigrationTriggerSchedulerTest(
 
         scheduler.checkTriggers()
 
-        verify(caseMigrationService).startMigration(migrationId("scheduled"))
+        verify(caseMigrationRunner).startMigration(migrationId("scheduled"))
         verify(caseMigrationService, never()).refreshCaseCountEstimate(any())
     }
 }

@@ -18,6 +18,7 @@ package com.ritense.case_.rest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.case_.service.migration.CaseMigrationRunner
 import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.service.migration.DryRunStatusDto
 import com.ritense.case_.service.migration.MigrationExecutionStatusDto
@@ -50,6 +51,7 @@ import org.springframework.web.server.ResponseStatusException
 )
 class CaseMigrationManagementResource(
     private val caseMigrationService: CaseMigrationService,
+    private val caseMigrationRunner: CaseMigrationRunner,
     private val migrationPlanImporter: MigrationPlanImporter,
     private val migrationPlanExporter: MigrationPlanExporter,
     private val migrationSuggestionService: MigrationSuggestionService,
@@ -247,8 +249,13 @@ class CaseMigrationManagementResource(
                     "scheduled date or after the plan it follows.",
             )
         }
-        asBadRequestOnInvalidPlan { caseMigrationService.startMigration(migrationId) }
-        return ResponseEntity.ok(caseMigrationService.getStatus(migrationId))
+        // Dispatched to a background thread: migrating every matching case takes hours, far longer than
+        // any request can be held open. The response carries the status the run starts from; the client
+        // follows the rest by polling GET .../status.
+        val started = asBadRequestOnInvalidPlan { caseMigrationRunner.startMigration(migrationId) }
+        val status = caseMigrationService.getStatus(migrationId)
+        // Already running: not an error, there is simply nothing new to accept.
+        return if (started) ResponseEntity.accepted().body(status) else ResponseEntity.ok(status)
     }
 
     @RunWithoutAuthorization
@@ -271,7 +278,11 @@ class CaseMigrationManagementResource(
         @PathVariable migrationKey: String,
     ): ResponseEntity<DryRunStatusDto> {
         val migrationId = migrationId(caseDefinitionKey, caseDefinitionVersionTag, migrationKey)
-        return ResponseEntity.ok(asBadRequestOnInvalidPlan { caseMigrationService.startDryRun(migrationId) })
+        // Background, for the same reason as a real run: a dry run simulates every case it would
+        // migrate, so it costs the same hours. Followed by polling GET .../dry-run/status.
+        val started = asBadRequestOnInvalidPlan { caseMigrationRunner.startDryRun(migrationId) }
+        val status = caseMigrationService.getDryRunStatus(migrationId)
+        return if (started) ResponseEntity.accepted().body(status) else ResponseEntity.ok(status)
     }
 
     @RunWithoutAuthorization

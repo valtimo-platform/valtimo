@@ -27,9 +27,9 @@ import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
+import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.QuickSearchRepository
 import com.ritense.case.repository.StartableItemRepository
-import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionCheckerImpl
@@ -48,9 +48,9 @@ import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
+import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
 import com.ritense.case.service.StartableItemExporter
 import com.ritense.case.service.StartableItemImporter
-import com.ritense.case.service.ConfigurationIssueCaseDefinitionFinalizationChecker
 import com.ritense.case.service.StartableItemManagementService
 import com.ritense.case.service.StartableItemProvider
 import com.ritense.case.service.StartableItemService
@@ -66,31 +66,32 @@ import com.ritense.case.web.rest.TaskListResource
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.repository.CaseMigrationDryRunCaseRepository
 import com.ritense.case_.repository.CaseMigrationDryRunRepository
-import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.case_.repository.HiddenCaseListColumnRepository
 import com.ritense.case_.rest.CaseMigrationManagementResource
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.case_.service.migration.CaseMigrationCandidateProvider
+import com.ritense.case_.service.migration.CaseMigrationRunner
 import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.service.migration.DataMigrationComponentDeployer
 import com.ritense.case_.service.migration.DataMigrationComponentExecutor
 import com.ritense.case_.service.migration.DataMigrationComponentSuggester
-import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.case_.service.migration.MigrationConditionEvaluator
-import com.ritense.case_.service.migration.MigrationPlanExporter
+import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.case_.service.migration.MigrationPlanApplier
+import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.case_.service.migration.MigrationTriggerScheduler
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
-import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
-import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
@@ -98,21 +99,23 @@ import com.ritense.importer.ValtimoImportService
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingSuggester
+import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingValidator
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.BuildingBlockEntryOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
-import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingSuggester
-import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingValidator
-import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
+import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valueresolver.ValueResolverService
+import java.time.Duration
 import org.springframework.beans.factory.ObjectProvider
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -126,9 +129,10 @@ import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
+import org.springframework.core.task.TaskExecutor
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.Duration
 
 @AutoConfiguration
 @EnableJpaRepositories(
@@ -689,15 +693,51 @@ class CaseAutoConfiguration {
         leaseDuration,
     )
 
+    /**
+     * The pool migration runs execute on. A run holds its thread for as long as it takes to migrate
+     * every matching case — hours — so the pool size is the number of *different* plans that can be
+     * running at once (the per-plan lease already prevents one plan running twice). The queue is
+     * deliberately small: a queued run is invisible to the user, and a rejection is recoverable, since
+     * the trigger sweep reclaims an abandoned claim.
+     */
+    @Bean("caseMigrationTaskExecutor")
+    @ConditionalOnMissingBean(name = ["caseMigrationTaskExecutor"])
+    fun caseMigrationTaskExecutor(
+        @Value("\${valtimo.case.migration.concurrent-runs:4}") concurrentRuns: Int,
+        @Value("\${valtimo.case.migration.queued-runs:8}") queuedRuns: Int,
+    ) = ThreadPoolTaskExecutor().apply {
+        corePoolSize = concurrentRuns
+        maxPoolSize = concurrentRuns
+        setQueueCapacity(queuedRuns)
+        setThreadNamePrefix("case-migration-")
+        // A run in progress must not be killed on shutdown: it would be reclaimed and resumed anyway,
+        // but letting the current case finish keeps the restart clean.
+        setWaitForTasksToCompleteOnShutdown(true)
+        setAwaitTerminationSeconds(30)
+        initialize()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseMigrationRunner::class)
+    fun caseMigrationRunner(
+        caseMigrationService: CaseMigrationService,
+        @Qualifier("caseMigrationTaskExecutor") caseMigrationTaskExecutor: TaskExecutor,
+    ) = CaseMigrationRunner(
+        caseMigrationService,
+        caseMigrationTaskExecutor,
+    )
+
     @Bean
     @ConditionalOnMissingBean(MigrationTriggerScheduler::class)
     fun migrationTriggerScheduler(
         caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
         caseDefinitionMigrationExecutionRepository: CaseDefinitionMigrationExecutionRepository,
+        caseMigrationRunner: CaseMigrationRunner,
         caseMigrationService: CaseMigrationService,
     ) = MigrationTriggerScheduler(
         caseDefinitionMigrationRepository,
         caseDefinitionMigrationExecutionRepository,
+        caseMigrationRunner,
         caseMigrationService,
     )
 
@@ -705,11 +745,13 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseMigrationManagementResource::class)
     fun caseMigrationManagementResource(
         caseMigrationService: CaseMigrationService,
+        caseMigrationRunner: CaseMigrationRunner,
         migrationPlanImporter: MigrationPlanImporter,
         migrationPlanExporter: MigrationPlanExporter,
         migrationSuggestionService: MigrationSuggestionService,
     ) = CaseMigrationManagementResource(
         caseMigrationService,
+        caseMigrationRunner,
         migrationPlanImporter,
         migrationPlanExporter,
         migrationSuggestionService,

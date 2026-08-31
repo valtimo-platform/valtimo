@@ -38,16 +38,20 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.blueprint.BlueprintType
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import java.time.Duration
+import java.time.LocalDateTime
+import java.util.Optional
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
-import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Answers
@@ -69,13 +73,11 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.jpa.domain.Specification
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.SimpleTransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.Duration
-import java.time.LocalDateTime
-import java.util.Optional
-import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -405,6 +407,60 @@ class CaseMigrationServiceTest(
         verify(executor).execute(migrationId, caseDefinitionId, case2)
         verify(caseRepository).save(CaseMigrationCase(caseRecordId(case2), CaseMigrationCaseStatus.MIGRATED))
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
+    }
+
+    @Test
+    fun `should record the actor that claimed the run, so a background run is not audited as System`() {
+        // The claim happens on the request thread, which still has the user; the run does not.
+        SecurityContextHolder.getContext().authentication =
+            UsernamePasswordAuthenticationToken("asha", null, emptyList())
+        try {
+            stubCandidates(case1)
+            whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+            val runToken = service.claimMigration(migrationId)!!
+            assertThat(execution.runActor).isEqualTo("asha")
+
+            // The run itself has no user, and must take the actor off the execution row instead.
+            SecurityContextHolder.clearContext()
+            service.runClaimedMigration(migrationId, runToken)
+
+            val captor = argumentCaptor<CaseMigratedEvent>()
+            verify(applicationEventPublisher).publishEvent(captor.capture())
+            assertThat(captor.firstValue.user).isEqualTo("asha")
+        } finally {
+            SecurityContextHolder.clearContext()
+        }
+    }
+
+    @Test
+    fun `a reclaimed run should keep the actor that started it, not the one that resumed it`() {
+        // A crashed run: RUNNING with a lapsed lease, started by a person who is long gone from the
+        // thread that resumes it. Reclaiming must not re-attribute their migration.
+        execution.status = CaseMigrationStatus.RUNNING
+        execution.leaseExpiresAt = LocalDateTime.now().minusMinutes(10)
+        execution.runActor = "asha"
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+
+        service.startMigration(migrationId)
+
+        assertThat(execution.runActor).isEqualTo("asha")
+        val captor = argumentCaptor<CaseMigratedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        assertThat(captor.firstValue.user).isEqualTo("asha")
+    }
+
+    @Test
+    fun `abandoning a claim should leave the run reclaimable rather than falsely completed`() {
+        val runToken = service.claimMigration(migrationId)!!
+
+        service.abandonClaim(migrationId, runToken)
+
+        // RUNNING with no lease is exactly what findReclaimable looks for, so the sweep resumes it.
+        assertThat(execution.status).isEqualTo(CaseMigrationStatus.RUNNING)
+        assertThat(execution.leaseExpiresAt).isNull()
+        assertThat(execution.runToken).isNull()
     }
 
     @Test

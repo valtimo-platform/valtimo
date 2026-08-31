@@ -28,6 +28,7 @@
     * [Migration](configuration-guides/cases/migration/README.md)
         * [Conditions](configuration-guides/cases/migration/conditions.md)
         * [Source and target](configuration-guides/cases/migration/source-and-target.md)
+        * [Process migration](configuration-guides/cases/migration/process-migration.md)
         * [Building blocks](configuration-guides/cases/migration/building-blocks.md)
         * [Running a plan](configuration-guides/cases/migration/running-a-plan.md)
     * [Forms](configuration-guides/cases/forms.md)
@@ -69,6 +70,7 @@
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
+  * [13.45.0](release-notes/13.x.x/13.45.0/README.md)
   * [13.44.0](release-notes/13.x.x/13.44.0/README.md)
   * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
 

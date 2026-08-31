@@ -18,6 +18,7 @@ This section covers:
 
 - **[Conditions](conditions.md)** — Selecting which cases a plan migrates
 - **[Source and target](source-and-target.md)** — Which version a plan reads from and writes to
+- **[Process migration](process-migration.md)** — Moving a case's running process onto the new version
 - **[Building blocks](building-blocks.md)** — Adding, removing, and following building blocks
 - **[Running a plan](running-a-plan.md)** — Triggers, dry runs, monitoring, and results
 
@@ -116,13 +117,20 @@ Click **Save** in the page header. **Cancel** discards the plan
 {% endstep %}
 {% endstepper %}
 
+{% hint style="info" %}
+A new plan opens pre-filled with a suggestion: Valtimo compares the source version with the target and
+proposes the patches, process migrations and building block entries that look to be needed. Changing
+the **Source** suggests them again, so treat the result as a starting point and review it before
+saving.
+{% endhint %}
+
 Each editor tab covers one part of the plan:
 
 | Tab                   | Description                                                                                                                                                                                                                                                                                                                           |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | General               | The plan's **Title** and **Key** (generated from the title, editable), the **Source** it migrates from, the **Triggers** that decide when it runs, and the **Conditions** that decide which cases it applies to. See [Source and target](source-and-target.md), [Running a plan](running-a-plan.md), and [Conditions](conditions.md). |
-| Data migration        | What happens to the case data. Click **Add patch** to add a row. Each patch writes one **Target field** from a **Source**: copy a field's value (**Path**), set a **Fixed value** (**Value**), or clear it (**Null**). A **Target type** can be set per patch, or left on **Auto**.                                                    |
-| Process migration     | How the running process moves. Click **Add process migration** to add an instruction. Each instruction pairs a **Source process** with a **Target process** and maps each **Source activity** onto a **Target activity**. Process variables can be set during the migration.                                                          |
+| Data migration        | What happens to the case data. Click **Add patch** to add a row. Each patch writes one **Target field** from a **Source**: copy a field's value (**Path**), set a **Fixed value** (**Value**), or clear it (**Null**). A **Target type** can be set per patch, or left on **Auto**.                                                   |
+| Process migration     | How the running process moves: one instruction per process, each pairing a **Source process** with a **Target process** and mapping the activities that moved. Process variables can be set on the way, and listeners and input/output mappings can be skipped. See [Process migration](process-migration.md).                        |
 | Add building block    | Optionally creates building blocks on each migrated case. See [Building blocks](building-blocks.md).                                                                                                                                                                                                                                  |
 | Remove building block | Optionally dissolves building blocks on each migrated case. See [Building blocks](building-blocks.md).                                                                                                                                                                                                                                |
 | JSON editor           | A raw view of the whole plan. Everything here is also editable through the guided tabs.                                                                                                                                                                                                                                               |
@@ -134,11 +142,6 @@ identically in every environment.
 Field pickers throughout the editor have a **Dropdown** / **Manual** toggle. **Dropdown** offers the
 fields of the relevant data model; **Manual** accepts a path typed by hand, for paths the dropdown
 does not offer.
-{% endhint %}
-
-{% hint style="info" %}
-Activity mapping follows the process engine's rules: activities are mapped onto activities of a
-compatible type. The editor reports an incompatible mapping so it can be corrected before saving.
 {% endhint %}
 
 ---

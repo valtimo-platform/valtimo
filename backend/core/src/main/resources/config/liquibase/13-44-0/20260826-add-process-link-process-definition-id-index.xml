@@ -20,17 +20,6 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
-    <!--
-      `process_link` carried exactly one index - its primary key on `id` - so every lookup by process
-      definition id was a full table scan, and Hibernate's JOINED inheritance dragged the subclass tables
-      through with it. `findByProcessDefinitionId` is on the hot path of the whole application (task forms,
-      process-link resolution) and case migration is simply the first workload to call it hundreds of times
-      in one request: measured over 121 migrating cases on a customer configuration, 58,777 sequential scans
-      reading 90 million rows, 84% of every row the migration read, against 262 index scans.
-
-      Measured effect on that configuration: 2.81 -> 2.49 seconds per migrated case, and the query plan goes
-      from `Seq Scan ... Rows Removed by Filter: 1530` at 0.275ms to an index scan at 0.082ms.
-    -->
     <changeSet id="1" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <not>

@@ -66,6 +66,15 @@ data class CaseDefinitionMigrationExecution(
     @Column(name = "run_token", length = 64)
     var runToken: String? = null,
 
+    /**
+     * Who started this run. Persisted because the run outlives the request that started it: the audit
+     * trail of every case it migrates is attributed to this actor, and a run reclaimed after a crash —
+     * hours later, on a node with no security context — must still credit the person who pressed the
+     * button rather than "System".
+     */
+    @Column(name = "run_actor", length = 255)
+    var runActor: String? = null,
+
     @Version
     @Column(name = "version")
     var version: Long? = null,

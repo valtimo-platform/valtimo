@@ -22,6 +22,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.core.task.SyncTaskExecutor
+import org.springframework.core.task.TaskExecutor
 
 @SpringBootApplication
 class TestApplication {
@@ -36,5 +38,17 @@ class TestApplication {
         fun testMailPluginFactory(pluginService: PluginService): PluginFactory<TestMailPlugin> {
             return TestMailPluginFactory(pluginService)
         }
+
+        /**
+         * Run migrations on the calling thread instead of the background pool.
+         *
+         * Production dispatches a run to a pool (D17) because it takes hours; an integration test
+         * migrates one or two cases and asserts the outcome immediately after. Left asynchronous, every
+         * assertion would be a race, and the polling needed to avoid that would hold a second connection
+         * open for the length of the run. What the pool adds — claim, dispatch, abandon on rejection — is
+         * covered by `CaseMigrationRunnerTest`; what these tests are about is the migration itself.
+         */
+        @Bean("caseMigrationTaskExecutor")
+        fun caseMigrationTaskExecutor(): TaskExecutor = SyncTaskExecutor()
     }
 }

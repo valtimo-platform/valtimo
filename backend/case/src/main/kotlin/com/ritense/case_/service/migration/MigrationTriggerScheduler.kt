@@ -53,6 +53,7 @@ import org.springframework.stereotype.Component
 class MigrationTriggerScheduler(
     private val caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
     private val executionRepository: CaseDefinitionMigrationExecutionRepository,
+    private val caseMigrationRunner: CaseMigrationRunner,
     private val caseMigrationService: CaseMigrationService,
 ) {
 
@@ -82,10 +83,24 @@ class MigrationTriggerScheduler(
         }
     }
 
+    /**
+     * On startup, resume runs this node (or its predecessor) was killed in the middle of, and refresh
+     * the estimates. Reclaiming here as well as hourly is what makes a restart mid-run cheap: a run
+     * now lives on a background thread, so a redeploy interrupts one routinely rather than rarely, and
+     * waiting up to an hour for the sweep would leave the plan reported as running while nothing ran.
+     */
     @EventListener(ApplicationFullyReadyEvent::class)
     fun refresh() {
         runWithoutAuthorization {
             val now = LocalDateTime.now()
+
+            executionRepository.findReclaimable(now)
+                .filter { it.id.blueprintType == BlueprintType.CASE }
+                .forEach { execution ->
+                    logger.info { "Resuming migration plan '${execution.id}' interrupted by a restart" }
+                    runTrigger(execution.id)
+                }
+
             caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
                 .forEach { plan ->
                     if (!isScheduledDue(plan, now) && !isRunAfterSatisfied(plan)) {
@@ -103,10 +118,15 @@ class MigrationTriggerScheduler(
         }
     }
 
+    /**
+     * Hand the plan to the background runner rather than migrating it here. A run takes hours, and the
+     * sweep visits every plan in turn: run inline, one long plan would hold the ShedLock and postpone
+     * every trigger behind it.
+     */
     private fun runTrigger(migrationId: BlueprintMigrationId) {
         try {
             logger.debug { "Trigger fired for migration plan '$migrationId'" }
-            caseMigrationService.startMigration(migrationId)
+            caseMigrationRunner.startMigration(migrationId)
         } catch (e: Exception) {
             logger.error(e) { "Failed to run migration trigger for plan '$migrationId'" }
         }

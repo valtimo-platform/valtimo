@@ -45,7 +45,8 @@ schedule or after another plan is started by that trigger, not by hand.
 
 A dry run goes through exactly the cases the plan would migrate and simulates migrating each one,
 applying the data changes and the process migration, then rolls everything back. No case data is
-changed, no process is moved, and no trace is left, so a dry run is safe against production data.
+changed, no process is moved, and no trace is left, so a dry run is safe against production data —
+with one exception, described under [What a rollback cannot undo](#what-a-rollback-cannot-undo).
 
 {% stepper %}
 {% step %}
@@ -78,10 +79,33 @@ The report shows:
 Because a dry run persists nothing, it never affects a later real run. Whether a case counts as
 already migrated is decided only by real runs.
 
+A dry run does the same work as a real run, so it runs in the background too and takes about as long.
+The plan's status shows **Running** while it does.
+
 {% hint style="info" %}
 A dry run of a case migration also walks the building block migration chain, so it reports a missing
 or ambiguous chain before a real run does. Building block plans have no dry run button of their own.
 {% endhint %}
+
+### What a rollback cannot undo
+
+A dry run undoes its work by running the real migration in a database transaction that is never
+committed. That covers everything the standard components do — document changes, process migrations,
+and building blocks created or dissolved — because all of it is written through the same transaction.
+
+{% hint style="warning" %}
+**A call to an external system is not rolled back.**
+
+If a migration runs a component that writes to an API outside Valtimo — a ZGW record, an email, a
+webhook — that call has already left the application by the time the transaction rolls back. Nothing
+undoes it, and the dry run still reports the case as **Would migrate**, so the report gives no sign
+that anything happened outside.
+
+{% endhint %}
+
+This only applies to custom migration components added to your installation. The components described
+in these guides — data migration, process migration, add and remove building block — write nothing
+outside the database and are always fully rolled back.
 
 ---
 
@@ -100,8 +124,23 @@ Confirm in the dialog
 {% endstep %}
 {% endstepper %}
 
-Migration runs in the background, so it never blocks the application, and it resumes safely if the
-application restarts mid-run.
+The run starts in the background and works through the matching cases one at a time, so the screen
+comes straight back and the plan's status moves to **Running**. The run itself takes as long as it
+takes — hours, for tens of thousands of cases — and the **Migration** tab follows its progress while
+it does.
+
+{% hint style="info" %}
+Nothing has to stay open. Leave the page, or close the browser, and the run carries on; the tab picks
+its progress back up when you return. Starting the plan again while it is still running does nothing —
+a run in progress keeps its claim on the plan.
+{% endhint %}
+
+Plans with a **Scheduled at** or **Run after plan** trigger are started by an hourly check instead.
+
+Because each case is migrated in its own transaction, a run interrupted by a restart of the
+application leaves no half-migrated case behind, and it resumes on its own: the application picks it
+up when it comes back, and hourly after that. Cases that already migrated are skipped, so it continues
+rather than starts over.
 
 ---
 

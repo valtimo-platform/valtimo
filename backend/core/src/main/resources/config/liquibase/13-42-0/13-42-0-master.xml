@@ -21,6 +21,5 @@ xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <include file="20260813-delete-orphaned-process-definition-case-definition.xml" relativeToChangelogFile="true"/>
-    <include file="20260817-add-case-migration-warnings.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

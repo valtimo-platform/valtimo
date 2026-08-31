@@ -17,6 +17,7 @@
 package com.ritense.case_.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.case_.service.migration.CaseMigrationRunner
 import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.service.migration.MigrationExecutionStatusDto
 import com.ritense.case_.service.migration.MigrationPlanExporter
@@ -42,11 +43,13 @@ import org.springframework.web.server.ResponseStatusException
 class CaseMigrationManagementResourceTest {
 
     private val caseMigrationService = mock<CaseMigrationService>()
+    private val caseMigrationRunner = mock<CaseMigrationRunner>()
     private val migrationPlanImporter = mock<MigrationPlanImporter>()
     private val migrationSuggestionService = mock<MigrationSuggestionService>()
 
     private val resource = CaseMigrationManagementResource(
         caseMigrationService,
+        caseMigrationRunner,
         migrationPlanImporter,
         mock<MigrationPlanExporter>(),
         migrationSuggestionService,
@@ -62,7 +65,7 @@ class CaseMigrationManagementResourceTest {
 
         resource.startMigration("woninginspectie", "1.0.4", "plan")
 
-        verify(caseMigrationService).startMigration(eq(migrationId))
+        verify(caseMigrationRunner).startMigration(eq(migrationId))
     }
 
     @Test
@@ -79,7 +82,7 @@ class CaseMigrationManagementResourceTest {
                 assertThat(thrown.reason).contains("cannot be started manually")
             })
 
-        verify(caseMigrationService, never()).startMigration(any())
+        verify(caseMigrationRunner, never()).startMigration(any())
     }
 
     @Test
@@ -104,7 +107,7 @@ class CaseMigrationManagementResourceTest {
     fun `a dry run is allowed regardless of the triggers, since it changes nothing`() {
         resource.startDryRun("woninginspectie", "1.0.4", "plan")
 
-        verify(caseMigrationService).startDryRun(eq(migrationId))
+        verify(caseMigrationRunner).startDryRun(eq(migrationId))
         verify(caseMigrationService, never()).isTriggeredByButton(any())
     }
 
@@ -115,7 +118,7 @@ class CaseMigrationManagementResourceTest {
         // arrive here as IllegalArgumentException, and both name the plan's problem — a 500 would tell the
         // editor the server broke instead.
         whenever(caseMigrationService.isTriggeredByButton(migrationId)).thenReturn(true)
-        whenever(caseMigrationService.startMigration(any()))
+        whenever(caseMigrationRunner.startMigration(any()))
             .thenThrow(IllegalArgumentException("declares source 'verhuizing:9.9.9', which is not deployed"))
 
         assertThatThrownBy { resource.startMigration("woninginspectie", "1.0.4", "plan") }
@@ -130,7 +133,7 @@ class CaseMigrationManagementResourceTest {
     fun `a dry run the service refuses is answered 400, not 500`() {
         // Same guards run ahead of a dry run, so the same translation has to hold there — this is where an
         // author checks a plan before committing to it, and it is the likeliest place to meet the refusal.
-        whenever(caseMigrationService.startDryRun(any()))
+        whenever(caseMigrationRunner.startDryRun(any()))
             .thenThrow(IllegalArgumentException("declares source 'verhuizing:9.9.9', which is not deployed"))
 
         assertThatThrownBy { resource.startDryRun("woninginspectie", "1.0.4", "plan") }

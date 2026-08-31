@@ -54,8 +54,10 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
+  distinctUntilChanged,
   EMPTY,
   map,
+  merge,
   Observable,
   of,
   shareReplay,
@@ -65,6 +67,7 @@ import {
   switchMap,
   take,
   tap,
+  timer,
 } from 'rxjs';
 import {catchError} from 'rxjs/operators';
 import {
@@ -77,6 +80,13 @@ import {CaseMigrationApiService} from '../../../../services';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../constants';
 
 type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
+
+/** How often the plan list re-reads status while a run is in progress. */
+const POLL_INTERVAL_MS = 3000;
+
+/** Whether the plan has a real run or a dry run currently executing. */
+const isRunInProgress = (plan: MigrationPlanViewModel): boolean =>
+  plan.status?.status === 'RUNNING' || plan.dryRun?.status === 'RUNNING';
 
 @Component({
   standalone: true,
@@ -156,15 +166,34 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   private readonly _loading$ = new BehaviorSubject<boolean>(true);
   public readonly loading$ = this._loading$.asObservable();
 
-  // The list is fetched once on load and re-fetched only on a manual action (start / delete /
-  // duplicate). No background polling — status reflects the moment the list was last loaded.
+  // True while any plan on this version has a run in progress.
+  private readonly _polling$ = new BehaviorSubject<boolean>(false);
+
+  /**
+   * The list refreshes on a manual action (start / delete / duplicate) and, while a run is in
+   * progress, on a timer.
+   *
+   * The timer is what makes a run followable: a migration is dispatched to a background thread and
+   * takes hours, so the request that starts it returns long before the run ends, and the progress the
+   * response carries is only the run's first moment. Polling stops as soon as nothing is running, so
+   * an idle tab is as quiet as it was before.
+   */
   public readonly plans$: Observable<MigrationPlanViewModel[]> = this._params$.pipe(
     switchMap(params =>
       !params
         ? of<MigrationPlanViewModel[]>([])
-        : this._refresh$.pipe(
+        : merge(
+            this._refresh$,
+            this._polling$.pipe(
+              distinctUntilChanged(),
+              switchMap(running => (running ? timer(POLL_INTERVAL_MS, POLL_INTERVAL_MS) : EMPTY))
+            )
+          ).pipe(
             startWith(undefined),
-            switchMap(() => this.fetchPlans(params))
+            switchMap(() => this.fetchPlans(params)),
+            // Deduplicated by distinctUntilChanged above, so a run that is still going does not
+            // resubscribe the timer on every tick.
+            tap(plans => this._polling$.next(plans.some(plan => isRunInProgress(plan))))
           )
     ),
     tap(() => this._loading$.next(false)),

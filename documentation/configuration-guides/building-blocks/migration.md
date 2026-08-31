@@ -45,8 +45,13 @@ The list shows every migration plan for that version:
 | Migration plan     | The plan's title                                                                      |
 | Source             | The building block version the plan migrates instances from                           |
 | Target             | The version the plan migrates instances into — always the version the plan belongs to |
-| Status             | Not started, Running, Completed, or Completed with errors                             |
+| Status             | **Not started** until the plan has migrated an instance, **Completed** once it has     |
 | Instances migrated | How many building block instances the plan has migrated                               |
+
+{% hint style="info" %}
+A building block plan has no run of its own, so the status never reads Running or Completed with
+errors. It is a running total of the instances the plan has been applied to, not the outcome of a run.
+{% endhint %}
 
 ---
 
@@ -60,6 +65,7 @@ The list shows every migration plan for that version:
 | Conditions                  | None. The plan applies to every building block instance the case migration brings onto this version                                                                  |
 | Manual start                | Not available. There is no **Start migration now** button                                                                                                            |
 | Dry run                     | Not available on this tab. Dry-run the case migration instead: it walks the same chain of building block plans and reports the same problems                         |
+| Results                     | No start or finish time, and no list of errors or warnings. A failure fails the case migration that triggered it and is reported there, because the case did not migrate either        |
 | Source                      | A **Source building block** and **Source version**. Naming a different building block makes this plan the bridge that carries its running instances over to this one |
 | Add / Remove building block | The owner is the migrating building block, so these tabs nest a building block inside it, or dissolve a nested one                                                   |
 

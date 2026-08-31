@@ -68,6 +68,10 @@ data class CaseMigrationDryRun(
     @Column(name = "run_token", length = 64)
     var runToken: String? = null,
 
+    /** Who started this dry run. Recorded for the same reason as on a real run's execution row. */
+    @Column(name = "run_actor", length = 255)
+    var runActor: String? = null,
+
     @Version
     @Column(name = "version")
     var version: Long? = null,
