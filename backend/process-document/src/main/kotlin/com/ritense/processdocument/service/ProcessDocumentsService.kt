@@ -28,6 +28,7 @@ import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSch
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.RepositoryService
@@ -44,6 +45,8 @@ class ProcessDocumentsService(
     private val associationService: ProcessDocumentAssociationService,
     private val repositoryService: RepositoryService,
     private val operatonRuntimeService: OperatonRuntimeService,
+    private val caseDocumentResolver: CaseDocumentResolver,
+    private val businessKeyProviders: List<CaseCorrelationBusinessKeyProvider> = emptyList(),
 ) {
 
     @ProcessBeanMethod(
@@ -130,30 +133,50 @@ class ProcessDocumentsService(
 
     @ProcessBeanMethod(description = "Gets all active process instance IDs for the current document")
     fun getActiveProcessInstanceIds(execution: DelegateExecution): List<String> {
-        val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
-
-        return associationService.findProcessDocumentInstances(documentId)
-            .filterIsInstance<OperatonProcessJsonSchemaDocumentInstance>()
-            .filter { it.isActive() }
-            .map {
-                it.processDocumentInstanceId()
-                    .processInstanceId()
-                    .toString()
-            }
+        return getActiveProcessInstanceIds(execution.getJsonSchemaDocumentId())
     }
 
     @ProcessBeanMethod(description = "Gets process definition keys from all active processes for the current document")
     fun getProcessDefinitionKeysFromActiveProcessInstances(execution: DelegateExecution): List<String> {
-        var activeProcessInstances = getActiveProcessInstanceIds(execution)
+        return getActiveProcessInstanceIds(execution)
+            .mapNotNull { processDefinitionKeyOf(it) }
+            .distinct()
+    }
 
-        return activeProcessInstances.mapNotNull {
-            val processInstance = operatonRuntimeService.findProcessInstanceById(it)!!
-            repositoryService
-                .createProcessDefinitionQuery()
-                .processDefinitionId(processInstance.processDefinitionId)
-                .singleResult()
-                .key
-        }.distinct()
+    fun activeProcessDefinitionKeysForCase(documentId: String): List<String> {
+        val caseDocumentId = runWithoutAuthorization {
+            caseDocumentResolver.resolveCaseDocumentId(UUID.fromString(documentId))
+        }
+
+        val documentIds = runWithoutAuthorization {
+            businessKeyProviders.flatMap { it.getBusinessKeysForCase(caseDocumentId) }
+        }.map { UUID.fromString(it) }
+
+        val activeProcessInstanceIds = getActiveProcessInstanceIds(caseDocumentId) +
+            runWithoutAuthorization { documentIds.flatMap { getActiveProcessInstanceIds(it) } }
+
+        return activeProcessInstanceIds
+            .distinct()
+            .mapNotNull { processDefinitionKeyOf(it) }
+            .distinct()
+    }
+
+    private fun getActiveProcessInstanceIds(documentId: UUID): List<String> {
+        return associationService.findProcessDocumentInstances(JsonSchemaDocumentId.existingId(documentId))
+            .filterIsInstance<OperatonProcessJsonSchemaDocumentInstance>()
+            .filter { it.isActive() }
+            .map { it.processDocumentInstanceId().processInstanceId().toString() }
+    }
+
+
+    private fun processDefinitionKeyOf(processInstanceId: String): String? {
+        val processInstance = runWithoutAuthorization {
+            operatonRuntimeService.findProcessInstanceById(processInstanceId)
+        } ?: return null
+        return repositoryService.createProcessDefinitionQuery()
+            .processDefinitionId(processInstance.processDefinitionId)
+            .singleResult()
+            .key
     }
 
     private fun associateDocumentToProcess(
