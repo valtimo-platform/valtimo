@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_BijstandUitvoeren" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="bijstand-uitvoeren" name="Bijstand uitvoeren" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start uitvoering">
+      <bpmn:outgoing>Flow_Start_To_Voorbereiden</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="VoorbereidenTask" name="Uitvoering voorbereiden" camunda:expression="${execution.setVariable('uitvoeringVoorbereid', true)}">
+      <bpmn:incoming>Flow_Start_To_Voorbereiden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Voorbereiden_To_Besluit</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="BesluitCallActivity" name="Besluit nemen" calledElement="bijstand-besluit" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="CD:bijstand:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Voorbereiden_To_Besluit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Besluit_To_End</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="EndEvent" name="Uitvoering afgerond">
+      <bpmn:incoming>Flow_Besluit_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Voorbereiden" sourceRef="StartEvent" targetRef="VoorbereidenTask" />
+    <bpmn:sequenceFlow id="Flow_Voorbereiden_To_Besluit" sourceRef="VoorbereidenTask" targetRef="BesluitCallActivity" />
+    <bpmn:sequenceFlow id="Flow_Besluit_To_End" sourceRef="BesluitCallActivity" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="bijstand-uitvoeren">
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="180" y="132" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="VoorbereidenTask_di" bpmnElement="VoorbereidenTask">
+        <dc:Bounds x="270" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BesluitCallActivity_di" bpmnElement="BesluitCallActivity">
+        <dc:Bounds x="430" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="590" y="132" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Voorbereiden_di" bpmnElement="Flow_Start_To_Voorbereiden">
+        <di:waypoint x="216" y="150" />
+        <di:waypoint x="270" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Voorbereiden_To_Besluit_di" bpmnElement="Flow_Voorbereiden_To_Besluit">
+        <di:waypoint x="370" y="150" />
+        <di:waypoint x="430" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Besluit_To_End_di" bpmnElement="Flow_Besluit_To_End">
+        <di:waypoint x="530" y="150" />
+        <di:waypoint x="590" y="150" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

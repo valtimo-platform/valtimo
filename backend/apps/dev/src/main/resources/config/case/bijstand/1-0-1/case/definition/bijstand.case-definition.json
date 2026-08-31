@@ -1,0 +1,7 @@
+{
+    "key": "bijstand",
+    "name": "Bijstandsaanvraag",
+    "versionTag": "1.0.1",
+    "canHaveAssignee": true,
+    "autoAssignTasks": false
+}

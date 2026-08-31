@@ -1,0 +1,28 @@
+{
+    "$id": "bijstand.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Bijstandsaanvraag",
+    "type": "object",
+    "properties": {
+        "aanvrager": {
+            "type": "string",
+            "description": "Naam van de aanvrager"
+        },
+        "bedrag": {
+            "type": ["number", "null"],
+            "description": "Aangevraagd bedrag"
+        },
+        "uitvoerStatus": {
+            "type": ["string", "null"],
+            "description": "Status van de uitvoering — op 1.0.0 geschreven door het subproces, op 1.0.1 door de bouwsteen"
+        },
+        "besluitStatus": {
+            "type": ["string", "null"],
+            "description": "Status van het besluit — idem, een niveau dieper"
+        },
+        "migratedFrom": {
+            "type": ["string", "null"],
+            "description": "Versie waarvandaan deze zaak is gemigreerd"
+        }
+    }
+}

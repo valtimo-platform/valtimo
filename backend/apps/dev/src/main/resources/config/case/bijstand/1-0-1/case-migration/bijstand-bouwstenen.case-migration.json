@@ -1,0 +1,39 @@
+{
+    "title": "Bouwstenen uit een lopende subprocesboom",
+    "key": "bijstand-bouwstenen",
+    "source": {
+        "key": "bijstand",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "bijstand",
+            "targetProcessDefinitionKey": "bijstand",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ],
+    "addBuildingBlock": [
+        {
+            "buildingBlockKey": "bijstand-uitvoeren",
+            "buildingBlockVersionTag": "1.0.0"
+        },
+        {
+            "buildingBlockKey": "bijstand-besluit",
+            "buildingBlockVersionTag": "1.0.0"
+        }
+    ]
+}
