@@ -94,10 +94,6 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:${kotlinCoroutinesVersion}"
 
-    // In-memory database for the standalone Operaton engine used by the process-migration
-    // activity-type coverage test (AllActivityTypesMigrationEngineTest); Docker-free.
-    testImplementation "com.h2database:h2:2.2.224"
-
     jar {
         enabled = true
         manifest {

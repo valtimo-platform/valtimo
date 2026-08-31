@@ -16,42 +16,41 @@
 
 package com.ritense.processdocument.migration
 
-import org.junit.jupiter.api.AfterAll
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.service.DocumentService
+import com.ritense.processdocument.BaseIntegrationTest
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.operaton.bpm.engine.ProcessEngine
-import org.operaton.bpm.engine.ProcessEngineConfiguration
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.RuntimeService
+import org.operaton.bpm.engine.TaskService
 import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.transaction.annotation.Transactional
 
-/** Migrates a running instance across every BPMN activity type against a real in-memory Operaton engine, using the exact plan build the executor performs. Leaf activities are renamed between the fixtures, gateways and events are not. */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AllActivityTypesMigrationEngineTest {
+/** Migrates a running instance across every BPMN activity type against the real engine, using the exact plan build the executor performs. Leaf activities are renamed between the fixtures, gateways and events are not. */
+@Transactional
+class AllActivityTypesMigrationEngineIntTest : BaseIntegrationTest() {
 
-    private lateinit var engine: ProcessEngine
+    @Autowired
+    lateinit var repositoryService: RepositoryService
 
-    @BeforeAll
-    fun setUp() {
-        engine = ProcessEngineConfiguration
-            .createStandaloneInMemProcessEngineConfiguration()
-            .setProcessEngineName("all-activity-types-migration")
-            .setJdbcUrl("jdbc:h2:mem:all-activity-types-migration;DB_CLOSE_DELAY=-1")
-            .setJobExecutorActivate(false)
-            .buildProcessEngine()
-    }
+    @Autowired
+    lateinit var runtimeService: RuntimeService
 
-    @AfterAll
-    fun tearDown() {
-        engine.close()
-    }
+    @Autowired
+    lateinit var taskService: TaskService
+
+    @Autowired
+    lateinit var documentService: DocumentService
+
+    @Autowired
+    lateinit var objectMapper: ObjectMapper
 
     @Test
     fun `builds and executes a migration mapping every activity type`() {
-        val repositoryService = engine.repositoryService
-        val runtimeService = engine.runtimeService
-        val taskService = engine.taskService
-
         val source = deploy("migration/all-activity-types-v1.bpmn")
         val target = deploy("migration/all-activity-types-v2.bpmn")
 
@@ -71,7 +70,8 @@ class AllActivityTypesMigrationEngineTest {
             .build()
 
         // 2. A running instance whose token rests on the user task must actually migrate.
-        val instance = runtimeService.startProcessInstanceById(source.id)
+        // Business key must be a document id — the engine's task-created listeners resolve the case from it.
+        val instance = runtimeService.startProcessInstanceById(source.id, createDocumentId())
         assertEquals(
             "beoordelen_verhuizing",
             taskService.createTaskQuery().processInstanceId(instance.id).singleResult().taskDefinitionKey,
@@ -89,11 +89,17 @@ class AllActivityTypesMigrationEngineTest {
         )
     }
 
+    private fun createDocumentId() = runWithoutAuthorization {
+        documentService.createDocument(
+            NewDocumentRequest("house", "house", "1.0.0", objectMapper.readTree("""{"street": "aStreet"}"""))
+        ).resultingDocument().orElseThrow()
+    }.id().toString()
+
     private fun deploy(resource: String): ProcessDefinition {
-        val deployment = engine.repositoryService.createDeployment()
+        val deployment = repositoryService.createDeployment()
             .addClasspathResource(resource)
             .deploy()
-        return engine.repositoryService.createProcessDefinitionQuery()
+        return repositoryService.createProcessDefinitionQuery()
             .deploymentId(deployment.id)
             .singleResult()
     }
