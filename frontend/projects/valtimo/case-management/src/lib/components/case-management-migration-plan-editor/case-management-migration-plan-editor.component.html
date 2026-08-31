@@ -1,0 +1,202 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-plan-editor">
+  <cds-tabs type="contained">
+    <cds-tab
+      [heading]="'migrationEditor.tabs.general' | translate"
+      [attr.data-test-id]="testIds.generalTab"
+    >
+      <valtimo-migration-general-tab
+        [caseDefinitionKey]="$caseDefinitionKey()"
+        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
+        [isEdit]="$isEdit()"
+        [plan]="$plan()"
+        [runAfterOptions]="$runAfterOptions()"
+        [suggesting]="$suggesting()"
+        [sourceKeyOptions]="$sourceKeyOptions()"
+        [sourceVersionOptions]="$sourceVersionOptions()"
+        [usedKeys]="$usedMigrationKeys()"
+        (generalChange)="onGeneralChange($event)"
+      ></valtimo-migration-general-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'migrationEditor.tabs.dataMigration' | translate"
+      [attr.data-test-id]="testIds.dataMigrationTab"
+    >
+      <valtimo-migration-data-migration-tab
+        [descriptionKey]="'caseManagement.migration.editor.dataMigration.description'"
+        [sourceContext]="$sourceCaseContext()"
+        [sourcePrefixes]="SOURCE_PREFIXES"
+        [targetContext]="$caseContext()"
+        [targetAdditionalVersionTags]="$targetAdditionalVersionTags()"
+        [testIds]="testIds"
+        [patches]="$plan().dataMigration"
+        (patchesChange)="onDataMigrationChange($event)"
+      ></valtimo-migration-data-migration-tab>
+    </cds-tab>
+
+    <!-- A template rather than a string so the heading can carry the warning: a blank target blocks Save from another tab, and the tab strip is the only place that can point at it. -->
+    <ng-template #processMigrationHeading>
+      {{ 'migrationEditor.tabs.processMigration' | translate }}
+      @if ($unmappedProcesses().length) {
+        <span
+          class="migration-plan-editor__tab-warning"
+          [title]="'migrationEditor.processMigration.missingTargetTab' | translate"
+        >
+          <svg cdsIcon="warning--filled" size="16"></svg>
+        </span>
+      }
+    </ng-template>
+
+    <cds-tab
+      [heading]="processMigrationHeading"
+      [title]="'migrationEditor.tabs.processMigration' | translate"
+      [attr.data-test-id]="testIds.processMigrationTab"
+    >
+      <valtimo-migration-process-migration-tab
+        [activityMappingHintKey]="
+          'caseManagement.migration.editor.processMigration.activityMappingHint'
+        "
+        [api]="$api()"
+        [descriptionKey]="'caseManagement.migration.editor.processMigration.description'"
+        [sourceContext]="$caseContext()"
+        [sourcePrefixes]="SOURCE_PREFIXES"
+        [sourceProcessDefinitions]="$sourceProcessDefs()"
+        [targetProcessDefinitions]="$targetProcessDefs()"
+        [testIds]="testIds"
+        [instructions]="$plan().processMigration"
+        (instructionsChange)="onProcessMigrationChange($event)"
+      ></valtimo-migration-process-migration-tab>
+    </cds-tab>
+
+    <!-- Same warning as the process-migration tab, for the instructions nested in these entries. -->
+    <ng-template #addBuildingBlockHeading>
+      {{ 'migrationEditor.tabs.addBuildingBlock' | translate }}
+      @if ($unmappedAddBuildingBlockProcesses().length) {
+        <span
+          class="migration-plan-editor__tab-warning"
+          [title]="'migrationEditor.processMigration.missingTargetTab' | translate"
+        >
+          <svg cdsIcon="warning--filled" size="16"></svg>
+        </span>
+      }
+    </ng-template>
+
+    <cds-tab
+      [heading]="addBuildingBlockHeading"
+      [title]="'migrationEditor.tabs.addBuildingBlock' | translate"
+      [attr.data-test-id]="testIds.addBuildingBlockTab"
+    >
+      <valtimo-migration-building-block-tab
+        [api]="$api()"
+        [dataMigrationHintKey]="
+          'caseManagement.migration.editor.addBuildingBlock.dataMigrationHint'
+        "
+        [descriptionKey]="'caseManagement.migration.editor.addBuildingBlock.description'"
+        [instructions]="$plan().addBuildingBlock"
+        [mode]="'add'"
+        [owner]="$owner()"
+        [ownerProcessDefinitions]="$targetProcessDefs()"
+        [planSource]="$plan().source ?? null"
+        [processMigrationHintKey]="
+          'caseManagement.migration.editor.addBuildingBlock.processMigrationHint'
+        "
+        [sourcePrefixes]="SOURCE_PREFIXES"
+        [testIds]="testIds"
+        (instructionsChange)="onAddBuildingBlockChange($event)"
+      ></valtimo-migration-building-block-tab>
+    </cds-tab>
+
+    <!-- Same warning as the process-migration tab, for the instructions nested in these entries. -->
+    <ng-template #removeBuildingBlockHeading>
+      {{ 'migrationEditor.tabs.removeBuildingBlock' | translate }}
+      @if ($unmappedRemoveBuildingBlockProcesses().length) {
+        <span
+          class="migration-plan-editor__tab-warning"
+          [title]="'migrationEditor.processMigration.missingTargetTab' | translate"
+        >
+          <svg cdsIcon="warning--filled" size="16"></svg>
+        </span>
+      }
+    </ng-template>
+
+    <cds-tab
+      [heading]="removeBuildingBlockHeading"
+      [title]="'migrationEditor.tabs.removeBuildingBlock' | translate"
+      [attr.data-test-id]="testIds.removeBuildingBlockTab"
+    >
+      <valtimo-migration-building-block-tab
+        [api]="$api()"
+        [dataMigrationHintKey]="
+          'caseManagement.migration.editor.removeBuildingBlock.dataMigrationHint'
+        "
+        [descriptionKey]="'caseManagement.migration.editor.removeBuildingBlock.description'"
+        [instructions]="$plan().removeBuildingBlock"
+        [mode]="'remove'"
+        [owner]="$owner()"
+        [ownerProcessDefinitions]="$targetProcessDefs()"
+        [planSource]="$plan().source ?? null"
+        [processMigrationHintKey]="
+          'caseManagement.migration.editor.removeBuildingBlock.processMigrationHint'
+        "
+        [sourcePrefixes]="SOURCE_PREFIXES"
+        [testIds]="testIds"
+        (instructionsChange)="onRemoveBuildingBlockChange($event)"
+      ></valtimo-migration-building-block-tab>
+    </cds-tab>
+
+    <cds-tab
+      [heading]="'migrationEditor.tabs.jsonEditor' | translate"
+      [attr.data-test-id]="testIds.jsonEditorTab"
+    >
+      @if ($model(); as model) {
+        <valtimo-editor
+          [model]="model"
+          [fitPage]="true"
+          (validEvent)="onValid($event)"
+          (valueChangeEvent)="onValueChange($event)"
+        ></valtimo-editor>
+      }
+    </cds-tab>
+  </cds-tabs>
+</div>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <div *ngIf="{compactMode: compactMode$ | async} as obs" class="migration-plan-editor__actions">
+      <button
+        cdsButton="ghost"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        [attr.data-test-id]="testIds.cancelButton"
+        (click)="onCancel()"
+      >
+        {{ 'interface.cancel' | translate }}
+      </button>
+
+      <button
+        cdsButton="primary"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        [attr.data-test-id]="testIds.saveButton"
+        [disabled]="!$canSave()"
+        (click)="onSave()"
+      >
+        {{ 'interface.save' | translate }}
+      </button>
+    </div>
+  </ng-template>
+</ng-container>

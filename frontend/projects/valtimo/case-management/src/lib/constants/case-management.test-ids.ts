@@ -77,6 +77,31 @@ export const CASE_MANAGEMENT_STATUS_MODAL_TEST_IDS = {
   saveButton: 'caseStatusSaveButton',
 } as const;
 
+export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
+  startButton: 'caseMigrationStartButton',
+  dryRunButton: 'caseMigrationDryRunButton',
+  dryRunResults: 'caseMigrationDryRunResults',
+  warnings: 'caseMigrationWarnings',
+  dryRunWarnings: 'caseMigrationDryRunWarnings',
+  addButton: 'caseMigrationAddButton',
+  saveButton: 'caseMigrationSaveButton',
+  cancelButton: 'caseMigrationCancelButton',
+  generalTab: 'caseMigrationGeneralTab',
+  processMigrationTab: 'caseMigrationProcessMigrationTab',
+  dataMigrationTab: 'caseMigrationDataMigrationTab',
+  addBuildingBlockTab: 'caseMigrationAddBuildingBlockTab',
+  removeBuildingBlockTab: 'caseMigrationRemoveBuildingBlockTab',
+  jsonEditorTab: 'caseMigrationJsonEditorTab',
+  addPatchButton: 'caseMigrationAddPatchButton',
+  addInstructionButton: 'caseMigrationAddInstructionButton',
+  sourceKeySelect: 'caseMigrationSourceKeySelect',
+  sourceVersionSelect: 'caseMigrationSourceVersionSelect',
+  addConditionButton: 'caseMigrationAddConditionButton',
+  addConditionGroupButton: 'caseMigrationAddConditionGroupButton',
+  addBuildingBlockButton: 'caseMigrationAddBuildingBlockButton',
+  removeBuildingBlockButton: 'caseMigrationRemoveBuildingBlockButton',
+} as const;
+
 export const CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS = {
   columnsList: 'caseListColumnsList',
   jsonEditor: 'listColumnJSONEditor',
