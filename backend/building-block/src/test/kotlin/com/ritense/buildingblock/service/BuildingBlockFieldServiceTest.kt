@@ -203,6 +203,99 @@ class BuildingBlockFieldServiceTest {
     }
 
     @Test
+    fun `should stop walking a schema that refers to itself through an array`() {
+        stubSchema(
+            """
+            {
+              "properties": {
+                "node": { "${'$'}ref": "#/definitions/node" }
+              },
+              "definitions": {
+                "node": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "children": {
+                      "type": "array",
+                      "items": { "${'$'}ref": "#/definitions/node" }
+                    }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        )
+
+        val fields = service.getFields(buildingBlockDefinitionId)
+
+        assertThat(fields.map { it.name }).containsExactly(
+            "/node",
+            "/node/children",
+            "/node/name"
+        )
+    }
+
+    @Test
+    fun `should stop walking a schema that refers to itself directly`() {
+        stubSchema(
+            """
+            {
+              "properties": {
+                "person": { "${'$'}ref": "#/definitions/person" }
+              },
+              "definitions": {
+                "person": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "partner": { "${'$'}ref": "#/definitions/person" }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        )
+
+        val fields = service.getFields(buildingBlockDefinitionId)
+
+        assertThat(fields.map { it.name }).containsExactly(
+            "/person",
+            "/person/name"
+        )
+    }
+
+    @Test
+    fun `should walk a reused definition at every path it appears on`() {
+        stubSchema(
+            """
+            {
+              "properties": {
+                "homeAddress": { "${'$'}ref": "#/definitions/address" },
+                "workAddress": { "${'$'}ref": "#/definitions/address" }
+              },
+              "definitions": {
+                "address": {
+                  "type": "object",
+                  "properties": {
+                    "city": { "type": "string" }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        )
+
+        val fields = service.getFields(buildingBlockDefinitionId)
+
+        assertThat(fields.map { it.name }).containsExactly(
+            "/homeAddress",
+            "/homeAddress/city",
+            "/workAddress",
+            "/workAddress/city"
+        )
+    }
+
+    @Test
     fun `should return empty list when no document definition exists`() {
         whenever(repository.findById(any())).thenReturn(Optional.empty())
 

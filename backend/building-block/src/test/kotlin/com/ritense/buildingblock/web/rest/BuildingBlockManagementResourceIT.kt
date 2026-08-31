@@ -24,7 +24,10 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -32,6 +35,10 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
@@ -105,6 +112,70 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
                 jsonPath("\$[0].key") { value(key) }
                 jsonPath("\$[0].versionTag") { value(version) }
                 jsonPath("\$[0].name") { value("My Building Block") }
+            }
+    }
+
+    // The query itself is exercised in BuildingBlockManagementServiceSearchIT; these stub the service to assert the HTTP contract alone.
+    @Test
+    @WithMockUser
+    fun `should return a page when searching`() {
+        val alpha = dto.copy(key = "alpha", name = "Alpha")
+        val charlie = dto.copy(key = "charlie", name = "Charlie")
+        doReturn(PageImpl(listOf(alpha, charlie), PageRequest.of(0, 10), 2))
+            .whenever(buildingBlockManagementService)
+            .searchLatestPerKey(anyOrNull(), any(), any())
+
+        mockMvc.get("$base/search")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(2) }
+                jsonPath("$.content[0].name") { value("Alpha") }
+                jsonPath("$.content[1].name") { value("Charlie") }
+            }
+    }
+
+    @Test
+    @WithMockUser
+    fun `should pass the search term and pageable through to the service`() {
+        doReturn(PageImpl(emptyList<BuildingBlockDefinitionDto>(), PageRequest.of(1, 5), 0))
+            .whenever(buildingBlockManagementService)
+            .searchLatestPerKey(anyOrNull(), any(), any())
+
+        mockMvc.get("$base/search") {
+            param("searchTerm", "invoice")
+            param("page", "1")
+            param("size", "5")
+        }.andExpect { status { isOk() } }
+
+        val pageable = argumentCaptor<Pageable>()
+        verify(buildingBlockManagementService).searchLatestPerKey(eq("invoice"), pageable.capture(), eq(false))
+        assertEquals(1, pageable.firstValue.pageNumber)
+        assertEquals(5, pageable.firstValue.pageSize)
+        assertEquals(Sort.by(Sort.Order.asc("name")), pageable.firstValue.sort)
+    }
+
+    @Test
+    @WithMockUser
+    fun `should return 400 when sorting the search on the version tag`() {
+        mockMvc.get("$base/search") {
+            param("sort", "versionTag,DESC")
+        }.andExpect {
+            status { isBadRequest() }
+        }
+    }
+
+    @Test
+    @WithMockUser
+    fun `should return an empty page rather than 404 when nothing matches`() {
+        doReturn(PageImpl(emptyList<BuildingBlockDefinitionDto>(), PageRequest.of(0, 10), 0))
+            .whenever(buildingBlockManagementService)
+            .searchLatestPerKey(anyOrNull(), any(), any())
+
+        mockMvc.get("$base/search")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(0) }
+                jsonPath("$.content") { isEmpty() }
             }
     }
 
