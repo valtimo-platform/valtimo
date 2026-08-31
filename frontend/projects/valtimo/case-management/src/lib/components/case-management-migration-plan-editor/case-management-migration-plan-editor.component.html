@@ -17,7 +17,7 @@
 <div class="migration-plan-editor">
   <cds-tabs type="contained">
     <cds-tab
-      [heading]="'caseManagement.migration.editor.tabs.general' | translate"
+      [heading]="'migrationEditor.tabs.general' | translate"
       [attr.data-test-id]="testIds.generalTab"
     >
       <valtimo-migration-general-tab
@@ -35,13 +35,16 @@
     </cds-tab>
 
     <cds-tab
-      [heading]="'caseManagement.migration.editor.tabs.dataMigration' | translate"
+      [heading]="'migrationEditor.tabs.dataMigration' | translate"
       [attr.data-test-id]="testIds.dataMigrationTab"
     >
       <valtimo-migration-data-migration-tab
+        [descriptionKey]="'caseManagement.migration.editor.dataMigration.description'"
         [sourceContext]="$sourceCaseContext()"
+        [sourcePrefixes]="SOURCE_PREFIXES"
         [targetContext]="$caseContext()"
         [targetAdditionalVersionTags]="$targetAdditionalVersionTags()"
+        [testIds]="testIds"
         [patches]="$plan().dataMigration"
         (patchesChange)="onDataMigrationChange($event)"
       ></valtimo-migration-data-migration-tab>
@@ -53,11 +56,11 @@
       while the author is not looking at it.
     -->
     <ng-template #processMigrationHeading>
-      {{ 'caseManagement.migration.editor.tabs.processMigration' | translate }}
+      {{ 'migrationEditor.tabs.processMigration' | translate }}
       @if ($unmappedProcesses().length) {
         <span
           class="migration-plan-editor__tab-warning"
-          [title]="'caseManagement.migration.editor.processMigration.missingTargetTab' | translate"
+          [title]="'migrationEditor.processMigration.missingTargetTab' | translate"
         >
           <svg cdsIcon="warning--filled" size="16"></svg>
         </span>
@@ -66,15 +69,20 @@
 
     <cds-tab
       [heading]="processMigrationHeading"
-      [title]="'caseManagement.migration.editor.tabs.processMigration' | translate"
+      [title]="'migrationEditor.tabs.processMigration' | translate"
       [attr.data-test-id]="testIds.processMigrationTab"
     >
       <valtimo-migration-process-migration-tab
-        [caseDefinitionKey]="$caseDefinitionKey()"
-        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
+        [activityMappingHintKey]="
+          'caseManagement.migration.editor.processMigration.activityMappingHint'
+        "
+        [api]="$api()"
+        [descriptionKey]="'caseManagement.migration.editor.processMigration.description'"
         [sourceContext]="$caseContext()"
+        [sourcePrefixes]="SOURCE_PREFIXES"
         [sourceProcessDefinitions]="$sourceProcessDefs()"
         [targetProcessDefinitions]="$targetProcessDefs()"
+        [testIds]="testIds"
         [instructions]="$plan().processMigration"
         (instructionsChange)="onProcessMigrationChange($event)"
       ></valtimo-migration-process-migration-tab>
@@ -82,11 +90,11 @@
 
     <!-- Same warning as the process-migration tab, for the instructions nested in these entries. -->
     <ng-template #addBuildingBlockHeading>
-      {{ 'caseManagement.migration.editor.tabs.addBuildingBlock' | translate }}
+      {{ 'migrationEditor.tabs.addBuildingBlock' | translate }}
       @if ($unmappedAddBuildingBlockProcesses().length) {
         <span
           class="migration-plan-editor__tab-warning"
-          [title]="'caseManagement.migration.editor.processMigration.missingTargetTab' | translate"
+          [title]="'migrationEditor.processMigration.missingTargetTab' | translate"
         >
           <svg cdsIcon="warning--filled" size="16"></svg>
         </span>
@@ -95,27 +103,36 @@
 
     <cds-tab
       [heading]="addBuildingBlockHeading"
-      [title]="'caseManagement.migration.editor.tabs.addBuildingBlock' | translate"
+      [title]="'migrationEditor.tabs.addBuildingBlock' | translate"
       [attr.data-test-id]="testIds.addBuildingBlockTab"
     >
       <valtimo-migration-building-block-tab
-        [mode]="'add'"
-        [caseDefinitionKey]="$caseDefinitionKey()"
-        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
-        [caseProcessDefinitions]="$targetProcessDefs()"
+        [api]="$api()"
+        [dataMigrationHintKey]="
+          'caseManagement.migration.editor.addBuildingBlock.dataMigrationHint'
+        "
+        [descriptionKey]="'caseManagement.migration.editor.addBuildingBlock.description'"
         [instructions]="$plan().addBuildingBlock"
+        [mode]="'add'"
+        [owner]="$owner()"
+        [ownerProcessDefinitions]="$targetProcessDefs()"
         [planSource]="$plan().source ?? null"
+        [processMigrationHintKey]="
+          'caseManagement.migration.editor.addBuildingBlock.processMigrationHint'
+        "
+        [sourcePrefixes]="SOURCE_PREFIXES"
+        [testIds]="testIds"
         (instructionsChange)="onAddBuildingBlockChange($event)"
       ></valtimo-migration-building-block-tab>
     </cds-tab>
 
     <!-- Same warning as the process-migration tab, for the instructions nested in these entries. -->
     <ng-template #removeBuildingBlockHeading>
-      {{ 'caseManagement.migration.editor.tabs.removeBuildingBlock' | translate }}
+      {{ 'migrationEditor.tabs.removeBuildingBlock' | translate }}
       @if ($unmappedRemoveBuildingBlockProcesses().length) {
         <span
           class="migration-plan-editor__tab-warning"
-          [title]="'caseManagement.migration.editor.processMigration.missingTargetTab' | translate"
+          [title]="'migrationEditor.processMigration.missingTargetTab' | translate"
         >
           <svg cdsIcon="warning--filled" size="16"></svg>
         </span>
@@ -124,22 +141,31 @@
 
     <cds-tab
       [heading]="removeBuildingBlockHeading"
-      [title]="'caseManagement.migration.editor.tabs.removeBuildingBlock' | translate"
+      [title]="'migrationEditor.tabs.removeBuildingBlock' | translate"
       [attr.data-test-id]="testIds.removeBuildingBlockTab"
     >
       <valtimo-migration-building-block-tab
-        [mode]="'remove'"
-        [caseDefinitionKey]="$caseDefinitionKey()"
-        [caseDefinitionVersionTag]="$caseDefinitionVersionTag()"
-        [caseProcessDefinitions]="$targetProcessDefs()"
+        [api]="$api()"
+        [dataMigrationHintKey]="
+          'caseManagement.migration.editor.removeBuildingBlock.dataMigrationHint'
+        "
+        [descriptionKey]="'caseManagement.migration.editor.removeBuildingBlock.description'"
         [instructions]="$plan().removeBuildingBlock"
+        [mode]="'remove'"
+        [owner]="$owner()"
+        [ownerProcessDefinitions]="$targetProcessDefs()"
         [planSource]="$plan().source ?? null"
+        [processMigrationHintKey]="
+          'caseManagement.migration.editor.removeBuildingBlock.processMigrationHint'
+        "
+        [sourcePrefixes]="SOURCE_PREFIXES"
+        [testIds]="testIds"
         (instructionsChange)="onRemoveBuildingBlockChange($event)"
       ></valtimo-migration-building-block-tab>
     </cds-tab>
 
     <cds-tab
-      [heading]="'caseManagement.migration.editor.tabs.jsonEditor' | translate"
+      [heading]="'migrationEditor.tabs.jsonEditor' | translate"
       [attr.data-test-id]="testIds.jsonEditorTab"
     >
       @if ($model(); as model) {

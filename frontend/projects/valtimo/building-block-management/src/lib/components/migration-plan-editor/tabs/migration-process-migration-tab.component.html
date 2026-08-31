@@ -29,8 +29,8 @@
         <div class="migration-tab__card-header">
           <!--
             The whole header is the toggle, not just the chevron: a suggested plan carries one
-            instruction per process of the building block, and hunting for a 16px target on each of
-            them is the opposite of what collapsing is for.
+            instruction per process of the blueprint, and hunting for a 16px target on each of them
+            is the opposite of what collapsing is for.
           -->
           <button
             type="button"
@@ -57,10 +57,7 @@
             @if (isIncomplete(instruction)) {
               <span
                 class="migration-tab__card-warning"
-                [title]="
-                  'buildingBlockManagement.migration.editor.processMigration.missingTarget'
-                    | translate
-                "
+                [title]="'migrationEditor.processMigration.missingTarget' | translate"
               >
                 <svg cdsIcon="warning--filled" size="16"></svg>
               </span>
@@ -70,10 +67,7 @@
               class="migration-tab__card-summary"
               [class.migration-tab__card-summary--incomplete]="isIncomplete(instruction)"
             >
-              {{
-                summaryOf(instruction) ||
-                  ('buildingBlockManagement.migration.editor.card.unnamed' | translate)
-              }}
+              {{ summaryOf(instruction) || ('migrationEditor.card.unnamed' | translate) }}
             </span>
           </button>
 
@@ -92,16 +86,10 @@
           <div class="migration-tab__grid">
             <cds-select
               formControlName="sourceProcessDefinitionKey"
-              [label]="
-                'buildingBlockManagement.migration.editor.processMigration.sourceProcess'
-                  | translate
-              "
+              [label]="'migrationEditor.processMigration.sourceProcess' | translate"
             >
               <option value="">
-                {{
-                  'buildingBlockManagement.migration.editor.processMigration.selectProcess'
-                    | translate
-                }}
+                {{ 'migrationEditor.processMigration.selectProcess' | translate }}
               </option>
               @for (key of processKeyOptions(instruction, 'source'); track key) {
                 <option [value]="key">{{ key }}</option>
@@ -111,20 +99,11 @@
             <cds-select
               formControlName="targetProcessDefinitionKey"
               [invalid]="isIncomplete(instruction)"
-              [invalidText]="
-                'buildingBlockManagement.migration.editor.processMigration.missingTarget'
-                  | translate
-              "
-              [label]="
-                'buildingBlockManagement.migration.editor.processMigration.targetProcess'
-                  | translate
-              "
+              [invalidText]="'migrationEditor.processMigration.missingTarget' | translate"
+              [label]="'migrationEditor.processMigration.targetProcess' | translate"
             >
               <option value="">
-                {{
-                  'buildingBlockManagement.migration.editor.processMigration.selectProcess'
-                    | translate
-                }}
+                {{ 'migrationEditor.processMigration.selectProcess' | translate }}
               </option>
               @for (key of processKeyOptions(instruction, 'target'); track key) {
                 <option [value]="key">{{ key }}</option>
@@ -134,17 +113,11 @@
 
           <!-- Activity mapping -->
           <h5 class="migration-tab__subheading">
-            {{
-              'buildingBlockManagement.migration.editor.processMigration.activityMapping'
-                | translate
-            }}
+            {{ 'migrationEditor.processMigration.activityMapping' | translate }}
           </h5>
-          <p class="migration-tab__hint">
-            {{
-              'buildingBlockManagement.migration.editor.processMigration.activityMappingHint'
-                | translate
-            }}
-          </p>
+          @if (activityMappingHintKey) {
+            <p class="migration-tab__hint">{{ activityMappingHintKey | translate }}</p>
+          }
 
           @if (activitiesFor(instruction).loading) {
             <p class="migration-tab__hint">{{ 'interface.loading' | translate }}</p>
@@ -156,10 +129,7 @@
                 @if (activitiesFor(instruction).sourceNodes.length) {
                   <cds-select
                     formControlName="source"
-                    [label]="
-                      'buildingBlockManagement.migration.editor.processMigration.sourceActivity'
-                        | translate
-                    "
+                    [label]="'migrationEditor.processMigration.sourceActivity' | translate"
                   >
                     <option value="">–</option>
                     @for (node of activitiesFor(instruction).sourceNodes; track node.id) {
@@ -168,10 +138,7 @@
                   </cds-select>
                 } @else {
                   <cds-text-label>
-                    {{
-                      'buildingBlockManagement.migration.editor.processMigration.sourceActivity'
-                        | translate
-                    }}
+                    {{ 'migrationEditor.processMigration.sourceActivity' | translate }}
                     <input cdsText formControlName="source" />
                   </cds-text-label>
                 }
@@ -183,10 +150,7 @@
                     formControlName="target"
                     [invalid]="mappingErrors(instruction, mapping).length > 0"
                     [invalidText]="mappingErrors(instruction, mapping)[0]"
-                    [label]="
-                      'buildingBlockManagement.migration.editor.processMigration.targetActivity'
-                        | translate
-                    "
+                    [label]="'migrationEditor.processMigration.targetActivity' | translate"
                   >
                     <option value="">–</option>
                     @for (node of activitiesFor(instruction).targetNodes; track node.id) {
@@ -195,10 +159,7 @@
                   </cds-select>
                 } @else {
                   <cds-text-label>
-                    {{
-                      'buildingBlockManagement.migration.editor.processMigration.targetActivity'
-                        | translate
-                    }}
+                    {{ 'migrationEditor.processMigration.targetActivity' | translate }}
                     <input cdsText formControlName="target" />
                   </cds-text-label>
                 }
@@ -216,32 +177,23 @@
               <!-- whitespace -->
               @if (mappingErrors(instruction, mapping).length) {
                 <p class="migration-tab__mapping-error">
-                  {{
-                    'buildingBlockManagement.migration.editor.processMigration.incompatibleMapping'
-                      | translate
-                  }}
+                  {{ 'migrationEditor.processMigration.incompatibleMapping' | translate }}
                 </p>
               }
             }
           </div>
 
           <button cdsButton="ghost" size="sm" (click)="addMapping(instruction)">
-            {{ 'buildingBlockManagement.migration.editor.processMigration.addMapping' | translate }}
+            {{ 'migrationEditor.processMigration.addMapping' | translate }}
             <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
           </button>
 
           <!-- Set process variables -->
           <h5 class="migration-tab__subheading">
-            {{
-              'buildingBlockManagement.migration.editor.processMigration.setProcessVariables'
-                | translate
-            }}
+            {{ 'migrationEditor.processMigration.setProcessVariables' | translate }}
           </h5>
           <p class="migration-tab__hint">
-            {{
-              'buildingBlockManagement.migration.editor.processMigration.setProcessVariablesHint'
-                | translate
-            }}
+            {{ 'migrationEditor.processMigration.setProcessVariablesHint' | translate }}
           </p>
 
           <div class="migration-tab__patches" formArrayName="setProcessVariables">
@@ -251,17 +203,11 @@
                 <div class="migration-tab__patch-side migration-tab__patch-side--from">
                   <cds-select
                     formControlName="mode"
-                    [label]="
-                      'buildingBlockManagement.migration.editor.processMigration.variableMode'
-                        | translate
-                    "
+                    [label]="'migrationEditor.processMigration.variableMode' | translate"
                   >
                     @for (mode of MODES; track mode) {
                       <option [value]="mode">
-                        {{
-                          'buildingBlockManagement.migration.editor.dataMigration.mode_' + mode
-                            | translate
-                        }}
+                        {{ 'migrationEditor.dataMigration.mode_' + mode | translate }}
                       </option>
                     }
                   </cds-select>
@@ -270,40 +216,32 @@
                     @case ('path') {
                       <valtimo-value-path-selector
                         formControlName="source"
+                        [caseDefinitionKey]="sourceContext?.caseDefinitionKey ?? null"
+                        [caseDefinitionVersionTag]="sourceContext?.caseDefinitionVersionTag ?? null"
                         [buildingBlockDefinitionKey]="sourceContext?.buildingBlockKey ?? null"
                         [buildingBlockDefinitionVersionTag]="
                           sourceContext?.buildingBlockVersionTag ?? null
                         "
-                        [label]="
-                          'buildingBlockManagement.migration.editor.processMigration.variableSource'
-                            | translate
-                        "
-                        [prefixes]="SOURCE_PREFIXES"
+                        [label]="'migrationEditor.processMigration.variableSource' | translate"
+                        [prefixes]="sourcePrefixes"
                         [notation]="'slashes'"
                       ></valtimo-value-path-selector>
                     }
                     @case ('value') {
                       <cds-text-label>
-                        {{
-                          'buildingBlockManagement.migration.editor.processMigration.variableValue'
-                            | translate
-                        }}
+                        {{ 'migrationEditor.processMigration.variableValue' | translate }}
                         <input
                           cdsText
                           formControlName="value"
                           [placeholder]="
-                            'buildingBlockManagement.migration.editor.processMigration.variableValuePlaceholder'
-                              | translate
+                            'migrationEditor.processMigration.variableValuePlaceholder' | translate
                           "
                         />
                       </cds-text-label>
                     }
                     @default {
                       <span class="migration-tab__null-hint">
-                        {{
-                          'buildingBlockManagement.migration.editor.dataMigration.nullHint'
-                            | translate
-                        }}
+                        {{ 'migrationEditor.dataMigration.nullHint' | translate }}
                       </span>
                     }
                   }
@@ -314,16 +252,12 @@
                 <!-- Target (right) — a plain pv: path, no value selector -->
                 <div class="migration-tab__patch-side migration-tab__patch-side--to">
                   <cds-text-label>
-                    {{
-                      'buildingBlockManagement.migration.editor.processMigration.variableTarget'
-                        | translate
-                    }}
+                    {{ 'migrationEditor.processMigration.variableTarget' | translate }}
                     <input
                       cdsText
                       formControlName="target"
                       [placeholder]="
-                        'buildingBlockManagement.migration.editor.processMigration.variableTargetPlaceholder'
-                          | translate
+                        'migrationEditor.processMigration.variableTargetPlaceholder' | translate
                       "
                     />
                   </cds-text-label>
@@ -331,16 +265,10 @@
                   @if (variable.get('mode')?.value !== 'null') {
                     <cds-select
                       formControlName="targetType"
-                      [label]="
-                        'buildingBlockManagement.migration.editor.processMigration.variableTargetType'
-                          | translate
-                      "
+                      [label]="'migrationEditor.processMigration.variableTargetType' | translate"
                     >
                       <option value="">
-                        {{
-                          'buildingBlockManagement.migration.editor.dataMigration.targetTypeAuto'
-                            | translate
-                        }}
+                        {{ 'migrationEditor.dataMigration.targetTypeAuto' | translate }}
                       </option>
                       @for (type of TARGET_TYPES; track type) {
                         <option [value]="type">{{ type }}</option>
@@ -363,33 +291,25 @@
           </div>
 
           <button cdsButton="ghost" size="sm" (click)="addVariable(instruction)">
-            {{
-              'buildingBlockManagement.migration.editor.processMigration.addVariable' | translate
-            }}
+            {{ 'migrationEditor.processMigration.addVariable' | translate }}
             <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
           </button>
 
           <!-- Options -->
           <div class="migration-tab__toggles">
             <cds-checkbox formControlName="skipCustomListeners">
-              {{
-                'buildingBlockManagement.migration.editor.processMigration.skipCustomListeners'
-                  | translate
-              }}
+              {{ 'migrationEditor.processMigration.skipCustomListeners' | translate }}
             </cds-checkbox>
 
             <cds-checkbox formControlName="skipIoMappings">
-              {{
-                'buildingBlockManagement.migration.editor.processMigration.skipIoMappings'
-                  | translate
-              }}
+              {{ 'migrationEditor.processMigration.skipIoMappings' | translate }}
             </cds-checkbox>
           </div>
         }
       </div>
     } @empty {
       <p class="migration-tab__empty">
-        {{ 'buildingBlockManagement.migration.editor.processMigration.empty' | translate }}
+        {{ 'migrationEditor.processMigration.empty' | translate }}
       </p>
     }
   </div>
@@ -400,7 +320,7 @@
     [attr.data-test-id]="testIds.addInstructionButton"
     (click)="addInstruction()"
   >
-    {{ 'buildingBlockManagement.migration.editor.processMigration.addInstruction' | translate }}
+    {{ 'migrationEditor.processMigration.addInstruction' | translate }}
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
 </div>

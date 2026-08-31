@@ -205,15 +205,7 @@ class CaseMigrationManagementResource(
                 "Migration plan cannot be saved: ${problems.joinToString("; ")}",
             )
         }
-        // The importer's own validation (a missing/self-referencing source, an unknown condition
-        // operator, ...) throws IllegalArgumentException, which Spring would render as a 500. On the
-        // management save path the caller supplied the plan, so the failure is theirs to fix: answer
-        // 400 with the importer's message rather than telling the editor the server broke.
-        try {
-            migrationPlanImporter.deploy(caseDefinitionId, plan)
-        } catch (e: IllegalArgumentException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message, e)
-        }
+        asBadRequestOnInvalidPlan { migrationPlanImporter.deploy(caseDefinitionId, plan) }
         return ResponseEntity.ok(caseMigrationService.getPlans(caseDefinitionId))
     }
 
@@ -255,7 +247,7 @@ class CaseMigrationManagementResource(
                     "scheduled date or after the plan it follows.",
             )
         }
-        caseMigrationService.startMigration(migrationId)
+        asBadRequestOnInvalidPlan { caseMigrationService.startMigration(migrationId) }
         return ResponseEntity.ok(caseMigrationService.getStatus(migrationId))
     }
 
@@ -279,7 +271,7 @@ class CaseMigrationManagementResource(
         @PathVariable migrationKey: String,
     ): ResponseEntity<DryRunStatusDto> {
         val migrationId = migrationId(caseDefinitionKey, caseDefinitionVersionTag, migrationKey)
-        return ResponseEntity.ok(caseMigrationService.startDryRun(migrationId))
+        return ResponseEntity.ok(asBadRequestOnInvalidPlan { caseMigrationService.startDryRun(migrationId) })
     }
 
     @RunWithoutAuthorization
@@ -292,6 +284,27 @@ class CaseMigrationManagementResource(
         val migrationId = migrationId(caseDefinitionKey, caseDefinitionVersionTag, migrationKey)
         return ResponseEntity.ok(caseMigrationService.getDryRunStatus(migrationId))
     }
+
+    /**
+     * Run [block], answering **400** rather than 500 when it is the plan that is wrong.
+     *
+     * Everything reached from here refuses a bad plan with `require`, so an `IllegalArgumentException` is
+     * this layer's "the caller's plan is invalid" signal, not a server fault: the importer's validation on
+     * the save path (a missing or self-referencing source, an unknown condition operator, triggers on a
+     * building block plan — D7), and the run guards on the two start paths (a source version that was never
+     * deployed, which would otherwise select nothing and report `COMPLETED` — G16; a building block plan
+     * started on its own, which has no run of its own — R1).
+     *
+     * Left uncaught, Spring renders all of them as a 500 with a stack trace, which tells the plan editor
+     * the server broke when in fact every one of these messages names the plan's problem and the fix. The
+     * save path already made this trade (D7); the start and dry-run paths had the same hole.
+     */
+    private fun <T> asBadRequestOnInvalidPlan(block: () -> T): T =
+        try {
+            block()
+        } catch (e: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message, e)
+        }
 
     private fun migrationId(caseDefinitionKey: String, caseDefinitionVersionTag: String, migrationKey: String) =
         BlueprintMigrationId.from(CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag), migrationKey)

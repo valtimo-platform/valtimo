@@ -33,6 +33,18 @@ import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
+ * A `removeBuildingBlock` entry as it is *suggested*: [RemoveBuildingBlockInstruction] with its
+ * `processMigration` left as JSON, so a row whose target the suggester would not guess survives to the
+ * editor rather than being dropped as unrepresentable.
+ */
+internal data class SuggestedRemoveBuildingBlockEntry(
+    val buildingBlockKey: String,
+    val buildingBlockVersionTag: String,
+    val dataMigration: List<DataMigrationPatch>,
+    val processMigration: List<JsonNode>,
+)
+
+/**
  * Best-effort `removeBuildingBlock` suggestion: the building blocks the [source] owner modelled that the
  * [target] owner no longer does — the blocks an owner *loses* across the version bump — each pre-filled the
  * same way the standalone suggesters do:
@@ -55,18 +67,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
  * make sense against the version they were derived from. Suggestions are advisory — the user edits before
  * saving.
  */
-/**
- * A `removeBuildingBlock` entry as it is *suggested*: [RemoveBuildingBlockInstruction] with its
- * `processMigration` left as JSON, so a row whose target the suggester would not guess survives to the
- * editor rather than being dropped as unrepresentable.
- */
-internal data class SuggestedRemoveBuildingBlockEntry(
-    val buildingBlockKey: String,
-    val buildingBlockVersionTag: String,
-    val dataMigration: List<DataMigrationPatch>,
-    val processMigration: List<JsonNode>,
-)
-
 class RemoveBuildingBlockMigrationComponentSuggester(
     private val objectMapper: ObjectMapper,
     private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,

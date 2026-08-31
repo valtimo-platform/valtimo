@@ -33,6 +33,7 @@ import {
   PageTitleService,
   RenderInPageHeaderDirective,
   SelectItem,
+  ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {CaseManagementParams} from '@valtimo/shared';
 import {WarningFilled16} from '@carbon/icons';
@@ -46,16 +47,27 @@ import {
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../constants';
 import {
   AddBuildingBlockInstruction,
+  BuildingBlockEntryOwner,
   DataMigrationPatch,
+  MigrationEditorApi,
   MigrationPlan,
   MigrationPlanSource,
   ProcessMigrationInstruction,
   RemoveBuildingBlockInstruction,
 } from '../../models';
+import {
+  MigrationBuildingBlockTabComponent,
+  MigrationDataMigrationTabComponent,
+  MigrationProcessMigrationTabComponent,
+} from '@valtimo/building-block-management';
 import {MigrationGeneralTabComponent} from './tabs/migration-general-tab.component';
-import {MigrationDataMigrationTabComponent} from './tabs/migration-data-migration-tab.component';
-import {MigrationProcessMigrationTabComponent} from './tabs/migration-process-migration-tab.component';
-import {MigrationBuildingBlockTabComponent} from './tabs/migration-building-block-tab.component';
+
+import {
+  asPlanText,
+  parsePlan,
+  sourceIdOf,
+  unmappedProcessesIn,
+} from '@valtimo/building-block-management';
 
 @Component({
   standalone: true,
@@ -79,6 +91,14 @@ import {MigrationBuildingBlockTabComponent} from './tabs/migration-building-bloc
 })
 export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDestroy {
   protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
+
+  /**
+   * What every "copy from" picker in this editor may read. `case:` is a case plan's alone — it
+   * resolves the migrating case's own metadata, which a building block plan has no access to — and it
+   * stays offered in both directions, including inside a `removeBuildingBlock` entry reading a
+   * building block document, because the case is migrating either way.
+   */
+  public readonly SOURCE_PREFIXES = [ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE];
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
@@ -104,6 +124,25 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     caseDefinitionKey: this.$caseDefinitionKey(),
     caseDefinitionVersionTag: this.$caseDefinitionVersionTag(),
   }));
+  // The blueprint this plan targets, as the shared editor components take it: the migrating case,
+  // which is the default counterparty of every building-block entry below.
+  public readonly $owner = computed<BuildingBlockEntryOwner | null>(() => {
+    const key = this.$caseDefinitionKey();
+    const versionTag = this.$caseDefinitionVersionTag();
+    return key && versionTag ? {type: 'CASE', key, versionTag} : null;
+  });
+  // The migration API with this case definition version bound, for the shared tabs. Recomputed rather
+  // than built once because the params are only known after the route resolves.
+  public readonly $api = computed<MigrationEditorApi | null>(() => {
+    const key = this.$caseDefinitionKey();
+    const versionTag = this.$caseDefinitionVersionTag();
+    return key && versionTag
+      ? this.caseMigrationApiService.forParams({
+          caseDefinitionKey: key,
+          caseDefinitionVersionTag: versionTag,
+        })
+      : null;
+  });
   // The "from" side resolves against the source the plan declares — its key as much as its version.
   public readonly $sourceCaseContext = computed(() => ({
     caseDefinitionKey: this.$sourceKey(),
@@ -140,8 +179,8 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     return (
       this.$valid() &&
       !this.$saving() &&
-      !!this.asText(plan.key) &&
-      !!this.asText(plan.source?.versionTag) &&
+      !!asPlanText(plan.key) &&
+      !!asPlanText(plan.source?.versionTag) &&
       !this.$unmappedProcesses().length &&
       !this.$unmappedEntryProcesses().length
     );
@@ -159,8 +198,8 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
    */
   public readonly $unmappedProcesses = computed(() =>
     (this.$plan().processMigration ?? [])
-      .filter(instruction => !this.asText(instruction?.targetProcessDefinitionKey))
-      .map(instruction => this.asText(instruction?.sourceProcessDefinitionKey) ?? '?')
+      .filter(instruction => !asPlanText(instruction?.targetProcessDefinitionKey))
+      .map(instruction => asPlanText(instruction?.sourceProcessDefinitionKey) ?? '?')
   );
 
   /**
@@ -172,17 +211,17 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
    * Kept separate from [$unmappedProcesses] so each tab's heading warns about its own instructions only.
    */
   public readonly $unmappedEntryProcesses = computed(() => [
-    ...this.unmappedIn(this.$plan().addBuildingBlock),
-    ...this.unmappedIn(this.$plan().removeBuildingBlock),
+    ...unmappedProcessesIn(this.$plan().addBuildingBlock),
+    ...unmappedProcessesIn(this.$plan().removeBuildingBlock),
   ]);
 
   /** The blank-target sources of every entry's nested `processMigration`, for one component. */
   public readonly $unmappedAddBuildingBlockProcesses = computed(() =>
-    this.unmappedIn(this.$plan().addBuildingBlock)
+    unmappedProcessesIn(this.$plan().addBuildingBlock)
   );
 
   public readonly $unmappedRemoveBuildingBlockProcesses = computed(() =>
-    this.unmappedIn(this.$plan().removeBuildingBlock)
+    unmappedProcessesIn(this.$plan().removeBuildingBlock)
   );
 
   private _params!: CaseManagementParams;
@@ -254,7 +293,7 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
       // yet, still resolves the title instead of showing the raw key.
       this._subscriptions.add(
         this.translateService
-          .stream('caseManagement.migration.editor.createTitle')
+          .stream('migrationEditor.createTitle')
           .subscribe(title => this.pageTitleService.setCustomPageTitle(title))
       );
       // Start a new plan from a best-effort suggestion (data/process pre-filled),
@@ -271,8 +310,9 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
           next: suggestion => {
             // Record what the suggestion was built for before applying it, so the resulting source
             // change does not immediately ask for the same suggestion again.
-            this._suggestedForSource = this.sourceIdOf(
-              suggestion['source'] as MigrationPlanSource | undefined
+            this._suggestedForSource = sourceIdOf(
+              suggestion['source'] as MigrationPlanSource | undefined,
+              this._params.caseDefinitionKey
             );
             this.setValue(JSON.stringify(suggestion, null, 2));
           },
@@ -321,7 +361,7 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     this._currentValue = value;
     // Keep the form tabs in sync with manual JSON edits, but leave the editor model untouched
     // so the user's cursor is not reset while typing.
-    const parsed = this.parse(value);
+    const parsed = parsePlan(value);
     if (parsed) {
       this.$plan.set(parsed);
       this.applySource(parsed.source);
@@ -374,7 +414,7 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
   private setValue(value: string): void {
     this._currentValue = value;
     this.$model.set({value, language: 'json'});
-    const plan = this.parse(value) ?? {};
+    const plan = parsePlan(value) ?? {};
     this.$plan.set(plan);
     this.applySource(plan.source);
   }
@@ -389,15 +429,6 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     this.applySource(plan.source);
     // A plan built from the form tabs is always structurally valid JSON.
     this.$valid.set(true);
-  }
-
-  private parse(value: string): MigrationPlan | null {
-    try {
-      const parsed = JSON.parse(value);
-      return typeof parsed === 'object' && parsed !== null ? (parsed as MigrationPlan) : null;
-    } catch {
-      return null;
-    }
   }
 
   /**
@@ -441,8 +472,8 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
    * called on every plan change.
    */
   private applySource(source: MigrationPlanSource | undefined): void {
-    const key = this.asText(source?.key) ?? this._params.caseDefinitionKey;
-    const versionTag = this.asText(source?.versionTag);
+    const key = asPlanText(source?.key) ?? this._params.caseDefinitionKey;
+    const versionTag = asPlanText(source?.versionTag);
     if (key === this.$sourceKey() && versionTag === this.$sourceVersionTag()) return;
 
     const keyChanged = key !== this.$sourceKey();
@@ -476,7 +507,7 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
    * rather than left describing the previous source.
    */
   private suggestComponentsFor(source: MigrationPlanSource): void {
-    const sourceId = this.sourceIdOf(source);
+    const sourceId = sourceIdOf(source, this._params.caseDefinitionKey);
     if (this.$isEdit() || !sourceId || sourceId === this._suggestedForSource) return;
 
     this._suggestedForSource = sourceId;
@@ -501,24 +532,6 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
         // Nothing to suggest (an undeployed source, most likely) — leave the plan as the author left it.
         error: () => {},
       });
-  }
-
-  /** A source as a comparable `<key>:<versionTag>`, or null when it is not complete enough to use. */
-  private sourceIdOf(source: MigrationPlanSource | undefined): string | null {
-    const key = this.asText(source?.key) ?? this._params.caseDefinitionKey;
-    const versionTag = this.asText(source?.versionTag);
-    return versionTag ? `${key}:${versionTag}` : null;
-  }
-
-  /**
-   * [value] when it is a non-blank string, else null — the only two shapes a key or a version tag may
-   * take. The plan is `JSON.parse`d from a free-form editor and patched by pickers, so a field can
-   * arrive as something else entirely (Carbon's combobox clears a selection to `[]`); an
-   * empty-but-truthy value would otherwise pass a `||` guard and end up interpolated into a request
-   * URL as an empty path segment.
-   */
-  private asText(value: unknown): string | null {
-    return typeof value === 'string' && value.trim().length > 0 ? value : null;
   }
 
   /** Every case definition key, so a plan can migrate instances of any of them. */
@@ -581,15 +594,6 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
   private navigateBack(): void {
     this.router.navigateByUrl(
       `case-management/case/${this._params.caseDefinitionKey}/version/${this._params.caseDefinitionVersionTag}/migration`
-    );
-  }
-
-  /** Blank-target sources across every entry's nested `processMigration`. */
-  private unmappedIn(entries: any[] | null | undefined): string[] {
-    return (entries ?? []).flatMap(entry =>
-      (entry?.processMigration ?? [])
-        .filter((instruction: any) => !this.asText(instruction?.targetProcessDefinitionKey))
-        .map((instruction: any) => this.asText(instruction?.sourceProcessDefinitionKey) ?? '?')
     );
   }
 }

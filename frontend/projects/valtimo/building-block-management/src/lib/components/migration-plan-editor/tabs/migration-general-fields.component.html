@@ -1,0 +1,92 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-tab" [formGroup]="form">
+  <!--
+    The title, the key and both source pickers are filled from the backend's suggested plan, which on a
+    large blueprint takes several seconds to compose. Without this the screen shows four empty required
+    fields and a disabled Save button, which reads as "this does not pre-fill" rather than "this is on
+    its way".
+  -->
+  @if (suggesting) {
+    <div class="migration-tab__loading">
+      <cds-loading size="sm"></cds-loading>
+
+      <span>{{ 'migrationEditor.general.suggesting' | translate }}</span>
+    </div>
+  }
+
+  <!-- Plan -->
+  <div class="migration-tab__grid">
+    <cds-text-label>
+      {{ 'migrationEditor.general.title' | translate }}
+      <input cdsText formControlName="title" [placeholder]="titlePlaceholderKey | translate" />
+    </cds-text-label>
+
+    <!--
+      The key is derived from the title rather than typed: it identifies the plan, so it has to be
+      URL-safe and unique among this version's plans, and [usedKeys] lets the shared input suffix a
+      number when a plan of that name already exists. The author can still take it over with the edit
+      button while creating; on an existing plan it is read-only, since changing it would create a
+      second plan rather than rename this one.
+    -->
+    <valtimo-auto-key-input
+      formControlName="key"
+      labelTranslationKey="migrationEditor.general.key"
+      [mode]="$keyMode()"
+      placeholderTranslationKey="migrationEditor.general.keyPlaceholder"
+      [sourceText]="$title()"
+      [usedKeys]="usedKeys"
+    ></valtimo-auto-key-input>
+  </div>
+
+  <!-- Source -->
+  <h5 class="migration-tab__subheading">
+    {{ 'migrationEditor.general.source' | translate }}
+  </h5>
+  <p class="migration-tab__hint">{{ sourceHintKey | translate }}</p>
+
+  <div class="migration-tab__grid">
+    <!--
+      Both pickers are non-clearable: a plan always migrates FROM somewhere, so neither field has a
+      meaningful empty state. "The same blueprint as the target" is expressed by selecting that key,
+      not by blanking the field. (Clearing a Carbon combobox also hands back an empty array rather than
+      an empty string, which is truthy and would travel into the plan as a version tag.)
+    -->
+    <v-select
+      formControlName="sourceKey"
+      [clearable]="false"
+      [items]="sourceKeyOptions"
+      [placeholder]="sourceKeyPlaceholderKey | translate"
+      [required]="true"
+      [titleTranslationKey]="sourceKeyLabelKey"
+      [attr.data-test-id]="testIds.sourceKeySelect"
+    ></v-select>
+
+    <v-select
+      formControlName="sourceVersionTag"
+      [clearable]="false"
+      [items]="sourceVersionOptions"
+      [placeholder]="'migrationEditor.general.sourceVersionPlaceholder' | translate"
+      [required]="true"
+      [titleTranslationKey]="'migrationEditor.general.sourceVersion'"
+      [attr.data-test-id]="testIds.sourceVersionSelect"
+    ></v-select>
+  </div>
+
+  <!-- Whatever this blueprint type adds: triggers and conditions, or an explanation of when it runs -->
+  <ng-content></ng-content>
+</div>

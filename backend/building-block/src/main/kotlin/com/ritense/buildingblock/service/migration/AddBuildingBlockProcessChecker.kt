@@ -62,9 +62,10 @@ class AddBuildingBlockProcessChecker(
      * they all can. Needs no deployed blueprint beyond [target]'s links, so it holds at execution time too.
      *
      * An entry with no `processMigration` is **not** automatically dead. Where [target] declares the block
-     * on a **call activity**, `BuildingBlockAdoptionExecutor` (@450) locates the running sub-process from
-     * that link and the running tree, needing no process definition key from the plan at all — the entry
-     * exists to authorise the adoption, and naming a key would only repeat the link. It is dead only when
+     * on a **call activity**, the tree walk in [AddBuildingBlockMigrationComponentExecutor] (@300) locates
+     * the running sub-process from that link and the running tree, needing no process definition key from
+     * the plan at all — the entry exists to authorise the take-over, and naming a key would only repeat the
+     * link. It is dead only when
      * neither route can find anything: no `processMigration` to hijack with, and no call-activity link to
      * adopt through.
      */

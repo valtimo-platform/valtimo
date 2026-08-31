@@ -61,7 +61,7 @@ class BuildingBlockProcessMigrationComponentExecutor(
 
     override fun componentKey() = ProcessMigrationComponentDeployer.PROCESS_MIGRATION_COMPONENT_KEY
 
-    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, ownerDocumentId: UUID) {
         if (target.blueprintType() != BlueprintType.BUILDING_BLOCK) {
             return
         }
@@ -73,8 +73,8 @@ class BuildingBlockProcessMigrationComponentExecutor(
             return
         }
 
-        val instance = buildingBlockInstanceRepository.findByDocumentId(caseId)
-            ?: throw NoSuchElementException("No building block instance found for document '$caseId'")
+        val instance = buildingBlockInstanceRepository.findByDocumentId(ownerDocumentId)
+            ?: throw NoSuchElementException("No building block instance found for document '$ownerDocumentId'")
         // A building block instance without a running process has nothing to migrate here.
         val processInstanceId = instance.processInstanceId ?: return
         val targetBuildingBlockDefinitionId = target as BuildingBlockDefinitionId

@@ -29,43 +29,43 @@ import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/f
 import {TranslateModule} from '@ngx-translate/core';
 import {Add16, ChevronDown16, ChevronUp16, TrashCan16} from '@carbon/icons';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {SelectItem, SelectModule as ValtimoSelectModule} from '@valtimo/components';
+import {
+  SelectItem,
+  SelectModule as ValtimoSelectModule,
+  ValuePathSelectorPrefix,
+} from '@valtimo/components';
+import {ProcessLinkBuildingBlockApiService} from '@valtimo/process-link';
 import {Subscription} from 'rxjs';
-import {BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
 import {
-  BuildingBlockManagementApiService,
-  BuildingBlockMigrationApiService,
-} from '../../../services';
-import {
-  AddBuildingBlockInstruction,
   BuildingBlockEntryOwner,
+  BuildingBlockInstruction,
+  BuildingBlockMode,
   DataMigrationPatch,
+  MigrationEditorApi,
+  MigrationEditorTestIds,
   MigrationPlanSource,
   ProcessMigrationInstruction,
-  RemoveBuildingBlockInstruction,
   ValuePathContext,
 } from '../../../models';
-import {BbMigrationDataMigrationTabComponent} from './migration-data-migration-tab.component';
-import {BbMigrationProcessMigrationTabComponent} from './migration-process-migration-tab.component';
-
-type BuildingBlockInstruction = AddBuildingBlockInstruction | RemoveBuildingBlockInstruction;
-
-/** Whether this tab edits the `addBuildingBlock` or the `removeBuildingBlock` component. */
-type BuildingBlockMode = 'add' | 'remove';
+import {MigrationDataMigrationTabComponent} from './migration-data-migration-tab.component';
+import {MigrationProcessMigrationTabComponent} from './migration-process-migration-tab.component';
 
 /** Page size for the version lookup; `all=true` returns every version regardless, this is a formality. */
 const MAX_VERSIONS_PER_KEY = 100;
 
 /**
- * Editor for the `addBuildingBlock` / `removeBuildingBlock` components of a *building block* plan —
- * the blocks nested inside the block the plan targets. A building block owns other building blocks
- * exactly as a case does (through the call activities of its own process), so the plan components are
- * identical to the case ones; only the owner differs, which is what every context below resolves to.
+ * Editor for the `addBuildingBlock` / `removeBuildingBlock` plan components, for either blueprint type.
  *
- * Both components are arrays of entries where each entry embeds its own `dataMigration` and
- * `processMigration`, so the existing data-/process-migration tab components are reused per entry.
- * Both modes carry a `buildingBlockKey` and a `buildingBlockVersionTag` — the version to create at, or
- * the version to dissolve — so the two differ only in the direction data and processes move.
+ * A building block owns other building blocks exactly as a case does — through the call activities of
+ * its own process — so the two plan components are the same components, and the only thing that varies
+ * is *who the owner is*. That is [owner]: the blueprint this plan targets, a case or a building block,
+ * and the default counterparty of every entry here. An entry nested deeper resolves its own owner from
+ * the backend ([ensureEntryOwner]) and the contexts below follow it.
+ *
+ * Both are arrays of entries where each entry embeds its own `dataMigration` and `processMigration`, so
+ * the data-/process-migration tab components are reused per entry. Both modes carry a
+ * `buildingBlockKey` and a `buildingBlockVersionTag` — the version to create at, or the version to
+ * dissolve — so the two differ only in the direction data and processes move.
  *
  * The building-block key/version fields live in a reactive form array; the nested data/process
  * migrations are managed by the reused child components and kept index-aligned in
@@ -73,7 +73,7 @@ const MAX_VERSIONS_PER_KEY = 100;
  */
 @Component({
   standalone: true,
-  selector: 'valtimo-bb-migration-building-block-tab',
+  selector: 'valtimo-migration-building-block-tab',
   templateUrl: './migration-building-block-tab.component.html',
   styleUrls: ['./migration-tab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,33 +84,42 @@ const MAX_VERSIONS_PER_KEY = 100;
     ButtonModule,
     IconModule,
     ValtimoSelectModule,
-    BbMigrationDataMigrationTabComponent,
-    BbMigrationProcessMigrationTabComponent,
+    MigrationDataMigrationTabComponent,
+    MigrationProcessMigrationTabComponent,
   ],
 })
-export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
+export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   @Input() public mode: BuildingBlockMode = 'add';
-  /** The building block definition version the plan targets — the owner of every nested block here. */
-  @Input() public buildingBlockDefinitionKey: string | null = null;
-  @Input() public buildingBlockDefinitionVersionTag: string | null = null;
-  /** Owner `key -> processDefinitionId` map — one side of every nested-building-block hijack. */
+  /** The migration API with this plan's blueprint bound. */
+  @Input() public api: MigrationEditorApi | null = null;
+  /** The blueprint version this plan targets — the default owner of every entry on this tab. */
+  @Input() public owner: BuildingBlockEntryOwner | null = null;
+  /** The owner's `key -> processDefinitionId` map — one side of every building-block hijack. */
   @Input() public ownerProcessDefinitions: Record<string, string> = {};
   /**
    * The plan's source version. Needed to resolve a `remove` entry's owner: the block it dissolves is
    * one the *source* version still models, so it is that version's tree the owner is declared in.
    */
   @Input() public planSource: MigrationPlanSource | null = null;
+  /** Intro text above the entries — what this component does, in the host's own words. */
+  @Input() public descriptionKey: string | null = null;
+  /** Which way data moves, in the host's own words. */
+  @Input() public dataMigrationHintKey: string | null = null;
+  /** Which way processes move, in the host's own words. */
+  @Input() public processMigrationHintKey: string | null = null;
+  /**
+   * What a nested tab's source picker may read. A case plan adds `case:` to the document paths a
+   * building block plan is limited to — and it stays available in both directions, because `case:`
+   * resolves the migrating case's own metadata whichever document the patch happens to read.
+   */
+  @Input() public sourcePrefixes: ValuePathSelectorPrefix[] = [ValuePathSelectorPrefix.DOC];
+  @Input() public testIds!: MigrationEditorTestIds;
 
   @Input() public set instructions(value: BuildingBlockInstruction[] | null | undefined) {
     this.writeInstructions(value ?? []);
   }
 
   @Output() public readonly instructionsChange = new EventEmitter<BuildingBlockInstruction[]>();
-
-  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
-
-  // Dropdown options: every building block key, and the versions available per key.
-  public keyItems: SelectItem[] = [];
 
   public readonly form = this.fb.group({
     instructions: this.fb.array<FormGroup>([]),
@@ -122,32 +131,35 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   private _lastEmitted = '[]';
   private readonly _subscriptions = new Subscription();
 
-  // The versions are loaded per key on demand — the definition list carries only the latest of each.
+  // Dropdown options: every building block key, and the versions available per key. The versions are
+  // loaded per key on demand — the definition list carries only the latest version of each.
+  public keyItems: SelectItem[] = [];
   private readonly _versionsByKey = new Map<string, SelectItem[]>();
   private readonly _versionsInFlight = new Set<string>();
 
-  // The blueprint each entry exchanges data and processes with, by `key:version`. Not always the block
-  // this plan targets: a block nested deeper is filled from, and handed back to, the block that
-  // declares it, and its patches therefore address that block's document — which is what the backend
-  // resolves and what the pickers below have to be scoped to. Resolved when an entry is opened, since
-  // a collapsed one renders no picker, and cached because a plan can hold dozens of entries.
-  private readonly _entryOwners = new Map<string, BuildingBlockEntryOwner>();
-  private readonly _entryOwnersInFlight = new Set<string>();
-
-  // Nested-building-block process scoping: a `key` -> latest versionTag map (the default version an
-  // entry gets), a `key:version` -> process definitions cache, and the lookups in flight.
+  // Building-block process scoping: a `key` -> latest versionTag map (the default version an entry
+  // gets), a `key:version` -> process keys cache, and the set of lookups already in flight.
   private readonly _bbLatestVersion = new Map<string, string>();
   private readonly _bbProcessDefs = new Map<string, Record<string, string>>();
   private readonly _bbInFlight = new Set<string>();
   private readonly _contextCache = new Map<string, ValuePathContext>();
 
+  // The blueprint each entry exchanges data and processes with, by `key:version`. Not always [owner]:
+  // a block nested deeper is filled from, and handed back to, the block that declares it, and its
+  // patches therefore address that block's document — which is what the backend resolves and what the
+  // pickers below have to be scoped to. Resolved when an entry is opened, since a collapsed one
+  // renders no picker, and cached because a plan can hold dozens of entries.
+  private readonly _entryOwners = new Map<string, BuildingBlockEntryOwner>();
+  private readonly _entryOwnersInFlight = new Set<string>();
+
   // Entries whose data/process migration is being (re)suggested — their nested tabs are collapsed.
   private readonly _suggesting = new Set<FormGroup>();
 
-  // The entries whose body is open. A suggested plan authorises every reachable building block, and
-  // each entry embeds a whole data-migration and process-migration editor, so the tab is unreadable
-  // with every body expanded. Collapsed is therefore the default and this set starts empty; an entry
-  // the author adds by hand opens, because they added it in order to fill it in.
+  // The entries whose body is open. A suggested plan authorises every reachable building block — 53 of
+  // them on the configuration this was reported from — and each entry embeds a whole data-migration and
+  // process-migration editor, so the tab is unreadable with every body expanded. Collapsed is therefore
+  // the default and this set starts empty; an entry the author adds by hand opens, because they added
+  // it in order to fill it in.
   private readonly _expanded = new Set<FormGroup>();
 
   public get instructionsArray(): FormArray {
@@ -162,8 +174,7 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly cdr: ChangeDetectorRef,
     private readonly iconService: IconService,
-    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
-    private readonly buildingBlockMigrationApiService: BuildingBlockMigrationApiService
+    private readonly buildingBlockApiService: ProcessLinkBuildingBlockApiService
   ) {
     this.iconService.registerAll([Add16, ChevronDown16, ChevronUp16, TrashCan16]);
   }
@@ -172,11 +183,11 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
 
     // Load every building block definition to drive the key dropdown and track each key's latest
-    // version (the version an entry defaults to), then load processes for existing rows. This endpoint
-    // answers the LATEST version per key only, so the version dropdown cannot be built from it — a plan
-    // targets a specific blueprint version and usually has to name an older block version than the
-    // newest one deployed. Those come from [ensureVersionItems], per key.
-    this.buildingBlockManagementApiService.getBuildingBlockDefinitions().subscribe(definitions => {
+    // version (the version an entry defaults to), then load processes for existing rows. This
+    // endpoint answers the LATEST version per key only, so the version dropdown cannot be built from
+    // it — a plan targets a specific blueprint version and usually has to name an older block
+    // version than the newest one deployed. Those come from [ensureVersionItems], per key.
+    this.buildingBlockApiService.getBuildingBlockDefinitions().subscribe(definitions => {
       const keyItems: SelectItem[] = [];
       const seenKeys = new Set<string>();
       (definitions ?? []).forEach(definition => {
@@ -307,16 +318,13 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Ask the backend for a best-effort `dataMigration` + `processMigration` for this entry's nested
-   * building block (in the add/remove direction) and replace the entry's nested migrations with it.
+   * Ask the backend for a best-effort `dataMigration` + `processMigration` for this entry's building
+   * block (in the add/remove direction) and replace the entry's nested migrations with it.
    */
   private suggestForEntry(group: FormGroup): void {
     const key = group.get('buildingBlockKey')?.value;
     const version = this.resolveBuildingBlockVersion(group);
-    const buildingBlockDefinitionKey = this.buildingBlockDefinitionKey;
-    const buildingBlockDefinitionVersionTag = this.buildingBlockDefinitionVersionTag;
-    if (!key || !version || !buildingBlockDefinitionKey || !buildingBlockDefinitionVersionTag)
-      return;
+    if (!key || !version || !this.api) return;
 
     // Collapse the nested migration tabs while the suggestion loads. Destroying them (rather than
     // just clearing their rows) means they remount from scratch on the response — the clean 0→N
@@ -326,36 +334,28 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     this._suggesting.add(group);
     this.cdr.markForCheck();
 
-    this.buildingBlockMigrationApiService
-      .suggestBuildingBlockEntry(
-        {buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag},
-        key,
-        version,
-        this.mode,
-        this.planSource
-      )
-      .subscribe({
-        next: suggestion => {
-          // Recorded whether or not the entry still exists: the answer is about the block, not the row.
-          this.rememberEntryOwner(key, version, suggestion.owner);
-          const index = this.instructionsArray.controls.indexOf(group);
-          if (index < 0) return;
-          this._dataMigrations[index] = suggestion.dataMigration ?? [];
-          this._processMigrations[index] = suggestion.processMigration ?? [];
-          this._suggesting.delete(group);
-          this.emit();
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this._suggesting.delete(group);
-          this.cdr.markForCheck();
-        },
-      });
+    this.api.suggestBuildingBlockEntry(key, version, this.mode, this.planSource).subscribe({
+      next: suggestion => {
+        // Recorded whether or not the entry still exists: the answer is about the block, not the row.
+        this.rememberEntryOwner(key, version, suggestion.owner);
+        const index = this.instructionsArray.controls.indexOf(group);
+        if (index < 0) return;
+        this._dataMigrations[index] = suggestion.dataMigration ?? [];
+        this._processMigrations[index] = suggestion.processMigration ?? [];
+        this._suggesting.delete(group);
+        this.emit();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this._suggesting.delete(group);
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   /**
    * Resolve (once, cached) which blueprint this entry's building block exchanges state with, so the
-   * pickers below list that blueprint's fields and processes rather than this plan's block's.
+   * pickers below list that blueprint's fields and processes rather than [owner]'s.
    *
    * An entry loaded from a saved plan never passes through [suggestForEntry] — re-suggesting it would
    * overwrite what the author wrote — so the answer is fetched on its own here. The response's
@@ -364,31 +364,20 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   private ensureEntryOwner(group: FormGroup): void {
     const key = group.get('buildingBlockKey')?.value;
     const version = this.resolveBuildingBlockVersion(group);
-    const buildingBlockDefinitionKey = this.buildingBlockDefinitionKey;
-    const buildingBlockDefinitionVersionTag = this.buildingBlockDefinitionVersionTag;
-    if (!key || !version || !buildingBlockDefinitionKey || !buildingBlockDefinitionVersionTag)
-      return;
+    if (!key || !version || !this.api) return;
 
     const cacheKey = `${key}:${version}`;
     if (this._entryOwners.has(cacheKey) || this._entryOwnersInFlight.has(cacheKey)) return;
 
     this._entryOwnersInFlight.add(cacheKey);
-    this.buildingBlockMigrationApiService
-      .suggestBuildingBlockEntry(
-        {buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag},
-        key,
-        version,
-        this.mode,
-        this.planSource
-      )
-      .subscribe({
-        next: suggestion => {
-          this._entryOwnersInFlight.delete(cacheKey);
-          this.rememberEntryOwner(key, version, suggestion.owner);
-          this.cdr.markForCheck();
-        },
-        error: () => this._entryOwnersInFlight.delete(cacheKey),
-      });
+    this.api.suggestBuildingBlockEntry(key, version, this.mode, this.planSource).subscribe({
+      next: suggestion => {
+        this._entryOwnersInFlight.delete(cacheKey);
+        this.rememberEntryOwner(key, version, suggestion.owner);
+        this.cdr.markForCheck();
+      },
+      error: () => this._entryOwnersInFlight.delete(cacheKey),
+    });
   }
 
   private rememberEntryOwner(
@@ -413,6 +402,24 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return this._entryOwners.get(`${key}:${version}`) ?? null;
   }
 
+  /**
+   * Whether this entry's counterparty is a building block *other than* the one this plan targets — the
+   * nested case, and the only one where the pickers must be re-scoped away from [owner].
+   *
+   * A `CASE`-typed owner is never that: a case plan's entries hang off the migrating case itself, and
+   * a building block plan cannot have one at all.
+   */
+  private isNestedOwner(owner: BuildingBlockEntryOwner | null): owner is BuildingBlockEntryOwner {
+    return (
+      owner?.type === 'BUILDING_BLOCK' &&
+      !(
+        this.owner?.type === 'BUILDING_BLOCK' &&
+        owner.key === this.owner.key &&
+        owner.versionTag === this.owner.versionTag
+      )
+    );
+  }
+
   /** Whether this entry's data/process migration is currently being suggested (tabs collapsed). */
   public isSuggesting(group: FormGroup): boolean {
     return this._suggesting.has(group);
@@ -428,14 +435,14 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
    * Fetch (once, cached) every deployed version of [key] into [_versionsByKey]. Every version has to be
    * offered: which one an entry may name is decided by what the plan's target blueprint version links
    * (the engine refuses the rest on save), and that is regularly an older version than the newest one
-   * deployed — a plan on block version 1.0.4 links the version 1.0.4 links, not whatever has been
+   * deployed — a plan on version 1.0.4 links the block version 1.0.4 links, not whatever has been
    * released since.
    */
   private ensureVersionItems(key: string | null | undefined): void {
     if (!key || this._versionsByKey.has(key) || this._versionsInFlight.has(key)) return;
 
     this._versionsInFlight.add(key);
-    this.buildingBlockManagementApiService
+    this.buildingBlockApiService
       .getVersionsForBuildingBlock(key, 0, MAX_VERSIONS_PER_KEY, true)
       .subscribe({
         next: page => {
@@ -479,20 +486,18 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     if (this._bbProcessDefs.has(cacheKey) || this._bbInFlight.has(cacheKey)) return;
 
     this._bbInFlight.add(cacheKey);
-    this.buildingBlockManagementApiService
-      .getBuildingBlockProcessDefinitions(key, version)
-      .subscribe({
-        next: definitions => {
-          const defs: Record<string, string> = {};
-          definitions.forEach(definition => {
-            if (definition.key && definition.id) defs[definition.key] = definition.id;
-          });
-          this._bbProcessDefs.set(cacheKey, defs);
-          this._bbInFlight.delete(cacheKey);
-          this.cdr.markForCheck();
-        },
-        error: () => this._bbInFlight.delete(cacheKey),
-      });
+    this.buildingBlockApiService.getProcessDefinitionsForBuildingBlock(key, version).subscribe({
+      next: definitions => {
+        const defs: Record<string, string> = {};
+        definitions.forEach(definition => {
+          if (definition.key && definition.id) defs[definition.key] = definition.id;
+        });
+        this._bbProcessDefs.set(cacheKey, defs);
+        this._bbInFlight.delete(cacheKey);
+        this.cdr.markForCheck();
+      },
+      error: () => this._bbInFlight.delete(cacheKey),
+    });
   }
 
   private buildingBlockProcessDefs(group: FormGroup): Record<string, string> {
@@ -501,36 +506,28 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return (key && version && this._bbProcessDefs.get(`${key}:${version}`)) || {};
   }
 
-  /** Add: source = the entry owner's processes. Remove: source = the nested block's processes. */
+  /** Add: source = the entry owner's processes. Remove: source = the building block's processes. */
   public sourceProcessDefinitionsOf(group: FormGroup): Record<string, string> {
     return this.isAdd ? this.ownerProcessDefs(group) : this.buildingBlockProcessDefs(group);
   }
 
-  /** Add: target = the nested block's processes. Remove: target = the entry owner's processes. */
+  /** Add: target = the building block's processes. Remove: target = the entry owner's processes. */
   public targetProcessDefinitionsOf(group: FormGroup): Record<string, string> {
     return this.isAdd ? this.buildingBlockProcessDefs(group) : this.ownerProcessDefs(group);
   }
 
-  /** The processes of the blueprint this entry exchanges state with. */
+  /** The processes of that same owner — the other side of every hijack and hand-back. */
   private ownerProcessDefs(group: FormGroup): Record<string, string> {
     const owner = this.entryOwnerOf(group);
-    if (!owner || this.isPlanTarget(owner)) return this.ownerProcessDefinitions;
+    if (!this.isNestedOwner(owner)) return this.ownerProcessDefinitions;
     return this._bbProcessDefs.get(`${owner.key}:${owner.versionTag}`) ?? {};
-  }
-
-  /** Whether [owner] is the building block version this plan targets — the entry's default owner. */
-  private isPlanTarget(owner: BuildingBlockEntryOwner): boolean {
-    return (
-      owner.key === this.buildingBlockDefinitionKey &&
-      owner.versionTag === this.buildingBlockDefinitionVersionTag
-    );
   }
 
   /**
    * Value-path context for the dataMigration source/target selectors. `dataMigration` copies between
-   * the owner building block document and the nested building block document, so — add: source =
-   * owner, target = nested; remove: source = nested, target = owner. Memoized so each render gets a
-   * stable object reference.
+   * the entry owner's document and the building block document, so — add: source = owner, target =
+   * block; remove: source = block, target = owner. Memoized so each render gets a stable object
+   * reference.
    */
   public sourceContextOf(group: FormGroup): ValuePathContext {
     return this.isAdd ? this.ownerContext(group) : this.buildingBlockContext(group);
@@ -541,29 +538,37 @@ export class BbMigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * The document the entry's patches address on the owner side: this plan's building block, or — for a
-   * block nested deeper — the block that declares it, which is the document the executor reads and
-   * writes. Falls back to this plan's block until the owner is known.
+   * The document the entry's patches address on the owner side: the blueprint this plan targets, or —
+   * for a block nested deeper — the block that declares it, which is the document the executor
+   * actually reads and writes.
+   *
+   * Falls back to [owner] until the entry's own owner is known, which is the right answer for the
+   * common case: an entry the migrating blueprint declares itself.
    */
   private ownerContext(group: FormGroup): ValuePathContext {
     const owner = this.entryOwnerOf(group);
-    if (owner && !this.isPlanTarget(owner)) {
+    if (this.isNestedOwner(owner)) {
       return this.memoContext(`bb|${owner.key}|${owner.versionTag}`, {
         buildingBlockKey: owner.key,
         buildingBlockVersionTag: owner.versionTag,
       });
     }
-    return this.planTargetContext();
+    return this.planOwnerContext();
   }
 
-  private planTargetContext(): ValuePathContext {
-    return this.memoContext(
-      `owner|${this.buildingBlockDefinitionKey}|${this.buildingBlockDefinitionVersionTag}`,
-      {
-        buildingBlockKey: this.buildingBlockDefinitionKey,
-        buildingBlockVersionTag: this.buildingBlockDefinitionVersionTag,
-      }
-    );
+  /** The document of the blueprint this plan targets, as a case or as a building block. */
+  private planOwnerContext(): ValuePathContext {
+    const key = this.owner?.key ?? null;
+    const versionTag = this.owner?.versionTag ?? null;
+    return this.owner?.type === 'BUILDING_BLOCK'
+      ? this.memoContext(`owner|bb|${key}|${versionTag}`, {
+          buildingBlockKey: key,
+          buildingBlockVersionTag: versionTag,
+        })
+      : this.memoContext(`owner|case|${key}|${versionTag}`, {
+          caseDefinitionKey: key,
+          caseDefinitionVersionTag: versionTag,
+        });
   }
 
   private buildingBlockContext(group: FormGroup): ValuePathContext {

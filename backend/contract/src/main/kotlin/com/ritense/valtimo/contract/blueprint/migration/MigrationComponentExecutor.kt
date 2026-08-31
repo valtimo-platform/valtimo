@@ -46,11 +46,17 @@ interface MigrationComponentExecutor {
     fun componentKey(): String
 
     /**
-     * Execute this component's migration for a single [caseId] (the document/case instance id),
+     * Execute this component's migration for the single instance identified by [ownerDocumentId],
      * using the configuration previously deployed for [migrationId]. [target] is the resolved
      * blueprint version the instance is migrated TO (the plan's `target*` override, or the plan's
      * own blueprint version by default). Does nothing when this plan has no data for this component,
      * or when this executor does not apply to the target's blueprint type.
+     *
+     * The instance is **not** necessarily a case. An executor runs for whatever a plan migrates, and a
+     * building block plan migrates a building block document — nested arbitrarily deep, since a plan
+     * applied to a block may in turn move the blocks below it. So this is the *owner's* document id,
+     * whichever kind of blueprint owns it, and an executor that means "the case" has to say so itself:
+     * `target.blueprintType()` is what distinguishes them.
      */
-    fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID)
+    fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, ownerDocumentId: UUID)
 }

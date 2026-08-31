@@ -16,20 +16,22 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, CaseManagementParams, ConfigService} from '@valtimo/shared';
+import {BlueprintMigrationApiService} from '@valtimo/building-block-management';
+import {CaseManagementParams, ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
-import {
-  BuildingBlockEntrySuggestion,
-  DataMigrationPatch,
-  DryRunStatus,
-  MigrationExecutionStatus,
-  MigrationPlanManagement,
-  MigrationPlanSource,
-  ProcessMigrationInstruction,
-} from '../models';
+import {DryRunStatus, MigrationExecutionStatus, MigrationPlanManagement} from '../models';
 
+/**
+ * The migration plans of one case definition version.
+ *
+ * Everything a building block plan also has is [BlueprintMigrationApiService]'s; what is added here is
+ * what only a case plan has — a run of its own, started explicitly or simulated first.
+ */
 @Injectable({providedIn: 'root'})
-export class CaseMigrationApiService extends BaseApiService {
+export class CaseMigrationApiService extends BlueprintMigrationApiService<
+  CaseManagementParams,
+  MigrationPlanManagement
+> {
   constructor(
     protected readonly configService: ConfigService,
     protected readonly httpClient: HttpClient
@@ -37,14 +39,10 @@ export class CaseMigrationApiService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  private getMigrationUrl(params: CaseManagementParams): string {
+  protected getMigrationUrl(params: CaseManagementParams): string {
     return this.getApiUrl(
       `management/v1/case-definition/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}/migration`
     );
-  }
-
-  public getPlans(params: CaseManagementParams): Observable<MigrationPlanManagement[]> {
-    return this.httpClient.get<MigrationPlanManagement[]>(this.getMigrationUrl(params));
   }
 
   public startMigration(
@@ -63,114 +61,5 @@ export class CaseMigrationApiService extends BaseApiService {
       `${this.getMigrationUrl(params)}/${migrationKey}/dry-run`,
       {}
     );
-  }
-
-  public getDryRunStatus(
-    params: CaseManagementParams,
-    migrationKey: string
-  ): Observable<DryRunStatus> {
-    return this.httpClient.get<DryRunStatus>(
-      `${this.getMigrationUrl(params)}/${migrationKey}/dry-run/status`
-    );
-  }
-
-  public getPlanJson(
-    params: CaseManagementParams,
-    migrationKey: string
-  ): Observable<Record<string, unknown>> {
-    return this.httpClient.get<Record<string, unknown>>(
-      `${this.getMigrationUrl(params)}/${migrationKey}`
-    );
-  }
-
-  public savePlan(
-    params: CaseManagementParams,
-    plan: Record<string, unknown>
-  ): Observable<MigrationPlanManagement[]> {
-    return this.httpClient.post<MigrationPlanManagement[]>(this.getMigrationUrl(params), plan);
-  }
-
-  /** A best-effort, pre-filled plan (dataMigration, processMigration) for a new plan. */
-  /**
-   * A best-effort, pre-filled plan for a new plan on this case definition version.
-   *
-   * `source` names the version the plan should migrate instances from; omit it and the backend falls
-   * back to this version's predecessor, which is what a new plan usually wants. Pass it to re-suggest
-   * the components after the author picks a different source.
-   */
-  public getPlanSuggestion(
-    params: CaseManagementParams,
-    source?: MigrationPlanSource
-  ): Observable<Record<string, unknown>> {
-    const query: Record<string, string> = {};
-    if (source?.key) query['sourceKey'] = source.key;
-    if (source?.versionTag) query['sourceVersionTag'] = source.versionTag;
-    return this.httpClient.get<Record<string, unknown>>(
-      `${this.getMigrationUrl(params)}/suggestion`,
-      {params: query}
-    );
-  }
-
-  /** A best-effort `sourceActivityId -> targetActivityId` mapping for a source/target process pair. */
-  public suggestActivityMapping(
-    params: CaseManagementParams,
-    sourceProcessDefinitionId: string,
-    targetProcessDefinitionId: string
-  ): Observable<Record<string, string>> {
-    return this.httpClient.get<Record<string, string>>(
-      `${this.getMigrationUrl(params)}/suggestion/activity-mapping`,
-      {params: {sourceProcessDefinitionId, targetProcessDefinitionId}}
-    );
-  }
-
-  /**
-   * The incompatible `sourceActivityId -> failure messages` pairs in a proposed activity mapping for
-   * a source/target process pair, as judged by the engine (empty when every pair is valid).
-   */
-  public validateActivityMapping(
-    params: CaseManagementParams,
-    sourceProcessDefinitionId: string,
-    targetProcessDefinitionId: string,
-    activityMapping: Record<string, string>
-  ): Observable<Record<string, string[]>> {
-    return this.httpClient.post<Record<string, string[]>>(
-      `${this.getMigrationUrl(params)}/suggestion/activity-mapping/validate`,
-      activityMapping,
-      {params: {sourceProcessDefinitionId, targetProcessDefinitionId}}
-    );
-  }
-
-  /**
-   * A best-effort `dataMigration` + `processMigration` suggestion for one building-block entry, with
-   * the `owner` it was computed against.
-   *
-   * The owner is not always this case: a nested building block exchanges data and processes with the
-   * block that declares it, which is what the executors read from the running tree. The plan's source
-   * is passed because a `remove` entry names a block the *source* version still models, and it is that
-   * version's tree the owner has to be resolved in.
-   */
-  public suggestBuildingBlockEntry(
-    params: CaseManagementParams,
-    buildingBlockKey: string,
-    buildingBlockVersionTag: string,
-    mode: 'add' | 'remove',
-    source?: MigrationPlanSource | null
-  ): Observable<BuildingBlockEntrySuggestion> {
-    return this.httpClient.get<BuildingBlockEntrySuggestion>(
-      `${this.getMigrationUrl(params)}/suggestion/building-block`,
-      {
-        params: {
-          buildingBlockKey,
-          buildingBlockVersionTag,
-          mode,
-          ...(source?.key ? {sourceKey: source.key} : {}),
-          ...(source?.versionTag ? {sourceVersionTag: source.versionTag} : {}),
-        },
-      }
-    );
-  }
-
-  public deletePlan(params: CaseManagementParams, migrationKey: string): Observable<void> {
-    return this.httpClient.delete<void>(`${this.getMigrationUrl(params)}/${migrationKey}`);
   }
 }

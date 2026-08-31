@@ -107,4 +107,37 @@ class CaseMigrationManagementResourceTest {
         verify(caseMigrationService).startDryRun(eq(migrationId))
         verify(caseMigrationService, never()).isTriggeredByButton(any())
     }
+
+    @Test
+    fun `a run the service refuses is answered 400, not 500`() {
+        // The run guards refuse a plan whose declared source was never deployed (it would select nothing
+        // and report COMPLETED) and a building block plan started on its own. Both are `require`, so both
+        // arrive here as IllegalArgumentException, and both name the plan's problem — a 500 would tell the
+        // editor the server broke instead.
+        whenever(caseMigrationService.isTriggeredByButton(migrationId)).thenReturn(true)
+        whenever(caseMigrationService.startMigration(any()))
+            .thenThrow(IllegalArgumentException("declares source 'verhuizing:9.9.9', which is not deployed"))
+
+        assertThatThrownBy { resource.startMigration("woninginspectie", "1.0.4", "plan") }
+            .isInstanceOf(ResponseStatusException::class.java)
+            .satisfies({ thrown ->
+                assertThat((thrown as ResponseStatusException).statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+                assertThat(thrown.reason).contains("which is not deployed")
+            })
+    }
+
+    @Test
+    fun `a dry run the service refuses is answered 400, not 500`() {
+        // Same guards run ahead of a dry run, so the same translation has to hold there — this is where an
+        // author checks a plan before committing to it, and it is the likeliest place to meet the refusal.
+        whenever(caseMigrationService.startDryRun(any()))
+            .thenThrow(IllegalArgumentException("declares source 'verhuizing:9.9.9', which is not deployed"))
+
+        assertThatThrownBy { resource.startDryRun("woninginspectie", "1.0.4", "plan") }
+            .isInstanceOf(ResponseStatusException::class.java)
+            .satisfies({ thrown ->
+                assertThat((thrown as ResponseStatusException).statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+                assertThat(thrown.reason).contains("which is not deployed")
+            })
+    }
 }

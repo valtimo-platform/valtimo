@@ -14,92 +14,25 @@
   ~ limitations under the License.
   -->
 
-<div class="migration-tab" [formGroup]="form">
-  <!--
-    The title, the key and both source pickers are filled from the backend's suggested plan, which on a
-    large building block takes several seconds to compose. Without this the screen shows four empty
-    required fields and a disabled Save button, which reads as "this does not pre-fill" rather than
-    "this is on its way".
-  -->
-  @if (suggesting) {
-    <div class="migration-tab__loading">
-      <cds-loading size="sm"></cds-loading>
-
-      <span>{{ 'buildingBlockManagement.migration.editor.general.suggesting' | translate }}</span>
-    </div>
-  }
-
-  <!-- Plan -->
-  <div class="migration-tab__grid">
-    <cds-text-label>
-      {{ 'buildingBlockManagement.migration.editor.general.title' | translate }}
-      <input
-        cdsText
-        formControlName="title"
-        [placeholder]="
-          'buildingBlockManagement.migration.editor.general.titlePlaceholder' | translate
-        "
-      />
-    </cds-text-label>
-
-    <!--
-      The key is derived from the title rather than typed: it identifies the plan, so it has to be
-      URL-safe and unique among this version's plans, and [usedKeys] lets the shared input suffix a
-      number when a plan of that name already exists. The author can still take it over with the edit
-      button while creating; on an existing plan it is read-only, since changing it would create a
-      second plan rather than rename this one.
-    -->
-    <valtimo-auto-key-input
-      formControlName="key"
-      labelTranslationKey="buildingBlockManagement.migration.editor.general.key"
-      [mode]="$keyMode()"
-      placeholderTranslationKey="buildingBlockManagement.migration.editor.general.keyPlaceholder"
-      [sourceText]="$title()"
-      [usedKeys]="usedKeys"
-    ></valtimo-auto-key-input>
-  </div>
-
-  <!-- Source -->
-  <h5 class="migration-tab__subheading">
-    {{ 'buildingBlockManagement.migration.editor.general.source' | translate }}
-  </h5>
-  <p class="migration-tab__hint">
-    {{ 'buildingBlockManagement.migration.editor.general.sourceHint' | translate }}
-  </p>
-
-  <div class="migration-tab__grid">
-    <!--
-      Both pickers are non-clearable: a plan always migrates FROM somewhere, so neither field has a
-      meaningful empty state. "The same building block as the target" is expressed by selecting that
-      key, not by blanking the field. (Clearing a Carbon combobox also hands back an empty array rather
-      than an empty string, which is truthy and would travel into the plan as a version tag.)
-    -->
-    <v-select
-      formControlName="sourceKey"
-      [clearable]="false"
-      [items]="sourceKeyOptions"
-      [placeholder]="
-        'buildingBlockManagement.migration.editor.general.sourceKeyPlaceholder' | translate
-      "
-      [required]="true"
-      [titleTranslationKey]="'buildingBlockManagement.migration.editor.general.sourceKey'"
-      [attr.data-test-id]="testIds.sourceKeySelect"
-    ></v-select>
-
-    <v-select
-      formControlName="sourceVersionTag"
-      [clearable]="false"
-      [items]="sourceVersionOptions"
-      [placeholder]="
-        'buildingBlockManagement.migration.editor.general.sourceVersionPlaceholder' | translate
-      "
-      [required]="true"
-      [titleTranslationKey]="'buildingBlockManagement.migration.editor.general.sourceVersion'"
-      [attr.data-test-id]="testIds.sourceVersionSelect"
-    ></v-select>
-  </div>
-
-  <!-- When this plan runs -->
+<valtimo-migration-general-fields
+  [blueprintKey]="buildingBlockDefinitionKey"
+  [blueprintVersionTag]="buildingBlockDefinitionVersionTag"
+  [isEdit]="isEdit"
+  [sourceHintKey]="'buildingBlockManagement.migration.editor.general.sourceHint'"
+  [sourceKeyLabelKey]="'buildingBlockManagement.migration.editor.general.sourceKey'"
+  [sourceKeyOptions]="sourceKeyOptions"
+  [sourceKeyPlaceholderKey]="
+    'buildingBlockManagement.migration.editor.general.sourceKeyPlaceholder'
+  "
+  [sourceVersionOptions]="sourceVersionOptions"
+  [suggesting]="suggesting"
+  [testIds]="testIds"
+  [titlePlaceholderKey]="'buildingBlockManagement.migration.editor.general.titlePlaceholder'"
+  [usedKeys]="usedKeys"
+  [value]="fields"
+  (valueChange)="onFieldsChange($event)"
+>
+  <!-- When this plan runs — a building block plan has no triggers and no conditions to declare -->
   <h5 class="migration-tab__subheading">
     {{ 'buildingBlockManagement.migration.editor.general.whenItRuns' | translate }}
   </h5>
@@ -121,4 +54,4 @@
         | translate: {key: buildingBlockDefinitionKey}
     }}
   </p>
-</div>
+</valtimo-migration-general-fields>

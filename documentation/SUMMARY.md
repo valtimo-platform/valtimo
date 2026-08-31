@@ -15,7 +15,6 @@
 * [Users, roles and permissions](fundamentals/roles-permissions.md)
 
 ## Tutorials
-
 * Setting up a case
 
 ## Configuration guides
@@ -69,7 +68,6 @@
     * [Context conditions](configuration-guides/access-control/context-conditions.md)
 
 ## Release notes
-
 * [13.x.x](release-notes/13.x.x/)
   * [13.44.0](release-notes/13.x.x/13.44.0/README.md)
   * [13.43.0](release-notes/13.x.x/13.43.0/README.md)

@@ -65,7 +65,7 @@ class BuildingBlockCallActivityRemapExecutor(
 
     override fun componentKey() = ProcessMigrationComponentDeployer.PROCESS_MIGRATION_COMPONENT_KEY
 
-    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, ownerDocumentId: UUID) {
         val instructions = processMigrationConfigurationRepository.findById(migrationId)
             .map { it.instructions }
             .orElse(emptyList())
@@ -73,7 +73,7 @@ class BuildingBlockCallActivityRemapExecutor(
             return
         }
 
-        val children = buildingBlockOwnershipResolver.directChildrenOf(caseId)
+        val children = buildingBlockOwnershipResolver.directChildrenOf(ownerDocumentId)
             .filter { it.callerProcessDefinitionId != null }
         if (children.isEmpty()) {
             return

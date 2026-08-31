@@ -91,7 +91,7 @@ class BuildingBlockOwnershipResolver(
     )
 
     private companion object {
-        /** Matches `BuildingBlockAdoptionExecutor`'s cap: the trees are the same trees. */
+        /** Matches [AddBuildingBlockMigrationComponentExecutor]'s cap: the trees are the same trees. */
         const val MAX_DEPTH = 20
         val logger = KotlinLogging.logger {}
     }

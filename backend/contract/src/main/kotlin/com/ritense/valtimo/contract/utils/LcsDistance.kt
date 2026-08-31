@@ -17,18 +17,16 @@
 package com.ritense.valtimo.contract.utils
 
 /**
- * LCS (longest-common-subsequence) distance: the number of single-character insertions and
- * deletions needed to turn one string into the other, i.e. `len(a) + len(b) - 2 * LCS`.
+ * LCS (longest-common-subsequence) distance: how much two strings have in common, measured by the
+ * single-character insertions and deletions needed to turn one into the other.
  */
 object LcsDistance {
 
-    fun between(a: String, b: String): Int = a.length + b.length - 2 * lengthOfLongestCommonSubsequence(a, b)
-
     /**
-     * The same comparison as [between], normalised to `0.0`(nothing in common)`..1.0`(equal) —
-     * `2 * LCS / (len(a) + len(b))`. Use this to compare *different* pairs with each other, which
-     * [between] cannot do: its result grows with the length of the strings, so a small change to two
-     * long names scores worse than a large change to two short ones. Two empty strings are equal.
+     * How alike two strings are, on `0.0`(nothing in common)`..1.0`(equal) — `2 * LCS / (len(a) +
+     * len(b))`. Normalised so that *different* pairs can be compared with each other, which the raw
+     * distance cannot do: it grows with the length of the strings, so a small change to two long
+     * names scores worse than a large change to two short ones. Two empty strings are equal.
      */
     fun similarityOf(a: String, b: String): Double {
         val totalLength = a.length + b.length

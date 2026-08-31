@@ -57,9 +57,10 @@ class BuildingBlockInstance(
     @Column(name = "process_instance_id", nullable = true)
     var processInstanceId: String? = null,
 
-    // Mutable because a migration can move an instance within the tree: BuildingBlockAdoptionExecutor
-    // claims a block the runtime listener created outside any tree (parent null, because the calling
-    // process still carried the case's business key) and re-homes it under the block it belongs to.
+    // Mutable because a migration can move an instance within the tree: the tree walk in
+    // AddBuildingBlockMigrationComponentExecutor claims a block the runtime listener created outside any
+    // tree (parent null, because the calling process still carried the case's business key) and re-homes
+    // it under the block it belongs to.
     @Column(name = "parent_building_block_instance_id", nullable = true)
     var parentBuildingBlockInstanceId: UUID? = null,
 

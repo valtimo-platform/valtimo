@@ -18,7 +18,6 @@ package com.ritense.valtimo.operaton
 
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.repository.ProcessDefinition
-import org.operaton.bpm.model.bpmn.BpmnModelInstance
 
 /**
  * The process definition [processDefinitionId] names, or null when Operaton has none.
@@ -41,11 +40,3 @@ import org.operaton.bpm.model.bpmn.BpmnModelInstance
  */
 fun RepositoryService.findProcessDefinitionOrNull(processDefinitionId: String): ProcessDefinition? =
     createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult()
-
-/**
- * The parsed BPMN of [processDefinitionId], or null when nothing is deployed under it — the same
- * "answer, don't throw" contract as [findProcessDefinitionOrNull], for the model rather than its
- * definition.
- */
-fun RepositoryService.findBpmnModelInstanceOrNull(processDefinitionId: String): BpmnModelInstance? =
-    findProcessDefinitionOrNull(processDefinitionId)?.let { getBpmnModelInstance(processDefinitionId) }

@@ -60,7 +60,7 @@ class ProcessMigrationComponentExecutor(
 
     override fun componentKey() = ProcessMigrationComponentDeployer.PROCESS_MIGRATION_COMPONENT_KEY
 
-    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, ownerDocumentId: UUID) {
         // Case-only path: building block process migration is handled by its own executor
         // (it resolves the target process via the building-block ↔ process-definition link).
         if (target.blueprintType() != BlueprintType.CASE) {
@@ -72,17 +72,17 @@ class ProcessMigrationComponentExecutor(
             .orElse(emptyList())!!
 
         val targetCaseDefinitionId = target as CaseDefinitionId
-        val unmatched = instructions.filterNot { migrateInstruction(it, targetCaseDefinitionId, caseId) }
+        val unmatched = instructions.filterNot { migrateInstruction(it, targetCaseDefinitionId, ownerDocumentId) }
 
         // A single instruction that matched nothing is normal and is not reported per case (see
         // [migrateInstruction]). The component as a whole matching nothing is not: it is the shape of a
         // plan whose process keys are wrong, which migrates no process on any case while reporting
         // success. One line, naming every key that was tried, instead of one line per instruction.
         if (instructions.isNotEmpty() && unmatched.size == instructions.size) {
-            val message = "No process was migrated for '$caseId': none of the plan's " +
+            val message = "No process was migrated for '$ownerDocumentId': none of the plan's " +
                 "${instructions.size} processMigration instruction(s) (" +
                 unmatched.joinToString { "'${it.sourceProcessDefinitionKey}'" } +
-                ") matched a running process with business key '$caseId'. Either this case is not (or no " +
+                ") matched a running process with business key '$ownerDocumentId'. Either this case is not (or no " +
                 "longer) running any of them, or the instructions name process keys this case never runs."
             logger.warn { message }
             MigrationWarnings.warn(message)

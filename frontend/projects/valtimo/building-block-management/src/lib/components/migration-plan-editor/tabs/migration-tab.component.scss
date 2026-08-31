@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+@use 'migration-tab-layout' as layout;
+
+@include layout.blocks;
+
 .migration-tab {
   display: flex;
   flex-direction: column;
@@ -120,19 +124,8 @@
     color: var(--cds-text-error);
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-
   &__grid--three {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  &__subheading {
-    margin: 8px 0 0;
-    font-weight: 600;
   }
 
   &__mapping {
@@ -218,15 +211,5 @@
     display: flex;
     gap: 32px;
     flex-wrap: wrap;
-  }
-
-  &__empty {
-    color: var(--cds-text-secondary);
-    font-style: italic;
-  }
-
-  &__hint {
-    font-size: 0.75rem;
-    color: var(--cds-text-secondary);
   }
 }

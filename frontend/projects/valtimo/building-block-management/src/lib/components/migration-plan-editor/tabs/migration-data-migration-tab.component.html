@@ -26,13 +26,11 @@
         <div class="migration-tab__patch-side migration-tab__patch-side--from">
           <cds-select
             formControlName="mode"
-            [label]="'buildingBlockManagement.migration.editor.dataMigration.mode' | translate"
+            [label]="'migrationEditor.dataMigration.mode' | translate"
           >
             @for (mode of MODES; track mode) {
               <option [value]="mode">
-                {{
-                  'buildingBlockManagement.migration.editor.dataMigration.mode_' + mode | translate
-                }}
+                {{ 'migrationEditor.dataMigration.mode_' + mode | translate }}
               </option>
             }
           </cds-select>
@@ -41,31 +39,28 @@
             @case ('path') {
               <valtimo-value-path-selector
                 formControlName="source"
+                [caseDefinitionKey]="sourceContext?.caseDefinitionKey ?? null"
+                [caseDefinitionVersionTag]="sourceContext?.caseDefinitionVersionTag ?? null"
                 [buildingBlockDefinitionKey]="sourceContext?.buildingBlockKey ?? null"
                 [buildingBlockDefinitionVersionTag]="sourceContext?.buildingBlockVersionTag ?? null"
-                [label]="
-                  'buildingBlockManagement.migration.editor.dataMigration.source' | translate
-                "
-                [prefixes]="SOURCE_PREFIXES"
+                [label]="'migrationEditor.dataMigration.source' | translate"
+                [prefixes]="sourcePrefixes"
                 [notation]="'slashes'"
               ></valtimo-value-path-selector>
             }
             @case ('value') {
               <cds-text-label>
-                {{ 'buildingBlockManagement.migration.editor.dataMigration.value' | translate }}
+                {{ 'migrationEditor.dataMigration.value' | translate }}
                 <input
                   cdsText
                   formControlName="value"
-                  [placeholder]="
-                    'buildingBlockManagement.migration.editor.dataMigration.valuePlaceholder'
-                      | translate
-                  "
+                  [placeholder]="'migrationEditor.dataMigration.valuePlaceholder' | translate"
                 />
               </cds-text-label>
             }
             @default {
               <span class="migration-tab__null-hint">
-                {{ 'buildingBlockManagement.migration.editor.dataMigration.nullHint' | translate }}
+                {{ 'migrationEditor.dataMigration.nullHint' | translate }}
               </span>
             }
           }
@@ -77,10 +72,12 @@
         <div class="migration-tab__patch-side migration-tab__patch-side--to">
           <valtimo-value-path-selector
             formControlName="target"
+            [caseDefinitionKey]="targetContext?.caseDefinitionKey ?? null"
+            [caseDefinitionVersionTag]="targetContext?.caseDefinitionVersionTag ?? null"
             [buildingBlockDefinitionKey]="targetContext?.buildingBlockKey ?? null"
             [buildingBlockDefinitionVersionTag]="targetContext?.buildingBlockVersionTag ?? null"
             [additionalVersionTags]="targetAdditionalVersionTags"
-            [label]="'buildingBlockManagement.migration.editor.dataMigration.target' | translate"
+            [label]="'migrationEditor.dataMigration.target' | translate"
             [prefixes]="TARGET_PREFIXES"
             [notation]="'slashes'"
           ></valtimo-value-path-selector>
@@ -88,15 +85,10 @@
           @if (patch.get('mode')?.value !== 'null') {
             <cds-select
               formControlName="targetType"
-              [label]="
-                'buildingBlockManagement.migration.editor.dataMigration.targetType' | translate
-              "
+              [label]="'migrationEditor.dataMigration.targetType' | translate"
             >
               <option value="">
-                {{
-                  'buildingBlockManagement.migration.editor.dataMigration.targetTypeAuto'
-                    | translate
-                }}
+                {{ 'migrationEditor.dataMigration.targetTypeAuto' | translate }}
               </option>
               @for (type of TARGET_TYPES; track type) {
                 <option [value]="type">{{ type }}</option>
@@ -117,7 +109,7 @@
       </div>
     } @empty {
       <p class="migration-tab__empty">
-        {{ 'buildingBlockManagement.migration.editor.dataMigration.empty' | translate }}
+        {{ 'migrationEditor.dataMigration.empty' | translate }}
       </p>
     }
   </div>
@@ -128,7 +120,7 @@
     [attr.data-test-id]="testIds.addPatchButton"
     (click)="addPatch()"
   >
-    {{ 'buildingBlockManagement.migration.editor.dataMigration.addPatch' | translate }}
+    {{ 'migrationEditor.dataMigration.addPatch' | translate }}
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
 </div>

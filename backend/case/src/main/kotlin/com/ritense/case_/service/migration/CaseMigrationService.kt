@@ -333,65 +333,108 @@ class CaseMigrationService(
         var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
         while (true) {
             val page = provider.findCandidateIds(source, pageable)
-            count += page.content.count { caseId -> matchesConditionsQuietly(plan, caseId) }
+            // No run is in progress, so an unevaluable case is logged and dropped, recorded nowhere.
+            count += page.content.count { caseId ->
+                matchesConditions(plan, caseId, "while estimating plan '${plan.id}'")
+            }
             if (!page.hasNext()) break
             pageable = page.nextPageable()
         }
         return count
     }
 
-    /** Like [matchesConditions] but for counting only: never records a failure (no run is in progress). */
-    private fun matchesConditionsQuietly(plan: CaseDefinitionMigration, caseId: UUID): Boolean {
+    /**
+     * Whether the case's conditions currently hold (this plan's responsibility). A case whose
+     * conditions cannot be evaluated is treated as not matching; what that is worth recording is the
+     * caller's, via [onFailure] — a failure against the run for a real run, a `WOULD_FAIL` row for a
+     * dry run, nothing at all while merely counting.
+     */
+    private fun matchesConditions(
+        plan: CaseDefinitionMigration,
+        caseId: UUID,
+        context: String,
+        onFailure: (Exception) -> Unit = {},
+    ): Boolean {
         return try {
             transactionTemplate.execute { conditionEvaluator.matches(caseId, plan.conditions) } ?: false
         } catch (e: Exception) {
-            logger.warn(e) { "Could not evaluate conditions for case '$caseId' while estimating plan '${plan.id}'" }
+            logger.warn(e) { "Could not evaluate conditions for case '$caseId' $context" }
+            onFailure(e)
             false
         }
     }
 
     /**
-     * Enumerate the candidate cases page-by-page (never hydrating the full documents nor holding
-     * them all in memory) and migrate the ones whose conditions currently hold. The lease is renewed
-     * as the scan progresses — including during the (potentially long) condition filtering — so the
-     * plan is not mistaken for crashed while it is still working.
+     * Enumerate the candidate cases page-by-page (never hydrating the full documents nor holding them
+     * all in memory) and hand each one whose conditions currently hold to [onMatch]. The lease is
+     * renewed as the scan progresses — including during the (potentially long) condition filtering —
+     * so the plan is not mistaken for crashed while it is still working.
+     *
+     * Shared by the real run and the dry run, which differ only in what they do per matching case and
+     * in which lease they hold: the paging, the renewal interval and the run cache below are the same
+     * scan, and while they were written out twice a fix to one was a fix to neither.
      */
+    private fun scanMatchingCases(
+        plan: CaseDefinitionMigration,
+        renewLease: () -> Unit,
+        matches: (UUID) -> Boolean,
+        onMatch: (UUID) -> Unit,
+        onPageComplete: () -> Unit = {},
+    ) {
+        val source = plan.sourceBlueprintId()
+        val provider = candidateProvider(source.blueprintType()) ?: return
+
+        val renewInterval = leaseDuration.dividedBy(2)
+        var leaseRenewedAt = LocalDateTime.now()
+        var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
+
+        // The scan is the run: the target is fixed for its duration and every case below asks the same
+        // questions of it (G31). Wrapped around the loop, not the caller, so finalize() stays outside
+        // it. In memory rather than in the transaction, so a dry run's per-case rollback neither undoes
+        // it nor is affected by it.
+        MigrationRunCache.inRun {
+            while (true) {
+                val page = provider.findCandidateIds(source, pageable)
+
+                page.content.forEach { caseId ->
+                    if (matches(caseId)) {
+                        onMatch(caseId)
+                    }
+                    if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
+                        renewLease()
+                        leaseRenewedAt = LocalDateTime.now()
+                    }
+                }
+
+                onPageComplete()
+                if (!page.hasNext()) break
+                pageable = page.nextPageable()
+            }
+        }
+    }
+
+    /** Migrate every case matching the plan, recording a condition failure against the run. */
     private fun migrateMatchingCases(
         migrationId: BlueprintMigrationId,
         plan: CaseDefinitionMigration,
         runToken: String,
     ) {
         val target = plan.targetBlueprintId()
-        val source = plan.sourceBlueprintId()
-        val provider = candidateProvider(source.blueprintType()) ?: return
-
-        val renewInterval = leaseDuration.dividedBy(2)
-        var leaseRenewedAt = LocalDateTime.now()
         var matchedCount = 0
-        var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
-
-        // The scan is the run: `target` is fixed here and every case below asks the same questions of it
-        // (G31). Wrapped around the loop, not startMigration, so finalize() stays outside it.
-        MigrationRunCache.inRun {
-            while (true) {
-                val page = provider.findCandidateIds(source, pageable)
-
-                page.content.forEach { caseId ->
-                    if (matchesConditions(migrationId, plan, caseId, runToken)) {
-                        matchedCount++
-                        migrateCase(migrationId, target, caseId, runToken)
-                    }
-                    if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
-                        renewLease(migrationId, runToken)
-                        leaseRenewedAt = LocalDateTime.now()
-                    }
+        scanMatchingCases(
+            plan = plan,
+            renewLease = { renewLease(migrationId, runToken) },
+            matches = { caseId ->
+                matchesConditions(plan, caseId, "in plan '$migrationId'") { e ->
+                    recordFailure(migrationId, caseId, e, runToken)
                 }
-
-                updateExecution(migrationId, runToken) { it.casesToMigrate = matchedCount }
-                if (!page.hasNext()) break
-                pageable = page.nextPageable()
-            }
-        }
+            },
+            onMatch = { caseId ->
+                matchedCount++
+                migrateCase(migrationId, target, caseId, runToken)
+            },
+            onPageComplete = { updateExecution(migrationId, runToken) { it.casesToMigrate = matchedCount } },
+        )
     }
 
     /**
@@ -424,25 +467,6 @@ class CaseMigrationService(
             return null // another run inserted the execution row first
         }
         return runToken
-    }
-
-    /**
-     * Whether the case's conditions currently hold (this plan's responsibility). A case whose
-     * conditions cannot be evaluated is recorded as a failure and treated as not matching.
-     */
-    private fun matchesConditions(
-        migrationId: BlueprintMigrationId,
-        plan: CaseDefinitionMigration,
-        caseId: UUID,
-        runToken: String,
-    ): Boolean {
-        return try {
-            transactionTemplate.execute { conditionEvaluator.matches(caseId, plan.conditions) } ?: false
-        } catch (e: Exception) {
-            logger.warn(e) { "Could not evaluate conditions for case '$caseId' in plan '$migrationId'" }
-            recordFailure(migrationId, caseId, e, runToken)
-            false
-        }
     }
 
     private fun migrateCase(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID, runToken: String) {
@@ -600,10 +624,9 @@ class CaseMigrationService(
     }
 
     /**
-     * Enumerate the candidate cases page-by-page and simulate migrating the ones whose conditions
-     * currently hold. Mirrors [migrateMatchingCases] but persists nothing to the cases — every
-     * matching case's simulated outcome (or a condition-evaluation failure) is recorded in the
-     * dry-run table. The lease is renewed as the scan progresses.
+     * Simulate migrating every case matching the plan. Mirrors [migrateMatchingCases] but persists
+     * nothing to the cases — every matching case's simulated outcome, and every condition-evaluation
+     * failure, is recorded in the dry-run table instead.
      */
     private fun dryRunMatchingCases(
         migrationId: BlueprintMigrationId,
@@ -611,52 +634,16 @@ class CaseMigrationService(
         runToken: String,
     ) {
         val target = plan.targetBlueprintId()
-        val source = plan.sourceBlueprintId()
-        val provider = candidateProvider(source.blueprintType()) ?: return
-
-        val renewInterval = leaseDuration.dividedBy(2)
-        var leaseRenewedAt = LocalDateTime.now()
-        var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
-
-        // Cached for the scan, as in migrateMatchingCases. In memory rather than in the transaction, so a
-        // dry run's per-case rollback neither undoes it nor is affected by it.
-        MigrationRunCache.inRun {
-            while (true) {
-                val page = provider.findCandidateIds(source, pageable)
-
-                page.content.forEach { caseId ->
-                    if (matchesConditionsForDryRun(migrationId, plan, caseId, runToken)) {
-                        simulateCase(migrationId, target, caseId, runToken)
-                    }
-                    if (Duration.between(leaseRenewedAt, LocalDateTime.now()) >= renewInterval) {
-                        renewDryRunLease(migrationId, runToken)
-                        leaseRenewedAt = LocalDateTime.now()
-                    }
+        scanMatchingCases(
+            plan = plan,
+            renewLease = { renewDryRunLease(migrationId, runToken) },
+            matches = { caseId ->
+                matchesConditions(plan, caseId, "in dry run of plan '$migrationId'") { e ->
+                    recordDryRunOutcome(migrationId, caseId, DryRunCaseStatus.WOULD_FAIL, e, runToken)
                 }
-
-                if (!page.hasNext()) break
-                pageable = page.nextPageable()
-            }
-        }
-    }
-
-    /**
-     * Whether the case's conditions currently hold, for a dry run. A case whose conditions cannot be
-     * evaluated is recorded as a dry-run failure (WOULD_FAIL) and treated as not matching.
-     */
-    private fun matchesConditionsForDryRun(
-        migrationId: BlueprintMigrationId,
-        plan: CaseDefinitionMigration,
-        caseId: UUID,
-        runToken: String,
-    ): Boolean {
-        return try {
-            transactionTemplate.execute { conditionEvaluator.matches(caseId, plan.conditions) } ?: false
-        } catch (e: Exception) {
-            logger.warn(e) { "Could not evaluate conditions for case '$caseId' in dry run of plan '$migrationId'" }
-            recordDryRunOutcome(migrationId, caseId, DryRunCaseStatus.WOULD_FAIL, e, runToken)
-            false
-        }
+            },
+            onMatch = { caseId -> simulateCase(migrationId, target, caseId, runToken) },
+        )
     }
 
     /**
@@ -754,14 +741,6 @@ class CaseMigrationService(
         }
     }
 
-    /** The provider that enumerates candidate instances for a blueprint type, if any. */
-    /**
-     * A building block plan has no run of its own (R1): it is applied by
-     * `BuildingBlockVersionAlignmentExecutor` while its *owner* migrates, to exactly the instances the
-     * owner's new version links. Starting one directly is refused rather than quietly doing nothing —
-     * which is what it would otherwise do, since there is no building block
-     * [MigrationCandidateProvider] to enumerate instances with.
-     */
     /**
      * A plan whose declared source version was never deployed selects nothing, migrates nothing and
      * finishes `COMPLETED` — the most convincing way this feature can appear to work while doing
@@ -784,6 +763,13 @@ class CaseMigrationService(
         }
     }
 
+    /**
+     * A building block plan has no run of its own (R1): it is applied by
+     * `BuildingBlockVersionAlignmentExecutor` while its *owner* migrates, to exactly the instances the
+     * owner's new version links. Starting one directly is refused rather than quietly doing nothing —
+     * which is what it would otherwise do, since there is no building block
+     * [MigrationCandidateProvider] to enumerate instances with.
+     */
     private fun assertNotBuildingBlockPlan(migrationId: BlueprintMigrationId) {
         require(migrationId.blueprintType != BlueprintType.BUILDING_BLOCK) {
             "Building block migration plan '$migrationId' cannot be started on its own. A building " +
@@ -792,6 +778,7 @@ class CaseMigrationService(
         }
     }
 
+    /** The provider that enumerates candidate instances for a blueprint type, if any. */
     private fun candidateProvider(blueprintType: BlueprintType): MigrationCandidateProvider? {
         return candidateProviders.firstOrNull { it.supports(blueprintType) }
     }

@@ -29,6 +29,27 @@ import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
+ * A clearing patch — "the target version does not have this field, so empty it" — as it is
+ * *suggested*, with its `value: null` written out.
+ *
+ * [DataMigrationPatch] is `@JsonInclude(NON_NULL)`, so a clearing patch and a copy patch whose source
+ * could not be worked out both serialise to `{"target": "doc:/x"}`, and neither the editor nor the
+ * author can tell which one they are looking at. They read as opposites — one says "this field is
+ * going away", the other "point me at the field this came from" — and only one of them is finished
+ * work. The applier treats both as a literal null write (`MigrationDataPatchApplier` resolves a patch
+ * with no `source` to its `value`), so an accepted suggestion does the right thing for a clear and
+ * quietly writes a null for an unfinished copy.
+ *
+ * Suggestion-only, like `ProcessMigrationComponentSuggester.UnmappedProcess`: a saved plan
+ * deserialises both back into [DataMigrationPatch], where the two are the same instruction and always
+ * were.
+ */
+internal data class ClearingPatch(
+    val target: String,
+    @get:JsonInclude(JsonInclude.Include.ALWAYS) val value: Any? = null,
+)
+
+/**
  * Best-effort `dataMigration` suggestion. Where the migration keeps **one document** the JSON is
  * carried over verbatim, so fields present at the **same path** in both versions need no patch; where
  * it fills a **separate** document they are the whole job, and are suggested as identity copies — see
@@ -67,27 +88,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
  * two copies into one new subtree — a lexicographic sort keeps the ancestor first (a prefix always
  * sorts before its extensions), which is the order that leaves the more specific patch winning.
  */
-/**
- * A clearing patch — "the target version does not have this field, so empty it" — as it is
- * *suggested*, with its `value: null` written out.
- *
- * [DataMigrationPatch] is `@JsonInclude(NON_NULL)`, so a clearing patch and a copy patch whose source
- * could not be worked out both serialise to `{"target": "doc:/x"}`, and neither the editor nor the
- * author can tell which one they are looking at. They read as opposites — one says "this field is
- * going away", the other "point me at the field this came from" — and only one of them is finished
- * work. The applier treats both as a literal null write (`MigrationDataPatchApplier` resolves a patch
- * with no `source` to its `value`), so an accepted suggestion does the right thing for a clear and
- * quietly writes a null for an unfinished copy.
- *
- * Suggestion-only, like `ProcessMigrationComponentSuggester.UnmappedProcess`: a saved plan
- * deserialises both back into [DataMigrationPatch], where the two are the same instruction and always
- * were.
- */
-internal data class ClearingPatch(
-    val target: String,
-    @get:JsonInclude(JsonInclude.Include.ALWAYS) val value: Any? = null,
-)
-
 class DataMigrationComponentSuggester(
     private val valueResolverService: ValueResolverService,
 ) : MigrationComponentSuggester {

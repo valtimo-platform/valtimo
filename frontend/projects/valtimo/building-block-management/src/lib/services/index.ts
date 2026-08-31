@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './blueprint-migration-api.service';
 export * from './building-block-management-api.service';
 export * from './building-block-management-detail.service';
 export * from './building-block-management.service';

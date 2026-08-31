@@ -48,11 +48,11 @@ class BuildingBlockInstanceRehomeExecutor(
 
     override fun componentKey() = COMPONENT_KEY
 
-    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, ownerDocumentId: UUID) {
         if (target.blueprintType() != BlueprintType.BUILDING_BLOCK) {
             return // a case document has no building block instance to re-point
         }
-        buildingBlockInstanceRehomer.rehome(caseId, target as BuildingBlockDefinitionId)
+        buildingBlockInstanceRehomer.rehome(ownerDocumentId, target as BuildingBlockDefinitionId)
     }
 
     companion object {

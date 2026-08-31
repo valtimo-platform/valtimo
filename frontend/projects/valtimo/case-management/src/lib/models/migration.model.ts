@@ -15,6 +15,33 @@
  */
 
 import {ValueConditionNode} from '@valtimo/components';
+import {
+  AddBuildingBlockInstruction,
+  BuildingBlockEntryOwner,
+  BuildingBlockEntrySuggestion,
+  BuildingBlockInstruction,
+  BuildingBlockMode,
+  DataMigrationPatch,
+  DataMigrationTargetType,
+  MigrationEditorApi,
+  MigrationEditorTestIds,
+  MigrationExecutionError,
+  MigrationPlan as BlueprintMigrationPlan,
+  MigrationPlanSource,
+  ProcessMigrationInstruction,
+  ProcessVariablePatch,
+  RemoveBuildingBlockInstruction,
+  ValuePathContext,
+} from '@valtimo/building-block-management';
+
+/*
+ * A case migration plan is a blueprint migration plan plus the two things only a case has: triggers
+ * that decide when the run starts, and conditions that decide which cases it takes. A building block
+ * plan declaring either is refused at deploy time — it has no lifecycle of its own — so the shared
+ * shape in `@valtimo/building-block-management` models neither, and everything below adds them back.
+ *
+ * The plan-shape types are re-exported so the rest of this library keeps importing them from here.
+ */
 
 type CaseMigrationStatus = 'NOT_STARTED' | 'RUNNING' | 'COMPLETED' | 'COMPLETED_WITH_ERRORS';
 
@@ -29,11 +56,6 @@ interface MigrationTriggers {
  * condition tree editor, which owns the mapping to and from the form.
  */
 type MigrationConditionNode = ValueConditionNode;
-
-interface MigrationExecutionError {
-  caseId: string;
-  message: string | null;
-}
 
 /**
  * A case the plan migrated without doing everything it describes — a component found nothing to act
@@ -87,164 +109,38 @@ interface MigrationPlanManagement {
   dryRun: DryRunStatus;
 }
 
-/** A single value-resolver patch of the `dataMigration` block of a migration plan. */
-interface DataMigrationPatch {
-  /** Value-resolver path to copy from (mutually exclusive with `value`). */
-  source?: string | null;
-  /** Literal value to set on the target (mutually exclusive with `source`). */
-  value?: unknown;
-  /** Value-resolver path to write to. */
-  target: string;
-  /** Optional type coercion of the written value. */
-  targetType?: DataMigrationTargetType | null;
-}
-
-type DataMigrationTargetType = 'string' | 'integer' | 'long' | 'number' | 'double' | 'boolean';
-
 /**
- * Which document schema a value-path selector resolves against: a case definition version or a
- * building block definition version. A `dataMigration` patch's source and target can point at
- * different documents (e.g. add building block: source = owner case, target = the building block).
+ * The full editable migration plan, matching the auto-deploy `*.case-migration.json` shape. The TARGET
+ * is not part of it — that is the case definition version the plan is deployed under — but the
+ * `source` is, and is required.
  */
-interface ValuePathContext {
-  caseDefinitionKey?: string | null;
-  caseDefinitionVersionTag?: string | null;
-  buildingBlockKey?: string | null;
-  buildingBlockVersionTag?: string | null;
-}
-
-/**
- * A single `setProcessVariables` patch: writes to the process variable at `target` (a value-resolver
- * path such as `pv:name` or a nested `pv:/config/enabled`), either copying from `source` or setting
- * the literal `value`. Resolved per migrating instance. Mirrors the backend `ProcessVariablePatch`.
- */
-interface ProcessVariablePatch {
-  /** Value-resolver path to copy from, e.g. `pv:/foo` or `doc:/emailadres` (mutually exclusive with `value`). */
-  source?: string | null;
-  /** Literal value to set on the target (mutually exclusive with `source`). */
-  value?: unknown;
-  /** Value-resolver path of the process variable to write to, e.g. `pv:name`. */
-  target: string;
-  /** Optional type coercion of the written value. */
-  targetType?: DataMigrationTargetType | null;
-}
-
-/** A single instruction of the `processMigration` block, translated 1:1 into an Operaton MigrationPlan. */
-interface ProcessMigrationInstruction {
-  sourceProcessDefinitionKey: string;
-  /**
-   * Null only while authoring. The suggester leaves it blank for a source process it cannot account
-   * for, so the row shows up as work; the backend refuses to store one, and Save stays disabled until
-   * the author names a target or deletes the row.
-   */
-  targetProcessDefinitionKey: string | null;
-  /** Source activity id -> target activity id. */
-  mapActivities: {[sourceActivityId: string]: string};
-  /** GZAC-layer value-resolver patches applied to the migrated process instance. */
-  setProcessVariables: ProcessVariablePatch[];
-  skipCustomListeners: boolean;
-  skipIoMappings: boolean;
-}
-
-/**
- * A single `addBuildingBlock` entry: a building block to create on the instance being migrated (its
- * owner — a case, or a parent building block). The new building block document is created empty and
- * filled by `dataMigration` (each patch's `source` reads the owner document, its `target` writes
- * into the new building block document); `processMigration` hijacks the owner's running process(es)
- * into the building block. Mirrors the backend `AddBuildingBlockInstruction`.
- */
-interface AddBuildingBlockInstruction {
-  buildingBlockKey: string;
-  buildingBlockVersionTag: string;
-  dataMigration: DataMigrationPatch[];
-  processMigration: ProcessMigrationInstruction[];
-}
-
-/**
- * A single `removeBuildingBlock` entry: dissolve the building block(s) of `buildingBlockKey` anywhere
- * below the instance being migrated, at any depth, deepest first. `processMigration` hands the building
- * block's process(es) back to its owner and `dataMigration` copies data back (each patch's `source`
- * reads the building block document, its `target` writes into the owner document) before the building
- * block document is deleted. Mirrors the backend `RemoveBuildingBlockInstruction`.
- *
- * `buildingBlockVersionTag` is required, as `AddBuildingBlockInstruction`'s is: the entry's
- * `dataMigration` reads paths out of that version's document schema and its `processMigration` names
- * that version's process definitions. A fleet holding two versions of one block therefore needs one
- * entry per version, and a version no entry names fails the case rather than being left behind.
- */
-interface RemoveBuildingBlockInstruction {
-  buildingBlockKey: string;
-  buildingBlockVersionTag: string;
-  dataMigration: DataMigrationPatch[];
-  processMigration: ProcessMigrationInstruction[];
-}
-
-/**
- * The blueprint an `addBuildingBlock` / `removeBuildingBlock` entry exchanges data and processes with:
- * the case being migrated for a block it links itself, and the **parent building block** for a nested
- * one — which is what the executors read from the running tree, and therefore which document a nested
- * entry's patches address.
- */
-interface BuildingBlockEntryOwner {
-  type: 'CASE' | 'BUILDING_BLOCK';
-  key: string;
-  versionTag: string;
-}
-
-/** One building-block entry as suggested, with the owner the suggestion was computed against. */
-interface BuildingBlockEntrySuggestion {
-  dataMigration: DataMigrationPatch[];
-  processMigration: ProcessMigrationInstruction[];
-  owner?: BuildingBlockEntryOwner;
-}
-
-/**
- * The blueprint version a plan migrates instances FROM. Required on every plan: the target is implied
- * by the definition version the plan is deployed under, but the source never is. It may name any
- * earlier version, and a different `key` altogether — which is how a case definition is replaced by a
- * differently-named successor. Omitting `key` means "the same key as the target".
- */
-interface MigrationPlanSource {
-  key?: string;
-  versionTag?: string;
-}
-
-/**
- * The full editable migration plan, matching the auto-deploy `*.migration.json` shape. The TARGET is
- * not part of it — that is the definition version the plan is deployed under — but the `source` is,
- * and is required.
- */
-interface MigrationPlan {
-  title?: string;
-  key?: string;
-  source?: MigrationPlanSource;
+interface MigrationPlan extends BlueprintMigrationPlan {
   migrationTriggers?: MigrationTriggers;
   conditions?: MigrationConditionNode[];
-  dataMigration?: DataMigrationPatch[];
-  processMigration?: ProcessMigrationInstruction[];
-  addBuildingBlock?: AddBuildingBlockInstruction[];
-  removeBuildingBlock?: RemoveBuildingBlockInstruction[];
-  [key: string]: unknown;
 }
 
 export {
-  CaseMigrationStatus,
-  MigrationTriggers,
-  MigrationConditionNode,
-  MigrationExecutionError,
-  MigrationExecutionWarning,
-  MigrationExecutionStatus,
-  DryRunStatus,
-  MigrationPlanManagement,
-  MigrationPlanSource,
-  DataMigrationPatch,
-  DataMigrationTargetType,
-  ValuePathContext,
-  ProcessVariablePatch,
-  ProcessMigrationInstruction,
   AddBuildingBlockInstruction,
-  RemoveBuildingBlockInstruction,
   BuildingBlockEntryOwner,
   BuildingBlockEntrySuggestion,
+  BuildingBlockInstruction,
+  BuildingBlockMode,
+  CaseMigrationStatus,
+  DataMigrationPatch,
+  DataMigrationTargetType,
+  DryRunStatus,
+  MigrationConditionNode,
+  MigrationEditorApi,
+  MigrationEditorTestIds,
+  MigrationExecutionError,
+  MigrationExecutionStatus,
+  MigrationExecutionWarning,
   MigrationPlan,
+  MigrationPlanManagement,
+  MigrationPlanSource,
+  MigrationTriggers,
+  ProcessMigrationInstruction,
+  ProcessVariablePatch,
+  RemoveBuildingBlockInstruction,
+  ValuePathContext,
 };

@@ -523,7 +523,9 @@ class AddBuildingBlockMigrationComponentExecutor(
                             callActivityLinks[callerProcessDefinitionKey to activityId]
                         }
                 }
-                if (link == null || callerActivityId == null) {
+                // A null link covers a null activity id too: the lookup above is inside `callerActivityId?.let`,
+                // so there is no link without one.
+                if (link == null) {
                     // The target version models this as a plain sub-process as well. Leave it be — but a
                     // call activity further down may still be declared a building block.
                     takeOverTreeBelow(

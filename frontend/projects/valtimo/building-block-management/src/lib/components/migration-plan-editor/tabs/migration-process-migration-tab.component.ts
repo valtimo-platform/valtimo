@@ -48,10 +48,10 @@ import {ProcessService} from '@valtimo/process';
 import {ValuePathSelectorComponent, ValuePathSelectorPrefix} from '@valtimo/components';
 import {forkJoin, of, Subscription} from 'rxjs';
 import {catchError, debounceTime} from 'rxjs/operators';
-import {BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
-import {BuildingBlockMigrationApiService} from '../../../services';
 import {
   DataMigrationTargetType,
+  MigrationEditorApi,
+  MigrationEditorTestIds,
   ProcessMigrationInstruction,
   ProcessVariablePatch,
   ValuePathContext,
@@ -71,9 +71,18 @@ interface InstructionActivities {
   loading: boolean;
 }
 
+/**
+ * The `processMigration` component of a migration plan, for either blueprint type.
+ *
+ * Which blueprint the plan belongs to reaches this component only through [api] — the two endpoints
+ * that suggest and validate an activity mapping, with the blueprint already bound by the host — and
+ * through the [sourceProcessDefinitions] / [targetProcessDefinitions] maps that say which processes
+ * each side may name. The instructions themselves are the same JSON either way, which is why one
+ * component serves the plan-level `processMigration` and the copy nested in every building-block entry.
+ */
 @Component({
   standalone: true,
-  selector: 'valtimo-bb-migration-process-migration-tab',
+  selector: 'valtimo-migration-process-migration-tab',
   templateUrl: './migration-process-migration-tab.component.html',
   styleUrls: ['./migration-tab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -89,40 +98,40 @@ interface InstructionActivities {
     ValuePathSelectorComponent,
   ],
 })
-export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChanges, OnDestroy {
-  // Used to build the migration endpoint URL for the activity-mapping suggestion.
-  @Input() public buildingBlockDefinitionKey: string | null = null;
-  @Input() public buildingBlockDefinitionVersionTag: string | null = null;
+export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges, OnDestroy {
+  /** The migration API with this plan's blueprint bound — suggests and validates activity mappings. */
+  @Input() public api: MigrationEditorApi | null = null;
 
   /**
    * Document context for the `setProcessVariables` source value-path selector — the SAME context the
-   * data-migration tab uses for its source, so both read from the same building block document. The
-   * target is a plain `pv:` path (a free-text input), so it needs no context.
+   * data-migration tab uses for its source, so both read from the same document. The target is a
+   * plain `pv:` path (a free-text input), so it needs no context.
    */
   @Input() public sourceContext: ValuePathContext | null = null;
 
   /**
    * When set, the source / target process pickers only offer these processes (linked to the relevant
-   * building block version) instead of every deployed process, and the maps' `key -> definitionId`
-   * drive the activity lookups so each side's activities come from the CORRECT version's definition
-   * (source = predecessor version, target = own version). `null` falls back to all deployed processes
-   * / the latest definition per key.
+   * blueprint version) instead of every deployed process, and the maps' `key -> definitionId` drive
+   * the activity lookups so each side's activities come from the CORRECT version's definition (source
+   * = predecessor version, target = own version). `null` falls back to all deployed processes / the
+   * latest definition per key. Source and target are separate because a building-block migration maps
+   * between owner and building-block processes (add: source = owner, target = block; remove: reverse).
    */
   @Input() public sourceProcessDefinitions: Record<string, string> | null = null;
   @Input() public targetProcessDefinitions: Record<string, string> | null = null;
   /** Intro text above the instructions. Hosts that already explain the direction pass `null` to hide it. */
-  @Input() public descriptionKey: string | null =
-    'buildingBlockManagement.migration.editor.processMigration.description';
+  @Input() public descriptionKey: string | null = null;
+  /** What mapping activities means for this blueprint type — the one hint the two hosts word differently. */
+  @Input() public activityMappingHintKey: string | null = null;
+  /** What the `setProcessVariables` source picker may read — `case:` metadata is a case plan's alone. */
+  @Input() public sourcePrefixes: ValuePathSelectorPrefix[] = [ValuePathSelectorPrefix.DOC];
+  @Input() public testIds!: MigrationEditorTestIds;
 
   @Input() public set instructions(value: ProcessMigrationInstruction[] | null | undefined) {
     this.writeInstructions(value ?? []);
   }
 
   @Output() public readonly instructionsChange = new EventEmitter<ProcessMigrationInstruction[]>();
-
-  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
-
-  public readonly SOURCE_PREFIXES = [ValuePathSelectorPrefix.DOC];
 
   public readonly MODES: PatchMode[] = ['path', 'value', 'null'];
 
@@ -143,9 +152,10 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
 
   private readonly _keyToLatestId = new Map<string, string>();
   // The instructions whose body is open. A plan the suggester filled carries one instruction per
-  // process of the building block — each with its own activity mapping and process variables — so the
-  // tab is unreadable with every body expanded. Collapsed is therefore the default and this set starts
-  // empty; an instruction the author adds by hand opens, because they added it in order to fill it in.
+  // process of the blueprint — thirteen of them on the configuration this was reported from, each with
+  // its own activity mapping and process variables — so the tab is unreadable with every body
+  // expanded. Collapsed is therefore the default and this set starts empty; an instruction the author
+  // adds by hand opens, because they added it in order to fill it in.
   private readonly _expanded = new Set<FormGroup>();
   private readonly _activities = new Map<FormGroup, InstructionActivities>();
   // Per instruction: incompatible source activity id -> engine failure messages (as judged live).
@@ -161,8 +171,7 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
     private readonly fb: FormBuilder,
     private readonly cdr: ChangeDetectorRef,
     private readonly iconService: IconService,
-    private readonly processService: ProcessService,
-    private readonly buildingBlockMigrationApiService: BuildingBlockMigrationApiService
+    private readonly processService: ProcessService
   ) {
     this.iconService.registerAll([Add16, ChevronDown16, ChevronUp16, TrashCan16, WarningFilled16]);
   }
@@ -213,9 +222,9 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
   }
 
   /**
-   * Keys offered in this instruction's source (or target) process picker: the allowed (building-
-   * block-linked) keys for that side — or all deployed keys when unscoped — plus this instruction's
-   * own stored key so a restored plan referencing a now-unlinked process still shows its selection.
+   * Keys offered in this instruction's source (or target) process picker: the allowed (blueprint-
+   * linked) keys for that side — or all deployed keys when unscoped — plus this instruction's own
+   * stored key so a restored plan referencing a now-unlinked process still shows its selection.
    */
   public processKeyOptions(group: FormGroup, side: 'source' | 'target'): string[] {
     const scoped =
@@ -403,19 +412,12 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
     this._activities.set(group, {sourceNodes: [], targetNodes: [], loading: true});
     this.cdr.markForCheck();
 
-    const key = this.buildingBlockDefinitionKey;
-    const tag = this.buildingBlockDefinitionVersionTag;
-    // A failed suggestion (or missing params) leaves the mappings untouched: null = "don't touch".
-    const mapping$ =
-      key && tag
-        ? this.buildingBlockMigrationApiService
-            .suggestActivityMapping(
-              {buildingBlockDefinitionKey: key, buildingBlockDefinitionVersionTag: tag},
-              sourceId,
-              targetId
-            )
-            .pipe(catchError(() => of<Record<string, string> | null>(null)))
-        : of<Record<string, string> | null>(null);
+    // A failed suggestion (or an unbound api) leaves the mappings untouched: null = "don't touch".
+    const mapping$ = this.api
+      ? this.api
+          .suggestActivityMapping(sourceId, targetId)
+          .pipe(catchError(() => of<Record<string, string> | null>(null)))
+      : of<Record<string, string> | null>(null);
 
     this._subscriptions.add(
       forkJoin({
@@ -514,29 +516,22 @@ export class BbMigrationProcessMigrationTabComponent implements OnInit, OnChange
 
   /**
    * Ask the engine whether this instruction's activity mapping is a valid migration and remember the
-   * incompatible pairs for the template. Needs the building block params and both process ids to
-   * resolve the definitions; clears the flags when it cannot validate (e.g. no mapping yet).
+   * incompatible pairs for the template. Needs the bound api and both process ids to resolve the
+   * definitions; clears the flags when it cannot validate (e.g. no mapping yet).
    */
   private validateInstruction(group: FormGroup): void {
-    const key = this.buildingBlockDefinitionKey;
-    const tag = this.buildingBlockDefinitionVersionTag;
     const sourceId = this.definitionIdFor(group, 'source');
     const targetId = this.definitionIdFor(group, 'target');
     const mapping = this.mappingObject(group);
 
-    if (!key || !tag || !sourceId || !targetId || Object.keys(mapping).length === 0) {
+    if (!this.api || !sourceId || !targetId || Object.keys(mapping).length === 0) {
       this._invalidMappings.delete(group);
       this.cdr.markForCheck();
       return;
     }
 
-    this.buildingBlockMigrationApiService
-      .validateActivityMapping(
-        {buildingBlockDefinitionKey: key, buildingBlockDefinitionVersionTag: tag},
-        sourceId,
-        targetId,
-        mapping
-      )
+    this.api
+      .validateActivityMapping(sourceId, targetId, mapping)
       .pipe(catchError(() => of<Record<string, string[]>>({})))
       .subscribe(invalid => {
         this._invalidMappings.set(group, invalid);

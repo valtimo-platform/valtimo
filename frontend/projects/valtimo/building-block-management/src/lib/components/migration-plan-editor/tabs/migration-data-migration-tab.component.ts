@@ -36,12 +36,25 @@ import {
 import {Add16, TrashCan16} from '@carbon/icons';
 import {ValuePathSelectorComponent, ValuePathSelectorPrefix} from '@valtimo/components';
 import {Subscription} from 'rxjs';
-import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
-import {DataMigrationPatch, DataMigrationTargetType, ValuePathContext} from '../../../models';
+import {
+  DataMigrationPatch,
+  DataMigrationTargetType,
+  MigrationEditorTestIds,
+  ValuePathContext,
+} from '../../../models';
 
 /** How the left ("from") side of a patch is filled: copy a field, set a literal, or set null. */
 type PatchMode = 'path' | 'value' | 'null';
 
+/**
+ * The `dataMigration` component of a migration plan, for either blueprint type.
+ *
+ * Nothing here is case- or building-block-specific: a patch names a source path, a target path and a
+ * coercion, and *which document* either path resolves against is [sourceContext] / [targetContext]'s
+ * business — set by whoever hosts this. That is also why the same component serves the plan-level
+ * `dataMigration` and the one nested inside every `addBuildingBlock` / `removeBuildingBlock` entry,
+ * where the two contexts deliberately differ.
+ */
 @Component({
   standalone: true,
   selector: 'valtimo-migration-data-migration-tab',
@@ -61,7 +74,7 @@ type PatchMode = 'path' | 'value' | 'null';
 })
 export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
   // The document schemas the source (copy-from) and target (write-to) value-path selectors resolve
-  // against. They can differ: e.g. add building block copies FROM the owner case INTO the block.
+  // against. They can differ: e.g. add building block copies FROM the owner INTO the block.
   @Input() public sourceContext: ValuePathContext | null = null;
   @Input() public targetContext: ValuePathContext | null = null;
   /**
@@ -71,8 +84,13 @@ export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
    */
   @Input() public targetAdditionalVersionTags: string[] = [];
   /** Intro text above the patches. Hosts that already explain the direction pass `null` to hide it. */
-  @Input() public descriptionKey: string | null =
-    'caseManagement.migration.editor.dataMigration.description';
+  @Input() public descriptionKey: string | null = null;
+  /**
+   * What the source ("from") picker may read. A case plan adds `case:` metadata to the document paths
+   * a building block plan is limited to, which is the whole of the difference between the two hosts.
+   */
+  @Input() public sourcePrefixes: ValuePathSelectorPrefix[] = [ValuePathSelectorPrefix.DOC];
+  @Input() public testIds!: MigrationEditorTestIds;
 
   @Input() public set patches(value: DataMigrationPatch[] | null | undefined) {
     this.writePatches(value ?? []);
@@ -80,10 +98,7 @@ export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
 
   @Output() public readonly patchesChange = new EventEmitter<DataMigrationPatch[]>();
 
-  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
-
-  // Source can copy from document data or case metadata; the target must be a writable document path.
-  public readonly SOURCE_PREFIXES = [ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE];
+  // The target must always be a writable document path, whichever blueprint owns it.
   public readonly TARGET_PREFIXES = [ValuePathSelectorPrefix.DOC];
 
   public readonly MODES: PatchMode[] = ['path', 'value', 'null'];

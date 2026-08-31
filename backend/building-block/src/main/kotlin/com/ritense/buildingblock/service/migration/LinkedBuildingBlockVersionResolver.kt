@@ -80,7 +80,7 @@ class LinkedBuildingBlockVersionResolver(
      * `bijstand-uitvoeren:1.0.0`, and `bijstand-besluit:1.0.0` is linked by `bijstand-uitvoeren:1.0.0`.
      * Anything asking "does this blueprint version model that block anywhere below it" therefore has to
      * walk the graph rather than read one level — which is exactly the set
-     * [BuildingBlockAdoptionExecutor] can reach in a single run.
+     * [AddBuildingBlockMigrationComponentExecutor]'s tree walk can reach in a single run.
      *
      * Startable-item links are deliberately not followed: they are how a *user* starts a block, not how a
      * running process tree nests, so they say nothing about what a migration can descend into.
@@ -97,24 +97,14 @@ class LinkedBuildingBlockVersionResolver(
      *   D12 guarantee: a plan may still only name a block the version genuinely declares, so it cannot
      *   create one no later migration would ever look for.
      *
-     * The two are consistent with what [BuildingBlockAdoptionExecutor] does at runtime, which descends
-     * *past* an unlinked child (leaving it a plain sub-process) and adopts a linked one below it. So
-     * widening the expansion cannot authorise anything adoption would then create out of thin air; it
+     * The two are consistent with what [AddBuildingBlockMigrationComponentExecutor] does at runtime, which
+     * descends *past* an unlinked child (leaving it a plain sub-process) and takes over a linked one below
+     * it. So widening the expansion cannot authorise anything the walk would then create out of thin air; it
      * only stops refusing entries for blocks that are declared, further down than one hop.
      */
     fun resolveCallActivityReachable(owner: BlueprintId): Set<BuildingBlockDefinitionId> =
         resolveCallActivityDeclarers(owner).keys
 
-    /**
-     * The same walk as [resolveCallActivityReachable], but keeping **which blueprint declares each block** —
-     * the one whose call activity names it, which is the block's owner in the running tree.
-     *
-     * That owner is what a nested block's state is transferred to and from: on the way out
-     * [RemoveBuildingBlockMigrationComponentExecutor] hands a nested block back to its **parent block**, not
-     * to the case, so a suggested `dataMigration` or `processMigration` has to be computed against the
-     * parent or it proposes moving data to the wrong document. The first declarer wins, which in breadth-first
-     * order is the shallowest one — the same node the runtime walk would descend through first.
-     */
     /**
      * The building-block link for [activityId] on the process [processDefinitionKey], looked up in the
      * blueprint that **[owner]'s model** says deploys that process — not in whichever deployment the
@@ -165,6 +155,16 @@ class LinkedBuildingBlockVersionResolver(
     fun resolveCallActivityLinkIndex(owner: BlueprintId): Map<Pair<String, String>, BuildingBlockProcessLink> =
         walkTree(owner).callActivityLinkIndex
 
+    /**
+     * The same walk as [resolveCallActivityReachable], but keeping **which blueprint declares each block** —
+     * the one whose call activity names it, which is the block's owner in the running tree.
+     *
+     * That owner is what a nested block's state is transferred to and from: on the way out
+     * [RemoveBuildingBlockMigrationComponentExecutor] hands a nested block back to its **parent block**, not
+     * to the case, so a suggested `dataMigration` or `processMigration` has to be computed against the
+     * parent or it proposes moving data to the wrong document. The first declarer wins, which in breadth-first
+     * order is the shallowest one — the same node the runtime walk would descend through first.
+     */
     fun resolveCallActivityDeclarers(owner: BlueprintId): Map<BuildingBlockDefinitionId, BlueprintId> =
         walkTree(owner).declaredBy
 

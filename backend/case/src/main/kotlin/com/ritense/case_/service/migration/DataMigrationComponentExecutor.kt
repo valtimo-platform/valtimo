@@ -47,11 +47,11 @@ class DataMigrationComponentExecutor(
 
     override fun componentKey() = DataMigrationComponentDeployer.DATA_MIGRATION_COMPONENT_KEY
 
-    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, ownerDocumentId: UUID) {
         val patches = dataMigrationConfigurationRepository.findById(migrationId).getOrNull()?.patches
         if (patches.isNullOrEmpty()) {
             return
         }
-        dataPatchApplier.apply(patches, caseId, caseId)
+        dataPatchApplier.apply(patches, ownerDocumentId, ownerDocumentId)
     }
 }

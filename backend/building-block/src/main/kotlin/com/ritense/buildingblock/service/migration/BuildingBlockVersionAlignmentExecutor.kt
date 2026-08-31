@@ -82,8 +82,8 @@ class BuildingBlockVersionAlignmentExecutor(
 
     override fun componentKey() = COMPONENT_KEY
 
-    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, caseId: UUID) {
-        alignChildrenOf(target, caseId)
+    override fun execute(migrationId: BlueprintMigrationId, target: BlueprintId, ownerDocumentId: UUID) {
+        alignChildrenOf(target, ownerDocumentId)
     }
 
     /** Align every building block [ownerDocumentId] owns *directly* against the owner's [ownerTarget] version. */
