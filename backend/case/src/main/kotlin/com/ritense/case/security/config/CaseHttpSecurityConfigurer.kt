@@ -127,6 +127,17 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/properties")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/version/{versionTag}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, MANAGEMENT_MIGRATION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, MANAGEMENT_MIGRATION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/activity-mapping")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/suggestion/activity-mapping/validate")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/building-block")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_MIGRATION_URL/{migrationKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/status")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/start")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/dry-run")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/dry-run/status")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
@@ -154,6 +165,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
         private const val STARTABLE_ITEMS_PATH = "/api/v1/case/startable-item"
         private const val MANAGEMENT_STARTABLE_ITEMS_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/startable-item"
+        private const val MANAGEMENT_MIGRATION_URL =
+            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/migration"
         private const val METROLINE_AVAILABLE_MODES_URL = "/api/management/v1/metroline/available-modes"
     }
 }
