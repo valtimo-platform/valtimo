@@ -66,6 +66,14 @@ data class DefinitionResponse(
     val contentHash: String?,
     val pendingContentHash: String?,
     val requiresReacceptance: Boolean,
+    /**
+     * Distinguishes the two re-acceptance prompts: true means the pending package asks for a
+     * different permission footprint, false that only its code changed.
+     */
+    val pendingPermissionsChanged: Boolean,
+    /** The pending package's declared permissions, for diffing against the accepted ones. */
+    val pendingManifest: JsonNode?,
+    val awaitingDiscovery: Boolean,
 ) {
     companion object {
         fun from(definition: ExternalPluginDefinition, compatibility: CompatibilityResult): DefinitionResponse {
@@ -90,6 +98,9 @@ data class DefinitionResponse(
                 contentHash = definition.contentHash,
                 pendingContentHash = definition.pendingContentHash,
                 requiresReacceptance = definition.requiresReacceptance,
+                pendingPermissionsChanged = definition.pendingPermissionsChanged,
+                pendingManifest = definition.pendingManifestJson,
+                awaitingDiscovery = definition.isPlaceholder,
             )
         }
     }

@@ -41,7 +41,9 @@
       <button
         cdsButton="ghost"
         [disabled]="obs.loading || !obs.hasConnectedHosts"
-        [vTooltip]="!obs.hasConnectedHosts ? ('pluginManagement.uploadDisabledTooltip' | translate) : ''"
+        [vTooltip]="
+          !obs.hasConnectedHosts ? ('pluginManagement.uploadDisabledTooltip' | translate) : ''
+        "
         [tooltipDisabled]="obs.hasConnectedHosts"
         (click)="openUploadModal()"
       >
@@ -67,7 +69,9 @@
     <button
       cdsButton="ghost"
       [disabled]="obs.loading || !obs.hasConnectedHosts"
-      [vTooltip]="!obs.hasConnectedHosts ? ('pluginManagement.uploadDisabledTooltip' | translate) : ''"
+      [vTooltip]="
+        !obs.hasConnectedHosts ? ('pluginManagement.uploadDisabledTooltip' | translate) : ''
+      "
       [tooltipDisabled]="obs.hasConnectedHosts"
       (click)="openUploadModal()"
     >
@@ -143,12 +147,30 @@
   <div class="plugin-management__plugin-name">
     <span>{{ data?.item?.pluginName }}</span>
 
-    @if (data?.item?.incompatible) {
+    @if (data?.item?.awaitingHost) {
       <cds-tag
-        type="red"
+        type="cool-gray"
         size="sm"
+        [title]="'pluginManagement.awaitingHost.tooltip' | translate"
         (click)="$event.stopPropagation()"
       >
+        {{ 'pluginManagement.awaitingHost.tag' | translate }}
+      </cds-tag>
+    }
+
+    @if (data?.item?.reviewRequired) {
+      <cds-tag
+        type="magenta"
+        size="sm"
+        [title]="data.item.reviewMessage"
+        (click)="$event.stopPropagation()"
+      >
+        {{ 'pluginManagement.reviewRequired.tag' | translate }}
+      </cds-tag>
+    }
+
+    @if (data?.item?.incompatible) {
+      <cds-tag type="red" size="sm" (click)="$event.stopPropagation()">
         {{ 'pluginManagement.compatibility.incompatibleTag' | translate }}
       </cds-tag>
 

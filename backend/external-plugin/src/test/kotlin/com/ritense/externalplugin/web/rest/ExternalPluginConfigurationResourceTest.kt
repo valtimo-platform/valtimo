@@ -121,7 +121,7 @@ class ExternalPluginConfigurationResourceTest {
             grantedEgress = listOf("api.kvk.nl"),
         )
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration())
 
         val response = resource.createConfiguration(request)
@@ -135,6 +135,8 @@ class ExternalPluginConfigurationResourceTest {
             eq(listOf(GrantedEventEntry("com.ritense.valtimo.document.created"))),
             eq(listOf("gzac_api", "log")),
             eq(listOf("api.kvk.nl")),
+            any(),
+            any(),
         )
     }
 
@@ -147,20 +149,20 @@ class ExternalPluginConfigurationResourceTest {
             grantedEndpoints = emptyList(),
         )
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration())
 
         resource.createConfiguration(request)
 
         verify(configurationService).create(
-            eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList()), eq(emptyList())
+            eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList()), eq(emptyList()), any(), any()
         )
     }
 
     @Test
     fun `createConfiguration response carries the token generation but no properties`() {
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration(tokenGeneration = 3))
 
         val body = resource.createConfiguration(

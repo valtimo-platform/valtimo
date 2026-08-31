@@ -17,7 +17,11 @@ services:
       retries: 5
 
   plugin-host:
-    build: .
+    # Context is the monorepo root, not app/: the image builds the SDK (a `file:` dependency of the
+    # app) before the app itself, so it needs both in the context.
+    build:
+      context: ..
+      dockerfile: app/Dockerfile
     container_name: plugin-host-app
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -29,6 +33,9 @@ services:
       DB_USER: ${POSTGRES_USER:-pluginhost}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-pluginhost}
       PLUGIN_STORAGE_DIR: /data/plugins
+      # Scanned once at boot; every .zip in it is installed. Empty in the image — mount your own
+      # packages over it (see the commented volume below) or bake them into a derived image.
+      PLUGIN_PREINSTALL_DIR: /data/preinstalled
       HOST_ID: ${HOST_ID:-plugin-host}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Uncomment (and mount the ./tls volume below) to terminate TLS at the host so the GZAC→host
@@ -41,6 +48,9 @@ services:
       - "${APP_PORT:-8090}:8090"
     volumes:
       - plugin-storage:/data/plugins
+      # Plugin packages to install at boot. Point this at a directory of .zip files — e.g. the
+      # sample plugin's build output, ../sample-plugins/case-summary/dist.
+      # - ./preinstalled:/data/preinstalled:ro
       # - ./tls:/tls:ro
     depends_on:
       db:

@@ -180,6 +180,17 @@ interface ExternalPluginDefinition {
   contentHash: string | null;
   pendingContentHash: string | null;
   requiresReacceptance: boolean;
+  /**
+   * Which of the two re-acceptance prompts applies: `true` when the pending package asks for a
+   * different permission footprint, `false` when only its code changed.
+   */
+  pendingPermissionsChanged: boolean;
+  pendingManifest: ExternalPluginManifest | null;
+  /**
+   * True while only a deployment descriptor has heard of this plugin: no manifest, so nothing to
+   * validate a configuration against and the backend refuses one. Cleared by discovery.
+   */
+  awaitingDiscovery: boolean;
 }
 
 /** The subset of compatibility fields needed to render a warning message. */

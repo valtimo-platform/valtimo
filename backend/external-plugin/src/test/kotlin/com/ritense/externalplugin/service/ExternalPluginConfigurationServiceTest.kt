@@ -429,6 +429,60 @@ class ExternalPluginConfigurationServiceTest {
             }
         }
 
+    @Test
+    fun `create refuses a definition the host has not served yet`() {
+        stubPlaceholderDefinition()
+
+        assertThatThrownBy { create(grantedCapabilities = emptyList()) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("has not been discovered on its host yet")
+
+        verify(configurationRepository, never()).save(any())
+    }
+
+    @Test
+    fun `create accepts a placeholder when the caller declared the grants up front`() {
+        stubPlaceholderDefinition()
+
+        val configuration = service.create(
+            definitionId = definitionId,
+            title = "Deployed from a descriptor",
+            properties = objectMapper.createObjectNode(),
+            grantedEndpoints = emptyList(),
+            grantedEvents = emptyList(),
+            allowPlaceholder = true,
+        )
+
+        assertThat(configuration.definitionId).isEqualTo(definitionId)
+    }
+
+    @Test
+    fun `create persists a caller-supplied id`() {
+        stubDefinition(manifestJson = null)
+        val id = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+
+        val configuration = service.create(
+            definitionId = definitionId,
+            title = "Test configuration",
+            properties = objectMapper.createObjectNode(),
+            grantedEndpoints = emptyList(),
+            grantedEvents = emptyList(),
+            id = id,
+        )
+
+        assertThat(configuration.id).isEqualTo(id)
+    }
+
+    @Test
+    fun `create without an explicit id still generates one`() {
+        stubDefinition(manifestJson = null)
+
+        val first = create(grantedCapabilities = emptyList())
+        val second = create(grantedCapabilities = emptyList())
+
+        assertThat(first.id).isNotEqualTo(second.id)
+    }
+
     private fun create(
         grantedCapabilities: List<String>,
         grantedEgress: List<String> = emptyList(),
@@ -442,6 +496,21 @@ class ExternalPluginConfigurationServiceTest {
         grantedCapabilities = grantedCapabilities,
         grantedEgress = grantedEgress,
     )
+
+    private fun stubPlaceholderDefinition() {
+        val definition = ExternalPluginDefinition(
+            id = definitionId,
+            pluginId = "test-plugin",
+            version = "1.0.0",
+            hostId = UUID.randomUUID(),
+            baseUrl = "https://plugin-host.example.com",
+            status = ExternalPluginDefinitionStatus.UNAVAILABLE,
+            manifestJson = null,
+            configSchema = null,
+        )
+        assertThat(definition.isPlaceholder).isTrue()
+        whenever(definitionRepository.findById(definitionId)).thenReturn(Optional.of(definition))
+    }
 
     private fun stubDefinition(manifestJson: ObjectNode?, configSchema: ObjectNode? = null) {
         val definition = ExternalPluginDefinition(

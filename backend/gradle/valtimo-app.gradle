@@ -64,11 +64,45 @@ def sharedComposeFile = project(":backend:apps:dev").file("docker-compose.yaml")
 dockerCompose {
     projectName = "gzac-docker-compose"
     useComposeFiles = [sharedComposeFile.path]
-    composeAdditionalArgs = ["--profile", "zgw", "--profile", "openklant", "--profile", "iko"]
+    composeAdditionalArgs = [
+        "--profile", "zgw",
+        "--profile", "openklant",
+        "--profile", "iko",
+        "--profile", "plugin-host",
+    ]
     stopContainers = false
     removeContainers = false
     removeVolumes = false
 }
+
+// Never fatal: without Node 22 the host just starts with no plugins.
+// -PskipSamplePlugin opts out.
+def pluginHostDir = project(":backend:apps:dev").file("../../../plugin-host")
+def samplePluginZip = new File(pluginHostDir, "sample-plugins/case-summary/dist/case-summary-0.1.0.zip")
+tasks.register("buildSamplePlugin") {
+    group = "application"
+    description = "Builds the case-summary sample plugin package for the local plugin host"
+    onlyIf { !project.hasProperty("skipSamplePlugin") && pluginHostDir.isDirectory() }
+    inputs.dir(new File(pluginHostDir, "sample-plugins/case-summary/src"))
+    inputs.file(new File(pluginHostDir, "sample-plugins/case-summary/manifest.json"))
+    outputs.file(samplePluginZip)
+    doLast {
+        try {
+            exec {
+                workingDir pluginHostDir
+                commandLine "npm", "run", "setup"
+            }
+        } catch (Exception e) {
+            logger.warn(
+                "Could not build the case-summary sample plugin ({}). The plugin host will start " +
+                    "without it; run `npm --prefix plugin-host run setup` manually to add it.",
+                e.message
+            )
+        }
+    }
+}
+
+tasks.matching { it.name == "composeUp" }.configureEach { dependsOn("buildSamplePlugin") }
 
 // Start the shared docker-compose stack, then run this module as a Spring Boot
 // app. Each module has exactly one @SpringBootApplication, so the main class is

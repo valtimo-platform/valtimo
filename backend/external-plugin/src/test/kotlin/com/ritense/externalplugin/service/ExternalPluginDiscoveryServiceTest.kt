@@ -37,6 +37,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.transaction.PlatformTransactionManager
@@ -57,6 +58,7 @@ class ExternalPluginDiscoveryServiceTest {
     private lateinit var configurationService: ExternalPluginConfigurationService
     private lateinit var hostService: ExternalPluginHostService
     private lateinit var hostClient: ExternalPluginHostClient
+    private lateinit var packageInstaller: ExternalPluginPackageInstaller
     private lateinit var service: ExternalPluginDiscoveryService
 
     @BeforeEach
@@ -69,6 +71,7 @@ class ExternalPluginDiscoveryServiceTest {
         hostClient = mock()
         val transactionManager = mock<PlatformTransactionManager>()
         whenever(transactionManager.getTransaction(anyOrNull())).thenReturn(SimpleTransactionStatus())
+        packageInstaller = mock()
         service = ExternalPluginDiscoveryService(
             hostRepository,
             definitionRepository,
@@ -79,6 +82,7 @@ class ExternalPluginDiscoveryServiceTest {
             TransactionTemplate(transactionManager),
             failureThreshold,
             FALLBACK_GZAC_BASE_URL,
+            packageInstaller,
         )
     }
 
@@ -550,6 +554,143 @@ class ExternalPluginDiscoveryServiceTest {
         verify(configurationService).pushToHost(live, definition, host)
         assertThat(host.status).isEqualTo(ExternalPluginHostStatus.CONNECTED)
     }
+
+    @Test
+    fun `a placeholder definition is filled in once its grants match the manifest the host serves`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        val placeholder = placeholder(host.id)
+        givenHost(host)
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:aaa"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(placeholder)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(placeholder))
+        whenever(configurationService.findGrantMismatches(any())).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        assertThat(placeholder.manifestJson).isNotNull
+        assertThat(placeholder.status).isEqualTo(ExternalPluginDefinitionStatus.AVAILABLE)
+        assertThat(placeholder.contentHash).isEqualTo("sha256:aaa")
+    }
+
+    @Test
+    fun `a placeholder whose declared grants do not match the manifest is left unusable`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        val placeholder = placeholder(host.id)
+        givenHost(host)
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:aaa"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(placeholder)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(placeholder))
+        whenever(configurationService.findGrantMismatches(any()))
+            .thenReturn(listOf("configuration x: capabilities granted but not declared: kv"))
+
+        service.discoverAll()
+
+        assertThat(placeholder.manifestJson).isNull()
+        assertThat(placeholder.configSchema).isNull()
+        assertThat(placeholder.contentHash).isNull()
+        assertThat(placeholder.status).isEqualTo(ExternalPluginDefinitionStatus.UNAVAILABLE)
+        verify(configurationService, never()).pushToHost(any(), any(), any())
+    }
+
+    @Test
+    fun `configurations of a placeholder definition are not pushed`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        val placeholder = placeholder(host.id)
+        givenHost(host)
+        givenPluginListing(host)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(placeholder))
+
+        service.discoverAll()
+
+        verify(configurationService, never()).pushToHost(any(), any(), any())
+    }
+
+    @Test
+    fun `a healthy poll uploads descriptor packages before listing the host's plugins`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        givenPluginListing(host)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        val order = inOrder(packageInstaller, hostClient)
+        order.verify(packageInstaller).deployPending(host)
+        order.verify(hostClient).listPlugins(any(), any())
+    }
+
+    @Test
+    fun `a changed package keeps the manifest it now serves so the two can be compared`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        val existing = definition(host.id, contentHash = "sha256:accepted")
+        existing.manifestJson = manifestWithCapabilities("gzac_api")
+        givenHost(host)
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:changed"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(existing)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(existing))
+
+        service.discoverAll()
+
+        assertThat(existing.pendingContentHash).isEqualTo("sha256:changed")
+        assertThat(existing.pendingManifestJson).isNotNull
+        // The accepted manifest stays frozen until an admin accepts the pending one.
+        assertThat(existing.manifestJson).isEqualTo(manifestWithCapabilities("gzac_api"))
+    }
+
+    @Test
+    fun `the pending manifest is cleared when the host serves the accepted bytes again`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        val existing = definition(host.id, contentHash = "sha256:aaa", pendingContentHash = "sha256:bbb")
+        existing.pendingManifestJson = manifestWithCapabilities("kv")
+        givenHost(host)
+        givenPluginListing(host, pluginEntry(contentHash = "sha256:aaa"))
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(existing)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(existing))
+
+        service.discoverAll()
+
+        assertThat(existing.pendingContentHash).isNull()
+        assertThat(existing.pendingManifestJson).isNull()
+    }
+
+    private fun manifestWithCapabilities(vararg capabilities: String) = objectMapper.readTree(
+        """{"permissions": {"capabilities": [${capabilities.joinToString(",") { "\"$it\"" }}]}}"""
+    ) as com.fasterxml.jackson.databind.node.ObjectNode
+
+    @Test
+    fun `a failing package installer does not count against the host's health`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        givenPluginListing(host)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+        whenever(packageInstaller.deployPending(any())).thenThrow(RuntimeException("host rejected the upload"))
+
+        service.discoverAll()
+
+        assertThat(host.status).isEqualTo(ExternalPluginHostStatus.CONNECTED)
+        assertThat(host.consecutiveFailures).isEqualTo(0)
+        verify(hostClient).listPlugins(any(), any())
+    }
+
+    @Test
+    fun `an unreachable host is never asked to install packages`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(false)
+
+        service.discoverAll()
+
+        verify(packageInstaller, never()).deployPending(any())
+    }
+
+    private fun placeholder(hostId: UUID): ExternalPluginDefinition = ExternalPluginDefinition(
+        id = UUID.randomUUID(),
+        pluginId = "case-summary",
+        version = "1.0.0",
+        hostId = hostId,
+        baseUrl = "https://plugin-host.example.com/plugins/case-summary",
+        status = ExternalPluginDefinitionStatus.UNAVAILABLE,
+    )
 
     private fun givenPluginListing(host: ExternalPluginHost, vararg entries: JsonNode) {
         whenever(hostClient.health(host.baseUrl)).thenReturn(true)

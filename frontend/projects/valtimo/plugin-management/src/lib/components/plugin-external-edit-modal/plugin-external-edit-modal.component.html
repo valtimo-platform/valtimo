@@ -32,39 +32,53 @@
 
     <div [hidden]="currentStepIndex !== 0 || $loading()">
       <ng-container *ngIf="!$loading()">
-        <ng-container *ngIf="$configBundleUrl() as bundleUrl; else jsonForm">
-          <valtimo-external-plugin-iframe
-            [bundleUrl]="bundleUrl"
-            [prefillConfiguration]="$prefillConfiguration()"
-            (configurationChangedEvent)="onIframeConfigurationChanged($event)"
-          ></valtimo-external-plugin-iframe>
-        </ng-container>
+        <cds-inline-notification
+          *ngIf="$awaitingHost(); else editableConfiguration"
+          [notificationObj]="{
+            type: 'info',
+            title: ('pluginManagement.awaitingHost.modalTitle' | translate),
+            message: ('pluginManagement.awaitingHost.modalMessage' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-external-edit-modal__awaiting-host"
+        ></cds-inline-notification>
 
-        <ng-template #jsonForm>
-          <form [formGroup]="_form">
-            <div class="cds--form-item">
-              <label class="cds--label">{{
-                'pluginManagement.labels.configurationName' | translate
-              }}</label>
-              <input class="cds--text-input" formControlName="title" />
-            </div>
+        <ng-template #editableConfiguration>
+          <ng-container *ngIf="$configBundleUrl() as bundleUrl; else jsonForm">
+            <valtimo-external-plugin-iframe
+              [bundleUrl]="bundleUrl"
+              [prefillConfiguration]="$prefillConfiguration()"
+              (configurationChangedEvent)="onIframeConfigurationChanged($event)"
+            ></valtimo-external-plugin-iframe>
+          </ng-container>
 
-            <div class="cds--form-item">
-              <label class="cds--label">{{
-                'pluginManagement.labels.properties' | translate
-              }}</label>
-
-              <textarea
-                class="cds--text-area plugin-external-edit-modal__properties-textarea"
-                formControlName="properties"
-                rows="12"
-              ></textarea>
-
-              <div *ngIf="$propertiesInvalid()" class="cds--form-requirement">
-                {{ 'pluginManagement.invalidJson' | translate }}
+          <ng-template #jsonForm>
+            <form [formGroup]="_form">
+              <div class="cds--form-item">
+                <label class="cds--label">{{
+                  'pluginManagement.labels.configurationName' | translate
+                }}</label>
+                <input class="cds--text-input" formControlName="title" />
               </div>
-            </div>
-          </form>
+
+              <div class="cds--form-item">
+                <label class="cds--label">{{
+                  'pluginManagement.labels.properties' | translate
+                }}</label>
+
+                <textarea
+                  class="cds--text-area plugin-external-edit-modal__properties-textarea"
+                  formControlName="properties"
+                  rows="12"
+                ></textarea>
+
+                <div *ngIf="$propertiesInvalid()" class="cds--form-requirement">
+                  {{ 'pluginManagement.invalidJson' | translate }}
+                </div>
+              </div>
+            </form>
+          </ng-template>
         </ng-template>
       </ng-container>
     </div>
@@ -88,7 +102,7 @@
     </button>
 
     <button
-      *ngIf="currentStepIndex === 0 && $hasPermissionsStep()"
+      *ngIf="currentStepIndex === 0 && $hasPermissionsStep() && !$awaitingHost()"
       cdsButton="primary"
       [disabled]="$loading()"
       (click)="goToNextStep()"
@@ -97,7 +111,7 @@
     </button>
 
     <button
-      *ngIf="currentStepIndex === 0 && !$hasPermissionsStep()"
+      *ngIf="currentStepIndex === 0 && !$hasPermissionsStep() && !$awaitingHost()"
       cdsButton="primary"
       [disabled]="!configValid || $loading()"
       (click)="onSave()"

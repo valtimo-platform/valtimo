@@ -19,6 +19,7 @@ import {registerBodyParsing} from "./body-parsing.js";
 import {loadConfig} from "./config.js";
 import {buildHttpsOptions} from "./https-options.js";
 import {PluginManager} from "./plugin-manager.js";
+import {preinstallPlugins} from "./preinstall.js";
 import {ConfigRegistry} from "./config-registry.js";
 import {healthRoutes} from "./routes/health.js";
 import {hostManagementRoutes} from "./routes/host-management.js";
@@ -169,6 +170,12 @@ async function main(): Promise<void> {
 
   // Load existing plugins from disk
   await pluginManager.loadAllFromDisk();
+
+  // Install any packages an operator shipped with this host (baked into the image or mounted over
+  // PLUGIN_PREINSTALL_DIR). After loadAllFromDisk, so "already installed" is decided against what
+  // the host actually serves; before the routes are registered, so the host never answers a
+  // discovery poll with a half-provisioned plugin list.
+  await preinstallPlugins(pluginManager, config, fastify.log);
 
   // Sync event consumers with persisted configurations
   await eventConsumerManager.sync();

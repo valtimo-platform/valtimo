@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Instant
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Polls every registered host: health check, manifest discovery, configuration reconciliation
@@ -66,6 +67,7 @@ class ExternalPluginDiscoveryService(
      * entries for the same GZAC.
      */
     private val fallbackGzacBaseUrl: String,
+    private val packageInstaller: ExternalPluginPackageInstaller = ExternalPluginPackageInstaller.NOOP,
 ) {
 
     fun discoverAll() {
@@ -108,6 +110,15 @@ class ExternalPluginDiscoveryService(
         }
         try {
             val adminToken = hostService.decryptedSecret(host)
+
+            // Before the listing below, so a package uploaded now is discovered in this same poll.
+            // Guarded here rather than trusted to the implementation: an install failure must not
+            // count against the host's health, and the catch below would do exactly that.
+            try {
+                packageInstaller.deployPending(host)
+            } catch (e: Exception) {
+                logger.warn(e) { "Failed to install declared packages on host ${host.id} (${host.baseUrl})" }
+            }
 
             // Re-announce this GZAC instance and the browser origins allowed to frame its plugin
             // screens. Doing it on every poll — not only at registration — is what makes the host's
@@ -262,6 +273,7 @@ class ExternalPluginDiscoveryService(
         if (definitions.isEmpty()) return
 
         definitions.forEach { definition ->
+            if (definition.isPlaceholder) return@forEach
             if (definition.requiresReacceptance) {
                 // No pushes means no fresh service tokens: the last one the host holds expires
                 // within its (short) TTL, after which the changed plugin can no longer call back
@@ -317,6 +329,14 @@ class ExternalPluginDiscoveryService(
             status = ExternalPluginDefinitionStatus.AVAILABLE,
         )
 
+        // Gates everything below: on a mismatch the row is left untouched, so pushToHost keeps
+        // withholding the configuration and its service token.
+        if (existing != null && existing.isPlaceholder && !acceptPlaceholderGrants(definition, manifest)) {
+            definition.consecutiveMisses = 0
+            definitionRepository.save(definition)
+            return definition.id
+        }
+
         // Content pinning: the hash of the package as first discovered is what the admin's
         // acceptance covers. Anything else the host serves later under the same pluginId@version is
         // a change of the running code, so the definition is flagged and its stored (accepted)
@@ -335,6 +355,7 @@ class ExternalPluginDiscoveryService(
                         }
                         definition.pendingContentHash = discoveredContentHash
                     }
+                    definition.pendingManifestJson = manifest as? ObjectNode
                     // The plugin is present on the host, just changed — keep it visible.
                     definition.status = ExternalPluginDefinitionStatus.AVAILABLE
                     definition.consecutiveMisses = 0
@@ -349,6 +370,7 @@ class ExternalPluginDiscoveryService(
                             "clearing the re-acceptance flag"
                     }
                     definition.pendingContentHash = null
+                    definition.pendingManifestJson = null
                 }
             }
         }
@@ -370,6 +392,42 @@ class ExternalPluginDiscoveryService(
 
         definitionRepository.save(definition)
         return definition.id
+    }
+
+    /**
+     * Deliberately not self-healing: narrowing would discard a permission the descriptor author
+     * wrote down, widening would grant one nobody accepted.
+     */
+    private fun acceptPlaceholderGrants(definition: ExternalPluginDefinition, manifest: JsonNode): Boolean {
+        val candidate = ExternalPluginDefinition(
+            id = definition.id,
+            pluginId = definition.pluginId,
+            version = definition.version,
+            hostId = definition.hostId,
+            baseUrl = definition.baseUrl,
+            status = definition.status,
+            manifestJson = if (manifest is ObjectNode) manifest.deepCopy() else null,
+        )
+        val mismatches = configurationService.findGrantMismatches(candidate)
+        if (mismatches.isEmpty()) {
+            logger.info {
+                "External plugin '${definition.pluginId}@${definition.version}' is now served by host " +
+                    "${definition.hostId}; the placeholder definition created from the deployment " +
+                    "descriptor is now active"
+            }
+            return true
+        }
+        if (reportedGrantMismatches.add(definition.id)) {
+            logger.error {
+                "Refusing to activate external plugin '${definition.pluginId}@${definition.version}' on " +
+                    "host ${definition.hostId}: the grants its deployment descriptor declared do not " +
+                    "match the manifest the host serves — ${mismatches.joinToString(" | ")}. The plugin " +
+                    "stays unavailable and no configuration or service token is pushed to the host. " +
+                    "Correct the descriptor's granted sets to match the manifest exactly, delete the " +
+                    "affected configuration, and restart."
+            }
+        }
+        return false
     }
 
     /**
@@ -444,6 +502,8 @@ class ExternalPluginDiscoveryService(
         val firstLocale = translations.fields().asSequence().firstOrNull()?.value ?: return null
         return firstLocale.path(key).asText("").takeIf { it.isNotBlank() }
     }
+
+    private val reportedGrantMismatches = ConcurrentHashMap.newKeySet<UUID>()
 
     companion object {
         private val logger = KotlinLogging.logger {}

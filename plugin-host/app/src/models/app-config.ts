@@ -21,6 +21,21 @@ export const envSchema = z.object({
   PORT: z.coerce.number().default(8090),
   ADMIN_TOKEN: z.string().min(1),
   PLUGIN_STORAGE_DIR: z.string().default("./plugins"),
+
+  // Directory scanned once at boot for plugin packages (.zip) to install — how an operator ships
+  // the plugins a host should serve without an admin uploading them: bake the zips into the image,
+  // or mount a directory over this path (the published image ships it empty). A version already
+  // installed with identical content is a no-op; one with *different* content is kept, not
+  // replaced, because GZAC pins the hash an admin accepted. PLUGIN_PREINSTALL_OVERWRITE=true drops
+  // that rule for throwaway environments — never set it where an admin has accepted a package.
+  PLUGIN_PREINSTALL_DIR: z.string().default("./preinstalled"),
+  // Deliberately not z.coerce.boolean(): that maps every non-empty string (including "false") to
+  // true. Only the literal string "true" enables the overwrite.
+  PLUGIN_PREINSTALL_OVERWRITE: z
+    .string()
+    .optional()
+    .transform((value) => (value ?? "").trim().toLowerCase() === "true"),
+
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
   // Event delivery is not configured on the host: each GZAC instance pushes its own broker
   // (amqpUrl/exchange) alongside every configuration, and the host opens one consumer per broker.

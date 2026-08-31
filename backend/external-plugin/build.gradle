@@ -44,6 +44,7 @@ dependencies {
     implementation project(":backend:plugin")
     implementation project(":backend:authorization")
     implementation project(":backend:case")
+    implementation project(":backend:importer")
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter"
@@ -62,7 +63,6 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation project(":backend:test-utils-common")
-    testImplementation project(":backend:importer")
     testImplementation project(":backend:plugin-valtimo")
 
     // Modules whose controllers EndpointDescriptionCoverageTest scans — it requires every endpoint
