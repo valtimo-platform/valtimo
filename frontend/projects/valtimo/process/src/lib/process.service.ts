@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {map, Observable} from 'rxjs';
 import {
+  FlowNodeMigration,
   ProcessDefinition,
   ProcessDefinitionStartForm,
   ProcessDefinitionStartProcessLink,
@@ -105,6 +106,15 @@ export class ProcessService {
 
   getProcessXml(id: string): Observable<any> {
     return this.http.get(`${this.valtimoEndpointUri}v1/process/${id}/xml`);
+  }
+
+  getFlowNodes(
+    sourceProcessDefinitionId: string,
+    targetProcessDefinitionId: string
+  ): Observable<FlowNodeMigration> {
+    return this.http.get<FlowNodeMigration>(
+      `${this.valtimoEndpointUri}v1/process/definition/${sourceProcessDefinitionId}/${targetProcessDefinitionId}/flownodes`
+    );
   }
 
   getProcessCount(id: string): Observable<any> {
