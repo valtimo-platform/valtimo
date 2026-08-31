@@ -46,7 +46,10 @@ COPY app/migrations/ ./migrations/
 COPY --from=builder /build/app/dist ./dist
 
 # /data/plugins holds installed packages; /data/preinstalled is the boot-time install drop point,
-# deliberately empty in the published image.
+# deliberately empty in the published image. Pinned via env because the code defaults resolve
+# against WORKDIR (/app) — where no volume mount or derived-image COPY would ever land.
+ENV PLUGIN_STORAGE_DIR=/data/plugins \
+    PLUGIN_PREINSTALL_DIR=/data/preinstalled
 RUN mkdir -p /data/plugins /data/preinstalled
 
 EXPOSE 8090

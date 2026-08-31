@@ -22,7 +22,7 @@
     "db:reset": "docker compose down -v && docker compose up -d db",
     "db:logs": "docker compose logs -f db",
     "db:shell": "docker compose exec db psql -U pluginhost -d pluginhost",
-    "docker:build": "npm run build && docker compose build plugin-host",
+    "docker:build": "docker compose build plugin-host",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f plugin-host"

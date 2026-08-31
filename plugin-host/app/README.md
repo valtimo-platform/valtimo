@@ -76,9 +76,10 @@ The database starts automatically and the host listens on port 8090.
 For production or isolated testing, run everything in Docker:
 
 ```bash
-npm run build
 ADMIN_TOKEN=my-secret npm run docker:up
 ```
+
+The image compiles the SDK and the app itself, so no local build is needed.
 
 Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` using
 `host.docker.internal` instead of `localhost` to reach the host machine's RabbitMQ.
