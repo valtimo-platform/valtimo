@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -65,9 +66,6 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var operatonProcessService: OperatonProcessService
-
-    @Autowired
-    lateinit var processDocumentsService: ProcessDocumentsService
 
     lateinit var documentJson: String
     lateinit var document: Document
@@ -180,67 +178,6 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
             "No process definition found with key: 'non-existing-key' and blueprintId: 'house:1.0.0'",
             exception.cause?.message
         )
-    }
-
-    @Test
-    @Throws(JsonProcessingException::class)
-    fun `should get process definition keys from active process instances for case`() {
-        document = runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    "house",
-                    "house",
-                    "1.0.0",
-                    objectMapper.readTree(documentJson)
-                )
-            ).resultingDocument().orElseThrow()
-        }
-        val processInstance = runtimeService.startProcessInstanceByKey(
-            "parent-process",
-            document.id().toString()
-        )
-        runWithoutAuthorization {
-            processDocumentAssociationService.createProcessDocumentInstance(
-                processInstance.id,
-                document.id().id,
-                "parent process"
-            )
-        }
-        val task = runWithoutAuthorization {
-            taskService.findTask(byName("child process user task"))
-        }
-        assertNotNull(task)
-
-        val processDefinitionKeys = runWithoutAuthorization {
-            processDocumentsService.activeProcessDefinitionKeysForCase(
-                document.id().toString()
-            )
-        }
-
-        assertEquals(setOf("child-process"), processDefinitionKeys.toSet())
-    }
-
-    @Test
-    @Throws(JsonProcessingException::class)
-    fun `should return empty list when case document has no active process instances`() {
-        document = runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    "house",
-                    "house",
-                    "1.0.0",
-                    objectMapper.readTree(documentJson)
-                )
-            ).resultingDocument().orElseThrow()
-        }
-
-        val processDefinitionKeys = runWithoutAuthorization {
-            processDocumentsService.activeProcessDefinitionKeysForCase(
-                document.id().toString()
-            )
-        }
-
-        assertEquals(emptyList(), processDefinitionKeys)
     }
 
 }

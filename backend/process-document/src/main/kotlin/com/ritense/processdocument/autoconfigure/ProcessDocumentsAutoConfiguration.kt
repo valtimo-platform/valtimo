@@ -191,18 +191,14 @@ class ProcessDocumentsAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         associationService: ProcessDocumentAssociationService,
         repositoryService: RepositoryService,
-        operatonRuntimeService: OperatonRuntimeService,
-        caseDocumentResolver: CaseDocumentResolver,
-        caseCorrelationBusinessKeyProviders: List<CaseCorrelationBusinessKeyProvider>,
+        operatonRuntimeService: OperatonRuntimeService
     ): ProcessDocumentsService {
         return ProcessDocumentsService(
             documentService,
             operatonProcessService,
             associationService,
             repositoryService,
-            operatonRuntimeService,
-            caseDocumentResolver,
-            caseCorrelationBusinessKeyProviders,
+            operatonRuntimeService
         )
     }
 
