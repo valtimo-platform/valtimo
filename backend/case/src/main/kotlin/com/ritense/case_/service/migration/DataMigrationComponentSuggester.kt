@@ -46,8 +46,8 @@ class DataMigrationComponentSuggester(
         suggest(source, target, separateDocument = false)
 
     /** The `dataMigration` of an add/removeBuildingBlock entry, which fills a second document rather than carrying one over. Told, not inferred: a nested entry and a cross-key block plan are both `block -> block`. */
-    override fun suggestForBuildingBlockEntry(owner: BlueprintId, block: BlueprintId): Any? =
-        suggest(owner, block, separateDocument = true)
+    override fun suggestForBuildingBlockEntry(source: BlueprintId, target: BlueprintId): Any? =
+        suggest(source, target, separateDocument = true)
 
     private fun suggest(source: BlueprintId, target: BlueprintId, separateDocument: Boolean): Any? {
         val sourcePaths = fieldPathsOf(source)

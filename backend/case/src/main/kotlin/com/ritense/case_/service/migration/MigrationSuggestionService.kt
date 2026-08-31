@@ -171,9 +171,6 @@ class MigrationSuggestionService(
         .put("key", owner.getIdKey())
         .put("versionTag", owner.blueprintVersionTag().toString())
 
-    private fun suggestComponent(componentKey: String, source: BlueprintId, target: BlueprintId): Any? =
-        componentSuggesters.firstOrNull { it.componentKey() == componentKey }?.suggest(source, target)
-
     /** The same component asked for as an entry rather than a plan — the distinction cannot be derived from the two blueprint ids. */
     private fun suggestEntryComponent(componentKey: String, source: BlueprintId, target: BlueprintId): Any? =
         componentSuggesters.firstOrNull { it.componentKey() == componentKey }
