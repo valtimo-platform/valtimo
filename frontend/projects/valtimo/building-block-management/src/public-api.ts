@@ -19,4 +19,12 @@
  */
 
 export * from './lib/building-block-management.module';
+export * from './lib/models';
 export * from './lib/services';
+
+/* The blueprint-agnostic half of the migration plan editor; `@valtimo/case-management` builds its own editor out of these. */
+export * from './lib/components/migration-plan-editor/migration-plan.utils';
+export * from './lib/components/migration-plan-editor/tabs/migration-building-block-tab.component';
+export * from './lib/components/migration-plan-editor/tabs/migration-data-migration-tab.component';
+export * from './lib/components/migration-plan-editor/tabs/migration-general-fields.component';
+export * from './lib/components/migration-plan-editor/tabs/migration-process-migration-tab.component';

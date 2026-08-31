@@ -1,0 +1,207 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'migration-tab-layout' as layout;
+
+@include layout.blocks;
+
+.migration-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 4px;
+
+  &__description {
+    max-width: 60rem;
+    color: var(--cds-text-secondary);
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cds-text-secondary);
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--cds-border-subtle);
+    background: var(--cds-layer);
+  }
+
+  // An instruction still naming no target. Flagged on the border so a collapsed one is findable by scanning; an inset shadow rather than a wider border, so the card keeps its box.
+  &__card--incomplete {
+    border-color: var(--cds-support-error);
+    box-shadow: inset 3px 0 0 var(--cds-support-error);
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  // Wrapped in a span: a `title` on an `<svg>` is not a tooltip. `fill` is inherited, so the icon keeps its colour.
+  &__card-warning {
+    display: flex;
+    flex-shrink: 0;
+    fill: var(--cds-support-error);
+
+    ::ng-deep [data-icon-path='inner-path'] {
+      fill: var(--cds-layer);
+      opacity: 1;
+    }
+  }
+
+  &__card-index {
+    font-weight: 600;
+    color: var(--cds-text-secondary);
+  }
+
+  // The header doubles as the expand/collapse control, so it is a real <button> for keyboard and screen readers.
+  &__card-toggle {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 4px;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--cds-layer-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--cds-focus);
+      outline-offset: -2px;
+    }
+  }
+
+  // A collapsed card is identified by this line alone, so it may not wrap onto two rows.
+  &__card-summary {
+    overflow: hidden;
+    color: var(--cds-text-secondary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__card-summary--incomplete {
+    color: var(--cds-text-error);
+  }
+
+  &__grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  &__mapping {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__mapping-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 12px;
+  }
+
+  &__mapping-arrow {
+    padding-bottom: 8px;
+    color: var(--cds-icon-secondary);
+  }
+
+  &__mapping-error {
+    margin-top: -4px;
+    font-size: 0.75rem;
+    color: var(--cds-text-error);
+  }
+
+  // Data-migration patches: one compact row each — source (left) → target (right) + delete.
+  &__patches {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__patch {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.15fr) auto;
+    align-items: end;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--cds-border-subtle);
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+  }
+
+  &__patch-side {
+    display: grid;
+    align-items: end;
+    gap: 8px;
+
+    // The value-path selector renders its toggle inline, so give the path inputs room and keep the fixed selects compact.
+    &--from {
+      grid-template-columns: 7rem minmax(0, 1fr);
+    }
+
+    &--to {
+      grid-template-columns: minmax(0, 1fr) 7rem;
+    }
+  }
+
+  &__null-hint {
+    align-self: center;
+    color: var(--cds-text-secondary);
+    font-style: italic;
+  }
+
+  &__variable-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+    align-items: end;
+    gap: 12px;
+  }
+
+  &__condition-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7rem minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 12px;
+  }
+
+  &__toggles {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+}
