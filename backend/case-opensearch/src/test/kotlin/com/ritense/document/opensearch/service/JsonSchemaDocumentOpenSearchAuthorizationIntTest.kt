@@ -123,6 +123,42 @@ class JsonSchemaDocumentOpenSearchAuthorizationIntTest : BaseOpenSearchIntegrati
         assertThat(page.content[0].id()).isEqualTo(matchingDoc.id())
     }
 
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [STATUS_ROLE])
+    fun `search returns no documents when status does not match permission`() {
+        setUpStatusPermission("open")
+
+        seedDocumentWithStatus("closed")
+        seedDocumentWithStatus("archived")
+
+        val page = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest(),
+            PageRequest.of(0, 10)
+        )
+
+        assertThat(page.totalElements).isEqualTo(0L)
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [TAGS_ROLE])
+    fun `search returns no documents when tags do not match permission`() {
+        setUpTagsPermission("urgent")
+
+        seedDocumentWithTags(listOf(OsCaseTag("normal", "Normal")))
+        seedDocumentWithTags(listOf(OsCaseTag("low-priority", "Low Priority")))
+
+        val page = documentSearchService.search(
+            "house",
+            BlueprintType.CASE,
+            AdvancedSearchRequest(),
+            PageRequest.of(0, 10)
+        )
+
+        assertThat(page.totalElements).isEqualTo(0L)
+    }
+
     private fun setUpStatusPermission(statusKey: String) {
         var role = roleRepository.findByKey(STATUS_ROLE)
         if (role == null) {
