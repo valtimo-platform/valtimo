@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Woningcontrole" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0">
+  <bpmn:process id="woningcontrole" name="Woningcontrole" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="controle_start" name="Controle ontvangen">
+      <bpmn:outgoing>Flow_start_afhandelen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="controle_afhandelen" name="Controle direct afhandelen" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/status', 'afgehandeld')}">
+      <bpmn:incoming>Flow_start_afhandelen</bpmn:incoming>
+      <bpmn:outgoing>Flow_afhandelen_end</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="controle_end" name="Controle afgerond">
+      <bpmn:incoming>Flow_afhandelen_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_start_afhandelen" sourceRef="controle_start" targetRef="controle_afhandelen" />
+    <bpmn:sequenceFlow id="Flow_afhandelen_end" sourceRef="controle_afhandelen" targetRef="controle_end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Woningcontrole">
+    <bpmndi:BPMNPlane id="BPMNPlane_Woningcontrole" bpmnElement="woningcontrole">
+      <bpmndi:BPMNShape id="controle_start_di" bpmnElement="controle_start">
+        <dc:Bounds x="172" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="150" y="175" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="controle_afhandelen_di" bpmnElement="controle_afhandelen">
+        <dc:Bounds x="260" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="controle_end_di" bpmnElement="controle_end">
+        <dc:Bounds x="412" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="390" y="175" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_start_afhandelen_di" bpmnElement="Flow_start_afhandelen">
+        <di:waypoint x="208" y="150" />
+        <di:waypoint x="260" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_afhandelen_end_di" bpmnElement="Flow_afhandelen_end">
+        <di:waypoint x="360" y="150" />
+        <di:waypoint x="412" y="150" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
