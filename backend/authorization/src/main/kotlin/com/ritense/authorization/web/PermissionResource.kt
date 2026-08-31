@@ -17,7 +17,9 @@
 package com.ritense.authorization.web
 
 import com.ritense.authorization.Action
+import com.ritense.authorization.AuthorizationResourceTypeResolver
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.UnknownAuthorizationResourceTypeException
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.authorization.web.request.PermissionAvailableRequest
@@ -28,6 +30,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -37,14 +40,15 @@ import org.springframework.web.bind.annotation.RestController
 @SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class PermissionResource(
-    private var authorizationService: AuthorizationService
+    private var authorizationService: AuthorizationService,
+    private val resourceTypeResolver: AuthorizationResourceTypeResolver,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(PermissionResource::class.java)
 
     @Transactional(readOnly = true)
     @PostMapping("/v1/permissions")
-    fun userHasPermission(@RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)
+    fun userHasPermission(@Valid @RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)
         : ResponseEntity<List<PermissionAvailableResult>> {
 
         val permissionResponse: List<PermissionAvailableResult> = permissionsPresentRequest.map {
@@ -52,20 +56,23 @@ class PermissionResource(
                 try {
                     val authorizationRequest = if (it.context == null) {
                         EntityAuthorizationRequest(
-                            it.getResourceAsClass(),
+                            resourceTypeResolver.resolve(it.resource),
                             Action(it.action),
                         )
                     } else {
                         RelatedEntityAuthorizationRequest(
-                            it.getResourceAsClass(),
+                            resourceTypeResolver.resolve(it.resource),
                             Action(it.action),
-                            it.context.getResourceAsClass(),
+                            resourceTypeResolver.resolve(it.context.resource),
                             it.context.identifier
                         )
                     }
                     authorizationService.hasPermission(authorizationRequest)
+                } catch (ex: UnknownAuthorizationResourceTypeException) {
+                    logger.debug("Failed to determine permissions for action '${it.action}'", ex)
+                    false
                 } catch (ex: Exception) {
-                    logger.error("Failed to determine permissions for $it", ex)
+                    logger.error("Failed to determine permissions for resource '${it.resource}'", ex)
                     false
                 }
 

@@ -16,17 +16,19 @@
 
 package com.ritense.authorization.web.request
 
-import com.ritense.authorization.web.request.PermissionResourceConstraints.RESOURCE_MAX_LENGTH
-import com.ritense.authorization.web.request.PermissionResourceConstraints.RESOURCE_NAME_PATTERN
-import jakarta.validation.Valid
-import jakarta.validation.constraints.Pattern
-import jakarta.validation.constraints.Size
+/**
+ * Input constraints shared by the request objects that carry an authorization resource type name.
+ *
+ * These reject obviously malformed input early. They are a second line of defence only. The control
+ * that matters is the allowlist applied by
+ * [com.ritense.authorization.AuthorizationResourceTypeResolver].
+ */
+internal object PermissionResourceConstraints {
 
-data class PermissionAvailableRequest(
-    @field:Size(max = RESOURCE_MAX_LENGTH)
-    @field:Pattern(regexp = RESOURCE_NAME_PATTERN)
-    val resource: String,
-    val action: String,
-    @field:Valid
-    val context: PermissionContext? = null,
-)
+    /**
+     * A fully qualified Java class name: dot separated identifiers.
+     */
+    const val RESOURCE_NAME_PATTERN = "^[a-zA-Z_$][a-zA-Z\\d_$]*(\\.[a-zA-Z_$][a-zA-Z\\d_$]*)*$"
+
+    const val RESOURCE_MAX_LENGTH = 512
+}
