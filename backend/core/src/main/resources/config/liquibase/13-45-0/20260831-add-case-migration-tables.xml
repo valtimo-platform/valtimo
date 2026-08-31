@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+    logicalFilePath="config/liquibase/changelog/20260831-add-case-migration-tables.xml">
+
+    <!--
+        The whole schema for case and building-block migration, in one file for the 13.45.0 release.
+
+        A migration plan migrates the instances of a blueprint (a case definition version or a
+        building block definition version) from a declared source version onto the version the plan
+        is deployed under. Every table is keyed by the neutral composite id (blueprint_type,
+        blueprint_key, blueprint_version_tag, migration_key) — the *target* — so one engine serves
+        both blueprint types. Component sections (dataMigration owned by the case module,
+        processMigration stored by the core module, ...) live in their own tables. Composite-key
+        VARCHAR lengths stay within MySQL's 3072-byte index limit (utf8mb4, 4 bytes per char).
+
+        The source (source_blueprint_key, source_blueprint_version_tag) is plan data, not part of the
+        key: several plans may migrate onto the same target version from different sources. It carries
+        no blueprint_type of its own — a plan never changes a blueprint's type.
+
+        `logicalFilePath` pins the changeset identity to a path, so moving this file between release
+        folders never re-runs it. This set was assembled from three separate unreleased changelogs;
+        a dev database that applied any of those must be reset.
+    -->
+    <changeSet id="1" author="Ritense">
+        <createTable tableName="blueprint_migration">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(512)"/>
+            <column name="migration_triggers" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conditions" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="estimated_cases_to_migrate" type="${intType}"/>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
+    </changeSet>
+
+    <!-- The 'dataMigration' component, owned by the case module. -->
+    <changeSet id="2" author="Ritense">
+        <createTable tableName="blueprint_migration_data">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="patches" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_data"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
+    </changeSet>
+
+    <!-- The 'processMigration' component, stored by the core module. -->
+    <changeSet id="3" author="Ritense">
+        <createTable tableName="blueprint_migration_process">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instructions" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_process"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
+    </changeSet>
+
+    <!--
+        Run state of a migration plan: powers the UI status and runAfter ordering, plus the
+        clustered single-runner guard (optimistic-lock version, lease expiry and fencing token).
+    -->
+    <changeSet id="4" author="Ritense">
+        <createTable tableName="blueprint_migration_execution">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cases_to_migrate" type="${intType}" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lease_expires_at" type="datetime"/>
+            <column name="run_token" type="VARCHAR(64)"/>
+            <column name="started_on" type="datetime"/>
+            <column name="finished_on" type="datetime"/>
+            <column name="run_actor" type="VARCHAR(255)"/>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_execution"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
+    </changeSet>
+
+    <!-- Per-instance migration result: one row per (plan, instance), so progress is O(1) per
+         instance instead of a growing collection on the execution row. `warnings` holds what a
+         plan's components decided not to do for this case: not a failure, but not nothing either.
+
+         error_message and warnings stay `clob` — the only portable type that yields `text` on
+         PostgreSQL and `LONGTEXT` on MySQL, and a single stack trace runs to ~25 KB, so MySQL `TEXT`
+         (64 KB) would be uncomfortably close. Note that `clob` here does NOT mean the entity should be
+         mapped `@Lob`: on PostgreSQL that binds a String as a JDBC CLOB, which the driver stores as a
+         *large object* and leaves only its OID in this column. The entity uses
+         `@JdbcTypeCode(SqlTypes.LONGVARCHAR)` instead, which keeps this column readable with a plain
+         `select`. -->
+    <changeSet id="5" author="Ritense">
+        <createTable tableName="blueprint_migration_case">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_id" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="error_message" type="clob"/>
+            <column name="warnings" type="clob"/>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_case"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key, case_id"/>
+    </changeSet>
+
+    <!-- The 'addBuildingBlock' component, owned by the building-block module. Creates a building
+         block on the migrating instance (fills its document, hijacks a process). -->
+    <changeSet id="6" author="Ritense">
+        <createTable tableName="blueprint_migration_add_building_block">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instructions" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_add_building_block"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
+    </changeSet>
+
+    <!-- The 'removeBuildingBlock' component, owned by the building-block module. Dissolves a
+         building block of the migrating instance (hands its process/data back, deletes it). -->
+    <changeSet id="7" author="Ritense">
+        <createTable tableName="blueprint_migration_remove_building_block">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="instructions" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_remove_building_block"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
+    </changeSet>
+
+    <!--
+        A migration plan dry run simulates migrating every matching case (running the real
+        migration inside a transaction that is always rolled back) and records, per case, whether
+        it would migrate or fail. Kept in its own tables so dry-run state never influences whether a
+        real run migrates or skips a case.
+    -->
+    <changeSet id="8" author="Ritense">
+        <createTable tableName="blueprint_migration_dry_run">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lease_expires_at" type="datetime"/>
+            <column name="run_token" type="VARCHAR(64)"/>
+            <column name="started_on" type="datetime"/>
+            <column name="finished_on" type="datetime"/>
+            <column name="run_actor" type="VARCHAR(255)"/>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_dry_run"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key"/>
+    </changeSet>
+
+    <!-- Per-instance dry-run result: one row per (plan, instance) with the simulated outcome. -->
+    <changeSet id="9" author="Ritense">
+        <createTable tableName="blueprint_migration_dry_run_case">
+            <column name="blueprint_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blueprint_version_tag" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="migration_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_id" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="error_message" type="clob"/>
+            <column name="warnings" type="clob"/>
+        </createTable>
+        <addPrimaryKey tableName="blueprint_migration_dry_run_case"
+                       columnNames="blueprint_type, blueprint_key, blueprint_version_tag, migration_key, case_id"/>
+    </changeSet>
+
+</databaseChangeLog>
