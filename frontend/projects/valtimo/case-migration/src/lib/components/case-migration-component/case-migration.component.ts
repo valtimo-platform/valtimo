@@ -40,6 +40,7 @@ import {TranslateService} from '@ngx-translate/core';
   selector: 'valtimo-case-migration',
   templateUrl: './case-migration.component.html',
 })
+/** @deprecated 'Case migration (beta)' is replaced by the migration feature in `@valtimo/case-management`. Will be removed in a future release. */
 export class CaseMigrationComponent {
   public readonly sourceCaseDefinitionKeySelected$ = new BehaviorSubject<string | null>(null);
   public readonly sourceCaseDefinitionVersionTagSelected$ = new BehaviorSubject<string | null>(

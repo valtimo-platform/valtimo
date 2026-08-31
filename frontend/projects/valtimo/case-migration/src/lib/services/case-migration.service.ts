@@ -23,6 +23,7 @@ import {DocumentMigrationConflictRequest, DocumentMigrationConflictResponse} fro
 @Injectable({
   providedIn: 'root',
 })
+/** @deprecated 'Case migration (beta)' and its `/api/management/v1/document-definition/migrate(/conflicts)` endpoints are replaced by the migration feature in `@valtimo/case-management`. */
 export class CaseMigrationService {
   private readonly valtimoEndpointUri!: string;
 

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.ritense.document.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
@@ -32,6 +34,10 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
+@Deprecated(
+    "Serves the 'Case migration (beta)' admin screen, which has been removed from the admin menu " +
+        "and replaced by the case definition migration feature. Will be removed in a future release."
+)
 class DocumentMigrationManagementResource(
     private val documentMigrationService: DocumentMigrationService,
 ) {
