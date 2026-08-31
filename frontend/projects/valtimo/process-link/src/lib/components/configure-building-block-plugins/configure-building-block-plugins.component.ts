@@ -192,9 +192,11 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
         this.buildingBlockStateService.requiredPluginKeys$,
         this.buildingBlockStateService.mappingsComplete$,
         this.buildingBlockStateService.requirementsLoading$,
+        // Mappings are pruned only once the new version's fields have loaded, or a save could send mappings that no longer exist.
+        this.buildingBlockStateService.fieldsLoading$,
         this.definitionVersionTag$,
-      ]).subscribe(([keys, complete, loading, version]) => {
-        if (loading || !version) {
+      ]).subscribe(([keys, complete, requirementsLoading, fieldsLoading, version]) => {
+        if (requirementsLoading || fieldsLoading || !version) {
           this.buttonService.disableNextButton();
           return;
         }
@@ -298,8 +300,7 @@ export class ConfigureBuildingBlockPluginsComponent implements OnInit, OnDestroy
     const normalizedValue = versionTag || null;
     const currentVersion = this.buildingBlockStateService.getDefinitionSnapshot().versionTag;
     if (normalizedValue === currentVersion) return;
-    this.buildingBlockStateService.setPluginConfigurationMappings(undefined);
-    this.buildingBlockStateService.setDefinitionVersionTag(normalizedValue);
+    this.buildingBlockStateService.changeDefinitionVersionTag(normalizedValue);
   }
 
   private createProcessLink(): void {
