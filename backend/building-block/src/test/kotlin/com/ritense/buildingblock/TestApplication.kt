@@ -16,6 +16,8 @@
 
 package com.ritense.buildingblock
 
+import com.ritense.case_.service.migration.CaseMigrationRunner
+import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -23,7 +25,6 @@ import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.core.task.SyncTaskExecutor
-import org.springframework.core.task.TaskExecutor
 
 @SpringBootApplication
 class TestApplication {
@@ -48,7 +49,8 @@ class TestApplication {
          * open for the length of the run. What the pool adds — claim, dispatch, abandon on rejection — is
          * covered by `CaseMigrationRunnerTest`; what these tests are about is the migration itself.
          */
-        @Bean("caseMigrationTaskExecutor")
-        fun caseMigrationTaskExecutor(): TaskExecutor = SyncTaskExecutor()
+        @Bean
+        fun caseMigrationRunner(caseMigrationService: CaseMigrationService) =
+            CaseMigrationRunner(caseMigrationService, SyncTaskExecutor())
     }
 }

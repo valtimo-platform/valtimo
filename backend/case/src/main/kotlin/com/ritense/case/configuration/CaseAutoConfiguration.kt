@@ -115,7 +115,6 @@ import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valueresolver.ValueResolverService
 import java.time.Duration
 import org.springframework.beans.factory.ObjectProvider
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -129,7 +128,6 @@ import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
-import org.springframework.core.task.TaskExecutor
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.transaction.support.TransactionTemplate
@@ -694,37 +692,40 @@ class CaseAutoConfiguration {
     )
 
     /**
-     * The pool migration runs execute on. A run holds its thread for as long as it takes to migrate
-     * every matching case — hours — so the pool size is the number of *different* plans that can be
-     * running at once (the per-plan lease already prevents one plan running twice). The queue is
-     * deliberately small: a queued run is invisible to the user, and a rejection is recoverable, since
-     * the trigger sweep reclaims an abandoned claim.
+     * The runner, with the pool its runs execute on.
+     *
+     * The executor is built here rather than exposed as a bean on purpose: Spring Boot's
+     * `applicationTaskExecutor` is conditional on *no* `Executor` bean existing
+     * (`@ConditionalOnMissingBean(Executor.class)`), so publishing one from this module — which every
+     * Valtimo application loads — would silently withdraw it platform-wide and leave async MVC (SSE
+     * among other things) on an unpooled fallback. A private executor keeps a case-migration decision
+     * from having a platform-wide side effect. Tests substitute a synchronous one by overriding this
+     * bean, which `@ConditionalOnMissingBean` above already allows.
+     *
+     * A run holds its thread for as long as it takes to migrate every matching case — hours — so the
+     * pool size is the number of *different* plans that can run at once; the per-plan lease already
+     * stops one plan running twice. The queue is deliberately small: a queued run is invisible to the
+     * user, and a rejection is recoverable, since the sweep reclaims an abandoned claim.
      */
-    @Bean("caseMigrationTaskExecutor")
-    @ConditionalOnMissingBean(name = ["caseMigrationTaskExecutor"])
-    fun caseMigrationTaskExecutor(
-        @Value("\${valtimo.case.migration.concurrent-runs:4}") concurrentRuns: Int,
-        @Value("\${valtimo.case.migration.queued-runs:8}") queuedRuns: Int,
-    ) = ThreadPoolTaskExecutor().apply {
-        corePoolSize = concurrentRuns
-        maxPoolSize = concurrentRuns
-        setQueueCapacity(queuedRuns)
-        setThreadNamePrefix("case-migration-")
-        // A run in progress must not be killed on shutdown: it would be reclaimed and resumed anyway,
-        // but letting the current case finish keeps the restart clean.
-        setWaitForTasksToCompleteOnShutdown(true)
-        setAwaitTerminationSeconds(30)
-        initialize()
-    }
-
     @Bean
     @ConditionalOnMissingBean(CaseMigrationRunner::class)
     fun caseMigrationRunner(
         caseMigrationService: CaseMigrationService,
-        @Qualifier("caseMigrationTaskExecutor") caseMigrationTaskExecutor: TaskExecutor,
+        @Value("\${valtimo.case.migration.concurrent-runs:4}") concurrentRuns: Int,
+        @Value("\${valtimo.case.migration.queued-runs:8}") queuedRuns: Int,
     ) = CaseMigrationRunner(
         caseMigrationService,
-        caseMigrationTaskExecutor,
+        ThreadPoolTaskExecutor().apply {
+            corePoolSize = concurrentRuns
+            maxPoolSize = concurrentRuns
+            setQueueCapacity(queuedRuns)
+            setThreadNamePrefix("case-migration-")
+            // A run in progress must not be killed on shutdown: it would be reclaimed and resumed
+            // anyway, but letting the current case finish keeps the restart clean.
+            setWaitForTasksToCompleteOnShutdown(true)
+            setAwaitTerminationSeconds(30)
+            initialize()
+        },
     )
 
     @Bean

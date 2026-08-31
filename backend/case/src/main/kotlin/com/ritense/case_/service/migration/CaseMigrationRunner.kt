@@ -19,6 +19,7 @@ package com.ritense.case_.service.migration
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.core.task.TaskExecutor
 import org.springframework.core.task.TaskRejectedException
 
@@ -43,7 +44,16 @@ import org.springframework.core.task.TaskRejectedException
 class CaseMigrationRunner(
     private val caseMigrationService: CaseMigrationService,
     private val taskExecutor: TaskExecutor,
-) {
+) : DisposableBean {
+
+    /**
+     * Shut the pool down with this bean. The executor is not a Spring bean (see
+     * `CaseAutoConfiguration.caseMigrationRunner` for why), so nothing else would stop its threads. A
+     * synchronous executor, as the tests use, has nothing to shut down.
+     */
+    override fun destroy() {
+        (taskExecutor as? DisposableBean)?.destroy()
+    }
 
     /**
      * Claim [migrationId] and migrate its cases on a background thread. Returns false when the plan is
