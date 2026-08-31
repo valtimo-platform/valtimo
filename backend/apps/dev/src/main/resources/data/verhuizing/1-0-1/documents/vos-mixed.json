@@ -1,0 +1,14 @@
+{
+    "aanvrager": {
+        "naam": "Sander Vos",
+        "emailadres": null,
+        "email": "sander.vos@example.com"
+    },
+    "nieuwAdres": "Stationsweg 3, 9711 AS Groningen",
+    "status": "in_behandeling",
+    "aantalPersonen": 4,
+    "oppervlakte": 120.75,
+    "documenten": [
+        "taxatie.pdf"
+    ]
+}

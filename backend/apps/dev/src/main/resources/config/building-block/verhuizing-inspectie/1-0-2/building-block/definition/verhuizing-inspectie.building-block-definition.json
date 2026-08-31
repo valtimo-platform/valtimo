@@ -1,0 +1,8 @@
+{
+    "key": "verhuizing-inspectie",
+    "name": "Verhuizing inspectie",
+    "description": "Voegt de geneste fotobouwsteen toe als call activity. Een zaak op deze versie heeft dus een lopende bouwsteen die zelf weer een lopende bouwsteen heeft.",
+    "versionTag": "1.0.2",
+    "basedOnVersionTag": "1.0.1",
+    "final": false
+}

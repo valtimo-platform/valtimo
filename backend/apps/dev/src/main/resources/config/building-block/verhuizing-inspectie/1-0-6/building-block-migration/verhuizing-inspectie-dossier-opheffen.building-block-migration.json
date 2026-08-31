@@ -1,0 +1,75 @@
+{
+    "title": "Dossierbouwsteen opheffen en in de inspectie opnemen",
+    "key": "verhuizing-inspectie-dossier-opheffen",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.5"
+    },
+    "dataMigration": [
+        {
+            "target": "doc:/dossierOpgehevenVan",
+            "value": "inspectie-dossier:1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing-inspectie-process",
+            "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:inspectieGemigreerdVan",
+                    "value": "1.0.5",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ],
+    "removeBuildingBlock": [
+        {
+            "buildingBlockKey": "inspectie-dossier",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/dossierStatus",
+                    "source": "doc:/dossierStatus"
+                },
+                {
+                    "target": "doc:/aantalBijlagen",
+                    "source": "doc:/aantalBijlagen",
+                    "targetType": "integer"
+                },
+                {
+                    "target": "doc:/dossierToelichting",
+                    "source": "doc:/toelichting"
+                },
+                {
+                    "target": "doc:/dossierKwaliteit",
+                    "source": "doc:/dossierKwaliteit"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "inspectie-dossier-process",
+                    "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+                    "mapActivities": {
+                        "DossierVaststellenTask": "InspectieUitvoerenTask",
+                        "RegistreerDossierstatusTask": "RegistreerGoedkeuringTask"
+                    },
+                    "setProcessVariables": [
+                        {
+                            "target": "pv:dossierTeruggegevenAan",
+                            "value": "verhuizing-inspectie:1.0.6",
+                            "targetType": "string"
+                        }
+                    ],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ]
+}

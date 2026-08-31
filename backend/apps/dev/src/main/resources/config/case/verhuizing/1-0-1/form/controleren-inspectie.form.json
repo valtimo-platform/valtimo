@@ -1,0 +1,62 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Controleren inspectie",
+            "content": "Controleer de uitkomst van de inspectie.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvrager.naam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "disabled": true,
+            "attributes": {
+                "data-testid": "controleren-inspectie-naam"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
+        },
+        {
+            "key": "inspectieStatus",
+            "type": "select",
+            "input": true,
+            "label": "Inspectiestatus",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "controleren-inspectie-status"
+            },
+            "data": {
+                "values": [
+                    {
+                        "label": "Goedgekeurd",
+                        "value": "goedgekeurd"
+                    },
+                    {
+                        "label": "Afgekeurd",
+                        "value": "afgekeurd"
+                    }
+                ]
+            },
+            "dataSrc": "values",
+            "defaultValue": "goedgekeurd"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Controle opslaan",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

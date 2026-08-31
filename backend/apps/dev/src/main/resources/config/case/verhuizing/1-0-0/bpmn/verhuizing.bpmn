@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_verhuizing" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="verhuizing" name="Verhuizing" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent_1" name="Verhuizing aangevraagd">
+      <bpmn:outgoing>Flow_start_ontvangst</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="registreer_ontvangst" name="Registreer ontvangst" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/status', 'ingediend')}">
+      <bpmn:incoming>Flow_start_ontvangst</bpmn:incoming>
+      <bpmn:outgoing>Flow_ontvangst_beoordelen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="beoordelen" name="Beoordelen verhuizing">
+      <bpmn:incoming>Flow_ontvangst_beoordelen</bpmn:incoming>
+      <bpmn:outgoing>Flow_beoordelen_akkoord</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="akkoord_geven" name="Akkoord geven">
+      <bpmn:incoming>Flow_beoordelen_akkoord</bpmn:incoming>
+      <bpmn:outgoing>Flow_akkoord_end</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_end" name="Verhuizing afgehandeld">
+      <bpmn:incoming>Flow_akkoord_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_start_ontvangst" sourceRef="StartEvent_1" targetRef="registreer_ontvangst"/>
+    <bpmn:sequenceFlow id="Flow_ontvangst_beoordelen" sourceRef="registreer_ontvangst" targetRef="beoordelen"/>
+    <bpmn:sequenceFlow id="Flow_beoordelen_akkoord" sourceRef="beoordelen" targetRef="akkoord_geven"/>
+    <bpmn:sequenceFlow id="Flow_akkoord_end" sourceRef="akkoord_geven" targetRef="Event_end"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="verhuizing">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="160" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="registreer_ontvangst_di" bpmnElement="registreer_ontvangst">
+        <dc:Bounds x="250" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="beoordelen_di" bpmnElement="beoordelen">
+        <dc:Bounds x="410" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="akkoord_geven_di" bpmnElement="akkoord_geven">
+        <dc:Bounds x="570" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
+        <dc:Bounds x="732" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_start_ontvangst_di" bpmnElement="Flow_start_ontvangst">
+        <di:waypoint x="196" y="120"/>
+        <di:waypoint x="250" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ontvangst_beoordelen_di" bpmnElement="Flow_ontvangst_beoordelen">
+        <di:waypoint x="350" y="120"/>
+        <di:waypoint x="410" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_beoordelen_akkoord_di" bpmnElement="Flow_beoordelen_akkoord">
+        <di:waypoint x="510" y="120"/>
+        <di:waypoint x="570" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_akkoord_end_di" bpmnElement="Flow_akkoord_end">
+        <di:waypoint x="670" y="120"/>
+        <di:waypoint x="732" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

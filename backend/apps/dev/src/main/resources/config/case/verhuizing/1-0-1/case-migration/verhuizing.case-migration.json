@@ -1,0 +1,111 @@
+{
+    "title": "Verhuizing migreren",
+    "key": "verhuizing-gegevens",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/status",
+            "operator": "==",
+            "value": "ingediend"
+        },
+        {
+            "path": "doc:/migratedFrom",
+            "operator": "!=",
+            "value": "1.0.0"
+        }
+    ],
+    "addBuildingBlock": [
+        {
+            "buildingBlockKey": "income-check",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/checkStatus",
+                    "source": "doc:/status"
+                },
+                {
+                    "target": "doc:/grandparentZaakOmschrijving",
+                    "source": "doc:/aanvrager/naam"
+                },
+                {
+                    "target": "doc:/eligibilityResult",
+                    "source": "doc:/nieuwAdres"
+                },
+                {
+                    "target": "doc:/householdSize",
+                    "value": 2,
+                    "targetType": "integer"
+                },
+                {
+                    "target": "doc:/applicantName",
+                    "source": "doc:/aanvrager/naam"
+                },
+                {
+                    "target": "doc:/zaakEinddatumGeplandBB3",
+                    "source": "doc:/verhuisdatum"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing",
+                    "targetProcessDefinitionKey": "income-check-process",
+                    "mapActivities": {
+                        "beoordelen_verhuizing": "EnterBubbleNoteTask",
+                        "controleren_inspectie": "EnterBubbleNoteTask",
+                        "registreer_ontvangst": "StoreCheckStatusTask",
+                        "markeer_spoed": "StoreCheckStatusTask",
+                        "afronden": "ReadZaakEinddatumTask"
+                    },
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/inspectieStatus",
+            "source": "doc:/status"
+        },
+        {
+            "target": "doc:/verhuisdatum",
+            "value": "2026-09-01",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/oppervlakte",
+            "value": 0,
+            "targetType": "number"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {
+                "beoordelen": "beoordelen_verhuizing",
+                "akkoord_geven": "controleren_inspectie",
+                "registreer_ontvangst": "registreer_ontvangst"
+            },
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

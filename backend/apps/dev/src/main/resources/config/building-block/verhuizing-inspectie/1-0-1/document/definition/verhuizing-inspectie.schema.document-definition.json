@@ -1,0 +1,48 @@
+{
+    "$id": "verhuizing-inspectie.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Verhuizing Inspectie",
+    "type": "object",
+    "properties": {
+        "aanvragerNaam": {
+            "type": "string",
+            "description": "Naam van de aanvrager, overgenomen uit de zaak bij het toevoegen van het bouwblok"
+        },
+        "nieuwAdres": {
+            "type": "string",
+            "description": "Nieuw adres, overgenomen uit de zaak"
+        },
+        "inspectieStatus": {
+            "type": "string",
+            "description": "Status van de inspectie"
+        },
+        "inspecteur": {
+            "type": "string",
+            "description": "Toegewezen inspecteur"
+        },
+        "akkoord": {
+            "type": "boolean",
+            "description": "Of de inspectie akkoord is bevonden"
+        },
+        "aantalKamers": {
+            "type": "integer",
+            "description": "Aantal geïnspecteerde kamers"
+        },
+        "geschatteWaarde": {
+            "type": "number",
+            "description": "Geschatte waarde van de woning"
+        },
+        "inspectiedatum": {
+            "type": "string",
+            "format": "date",
+            "description": "Datum waarop de inspectie is uitgevoerd"
+        },
+        "bevindingen": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Lijst met bevindingen uit de inspectie"
+        }
+    }
+}

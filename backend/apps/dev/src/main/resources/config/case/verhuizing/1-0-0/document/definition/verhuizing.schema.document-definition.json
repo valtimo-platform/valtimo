@@ -1,0 +1,38 @@
+{
+    "$id": "verhuizing.schema",
+    "type": "object",
+    "title": "Verhuizing",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+        "aanvrager",
+        "status"
+    ],
+    "properties": {
+        "aanvrager": {
+            "type": "object",
+            "required": [
+                "naam"
+            ],
+            "properties": {
+                "naam": {
+                    "type": "string"
+                },
+                "emailadres": {
+                    "type": ["string", "null"]
+                }
+            }
+        },
+        "nieuwAdres": {
+            "type": ["string", "null"]
+        },
+        "status": {
+            "type": "string"
+        },
+        "spoed": {
+            "type": ["boolean", "null"]
+        },
+        "aantalPersonen": {
+            "type": ["integer", "null"]
+        }
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "aanvrager": {
+        "naam": "Youssef Dekker",
+        "emailadres": "youssef@example.com",
+        "email": "y.dekker@work.example.com"
+    },
+    "nieuwAdres": "Vestdijk 20, 5611 CA Eindhoven",
+    "status": "afgehandeld",
+    "spoed": true,
+    "aantalPersonen": 3,
+    "oppervlakte": 95.0,
+    "verhuisdatum": "2026-10-15",
+    "documenten": [
+        "contract.pdf",
+        "inspectierapport.pdf"
+    ],
+    "migratedFrom": "1.0.1",
+    "afgerond": true,
+    "inspectieStatus": "afgerond",
+    "inspectieAkkoord": true,
+    "aantalKamers": 4,
+    "geschatteWaarde": 325000.5
+}

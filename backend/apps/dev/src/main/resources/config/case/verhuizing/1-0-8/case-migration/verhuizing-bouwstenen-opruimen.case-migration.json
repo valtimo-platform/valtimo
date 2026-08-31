@@ -1,0 +1,99 @@
+{
+    "title": "Twee bouwstenen opheffen én één toevoegen in één plan",
+    "key": "verhuizing-bouwstenen-opruimen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.7"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.7",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [],
+    "addBuildingBlock": [
+        {
+            "buildingBlockKey": "case-review",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/subject",
+                    "source": "doc:/aanvrager/naam"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing",
+                    "targetProcessDefinitionKey": "case-review-process",
+                    "mapActivities": {},
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ],
+    "removeBuildingBlock": [
+        {
+            "buildingBlockKey": "case-notification",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/inspectieStatus",
+                    "source": "doc:/subject"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "case-notification-process",
+                    "targetProcessDefinitionKey": "verhuizing",
+                    "mapActivities": {
+                        "AcknowledgeNotificationTask": "beoordelen_verhuizing_v3"
+                    },
+                    "setProcessVariables": [
+                        {
+                            "target": "pv:teruggegevenDoor",
+                            "value": "case-notification",
+                            "targetType": "string"
+                        }
+                    ],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        },
+        {
+            "buildingBlockKey": "inspectie-dossier",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/aantalKamers",
+                    "source": "doc:/aantalBijlagen",
+                    "targetType": "integer"
+                },
+                {
+                    "target": "doc:/status",
+                    "source": "doc:/dossierStatus"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "inspectie-dossier-process",
+                    "targetProcessDefinitionKey": "verhuizing-nazorg",
+                    "mapActivities": {
+                        "DossierVaststellenTask": "nazorg_uitvoeren"
+                    },
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ]
+}

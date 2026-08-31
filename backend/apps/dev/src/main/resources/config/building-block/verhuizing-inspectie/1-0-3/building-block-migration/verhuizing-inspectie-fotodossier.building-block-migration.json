@@ -1,0 +1,35 @@
+{
+    "title": "Fotodossier vastleggen op de inspectie",
+    "key": "verhuizing-inspectie-fotodossier",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.2"
+    },
+    "dataMigration": [
+        {
+            "target": "doc:/fotoStatus",
+            "value": "in-behandeling",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/inspectieStatus",
+            "source": "doc:/inspectieStatus"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing-inspectie-process",
+            "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:inspectieGemigreerdVan",
+                    "value": "1.0.2",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}
