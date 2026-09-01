@@ -288,9 +288,10 @@ accepted by one route can never be replayed against another. The hook is the act
     the host refuses to start), encrypting the GZAC→host channel end-to-end.
   - Host registration **refuses a non-null `eventBrokerAmqpUrl` unless the host base URL is a
     confidential transport** — HTTPS, or a loopback address (`localhost`/`127.0.0.1`/`::1`) for local
-    development (`ExternalPluginHostService.isSecureTransport`). Registration is the single gate
-    because the base URL is immutable afterwards, so no later push can reach an insecure host with
-    broker credentials.
+    development (`ExternalPluginHostService.isSecureTransport`). The same check re-runs on every
+    connection update (#618) against the *effective* (baseUrl, broker) pair — flipping the base URL
+    to plain http under an existing broker is refused just like adding a broker to a plain-http
+    host — so no push can ever reach an insecure host with broker credentials.
 
   Hosts without a broker (actions only) may still run over plain HTTP — e.g. behind a TLS-terminating
   reverse proxy. Replay and forgery are closed by the HMAC scheme; eavesdropping is closed by running
@@ -452,19 +453,39 @@ the catch-all 500-with-a-reference-id it produced before. Two rejections use it 
 non-confidential base URL, and a base URL that is a *bind* address (`0.0.0.0`, `::`) rather than an
 address GZAC can dial.
 
-The same service exposes **narrowly-scoped update paths** for the two runtime-editable fields.
-`baseUrl`, `secret`, `eventBrokerAmqpUrl`, and `eventBrokerExchange` remain immutable — the security
-check that pins broker credentials to a confidential `baseUrl` only needs to run at registration.
+The same service exposes **narrowly-scoped update paths**, one payload per concern:
 
 - `PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
   `{eventQueueMode, eventQueueTtlMs}`. After the PATCH, the resource triggers
-  `discoveryService.discoverAll()` so the host's `EventConsumerManager.sync()` swaps the queue
-  immediately instead of waiting for the next polling tick.
+  `discoveryService.discoverHost(hostId)` so the host's `EventConsumerManager.sync()` swaps the
+  queue immediately instead of waiting for the next polling tick.
 - `PATCH /api/management/v1/external-plugin/host/{hostId}/frontend-origins` with
   `{frontendOrigins}` — the browser origins allowed to embed this host's plugin screens (§7).
   Each entry is validated and canonicalised to a bare `scheme://host[:port]`; wildcards, paths,
   credentials and non-http(s) schemes are rejected, since a wildcard would defeat the allowlist.
   The new list is pushed to the host immediately, and re-pushed on every discovery poll anyway.
+- `PATCH /api/management/v1/external-plugin/host/{hostId}/connection` (#618) with any subset of
+  `{name, baseUrl, secret, gzacCallbackBaseUrl, eventBrokerAmqpUrl, eventBrokerExchange}` — absent
+  means unchanged, so an operator repoints a moved host or broker, or rotates the admin secret,
+  without recreating the row and orphaning its configurations. Every registration-time check
+  re-runs against the effective result (§3.9); a broker URL echoing the response's `***@`
+  redaction marker is refused outright, and blank means unchanged for the secret but *clear* for
+  the broker fields. On a base-url change the denormalized `definition.baseUrl` rows are rewritten
+  in the same transaction, so bundle and logo URLs never serve the dead old address. The PATCH
+  finishes with `discoverHost(hostId)`, which announces the (possibly new) callback URL and
+  re-pushes every configuration with a fresh service token — that re-push is what makes the host's
+  event consumers rebind to a moved broker. `kind` stays immutable, and descriptors still never
+  change connection fields on an existing host (§22.3.2): the warn-and-leave drift report now
+  points at this endpoint instead of delete-and-re-register.
+
+**Secret rotation is two-sided** — the host reads `ADMIN_TOKEN` from its environment once at boot
+and has no rotation API. The order that minimizes the outage: restart the host with the new token
+(GZAC keeps failing pushes as warnings, flips the host `UNREACHABLE` after the failure threshold),
+then PATCH the new secret — the next poll reconnects and re-pushes everything. In the mismatch
+window every HMAC route 401s (pushes, actions, discovery listings) while the public bundle and
+data routes keep serving. Repointing `baseUrl` at a *different physical host* leaves the old
+host's pushed configurations behind, exactly like deleting the host would — GZAC no longer polls
+it, so its reconciliation never prunes them.
 
 The add-host form pre-fills `frontendOrigins` from `valtimo.web.cors.corsConfiguration.allowedOrigins`
 (the browser origins the API already trusts — in a split frontend/backend deployment exactly the
@@ -3045,12 +3066,14 @@ every existing caller is unaffected.
 from the manifest would let a manifest change silently widen an existing environment's grants; the
 descriptor author reviewing the declared set *is* the acceptance step.
 
-**What redeployment does not do.** `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` and the broker
-fields are immutable after registration by design — the confidential-transport check that pins broker
-credentials to a safe base URL only runs at registration (§6) — so a changed value is reported by
-name and the row left alone (#618). Only `frontendOrigins` and the event-queue mode/TTL are
-reconciled. An activated configuration is likewise never re-granted: that set is what an admin
-accepted. Its `title` and `properties` *are* upserted from the descriptor on every start.
+**What redeployment does not do.** Descriptors never change `baseUrl`, `secret`,
+`gzacCallbackBaseUrl`, `kind` or the broker fields on an existing host: silently repointing a live
+environment's broker or host at boot from an env var is a bigger blast radius than an explicit
+admin action, so a drifted value is reported by name and the row left alone. The repair is the
+connection PATCH (§6, #618) — the one deliberate, validated way to repoint. Only `frontendOrigins`
+and the event-queue mode/TTL are reconciled from the descriptor. An activated configuration is
+likewise never re-granted: that set is what an admin accepted. Its `title` and `properties` *are*
+upserted from the descriptor on every start.
 
 **Failure.** Errors propagate, like every other importer and like the embedded plugin
 autodeployment (which rethrows). A malformed descriptor or a rejected registration fails the import
@@ -3163,7 +3186,7 @@ approval-by-clicking — and is arguably stronger, being peer-reviewed and enfor
 | # | Scenario | Acceptance? | Why |
 |---|---|---|---|
 | 17 | New integration registered from a descriptor | **No** | Host registration is not a plugin permission. The gate that matters is the confidential-transport check on broker credentials at registration (§6). |
-| 18 | Descriptor changes `baseUrl` / secret / broker fields | **No — refused** | Immutable after registration; reported and left unchanged. Changing them means delete and re-register. |
+| 18 | Descriptor changes `baseUrl` / secret / broker fields | **No — refused** | Descriptors never repoint an existing host; the drift is reported and the row left unchanged. Repointing is an explicit admin action: the connection PATCH / Edit connection modal (§6, #618), which re-runs the transport checks. |
 
 ### 23.5 Out of scope
 

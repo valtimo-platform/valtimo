@@ -35,11 +35,7 @@
         class="plugin-hosts-page__spinner"
       ></cds-loading>
 
-      <button
-        cdsButton="primary"
-        [disabled]="hostsLoading$ | async"
-        (click)="openHostModal()"
-      >
+      <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
         {{ 'pluginManagement.addHost' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -53,11 +49,7 @@
   </valtimo-carbon-list>
 
   <ng-template #addHostButton>
-    <button
-      cdsButton="primary"
-      [disabled]="hostsLoading$ | async"
-      (click)="openHostModal()"
-    >
+    <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
       {{ 'pluginManagement.addHost' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -73,6 +65,16 @@
   (closeEvent)="closeHostModal()"
   (submitEvent)="submitHost($event)"
 ></valtimo-plugin-host-modal>
+
+<valtimo-plugin-host-edit-modal
+  [errorMessage]="editConnectionErrorMessage$ | async"
+  [host]="hostToEditConnection$ | async"
+  [open]="editConnectionModalOpen$ | async"
+  [submitting]="editConnectionSubmitting$ | async"
+  [variant]="'host'"
+  (closeEvent)="closeEditConnectionModal()"
+  (submitEvent)="submitConnectionUpdate($event)"
+></valtimo-plugin-host-edit-modal>
 
 <valtimo-plugin-host-frontend-origins-modal
   [host]="hostToEditFrontendOrigins$ | async"

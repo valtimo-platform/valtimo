@@ -2470,7 +2470,18 @@
       "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
       "eventQueueTtlMsApp": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden app. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
       "frontendOrigins": "Browser-origins (scheme://host[:poort], zonder pad) die pluginschermen van deze host mogen tonen. Voeg elke Valtimo-frontend-URL toe waarvandaan gebruikers plugins openen, inclusief een eventuele proxy-alias.",
-      "noFrontendOrigins": "Zonder origins kan geen enkele pagina de pluginschermen van deze host tonen."
+      "noFrontendOrigins": "Zonder origins kan geen enkele pagina de pluginschermen van deze host tonen.",
+      "secretUnchanged": "Laat leeg om de huidige secret te behouden."
+    },
+    "editConnection": "Verbinding bewerken",
+    "editHost": {
+      "modalTitle": "Verbinding bewerken",
+      "modalTitleApp": "App-verbinding bewerken",
+      "updateFailedTitle": "Bijwerken mislukt",
+      "secretWarningTitle": "Secret gewijzigd",
+      "secretWarningMessage": "De host moet opnieuw worden gestart met de bijbehorende ADMIN_TOKEN. Tot die tijd kan GZAC de host niet bereiken en wordt deze als niet-bereikbaar getoond.",
+      "brokerNoteTitle": "Event-broker gewijzigd",
+      "brokerNoteMessage": "Event-consumers verbinden na het opslaan opnieuw met de nieuwe broker. Een achtergebleven durable queue op de oude broker verloopt vanzelf."
     },
     "editEventQueue": "Event queue bewerken",
     "editHostEventQueueModalTitle": "Event queue bewerken voor {{name}}",

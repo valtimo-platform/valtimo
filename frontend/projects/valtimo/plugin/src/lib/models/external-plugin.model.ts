@@ -79,6 +79,21 @@ interface ExternalPluginHostEventQueueUpdateRequest {
   eventQueueTtlMs: number | null;
 }
 
+/**
+ * Connection-field update (#618). Every field is optional and absent means unchanged, so the edit
+ * modal sends only what the admin actually edited. That convention is what lets the write-only
+ * secret (never present in any response) and the credential-redacted broker URL round-trip safely.
+ * A blank secret means unchanged; blank broker fields mean clear.
+ */
+interface ExternalPluginHostConnectionUpdateRequest {
+  name?: string;
+  baseUrl?: string;
+  secret?: string;
+  gzacCallbackBaseUrl?: string;
+  eventBrokerAmqpUrl?: string;
+  eventBrokerExchange?: string;
+}
+
 /** The plugin host's 201 body for a successful package upload, relayed by the backend. */
 interface ExternalPluginUploadResult {
   pluginId: string;
@@ -447,6 +462,7 @@ export {
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostDefaults,
+  ExternalPluginHostConnectionUpdateRequest,
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
   ExternalPluginHostUsageParentType,

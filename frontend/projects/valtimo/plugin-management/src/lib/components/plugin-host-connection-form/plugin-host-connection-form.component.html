@@ -27,7 +27,9 @@
 
   <cds-label>
     {{ 'pluginManagement.labels.secret' | translate }}
-    <input cdsText formControlName="secret" type="password" placeholder="admin-token" />
+    <input cdsText formControlName="secret" type="password" [placeholder]="secretPlaceholder" />
+
+    <small *ngIf="editHost">{{ 'pluginManagement.hints.secretUnchanged' | translate }}</small>
   </cds-label>
 
   <cds-label>
@@ -49,7 +51,11 @@
     <input cdsText formControlName="eventBrokerExchange" placeholder="valtimo-events" />
   </cds-label>
 
-  <div class="plugin-host-connection-form__origins" formArrayName="frontendOrigins">
+  <div
+    *ngIf="!editHost"
+    class="plugin-host-connection-form__origins"
+    formArrayName="frontendOrigins"
+  >
     <span class="cds--label">{{ 'pluginManagement.labels.frontendOrigins' | translate }}</span>
 
     <div
@@ -76,6 +82,7 @@
   </div>
 
   <v-select
+    *ngIf="!editHost"
     [appendInline]="false"
     [dropUp]="false"
     [items]="queueModeItems"
@@ -83,7 +90,7 @@
     formControlName="eventQueueMode"
   ></v-select>
 
-  <cds-label *ngIf="form.controls.eventQueueMode.value === 'DURABLE'">
+  <cds-label *ngIf="!editHost && form.controls.eventQueueMode.value === 'DURABLE'">
     {{ 'pluginManagement.labels.eventQueueTtlMs' | translate }}
     <input
       cdsText

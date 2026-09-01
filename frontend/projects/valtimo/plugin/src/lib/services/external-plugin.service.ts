@@ -29,6 +29,7 @@ import {
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostDefaults,
+  ExternalPluginHostConnectionUpdateRequest,
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
   ExternalPluginUploadResult,
@@ -103,6 +104,27 @@ export class ExternalPluginService {
   }
 
   /**
+   * Updates a host's connection fields — repoint a moved host or broker, or rotate the admin
+   * secret — without recreating the host and orphaning its configurations (#618). Absent fields
+   * stay unchanged, so callers send only what the admin edited. `InterceptorSkip: 400` for the
+   * same reason as `createHost`: a validation rejection carries a fixable explanation the edit
+   * modal renders inline.
+   */
+  public updateHostConnection(
+    hostId: string,
+    request: ExternalPluginHostConnectionUpdateRequest
+  ): Observable<ExternalPluginHost> {
+    const headers = new HttpHeaders().set(InterceptorSkip, '400');
+    return this._http.patch<ExternalPluginHost>(
+      `${this._baseUrl}/host/${hostId}/connection`,
+      request,
+      {
+        headers,
+      }
+    );
+  }
+
+  /**
    * Replaces the browser origins allowed to embed this host's plugin screens. The backend pushes
    * the new list to the plugin host immediately, which serves it as the `frame-ancestors` CSP
    * directive — so an empty list means no page may frame this host's plugins.
@@ -111,9 +133,12 @@ export class ExternalPluginService {
     hostId: string,
     origins: Array<string>
   ): Observable<ExternalPluginHost> {
-    return this._http.patch<ExternalPluginHost>(`${this._baseUrl}/host/${hostId}/frontend-origins`, {
-      frontendOrigins: origins,
-    });
+    return this._http.patch<ExternalPluginHost>(
+      `${this._baseUrl}/host/${hostId}/frontend-origins`,
+      {
+        frontendOrigins: origins,
+      }
+    );
   }
 
   public getDefinitions(): Observable<Array<ExternalPluginDefinition>> {

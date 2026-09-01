@@ -32,6 +32,7 @@ import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
 import com.ritense.externalplugin.service.HostDiscoveryResult
 import com.ritense.externalplugin.service.PluginRegistrationConflict
+import com.ritense.externalplugin.web.rest.dto.HostConnectionUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
@@ -409,7 +410,7 @@ class ExternalPluginHostResourceTest {
         // The re-discovery has to come *after* the row is updated, or the host re-reads the old mode.
         inOrder(hostService, discoveryService) {
             verify(hostService).updateEventQueue(hostId, EventQueueMode.DURABLE, 259_200_000)
-            verify(discoveryService).discoverAll()
+            verify(discoveryService).discoverHost(hostId)
         }
     }
 
@@ -428,12 +429,79 @@ class ExternalPluginHostResourceTest {
     @Test
     fun `updateHostEventQueue survives a failing re-discovery`() {
         whenever(hostService.updateEventQueue(eq(hostId), any(), anyOrNull())).thenReturn(host())
-        whenever(discoveryService.discoverAll()).thenThrow(RuntimeException("unreachable"))
+        whenever(discoveryService.discoverHost(hostId)).thenThrow(RuntimeException("unreachable"))
 
         val response = resource.updateHostEventQueue(
             hostId,
             HostEventQueueUpdateRequest(EventQueueMode.LIVE, null),
         )
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    }
+
+    // ---------------------------------------------------------------- connection PATCH (#618)
+
+    @Test
+    fun `updateHostConnection passes every field through and re-discovers the single host afterwards`() {
+        whenever(
+            hostService.updateConnection(
+                eq(hostId), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(),
+            )
+        ).thenReturn(host())
+
+        val response = resource.updateHostConnection(
+            hostId,
+            HostConnectionUpdateRequest(
+                name = "renamed",
+                baseUrl = "https://moved:8090",
+                secret = "rotated",
+                gzacCallbackBaseUrl = "http://gzac-new:8080",
+                eventBrokerAmqpUrl = "amqp://guest:guest@moved-rabbit:5672",
+                eventBrokerExchange = "valtimo-events-2",
+            ),
+        )
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        // Re-discovery after the row update: it announces the new callback URL and re-pushes every
+        // configuration, which is what makes the host's event consumers rebind.
+        inOrder(hostService, discoveryService) {
+            verify(hostService).updateConnection(
+                hostId,
+                name = "renamed",
+                baseUrl = "https://moved:8090",
+                secret = "rotated",
+                gzacCallbackBaseUrl = "http://gzac-new:8080",
+                eventBrokerAmqpUrl = "amqp://guest:guest@moved-rabbit:5672",
+                eventBrokerExchange = "valtimo-events-2",
+            )
+            verify(discoveryService).discoverHost(hostId)
+        }
+    }
+
+    @Test
+    fun `updateHostConnection redacts the broker url and never echoes the secret`() {
+        whenever(
+            hostService.updateConnection(
+                eq(hostId), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(),
+            )
+        ).thenReturn(host())
+
+        val response = resource.updateHostConnection(hostId, HostConnectionUpdateRequest(name = "renamed"))
+
+        assertThat(response.body!!.eventBrokerAmqpUrl).isEqualTo("amqp://***@rabbit:5672")
+        assertThat(ObjectMapper().valueToTree<JsonNode>(response.body!!).has("secret")).isFalse()
+    }
+
+    @Test
+    fun `updateHostConnection survives a failing re-discovery`() {
+        whenever(
+            hostService.updateConnection(
+                eq(hostId), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(),
+            )
+        ).thenReturn(host())
+        whenever(discoveryService.discoverHost(hostId)).thenThrow(RuntimeException("unreachable"))
+
+        val response = resource.updateHostConnection(hostId, HostConnectionUpdateRequest(name = "renamed"))
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
     }

@@ -20,6 +20,7 @@ import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
+import com.ritense.externalplugin.service.ExternalPluginHostService
 import java.time.Instant
 import java.util.UUID
 
@@ -59,7 +60,7 @@ data class HostResponse(
 ) {
     companion object {
         /** Marker replacing the `user:password` userinfo of an AMQP URL in API responses. */
-        const val AMQP_USERINFO_REDACTION = "***"
+        const val AMQP_USERINFO_REDACTION = ExternalPluginHostService.AMQP_USERINFO_REDACTION
 
         fun from(host: ExternalPluginHost) = HostResponse(
             id = host.id,
@@ -114,8 +115,8 @@ data class HostDefaultsResponse(
 
 /**
  * Narrow update payload: flips the per-host event-queue mode and adjusts the TTL on an existing
- * host without touching any other field. baseUrl/secret/broker remain immutable because the
- * security check that pins broker credentials to a confidential baseUrl runs at registration time.
+ * host without touching any other field. Connection fields have their own payload,
+ * [HostConnectionUpdateRequest], whose handler re-runs the registration-time security checks.
  */
 data class HostEventQueueUpdateRequest(
     val eventQueueMode: EventQueueMode,
@@ -124,9 +125,28 @@ data class HostEventQueueUpdateRequest(
 
 /**
  * Narrow update payload for the browser origins allowed to embed this host's plugin screens. Same
- * shape of change as [HostEventQueueUpdateRequest]: one runtime-editable field, everything
- * security-sensitive stays immutable. An empty list means nothing may frame this host's plugins.
+ * shape of change as [HostEventQueueUpdateRequest]: one concern per payload. An empty list means
+ * nothing may frame this host's plugins.
  */
 data class HostFrontendOriginsUpdateRequest(
     val frontendOrigins: List<String>,
+)
+
+/**
+ * Update payload for a host's connection fields (#618): repoint a moved host or broker, or rotate
+ * the admin secret, without recreating the host and orphaning its configurations.
+ *
+ * Every field is optional and absent means unchanged, so a client sends only what the admin
+ * actually edited. That convention is what lets the write-only [secret] (never echoed by any
+ * response) and the credential-redacted broker URL round-trip safely: an untouched field simply
+ * never travels. [secret] also treats blank as unchanged (an empty password input). The broker
+ * fields treat blank as *clear* — they are the only fields that are optional at registration too.
+ */
+data class HostConnectionUpdateRequest(
+    val name: String? = null,
+    val baseUrl: String? = null,
+    val secret: String? = null,
+    val gzacCallbackBaseUrl: String? = null,
+    val eventBrokerAmqpUrl: String? = null,
+    val eventBrokerExchange: String? = null,
 )

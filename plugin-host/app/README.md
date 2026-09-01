@@ -88,7 +88,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)) |
+| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)). Rotation is two-sided: restart the host with the new value, then update the secret on the GZAC host via its Edit connection modal — GZAC shows the host unreachable in between and reconnects on the next poll |
 | `PORT` | no | `8090` | HTTP listen port |
 | `PLUGIN_STORAGE_DIR` | no | `./plugins` (local), `/data/plugins` (Docker) | Directory for persisted plugin binaries |
 | `PLUGIN_PREINSTALL_DIR` | no | `./preinstalled` (local), `/data/preinstalled` (Docker) | Directory scanned once at boot; every `*.zip` in it is installed (see [Pre-installed plugins](#pre-installed-plugins)). Empty in the published image. |
@@ -159,10 +159,10 @@ must be trusted by GZAC's JVM truststore (a CA-signed certificate, or the host C
 truststore).
 
 Plain HTTP is fine when TLS is terminated by a reverse proxy in front of the host, or for local
-development on `localhost`. To keep secrets off an eavesdroppable link, **GZAC refuses to register a
-host that carries event-broker credentials unless that host is reachable over HTTPS** (or a loopback
-address such as `localhost`/`127.0.0.1` for local development). Hosts without a broker (actions only)
-may still be registered over plain HTTP.
+development on `localhost`. To keep secrets off an eavesdroppable link, **GZAC refuses to register
+or update a host that carries event-broker credentials unless that host is reachable over HTTPS**
+(or a loopback address such as `localhost`/`127.0.0.1` for local development). Hosts without a
+broker (actions only) may still be registered over plain HTTP.
 
 ## NPM Scripts
 

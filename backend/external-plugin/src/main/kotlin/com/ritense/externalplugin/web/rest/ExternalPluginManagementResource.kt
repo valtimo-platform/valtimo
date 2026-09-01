@@ -45,6 +45,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
+import com.ritense.externalplugin.web.rest.dto.HostConnectionUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
@@ -180,8 +181,8 @@ class ExternalPluginManagementResource(
     }
 
     /**
-     * Narrowly-scoped update for the per-host event-queue declaration. baseUrl/secret/broker stay
-     * immutable; only mode and TTL are mutable. Triggers an immediate re-discovery so the host's
+     * Narrowly-scoped update for the per-host event-queue declaration; connection fields are
+     * edited through [updateHostConnection]. Triggers an immediate re-discovery so the host's
      * `EventConsumerManager` swaps its queue without waiting for the next polling tick — best-effort
      * because the periodic discovery cycle will reconcile anyway.
      */
@@ -200,7 +201,42 @@ class ExternalPluginManagementResource(
             request.eventQueueMode,
             request.eventQueueTtlMs,
         )
-        runCatching { discoveryService.discoverAll() }
+        runCatching { discoveryService.discoverHost(hostId) }
+        return ResponseEntity.ok(HostResponse.from(host))
+    }
+
+    /**
+     * Updates a host's connection fields — repoint a moved host or broker, or rotate the admin
+     * secret, without recreating the host and orphaning its configurations (#618). Absent fields
+     * stay unchanged; the service re-runs every registration-time check against the effective
+     * result, so the confidential-transport invariant survives any combination of edits.
+     *
+     * Finishes with a best-effort single-host re-discovery: it announces the (possibly new)
+     * callback URL, re-pushes every configuration with the new broker fields and a fresh service
+     * token — which is what makes the host's event consumers rebind — and records truthful
+     * CONNECTED/UNREACHABLE status against the new address. The periodic poll reconciles anyway
+     * if this attempt fails.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update a host's connection settings",
+        nl = "Verbindingsinstellingen van host bijwerken",
+    )
+    @PatchMapping("/host/{hostId}/connection")
+    fun updateHostConnection(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostConnectionUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val host = hostService.updateConnection(
+            hostId,
+            name = request.name,
+            baseUrl = request.baseUrl,
+            secret = request.secret,
+            gzacCallbackBaseUrl = request.gzacCallbackBaseUrl,
+            eventBrokerAmqpUrl = request.eventBrokerAmqpUrl,
+            eventBrokerExchange = request.eventBrokerExchange,
+        )
+        runCatching { discoveryService.discoverHost(hostId) }
         return ResponseEntity.ok(HostResponse.from(host))
     }
 

@@ -20,6 +20,8 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.exception.ExternalPluginHostValidationException
 import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
+import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
@@ -34,6 +36,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.util.Optional
 import java.util.UUID
@@ -41,24 +45,26 @@ import java.util.UUID
 /**
  * Guards the rule that the broker AMQP URL and credentials — carried in cleartext inside the
  * HMAC-signed configuration push body — are never associated with a host the push can only reach
- * over an unencrypted transport. Registration is the single enforcement point because the host base
- * URL cannot change afterwards.
+ * over an unencrypted transport. The check runs at registration and again on every connection
+ * update, so the invariant survives any combination of baseUrl/broker edits.
  */
 class ExternalPluginHostServiceTest {
 
     private lateinit var hostRepository: ExternalPluginHostRepository
+    private lateinit var definitionRepository: ExternalPluginDefinitionRepository
     private lateinit var encryptionService: EncryptionService
     private lateinit var service: ExternalPluginHostService
 
     @BeforeEach
     fun setUp() {
         hostRepository = mock()
+        definitionRepository = mock()
         encryptionService = mock()
         whenever(encryptionService.encrypt(any())).thenReturn("encrypted-secret")
         whenever(hostRepository.save(any<ExternalPluginHost>())).thenAnswer { it.getArgument(0) }
         service = ExternalPluginHostService(
             hostRepository,
-            mock<ExternalPluginDefinitionRepository>(),
+            definitionRepository,
             mock<ExternalPluginConfigurationRepository>(),
             mock<ExternalPluginGrantedEndpointRepository>(),
             mock<ExternalPluginGrantedEventRepository>(),
@@ -466,6 +472,216 @@ class ExternalPluginHostServiceTest {
         }.isInstanceOf(ExternalPluginNotFoundException::class.java)
             .hasMessageContaining("not found")
     }
+
+    // ---------------------------------------------------------------- connection updates (#618)
+
+    @Test
+    fun `updateConnection repoints the base url and normalises the trailing slash`() {
+        val existing = stubExisting()
+
+        val updated = service.updateConnection(existing.id, baseUrl = "https://moved.example.com/")
+
+        assertThat(updated.baseUrl).isEqualTo("https://moved.example.com")
+    }
+
+    @Test
+    fun `updateConnection with no fields changes nothing`() {
+        val existing = stubExisting()
+        val before = snapshot(existing)
+
+        val updated = service.updateConnection(existing.id)
+
+        assertThat(snapshot(updated)).isEqualTo(before)
+    }
+
+    @Test
+    fun `updateConnection refuses a base url change to plaintext while a broker is configured`() {
+        val existing = stubExisting()
+
+        assertThatThrownBy {
+            service.updateConnection(existing.id, baseUrl = "http://moved-host:8090")
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("unencrypted transport")
+        assertThat(existing.baseUrl).isEqualTo("https://plugin-host.example.com")
+    }
+
+    @Test
+    fun `updateConnection refuses adding a broker to a plaintext remote host`() {
+        val existing = stubExisting(brokerAmqpUrl = null, baseUrl = "http://plugin-host:8090")
+
+        assertThatThrownBy {
+            service.updateConnection(existing.id, eventBrokerAmqpUrl = "amqp://guest:guest@broker:5672")
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("unencrypted transport")
+    }
+
+    @Test
+    fun `updateConnection allows broker plus base url changed together to a confidential pair`() {
+        val existing = stubExisting(brokerAmqpUrl = null, baseUrl = "http://plugin-host:8090")
+
+        val updated = service.updateConnection(
+            existing.id,
+            baseUrl = "http://localhost:8090",
+            eventBrokerAmqpUrl = "amqp://guest:guest@localhost:5672",
+        )
+
+        assertThat(updated.baseUrl).isEqualTo("http://localhost:8090")
+        assertThat(updated.eventBrokerAmqpUrl).isEqualTo("amqp://guest:guest@localhost:5672")
+    }
+
+    @Test
+    fun `updateConnection refuses a bind address as the new base url`() {
+        val existing = stubExisting()
+
+        assertThatThrownBy {
+            service.updateConnection(existing.id, baseUrl = "http://0.0.0.0:8090")
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("bind address")
+    }
+
+    @Test
+    fun `updateConnection refuses a base url already registered as another host`() {
+        val existing = stubExisting()
+        val other = registerMinimal()
+        whenever(hostRepository.findByBaseUrl("https://other.example.com")).thenReturn(other)
+
+        assertThatThrownBy {
+            service.updateConnection(existing.id, baseUrl = "https://other.example.com")
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("already registered")
+    }
+
+    @Test
+    fun `updateConnection accepts re-submitting the host's own base url`() {
+        val existing = stubExisting()
+
+        val updated = service.updateConnection(existing.id, baseUrl = "${existing.baseUrl}/")
+
+        assertThat(updated.baseUrl).isEqualTo(existing.baseUrl)
+    }
+
+    @Test
+    fun `updateConnection re-encrypts a new secret and leaves a blank one untouched`() {
+        val existing = stubExisting()
+        val originalCiphertext = existing.secret
+        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated")
+
+        val untouched = service.updateConnection(existing.id, secret = "  ")
+        assertThat(untouched.secret).isEqualTo(originalCiphertext)
+
+        val rotated = service.updateConnection(existing.id, secret = "rotated-token")
+        assertThat(rotated.secret).isEqualTo("encrypted-rotated")
+    }
+
+    @Test
+    fun `updateConnection refuses a broker url echoing the redaction marker`() {
+        val existing = stubExisting()
+
+        assertThatThrownBy {
+            service.updateConnection(existing.id, eventBrokerAmqpUrl = "amqp://***@broker:5672")
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("redacted")
+        assertThat(existing.eventBrokerAmqpUrl).isEqualTo("amqp://guest:guest@broker:5672")
+    }
+
+    @Test
+    fun `updateConnection clears the broker on a blank url and keeps it on null`() {
+        val existing = stubExisting()
+
+        val kept = service.updateConnection(existing.id, name = "renamed")
+        assertThat(kept.eventBrokerAmqpUrl).isEqualTo("amqp://guest:guest@broker:5672")
+
+        val cleared = service.updateConnection(existing.id, eventBrokerAmqpUrl = "  ")
+        assertThat(cleared.eventBrokerAmqpUrl).isNull()
+    }
+
+    @Test
+    fun `updateConnection updates name and callback url and rejects blanks for both`() {
+        val existing = stubExisting()
+
+        val updated = service.updateConnection(
+            existing.id,
+            name = "renamed",
+            gzacCallbackBaseUrl = "https://gzac-new.example.com/",
+        )
+        assertThat(updated.name).isEqualTo("renamed")
+        assertThat(updated.gzacCallbackBaseUrl).isEqualTo("https://gzac-new.example.com")
+
+        assertThatThrownBy { service.updateConnection(existing.id, name = " ") }
+            .isInstanceOf(ExternalPluginHostValidationException::class.java)
+        assertThatThrownBy { service.updateConnection(existing.id, gzacCallbackBaseUrl = " ") }
+            .isInstanceOf(ExternalPluginHostValidationException::class.java)
+    }
+
+    @Test
+    fun `updateConnection resets the failure counter on base url or secret change but not otherwise`() {
+        val existing = stubExisting()
+        existing.consecutiveFailures = 2
+
+        service.updateConnection(existing.id, name = "renamed")
+        assertThat(existing.consecutiveFailures).isEqualTo(2)
+
+        service.updateConnection(existing.id, baseUrl = "https://moved.example.com")
+        assertThat(existing.consecutiveFailures).isEqualTo(0)
+
+        existing.consecutiveFailures = 2
+        service.updateConnection(existing.id, secret = "rotated-token")
+        assertThat(existing.consecutiveFailures).isEqualTo(0)
+    }
+
+    @Test
+    fun `updateConnection rewrites denormalized definition base urls on a repoint`() {
+        val existing = stubExisting()
+        val definition = ExternalPluginDefinition(
+            id = UUID.randomUUID(),
+            pluginId = "case-summary",
+            version = "0.1.0",
+            hostId = existing.id,
+            baseUrl = "${existing.baseUrl}/plugins/case-summary",
+            status = ExternalPluginDefinitionStatus.AVAILABLE,
+        )
+        whenever(definitionRepository.findAllByHostId(existing.id)).thenReturn(listOf(definition))
+
+        service.updateConnection(existing.id, baseUrl = "https://moved.example.com")
+
+        assertThat(definition.baseUrl).isEqualTo("https://moved.example.com/plugins/case-summary")
+        verify(definitionRepository).saveAll(listOf(definition))
+
+        service.updateConnection(existing.id, name = "renamed")
+        // Name-only edits never touch definitions.
+        verify(definitionRepository, times(1)).saveAll(any<List<ExternalPluginDefinition>>())
+    }
+
+    @Test
+    fun `updateConnection throws when the host does not exist`() {
+        val missingId = UUID.randomUUID()
+        whenever(hostRepository.findById(missingId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy {
+            service.updateConnection(missingId, name = "renamed")
+        }.isInstanceOf(ExternalPluginNotFoundException::class.java)
+    }
+
+    private fun stubExisting(
+        baseUrl: String = "https://plugin-host.example.com",
+        brokerAmqpUrl: String? = "amqp://guest:guest@broker:5672",
+    ): ExternalPluginHost {
+        val host = service.register(
+            name = "local",
+            baseUrl = baseUrl,
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "https://gzac.example.com",
+            eventBrokerAmqpUrl = brokerAmqpUrl,
+            eventBrokerExchange = null,
+        )
+        whenever(hostRepository.findById(host.id)).thenReturn(Optional.of(host))
+        return host
+    }
+
+    private fun snapshot(host: ExternalPluginHost) = listOf(
+        host.name, host.baseUrl, host.secret, host.gzacCallbackBaseUrl,
+        host.eventBrokerAmqpUrl, host.eventBrokerExchange, host.consecutiveFailures,
+    )
 
     private fun registerMinimal(
         mode: EventQueueMode = EventQueueMode.LIVE,
