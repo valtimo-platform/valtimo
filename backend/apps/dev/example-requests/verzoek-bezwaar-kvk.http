@@ -8,7 +8,7 @@ Content-Type: application/json
     "record": {
         "typeVersion": "{{bezwaar_objecttypes_version}}",
         "data": {
-            "kvk": "",
+            "kvk": "87654321",
             "data": {
                 "voornaam": "Jan",
                 "achternaam": "Pieter",
