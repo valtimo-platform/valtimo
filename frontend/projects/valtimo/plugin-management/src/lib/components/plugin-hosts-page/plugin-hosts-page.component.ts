@@ -18,9 +18,17 @@ import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
-import {ActionItem, CarbonListModule, CarbonTag, ColumnConfig, ConfirmationModalModule, ViewType} from '@valtimo/components';
+import {
+  ActionItem,
+  CarbonListModule,
+  CarbonTag,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
 import {
   ExternalPluginHost,
+  ExternalPluginHostConnectionUpdateRequest,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
@@ -28,10 +36,20 @@ import {
 } from '@valtimo/plugin';
 import {ButtonModule, LoadingModule} from 'carbon-components-angular';
 import {BehaviorSubject, EMPTY, fromEvent, merge, Observable, of, Subject, timer} from 'rxjs';
-import {catchError, distinctUntilChanged, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  startWith,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {PluginHostModalComponent} from '../plugin-host-modal/plugin-host-modal.component';
+import {PluginHostEditModalComponent} from '../plugin-host-edit-modal/plugin-host-edit-modal.component';
 import {PluginHostEventQueueModalComponent} from '../plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
 import {PluginHostFrontendOriginsModalComponent} from '../plugin-host-frontend-origins-modal/plugin-host-frontend-origins-modal.component';
 import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-modal.component';
@@ -49,6 +67,7 @@ import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-moda
     CarbonListModule,
     ConfirmationModalModule,
     PluginHostModalComponent,
+    PluginHostEditModalComponent,
     PluginHostEventQueueModalComponent,
     PluginHostFrontendOriginsModalComponent,
     PluginUsageModalComponent,
@@ -72,6 +91,11 @@ export class PluginHostsPageComponent implements OnDestroy {
   public readonly reloadModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
+
+  public readonly editConnectionModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostToEditConnection$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+  public readonly editConnectionSubmitting$ = new BehaviorSubject<boolean>(false);
+  public readonly editConnectionErrorMessage$ = new BehaviorSubject<string | null>(null);
 
   public readonly eventQueueModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly hostToEditEventQueue$ = new BehaviorSubject<ExternalPluginHost | null>(null);
@@ -110,6 +134,10 @@ export class PluginHostsPageComponent implements OnDestroy {
 
   public readonly hostActionItems: ActionItem[] = [
     {
+      callback: this.editHostConnection.bind(this),
+      label: 'pluginManagement.editConnection',
+    },
+    {
       callback: this.editHostEventQueue.bind(this),
       label: 'pluginManagement.editEventQueue',
     },
@@ -137,9 +165,7 @@ export class PluginHostsPageComponent implements OnDestroy {
       }
     }),
     switchMap(() =>
-      this._externalPluginService
-        .getHosts()
-        .pipe(catchError(() => of([] as ExternalPluginHost[])))
+      this._externalPluginService.getHosts().pipe(catchError(() => of([] as ExternalPluginHost[])))
     ),
     map(hosts => hosts.filter(h => h.kind === 'PLUGIN_HOST')),
     switchMap(hosts =>
@@ -291,6 +317,45 @@ export class PluginHostsPageComponent implements OnDestroy {
 
   public cancelDeleteHost(): void {
     this.hostToDelete = null;
+  }
+
+  public editHostConnection(host: ExternalPluginHost): void {
+    this.hostToEditConnection$.next(host);
+    this.editConnectionErrorMessage$.next(null);
+    this.editConnectionModalOpen$.next(true);
+  }
+
+  public closeEditConnectionModal(): void {
+    this.editConnectionModalOpen$.next(false);
+    this.hostToEditConnection$.next(null);
+    this.editConnectionErrorMessage$.next(null);
+  }
+
+  /**
+   * Applies the dirty-fields-only connection patch (#618). A changed base URL also changes the
+   * origin the frontend CSP must allow, and that CSP is fixed at bootstrap — so a repoint gets the
+   * same reload-required modal as registering a new host.
+   */
+  public submitConnectionUpdate(patch: ExternalPluginHostConnectionUpdateRequest): void {
+    const host = this.hostToEditConnection$.value;
+    if (!host) return;
+    this.editConnectionSubmitting$.next(true);
+    this._externalPluginService.updateHostConnection(host.id, patch).subscribe({
+      next: () => {
+        this.editConnectionSubmitting$.next(false);
+        this.closeEditConnectionModal();
+        this._refreshHosts$.next();
+        if (patch.baseUrl !== undefined) this.reloadModalOpen$.next(true);
+      },
+      error: (response: HttpErrorResponse) => {
+        this.editConnectionSubmitting$.next(false);
+        this.editConnectionErrorMessage$.next(this._extractHostError(response));
+        this._logger.error(
+          'Something went wrong with updating the plugin host connection.',
+          response
+        );
+      },
+    });
   }
 
   public editHostEventQueue(host: ExternalPluginHost): void {

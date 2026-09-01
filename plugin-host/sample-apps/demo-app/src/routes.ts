@@ -68,11 +68,12 @@ function normalizeSubscriptions(raw: unknown): string[] {
   return raw.filter((t): t is string => typeof t === "string" && t.length > 0);
 }
 
-async function serveFile(reply: FastifyReply, fullPath: string): Promise<void> {
+async function serveFile(reply: FastifyReply, fullPath: string, csp?: string): Promise<void> {
   if (!existsSync(fullPath)) {
     reply.code(404).header("Access-Control-Allow-Origin", "*").send({ error: "Not found" });
     return;
   }
+  if (csp) reply.header("Content-Security-Policy", csp);
   const content = await readFile(fullPath);
   reply
     .header("Content-Type", MIME_TYPES[extname(fullPath)] ?? "application/octet-stream")
@@ -100,6 +101,40 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
   fastify.get("/api/host/plugins", { preHandler: hmac }, async () => [
     { pluginId: PLUGIN_ID, version: PLUGIN_VERSION, manifest },
   ]);
+
+  // ---- GZAC instance announcement (HMAC) ----
+  // Each connecting GZAC announces its own base URL plus the browser origins allowed to frame this
+  // app's plugin screens; the union becomes the bundles' `frame-ancestors` CSP. In memory, keyed by
+  // gzacBaseUrl, matching the config store's philosophy: GZAC re-announces on every discovery poll,
+  // so a restart converges within one cycle. With nothing announced yet the policy is 'none' —
+  // fail closed, exactly like the plugin host.
+  const frameAncestors = new Map<string, string[]>();
+  const frameAncestorsCsp = (): string => {
+    const origins = [...new Set([...frameAncestors.values()].flat())];
+    return `frame-ancestors ${origins.length ? origins.join(" ") : "'none'"}`;
+  };
+
+  fastify.put(
+    "/api/host/gzac-instances",
+    { preHandler: hmac, config: { rawBody: true } },
+    async (request, reply) => {
+      const body = (request.body ?? {}) as Record<string, unknown>;
+      const gzacBaseUrl = body.gzacBaseUrl;
+      const origins = body.frontendOrigins;
+      if (typeof gzacBaseUrl !== "string" || !gzacBaseUrl || !Array.isArray(origins)) {
+        reply.code(400).send({ error: "Invalid body: expected {gzacBaseUrl, frontendOrigins[]}" });
+        return;
+      }
+      const frontendOrigins = origins.filter(
+        (o): o is string => typeof o === "string" && /^https?:\/\/[^/\s]+$/.test(o),
+      );
+      frameAncestors.set(gzacBaseUrl, frontendOrigins);
+      request.log.info(
+        `[demo-app] GZAC instance ${gzacBaseUrl} registered as frame ancestor (${frontendOrigins.join(", ") || "no origins"})`,
+      );
+      reply.code(200).send({ gzacBaseUrl, frontendOrigins });
+    },
+  );
 
   // ---- Configuration push / update / delete / list (HMAC) ----
   fastify.post<{ Params: { configId: string } }>(
@@ -233,7 +268,7 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
         reply.code(403).header("Access-Control-Allow-Origin", "*").send({ error: "Path traversal not allowed" });
         return;
       }
-      await serveFile(reply, fullPath);
+      await serveFile(reply, fullPath, frameAncestorsCsp());
     },
   );
 

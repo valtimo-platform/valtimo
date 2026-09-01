@@ -2441,7 +2441,18 @@
       "eventQueueTtlMs": "The durable queue is deleted after this many ms with no connected host. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
       "eventQueueTtlMsApp": "The durable queue is deleted after this many ms with no connected app. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
       "frontendOrigins": "Browser origins (scheme://host[:port], no path) allowed to embed this host's plugin screens. Add every Valtimo frontend URL users open plugins from, including any proxy alias.",
-      "noFrontendOrigins": "With no origins listed, no page can embed this host's plugin screens."
+      "noFrontendOrigins": "With no origins listed, no page can embed this host's plugin screens.",
+      "secretUnchanged": "Leave blank to keep the current secret."
+    },
+    "editConnection": "Edit connection",
+    "editHost": {
+      "modalTitle": "Edit connection",
+      "modalTitleApp": "Edit app connection",
+      "updateFailedTitle": "Could not update",
+      "secretWarningTitle": "Secret changed",
+      "secretWarningMessage": "The host must be restarted with the matching ADMIN_TOKEN. Until then GZAC cannot reach it and it will show as unreachable.",
+      "brokerNoteTitle": "Event broker changed",
+      "brokerNoteMessage": "Event consumers reconnect to the new broker after saving. A durable queue left behind on the old broker expires on its own."
     },
     "editEventQueue": "Edit event queue",
     "editHostEventQueueModalTitle": "Edit event queue for {{name}}",

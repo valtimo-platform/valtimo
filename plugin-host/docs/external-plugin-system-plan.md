@@ -288,9 +288,10 @@ accepted by one route can never be replayed against another. The hook is the act
     the host refuses to start), encrypting the GZAC→host channel end-to-end.
   - Host registration **refuses a non-null `eventBrokerAmqpUrl` unless the host base URL is a
     confidential transport** — HTTPS, or a loopback address (`localhost`/`127.0.0.1`/`::1`) for local
-    development (`ExternalPluginHostService.isSecureTransport`). Registration is the single gate
-    because the base URL is immutable afterwards, so no later push can reach an insecure host with
-    broker credentials.
+    development (`ExternalPluginHostService.isSecureTransport`). The same check re-runs on every
+    connection update (#618) against the *effective* (baseUrl, broker) pair — flipping the base URL
+    to plain http under an existing broker is refused just like adding a broker to a plain-http
+    host — so no push can ever reach an insecure host with broker credentials.
 
   Hosts without a broker (actions only) may still run over plain HTTP — e.g. behind a TLS-terminating
   reverse proxy. Replay and forgery are closed by the HMAC scheme; eavesdropping is closed by running
@@ -452,19 +453,51 @@ the catch-all 500-with-a-reference-id it produced before. Two rejections use it 
 non-confidential base URL, and a base URL that is a *bind* address (`0.0.0.0`, `::`) rather than an
 address GZAC can dial.
 
-The same service exposes **narrowly-scoped update paths** for the two runtime-editable fields.
-`baseUrl`, `secret`, `eventBrokerAmqpUrl`, and `eventBrokerExchange` remain immutable — the security
-check that pins broker credentials to a confidential `baseUrl` only needs to run at registration.
+The same service exposes **narrowly-scoped update paths**, one payload per concern:
 
 - `PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
   `{eventQueueMode, eventQueueTtlMs}`. After the PATCH, the resource triggers
-  `discoveryService.discoverAll()` so the host's `EventConsumerManager.sync()` swaps the queue
-  immediately instead of waiting for the next polling tick.
+  `discoveryService.discoverHost(hostId)` so the host's `EventConsumerManager.sync()` swaps the
+  queue immediately instead of waiting for the next polling tick.
 - `PATCH /api/management/v1/external-plugin/host/{hostId}/frontend-origins` with
   `{frontendOrigins}` — the browser origins allowed to embed this host's plugin screens (§7).
   Each entry is validated and canonicalised to a bare `scheme://host[:port]`; wildcards, paths,
   credentials and non-http(s) schemes are rejected, since a wildcard would defeat the allowlist.
   The new list is pushed to the host immediately, and re-pushed on every discovery poll anyway.
+- `PATCH /api/management/v1/external-plugin/host/{hostId}/connection` (#618) with any subset of
+  `{name, baseUrl, secret, gzacCallbackBaseUrl, eventBrokerAmqpUrl, eventBrokerExchange}` — absent
+  means unchanged, so an operator repoints a moved host or broker, or rotates the admin secret,
+  without recreating the row and orphaning its configurations. Every registration-time check
+  re-runs against the effective result (§3.9); a broker URL echoing the response's `***@`
+  redaction marker is refused outright, and blank means unchanged for the secret but *clear* for
+  the broker fields. On a base-url change the denormalized `definition.baseUrl` rows are rewritten
+  in the same transaction, so bundle and logo URLs never serve the dead old address. The PATCH
+  finishes with `discoverHost(hostId)`, which announces the (possibly new) callback URL and
+  re-pushes every configuration with a fresh service token — that re-push is what makes the host's
+  event consumers rebind to a moved broker. `kind` stays immutable, and descriptors never change
+  connection fields on an existing host (§22.3.2): the warn-and-leave drift report points at this
+  endpoint.
+
+**Secret rotation is two-sided** — the host reads `ADMIN_TOKEN` from its environment once at boot
+and has no rotation API. The order that minimizes the outage: restart the host with the new token
+(GZAC keeps failing pushes as warnings, flips the host `UNREACHABLE` after the failure threshold),
+then PATCH the new secret — the next poll reconnects and re-pushes everything. In the mismatch
+window every HMAC route 401s (pushes, actions, discovery listings) while the public bundle and
+data routes keep serving. Repointing `baseUrl` at a *different physical host* leaves the old
+host's pushed configurations behind, exactly like deleting the host would — GZAC no longer polls
+it, so its reconciliation never prunes them.
+
+**Edit connection modal.** Both the hosts page and the apps page carry an *Edit connection* row
+action opening the shared connection form in edit mode: prefilled from the row (the broker URL
+credential-redacted, the write-only secret empty — blank means keep), with the event-queue and
+frontend-origins sections hidden since those keep their own modals. The PATCH body contains only
+fields whose value differs from the prefill baseline — a value comparison, not dirty-tracking, so
+a field edited and then typed back to its stored value is not sent and its warning withdraws, and
+an untouched redacted broker URL never round-trips. Contextual notices appear while editing:
+rotating the secret warns that the host must be restarted with the matching `ADMIN_TOKEN`; a
+broker change notes that consumers rebind after saving. A base-URL change ends in the same
+reload-required dialog as registration, because the CSP frame origin is fixed at bootstrap.
+Validation rejections render inline (`InterceptorSkip: 400`), keeping everything the admin typed.
 
 The add-host form pre-fills `frontendOrigins` from `valtimo.web.cors.corsConfiguration.allowedOrigins`
 (the browser origins the API already trusts — in a split frontend/backend deployment exactly the
@@ -1338,24 +1371,24 @@ runs one unified `_requestDeleteConfiguration(source, id, title)` entry point fo
 trigger (row action, external edit modal's `onExternalConfigDeleted`, embedded edit modal's
 bubbled `deleteEvent`): it pre-checks usages, then routes to either the read-only in-use modal
 (blocked) or a destructive-confirmation modal (clear); the actual delete still catches a 409 and
-re-opens the in-use modal to cover the race. The embedded `PluginEditModalComponent` no longer
-deletes inline — it emits `deleteEvent` up to the parent so the pre-check + confirmation flow lives
+re-opens the in-use modal to cover the race. The embedded `PluginEditModalComponent` does not
+delete inline — it emits `deleteEvent` up to the parent so the pre-check + confirmation flow lives
 in one place (matching the external edit modal). `PluginUsageModalComponent` is a single read-only,
 "Close"-only modal reused for hosts and configurations; the parent supplies the title/description
 translation keys. i18n lives under `pluginManagement.{deleteConfigurationModal, hostInUseModal,
 configurationInUseModal, usageModal}` in `en.json` / `nl.json`.
 
 **12.5 Host-side reconciliation & ownership ✅.** Discovery re-pushes every configuration each
-cycle but, before this, never *removed* host-side configurations GZAC no longer has — a config
-deleted while its host was down (the after-commit `deleteConfiguration` call is best-effort, no
-retry) stayed in the host's database indefinitely. Two mechanisms close this:
+cycle; *removing* host-side configurations GZAC no longer has needs its own machinery — without
+it, a config deleted while its host was down (the after-commit `deleteConfiguration` call is
+best-effort, no retry) would stay in the host's database indefinitely. Two mechanisms cover it:
 
 - **Ownership.** Every push carries `ownerId` — the GZAC-side **host-row UUID**
   (`ExternalPluginHost.id`), i.e. the identity of the GZAC↔host *relationship*. The host persists
   it (`owner_id TEXT NULL`, migration 8) as an opaque token and echoes it in
-  `GET /api/host/configurations`, which now returns **redacted summaries**
-  (`{configurationId, pluginId, pluginVersion, ownerId}`) instead of full configs — a host serves
-  many GZAC instances, and the old full-fat listing handed every `ADMIN_TOKEN` holder the service
+  `GET /api/host/configurations`, which returns **redacted summaries**
+  (`{configurationId, pluginId, pluginVersion, ownerId}`) rather than full configs — a host serves
+  many GZAC instances, and a full-fat listing would hand every `ADMIN_TOKEN` holder the service
   tokens / decrypted properties / broker credentials of *other* instances. `HOST_ID` (the host's
   own event-queue identity) deliberately plays no role: it identifies the host, not the pusher.
   Since discovery re-pushes everything each cycle, live configs self-claim within one healthy
@@ -1376,65 +1409,14 @@ retry) stayed in the host's database indefinitely. Two mechanisms close this:
   Ownership scoping is a *safety* mechanism, not authorization — all `ADMIN_TOKEN` holders are
   mutually trusted; the host does not enforce owners on DELETE (that would break legacy-row and
   older-GZAC cleanup).
-- **Status semantics.** `CONNECTED` previously flipped on a bare `/health` 200 *before* anything
-  else, and post-probe failures never touched the failure counter — a host with a wrong admin
-  token stayed `CONNECTED` forever. Now the flip happens only at the end of a fully successful
-  poll (health + authenticated plugin and configuration listings fetched, reconcile + pushes run),
-  and a state-fetch failure counts toward the same `failure-threshold` as an unreachable host. No
+- **Status semantics.** `CONNECTED` attests a fully successful poll — health probe *plus*
+  authenticated plugin and configuration listings fetched, reconcile and pushes run — never a bare
+  `/health` 200, which proves nothing about usability (a host with a wrong admin token pings
+  happily). A state-fetch failure counts toward the same `failure-threshold` as an unreachable
+  host. No
   new enum value: "pings but unusable" surfaces as `UNREACHABLE` (deliberate — zero frontend/i18n
   impact; per-config push failures still don't fail the poll, they self-heal next cycle).
-- **Host deletion cleanup.** `ExternalPluginHostService.delete` now best-effort-deletes every
-  pushed config from the host after the local cascade commits — once the host row is gone GZAC
-  never polls the host again, so reconciliation could never prune these. If the host is down at
-  that moment the rows remain until cleaned manually (accepted residual; a host-side
-  stale-owner TTL GC was considered and rejected — it would delete configs of a legitimately
-  long-down GZAC).
-
-Version-skew is safe in every combination: old GZAC × new host → rows stay unowned, nobody deletes
-them; new GZAC × old host → no listing, reconciliation skipped; the mechanism only fully engages
-when both sides are current. Operational rule (README'd): never point a database-cloned GZAC
-environment at the same host as its source — clones share host-row UUIDs and configuration ids and
-will fight over the same rows.
-
-**12.5 Host-side reconciliation & ownership ✅.** Discovery re-pushes every configuration each
-cycle but, before this, never *removed* host-side configurations GZAC no longer has — a config
-deleted while its host was down (the after-commit `deleteConfiguration` call is best-effort, no
-retry) stayed in the host's database indefinitely. Two mechanisms close this:
-
-- **Ownership.** Every push carries `ownerId` — the GZAC-side **host-row UUID**
-  (`ExternalPluginHost.id`), i.e. the identity of the GZAC↔host *relationship*. The host persists
-  it (`owner_id TEXT NULL`) as an opaque token and echoes it in
-  `GET /api/host/configurations`, which now returns **redacted summaries**
-  (`{configurationId, pluginId, pluginVersion, ownerId}`) instead of full configs — a host serves
-  many GZAC instances, and the old full-fat listing handed every `ADMIN_TOKEN` holder the service
-  tokens / decrypted properties / broker credentials of *other* instances. `HOST_ID` (the host's
-  own event-queue identity) deliberately plays no role: it identifies the host, not the pusher.
-  Since discovery re-pushes everything each cycle, live configs self-claim within one healthy
-  cycle — no data migration. The host warns when a push *changes* an owner: the fingerprint of two
-  environments (typically DB clones) pushing the same configuration id.
-- **Reconciliation pass** (`ExternalPluginDiscoveryService.reconcileConfigurations`). Each poll
-  fetches the host's configuration listing, then reads the local set, and deletes host entries
-  that carry **this GZAC's ownerId** but are absent locally. Never deleted: entries owned by
-  another GZAC, unowned entries (`ownerId` null — pre-ownership pushers; claimed on their owner's
-  next push, or cleaned manually), and anything when the listing is unavailable. Correctness
-  invariant: the host snapshot is fetched *before* the local read, so a concurrently created
-  config is absent from the snapshot (never a candidate) and a concurrently deleted one is still
-  in the local set (pruned next cycle); config ids are GZAC-generated UUIDs and never reused.
-  Parsing is strict (`ExternalPluginHostClient.listConfigurations`): 404/405 → `null` → skip the
-  pass (older hosts / minimal apps keep working); any other failure or a malformed body throws and
-  fails the whole poll — deleting from a half-parsed listing could nuke live configs. Deletes are
-  idempotent (a 404 on DELETE counts as success) and a failed delete is retried next cycle.
-  Ownership scoping is a *safety* mechanism, not authorization — all `ADMIN_TOKEN` holders are
-  mutually trusted; the host does not enforce owners on DELETE (that would break legacy-row and
-  older-GZAC cleanup).
-- **Status semantics.** `CONNECTED` previously flipped on a bare `/health` 200 *before* anything
-  else, and post-probe failures never touched the failure counter — a host with a wrong admin
-  token stayed `CONNECTED` forever. Now the flip happens only at the end of a fully successful
-  poll (health + authenticated plugin and configuration listings fetched, reconcile + pushes run),
-  and a state-fetch failure counts toward the same `failure-threshold` as an unreachable host. No
-  new enum value: "pings but unusable" surfaces as `UNREACHABLE` (deliberate — zero frontend/i18n
-  impact; per-config push failures still don't fail the poll, they self-heal next cycle).
-- **Host deletion cleanup.** `ExternalPluginHostService.delete` now best-effort-deletes every
+- **Host deletion cleanup.** `ExternalPluginHostService.delete` best-effort-deletes every
   pushed config from the host after the local cascade commits — once the host row is gone GZAC
   never polls the host again, so reconciliation could never prune these. If the host is down at
   that moment the rows remain until cleaned manually (accepted residual; a host-side
@@ -1463,8 +1445,8 @@ parent (the **parent-proxy** model, §13.2) rather than being handed the token v
 > (`--bundles page`). Two things about it *are* specific and are easy to get wrong from the type
 > alone: GZAC reads **`icon`** for the menu icon, and it resolves a page bundle's **`title` as a
 > translation key** across every locale bucket — every other bundle type renders its title
-> literally. `FrontendBundle` declared a `menuIcon`/`menuPosition` pair that nothing ever read; both
-> were removed in favour of `icon` when the scaffold gained a `page` bundle.
+> literally. `FrontendBundle` deliberately declares no `menuIcon`/`menuPosition` pair — `icon` is
+> the single field GZAC reads for a page bundle's menu rendering.
 
 ### 13.1 Case-tab surface (`EXTERNAL_PLUGIN` tab type) ✅
 
@@ -1875,7 +1857,8 @@ All iframe surfaces are now implemented: case **tab** (§13.1), **task form** (�
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist **for both the service and the
   user principal** + service-token-filter + service-token-ttl + **user-token suites** +
   **task-form-submission suite** + endpoint-
-  description-coverage + host-client-HMAC + host-registration transport-guard + compatibility +
+  description-coverage + host-client-HMAC + host-registration and connection-update
+  transport-guard + compatibility +
   event-queue mode/TTL tests). The endpoint-description-coverage suite
   (`EndpointDescriptionCoverageTest`, §3.8/§4) scans every controller on the test classpath and fails
   unless each handler carries an `@EndpointDescription` with both `en` and `nl` text — so the
@@ -2082,13 +2065,19 @@ endpoints, no duplicated token/HMAC/discovery/iframe code:
 - **`external_plugin_host.kind`** (`ExternalPluginHostKind = PLUGIN_HOST | APP`, default
   `PLUGIN_HOST`, `20260708-external-plugin-host-kind.xml`). Carried through `HostCreateRequest` /
   `HostResponse` and `ExternalPluginHostService.register()`.
-- **Immediate discovery on registration** — `createHost()` calls the new
+- **Immediate discovery on registration** — `createHost()` calls
   `ExternalPluginDiscoveryService.discoverHost(hostId)` for an APP so its single plugin is
   discovered and configurable at once instead of on the next ≤60 s poll. Best-effort; the periodic
   cycle reconciles regardless.
 - **Upload guard** — `ExternalPluginHostService.uploadPlugin()` rejects an APP host (an app serves
   its own plugin); the UI hides upload for apps and restricts the upload host list to
   `kind = PLUGIN_HOST`.
+- **Instance announcements are optional** — GZAC PUTs `/api/host/gzac-instances` to every
+  integration, but an app that serves no framable screens may simply not implement the route:
+  GZAC treats a 404 as unsupported (one debug line, no retry noise — the poll re-announces
+  anyway). The reference app implements it — announcements held in memory, re-filled by every
+  poll — and serves the announced union as the `frame-ancestors` CSP on its bundles, failing
+  closed like the plugin host.
 - **Admin UX** — the "Plugin hosts" tab becomes **Integrations** with a **Type** tag column; an
   **Add app** button opens the shared host modal in APP mode. Discovery, configuration, permissions,
   process-link/case-tab/task-form binding, and deletion guards are all reused unchanged, because an
@@ -2104,7 +2093,7 @@ against `@valtimo/plugin-sdk/frontend`), a `handle_request` `/data` route (level
 RabbitMQ event consumer that notes back on `document.created`. HMAC verification reproduces
 `ExternalPluginHmacSigner` byte-for-byte. It doubles as living documentation of the app contract.
 
-**Verification.** `:backend:external-plugin:test` (incl. new `register`-persists-kind,
+**Verification.** `:backend:external-plugin:test` (incl. `register`-persists-kind,
 APP-upload-rejected, and default-kind cases) and `:backend:app:gzac:compileKotlin` BUILD SUCCESSFUL.
 Demo app `npm run build` clean (server `tsc` + three iframe bundles); a live run confirmed `/health`,
 the public `/plugin-manifest`, a correctly-signed `GET /api/host/plugins` (→ 200 with the single
@@ -3037,20 +3026,22 @@ grant mismatch through it would let an admin unblock pushing grants that were ne
 
 **Idempotency keys.** Both `ExternalPluginHost.id` and `ExternalPluginConfiguration.id` are
 caller-supplied, so the descriptor's UUIDs *are* the row ids and a redeployment recognises its own
-rows. `register(…)` and `create(…)` gained a trailing `id: UUID = UUID.randomUUID()` parameter;
-every existing caller is unaffected.
+rows. `register(…)` and `create(…)` take a trailing `id: UUID = UUID.randomUUID()` parameter, so
+callers that supply none keep generating their own.
 
 **Grants are verbatim, never derived.** A descriptor states the full granted sets, and the same
 `requireExactGrantMatch` validation the activation screen runs still applies (§3.1). Deriving them
 from the manifest would let a manifest change silently widen an existing environment's grants; the
 descriptor author reviewing the declared set *is* the acceptance step.
 
-**What redeployment does not do.** `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` and the broker
-fields are immutable after registration by design — the confidential-transport check that pins broker
-credentials to a safe base URL only runs at registration (§6) — so a changed value is reported by
-name and the row left alone (#618). Only `frontendOrigins` and the event-queue mode/TTL are
-reconciled. An activated configuration is likewise never re-granted: that set is what an admin
-accepted. Its `title` and `properties` *are* upserted from the descriptor on every start.
+**What redeployment does not do.** Descriptors never change `baseUrl`, `secret`,
+`gzacCallbackBaseUrl`, `kind` or the broker fields on an existing host: silently repointing a live
+environment's broker or host at boot from an env var is a bigger blast radius than an explicit
+admin action, so a drifted value is reported by name and the row left alone. The repair is the
+connection PATCH (§6, #618) — the one deliberate, validated way to repoint. Only `frontendOrigins`
+and the event-queue mode/TTL are reconciled from the descriptor. An activated configuration is
+likewise never re-granted: that set is what an admin accepted. Its `title` and `properties` *are*
+upserted from the descriptor on every start.
 
 **Failure.** Errors propagate, like every other importer and like the embedded plugin
 autodeployment (which rethrows). A malformed descriptor or a rejected registration fails the import
@@ -3100,13 +3091,18 @@ which is loopback, so events work unchanged.
 
 ### 22.7 Development environment
 
-`backend/apps/dev/docker-compose.yaml` gained a `plugin-host` profile (`plugin-host-database`,
-`plugin-host`, `demo-app`), added to `bootRunWithDocker`'s compose arguments. The descriptor at
+`backend/apps/dev/docker-compose.yaml` carries a `plugin-host` profile (`plugin-host-database`,
+`plugin-host`, `demo-app`), included in `bootRunWithDocker`'s compose arguments. The descriptor at
 `backend/apps/dev/src/main/resources/config/global/external-plugin/dev.externalplugin.json` registers both
 integrations and activates one configuration of each. The plugin host mounts
 `plugin-host/sample-plugins/case-summary/dist` over `/data/preinstalled`, so
 `npm --prefix plugin-host run setup` once is all that is needed for the sample plugin to be installed
 at boot; without it the directory is empty and the host simply starts with no plugins.
+
+The compose wiring builds the locally-built images (plugin host, demo app) before every `up`
+(`buildBeforeUp`), so the running containers always match the checked-out sources — the Docker
+layer cache makes an unchanged tree a no-op. A stale image silently running old code is the one
+failure mode this stack must never have.
 
 ---
 
@@ -3163,7 +3159,7 @@ approval-by-clicking — and is arguably stronger, being peer-reviewed and enfor
 | # | Scenario | Acceptance? | Why |
 |---|---|---|---|
 | 17 | New integration registered from a descriptor | **No** | Host registration is not a plugin permission. The gate that matters is the confidential-transport check on broker credentials at registration (§6). |
-| 18 | Descriptor changes `baseUrl` / secret / broker fields | **No — refused** | Immutable after registration; reported and left unchanged. Changing them means delete and re-register. |
+| 18 | Descriptor changes `baseUrl` / secret / broker fields | **No — refused** | Descriptors never repoint an existing host; the drift is reported and the row left unchanged. Repointing is an explicit admin action: the connection PATCH / Edit connection modal (§6, #618), which re-runs the transport checks. |
 
 ### 23.5 Out of scope
 

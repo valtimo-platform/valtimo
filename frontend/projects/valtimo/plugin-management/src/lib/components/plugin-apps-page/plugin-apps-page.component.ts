@@ -31,6 +31,7 @@ import {
   ExternalPluginConfiguration,
   ExternalPluginDefinition,
   ExternalPluginHost,
+  ExternalPluginHostConnectionUpdateRequest,
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,
   ExternalPluginService,
@@ -61,7 +62,9 @@ import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {PluginAppAddModalComponent} from '../plugin-app-add-modal/plugin-app-add-modal.component';
 import {PluginExternalEditModalComponent} from '../plugin-external-edit-modal/plugin-external-edit-modal.component';
+import {PluginHostEditModalComponent} from '../plugin-host-edit-modal/plugin-host-edit-modal.component';
 import {PluginHostEventQueueModalComponent} from '../plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
+import {PluginHostFrontendOriginsModalComponent} from '../plugin-host-frontend-origins-modal/plugin-host-frontend-origins-modal.component';
 import {PluginLogModalComponent} from '../plugin-log-modal/plugin-log-modal.component';
 import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-modal.component';
 import {UnifiedPluginConfigurationRow} from '../../models';
@@ -103,7 +106,9 @@ const LOG_CAPABILITY = 'log';
     ConfirmationModalModule,
     PluginAppAddModalComponent,
     PluginExternalEditModalComponent,
+    PluginHostEditModalComponent,
     PluginHostEventQueueModalComponent,
+    PluginHostFrontendOriginsModalComponent,
     PluginLogModalComponent,
     PluginUsageModalComponent,
   ],
@@ -149,6 +154,15 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   public readonly eventQueueModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly hostToEditEventQueue$ = new BehaviorSubject<ExternalPluginHost | null>(null);
 
+  public readonly editConnectionModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostToEditConnection$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+  public readonly editConnectionSubmitting$ = new BehaviorSubject<boolean>(false);
+  public readonly editConnectionErrorMessage$ = new BehaviorSubject<string | null>(null);
+  public readonly reloadModalOpen$ = new BehaviorSubject<boolean>(false);
+
+  public readonly frontendOriginsModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostToEditFrontendOrigins$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+
   public readonly usageModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly usageModalUsages$ = new BehaviorSubject<Array<ExternalPluginHostUsage>>([]);
   public usageModalEntityName: string | null = null;
@@ -186,7 +200,7 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   public readonly appActionItems: ActionItem[] = [
     // Configuring an app for the first time happens through the add-app stepper (or a row click on
     // an unconfigured app); a dedicated menu entry that only ever showed disabled once configured is
-    // omitted until editing apps/hosts is reworked in a later story.
+    // omitted.
     {
       callback: this.editConfiguration.bind(this),
       label: 'pluginManagement.editConfiguration',
@@ -200,8 +214,16 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
       disabledCallback: (row: PluginAppRow) => !row.configuration || !row.supportsLogs,
     },
     {
+      callback: this.editHostConnection.bind(this),
+      label: 'pluginManagement.editConnection',
+    },
+    {
       callback: this.editHostEventQueue.bind(this),
       label: 'pluginManagement.editEventQueue',
+    },
+    {
+      callback: this.editHostFrontendOrigins.bind(this),
+      label: 'pluginManagement.editFrontendOrigins',
     },
     {
       callback: this.deleteHost.bind(this),
@@ -518,6 +540,89 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  // --- Connection editing (#618) ---
+
+  public editHostConnection(host: ExternalPluginHost): void {
+    this.hostToEditConnection$.next(host);
+    this.editConnectionErrorMessage$.next(null);
+    this.editConnectionModalOpen$.next(true);
+  }
+
+  public closeEditConnectionModal(): void {
+    this.editConnectionModalOpen$.next(false);
+    this.hostToEditConnection$.next(null);
+    this.editConnectionErrorMessage$.next(null);
+  }
+
+  /** Same reload rule as the hosts page: a new base URL means a new CSP frame origin. */
+  public submitConnectionUpdate(patch: ExternalPluginHostConnectionUpdateRequest): void {
+    const host = this.hostToEditConnection$.value;
+    if (!host) return;
+    this.editConnectionSubmitting$.next(true);
+    this._externalPluginService.updateHostConnection(host.id, patch).subscribe({
+      next: () => {
+        this.editConnectionSubmitting$.next(false);
+        this.closeEditConnectionModal();
+        this._refreshApps$.next();
+        if (patch.baseUrl !== undefined) this.reloadModalOpen$.next(true);
+      },
+      error: (response: HttpErrorResponse) => {
+        this.editConnectionSubmitting$.next(false);
+        this.editConnectionErrorMessage$.next(this._extractHostError(response));
+        this._logger.error('Something went wrong with updating the app connection.', response);
+      },
+    });
+  }
+
+  public confirmReload(): void {
+    window.location.reload();
+  }
+
+  public cancelReload(): void {
+    this._refreshApps$.next();
+  }
+
+  // --- Frontend origins ---
+
+  public editHostFrontendOrigins(host: ExternalPluginHost): void {
+    this.hostToEditFrontendOrigins$.next(host);
+    this.frontendOriginsModalOpen$.next(true);
+  }
+
+  public closeFrontendOriginsModal(): void {
+    this.frontendOriginsModalOpen$.next(false);
+    this.hostToEditFrontendOrigins$.next(null);
+  }
+
+  public submitFrontendOriginsUpdate(origins: Array<string>): void {
+    const host = this.hostToEditFrontendOrigins$.value;
+    if (!host) return;
+    this._externalPluginService.updateHostFrontendOrigins(host.id, origins).subscribe({
+      next: () => {
+        this.frontendOriginsModalOpen$.next(false);
+        this.hostToEditFrontendOrigins$.next(null);
+        this._refreshApps$.next();
+      },
+      error: () => {
+        this._logger.error('Something went wrong with updating the app frontend origins.');
+      },
+    });
+  }
+
+  /** Mirrors the hosts page: `detail` is the operator-facing reason the validation mapper fills. */
+  private _extractHostError(response: HttpErrorResponse): string {
+    const body = response?.error;
+    const candidate =
+      (typeof body?.detail === 'string' && body.detail) ||
+      (typeof body?.message === 'string' && body.message) ||
+      (typeof body?.title === 'string' && body.title) ||
+      '';
+    return (
+      candidate.trim() ||
+      this._translateService.instant('pluginManagement.host.createFailedFallback')
+    );
+  }
+
   // --- Usage modal ---
 
   public closeUsageModal(): void {
@@ -555,7 +660,9 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
         configuration?.title ?? this._translateService.instant('pluginManagement.notConfigured'),
       definition,
       configuration,
-      supportsLogs: (definition?.manifest?.permissions?.capabilities ?? []).includes(LOG_CAPABILITY),
+      supportsLogs: (definition?.manifest?.permissions?.capabilities ?? []).includes(
+        LOG_CAPABILITY
+      ),
     };
   }
 

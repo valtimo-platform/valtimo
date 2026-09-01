@@ -103,17 +103,10 @@ class ExternalPluginHostService(
         }
         // The config push delivers the broker AMQP URL and credentials in its body. HMAC binds and
         // authenticates that body but does not encrypt it, so a broker may only be configured on a
-        // host the push can reach over a confidential transport. Registration is the single gate:
-        // the base URL is immutable afterwards, so no later push can reach an insecure host.
-        if (brokerAmqpUrl != null && !isSecureTransport(normalizedBaseUrl)) {
-            throw ExternalPluginHostValidationException(
-                "Refusing to register host '$normalizedBaseUrl' with event broker credentials over an " +
-                    "unencrypted transport. The configuration push carries the broker AMQP URL and " +
-                    "credentials, so the host must be reachable over HTTPS (or a loopback address for " +
-                    "local development). Enable TLS on the host, or leave the event broker blank to " +
-                    "disable events for configurations on this host."
-            )
-        }
+        // host the push can reach over a confidential transport. The same check re-runs on every
+        // later mutation of the (baseUrl, broker) pair ([updateConnection]), so no push can ever
+        // reach an insecure host with broker credentials.
+        requireConfidentialTransportForBroker(normalizedBaseUrl, brokerAmqpUrl)
         val resolvedTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
         val host = ExternalPluginHost(
             id = id,
@@ -133,10 +126,9 @@ class ExternalPluginHostService(
     }
 
     /**
-     * Updates only the browser origins allowed to embed this host's plugin screens. Like
-     * [updateEventQueue] this is deliberately narrow: baseUrl, secret and broker fields stay
-     * immutable because the transport check that pins broker credentials to a confidential baseUrl
-     * only runs at registration.
+     * Updates only the browser origins allowed to embed this host's plugin screens. Connection
+     * fields have their own update path, [updateConnection], which re-runs the registration-time
+     * transport checks.
      *
      * The origins reach the plugin host on the next push (registration, this update, or any
      * discovery poll), which serves them as `frame-ancestors`. An empty list means no page may
@@ -152,10 +144,10 @@ class ExternalPluginHostService(
         origins.joinToString(",").takeIf { it.isNotEmpty() }
 
     /**
-     * Updates only the per-host event-queue declaration knobs. The base URL, secret, broker URL
-     * and broker exchange remain immutable — those are the security-sensitive fields. Mode and TTL
-     * only affect the queue declaration on the plugin-host side; the next configuration push
-     * propagates the change so the host swaps its queue.
+     * Updates only the per-host event-queue declaration knobs. The connection fields (base URL,
+     * secret, broker URL, broker exchange) are edited through [updateConnection], which re-runs
+     * the transport checks. Mode and TTL only affect the queue declaration on the plugin-host
+     * side; the next configuration push propagates the change so the host swaps its queue.
      */
     fun updateEventQueue(
         hostId: UUID,
@@ -182,6 +174,129 @@ class ExternalPluginHostService(
                     "$MAX_EVENT_QUEUE_TTL_MS (30d), got $value."
             }
             value
+        }
+    }
+
+    /**
+     * Updates the connection fields of a registered host or app so an operator can repoint it in
+     * place — moved broker, moved host, rotated admin token — without recreating it and orphaning
+     * its configurations (#618).
+     *
+     * Field semantics: `null` leaves a field unchanged. [secret] additionally treats blank as
+     * unchanged (an untouched password field). The broker fields treat blank as *clear* — they are
+     * the only optional ones at registration. [name], [baseUrl] and [gzacCallbackBaseUrl] reject
+     * blank: they are required at registration and clearing them would break the row.
+     *
+     * Every check register() runs re-runs here against the *effective* result, so the invariant
+     * "no push carries broker credentials to a host reachable only over plaintext" survives any
+     * combination of edits: broker added to an http host, baseUrl flipped to http under an
+     * existing broker, or both at once.
+     *
+     * The caller is expected to follow up with a single-host re-discovery, which announces the
+     * (possibly new) callback URL and re-pushes every configuration with the new values.
+     */
+    fun updateConnection(
+        hostId: UUID,
+        name: String? = null,
+        baseUrl: String? = null,
+        secret: String? = null,
+        gzacCallbackBaseUrl: String? = null,
+        eventBrokerAmqpUrl: String? = null,
+        eventBrokerExchange: String? = null,
+    ): ExternalPluginHost {
+        val host = get(hostId)
+
+        name?.let {
+            if (it.isBlank()) throw ExternalPluginHostValidationException("The host name must not be blank.")
+        }
+        gzacCallbackBaseUrl?.let {
+            if (it.isBlank()) {
+                throw ExternalPluginHostValidationException(
+                    "The GZAC callback base URL must not be blank — the host needs it to reach " +
+                        "this GZAC for plugin callbacks."
+                )
+            }
+        }
+        val normalizedBaseUrl = baseUrl?.let {
+            if (it.isBlank()) throw ExternalPluginHostValidationException("The base URL must not be blank.")
+            it.trimEnd('/')
+        }
+        if (eventBrokerAmqpUrl != null && eventBrokerAmqpUrl.contains("$AMQP_USERINFO_REDACTION@")) {
+            throw ExternalPluginHostValidationException(
+                "The event broker AMQP URL looks like a redacted value " +
+                    "('$AMQP_USERINFO_REDACTION@'). Re-enter the full URL including credentials, " +
+                    "or omit the field to leave the stored value unchanged."
+            )
+        }
+
+        val effectiveBaseUrl = normalizedBaseUrl ?: host.baseUrl
+        // Blank broker URL clears it (events disabled); null leaves the stored value in place.
+        val effectiveBrokerUrl = when {
+            eventBrokerAmqpUrl == null -> host.eventBrokerAmqpUrl
+            eventBrokerAmqpUrl.isBlank() -> null
+            else -> eventBrokerAmqpUrl
+        }
+        if (!isConnectableBaseUrl(effectiveBaseUrl)) {
+            throw ExternalPluginHostValidationException(
+                "'$effectiveBaseUrl' is not a reachable address for the base URL. 0.0.0.0 (and " +
+                    "the IPv6 equivalent ::) is a bind address, not a connect address — use the " +
+                    "host name or IP address GZAC can reach the plugin host on, for example " +
+                    "http://localhost:8090."
+            )
+        }
+        requireConfidentialTransportForBroker(
+            effectiveBaseUrl,
+            effectiveBrokerUrl,
+            "Refusing to update host '$effectiveBaseUrl': the resulting combination carries event " +
+                "broker credentials over an unencrypted transport."
+        )
+        if (normalizedBaseUrl != null && normalizedBaseUrl != host.baseUrl) {
+            hostRepository.findByBaseUrl(normalizedBaseUrl)?.takeIf { it.id != hostId }?.let { other ->
+                throw ExternalPluginHostValidationException(
+                    "'$normalizedBaseUrl' is already registered as host '${other.name}' " +
+                        "(${other.id}). Two host rows must not share one base URL."
+                )
+            }
+        }
+
+        val baseUrlChanged = normalizedBaseUrl != null && normalizedBaseUrl != host.baseUrl
+        val secretChanged = !secret.isNullOrBlank()
+
+        name?.let { host.name = it }
+        normalizedBaseUrl?.let { host.baseUrl = it }
+        if (secretChanged) host.secret = encryptionService.encrypt(secret!!)
+        gzacCallbackBaseUrl?.let { host.gzacCallbackBaseUrl = it.trimEnd('/') }
+        eventBrokerAmqpUrl?.let { host.eventBrokerAmqpUrl = it.takeIf { url -> url.isNotBlank() } }
+        eventBrokerExchange?.let { host.eventBrokerExchange = it.takeIf { ex -> ex.isNotBlank() } }
+
+        if (baseUrlChanged || secretChanged) {
+            // Fresh start against the new reality; the follow-up discovery records truthful status.
+            host.consecutiveFailures = 0
+        }
+        if (baseUrlChanged) {
+            // definition.baseUrl is denormalized from the host row and feeds bundle/logo URLs —
+            // rewrite it now instead of serving the dead old address until the next poll.
+            val definitions = definitionRepository.findAllByHostId(hostId)
+            definitions.forEach { it.baseUrl = "${host.baseUrl}/plugins/${it.pluginId}" }
+            definitionRepository.saveAll(definitions)
+        }
+        return hostRepository.save(host)
+    }
+
+    private fun requireConfidentialTransportForBroker(
+        baseUrl: String,
+        brokerAmqpUrl: String?,
+        refusalPrefix: String =
+            "Refusing to register host '$baseUrl' with event broker credentials over an " +
+                "unencrypted transport.",
+    ) {
+        if (brokerAmqpUrl != null && !isSecureTransport(baseUrl)) {
+            throw ExternalPluginHostValidationException(
+                "$refusalPrefix The configuration push carries the broker AMQP URL and " +
+                    "credentials, so the host must be reachable over HTTPS (or a loopback address " +
+                    "for local development). Enable TLS on the host, or leave the event broker " +
+                    "blank to disable events for configurations on this host."
+            )
         }
     }
 
@@ -277,6 +392,9 @@ class ExternalPluginHostService(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+
+        /** Replaces AMQP userinfo in responses; [updateConnection] refuses URLs echoing it back. */
+        const val AMQP_USERINFO_REDACTION = "***"
 
         private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "::1")
 

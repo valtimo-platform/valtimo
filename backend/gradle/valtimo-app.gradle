@@ -64,6 +64,11 @@ def sharedComposeFile = project(":backend:apps:dev").file("docker-compose.yaml")
 dockerCompose {
     projectName = "gzac-docker-compose"
     useComposeFiles = [sharedComposeFile.path]
+    // Locally-built images (plugin-host, demo-app) must always run the checked-out sources:
+    // `docker compose build` runs before every `up`, and the Docker layer cache makes an
+    // unchanged tree a no-op. Explicit, even though it is the plugin default, because a stale
+    // image silently running old code is the failure mode this stack must never have.
+    buildBeforeUp = true
     composeAdditionalArgs = [
         "--profile", "zgw",
         "--profile", "openklant",

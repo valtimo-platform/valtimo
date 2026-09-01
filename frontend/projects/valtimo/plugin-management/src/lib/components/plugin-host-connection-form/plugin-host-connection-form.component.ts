@@ -32,6 +32,8 @@ import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular'
 import {SelectItem, SelectModule} from '@valtimo/components';
 import {
   ExternalPluginEventQueueMode,
+  ExternalPluginHost,
+  ExternalPluginHostConnectionUpdateRequest,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostKind,
   ExternalPluginService,
@@ -68,6 +70,14 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
   @Input() public active = false;
   /** Freezes the form, e.g. while connecting or after the host has been created. */
   @Input() public disabled = false;
+  /**
+   * Edit mode (#618): prefill from this host instead of the environment defaults, make the secret
+   * optional (blank = unchanged), and hide the event-queue and frontend-origins sections — those
+   * keep their dedicated modals. The embedder builds the update via {@link buildConnectionPatch},
+   * which sends dirty fields only, so the write-only secret and the credential-redacted broker URL
+   * never round-trip unless the admin actually retyped them.
+   */
+  @Input() public editHost: ExternalPluginHost | null = null;
   /** Chooses the placeholder examples: 'host' in the plugin-host modal, 'app' in the app add stepper. */
   @Input() public variant: 'host' | 'app' = 'host';
 
@@ -95,6 +105,11 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
   public queueModeItems: SelectItem[] = [];
 
   private readonly _subscriptions = new Subscription();
+  /** Prefill snapshot in edit mode; [isEdited] and [buildConnectionPatch] compare against it. */
+  private _editBaseline: Record<
+    'name' | 'baseUrl' | 'gzacCallbackBaseUrl' | 'eventBrokerAmqpUrl' | 'eventBrokerExchange',
+    string
+  > | null = null;
 
   public get namePlaceholder(): string {
     return this.variant === 'app' ? 'my-app' : 'my-plugin-host';
@@ -104,6 +119,10 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     return this.variant === 'app'
       ? 'https://my-app.internal:8090'
       : 'https://plugin-host.internal:8090';
+  }
+
+  public get secretPlaceholder(): string {
+    return this.editHost ? '••••••••' : 'admin-token';
   }
 
   public get ttlHintKey(): string {
@@ -155,7 +174,11 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['active']?.currentValue === true) {
-      this._fetchDefaults();
+      if (this.editHost) {
+        this._enterEditMode(this.editHost);
+      } else {
+        this._fetchDefaults();
+      }
     }
 
     if (changes['disabled']) {
@@ -200,6 +223,48 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     };
   }
 
+  /**
+   * Whether a connection field currently differs from the value it was prefilled with. Deliberately
+   * a value comparison, not `dirty`: a field the admin edited and then reverted counts as unchanged
+   * again — the warning below it disappears and the field never travels. That also means a broker
+   * URL reverted to its redacted prefill (`amqp://***@…`) is simply not sent, instead of tripping
+   * the backend's redaction-marker guard.
+   */
+  public isEdited(
+    field: 'name' | 'baseUrl' | 'gzacCallbackBaseUrl' | 'eventBrokerAmqpUrl' | 'eventBrokerExchange'
+  ): boolean {
+    if (!this._editBaseline) return false;
+    return (this.form.controls[field].value ?? '').trim() !== this._editBaseline[field];
+  }
+
+  /**
+   * The connection PATCH body: fields that differ from the prefill baseline only, so an untouched
+   * secret (empty) and an untouched or reverted redacted broker URL never travel. `null` while the
+   * form is invalid; an empty object when nothing was edited — the embedder can skip the call then.
+   */
+  public buildConnectionPatch(): ExternalPluginHostConnectionUpdateRequest | null {
+    if (this.form.invalid) return null;
+    const controls = this.form.controls;
+    const patch: ExternalPluginHostConnectionUpdateRequest = {};
+    if (this.isEdited('name')) patch.name = controls.name.value ?? '';
+    if (this.isEdited('baseUrl')) patch.baseUrl = controls.baseUrl.value ?? '';
+    // A blank secret is "unchanged" server-side too, but not sending it at all is clearer.
+    if (controls.secret.value?.trim()) {
+      patch.secret = controls.secret.value;
+    }
+    if (this.isEdited('gzacCallbackBaseUrl')) {
+      patch.gzacCallbackBaseUrl = controls.gzacCallbackBaseUrl.value ?? '';
+    }
+    // Blank means clear for the broker fields; the trim keeps a whitespace-only edit a clear too.
+    if (this.isEdited('eventBrokerAmqpUrl')) {
+      patch.eventBrokerAmqpUrl = controls.eventBrokerAmqpUrl.value?.trim() ?? '';
+    }
+    if (this.isEdited('eventBrokerExchange')) {
+      patch.eventBrokerExchange = controls.eventBrokerExchange.value?.trim() ?? '';
+    }
+    return patch;
+  }
+
   public reset(): void {
     this.form.controls.frontendOrigins.clear();
     this.form.reset({
@@ -212,6 +277,30 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
       eventQueueMode: 'LIVE',
       eventQueueTtlMs: null,
     });
+  }
+
+  private _enterEditMode(host: ExternalPluginHost): void {
+    // The secret is write-only: it prefills empty and empty means unchanged.
+    this.form.controls.secret.removeValidators(Validators.required);
+    this.form.controls.secret.updateValueAndValidity({emitEvent: false});
+    this._editBaseline = {
+      name: host.name,
+      baseUrl: host.baseUrl,
+      gzacCallbackBaseUrl: host.gzacCallbackBaseUrl ?? '',
+      eventBrokerAmqpUrl: host.eventBrokerAmqpUrl ?? '',
+      eventBrokerExchange: host.eventBrokerExchange ?? '',
+    };
+    this.form.patchValue({
+      secret: '',
+      // The redacted value (amqp://***@…) is shown as-is; buildConnectionPatch only sends a field
+      // whose value differs from this baseline, and the backend refuses the marker outright.
+      ...this._editBaseline,
+    });
+    this.form.markAsPristine();
+    // ngOnChanges runs before ngOnInit's statusChanges subscription exists, so the validity of the
+    // prefilled form must be announced explicitly or the embedder's save stays disabled. As a
+    // microtask: emitting synchronously from ngOnChanges risks NG0100.
+    queueMicrotask(() => this.validChange.emit(this.form.valid));
   }
 
   private _fetchDefaults(): void {

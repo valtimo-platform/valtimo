@@ -37,6 +37,8 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/host")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/external-plugin/host/*")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PATCH, "/api/management/v1/external-plugin/host/*/event-queue")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PATCH, "/api/management/v1/external-plugin/host/*/frontend-origins")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PATCH, "/api/management/v1/external-plugin/host/*/connection")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host/*/usages")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/host-defaults")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/host/*/upload")).hasAuthority(ADMIN)

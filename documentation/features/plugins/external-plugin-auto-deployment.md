@@ -134,9 +134,11 @@ Restarting is safe: rows are recognised by their descriptor ids and nothing an a
 accepted is altered. In detail:
 
 * `frontendOrigins` and the event-queue settings are brought in line with the descriptor.
-* `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` and the broker fields are **immutable** after
-  registration. A changed value is logged as a warning and the integration is left as it is; to
-  repoint an integration, delete it and let it be registered again.
+* Descriptors never change `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` or the broker fields
+  on an existing integration. A changed value is logged as a warning and the integration is left as
+  it is; to repoint an integration — a moved host, a moved broker, a rotated admin token — use
+  **Edit connection** on the integration in `Admin → Integrations`, which validates the change and
+  re-pushes every configuration.
 * An active configuration is never re-granted — that set is what an administrator accepted. Its
   `title` and `properties` are brought in line with the descriptor on every start.
 * An integration whose `baseUrl` is already registered under a *different* id is skipped rather than
