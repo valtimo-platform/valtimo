@@ -26,12 +26,14 @@ import {
   TextTemplatePluginModule,
   textTemplatePluginSpecification,
 } from '@valtimo-plugins/freemarker';
+import {PublictaskPluginModule, publictaskPluginSpecification} from '@valtimo-plugins/publictask';
 
 export const pluginImports = [
   SmtpMailPluginModule,
   DocumentGeneratorPluginModule,
   MailTemplatePluginModule,
   TextTemplatePluginModule,
+  PublictaskPluginModule,
 ];
 
 export const pluginSpecifications = [
@@ -39,4 +41,5 @@ export const pluginSpecifications = [
   documentGeneratorPluginSpecification,
   mailTemplatePluginSpecification,
   textTemplatePluginSpecification,
+  publictaskPluginSpecification,
 ];

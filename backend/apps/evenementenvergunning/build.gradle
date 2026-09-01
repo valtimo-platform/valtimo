@@ -32,6 +32,7 @@ dependencies {
     // Plugins
     implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
     implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
+    implementation("com.ritense.valtimoplugins:publictask:$publictaskPluginVersion")
 
     implementation("io.github.oshai:kotlin-logging")
 
