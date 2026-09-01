@@ -445,6 +445,44 @@ class OpenSearchPermissionConditionTranslatorTest {
         assertThat(rangeQuery.fieldName()).isEqualTo("content.name")
     }
 
+    @Test
+    fun `translateField maps internalStatus to OpenSearch field`() {
+        val permission = Permission(
+            resourceType = JsonSchemaDocument::class.java,
+            actions = mutableListOf(Action<JsonSchemaDocument>(Action.VIEW)),
+            conditionContainer = ConditionContainer(listOf(
+                FieldPermissionCondition("internalStatus.id.key", EQUAL_TO, "completed")
+            )),
+            role = Role(key = "test-role"),
+        )
+
+        val result = translator.toQuery(listOf(permission), Action<JsonSchemaDocument>(Action.VIEW))
+
+        assertThat(result).isInstanceOf(TermQueryBuilder::class.java)
+        val termQuery = result as TermQueryBuilder
+        assertThat(termQuery.fieldName()).isEqualTo("internalStatus")
+        assertThat(termQuery.value()).isEqualTo("completed")
+    }
+
+    @Test
+    fun `translateField maps caseTags with LIST_CONTAINS to OpenSearch field`() {
+        val permission = Permission(
+            resourceType = JsonSchemaDocument::class.java,
+            actions = mutableListOf(Action<JsonSchemaDocument>(Action.VIEW)),
+            conditionContainer = ConditionContainer(listOf(
+                FieldPermissionCondition("caseTags", LIST_CONTAINS, "urgent")
+            )),
+            role = Role(key = "test-role"),
+        )
+
+        val result = translator.toQuery(listOf(permission), Action<JsonSchemaDocument>(Action.VIEW))
+
+        assertThat(result).isInstanceOf(TermQueryBuilder::class.java)
+        val termQuery = result as TermQueryBuilder
+        assertThat(termQuery.fieldName()).isEqualTo("caseTags.key")
+        assertThat(termQuery.value()).isEqualTo("urgent")
+    }
+
     // --- Helper methods ---
 
     @Test
@@ -452,6 +490,8 @@ class OpenSearchPermissionConditionTranslatorTest {
         assertThat(OpenSearchPermissionConditionTranslator.jpaToOsField("content.content")).isEqualTo("content")
         assertThat(OpenSearchPermissionConditionTranslator.jpaToOsField("createdBy")).isEqualTo("createdBy")
         assertThat(OpenSearchPermissionConditionTranslator.jpaToOsField("assigneeId")).isEqualTo("assigneeId")
+        assertThat(OpenSearchPermissionConditionTranslator.jpaToOsField("internalStatus.id.key")).isEqualTo("internalStatus")
+        assertThat(OpenSearchPermissionConditionTranslator.jpaToOsField("caseTags")).isEqualTo("caseTags.key")
     }
 
     @Test

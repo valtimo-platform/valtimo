@@ -35,6 +35,7 @@ noticeably on configurations with large document schemas or many process links.
 | Area | Fix |
 |------|-----|
 | Case configuration | A field path the case model does not allow is rejected instead of accepted |
+| Case search | Permissions based on case status or tags now filter OpenSearch search results |
 | Case definitions | A new draft based on an existing version of a case with building blocks can be created again |
 | Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
 | Cases | The progress tab shows the name of every process, instead of leaving some blank |
