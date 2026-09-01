@@ -91,11 +91,10 @@ export async function hostManagementRoutes(
       const zipBuffer = Buffer.concat(chunks);
 
       // The multipart parser truncates a stream that exceeds its size limit rather than erroring —
-      // reject explicitly so an oversized upload can't slip through as a corrupt zip.
+      // reject explicitly so an oversized upload can't slip through as a corrupt zip. The message
+      // omits the cap: this runs before the HMAC check below, so it would leak to any caller.
       if (data.file.truncated) {
-        reply.code(413).send({
-          error: `Plugin package exceeds the maximum upload size of ${config.UPLOAD_MAX_BYTES} bytes`,
-        });
+        reply.code(413).send({ error: "Plugin package exceeds the maximum upload size" });
         return;
       }
 

@@ -18,6 +18,7 @@ import {FastifyInstance} from "fastify";
 import {PluginManager} from "../plugin-manager.js";
 import {ConfigRegistry} from "../config-registry.js";
 import {UserTokenIntrospector} from "../security/user-token-introspection.js";
+import {checkContentPin} from "../security/content-pin.js";
 import type {AppConfig} from "../config.js";
 
 /**
@@ -37,7 +38,9 @@ import type {AppConfig} from "../config.js";
  *    version, and was granted the `frontend_data` capability by an admin — otherwise 403;
  * 2. a per-configuration in-memory rate limit (`DATA_RATE_LIMIT_PER_MINUTE`) bounds abuse of the
  *    public endpoint — 429 once the budget is spent;
- * 3. the request carries a GZAC-minted downscoped `userToken` (400 when absent), which the host
+ * 3. the loaded package still hashes to the value the owning GZAC pinned — otherwise 409, carrying
+ *    neither hash;
+ * 4. the request carries a GZAC-minted downscoped `userToken` (400 when absent), which the host
  *    validates by remote introspection against the configuration's GZAC (the HS256 signing key
  *    never leaves GZAC). GZAC rejecting the token → 401; the token bound to a DIFFERENT
  *    configuration than the request names → 403; GZAC unreachable → 503 (fail closed). Positive
@@ -156,6 +159,13 @@ export async function pluginDataRoutes(
 
       if (isRateLimited(configurationId)) {
         reply.code(429).send({ error: "Rate limit exceeded for this configuration" });
+        return;
+      }
+
+      // Unlike the HMAC-authenticated action and submit routes the body carries neither hash: this
+      // endpoint is public, and echoing the expected value would hand a caller the hash to replay.
+      if (checkContentPin(pluginConfig, pluginManager, request.log)) {
+        reply.code(409).send({ error: "Plugin package content has changed" });
         return;
       }
 

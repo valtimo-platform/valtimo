@@ -340,6 +340,15 @@ class ExternalPluginManagementResource(
         @RequestParam(name = "force", required = false, defaultValue = "false") force: Boolean,
         @RequestParam(name = "overwrite", required = false, defaultValue = "false") overwrite: Boolean = false,
     ): ResponseEntity<JsonNode> {
+        // Gate on the reported size before touching `file.bytes`, so an oversized package never
+        // reaches the heap.
+        if (file.size > MAX_PLUGIN_UPLOAD_BYTES) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
+                objectMapper.createObjectNode()
+                    .put("error", "Plugin package is too large")
+                    .put("maxBytes", MAX_PLUGIN_UPLOAD_BYTES)
+            )
+        }
         val fileBytes = file.bytes
         if (!force) {
             val range = pluginPackageInspector.readCompatibilityRange(fileBytes)
@@ -703,5 +712,13 @@ class ExternalPluginManagementResource(
 
         /** 409 code for connecting an app whose plugin is already registered under another host. */
         const val APP_ALREADY_REGISTERED_CODE = "APP_PLUGIN_ALREADY_REGISTERED"
+
+        /**
+         * Largest plugin package this endpoint accepts. `spring.servlet.multipart.max-file-size`
+         * must stay strictly ABOVE this: Spring rejects during multipart parsing, before the
+         * handler runs, so an equal servlet cap makes the 413 below unreachable and the caller gets
+         * a generic "Maximum upload size exceeded" instead.
+         */
+        const val MAX_PLUGIN_UPLOAD_BYTES = 100L * 1024 * 1024
     }
 }

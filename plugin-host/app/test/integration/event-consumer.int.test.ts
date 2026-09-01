@@ -99,6 +99,82 @@ describe("EventConsumerManager against real RabbitMQ", () => {
     }
   }
 
+  /** Queue stats, or null when the queue does not exist (checkQueue fails and closes the channel). */
+  async function queueState(
+    queue: string
+  ): Promise<{ messageCount: number; consumerCount: number } | null> {
+    const conn = await amqp.connect(amqpUrl);
+    try {
+      const ch = await conn.createChannel();
+      ch.on("error", () => {});
+      try {
+        const ok = await ch.checkQueue(queue);
+        return { messageCount: ok.messageCount, consumerCount: ok.consumerCount };
+      } catch {
+        return null;
+      }
+    } finally {
+      await conn.close().catch(() => {});
+    }
+  }
+
+  /** Re-declares a queue with the given arguments. A mismatch is a 406 PRECONDITION_FAILED. */
+  async function assertQueueArguments(
+    queue: string,
+    options: amqp.Options.AssertQueue
+  ): Promise<void> {
+    const conn = await amqp.connect(amqpUrl);
+    try {
+      const ch = await conn.createChannel();
+      await ch.assertQueue(queue, options);
+      await ch.close();
+    } finally {
+      await conn.close().catch(() => {});
+    }
+  }
+
+  it("swaps a live queue for a durable one when the mode flips, with no restart", async () => {
+    const exchange = "evt-mode-switch";
+    const ttlMs = 3_600_000;
+    const hostId = "host-mode";
+    const liveQueue = `valtimo-external-plugins.${exchange}.${hostId}.live`;
+    const durableQueue = `valtimo-external-plugins.${exchange}.${hostId}.durable.t${ttlMs}`;
+
+    const configs = [config(exchange)];
+    const { manager, callEvent } = makeManager(hostId, configs);
+    await manager.sync();
+    expect(await queueState(liveQueue)).toMatchObject({ consumerCount: 1 });
+
+    configs[0] = config(exchange, {
+      eventBroker: {
+        amqpUrl,
+        exchange,
+        exchangeType: "fanout",
+        queueMode: "durable",
+        queueTtlMs: ttlMs,
+      },
+    });
+    await manager.sync();
+
+    expect(await queueState(durableQueue)).toMatchObject({ consumerCount: 1 });
+    // Passes only if the running consumer declared exactly this x-expires.
+    await assertQueueArguments(durableQueue, {
+      durable: true,
+      autoDelete: false,
+      arguments: { "x-expires": ttlMs },
+    });
+    await vi.waitFor(async () => expect(await queueState(liveQueue)).toBeNull(), {
+      timeout: 15_000,
+      interval: 200,
+    });
+
+    await publish(exchange, cloudEvent("test.type"));
+    await vi.waitFor(() => expect(callEvent).toHaveBeenCalledTimes(1), {
+      timeout: 15_000,
+      interval: 200,
+    });
+  });
+
   it("delivers a subscribed event through the broker to handle_event", async () => {
     const exchange = "evt-delivery";
     const { manager, callEvent } = makeManager("host-1", [config(exchange)]);

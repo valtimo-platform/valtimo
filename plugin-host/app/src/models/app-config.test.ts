@@ -61,7 +61,7 @@ describe("envSchema", () => {
     expect(defaults.WASM_INSTANCE_IDLE_TTL_MS).toBe(10 * 60 * 1000);
     expect(defaults.GZAC_API_TIMEOUT_MS).toBe(60_000);
     expect(defaults.USER_TOKEN_INTROSPECTION_TIMEOUT_MS).toBe(10_000);
-    expect(defaults.UPLOAD_MAX_BYTES).toBe(25 * 1024 * 1024);
+    expect(defaults.UPLOAD_MAX_BYTES).toBe(100 * 1024 * 1024);
     expect(defaults.DATA_RATE_LIMIT_PER_MINUTE).toBe(120);
     expect(defaults.CONFIG_CACHE_TTL_MS).toBe(10_000);
 

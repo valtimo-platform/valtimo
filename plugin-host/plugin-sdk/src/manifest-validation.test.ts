@@ -533,6 +533,83 @@ describe("validatePluginManifest", () => {
     });
   });
 
+  // GZAC silently drops a bound its semver parser rejects and then reports "compatible", so a
+  // bound that cannot drive the gate must never reach a package.
+  describe("compatibility bounds", () => {
+    const withCompatibility = (compatibility: unknown) => ({
+      ...validManifest(),
+      compatibility,
+    });
+
+    it("accepts an absent compatibility block", () => {
+      expect(validatePluginManifest(validManifest())).toEqual([]);
+    });
+
+    it.each([
+      ["a full range", { minGzacVersion: "12.0.0", maxGzacVersion: "12.1.0" }],
+      ["an equal range", { minGzacVersion: "12.0.0", maxGzacVersion: "12.0.0" }],
+      ["only a minimum", { minGzacVersion: "12.0.0" }],
+      ["only a maximum", { maxGzacVersion: "12.1.0" }],
+      ["an empty object", {}],
+      ["build metadata", { minGzacVersion: "12.0.0+build.5" }],
+    ])("accepts %s", (_label, compatibility) => {
+      expect(validatePluginManifest(withCompatibility(compatibility))).toEqual([]);
+    });
+
+    it.each([
+      ["a major-only bound", "13"],
+      ["a major.minor bound", "13.1"],
+      ["a v-prefixed bound", "v13.1.3"],
+      ["a word", "latest"],
+      ["a number", 13],
+      ["a leading-zero core", "13.01.3"],
+    ])("rejects %s as minGzacVersion", (_label, minGzacVersion) => {
+      const errors = validatePluginManifest(withCompatibility({ minGzacVersion }));
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toContain("compatibility.minGzacVersion must be a semver version string");
+    });
+
+    it("rejects a malformed maxGzacVersion", () => {
+      const errors = validatePluginManifest(withCompatibility({ maxGzacVersion: "banana" }));
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toContain("compatibility.maxGzacVersion must be a semver version string");
+    });
+
+    it.each([
+      ["a string", "1.0"],
+      ["an array", ["1.0.0"]],
+      ["null", null],
+    ])("rejects a compatibility block that is %s", (_label, compatibility) => {
+      expect(validatePluginManifest(withCompatibility(compatibility))).toEqual([
+        "manifest.json 'compatibility' must be an object when present",
+      ]);
+    });
+
+    it("rejects an inverted stable range", () => {
+      const errors = validatePluginManifest(
+        withCompatibility({ minGzacVersion: "13.0.0", maxGzacVersion: "12.1.0" })
+      );
+      expect(errors).toEqual([
+        "manifest.json compatibility.minGzacVersion ('13.0.0') must not be greater than compatibility.maxGzacVersion ('12.1.0')",
+      ]);
+    });
+
+    it("accepts a prerelease bound and skips the ordering comparison", () => {
+      expect(
+        validatePluginManifest(
+          withCompatibility({ minGzacVersion: "13.0.0", maxGzacVersion: "13.0.0-rc.1" })
+        )
+      ).toEqual([]);
+    });
+
+    it("reports both bounds when both are malformed", () => {
+      const errors = validatePluginManifest(
+        withCompatibility({ minGzacVersion: "13", maxGzacVersion: "14" })
+      );
+      expect(errors).toHaveLength(2);
+    });
+  });
+
   it("accumulates errors across capabilities, actions and bundles in one pass", () => {
     const errors = validatePluginManifest({
       ...validManifest(),

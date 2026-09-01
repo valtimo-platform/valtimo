@@ -2386,6 +2386,8 @@
       "description": "Only .zip files are accepted",
       "failedTitle": "Upload failed",
       "rejected": "The plugin host rejected the upload.",
+      "tooLargeTitle": "Package too large",
+      "tooLarge": "This plugin package is {{sizeMb}} MB. The maximum accepted size is {{maxMb}} MB.",
       "identicalTitle": "Already up to date",
       "identicalMessage": "This exact package already exists on the host — the content is identical, so there is nothing to overwrite.",
       "overwriteTitle": "Overwrite existing plugin version?",

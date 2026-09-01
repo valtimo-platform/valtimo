@@ -286,7 +286,7 @@ describe("EventConsumerManager", () => {
       );
     });
 
-    it("declares a durable-mode queue with x-expires and a .durable suffix", async () => {
+    it("declares a durable-mode queue with x-expires and a mode + TTL suffix", async () => {
       build([
         config({
           eventBroker: {
@@ -300,7 +300,7 @@ describe("EventConsumerManager", () => {
 
       const assertQueue = consumerFor("valtimo-events").channel.assertQueue;
       expect(assertQueue).toHaveBeenCalledWith(
-        "valtimo-external-plugins.valtimo-events.host-1.durable",
+        "valtimo-external-plugins.valtimo-events.host-1.durable.t259200000",
         { durable: true, autoDelete: false, arguments: { "x-expires": 259_200_000 } }
       );
     });
@@ -323,6 +323,71 @@ describe("EventConsumerManager", () => {
       await manager.sync();
 
       expect(h.consumers).toHaveLength(0);
+    });
+
+    it("starts a durable consumer and closes the live one when the mode flips", async () => {
+      const configs = [config({ eventBroker: BROKER_1 })];
+      build(configs);
+      await manager.sync();
+      const liveChannel = h.channels[0];
+      expect(h.consumers[0].queue).toBe("valtimo-external-plugins.valtimo-events.host-1.live");
+
+      configs[0] = config({
+        eventBroker: { ...BROKER_1, queueMode: "durable", queueTtlMs: 3_600_000 },
+      });
+      await manager.sync();
+
+      expect(h.consumers).toHaveLength(2);
+      const durable = h.consumers[1];
+      expect(durable.queue).toBe("valtimo-external-plugins.valtimo-events.host-1.durable.t3600000");
+      expect(durable.channel.assertQueue).toHaveBeenCalledWith(durable.queue, {
+        durable: true,
+        autoDelete: false,
+        arguments: { "x-expires": 3_600_000 },
+      });
+      expect(liveChannel.close).toHaveBeenCalled();
+    });
+
+    it("declares a differently named queue when only the TTL changes", async () => {
+      const durable = (queueTtlMs: number) => ({
+        ...BROKER_1,
+        queueMode: "durable" as const,
+        queueTtlMs,
+      });
+      const configs = [config({ eventBroker: durable(3_600_000) })];
+      build(configs);
+      await manager.sync();
+
+      configs[0] = config({ eventBroker: durable(7_200_000) });
+      await manager.sync();
+
+      // Two TTLs may never name one queue: re-asserting with a different x-expires is a 406.
+      expect(h.consumers.map((c) => c.queue)).toEqual([
+        "valtimo-external-plugins.valtimo-events.host-1.durable.t3600000",
+        "valtimo-external-plugins.valtimo-events.host-1.durable.t7200000",
+      ]);
+    });
+
+    it("gives two configs on one broker with different modes their own consumer", async () => {
+      build([
+        config({ configurationId: "live-cfg", eventBroker: BROKER_1 }),
+        config({
+          configurationId: "durable-cfg",
+          eventBroker: { ...BROKER_1, queueMode: "durable", queueTtlMs: 3_600_000 },
+        }),
+      ]);
+      await manager.sync();
+
+      expect(h.consumers).toHaveLength(2);
+
+      await h.consumers.find((c) => c.queue.endsWith(".live"))!.cb(message(cloudEvent()));
+
+      expect(pluginManager.callEvent).toHaveBeenCalledTimes(1);
+      expect(pluginManager.callEvent).toHaveBeenCalledWith(
+        "case-summary",
+        "0.1.0",
+        expect.objectContaining({ configurationId: "live-cfg" })
+      );
     });
   });
 });

@@ -26,7 +26,11 @@ const ACTION = "my-action";
 
 describe("plugin-actions routes", () => {
   let app: FastifyInstance;
-  let pluginManager: { getManifest: ReturnType<typeof vi.fn>; callAction: ReturnType<typeof vi.fn> };
+  let pluginManager: {
+    getManifest: ReturnType<typeof vi.fn>;
+    callAction: ReturnType<typeof vi.fn>;
+    getContentHash: ReturnType<typeof vi.fn>;
+  };
   let configRegistry: { get: ReturnType<typeof vi.fn> };
 
   const storedConfig = () => ({
@@ -44,6 +48,7 @@ describe("plugin-actions routes", () => {
     pluginManager = {
       getManifest: vi.fn(() => ({ actions: [{ key: ACTION }] })),
       callAction: vi.fn(async () => ({ status: "completed", variables: { done: true } })),
+      getContentHash: vi.fn(() => "sha256:pinned"),
     };
     configRegistry = { get: vi.fn(async () => storedConfig()) };
     app = await buildTestApp((a) =>
@@ -198,6 +203,41 @@ describe("plugin-actions routes", () => {
     });
     expect(res.statusCode).toBe(401);
     expect(pluginManager.callAction).not.toHaveBeenCalled();
+  });
+
+  describe("content pin", () => {
+    it("executes when the stored pin matches the loaded package", async () => {
+      configRegistry.get.mockResolvedValueOnce({
+        ...storedConfig(),
+        expectedContentHash: "sha256:pinned",
+      });
+      const res = await invokeAction(actionBody());
+      expect(res.statusCode).toBe(200);
+      expect(pluginManager.callAction).toHaveBeenCalled();
+    });
+
+    it("refuses a mismatch with 409 EXTERNAL_PLUGIN_CONTENT_CHANGED and never calls the action", async () => {
+      configRegistry.get.mockResolvedValueOnce({
+        ...storedConfig(),
+        expectedContentHash: "sha256:accepted",
+      });
+      const res = await invokeAction(actionBody());
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toMatchObject({
+        // Read by ExternalPluginServiceTaskStartListener.actionFailed; a bare 409 would surface
+        // in the process incident as EXTERNAL_PLUGIN_409.
+        errorCode: "EXTERNAL_PLUGIN_CONTENT_CHANGED",
+        expectedContentHash: "sha256:accepted",
+        actualContentHash: "sha256:pinned",
+      });
+      expect(pluginManager.callAction).not.toHaveBeenCalled();
+    });
+
+    it("executes when no pin was pushed (older GZAC)", async () => {
+      const res = await invokeAction(actionBody());
+      expect(res.statusCode).toBe(200);
+      expect(pluginManager.getContentHash).not.toHaveBeenCalled();
+    });
   });
 
   describe("GET plugin-manifest (public)", () => {

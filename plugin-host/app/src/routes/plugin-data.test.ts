@@ -26,9 +26,24 @@ const DATA_URL = `/plugins/${PLUGIN}/${VERSION}/data`;
 
 describe("plugin-data route", () => {
   let app: FastifyInstance;
-  let pluginManager: { getManifest: ReturnType<typeof vi.fn>; callRequest: ReturnType<typeof vi.fn> };
+  let pluginManager: {
+    getManifest: ReturnType<typeof vi.fn>;
+    callRequest: ReturnType<typeof vi.fn>;
+    getContentHash: ReturnType<typeof vi.fn>;
+  };
   let configRegistry: { get: ReturnType<typeof vi.fn> };
   let introspector: { introspect: ReturnType<typeof vi.fn> };
+
+  const storedConfig = (overrides: Record<string, unknown> = {}) => ({
+    configurationId: "cfg-1",
+    pluginId: PLUGIN,
+    pluginVersion: VERSION,
+    properties: { p: 1 },
+    serviceToken: "svc-token",
+    gzacBaseUrl: "http://gzac:8080",
+    grantedCapabilities: ["gzac_api", "frontend_data"],
+    ...overrides,
+  });
 
   async function buildApp(rateLimitPerMinute = 120): Promise<void> {
     app = await buildTestApp((a) =>
@@ -45,16 +60,10 @@ describe("plugin-data route", () => {
     pluginManager = {
       getManifest: vi.fn(() => ({})),
       callRequest: vi.fn(async () => ({ status: 200, body: { ok: true } })),
+      getContentHash: vi.fn(() => "sha256:pinned"),
     };
     configRegistry = {
-      get: vi.fn(async () => ({
-        pluginId: PLUGIN,
-        pluginVersion: VERSION,
-        properties: { p: 1 },
-        serviceToken: "svc-token",
-        gzacBaseUrl: "http://gzac:8080",
-        grantedCapabilities: ["gzac_api", "frontend_data"],
-      })),
+      get: vi.fn(async () => storedConfig()),
     };
     introspector = {
       introspect: vi.fn(async () => ({ kind: "valid", configurationId: "cfg-1" })),
@@ -318,5 +327,44 @@ describe("plugin-data route", () => {
       payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
     });
     expect(res.statusCode).toBe(500);
+  });
+
+  describe("content pin", () => {
+    const post = () =>
+      app.inject({
+        method: "POST",
+        url: DATA_URL,
+        payload: { configurationId: "cfg-1", method: "GET", path: "/x", userToken: "user-tok" },
+      });
+
+    it("executes when the stored pin matches the loaded package", async () => {
+      configRegistry.get.mockResolvedValueOnce(storedConfig({ expectedContentHash: "sha256:pinned" }));
+      expect((await post()).statusCode).toBe(200);
+      expect(pluginManager.callRequest).toHaveBeenCalled();
+    });
+
+    it("refuses a mismatch with 409 and never executes the request handler", async () => {
+      configRegistry.get.mockResolvedValueOnce(
+        storedConfig({ expectedContentHash: "sha256:accepted" })
+      );
+      const res = await post();
+      expect(res.statusCode).toBe(409);
+      expect(pluginManager.callRequest).not.toHaveBeenCalled();
+    });
+
+    it("does not echo either hash on this public route", async () => {
+      configRegistry.get.mockResolvedValueOnce(
+        storedConfig({ expectedContentHash: "sha256:accepted" })
+      );
+      const res = await post();
+      // Echoing the expected hash would hand a caller the value to replay.
+      expect(res.body).not.toContain("sha256:accepted");
+      expect(res.body).not.toContain("sha256:pinned");
+    });
+
+    it("executes when no pin was pushed (older GZAC)", async () => {
+      expect((await post()).statusCode).toBe(200);
+      expect(pluginManager.getContentHash).not.toHaveBeenCalled();
+    });
   });
 });

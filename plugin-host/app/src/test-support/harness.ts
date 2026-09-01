@@ -31,10 +31,12 @@ export const ADMIN_TOKEN = "test-admin-secret";
  */
 export async function buildTestApp(
   register: (app: FastifyInstance) => Promise<void>,
-  opts: { logger?: FastifyServerOptions["logger"] } = {}
+  opts: { logger?: FastifyServerOptions["logger"]; uploadMaxBytes?: number } = {}
 ): Promise<FastifyInstance> {
   const app = Fastify({ logger: opts.logger ?? false });
-  await registerBodyParsing(app, { uploadMaxBytes: 25 * 1024 * 1024 });
+  await registerBodyParsing(app, {
+    uploadMaxBytes: opts.uploadMaxBytes ?? testConfig().UPLOAD_MAX_BYTES,
+  });
   await register(app);
   await app.ready();
   return app;
@@ -81,7 +83,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     WASM_INSTANCE_IDLE_TTL_MS: 10 * 60 * 1000,
     GZAC_API_TIMEOUT_MS: 60_000,
     USER_TOKEN_INTROSPECTION_TIMEOUT_MS: 10_000,
-    UPLOAD_MAX_BYTES: 25 * 1024 * 1024,
+    UPLOAD_MAX_BYTES: 100 * 1024 * 1024,
     DATA_RATE_LIMIT_PER_MINUTE: 120,
     CONFIG_CACHE_TTL_MS: 10_000,
     ...overrides,

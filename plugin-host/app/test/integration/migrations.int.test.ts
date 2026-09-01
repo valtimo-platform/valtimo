@@ -108,6 +108,13 @@ describe("runMigrations against real Postgres", () => {
     // Nullable on purpose — NULL means "unowned" (pushed by a pre-ownership GZAC); such rows are
     // excluded from every GZAC's reconciliation pass.
     expect(cols.owner_id).toMatchObject({type: "text", nullable: "YES", default: null});
+
+    // Nullable on purpose — NULL means "no pin pushed", which skips the check.
+    expect(cols.expected_content_hash).toMatchObject({
+      type: "text",
+      nullable: "YES",
+      default: null,
+    });
   });
 
   it("creates plugin_kv keyed by (configuration_id, key) with a prefix index", async () => {

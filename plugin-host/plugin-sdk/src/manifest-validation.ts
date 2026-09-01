@@ -52,6 +52,14 @@ export const PLUGIN_LOGO_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:svg|png|jpe?
 export const MAX_PLUGIN_IDENTIFIER_LENGTH = 64;
 
 /**
+ * The official strict-semver pattern from semver.org, inlined because this module is deliberately
+ * dependency-free. Applies to the `compatibility` bounds only — the plugin's own `version` stays on
+ * the looser {@link PLUGIN_VERSION_PATTERN} charset rule.
+ */
+export const SEMVER_PATTERN =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
+/**
  * The `..` check is redundant against the anchored patterns for the dangerous cases (`.` and `..`
  * are already rejected because both ends must be alphanumeric), but it is kept so the rule reads as
  * "never `..`, anywhere" without the reader having to re-derive it from the regex.
@@ -118,6 +126,8 @@ export function validatePluginManifest(manifest: unknown): string[] {
   if (m.sdkVersion !== undefined && (typeof m.sdkVersion !== "string" || m.sdkVersion.trim() === "")) {
     errors.push("manifest.json 'sdkVersion' must be a non-empty string when present");
   }
+
+  errors.push(...validateCompatibility(m.compatibility));
 
   const translations = m.translations;
   if (typeof translations !== "object" || translations === null || Array.isArray(translations)) {
@@ -271,6 +281,55 @@ export function validatePluginManifest(manifest: unknown): string[] {
   }
 
   return errors;
+}
+
+/**
+ * Checks the optional `compatibility` range. Errors rather than warnings, because GZAC silently
+ * drops a bound its semver parser rejects and then reports "compatible" — so `"13"` or `"v13.1.3"`
+ * would read as a guard while enforcing nothing.
+ */
+function validateCompatibility(compatibility: unknown): string[] {
+  if (compatibility === undefined) return [];
+  if (typeof compatibility !== "object" || compatibility === null || Array.isArray(compatibility)) {
+    return ["manifest.json 'compatibility' must be an object when present"];
+  }
+
+  const errors: string[] = [];
+  const c = compatibility as Record<string, unknown>;
+  const bounds: Record<string, string> = {};
+  for (const field of ["minGzacVersion", "maxGzacVersion"] as const) {
+    const value = c[field];
+    if (value === undefined) continue;
+    if (typeof value !== "string" || !SEMVER_PATTERN.test(value)) {
+      errors.push(
+        `manifest.json compatibility.${field} must be a semver version string such as '13.1.3' (no 'v' prefix, all three parts required)`
+      );
+      continue;
+    }
+    bounds[field] = value;
+  }
+
+  const min = bounds.minGzacVersion;
+  const max = bounds.maxGzacVersion;
+  // A prerelease on either side skips the comparison: reimplementing prerelease ordering buys
+  // nothing when the mistake worth catching is an inverted stable range.
+  if (min && max && !min.includes("-") && !max.includes("-") && compareCores(min, max) > 0) {
+    errors.push(
+      `manifest.json compatibility.minGzacVersion ('${min}') must not be greater than compatibility.maxGzacVersion ('${max}')`
+    );
+  }
+
+  return errors;
+}
+
+/** Compares the numeric `major.minor.patch` core of two strict-semver strings. */
+function compareCores(a: string, b: string): number {
+  const core = (v: string): number[] => v.split(/[-+]/)[0].split(".").map(Number);
+  const [aParts, bParts] = [core(a), core(b)];
+  for (let i = 0; i < 3; i++) {
+    if (aParts[i] !== bParts[i]) return aParts[i] - bParts[i];
+  }
+  return 0;
 }
 
 /**
