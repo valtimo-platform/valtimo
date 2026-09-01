@@ -32,6 +32,7 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, from, map, startWith, switchMap} from 'rxjs';
+import {BUILDING_BLOCK_MANAGEMENT_PROCESS_UPLOAD_TEST_IDS} from '../../constants';
 import {BuildingBlockManagementDetailService} from '../../services';
 import {BuildingBlockProcessDefinitionConflictResponse, ProcessLinkService} from '@valtimo/process-link';
 
@@ -54,6 +55,8 @@ import {BuildingBlockProcessDefinitionConflictResponse, ProcessLinkService} from
   ],
 })
 export class BuildingBlockManagementProcessUploadComponent {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_PROCESS_UPLOAD_TEST_IDS;
+
   public readonly modalOpen$ =
     this.buildingBlockManagementDetailService.showProcessDefinitionUploadModal$;
   public readonly showReplaceConfirmationModal$ = new BehaviorSubject<boolean>(false);
