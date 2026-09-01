@@ -18,6 +18,7 @@
  * Public API Surface of form-flow
  */
 
+export * from './lib/constants';
 export * from './lib/models';
 export * from './lib/services';
 export * from './lib/components/overview/form-flow-overview.component';

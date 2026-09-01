@@ -33,6 +33,7 @@
     typeOfSelectedProgressLink: typeOfSelectedProcessLink$ | async,
     isEditing: isEditing$ | async,
     isAdHocBuildingBlock: isAdHocBuildingBlock$ | async,
+    readOnly: readOnly$ | async,
   } as obs"
 >
   <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg" (close)="closeModal()">
@@ -59,7 +60,7 @@
         <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
       </div>
     </cds-modal-header>
-    <section cdsModalContent [cdsLayer]="1">
+    <section cdsModalContent [cdsLayer]="1" [valtimoReadOnlyContent]="obs.readOnly">
       <ng-container *ngTemplateOutlet="stepContent; context: {obs: obs}"></ng-container>
     </section>
     <ng-template *ngTemplateOutlet="footer; context: {obs: obs}"></ng-template>
@@ -141,18 +142,20 @@
 <ng-template #footer let-obs="obs">
   <cds-modal-footer *ngIf="!obs.saving">
     <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
-      {{ 'processLinkConfiguration.cancel' | translate }}
+      {{
+        (obs.readOnly ? 'interface.close' : 'processLinkConfiguration.cancel') | translate
+      }}
     </button>
     <div class="footer-spacer"></div>
     <button
       cdsButton="danger--primary"
-      *ngIf="obs.isEditing"
+      *ngIf="obs.isEditing && !obs.readOnly"
       (click)="unlinkButtonClick()"
     >
       {{ 'processLinkConfiguration.unlink' | translate }}
     </button>
     <button
-      *ngIf="obs.showBackButton && !obs.saving"
+      *ngIf="obs.showBackButton && !obs.saving && !obs.readOnly"
       cdsButton="secondary"
       (click)="backButtonClick()"
     >
@@ -160,7 +163,7 @@
     </button>
     <button
       cdsButton="primary"
-      *ngIf="obs.showNextButton && !obs.saving"
+      *ngIf="obs.showNextButton && !obs.saving && !obs.readOnly"
       [disabled]="!obs.enableNextButton"
       (click)="nextButtonClick()"
     >
@@ -168,7 +171,7 @@
     </button>
     <button
       cdsButton="primary"
-      *ngIf="obs.showSaveButton && !obs.saving"
+      *ngIf="obs.showSaveButton && !obs.saving && !obs.readOnly"
       [disabled]="!obs.enableSaveButton"
       (click)="saveButtonClick()"
     >

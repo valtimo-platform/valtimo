@@ -283,6 +283,7 @@ class BuildingBlockManagementService(
         denyAuthorization()
 
         val buildingBlocks = buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(key)
+            .sortedByDescending { it.id.versionTag }
 
         return PageImpl(
             buildingBlocks.map {
