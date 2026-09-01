@@ -47,6 +47,7 @@
         </span>
 
         <input
+          [attr.data-test-id]="testIds.nameInput"
           formControlName="name"
           cdsText
           placeholder="{{ 'buildingBlockManagement.createDefinition.namePlaceholder' | translate }}"
@@ -80,6 +81,7 @@
         </span>
 
         <input
+          [attr.data-test-id]="testIds.versionInput"
           formControlName="versionTag"
           cdsText
           placeholder="{{
@@ -104,6 +106,7 @@
         </span>
 
         <textarea
+          [attr.data-test-id]="testIds.descriptionInput"
           cdsTextArea
           formControlName="description"
           placeholder="{{
@@ -117,11 +120,20 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onCloseModal()">
+    <button
+      [attr.data-test-id]="testIds.cancelButton"
+      cdsButton="secondary"
+      (click)="onCloseModal()"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onSave()">
+    <button
+      [attr.data-test-id]="testIds.saveButton"
+      cdsButton="primary"
+      [disabled]="formGroup.invalid"
+      (click)="onSave()"
+    >
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

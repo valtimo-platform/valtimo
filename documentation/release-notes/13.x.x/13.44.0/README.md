@@ -39,6 +39,10 @@ Emptying a field now follows what the case model allows: the field is either set
 Creating and updating cases, resolving document values and opening task forms are all faster, most
 noticeably on configurations with large document schemas or many process links.
 
+### Searchable building block overview
+
+The building block overview is now sorted by name, paginated, and searchable by name or key, so a large collection of building blocks stays workable.
+
 ---
 
 ## Bugfixes
@@ -61,3 +65,5 @@ noticeably on configurations with large document schemas or many process links.
 | Process links | Changing the form flow definition on an existing form flow process link is now saved (previously the change was silently ignored). |
 | Field pickers | A case model with an unreadable reference no longer stops every field picker from loading |
 | Field pickers | Lists in a case can be picked as a field, not only as a collection |
+| Building blocks | Selecting a field for a mapping works again when the document schema refers to itself |
+| Process links | Changing the building block version keeps the configuration that still applies to the new version |
