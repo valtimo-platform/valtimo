@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-export interface ChoiceField {
-  id: number;
-  keyName: string;
-  title: string;
-}
+import {ChoiceFieldValue as ChoiceFieldValueDto} from '@valtimo/shared';
 
-export interface ChoiceFieldValue {
-  id: number;
-  choiceField: ChoiceField;
-  deprecated: boolean;
-  name: string;
-  sortOrder: number;
-  value: string;
-  deprecatedDisplayString: string;
+export {ChoiceField} from '@valtimo/shared';
+
+export interface ChoiceFieldValue extends ChoiceFieldValueDto {
+  deprecatedDisplayString?: string;
 }
