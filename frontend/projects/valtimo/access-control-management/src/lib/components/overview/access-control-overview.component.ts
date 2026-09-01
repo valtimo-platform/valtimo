@@ -20,6 +20,7 @@ import {BehaviorSubject, delay, finalize, map, Observable, Subject, tap} from 'r
 import {ExportRoleOutput, Role} from '../../models';
 import {AccessControlExportService} from '../../services/access-control-export.service';
 import {AccessControlService} from '../../services/access-control.service';
+import {ACCESS_CONTROL_ROLES_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -50,6 +51,7 @@ export class AccessControlOverviewComponent implements OnInit {
   public readonly selectedRowKeys$ = new BehaviorSubject<Array<string>>([]);
   public readonly resetExportType$ = new Subject<null>();
   public readonly exportDisabled$ = new BehaviorSubject<boolean>(false);
+  public readonly testIds = ACCESS_CONTROL_ROLES_TEST_IDS;
 
   constructor(
     private readonly accessControlService: AccessControlService,

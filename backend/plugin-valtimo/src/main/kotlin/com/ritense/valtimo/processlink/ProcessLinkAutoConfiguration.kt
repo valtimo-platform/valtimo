@@ -227,9 +227,9 @@ class ProcessLinkAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ProcessDefinitionChangedEventListener::class)
     fun processDefinitionChangedEventListener(
-        pluginConfigurationMappingResolver: PluginConfigurationMappingResolver,
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
     ): ProcessDefinitionChangedEventListener {
-        return ProcessDefinitionChangedEventListener(pluginConfigurationMappingResolver)
+        return ProcessDefinitionChangedEventListener(pluginConfigurationMappingResolvers)
     }
 
     @Bean

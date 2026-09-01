@@ -38,17 +38,21 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
     super(httpClient, configService);
   }
 
+  public getAllVersionsForBuildingBlock(key: string): Observable<Page<BuildingBlockVersionDto>> {
+    return this.getVersionsForBuildingBlock(key, 0, 5, true);
+  }
+
   public getVersionsForBuildingBlock(
     key: string,
     page: number = 0,
     size: number = 5,
     all: boolean = false
   ): Observable<Page<BuildingBlockVersionDto>> {
-    const allParam: string = all ? 'all=true' : '';
     return this.httpClient.get<Page<BuildingBlockVersionDto>>(
-      this.getApiUrl(
-        `management/v1/building-block/${key}/version?page=${page}&size=${size}${allParam}`
-      )
+      this.getApiUrl(`management/v1/building-block/${key}/version`),
+      {
+        params: {page, size, all},
+      }
     );
   }
 
@@ -124,10 +128,7 @@ export class ProcessLinkBuildingBlockApiService extends BaseApiService {
       .pipe(catchError(() => of(null)));
   }
 
-  public getCaseDefinition(
-    key: string,
-    versionTag: string
-  ): Observable<{name: string} | null> {
+  public getCaseDefinition(key: string, versionTag: string): Observable<{name: string} | null> {
     return this.httpClient
       .get<{name: string}>(
         this.getApiUrl(`management/v1/case-definition/${key}/version/${versionTag}`),

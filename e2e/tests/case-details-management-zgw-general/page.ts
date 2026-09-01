@@ -253,8 +253,13 @@ export class CaseDetailsManagementZgwGeneralPage {
 
   // ─── Case type link assertions ───────────────────────────────────
 
+  /**
+   * The card title renders the omschrijving followed by the zaak type validity
+   * period, e.g. "Bezwaar behandelen (01-01-2021 - present)", so only assert
+   * that the omschrijving is present.
+   */
   async assertCaseTypeLinkTitle(title: string) {
-    await expect(this.caseTypeLinkTitle).toHaveText(title);
+    await expect(this.caseTypeLinkTitle).toContainText(title);
   }
 
   async assertCaseTypeLinkRsinValue(rsin: string) {

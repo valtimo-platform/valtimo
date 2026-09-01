@@ -30,6 +30,10 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
+import {
+  SELECT_PLUGIN_ACTION_TEST_IDS,
+  SELECT_PLUGIN_ACTION_TILE_TEST_ID_PREFIX,
+} from '../../constants';
 
 @Component({
   standalone: false,
@@ -38,6 +42,9 @@ import {
   styleUrls: ['./select-plugin-action.component.scss'],
 })
 export class SelectPluginActionComponent implements OnInit, OnDestroy {
+  protected readonly testIds = SELECT_PLUGIN_ACTION_TEST_IDS;
+  protected readonly tileTestIdPrefix = SELECT_PLUGIN_ACTION_TILE_TEST_ID_PREFIX;
+
   public readonly pluginFunctions$: Observable<Array<PluginFunction> | undefined> = combineLatest([
     this.stateService.selectedPluginDefinition$,
     this.processLinkStateService.modalParams$,

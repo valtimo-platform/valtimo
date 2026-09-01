@@ -47,7 +47,12 @@
           <svg cdsIcon="view" *ngIf="$markersVisible()" size="16"></svg>
           <svg cdsIcon="view--off" *ngIf="!$markersVisible()" size="16"></svg>
           <span class="markers-visibility-toggle__label">
-            {{ ($markersVisible() ? 'processManagement.markers.hide' : 'processManagement.markers.show') | translate }}
+            {{
+              ($markersVisible()
+                ? 'processManagement.markers.hide'
+                : 'processManagement.markers.show'
+              ) | translate
+            }}
           </span>
         </button>
       </cds-tooltip>
@@ -56,6 +61,7 @@
         class="validation-errors-list"
         *ngIf="validationErrors$ | async as validationErrors"
         [style.display]="validationErrors.length > 0 ? '' : 'none'"
+        [attr.data-test-id]="testIds.validationErrors"
       >
         <details open>
           <summary class="validation-errors-list__header">
@@ -129,13 +135,18 @@
           <svg cdsIcon="view" *ngIf="$markersVisible()" size="16"></svg>
           <svg cdsIcon="view--off" *ngIf="!$markersVisible()" size="16"></svg>
           <span class="markers-visibility-toggle__label">
-            {{ ($markersVisible() ? 'processManagement.markers.hide' : 'processManagement.markers.show') | translate }}
+            {{
+              ($markersVisible()
+                ? 'processManagement.markers.hide'
+                : 'processManagement.markers.show'
+              ) | translate
+            }}
           </span>
         </button>
       </cds-tooltip>
     </div>
 
-    <div class="bpmn__modeler-panel" #viewerPanel></div>
+    <div class="bpmn__modeler-panel bpmn__modeler-panel--read-only" #viewerPanel></div>
   </div>
 </div>
 
@@ -175,6 +186,7 @@
         <cds-dropdown
           *ngIf="!actionsObs.creatingNewProcess && actionsObs?.context === 'independent'"
           class="page-header-actions__version-dropdown"
+          [attr.data-test-id]="testIds.versionDropdown"
           (selected)="selectedVersionChange($event)"
           [disabled]="
             actionsObs.loading ||
@@ -199,12 +211,16 @@
           <cds-tag
             *ngIf="actionsObs.isReadOnlyProcess || !actionsObs.hasEditPermissions"
             type="blue"
+            [attr.data-test-id]="testIds.readOnlyTag"
             >{{ 'processManagement.readOnly' | translate }}</cds-tag
           >
 
-          <cds-tag *ngIf="actionsObs.isSystemProcess" type="red">{{
-            'processManagement.systemProcess' | translate
-          }}</cds-tag>
+          <cds-tag
+            *ngIf="actionsObs.isSystemProcess"
+            type="red"
+            [attr.data-test-id]="testIds.systemProcessTag"
+            >{{ 'processManagement.systemProcess' | translate }}</cds-tag
+          >
         </div>
 
         <div class="page-header-actions__toggles">
@@ -270,7 +286,10 @@
 
       <div class="page-header-actions__buttons">
         <v-overflow-menu class="overflow-button" placement="bottom-end">
-          <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
+          <v-overflow-menu-trigger
+            overflowTrigger
+            [attr.data-test-id]="testIds.moreButton"
+          ></v-overflow-menu-trigger>
           <v-overflow-menu-option
             *ngIf="actionsObs.context !== 'case'"
             [disabled]="actionsObs.loading"
@@ -299,7 +318,8 @@
         <button
           cdsButton="secondary"
           [size]="actionsObs.compactMode ? 'sm' : 'md'"
-          [disabled]="actionsObs.loading"
+          [disabled]="actionsObs.loading || !actionsObs.hasEditPermissions"
+          [attr.data-test-id]="testIds.validateButton"
           (click)="validateProcessDefinition(actionsObs.isReadOnlyProcess)"
         >
           {{ 'processManagement.validate' | translate }}
@@ -307,7 +327,7 @@
         </button>
 
         <button
-          [disabled]="!actionsObs.changesPending"
+          [disabled]="!actionsObs.changesPending || !actionsObs.hasEditPermissions"
           cdsButton="primary"
           (click)="
             !actionsObs.creatingNewProcess
