@@ -564,11 +564,7 @@ class BuildingBlockAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockProcessLinkCopyValidator::class)
-    fun buildingBlockProcessLinkCopyValidator(
-        repositoryService: RepositoryService,
-    ) = BuildingBlockProcessLinkCopyValidator(
-        repositoryService
-    )
+    fun buildingBlockProcessLinkCopyValidator() = BuildingBlockProcessLinkCopyValidator()
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockStartEventListener::class)
