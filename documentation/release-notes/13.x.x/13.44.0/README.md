@@ -43,3 +43,4 @@ noticeably on configurations with large document schemas or many process links.
 | Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
 | Field pickers | A case model with an unreadable reference no longer stops every field picker from loading |
 | Field pickers | Lists in a case can be picked as a field, not only as a collection |
+| Case management | A process in a finalised case version shows all of its settings, read-only, instead of only the process link |
