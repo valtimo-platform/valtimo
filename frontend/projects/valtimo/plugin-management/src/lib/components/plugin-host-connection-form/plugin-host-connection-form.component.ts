@@ -105,6 +105,11 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
   public queueModeItems: SelectItem[] = [];
 
   private readonly _subscriptions = new Subscription();
+  /** Prefill snapshot in edit mode; [isEdited] and [buildConnectionPatch] compare against it. */
+  private _editBaseline: Record<
+    'name' | 'baseUrl' | 'gzacCallbackBaseUrl' | 'eventBrokerAmqpUrl' | 'eventBrokerExchange',
+    string
+  > | null = null;
 
   public get namePlaceholder(): string {
     return this.variant === 'app' ? 'my-app' : 'my-plugin-host';
@@ -219,28 +224,42 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
   }
 
   /**
-   * The connection PATCH body: dirty controls only, so an untouched secret (empty) and an
-   * untouched redacted broker URL never travel. `null` while the form is invalid; an empty object
-   * when nothing was edited — the embedder can skip the call then.
+   * Whether a connection field currently differs from the value it was prefilled with. Deliberately
+   * a value comparison, not `dirty`: a field the admin edited and then reverted counts as unchanged
+   * again — the warning below it disappears and the field never travels. That also means a broker
+   * URL reverted to its redacted prefill (`amqp://***@…`) is simply not sent, instead of tripping
+   * the backend's redaction-marker guard.
+   */
+  public isEdited(
+    field: 'name' | 'baseUrl' | 'gzacCallbackBaseUrl' | 'eventBrokerAmqpUrl' | 'eventBrokerExchange'
+  ): boolean {
+    if (!this._editBaseline) return false;
+    return (this.form.controls[field].value ?? '').trim() !== this._editBaseline[field];
+  }
+
+  /**
+   * The connection PATCH body: fields that differ from the prefill baseline only, so an untouched
+   * secret (empty) and an untouched or reverted redacted broker URL never travel. `null` while the
+   * form is invalid; an empty object when nothing was edited — the embedder can skip the call then.
    */
   public buildConnectionPatch(): ExternalPluginHostConnectionUpdateRequest | null {
     if (this.form.invalid) return null;
     const controls = this.form.controls;
     const patch: ExternalPluginHostConnectionUpdateRequest = {};
-    if (controls.name.dirty) patch.name = controls.name.value ?? '';
-    if (controls.baseUrl.dirty) patch.baseUrl = controls.baseUrl.value ?? '';
+    if (this.isEdited('name')) patch.name = controls.name.value ?? '';
+    if (this.isEdited('baseUrl')) patch.baseUrl = controls.baseUrl.value ?? '';
     // A blank secret is "unchanged" server-side too, but not sending it at all is clearer.
-    if (controls.secret.dirty && controls.secret.value?.trim()) {
+    if (controls.secret.value?.trim()) {
       patch.secret = controls.secret.value;
     }
-    if (controls.gzacCallbackBaseUrl.dirty) {
+    if (this.isEdited('gzacCallbackBaseUrl')) {
       patch.gzacCallbackBaseUrl = controls.gzacCallbackBaseUrl.value ?? '';
     }
     // Blank means clear for the broker fields; the trim keeps a whitespace-only edit a clear too.
-    if (controls.eventBrokerAmqpUrl.dirty) {
+    if (this.isEdited('eventBrokerAmqpUrl')) {
       patch.eventBrokerAmqpUrl = controls.eventBrokerAmqpUrl.value?.trim() ?? '';
     }
-    if (controls.eventBrokerExchange.dirty) {
+    if (this.isEdited('eventBrokerExchange')) {
       patch.eventBrokerExchange = controls.eventBrokerExchange.value?.trim() ?? '';
     }
     return patch;
@@ -264,17 +283,19 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     // The secret is write-only: it prefills empty and empty means unchanged.
     this.form.controls.secret.removeValidators(Validators.required);
     this.form.controls.secret.updateValueAndValidity({emitEvent: false});
-    this.form.patchValue({
+    this._editBaseline = {
       name: host.name,
       baseUrl: host.baseUrl,
-      secret: '',
       gzacCallbackBaseUrl: host.gzacCallbackBaseUrl ?? '',
-      // The redacted value (amqp://***@…) is shown as-is; buildConnectionPatch only sends the
-      // field back when the admin actually edits it, and the backend refuses the marker outright.
       eventBrokerAmqpUrl: host.eventBrokerAmqpUrl ?? '',
       eventBrokerExchange: host.eventBrokerExchange ?? '',
+    };
+    this.form.patchValue({
+      secret: '',
+      // The redacted value (amqp://***@…) is shown as-is; buildConnectionPatch only sends a field
+      // whose value differs from this baseline, and the backend refuses the marker outright.
+      ...this._editBaseline,
     });
-    // Pristine after prefill: dirtiness now means "the admin edited this".
     this.form.markAsPristine();
     // ngOnChanges runs before ngOnInit's statusChanges subscription exists, so the validity of the
     // prefilled form must be announced explicitly or the embedder's save stays disabled. As a

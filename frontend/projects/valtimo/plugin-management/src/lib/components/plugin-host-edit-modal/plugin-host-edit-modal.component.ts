@@ -71,10 +71,11 @@ export class PluginHostEditModalComponent implements OnDestroy {
     this._formEditSubscription =
       form?.form.valueChanges.subscribe(() => {
         if (this._errorMessage$.value !== null) this._errorMessage$.next(null);
-        const controls = form.form.controls;
-        this.$secretChanged.set(controls.secret.dirty && !!controls.secret.value?.trim());
+        // Value comparisons, not dirty flags: an edit reverted to the stored value withdraws the
+        // warning, matching what buildConnectionPatch will (not) send.
+        this.$secretChanged.set(!!form.form.controls.secret.value?.trim());
         this.$brokerChanged.set(
-          controls.eventBrokerAmqpUrl.dirty || controls.eventBrokerExchange.dirty
+          form.isEdited('eventBrokerAmqpUrl') || form.isEdited('eventBrokerExchange')
         );
       }) ?? null;
   }
