@@ -91,6 +91,7 @@ export const CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS = {
   sortableCheckbox: 'listColumnSortableCheckbox',
   defaultSort: 'listColumnDefaultSort',
   exportable: 'listColumnExportable',
+  defaultVisibleCheckbox: 'listColumnDefaultVisibleCheckbox',
   cancelButton: 'listColumnCancelButton',
   saveButton: 'listColumnSaveButton',
   confirmationModal: 'listColumnConfirmationModal',

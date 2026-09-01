@@ -51,6 +51,7 @@ interface TaskListColumn {
   sortable: boolean;
   defaultSort?: TaskListColumnDefaultSort;
   order?: number;
+  defaultVisible?: boolean;
 }
 
 type TaskListColumnModalType = 'edit' | 'add';
