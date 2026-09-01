@@ -1780,7 +1780,13 @@
     "rowLocked": "Je hebt geen toegang tot deze taak",
     "allCases": "Alle dossiers",
     "noSearchResultsTitle": "Geen taken gevonden",
-    "noSearchResultsDescription": "Er zijn geen taken die aan je zoekcriteria voldoen."
+    "noSearchResultsDescription": "Er zijn geen taken die aan je zoekcriteria voldoen.",
+    "autoRefresh": {
+      "automatic": "Automatisch verversen",
+      "manual": "Handmatig verversen",
+      "refreshTooltip": "Ververs de takenlijst",
+      "pendingTooltip": "Deze takenlijst is verouderd. Ververs om de laatste taken te zien."
+    }
   },
   "Task": "Taak",
   "Tasks": "Taken",

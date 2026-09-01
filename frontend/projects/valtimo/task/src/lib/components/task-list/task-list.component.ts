@@ -74,11 +74,13 @@ import {
   TaskListHiddenColumnsService,
   TaskListPaginationService,
   TaskListQueryParamService,
+  TaskListRefreshService,
   TaskListSearchService,
   TaskListService,
 } from '../../services';
 import {isEqual} from 'lodash';
-import {ListItem} from 'carbon-components-angular';
+import {Renew16} from '@carbon/icons';
+import {IconService, ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
 import {CarbonListNoResultsMessage, PageTitleService} from '@valtimo/components';
@@ -98,6 +100,7 @@ moment.locale(localStorage.getItem('langKey') || '');
     TaskListColumnService,
     TaskListHiddenColumnsService,
     TaskListPaginationService,
+    TaskListRefreshService,
     TaskListSortService,
     TaskListSearchService,
     TaskListQueryParamService,
@@ -168,6 +171,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.taskListSortService.sortStateForCurrentTaskType$;
 
   public readonly overrideSortState$ = this.taskListSortService.overrideSortState$;
+
+  public readonly autoRefresh$ = this.taskListRefreshService.autoRefresh$;
+
+  public readonly pendingUpdateCount$ = this.taskListRefreshService.pendingUpdateCount$;
 
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
 
@@ -240,6 +247,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
       this.cachedTasks$.next(tasks);
       this.loadingTasks$.next(false);
       this.disableLoadingAnimation();
+      this.taskListRefreshService.clearPendingUpdates();
 
       this.taskListSearchService.otherFilters$.pipe(take(1)).subscribe(otherFilters => {
         this._overrideNoResultsMessage$.next(
@@ -299,6 +307,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly taskListColumnService: TaskListColumnService,
     private readonly taskListPaginationService: TaskListPaginationService,
+    private readonly taskListRefreshService: TaskListRefreshService,
     private readonly taskListSortService: TaskListSortService,
     private readonly taskListSearchService: TaskListSearchService,
     private readonly taskListQueryParamService: TaskListQueryParamService,
@@ -306,15 +315,19 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly quickSearchStateService: QuickSearchStateService,
     private readonly sseService: SseService,
     private readonly teamsApiService: TeamsApiService,
+    private readonly iconService: IconService,
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly quickSearchService: IQuickSearchService<TaskListQuickSearchParams>
-  ) {}
+  ) {
+    this.iconService.registerAll([Renew16]);
+  }
 
   public ngOnInit(): void {
     this.taskListColumnService.resetTaskListFields();
     this.setVisibleTabs();
     this.pageTitleService.disableReset();
     this.setParamsFromQueryParams();
+    this.taskListRefreshService.loadPreference();
     this.openTaskUpdateSseEventSubscription();
   }
 
@@ -330,7 +343,15 @@ export class TaskListComponent implements OnInit, OnDestroy {
               caseDefinitionKey === null || event.caseDefinitionKey === caseDefinitionKey
           )
         )
-        .subscribe(() => this.reload())
+        .subscribe(() => {
+          // Manual mode: keep the list as-is, only flag that it is out of date
+          if (!this.taskListRefreshService.autoRefresh) {
+            this.taskListRefreshService.markPendingUpdate();
+            return;
+          }
+
+          this.reload(true);
+        })
     );
   }
 
@@ -411,9 +432,22 @@ export class TaskListComponent implements OnInit, OnDestroy {
     }
   }
 
-  public reload(): void {
-    this.enableLoadingAnimation();
+  public reload(silent = false): void {
+    if (!silent) this.enableLoadingAnimation();
+
     this._reload$.next(!this._reload$.getValue());
+  }
+
+  public onAutoRefreshChange(enabled: boolean): void {
+    const hasPendingUpdates = this.taskListRefreshService.pendingUpdateCount > 0;
+
+    this.taskListRefreshService.setAutoRefresh(enabled);
+
+    if (enabled && hasPendingUpdates) this.reload(true);
+  }
+
+  public onManualRefreshClick(): void {
+    this.reload(true);
   }
 
   public search(searchFieldValues: SearchFieldValues): void {

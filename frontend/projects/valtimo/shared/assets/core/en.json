@@ -1752,7 +1752,13 @@
     "rowLocked": "You don't have access to this task",
     "allCases": "All cases",
     "noSearchResultsTitle": "No tasks found",
-    "noSearchResultsDescription": "There are no tasks that match your search criteria."
+    "noSearchResultsDescription": "There are no tasks that match your search criteria.",
+    "autoRefresh": {
+      "automatic": "Automatic refresh",
+      "manual": "Manual refresh",
+      "refreshTooltip": "Refresh the task list",
+      "pendingTooltip": "This task list is out of date. Refresh to see the latest tasks."
+    }
   },
   "Task": "Task",
   "Tasks": "Tasks",

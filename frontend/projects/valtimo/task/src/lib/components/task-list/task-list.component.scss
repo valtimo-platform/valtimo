@@ -25,6 +25,21 @@
   width: 250px;
 }
 
+.valtimo-task-list__toolbar-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.valtimo-task-list__auto-refresh-toggle {
+  padding-left: 1rem;
+
+  // Only control in the toolbar: keep its text off the edge
+  &:last-child {
+    padding-right: 1rem;
+  }
+}
+
 .valtimo-task-list__unread-dot {
   display: inline-block;
   width: 8px;

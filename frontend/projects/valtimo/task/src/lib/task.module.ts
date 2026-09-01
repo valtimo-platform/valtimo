@@ -46,6 +46,8 @@ import {
   LinkModule,
   ModalModule,
   TabsModule,
+  TagModule,
+  ToggleModule,
   TooltipModule,
 } from 'carbon-components-angular';
 import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-due-date.component';
@@ -85,6 +87,8 @@ import {TaskRoutingModule} from './task-routing.module';
     DropdownModule,
     ButtonModule,
     IconModule,
+    TagModule,
+    ToggleModule,
     TooltipModule,
     ValtimoTooltipModule,
     ConfirmationModalModule,

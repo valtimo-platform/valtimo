@@ -31,6 +31,8 @@
     loadingSearchFields: loadingSearchFields$ | async,
     caseDefinitionKey: caseDefinitionKey$ | async,
     noResultsMessage: noResultsMessage$ | async,
+    autoRefresh: autoRefresh$ | async,
+    pendingUpdateCount: pendingUpdateCount$ | async,
   } as obs"
   class="main-content"
 >
@@ -147,7 +149,48 @@
       </ng-container>
     </div>
 
-    <div carbonToolbarContent>
+    <div carbonToolbarContent class="valtimo-task-list__toolbar-content">
+      <cds-toggle
+        [checked]="obs.autoRefresh"
+        [hideLabel]="true"
+        [label]="
+          (obs.autoRefresh ? 'task-list.autoRefresh.automatic' : 'task-list.autoRefresh.manual')
+            | translate
+        "
+        size="sm"
+        (checkedChange)="onAutoRefreshChange($event)"
+        [attr.data-test-id]="'task-list-auto-refresh-toggle'"
+        class="valtimo-task-list__auto-refresh-toggle"
+      ></cds-toggle>
+
+      <ng-container *ngIf="!obs.autoRefresh">
+        <cds-tooltip
+          [description]="
+            (obs.pendingUpdateCount > 0
+              ? 'task-list.autoRefresh.pendingTooltip'
+              : 'task-list.autoRefresh.refreshTooltip'
+            ) | translate
+          "
+        >
+          <button
+            cdsButton="ghost"
+            iconOnly="true"
+            (click)="onManualRefreshClick()"
+            [attr.data-test-id]="'task-list-manual-refresh-button'"
+          >
+            <svg cdsIcon="renew" size="16"></svg>
+          </button>
+        </cds-tooltip>
+
+        <cds-tag
+          *ngIf="obs.pendingUpdateCount > 0"
+          type="blue"
+          [attr.data-test-id]="'task-list-pending-updates-tag'"
+        >
+          {{ obs.pendingUpdateCount }}
+        </cds-tag>
+      </ng-container>
+
       <valtimo-list-column-view
         *ngIf="obs.caseDefinitionKey && obs.caseDefinitionKey !== ALL_CASES_ID"
         [availableFields]="obs.availableFields"
