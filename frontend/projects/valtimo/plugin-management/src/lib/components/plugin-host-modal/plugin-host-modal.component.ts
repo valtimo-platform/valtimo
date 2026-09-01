@@ -33,9 +33,15 @@ import {
   NotificationModule,
 } from 'carbon-components-angular';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
-import {ExternalPluginHostCreateRequest, ExternalPluginHostKind} from '@valtimo/plugin';
+import {
+  ExternalPluginHost,
+  ExternalPluginHostCreateRequest,
+  ExternalPluginHostKind,
+  ExternalPluginHostUpdateRequest,
+} from '@valtimo/plugin';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {PLUGIN_HOST_MODAL_TEST_IDS} from '../../constants';
 import {PluginHostConnectionFormComponent} from '../plugin-host-connection-form/plugin-host-connection-form.component';
 
 @Component({
@@ -74,13 +80,15 @@ export class PluginHostModalComponent implements OnDestroy {
 
   @Input() public open = false;
   @Input() public kind: ExternalPluginHostKind = 'PLUGIN_HOST';
-  /** Disables both footer buttons and shows the inline loader while the create call is in flight. */
+  /** The host being edited; null registers a new one. Edit mode emits {@link updateEvent}. */
+  @Input() public host: ExternalPluginHost | null = null;
+  /** Disables both footer buttons and shows the inline loader while the call is in flight. */
   @Input() public submitting = false;
 
   /**
-   * Why the last create attempt failed, rendered above the fields. Owned by the parent (it is the
-   * one that makes the call) but cleared here as soon as the admin edits anything, so a stale
-   * message never sits above a form they have already corrected.
+   * Why the last attempt failed, rendered above the fields. Owned by the parent (it is the one that
+   * makes the call) but cleared here as soon as the admin edits anything, so a stale message never
+   * sits above a form they have already corrected.
    */
   @Input()
   public set errorMessage(value: string | null) {
@@ -89,12 +97,20 @@ export class PluginHostModalComponent implements OnDestroy {
 
   @Output() public closeEvent = new EventEmitter<void>();
   @Output() public submitEvent = new EventEmitter<ExternalPluginHostCreateRequest>();
+  /** Separate from {@link submitEvent}: that contract is public API, widening it would break it. */
+  @Output() public updateEvent = new EventEmitter<ExternalPluginHostUpdateRequest>();
 
   public formValid = false;
 
   public get isApp(): boolean {
     return this.kind === 'APP';
   }
+
+  public get isEdit(): boolean {
+    return this.host !== null;
+  }
+
+  protected readonly testIds = PLUGIN_HOST_MODAL_TEST_IDS;
 
   private readonly _errorMessage$ = new BehaviorSubject<string | null>(null);
   private _connectionForm: PluginHostConnectionFormComponent | undefined;
@@ -111,7 +127,11 @@ export class PluginHostModalComponent implements OnDestroy {
           ? null
           : {
               type: 'error',
-              title: this._translateService.instant('pluginManagement.host.createFailedTitle'),
+              title: this._translateService.instant(
+                this.isEdit
+                  ? 'pluginManagement.host.updateFailedTitle'
+                  : 'pluginManagement.host.createFailedTitle'
+              ),
               message,
               showClose: false,
               lowContrast: true,
@@ -131,10 +151,18 @@ export class PluginHostModalComponent implements OnDestroy {
 
   public onSubmit(): void {
     if (this.submitting) return;
+    // Deliberately no reset in either branch: a failed attempt keeps every value the admin typed,
+    // with the backend's reason rendered above the fields. The parent closes the modal on success.
+    if (this.isEdit) {
+      const request = this._connectionForm?.buildUpdateRequest();
+      if (!request) return;
+      this._errorMessage$.next(null);
+      this.updateEvent.emit(request);
+      return;
+    }
+
     const request = this._connectionForm?.buildRequest(this.kind);
     if (!request) return;
-    // Deliberately no reset here: a failed create keeps every value the admin typed, with the
-    // backend's reason rendered above the fields. The parent closes the modal on success.
     this._errorMessage$.next(null);
     this.submitEvent.emit(request);
   }

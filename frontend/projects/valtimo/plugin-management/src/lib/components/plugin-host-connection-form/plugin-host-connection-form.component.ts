@@ -32,8 +32,10 @@ import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular'
 import {SelectItem, SelectModule} from '@valtimo/components';
 import {
   ExternalPluginEventQueueMode,
+  ExternalPluginHost,
   ExternalPluginHostCreateRequest,
   ExternalPluginHostKind,
+  ExternalPluginHostUpdateRequest,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {Subscription} from 'rxjs';
@@ -42,10 +44,12 @@ import {Subscription} from 'rxjs';
 const ORIGIN_PATTERN = /^https?:\/\/[^/\s]+$/;
 
 /**
- * The connection details form shared by host registration (plugin-host modal) and app
- * registration (the app add stepper). Owns the form controls, the backend-provided defaults and
- * the queue-mode/TTL validation rules; the embedding component decides when to submit and builds
- * the create request via {@link buildRequest}.
+ * Connection details form shared by host registration, the app add stepper, and editing either.
+ * Owns the controls, the backend defaults and the queue-mode/TTL rules; the embedding component
+ * decides when to submit and builds the request via {@link buildRequest} or
+ * {@link buildUpdateRequest}.
+ *
+ * Setting {@link host} switches to edit mode.
  */
 @Component({
   standalone: true,
@@ -70,6 +74,8 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
   @Input() public disabled = false;
   /** Chooses the placeholder examples: 'host' in the plugin-host modal, 'app' in the app add stepper. */
   @Input() public variant: 'host' | 'app' = 'host';
+  /** The host being edited; null registers a new one. */
+  @Input() public host: ExternalPluginHost | null = null;
 
   @Output() public validChange = new EventEmitter<boolean>();
 
@@ -116,6 +122,10 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     return this.form.controls.frontendOrigins.controls;
   }
 
+  public get isEdit(): boolean {
+    return this.host !== null;
+  }
+
   constructor(private readonly _externalPluginService: ExternalPluginService) {}
 
   public ngOnInit(): void {
@@ -154,7 +164,19 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['host']) {
+      // The API never returns the secret, so in edit mode blank means "keep the stored one".
+      const secret = this.form.controls.secret;
+      if (this.isEdit) {
+        secret.clearValidators();
+      } else {
+        secret.setValidators(Validators.required);
+      }
+      secret.updateValueAndValidity({emitEvent: false});
+    }
+
     if (changes['active']?.currentValue === true) {
+      // Fetched in both modes — the TTL bounds drive the durable-mode validators.
       this._fetchDefaults();
     }
 
@@ -200,6 +222,30 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     };
   }
 
+  /**
+   * Edit-mode counterpart of {@link buildRequest}. No `kind` — it is immutable. Blank secret
+   * collapses to null, and the broker URL passes through untouched so an unedited redacted value
+   * round-trips to "unchanged" server-side.
+   */
+  public buildUpdateRequest(): ExternalPluginHostUpdateRequest | null {
+    if (this.form.invalid) return null;
+    const value = this.form.getRawValue();
+    const mode = value.eventQueueMode ?? 'LIVE';
+    return {
+      name: value.name!,
+      baseUrl: value.baseUrl!,
+      secret: value.secret?.trim() || null,
+      gzacCallbackBaseUrl: value.gzacCallbackBaseUrl!,
+      eventBrokerAmqpUrl: value.eventBrokerAmqpUrl?.trim() || null,
+      eventBrokerExchange: value.eventBrokerExchange?.trim() || null,
+      eventQueueMode: mode,
+      eventQueueTtlMs: mode === 'DURABLE' ? (value.eventQueueTtlMs ?? null) : null,
+      frontendOrigins: (value.frontendOrigins ?? [])
+        .map(origin => origin?.trim() ?? '')
+        .filter(origin => origin.length > 0),
+    };
+  }
+
   public reset(): void {
     this.form.controls.frontendOrigins.clear();
     this.form.reset({
@@ -230,7 +276,28 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
         // the plugin, unlike gzacCallbackBaseUrl, which is a server-to-server address.
         defaults.frontendOrigins?.length ? defaults.frontendOrigins : [window.location.origin]
       );
+
+      if (this.host) this._patchHost(this.host);
     });
+  }
+
+  /**
+   * Overlays the stored host on the defaults. Secret stays blank; the redacted broker URL is
+   * patched in as-is, so submitting it unchanged keeps the stored credentials.
+   */
+  private _patchHost(host: ExternalPluginHost): void {
+    this.form.patchValue({
+      name: host.name,
+      baseUrl: host.baseUrl,
+      secret: '',
+      gzacCallbackBaseUrl: host.gzacCallbackBaseUrl ?? '',
+      eventBrokerAmqpUrl: host.eventBrokerAmqpUrl ?? '',
+      eventBrokerExchange: host.eventBrokerExchange ?? '',
+      eventQueueMode: host.eventQueueMode,
+      eventQueueTtlMs: host.eventQueueTtlMs,
+    });
+    // The host's own allowlist — the CORS-derived guess is only for a host that has none.
+    this._setFrontendOrigins(host.frontendOrigins ?? []);
   }
 
   private _setFrontendOrigins(origins: Array<string>): void {

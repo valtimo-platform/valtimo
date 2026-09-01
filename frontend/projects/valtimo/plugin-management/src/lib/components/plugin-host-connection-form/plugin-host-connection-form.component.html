@@ -28,6 +28,8 @@
   <cds-label>
     {{ 'pluginManagement.labels.secret' | translate }}
     <input cdsText formControlName="secret" type="password" placeholder="admin-token" />
+
+    <small *ngIf="isEdit">{{ 'pluginManagement.hints.secretUnchanged' | translate }}</small>
   </cds-label>
 
   <cds-label>
@@ -42,6 +44,10 @@
       formControlName="eventBrokerAmqpUrl"
       placeholder="amqp://guest:guest@localhost:5672"
     />
+
+    <small *ngIf="isEdit">{{
+      'pluginManagement.hints.brokerCredentialsRedacted' | translate
+    }}</small>
   </cds-label>
 
   <cds-label>

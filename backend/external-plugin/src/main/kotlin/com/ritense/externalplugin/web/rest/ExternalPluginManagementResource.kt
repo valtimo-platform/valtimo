@@ -48,6 +48,7 @@ import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
+import com.ritense.externalplugin.web.rest.dto.HostUpdateRequest
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -145,9 +146,45 @@ class ExternalPluginManagementResource(
     }
 
     /**
-     * Narrowly-scoped update for the browser origins allowed to embed this host's plugin screens,
-     * mirroring the event-queue PATCH. The new list is pushed to the host immediately so an operator
-     * fixing a wrong origin does not have to wait out a discovery cycle; the poll re-pushes anyway.
+     * Repoints a host: the whole connection surface is editable in place, so following a moved host
+     * or broker no longer means deleting and re-registering. Only `kind` is immutable.
+     *
+     * Blank secret keeps the stored one. The broker URL comes back redacted from both
+     * `/host-defaults` (resolved here) and the host row (resolved in the service), so a
+     * round-tripped `***` never gets persisted.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update an external plugin host's connection settings",
+        nl = "Verbindingsinstellingen van externe-pluginhost bijwerken",
+    )
+    @PutMapping("/host/{hostId}")
+    fun updateHost(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val result = hostService.update(
+            hostId,
+            request.name,
+            request.baseUrl,
+            request.secret,
+            request.gzacCallbackBaseUrl,
+            resolveBrokerAmqpUrl(request.eventBrokerAmqpUrl),
+            request.eventBrokerExchange,
+            request.eventQueueMode,
+            request.eventQueueTtlMs,
+            request.frontendOrigins,
+        )
+        // Best-effort pair, as in createHost: announce origins, then re-discover so configurations
+        // land on the new address and definition.baseUrl is rewritten. Polling reconciles anyway.
+        runCatching { pushFrontendOrigins(result.host) }
+        runCatching { discoveryService.discoverHost(hostId) }
+        return ResponseEntity.ok(HostResponse.from(result.host))
+    }
+
+    /**
+     * Frontend origins only — a convenience over [updateHost]. Pushed immediately so fixing a wrong
+     * origin does not mean waiting out a discovery cycle; the poll re-pushes anyway.
      */
     @RunWithoutAuthorization
     @EndpointDescription(
@@ -180,10 +217,8 @@ class ExternalPluginManagementResource(
     }
 
     /**
-     * Narrowly-scoped update for the per-host event-queue declaration. baseUrl/secret/broker stay
-     * immutable; only mode and TTL are mutable. Triggers an immediate re-discovery so the host's
-     * `EventConsumerManager` swaps its queue without waiting for the next polling tick — best-effort
-     * because the periodic discovery cycle will reconcile anyway.
+     * Queue mode and TTL only — a convenience over [updateHost]. Re-discovers immediately so the
+     * host's `EventConsumerManager` swaps its queue without waiting for the next polling tick.
      */
     @RunWithoutAuthorization
     @EndpointDescription(

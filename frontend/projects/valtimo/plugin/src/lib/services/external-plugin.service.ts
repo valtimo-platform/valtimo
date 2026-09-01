@@ -30,6 +30,7 @@ import {
   ExternalPluginHostCreateRequest,
   ExternalPluginHostDefaults,
   ExternalPluginHostEventQueueUpdateRequest,
+  ExternalPluginHostUpdateRequest,
   ExternalPluginHostUsage,
   ExternalPluginUploadResult,
   PluginLogPage,
@@ -73,6 +74,23 @@ export class ExternalPluginService {
     return this._http.post<ExternalPluginHost>(`${this._baseUrl}/host`, request, {headers});
   }
 
+  /**
+   * Repoints a host in place, so following a moved host or broker does not mean deleting and
+   * re-registering — which would orphan its configurations.
+   *
+   * `InterceptorSkip: 400` for the same reason as {@link createHost}: a fixable rejection comes
+   * back as a 400 whose `detail` the modal renders inline.
+   */
+  public updateHost(
+    hostId: string,
+    request: ExternalPluginHostUpdateRequest
+  ): Observable<ExternalPluginHost> {
+    const headers = new HttpHeaders().set(InterceptorSkip, '400');
+    return this._http.put<ExternalPluginHost>(`${this._baseUrl}/host/${hostId}`, request, {
+      headers,
+    });
+  }
+
   public getHostDefaults(): Observable<ExternalPluginHostDefaults> {
     return this._http.get<ExternalPluginHostDefaults>(`${this._baseUrl}/host-defaults`);
   }
@@ -111,9 +129,12 @@ export class ExternalPluginService {
     hostId: string,
     origins: Array<string>
   ): Observable<ExternalPluginHost> {
-    return this._http.patch<ExternalPluginHost>(`${this._baseUrl}/host/${hostId}/frontend-origins`, {
-      frontendOrigins: origins,
-    });
+    return this._http.patch<ExternalPluginHost>(
+      `${this._baseUrl}/host/${hostId}/frontend-origins`,
+      {
+        frontendOrigins: origins,
+      }
+    );
   }
 
   public getDefinitions(): Observable<Array<ExternalPluginDefinition>> {

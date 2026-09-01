@@ -14,5 +14,12 @@
  * limitations under the License.
  */
 
-export * from './plugin-app-add-modal.test-ids';
-export * from './plugin-host-modal.test-ids';
+export const PLUGIN_HOST_MODAL_TEST_IDS = {
+  cancelButton: 'pluginHostModalCancelButton',
+  saveButton: 'pluginHostModalSaveButton',
+} as const;
+
+/** Shared by the plugin hosts tab and the apps tab. */
+export const PLUGIN_HOST_LIST_TEST_IDS = {
+  editConnectionAction: 'pluginHostEditConnectionAction',
+} as const;

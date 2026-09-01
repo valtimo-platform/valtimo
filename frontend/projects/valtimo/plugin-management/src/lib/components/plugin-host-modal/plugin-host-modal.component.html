@@ -17,7 +17,13 @@
 <cds-modal *ngIf="open" [open]="open" size="sm" valtimoCdsModal>
   <cds-modal-header (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>
-      {{ (isApp ? 'pluginManagement.addApp' : 'pluginManagement.addHost') | translate }}
+      <ng-container *ngIf="isEdit; else addTitle">
+        {{ 'pluginManagement.editHostConnectionModalTitle' | translate: {name: host?.name} }}
+      </ng-container>
+
+      <ng-template #addTitle>
+        {{ (isApp ? 'pluginManagement.addApp' : 'pluginManagement.addHost') | translate }}
+      </ng-template>
     </h3>
   </cds-modal-header>
 
@@ -29,6 +35,8 @@
 
     <valtimo-plugin-host-connection-form
       [active]="open"
+      [host]="host"
+      [variant]="isApp ? 'app' : 'host'"
       (validChange)="onFormValidChange($event)"
     ></valtimo-plugin-host-connection-form>
   </div>
@@ -41,12 +49,22 @@
       class="plugin-host-modal__spinner"
     ></cds-loading>
 
-    <button cdsButton="secondary" [disabled]="submitting" (click)="onClose()">
+    <button
+      cdsButton="secondary"
+      [disabled]="submitting"
+      (click)="onClose()"
+      [attr.data-test-id]="testIds.cancelButton"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="!formValid || submitting" (click)="onSubmit()">
-      {{ 'interface.save' | translate }}
+    <button
+      cdsButton="primary"
+      [disabled]="!formValid || submitting"
+      (click)="onSubmit()"
+      [attr.data-test-id]="testIds.saveButton"
+    >
+      {{ (isEdit ? 'pluginManagement.saveConnection' : 'interface.save') | translate }}
     </button>
   </cds-modal-footer>
 </cds-modal>

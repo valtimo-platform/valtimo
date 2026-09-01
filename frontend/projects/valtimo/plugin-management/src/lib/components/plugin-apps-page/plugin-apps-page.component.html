@@ -73,13 +73,15 @@
   (deleteEvent)="onConfigurationDeleteRequested($event)"
 ></valtimo-plugin-external-edit-modal>
 
-<valtimo-plugin-host-event-queue-modal
-  [host]="hostToEditEventQueue$ | async"
-  [open]="eventQueueModalOpen$ | async"
-  variant="app"
-  (closeEvent)="closeEventQueueModal()"
-  (submitEvent)="submitEventQueueUpdate($event)"
-></valtimo-plugin-host-event-queue-modal>
+<valtimo-plugin-host-modal
+  [errorMessage]="hostUpdateErrorMessage$ | async"
+  [host]="hostToEdit$ | async"
+  [kind]="'APP'"
+  [open]="editConnectionModalOpen$ | async"
+  [submitting]="hostUpdating$ | async"
+  (closeEvent)="closeEditConnectionModal()"
+  (updateEvent)="submitHostUpdate($event)"
+></valtimo-plugin-host-modal>
 
 <valtimo-plugin-log-modal
   [open]="$logModalOpen()"

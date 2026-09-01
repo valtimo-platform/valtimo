@@ -18,22 +18,37 @@ import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
-import {ActionItem, CarbonListModule, CarbonTag, ColumnConfig, ConfirmationModalModule, ViewType} from '@valtimo/components';
+import {
+  ActionItem,
+  CarbonListModule,
+  CarbonTag,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
 import {
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
-  ExternalPluginHostEventQueueUpdateRequest,
+  ExternalPluginHostUpdateRequest,
   ExternalPluginHostUsage,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {ButtonModule, LoadingModule} from 'carbon-components-angular';
 import {BehaviorSubject, EMPTY, fromEvent, merge, Observable, of, Subject, timer} from 'rxjs';
-import {catchError, distinctUntilChanged, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  startWith,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
+import {PLUGIN_HOST_LIST_TEST_IDS} from '../../constants';
 import {PluginHostModalComponent} from '../plugin-host-modal/plugin-host-modal.component';
-import {PluginHostEventQueueModalComponent} from '../plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
-import {PluginHostFrontendOriginsModalComponent} from '../plugin-host-frontend-origins-modal/plugin-host-frontend-origins-modal.component';
 import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-modal.component';
 
 @Component({
@@ -49,8 +64,6 @@ import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-moda
     CarbonListModule,
     ConfirmationModalModule,
     PluginHostModalComponent,
-    PluginHostEventQueueModalComponent,
-    PluginHostFrontendOriginsModalComponent,
     PluginUsageModalComponent,
   ],
 })
@@ -73,11 +86,10 @@ export class PluginHostsPageComponent implements OnDestroy {
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
 
-  public readonly eventQueueModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly hostToEditEventQueue$ = new BehaviorSubject<ExternalPluginHost | null>(null);
-
-  public readonly frontendOriginsModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly hostToEditFrontendOrigins$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+  public readonly editModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostToEdit$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+  public readonly hostUpdating$ = new BehaviorSubject<boolean>(false);
+  public readonly hostUpdateErrorMessage$ = new BehaviorSubject<string | null>(null);
 
   public readonly usageModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly usageModalUsages$ = new BehaviorSubject<Array<ExternalPluginHostUsage>>([]);
@@ -110,12 +122,9 @@ export class PluginHostsPageComponent implements OnDestroy {
 
   public readonly hostActionItems: ActionItem[] = [
     {
-      callback: this.editHostEventQueue.bind(this),
-      label: 'pluginManagement.editEventQueue',
-    },
-    {
-      callback: this.editHostFrontendOrigins.bind(this),
-      label: 'pluginManagement.editFrontendOrigins',
+      callback: this.editHostConnection.bind(this),
+      label: 'pluginManagement.editConnection',
+      testId: PLUGIN_HOST_LIST_TEST_IDS.editConnectionAction,
     },
     {
       callback: this.deleteHost.bind(this),
@@ -137,9 +146,7 @@ export class PluginHostsPageComponent implements OnDestroy {
       }
     }),
     switchMap(() =>
-      this._externalPluginService
-        .getHosts()
-        .pipe(catchError(() => of([] as ExternalPluginHost[])))
+      this._externalPluginService.getHosts().pipe(catchError(() => of([] as ExternalPluginHost[])))
     ),
     map(hosts => hosts.filter(h => h.kind === 'PLUGIN_HOST')),
     switchMap(hosts =>
@@ -203,27 +210,41 @@ export class PluginHostsPageComponent implements OnDestroy {
     });
   }
 
-  public editHostFrontendOrigins(host: ExternalPluginHost): void {
-    this.hostToEditFrontendOrigins$.next(host);
-    this.frontendOriginsModalOpen$.next(true);
+  public editHostConnection(host: ExternalPluginHost): void {
+    this.hostUpdateErrorMessage$.next(null);
+    this.hostToEdit$.next(host);
+    this.editModalOpen$.next(true);
   }
 
-  public closeFrontendOriginsModal(): void {
-    this.frontendOriginsModalOpen$.next(false);
-    this.hostToEditFrontendOrigins$.next(null);
+  public closeEditModal(): void {
+    this.editModalOpen$.next(false);
+    this.hostToEdit$.next(null);
+    this.hostUpdateErrorMessage$.next(null);
   }
 
-  public submitFrontendOriginsUpdate(origins: Array<string>): void {
-    const host = this.hostToEditFrontendOrigins$.value;
+  /**
+   * Same inline-failure handling as {@link submitHost}. A moved base URL also prompts for a reload:
+   * the `frame-src` allowlist is a meta tag parsed once at bootstrap, so the iframes cannot load
+   * until then.
+   */
+  public submitHostUpdate(request: ExternalPluginHostUpdateRequest): void {
+    const host = this.hostToEdit$.value;
     if (!host) return;
-    this._externalPluginService.updateHostFrontendOrigins(host.id, origins).subscribe({
+    const baseUrlChanged = request.baseUrl.replace(/\/+$/, '') !== host.baseUrl.replace(/\/+$/, '');
+
+    this.hostUpdating$.next(true);
+    this.hostUpdateErrorMessage$.next(null);
+    this._externalPluginService.updateHost(host.id, request).subscribe({
       next: () => {
-        this.frontendOriginsModalOpen$.next(false);
-        this.hostToEditFrontendOrigins$.next(null);
+        this.hostUpdating$.next(false);
+        this.closeEditModal();
         this._refreshHosts$.next();
+        if (baseUrlChanged) this.reloadModalOpen$.next(true);
       },
-      error: () => {
-        this._logger.error('Something went wrong with updating the plugin host frontend origins.');
+      error: (response: HttpErrorResponse) => {
+        this.hostUpdating$.next(false);
+        this.hostUpdateErrorMessage$.next(this._extractHostError(response, 'update'));
+        this._logger.error('Something went wrong with updating the plugin host.', response);
       },
     });
   }
@@ -233,7 +254,10 @@ export class PluginHostsPageComponent implements OnDestroy {
    * mapper fills with the operator-facing reason; `message`/`title` cover the other problem shapes;
    * the translated fallback covers a response with none of them (a gateway error, say).
    */
-  private _extractHostError(response: HttpErrorResponse): string {
+  private _extractHostError(
+    response: HttpErrorResponse,
+    operation: 'create' | 'update' = 'create'
+  ): string {
     const body = response?.error;
     const candidate =
       (typeof body?.detail === 'string' && body.detail) ||
@@ -242,7 +266,11 @@ export class PluginHostsPageComponent implements OnDestroy {
       '';
     return (
       candidate.trim() ||
-      this._translateService.instant('pluginManagement.host.createFailedFallback')
+      this._translateService.instant(
+        operation === 'update'
+          ? 'pluginManagement.host.updateFailedFallback'
+          : 'pluginManagement.host.createFailedFallback'
+      )
     );
   }
 
@@ -291,31 +319,6 @@ export class PluginHostsPageComponent implements OnDestroy {
 
   public cancelDeleteHost(): void {
     this.hostToDelete = null;
-  }
-
-  public editHostEventQueue(host: ExternalPluginHost): void {
-    this.hostToEditEventQueue$.next(host);
-    this.eventQueueModalOpen$.next(true);
-  }
-
-  public closeEventQueueModal(): void {
-    this.eventQueueModalOpen$.next(false);
-    this.hostToEditEventQueue$.next(null);
-  }
-
-  public submitEventQueueUpdate(request: ExternalPluginHostEventQueueUpdateRequest): void {
-    const host = this.hostToEditEventQueue$.value;
-    if (!host) return;
-    this._externalPluginService.updateHostEventQueue(host.id, request).subscribe({
-      next: () => {
-        this.eventQueueModalOpen$.next(false);
-        this.hostToEditEventQueue$.next(null);
-        this._refreshHosts$.next();
-      },
-      error: () => {
-        this._logger.error('Something went wrong with updating the plugin host event queue.');
-      },
-    });
   }
 
   public closeUsageModal(): void {

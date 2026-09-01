@@ -128,10 +128,23 @@ administrator accepts.
 
 Restarting changes nothing. Beyond that:
 
-* `frontendOrigins` and the event-queue settings are brought in line with the descriptor.
-* `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` and the broker fields are **immutable** after
-  registration. A changed value is logged as a warning and the integration is left as it is; to
-  repoint an integration, delete it and let it be registered again.
+* The whole connection surface — `name`, `baseUrl`, `secret`, `gzacCallbackBaseUrl`, the broker
+  fields, the event-queue settings and `frontendOrigins` — is brought in line with the descriptor.
+  Repointing an integration at a moved host or broker is therefore just an edit to the descriptor;
+  the configurations under it keep their ids, properties and granted permissions.
+* A redeployment that changes the address or the credentials **revokes the tokens** of every
+  configuration under the integration: from that moment Valtimo no longer talks to the old address,
+  so anything still running there must be assumed hostile. The next discovery cycle hands the new
+  address a fresh token, so a legitimate host recovers on its own, and the configurations left
+  behind on the old address are removed best-effort. The repoint is logged at INFO. A redeployment
+  that changes nothing revokes nothing.
+* `kind` is **immutable**: an app serves its own plugin while a plugin host accepts uploads, so
+  switching would change the upload model and the definition set. A changed `kind` is logged as a
+  warning and left as it is; delete the integration and let it be registered again to change it.
+* Broker credentials can never be moved onto an address Valtimo can only reach over plaintext HTTP.
+  The configuration push carries them in its body, so the transport check runs on every resulting
+  state, not just at registration — a descriptor that downgrades `baseUrl` to plain HTTP while a
+  broker is configured fails the import.
 * An active configuration is never re-granted or re-titled — that set is what an administrator
   accepted.
 * An integration whose `baseUrl` is already registered under a *different* id is skipped rather than

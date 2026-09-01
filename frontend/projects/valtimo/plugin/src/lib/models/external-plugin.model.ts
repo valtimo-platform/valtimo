@@ -59,6 +59,25 @@ interface ExternalPluginHostCreateRequest {
   frontendOrigins: Array<string>;
 }
 
+/**
+ * The full connection surface, all repointable in place. No `kind` — plugin host ↔ app is a
+ * re-registration, not an edit.
+ *
+ * "Unchanged" semantics, since the API never returns the real values: `null` `secret` keeps the
+ * stored one, and a redacted `eventBrokerAmqpUrl` keeps the stored credentials.
+ */
+interface ExternalPluginHostUpdateRequest {
+  name: string;
+  baseUrl: string;
+  secret: string | null;
+  gzacCallbackBaseUrl: string;
+  eventBrokerAmqpUrl: string | null;
+  eventBrokerExchange: string | null;
+  eventQueueMode: ExternalPluginEventQueueMode;
+  eventQueueTtlMs: number | null;
+  frontendOrigins: Array<string>;
+}
+
 interface ExternalPluginHostDefaults {
   gzacCallbackBaseUrl: string;
   eventBrokerAmqpUrl: string;
@@ -446,6 +465,7 @@ export {
   ExternalPluginHostKind,
   ExternalPluginHost,
   ExternalPluginHostCreateRequest,
+  ExternalPluginHostUpdateRequest,
   ExternalPluginHostDefaults,
   ExternalPluginHostEventQueueUpdateRequest,
   ExternalPluginHostUsage,

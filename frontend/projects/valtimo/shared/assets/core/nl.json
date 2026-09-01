@@ -2468,18 +2468,19 @@
       "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
       "eventQueueTtlMsApp": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden app. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
       "frontendOrigins": "Browser-origins (scheme://host[:poort], zonder pad) die pluginschermen van deze host mogen tonen. Voeg elke Valtimo-frontend-URL toe waarvandaan gebruikers plugins openen, inclusief een eventuele proxy-alias.",
-      "noFrontendOrigins": "Zonder origins kan geen enkele pagina de pluginschermen van deze host tonen."
+      "noFrontendOrigins": "Zonder origins kan geen enkele pagina de pluginschermen van deze host tonen.",
+      "secretUnchanged": "Laat leeg om het huidige secret te behouden.",
+      "brokerCredentialsRedacted": "De inloggegevens zijn verborgen. Laat de URL staan zoals getoond om ze te behouden, of vul een volledige AMQP-URL in om ze te vervangen."
     },
-    "editEventQueue": "Event queue bewerken",
-    "editHostEventQueueModalTitle": "Event queue bewerken voor {{name}}",
-    "saveEventQueue": "Opslaan",
     "addFrontendOrigin": "Origin toevoegen",
-    "editFrontendOrigins": "Frontend-origins bewerken",
-    "editHostFrontendOriginsModalTitle": "Frontend-origins voor {{name}}",
-    "saveFrontendOrigins": "Origins opslaan",
+    "editConnection": "Verbinding bewerken",
+    "editHostConnectionModalTitle": "Verbinding bewerken voor {{name}}",
+    "saveConnection": "Verbinding opslaan",
     "host": {
       "createFailedTitle": "Opslaan mislukt",
-      "createFailedFallback": "De host kon niet worden opgeslagen. Controleer de ingevulde waarden en probeer het opnieuw."
+      "createFailedFallback": "De host kon niet worden opgeslagen. Controleer de ingevulde waarden en probeer het opnieuw.",
+      "updateFailedTitle": "Verbinding opslaan mislukt",
+      "updateFailedFallback": "De verbinding kon niet worden opgeslagen."
     },
     "source": {
       "embedded": "Ingebed",

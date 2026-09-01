@@ -113,9 +113,32 @@ data class HostDefaultsResponse(
 )
 
 /**
- * Narrow update payload: flips the per-host event-queue mode and adjusts the TTL on an existing
- * host without touching any other field. baseUrl/secret/broker remain immutable because the
- * security check that pins broker credentials to a confidential baseUrl runs at registration time.
+ * The full connection surface, all repointable in place — recreating a host would orphan its
+ * configurations, which cannot be moved between hosts.
+ *
+ * "Unchanged" semantics, since [HostResponse] never returns the real values:
+ * - [secret]: blank keeps the stored one.
+ * - [eventBrokerAmqpUrl]: the redacted form from a GET keeps the stored credentials; anything else
+ *   is taken literally, blank disables events.
+ *
+ * [ExternalPluginHostKind] is absent on purpose: plugin host ↔ app changes the upload model and the
+ * definition set, so it is a re-registration, not an edit.
+ */
+data class HostUpdateRequest(
+    val name: String,
+    val baseUrl: String,
+    val secret: String? = null,
+    val gzacCallbackBaseUrl: String,
+    val eventBrokerAmqpUrl: String?,
+    val eventBrokerExchange: String?,
+    val eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
+    val eventQueueTtlMs: Long? = null,
+    val frontendOrigins: List<String> = emptyList(),
+)
+
+/**
+ * Queue mode and TTL only. Same code path as [HostUpdateRequest]; exists so a caller with no
+ * opinion on the rest of the connection surface does not have to echo it back.
  */
 data class HostEventQueueUpdateRequest(
     val eventQueueMode: EventQueueMode,
@@ -123,9 +146,8 @@ data class HostEventQueueUpdateRequest(
 )
 
 /**
- * Narrow update payload for the browser origins allowed to embed this host's plugin screens. Same
- * shape of change as [HostEventQueueUpdateRequest]: one runtime-editable field, everything
- * security-sensitive stays immutable. An empty list means nothing may frame this host's plugins.
+ * Browser origins allowed to embed this host's plugin screens; empty means none may. Same shape of
+ * convenience as [HostEventQueueUpdateRequest].
  */
 data class HostFrontendOriginsUpdateRequest(
     val frontendOrigins: List<String>,

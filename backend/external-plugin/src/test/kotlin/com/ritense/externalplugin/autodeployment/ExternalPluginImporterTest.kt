@@ -32,6 +32,7 @@ import com.ritense.externalplugin.repository.ExternalPluginConfigurationReposito
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.externalplugin.service.HostUpdateResult
 import com.ritense.externalplugin.web.rest.dto.GrantedEndpointEntry
 import com.ritense.externalplugin.web.rest.dto.GrantedEventEntry
 import com.ritense.importer.ImportRequest
@@ -96,6 +97,18 @@ class ExternalPluginImporterTest {
                 any(), anyOrNull(), any(), any(), any(),
             )
         ).thenAnswer { invocation -> host(id = invocation.getArgument(10)) }
+        whenever(
+            hostService.update(
+                any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(),
+                anyOrNull(), any(), anyOrNull(), any(),
+            )
+        ).thenAnswer { invocation ->
+            HostUpdateResult(
+                host = host(id = invocation.getArgument(0), baseUrl = invocation.getArgument(2)),
+                addressChanged = false,
+                credentialsChanged = false,
+            )
+        }
 
         importer = ExternalPluginImporter(
             environment,
@@ -186,7 +199,7 @@ class ExternalPluginImporterTest {
     }
 
     @Test
-    fun `a second import changes nothing`() {
+    fun `a second import reconciles the host with the values it already holds`() {
         whenever(hostService.findById(hostId)).thenReturn(host())
         whenever(configurationRepository.findById(configurationId))
             .thenReturn(Optional.of(ExternalPluginConfiguration(configurationId, definitionId, "Case summary")))
@@ -196,6 +209,19 @@ class ExternalPluginImporterTest {
         verify(hostService, never()).register(
             any(), any(), any(), any(), anyOrNull(), anyOrNull(),
             any(), anyOrNull(), any(), any(), any(),
+        )
+        // One reconciliation call, carrying exactly what is already stored — so nothing moves.
+        verify(hostService).update(
+            eq(hostId),
+            eq("Local plugin host"),
+            eq("http://localhost:8090"),
+            eq("test-secret"),
+            eq("http://localhost:8080"),
+            eq("amqp://guest:guest@localhost:5672"),
+            eq("valtimo-events"),
+            eq(EventQueueMode.LIVE),
+            isNull(),
+            eq(listOf("http://localhost:4200")),
         )
         verify(hostService, never()).updateFrontendOrigins(any(), any())
         verify(hostService, never()).updateEventQueue(any(), any(), anyOrNull())
@@ -241,12 +267,46 @@ class ExternalPluginImporterTest {
     }
 
     @Test
-    fun `a changed base url is reported and the host row is left alone`() {
+    fun `a changed base url repoints the host row`() {
         whenever(hostService.findById(hostId)).thenReturn(host(baseUrl = "http://plugin-host:8090"))
 
         importer.import(request(descriptorJson()))
 
-        verify(hostService, never()).updateFrontendOrigins(any(), any())
+        verify(hostService).update(
+            eq(hostId), any(), eq("http://localhost:8090"), anyOrNull(), anyOrNull(),
+            anyOrNull(), anyOrNull(), any(), anyOrNull(), any(),
+        )
+    }
+
+    @Test
+    fun `a changed broker address repoints the host row`() {
+        whenever(hostService.findById(hostId)).thenReturn(host())
+
+        importer.import(request(descriptorJson(brokerUrl = "amqp://guest:guest@new-broker:5672")))
+
+        verify(hostService).update(
+            eq(hostId), any(), any(), anyOrNull(), anyOrNull(),
+            eq("amqp://guest:guest@new-broker:5672"), anyOrNull(), any(), anyOrNull(), any(),
+        )
+    }
+
+    @Test
+    fun `a changed callback url and secret are applied`() {
+        whenever(hostService.findById(hostId)).thenReturn(host())
+
+        importer.import(
+            request(
+                descriptorJson(
+                    secret = "rotated-secret",
+                    gzacCallbackBaseUrl = "https://gzac.example.com",
+                )
+            )
+        )
+
+        verify(hostService).update(
+            eq(hostId), any(), any(), eq("rotated-secret"), eq("https://gzac.example.com"),
+            anyOrNull(), anyOrNull(), any(), anyOrNull(), any(),
+        )
     }
 
     @Test
@@ -255,7 +315,39 @@ class ExternalPluginImporterTest {
 
         importer.import(request(descriptorJson()))
 
-        verify(hostService).updateFrontendOrigins(hostId, listOf("http://localhost:4200"))
+        verify(hostService).update(
+            eq(hostId), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(),
+            any(), anyOrNull(), eq(listOf("http://localhost:4200")),
+        )
+    }
+
+    @Test
+    fun `a changed event queue mode is reconciled`() {
+        whenever(hostService.findById(hostId)).thenReturn(host())
+
+        importer.import(request(descriptorJson(eventQueueMode = EventQueueMode.DURABLE)))
+
+        verify(hostService).update(
+            eq(hostId), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(),
+            eq(EventQueueMode.DURABLE), anyOrNull(), any(),
+        )
+    }
+
+    @Test
+    fun `kind drift is reported and the kind is left untouched`() {
+        whenever(hostService.findById(hostId)).thenReturn(host(kind = ExternalPluginHostKind.APP))
+
+        importer.import(request(descriptorJson(kind = ExternalPluginHostKind.PLUGIN_HOST)))
+
+        // update() has no kind parameter — the rest still reconciles, the mismatch only warns.
+        verify(hostService).update(
+            eq(hostId), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(),
+            any(), anyOrNull(), any(),
+        )
+        verify(hostService, never()).register(
+            any(), any(), any(), any(), anyOrNull(), anyOrNull(),
+            any(), anyOrNull(), any(), any(), any(),
+        )
     }
 
     @Test
@@ -344,6 +436,10 @@ class ExternalPluginImporterTest {
         withPackage: Boolean = false,
         kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
         secret: String = "test-secret",
+        baseUrl: String = "http://localhost:8090",
+        brokerUrl: String = "amqp://guest:guest@localhost:5672",
+        gzacCallbackBaseUrl: String = "http://localhost:8080",
+        eventQueueMode: EventQueueMode = EventQueueMode.LIVE,
     ): String = """
         {
           "integrations": [
@@ -351,11 +447,12 @@ class ExternalPluginImporterTest {
               "id": "$hostId",
               "name": "Local plugin host",
               "kind": "${kind.name}",
-              "baseUrl": "http://localhost:8090",
+              "baseUrl": "$baseUrl",
               "secret": "$secret",
-              "gzacCallbackBaseUrl": "http://localhost:8080",
-              "eventBrokerAmqpUrl": "amqp://guest:guest@localhost:5672",
+              "gzacCallbackBaseUrl": "$gzacCallbackBaseUrl",
+              "eventBrokerAmqpUrl": "$brokerUrl",
               "eventBrokerExchange": "valtimo-events",
+              "eventQueueMode": "${eventQueueMode.name}",
               "frontendOrigins": ["http://localhost:4200"],
               "packages": ${if (withPackage) """[{"resource": "classpath:case-summary-0.1.0.zip"}]""" else "[]"},
               "configurations": [
@@ -384,13 +481,14 @@ class ExternalPluginImporterTest {
         id: UUID = hostId,
         baseUrl: String = "http://localhost:8090",
         frontendOrigins: String? = "http://localhost:4200",
+        kind: ExternalPluginHostKind = ExternalPluginHostKind.PLUGIN_HOST,
     ) = ExternalPluginHost(
         id = id,
         name = "Local plugin host",
         baseUrl = baseUrl,
         secret = "encrypted",
         status = ExternalPluginHostStatus.UNREACHABLE,
-        kind = ExternalPluginHostKind.PLUGIN_HOST,
+        kind = kind,
         gzacCallbackBaseUrl = "http://localhost:8080",
         eventBrokerAmqpUrl = "amqp://guest:guest@localhost:5672",
         eventBrokerExchange = "valtimo-events",

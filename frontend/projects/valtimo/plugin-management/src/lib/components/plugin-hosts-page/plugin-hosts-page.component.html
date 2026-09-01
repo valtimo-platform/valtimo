@@ -35,11 +35,7 @@
         class="plugin-hosts-page__spinner"
       ></cds-loading>
 
-      <button
-        cdsButton="primary"
-        [disabled]="hostsLoading$ | async"
-        (click)="openHostModal()"
-      >
+      <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
         {{ 'pluginManagement.addHost' | translate }}
 
         <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -53,11 +49,7 @@
   </valtimo-carbon-list>
 
   <ng-template #addHostButton>
-    <button
-      cdsButton="primary"
-      [disabled]="hostsLoading$ | async"
-      (click)="openHostModal()"
-    >
+    <button cdsButton="primary" [disabled]="hostsLoading$ | async" (click)="openHostModal()">
       {{ 'pluginManagement.addHost' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -74,19 +66,16 @@
   (submitEvent)="submitHost($event)"
 ></valtimo-plugin-host-modal>
 
-<valtimo-plugin-host-frontend-origins-modal
-  [host]="hostToEditFrontendOrigins$ | async"
-  [open]="frontendOriginsModalOpen$ | async"
-  (closeEvent)="closeFrontendOriginsModal()"
-  (submitEvent)="submitFrontendOriginsUpdate($event)"
-></valtimo-plugin-host-frontend-origins-modal>
-
-<valtimo-plugin-host-event-queue-modal
-  [host]="hostToEditEventQueue$ | async"
-  [open]="eventQueueModalOpen$ | async"
-  (closeEvent)="closeEventQueueModal()"
-  (submitEvent)="submitEventQueueUpdate($event)"
-></valtimo-plugin-host-event-queue-modal>
+<!-- A second instance, so the add flow's [kind] and the edit flow's [host] stay independent. -->
+<valtimo-plugin-host-modal
+  [errorMessage]="hostUpdateErrorMessage$ | async"
+  [host]="hostToEdit$ | async"
+  [kind]="'PLUGIN_HOST'"
+  [open]="editModalOpen$ | async"
+  [submitting]="hostUpdating$ | async"
+  (closeEvent)="closeEditModal()"
+  (updateEvent)="submitHostUpdate($event)"
+></valtimo-plugin-host-modal>
 
 <valtimo-confirmation-modal
   [showModalSubject$]="reloadModalOpen$"

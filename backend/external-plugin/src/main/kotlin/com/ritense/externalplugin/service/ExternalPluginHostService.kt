@@ -32,6 +32,7 @@ import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepo
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
+import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -90,30 +91,7 @@ class ExternalPluginHostService(
     ): ExternalPluginHost {
         val normalizedBaseUrl = baseUrl.trimEnd('/')
         val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }
-        // Every rejection below throws ExternalPluginHostValidationException rather than
-        // IllegalArgumentException so it surfaces as a 400 carrying this text, which the add-host
-        // modal renders next to the fields the admin already filled in.
-        if (!isConnectableBaseUrl(normalizedBaseUrl)) {
-            throw ExternalPluginHostValidationException(
-                "'$normalizedBaseUrl' is not a reachable address for the base URL. 0.0.0.0 (and " +
-                    "the IPv6 equivalent ::) is a bind address, not a connect address — use the " +
-                    "host name or IP address GZAC can reach the plugin host on, for example " +
-                    "http://localhost:8090."
-            )
-        }
-        // The config push delivers the broker AMQP URL and credentials in its body. HMAC binds and
-        // authenticates that body but does not encrypt it, so a broker may only be configured on a
-        // host the push can reach over a confidential transport. Registration is the single gate:
-        // the base URL is immutable afterwards, so no later push can reach an insecure host.
-        if (brokerAmqpUrl != null && !isSecureTransport(normalizedBaseUrl)) {
-            throw ExternalPluginHostValidationException(
-                "Refusing to register host '$normalizedBaseUrl' with event broker credentials over an " +
-                    "unencrypted transport. The configuration push carries the broker AMQP URL and " +
-                    "credentials, so the host must be reachable over HTTPS (or a loopback address for " +
-                    "local development). Enable TLS on the host, or leave the event broker blank to " +
-                    "disable events for configurations on this host."
-            )
-        }
+        validateConnection(normalizedBaseUrl, brokerAmqpUrl)
         val resolvedTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
         val host = ExternalPluginHost(
             id = id,
@@ -133,40 +111,231 @@ class ExternalPluginHostService(
     }
 
     /**
-     * Updates only the browser origins allowed to embed this host's plugin screens. Like
-     * [updateEventQueue] this is deliberately narrow: baseUrl, secret and broker fields stay
-     * immutable because the transport check that pins broker credentials to a confidential baseUrl
-     * only runs at registration.
+     * Rules for any *resulting* host state — [register] and [update] both run this, so a repoint
+     * cannot reach a state registration would have refused.
      *
-     * The origins reach the plugin host on the next push (registration, this update, or any
-     * discovery poll), which serves them as `frame-ancestors`. An empty list means no page may
-     * frame this host's plugins.
+     * Throws [ExternalPluginHostValidationException], not [IllegalArgumentException]: it maps to a
+     * 400 whose text the host modal renders inline.
      */
-    fun updateFrontendOrigins(hostId: UUID, frontendOrigins: List<String>): ExternalPluginHost {
-        val host = get(hostId)
-        host.frontendOrigins = joinFrontendOrigins(normalizeFrontendOrigins(frontendOrigins))
-        return hostRepository.save(host)
+    private fun validateConnection(baseUrl: String, brokerAmqpUrl: String?) {
+        if (!isConnectableBaseUrl(baseUrl)) {
+            throw ExternalPluginHostValidationException(
+                "'$baseUrl' is not a reachable address for the base URL. 0.0.0.0 (and " +
+                    "the IPv6 equivalent ::) is a bind address, not a connect address — use the " +
+                    "host name or IP address GZAC can reach the plugin host on, for example " +
+                    "http://localhost:8090."
+            )
+        }
+        if (brokerAmqpUrl != null && REDACTED_USERINFO.containsMatchIn(brokerAmqpUrl)) {
+            throw ExternalPluginHostValidationException(
+                "The event broker URL still contains the redacted placeholder " +
+                    "'${HostResponse.AMQP_USERINFO_REDACTION}'. Enter the full AMQP URL including " +
+                    "credentials, or leave the field exactly as it was returned to keep the stored one."
+            )
+        }
+        // HMAC authenticates the push body but does not encrypt it.
+        if (brokerAmqpUrl != null && !isSecureTransport(baseUrl)) {
+            throw ExternalPluginHostValidationException(
+                "Refusing to register host '$baseUrl' with event broker credentials over an " +
+                    "unencrypted transport. The configuration push carries the broker AMQP URL and " +
+                    "credentials, so the host must be reachable over HTTPS (or a loopback address for " +
+                    "local development). Enable TLS on the host, or leave the event broker blank to " +
+                    "disable events for configurations on this host."
+            )
+        }
     }
+
+    /**
+     * Repoints a host in place. Everything but [ExternalPluginHost.kind] is mutable, so following a
+     * moved host or broker does not mean recreating it — which would orphan its configurations.
+     *
+     * "Unchanged" semantics, since the API never returns the real values: blank [secret] keeps the
+     * stored one, and a redacted [eventBrokerAmqpUrl] keeps the stored credentials.
+     *
+     * On an address or credential change: tokens revoked, old address purged after commit. Caller
+     * must re-discover afterwards to re-push with fresh tokens — see [HostUpdateResult].
+     */
+    fun update(
+        hostId: UUID,
+        name: String,
+        baseUrl: String,
+        secret: String?,
+        gzacCallbackBaseUrl: String?,
+        eventBrokerAmqpUrl: String?,
+        eventBrokerExchange: String?,
+        eventQueueMode: EventQueueMode,
+        eventQueueTtlMs: Long?,
+        frontendOrigins: List<String>,
+    ): HostUpdateResult {
+        val host = get(hostId)
+        val normalizedBaseUrl = baseUrl.trimEnd('/')
+
+        // findByBaseUrl returns a single row — a second host here would make it throw.
+        if (normalizedBaseUrl != host.baseUrl) {
+            hostRepository.findByBaseUrl(normalizedBaseUrl)?.takeIf { it.id != hostId }?.let { other ->
+                throw ExternalPluginHostValidationException(
+                    "'$normalizedBaseUrl' is already registered as '${other.name}'. Two hosts cannot " +
+                        "share a base URL."
+                )
+            }
+        }
+
+        val resolvedBroker = resolveBrokerAmqpUrl(host, eventBrokerAmqpUrl)
+        validateConnection(normalizedBaseUrl, resolvedBroker)
+        // Resolved before mutating — a rejected TTL or origin must not half-mutate the entity.
+        val resolvedTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
+        val resolvedOrigins = joinFrontendOrigins(normalizeFrontendOrigins(frontendOrigins))
+
+        val oldBaseUrl = host.baseUrl
+        val oldAdminToken = runCatching { encryptionService.decrypt(host.secret) }.getOrNull()
+        val addressChanged = normalizedBaseUrl != host.baseUrl
+        // Compared, not assumed changed: the descriptor always sends a secret, and an unchanged
+        // redeploy must not revoke every token on each boot.
+        val secretChanged = !secret.isNullOrBlank() && oldAdminToken != secret
+        val brokerChanged = resolvedBroker != host.eventBrokerAmqpUrl
+
+        host.name = name
+        host.baseUrl = normalizedBaseUrl
+        if (secretChanged) host.secret = encryptionService.encrypt(secret!!)
+        host.gzacCallbackBaseUrl = gzacCallbackBaseUrl?.trimEnd('/')
+        host.eventBrokerAmqpUrl = resolvedBroker
+        host.eventBrokerExchange = eventBrokerExchange?.takeIf { it.isNotBlank() }
+        host.eventQueueMode = eventQueueMode
+        host.eventQueueTtlMs = resolvedTtlMs
+        host.frontendOrigins = resolvedOrigins
+
+        val saved = hostRepository.save(host)
+
+        val credentialsChanged = secretChanged || brokerChanged
+        val configurationIds = if (addressChanged || credentialsChanged) {
+            revokeTokensUnderHost(hostId)
+        } else {
+            emptyList()
+        }
+        if (addressChanged) {
+            purgeConfigurationsFromOldAddress(hostId, oldBaseUrl, oldAdminToken, configurationIds)
+        }
+
+        return HostUpdateResult(
+            host = saved,
+            addressChanged = addressChanged,
+            credentialsChanged = credentialsChanged,
+        )
+    }
+
+    /**
+     * The stored URL when the caller echoed back its redacted form, else the requested one (blank →
+     * null). The resource resolves the redacted `/host-defaults` value; only the row resolves this one.
+     */
+    private fun resolveBrokerAmqpUrl(host: ExternalPluginHost, requested: String?): String? {
+        if (requested.isNullOrBlank()) return null
+        if (requested == HostResponse.redactAmqpUserInfo(host.eventBrokerAmqpUrl)) {
+            return host.eventBrokerAmqpUrl
+        }
+        return requested
+    }
+
+    /**
+     * Kills every outstanding token of this host's configurations by bumping their generation
+     * counters (see [ExternalPluginConfigurationService.revokeTokens]). Whatever still runs at the
+     * old address must be assumed hostile once GZAC stops talking to it.
+     *
+     * Returns the configuration ids — also exactly what needs purging from the old address.
+     */
+    private fun revokeTokensUnderHost(hostId: UUID): List<UUID> =
+        definitionRepository.findAllByHostId(hostId)
+            .flatMap { configurationRepository.findAllByDefinitionId(it.id) }
+            .map { configuration ->
+                configuration.tokenGeneration += 1
+                configurationRepository.save(configuration).id
+            }
+
+    /**
+     * Best-effort purge of the address just moved away from, with its *old* credentials. Without
+     * it the configurations are orphaned there forever — GZAC stops polling, so reconciliation can
+     * never prune them. Same trap [delete] works around, and same scope choice: a dead old address
+     * only logs, nothing retries.
+     *
+     * After commit, so it lands before the caller's re-discovery repopulates the new address.
+     */
+    private fun purgeConfigurationsFromOldAddress(
+        hostId: UUID,
+        oldBaseUrl: String,
+        oldAdminToken: String?,
+        configurationIds: List<UUID>,
+    ) {
+        if (oldAdminToken == null || configurationIds.isEmpty()) return
+        runAfterCommit {
+            configurationIds.forEach { configurationId ->
+                try {
+                    val deleted = hostClient.deleteConfiguration(
+                        oldBaseUrl,
+                        oldAdminToken,
+                        configurationId.toString(),
+                    )
+                    if (!deleted) {
+                        logger.warn { "Failed to delete configuration $configurationId from the previous plugin host address $oldBaseUrl after repointing host $hostId" }
+                    }
+                } catch (e: Exception) {
+                    logger.warn(e) { "Failed to delete configuration $configurationId from the previous plugin host address $oldBaseUrl after repointing host $hostId" }
+                }
+            }
+        }
+    }
+
+    /**
+     * Browser origins allowed to embed this host's plugin screens, served as `frame-ancestors` from
+     * the next push. Empty means nothing may frame them.
+     *
+     * Convenience over [update]; the rest stays as stored, so no repoint side effects fire.
+     */
+    fun updateFrontendOrigins(hostId: UUID, frontendOrigins: List<String>): ExternalPluginHost =
+        updateUnchangedExcept(hostId) { host ->
+            update(
+                hostId = hostId,
+                name = host.name,
+                baseUrl = host.baseUrl,
+                secret = null,
+                gzacCallbackBaseUrl = host.gzacCallbackBaseUrl,
+                eventBrokerAmqpUrl = host.eventBrokerAmqpUrl,
+                eventBrokerExchange = host.eventBrokerExchange,
+                eventQueueMode = host.eventQueueMode,
+                eventQueueTtlMs = host.eventQueueTtlMs,
+                frontendOrigins = frontendOrigins,
+            )
+        }
 
     private fun joinFrontendOrigins(origins: List<String>): String? =
         origins.joinToString(",").takeIf { it.isNotEmpty() }
 
     /**
-     * Updates only the per-host event-queue declaration knobs. The base URL, secret, broker URL
-     * and broker exchange remain immutable — those are the security-sensitive fields. Mode and TTL
-     * only affect the queue declaration on the plugin-host side; the next configuration push
-     * propagates the change so the host swaps its queue.
+     * Per-host queue declaration knobs. The next configuration push propagates them, and the host
+     * swaps its queue. Convenience over [update]; the rest stays as stored.
      */
     fun updateEventQueue(
         hostId: UUID,
         eventQueueMode: EventQueueMode,
         eventQueueTtlMs: Long?,
-    ): ExternalPluginHost {
-        val host = get(hostId)
-        host.eventQueueMode = eventQueueMode
-        host.eventQueueTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
-        return hostRepository.save(host)
-    }
+    ): ExternalPluginHost =
+        updateUnchangedExcept(hostId) { host ->
+            update(
+                hostId = hostId,
+                name = host.name,
+                baseUrl = host.baseUrl,
+                secret = null,
+                gzacCallbackBaseUrl = host.gzacCallbackBaseUrl,
+                eventBrokerAmqpUrl = host.eventBrokerAmqpUrl,
+                eventBrokerExchange = host.eventBrokerExchange,
+                eventQueueMode = eventQueueMode,
+                eventQueueTtlMs = eventQueueTtlMs,
+                frontendOrigins = host.frontendOriginList,
+            )
+        }
+
+    private fun updateUnchangedExcept(
+        hostId: UUID,
+        block: (ExternalPluginHost) -> HostUpdateResult,
+    ): ExternalPluginHost = block(get(hostId)).host
 
     private fun resolveEventQueueTtlMs(mode: EventQueueMode, ttlMs: Long?): Long? = when (mode) {
         EventQueueMode.LIVE -> {
@@ -278,6 +447,10 @@ class ExternalPluginHostService(
     companion object {
         private val logger = KotlinLogging.logger {}
 
+        /** AMQP URL whose userinfo is still the redaction marker — an unresolved GET response. */
+        private val REDACTED_USERINFO =
+            Regex("^amqps?://${Regex.escape(HostResponse.AMQP_USERINFO_REDACTION)}@")
+
         private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "::1")
 
         /**
@@ -368,3 +541,15 @@ class ExternalPluginHostService(
         }
     }
 }
+
+/**
+ * What [ExternalPluginHostService.update] changed. A repoint needs a re-discovery, and is worth
+ * logging — it moves where a trusted secret and the broker credentials are sent.
+ */
+data class HostUpdateResult(
+    val host: ExternalPluginHost,
+    /** Base URL moved: configurations sit on an address GZAC no longer talks to. */
+    val addressChanged: Boolean,
+    /** Admin secret or broker URL changed. */
+    val credentialsChanged: Boolean,
+)

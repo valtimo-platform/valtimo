@@ -20,8 +20,12 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.exception.ExternalPluginHostValidationException
 import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
+import com.ritense.externalplugin.domain.ExternalPluginConfiguration
+import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
+import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
@@ -33,39 +37,50 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.util.Optional
 import java.util.UUID
 
 /**
- * Guards the rule that the broker AMQP URL and credentials — carried in cleartext inside the
- * HMAC-signed configuration push body — are never associated with a host the push can only reach
- * over an unencrypted transport. Registration is the single enforcement point because the host base
- * URL cannot change afterwards.
+ * Guards the rule that broker credentials — cleartext inside the HMAC-signed push body — never end
+ * up on a host reachable only over an unencrypted transport. Enforced on every resulting state,
+ * registration and repoint alike; the `update` block below is what holds it there.
  */
 class ExternalPluginHostServiceTest {
 
     private lateinit var hostRepository: ExternalPluginHostRepository
+    private lateinit var definitionRepository: ExternalPluginDefinitionRepository
+    private lateinit var configurationRepository: ExternalPluginConfigurationRepository
+    private lateinit var hostClient: ExternalPluginHostClient
     private lateinit var encryptionService: EncryptionService
     private lateinit var service: ExternalPluginHostService
 
     @BeforeEach
     fun setUp() {
         hostRepository = mock()
+        definitionRepository = mock()
+        configurationRepository = mock()
+        hostClient = mock()
         encryptionService = mock()
         whenever(encryptionService.encrypt(any())).thenReturn("encrypted-secret")
+        whenever(encryptionService.decrypt("encrypted-secret")).thenReturn("admin-token")
         whenever(hostRepository.save(any<ExternalPluginHost>())).thenAnswer { it.getArgument(0) }
+        whenever(configurationRepository.save(any<ExternalPluginConfiguration>()))
+            .thenAnswer { it.getArgument(0) }
         service = ExternalPluginHostService(
             hostRepository,
-            mock<ExternalPluginDefinitionRepository>(),
-            mock<ExternalPluginConfigurationRepository>(),
+            definitionRepository,
+            configurationRepository,
             mock<ExternalPluginGrantedEndpointRepository>(),
             mock<ExternalPluginGrantedEventRepository>(),
             mock(),
             mock(),
             encryptionService,
-            mock<ExternalPluginHostClient>(),
+            hostClient,
             mock<ExternalPluginHostUsageResolver>(),
         )
     }
@@ -466,6 +481,384 @@ class ExternalPluginHostServiceTest {
         }.isInstanceOf(ExternalPluginNotFoundException::class.java)
             .hasMessageContaining("not found")
     }
+
+    // ---------------------------------------------------------------- update / repoint
+
+    @Test
+    fun `update rejects downgrading to plaintext while broker credentials are set`() {
+        val host = storedHost()
+
+        assertThatThrownBy { updateHost(host, baseUrl = "http://plugin-host:8090") }
+            .isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("unencrypted transport")
+    }
+
+    @Test
+    fun `update allows downgrading to plaintext when the broker is cleared in the same call`() {
+        val host = storedHost()
+
+        val result = updateHost(host, baseUrl = "http://plugin-host:8090", brokerUrl = null)
+
+        assertThat(result.host.baseUrl).isEqualTo("http://plugin-host:8090")
+        assertThat(result.host.eventBrokerAmqpUrl).isNull()
+    }
+
+    @Test
+    fun `update allows adding broker credentials once the host moved to https`() {
+        val host = storedHost(baseUrl = "http://plugin-host:8090", brokerUrl = null)
+
+        val result = updateHost(
+            host,
+            baseUrl = "https://plugin-host.example.com",
+            brokerUrl = "amqp://guest:guest@broker:5672",
+        )
+
+        assertThat(result.host.eventBrokerAmqpUrl).isEqualTo("amqp://guest:guest@broker:5672")
+    }
+
+    @Test
+    fun `update with a blank secret keeps the stored ciphertext`() {
+        val host = storedHost()
+
+        listOf(null, "", "   ").forEach { secret ->
+            val result = updateHost(host, secret = secret)
+
+            assertThat(result.host.secret).isEqualTo("encrypted-secret")
+            assertThat(result.credentialsChanged).isFalse()
+        }
+        verify(encryptionService, never()).encrypt(any())
+    }
+
+    @Test
+    fun `update with a secret that matches the stored one does not re-encrypt or revoke`() {
+        val host = storedHost()
+        val configuration = configurationUnder(host)
+
+        val result = updateHost(host, secret = "admin-token")
+
+        verify(encryptionService, never()).encrypt(any())
+        assertThat(result.credentialsChanged).isFalse()
+        assertThat(configuration.tokenGeneration).isZero()
+    }
+
+    @Test
+    fun `update with a new secret re-encrypts and replaces the stored value`() {
+        val host = storedHost()
+        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated-token")
+
+        val result = updateHost(host, secret = "rotated-token")
+
+        assertThat(result.host.secret).isEqualTo("encrypted-rotated-token")
+        assertThat(result.credentialsChanged).isTrue()
+        assertThat(result.addressChanged).isFalse()
+    }
+
+    @Test
+    fun `update round-trips the redacted stored broker url back to the stored credentials`() {
+        val host = storedHost(brokerUrl = "amqp://guest:secret@broker:5672")
+
+        val result = updateHost(host, brokerUrl = "amqp://***@broker:5672")
+
+        assertThat(result.host.eventBrokerAmqpUrl).isEqualTo("amqp://guest:secret@broker:5672")
+        assertThat(result.credentialsChanged).isFalse()
+    }
+
+    @Test
+    fun `update rejects a broker url still carrying the redaction marker`() {
+        val host = storedHost(brokerUrl = "amqp://guest:secret@broker:5672")
+
+        // Redacted, but a different broker than the stored one — nothing can resolve it.
+        assertThatThrownBy { updateHost(host, brokerUrl = "amqp://***@other-broker:5672") }
+            .isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("redacted placeholder")
+    }
+
+    @Test
+    fun `update rejects a base url already registered by another host`() {
+        val host = storedHost()
+        val other = storedHost(baseUrl = "https://other-host.example.com")
+        whenever(hostRepository.findByBaseUrl("https://other-host.example.com")).thenReturn(other)
+
+        assertThatThrownBy { updateHost(host, baseUrl = "https://other-host.example.com") }
+            .isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("already registered")
+    }
+
+    @Test
+    fun `update accepts the host's own current base url`() {
+        val host = storedHost()
+        whenever(hostRepository.findByBaseUrl(host.baseUrl)).thenReturn(host)
+
+        val result = updateHost(host, name = "renamed")
+
+        assertThat(result.host.name).isEqualTo("renamed")
+        assertThat(result.addressChanged).isFalse()
+    }
+
+    @Test
+    fun `update keeps the event queue TTL bounds`() {
+        val host = storedHost()
+
+        assertThatThrownBy { updateHost(host, mode = EventQueueMode.LIVE, ttlMs = 60L * 60 * 1000) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("must be null when eventQueueMode is LIVE")
+
+        assertThatThrownBy { updateHost(host, mode = EventQueueMode.DURABLE, ttlMs = 60_000) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("eventQueueTtlMs must be between")
+    }
+
+    @Test
+    fun `update throws when the host does not exist`() {
+        val missingId = UUID.randomUUID()
+        whenever(hostRepository.findById(missingId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy {
+            service.update(
+                missingId,
+                "local",
+                "https://plugin-host.example.com",
+                null,
+                "https://gzac.example.com",
+                null,
+                null,
+                EventQueueMode.LIVE,
+                null,
+                emptyList(),
+            )
+        }.isInstanceOf(ExternalPluginNotFoundException::class.java)
+            .hasMessageContaining("not found")
+    }
+
+    @Test
+    fun `update reports an address change and applies the rest of the connection surface`() {
+        val host = storedHost()
+
+        val result = updateHost(
+            host,
+            name = "moved",
+            baseUrl = "https://new-host.example.com/",
+            gzacCallbackBaseUrl = "https://gzac.example.com/",
+            brokerExchange = "other-exchange",
+            frontendOrigins = listOf("https://Valtimo.Example.com/"),
+        )
+
+        assertThat(result.addressChanged).isTrue()
+        assertThat(result.credentialsChanged).isFalse()
+        assertThat(result.host.name).isEqualTo("moved")
+        // Trailing slashes normalised away, or findByBaseUrl stops matching.
+        assertThat(result.host.baseUrl).isEqualTo("https://new-host.example.com")
+        assertThat(result.host.gzacCallbackBaseUrl).isEqualTo("https://gzac.example.com")
+        assertThat(result.host.eventBrokerExchange).isEqualTo("other-exchange")
+        assertThat(result.host.frontendOriginList).containsExactly("https://valtimo.example.com")
+    }
+
+    @Test
+    fun `update reports a credentials change when only the broker url moves`() {
+        val host = storedHost()
+
+        val result = updateHost(host, brokerUrl = "amqp://guest:guest@new-broker:5672")
+
+        assertThat(result.credentialsChanged).isTrue()
+        assertThat(result.addressChanged).isFalse()
+    }
+
+    // ------------------------------------------------- repoint side effects: tokens and purge
+
+    @Test
+    fun `update revokes every token under the host when the address changes`() {
+        val host = storedHost()
+        val first = configurationUnder(host)
+        val second = configurationUnder(host, generation = 4)
+
+        updateHost(host, baseUrl = "https://new-host.example.com")
+
+        assertThat(first.tokenGeneration).isEqualTo(1)
+        assertThat(second.tokenGeneration).isEqualTo(5)
+    }
+
+    @Test
+    fun `update revokes every token under the host when only the secret rotates`() {
+        val host = storedHost()
+        val configuration = configurationUnder(host)
+
+        updateHost(host, secret = "rotated-token")
+
+        assertThat(configuration.tokenGeneration).isEqualTo(1)
+    }
+
+    @Test
+    fun `update revokes every token under the host when only the broker url changes`() {
+        val host = storedHost()
+        val configuration = configurationUnder(host)
+
+        updateHost(host, brokerUrl = "amqp://guest:guest@new-broker:5672")
+
+        assertThat(configuration.tokenGeneration).isEqualTo(1)
+    }
+
+    @Test
+    fun `update leaves tokens alone for a cosmetic edit`() {
+        val host = storedHost()
+        val configuration = configurationUnder(host)
+
+        updateHost(
+            host,
+            name = "renamed",
+            mode = EventQueueMode.DURABLE,
+            ttlMs = null,
+            frontendOrigins = listOf("https://valtimo.example.com"),
+        )
+
+        assertThat(configuration.tokenGeneration).isZero()
+        verify(configurationRepository, never()).save(any<ExternalPluginConfiguration>())
+    }
+
+    @Test
+    fun `update purges the configurations from the previous address with the previous secret`() {
+        val host = storedHost()
+        val first = configurationUnder(host)
+        val second = configurationUnder(host)
+
+        updateHost(host, baseUrl = "https://new-host.example.com", secret = "rotated-token")
+
+        // Old address, old admin token.
+        verify(hostClient).deleteConfiguration(
+            eq("https://plugin-host.example.com"),
+            eq("admin-token"),
+            eq(first.id.toString()),
+        )
+        verify(hostClient).deleteConfiguration(
+            eq("https://plugin-host.example.com"),
+            eq("admin-token"),
+            eq(second.id.toString()),
+        )
+    }
+
+    @Test
+    fun `update does not purge anything when the address is unchanged`() {
+        val host = storedHost()
+        configurationUnder(host)
+
+        updateHost(host, secret = "rotated-token")
+
+        verify(hostClient, never()).deleteConfiguration(any(), any(), any())
+    }
+
+    @Test
+    fun `update survives a plugin host that cannot be reached for the purge`() {
+        val host = storedHost()
+        val configuration = configurationUnder(host)
+        whenever(hostClient.deleteConfiguration(any(), any(), any()))
+            .thenThrow(RuntimeException("connection refused"))
+
+        val result = updateHost(host, baseUrl = "https://new-host.example.com")
+
+        assertThat(result.host.baseUrl).isEqualTo("https://new-host.example.com")
+        assertThat(configuration.tokenGeneration).isEqualTo(1)
+    }
+
+    @Test
+    fun `updateFrontendOrigins leaves the rest of the connection surface and the tokens alone`() {
+        val host = storedHost(brokerUrl = "amqp://guest:secret@broker:5672")
+        val configuration = configurationUnder(host)
+
+        val updated = service.updateFrontendOrigins(host.id, listOf("https://valtimo.example.com"))
+
+        assertThat(updated.baseUrl).isEqualTo("https://plugin-host.example.com")
+        assertThat(updated.secret).isEqualTo("encrypted-secret")
+        assertThat(updated.eventBrokerAmqpUrl).isEqualTo("amqp://guest:secret@broker:5672")
+        assertThat(configuration.tokenGeneration).isZero()
+    }
+
+    @Test
+    fun `updateEventQueue leaves the rest of the connection surface and the tokens alone`() {
+        val host = storedHost(
+            brokerUrl = "amqp://guest:secret@broker:5672",
+            frontendOrigins = "https://valtimo.example.com",
+        )
+        val configuration = configurationUnder(host)
+
+        val updated = service.updateEventQueue(host.id, EventQueueMode.DURABLE, null)
+
+        assertThat(updated.eventQueueMode).isEqualTo(EventQueueMode.DURABLE)
+        assertThat(updated.eventBrokerAmqpUrl).isEqualTo("amqp://guest:secret@broker:5672")
+        assertThat(updated.frontendOriginList).containsExactly("https://valtimo.example.com")
+        assertThat(configuration.tokenGeneration).isZero()
+    }
+
+    /** Built directly, not via `register`, so the encrypt mock stays untouched. */
+    private fun storedHost(
+        baseUrl: String = "https://plugin-host.example.com",
+        brokerUrl: String? = "amqp://guest:guest@broker:5672",
+        frontendOrigins: String? = null,
+    ): ExternalPluginHost {
+        val host = ExternalPluginHost(
+            id = UUID.randomUUID(),
+            name = "local",
+            baseUrl = baseUrl,
+            secret = "encrypted-secret",
+            status = ExternalPluginHostStatus.UNREACHABLE,
+            gzacCallbackBaseUrl = "https://gzac.example.com",
+            eventBrokerAmqpUrl = brokerUrl,
+            eventBrokerExchange = null,
+            frontendOrigins = frontendOrigins,
+        )
+        whenever(hostRepository.findById(host.id)).thenReturn(Optional.of(host))
+        return host
+    }
+
+    /** Stubs one definition-plus-configuration pair under [host]. */
+    private fun configurationUnder(
+        host: ExternalPluginHost,
+        generation: Long = 0,
+    ): ExternalPluginConfiguration {
+        val definition = ExternalPluginDefinition(
+            id = UUID.randomUUID(),
+            pluginId = "plugin-${definitionsUnderHost.size}",
+            version = "1.0.0",
+            hostId = host.id,
+            baseUrl = "${host.baseUrl}/plugins/plugin",
+            status = ExternalPluginDefinitionStatus.AVAILABLE,
+        )
+        val configuration = ExternalPluginConfiguration(
+            id = UUID.randomUUID(),
+            definitionId = definition.id,
+            title = "configuration",
+            tokenGeneration = generation,
+        )
+        definitionsUnderHost += definition
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(definitionsUnderHost.toList())
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        return configuration
+    }
+
+    private val definitionsUnderHost = mutableListOf<ExternalPluginDefinition>()
+
+    /** `update` with every field defaulting to what is stored. */
+    private fun updateHost(
+        host: ExternalPluginHost,
+        name: String = host.name,
+        baseUrl: String = host.baseUrl,
+        secret: String? = null,
+        gzacCallbackBaseUrl: String? = host.gzacCallbackBaseUrl,
+        brokerUrl: String? = host.eventBrokerAmqpUrl,
+        brokerExchange: String? = host.eventBrokerExchange,
+        mode: EventQueueMode = host.eventQueueMode,
+        ttlMs: Long? = host.eventQueueTtlMs,
+        frontendOrigins: List<String> = host.frontendOriginList,
+    ): HostUpdateResult = service.update(
+        host.id,
+        name,
+        baseUrl,
+        secret,
+        gzacCallbackBaseUrl,
+        brokerUrl,
+        brokerExchange,
+        mode,
+        ttlMs,
+        frontendOrigins,
+    )
 
     private fun registerMinimal(
         mode: EventQueueMode = EventQueueMode.LIVE,

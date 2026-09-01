@@ -25,20 +25,24 @@ import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
+import com.ritense.externalplugin.exception.ExternalPluginHostValidationException
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
 import com.ritense.externalplugin.service.HostDiscoveryResult
+import com.ritense.externalplugin.service.HostUpdateResult
 import com.ritense.externalplugin.service.PluginRegistrationConflict
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
+import com.ritense.externalplugin.web.rest.dto.HostUpdateRequest
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -127,6 +131,32 @@ class ExternalPluginHostResourceTest {
         kind = kind,
         frontendOrigins = frontendOrigins,
     )
+
+    private fun updateRequest(
+        brokerUrl: String? = "amqp://guest:guest@rabbit:5672",
+        secret: String? = null,
+        frontendOrigins: List<String> = emptyList(),
+    ) = HostUpdateRequest(
+        name = "moved host",
+        baseUrl = "https://plugin-host:8090",
+        secret = secret,
+        gzacCallbackBaseUrl = "http://gzac:8080",
+        eventBrokerAmqpUrl = brokerUrl,
+        eventBrokerExchange = "valtimo-events",
+        frontendOrigins = frontendOrigins,
+    )
+
+    private fun stubUpdate(
+        host: ExternalPluginHost,
+        addressChanged: Boolean = false,
+        credentialsChanged: Boolean = false,
+    ) {
+        whenever(
+            hostService.update(
+                any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()
+            )
+        ).thenReturn(HostUpdateResult(host, addressChanged, credentialsChanged))
+    }
 
     // ---------------------------------------------------------------- host-defaults
 
@@ -546,6 +576,99 @@ class ExternalPluginHostResourceTest {
         assertThat(
             resource.updateHostFrontendOrigins(hostId, HostFrontendOriginsUpdateRequest(emptyList())).statusCode
         ).isEqualTo(HttpStatus.OK)
+    }
+
+    // ---------------------------------------------------------------- updateHost (PUT)
+
+    @Test
+    fun `updateHost returns 200 with the secret absent and the broker url redacted`() {
+        stubUpdate(host())
+
+        val response = resource.updateHost(hostId, updateRequest())
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(response.body!!.eventBrokerAmqpUrl).isEqualTo("amqp://***@rabbit:5672")
+        assertThat(HostResponse::class.java.declaredFields.map { it.name }).doesNotContain("secret")
+    }
+
+    @Test
+    fun `updateHost substitutes the real credentials when the redacted default is echoed back`() {
+        environment.setProperty("spring.rabbitmq.username", "valtimo")
+        environment.setProperty("spring.rabbitmq.password", "s3cr3t")
+        environment.setProperty("spring.rabbitmq.host", "rabbit")
+        stubUpdate(host())
+
+        resource.updateHost(hostId, updateRequest(brokerUrl = "amqp://***@rabbit:5672"))
+
+        val brokerUrl = argumentCaptor<String>()
+        verify(hostService).update(
+            any(), any(), any(), anyOrNull(), anyOrNull(), brokerUrl.capture(), anyOrNull(), any(), anyOrNull(), any()
+        )
+        assertThat(brokerUrl.firstValue).isEqualTo("amqp://valtimo:s3cr3t@rabbit:5672")
+    }
+
+    @Test
+    fun `updateHost forwards a blank secret so the service keeps the stored one`() {
+        stubUpdate(host())
+
+        resource.updateHost(hostId, updateRequest(secret = null))
+
+        verify(hostService).update(
+            eq(hostId),
+            eq("moved host"),
+            eq("https://plugin-host:8090"),
+            eq(null),
+            eq("http://gzac:8080"),
+            anyOrNull(),
+            eq("valtimo-events"),
+            eq(EventQueueMode.LIVE),
+            anyOrNull(),
+            eq(emptyList()),
+        )
+    }
+
+    @Test
+    fun `updateHost announces the origins and re-discovers so configurations land on the new address`() {
+        stubUpdate(host(frontendOrigins = "https://valtimo.example.com"))
+        whenever(hostService.decryptedSecret(any())).thenReturn("admin-token")
+
+        resource.updateHost(hostId, updateRequest(frontendOrigins = listOf("https://valtimo.example.com")))
+
+        // Both after the row moved, or the host is handed the old state back.
+        inOrder(hostService, hostClient, discoveryService) {
+            verify(hostService).update(
+                any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()
+            )
+            verify(hostClient).registerGzacInstance(
+                any(), any(), any(), eq(listOf("https://valtimo.example.com"))
+            )
+            verify(discoveryService).discoverHost(hostId)
+        }
+    }
+
+    @Test
+    fun `updateHost survives an unreachable host — the discovery poll reconciles`() {
+        stubUpdate(host())
+        whenever(hostService.decryptedSecret(any())).thenReturn("admin-token")
+        whenever(hostClient.registerGzacInstance(any(), any(), any(), any()))
+            .thenThrow(RuntimeException("host unreachable"))
+        whenever(discoveryService.discoverHost(any())).thenThrow(RuntimeException("host unreachable"))
+
+        assertThat(resource.updateHost(hostId, updateRequest()).statusCode).isEqualTo(HttpStatus.OK)
+    }
+
+    @Test
+    fun `updateHost lets a validation failure surface so the mapper can turn it into a 400`() {
+        whenever(
+            hostService.update(
+                any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull(), any()
+            )
+        ).thenThrow(ExternalPluginHostValidationException("unencrypted transport"))
+
+        assertThatThrownBy { resource.updateHost(hostId, updateRequest()) }
+            .isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("unencrypted transport")
+        verify(discoveryService, never()).discoverHost(any())
     }
 
     // ---------------------------------------------------------------- usages & delete

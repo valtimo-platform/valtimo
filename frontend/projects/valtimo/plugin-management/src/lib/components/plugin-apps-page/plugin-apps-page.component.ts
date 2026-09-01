@@ -31,7 +31,7 @@ import {
   ExternalPluginConfiguration,
   ExternalPluginDefinition,
   ExternalPluginHost,
-  ExternalPluginHostEventQueueUpdateRequest,
+  ExternalPluginHostUpdateRequest,
   ExternalPluginHostUsage,
   ExternalPluginService,
 } from '@valtimo/plugin';
@@ -61,9 +61,10 @@ import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {PluginAppAddModalComponent} from '../plugin-app-add-modal/plugin-app-add-modal.component';
 import {PluginExternalEditModalComponent} from '../plugin-external-edit-modal/plugin-external-edit-modal.component';
-import {PluginHostEventQueueModalComponent} from '../plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
+import {PluginHostModalComponent} from '../plugin-host-modal/plugin-host-modal.component';
 import {PluginLogModalComponent} from '../plugin-log-modal/plugin-log-modal.component';
 import {PluginUsageModalComponent} from '../plugin-usage-modal/plugin-usage-modal.component';
+import {PLUGIN_HOST_LIST_TEST_IDS} from '../../constants';
 import {UnifiedPluginConfigurationRow} from '../../models';
 import {cspAllowsFrameOrigin} from '../../utils';
 
@@ -103,7 +104,7 @@ const LOG_CAPABILITY = 'log';
     ConfirmationModalModule,
     PluginAppAddModalComponent,
     PluginExternalEditModalComponent,
-    PluginHostEventQueueModalComponent,
+    PluginHostModalComponent,
     PluginLogModalComponent,
     PluginUsageModalComponent,
   ],
@@ -146,8 +147,11 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   public readonly deleteHostModalOpen$ = new BehaviorSubject<boolean>(false);
   public hostToDelete: ExternalPluginHost | null = null;
 
-  public readonly eventQueueModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly hostToEditEventQueue$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+  // --- Connection edit ---
+  public readonly editConnectionModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly hostToEdit$ = new BehaviorSubject<ExternalPluginHost | null>(null);
+  public readonly hostUpdating$ = new BehaviorSubject<boolean>(false);
+  public readonly hostUpdateErrorMessage$ = new BehaviorSubject<string | null>(null);
 
   public readonly usageModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly usageModalUsages$ = new BehaviorSubject<Array<ExternalPluginHostUsage>>([]);
@@ -184,9 +188,7 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   ];
 
   public readonly appActionItems: ActionItem[] = [
-    // Configuring an app for the first time happens through the add-app stepper (or a row click on
-    // an unconfigured app); a dedicated menu entry that only ever showed disabled once configured is
-    // omitted until editing apps/hosts is reworked in a later story.
+    // First-time configuration goes through the add-app stepper; this edits an existing one.
     {
       callback: this.editConfiguration.bind(this),
       label: 'pluginManagement.editConfiguration',
@@ -200,8 +202,9 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
       disabledCallback: (row: PluginAppRow) => !row.configuration || !row.supportsLogs,
     },
     {
-      callback: this.editHostEventQueue.bind(this),
-      label: 'pluginManagement.editEventQueue',
+      callback: this.editHostConnection.bind(this),
+      label: 'pluginManagement.editConnection',
+      testId: PLUGIN_HOST_LIST_TEST_IDS.editConnectionAction,
     },
     {
       callback: this.deleteHost.bind(this),
@@ -312,7 +315,11 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   }
 
   public onRefreshConfirm(): void {
-    if (!this._pendingRefreshHostId) return;
+    // No pending host: opened by a base-URL edit, so there is nothing to resume after the reload.
+    if (!this._pendingRefreshHostId) {
+      window.location.reload();
+      return;
+    }
     const url = new URL(window.location.href);
     url.searchParams.set(CONFIGURE_APP_QUERY_PARAM, this._pendingRefreshHostId);
     window.location.assign(url.toString());
@@ -491,31 +498,61 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
     this.hostToDelete = null;
   }
 
-  // --- Event queue ---
+  // --- Connection edit ---
 
-  public editHostEventQueue(host: ExternalPluginHost): void {
-    this.hostToEditEventQueue$.next(host);
-    this.eventQueueModalOpen$.next(true);
+  public editHostConnection(host: ExternalPluginHost): void {
+    this.hostUpdateErrorMessage$.next(null);
+    this.hostToEdit$.next(host);
+    this.editConnectionModalOpen$.next(true);
   }
 
-  public closeEventQueueModal(): void {
-    this.eventQueueModalOpen$.next(false);
-    this.hostToEditEventQueue$.next(null);
+  public closeEditConnectionModal(): void {
+    this.editConnectionModalOpen$.next(false);
+    this.hostToEdit$.next(null);
+    this.hostUpdateErrorMessage$.next(null);
   }
 
-  public submitEventQueueUpdate(request: ExternalPluginHostEventQueueUpdateRequest): void {
-    const host = this.hostToEditEventQueue$.value;
+  /**
+   * A rejected repoint keeps the modal open and shows the reason inline — the 400 is
+   * `InterceptorSkip`, so nothing else surfaces it.
+   *
+   * A moved base URL needs a reload: the `frame-src` allowlist is a meta tag parsed once at load.
+   * Reuses the page's existing refresh dialog.
+   */
+  public submitHostUpdate(request: ExternalPluginHostUpdateRequest): void {
+    const host = this.hostToEdit$.value;
     if (!host) return;
-    this._externalPluginService.updateHostEventQueue(host.id, request).subscribe({
+    const baseUrlChanged = request.baseUrl.replace(/\/+$/, '') !== host.baseUrl.replace(/\/+$/, '');
+
+    this.hostUpdating$.next(true);
+    this.hostUpdateErrorMessage$.next(null);
+    this._externalPluginService.updateHost(host.id, request).subscribe({
       next: () => {
-        this.eventQueueModalOpen$.next(false);
-        this.hostToEditEventQueue$.next(null);
+        this.hostUpdating$.next(false);
+        this.closeEditConnectionModal();
         this._refreshApps$.next();
+        if (baseUrlChanged) this.refreshModalOpen$.next(true);
       },
-      error: () => {
-        this._logger.error('Something went wrong with updating the app event queue.');
+      error: (response: HttpErrorResponse) => {
+        this.hostUpdating$.next(false);
+        this.hostUpdateErrorMessage$.next(this._extractHostError(response));
+        this._logger.error('Something went wrong with updating the app connection.', response);
       },
     });
+  }
+
+  /** The most specific message the response carries; `detail` is the validation mapper's field. */
+  private _extractHostError(response: HttpErrorResponse): string {
+    const body = response?.error;
+    const candidate =
+      (typeof body?.detail === 'string' && body.detail) ||
+      (typeof body?.message === 'string' && body.message) ||
+      (typeof body?.title === 'string' && body.title) ||
+      '';
+    return (
+      candidate.trim() ||
+      this._translateService.instant('pluginManagement.host.updateFailedFallback')
+    );
   }
 
   // --- Usage modal ---
@@ -555,7 +592,9 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
         configuration?.title ?? this._translateService.instant('pluginManagement.notConfigured'),
       definition,
       configuration,
-      supportsLogs: (definition?.manifest?.permissions?.capabilities ?? []).includes(LOG_CAPABILITY),
+      supportsLogs: (definition?.manifest?.permissions?.capabilities ?? []).includes(
+        LOG_CAPABILITY
+      ),
     };
   }
 

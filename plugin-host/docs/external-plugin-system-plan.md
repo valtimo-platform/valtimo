@@ -286,11 +286,12 @@ accepted by one route can never be replayed against another. The hook is the act
   - The host serves **HTTPS** when `TLS_CERT_PATH` + `TLS_KEY_PATH` are set (`buildHttpsOptions` in
     `plugin-host/app/src/index.ts`; optional `TLS_CA_PATH` for a chain; both cert and key required or
     the host refuses to start), encrypting the GZAC→host channel end-to-end.
-  - Host registration **refuses a non-null `eventBrokerAmqpUrl` unless the host base URL is a
-    confidential transport** — HTTPS, or a loopback address (`localhost`/`127.0.0.1`/`::1`) for local
-    development (`ExternalPluginHostService.isSecureTransport`). Registration is the single gate
-    because the base URL is immutable afterwards, so no later push can reach an insecure host with
-    broker credentials.
+  - GZAC **refuses a non-null `eventBrokerAmqpUrl` unless the host base URL is a confidential
+    transport** — HTTPS, or a loopback address (`localhost`/`127.0.0.1`/`::1`) for local development
+    (`ExternalPluginHostService.isSecureTransport`). The gate is a property of the *resulting* host
+    state, not of registration: `ExternalPluginHostService.validateConnection` runs on both
+    `register` and `update`, so a host can never be repointed onto a plaintext address while it
+    still holds broker credentials, and no push can reach an insecure host with them.
 
   Hosts without a broker (actions only) may still run over plain HTTP — e.g. behind a TLS-terminating
   reverse proxy. Replay and forgery are closed by the HMAC scheme; eavesdropping is closed by running
@@ -452,9 +453,38 @@ the catch-all 500-with-a-reference-id it produced before. Two rejections use it 
 non-confidential base URL, and a base URL that is a *bind* address (`0.0.0.0`, `::`) rather than an
 address GZAC can dial.
 
-The same service exposes **narrowly-scoped update paths** for the two runtime-editable fields.
-`baseUrl`, `secret`, `eventBrokerAmqpUrl`, and `eventBrokerExchange` remain immutable — the security
-check that pins broker credentials to a confidential `baseUrl` only needs to run at registration.
+The same service exposes an **in-place repoint** of the whole connection surface, plus two
+narrowly-scoped conveniences over it. Only `kind` is immutable: `PLUGIN_HOST` ↔ `APP` changes the
+upload model and the definition set, which is a re-registration rather than an edit.
+
+- `PUT /api/management/v1/external-plugin/host/{hostId}` with
+  `{name, baseUrl, secret?, gzacCallbackBaseUrl, eventBrokerAmqpUrl?, eventBrokerExchange?,
+  eventQueueMode, eventQueueTtlMs?, frontendOrigins}` — `ExternalPluginHostService.update`. Following
+  a moved host or broker no longer means deleting and re-registering, which would orphan every
+  configuration underneath (#618). Three things make a repoint safe:
+  - The confidential-transport gate runs against the *resulting* `(baseUrl, brokerAmqpUrl)` pair
+    (§6), so the address can never be downgraded to plaintext while broker credentials are set.
+  - Values the API redacts never round-trip into storage. A blank `secret` keeps the stored one (the
+    same "unchanged" convention `ExternalPluginConfigurationService.update` uses for `x-secret`
+    properties); a broker URL echoed back in its redacted form resolves to the stored credentials,
+    and one still carrying `***` that matches neither the stored value nor the `/host-defaults`
+    default is rejected rather than persisted.
+  - An address or credential change is a **revocation event**: every configuration under the host
+    gets its `tokenGeneration` bumped, because GZAC no longer talks to the old address and anything
+    still running there must be assumed hostile. The resource then re-announces the frontend origins
+    and calls `discoveryService.discoverHost`, which re-pushes every configuration — with a fresh
+    token — to the new address and rewrites `definition.baseUrl`. The configurations left behind on
+    the old address are deleted best-effort after commit, with the old secret, the same way
+    `delete()` purges a removed host.
+
+  Known limitation: changing `gzacCallbackBaseUrl` leaves a stale entry in the host's
+  `gzac-instances` map. The host keys announcements by `gzacBaseUrl` and the route is PUT-only, so
+  the old origin stays in `frame-ancestors` until the host restarts. It only ever lists origins an
+  admin already authorised.
+
+  Changing the base URL also invalidates the page's CSP: the `frame-src` allowlist is derived from
+  host base URLs server-side and applied as a meta tag at bootstrap, which is immutable once parsed.
+  The hosts page prompts for a reload after a base-URL edit for exactly this reason.
 
 - `PATCH /api/management/v1/external-plugin/host/{hostId}/event-queue` with
   `{eventQueueMode, eventQueueTtlMs}`. After the PATCH, the resource triggers
@@ -1815,13 +1845,16 @@ All iframe surfaces are now implemented: case **tab** (§13.1), **task form** (�
   which is what makes that refactor provably behaviour-preserving. `docker build -f app/Dockerfile
   plugin-host` succeeds from a context with no `dist/`, and `/data/preinstalled` in the resulting
   image is empty. Backend: `ExternalPluginImporterTest` pins the full matrix
-  (apply-in-order, second-run no-op, immutable-field drift reported without mutation, frontend-origin
+  (apply-in-order, second-run no-op, connection-surface reconciliation including base URL, broker,
+  callback URL and secret, `kind` drift reported without mutation, frontend-origin
   and event-queue reconciliation, duplicate-baseUrl skip, unreachable-host skip, 409-same-hash vs
   409-different-hash, `APP`-with-packages refusal, missing/foreign definition skip, malformed
   malformed-descriptor failure, `afterImport` issue recheck, placeholder resolution + default);
   `ExternalPluginAutoDeploymentIntTest` runs the whole path against a real database and a real
   (stubbed) host over HTTP — host row, definition, configuration and all four grant tables — and
-  asserts the second run changes nothing. `:backend:apps:dev:test` deserializes every shipped
+  asserts the second run changes nothing, plus that a redeploy with a moved base URL and broker
+  repoints the host row while the configuration keeps its id, properties and grants and its token
+  generation advances exactly once. `:backend:apps:dev:test` deserializes every shipped
   descriptor and pins its ids and base URLs unique.
 - Backend `:backend:external-plugin:test`: BUILD SUCCESSFUL (allowlist **for both the service and the
   user principal** + service-token-filter + service-token-ttl + **user-token suites** +
@@ -2974,12 +3007,16 @@ every existing caller is unaffected.
 from the manifest would let a manifest change silently widen an existing environment's grants; the
 descriptor author reviewing the declared set *is* the acceptance step.
 
-**What redeployment does not do.** `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` and the broker
-fields are immutable after registration by design — the confidential-transport check that pins broker
-credentials to a safe base URL only runs at registration (§6) — so a changed value is reported by
-name and the row left alone (#618). Only `frontendOrigins` and the event-queue mode/TTL are
-reconciled. An activated configuration is likewise never re-granted or re-titled: that set is what an
-admin accepted.
+**What redeployment reconciles.** The whole connection surface — `name`, `baseUrl`, `secret`,
+`gzacCallbackBaseUrl`, the broker fields, the event-queue mode/TTL and `frontendOrigins` — through
+the single `ExternalPluginHostService.update` the UI also uses (#618). The confidential-transport
+check runs on the resulting state (§6), so a descriptor that downgrades `baseUrl` to plaintext while
+a broker is set fails the import rather than being applied. A repoint is logged at INFO and revokes
+the tokens of every configuration under the integration; a redeploy that changes nothing revokes
+nothing, because the secret is compared against the decrypted stored value rather than assumed
+changed on sight. `kind` stays immutable — an app serves its own plugin while a plugin host accepts
+uploads — so a changed `kind` is reported by name and left alone. An activated configuration is
+likewise never re-granted or re-titled: that set is what an admin accepted.
 
 **Failure.** Errors propagate, like every other importer and like the embedded plugin
 autodeployment (which rethrows). A malformed descriptor or a rejected registration fails the import

@@ -66,6 +66,8 @@ interface ActionItem {
   disabledCallback?: (_) => boolean;
   disabled$?: (_) => Observable<boolean>;
   iconClass?: string;
+  /** `data-test-id` on the overflow-menu option, so e2e targets it by id rather than label. */
+  testId?: string;
   type?: 'normal' | 'danger';
 }
 

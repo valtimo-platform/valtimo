@@ -139,6 +139,7 @@
         [disabled]="action | actionItemDisabled: data.item | async"
         [type]="action.type"
         (selected)="action.callback(data.item)"
+        [attr.data-test-id]="action.testId"
       >
         <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
 

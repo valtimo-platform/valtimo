@@ -125,40 +125,44 @@ class ExternalPluginImporter(
         return registered
     }
 
+    /**
+     * Applies the descriptor's whole connection surface, so a moved broker or base URL is genuinely
+     * declarative rather than a log warning. One `update` call, so at most one re-push.
+     *
+     * `kind` stays immutable — switching would need definition and package reconciliation.
+     */
     private fun reconcileHost(integration: IntegrationDeploymentDto, host: ExternalPluginHost) {
-        immutableDrift(integration, host).forEach { field ->
+        if (integration.kind != host.kind) {
             logger.warn {
-                "External plugin integration '${integration.name}' (${integration.id}) declares a " +
-                    "different $field than the registered host. This field is immutable after " +
-                    "registration and was left unchanged; delete and re-register the integration to " +
-                    "change it."
+                "External plugin integration '${integration.name}' (${integration.id}) declares kind " +
+                    "${integration.kind} but the registered host is ${host.kind}. The kind is immutable " +
+                    "— an app serves its own plugin while a plugin host accepts uploads — so it was " +
+                    "left unchanged; delete and re-register the integration to change it."
             }
         }
 
-        val declaredOrigins = ExternalPluginHostService.normalizeFrontendOrigins(integration.frontendOrigins)
-        if (declaredOrigins != host.frontendOriginList) {
-            hostService.updateFrontendOrigins(host.id, integration.frontendOrigins)
-        }
+        val result = hostService.update(
+            hostId = host.id,
+            name = integration.name,
+            baseUrl = integration.baseUrl,
+            secret = integration.secret,
+            gzacCallbackBaseUrl = integration.gzacCallbackBaseUrl,
+            eventBrokerAmqpUrl = integration.eventBrokerAmqpUrl,
+            eventBrokerExchange = integration.eventBrokerExchange,
+            eventQueueMode = integration.eventQueueMode,
+            eventQueueTtlMs = integration.eventQueueTtlMs,
+            frontendOrigins = integration.frontendOrigins,
+        )
 
-        if (integration.eventQueueMode != host.eventQueueMode || integration.eventQueueTtlMs != host.eventQueueTtlMs) {
-            hostService.updateEventQueue(host.id, integration.eventQueueMode, integration.eventQueueTtlMs)
+        // Never silently: a repoint moves where the secret and broker credentials are sent, and
+        // invalidates every token under the host.
+        if (result.addressChanged || result.credentialsChanged) {
+            logger.info {
+                "Repointed external plugin integration '${integration.name}' (${integration.id}) to " +
+                    "${result.host.baseUrl} (address changed: ${result.addressChanged}, credentials " +
+                    "changed: ${result.credentialsChanged})"
+            }
         }
-    }
-
-    private fun immutableDrift(integration: IntegrationDeploymentDto, host: ExternalPluginHost): List<String> {
-        val drift = mutableListOf<String>()
-        if (integration.baseUrl.trimEnd('/') != host.baseUrl) drift += "baseUrl"
-        if (integration.gzacCallbackBaseUrl.trimEnd('/') != host.gzacCallbackBaseUrl) drift += "gzacCallbackBaseUrl"
-        if (integration.kind != host.kind) drift += "kind"
-        if (integration.eventBrokerAmqpUrl?.takeIf { it.isNotBlank() } != host.eventBrokerAmqpUrl) {
-            drift += "eventBrokerAmqpUrl"
-        }
-        if (integration.eventBrokerExchange?.takeIf { it.isNotBlank() } != host.eventBrokerExchange) {
-            drift += "eventBrokerExchange"
-        }
-        val storedSecret = runCatching { hostService.decryptedSecret(host) }.getOrNull()
-        if (storedSecret != null && storedSecret != integration.secret) drift += "secret"
-        return drift
     }
 
     private fun registerPackages(

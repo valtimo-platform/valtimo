@@ -2439,18 +2439,19 @@
       "eventQueueTtlMs": "The durable queue is deleted after this many ms with no connected host. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
       "eventQueueTtlMsApp": "The durable queue is deleted after this many ms with no connected app. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
       "frontendOrigins": "Browser origins (scheme://host[:port], no path) allowed to embed this host's plugin screens. Add every Valtimo frontend URL users open plugins from, including any proxy alias.",
-      "noFrontendOrigins": "With no origins listed, no page can embed this host's plugin screens."
+      "noFrontendOrigins": "With no origins listed, no page can embed this host's plugin screens.",
+      "secretUnchanged": "Leave blank to keep the current secret.",
+      "brokerCredentialsRedacted": "Credentials are hidden. Leave the URL as shown to keep them, or enter a full AMQP URL to replace them."
     },
-    "editEventQueue": "Edit event queue",
-    "editHostEventQueueModalTitle": "Edit event queue for {{name}}",
-    "saveEventQueue": "Save",
     "addFrontendOrigin": "Add origin",
-    "editFrontendOrigins": "Edit frontend origins",
-    "editHostFrontendOriginsModalTitle": "Frontend origins for {{name}}",
-    "saveFrontendOrigins": "Save origins",
+    "editConnection": "Edit connection",
+    "editHostConnectionModalTitle": "Edit connection for {{name}}",
+    "saveConnection": "Save connection",
     "host": {
       "createFailedTitle": "Could not save",
-      "createFailedFallback": "The host could not be saved. Check the entered values and try again."
+      "createFailedFallback": "The host could not be saved. Check the entered values and try again.",
+      "updateFailedTitle": "Could not save the connection",
+      "updateFailedFallback": "The connection could not be saved."
     },
     "source": {
       "embedded": "Embedded",

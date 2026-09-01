@@ -72,11 +72,9 @@ class ExternalPluginAutoDeploymentIntTest @Autowired constructor(
 ) : BaseIntegrationTest() {
     @BeforeEach
     fun setUp() {
-        (environment as ConfigurableEnvironment).propertySources.addFirst(
-            MapPropertySource(
-                "external-plugin-autodeployment-test",
-                mapOf("test.external-plugin.base-url" to "http://localhost:${server.address.port}")
-            )
+        descriptorProperties(
+            baseUrl = "http://localhost:${server.address.port}",
+            brokerUrl = "amqp://guest:guest@localhost:5672",
         )
         uploadCount = 0
         packageDeployer.clear()
@@ -167,6 +165,65 @@ class ExternalPluginAutoDeploymentIntTest @Autowired constructor(
         assertThat(grantedCapabilityRepository.findAllByConfigurationId(CONFIGURATION_ID)).hasSize(2)
         assertThat(grantedEgressRepository.findAllByConfigurationId(CONFIGURATION_ID)).hasSize(1)
         assertThat(uploadCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `redeploying a descriptor with new connection details repoints the host and keeps its configurations`() {
+        val importer = importer()
+        importer.import(descriptorRequest())
+        discoveryService.discoverHost(HOST_ID)
+
+        val definitionId = definitionRepository.findByPluginIdAndVersion("case-summary", "0.1.0")!!.id
+        val hostCount = hostRepository.count()
+        val configurationCount = configurationRepository.count()
+        assertThat(configurationRepository.findById(CONFIGURATION_ID).orElseThrow().tokenGeneration)
+            .isZero()
+
+        // Same loopback machine, different address string — a real repoint, no second stub server.
+        descriptorProperties(
+            baseUrl = "http://127.0.0.1:${server.address.port}",
+            brokerUrl = "amqp://guest:guest@moved-broker:5672",
+        )
+
+        importer.import(descriptorRequest())
+
+        val host = hostRepository.findById(HOST_ID).orElseThrow()
+        assertThat(host.baseUrl).isEqualTo("http://127.0.0.1:${server.address.port}")
+        assertThat(host.eventBrokerAmqpUrl).isEqualTo("amqp://guest:guest@moved-broker:5672")
+        assertThat(host.kind).isEqualTo(ExternalPluginHostKind.PLUGIN_HOST)
+
+        // Nothing recreated: same rows, same ids. This is the loss the ticket is about.
+        assertThat(hostRepository.count()).isEqualTo(hostCount)
+        assertThat(configurationRepository.count()).isEqualTo(configurationCount)
+        assertThat(definitionRepository.findByPluginIdAndVersion("case-summary", "0.1.0")!!.id)
+            .isEqualTo(definitionId)
+
+        val configuration = configurationRepository.findById(CONFIGURATION_ID).orElseThrow()
+        assertThat(configuration.definitionId).isEqualTo(definitionId)
+        assertThat(configuration.properties!!.get("currency").asText()).isEqualTo("EUR")
+        assertThat(grantedEndpointRepository.findAllByConfigurationId(CONFIGURATION_ID)).hasSize(1)
+        assertThat(grantedCapabilityRepository.findAllByConfigurationId(CONFIGURATION_ID)).hasSize(2)
+
+        // One repoint, one revocation.
+        assertThat(configuration.tokenGeneration).isEqualTo(1)
+
+        // An unchanged redeploy must not keep bumping the generation on every boot.
+        importer.import(descriptorRequest())
+        assertThat(configurationRepository.findById(CONFIGURATION_ID).orElseThrow().tokenGeneration)
+            .isEqualTo(1)
+    }
+
+    /** addFirst replaces the same-named source, so each call fully swaps the resolved values. */
+    private fun descriptorProperties(baseUrl: String, brokerUrl: String) {
+        (environment as ConfigurableEnvironment).propertySources.addFirst(
+            MapPropertySource(
+                "external-plugin-autodeployment-test",
+                mapOf(
+                    "test.external-plugin.base-url" to baseUrl,
+                    "test.external-plugin.broker-url" to brokerUrl,
+                ),
+            )
+        )
     }
 
     private fun importer() = ExternalPluginImporter(

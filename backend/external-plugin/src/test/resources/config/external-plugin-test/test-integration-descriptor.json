@@ -7,7 +7,7 @@
             "baseUrl": "${test.external-plugin.base-url}",
             "secret": "${test.external-plugin.admin-token:test-secret}",
             "gzacCallbackBaseUrl": "http://localhost:8080",
-            "eventBrokerAmqpUrl": "amqp://guest:guest@localhost:5672",
+            "eventBrokerAmqpUrl": "${test.external-plugin.broker-url}",
             "eventBrokerExchange": "valtimo-events",
             "frontendOrigins": ["http://localhost:4200"],
             "packages": [
