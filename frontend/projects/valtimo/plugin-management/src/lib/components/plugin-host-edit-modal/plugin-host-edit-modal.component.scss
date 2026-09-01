@@ -2,6 +2,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+
+  // The notification host element is a flex item here; without this it gets compressed when the
+  // modal content is tight, clipping a multi-line message and swallowing its bottom padding.
+  cds-inline-notification {
+    flex-shrink: 0;
+  }
 }
 
 .plugin-host-edit-modal__spinner {
