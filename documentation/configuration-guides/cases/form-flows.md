@@ -9,8 +9,10 @@ follow-up forms for approved and denied requests), and to run actions when a ste
 completes, or the user goes back. A form flow is normally linked to a BPMN user task via a
 [process link](processes.md).
 
-Each form flow definition is configured as JSON against a schema, edited directly in a
-code editor with autocomplete and validation, rather than through a form-based UI.
+Each form flow definition is JSON against a schema. The form flow editor has two tabs that
+work on the same definition: a **JSON editor** (the default) with autocomplete and
+validation, and a visual **Editor (beta)** that shows the steps, transitions, and actions
+as a form-based UI.
 
 ---
 
@@ -47,14 +49,14 @@ Enter a unique **Key** for the form flow
 {% step %}
 Click **Create**
 
-You're taken to the form flow editor, which opens with a minimal default definition: a single
-`start-step` and an empty `steps` array.
+You're taken to the form flow editor, which opens on the **JSON editor** tab with a minimal
+default definition: a single `start-step` and an empty `steps` array.
 
 <figure><img src="../../assets/configuration-guides/cases/form-flows/03-editor-default-stub.png" alt="Form flow editor showing the default JSON stub"><figcaption>A newly created form flow starts with an empty steps array.</figcaption></figure>
 {% endstep %}
 {% endstepper %}
 
-### Editing steps
+### Editing in the JSON editor
 
 Add and configure steps directly in the JSON editor. The editor validates your changes against
 the form flow schema as you type and offers autocomplete for property names and values.
@@ -110,6 +112,48 @@ expressions wrapped in `${...}`, evaluated in order. Common examples:
 |-------|-------------|
 | `step` | The `key` of the step to transition to. Must match one of the entries in `steps`. |
 | `condition` | Optional. A SpEL expression wrapped in `${...}` evaluated against the current step's submission data, e.g. `${step.submissionData.personalDetails.age >= 21}`. Omit to make this entry the default transition. |
+
+### Editing in the visual editor (beta)
+
+{% hint style="success" %}
+Available since Valtimo `13.44.0`
+{% endhint %}
+
+The **Editor (beta)** tab offers a visual alternative to writing the JSON by hand. Both tabs
+work on the same definition, so you can switch between them at any time.
+
+<figure><img src="../../assets/configuration-guides/cases/form-flows/09-visual-editor.png" alt="Visual form flow editor with a step list and the configuration of the selected step"><figcaption>The visual editor shows the steps of the flow in a sidebar and the configuration of the selected step next to it.</figcaption></figure>
+
+The left panel lists the steps of the flow; **Add step** adds a new one. Selecting a step
+shows its configuration on the right:
+
+- **Step details** — The key identifies the step; renaming it automatically updates the start
+  step and every transition that references it. The optional title is shown in the breadcrumb
+  trail while a user walks through the form flow. The type determines what the step shows:
+  for a `form` step, the **Form** dropdown lists the forms of this case definition; for a
+  `custom-component` step, the **Component ID** dropdown lists the custom components
+  registered by the implementation (the `custom-component` type is unavailable when none are
+  registered).
+- **Start step** — The step where the form flow begins carries a *Start step* tag. Any other
+  step can be made the start step with the **Make start step** button.
+- **Navigation** — Transitions define where the user can go after completing the step. Each
+  transition points to another step and can have a SpEL condition. Transitions are evaluated
+  from top to bottom — the first one whose condition holds is taken, and a transition without
+  a condition is the default. The order can be changed with the arrow buttons.
+- **Actions** — Expressions that run when the step opens, when it is completed, or when the
+  user navigates back. The **Add action** menu lists the registered form flow functions with
+  their parameters, next to the option to write a blank expression.
+
+<figure><img src="../../assets/configuration-guides/cases/form-flows/10-visual-editor-actions.png" alt="Add action menu listing the registered form flow functions"><figcaption>The Add action menu lists the registered form flow functions, such as valtimoFormFlow.completeTask.</figcaption></figure>
+
+The **How do expressions work?** link opens a help dialog explaining conditions and actions,
+including exactly which data is available in `additionalProperties` for this application.
+
+<figure><img src="../../assets/configuration-guides/cases/form-flows/11-visual-editor-help.png" alt="Help dialog explaining how expressions work"><figcaption>The help dialog documents the expression syntax and the available context data.</figcaption></figure>
+
+The editor validates the definition while editing — duplicate step keys, a missing start
+step, transitions to unknown steps, and multiple default transitions are reported — and warns
+when leaving the page with unsaved changes.
 
 ### Managing existing form flows
 

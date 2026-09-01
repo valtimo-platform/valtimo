@@ -128,14 +128,10 @@ export class BuildingBlockStateService implements OnDestroy {
     if (!key) return;
 
     this._versionSubscription = this.processLinkBuildingBlockApiService
-      .getVersionsForBuildingBlock(key)
+      .getAllVersionsForBuildingBlock(key)
       .subscribe({
         next: versions => {
-          this._versions$.next(
-            versions.content.map(version => {
-              return version.versionTag;
-            }) ?? []
-          );
+          this._versions$.next(versions.content?.map(version => version.versionTag) ?? []);
           if (initialVersionTag) {
             this.setDefinitionVersionTag(initialVersionTag, true);
           }
