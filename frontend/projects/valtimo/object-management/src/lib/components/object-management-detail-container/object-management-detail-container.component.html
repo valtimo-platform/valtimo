@@ -31,7 +31,10 @@
     <div class="bg-light dossier-header" *ngIf="object.showInDataMenu">
       <h3 class="dossier-title">
         <div *ngIf="object.showInDataMenu" class="pull-right">
-          <span class="badge badge-pill badge-info increase-size">{{
+          <span
+            [attr.data-test-id]="testIds.visibleInMenuTag"
+            class="badge badge-pill badge-info increase-size"
+          >{{
             'objectManagement.visibleInMenu' | translate
           }}</span>
         </div>
@@ -45,6 +48,7 @@
     <li class="nav-item">
       <a
         id="general-tab"
+        [attr.data-test-id]="testIds.generalTab"
         class="nav-link clickable active"
         data-toggle="tab"
         (click)="displayBodyComponent(TabEnum.GENERAL)"
@@ -55,6 +59,7 @@
     <li class="nav-item">
       <a
         id="search-tab"
+        [attr.data-test-id]="testIds.searchFieldsTab"
         class="nav-link clickable"
         data-toggle="tab"
         (click)="displayBodyComponent(TabEnum.SEARCH)"
@@ -65,6 +70,7 @@
     <li class="nav-item" *ngIf="caseListColumn$ | async">
       <a
         id="list-tab"
+        [attr.data-test-id]="testIds.listTab"
         class="nav-link clickable"
         data-toggle="tab"
         (click)="displayBodyComponent(TabEnum.LIST)"

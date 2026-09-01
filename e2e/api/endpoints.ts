@@ -11,6 +11,16 @@ export const endpoints = {
     dataSources: '/api/management/v1/dashboard/widget-data-sources',
   },
 
+  /**
+   * User-facing dashboard endpoints (as consumed by the dashboard shown on `/`).
+   * These are filtered by the caller's role via access-control permissions, so they
+   * only return dashboards the current user is allowed to view.
+   */
+  userDashboard: {
+    getAll: '/api/v1/dashboard',
+    data: (dashboardKey: string) => `/api/v1/dashboard/${dashboardKey}/data`,
+  },
+
   formFlow: {
     getAll: '/api/management/v1/form-flow/definition',
     getByKeyAndVersion: (key: string, version: number) =>
