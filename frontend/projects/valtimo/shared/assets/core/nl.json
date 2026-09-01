@@ -814,6 +814,9 @@
     "goToSlide": "Ga naar dia"
   },
   "formManagement": {
+    "edit": {
+      "title": "Formulier bewerken"
+    },
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
     "gotoProcessLinksButton": "Configureer nu",
@@ -2321,6 +2324,7 @@
     "noResults": "Geen resultaten",
     "loading": "Aan het laden...",
     "edit": "Aanpassen",
+    "view": "Bekijken",
     "noItemsFound": "Geen items gevonden",
     "clearAll": "Alles wissen",
     "clear": "Wissen",
@@ -3388,6 +3392,103 @@
     "noResults": {
       "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
       "title": "Geen form flows toegevoegd"
+    },
+    "tabs": {
+      "editor": "Editor (bèta)",
+      "jsonEditor": "JSON-editor"
+    },
+    "uiEditor": {
+      "stepsTitle": "Stappen",
+      "startStep": "Startstap",
+      "stepType": "Type",
+      "addStep": "Stap toevoegen",
+      "deleteStep": "Stap verwijderen",
+      "makeStartStep": "Maak startstap",
+      "selectForm": "Kies een formulier",
+      "selectComponent": "Kies een component",
+      "fieldTooltips": {
+        "key": "Identificeert deze stap. De startstap en overgangen verwijzen ernaar; bij hernoemen worden die verwijzingen automatisch bijgewerkt.",
+        "title": "Optioneel. Wordt getoond in het kruimelpad terwijl een gebruiker de form flow doorloopt.",
+        "type": "Wat deze stap toont: \"form\" toont een Form.io-formulier, \"custom-component\" toont een Angular-component die door deze implementatie is geregistreerd. Andere waarden worden afgehandeld door een bijpassende staptype-handler in de backend.",
+        "typeNoComponents": "\"custom-component\" is niet beschikbaar omdat deze implementatie geen custom componenten heeft geregistreerd.",
+        "definition": "Het formulier van deze zaakdefinitie of building block dat voor deze stap wordt getoond.",
+        "componentId": "De geregistreerde Angular-component die voor deze stap wordt getoond.",
+        "targetStep": "De stap waar de gebruiker naartoe gaat wanneer deze overgang wordt gekozen.",
+        "condition": "Optionele SpEL-expressie tussen ${ en }. Overgangen worden van boven naar beneden geëvalueerd; laat leeg om dit de standaardroute te maken."
+      },
+      "stepDetails": "Stapdetails",
+      "title": "Titel",
+      "titlePlaceholder": "Wordt getoond in het kruimelpad",
+      "keyPlaceholder": "Bijvoorbeeld persoonsgegevensStap",
+      "duplicateKey": "Deze key wordt al gebruikt door een andere stap",
+      "required": "Dit veld is verplicht",
+      "navigation": "Navigatie",
+      "navigationDescription": "Waar de gebruiker naartoe kan na het afronden van deze stap. Overgangen worden van boven naar beneden geëvalueerd; de eerste waarvan de conditie waar is wordt gekozen en een overgang zonder conditie is de standaard.",
+      "targetStep": "Volgende stap",
+      "selectStep": "Kies een stap",
+      "condition": "Conditie",
+      "conditionPlaceholder": "${step.submissionData.leeftijd >= 21} (leeg = standaard)",
+      "moveUp": "Omhoog",
+      "moveDown": "Omlaag",
+      "addTransition": "Overgang toevoegen",
+      "noTransitions": "Geen overgangen — de form flow eindigt na deze stap.",
+      "multipleDefaultTransitions": "Slechts één overgang mag zonder conditie zijn; die overgang is de standaard.",
+      "conditionExamplesTitle": "Condities zijn Spring Expression Language (SpEL)-expressies tussen ${ en }. Ze kunnen gebruikmaken van:",
+      "conditionExampleSubmission": "waarden die de gebruiker in deze stap heeft ingevuld, via step.submissionData",
+      "conditionExampleContext": "zaak- en procescontext, via additionalProperties (de exacte waarden staan hieronder)",
+      "conditionExampleDefault": "Vergelijkingsoperatoren zoals ==, !=, >, >= en booleaanse operatoren zoals && en || worden ondersteund. Een overgang zonder conditie is de standaardroute.",
+      "additionalPropertiesTitle": "Beschikbaar in additionalProperties:",
+      "additionalPropertiesUserTask": "Wanneer de form flow gekoppeld is aan een gebruikerstaak:",
+      "additionalPropertiesStartEvent": "Wanneer de form flow gekoppeld is aan een startgebeurtenis:",
+      "additionalPropertiesOptional": "(indien beschikbaar)",
+      "additionalProperties": {
+        "processInstanceId": "het id van de procesinstantie waar de taak bij hoort",
+        "processInstanceBusinessKey": "de business key van die procesinstantie",
+        "taskInstanceId": "het id van de gebruikerstaak die deze form flow heeft geopend",
+        "documentId": "het id van de zaak, wanneer het proces bij een zaak hoort",
+        "processDefinitionKey": "de key van de procesdefinitie die gestart wordt",
+        "documentDefinitionName": "de documentdefinitie van de nieuwe zaak, bij het starten van een nieuwe zaak"
+      },
+      "actions": "Acties",
+      "actionsDescription": "Acties worden op de server uitgevoerd op vaste momenten in de levenscyclus van de stap, bijvoorbeeld om formulieren vooraf in te vullen, inzendingen op te slaan, taken af te ronden of processen te starten.",
+      "help": {
+        "title": "Hoe expressies werken",
+        "button": "Hoe werken expressies?",
+        "intro": "Condities en acties zijn Spring Expression Language (SpEL)-expressies tussen ${ en }. Ze worden op de server geëvalueerd terwijl de form flow draait.",
+        "conditionsHeading": "Condities",
+        "actionsHeading": "Acties",
+        "actionsBody": "Acties worden uitgevoerd op vaste momenten in de levenscyclus van een stap: bij het openen, bij het afronden en wanneer de gebruiker teruggaat. Ze kunnen de geregistreerde form flow-functies aanroepen uit het menu \"Actie toevoegen\", en kunnen de ingevulde gegevens lezen via step.submissionData en de zaak- en procescontext via additionalProperties. Gebruik ze om formulieren vooraf in te vullen, inzendingen op te slaan, taken af te ronden of processen te starten.",
+        "dataHeading": "Beschikbare gegevens",
+        "conditionsInlineTitle": "Condities zijn expressies.",
+        "conditionsInlineMessage": "Bijvoorbeeld ${step.submissionData.leeftijd >= 21}. Laat de conditie leeg voor de standaardroute.",
+        "actionsInlineTitle": "Acties zijn expressies.",
+        "actionsInlineMessage": "Ze kunnen geregistreerde functies aanroepen en ingevulde gegevens en zaakcontext lezen."
+      },
+      "onOpen": "Bij openen van de stap",
+      "onOpenDescription": "Wordt uitgevoerd wanneer de gebruiker deze stap opent, bijvoorbeeld om het formulier vooraf in te vullen.",
+      "onComplete": "Bij afronden van de stap",
+      "onCompleteDescription": "Wordt uitgevoerd wanneer de gebruiker deze stap indient, bijvoorbeeld om gegevens op te slaan of een taak af te ronden.",
+      "onBack": "Bij teruggaan",
+      "onBackDescription": "Wordt uitgevoerd wanneer de gebruiker teruggaat naar de vorige stap, bijvoorbeeld om gegevens op te schonen.",
+      "addExpression": "Actie toevoegen",
+      "blankExpression": "Lege expressie",
+      "noExpressions": "Geen acties geconfigureerd.",
+      "stepInvalid": "Deze stap bevat configuratiefouten",
+      "noStepsTitle": "Nog geen stappen",
+      "noStepsDescription": "Voeg een stap toe om deze form flow te ontwerpen.",
+      "parseFailedTitle": "De visuele editor kan niet worden geopend",
+      "parseFailedMessage": "De definitie bevat ongeldige JSON. Herstel dit eerst in de JSON-editor.",
+      "properties": {
+        "definition": "Formulier",
+        "componentId": "Component-ID"
+      },
+      "errors": {
+        "title": "De definitie bevat fouten",
+        "duplicateKeys": "Dubbele stap-keys: {{keys}}.",
+        "startStepMissing": "De startstap \"{{startStep}}\" bestaat niet.",
+        "unknownTargets": "Overgangen verwijzen naar onbekende stappen: {{targets}}.",
+        "stepIncomplete": "Stap \"{{step}}\" heeft ontbrekende of ongeldige velden."
+      }
     }
   },
   "taskManagement": {
