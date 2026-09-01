@@ -1,12 +1,20 @@
+<!--
+  Copyright 2015-2026 Ritense BV, the Netherlands.
+  Licensed under EUPL, Version 1.2 (the "License");
+  https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+-->
+
 # Auto-deploying external plugins
 
+> **Audience:** implementation developers provisioning environments. For the manual flows see the
+> [admin documentation](../../documentation/configuration-guides/plugins/external-plugins/README.md).
+
 External plugins live on a **plugin host** (or are served by an **app**) rather than inside the
-Valtimo backend. Getting one running normally means three manual steps in `Admin → Integrations`:
-register the host, upload the plugin package, activate a configuration.
+Valtimo backend. Getting one running normally means three manual steps in the admin UI: register
+the integration, upload the plugin package, activate a configuration.
 
 An application can declare all three instead, and Valtimo applies them at startup. This is the
-external-plugin counterpart of the embedded-plugin `*.pluginconfig.json` mechanism described in
-[Configuring plugins](configure-plugin.md).
+external-plugin counterpart of the embedded-plugin `*.pluginconfig.json` mechanism.
 
 ## The descriptor
 
@@ -137,7 +145,7 @@ accepted is altered. In detail:
 * Descriptors never change `baseUrl`, `secret`, `gzacCallbackBaseUrl`, `kind` or the broker fields
   on an existing integration. A changed value is logged as a warning and the integration is left as
   it is; to repoint an integration — a moved host, a moved broker, a rotated admin token — use
-  **Edit connection** on the integration in `Admin → Integrations`, which validates the change and
+  **Edit connection** on the integration's row in the admin UI, which validates the change and
   re-pushes every configuration.
 * An active configuration is never re-granted — that set is what an administrator accepted. Its
   `title` and `properties` are brought in line with the descriptor on every start.
@@ -163,8 +171,7 @@ up where the descriptor left off whenever it appears.
 ## Shipping plugins with the host
 
 The other half of a hands-off environment is the host having its packages. Besides uploading them
-from a descriptor, a plugin host installs every `.zip` found in its pre-install directory
-(`PLUGIN_PREINSTALL_DIR`, `/data/preinstalled` in the container image) when it boots. Mount a
-directory of packages over it, or bake them into a derived image. A version already installed with
-identical content is left untouched; one whose content differs is kept rather than silently
-replaced.
+from a descriptor, a plugin host installs every `.zip` found in its pre-install directory when it
+boots — see [Plugin host configuration & deployment](./host-configuration-and-deployment.md#shipping-plugins-with-the-host).
+A version already installed with identical content is left untouched; one whose content differs is
+kept rather than silently replaced.

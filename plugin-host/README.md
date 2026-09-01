@@ -202,7 +202,10 @@ throwaway environments only). See [`app/README.md`](./app/README.md) for both se
 
 ## Documentation
 
+- [Developer & operator guides](./docs/README.md) — developing a plugin, developing an app,
+  host deployment, auto-deployment
 - [Plugin Host README](./app/README.md) — API reference, configuration, events
 - [Plugin SDK README](./plugin-sdk/README.md) — Building plugins, SDK API
 - [`valtimo-plugin-init`](./plugin-sdk/README.md#valtimo-plugin-init) — Scaffolding a new plugin project
 - [Case Summary Plugin](./sample-plugins/case-summary/README.md) — Example with GZAC callbacks
+- Administrator documentation — [Configuration guides: Plugins](../documentation/configuration-guides/plugins/README.md)

@@ -1,0 +1,130 @@
+<!--
+  Copyright 2015-2026 Ritense BV, the Netherlands.
+  Licensed under EUPL, Version 1.2 (the "License");
+  https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+-->
+
+# Plugin host configuration & deployment
+
+> **Audience:** operators running the plugin host. For local development the one-liner is
+> `cd plugin-host && npm run dev` (see the [plugin-host README](../README.md)); this page covers
+> running the host as a service. Full reference: [app README](../app/README.md).
+
+The plugin host is a stateless-ish Node.js service (Fastify + Extism) with its own PostgreSQL
+database. It stores plugin packages on disk, persists configurations/KV/logs in PostgreSQL, and
+holds **no GZAC-side configuration at all** — every credential, grant, and broker detail arrives
+in the configuration pushes from GZAC.
+
+## Running with Docker
+
+```bash
+cd plugin-host/app
+ADMIN_TOKEN=your-secret npm run docker:up      # PostgreSQL + host; plugin binaries in a volume
+```
+
+The image builds itself from a clean checkout — no local `npm run build` first. Its build
+context is `plugin-host/` (the app depends on the SDK via `file:../plugin-sdk`):
+
+```bash
+docker build -f app/Dockerfile -t valtimo/plugin-host .
+```
+
+## Environment reference
+
+Required:
+
+| Variable | Purpose |
+|---|---|
+| `ADMIN_TOKEN` | The shared secret GZAC signs every request with (HMAC). The value the admin enters as **Secret** when adding the host. |
+| `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | The host's own PostgreSQL. Note the compose default port is **5434**, not 5432. |
+
+Common:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `PORT` | `8090` | HTTP(S) listen port |
+| `PLUGIN_STORAGE_DIR` | `./plugins` | Where installed packages live (persist this) |
+| `HOST_ID` | OS hostname | Event-queue identity — see **Scaling** below |
+| `TLS_CERT_PATH` / `TLS_KEY_PATH` (+ `TLS_CA_PATH`) | unset | Set both to serve HTTPS. Required in practice for event-consuming hosts: GZAC refuses to push broker credentials to a non-confidential (non-HTTPS, non-loopback) base URL |
+| `PLUGIN_PREINSTALL_DIR` | `./preinstalled` | Boot-time package directory (`/data/preinstalled` in the image) |
+| `PLUGIN_PREINSTALL_OVERWRITE` | `false` | Replace an installed version whose content differs — throwaway environments only |
+| `LOG_LEVEL` / `LOG_RETENTION_DAYS` | `info` / `30` | Logging and `plugin_logs` retention (cleanup runs 6-hourly) |
+
+Execution and abuse bounds (defaults are sane; tune deliberately):
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `WASM_TIMEOUT_MS` | 30 s | Hard wall-clock cap per plugin call |
+| `WASM_MAX_MEMORY_PAGES` | 4096 (= 256 MiB) | Per-instance guest memory cap (0 uncaps) |
+| `WASM_POOL_MIN_INSTANCES` / `WASM_POOL_MAX_INSTANCES` | 1 / 10 | Per-plugin-version instance pool; worst-case memory ≈ max × page cap. Set max to 1 for strictly serialised calls |
+| `WASM_POOL_ACQUIRE_TIMEOUT_MS` | 30 s | Max wait for a free instance under load |
+| `WASM_INSTANCE_IDLE_TTL_MS` | 10 min | Idle instances are evicted; a quiet host returns to zero |
+| `GZAC_API_TIMEOUT_MS` | 60 s | Bound on plugin→GZAC callbacks |
+| `UPLOAD_MAX_BYTES` | 100 MiB | Package size cap |
+| `DATA_RATE_LIMIT_PER_MINUTE` | 120 | Per-configuration rate limit on the public `/data` route |
+| `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | 10 s | Bound on the `/data` token check against GZAC |
+| `CONFIG_CACHE_TTL_MS` | 10 s | Config read-cache; also bounds cross-replica visibility of pushes |
+
+Security-posture switches:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `HOST_ALLOWED_INTERNAL_CIDRS` | unset | Comma-separated CIDRs plugins may reach despite being private address space — the **production** way to allow an internal service. Keep entries narrow (a `/32` or a specific ClusterIP); in Kubernetes prefer a NetworkPolicy. `169.254.0.0/16` (cloud metadata) is never allowlistable |
+| `HOST_ALLOW_HTTP` | `false` | Allow plain-http egress targets — local development only |
+| `HOST_ALLOW_PRIVATE_NETWORK` | `false` | Disables the SSRF classifier wholesale — local development only, logs a loud warning |
+| `ALLOWED_FRAME_ANCESTORS` | unset | Extra browser origins allowed to frame plugin screens, on top of what connected GZACs announce |
+| `FRAME_ANCESTOR_STALE_MS` | 7 days | How long an announced GZAC stays in the frame allowlist without re-announcing |
+
+**No broker variables.** The host never configures RabbitMQ itself — broker details arrive per
+configuration from GZAC.
+
+## Shipping plugins with the host
+
+The published image contains **no plugins**. Every `.zip` in the pre-install directory is
+installed at boot through the same validated pipeline as an upload:
+
+```yaml
+volumes:
+  - ./my-plugins:/data/preinstalled:ro
+```
+
+or baked into a derived image:
+
+```dockerfile
+FROM valtimo/plugin-host
+COPY my-plugin-1.0.0.zip /data/preinstalled/
+```
+
+An already-installed version with identical content is a no-op; one with **different** content is
+kept, not replaced — GZAC pinned the content an admin accepted, so replacing code is an explicit
+act (a new version, or an admin-confirmed overwrite). A corrupt package is skipped with a
+warning; nothing in pre-install can stop the host from starting.
+
+For declaring the GZAC side of an environment (integrations, uploads, configurations) in code,
+see [Auto-deployment](./auto-deployment.md).
+
+## Scaling and replicas
+
+- **Replicas of one host** share the database, the package storage, and the same `HOST_ID`: they
+  form a competing-consumer group — each event is handled by exactly one replica.
+- **Distinct hosts** (different `HOST_ID`) each receive a copy of every event.
+- Configuration pushes land in the shared database; other replicas see them within
+  `CONFIG_CACHE_TTL_MS`.
+- The per-configuration `/data` rate limit is per replica.
+
+## Operational notes
+
+- **Secret rotation is two-sided.** The host reads `ADMIN_TOKEN` once at boot. Order that
+  minimises the outage: restart the host with the new token first (GZAC's pushes fail as
+  warnings, the host may show Unreachable), then update the secret on the GZAC side via **Edit
+  connection** — the next poll reconnects and re-pushes everything.
+- **Moving a host** (new address, new broker) is done from GZAC via **Edit connection**; the host
+  itself needs no change. Repointing GZAC at a *different physical host* leaves the old host's
+  pushed configurations behind — clean those manually.
+- **Reverse proxies must not add a path prefix**: the HMAC signature covers the request path, so
+  the host must see the same path GZAC signed. Root-mounted (the default) is fine; TLS
+  termination in front of an actions-only host is fine too.
+- **Never point a database-cloned GZAC environment at the same host as its source** — clones
+  share configuration ids and will fight over the same rows.
+- The `/health` endpoint is a liveness probe only; GZAC's **Connected** status means the full
+  authenticated cycle succeeded, which is the signal that matters.
