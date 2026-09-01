@@ -1,0 +1,97 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Spacing is gap-driven on a single scale: 24px between the top-level blocks, 16px between the
+// blocks inside a section, 12px inside lists and 4px for heading/label clusters. Elements carry
+// no individual margins, so gaps never compound.
+.step-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-06);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--cds-spacing-05);
+  }
+
+  &__heading {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+
+    cds-tag {
+      margin: 0;
+    }
+  }
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--cds-spacing-05);
+
+    cds-label {
+      margin-bottom: 0;
+    }
+  }
+
+  &__divider {
+    border: none;
+    border-top: 1px solid var(--cds-border-subtle);
+    margin: 0;
+    width: 100%;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-05);
+  }
+
+  &__section-header {
+    h5 {
+      margin: 0 0 var(--cds-spacing-02) 0;
+    }
+  }
+
+  &__section-description {
+    color: var(--cds-text-secondary);
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    margin: 0;
+  }
+
+  // Carbon puts the cds--actionable-notification class (with its max-inline-size cap and margin)
+  // on the host element itself, so the override targets the host directly.
+  &__help-notification {
+    display: block;
+    margin: 0;
+    max-inline-size: none;
+    max-width: none;
+  }
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+  }
+}
