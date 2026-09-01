@@ -34,6 +34,7 @@ import {BuildingBlockStateService} from './building-block-state.service';
 @Injectable()
 export class ProcessLinkStateService implements OnDestroy {
   private readonly _showModal$ = new BehaviorSubject<boolean>(false);
+  private readonly _readOnly$ = new BehaviorSubject<boolean>(false);
   private readonly _availableProcessLinkTypes$ = new BehaviorSubject<Array<ProcessLinkType>>([]);
   private readonly _elementName$ = new BehaviorSubject<string>('');
   private readonly _selectedProcessLinkTypeId$ = new BehaviorSubject<string>('');
@@ -59,6 +60,9 @@ export class ProcessLinkStateService implements OnDestroy {
   }
   public get showModal$(): Observable<boolean> {
     return this._showModal$.asObservable();
+  }
+  public get readOnly$(): Observable<boolean> {
+    return this._readOnly$.asObservable();
   }
   public get elementName$(): Observable<string> {
     return this._elementName$.asObservable();
@@ -165,6 +169,10 @@ export class ProcessLinkStateService implements OnDestroy {
 
   public showModal(): void {
     this._showModal$.next(true);
+  }
+
+  public setReadOnly(readOnly: boolean): void {
+    this._readOnly$.next(readOnly);
   }
 
   public closeModal(): void {
@@ -325,5 +333,6 @@ export class ProcessLinkStateService implements OnDestroy {
     this.deselectProcessLink();
     this.resetBuildingBlockState();
     this._isEditing$.next(false);
+    this._readOnly$.next(false);
   }
 }

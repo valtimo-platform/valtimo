@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-interface AccentColorsDto {
-  colors: {[key: string]: string};
-}
-
 interface AccentColorDefinition {
   cssVar: string;
   labelTranslationKey: string;
 }
 
-export {AccentColorsDto, AccentColorDefinition};
+export {AccentColorsDto} from '@valtimo/shared';
+export {AccentColorDefinition};

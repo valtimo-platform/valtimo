@@ -15,7 +15,7 @@
  */
 
 import {ModalParams, ProcessLink} from '@valtimo/process-link';
-import {ManagementContext} from '@valtimo/shared';
+import {ManagementContext, ProcessDefinitionValidationError} from '@valtimo/shared';
 
 interface OpenProcessLinkModalEvent {
   modalParams: ModalParams;
@@ -38,20 +38,6 @@ interface ProcessManagementRouteData {
 interface UpdateProcessDefinitionCaseDefinitionRequest {
   canInitializeDocument?: boolean;
   startableByUser?: boolean;
-}
-
-interface ProcessDefinitionValidationError {
-  elementId: string;
-  elementType: string;
-  elementName?: string;
-  reason: string;
-  errorCode?: string;
-  expression?: string;
-  severity?: 'ERROR' | 'WARNING';
-  invalidFields?: string[];
-  invalidArguments?: number[];
-  listenerType?: string;
-  listenerIndex?: number;
 }
 
 interface ProcessDefinitionValidationResult {

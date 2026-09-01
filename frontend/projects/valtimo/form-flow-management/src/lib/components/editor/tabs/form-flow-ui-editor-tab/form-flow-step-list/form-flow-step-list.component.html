@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="step-list__header">
+  <span class="step-list__title">{{ 'formFlow.uiEditor.stepsTitle' | translate }}</span>
+
+  @if (!readOnly) {
+    <button
+      cdsButton="primary"
+      size="sm"
+      [attr.data-test-id]="testIds.addStepButton"
+      (click)="addEvent.emit()"
+    >
+      {{ 'formFlow.uiEditor.addStep' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  }
+</div>
+
+<ul class="step-list__list" [attr.data-test-id]="testIds.stepList">
+  @for (step of steps; track $index) {
+    <li class="step-list__list-item">
+      <button
+        class="step-list__item"
+        [class.step-list__item--selected]="selectedIndex === $index"
+        [attr.data-test-id]="testIds.stepListItem"
+        type="button"
+        (click)="selectEvent.emit($index)"
+      >
+        <span class="step-list__item-heading">
+          <span class="step-list__item-key" [title]="step.key">{{ step.key }}</span>
+
+          @if (step.invalid) {
+            <svg
+              class="step-list__item-warning"
+              cdsIcon="warning--filled"
+              size="16"
+              [attr.aria-label]="'formFlow.uiEditor.stepInvalid' | translate"
+            ></svg>
+          }
+        </span>
+
+        @if (step.title) {
+          <span class="step-list__item-title">{{ step.title }}</span>
+        }
+
+        <span class="step-list__item-tags">
+          @if (step.isStart) {
+            <cds-tag type="green" size="sm">{{
+              'formFlow.uiEditor.startStep' | translate
+            }}</cds-tag>
+          }
+
+          <cds-tag type="blue" size="sm">{{ step.typeName }}</cds-tag>
+        </span>
+      </button>
+    </li>
+  }
+</ul>
