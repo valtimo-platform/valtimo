@@ -31,6 +31,7 @@ import {
   PluginProcessLinkUpdateDto,
   ProcessLink,
 } from '../../models';
+import {PLUGIN_ACTION_CONFIGURATION_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -39,6 +40,8 @@ import {
   styleUrls: ['./plugin-action-configuration.component.scss'],
 })
 export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
+  protected readonly testIds = PLUGIN_ACTION_CONFIGURATION_TEST_IDS;
+
   @Input() selectedPluginConfiguration$: Observable<PluginConfiguration>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
@@ -133,7 +136,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             ? (selectedProcessLink.pluginConfigurationId ?? '')
             : undefined;
         // Use the currently selected function key (user may have changed it)
-        const actionKey = selectedFunction?.key ?? selectedProcessLink.pluginActionDefinitionKey ?? '';
+        const actionKey =
+          selectedFunction?.key ?? selectedProcessLink.pluginActionDefinitionKey ?? '';
         const updateProcessLinkRequest: PluginProcessLinkUpdateDto = {
           id: selectedProcessLink.id,
           pluginConfigurationId,
