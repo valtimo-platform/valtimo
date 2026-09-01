@@ -111,6 +111,36 @@ class MigrationPlanExporterTest(
         assertThat(json.get("dataMigration")[0].get("source").asText()).isEqualTo("doc:/persoon/voornaam")
     }
 
+    /** `NON_NULL` strips the marker, so after one save a clear has no other shape for the editor to read. */
+    @Test
+    fun `should export a clearing patch as its target alone, whether or not a null value was stored`() {
+        val migrationId = BlueprintMigrationId.from(caseDefinitionId, "velden-leegmaken")
+        whenever(caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(caseDefinitionId.blueprintType(), caseDefinitionId.getIdKey(), caseDefinitionId.blueprintVersionTag()))
+            .thenReturn(
+                listOf(
+                    CaseDefinitionMigration(
+                        id = migrationId,
+                        sourceKey = "bezwaar",
+                        sourceVersionTag = Semver("1.2.2"),
+                        title = null,
+                    )
+                )
+            )
+        whenever(dataMigrationComponentDeployer.componentKey()).thenReturn("dataMigration")
+        whenever(dataMigrationComponentDeployer.getComponentToExport(any())).thenReturn(
+            listOf(
+                DataMigrationPatch(target = "doc:/oudAdres"),
+                DataMigrationPatch(value = null, target = "doc:/oudeStatus"),
+            )
+        )
+
+        val result = exporter.export(MigrationPlanExportRequest(caseDefinitionId))
+
+        val json = objectMapper.readTree(result.exportFiles.first().content)
+        assertThat(json.get("dataMigration").toString())
+            .isEqualTo("""[{"target":"doc:/oudAdres"},{"target":"doc:/oudeStatus"}]""")
+    }
+
     @Test
     fun `should omit components with no data`() {
         val migrationId = BlueprintMigrationId.from(caseDefinitionId, "empty")

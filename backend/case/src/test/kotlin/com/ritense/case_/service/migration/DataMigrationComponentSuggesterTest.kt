@@ -66,7 +66,7 @@ class DataMigrationComponentSuggesterTest {
         paths(source, "doc:/adres", "doc:/adres/straat", "doc:/adres/plaats", "doc:/naam")
         paths(target, "doc:/naam")
 
-        assertThat(suggest()).containsExactly(ClearingPatch(target = "doc:/adres"))
+        assertThat(suggest()).containsExactly(DataMigrationPatch(target = "doc:/adres"))
     }
 
     @Test
@@ -74,7 +74,7 @@ class DataMigrationComponentSuggesterTest {
         paths(source, "doc:/aanvrager", "doc:/aanvrager/adres", "doc:/aanvrager/adres/straat", "doc:/naam")
         paths(target, "doc:/naam")
 
-        assertThat(suggest()).containsExactly(ClearingPatch(target = "doc:/aanvrager"))
+        assertThat(suggest()).containsExactly(DataMigrationPatch(target = "doc:/aanvrager"))
     }
 
     @Test
@@ -83,7 +83,7 @@ class DataMigrationComponentSuggesterTest {
         paths(source, "doc:/adres", "doc:/adres/straat", "doc:/adres/postcode")
         paths(target, "doc:/adres", "doc:/adres/straat")
 
-        assertThat(suggest()).containsExactly(ClearingPatch(target = "doc:/adres/postcode"))
+        assertThat(suggest()).containsExactly(DataMigrationPatch(target = "doc:/adres/postcode"))
     }
 
     @Test
@@ -96,39 +96,45 @@ class DataMigrationComponentSuggesterTest {
     }
 
     @Test
-    fun `should surface a new target field with no source, and clear the object it replaces`() {
+    fun `should clear the object a new target field replaces, without suggesting the new field itself`() {
+        // A bare `doc:/woonplaats` would null the field, not hand the author a blank to fill in.
         paths(source, "doc:/adres", "doc:/adres/straat")
         paths(target, "doc:/woonplaats")
 
-        assertThat(suggest()).containsExactly(
-            ClearingPatch(target = "doc:/adres"),
-            DataMigrationPatch(source = null, target = "doc:/woonplaats"),
-        )
+        assertThat(suggest()).containsExactly(DataMigrationPatch(target = "doc:/adres"))
+    }
+
+    @Test
+    fun `should not suggest a target field no source path matches`() {
+        paths(source, "doc:/adres")
+        paths(target, "doc:/adres", "doc:/woonplaats")
+
+        assertThat(suggester.suggest(source, target)).isNull()
     }
 
     @Test
     fun `should order every patch by target path, whatever order the schema walk yields`() {
-        // Copies and clears interleaved, and neither side enumerated alphabetically.
+        // Copies and clears interleaved, neither side alphabetical. `doc:/bsn` matches nothing.
         paths(source, "doc:/zaak", "doc:/naam", "doc:/adres", "doc:/straatnaam")
         paths(target, "doc:/zaak", "doc:/bsn", "doc:/straat_naam")
 
-        assertThat(suggest().map { targetOf(it) })
-            .containsExactly("doc:/adres", "doc:/bsn", "doc:/naam", "doc:/straat_naam")
+        assertThat(suggest().map { it.target })
+            .containsExactly("doc:/adres", "doc:/naam", "doc:/straat_naam")
     }
 
     @Test
-    fun `should write a clearing patch's null value out, so it is not the same row as an unfinished copy`() {
-        // Both are "no source" to the applier, but only one is work the author still has to do.
+    fun `should write a clear as the target-only shape the engine and the editor both read as a null write`() {
+        // The one shape a save keeps — `NON_NULL` drops an explicit `value: null`.
         paths(source, "doc:/adres")
         paths(target, "doc:/woonplaats")
 
         assertThat(ObjectMapper().writeValueAsString(suggest()))
-            .isEqualTo("""[{"target":"doc:/adres","value":null},{"target":"doc:/woonplaats"}]""")
+            .isEqualTo("""[{"target":"doc:/adres"}]""")
     }
 
     @Test
     fun `should suggest nothing when the source resolves no path at all`() {
-        // `verhuizing:9.9.9` was never deployed, so every target would come back bare — a plan that empties the document field by field, dressed as "fill this in".
+        // `verhuizing:9.9.9` was never deployed, so there is nothing to match against and nothing to clear.
         paths(source)
         paths(target, "doc:/adres", "doc:/naam", "doc:/status")
 
@@ -238,14 +244,7 @@ class DataMigrationComponentSuggesterTest {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun suggest() = suggester.suggest(source, target) as List<Any>
-
-    /** The target of either kind of suggested patch — a copy, or a clear. */
-    private fun targetOf(patch: Any): String = when (patch) {
-        is DataMigrationPatch -> patch.target
-        is ClearingPatch -> patch.target
-        else -> error("Unexpected suggestion '$patch'")
-    }
+    private fun suggest() = suggester.suggest(source, target) as List<DataMigrationPatch>
 
     private fun paths(blueprintId: BlueprintId, vararg paths: String) {
         whenever(valueResolverService.getResolvableKeys(any<ValueResolverOptionRequest>(), eq(blueprintId)))

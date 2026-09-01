@@ -150,13 +150,12 @@ export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
     return group;
   }
 
-  /** Derive the edit mode from a stored patch. An explicit `value: null` is a clearing patch; neither key is an unfilled copy — the engine applies both as a null write, so they used to read alike. */
+  /** Neither key clears the target, so it is 'null'; only a brand-new patch defaults to 'path'. */
   private modeOf(patch?: DataMigrationPatch): PatchMode {
     if (!patch) return 'path';
     if (patch.source) return 'path';
-    if (patch.value === null) return 'null';
-    if (patch.value !== undefined) return 'value';
-    return 'path';
+    if (patch.value !== undefined && patch.value !== null) return 'value';
+    return 'null';
   }
 
   private emit(): void {
@@ -170,11 +169,10 @@ export class MigrationDataMigrationTabComponent implements OnInit, OnDestroy {
       const {mode, source, value, target, targetType} = (control as FormGroup).getRawValue();
       const patch: DataMigrationPatch = {target: target ?? ''};
 
-      if (mode === 'null') {
-        patch.value = null;
-      } else if (mode === 'path') {
+      // 'null' writes neither key: that is the clear shape, and the only one a save keeps.
+      if (mode === 'path') {
         if (source) patch.source = source;
-      } else if (value !== '' && value != null) {
+      } else if (mode === 'value' && value !== '' && value != null) {
         patch.value = value;
       }
 

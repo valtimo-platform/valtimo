@@ -30,12 +30,7 @@ describe('MigrationDataMigrationTabComponent', () => {
     } as any);
   });
 
-  /**
-   * The shape every saved and every file-deployed clear has: `DataMigrationPatch` is `NON_NULL` on
-   * the backend, so an explicit `value: null` is stripped on the way into the database and on the
-   * way back out of the exporter. Reading it as an unfilled copy showed a deliberate "set null" as
-   * an empty source picker.
-   */
+  // The shape every saved and every file-deployed clear has — `NON_NULL` strips the marker.
   it('reads a patch with neither source nor value as a clear', () => {
     component.patches = [{target: 'doc:/nieuwAdres'}];
 

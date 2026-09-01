@@ -511,10 +511,10 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
         .controls.map(row => {
           const {mode, source, value, target, targetType} = (row as FormGroup).getRawValue();
           const patch: ProcessVariablePatch = {target: target ?? ''};
-          if (mode === 'null') patch.value = null;
-          else if (mode === 'path') {
+          // 'null' writes neither key: that is the clear shape, and the only one a save keeps.
+          if (mode === 'path') {
             if (source) patch.source = source;
-          } else if (value !== '' && value != null) patch.value = value;
+          } else if (mode === 'value' && value !== '' && value != null) patch.value = value;
           if (mode !== 'null' && targetType) patch.targetType = targetType;
           return patch;
         })

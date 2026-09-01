@@ -16,7 +16,6 @@
 
 package com.ritense.case_.service.migration
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
@@ -28,13 +27,7 @@ import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-/** A clearing patch as it is suggested, with `value: null` written out — otherwise it is indistinguishable on the wire from a copy patch whose source is still missing. */
-internal data class ClearingPatch(
-    val target: String,
-    @get:JsonInclude(JsonInclude.Include.ALWAYS) val value: Any? = null,
-)
-
-/** Best-effort `dataMigration` suggestion: name-matched copies above [SIMILARITY_THRESHOLD], bare targets for what found no source, clears for what found no target. Collapsed to the shallowest path and sorted by target. */
+/** Best-effort `dataMigration` suggestion: name-matched copies above [SIMILARITY_THRESHOLD], clears for what found no target. Collapsed to the shallowest path and sorted by target. */
 class DataMigrationComponentSuggester(
     private val valueResolverService: ValueResolverService,
 ) : MigrationComponentSuggester {
@@ -53,7 +46,7 @@ class DataMigrationComponentSuggester(
         val sourcePaths = fieldPathsOf(source)
         val targetPaths = fieldPathsOf(target)
 
-        // A source resolving no path would yield only bare targets, which the applier writes as literal nulls — emptying the document field by field. Nothing is the honest answer.
+        // A source resolving no path can match nothing, so every patch below would be empty anyway.
         if (sourcePaths.isEmpty()) {
             logger.info {
                 "'$source' resolves no document path, so no 'dataMigration' is suggested for '$target'. " +
@@ -81,9 +74,13 @@ class DataMigrationComponentSuggester(
                 .map { sharedPath -> DataMigrationPatch(source = sharedPath, target = sharedPath) }
         }
 
-        val copies = targetPaths
-            .filter { targetPath -> targetPath !in sourcePathSet }
-            .map { targetPath -> DataMigrationPatch(source = matchedSourceByTarget[targetPath], target = targetPath) }
+        val newTargets = targetPaths.filter { targetPath -> targetPath !in sourcePathSet }
+        val copies = newTargets.mapNotNull { targetPath ->
+            matchedSourceByTarget[targetPath]?.let { matchedSource ->
+                DataMigrationPatch(source = matchedSource, target = targetPath)
+            }
+        }
+        logUnmatchedTargets(newTargets.filterNot { it in matchedSourceByTarget }, target)
 
         // A separate document starts empty, so there is no carried-over value to clear.
         val removals = if (separateDocument) {
@@ -91,14 +88,22 @@ class DataMigrationComponentSuggester(
         } else {
             collapseToRoots(
                 sourcePaths.filter { sourcePath -> sourcePath !in targetPathSet && sourcePath !in matchedSources }
-            ).map { removedPath -> ClearingPatch(target = removedPath) }
+            ).map { removedPath -> DataMigrationPatch(target = removedPath) }
         }
 
-        // Carried with their target rather than sorted as one list: a clearing patch is a different shape on the wire.
-        val suggested = identityCopies.map { it.target to it } +
-            copies.map { it.target to it } +
-            removals.map { it.target to it }
-        return suggested.sortedBy { (target, _) -> target }.map { (_, patch) -> patch }.ifEmpty { null }
+        return (identityCopies + copies + removals).sortedBy { patch -> patch.target }.ifEmpty { null }
+    }
+
+    /** Left out rather than suggested bare: `{"target": …}` is the clear, not a blank to fill in. */
+    private fun logUnmatchedTargets(unmatched: List<String>, target: BlueprintId) {
+        if (unmatched.isEmpty()) return
+        logger.info {
+            "'$target' models ${unmatched.size} path(s) no source path matches, so no 'dataMigration' " +
+                "patch is suggested for them — a patch naming only a target is a null write, not a " +
+                "blank to fill in. Add one by hand where a value should carry over: " +
+                unmatched.take(MAX_LOGGED_UNMATCHED).joinToString() +
+                if (unmatched.size > MAX_LOGGED_UNMATCHED) ", and ${unmatched.size - MAX_LOGGED_UNMATCHED} more" else ""
+        }
     }
 
 
@@ -171,5 +176,8 @@ class DataMigrationComponentSuggester(
 
         /** Minimum field-name similarity for a source to be considered a rename of a target. */
         const val SIMILARITY_THRESHOLD = 0.9
+
+        /** A version can add hundreds of paths; the count is the point, the names are a sample. */
+        const val MAX_LOGGED_UNMATCHED = 20
     }
 }
