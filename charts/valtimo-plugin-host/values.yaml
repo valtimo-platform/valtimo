@@ -1,0 +1,102 @@
+replicaCount: 1
+
+image:
+  repository: valtimo-platform/valtimo-plugin-host
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+  automountServiceAccountToken: false
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8090
+
+ingress:
+  enabled: false
+  ingressClassName: "alb"
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+  hosts:
+    - host: plugin-host.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+extraEnvVars: []
+extraVolumes: []
+extraVolumeMounts: []
+
+existingSecret: ""
+
+persistence:
+  enabled: true
+  annotations: {}
+  size: 5Gi
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  existingClaim: ""
+  mountPath: /data/plugins
+
+settings:
+  port: 8090
+  logLevel: "info"
+  hostId: "plugin-host"
+  pluginStorageDir: "/data/plugins"
+
+database:
+  host: ""
+  port: 5432
+  name: "pluginhost"
+  user: "pluginhost"

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: valtimo-plugin-host
+description: A Helm chart for Valtimo Plugin Host - a GZAC/Valtimo plugin hosting service
+type: application
+version: 0.1.0
+appVersion: "13.1.3"
+maintainers:
+  - name: Ritense
+    url: https://ritense.com
+keywords:
+  - valtimo
+  - gzac
+  - plugin
+  - plugin-host
+home: https://github.com/valtimo-platform/valtimo/plugin-host
+sources:
+  - https://github.com/valtimo-platform/valtimo/plugin-host
