@@ -135,7 +135,10 @@
       </cds-tooltip>
     </div>
 
-    <div class="bpmn__modeler-panel" #viewerPanel></div>
+    <div
+      class="bpmn__modeler-panel bpmn__modeler-panel--read-only"
+      #viewerPanel
+    ></div>
   </div>
 </div>
 
@@ -300,7 +303,7 @@
         <button
           cdsButton="secondary"
           [size]="actionsObs.compactMode ? 'sm' : 'md'"
-          [disabled]="actionsObs.loading"
+          [disabled]="actionsObs.loading || !actionsObs.hasEditPermissions"
           (click)="validateProcessDefinition(actionsObs.isReadOnlyProcess)"
         >
           {{ 'processManagement.validate' | translate }}
@@ -308,7 +311,7 @@
         </button>
 
         <button
-          [disabled]="!actionsObs.changesPending"
+          [disabled]="!actionsObs.changesPending || !actionsObs.hasEditPermissions"
           cdsButton="primary"
           (click)="
             !actionsObs.creatingNewProcess
