@@ -244,6 +244,15 @@ class ExternalPluginHostClient(
         }
         val request = RequestEntity(bodyBytes, headers, HttpMethod.PUT, uri)
         restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
+    } catch (e: HttpClientErrorException.NotFound) {
+        // Optional for minimal apps: the reference demo app implements the route, but a
+        // third-party app serving no framable screens legitimately may not. Every poll
+        // re-announces, so a warn with stack trace here would repeat forever.
+        logger.debug {
+            "Host at $baseUrl does not implement GZAC instance announcements (404); " +
+                "frame-ancestors for its plugin screens must be configured on the host itself"
+        }
+        false
     } catch (e: Exception) {
         logger.warn(e) { "Failed to register GZAC instance '$gzacBaseUrl' with plugin host at $baseUrl" }
         false
