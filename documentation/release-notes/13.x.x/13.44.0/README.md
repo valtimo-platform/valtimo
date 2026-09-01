@@ -34,14 +34,17 @@ noticeably on configurations with large document schemas or many process links.
 
 | Area | Fix |
 |------|-----|
+| Admin screens | Dropdown lists open in the right place, instead of on top of their own search box |
+| Admin screens | Field pickers no longer come up empty when more than one is shown on a screen |
 | Case configuration | A field path the case model does not allow is rejected instead of accepted |
-| Case search | Permissions based on case status or tags now filter OpenSearch search results |
 | Case definitions | A new draft based on an existing version of a case with building blocks can be created again |
+| Case management | A process in a finalised case version shows all of its settings, read-only, instead of only the process link |
+| Case search | Permissions based on case status or tags now filter OpenSearch search results |
 | Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
 | Cases | The progress tab shows the name of every process, instead of leaving some blank |
-| Plugins | Re-saving a plugin configuration removes settings from older versions that are no longer used |
 | List columns | The **Path** field is empty again when the column modal is reopened after cancelling |
+| Process links | Every version of a building block is offered when picking one |
+| Plugins | Re-saving a plugin configuration removes settings from older versions that are no longer used |
 | Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
 | Field pickers | A case model with an unreadable reference no longer stops every field picker from loading |
 | Field pickers | Lists in a case can be picked as a field, not only as a collection |
-| Case management | A process in a finalised case version shows all of its settings, read-only, instead of only the process link |
