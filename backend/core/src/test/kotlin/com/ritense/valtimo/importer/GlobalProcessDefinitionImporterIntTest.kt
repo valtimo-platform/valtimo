@@ -24,13 +24,17 @@ import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
+import java.io.ByteArrayInputStream
 
 class GlobalProcessDefinitionImporterIntTest @Autowired constructor(
     private val processDefinitionImporter: GlobalProcessDefinitionImporter,
     private val operatonProcessService: OperatonProcessService,
+    private val repositoryService: RepositoryService,
     @Value("classpath:examples/bpmn/shouldDeploy.bpmn")
     private val processDefinition: Resource,
     @Value("classpath:examples/bpmn/shouldDeploy.bpmn")
@@ -66,4 +70,76 @@ class GlobalProcessDefinitionImporterIntTest @Autowired constructor(
         }
     }
 
+    @Test
+    fun `should not import an unchanged configuration file over a version deployed in the application`() {
+        val key = "configurationProcessChangedInApplication"
+        importFromConfiguration(key, bpmn(key, FROM_CONFIGURATION))
+        deployInApplication(key, bpmn(key, CHANGED_IN_APPLICATION))
+
+        importFromConfiguration(key, bpmn(key, FROM_CONFIGURATION))
+
+        assertThat(deployedVersionsOf(key)).hasSize(2)
+        assertThat(latestVersionOf(key).name).isEqualTo(CHANGED_IN_APPLICATION)
+    }
+
+    @Test
+    fun `should import a configuration file that changed over a version deployed in the application`() {
+        val key = "configurationProcessThatChanged"
+        importFromConfiguration(key, bpmn(key, FROM_CONFIGURATION))
+        deployInApplication(key, bpmn(key, CHANGED_IN_APPLICATION))
+
+        importFromConfiguration(key, bpmn(key, CHANGED_IN_CONFIGURATION))
+
+        assertThat(deployedVersionsOf(key)).hasSize(3)
+        assertThat(latestVersionOf(key).name).isEqualTo(CHANGED_IN_CONFIGURATION)
+    }
+
+    @Test
+    fun `should import content deployed in an earlier version when it does not come from configuration`() {
+        val key = "importedProcessDeployedBefore"
+        importFromConfiguration(key, bpmn(key, FROM_CONFIGURATION))
+        deployInApplication(key, bpmn(key, CHANGED_IN_APPLICATION))
+
+        // An import someone triggered, of content that was deployed before, is a deliberate roll back to it
+        runWithoutAuthorization {
+            processDefinitionImporter.import(
+                ImportRequest("/global/bpmn/$key.bpmn", bpmn(key, FROM_CONFIGURATION))
+            )
+        }
+
+        assertThat(deployedVersionsOf(key)).hasSize(3)
+        assertThat(latestVersionOf(key).name).isEqualTo(FROM_CONFIGURATION)
+    }
+
+    private fun importFromConfiguration(key: String, bpmn: ByteArray) {
+        runWithoutAuthorization {
+            processDefinitionImporter.import(
+                ImportRequest("/global/bpmn/$key.bpmn", bpmn, fromConfiguration = true)
+            )
+        }
+    }
+
+    private fun deployInApplication(key: String, bpmn: ByteArray) {
+        runWithoutAuthorization {
+            operatonProcessService.deploy(null, "$key.bpmn", ByteArrayInputStream(bpmn), false, true)
+        }
+    }
+
+    private fun deployedVersionsOf(key: String): List<ProcessDefinition> =
+        repositoryService.createProcessDefinitionQuery().processDefinitionKey(key).list()
+
+    private fun latestVersionOf(key: String): ProcessDefinition =
+        repositoryService.createProcessDefinitionQuery().processDefinitionKey(key).latestVersion().singleResult()
+
+    private fun bpmn(key: String, name: String): ByteArray =
+        processDefinition.inputStream.use { String(it.readAllBytes()) }
+            .replace("deployedProcess", key)
+            .replace("""<bpmn:process id="$key" """, """<bpmn:process id="$key" name="$name" """)
+            .toByteArray()
+
+    private companion object {
+        const val FROM_CONFIGURATION = "From configuration"
+        const val CHANGED_IN_APPLICATION = "Changed in the application"
+        const val CHANGED_IN_CONFIGURATION = "Changed in the configuration"
+    }
 }

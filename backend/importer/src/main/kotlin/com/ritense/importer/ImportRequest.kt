@@ -29,6 +29,7 @@ data class ImportRequest(
     val keyOverride: String? = null,
     val nameOverride: String? = null,
     val pluginConfigurationMappings: Map<UUID, UUID?>? = null,
+    val fromConfiguration: Boolean = false,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
