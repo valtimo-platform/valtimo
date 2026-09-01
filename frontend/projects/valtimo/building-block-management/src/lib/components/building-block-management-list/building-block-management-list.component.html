@@ -14,12 +14,23 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{buildingBlockDefinitions: buildingBlockDefinitions$ | async} as obs">
+<ng-container
+  *ngIf="{
+    buildingBlockDefinitions: buildingBlockDefinitions$ | async,
+    pagination: pagination$ | async,
+  } as obs"
+>
   <valtimo-carbon-list
     [fields]="FIELDS"
+    [isSearchable]="true"
     [items]="obs.buildingBlockDefinitions"
     [loading]="$loading()"
+    [pagination]="obs.pagination"
+    paginationIdentifier="buildingBlockManagementList"
+    (paginationClicked)="paginationClicked($event)"
+    (paginationSet)="paginationSet($event)"
     (rowClicked)="onRowClick($event)"
+    (search)="searchTermEntered($event)"
   >
     <ng-container
       carbonToolbarContent
