@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Documenten API | A file uploaded with the Documenten API upload field in a form flow is added to the case when the form flow finishes |
