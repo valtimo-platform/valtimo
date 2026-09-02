@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
+import {BehaviorSubject, Observable, switchMap} from 'rxjs';
 import {ColumnConfig, Pagination, ViewType} from '@valtimo/components';
 import {CaseManagementService} from '../../services';
 import {filter, map} from 'rxjs/operators';
@@ -24,6 +24,12 @@ import {Page} from '@valtimo/document';
 import {CaseVersionListItem} from '../../models/case-version-list.model';
 
 const DEFAULT_PAGE_SIZE = 10;
+
+interface VersionQuery {
+  caseDefinitionKey: string;
+  page: number;
+  size: number;
+}
 
 @Component({
   standalone: false,
@@ -35,11 +41,9 @@ export class CaseManagementSelectVersionModalComponent {
   @Input() open = false;
   @Input() previousSelectedVersion = '';
 
-  public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
   public readonly caseDefinitionTitle$ = new BehaviorSubject<string>('');
   @Input() set caseDefinitionKey(value: string) {
-    this._page$.next(0);
-    this.caseDefinitionKey$.next(value);
+    this._query$.next({...this._query$.value, caseDefinitionKey: value, page: 0});
   }
   @Input() set caseDefinitionTitle(value: string) {
     this.caseDefinitionTitle$.next(value);
@@ -50,20 +54,18 @@ export class CaseManagementSelectVersionModalComponent {
 
   private _paginationInitialized = false;
 
-  private readonly _page$ = new BehaviorSubject<number>(0);
-  private readonly _size$ = new BehaviorSubject<number>(DEFAULT_PAGE_SIZE);
+  // Key, page and size live in one subject so a change to any of them fires a single request.
+  private readonly _query$ = new BehaviorSubject<VersionQuery>({
+    caseDefinitionKey: '',
+    page: 0,
+    size: DEFAULT_PAGE_SIZE,
+  });
 
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 
-  public readonly versionItems$: Observable<CaseListItem[]> = combineLatest([
-    this.caseDefinitionKey$,
-    this._page$,
-    this._size$,
-  ]).pipe(
-    filter(([caseDefinitionKey]) => !!caseDefinitionKey),
-    switchMap(([caseDefinitionKey, page, size]) =>
-      this.caseManagementService.getAllCaseVersions({caseDefinitionKey, page, size})
-    ),
+  public readonly versionItems$: Observable<CaseListItem[]> = this._query$.pipe(
+    filter(({caseDefinitionKey}) => !!caseDefinitionKey),
+    switchMap(query => this.caseManagementService.getAllCaseVersions(query)),
     map((page: Page<CaseVersionListItem>) => {
       this.pagination$.next({
         size: page.size,
@@ -106,7 +108,7 @@ export class CaseManagementSelectVersionModalComponent {
   constructor(private readonly caseManagementService: CaseManagementService) {}
 
   public paginationClicked(page: number): void {
-    this._page$.next(page - 1);
+    this._query$.next({...this._query$.value, page: page - 1});
   }
 
   public paginationSet(size: number): void {
@@ -115,8 +117,7 @@ export class CaseManagementSelectVersionModalComponent {
       return;
     }
 
-    this._page$.next(0);
-    this._size$.next(size);
+    this._query$.next({...this._query$.value, page: 0, size: +size});
   }
 
   public selectActiveVersion(event: {caseDefinitionVersionTag: string}): void {

@@ -143,6 +143,54 @@ class CaseDefinitionVersionListingIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should order the management list by name without regard for casing`() {
+        val key = "management-list-sorted-name"
+        deployVersion(key, versionTag = "1.0.1", name = "gamma")
+        deployVersion(key, versionTag = "1.0.2", name = "alpha")
+        deployVersion(key, versionTag = "1.0.3", name = "Beta")
+
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("caseDefinitionKey", key)
+                    .param("allVersions", "true")
+                    .param("sort", "name,asc")
+                    .param("size", "100")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(3))
+            // A case-sensitive sort would put 'Beta' first.
+            .andExpect(jsonPath("$.content[0].name").value("alpha"))
+            .andExpect(jsonPath("$.content[1].name").value("Beta"))
+            .andExpect(jsonPath("$.content[2].name").value("gamma"))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should order the management list by the requested direction`() {
+        val key = "management-list-sorted-active"
+        deployVersions(key, count = 3)
+
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("caseDefinitionKey", key)
+                    .param("allVersions", "true")
+                    .param("sort", "active,asc")
+                    .param("size", "100")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(3))
+            // Ascending on a boolean puts the one active version last.
+            .andExpect(jsonPath("$.content[0].active").value(false))
+            .andExpect(jsonPath("$.content[2].caseDefinitionVersionTag").value("1.0.3"))
+            .andExpect(jsonPath("$.content[2].active").value(true))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `should refuse a management list sort on a property that is not sortable`() {
         mockMvc
             .perform(
@@ -172,17 +220,21 @@ class CaseDefinitionVersionListingIntTest : BaseIntegrationTest() {
     }
 
     private fun deployVersions(key: String, count: Int) {
+        (1..count).forEach { minor ->
+            deployVersion(key, versionTag = "1.0.$minor", name = key, active = minor == count)
+        }
+    }
+
+    private fun deployVersion(key: String, versionTag: String, name: String, active: Boolean = false) {
         runWithoutAuthorization {
-            (1..count).forEach { minor ->
-                caseDefinitionRepository.saveAndFlush(
-                    CaseDefinition(
-                        id = CaseDefinitionId(key, "1.0.$minor"),
-                        name = key,
-                        createdDate = null,
-                        active = minor == count,
-                    )
+            caseDefinitionRepository.saveAndFlush(
+                CaseDefinition(
+                    id = CaseDefinitionId(key, versionTag),
+                    name = name,
+                    createdDate = null,
+                    active = active,
                 )
-            }
+            )
         }
     }
 
