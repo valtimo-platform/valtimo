@@ -74,7 +74,6 @@ import {
   TaskListHiddenColumnsService,
   TaskListPaginationService,
   TaskListQueryParamService,
-  TaskListRefreshService,
   TaskListSearchService,
   TaskListService,
 } from '../../services';
@@ -84,7 +83,7 @@ import {IconService, ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
 import {CarbonListNoResultsMessage, PageTitleService} from '@valtimo/components';
-import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE} from '../../constants';
+import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE, TASK_LIST_TEST_IDS} from '../../constants';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -100,7 +99,6 @@ moment.locale(localStorage.getItem('langKey') || '');
     TaskListColumnService,
     TaskListHiddenColumnsService,
     TaskListPaginationService,
-    TaskListRefreshService,
     TaskListSortService,
     TaskListSearchService,
     TaskListQueryParamService,
@@ -172,9 +170,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   public readonly overrideSortState$ = this.taskListSortService.overrideSortState$;
 
-  public readonly autoRefresh$ = this.taskListRefreshService.autoRefresh$;
+  public readonly manualRefresh$ = this.configService.getFeatureToggleObservable(
+    'enableManualTaskListRefresh'
+  );
 
-  public readonly pendingUpdateCount$ = this.taskListRefreshService.pendingUpdateCount$;
+  protected readonly testIds = TASK_LIST_TEST_IDS;
 
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
 
@@ -247,7 +247,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
       this.cachedTasks$.next(tasks);
       this.loadingTasks$.next(false);
       this.disableLoadingAnimation();
-      this.taskListRefreshService.clearPendingUpdates();
 
       this.taskListSearchService.otherFilters$.pipe(take(1)).subscribe(otherFilters => {
         this._overrideNoResultsMessage$.next(
@@ -307,7 +306,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly taskListColumnService: TaskListColumnService,
     private readonly taskListPaginationService: TaskListPaginationService,
-    private readonly taskListRefreshService: TaskListRefreshService,
     private readonly taskListSortService: TaskListSortService,
     private readonly taskListSearchService: TaskListSearchService,
     private readonly taskListQueryParamService: TaskListQueryParamService,
@@ -327,7 +325,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.setVisibleTabs();
     this.pageTitleService.disableReset();
     this.setParamsFromQueryParams();
-    this.taskListRefreshService.loadPreference();
     this.openTaskUpdateSseEventSubscription();
   }
 
@@ -340,15 +337,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
         .pipe(
           filter(
             ([event, caseDefinitionKey]) =>
-              caseDefinitionKey === null || event.caseDefinitionKey === caseDefinitionKey
+              !caseDefinitionKey ||
+              caseDefinitionKey === this.ALL_CASES_ID ||
+              event.caseDefinitionKey === caseDefinitionKey
           )
         )
         .subscribe(() => {
-          // Manual mode: keep the list as-is, only flag that it is out of date
-          if (!this.taskListRefreshService.autoRefresh) {
-            this.taskListRefreshService.markPendingUpdate();
-            return;
-          }
+          // Manual refresh: leave the list as-is until the user asks for it
+          if (this.configService.getFeatureToggle('enableManualTaskListRefresh')) return;
 
           this.reload(true);
         })
@@ -438,15 +434,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this._reload$.next(!this._reload$.getValue());
   }
 
-  public onAutoRefreshChange(enabled: boolean): void {
-    const hasPendingUpdates = this.taskListRefreshService.pendingUpdateCount > 0;
-
-    this.taskListRefreshService.setAutoRefresh(enabled);
-
-    if (enabled && hasPendingUpdates) this.reload(true);
-  }
-
-  public onManualRefreshClick(): void {
+  public onRefreshTasksClick(): void {
     this.reload(true);
   }
 

@@ -26,6 +26,14 @@ user task. The preview keeps its light, e-mail client-like appearance in dark mo
 [E-mail preview component documentation](../../../configuration-guides/cases/forms/email-preview-component.md)
 for configuration details.
 
+### Manual task list refresh
+
+The task list updates itself as soon as tasks change. With the new **Enable manual task list
+refresh** toggle under **Admin** > **Settings** > **Feature toggles**, the list keeps its
+contents until a case worker presses the new **Refresh tasks** button in the list toolbar
+instead — useful for teams that work through a list top to bottom and do not want rows to move
+while they do.
+
 ---
 
 ## Enhancements
@@ -42,6 +50,10 @@ noticeably on configurations with large document schemas or many process links.
 ### Searchable building block overview
 
 The building block overview is now sorted by name, paginated, and searchable by name or key, so a large collection of building blocks stays workable.
+
+### Task list updates without interrupting
+
+The task list no longer shows a loading state when it picks up changed tasks by itself. The rows are replaced in place, so searching, sorting and reading are not interrupted.
 
 ---
 
@@ -66,3 +78,4 @@ The building block overview is now sorted by name, paginated, and searchable by 
 | Field pickers | Lists in a case can be picked as a field, not only as a collection |
 | Building blocks | Selecting a field for a mapping works again when the document schema refers to itself |
 | Process links | Changing the building block version keeps the configuration that still applies to the new version |
+| Task list | The **All cases** task list picks up new and completed tasks by itself, like a list for a single case definition already did |

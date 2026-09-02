@@ -93,6 +93,11 @@ interface ValtimoConfigFeatureToggles {
   enableSuppressDocumentError?: boolean;
   enableIkoType?: boolean;
   enableGenericCaseList?: boolean;
+  /**
+   * When enabled, the task list no longer refreshes itself when tasks change. Users refresh it
+   * with a button in the list toolbar instead.
+   */
+  enableManualTaskListRefresh?: boolean;
   menuCollapsedByDefault?: boolean;
   enableOpenSearch?: boolean;
   /**

@@ -22,7 +22,6 @@ interface UserSettings {
   preferredTheme?: string;
   caseListPageSizes?: {[key: string]: number};
   taskListPageSizes?: {[key: string]: number};
-  taskListAutoRefresh?: boolean;
 }
 
 export {UserSettings};
