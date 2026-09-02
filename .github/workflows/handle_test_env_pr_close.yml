@@ -14,6 +14,7 @@ permissions:
 jobs:
   print_something:
     runs-on: ubuntu-latest
+    permissions: {} 
     steps:
       - id: printStep
         shell: bash
