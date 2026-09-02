@@ -20,6 +20,7 @@
 
 export * from './lib/building-block-management.module';
 export * from './lib/constants';
+export * from './lib/models';
 export * from './lib/services';
 
 /* The blueprint-agnostic half of the migration plan editor; `@valtimo/case-management` builds its own editor out of these. */

@@ -107,24 +107,6 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
       map(res => res?.content ?? [])
     );
 
-  public readonly buildingBlockDefinitions$: Observable<BuildingBlockDefinitionDto[]> =
-    combineLatest([this.buildingBlockManagementService.reload$, this._query$]).pipe(
-      tap(() => this.$loading.set(true)),
-      switchMap(([, {page, searchTerm, size}]) =>
-        this.buildingBlockManagementApiService.searchBuildingBlockDefinitions({
-          page: page - 1,
-          size,
-          ...(searchTerm && {searchTerm}),
-        })
-      ),
-      map(res => {
-        this._collectionSize$.next(res?.totalElements ?? 0);
-        this.$loading.set(false);
-
-        return res?.content ?? [];
-      })
-    );
-
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'name', label: 'buildingBlockManagement.listColumns.name'},
     {key: 'key', label: 'buildingBlockManagement.listColumns.key'},
