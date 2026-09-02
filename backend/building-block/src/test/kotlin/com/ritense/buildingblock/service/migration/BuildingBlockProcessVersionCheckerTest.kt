@@ -28,6 +28,7 @@ import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
@@ -54,6 +55,7 @@ class BuildingBlockProcessVersionCheckerTest {
     private val newProcessDefinitionId = "$processDefinitionKey:4:new"
 
     private lateinit var instance: BuildingBlockInstance
+    private lateinit var query: ProcessInstanceQuery
 
     @BeforeEach
     fun setUp() {
@@ -61,6 +63,12 @@ class BuildingBlockProcessVersionCheckerTest {
         processDefinitionLinkRepository = mock()
         runtimeService = mock()
         repositoryService = mock()
+        query = mock()
+        whenever(runtimeService.createProcessInstanceQuery()).thenReturn(query)
+        whenever(query.processInstanceId(any())).thenReturn(query)
+        whenever(query.processInstanceBusinessKey(any())).thenReturn(query)
+        // Overridden by [alsoRunning]; a block owning one process answers nothing here.
+        whenever(query.list()).thenReturn(emptyList())
         checker = BuildingBlockProcessVersionChecker(
             instanceRepository,
             processDefinitionLinkRepository,
@@ -117,12 +125,47 @@ class BuildingBlockProcessVersionCheckerTest {
 
     @Test
     fun `should pass when the block's process has already ended`() {
-        val query = mock<ProcessInstanceQuery>()
-        whenever(runtimeService.createProcessInstanceQuery()).thenReturn(query)
-        whenever(query.processInstanceId(processInstanceId)).thenReturn(query)
         whenever(query.singleResult()).thenReturn(null)
 
         assertThatCode { checker.assertProcessOnVersion(documentId, target) }.doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `should fail when a second process the block owns was left on the previous version`() {
+        // G65: a process the block's own BPMN calls is a different process instance, so the recorded id never reached it and nothing asserted it onto the target version.
+        runningOn(newProcessDefinitionId)
+        alsoRunning("pi-2", "verhuizing-inspectie-controle:3:old", "verhuizing-inspectie-controle")
+        linksProcessDefinitions(
+            processDefinitionKey to newProcessDefinitionId,
+            "verhuizing-inspectie-controle" to "verhuizing-inspectie-controle:4:new",
+        )
+
+        assertThatThrownBy { checker.assertProcessOnVersion(documentId, target) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("verhuizing-inspectie-controle:3:old")
+            .hasMessageContaining("verhuizing-inspectie-controle:4:new")
+    }
+
+    @Test
+    fun `should pass when every process the block owns was migrated`() {
+        runningOn(newProcessDefinitionId)
+        alsoRunning("pi-2", "verhuizing-inspectie-controle:4:new", "verhuizing-inspectie-controle")
+        linksProcessDefinitions(
+            processDefinitionKey to newProcessDefinitionId,
+            "verhuizing-inspectie-controle" to "verhuizing-inspectie-controle:4:new",
+        )
+
+        assertThatCode { checker.assertProcessOnVersion(documentId, target) }.doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `should still check the recorded process when the business key names nothing`() {
+        // Older instances whose process does not carry the document id as business key must not stop being asserted.
+        runningOn(oldProcessDefinitionId)
+
+        assertThatThrownBy { checker.assertProcessOnVersion(documentId, target) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining(oldProcessDefinitionId)
     }
 
     @Test
@@ -135,14 +178,33 @@ class BuildingBlockProcessVersionCheckerTest {
         assertThatCode { checker.assertProcessOnVersion(documentId, target) }.doesNotThrowAnyException()
     }
 
+    /** The process the instance records — found by id, as it always was. */
     private fun runningOn(processDefinitionId: String, processDefinitionKey: String = this.processDefinitionKey) {
-        val query = mock<ProcessInstanceQuery>()
-        val processInstance = mock<ProcessInstance>()
-        whenever(runtimeService.createProcessInstanceQuery()).thenReturn(query)
-        whenever(query.processInstanceId(processInstanceId)).thenReturn(query)
+        // Built before the stubbing starts: a `whenever` inside another one's argument is an unfinished stubbing.
+        val processInstance = processInstanceOn(processInstanceId, processDefinitionId)
         whenever(query.singleResult()).thenReturn(processInstance)
-        whenever(processInstance.processDefinitionId).thenReturn(processDefinitionId)
+        definitionKeyOf(processDefinitionId, processDefinitionKey)
+    }
 
+    /** A second process the block owns, reachable only by its business key — the G65 shape. */
+    private fun alsoRunning(
+        processInstanceId: String,
+        processDefinitionId: String,
+        processDefinitionKey: String,
+    ) {
+        val processInstances = listOf(processInstanceOn(processInstanceId, processDefinitionId))
+        whenever(query.list()).thenReturn(processInstances)
+        definitionKeyOf(processDefinitionId, processDefinitionKey)
+    }
+
+    private fun processInstanceOn(processInstanceId: String, processDefinitionId: String): ProcessInstance {
+        val processInstance = mock<ProcessInstance>()
+        whenever(processInstance.processInstanceId).thenReturn(processInstanceId)
+        whenever(processInstance.processDefinitionId).thenReturn(processDefinitionId)
+        return processInstance
+    }
+
+    private fun definitionKeyOf(processDefinitionId: String, processDefinitionKey: String) {
         val processDefinition = mock<ProcessDefinition>()
         whenever(processDefinition.key).thenReturn(processDefinitionKey)
         whenever(repositoryService.getProcessDefinition(processDefinitionId)).thenReturn(processDefinition)
@@ -151,12 +213,14 @@ class BuildingBlockProcessVersionCheckerTest {
     private fun linksProcessDefinition(
         processDefinitionId: String,
         processDefinitionKey: String = this.processDefinitionKey,
-    ) {
-        val link = ProcessDefinitionBuildingBlockDefinition(
-            ProcessDefinitionBuildingBlockDefinitionId(ProcessDefinitionId(processDefinitionId), target)
-        )
-        link.processDefinitionKey = processDefinitionKey
-        whenever(processDefinitionLinkRepository.findAllByIdBuildingBlockDefinitionId(target))
-            .thenReturn(listOf(link))
+    ) = linksProcessDefinitions(processDefinitionKey to processDefinitionId)
+
+    private fun linksProcessDefinitions(vararg keysToDefinitionIds: Pair<String, String>) {
+        val links = keysToDefinitionIds.map { (key, definitionId) ->
+            ProcessDefinitionBuildingBlockDefinition(
+                ProcessDefinitionBuildingBlockDefinitionId(ProcessDefinitionId(definitionId), target)
+            ).apply { processDefinitionKey = key }
+        }
+        whenever(processDefinitionLinkRepository.findAllByIdBuildingBlockDefinitionId(target)).thenReturn(links)
     }
 }

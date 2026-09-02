@@ -38,9 +38,12 @@ class DataMigrationComponentSuggester(
     override fun suggest(source: BlueprintId, target: BlueprintId): Any? =
         suggest(source, target, separateDocument = false)
 
-    /** The `dataMigration` of an add/removeBuildingBlock entry, which fills a second document rather than carrying one over. Told, not inferred: a nested entry and a cross-key block plan are both `block -> block`. */
-    override fun suggestForBuildingBlockEntry(source: BlueprintId, target: BlueprintId): Any? =
-        suggest(source, target, separateDocument = true)
+    /** The `dataMigration` of an add/removeBuildingBlock entry, which fills a second document rather than carrying one over. Told, not inferred: a nested entry and a cross-key block plan are both `block -> block`. [running] is ignored: `dataMigration` runs at @100, so by the time an entry executes the document is already [source]'s. */
+    override fun suggestForBuildingBlockEntry(
+        source: BlueprintId,
+        target: BlueprintId,
+        running: BlueprintId,
+    ): Any? = suggest(source, target, separateDocument = true)
 
     private fun suggest(source: BlueprintId, target: BlueprintId, separateDocument: Boolean): Any? {
         val sourcePaths = fieldPathsOf(source)

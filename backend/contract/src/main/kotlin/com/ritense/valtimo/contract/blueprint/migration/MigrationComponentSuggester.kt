@@ -27,6 +27,17 @@ interface MigrationComponentSuggester {
     /** A best-effort suggestion for migrating [source] to [target], or null when there is nothing to suggest. */
     fun suggest(source: BlueprintId, target: BlueprintId): Any?
 
-    /** The same component suggested for one add/removeBuildingBlock entry, where [source] and [target] are a block and its owner. Asked rather than derived: a nested entry and a cross-key block plan look identical. */
-    fun suggestForBuildingBlockEntry(source: BlueprintId, target: BlueprintId): Any? = suggest(source, target)
+    /**
+     * The same component suggested for one add/removeBuildingBlock entry, where [source] and [target] are a block and
+     * its owner. Asked rather than derived: a nested entry and a cross-key block plan look identical.
+     *
+     * [running] is [source] as the instances being migrated still have it — for an `add` the owner at the plan's source
+     * version, since a process the target version already handed to the block is exactly the one a hijack takes over.
+     * It defaults to [source], which is the answer whenever the two cannot differ.
+     */
+    fun suggestForBuildingBlockEntry(
+        source: BlueprintId,
+        target: BlueprintId,
+        running: BlueprintId = source,
+    ): Any? = suggest(source, target)
 }

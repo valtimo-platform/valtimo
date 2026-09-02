@@ -56,8 +56,8 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         processSuggester = mock()
         whenever(caseLinkRepository.findAllByCaseDefinitionId(any())).thenReturn(emptyList())
         whenever(linkResolver.resolveCallActivityDeclarers(any())).thenReturn(emptyMap())
-        whenever(dataSuggester.suggestForBuildingBlockEntry(any(), any())).thenReturn(null)
-        whenever(processSuggester.suggestForBuildingBlockEntry(any(), any())).thenReturn(null)
+        whenever(dataSuggester.suggestForBuildingBlockEntry(any(), any(), any())).thenReturn(null)
+        whenever(processSuggester.suggestForBuildingBlockEntry(any(), any(), any())).thenReturn(null)
         // The real level rules over the mocked resolver: an unstubbed walk answers empty, so they are inert.
         suggester = RemoveBuildingBlockMigrationComponentSuggester(
             ObjectMapper(),
@@ -93,10 +93,10 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
         suggester.suggest(source, target)
 
         // The nested block hands back one level, to uitvoeren.
-        verify(dataSuggester).suggestForBuildingBlockEntry(eq(besluit), eq(uitvoeren))
-        verify(processSuggester).suggestForBuildingBlockEntry(eq(besluit), eq(uitvoeren))
+        verify(dataSuggester).suggestForBuildingBlockEntry(eq(besluit), eq(uitvoeren), any())
+        verify(processSuggester).suggestForBuildingBlockEntry(eq(besluit), eq(uitvoeren), any())
         // The first-level block hands back to the owner on the version it ends up on.
-        verify(dataSuggester).suggestForBuildingBlockEntry(eq(uitvoeren), eq(target))
+        verify(dataSuggester).suggestForBuildingBlockEntry(eq(uitvoeren), eq(target), any())
     }
 
     @Test
@@ -166,7 +166,7 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
     fun `should keep a process row the suggester could not pair, rather than dropping it`() {
         // A block whose process is not handed back cannot be dissolved, so dropping the row fails every case from an entry that reads as complete.
         declares(source, uitvoeren to source)
-        whenever(processSuggester.suggestForBuildingBlockEntry(eq(uitvoeren), any())).thenReturn(
+        whenever(processSuggester.suggestForBuildingBlockEntry(eq(uitvoeren), any(), any())).thenReturn(
             listOf(mapOf("sourceProcessDefinitionKey" to "bijstand-uitvoeren-process", "mapActivities" to emptyMap<String, String>()))
         )
 

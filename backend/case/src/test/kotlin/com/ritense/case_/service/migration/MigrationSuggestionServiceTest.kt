@@ -89,6 +89,72 @@ class MigrationSuggestionServiceTest {
     }
 
     @Test
+    fun `an entry suggests its process migration against the owner as the instances still have it`() {
+        // The two components stage differently: `dataMigration` runs at @100, so by @300 the document is the target version's, while the process to hijack is still the one the source version linked.
+        val running = CaseDefinitionId("verhuizing", "1.0.1")
+        val nested = BuildingBlockDefinitionId("inspectie-fotos", "1.0.1")
+        val askedAbout = mutableMapOf<String, BlueprintId>()
+        val service = suggestionService(
+            dataMigration = listOf(mapOf("source" to "doc:/adres", "target" to "doc:/adres")),
+            processMigration = listOf(mapOf("sourceProcessDefinitionKey" to "inspectie")),
+            onEntrySuggestion = { componentKey, asked -> askedAbout[componentKey] = asked },
+        )
+
+        service.suggestBuildingBlockEntry(target, nested, running)
+
+        assertThat(askedAbout["dataMigration"]).isEqualTo(target)
+        assertThat(askedAbout["processMigration"]).isEqualTo(running)
+    }
+
+    @Test
+    fun `an entry asked about one version only keeps asking about that one`() {
+        // The remove direction and every caller that has nothing better to say: the block's own processes are the ones it hands back.
+        val nested = BuildingBlockDefinitionId("inspectie-fotos", "1.0.1")
+        val askedAbout = mutableMapOf<String, BlueprintId>()
+        val service = suggestionService(
+            processMigration = listOf(mapOf("sourceProcessDefinitionKey" to "inspectie")),
+            onEntrySuggestion = { componentKey, asked -> askedAbout[componentKey] = asked },
+        )
+
+        service.suggestBuildingBlockEntry(nested, target)
+
+        assertThat(askedAbout["processMigration"]).isEqualTo(nested)
+    }
+
+    @Test
+    fun `the running owner of a blueprint migrating itself is the version the plan migrates from`() {
+        val source = CaseDefinitionId("verhuizing", "1.0.1")
+        val service = suggestionService(entryOwners = emptyMap())
+
+        assertThat(service.runningOwnerOf(owner = target, migrating = target, source = source)).isEqualTo(source)
+    }
+
+    @Test
+    fun `a plan declaring no source leaves the owner as it was read`() {
+        val service = suggestionService(entryOwners = emptyMap())
+
+        assertThat(service.runningOwnerOf(owner = target, migrating = target, source = null)).isEqualTo(target)
+    }
+
+    @Test
+    fun `a nested owner is read back at the version the source tree declares`() {
+        val onTarget = BuildingBlockDefinitionId("verhuizing-inspectie", "1.0.4")
+        val onSource = BuildingBlockDefinitionId("verhuizing-inspectie", "1.0.3")
+        val service = suggestionService(
+            entryOwners = emptyMap(),
+            entryOwnersInSourceTree = mapOf(onTarget to onSource),
+        )
+
+        val running = service.runningOwnerOf(
+            owner = onTarget,
+            migrating = target,
+            source = CaseDefinitionId("verhuizing", "1.0.1"),
+        )
+
+        assertThat(running).isEqualTo(onSource)
+    }
+
+    @Test
     fun `an unasked-for source defaults to the predecessor the target records`() {
         val service = suggestionService(
             lineage = lineage(basedOn = "1.0.1", deployed = listOf("1.0.0", "1.0.1", "1.0.2")),
@@ -318,8 +384,11 @@ class MigrationSuggestionServiceTest {
             override fun suggest(source: BlueprintId, target: BlueprintId): Any =
                 listOf(memoize(source, computed), memoize(target, computed))
 
-            override fun suggestForBuildingBlockEntry(source: BlueprintId, target: BlueprintId): Any =
-                suggest(source, target)
+            override fun suggestForBuildingBlockEntry(
+                source: BlueprintId,
+                target: BlueprintId,
+                running: BlueprintId,
+            ): Any = suggest(running, target)
         }
 
     private fun memoizingValidator(componentKey: String, computed: MutableList<BlueprintId>) =
@@ -346,29 +415,50 @@ class MigrationSuggestionServiceTest {
         lineage: BlueprintVersionLineage? = null,
         componentValidator: MigrationComponentValidator? = null,
         entryOwners: Map<BuildingBlockDefinitionId, BlueprintId>? = null,
+        entryOwnersInSourceTree: Map<BlueprintId, BlueprintId> = emptyMap(),
+        onEntrySuggestion: (String, BlueprintId) -> Unit = { _, _ -> },
     ) = MigrationSuggestionService(
         objectMapper = objectMapper,
         versionLineages = listOfNotNull(lineage),
         componentSuggesters = listOfNotNull(
-            dataMigration?.let { suggester("dataMigration", it) },
-            processMigration?.let { suggester("processMigration", it) },
+            dataMigration?.let { suggester("dataMigration", it, onEntrySuggestion) },
+            processMigration?.let { suggester("processMigration", it, onEntrySuggestion) },
         ),
         activityMappingSuggesters = emptyList(),
         activityMappingValidators = emptyList(),
         componentValidators = listOfNotNull(componentValidator),
-        buildingBlockEntryOwnerships = entryOwners?.let { listOf(entryOwnership(it)) } ?: emptyList(),
+        buildingBlockEntryOwnerships = entryOwners
+            ?.let { listOf(entryOwnership(it, entryOwnersInSourceTree)) }
+            ?: emptyList(),
     )
 
-    private fun entryOwnership(owners: Map<BuildingBlockDefinitionId, BlueprintId>) =
-        object : BuildingBlockEntryOwnership {
-            override fun supports(blueprintType: BlueprintType) = true
-            override fun entryOwnerOf(migratingOwner: BlueprintId, block: BuildingBlockDefinitionId) =
-                owners[block] ?: migratingOwner
-        }
+    private fun entryOwnership(
+        owners: Map<BuildingBlockDefinitionId, BlueprintId>,
+        declaredIn: Map<BlueprintId, BlueprintId> = emptyMap(),
+    ) = object : BuildingBlockEntryOwnership {
+        override fun supports(blueprintType: BlueprintType) = true
+        override fun entryOwnerOf(migratingOwner: BlueprintId, block: BuildingBlockDefinitionId) =
+            owners[block] ?: migratingOwner
 
-    private fun suggester(componentKey: String, suggestion: Any) = object : MigrationComponentSuggester {
+        override fun ownerAsDeclaredIn(tree: BlueprintId, owner: BlueprintId) = declaredIn[owner] ?: owner
+    }
+
+    /** Records the blueprint each component was asked to suggest an entry against — [MigrationComponentSuggester.suggestForBuildingBlockEntry]'s `running`. */
+    private fun suggester(
+        componentKey: String,
+        suggestion: Any,
+        onEntry: (String, BlueprintId) -> Unit = { _, _ -> },
+    ) = object : MigrationComponentSuggester {
         override fun componentKey() = componentKey
         override fun suggest(source: BlueprintId, target: BlueprintId) = suggestion
+        override fun suggestForBuildingBlockEntry(
+            source: BlueprintId,
+            target: BlueprintId,
+            running: BlueprintId,
+        ): Any {
+            onEntry(componentKey, running)
+            return suggestion
+        }
     }
 
     private fun lineage(

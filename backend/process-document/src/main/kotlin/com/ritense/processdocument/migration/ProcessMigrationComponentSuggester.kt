@@ -48,11 +48,20 @@ class ProcessMigrationComponentSuggester(
         suggest(source, target, buildingBlockEntry = false)
 
     /** The `processMigration` of an add/removeBuildingBlock entry — a hijack. Told rather than inferred: a nested entry and a cross-key block plan are both `block -> block`. */
-    override fun suggestForBuildingBlockEntry(source: BlueprintId, target: BlueprintId): Any? =
-        suggest(source, target, buildingBlockEntry = true)
+    override fun suggestForBuildingBlockEntry(
+        source: BlueprintId,
+        target: BlueprintId,
+        running: BlueprintId,
+    ): Any? = suggest(source, target, buildingBlockEntry = true, running = running)
 
-    private fun suggest(source: BlueprintId, target: BlueprintId, buildingBlockEntry: Boolean): Any? {
-        val sourceProcessDefinitions = resolveProcessDefinitions(source) ?: return null
+    private fun suggest(
+        source: BlueprintId,
+        target: BlueprintId,
+        buildingBlockEntry: Boolean,
+        /** Whose processes may be taken over. Only an `add` entry parts the two: an owner is hijacked as its instances still have it, while [source] stays the version that declares the block. */
+        running: BlueprintId = source,
+    ): Any? {
+        val sourceProcessDefinitions = resolveProcessDefinitions(running) ?: return null
         val targetProcessDefinitions = resolveProcessDefinitions(target)?.map { (key, definitionId) ->
             ProcessDefinitionRef(key, processActivityMapper.processDefinitionName(definitionId) ?: key, definitionId)
         } ?: return null
@@ -76,7 +85,7 @@ class ProcessMigrationComponentSuggester(
         // Resolved once per suggestion rather than per source process: it walks the whole link graph.
         val relocated = if (sameBlueprint) processesReachableFrom(target) else emptySet()
         val entryPairs = if (buildingBlockEntry) {
-            pairForEntry(sourceProcessDefinitions, targetProcessDefinitions, targetsByKey, source, target)
+            pairForEntry(sourceProcessDefinitions, targetProcessDefinitions, targetsByKey, running, target)
         } else {
             emptyMap()
         }
@@ -88,7 +97,7 @@ class ProcessMigrationComponentSuggester(
                 val sourceName = processActivityMapper.processDefinitionName(sourceDefinitionId) ?: sourceKey
 
                 val counterpart = if (buildingBlockEntry) {
-                    entryPairs[sourceKey] ?: return@mapNotNull unpairedEntryProcess(sourceKey, source, target)
+                    entryPairs[sourceKey] ?: return@mapNotNull unpairedEntryProcess(sourceKey, running, target)
                 } else if (sameBlueprint) {
                     targetsByKey[sourceKey] ?: return@mapNotNull unmapped(
                         sourceKey, sourceName, target, targetProcessDefinitions, relocated,

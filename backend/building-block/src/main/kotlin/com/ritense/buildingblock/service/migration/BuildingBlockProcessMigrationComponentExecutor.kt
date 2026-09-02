@@ -23,10 +23,12 @@ import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
+import com.ritense.valtimo.contract.blueprint.migration.MigrationWarnings
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.migration.ProcessMigrationComponentDeployer
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlan
 import org.springframework.core.annotation.Order
@@ -62,25 +64,52 @@ class BuildingBlockProcessMigrationComponentExecutor(
         val instance = buildingBlockInstanceRepository.findByDocumentId(ownerDocumentId)
             ?: throw NoSuchElementException("No building block instance found for document '$ownerDocumentId'")
         // A building block instance without a running process has nothing to migrate here.
-        val processInstanceId = instance.processInstanceId ?: return
+        instance.processInstanceId ?: return
         val targetBuildingBlockDefinitionId = target as BuildingBlockDefinitionId
 
-        instructions.forEach { instruction ->
-            migrateInstruction(instruction, targetBuildingBlockDefinitionId, processInstanceId)
+        val unmatched = instructions.filterNot {
+            migrateInstruction(it, targetBuildingBlockDefinitionId, ownerDocumentId)
+        }
+
+        // One instruction matching nothing is normal; the component as a whole matching nothing is the wrong-key plan D13 exists to catch. Mirrors the case-side executor.
+        if (unmatched.size == instructions.size) {
+            val message = "No process was migrated for building block '$ownerDocumentId': none of the " +
+                "plan's ${instructions.size} processMigration instruction(s) (" +
+                unmatched.joinToString { "'${it.sourceProcessDefinitionKey}'" } +
+                ") matched a running process with business key '$ownerDocumentId'. Either this block is not " +
+                "(or no longer) running any of them, or the instructions name process keys it never runs."
+            logger.warn { message }
+            MigrationWarnings.warn(message)
         }
     }
 
+    /**
+     * True when the instruction found instances to migrate, false when it matched nothing.
+     *
+     * Matched by key **and business key**, as the case side is: a block may own more than one process, and one its
+     * own BPMN calls is a different process instance from the block's, so pinning the query to the block's own
+     * instance made every such instruction a silent no-op (G65). A process reached this way carries the block's
+     * document id because its call activity maps the business key across — the same requirement
+     * `BuildingBlockCallActivityBusinessKeyValidator` already states for a nested block, whose own document id
+     * keeps it out of this query.
+     */
     private fun migrateInstruction(
         instruction: ProcessMigrationInstruction,
         targetBuildingBlockDefinitionId: BuildingBlockDefinitionId,
-        processInstanceId: String,
-    ) {
+        buildingBlockDocumentId: UUID,
+    ): Boolean {
         val instances = runtimeService.createProcessInstanceQuery()
-            .processInstanceId(processInstanceId)
             .processDefinitionKey(instruction.sourceProcessDefinitionKey)
+            .processInstanceBusinessKey(buildingBlockDocumentId.toString())
             .list()
         if (instances.isEmpty()) {
-            return
+            // Per-instruction silence is deliberate, as on the case side: [execute] reports the component doing nothing at all.
+            logger.info {
+                "No running process '${instruction.sourceProcessDefinitionKey}' with business key " +
+                    "'$buildingBlockDocumentId' was found, so it was not migrated to " +
+                    "'${instruction.targetProcessDefinitionKey}' on '$targetBuildingBlockDefinitionId'."
+            }
+            return false
         }
 
         val targetDefinitionId = findTargetProcessDefinitionId(
@@ -96,6 +125,7 @@ class BuildingBlockProcessMigrationComponentExecutor(
             migrate(instruction, instance.processDefinitionId, targetDefinitionId, listOf(instance.processInstanceId))
             processMigrationVariableResolver.apply(instance.processInstanceId, instruction.setProcessVariables)
         }
+        return true
     }
 
     private fun findTargetProcessDefinitionId(
@@ -126,6 +156,10 @@ class BuildingBlockProcessMigrationComponentExecutor(
             builder = builder.skipIoMappings()
         }
         builder.execute() // synchronous — joins the current transaction
+    }
+
+    private companion object {
+        val logger = KotlinLogging.logger {}
     }
 
     private fun buildMigrationPlan(

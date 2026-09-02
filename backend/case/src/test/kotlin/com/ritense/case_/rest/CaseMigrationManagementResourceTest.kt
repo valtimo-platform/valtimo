@@ -24,6 +24,7 @@ import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -134,5 +136,25 @@ class CaseMigrationManagementResourceTest {
                 assertThat((thrown as ResponseStatusException).statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
                 assertThat(thrown.reason).contains("which is not deployed")
             })
+    }
+
+    @Test
+    fun `an add suggestion hijacks from the case as its instances still have it, not as the target version models it`() {
+        // A process the target version handed to the block is gone from it — and is exactly the one the entry takes over.
+        val block = BuildingBlockDefinitionId("inspectie-fotos", "1.0.1")
+        val source = CaseDefinitionId("woninginspectie", "1.0.3")
+        whenever(migrationSuggestionService.entryOwnerOf(any(), any())).thenReturn(caseDefinitionId)
+        whenever(migrationSuggestionService.runningOwnerOf(any(), any(), anyOrNull())).thenReturn(source)
+        whenever(migrationSuggestionService.suggestBuildingBlockEntry(any(), any(), any()))
+            .thenReturn(ObjectMapper().createObjectNode())
+        whenever(migrationSuggestionService.describeEntryOwner(any()))
+            .thenReturn(ObjectMapper().createObjectNode())
+
+        resource.suggestBuildingBlockEntry(
+            "woninginspectie", "1.0.4", "inspectie-fotos", "1.0.1", "add", null, "1.0.3",
+        )
+
+        verify(migrationSuggestionService).runningOwnerOf(eq(caseDefinitionId), eq(caseDefinitionId), eq(source))
+        verify(migrationSuggestionService).suggestBuildingBlockEntry(eq(caseDefinitionId), eq(block), eq(source))
     }
 }

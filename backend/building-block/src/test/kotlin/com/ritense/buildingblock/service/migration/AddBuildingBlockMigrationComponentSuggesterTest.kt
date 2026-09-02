@@ -49,7 +49,7 @@ class AddBuildingBlockMigrationComponentSuggesterTest {
         linkResolver = mock()
         dataSuggester = mock()
         whenever(dataSuggester.suggest(any(), any())).thenReturn(null)
-        whenever(dataSuggester.suggestForBuildingBlockEntry(any(), any())).thenReturn(null)
+        whenever(dataSuggester.suggestForBuildingBlockEntry(any(), any(), any())).thenReturn(null)
         whenever(linkResolver.resolveCallActivityReachable(any())).thenReturn(emptySet())
         // The real level rules over the mocked resolver: an unstubbed walk answers empty, so they are inert.
         suggester = AddBuildingBlockMigrationComponentSuggester(
@@ -86,8 +86,8 @@ class AddBuildingBlockMigrationComponentSuggesterTest {
 
         suggester.suggest(source, target)
 
-        verify(dataSuggester).suggestForBuildingBlockEntry(eq(uitvoeren), eq(besluit))
-        verify(dataSuggester).suggestForBuildingBlockEntry(eq(target), eq(uitvoeren))
+        verify(dataSuggester).suggestForBuildingBlockEntry(eq(uitvoeren), eq(besluit), any())
+        verify(dataSuggester).suggestForBuildingBlockEntry(eq(target), eq(uitvoeren), any())
     }
 
     @Test

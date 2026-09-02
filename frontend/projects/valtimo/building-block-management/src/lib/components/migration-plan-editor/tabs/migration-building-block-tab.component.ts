@@ -77,8 +77,10 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   @Input() public api: MigrationEditorApi | null = null;
   /** The blueprint version this plan targets — the default owner of every entry on this tab. */
   @Input() public owner: BuildingBlockEntryOwner | null = null;
-  /** The owner's `key -> processDefinitionId` map — one side of every building-block hijack. */
+  /** The owner's `key -> processDefinitionId` map at the version this plan targets — one side of every building-block hijack. */
   @Input() public ownerProcessDefinitions: Record<string, string> = {};
+  /** The same map at the version the plan migrates from. An `add` entry hijacks a process the owner is still running, and a process moving into a block is exactly the one the target version no longer links. */
+  @Input() public ownerSourceProcessDefinitions: Record<string, string> = {};
   /** The plan's source version — a `remove` entry's owner is declared in that version's tree. */
   @Input() public planSource: MigrationPlanSource | null = null;
   /** Intro text above the entries — what this component does, in the host's own words. */
@@ -117,6 +119,10 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   private readonly _bbProcessDefs = new Map<string, Record<string, string>>();
   private readonly _bbInFlight = new Set<string>();
   private readonly _contextCache = new Map<string, ValuePathContext>();
+
+  // The owner's source and target process maps merged, and the two inputs it was merged from.
+  private _mergedProcessDefs: Record<string, string> = {};
+  private _mergedFrom: [Record<string, string>, Record<string, string>] | null = null;
 
   // The blueprint each entry exchanges state with. Not always [owner]: a block nested deeper is filled from the block that declares it.
   private readonly _entryOwners = new Map<string, BuildingBlockEntryOwner>();
@@ -427,9 +433,9 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return (key && version && this._bbProcessDefs.get(`${key}:${version}`)) || {};
   }
 
-  /** Add: source = the entry owner's processes. Remove: source = the building block's processes. */
+  /** Add: source = what the entry owner is running when the hijack happens. Remove: source = the building block's processes. */
   public sourceProcessDefinitionsOf(group: FormGroup): Record<string, string> {
-    return this.isAdd ? this.ownerProcessDefs(group) : this.buildingBlockProcessDefs(group);
+    return this.isAdd ? this.runningOwnerProcessDefs(group) : this.buildingBlockProcessDefs(group);
   }
 
   /** Add: target = the building block's processes. Remove: target = the entry owner's processes. */
@@ -437,11 +443,31 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return this.isAdd ? this.buildingBlockProcessDefs(group) : this.ownerProcessDefs(group);
   }
 
-  /** The processes of that same owner — the other side of every hijack and hand-back. */
+  /** The processes of that same owner at the target version — the other side of every hand-back. */
   private ownerProcessDefs(group: FormGroup): Record<string, string> {
     const owner = this.entryOwnerOf(group);
     if (!this.isNestedOwner(owner)) return this.ownerProcessDefinitions;
     return this._bbProcessDefs.get(`${owner.key}:${owner.versionTag}`) ?? {};
+  }
+
+  /** What the owner still runs by the time an `add` entry executes: the target version's processes (the plan's own `processMigration` moved them there) plus the source-only ones it could not move — which is what a hijack takes over. A nested block owner has one version, so its own map answers both. */
+  private runningOwnerProcessDefs(group: FormGroup): Record<string, string> {
+    const owner = this.entryOwnerOf(group);
+    if (this.isNestedOwner(owner)) {
+      return this._bbProcessDefs.get(`${owner.key}:${owner.versionTag}`) ?? {};
+    }
+    return this.mergedOwnerProcessDefs();
+  }
+
+  /** [ownerSourceProcessDefinitions] under [ownerProcessDefinitions], so a key both versions link resolves to the definition the plan migrated it onto. Memoized: the template asks on every change detection, and a fresh object each time would re-trigger the nested tab's input change. */
+  private mergedOwnerProcessDefs(): Record<string, string> {
+    const source = this.ownerSourceProcessDefinitions;
+    const target = this.ownerProcessDefinitions;
+    if (this._mergedFrom?.[0] !== source || this._mergedFrom[1] !== target) {
+      this._mergedFrom = [source, target];
+      this._mergedProcessDefs = {...source, ...target};
+    }
+    return this._mergedProcessDefs;
   }
 
   /** Value-path context for the dataMigration selectors — add: source = owner, target = block; remove: the reverse. Memoized for a stable object reference per render. */

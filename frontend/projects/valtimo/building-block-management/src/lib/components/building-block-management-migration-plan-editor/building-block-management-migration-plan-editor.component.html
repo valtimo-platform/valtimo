@@ -109,6 +109,7 @@
         [mode]="'add'"
         [owner]="$owner()"
         [ownerProcessDefinitions]="$targetProcessDefs()"
+        [ownerSourceProcessDefinitions]="$sourceProcessDefs()"
         [planSource]="$plan().source ?? null"
         [processMigrationHintKey]="
           'buildingBlockManagement.migration.editor.addBuildingBlock.processMigrationHint'
@@ -148,6 +149,7 @@
         [mode]="'remove'"
         [owner]="$owner()"
         [ownerProcessDefinitions]="$targetProcessDefs()"
+        [ownerSourceProcessDefinitions]="$sourceProcessDefs()"
         [planSource]="$plan().source ?? null"
         [processMigrationHintKey]="
           'buildingBlockManagement.migration.editor.removeBuildingBlock.processMigrationHint'

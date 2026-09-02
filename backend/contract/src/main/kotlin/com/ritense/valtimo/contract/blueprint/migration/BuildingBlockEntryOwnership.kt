@@ -28,4 +28,7 @@ interface BuildingBlockEntryOwnership {
 
     /** The blueprint an entry for [block] exchanges state with, read against [migratingOwner] — the plan's target for an add, its source for a remove. [migratingOwner] itself when it declares [block] directly. */
     fun entryOwnerOf(migratingOwner: BlueprintId, block: BuildingBlockDefinitionId): BlueprintId
+
+    /** [owner] at the version [tree] declares it — where its instances still are, when [owner] was read off a version they have not reached yet. [owner] itself when [tree] declares no version of it. */
+    fun ownerAsDeclaredIn(tree: BlueprintId, owner: BlueprintId): BlueprintId = owner
 }

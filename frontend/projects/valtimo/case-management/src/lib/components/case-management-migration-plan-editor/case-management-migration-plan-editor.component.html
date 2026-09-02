@@ -112,6 +112,7 @@
         [mode]="'add'"
         [owner]="$owner()"
         [ownerProcessDefinitions]="$targetProcessDefs()"
+        [ownerSourceProcessDefinitions]="$sourceProcessDefs()"
         [planSource]="$plan().source ?? null"
         [processMigrationHintKey]="
           'caseManagement.migration.editor.addBuildingBlock.processMigrationHint'
@@ -150,6 +151,7 @@
         [mode]="'remove'"
         [owner]="$owner()"
         [ownerProcessDefinitions]="$targetProcessDefs()"
+        [ownerSourceProcessDefinitions]="$sourceProcessDefs()"
         [planSource]="$plan().source ?? null"
         [processMigrationHintKey]="
           'caseManagement.migration.editor.removeBuildingBlock.processMigrationHint'

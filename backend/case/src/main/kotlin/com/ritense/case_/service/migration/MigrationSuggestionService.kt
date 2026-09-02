@@ -147,13 +147,19 @@ class MigrationSuggestionService(
             ?.findInvalidActivityMappings(sourceProcessDefinitionId, targetProcessDefinitionId, activityMapping)
             ?: emptyMap()
 
-    /** A best-effort `{ dataMigration, processMigration }` for one building-block entry. Only copy patches are kept — a clearing patch does not apply across documents. */
-    fun suggestBuildingBlockEntry(source: BlueprintId, target: BlueprintId): ObjectNode = MigrationRunCache.inRun {
+    /** A best-effort `{ dataMigration, processMigration }` for one building-block entry. Only copy patches are kept — a clearing patch does not apply across documents. [running] is [source] as the instances still have it; the components stage differently, so only `processMigration` reads it. */
+    fun suggestBuildingBlockEntry(
+        source: BlueprintId,
+        target: BlueprintId,
+        running: BlueprintId = source,
+    ): ObjectNode = MigrationRunCache.inRun {
         val node = objectMapper.createObjectNode()
-        node.set<JsonNode>("dataMigration", copyPatches(suggestEntryComponent(DATA_MIGRATION, source, target)))
+        node.set<JsonNode>("dataMigration", copyPatches(suggestEntryComponent(DATA_MIGRATION, source, target, source)))
         node.set<JsonNode>(
             "processMigration",
-            objectMapper.valueToTree(suggestEntryComponent(PROCESS_MIGRATION, source, target) ?: emptyList<Any>())
+            objectMapper.valueToTree(
+                suggestEntryComponent(PROCESS_MIGRATION, source, target, running) ?: emptyList<Any>()
+            )
         )
         node
     }
@@ -165,6 +171,20 @@ class MigrationSuggestionService(
             ?.entryOwnerOf(migratingOwner, block)
             ?: migratingOwner
 
+    /**
+     * [owner] as the instances this plan migrates still have it. An `add` entry reads its owner off [migrating], the
+     * version they have not reached yet: the blueprint itself is then simply [source], and a parent block is whichever
+     * version [source]'s own tree declares. [owner] when the plan declares no source to read.
+     */
+    fun runningOwnerOf(owner: BlueprintId, migrating: BlueprintId, source: BlueprintId?): BlueprintId = when {
+        source == null -> owner
+        owner == migrating -> source
+        else -> buildingBlockEntryOwnerships
+            .firstOrNull { it.supports(source.blueprintType()) }
+            ?.ownerAsDeclaredIn(source, owner)
+            ?: owner
+    }
+
     /** [entryOwnerOf] as the editor reads it: the type tells it which pickers to build. */
     fun describeEntryOwner(owner: BlueprintId): ObjectNode = objectMapper.createObjectNode()
         .put("type", owner.blueprintType().name)
@@ -172,9 +192,14 @@ class MigrationSuggestionService(
         .put("versionTag", owner.blueprintVersionTag().toString())
 
     /** The same component asked for as an entry rather than a plan — the distinction cannot be derived from the two blueprint ids. */
-    private fun suggestEntryComponent(componentKey: String, source: BlueprintId, target: BlueprintId): Any? =
+    private fun suggestEntryComponent(
+        componentKey: String,
+        source: BlueprintId,
+        target: BlueprintId,
+        running: BlueprintId,
+    ): Any? =
         componentSuggesters.firstOrNull { it.componentKey() == componentKey }
-            ?.suggestForBuildingBlockEntry(source, target)
+            ?.suggestForBuildingBlockEntry(source, target, running)
 
     /** Keep only the copy patches (those with a non-null `source`) from a data-migration suggestion. */
     private fun copyPatches(suggestion: Any?): ArrayNode {

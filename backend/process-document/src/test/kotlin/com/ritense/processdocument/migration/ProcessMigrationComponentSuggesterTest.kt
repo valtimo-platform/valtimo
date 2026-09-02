@@ -327,6 +327,42 @@ class ProcessMigrationComponentSuggesterTest {
     }
 
     @Test
+    fun `should pair an add entry against the process the owner still runs, not the one the target version kept`() {
+        // The block is linked as a startable item, so no call activity reaches it and the entry needs a hijack. The process left the case in the target version — which is what makes it the one to take over.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(target, "ab-afhandelen-aanvraag-dcm")
+        processes(block, "uitvoeren-business-services")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(target, block, source))
+            .isEqualTo(listOf(instruction("uitvoeren-business-services", "uitvoeren-business-services")))
+    }
+
+    @Test
+    fun `should not force an add entry onto the one process the target version kept`() {
+        // What the 1-1 fallback produced while the candidates came from the target version: the case's own process handed to the block, which the executor would then hijack for real.
+        val block = buildingBlock("bs-ophalen-brp", "1.0.0")
+        processes(source, "ioaw-afhandelen-aanvraag-dcm", "bs-ophalen-brp-persoonsgegevens")
+        processes(target, "ioaw-afhandelen-aanvraag-dcm")
+        processes(block, "bs-ophalen-brp-persoonsgegevens")
+
+        assertThat(entryPairs(target, block, running = source))
+            .containsExactly("bs-ophalen-brp-persoonsgegevens" to "bs-ophalen-brp-persoonsgegevens")
+    }
+
+    @Test
+    fun `should still leave a declared block to adoption, though the process is only on the source version`() {
+        // Two different questions of two different versions: which blueprint declares the block, and what its instances are running. Answered together, every adopted block would be suggested a hijack.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        reachableFromTarget("uitvoeren-business-services")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(target, "ab-afhandelen-aanvraag-dcm")
+        processes(block, "uitvoeren-business-services")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(target, block, source)).isNull()
+    }
+
+    @Test
     fun `should keep nearest match for a plan migrating a block onto its successor`() {
         // Same types and keys as a nested entry, opposite meaning — which is why the caller says which it wants.
         val from = buildingBlock("bs-ophalen-brp", "1.0.0")
@@ -378,8 +414,14 @@ class ProcessMigrationComponentSuggesterTest {
         }
 
     /** (source, target) of every row suggested for one building-block entry. */
-    private fun entryPairs(entrySource: BlueprintId, entryTarget: BlueprintId): List<Pair<String, String?>> =
-        objectMapper.valueToTree<JsonNode>(suggester.suggestForBuildingBlockEntry(entrySource, entryTarget))
+    private fun entryPairs(
+        entrySource: BlueprintId,
+        entryTarget: BlueprintId,
+        running: BlueprintId = entrySource,
+    ): List<Pair<String, String?>> =
+        objectMapper.valueToTree<JsonNode>(
+            suggester.suggestForBuildingBlockEntry(entrySource, entryTarget, running)
+        )
             .map { node ->
                 node.get("sourceProcessDefinitionKey").asText() to
                     node.get("targetProcessDefinitionKey")?.takeIf { it.isTextual }?.asText()

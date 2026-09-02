@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -52,7 +53,7 @@ class BuildingBlockMigrationManagementResourceTest {
 
     @BeforeEach
     fun setUp() {
-        whenever(suggestionService.suggestBuildingBlockEntry(any(), any()))
+        whenever(suggestionService.suggestBuildingBlockEntry(any(), any(), any()))
             .thenReturn(ObjectMapper().createObjectNode())
         whenever(suggestionService.describeEntryOwner(any())).thenReturn(ObjectMapper().createObjectNode())
         // No nesting unless a test says so: the entry's owner is the blueprint being migrated.
@@ -62,16 +63,19 @@ class BuildingBlockMigrationManagementResourceTest {
 
     @Test
     fun `an add suggestion moves data and process from the owner building block into the nested one`() {
+        runningOwnerIs(owner)
+
         suggest(mode = "add", block = nested)
 
-        verify(suggestionService).suggestBuildingBlockEntry(eq(owner), eq(nested))
+        verify(suggestionService).suggestBuildingBlockEntry(eq(owner), eq(nested), eq(owner))
     }
 
     @Test
     fun `a remove suggestion moves them back from the nested building block to its owner`() {
         suggest(mode = "remove", block = nested)
 
-        verify(suggestionService).suggestBuildingBlockEntry(eq(nested), eq(owner))
+        // The block's own processes are the ones it hands back, so the two are the same version here.
+        verify(suggestionService).suggestBuildingBlockEntry(eq(nested), eq(owner), eq(nested))
     }
 
     @Test
@@ -80,7 +84,19 @@ class BuildingBlockMigrationManagementResourceTest {
 
         suggest(mode = "remove", block = deeper)
 
-        verify(suggestionService).suggestBuildingBlockEntry(eq(deeper), eq(nested))
+        verify(suggestionService).suggestBuildingBlockEntry(eq(deeper), eq(nested), eq(deeper))
+    }
+
+    @Test
+    fun `an add suggestion hijacks from the owner as the instances still have it, not as the target models it`() {
+        // The processes to take over are the ones the owner is still running; the target version may have handed them to the block already.
+        val source = BuildingBlockDefinitionId("verhuizing-inspectie", "1.0.3")
+        runningOwnerIs(source)
+
+        suggest(mode = "add", block = nested, sourceVersionTag = "1.0.3")
+
+        verify(suggestionService).runningOwnerOf(eq(owner), eq(owner), eq(source))
+        verify(suggestionService).suggestBuildingBlockEntry(eq(owner), eq(nested), eq(source))
     }
 
     @Test
@@ -94,6 +110,8 @@ class BuildingBlockMigrationManagementResourceTest {
 
     @Test
     fun `an addition reads the tree of the version that models it - this plan's own`() {
+        runningOwnerIs(owner)
+
         suggest(mode = "add", block = nested, sourceVersionTag = "1.0.3")
 
         verify(suggestionService).entryOwnerOf(eq(owner), eq(nested))
@@ -104,6 +122,11 @@ class BuildingBlockMigrationManagementResourceTest {
         val response = suggest(mode = "remove", block = nested)
 
         assertThat(response.body?.has("owner")).isTrue()
+    }
+
+    /** Only an `add` asks: a remove reads the block's own processes, which need no second version. */
+    private fun runningOwnerIs(running: BlueprintId) {
+        whenever(suggestionService.runningOwnerOf(any(), any(), anyOrNull())).thenReturn(running)
     }
 
     private fun suggest(mode: String, block: BuildingBlockDefinitionId, sourceVersionTag: String? = null) =

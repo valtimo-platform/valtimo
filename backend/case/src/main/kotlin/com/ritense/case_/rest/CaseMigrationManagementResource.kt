@@ -128,9 +128,13 @@ class CaseMigrationManagementResource(
         val block = BuildingBlockDefinitionId(buildingBlockKey, buildingBlockVersionTag)
         val removing = mode == "remove"
         val owner = migrationSuggestionService.entryOwnerOf(if (removing) source ?: target else target, block)
-        val suggestion =
-            if (removing) migrationSuggestionService.suggestBuildingBlockEntry(block, owner)
-            else migrationSuggestionService.suggestBuildingBlockEntry(owner, block)
+        val suggestion = if (removing) {
+            migrationSuggestionService.suggestBuildingBlockEntry(block, owner)
+        } else {
+            // A hijack takes over a process the owner is still running — which is the one the target version handed to the block.
+            val running = migrationSuggestionService.runningOwnerOf(owner, target, source)
+            migrationSuggestionService.suggestBuildingBlockEntry(owner, block, running)
+        }
         suggestion.set<JsonNode>("owner", migrationSuggestionService.describeEntryOwner(owner))
         return ResponseEntity.ok(suggestion)
     }
