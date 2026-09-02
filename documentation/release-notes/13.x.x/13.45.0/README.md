@@ -59,3 +59,19 @@ instances already running. Building block versions have a **Migration** tab of t
 that describe those steps.
 
 **[Try it out →](../../../configuration-guides/cases/migration/building-blocks.md)**
+
+---
+
+## Enhancements
+
+### New enhancement title
+
+New enhancement explanation.
+
+---
+
+## Bugfixes
+
+| Area | Fix |
+|------|-----|
+| Area name | New bugfix. |
