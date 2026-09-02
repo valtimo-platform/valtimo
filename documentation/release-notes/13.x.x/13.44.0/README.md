@@ -43,16 +43,6 @@ noticeably on configurations with large document schemas or many process links.
 
 The building block overview is now sorted by name, paginated, and searchable by name or key, so a large collection of building blocks stays workable.
 
-### System processes can always be edited
-
-A process marked as a system process can now be changed and saved like any other process, which creates a new version of it. Importing a process package also overwrites an existing system process instead of being refused. Finalised case definitions keep using the version of the system process they were configured with, so an existing case is not affected by the change.
-
-The `valtimo.process.systemProcessUpdatable` property no longer does anything and will be removed. If your installation set it to `false` to keep system processes unchanged, that protection is gone — the application logs a warning at startup when it is still set.
-
-### Refreshed process migration screen
-
-Admin > Other > Process migration has the standard Valtimo look and feel, with clearer labels for the source and target process, the versions, and the activities to map.
-
 ---
 
 ## Bugfixes
@@ -72,7 +62,6 @@ Admin > Other > Process migration has the standard Valtimo look and feel, with c
 | Plugins | Re-saving a plugin configuration removes settings from older versions that are no longer used |
 | Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |
 | Process links | Changing the form flow definition on an existing form flow process link is now saved (previously the change was silently ignored). |
-| Process migration | A system process can be migrated after it was changed |
 | Field pickers | A case model with an unreadable reference no longer stops every field picker from loading |
 | Field pickers | Lists in a case can be picked as a field, not only as a collection |
 | Building blocks | Selecting a field for a mapping works again when the document schema refers to itself |
