@@ -15,13 +15,16 @@
  */
 
 import {Component} from '@angular/core';
-import {CaseDefinition, DocumentService} from '@valtimo/document';
+import {CaseDefinition, DocumentService, Page} from '@valtimo/document';
 import {MultiInputValues} from '@valtimo/components';
 import {
   BehaviorSubject,
   combineLatest,
+  EMPTY,
+  expand,
   map,
   Observable,
+  reduce,
   shareReplay,
   startWith,
   switchMap,
@@ -34,6 +37,9 @@ import {WatsonHealthStackedMove16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {TranslateService} from '@ngx-translate/core';
+
+// Spring caps the `size` request param at 2000, so larger pages have to be fetched one by one.
+const MAX_PAGE_SIZE = 2000;
 
 @Component({
   standalone: false,
@@ -64,29 +70,12 @@ export class CaseMigrationComponent {
     this.iconService.registerAll([WatsonHealthStackedMove16]);
   }
 
-  public readonly caseDefinitions$: Observable<Array<CaseDefinition>> = this.documentService
-    .getCaseDefinitionsManagement({sort: 'name,id.versionTag', size: 100000})
-    .pipe(
-      map(caseDefinitionsPage => caseDefinitionsPage.content),
-      shareReplay(1)
-    );
+  public readonly caseDefinitions$: Observable<Array<CaseDefinition>> =
+    this.getAllCaseDefinitions().pipe(shareReplay(1));
   public readonly sourceCaseDefinitionKeyItems$: Observable<LoadedValue<Array<ListItem>>> =
     this.caseDefinitions$.pipe(
-      map(caseDefinitions => [
-        ...new Map(caseDefinitions.map(item => [item.caseDefinitionKey, item])).values(),
-      ]),
-      map(caseDefinitions =>
-        caseDefinitions.map(
-          caseDefinition =>
-            ({
-              caseDefinitionKey: caseDefinition.caseDefinitionKey,
-              content: caseDefinition.name,
-              selected: false,
-            }) as ListItem
-        )
-      ),
-      map(items => ({
-        value: items,
+      map(caseDefinitions => ({
+        value: this.toCaseDefinitionKeyItems(caseDefinitions),
         isLoading: false,
       })),
       startWith({isLoading: true})
@@ -115,21 +104,8 @@ export class CaseMigrationComponent {
   );
   public readonly targetCaseDefinitionKeyItems$: Observable<LoadedValue<Array<ListItem>>> =
     this.caseDefinitions$.pipe(
-      map(caseDefinitions => [
-        ...new Map(caseDefinitions.map(item => [item.caseDefinitionKey, item])).values(),
-      ]),
-      map(caseDefinitions =>
-        caseDefinitions.map(
-          caseDefinition =>
-            ({
-              caseDefinitionKey: caseDefinition.caseDefinitionKey,
-              content: caseDefinition.name,
-              selected: false,
-            }) as ListItem
-        )
-      ),
-      map(items => ({
-        value: items,
+      map(caseDefinitions => ({
+        value: this.toCaseDefinitionKeyItems(caseDefinitions),
         isLoading: false,
       })),
       startWith({isLoading: true})
@@ -265,6 +241,44 @@ export class CaseMigrationComponent {
         },
         error: error => this.errors$.next([error.message]),
       });
+  }
+
+  private getAllCaseDefinitions(): Observable<Array<CaseDefinition>> {
+    return this.getCaseDefinitionPage(0).pipe(
+      expand(page =>
+        page.content.length === 0 || (page.number + 1) * page.size >= page.totalElements
+          ? EMPTY
+          : this.getCaseDefinitionPage(page.number + 1)
+      ),
+      reduce(
+        (caseDefinitions: Array<CaseDefinition>, page) => [...caseDefinitions, ...page.content],
+        []
+      )
+    );
+  }
+
+  private getCaseDefinitionPage(page: number): Observable<Page<CaseDefinition>> {
+    return this.documentService.getCaseDefinitionsManagement({
+      sort: 'id.key,id.versionTag',
+      allVersions: true,
+      page,
+      size: MAX_PAGE_SIZE,
+    });
+  }
+
+  // Ordered on name because that is what the dropdown shows; the fetch itself is ordered on key
+  // so that the versions of a case stay grouped and in version order.
+  private toCaseDefinitionKeyItems(caseDefinitions: Array<CaseDefinition>): Array<ListItem> {
+    return [...new Map(caseDefinitions.map(item => [item.caseDefinitionKey, item])).values()]
+      .map(
+        caseDefinition =>
+          ({
+            caseDefinitionKey: caseDefinition.caseDefinitionKey,
+            content: caseDefinition.name,
+            selected: false,
+          }) as ListItem
+      )
+      .sort((left, right) => left.content.localeCompare(right.content));
   }
 
   protected readonly CARBON_THEME = 'g10';
