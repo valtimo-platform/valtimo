@@ -109,6 +109,12 @@ $darkThemeOverwriteVariables: (
 
 @use '@carbon/styles';
 @use '@carbon/grid';
+/* Loaded as a module, so the specifier is resolved against this file's own location
+   at compile time. A plain CSS @import is instead emitted verbatim and left to the
+   consuming app's bundler, which resolves it from that app's stylesheet and cannot
+   reach this package's dependencies. The alias is required: the namespace derived
+   from the filename would collide with '@carbon/styles' above. */
+@use '@carbon/charts-angular/styles.min.css' as chart-styles;
 @include grid.flex-grid();
 
 /* Extended tag colours, beyond the ten colours Carbon ships for tags. They follow Carbon's own tag
@@ -200,8 +206,6 @@ $extendedTagColors: (
     @include extended-tag-tokens(dark);
   }
 }
-
-@import 'node_modules/@carbon/charts-angular/styles.min.css';
 
 /* default Valtimo colors */
 
