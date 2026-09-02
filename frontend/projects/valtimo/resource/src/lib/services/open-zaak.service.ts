@@ -62,7 +62,9 @@ export class OpenZaakService {
     return this.http
       .get<{
         value: string;
-      }>(`${this.valtimoApiConfig.endpointUri}v1/resource-storage/${resourceId}/metadata/${metadataKey}`)
+      }>(
+        `${this.valtimoApiConfig.endpointUri}v1/resource-storage/${resourceId}/metadata/${metadataKey}`
+      )
       .pipe(
         map(response => response?.value || ''),
         catchError(() => of(''))
@@ -124,7 +126,13 @@ export class OpenZaakService {
     caseDefinitionKey: string,
     documentId?: string
   ): Observable<DocumentenApiFileReference> {
-    return this.uploadTempFileWithMetadata(file, {caseDefinitionKey, documentId});
+    return this.uploadTempFileWithMetadata(file, {caseDefinitionKey}).pipe(
+      switchMap(reference =>
+        !documentId
+          ? of(reference)
+          : this.startUploadProcess(documentId, reference.id).pipe(map(() => reference))
+      )
+    );
   }
 
   public uploadWithMetadata(
@@ -132,23 +140,17 @@ export class OpenZaakService {
     documentId: string,
     metadata: {[key: string]: any}
   ): Observable<void> {
-    const formData: FormData = new FormData();
-    formData.append('file', file);
-    formData.append('documentId', documentId);
+    return this.uploadTempFileWithMetadata(file, metadata).pipe(
+      switchMap(reference => this.startUploadProcess(documentId, reference.id))
+    );
+  }
 
-    Object.keys(metadata).forEach(metaDataKey => {
-      const metadataValue = metadata[metaDataKey];
-
-      if (metadataValue) {
-        formData.append(metaDataKey, metadataValue);
-      }
-    });
-
-    return this.http.post<void>(`${this.valtimoApiConfig.endpointUri}v1/resource/temp`, formData, {
-      reportProgress: true,
-      responseType: 'json',
-      headers: new HttpHeaders().set(InterceptorSkip, '403'),
-    });
+  public startUploadProcess(documentId: string, resourceId: string): Observable<void> {
+    return this.http.post<void>(
+      `${this.valtimoApiConfig.endpointUri}v1/uploadprocess/document/${documentId}/resource/${resourceId}`,
+      null,
+      {headers: new HttpHeaders().set(InterceptorSkip, '403')}
+    );
   }
 
   public uploadTempFileWithMetadata(

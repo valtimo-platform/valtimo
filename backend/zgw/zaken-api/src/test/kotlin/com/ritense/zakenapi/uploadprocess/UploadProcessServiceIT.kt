@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,32 +25,31 @@ import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessRequest
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.resource.domain.MetadataType
-import com.ritense.resource.domain.TemporaryResourceUploadedEvent
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.temporaryresource.domain.StorageMetadataKeys
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.BaseIntegrationTest
 import com.ritense.zakenapi.uploadprocess.UploadProcessService.Companion.DOCUMENT_UPLOAD
 import com.ritense.zakenapi.uploadprocess.UploadProcessService.Companion.RESOURCE_ID_PROCESS_VAR
 import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.HistoryService
-import org.operaton.bpm.engine.history.HistoricProcessInstance
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.operaton.bpm.engine.HistoryService
+import org.operaton.bpm.engine.history.HistoricProcessInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Transactional
-class ResourceUploadedToDocumentSseEventMapperIT @Autowired constructor(
+class UploadProcessServiceIT @Autowired constructor(
     private val documentService: JsonSchemaDocumentService,
     private val temporaryResourceStorageService: TemporaryResourceStorageService,
-    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val uploadProcessService: UploadProcessService,
     private val historyService: HistoryService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
     private val objectMapper: ObjectMapper,
-): BaseIntegrationTest() {
+) : BaseIntegrationTest() {
 
     val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
 
@@ -75,53 +74,54 @@ class ResourceUploadedToDocumentSseEventMapperIT @Autowired constructor(
     }
 
     @Test
-    fun `should not start upload process when missing documentId or taskId`() {
-        val documentId = runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
-                    objectMapper.createObjectNode()
-                )
-            ).resultingDocument().get().id!!.id.toString()
-        }
+    fun `should start upload process when a resource is attached to a document`() {
+        val documentId = createDocument()
         val resourceId = temporaryResourceStorageService.store("My file data".byteInputStream())
 
-        applicationEventPublisher.publishEvent(TemporaryResourceUploadedEvent(resourceId))
-
-        val documentUploadProcess = historyService.createHistoricProcessInstanceQuery()
-            .processInstanceBusinessKey(documentId)
-            .singleResult()
-        assertThat(documentUploadProcess).isNull()
-    }
-
-    @Test
-    fun `should start upload process after publishing TemporaryResourceUploadedEvent`() {
-        val documentId = runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
-                    objectMapper.createObjectNode()
-                )
-            ).resultingDocument().get().id!!.id.toString()
-        }
-        val resourceId = temporaryResourceStorageService.store(
-            "My file data".byteInputStream(),
-            mapOf(MetadataType.DOCUMENT_ID.key to documentId)
-        )
-
         runWithoutAuthorization {
-            applicationEventPublisher.publishEvent(TemporaryResourceUploadedEvent(resourceId))
+            uploadProcessService.startUploadResourceProcess(documentId, resourceId)
         }
 
-        val documentUploadProcess = getHistoricProcessInstance(UPLOAD_DOCUMENT_PROCESS_DEFINITION_KEY, documentId)
+        val documentUploadProcess =
+            getHistoricProcessInstance(UPLOAD_DOCUMENT_PROCESS_DEFINITION_KEY, documentId.toString())
         val retrievedResourceId =
             getHistoricVariable(documentUploadProcess.rootProcessInstanceId, RESOURCE_ID_PROCESS_VAR) as String
         assertThat(documentUploadProcess.startTime).isNotNull
         assertThat(retrievedResourceId).isEqualTo(resourceId)
+    }
+
+    @Test
+    fun `should not start upload process for a resource that is already part of a case`() {
+        val documentId = createDocument()
+        val resourceId = temporaryResourceStorageService.store("My file data".byteInputStream())
+        temporaryResourceStorageService.saveMetadataValue(
+            resourceId,
+            StorageMetadataKeys.DOCUMENT_URL,
+            "http://localhost/documenten/api/v1/enkelvoudiginformatieobjecten/${UUID.randomUUID()}"
+        )
+        temporaryResourceStorageService.deleteResource(resourceId)
+
+        runWithoutAuthorization {
+            uploadProcessService.startUploadResourceProcess(documentId, resourceId)
+        }
+
+        val documentUploadProcess = historyService.createHistoricProcessInstanceQuery()
+            .processInstanceBusinessKey(documentId.toString())
+            .singleResult()
+        assertThat(documentUploadProcess).isNull()
+    }
+
+    private fun createDocument(): UUID {
+        return runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    DOCUMENT_DEFINITION_KEY,
+                    "profile",
+                    "1.0.0",
+                    objectMapper.createObjectNode()
+                )
+            ).resultingDocument().get().id!!.id
+        }
     }
 
     private fun getHistoricProcessInstance(processDefinitionKey: String, documentId: String): HistoricProcessInstance {

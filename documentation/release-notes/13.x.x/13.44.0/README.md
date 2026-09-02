@@ -58,7 +58,7 @@ The building block overview is now sorted by name, paginated, and searchable by 
 | Cases | The process selector on the Progress tab shows long process names in full instead of cutting them off |
 | Cases | The progress tab shows the name of every process, instead of leaving some blank |
 | List columns | The **Path** field is empty again when the column modal is reopened after cancelling |
-| Documenten API | A file uploaded with the Documenten API upload field on a form is added to the case, also when that form belongs to a building block |
+| Documenten API | A file uploaded with the Documenten API upload field in a form flow is added to the case when the form flow finishes |
 | Process links | Every version of a building block is offered when picking one |
 | Plugins | Re-saving a plugin configuration removes settings from older versions that are no longer used |
 | Plugins | Required fields such as the authentication configuration have to be filled in before a plugin configuration can be saved |

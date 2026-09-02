@@ -92,6 +92,10 @@ class FormFlowResource(
         formFlowService.save(instance)
 
         val nextStep = completeResult.nextStep
+        if (nextStep == null) {
+            formFlowValtimoService.attachSubmittedFilesToCase(instance, completeResult.onCompleteResult)
+        }
+
         val onCompleteResult = toResultList(completeResult.onCompleteResult)
         val onOpenResult = nextStep?.let { toResultList(it.open()) }
         return ResponseEntity.ok(CompleteStepResult(instance.id.id, nextStep?.let { toStepResult(it) }, onOpenResult, onCompleteResult))
