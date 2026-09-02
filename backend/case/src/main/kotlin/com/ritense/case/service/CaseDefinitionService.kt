@@ -460,16 +460,6 @@ class CaseDefinitionService(
             .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
     }
 
-    /**
-     * Case definitions matching the filters, ordered by [Pageable.getSort] and paged. Collapses to the
-     * representative version per key unless [allVersions] is set: the overview shows a single row per
-     * case, while the version picker, case migration and the verzoek plugin need every version.
-     *
-     * Ordering happens in memory rather than in the database, because the version tag column is a string:
-     * the database would rank 1.0.10 below 1.0.9 instead of following SemVer precedence.
-     *
-     * @throws ValidationException when [Pageable.getSort] names a property that is not sortable
-     */
     fun getCaseDefinitionsForManagement(
         caseDefinitionKey: String? = null,
         active: Boolean? = null,
@@ -479,7 +469,6 @@ class CaseDefinitionService(
     ): Page<CaseDefinition> {
         denyManagementOperation()
 
-        // Resolved first, so a bad sort is refused even on an empty table.
         val comparator = toComparator(pageable.sort)
 
         val spec = getCaseDefinitionsQuery(
@@ -491,7 +480,6 @@ class CaseDefinitionService(
             .let { if (allVersions) it else latestPerKey(it) }
             .sortedWith(comparator)
 
-        // Coerced as a Long: the offset of a high page number overflows Int and would wrap negative.
         val start = pageable.offset.coerceIn(0, result.size.toLong()).toInt()
         val end = (start.toLong() + pageable.pageSize).coerceAtMost(result.size.toLong()).toInt()
         return PageImpl(result.subList(start, end), pageable, result.size.toLong())
@@ -502,12 +490,6 @@ class CaseDefinitionService(
             .groupBy { it.id.key }
             .map { (_, versions) -> versions.find { it.active } ?: versions.maxBy { it.id.versionTag } }
 
-    /**
-     * Maps the requested sort onto comparators, refusing anything outside [SORT_COMPARATORS]. A key and
-     * version tag tie-breaker is appended, so paging stays stable when the requested sort leaves ties.
-     *
-     * An unsorted [Sort] falls through to that tie-breaker alone; the endpoint declares its own defaults.
-     */
     private fun toComparator(sort: Sort): Comparator<CaseDefinition> {
         val requested = sort.map { order ->
             val comparator = SORT_COMPARATORS[order.property]
@@ -588,27 +570,15 @@ class CaseDefinitionService(
         val logger = KotlinLogging.logger {}
         val PATH_REGEX_EXPORTABLE = Regex("^(case:|doc:)")
 
-        private val BY_KEY: Comparator<CaseDefinition> = compareBy { it.id.key }
-        private val BY_VERSION_TAG: Comparator<CaseDefinition> = compareBy { it.id.versionTag }
-
-        /**
-         * Sort property -> comparator. Both the entity path and the name the response uses are accepted,
-         * so a caller can sort on a column it can actually see. Anything else is refused rather than
-         * silently ignored.
-         */
         private val SORT_COMPARATORS: Map<String, Comparator<CaseDefinition>> = mapOf(
-            "name" to compareBy<CaseDefinition, String>(String.CASE_INSENSITIVE_ORDER) { it.name },
-            "key" to BY_KEY,
-            "id.key" to BY_KEY,
-            "caseDefinitionKey" to BY_KEY,
-            "versionTag" to BY_VERSION_TAG,
-            "id.versionTag" to BY_VERSION_TAG,
-            "caseDefinitionVersionTag" to BY_VERSION_TAG,
-            "active" to compareBy<CaseDefinition> { it.active },
-            "final" to compareBy<CaseDefinition> { it.final },
-            "createdDate" to compareBy<CaseDefinition, LocalDateTime?>(nullsFirst()) { it.createdDate },
+            "name" to compareBy(String.CASE_INSENSITIVE_ORDER) { it.name },
+            "id.key" to compareBy { it.id.key },
+            "id.versionTag" to compareBy { it.id.versionTag },
+            "active" to compareBy { it.active },
+            "final" to compareBy { it.final },
+            "createdDate" to compareBy(nullsFirst()) { it.createdDate },
         )
 
-        private val TIE_BREAKER: Comparator<CaseDefinition> = BY_KEY.thenByDescending { it.id.versionTag }
+        private val TIE_BREAKER: Comparator<CaseDefinition> = compareBy<CaseDefinition> { it.id.key }.thenByDescending { it.id.versionTag }
     }
 }
