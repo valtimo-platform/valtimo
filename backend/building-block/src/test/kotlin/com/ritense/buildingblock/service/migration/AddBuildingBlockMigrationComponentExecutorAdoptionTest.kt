@@ -22,6 +22,7 @@ import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.domain.instance.BuildingBlockInstance
 import com.ritense.buildingblock.domain.migration.AddBuildingBlockConfiguration
 import com.ritense.buildingblock.domain.migration.AddBuildingBlockInstruction
+import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.AddBuildingBlockConfigurationRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
@@ -50,6 +51,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.Mockito.RETURNS_SELF
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -214,6 +216,38 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         // the running process moved from the case's deployment onto the block's
         verify(runtimeService).createMigrationPlan("bijstand-uitvoeren:cd", "bijstand-uitvoeren:bb")
         verify(jdbcTemplate).update(any<String>(), eq(created[0].documentId.toString()), eq(uitvoerenPi))
+    }
+
+    /** G68. A mapping the caller cannot answer must leave the property unset; writing the null failed schema validation and took the case with it. */
+    @Test
+    fun `should leave a mapping the caller cannot answer unset rather than writing null`() {
+        running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
+        running(
+            Node(
+                uitvoerenPi, "bijstand-uitvoeren:cd", "bijstand-uitvoeren",
+                parent = rootPi, callerActivityId = "UitvoerenCallActivity",
+                callerProcessDefinitionId = "bijstand-process:1",
+            )
+        )
+        declares(
+            "bijstand-process:1", "UitvoerenCallActivity", "bijstand-uitvoeren", "1.0.0",
+            inputMappings = listOf(
+                BuildingBlockInputMapping("doc:/aanwezig", "doc:/aanwezig"),
+                BuildingBlockInputMapping("doc:/afwezig", "doc:/afwezig"),
+            ),
+        )
+        deploys("bijstand-uitvoeren", "1.0.0", "bijstand-uitvoeren", "bijstand-uitvoeren:bb")
+        // Only one of the two paths exists on the caller's document.
+        whenever(valueResolverService.resolveValues(any<String>(), any()))
+            .thenReturn(mapOf("doc:/aanwezig" to "wel"))
+
+        executor.execute(migrationId, target, caseDocumentId)
+
+        val written = argumentCaptor<Map<String, Any?>>()
+        verify(valueResolverService).preProcessValuesForNewDocument(written.capture(), any())
+        assertThat(written.lastValue.values).doesNotContainNull()
+        assertThat(written.lastValue).hasSize(1)
+        assertThat(created).hasSize(1)
     }
 
     /** G43. The association carries the name the progress tab labels the process with; recreating it without one left every adopted process showing '-'. */
@@ -603,10 +637,11 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         activityId: String,
         blockKey: String,
         blockVersionTag: String,
+        inputMappings: List<BuildingBlockInputMapping> = emptyList(),
     ) {
         val link = mock<BuildingBlockProcessLink>()
         whenever(link.buildingBlockDefinitionId).thenReturn(BuildingBlockDefinitionId.of(blockKey, blockVersionTag))
-        whenever(link.inputMappings).thenReturn(emptyList())
+        whenever(link.inputMappings).thenReturn(inputMappings)
         whenever(processLinkService.getProcessLinks(callerProcessDefinitionId, activityId)).thenReturn(listOf(link))
         authorises(blockKey, blockVersionTag)
     }

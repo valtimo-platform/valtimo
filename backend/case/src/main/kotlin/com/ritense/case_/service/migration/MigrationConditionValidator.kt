@@ -27,6 +27,8 @@ object MigrationConditionValidator {
     /** How deep condition groups may nest. Deep enough for real plans, shallow enough to stay readable. */
     const val MAX_DEPTH = 10
 
+    private const val PROCESS_VARIABLE_PREFIX = "pv:"
+
     fun validate(conditions: List<MigrationConditionNode>) = conditions.forEach { validate(it, 1) }
 
     private fun validate(node: MigrationConditionNode, depth: Int) {
@@ -35,6 +37,13 @@ object MigrationConditionValidator {
         when (node) {
             is MigrationCondition -> {
                 require(node.path.isNotBlank()) { "A migration condition requires a non-blank 'path'" }
+                require(!node.path.startsWith(PROCESS_VARIABLE_PREFIX)) {
+                    "Migration condition path '${node.path}' reads a process variable, which a condition may " +
+                        "not do. Conditions are evaluated for every case on the source version, and a case " +
+                        "whose process has ended has no variables to read. Gate on the document (`doc:`) or " +
+                        "on the case itself (`case:`) instead, and use `pv:` in the plan's components, which " +
+                        "run per case against a process that is known to be there."
+                }
                 require(node.operator in MigrationConditionEvaluator.SUPPORTED_OPERATORS) {
                     "Unsupported migration condition operator '${node.operator}' on path '${node.path}'. " +
                         "Supported operators: ${MigrationConditionEvaluator.SUPPORTED_OPERATORS.joinToString()}"

@@ -79,6 +79,34 @@ class MigrationConditionValidatorTest {
     }
 
     @Test
+    fun `should reject a process variable path`() {
+        // Conditions are resolved for every candidate, and a case whose process has ended has no variables (G67).
+        assertThatThrownBy { MigrationConditionValidator.validate(listOf(MigrationCondition("pv:status", "==", "x"))) }
+            .hasMessageContaining("reads a process variable")
+    }
+
+    @Test
+    fun `should reject a process variable path inside a group`() {
+        assertThatThrownBy {
+            MigrationConditionValidator.validate(
+                listOf(AnyOfMigrationCondition(listOf(MigrationCondition("pv:/meta/stap", "exists", null))))
+            )
+        }.hasMessageContaining("reads a process variable")
+    }
+
+    @Test
+    fun `should accept the document and case prefixes a condition may read`() {
+        assertThatCode {
+            MigrationConditionValidator.validate(
+                listOf(
+                    MigrationCondition("doc:/status", "==", "x"),
+                    MigrationCondition("case:sequence", ">", 0),
+                )
+            )
+        }.doesNotThrowAnyException()
+    }
+
+    @Test
     fun `should reject groups nested deeper than the maximum`() {
         assertThatCode { MigrationConditionValidator.validate(listOf(nest(MAX_DEPTH))) }.doesNotThrowAnyException()
 

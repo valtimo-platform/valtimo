@@ -520,7 +520,17 @@ class AddBuildingBlockMigrationComponentExecutor(
         val resolvedValues = valueResolverService.resolveValues(
             ownerDocumentId.toString(), resolvable.map { it.source }
         )
-        val valuesToHandle = resolvable.associate { it.getPrefixedTarget() to resolvedValues[it.source] }
+
+        val (mapped, unresolved) = resolvable.partition { resolvedValues[it.source] != null }
+        if (unresolved.isNotEmpty()) {
+            val message = "Building block '${link.buildingBlockDefinitionId}' was taken over without " +
+                unresolved.joinToString { "'${it.source}'" } +
+                ": '$ownerDocumentId' has no such value, so the mapping was left unset rather than written null."
+            logger.warn { message }
+            MigrationWarnings.warn(message)
+        }
+
+        val valuesToHandle = mapped.associate { it.getPrefixedTarget() to resolvedValues[it.source] }
         val preProcessValues = valueResolverService.preProcessValuesForNewDocument(
             valuesToHandle, link.buildingBlockDefinitionId.key
         )
