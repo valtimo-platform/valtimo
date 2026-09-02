@@ -53,6 +53,8 @@ import {DataTable16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
 import {VERZOEK_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
+const ALL_ITEMS_PAGE_SIZE = 100000;
+
 @Component({
   standalone: false,
   selector: 'valtimo-verzoek-configuration',
@@ -114,7 +116,7 @@ export class VerzoekConfigurationComponent
     );
 
   readonly caseSelectItems$: Observable<Array<SelectItem>> = this.verzoekPluginService
-    .getCaseDefinitions({active: true})
+    .getCaseDefinitions({active: true, size: ALL_ITEMS_PAGE_SIZE})
     .pipe(
       map(caseDefinitions =>
         caseDefinitions.content.map(caseDefinition => ({
@@ -210,7 +212,11 @@ export class VerzoekConfigurationComponent
         caseVersionTagSelectItemsObservables[uuid] = {
           caseDefinitionKey,
           items: this.verzoekPluginService
-            .getCaseDefinitions({caseDefinitionKey, allVersions: true})
+            .getCaseDefinitions({
+              caseDefinitionKey,
+              allVersions: true,
+              size: ALL_ITEMS_PAGE_SIZE,
+            })
             .pipe(
               map(caseDefinitions =>
                 [{text: 'Active version', id: ''}].concat(

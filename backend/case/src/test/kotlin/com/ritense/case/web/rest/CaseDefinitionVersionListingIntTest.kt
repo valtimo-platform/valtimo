@@ -129,7 +129,7 @@ class CaseDefinitionVersionListingIntTest : BaseIntegrationTest() {
                 get(MANAGEMENT_LIST_PATH)
                     .param("caseDefinitionKey", key)
                     .param("allVersions", "true")
-                    .param("sort", "versionTag,asc")
+                    .param("sort", "id.versionTag,asc")
                     .param("size", "100")
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
             )
