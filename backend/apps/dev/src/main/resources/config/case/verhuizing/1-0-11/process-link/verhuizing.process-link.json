@@ -1,0 +1,31 @@
+[
+    {
+        "activityId": "StartEvent_1",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-verhuizing"
+    },
+    {
+        "activityId": "CallInspectieActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "verhuizing-inspectie",
+        "buildingBlockDefinitionVersionTag": "1.0.2",
+        "inputMappings": [
+            {
+                "source": "doc:/aanvrager/naam",
+                "target": "doc:/aanvragerNaam"
+            },
+            {
+                "source": "doc:/nieuwAdres",
+                "target": "doc:/nieuwAdres"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/inspectieStatus",
+                "target": "doc:/inspectieStatus"
+            }
+        ]
+    }
+]

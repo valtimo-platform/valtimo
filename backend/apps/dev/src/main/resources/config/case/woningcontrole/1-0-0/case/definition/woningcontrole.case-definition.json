@@ -1,7 +1,0 @@
-{
-    "key": "woningcontrole",
-    "name": "Woningcontrole",
-    "versionTag": "1.0.0",
-    "canHaveAssignee": true,
-    "autoAssignTasks": false
-}

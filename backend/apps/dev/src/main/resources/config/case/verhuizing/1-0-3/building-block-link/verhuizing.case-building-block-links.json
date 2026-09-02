@@ -1,0 +1,35 @@
+[
+    {
+        "buildingBlockDefinitionKey": "verhuizing-inspectie",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {},
+        "inputMappings": [
+            {
+                "source": "doc:/aanvrager/naam",
+                "target": "doc:/aanvragerNaam"
+            },
+            {
+                "source": "doc:/nieuwAdres",
+                "target": "doc:/nieuwAdres"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/inspectieStatus",
+                "target": "doc:/inspectieStatus"
+            }
+        ]
+    },
+    {
+        "buildingBlockDefinitionKey": "inspectie-fotos",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {},
+        "inputMappings": [
+            {
+                "source": "doc:/aanvrager/naam",
+                "target": "doc:/aanvragerNaam"
+            }
+        ],
+        "outputMappings": []
+    }
+]

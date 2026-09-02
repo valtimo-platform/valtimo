@@ -1,8 +1,0 @@
-{
-    "aanvrager": {
-        "naam": "Jan Jansen",
-        "emailadres": "jan.jansen@example.com"
-    },
-    "nieuwAdres": "Kalverstraat 1, 1012 NX Amsterdam",
-    "status": "ingediend"
-}

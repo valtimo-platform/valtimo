@@ -1,0 +1,25 @@
+{
+    "title": "Onevalueerbare conditie (testrun rapporteert WOULD_FAIL) \u2014 alleen voor een testrun",
+    "key": "verhuizing-conditiefout",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "case:nietBestaandeKolom",
+            "operator": "exists"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "onbereikbaar",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": []
+}

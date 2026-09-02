@@ -16,9 +16,27 @@
         <camunda:in businessKey="#{buildingBlockDocumentId}" />
         <camunda:out variables="all" />
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_Voorbereiden_To_Fotos</bpmn:incoming>
-      <bpmn:outgoing>Flow_Fotos_To_Inspectie</bpmn:outgoing>
+      <bpmn:incoming>Flow_Split_To_Hoofdspoor</bpmn:incoming>
+      <bpmn:outgoing>Flow_Hoofdspoor_To_Join</bpmn:outgoing>
     </bpmn:callActivity>
+    <bpmn:parallelGateway id="Gateway_HerstelSplit" name="Splits">
+      <bpmn:incoming>Flow_Voorbereiden_To_Fotos</bpmn:incoming>
+      <bpmn:outgoing>Flow_Split_To_Herstel</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Split_To_Hoofdspoor</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:callActivity id="CallInspectieHerstelActivity" name="Herstel (eigen subproces)" calledElement="inspectie-herstel-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:verhuizing-inspectie:1.0.3">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Split_To_Herstel</bpmn:incoming>
+      <bpmn:outgoing>Flow_Herstel_To_Join</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:parallelGateway id="Gateway_HerstelJoin" name="Voeg samen">
+      <bpmn:incoming>Flow_Herstel_To_Join</bpmn:incoming>
+      <bpmn:incoming>Flow_Hoofdspoor_To_Join</bpmn:incoming>
+      <bpmn:outgoing>Flow_Fotos_To_Inspectie</bpmn:outgoing>
+    </bpmn:parallelGateway>
     <bpmn:userTask id="InspectieUitvoerenTask" name="Inspectie uitvoeren">
       <bpmn:incoming>Flow_Fotos_To_Inspectie</bpmn:incoming>
       <bpmn:outgoing>Flow_Inspectie_To_ResolveAkkoord</bpmn:outgoing>
@@ -49,8 +67,12 @@
       <bpmn:incoming>Flow_Join_To_End</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_Start_To_Voorbereiden" sourceRef="StartEvent" targetRef="VoorbereidenInspectieTask" />
-    <bpmn:sequenceFlow id="Flow_Voorbereiden_To_Fotos" sourceRef="VoorbereidenInspectieTask" targetRef="CallInspectieFotosActivity" />
-    <bpmn:sequenceFlow id="Flow_Fotos_To_Inspectie" sourceRef="CallInspectieFotosActivity" targetRef="InspectieUitvoerenTask" />
+    <bpmn:sequenceFlow id="Flow_Voorbereiden_To_Fotos" sourceRef="VoorbereidenInspectieTask" targetRef="Gateway_HerstelSplit" />
+    <bpmn:sequenceFlow id="Flow_Split_To_Herstel" sourceRef="Gateway_HerstelSplit" targetRef="CallInspectieHerstelActivity" />
+    <bpmn:sequenceFlow id="Flow_Herstel_To_Join" sourceRef="CallInspectieHerstelActivity" targetRef="Gateway_HerstelJoin" />
+    <bpmn:sequenceFlow id="Flow_Split_To_Hoofdspoor" sourceRef="Gateway_HerstelSplit" targetRef="CallInspectieFotosActivity" />
+    <bpmn:sequenceFlow id="Flow_Hoofdspoor_To_Join" sourceRef="CallInspectieFotosActivity" targetRef="Gateway_HerstelJoin" />
+    <bpmn:sequenceFlow id="Flow_Fotos_To_Inspectie" sourceRef="Gateway_HerstelJoin" targetRef="InspectieUitvoerenTask" />
     <bpmn:sequenceFlow id="Flow_Inspectie_To_ResolveAkkoord" sourceRef="InspectieUitvoerenTask" targetRef="ResolveAkkoordTask" />
     <bpmn:sequenceFlow id="Flow_ResolveAkkoord_To_Gateway" sourceRef="ResolveAkkoordTask" targetRef="Gateway_Akkoord" />
     <bpmn:sequenceFlow id="Flow_Gateway_To_Goedkeuring" name="Ja" sourceRef="Gateway_Akkoord" targetRef="RegistreerGoedkeuringTask">
@@ -148,6 +170,15 @@
         <di:waypoint x="1055" y="150" />
         <di:waypoint x="1102" y="150" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Gateway_HerstelSplit_di" bpmnElement="Gateway_HerstelSplit">
+        <dc:Bounds x="345" y="345" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallInspectieHerstelActivity_di" bpmnElement="CallInspectieHerstelActivity">
+        <dc:Bounds x="430" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_HerstelJoin_di" bpmnElement="Gateway_HerstelJoin">
+        <dc:Bounds x="600" y="345" width="50" height="50"/>
+      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

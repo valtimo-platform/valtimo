@@ -1,7 +1,0 @@
-{
-    "key": "bijstand-uitvoeren",
-    "name": "Bijstand uitvoeren",
-    "description": "De uitvoering van een bijstandsaanvraag. Op zaakversie 1.0.0 nog een gewoon subproces van de zaak; op 1.0.1 een bouwsteen met een eigen document, die zelf de besluitbouwsteen aanroept. Bestaat om te testen dat een lopende, geneste subprocesboom in één migratie bouwstenen wordt.",
-    "versionTag": "1.0.0",
-    "final": false
-}

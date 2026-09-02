@@ -1,7 +1,0 @@
-[
-    {
-        "processDefinitionKey": "bijstand",
-        "canInitializeDocument": true,
-        "startableByUser": false
-    }
-]

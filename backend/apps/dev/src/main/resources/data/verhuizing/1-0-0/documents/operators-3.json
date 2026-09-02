@@ -1,0 +1,15 @@
+{
+    "scenario": "operators",
+    "aanvrager": {
+        "naam": "Ayse Yilmaz"
+    },
+    "nieuwAdres": "Testlaan 3, 1000 AA Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 10,
+    "oppervlakte": 999.99,
+    "documenten": [
+        "paspoort",
+        "loonstrook"
+    ]
+}

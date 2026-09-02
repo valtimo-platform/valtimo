@@ -3,5 +3,10 @@
         "processDefinitionKey": "verhuizing",
         "canInitializeDocument": true,
         "startableByUser": false
+    },
+    {
+        "processDefinitionKey": "verhuizing-nazorg",
+        "canInitializeDocument": false,
+        "startableByUser": true
     }
 ]

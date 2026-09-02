@@ -1,0 +1,86 @@
+{
+    "title": "Geneste condities (allOf / anyOf), drie niveaus diep",
+    "key": "verhuizing-geneste-condities",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "genest"
+        },
+        {
+            "anyOf": [
+                {
+                    "path": "doc:/spoed",
+                    "operator": "==",
+                    "value": true
+                },
+                {
+                    "allOf": [
+                        {
+                            "path": "doc:/oppervlakte",
+                            "operator": ">=",
+                            "value": 50
+                        },
+                        {
+                            "path": "doc:/aanvrager/naam",
+                            "operator": "exists"
+                        },
+                        {
+                            "anyOf": [
+                                {
+                                    "path": "doc:/nieuwAdres",
+                                    "operator": "exists",
+                                    "value": false
+                                },
+                                {
+                                    "path": "doc:/status",
+                                    "operator": "contains",
+                                    "value": "behandeling"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0-genest",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

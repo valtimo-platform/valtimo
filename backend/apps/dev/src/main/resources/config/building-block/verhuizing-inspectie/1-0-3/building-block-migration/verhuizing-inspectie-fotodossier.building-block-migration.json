@@ -30,6 +30,20 @@
             ],
             "skipCustomListeners": false,
             "skipIoMappings": false
+        },
+        {
+            "sourceProcessDefinitionKey": "inspectie-herstel-process",
+            "targetProcessDefinitionKey": "inspectie-herstel-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:herstelGemigreerdVan",
+                    "value": "1.0.2",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
         }
     ]
 }

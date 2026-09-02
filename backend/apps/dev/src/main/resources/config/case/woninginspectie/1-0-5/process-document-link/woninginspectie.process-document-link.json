@@ -1,7 +1,0 @@
-[
-    {
-        "processDefinitionKey": "woninginspectie",
-        "canInitializeDocument": true,
-        "startableByUser": false
-    }
-]

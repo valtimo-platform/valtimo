@@ -1,8 +1,0 @@
-{
-    "key": "woninginspectie",
-    "name": "Woninginspectie",
-    "versionTag": "1.0.5",
-    "basedOnVersionTag": "1.0.4",
-    "canHaveAssignee": true,
-    "autoAssignTasks": false
-}

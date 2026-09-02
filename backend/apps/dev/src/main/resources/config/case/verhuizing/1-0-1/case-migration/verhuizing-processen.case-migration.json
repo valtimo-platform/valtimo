@@ -1,0 +1,112 @@
+{
+    "title": "Twee processen migreren \u2014 elke setProcessVariables-modus en elk targetType",
+    "key": "verhuizing-processen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "processen"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:migratieStap",
+                    "value": "1.0.1",
+                    "targetType": "string"
+                },
+                {
+                    "target": "pv:/migratieMeta/stap",
+                    "value": "1.0.1",
+                    "targetType": "string"
+                },
+                {
+                    "target": "pv:/migratieMeta/bron",
+                    "value": "1.0.0",
+                    "targetType": "string"
+                },
+                {
+                    "target": "pv:aantalKamers",
+                    "source": "doc:/aantalPersonen",
+                    "targetType": "long"
+                },
+                {
+                    "target": "pv:oppervlakte",
+                    "value": 42,
+                    "targetType": "number"
+                },
+                {
+                    "target": "pv:geschatteWaarde",
+                    "value": 99.5,
+                    "targetType": "double"
+                },
+                {
+                    "target": "pv:spoedZaak",
+                    "source": "doc:/spoed",
+                    "targetType": "boolean"
+                },
+                {
+                    "target": "pv:zaakvolgnummer",
+                    "source": "case:sequence",
+                    "targetType": "integer"
+                },
+                {
+                    "target": "pv:scenarioUitProces",
+                    "source": "pv:scenario"
+                },
+                {
+                    "target": "pv:scenario"
+                }
+            ],
+            "skipCustomListeners": true,
+            "skipIoMappings": true
+        },
+        {
+            "sourceProcessDefinitionKey": "verhuizing-nazorg",
+            "targetProcessDefinitionKey": "verhuizing-nazorg",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:nazorgGemigreerdVan",
+                    "value": "1.0.0",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

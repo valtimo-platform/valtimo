@@ -10,11 +10,5 @@
         "activityType": "bpmn:UserTask:create",
         "processLinkType": "form",
         "formDefinitionName": "beoordelen-verhuizing"
-    },
-    {
-        "activityId": "controleren_inspectie",
-        "activityType": "bpmn:UserTask:create",
-        "processLinkType": "form",
-        "formDefinitionName": "controleren-inspectie"
     }
 ]

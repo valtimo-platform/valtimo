@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_verhuizing_dossier" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="verhuizing-dossier" name="Verhuizingdossier" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent_1" name="Dossier geopend">
+      <bpmn:outgoing>Flow_start_vaststellen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="dossier_vaststellen" name="Dossier vaststellen">
+      <bpmn:incoming>Flow_start_vaststellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_vaststellen_afronden</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="dossier_afronden" name="Dossier afronden" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/dossierStatus', 'afgehandeld')}">
+      <bpmn:incoming>Flow_vaststellen_afronden</bpmn:incoming>
+      <bpmn:outgoing>Flow_afronden_end</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_end" name="Dossier gesloten">
+      <bpmn:incoming>Flow_afronden_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_start_vaststellen" sourceRef="StartEvent_1" targetRef="dossier_vaststellen"/>
+    <bpmn:sequenceFlow id="Flow_vaststellen_afronden" sourceRef="dossier_vaststellen" targetRef="dossier_afronden"/>
+    <bpmn:sequenceFlow id="Flow_afronden_end" sourceRef="dossier_afronden" targetRef="Event_end"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="verhuizing-dossier">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="160" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="dossier_vaststellen_di" bpmnElement="dossier_vaststellen">
+        <dc:Bounds x="250" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="dossier_afronden_di" bpmnElement="dossier_afronden">
+        <dc:Bounds x="410" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
+        <dc:Bounds x="572" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_start_vaststellen_di" bpmnElement="Flow_start_vaststellen">
+        <di:waypoint x="196" y="120"/><di:waypoint x="250" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_vaststellen_afronden_di" bpmnElement="Flow_vaststellen_afronden">
+        <di:waypoint x="350" y="120"/><di:waypoint x="410" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_afronden_end_di" bpmnElement="Flow_afronden_end">
+        <di:waypoint x="510" y="120"/><di:waypoint x="572" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -6,7 +6,7 @@
         "formDefinitionName": "start-form-verhuizing"
     },
     {
-        "activityId": "beoordelen_verhuizing",
+        "activityId": "beoordelen_verhuizing_v3",
         "activityType": "bpmn:UserTask:create",
         "processLinkType": "form",
         "formDefinitionName": "beoordelen-verhuizing"

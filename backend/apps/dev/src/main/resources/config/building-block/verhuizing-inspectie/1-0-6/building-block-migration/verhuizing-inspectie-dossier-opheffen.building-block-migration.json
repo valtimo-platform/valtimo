@@ -26,50 +26,26 @@
             ],
             "skipCustomListeners": false,
             "skipIoMappings": false
+        },
+        {
+            "sourceProcessDefinitionKey": "inspectie-herstel-process",
+            "targetProcessDefinitionKey": "inspectie-herstel-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:herstelGemigreerdVan",
+                    "value": "1.0.5",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
         }
     ],
     "removeBuildingBlock": [
         {
             "buildingBlockKey": "inspectie-dossier",
-            "buildingBlockVersionTag": "1.0.0",
-            "dataMigration": [
-                {
-                    "target": "doc:/dossierStatus",
-                    "source": "doc:/dossierStatus"
-                },
-                {
-                    "target": "doc:/aantalBijlagen",
-                    "source": "doc:/aantalBijlagen",
-                    "targetType": "integer"
-                },
-                {
-                    "target": "doc:/dossierToelichting",
-                    "source": "doc:/toelichting"
-                },
-                {
-                    "target": "doc:/dossierKwaliteit",
-                    "source": "doc:/dossierKwaliteit"
-                }
-            ],
-            "processMigration": [
-                {
-                    "sourceProcessDefinitionKey": "inspectie-dossier-process",
-                    "targetProcessDefinitionKey": "verhuizing-inspectie-process",
-                    "mapActivities": {
-                        "DossierVaststellenTask": "InspectieUitvoerenTask",
-                        "RegistreerDossierstatusTask": "RegistreerGoedkeuringTask"
-                    },
-                    "setProcessVariables": [
-                        {
-                            "target": "pv:dossierTeruggegevenAan",
-                            "value": "verhuizing-inspectie:1.0.6",
-                            "targetType": "string"
-                        }
-                    ],
-                    "skipCustomListeners": false,
-                    "skipIoMappings": false
-                }
-            ]
+            "buildingBlockVersionTag": "1.0.0"
         }
     ]
 }
