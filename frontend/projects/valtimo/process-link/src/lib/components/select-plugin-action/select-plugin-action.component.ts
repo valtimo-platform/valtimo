@@ -19,6 +19,7 @@ import {
   PluginFunction,
   PluginManagementService,
   PluginService,
+  PluginTranslationService,
 } from '@valtimo/plugin';
 import {combineLatest, forkJoin, Observable, of, Subscription} from 'rxjs';
 import {filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
@@ -70,7 +71,8 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
                 filterFn(props, fn.key, this.injector).pipe(map(visible => ({fn, visible})))
               )
             ).pipe(map(results => results.filter(r => r.visible).map(r => r.fn)));
-          })
+          }),
+          switchMap(functions => this.sortByTranslatedTitle(functions, selectedDefinition.key))
         );
     })
   );
@@ -86,6 +88,7 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
     private readonly injector: Injector,
     private readonly pluginManagementService: PluginManagementService,
     private readonly pluginService: PluginService,
+    private readonly pluginTranslationService: PluginTranslationService,
     private readonly stateService: PluginStateService,
     private readonly stepService: ProcessLinkStepService,
     private readonly processLinkStateService: ProcessLinkStateService
@@ -111,6 +114,27 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
 
   public stringify(object: object): string {
     return JSON.stringify(object);
+  }
+
+  private sortByTranslatedTitle(
+    pluginFunctions: Array<PluginFunction>,
+    pluginDefinitionKey: string
+  ): Observable<Array<PluginFunction>> {
+    if (!pluginFunctions?.length) return of(pluginFunctions);
+
+    return combineLatest(
+      pluginFunctions.map(pluginFunction =>
+        this.pluginTranslationService
+          .translate(pluginFunction.key, pluginDefinitionKey)
+          .pipe(map(title => ({pluginFunction, title})))
+      )
+    ).pipe(
+      map(translatedFunctions =>
+        [...translatedFunctions]
+          .sort((a, b) => a.title.localeCompare(b.title))
+          .map(translatedFunction => translatedFunction.pluginFunction)
+      )
+    );
   }
 
   private openBackButtonSubscription(): void {

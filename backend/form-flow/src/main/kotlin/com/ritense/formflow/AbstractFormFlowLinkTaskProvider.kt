@@ -70,6 +70,7 @@ abstract class AbstractFormFlowLinkTaskProvider(
         const val TASK_INSTANCE_ID = "taskInstanceId"
         const val DOCUMENT_ID = "documentId"
         const val PROCESS_DEFINITION_KEY = "processDefinitionKey"
+        const val PROCESS_DEFINITION_ID = "processDefinitionId"
         const val DOCUMENT_DEFINITION_NAME = "documentDefinitionName"
     }
 
