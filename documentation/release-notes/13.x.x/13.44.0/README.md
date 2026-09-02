@@ -66,3 +66,8 @@ The building block overview is now sorted by name, paginated, and searchable by 
 | Field pickers | Lists in a case can be picked as a field, not only as a collection |
 | Building blocks | Selecting a field for a mapping works again when the document schema refers to itself |
 | Process links | Changing the building block version keeps the configuration that still applies to the new version |
+| Case definitions | The version picker lists every version of a case again, instead of only the active one, and its pagination works |
+| Case migration | The source and target version dropdowns offer every version of the selected case again, instead of only one |
+| Plugins | The verzoek plugin offers every case version again when picking one, instead of only the active one |
+| Case definitions | Versions are ordered by version number rather than alphabetically, so 1.0.10 comes after 1.0.9 |
+| Case definitions | The case definition overview honours a requested sort order instead of silently ignoring it |

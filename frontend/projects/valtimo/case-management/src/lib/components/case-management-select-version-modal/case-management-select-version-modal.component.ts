@@ -15,14 +15,15 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {BehaviorSubject, Observable, switchMap} from 'rxjs';
-import {ActivatedRoute, Router} from '@angular/router';
+import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
 import {ColumnConfig, Pagination, ViewType} from '@valtimo/components';
 import {CaseManagementService} from '../../services';
-import {map} from 'rxjs/operators';
+import {filter, map} from 'rxjs/operators';
 import {CaseListItem} from '../../models';
 import {Page} from '@valtimo/document';
 import {CaseVersionListItem} from '../../models/case-version-list.model';
+
+const DEFAULT_PAGE_SIZE = 10;
 
 @Component({
   standalone: false,
@@ -37,6 +38,7 @@ export class CaseManagementSelectVersionModalComponent {
   public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
   public readonly caseDefinitionTitle$ = new BehaviorSubject<string>('');
   @Input() set caseDefinitionKey(value: string) {
+    this._page$.next(0);
     this.caseDefinitionKey$.next(value);
   }
   @Input() set caseDefinitionTitle(value: string) {
@@ -48,16 +50,20 @@ export class CaseManagementSelectVersionModalComponent {
 
   private _paginationInitialized = false;
 
-  public pagination: Pagination = {
-    collectionSize: 0,
-    page: 1,
-    size: 10,
-  };
+  private readonly _page$ = new BehaviorSubject<number>(0);
+  private readonly _size$ = new BehaviorSubject<number>(DEFAULT_PAGE_SIZE);
 
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 
-  public readonly versionItems$: Observable<CaseListItem[]> = this.caseDefinitionKey$.pipe(
-    switchMap(key => this.caseManagementService.getAllCaseVersions({caseDefinitionKey: key})),
+  public readonly versionItems$: Observable<CaseListItem[]> = combineLatest([
+    this.caseDefinitionKey$,
+    this._page$,
+    this._size$,
+  ]).pipe(
+    filter(([caseDefinitionKey]) => !!caseDefinitionKey),
+    switchMap(([caseDefinitionKey, page, size]) =>
+      this.caseManagementService.getAllCaseVersions({caseDefinitionKey, page, size})
+    ),
     map((page: Page<CaseVersionListItem>) => {
       this.pagination$.next({
         size: page.size,
@@ -76,8 +82,6 @@ export class CaseManagementSelectVersionModalComponent {
           },
         ],
       }));
-
-      return page.content;
     })
   );
 
@@ -99,18 +103,10 @@ export class CaseManagementSelectVersionModalComponent {
     },
   ];
 
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly caseManagementService: CaseManagementService
-  ) {}
+  constructor(private readonly caseManagementService: CaseManagementService) {}
 
   public paginationClicked(page: number): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {page: page - 1},
-      queryParamsHandling: 'merge',
-    });
+    this._page$.next(page - 1);
   }
 
   public paginationSet(size: number): void {
@@ -119,11 +115,8 @@ export class CaseManagementSelectVersionModalComponent {
       return;
     }
 
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {size},
-      queryParamsHandling: 'merge',
-    });
+    this._page$.next(0);
+    this._size$.next(size);
   }
 
   public selectActiveVersion(event: {caseDefinitionVersionTag: string}): void {

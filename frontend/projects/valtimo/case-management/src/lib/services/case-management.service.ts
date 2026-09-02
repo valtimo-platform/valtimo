@@ -106,7 +106,7 @@ export class CaseManagementService extends BaseApiService {
   public getAllCaseVersions(params: any): Observable<Page<CaseVersionListItem>> {
     return this.httpClient.get<Page<CaseVersionListItem>>(
       this.getApiUrl(`management/v1/case-definition`),
-      {params}
+      {params: {...params, allVersions: true}}
     );
   }
 

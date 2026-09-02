@@ -209,16 +209,18 @@ export class VerzoekConfigurationComponent
       ) {
         caseVersionTagSelectItemsObservables[uuid] = {
           caseDefinitionKey,
-          items: this.verzoekPluginService.getCaseDefinitions({caseDefinitionKey}).pipe(
-            map(caseDefinitions =>
-              [{text: 'Active version', id: ''}].concat(
-                caseDefinitions.content.map(caseDefinition => ({
-                  text: caseDefinition.caseDefinitionVersionTag,
-                  id: caseDefinition.caseDefinitionVersionTag,
-                }))
+          items: this.verzoekPluginService
+            .getCaseDefinitions({caseDefinitionKey, allVersions: true})
+            .pipe(
+              map(caseDefinitions =>
+                [{text: 'Active version', id: ''}].concat(
+                  caseDefinitions.content.map(caseDefinition => ({
+                    text: caseDefinition.caseDefinitionVersionTag,
+                    id: caseDefinition.caseDefinitionVersionTag,
+                  }))
+                )
               )
-            )
-          ),
+            ),
         };
       }
       if (
