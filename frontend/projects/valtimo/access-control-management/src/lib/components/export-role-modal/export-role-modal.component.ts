@@ -26,6 +26,7 @@ import {
 import {ExportRoleOutput, RoleExport} from '../../models';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {CARBON_CONSTANTS} from '@valtimo/components';
+import {ACCESS_CONTROL_ROLES_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -44,6 +45,7 @@ export class ExportRoleModalComponent implements OnInit, OnDestroy {
   @Output() closeEvent = new EventEmitter<any>();
 
   public readonly selectedType$ = new BehaviorSubject<RoleExport | null>(null);
+  public readonly testIds = ACCESS_CONTROL_ROLES_TEST_IDS;
 
   private _resetSubscription!: Subscription;
 

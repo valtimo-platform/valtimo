@@ -26,6 +26,7 @@
     * [Decision tables](configuration-guides/cases/decision-tables.md)
     * [Document](configuration-guides/cases/document.md)
     * [Forms](configuration-guides/cases/forms.md)
+        * [E-mail preview component](configuration-guides/cases/forms/email-preview-component.md)
     * [Form flows](configuration-guides/cases/form-flows.md)
     * [Tasks](configuration-guides/cases/tasks/README.md)
         * [Columns](configuration-guides/cases/tasks/columns.md)
@@ -62,6 +63,7 @@
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
+  * [13.44.0](release-notes/13.x.x/13.44.0/README.md)
   * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
 
 ## Support

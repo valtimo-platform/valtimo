@@ -28,6 +28,7 @@ import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListene
 import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
+import com.ritense.buildingblock.processlink.service.BuildingBlockProcessLinkCopyValidator
 import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
@@ -560,6 +561,10 @@ class BuildingBlockAutoConfiguration {
         objectMapper,
         operatonRepositoryService
     )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkCopyValidator::class)
+    fun buildingBlockProcessLinkCopyValidator() = BuildingBlockProcessLinkCopyValidator()
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockStartEventListener::class)
