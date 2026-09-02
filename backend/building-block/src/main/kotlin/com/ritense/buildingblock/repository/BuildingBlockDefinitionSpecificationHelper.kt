@@ -63,7 +63,9 @@ class BuildingBlockDefinitionSpecificationHelper {
             root.get<Any>(ID).`in`(ids)
         }
 
-        /** Matches [searchTerm] against name and key, case-insensitively. A blank term matches everything, so it composes without the caller branching. */
+        /**
+         * Matches [searchTerm] against name and key, case-insensitively; a blank term matches everything.
+         */
         @JvmStatic
         fun bySearchTerm(searchTerm: String?) = Specification<BuildingBlockDefinition> { root, _, cb ->
             if (searchTerm.isNullOrBlank()) {
@@ -77,7 +79,9 @@ class BuildingBlockDefinitionSpecificationHelper {
             }
         }
 
-        /** `%` and `_` are LIKE wildcards, so `100%` would match any name starting with `100`. Escaped and paired with the explicit escape-character overload. */
+        /**
+         * Escapes the LIKE wildcards `%` and `_`, which would otherwise over-match (`100%` finding any `100...`).
+         */
         private fun escapeLikeWildcards(term: String): String = term
             .replace(LIKE_ESCAPE_CHARACTER.toString(), "$LIKE_ESCAPE_CHARACTER$LIKE_ESCAPE_CHARACTER")
             .replace("%", "$LIKE_ESCAPE_CHARACTER%")

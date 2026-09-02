@@ -20,7 +20,10 @@ import {ButtonModule, DialogModule, IconModule, TabsModule} from 'carbon-compone
 import {ActivatedRoute} from '@angular/router';
 import {BuildingBlockManagementDetailService} from '../../services';
 import {TranslatePipe} from '@ngx-translate/core';
-import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {
+  BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_TABS,
+} from '../../constants';
 import {BuildingBlockManagementGeneralComponent} from '../building-block-management-general/building-block-management-general.component';
 import {BuildingBlockManagementDocumentComponent} from '../building-block-management-document/building-block-management-document.component';
 import {
@@ -63,6 +66,8 @@ import {BuildingBlockManagementMigrationComponent} from '../building-block-manag
 })
 export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy {
   public readonly BUILDING_BLOCK_MANAGEMENT_TABS = BUILDING_BLOCK_MANAGEMENT_TABS;
+
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS;
   public readonly activeTabKey$ = this.buildingBlockManagementDetailService.activeTabKey$;
 
   constructor(

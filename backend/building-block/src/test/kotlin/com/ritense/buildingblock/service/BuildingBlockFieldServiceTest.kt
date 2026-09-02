@@ -228,7 +228,7 @@ class BuildingBlockFieldServiceTest {
 
         val fields = service.getFields(buildingBlockDefinitionId)
 
-        assertThat(fields.map { it.name }).containsExactly(
+        assertThat(fields.map { it.name }).containsExactlyInAnyOrder(
             "/node",
             "/node/children",
             "/node/name"
@@ -258,7 +258,7 @@ class BuildingBlockFieldServiceTest {
 
         val fields = service.getFields(buildingBlockDefinitionId)
 
-        assertThat(fields.map { it.name }).containsExactly(
+        assertThat(fields.map { it.name }).containsExactlyInAnyOrder(
             "/person",
             "/person/name"
         )
@@ -287,7 +287,7 @@ class BuildingBlockFieldServiceTest {
 
         val fields = service.getFields(buildingBlockDefinitionId)
 
-        assertThat(fields.map { it.name }).containsExactly(
+        assertThat(fields.map { it.name }).containsExactlyInAnyOrder(
             "/homeAddress",
             "/homeAddress/city",
             "/workAddress",

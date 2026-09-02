@@ -31,7 +31,9 @@ interface BuildingBlockDefinitionRepository :
     fun findAllByIdKeyOrderByIdVersionTag(key: String): List<BuildingBlockDefinition>
     fun findAllByIdKey(key: String, pageable: Pageable): Page<BuildingBlockDefinition>
 
-    /** Identifiers only. Which version of a key is latest is SemVer precedence, which a string column cannot express, so that one step happens in Kotlin. */
+    /**
+     * Identifiers only: SemVer ranking happens in Kotlin, so this reads just two varchar columns.
+     */
     @Query("select definition.id from BuildingBlockDefinition definition")
     fun findAllIds(): List<BuildingBlockDefinitionId>
 }

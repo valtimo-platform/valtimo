@@ -15,22 +15,34 @@
  */
 import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CarbonListModule, ColumnConfig, Pagination, ViewType} from '@valtimo/components';
+import {
+  CarbonListModule,
+  ColumnConfig,
+  DEFAULT_PAGINATION,
+  Pagination,
+  ViewType,
+} from '@valtimo/components';
 import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {isEqual} from 'lodash';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
-import {
-  BuildingBlockManagementCreateModalComponent,
-} from '../building-block-management-create-modal/building-block-management-create-modal.component';
+import {BuildingBlockManagementCreateModalComponent} from '../building-block-management-create-modal/building-block-management-create-modal.component';
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
-import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
-import {
-  BuildingBlockManagementUploadModalComponent,
-} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
+import {BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS, BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
 import {BuildingBlockDefinitionQuery} from '../../models';
 
 @Component({
@@ -50,15 +62,20 @@ import {BuildingBlockDefinitionQuery} from '../../models';
   providers: [BuildingBlockManagementService],
 })
 export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS;
+
   public readonly $loading = signal<boolean>(true);
 
   private readonly _collectionSize$ = new BehaviorSubject<number>(0);
 
-  // Page, size and search term share one subject, so a search — which also resets the page — is one request.
+  /*
+    Page, size and search term live in a single subject so that a search - which also resets the
+    page - results in one request rather than two.
+  */
   private readonly _query$ = new BehaviorSubject<BuildingBlockDefinitionQuery>({
-    page: 1,
+    page: DEFAULT_PAGINATION.page,
     searchTerm: '',
-    size: 10,
+    size: DEFAULT_PAGINATION.size,
   });
 
   private get _query(): BuildingBlockDefinitionQuery {
@@ -68,9 +85,27 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
   public readonly pagination$: Observable<Pagination> = combineLatest([
     this._collectionSize$,
     this._query$,
-  ]).pipe(
-    map(([collectionSize, {page, size}]) => ({collectionSize, page, size}) as Pagination)
-  );
+  ]).pipe(map(([collectionSize, {page, size}]) => ({collectionSize, page, size}) as Pagination));
+
+  public readonly buildingBlockDefinitions$: Observable<BuildingBlockDefinitionDto[]> =
+    combineLatest([this.buildingBlockManagementService.reload$, this._query$]).pipe(
+      tap(() => this.$loading.set(true)),
+      switchMap(([, {page, searchTerm, size}]) =>
+        this.buildingBlockManagementApiService
+          .searchBuildingBlockDefinitions({
+            page: page - 1,
+            size,
+            ...(searchTerm && {searchTerm}),
+          })
+          // Caught inside the switchMap: an error on the outer stream would terminate it, stranding the skeleton.
+          .pipe(catchError(() => of(null)))
+      ),
+      tap(res => {
+        this._collectionSize$.next(res?.totalElements ?? 0);
+        this.$loading.set(false);
+      }),
+      map(res => res?.content ?? [])
+    );
 
   public readonly buildingBlockDefinitions$: Observable<BuildingBlockDefinitionDto[]> =
     combineLatest([this.buildingBlockManagementService.reload$, this._query$]).pipe(
@@ -112,7 +147,10 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    // The create modal validates a key is not taken, so it needs every key rather than the current page's.
+    /*
+      The create modal validates that a key is not taken yet, so it needs every key rather than the
+      keys on the current page. Kept separate from the paginated list request for that reason.
+    */
     this._subscriptions.add(
       this.buildingBlockManagementService.reload$
         .pipe(switchMap(() => this.buildingBlockManagementApiService.getBuildingBlockDefinitions()))
@@ -130,18 +168,21 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
     this.updateQuery({page});
   }
 
-  public paginationSet(size: number): void {
-    this.updateQuery({size, page: 1});
+  public paginationSet(size: number | string): void {
+    this.updateQuery({size: Number(size), page: 1});
   }
 
-  public searchTermEntered(searchTerm: string): void {
-    this.updateQuery({searchTerm, page: 1});
+  public searchTermEntered(searchTerm: string | null): void {
+    this.updateQuery({searchTerm: searchTerm ?? '', page: 1});
   }
 
   private updateQuery(update: Partial<BuildingBlockDefinitionQuery>): void {
     const query = {...this._query, ...update};
 
-    // The list emits paginationSet once on init with the size it already holds; ignoring no-ops saves a request.
+    /*
+      The list emits paginationSet once on init with the size it restored from local storage, which
+      is usually the size we already hold. Ignoring no-op updates keeps that from costing a request.
+    */
     if (isEqual(query, this._query)) return;
 
     this._query$.next(query);

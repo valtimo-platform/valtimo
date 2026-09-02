@@ -15,7 +15,7 @@
   -->
 
 <ng-container *ngIf="{loaded: loaded$ | async} as obs">
-  <div *ngIf="!obs.loaded" class="loading-container">
+  <div *ngIf="!obs.loaded" class="loading-container" [attr.data-test-id]="testIds.loading">
     <cds-loading></cds-loading>
   </div>
 </ng-container>
@@ -23,11 +23,17 @@
 <div
   #widgetContainer
   class="widget-container"
+  [attr.data-test-id]="testIds.widgetContainer"
   [ngClass]="{'widget-container__visible': loaded$ | async}"
 >
   <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
     <ng-container *ngFor="let config of widgetConfigurations">
-      <div #widgetConfiguration [id]="config.key" class="widget-configuration">
+      <div
+        #widgetConfiguration
+        [id]="config.key"
+        [attr.data-test-id]="widgetTestId(config.key)"
+        class="widget-configuration"
+      >
         <div
           (click)="navigateToRoute(config, $event)"
           [ngClass]="{
@@ -42,6 +48,7 @@
 
     <valtimo-no-results
       *ngIf="!widgetConfigurations.length"
+      [attr.data-test-id]="testIds.noWidgets"
       [title]="'dashboard.noWidgets' | translate"
       [description]="'dashboard.noWidgetsDescription' | translate"
       illustration="valtimo-layout/img/no-widgets.svg"

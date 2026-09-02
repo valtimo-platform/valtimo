@@ -29,7 +29,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import java.util.UUID
 
-/** The search, ordering and paging are done by the database, so they run against a real one. */
+/**
+ * Search, ordering and paging are done by the database, so they run against a real one, not a mock.
+ */
 class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
 
     private lateinit var prefix: String
@@ -37,14 +39,14 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        // Classpath definitions share the table, so every assertion is scoped by a unique key and name prefix.
+        // Classpath definitions share the table, so a unique key/name prefix scopes every assertion.
         prefix = "srch${UUID.randomUUID().toString().take(8)}"
         stored.clear()
     }
 
     @AfterEach
     fun tearDown() {
-        // The table is shared with every other test in this context - leave it as we found it.
+        // Shared table - leave it as we found it.
         stored.forEach { buildingBlockDefinitionRepository.deleteById(it) }
         buildingBlockDefinitionRepository.flush()
     }
@@ -136,13 +138,16 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
         store("renamed", "1.0.0", "Old name")
         store("renamed", "2.0.0", "New name")
 
-        // The old version's name must not pull its key into the result...
+        // The old version's name must not pull its key in...
         assertThat(search("$prefix Old name").content).isEmpty()
         // ...and the latest version's name must still find it.
         assertThat(names(search("$prefix New name"))).containsExactly("New name")
     }
 
-    // A key is restricted to alphanumerics and dashes, so these characters can only reach the query through a name — where they have to stay literal.
+    /*
+       A key is restricted to alphanumerics and dashes, so these characters can only ever reach the
+       query through a name - which is exactly where they have to stay literal.
+     */
     @Test
     fun `treats LIKE wildcards in the search term as literal characters`() {
         store("discount", "1.0.0", "100% discount")
@@ -170,7 +175,7 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
 
         val page = search(pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "key")))
 
-        // 'id.key' is internal - the endpoint refuses it as input, so it must not come back either.
+        // 'id.key' is internal - refused as input, so it must not come back either.
         assertThat(page.pageable.sort.map { it.property }).containsExactly("key")
     }
 
@@ -192,6 +197,19 @@ class BuildingBlockManagementServiceSearchIT : BaseIntegrationTest() {
         assertThat(names(secondPage)).containsExactly("Block 3", "Block 4")
         assertThat(secondPage.totalElements).isEqualTo(5)
         assertThat(secondPage.totalPages).isEqualTo(3)
+    }
+
+    @Test
+    fun `pages definitions with the same name without repeating or skipping one`() {
+        // Name alone is not a stable order across page requests, so a key could land on both pages.
+        (1..5).forEach { store("block-$it", "1.0.0", "Same name") }
+
+        val firstPage = search(pageable = PageRequest.of(0, 2))
+        val secondPage = search(pageable = PageRequest.of(1, 2))
+        val lastPage = search(pageable = PageRequest.of(2, 2))
+
+        val paged = (firstPage.content + secondPage.content + lastPage.content).map { it.key }
+        assertThat(paged).containsExactlyInAnyOrderElementsOf((1..5).map { "$prefix-block-$it" })
     }
 
     @Test

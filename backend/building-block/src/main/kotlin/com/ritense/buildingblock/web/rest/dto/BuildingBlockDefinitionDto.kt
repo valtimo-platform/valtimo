@@ -36,7 +36,9 @@ data class BuildingBlockDefinitionDto(
     val imageBase64: String? = null,
 ) {
     companion object {
-        /** Pass `includeArtwork = true` only when needed: it is a lazy relation, so it costs a query per definition. */
+        /**
+         * Pass `includeArtwork = true` only when needed: it is lazy, costing a query per definition.
+         */
         fun from(definition: BuildingBlockDefinition, includeArtwork: Boolean = false) =
             BuildingBlockDefinitionDto(
                 key = definition.id.key,

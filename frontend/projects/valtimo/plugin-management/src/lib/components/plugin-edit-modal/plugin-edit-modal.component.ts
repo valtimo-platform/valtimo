@@ -19,6 +19,7 @@ import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {
+  PLUGIN_EDIT_MODAL_TEST_IDS,
   PluginConfiguration,
   PluginConfigurationData,
   PluginManagementService,
@@ -41,6 +42,7 @@ export class PluginEditModalComponent {
   public readonly selectedPluginConfiguration$: Observable<PluginConfiguration> =
     this.stateService.selectedPluginConfiguration$;
   public readonly configurationValid$ = new BehaviorSubject<boolean>(false);
+  public readonly testIds = PLUGIN_EDIT_MODAL_TEST_IDS;
 
   constructor(
     private readonly stateService: PluginManagementStateService,

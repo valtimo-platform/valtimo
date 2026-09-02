@@ -59,31 +59,34 @@ class BuildingBlockManagementService(
     fun getLatestPerKey(includeArtwork: Boolean = false): List<BuildingBlockDefinitionDto> {
         denyAuthorization()
 
-        return buildingBlockDefinitionRepository.findAll()
-            .groupBy { it.id.key }
-            .values
-            .mapNotNull { defsForKey ->
-                defsForKey.maxWithOrNull { a, b ->
-                    a.id.versionTag.compareTo(b.id.versionTag)
-                }
-            }
+        return latestPerKey(buildingBlockDefinitionRepository.findAll()) { it.id }
             .map { BuildingBlockDefinitionDto.from(it, includeArtwork) }
     }
 
-    /** The latest version per key, narrowed by [searchTerm], sorted and paged by the database. Only the SemVer "which version is latest" step happens in Kotlin — a string column cannot express it in SQL. @throws IllegalArgumentException on an unsortable property */
+    /**
+     * Latest version per key, narrowed by [searchTerm], ordered by [Pageable.getSort] and paged.
+     *
+     * Only the SemVer ranking happens in Kotlin; search, ordering and paging are left to the database.
+     * Resolving latest versions first keeps the search honest, since a name may differ between versions.
+     *
+     * @throws IllegalArgumentException when [Pageable.getSort] names a property that is not sortable
+     */
     @Transactional(readOnly = true)
     fun searchLatestPerKey(
         searchTerm: String?,
-        pageable: Pageable,
-        includeArtwork: Boolean = false
+        pageable: Pageable
     ): Page<BuildingBlockDefinitionDto> {
         denyAuthorization()
 
-        // Validate the sort before anything else, so a bad sort is refused even on an empty table.
+        // Validated first, so a bad sort is refused even on an empty table.
         val requestedSort = if (pageable.sort.isSorted) pageable.sort else BY_NAME_ASCENDING
-        val entitySort = toEntitySort(requestedSort)
+        val entitySort = withStableTieBreaker(toEntitySort(requestedSort))
 
-        // Report the sort the caller asked for, not the entity paths it was translated to — otherwise a client cannot feed its own page metadata back.
+        /*
+           The returned page reports the sort the caller asked for, not the entity paths it was
+           translated to. Reporting 'id.key' would hand back a property this endpoint refuses as
+           input, so a client could not feed its own page metadata back to it.
+         */
         val responsePageable = pageable.withSort(requestedSort)
 
         val latestIds = latestIdPerKey()
@@ -95,7 +98,7 @@ class BuildingBlockManagementService(
             .findAll(byIds(latestIds).and(bySearchTerm(searchTerm)), pageable.withSort(entitySort))
 
         return PageImpl(
-            page.content.map { BuildingBlockDefinitionDto.from(it, includeArtwork) },
+            page.content.map { BuildingBlockDefinitionDto.from(it) },
             responsePageable,
             page.totalElements
         )
@@ -104,16 +107,31 @@ class BuildingBlockManagementService(
     private fun Pageable.withSort(sort: Sort): Pageable =
         if (isUnpaged) Pageable.unpaged(sort) else PageRequest.of(pageNumber, pageSize, sort)
 
-    private fun latestIdPerKey(): List<BuildingBlockDefinitionId> {
-        return buildingBlockDefinitionRepository.findAllIds()
-            .groupBy { it.key }
+    private fun latestIdPerKey(): List<BuildingBlockDefinitionId> =
+        latestPerKey(buildingBlockDefinitionRepository.findAllIds()) { it }
+
+    /**
+     * Highest version tag per key by SemVer; shared by the id-only and entity variants so they cannot drift.
+     */
+    private fun <T> latestPerKey(items: Iterable<T>, id: (T) -> BuildingBlockDefinitionId): List<T> {
+        return items
+            .groupBy { id(it).key }
             .values
-            .mapNotNull { idsForKey ->
-                idsForKey.maxWithOrNull { a, b -> a.versionTag.compareTo(b.versionTag) }
+            .mapNotNull { forKey ->
+                forKey.maxWithOrNull { a, b -> id(a).versionTag.compareTo(id(b).versionTag) }
             }
     }
 
-    /** Translates the requested sort onto entity paths, refusing anything not in [SORT_PROPERTIES]. Case-insensitive, so the result does not depend on database collation. */
+    private fun withStableTieBreaker(entitySort: Sort): Sort =
+        if (entitySort.getOrderFor(KEY_PATH) != null) {
+            entitySort
+        } else {
+            entitySort.and(Sort.by(Sort.Order.asc(KEY_PATH)))
+        }
+
+    /**
+     * Maps the requested sort onto entity paths, refusing anything outside [SORT_PROPERTIES]; case-insensitive.
+     */
     private fun toEntitySort(sort: Sort): Sort {
         return Sort.by(
             sort.map { order ->
@@ -287,10 +305,15 @@ class BuildingBlockManagementService(
     }
 
     companion object {
-        /** Requested sort property -> entity path. The version tag is absent: as a string the database would order `1.9.0` above `1.10.0`. */
+        private const val KEY_PATH: String = "id.key"
+
+        /**
+         * Sort property -> entity path. The version tag is absent by design: sorting it in SQL would be
+         * lexicographic, not SemVer. Anything else is refused rather than silently ignored.
+         */
         private val SORT_PROPERTIES: Map<String, String> = mapOf(
             "name" to "name",
-            "key" to "id.key",
+            "key" to KEY_PATH,
         )
 
         private val BY_NAME_ASCENDING: Sort = Sort.by(Sort.Order.asc("name"))
