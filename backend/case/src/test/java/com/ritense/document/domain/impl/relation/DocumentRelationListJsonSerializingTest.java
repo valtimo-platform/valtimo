@@ -44,30 +44,46 @@ public class DocumentRelationListJsonSerializingTest {
         ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
         JacksonTester.initFields(this, objectMapper);
         jsonString = """
-            [{
+            [
+            {
             \t"id": "91e750e1-53ab-4922-9979-6a2dacd009cf",
             \t"relationType": "NEXT"
-            }]""";
+            },
+            {
+            \t"id": "91e750e1-53ab-4922-9979-6a2dacd009cf",
+            \t"relationType": "PARENT"
+            }
+            ]""";
     }
 
     @Test
     public void shouldParseJson() throws IOException {
-        final JsonSchemaDocumentRelation relationship = new JsonSchemaDocumentRelation(
+        final JsonSchemaDocumentRelation nextRelationship = new JsonSchemaDocumentRelation(
             JsonSchemaDocumentId.newId(UUID.fromString(UUID_STRING)),
             DocumentRelationType.NEXT
         );
-        final Set<JsonSchemaDocumentRelation> relationships = Set.of(relationship);
+        final JsonSchemaDocumentRelation parentRelationship = new JsonSchemaDocumentRelation(
+            JsonSchemaDocumentId.newId(UUID.fromString(UUID_STRING)),
+            DocumentRelationType.PARENT
+        );
+
+        final Set<JsonSchemaDocumentRelation> relationships = Set.of(nextRelationship, parentRelationship);
         ObjectContent<Set<JsonSchemaDocumentRelation>> jsonSchemaDocumentRelationObjectContent = jacksonTester.parse(jsonString);
         assertThat(jsonSchemaDocumentRelationObjectContent.getObject()).isEqualTo(relationships);
     }
 
     @Test
     public void shouldMarshalObjectToJson() throws IOException {
-        final JsonSchemaDocumentRelation relationship = new JsonSchemaDocumentRelation(
+        final JsonSchemaDocumentRelation nextRelationship = new JsonSchemaDocumentRelation(
             JsonSchemaDocumentId.newId(UUID.fromString(UUID_STRING)),
             DocumentRelationType.NEXT
         );
-        final Set<JsonSchemaDocumentRelation> relationships = Set.of(relationship);
+        final JsonSchemaDocumentRelation parentRelationship = new JsonSchemaDocumentRelation(
+            JsonSchemaDocumentId.newId(UUID.fromString(UUID_STRING)),
+            DocumentRelationType.PARENT
+        );
+
+        final Set<JsonSchemaDocumentRelation> relationships = Set.of(nextRelationship, parentRelationship);
         JsonContent<Set<JsonSchemaDocumentRelation>> jsonContent = jacksonTester.write(relationships);
         JSONAssert.assertEquals(jsonContent.getJson(), jsonString, JSONCompareMode.STRICT);
     }
