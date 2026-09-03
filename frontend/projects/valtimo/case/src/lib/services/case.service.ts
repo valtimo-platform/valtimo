@@ -34,6 +34,10 @@ export class CaseService {
   }
 
   public getInitialSortState(columns: Array<DefinitionColumn>): SortState {
+    if (!columns || columns.length === 0) {
+      return {isSorting: false, state: {name: '', direction: 'DESC'}};
+    }
+
     const defaultColumn = columns.find(column => column.default);
     const isSorting = defaultColumn?.default === 'ASC' || defaultColumn?.default === 'DESC';
     const direction: Direction =

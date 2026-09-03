@@ -401,11 +401,48 @@ interface CaseDefinition {
   autoAssignTasks: boolean;
 }
 
+interface CaseDefinitionGroup {
+  key: string;
+  title: string;
+  description?: string;
+  order: number;
+}
+
+interface GroupListColumn {
+  key: string;
+  title?: string;
+  displayType: {type: string; displayTypeParameters?: any};
+  sortable: boolean;
+  defaultSort?: 'ASC' | 'DESC';
+  order?: number;
+  exportable: boolean;
+}
+
+interface GroupSearchField {
+  key: string;
+  title?: string;
+  dataType: string;
+  fieldType: string;
+  matchType?: string;
+  dropdownDataProvider?: string;
+  order?: number;
+}
+
+interface GroupCaseListRow {
+  id: string;
+  caseDefinitionKey: string;
+  items: Array<{key: string; value: any}>;
+}
+
 export {
   AssignHandlerToDocumentResult,
   BlueprintId,
   CaseDefinition,
+  CaseDefinitionGroup,
   CaseDefinitionId,
+  GroupCaseListRow,
+  GroupListColumn,
+  GroupSearchField,
   CaseListColumn,
   CaseListColumnView,
   CaseSettings,

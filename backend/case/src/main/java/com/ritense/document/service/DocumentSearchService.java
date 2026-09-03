@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import com.ritense.document.domain.search.SearchWithConfigRequest;
 import com.ritense.document.service.impl.SearchRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.util.Collection;
+import java.util.Map;
 
 public interface DocumentSearchService {
 
@@ -48,6 +50,35 @@ public interface DocumentSearchService {
         AdvancedSearchRequest searchRequest,
         Pageable pageable
     );
+
+    @SuppressWarnings({"squid:S1452", "java:S1452"})
+    Page<? extends Document> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Pageable pageable
+    );
+
+    @SuppressWarnings({"squid:S1452", "java:S1452"})
+    Page<? extends Document> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Pageable pageable
+    );
+
+    @SuppressWarnings({"squid:S1452", "java:S1452"})
+    default Page<? extends Document> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields,
+        Pageable pageable
+    ) {
+        return search(documentDefinitionNames, blueprintType, searchWithConfigRequest, filterPathMappings, pageable);
+    }
 
     Long count(
         String documentDefinitionName,

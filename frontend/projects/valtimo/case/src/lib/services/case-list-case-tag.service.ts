@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,20 @@
 
 import {Injectable} from '@angular/core';
 import {CaseTag, CaseTagService} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {CaseListService} from './case-list.service';
 import {CaseParameterService} from './case-parameter.service';
+import {CaseListContext} from '../models';
 
 @Injectable()
 export class CaseListCaseTagService {
@@ -26,14 +37,15 @@ export class CaseListCaseTagService {
 
   private readonly _showCaseTagsSelector$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _caseTags$: Observable<CaseTag[]> = this.caseListService.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
-      caseDefinitionKey
-        ? combineLatest([
-            this.caseTagsService.getCaseTags(caseDefinitionKey),
+  private readonly _caseTags$: Observable<CaseTag[]> = this.caseListService.context$.pipe(
+    filter((ctx): ctx is CaseListContext => !!ctx),
+    switchMap(context =>
+      context.type === 'group'
+        ? of<[CaseTag[], null]>([[], null])
+        : combineLatest([
+            this.caseTagsService.getCaseTags(context.key),
             this.caseParameterService.queryCaseTagsParams$,
           ]).pipe(take(1))
-        : of<[CaseTag[], null]>([[], null])
     ),
     tap(([caseTags, queryCaseTags]) => {
       let selectedCaseTags;

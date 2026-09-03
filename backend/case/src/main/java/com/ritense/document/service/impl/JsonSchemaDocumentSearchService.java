@@ -33,6 +33,7 @@ import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.AssigneeFilter;
+import com.ritense.document.domain.search.DatabaseSearchType;
 import com.ritense.document.domain.search.SearchOperator;
 import com.ritense.document.domain.search.SearchRequestMapper;
 import com.ritense.document.domain.search.SearchRequestValidator;
@@ -69,6 +70,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -216,6 +218,255 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 VIEW_LIST
             )
         );
+    }
+
+    @Override
+    public Page<JsonSchemaDocument> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Pageable pageable
+    ) {
+        if (documentDefinitionNames == null || documentDefinitionNames.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        ZoneOffset zoneOffset = RequestHelper.getZoneOffset();
+
+        var searchCriteria = searchWithConfigRequest.getOtherFilters().stream()
+            .map(otherFilter -> SearchRequestMapper.toOtherFilter(otherFilter, null, zoneOffset))
+            .toList();
+
+        var advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(
+            searchWithConfigRequest,
+            searchCriteria
+        );
+
+        SearchRequestValidator.validate(advancedSearchRequest);
+        return search(
+            (cb, query, documentRoot) -> buildQueryWhereMultipleDefinitions(
+                documentDefinitionNames,
+                blueprintType,
+                advancedSearchRequest,
+                cb,
+                query,
+                documentRoot,
+                VIEW_LIST
+            ),
+            pageable,
+            Map.of()
+        );
+    }
+
+    @Override
+    public Page<JsonSchemaDocument> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Pageable pageable
+    ) {
+        if (documentDefinitionNames == null || documentDefinitionNames.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        var otherFilters = searchWithConfigRequest.getOtherFilters().stream()
+            .map(filter -> {
+                var otherFilter = new AdvancedSearchRequest.OtherFilter();
+                otherFilter.setPath(filter.getKey());
+                otherFilter.setSearchType(DatabaseSearchType.LIKE);
+                otherFilter.setSearchRequestValues(filter.getSearchRequestValues());
+                return otherFilter;
+            })
+            .toList();
+
+        var advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(
+            searchWithConfigRequest,
+            otherFilters
+        );
+
+        return search(
+            (cb, query, documentRoot) -> buildQueryWhereMultipleDefinitionsWithMappings(
+                documentDefinitionNames,
+                blueprintType,
+                advancedSearchRequest,
+                filterPathMappings,
+                cb,
+                query,
+                documentRoot,
+                VIEW_LIST
+            ),
+            pageable,
+            Map.of()
+        );
+    }
+
+    private void buildQueryWhereMultipleDefinitionsWithMappings(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        AdvancedSearchRequest searchRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        CriteriaBuilder cb,
+        CriteriaQuery<?> query,
+        Root<JsonSchemaDocument> documentRoot,
+        Action<JsonSchemaDocument> action
+    ) {
+        final List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(documentRoot.get(DOCUMENT_DEFINITION_ID).get(NAME).in(documentDefinitionNames));
+
+        predicates.add(
+            authorizationService
+                .getAuthorizationSpecification(
+                    new EntityAuthorizationRequest<>(
+                        JsonSchemaDocument.class,
+                        action
+                    ),
+                    null
+                ).toPredicate(documentRoot, query, cb));
+
+        predicates.add(
+            cb.equal(
+                documentRoot.get(DOCUMENT_DEFINITION_ID).get(BLUEPRINT_ID).get(BLUEPRINT_TYPE),
+                blueprintType
+            )
+        );
+
+        if (searchRequest.getAssigneeFilter() != null && searchRequest.getAssigneeFilter() != AssigneeFilter.ALL) {
+            predicates.add(getAssigneeFilterPredicate(cb, documentRoot, searchRequest.getAssigneeFilter()));
+        }
+
+        if (searchRequest.getOtherFilters() != null && !searchRequest.getOtherFilters().isEmpty()) {
+            predicates.add(getOtherFiltersPredicateWithMappings(
+                cb, documentRoot, searchRequest, filterPathMappings, documentDefinitionNames
+            ));
+        }
+
+        if (searchRequest.getStatusFilter() != null && !searchRequest.getStatusFilter().isEmpty()) {
+            predicates.add(getStatusFilterPredicate(cb, documentRoot, searchRequest.getStatusFilter()));
+        }
+
+        if (searchRequest.getCaseTagsFilter() != null && !searchRequest.getCaseTagsFilter().isEmpty()) {
+            predicates.add(getCaseTagsFilterPredicate(cb, documentRoot, searchRequest.getCaseTagsFilter()));
+        }
+
+        query.where(predicates.toArray(Predicate[]::new));
+    }
+
+    private Predicate getOtherFiltersPredicateWithMappings(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> root,
+        AdvancedSearchRequest searchRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Collection<String> documentDefinitionNames
+    ) {
+        var filterPredicates = searchRequest.getOtherFilters().stream()
+            .map(filter -> buildFilterPredicateWithMappings(
+                cb, root, filter, filterPathMappings, documentDefinitionNames
+            ))
+            .toList()
+            .toArray(Predicate[]::new);
+
+        if (searchRequest.getSearchOperator() == SearchOperator.AND) {
+            return cb.and(filterPredicates);
+        } else {
+            return cb.or(filterPredicates);
+        }
+    }
+
+    private Predicate buildFilterPredicateWithMappings(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> root,
+        AdvancedSearchRequest.OtherFilter filter,
+        Map<String, Map<String, String>> filterPathMappings,
+        Collection<String> documentDefinitionNames
+    ) {
+        String filterKey = extractFilterKey(filter.getPath());
+        Map<String, String> pathsPerDefinition = filterPathMappings.get(filterKey);
+
+        if (pathsPerDefinition == null || pathsPerDefinition.isEmpty()) {
+            return buildQueryForSearchCriteria(cb, root, filter);
+        }
+
+        List<Predicate> orConditions = new ArrayList<>();
+        for (String definitionName : documentDefinitionNames) {
+            String path = pathsPerDefinition.get(definitionName);
+            if (path != null) {
+                Predicate defMatch = cb.equal(
+                    root.get(DOCUMENT_DEFINITION_ID).get(NAME), definitionName
+                );
+                var mappedFilter = filter.withPath(path);
+                Predicate valueMatch = buildQueryForSearchCriteria(cb, root, mappedFilter);
+                orConditions.add(cb.and(defMatch, valueMatch));
+            }
+        }
+
+        if (orConditions.isEmpty()) {
+            return cb.disjunction();
+        }
+        return cb.or(orConditions.toArray(Predicate[]::new));
+    }
+
+    private String extractFilterKey(String path) {
+        if (path == null) {
+            return null;
+        }
+        if (path.startsWith(DOC_PREFIX)) {
+            return path.substring(DOC_PREFIX.length());
+        }
+        if (path.startsWith(CASE_PREFIX)) {
+            return path.substring(CASE_PREFIX.length());
+        }
+        return path;
+    }
+
+    private void buildQueryWhereMultipleDefinitions(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        AdvancedSearchRequest searchRequest,
+        CriteriaBuilder cb,
+        CriteriaQuery<?> query,
+        Root<JsonSchemaDocument> documentRoot,
+        Action<JsonSchemaDocument> action
+    ) {
+        final List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(documentRoot.get(DOCUMENT_DEFINITION_ID).get(NAME).in(documentDefinitionNames));
+
+        predicates.add(
+            authorizationService
+                .getAuthorizationSpecification(
+                    new EntityAuthorizationRequest<>(
+                        JsonSchemaDocument.class,
+                        action
+                    ),
+                    null
+                ).toPredicate(documentRoot, query, cb));
+
+        predicates.add(
+            cb.equal(
+                documentRoot.get(DOCUMENT_DEFINITION_ID).get(BLUEPRINT_ID).get(BLUEPRINT_TYPE),
+                blueprintType
+            )
+        );
+
+        if (searchRequest.getAssigneeFilter() != null && searchRequest.getAssigneeFilter() != AssigneeFilter.ALL) {
+            predicates.add(getAssigneeFilterPredicate(cb, documentRoot, searchRequest.getAssigneeFilter()));
+        }
+
+        if (searchRequest.getOtherFilters() != null && !searchRequest.getOtherFilters().isEmpty()) {
+            predicates.add(getOtherFilersPredicate(cb, documentRoot, searchRequest));
+        }
+
+        if (searchRequest.getStatusFilter() != null && !searchRequest.getStatusFilter().isEmpty()) {
+            predicates.add(getStatusFilterPredicate(cb, documentRoot, searchRequest.getStatusFilter()));
+        }
+
+        if (searchRequest.getCaseTagsFilter() != null && !searchRequest.getCaseTagsFilter().isEmpty()) {
+            predicates.add(getCaseTagsFilterPredicate(cb, documentRoot, searchRequest.getCaseTagsFilter()));
+        }
+
+        query.where(predicates.toArray(Predicate[]::new));
     }
 
     private Page<JsonSchemaDocument> search(

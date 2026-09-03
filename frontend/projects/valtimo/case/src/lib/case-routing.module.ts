@@ -27,6 +27,12 @@ import {GenericCaseListComponent} from './components/generic-case-list/generic-c
 
 const routes: Routes = [
   {
+    path: 'groups/:groupKey',
+    component: CaseListComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Cases', roles: [ROLE_USER], customPageTitle: true},
+  },
+  {
     path: 'cases',
     component: GenericCaseListComponent,
     canActivate: [AuthGuardService],

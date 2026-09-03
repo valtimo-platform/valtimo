@@ -20,6 +20,7 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.service.DocumentSearchService
+import com.ritense.document.service.GlobalSearchFieldMeta
 import com.ritense.document.service.impl.SearchRequest
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import org.springframework.data.domain.Page
@@ -63,6 +64,36 @@ class DelegatingDocumentSearchService(
         pageable: Pageable
     ): Page<out Document> = executeWithFallback {
         active().searchForExport(documentDefinitionName, blueprintType, searchWithConfigRequest, pageable)
+    }
+
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        pageable: Pageable
+    ): Page<out Document> = executeWithFallback {
+        active().search(documentDefinitionNames, blueprintType, searchWithConfigRequest, pageable)
+    }
+
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        filterPathMappings: Map<String, Map<String, String>>,
+        pageable: Pageable
+    ): Page<out Document> = executeWithFallback {
+        active().search(documentDefinitionNames, blueprintType, searchWithConfigRequest, filterPathMappings, pageable)
+    }
+
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        filterPathMappings: Map<String, Map<String, String>>,
+        globalSearchFields: Map<String, GlobalSearchFieldMeta>,
+        pageable: Pageable
+    ): Page<out Document> = executeWithFallback {
+        active().search(documentDefinitionNames, blueprintType, searchWithConfigRequest, filterPathMappings, globalSearchFields, pageable)
     }
 
     override fun count(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,6 +202,16 @@ public class AdvancedSearchRequest {
             this.values = new ArrayList<>(values);
             values.add(SearchRequestValue.of(value));
             return this;
+        }
+
+        public OtherFilter withPath(String newPath) {
+            OtherFilter copy = new OtherFilter();
+            copy.path = newPath;
+            copy.searchType = this.searchType;
+            copy.rangeFrom = this.rangeFrom;
+            copy.rangeTo = this.rangeTo;
+            copy.values = this.values;
+            return copy;
         }
     }
 }

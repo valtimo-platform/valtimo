@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 
 import {Injectable} from '@angular/core';
 import {ConfigService, DefinitionColumn} from '@valtimo/shared';
-import {combineLatest, map, Observable} from 'rxjs';
-import {CaseListColumn, DocumentService} from '@valtimo/document';
+import {combineLatest, map, Observable, of} from 'rxjs';
+import {CaseListColumn, DocumentService, GroupListColumn} from '@valtimo/document';
 import {ListField} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
+import {CaseListContext} from '../models';
 
 @Injectable()
 export class CaseColumnService {
@@ -28,6 +29,20 @@ export class CaseColumnService {
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService
   ) {}
+
+  public getColumnsForContext(
+    context: CaseListContext
+  ): Observable<{columns: Array<DefinitionColumn>; hasApiConfig: boolean}> {
+    if (context.type === 'group') {
+      return this.documentService.getGroupListColumns(context.key).pipe(
+        map(groupColumns => ({
+          columns: this.mapGroupListColumnsToDefinitionColumns(groupColumns),
+          hasApiConfig: true,
+        }))
+      );
+    }
+    return this.getDefinitionColumns(context.key);
+  }
 
   public getDefinitionColumns(
     caseDefinitionKey: string
@@ -52,6 +67,28 @@ export class CaseColumnService {
         };
       })
     );
+  }
+
+  private mapGroupListColumnsToDefinitionColumns(
+    groupColumns: Array<GroupListColumn>
+  ): Array<DefinitionColumn> {
+    return groupColumns.map(col => ({
+      translationKey: col.key,
+      sortable: col.sortable,
+      default: col.defaultSort,
+      viewType: this.getViewType(col.displayType?.type),
+      propertyName: col.key,
+      ...(col.title && {title: col.title}),
+      ...(col.displayType?.displayTypeParameters?.enum && {
+        enum: col.displayType.displayTypeParameters.enum as any,
+      }),
+      ...(col.displayType?.displayTypeParameters?.dateFormat && {
+        format: col.displayType.displayTypeParameters.dateFormat,
+      }),
+      ...(col.displayType?.displayTypeParameters?.tagAmount && {
+        tagAmount: col.displayType.displayTypeParameters.tagAmount,
+      }),
+    }));
   }
 
   public mapDefinitionColumnsToListFields(

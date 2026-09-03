@@ -37,6 +37,7 @@ import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditi
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentSearchService
+import com.ritense.document.service.GlobalSearchFieldMeta
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.SearchFieldService
 import com.ritense.document.service.impl.SearchRequest
@@ -46,6 +47,7 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.document.domain.impl.searchfield.SearchField
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.apache.commons.lang3.NotImplementedException
@@ -187,6 +189,235 @@ class JsonSchemaDocumentOpenSearchService(
             pageable,
             JsonSchemaDocumentActionProvider.EXPORT
         )
+    }
+
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        pageable: Pageable
+    ): Page<JsonSchemaDocument> {
+        if (documentDefinitionNames.isEmpty()) {
+            return PageImpl(emptyList(), pageable, 0)
+        }
+
+        val zoneOffset = RequestHelper.getZoneOffset()
+
+        val otherFilters = searchWithConfigRequest.otherFilters
+            .map { filter -> SearchRequestMapper.toOtherFilter(filter, null, zoneOffset) }
+
+        val advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(searchWithConfigRequest, otherFilters)
+
+        SearchRequestValidator.validate(advancedSearchRequest)
+        val combinedQuery = buildCombinedQueryMultipleDefinitions(
+            documentDefinitionNames,
+            blueprintType,
+            advancedSearchRequest,
+            JsonSchemaDocumentActionProvider.VIEW_LIST
+        )
+        return executeSearch(combinedQuery, pageable)
+    }
+
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        filterPathMappings: Map<String, Map<String, String>>,
+        pageable: Pageable
+    ): Page<JsonSchemaDocument> {
+        if (documentDefinitionNames.isEmpty()) {
+            return PageImpl(emptyList(), pageable, 0)
+        }
+
+        val otherFilters = searchWithConfigRequest.otherFilters.map { filter ->
+            AdvancedSearchRequest.OtherFilter().apply {
+                path = filter.key
+                searchType = DatabaseSearchType.LIKE
+                setSearchRequestValues(filter.searchRequestValues)
+            }
+        }
+
+        val advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(searchWithConfigRequest, otherFilters)
+
+        val combinedQuery = buildCombinedQueryMultipleDefinitionsWithMappings(
+            documentDefinitionNames,
+            blueprintType,
+            advancedSearchRequest,
+            filterPathMappings,
+            emptyMap(),
+            JsonSchemaDocumentActionProvider.VIEW_LIST
+        )
+        return executeSearch(combinedQuery, pageable)
+    }
+
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        filterPathMappings: Map<String, Map<String, String>>,
+        globalSearchFields: Map<String, GlobalSearchFieldMeta>,
+        pageable: Pageable
+    ): Page<JsonSchemaDocument> {
+        if (documentDefinitionNames.isEmpty()) {
+            return PageImpl(emptyList(), pageable, 0)
+        }
+
+        val otherFilters = searchWithConfigRequest.otherFilters.map { filter ->
+            AdvancedSearchRequest.OtherFilter().apply {
+                path = filter.key
+                searchType = DatabaseSearchType.LIKE
+                setSearchRequestValues(filter.searchRequestValues)
+            }
+        }
+
+        val advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(searchWithConfigRequest, otherFilters)
+
+        val combinedQuery = buildCombinedQueryMultipleDefinitionsWithMappings(
+            documentDefinitionNames,
+            blueprintType,
+            advancedSearchRequest,
+            filterPathMappings,
+            globalSearchFields,
+            JsonSchemaDocumentActionProvider.VIEW_LIST
+        )
+        return executeSearch(combinedQuery, pageable)
+    }
+
+    private fun buildCombinedQueryMultipleDefinitions(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchRequest: AdvancedSearchRequest,
+        action: Action<JsonSchemaDocument>
+    ): QueryBuilder {
+        val parts = mutableListOf<QueryBuilder>()
+
+        parts.add(buildAuthQuery(action))
+        parts.add(QueryBuilders.termQuery(BLUEPRINT_TYPE_FIELD, blueprintType.name))
+        parts.add(QueryBuilders.termsQuery(DEFINITION_NAME_FIELD, documentDefinitionNames.toList()))
+
+        if (searchRequest.assigneeFilter != null && searchRequest.assigneeFilter != AssigneeFilter.ALL) {
+            parts.add(buildAssigneeFilterQuery(searchRequest.assigneeFilter))
+        }
+
+        if (!searchRequest.statusFilter.isNullOrEmpty()) {
+            parts.add(buildStatusFilterQuery(searchRequest.statusFilter))
+        }
+
+        if (!searchRequest.caseTagsFilter.isNullOrEmpty()) {
+            parts.add(QueryBuilders.termsQuery("caseTags.key", searchRequest.caseTagsFilter.toList()))
+        }
+
+        if (!searchRequest.otherFilters.isNullOrEmpty()) {
+            parts.add(buildOtherFiltersQuery(searchRequest.otherFilters, searchRequest.searchOperator))
+        }
+
+        return andAll(parts)
+    }
+
+    private fun buildCombinedQueryMultipleDefinitionsWithMappings(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchRequest: AdvancedSearchRequest,
+        filterPathMappings: Map<String, Map<String, String>>,
+        globalSearchFields: Map<String, GlobalSearchFieldMeta>,
+        action: Action<JsonSchemaDocument>
+    ): QueryBuilder {
+        val parts = mutableListOf<QueryBuilder>()
+
+        parts.add(buildAuthQuery(action))
+        parts.add(QueryBuilders.termQuery(BLUEPRINT_TYPE_FIELD, blueprintType.name))
+        parts.add(QueryBuilders.termsQuery(DEFINITION_NAME_FIELD, documentDefinitionNames.toList()))
+
+        if (searchRequest.assigneeFilter != null && searchRequest.assigneeFilter != AssigneeFilter.ALL) {
+            parts.add(buildAssigneeFilterQuery(searchRequest.assigneeFilter))
+        }
+
+        if (!searchRequest.statusFilter.isNullOrEmpty()) {
+            parts.add(buildStatusFilterQuery(searchRequest.statusFilter))
+        }
+
+        if (!searchRequest.caseTagsFilter.isNullOrEmpty()) {
+            parts.add(QueryBuilders.termsQuery("caseTags.key", searchRequest.caseTagsFilter.toList()))
+        }
+
+        if (!searchRequest.otherFilters.isNullOrEmpty()) {
+            parts.add(buildOtherFiltersQueryWithMappings(
+                searchRequest.otherFilters,
+                searchRequest.searchOperator,
+                filterPathMappings,
+                documentDefinitionNames
+            ))
+        }
+
+        val globalFilter = searchRequest.globalSearchFilter?.takeIf { it.isNotEmpty() }
+        if (globalFilter != null) {
+            if (globalSearchFields.isNotEmpty()) {
+                parts.add(buildGlobalSearchQueryWithMappings(
+                    globalFilter.trim(),
+                    documentDefinitionNames,
+                    filterPathMappings,
+                    globalSearchFields
+                ))
+            } else {
+                parts.add(buildGlobalSearchQueryForDefinitions(globalFilter.trim(), documentDefinitionNames))
+            }
+        }
+
+        return andAll(parts)
+    }
+
+    private fun buildOtherFiltersQueryWithMappings(
+        filters: List<AdvancedSearchRequest.OtherFilter>,
+        operator: SearchOperator?,
+        filterPathMappings: Map<String, Map<String, String>>,
+        documentDefinitionNames: Collection<String>
+    ): QueryBuilder {
+        val filterQueries = filters.map { filter ->
+            buildSingleFilterQueryWithMappings(filter, filterPathMappings, documentDefinitionNames)
+        }
+
+        return if (operator == SearchOperator.OR) {
+            QueryBuilders.boolQuery().apply {
+                filterQueries.forEach { should(it) }
+                minimumShouldMatch(1)
+            }
+        } else {
+            andAll(filterQueries)
+        }
+    }
+
+    private fun buildSingleFilterQueryWithMappings(
+        filter: AdvancedSearchRequest.OtherFilter,
+        filterPathMappings: Map<String, Map<String, String>>,
+        documentDefinitionNames: Collection<String>
+    ): QueryBuilder {
+        val filterKey = extractFilterKey(filter.path)
+        val pathsPerDefinition = filterPathMappings[filterKey]
+
+        if (pathsPerDefinition.isNullOrEmpty()) {
+            return buildSingleFilterQuery(filter)
+        }
+
+        val orConditions = documentDefinitionNames.mapNotNull { definitionName ->
+            val path = pathsPerDefinition[definitionName] ?: return@mapNotNull null
+
+            QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definitionName))
+                .must(buildSingleFilterQuery(filter.withPath(path)))
+        }
+
+        if (orConditions.isEmpty()) {
+            return MATCH_NONE
+        }
+
+        return QueryBuilders.boolQuery().apply {
+            orConditions.forEach { should(it) }
+            minimumShouldMatch(1)
+        }
+    }
+
+    private fun extractFilterKey(path: String?): String? {
+        return path?.removePrefix(DOC_PREFIX)?.removePrefix(CASE_PREFIX)
     }
 
     override fun count(
@@ -588,6 +819,72 @@ class JsonSchemaDocumentOpenSearchService(
             } else {
                 QueryBuilders.boolQuery()
                     .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definition.id.key))
+                    .must(buildGlobalSearchQuery(query, searchFields))
+            }
+        }
+
+        if (definitionQueries.isEmpty()) {
+            return MATCH_NONE
+        }
+
+        return QueryBuilders.boolQuery().apply {
+            definitionQueries.forEach { should(it) }
+            minimumShouldMatch(1)
+        }
+    }
+
+    private fun buildGlobalSearchQueryForDefinitions(
+        query: String,
+        documentDefinitionNames: Collection<String>
+    ): QueryBuilder {
+        val definitionQueries = documentDefinitionNames.mapNotNull { definitionName ->
+            val searchFields = runWithoutAuthorization {
+                searchFieldService.getSearchFields(definitionName)
+            }
+            if (searchFields.isEmpty()) {
+                null
+            } else {
+                QueryBuilders.boolQuery()
+                    .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definitionName))
+                    .must(buildGlobalSearchQuery(query, searchFields))
+            }
+        }
+
+        if (definitionQueries.isEmpty()) {
+            return MATCH_NONE
+        }
+
+        return QueryBuilders.boolQuery().apply {
+            definitionQueries.forEach { should(it) }
+            minimumShouldMatch(1)
+        }
+    }
+
+    private fun buildGlobalSearchQueryWithMappings(
+        query: String,
+        documentDefinitionNames: Collection<String>,
+        filterPathMappings: Map<String, Map<String, String>>,
+        globalSearchFields: Map<String, GlobalSearchFieldMeta>
+    ): QueryBuilder {
+        val definitionQueries = documentDefinitionNames.mapNotNull { definitionName ->
+            val searchFields = globalSearchFields.mapNotNull { (fieldKey, meta) ->
+                val path = filterPathMappings[fieldKey]?.get(definitionName) ?: return@mapNotNull null
+                SearchField(
+                    fieldKey,
+                    path,
+                    meta.dataType,
+                    SearchFieldFieldType.SINGLE,
+                    meta.matchType,
+                    null,
+                    0,
+                    null
+                )
+            }
+            if (searchFields.isEmpty()) {
+                null
+            } else {
+                QueryBuilders.boolQuery()
+                    .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definitionName))
                     .must(buildGlobalSearchQuery(query, searchFields))
             }
         }

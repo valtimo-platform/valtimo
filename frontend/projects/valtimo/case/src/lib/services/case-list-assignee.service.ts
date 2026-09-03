@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,25 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Subject, map, Observable, of, switchMap, take, tap, combineLatest} from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+  combineLatest,
+  filter,
+} from 'rxjs';
 import {CaseListService} from './case-list.service';
 import {DocumentService} from '@valtimo/document';
 import {AssigneeFilter, ConfigService, DefinitionColumn} from '@valtimo/shared';
 import {TranslateService} from '@ngx-translate/core';
 import {ListField} from '@valtimo/components';
 import {CaseParameterService} from './case-parameter.service';
+import {CaseListContext} from '../models';
 
 @Injectable()
 export class CaseListAssigneeService {
@@ -29,22 +41,24 @@ export class CaseListAssigneeService {
   private readonly _defaultAssigneeFilter$ = new Subject<AssigneeFilter>();
   private readonly _assigneeFilter$ = new BehaviorSubject<AssigneeFilter | null>(null);
 
-  public readonly canHaveAssignee$: Observable<boolean> =
-    this.caseListService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey =>
-        caseDefinitionKey
-          ? this.documentService.getCaseSettings(caseDefinitionKey)
-          : of({canHaveAssignee: false})
-      ),
-      map(caseSettings => caseSettings?.canHaveAssignee),
-      tap(canHaveAssignee => {
-        const visibleTabs: AssigneeFilter[] = this.configService.config.visibleCaseListTabs ?? [];
+  public readonly canHaveAssignee$: Observable<boolean> = this.caseListService.context$.pipe(
+    filter((ctx): ctx is CaseListContext => !!ctx),
+    switchMap(context => {
+      if (context.type === 'group') {
+        return of(true);
+      }
+      return this.documentService.getCaseSettings(context.key).pipe(
+        map(caseSettings => caseSettings?.canHaveAssignee ?? false)
+      );
+    }),
+    tap(canHaveAssignee => {
+      const visibleTabs: AssigneeFilter[] = this.configService.config.visibleCaseListTabs ?? [];
 
-        this._defaultAssigneeFilter$.next(
-          !!visibleTabs && canHaveAssignee ? visibleTabs[0] : 'ALL'
-        );
-      })
-    );
+      this._defaultAssigneeFilter$.next(
+        !!visibleTabs && canHaveAssignee ? visibleTabs[0] : 'ALL'
+      );
+    })
+  );
 
   public get assigneeFilter$(): Observable<AssigneeFilter | null> {
     return this._assigneeFilter$.asObservable();

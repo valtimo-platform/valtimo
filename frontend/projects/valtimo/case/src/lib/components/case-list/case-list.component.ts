@@ -38,7 +38,7 @@ import {
   take,
 } from 'rxjs';
 import {CASE_LIST_TABLE_TRANSLATIONS, DEFAULT_CASE_LIST_TABS} from '../../constants';
-import {BulkAssign, CaseListQuickSearchParams} from '../../models';
+import {BulkAssign, CaseListContext, CaseListQuickSearchParams} from '../../models';
 import {
   CaseBulkAssignService,
   CaseColumnService,
@@ -158,16 +158,19 @@ export class CaseListComponent implements OnInit, OnDestroy {
   // --- Row click ---
 
   public rowClick(item: any): void {
-    this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
+    this.listService.context$.pipe(take(1)).subscribe(context => {
+      const caseDefKey = item.caseDefinitionKey || context?.key;
+      if (!caseDefKey) return;
+
       this.breadcrumbService.cacheQueryParams(
-        `/cases/${caseDefinitionKey}`,
+        `/cases/${caseDefKey}`,
         this.route.snapshot.queryParams
       );
 
       if (item.ctrlClick) {
-        window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
+        window.open(`/cases/${caseDefKey}/document/${item.id}`, '_blank');
       } else {
-        this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
+        this.router.navigate([`/cases/${caseDefKey}/document/${item.id}`]);
       }
     });
   }
@@ -284,11 +287,13 @@ export class CaseListComponent implements OnInit, OnDestroy {
   }
 
   public onQuickSearchEvent(queryPath: string): void {
-    combineLatest([this.route.queryParams, this.orchestration.caseDefinitionKey$])
+    combineLatest([this.route.queryParams, this.listService.context$])
       .pipe(take(1))
-      .subscribe(([urlParams, caseDefinitionKey]) => {
+      .subscribe(([urlParams, context]) => {
         const queryParams = {...urlParams, ...Object.fromEntries(new URLSearchParams(queryPath))};
-        this.router.navigate([`/cases/${caseDefinitionKey}`], {
+        const route =
+          context?.type === 'group' ? ['/groups', context.key] : ['/cases', context?.key];
+        this.router.navigate(route, {
           queryParams,
           replaceUrl: true,
           queryParamsHandling: 'replace',
@@ -316,19 +321,27 @@ export class CaseListComponent implements OnInit, OnDestroy {
   private openCaseDefinitionKeySubscription(): void {
     this._caseDefinitionKeySubscription = this.route.params
       .pipe(
-        map((params: Params) => params?.caseDefinitionKey),
-        filter(docDefName => !!docDefName),
-        distinctUntilChanged()
+        map((params: Params): CaseListContext | null => {
+          if (params?.groupKey) {
+            return {type: 'group', key: params.groupKey};
+          }
+          if (params?.caseDefinitionKey) {
+            return {type: 'definition', key: params.caseDefinitionKey};
+          }
+          return null;
+        }),
+        filter((context): context is CaseListContext => !!context),
+        distinctUntilChanged((a, b) => a.type === b.type && a.key === b.key)
       )
-      .subscribe(caseDefinitionKey => {
+      .subscribe(context => {
         if (this._previousCaseDefinitionKey) {
           this.parameterService.clearParameters();
           this.parameterService.clearSearchFieldValues();
         }
-        this._previousCaseDefinitionKey = caseDefinitionKey;
+        this._previousCaseDefinitionKey = context.key;
         this.paginationService.clearPagination();
         this.assigneeService.resetAssigneeFilter();
-        this.listService.setCaseDefinitionKey(caseDefinitionKey);
+        this.listService.setContext(context);
         this.orchestration.setLoading();
       });
   }

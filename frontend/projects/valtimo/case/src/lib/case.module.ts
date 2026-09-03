@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ import {CaseProcessStartModalComponent} from './components/case-process-start-mo
 import {CaseSupportingProcessStartModalComponent} from './components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
 import {TAB_MAP} from './constants';
-import {CaseBulkAssignService, CaseMenuService, CaseService} from './services';
+import {CaseBulkAssignService, CaseMenuService, CaseService, GroupMenuService} from './services';
 import {CaseDetailTabFormioComponent} from './components/case-detail/tab/formio/formio.component';
 import {TabTranslatePipeModule} from './pipes';
 import {CaseDetailTabNotFoundComponent} from './components/case-detail/tab/not-found/not-found.component';
@@ -226,9 +226,10 @@ export class CaseModule {
   }
 
   constructor(
-    private readonly caseMenuService: CaseMenuService,
-    private readonly menuService: MenuService
+    private readonly _caseMenuService: CaseMenuService,
+    private readonly _groupMenuService: GroupMenuService,
+    private readonly _menuService: MenuService
   ) {
-    this.menuService.registerAppendMenuItemsFunction(this.caseMenuService.appendCaseMenuItems);
+    this._menuService.registerAppendMenuItemsFunction(this._caseMenuService.appendCaseMenuItems);
   }
 }

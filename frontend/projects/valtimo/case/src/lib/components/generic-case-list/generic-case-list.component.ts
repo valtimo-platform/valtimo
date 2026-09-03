@@ -400,11 +400,13 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
   }
 
   public onQuickSearchEvent(queryPath: string): void {
-    combineLatest([this.orchestration.caseDefinitionKey$])
+    this.listService.context$
       .pipe(take(1))
-      .subscribe(([caseDefinitionKey]) => {
+      .subscribe(context => {
         const queryParams = Object.fromEntries(new URLSearchParams(queryPath));
-        this.router.navigate(['/cases'], {
+        const route =
+          context?.type === 'group' ? ['/groups', context.key] : ['/cases'];
+        this.router.navigate(route, {
           queryParams,
           replaceUrl: true,
           queryParamsHandling: 'replace',
