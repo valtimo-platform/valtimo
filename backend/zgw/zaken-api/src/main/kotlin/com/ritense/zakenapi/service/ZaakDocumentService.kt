@@ -155,7 +155,24 @@ class ZaakDocumentService(
             )
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakInstanceUrl" }
 
-        zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakInstanceUrl).forEach { zaakInformatieobject ->
+        val zaakInformatieObjecten = try {
+            zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakInstanceUrl)
+        } catch (e: HttpClientErrorException) {
+            if (e.statusCode == HttpStatus.NOT_FOUND) {
+                // The catch belongs here rather than in the caller: this class is @Transactional,
+                // so an exception crossing its proxy would have marked the transaction
+                // rollback-only and the case deletion could no longer be saved.
+                logger.warn(e) {
+                    "Skipping cleanup of the informatieobjecten of case '$caseDocumentId': " +
+                        "zaak '$zaakInstanceUrl' was not found in the Zaken API"
+                }
+                return
+            } else {
+                throw e
+            }
+        }
+
+        zaakInformatieObjecten.forEach { zaakInformatieobject ->
             if (zakenApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(
                     caseDocumentId,
                     zaakInformatieobject.informatieobject
