@@ -565,7 +565,9 @@ export class CaseListOrchestrationService {
           {
             page: documentSearchRequest.page,
             size: documentSearchRequest.size,
-            sort: documentSearchRequest.sort,
+            sort: documentSearchRequest.sort
+              ? `${documentSearchRequest.sort.state.name},${documentSearchRequest.sort.state.direction}`
+              : undefined,
           }
         )
         .pipe(
