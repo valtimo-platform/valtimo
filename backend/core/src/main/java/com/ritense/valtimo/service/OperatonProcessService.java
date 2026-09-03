@@ -843,8 +843,9 @@ public class OperatonProcessService {
 
         List<OperatonProcessDefinition> processDefinitions = operatonRepositoryService.findProcessDefinitions(
             byKey(processDefinitionKey)
-                .and(blueprintId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
-                    blueprintId.getTagPrefix() + blueprintId))
+                .and(blueprintId == null
+                    ? byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock())
+                    : byVersionTag(blueprintId.getTagPrefix() + blueprintId))
             ,
             Sort.by(Sort.Order.desc(VERSION))
         );

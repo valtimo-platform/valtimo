@@ -215,12 +215,12 @@ public class ValtimoProperties {
          * @deprecated a system process is always updatable, so this has no effect. Case definitions are
          *     protected by the version their process link pins, not by making the process read-only.
          */
-        @Deprecated(since = "13.44.0", forRemoval = true)
+        @Deprecated(since = "13.45.0", forRemoval = true)
         public boolean isSystemProcessUpdatable() {
             return systemProcessUpdatable;
         }
 
-        @Deprecated(since = "13.44.0", forRemoval = true)
+        @Deprecated(since = "13.45.0", forRemoval = true)
         public void setSystemProcessUpdatable(boolean systemProcessUpdatable) {
             if (!systemProcessUpdatable) {
                 // Warned rather than ignored: whoever set this wanted that protection, and it is gone.

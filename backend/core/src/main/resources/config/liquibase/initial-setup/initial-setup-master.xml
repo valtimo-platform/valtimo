@@ -140,7 +140,6 @@
     <include file="config/liquibase/initial-setup/process-document/changelog/20230217-process-definition-key-type-resize.xml"/>
     <include file="config/liquibase/initial-setup/process-document/changelog/20250106-process-case-definition.xml"/>
     <include file="config/liquibase/initial-setup/process-document/changelog/20250327-case-definition-process.xml"/>
-    <include file="config/liquibase/initial-setup/process-document/changelog/20260826-case-definition-process-link-version.xml"/>
 
     <!-- form/src/main/resources/config/liquibase/form-master.xml -->
 

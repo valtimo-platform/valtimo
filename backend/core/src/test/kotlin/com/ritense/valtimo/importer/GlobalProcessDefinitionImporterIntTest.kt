@@ -19,6 +19,7 @@ package com.ritense.valtimo.importer
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.importer.ImportRequest
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.exception.FileExtensionNotSupportedException
 import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
@@ -111,6 +112,18 @@ class GlobalProcessDefinitionImporterIntTest @Autowired constructor(
         assertThat(latestVersionOf(key).name).isEqualTo(FROM_CONFIGURATION)
     }
 
+    @Test
+    fun `should import a configuration file when a building block deployed the same process key`() {
+        val key = "processKeySharedWithBuildingBlock"
+        deployInBuildingBlock(key, bpmn(key, IN_BUILDING_BLOCK))
+
+        importFromConfiguration(key, bpmn(key, FROM_CONFIGURATION))
+
+        assertThat(deployedVersionsOf(key)).hasSize(2)
+        assertThat(globalVersionsOf(key)).hasSize(1)
+        assertThat(globalVersionsOf(key).single().name).isEqualTo(FROM_CONFIGURATION)
+    }
+
     private fun importFromConfiguration(key: String, bpmn: ByteArray) {
         runWithoutAuthorization {
             processDefinitionImporter.import(
@@ -125,8 +138,23 @@ class GlobalProcessDefinitionImporterIntTest @Autowired constructor(
         }
     }
 
+    private fun deployInBuildingBlock(key: String, bpmn: ByteArray) {
+        runWithoutAuthorization {
+            operatonProcessService.deploy(
+                BuildingBlockDefinitionId(key, "1.0.0"),
+                "$key.bpmn",
+                ByteArrayInputStream(bpmn),
+                false,
+                true
+            )
+        }
+    }
+
     private fun deployedVersionsOf(key: String): List<ProcessDefinition> =
         repositoryService.createProcessDefinitionQuery().processDefinitionKey(key).list()
+
+    private fun globalVersionsOf(key: String): List<ProcessDefinition> =
+        deployedVersionsOf(key).filter { it.versionTag == null }
 
     private fun latestVersionOf(key: String): ProcessDefinition =
         repositoryService.createProcessDefinitionQuery().processDefinitionKey(key).latestVersion().singleResult()
@@ -141,5 +169,6 @@ class GlobalProcessDefinitionImporterIntTest @Autowired constructor(
         const val FROM_CONFIGURATION = "From configuration"
         const val CHANGED_IN_APPLICATION = "Changed in the application"
         const val CHANGED_IN_CONFIGURATION = "Changed in the configuration"
+        const val IN_BUILDING_BLOCK = "In a building block"
     }
 }
