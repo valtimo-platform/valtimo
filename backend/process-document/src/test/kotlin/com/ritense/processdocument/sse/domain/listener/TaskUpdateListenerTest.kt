@@ -32,6 +32,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.spring.boot.starter.event.TaskEvent
@@ -171,6 +172,34 @@ class TaskUpdateListenerTest {
         assertEquals(taskId, sseEvent.taskId)
         assertEquals(caseDocumentId.toString(), sseEvent.documentId)
         assertEquals(caseDefinitionKey, sseEvent.caseDefinitionKey)
+    }
+
+    @Test
+    fun `should not notify when the process instance has already ended`() {
+        val taskId = UUID.randomUUID().toString()
+        val processInstanceId = UUID.randomUUID().toString()
+
+        val taskEvent = mock<TaskEvent>()
+        whenever(taskEvent.id).thenReturn(taskId)
+        whenever(taskEvent.processInstanceId).thenReturn(processInstanceId)
+
+        whenever(processDocumentService.getDocument(any(), anyOrNull()))
+            .thenThrow(RuntimeException("Process instance not found by id $processInstanceId"))
+
+        taskUpdateListener.handle(taskEvent)
+
+        verify(sseSubscriptionService, never()).notifySubscribers(any())
+    }
+
+    @Test
+    fun `should not notify when the team assigned task can no longer be found`() {
+        val taskId = UUID.randomUUID().toString()
+
+        whenever(operatonTaskService.findTaskById(taskId)).thenThrow(RuntimeException("Task not found by id $taskId"))
+
+        taskUpdateListener.handleTeamAssignment(TaskTeamAssignedEvent(taskId, null, null, "INTAKE_TEAM", "Intake Team"))
+
+        verify(sseSubscriptionService, never()).notifySubscribers(any())
     }
 
     private fun mockDocument(documentId: UUID, definitionName: String): Document {

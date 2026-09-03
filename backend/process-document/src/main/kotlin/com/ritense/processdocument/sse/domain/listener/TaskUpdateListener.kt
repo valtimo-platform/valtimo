@@ -51,16 +51,33 @@ class TaskUpdateListener(
         fallbackExecution = true
     )
     fun handle(taskEvent: TaskEvent) {
-        val document = processDocumentService.getDocument(OperatonProcessInstanceId(taskEvent.processInstanceId), null)
-        notifyTaskUpdate(taskEvent.id, document)
+        val document = resolveDocumentOrNull(taskEvent.id) {
+            processDocumentService.getDocument(OperatonProcessInstanceId(taskEvent.processInstanceId), null)
+        }
+        if (document != null) {
+            notifyTaskUpdate(taskEvent.id, document)
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     fun handleTeamAssignment(event: TaskTeamAssignedEvent): Unit = runWithoutAuthorization {
-        val task = operatonTaskService.findTaskById(event.taskId)
-        val processInstanceId = OperatonProcessInstanceId(task.getProcessInstanceId())
-        val document = processDocumentService.getDocument(processInstanceId, task)
-        notifyTaskUpdate(event.taskId, document)
+        val document = resolveDocumentOrNull(event.taskId) {
+            val task = operatonTaskService.findTaskById(event.taskId)
+            processDocumentService.getDocument(OperatonProcessInstanceId(task.getProcessInstanceId()), task)
+        }
+        if (document != null) {
+            notifyTaskUpdate(event.taskId, document)
+        }
+    }
+
+    // Both listeners run after commit, so the process instance may already have ended and be gone.
+    private fun resolveDocumentOrNull(taskId: String, resolve: () -> Document): Document? {
+        return try {
+            resolve()
+        } catch (e: Exception) {
+            logger.debug(e) { "Could not resolve the document for task $taskId, skipping the task update notification" }
+            null
+        }
     }
 
     private fun notifyTaskUpdate(taskId: String, document: Document) {
@@ -79,7 +96,7 @@ class TaskUpdateListener(
                 )
             )
         } catch (e: Exception) {
-            logger.error(e) { "Failed to send SSE notification for team assignment on task $taskId" }
+            logger.error(e) { "Failed to send SSE notification for task update on task $taskId" }
         }
     }
 
