@@ -56,6 +56,7 @@ import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.ValidationException
 import org.semver4j.Semver
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationEventPublisher
@@ -470,26 +471,39 @@ class CaseDefinitionService(
         pageable: Pageable,
     ): Page<CaseDefinition> {
         denyManagementOperation()
+
+        val comparator = toComparator(pageable.sort)
+
         val spec = getCaseDefinitionsQuery(
             caseDefinitionKey = caseDefinitionKey,
             active = active,
             final = final,
         )
-        val allCaseDefinitions = caseDefinitionRepository.findAll(spec, Sort.by(Sort.Order.asc("name"), Sort.Order.desc("active"), Sort.Order.desc("id.versionTag")))
-        val result = if (allVersions) {
-            allCaseDefinitions.sortedWith(compareBy({ it.name.lowercase() }, { it.id.versionTag }))
-        } else {
-            allCaseDefinitions
-                .groupBy { it.id.key }
-                .map { (_, versions) ->
-                    versions.find { it.active } ?: versions.maxBy { it.id.versionTag }
-                }
-                .sortedBy { it.name.lowercase() }
-        }
+        val result = caseDefinitionRepository.findAll(spec)
+            .let { if (allVersions) it else latestPerKey(it) }
+            .sortedWith(comparator)
 
         val start = pageable.offset.coerceIn(0, result.size.toLong()).toInt()
         val end = (start.toLong() + pageable.pageSize).coerceAtMost(result.size.toLong()).toInt()
         return PageImpl(result.subList(start, end), pageable, result.size.toLong())
+    }
+
+    private fun latestPerKey(caseDefinitions: List<CaseDefinition>): List<CaseDefinition> =
+        caseDefinitions
+            .groupBy { it.id.key }
+            .map { (_, versions) -> versions.find { it.active } ?: versions.maxBy { it.id.versionTag } }
+
+    private fun toComparator(sort: Sort): Comparator<CaseDefinition> {
+        val requested = sort.map { order ->
+            val comparator = SORT_COMPARATORS[order.property]
+                ?: throw ValidationException(
+                    "Cannot sort case definitions on '${order.property}'. " +
+                        "Sortable properties are: ${SORT_COMPARATORS.keys.joinToString()}."
+                )
+            if (order.isAscending) comparator else comparator.reversed()
+        }.toList()
+
+        return (requested + TIE_BREAKER).reduce { left, right -> left.then(right) }
     }
 
     fun isCaseDefinitionFinalizable(caseDefinitionId: CaseDefinitionId): CaseDefinitionFinalizationCheckResult {
@@ -558,5 +572,16 @@ class CaseDefinitionService(
     companion object {
         val logger = KotlinLogging.logger {}
         val PATH_REGEX_EXPORTABLE = Regex("^(case:|doc:)")
+
+        private val SORT_COMPARATORS: Map<String, Comparator<CaseDefinition>> = mapOf(
+            "name" to compareBy(String.CASE_INSENSITIVE_ORDER) { it.name },
+            "id.key" to compareBy { it.id.key },
+            "id.versionTag" to compareBy { it.id.versionTag },
+            "active" to compareBy { it.active },
+            "final" to compareBy { it.final },
+            "createdDate" to compareBy(nullsFirst()) { it.createdDate },
+        )
+
+        private val TIE_BREAKER: Comparator<CaseDefinition> = compareBy<CaseDefinition> { it.id.key }.thenByDescending { it.id.versionTag }
     }
 }

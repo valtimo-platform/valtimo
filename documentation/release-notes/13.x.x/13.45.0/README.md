@@ -31,3 +31,7 @@ Admin > Other > Process migration has the standard Valtimo look and feel, with c
 | Area | Fix |
 |------|-----|
 | Process migration | A system process can be migrated after it was changed |
+| Case definitions | The version picker lists every version of a case again, instead of only the active one, and its pagination works |
+| Case migration | The source and target version dropdowns offer every version of the selected case again, instead of only one |
+| Plugins | The verzoek plugin offers every case version again when picking one, instead of only the active one |
+| Case definitions | Versions are ordered by version number rather than alphabetically, so 1.0.10 comes after 1.0.9 |
