@@ -28,4 +28,4 @@ New enhancement explanation.
 | Case migration | The source and target version dropdowns offer every version of the selected case again, instead of only one |
 | Plugins | The verzoek plugin offers every case version again when picking one, instead of only the active one |
 | Case definitions | Versions are ordered by version number rather than alphabetically, so 1.0.10 comes after 1.0.9 |
-| Processes | Completing or cancelling a process with a message no longer logs an error, even though the process ended correctly |
+| Processes | Completing or cancelling a process with a message no longer logs an error when the process ends while a user task is still open |
