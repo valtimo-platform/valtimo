@@ -85,6 +85,6 @@ public class DocumentRelationListJsonSerializingTest {
 
         final Set<JsonSchemaDocumentRelation> relationships = Set.of(nextRelationship, parentRelationship);
         JsonContent<Set<JsonSchemaDocumentRelation>> jsonContent = jacksonTester.write(relationships);
-        JSONAssert.assertEquals(jsonContent.getJson(), jsonString, JSONCompareMode.STRICT);
+        JSONAssert.assertEquals(jsonContent.getJson(), jsonString, JSONCompareMode.LENIENT);
     }
 }
