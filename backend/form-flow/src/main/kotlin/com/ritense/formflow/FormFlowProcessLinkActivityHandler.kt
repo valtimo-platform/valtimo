@@ -108,7 +108,7 @@ class FormFlowProcessLinkActivityHandler(
                 PROCESS_DEFINITION_KEY to processDefinition.key,
                 // The key alone cannot identify a version: every building block version redeploys the same
                 // process definition key. Pass the id on so submitting starts the linked version.
-                "processDefinitionId" to processDefinition.id,
+                PROCESS_DEFINITION_ID to processDefinition.id,
             )
             documentId?.let { additionalProperties[DOCUMENT_ID] = it }
             documentDefinitionName?.let { additionalProperties[DOCUMENT_DEFINITION_NAME] = it }

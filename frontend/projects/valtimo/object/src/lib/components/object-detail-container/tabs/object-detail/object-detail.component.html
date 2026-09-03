@@ -38,12 +38,24 @@
 </ng-container>
 
 <ng-template #buttons let-obs="obs">
-  <button [disabled]="obs.disableInput" (click)="openModal()" cdsButton="primary" size="md">
+  <button
+    [attr.data-test-id]="testIds.editButton"
+    [disabled]="obs.disableInput"
+    (click)="openModal()"
+    cdsButton="primary"
+    size="md"
+  >
     {{ 'object.editObject' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
 
-  <button (click)="deleteObject()" cdsButton="danger" size="md" class="ml-3">
+  <button
+    [attr.data-test-id]="testIds.deleteButton"
+    (click)="deleteObject()"
+    cdsButton="danger"
+    size="md"
+    class="ml-3"
+  >
     {{ 'object.deleteObject' | translate }}
     <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
   </button>
@@ -51,6 +63,7 @@
 
 <ng-template #widget let-obs="obs">
   <valtimo-form-io
+    [attr.data-test-id]="testIds.summaryForm"
     *ngIf="obs.formioFormSummary"
     [form]="obs.formioFormSummary"
     [readOnly]="true"
@@ -92,6 +105,7 @@
   <cds-modal-footer>
     <ng-container>
       <button
+        [attr.data-test-id]="testIds.modalCloseButton"
         cdsButton="ghost"
         [attr.modal-primary-focus]="true"
         (click)="closeModal()"
@@ -100,6 +114,7 @@
         {{ 'object.close' | translate }}
       </button>
       <button
+        [attr.data-test-id]="testIds.modalSaveButton"
         cdsButton="primary"
         [attr.modal-primary-focus]="true"
         (click)="saveObject()"
