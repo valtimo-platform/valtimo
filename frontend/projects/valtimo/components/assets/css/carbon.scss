@@ -109,11 +109,7 @@ $darkThemeOverwriteVariables: (
 
 @use '@carbon/styles';
 @use '@carbon/grid';
-/* Loaded as a module, so the specifier is resolved against this file's own location
-   at compile time. A plain CSS @import is instead emitted verbatim and left to the
-   consuming app's bundler, which resolves it from that app's stylesheet and cannot
-   reach this package's dependencies. The alias is required: the namespace derived
-   from the filename would collide with '@carbon/styles' above. */
+/* @use so the path resolves here, not in the consuming app; aliased to avoid a namespace clash */
 @use '@carbon/charts-angular/styles.min.css' as chart-styles;
 @include grid.flex-grid();
 
