@@ -47,11 +47,12 @@ class CaseDefinitionManagementListingIntTest @Autowired constructor(
             )
         }
 
+        // No explicit sort — tie-breaker: key asc, version desc
         assertThat(
             caseDefinitions.content
                 .filter { it.id.key == CASE_DEFINITION_KEY }
                 .map { it.id.versionTag.toString() }
-        ).containsExactly("0.0.1", "1.2.3")
+        ).containsExactly("1.2.3", "0.0.1")
     }
 
     @Test
