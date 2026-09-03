@@ -17,6 +17,7 @@
 import {useService} from 'bpmn-js-properties-panel';
 import {html} from 'htm/preact';
 import {is} from 'bpmn-js/lib/util/ModelUtil';
+import {PROCESS_LINK_PANEL_TEST_IDS} from '../../../constants';
 import {ProcessManagementEditorService} from '../../../services';
 import {
   BpmnElement,
@@ -206,7 +207,10 @@ const CustomRootElement = (props: {
       element: {
         id: currentElement.id,
         type: currentElement.type,
-        activityListenerType: mapActivityTypeToActivityListenerType(currentElement.type, currentElement),
+        activityListenerType: mapActivityTypeToActivityListenerType(
+          currentElement.type,
+          currentElement
+        ),
         name: currentElement.di?.bpmnElement?.name,
       },
     };
@@ -250,13 +254,19 @@ const CustomRootElement = (props: {
     option => option.id === processLinkFormDefinitionId
   )?.name;
 
-  const hiddenInput = html`<input type="hidden" class="bio-properties-panel-input" value=${processLink ? 'configured' : ''} />`;
-  const wrapEntry = (content: any) => html`<div data-entry-id=${props.id}>${hiddenInput}${content}</div>`;
+  const hiddenInput = html`<input
+    type="hidden"
+    class="bio-properties-panel-input"
+    value=${processLink ? 'configured' : ''}
+  />`;
+  const wrapEntry = (content: any) =>
+    html`<div data-entry-id=${props.id}>${hiddenInput}${content}</div>`;
 
   const linkedButtons = !editingAllowed
     ? html`<div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
           onClick=${handleEditClick}
         >
           ${viewText}
@@ -265,6 +275,7 @@ const CustomRootElement = (props: {
     : html`<div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.unlinkButton}
           onClick=${handleUnlinkClick}
         >
           ${unlinkText}
@@ -272,6 +283,7 @@ const CustomRootElement = (props: {
 
         <button
           class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
           onClick=${handleEditClick}
         >
           ${editProcessLinkText}
@@ -279,63 +291,69 @@ const CustomRootElement = (props: {
       </div>`;
 
   if (processLinkFormDefinitionName) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
 
-        <cds-tag
-          class="cds--tag cds--tag--blue cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.form')}
-          </span>
-        </cds-tag>
-      </div>
+          <cds-tag
+            class="cds--tag cds--tag--blue cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.form')}
+            </span>
+          </cds-tag>
+        </div>
 
-      ${linkedButtons}
-    </div>`);
+        ${linkedButtons}
+      </div>`
+    );
   }
 
   const processLinkFormFlowDefinitionKey = processLink?.formFlowDefinitionKey;
 
   if (processLinkFormFlowDefinitionKey) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title"
-          >${processLinkFormFlowDefinitionKey}</span
-        >
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title"
+            >${processLinkFormFlowDefinitionKey}</span
+          >
 
-        <cds-tag
-          class="cds--tag cds--tag--teal cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.form-flow')}
-          </span>
-        </cds-tag>
-      </div>
+          <cds-tag
+            class="cds--tag cds--tag--teal cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.form-flow')}
+            </span>
+          </cds-tag>
+        </div>
 
-      ${linkedButtons}
-    </div>`);
+        ${linkedButtons}
+      </div>`
+    );
   }
 
   const buildingBlockDefinitionKey = processLink?.buildingBlockDefinitionKey;
   const buildingBlockDefinitionVersion = processLink?.buildingBlockDefinitionVersionTag;
 
   if (buildingBlockDefinitionKey) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title"
-          >${buildingBlockDefinitionKey} (${buildingBlockDefinitionVersion})</span
-        >
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title"
+            >${buildingBlockDefinitionKey} (${buildingBlockDefinitionVersion})</span
+          >
 
-        <cds-tag
-          class="cds--tag cds--tag--green cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.building-block')}
-          </span>
-        </cds-tag>
-      </div>
+          <cds-tag
+            class="cds--tag cds--tag--green cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.building-block')}
+            </span>
+          </cds-tag>
+        </div>
 
-      ${linkedButtons}
-    </div>`);
+        ${linkedButtons}
+      </div>`
+    );
   }
 
   const pluginActionKey = processLink?.pluginActionDefinitionKey;
@@ -345,43 +363,47 @@ const CustomRootElement = (props: {
     pluginTranslationService.instantPluginTitleByPluginActionKey(pluginActionKey);
 
   if (pluginActionKey) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title-container">
-          <span class="process-link-properties-panel__title">${pluginTitleTranslation}</span>
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title-container">
+            <span class="process-link-properties-panel__title">${pluginTitleTranslation}</span>
 
-          <span class="process-link-properties-panel__title">${pluginActionTranslation}</span>
-        </span>
-
-        <cds-tag
-          class="cds--tag cds--tag--purple cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.plugin')}
+            <span class="process-link-properties-panel__title">${pluginActionTranslation}</span>
           </span>
-        </cds-tag>
-      </div>
 
-      ${linkedButtons}
-    </div>`);
+          <cds-tag
+            class="cds--tag cds--tag--purple cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.plugin')}
+            </span>
+          </cds-tag>
+        </div>
+
+        ${linkedButtons}
+      </div>`
+    );
   }
 
   const uiComponentKey = processLink?.componentKey;
 
   if (uiComponentKey) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title">${uiComponentKey}</span>
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title">${uiComponentKey}</span>
 
-        <cds-tag
-          class="cds--tag cds--tag--magenta cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.ui-component')}
-          </span>
-        </cds-tag>
-      </div>
+          <cds-tag
+            class="cds--tag cds--tag--magenta cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.ui-component')}
+            </span>
+          </cds-tag>
+        </div>
 
-      ${linkedButtons}
-    </div>`);
+        ${linkedButtons}
+      </div>`
+    );
   }
 
   const genericLinkedPanel = html`<div class="process-link-properties-panel">
@@ -392,6 +414,7 @@ const CustomRootElement = (props: {
     <div class="process-link-properties-panel__buttons">
       <button
         class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+        data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.createButton}
         onClick=${handleCreateClick}
       >
         ${createText}
@@ -409,7 +432,9 @@ const ValidationErrorsElement = (props: {
   const getErrorMessage = (error: ProcessDefinitionValidationError): string => {
     if (error.errorCode) {
       const translationKey = `processManagement.validationErrorCodes.${error.errorCode}`;
-      const translated = props.translateService.instant(translationKey, {expression: error.expression ?? ''});
+      const translated = props.translateService.instant(translationKey, {
+        expression: error.expression ?? '',
+      });
       if (translated !== translationKey) {
         return translated;
       }
@@ -420,9 +445,17 @@ const ValidationErrorsElement = (props: {
   return html`<div class="validation-errors-panel">
     ${props.errors.map(
       error =>
-        html`<div class="validation-errors-panel__item${error.severity === 'WARNING' ? ' warning' : ''}">
-          <span class="validation-errors-panel__icon${error.severity === 'WARNING' ? ' warning' : ''}">!</span>
-          <span class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}">${getErrorMessage(error)}</span>
+        html`<div
+          class="validation-errors-panel__item${error.severity === 'WARNING' ? ' warning' : ''}"
+        >
+          <span
+            class="validation-errors-panel__icon${error.severity === 'WARNING' ? ' warning' : ''}"
+            >!</span
+          >
+          <span
+            class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}"
+            >${getErrorMessage(error)}</span
+          >
         </div>`
     )}
   </div>`;

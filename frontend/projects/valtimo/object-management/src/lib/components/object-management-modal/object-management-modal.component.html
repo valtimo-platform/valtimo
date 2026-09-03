@@ -25,7 +25,7 @@
 >
   <div role="header">
     <div class="add-title">
-      <h4>
+      <h4 [attr.data-test-id]="testIds.heading">
         {{
           (obs.modalType === 'add'
             ? 'objectManagement.createObjecttype'
@@ -45,11 +45,21 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled">
+      <button
+        [attr.data-test-id]="testIds.cancelButton"
+        cdsButton="secondary"
+        (click)="cancel()"
+        [disabled]="obs.disabled"
+      >
         {{ 'objectManagement.cancel' | translate }}
       </button>
 
-      <button cdsButton="primary" (click)="save()" [disabled]="obs.disabled || !obs.valid">
+      <button
+        [attr.data-test-id]="testIds.saveButton"
+        cdsButton="primary"
+        (click)="save()"
+        [disabled]="obs.disabled || !obs.valid"
+      >
         {{
           (obs.modalType === 'add' ? 'objectManagement.add' : 'objectManagement.edit') | translate
         }}
@@ -77,6 +87,7 @@
         [widthPx]="350"
         [defaultValue]="prefillObject?.title"
         name="title"
+        [attr.data-test-id]="testIds.titleInput"
       ></v-input>
 
       <ng-container
@@ -91,6 +102,7 @@
           [margin]="true"
           [widthInPx]="350"
           name="objectenApiPluginConfigurationId"
+        [attr.data-test-id]="testIds.objectenApiSelect"
           [title]="'objectManagement.labels.objects' | translate"
           [defaultSelectionId]="prefillObject?.objectenApiPluginConfigurationId"
           [required]="true"
@@ -101,6 +113,7 @@
           [margin]="true"
           [widthInPx]="350"
           name="objecttypenApiPluginConfigurationId"
+        [attr.data-test-id]="testIds.objecttypenApiSelect"
           [title]="'objectManagement.labels.objecttypes' | translate"
           [defaultSelectionId]="prefillObject?.objecttypenApiPluginConfigurationId"
           [required]="true"
@@ -116,6 +129,7 @@
         [widthPx]="350"
         [defaultValue]="prefillObject?.objecttypeId"
         name="objecttypeId"
+        [attr.data-test-id]="testIds.objecttypeIdInput"
       ></v-input>
 
       <v-input
@@ -128,6 +142,7 @@
         [min]="1"
         type="number"
         name="objecttypeVersion"
+        [attr.data-test-id]="testIds.objecttypeVersionInput"
       ></v-input>
 
       <ng-container *ngIf="{formDefinitions: formDefinitions$ | async} as formObs">
@@ -136,6 +151,7 @@
           [margin]="true"
           [widthInPx]="350"
           name="formDefinitionView"
+        [attr.data-test-id]="testIds.formDefinitionViewSelect"
           [title]="'objectManagement.labels.formDefinitionView' | translate"
           [tooltip]="'objectManagement.tooltips.formDefinitionView' | translate"
           [defaultSelectionId]="prefillObject?.formDefinitionView"
@@ -146,6 +162,7 @@
           [margin]="true"
           [widthInPx]="350"
           name="formDefinitionEdit"
+        [attr.data-test-id]="testIds.formDefinitionEditSelect"
           [title]="'objectManagement.labels.formDefinitionEdit' | translate"
           [tooltip]="'objectManagement.tooltips.formDefinitionEdit' | translate"
           [defaultSelectionId]="prefillObject?.formDefinitionEdit"
@@ -158,6 +175,7 @@
         [title]="'objectManagement.labels.showInDataMenu' | translate"
         [tooltip]="'objectManagement.tooltips.showInDataMenu' | translate"
         name="showInDataMenu"
+        [attr.data-test-id]="testIds.showInDataMenuCheckbox"
         [defaultValue]="prefillObject?.showInDataMenu"
       ></v-input>
 
@@ -167,6 +185,7 @@
         [title]="'objectManagement.labels.suppressOutbox' | translate"
         [tooltip]="'objectManagement.tooltips.suppressOutbox' | translate"
         name="suppressOutbox"
+        [attr.data-test-id]="testIds.suppressOutboxCheckbox"
         [defaultValue]="prefillObject?.suppressOutbox"
       ></v-input>
     </v-form>
