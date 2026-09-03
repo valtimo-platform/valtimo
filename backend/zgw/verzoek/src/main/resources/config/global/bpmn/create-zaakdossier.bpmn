@@ -10,7 +10,7 @@
         <camunda:property name="systemProcess" value="true" />
       </camunda:properties>
     </bpmn:extensionElements>
-    <bpmn:sequenceFlow id="Flow_0evcldf" sourceRef="create-initiator-zaak-rol-bsn" targetRef="Gateway_15xv19r" />
+    <bpmn:sequenceFlow id="Flow_0evcldf" sourceRef="create-initiator-zaak-rol" targetRef="Gateway_15xv19r" />
     <bpmn:sequenceFlow id="Flow_1tgmdp6" sourceRef="create-zaak" targetRef="Activity_1m2evlj" />
     <bpmn:sequenceFlow id="Flow_1uhql59" sourceRef="delete-verzoek-from-objectsapi" targetRef="Event_19l1mml" />
     <bpmn:sequenceFlow id="Flow_1ju01uk" sourceRef="StartEvent_1" targetRef="create-zaak" />
@@ -28,7 +28,7 @@
     <bpmn:sequenceFlow id="Flow_1eu3hy4" sourceRef="Activity_1m2evlj" targetRef="Gateway_00itrlf" />
     <bpmn:sequenceFlow id="Flow_1gwaqz2" sourceRef="link-document-to-zaak" targetRef="start-handling-process" />
     <bpmn:sequenceFlow id="Flow_1k5479s" sourceRef="start-handling-process" targetRef="delete-verzoek-from-objectsapi" />
-    <bpmn:sequenceFlow id="Flow_0qtk1px" name="BSN" sourceRef="Gateway_00itrlf" targetRef="create-initiator-zaak-rol-bsn">
+    <bpmn:sequenceFlow id="Flow_0qtk1px" name="BSN" sourceRef="Gateway_00itrlf" targetRef="create-initiator-zaak-rol">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${initiatorType=='bsn'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_17ut7rr" sourceRef="Gateway_15xv19r" targetRef="link-document-to-zaak" />
@@ -37,7 +37,7 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${initiatorType=='kvk'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_005exze" sourceRef="create-initiator-zaak-rol-kvk" targetRef="Gateway_15xv19r" />
-    <bpmn:serviceTask id="create-initiator-zaak-rol-bsn" name="Create Initiator ZaakRol BSN" camunda:asyncAfter="true" camunda:expression="${true}">
+    <bpmn:serviceTask id="create-initiator-zaak-rol" name="Create Initiator ZaakRol BSN" camunda:asyncAfter="true" camunda:expression="${true}">
       <bpmn:incoming>Flow_0qtk1px</bpmn:incoming>
       <bpmn:outgoing>Flow_0evcldf</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -96,7 +96,7 @@
         <dc:Bounds x="530" y="220" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0049x1j_di" bpmnElement="create-initiator-zaak-rol-bsn">
+      <bpmndi:BPMNShape id="Activity_0049x1j_di" bpmnElement="create-initiator-zaak-rol">
         <dc:Bounds x="830" y="220" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
