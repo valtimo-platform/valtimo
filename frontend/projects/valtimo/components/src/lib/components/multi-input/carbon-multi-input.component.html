@@ -160,7 +160,7 @@
 
       <button
         *ngIf="!hideDeleteButton"
-        cdsButton="danger"
+        [cdsButton]="deleteButtonType"
         [disabled]="values?.length <= this.minimumAmountOfRows || $disabled()"
         [iconOnly]="true"
         size="md"

@@ -16,12 +16,21 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {ReactiveFormsModule} from '@angular/forms';
 import {DATA_SOURCE_TOKEN} from '../../constants';
 import {taskCountSpecification} from './task-count.specification';
-import {TaskCountConfigurationComponent} from './components';
-import {ReactiveFormsModule} from '@angular/forms';
+import {TaskCountConditionGroupComponent, TaskCountConfigurationComponent} from './components';
 import {WidgetTranslatePipeModule} from '../../pipes';
-import {DropdownModule, InputModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  ContentSwitcherModule,
+  DropdownModule,
+  IconModule,
+  InputModule,
+  LayerModule,
+  NotificationModule,
+  TilesModule,
+} from 'carbon-components-angular';
 import {CarbonMultiInputModule} from '@valtimo/components';
 
 @NgModule({
@@ -33,8 +42,15 @@ import {CarbonMultiInputModule} from '@valtimo/components';
     InputModule,
     DropdownModule,
     CarbonMultiInputModule,
+    ButtonModule,
+    ContentSwitcherModule,
+    IconModule,
+    LayerModule,
+    NotificationModule,
+    TilesModule,
+    TaskCountConditionGroupComponent,
   ],
-  exports: [TaskCountConfigurationComponent],
+  exports: [TaskCountConditionGroupComponent, TaskCountConfigurationComponent],
   providers: [{provide: DATA_SOURCE_TOKEN, useValue: taskCountSpecification, multi: true}],
 })
 export class TaskCountDataSourceModule {}

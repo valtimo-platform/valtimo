@@ -84,6 +84,12 @@ class ConditionTest {
     }
 
     @Test
+    fun `should evaluate in operator against a ComparableList value`() {
+        assertThat(ExpressionOperator.IN.evaluate("A", ComparableList(listOf("A", "B")))).isTrue()
+        assertThat(ExpressionOperator.IN.evaluate("C", ComparableList(listOf("A", "B")))).isFalse()
+    }
+
+    @Test
     fun `should allow instance method calls like plusMinutes on LocalDateTime`() {
         val condition = Condition(
             path = "/xyz",
