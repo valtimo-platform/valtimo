@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,8 @@
  * limitations under the License.
  */
 
-export * from './task-list.constants';
-export * from './task-list.test-ids';
+const TASK_LIST_TEST_IDS = {
+  refreshTasksButton: 'taskListRefreshTasksButton',
+} as const;
+
+export {TASK_LIST_TEST_IDS};

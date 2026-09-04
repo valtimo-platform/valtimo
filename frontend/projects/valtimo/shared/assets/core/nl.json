@@ -1785,7 +1785,8 @@
     "rowLocked": "Je hebt geen toegang tot deze taak",
     "allCases": "Alle dossiers",
     "noSearchResultsTitle": "Geen taken gevonden",
-    "noSearchResultsDescription": "Er zijn geen taken die aan je zoekcriteria voldoen."
+    "noSearchResultsDescription": "Er zijn geen taken die aan je zoekcriteria voldoen.",
+    "refreshTasks": "Taken verversen"
   },
   "Task": "Taak",
   "Tasks": "Taken",
@@ -3585,6 +3586,10 @@
         "enableGenericCaseList": {
           "title": "Generieke dossierlijst inschakelen",
           "description": "Toon één dossierlijstweergave met een dropdown om tussen dossierdefinities te wisselen."
+        },
+        "enableManualTaskListRefresh": {
+          "title": "Handmatig verversen takenlijst inschakelen",
+          "description": "Toon een verversknop in de takenlijst in plaats van de lijst automatisch te verversen bij wijzigingen."
         }
       }
     },
