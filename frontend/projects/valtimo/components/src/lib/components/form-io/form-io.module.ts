@@ -18,7 +18,8 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormioComponent} from './components/form-io/form-io.component';
 import {FormioBuilderComponent} from './components/form-io-builder/form-io-builder.component';
-import {Formio, FormioAppConfig, FormioModule} from '@formio/angular';
+import {FormioAppConfig, FormioModule} from '@formio/angular';
+import {Formio} from '@formio/js';
 import {getFormioAppConfig} from './formio-config';
 import {FormIoUploaderComponent} from './components/form-io-uploader/form-io-uploader.component';
 import {DropzoneModule} from '../dropzone/dropzone.module';
@@ -38,9 +39,11 @@ import {FormIoCurrencyComponent} from './components/form-io-currency/currency.co
 import bootstrap4 from '@formio/bootstrap/bootstrap4';
 import {applyDataGridPatch} from './patches/patched-datagrid';
 import {registerFormioFlatpickr, setFormioFlatpickrLocale} from './formio-flatpickr';
-import { FormIoMailPreviewComponent } from './components/form-io-mail-preview/mail-preview.component';
+import {FormIoMailPreviewComponent} from './components/form-io-mail-preview/mail-preview.component';
 
-// Apply FormIO patches before any form renders
+// Apply FormIO patches and register the template set before any form renders.
+// Form.io 5 ships no framework templates by default; bootstrap4 matches the bootstrap 4.x CSS.
+Formio.use(bootstrap4);
 applyDataGridPatch();
 
 @NgModule({
@@ -87,7 +90,6 @@ applyDataGridPatch();
 })
 export class FormIoModule {
   constructor(private translateService: TranslateService) {
-    Formio.use((bootstrap4 as any)?.default ?? bootstrap4);
     registerFormioFlatpickr();
     setFormioFlatpickrLocale(this.translateService.currentLang);
     this.translateService.onLangChange.subscribe(({lang}) => setFormioFlatpickrLocale(lang));

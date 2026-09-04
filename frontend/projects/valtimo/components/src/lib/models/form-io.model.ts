@@ -16,10 +16,10 @@
 
 import {
   AlertsOptions,
+  AngularFormioOptions,
   ErrorsOptions,
   FormioBeforeSubmit,
   FormioHookOptions,
-  AngularFormioOptions,
 } from '@formio/angular';
 import {ManagementContext} from '@valtimo/shared';
 
@@ -31,7 +31,6 @@ interface FormioOptions extends AngularFormioOptions {
   readonly?: boolean;
   decimalSeparator?: string;
   thousandsSeparator?: string;
-  [key: string]: any;
 }
 
 interface FormioSubmission {

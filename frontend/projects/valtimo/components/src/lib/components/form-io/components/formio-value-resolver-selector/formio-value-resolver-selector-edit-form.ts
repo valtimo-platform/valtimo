@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import {Components} from '@formio/js';
-
-const TextfieldEditForm = Components.components.textfield.editForm;
-
-export const formioValueResolverSelectorEditForm = () => {
-  const editForm = TextfieldEditForm();
-  return editForm;
-};
+export const formioValueResolverSelectorEditForm = () => ({
+  components: [{key: 'type', type: 'hidden'}],
+});

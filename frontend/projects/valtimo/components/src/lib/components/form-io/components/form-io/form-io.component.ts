@@ -91,9 +91,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   public refreshForm = new EventEmitter<FormioRefreshValue>();
 
   // Annotated explicitly: inferring resolves FormioSubmission's unexported default type param and fails declaration emit (TS4029).
-  public readonly submission$: BehaviorSubject<FormioSubmission> = new BehaviorSubject<FormioSubmission>(
-    {}
-  );
+  public readonly submission$: BehaviorSubject<FormioSubmission> =
+    new BehaviorSubject<FormioSubmission>({});
 
   private readonly _form$ = new BehaviorSubject<FormioForm>(undefined);
 

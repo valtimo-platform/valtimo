@@ -16,6 +16,7 @@
     "@ngx-translate/http-loader",
     "@ng-bootstrap/ng-bootstrap",
     "@formio/angular",
+    "@formio/bootstrap",
     "ngx-spinner",
     "ng-multiselect-dropdown",
     "@carbon/icons",
