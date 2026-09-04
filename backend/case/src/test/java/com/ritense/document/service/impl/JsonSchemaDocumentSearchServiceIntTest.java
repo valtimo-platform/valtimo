@@ -631,6 +631,23 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         assertThat(content.get(2).assigneeFullName()).isEqualTo("Anna Yablon");
     }
 
+    @Test
+    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
+    void searchShouldReturnDisjunctPagesWhenAllDocumentsShareTheSameAssigneeFullName() {
+        documentRepository.deleteAllInBatch();
+        var documents = Stream.generate(() -> (JsonSchemaDocument) createDocument("{}").resultingDocument().orElseThrow())
+            .limit(25)
+            .collect(Collectors.toList());
+        documents.forEach(document -> document.setAssignee("1111", "Beth Xander"));
+        documentRepository.saveAll(documents);
+
+        var sort = Sort.by(Direction.DESC, "assigneeFullName");
+        var firstPageIds = searchDocumentIds(PageRequest.of(0, 10, sort));
+        var secondPageIds = searchDocumentIds(PageRequest.of(1, 10, sort));
+
+        assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds);
+        assertThat(Stream.concat(firstPageIds.stream(), secondPageIds.stream())).isSorted();
+    }
 
     @Test
     @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
@@ -1709,6 +1726,14 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
                 )
             )
         );
+    }
+
+    // Compared as text because UUID.compareTo treats the bits as signed, where the database orders them unsigned
+    private List<String> searchDocumentIds(Pageable pageable) {
+        return documentSearchService.search(new SearchRequest(), BlueprintType.CASE, pageable)
+            .getContent().stream()
+            .map(document -> document.id().getId().toString())
+            .collect(Collectors.toList());
     }
 
     private void mockTeamFindByKey(String key, String title) {

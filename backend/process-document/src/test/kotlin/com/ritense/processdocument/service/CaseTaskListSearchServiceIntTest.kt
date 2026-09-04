@@ -392,6 +392,24 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
         assertThat(searchResult.numberOfElements).isEqualTo(10)
     }
 
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [AuthoritiesConstants.USER])
+    fun shouldReturnDisjunctPagesWhenAllTasksShareTheSortedValue() {
+        val taskDefinition = definition("task")
+        repeat(12) { createDocumentAndTwoProcesses("Funenpark", taskDefinition.id().name()) }
+
+        val sort = Sort.by(Sort.Direction.DESC, "doc:street")
+        val firstPageTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(0, 10, sort))
+        val secondPageTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(1, 10, sort))
+
+        assertThat(firstPageTaskIds).doesNotContainAnyElementsOf(secondPageTaskIds)
+        assertThat(firstPageTaskIds + secondPageTaskIds).isSorted()
+    }
+
+    private fun searchTaskIds(caseDefinitionName: String, pageable: PageRequest): List<String> =
+        caseTaskListSearchService.search(caseDefinitionName, AdvancedSearchRequest(), pageable)
+            .content.map { it.taskId }
+
     private fun createTeamAndAssignToTask(taskId: String, teamKey: String, teamTitle: String) {
         if (!teamRepository.existsById(teamKey)) {
             teamRepository.save(com.ritense.team.domain.Team(key = teamKey, title = teamTitle))
