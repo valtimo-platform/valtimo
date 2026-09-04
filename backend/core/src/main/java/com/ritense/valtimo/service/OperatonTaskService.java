@@ -858,7 +858,7 @@ public class OperatonTaskService {
             .collect(Collectors.toCollection(ArrayList::new));
 
         // Paging is only reproducible when the ORDER BY ends on a unique column, so ties never reshuffle
-        orders.add(cb.asc(root.get("id")));
+        orders.add(cb.asc(root.get(ID)));
         return orders;
     }
 
