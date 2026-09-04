@@ -30,7 +30,6 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import type {Content} from 'vanilla-jsoneditor';
-import {createJSONEditor} from 'vanilla-jsoneditor';
 import Ajv from 'ajv';
 import {
   ButtonModule,
@@ -85,6 +84,7 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
   @Output() public validEvent = new EventEmitter<boolean>();
 
   private _editor!: any;
+  private _destroyed = false;
 
   private readonly _ajv = new Ajv();
 
@@ -127,11 +127,17 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
     this.iconService.registerAll([DocumentRequirements16]);
   }
 
-  public ngAfterViewInit(): void {
-    const initial: Content = {text: this.schemaJson};
-
+  public async ngAfterViewInit(): Promise<void> {
     this.setObjectLevels(this.schemaJson);
     this.setRequired(this.schemaJson);
+
+    // Lazy — keeps vanilla-jsoneditor out of the initial bundle
+    const {createJSONEditor} = await import('vanilla-jsoneditor');
+
+    if (this._destroyed) return;
+
+    // Read after the await: inputs may have changed while loading
+    const initial: Content = {text: this.schemaJson};
 
     this._editor = createJSONEditor({
       target: this.hostEl.nativeElement,
@@ -185,6 +191,7 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   public ngOnDestroy(): void {
+    this._destroyed = true;
     if (this._editor) this._editor.destroy?.();
   }
 

@@ -30,17 +30,12 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {ButtonModule, InputModule, SkeletonModule} from 'carbon-components-angular';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Subscription} from 'rxjs';
 import {MapWidget, MapData} from '../../models';
 import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
-import TileLayer from 'ol/layer/Tile';
-import {OSM} from 'ol/source';
-import {GeoJSON} from 'ol/format';
-import {Map, View} from 'ol';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import {FullScreen, defaults, Zoom} from 'ol/control';
-import {Icon, Fill, Stroke, Style} from 'ol/style';
+import type {Map} from 'ol';
+import type VectorLayer from 'ol/layer/Vector';
+import type VectorSource from 'ol/source/Vector';
 
 @Component({
   selector: 'valtimo-widget-map',
@@ -89,6 +84,9 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
   private _observer!: ResizeObserver;
   private map!: Map;
   private vectorLayer!: VectorLayer<VectorSource>;
+  private _destroyed = false;
+
+  private readonly _subscriptions = new Subscription();
 
   public ngAfterViewInit(): void {
     if (this._widgetMapRef) this.openWidthObserver();
@@ -96,6 +94,8 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this._destroyed = true;
+    this._subscriptions.unsubscribe();
     this._observer?.disconnect();
   }
 
@@ -108,10 +108,33 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
     return widgetData && Object.keys(widgetData).length === 0;
   }
 
-  private subscribeMapData(): void {
+  private async subscribeMapData(): Promise<void> {
+    // Loaded on demand: OpenLayers is only needed by dashboards that actually show a map widget.
+    const [
+      {Map: OlMap, View},
+      {default: TileLayer},
+      {OSM},
+      {GeoJSON},
+      {default: VectorLayerCtor},
+      {default: VectorSourceCtor},
+      {FullScreen, defaults, Zoom},
+      {Icon, Fill, Stroke, Style},
+    ] = await Promise.all([
+      import('ol'),
+      import('ol/layer/Tile'),
+      import('ol/source'),
+      import('ol/format'),
+      import('ol/layer/Vector'),
+      import('ol/source/Vector'),
+      import('ol/control'),
+      import('ol/style'),
+    ]);
+
+    if (this._destroyed) return;
+
     const fullscreen = new FullScreen();
     const zoomControl = new Zoom({});
-    this.map = new Map({
+    this.map = new OlMap({
       target: this._widgetMapRef.nativeElement,
       layers: [
         new TileLayer({
@@ -154,32 +177,34 @@ export class WidgetMapComponent implements AfterViewInit, OnDestroy {
       }),
     });
 
-    this.widgetData$.subscribe(widgetData => {
-      if (!widgetData?.geoJsonFeatureCollection?.features) {
-        return;
-      }
+    this._subscriptions.add(
+      this.widgetData$.subscribe(widgetData => {
+        if (!widgetData?.geoJsonFeatureCollection?.features) {
+          return;
+        }
 
-      const featureCollection = {
-        ...widgetData?.geoJsonFeatureCollection,
-        type: 'FeatureCollection',
-      };
+        const featureCollection = {
+          ...widgetData?.geoJsonFeatureCollection,
+          type: 'FeatureCollection',
+        };
 
-      if (this.vectorLayer) {
-        this.map.removeLayer(this.vectorLayer);
-      }
+        if (this.vectorLayer) {
+          this.map.removeLayer(this.vectorLayer);
+        }
 
-      const vectorSource = new VectorSource({
-        features: new GeoJSON().readFeatures(featureCollection, featureOptions),
-      });
+        const vectorSource = new VectorSourceCtor({
+          features: new GeoJSON().readFeatures(featureCollection, featureOptions),
+        });
 
-      this.vectorLayer = new VectorLayer({
-        source: vectorSource,
-        style: vectorStyle,
-      });
+        this.vectorLayer = new VectorLayerCtor({
+          source: vectorSource,
+          style: vectorStyle,
+        });
 
-      this.map.addLayer(this.vectorLayer);
-      setTimeout(() => this.fitMap(vectorSource));
-    });
+        this.map.addLayer(this.vectorLayer);
+        setTimeout(() => this.fitMap(vectorSource));
+      })
+    );
   }
 
   private fitMap(vectorSource: VectorSource): void {

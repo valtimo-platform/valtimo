@@ -39,6 +39,14 @@ Emptying a field now follows what the case model allows: the field is either set
 Creating and updating cases, resolving document values and opening task forms are all faster, most
 noticeably on configurations with large document schemas or many process links.
 
+### Faster first page load
+
+Opening Valtimo for the first time, or the first time after an update, now downloads roughly half
+as much data: 2.0 MB instead of 4.1 MB. The Swagger viewer, the DMN editor, the JSON schema editor
+and the map widget are fetched only when the screen that uses them is opened, and several scripts
+that were loaded on every page but never used have been removed. The deployed image is also
+considerably smaller, because only the part of the code editor that is actually used is shipped.
+
 ### Searchable building block overview
 
 The building block overview is now sorted by name, paginated, and searchable by name or key, so a large collection of building blocks stays workable.
