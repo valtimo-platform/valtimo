@@ -137,6 +137,22 @@ class ProcessResourceIntTest extends BaseIntegrationTest {
     }
 
     @Test
+    void shouldNotFailMigrationWhenThereAreNoProcessInstances() throws Exception {
+        var processDefinition = repositoryService.createDeployment()
+            .addClasspathResource("bpmn/system-receive-task-process.bpmn")
+            .deployWithResult()
+            .getDeployedProcessDefinitions()
+            .get(0);
+
+        mockMvc.perform(
+            post("/api/v1/process/definition/{sourceProcessDefinitionId}/{targetProcessDefinitionId}/migrate",
+                processDefinition.getId(), processDefinition.getId())
+                .accept(APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isNoContent());
+    }
+
+    @Test
     void shouldGetProcessInstances() throws Exception {
 
         List<ProcessInstance> processInstances = List.of(

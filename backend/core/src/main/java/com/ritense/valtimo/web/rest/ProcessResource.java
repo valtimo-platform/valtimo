@@ -589,6 +589,9 @@ public class ProcessResource extends AbstractProcessResource {
         MigrationPlan migrationPlan = migrationPlanBuilder.build();
         ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery().processDefinitionId(
                 sourceProcessDefinitionId);
+        if (processInstanceQuery.count() == 0) {
+            return ResponseEntity.noContent().build();
+        }
         Batch migrationBatch = runtimeService.newMigration(migrationPlan).processInstanceQuery(
                 processInstanceQuery).executeAsync();
         return new ResponseEntity<>(BatchDto.fromBatch(migrationBatch), HttpStatus.OK);
