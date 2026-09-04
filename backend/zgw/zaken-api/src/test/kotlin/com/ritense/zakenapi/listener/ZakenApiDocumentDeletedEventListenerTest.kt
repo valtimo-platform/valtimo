@@ -23,6 +23,8 @@ import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.service.ZaakDocumentService
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -30,6 +32,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import org.springframework.http.HttpStatus
+import org.springframework.web.client.HttpClientErrorException
 import java.net.URI
 import java.util.UUID
 
@@ -58,6 +62,42 @@ class ZakenApiDocumentDeletedEventListenerTest {
 
         verify(zaakDocumentService).deleteRelatedInformatieObjecten(caseDocumentId, zaakInstanceUrl)
         verify(pluginInstance).deleteZaak(zaakInstanceUrl)
+    }
+
+    @Test
+    fun `should not throw exception when the zaak was already deleted in the Zaken API`() {
+        val caseDocumentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
+        val zaakInstanceUrl = URI("http://zaaak.url")
+        val zaakInstanceLink = mock<ZaakInstanceLink>()
+
+        whenever(zaakInstanceService.getByDocumentId(caseDocumentId)).thenReturn(zaakInstanceLink)
+        whenever(zaakInstanceLink.zaakInstanceUrl).thenReturn(zaakInstanceUrl)
+
+        val pluginInstance = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any())).thenReturn(pluginInstance)
+        whenever(pluginInstance.deleteZaak(zaakInstanceUrl)).thenThrow(HttpClientErrorException(HttpStatus.NOT_FOUND))
+
+        assertThatCode { listener.handle(DocumentDeletedEvent(caseDocumentId)) }.doesNotThrowAnyException()
+
+        verify(zaakDocumentService).deleteRelatedInformatieObjecten(caseDocumentId, zaakInstanceUrl)
+        verify(pluginInstance).deleteZaak(zaakInstanceUrl)
+    }
+
+    @Test
+    fun `should throw exception when the Zaken API refuses to delete the zaak`() {
+        val caseDocumentId = UUID.fromString("d1f1b3ed-7575-45bb-a02b-18f378ddc34d")
+        val zaakInstanceUrl = URI("http://zaaak.url")
+        val zaakInstanceLink = mock<ZaakInstanceLink>()
+
+        whenever(zaakInstanceService.getByDocumentId(caseDocumentId)).thenReturn(zaakInstanceLink)
+        whenever(zaakInstanceLink.zaakInstanceUrl).thenReturn(zaakInstanceUrl)
+
+        val pluginInstance = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any())).thenReturn(pluginInstance)
+        whenever(pluginInstance.deleteZaak(zaakInstanceUrl)).thenThrow(HttpClientErrorException(HttpStatus.FORBIDDEN))
+
+        assertThatExceptionOfType(HttpClientErrorException::class.java)
+            .isThrownBy { listener.handle(DocumentDeletedEvent(caseDocumentId)) }
     }
 
     @Test
