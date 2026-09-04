@@ -1,0 +1,58 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Inspectie starten",
+            "content": "Start een inspectie voor de verhuizing.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvragerNaam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-inspectie-aanvrager-naam"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
+        },
+        {
+            "key": "nieuwAdres",
+            "type": "textfield",
+            "input": true,
+            "label": "Nieuw adres",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-inspectie-nieuw-adres"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "Dorpsstraat 1, 1234 AB Testdorp"
+        },
+        {
+            "key": "inspecteur",
+            "type": "textfield",
+            "input": true,
+            "label": "Toegewezen inspecteur",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-inspectie-inspecteur"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "Piet Pietersen"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Inspectie starten",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

@@ -1,0 +1,55 @@
+{
+    "title": "Navolger (runAfter verhuizing-gepland)",
+    "key": "verhuizing-navolger",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "runAfter": "verhuizing-gepland"
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "navolger"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/gemigreerdDoor",
+            "value": "verhuizing-navolger",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

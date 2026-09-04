@@ -1,0 +1,55 @@
+{
+    "title": "Herinspectie plannen",
+    "key": "verhuizing-inspectie-herinspectie",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.0"
+    },
+    "dataMigration": [
+        {
+            "value": "herinspectie",
+            "target": "doc:/inspectieStatus",
+            "targetType": "string"
+        },
+        {
+            "value": "false",
+            "target": "doc:/akkoord",
+            "targetType": "boolean"
+        },
+        {
+            "value": "0",
+            "target": "doc:/aantalKamers",
+            "targetType": "integer"
+        },
+        {
+            "value": "0",
+            "target": "doc:/geschatteWaarde",
+            "targetType": "number"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing-inspectie-process",
+            "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "value": "1.0.0",
+                    "target": "pv:migratedFrom",
+                    "targetType": "string"
+                },
+                {
+                    "source": "doc:/inspecteur",
+                    "target": "pv:previousInspecteur"
+                },
+                {
+                    "value": "1",
+                    "target": "pv:herinspectieRonde",
+                    "targetType": "integer"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

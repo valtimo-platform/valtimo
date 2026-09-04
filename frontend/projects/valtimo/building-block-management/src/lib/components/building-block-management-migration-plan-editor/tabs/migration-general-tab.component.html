@@ -1,0 +1,57 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-migration-general-fields
+  [blueprintKey]="buildingBlockDefinitionKey"
+  [blueprintVersionTag]="buildingBlockDefinitionVersionTag"
+  [isEdit]="isEdit"
+  [sourceHintKey]="'buildingBlockManagement.migration.editor.general.sourceHint'"
+  [sourceKeyLabelKey]="'buildingBlockManagement.migration.editor.general.sourceKey'"
+  [sourceKeyOptions]="sourceKeyOptions"
+  [sourceKeyPlaceholderKey]="
+    'buildingBlockManagement.migration.editor.general.sourceKeyPlaceholder'
+  "
+  [sourceVersionOptions]="sourceVersionOptions"
+  [suggesting]="suggesting"
+  [testIds]="testIds"
+  [titlePlaceholderKey]="'buildingBlockManagement.migration.editor.general.titlePlaceholder'"
+  [usedKeys]="usedKeys"
+  [value]="fields"
+  (valueChange)="onFieldsChange($event)"
+>
+  <!-- When this plan runs — a building block plan has no triggers and no conditions to declare -->
+  <h5 class="migration-tab__subheading">
+    {{ 'buildingBlockManagement.migration.editor.general.whenItRuns' | translate }}
+  </h5>
+
+  <p class="migration-tab__hint">
+    {{
+      'buildingBlockManagement.migration.editor.general.whenItRunsHint'
+        | translate
+          : {
+              key: buildingBlockDefinitionKey,
+              versionTag: buildingBlockDefinitionVersionTag,
+            }
+    }}
+  </p>
+
+  <p class="migration-tab__hint">
+    {{
+      'buildingBlockManagement.migration.editor.general.chainOfPlansHint'
+        | translate: {key: buildingBlockDefinitionKey}
+    }}
+  </p>
+</valtimo-migration-general-fields>

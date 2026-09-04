@@ -1,0 +1,17 @@
+{
+    "scenario": "gegevens",
+    "aanvrager": {
+        "naam": "Jan Jansen",
+        "emailadres": "jan.jansen@example.com"
+    },
+    "nieuwAdres": "Dorpsstraat 1, 1234 AB Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 3,
+    "oppervlakte": 85.5,
+    "verhuisdatum": "2026-03-01",
+    "documenten": [
+        "paspoort",
+        "huurcontract"
+    ]
+}

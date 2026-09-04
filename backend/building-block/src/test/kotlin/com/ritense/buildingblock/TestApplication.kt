@@ -16,12 +16,15 @@
 
 package com.ritense.buildingblock
 
+import com.ritense.case_.service.migration.CaseMigrationRunner
+import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.core.task.SyncTaskExecutor
 
 @SpringBootApplication
 class TestApplication {
@@ -36,5 +39,10 @@ class TestApplication {
         fun testMailPluginFactory(pluginService: PluginService): PluginFactory<TestMailPlugin> {
             return TestMailPluginFactory(pluginService)
         }
+
+        /** Run migrations on the calling thread instead of the background pool — an integration test asserts straight after the call, which against a dispatched run would be a race. */
+        @Bean
+        fun caseMigrationRunner(caseMigrationService: CaseMigrationService) =
+            CaseMigrationRunner(caseMigrationService, SyncTaskExecutor())
     }
 }

@@ -1,0 +1,35 @@
+[
+    {
+        "title": "Dossierhouder",
+        "key": "dossierhouder",
+        "path": "doc:dossierhouder",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": false,
+        "order": 0
+    },
+    {
+        "title": "Status",
+        "key": "dossierStatus",
+        "path": "doc:dossierStatus",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": true,
+        "order": 1
+    },
+    {
+        "title": "Gemigreerd vanaf",
+        "key": "gemigreerdVan",
+        "path": "doc:gemigreerdVan",
+        "displayType": {
+            "type": "text",
+            "displayTypeParameters": {}
+        },
+        "sortable": false,
+        "order": 2
+    }
+]

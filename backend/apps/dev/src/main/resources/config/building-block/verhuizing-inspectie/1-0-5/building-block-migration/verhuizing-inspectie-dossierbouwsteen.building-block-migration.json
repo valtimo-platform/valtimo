@@ -1,0 +1,38 @@
+{
+    "title": "Dossierbouwsteen aanroepen in plaats van de fotobouwsteen",
+    "key": "verhuizing-inspectie-dossierbouwsteen",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.4"
+    },
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing-inspectie-process",
+            "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:inspectieGemigreerdVan",
+                    "value": "1.0.4",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        },
+        {
+            "sourceProcessDefinitionKey": "inspectie-herstel-process",
+            "targetProcessDefinitionKey": "inspectie-herstel-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:herstelGemigreerdVan",
+                    "value": "1.0.4",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

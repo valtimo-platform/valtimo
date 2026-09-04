@@ -204,6 +204,11 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this._buildingBlockDefinitionVersionTag$.next(value);
   }
 
+  /** Extra version tags whose fields are merged into the option list, deduplicated by path — so a migration patch can clear a field that only exists in the source version. */
+  @Input() set additionalVersionTags(value: string[] | null | undefined) {
+    this._additionalVersionTags$.next(value ?? []);
+  }
+
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
     this._prefixes$.next(value ?? []);
   }
@@ -258,6 +263,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   private readonly _buildingBlockDefinitionKey$ = new BehaviorSubject<string | null>(null);
   private readonly _buildingBlockDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
 
+  private readonly _additionalVersionTags$ = new BehaviorSubject<string[]>([]);
+
   public readonly showToggle$ = combineLatest([
     this._caseDefinitionKeySubject$,
     this._buildingBlockDefinitionKey$,
@@ -293,9 +300,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
             this._caseDefinitionVersionTag$,
             this._buildingBlockDefinitionKey$,
             this._buildingBlockDefinitionVersionTag$,
+            this._additionalVersionTags$,
             this.showToggle$,
           ]).pipe(
-            filter(([, , , , , , , showToggle]) => showToggle),
+            filter(([, , , , , , , , showToggle]) => showToggle),
             switchMap(
               ([
                 caseDefinitionKey,
@@ -305,6 +313,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
                 caseDefinitionVersionTag,
                 buildingBlockKey,
                 buildingBlockVersionTag,
+                additionalVersionTags,
               ]) => {
                 const context = this.buildBlueprintContext(
                   caseDefinitionKey,
@@ -313,12 +322,31 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
                   buildingBlockVersionTag
                 );
                 if (!context) return of([]);
-                return this.valuePathSelectorService.getResolvableKeysForContext(
-                  prefixes,
-                  excludePrefixes,
+                // The primary context plus one per extra version tag, deduped so the primary is never fetched twice.
+                const contexts = [
                   context,
-                  type
-                );
+                  ...additionalVersionTags
+                    .filter(tag => !!tag && tag !== context.versionTag)
+                    .map(tag => ({...context, versionTag: tag})),
+                ];
+                if (contexts.length === 1) {
+                  return this.valuePathSelectorService.getResolvableKeysForContext(
+                    prefixes,
+                    excludePrefixes,
+                    context,
+                    type
+                  );
+                }
+                return combineLatest(
+                  contexts.map(ctx =>
+                    this.valuePathSelectorService.getResolvableKeysForContext(
+                      prefixes,
+                      excludePrefixes,
+                      ctx,
+                      type
+                    )
+                  )
+                ).pipe(map(lists => this.mergeOptionsByPath(lists)));
               }
             )
           )
@@ -488,6 +516,17 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
 
     return `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`;
+  }
+
+  /** Flatten the per-version option lists, keeping the first occurrence of each path so the primary version's entry — with its children — wins. */
+  private mergeOptionsByPath(lists: ValuePathItem[][]): ValuePathItem[] {
+    const byPath = new Map<string, ValuePathItem>();
+    lists.forEach(list =>
+      list.forEach(item => {
+        if (!byPath.has(item.path)) byPath.set(item.path, item);
+      })
+    );
+    return [...byPath.values()];
   }
 
   private buildBlueprintContext(

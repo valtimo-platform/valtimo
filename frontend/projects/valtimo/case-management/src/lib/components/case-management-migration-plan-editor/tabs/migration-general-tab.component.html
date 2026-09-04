@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-migration-general-fields
+  [blueprintKey]="caseDefinitionKey"
+  [blueprintVersionTag]="caseDefinitionVersionTag"
+  [isEdit]="isEdit"
+  [sourceHintKey]="'caseManagement.migration.editor.general.sourceHint'"
+  [sourceKeyLabelKey]="'caseManagement.migration.editor.general.sourceKey'"
+  [sourceKeyOptions]="sourceKeyOptions"
+  [sourceKeyPlaceholderKey]="'caseManagement.migration.editor.general.sourceKeyPlaceholder'"
+  [sourceVersionOptions]="sourceVersionOptions"
+  [suggesting]="suggesting"
+  [testIds]="testIds"
+  [titlePlaceholderKey]="'caseManagement.migration.editor.general.titlePlaceholder'"
+  [usedKeys]="usedKeys"
+  [value]="fields"
+  (valueChange)="onFieldsChange($event)"
+>
+  <!-- `display: contents`: the form element only binds the controls, and without it the block would be one flex child and lose the gap between its sections. -->
+  <div class="migration-tab__projected" [formGroup]="form">
+    <!-- Triggers -->
+    <h5 class="migration-tab__subheading">
+      {{ 'caseManagement.migration.editor.general.triggers' | translate }}
+    </h5>
+    <p class="migration-tab__hint">
+      {{ 'caseManagement.migration.editor.general.triggersHint' | translate }}
+    </p>
+
+    <cds-checkbox formControlName="triggeredByButton">
+      {{ 'caseManagement.migration.editor.general.triggeredByButton' | translate }}
+    </cds-checkbox>
+
+    <div class="migration-tab__grid">
+      <cds-text-label>
+        {{ 'caseManagement.migration.editor.general.scheduledAtDate' | translate }}
+        <input cdsText formControlName="scheduledAtDate" type="datetime-local" />
+      </cds-text-label>
+
+      <v-select
+        formControlName="runAfter"
+        [items]="runAfterOptions"
+        [titleTranslationKey]="'caseManagement.migration.editor.general.runAfter'"
+        [placeholder]="'caseManagement.migration.editor.general.runAfterPlaceholder' | translate"
+        [notFoundText]="'caseManagement.migration.editor.general.runAfterEmpty' | translate"
+        [clearable]="true"
+      ></v-select>
+    </div>
+
+    <!-- Conditions -->
+    <h5 class="migration-tab__subheading">
+      {{ 'caseManagement.migration.editor.general.conditions' | translate }}
+    </h5>
+    <p class="migration-tab__hint">
+      {{ 'caseManagement.migration.editor.general.conditionsHint' | translate }}
+    </p>
+
+    @if (!conditionsArray.length) {
+      <p class="migration-tab__empty">
+        {{ 'caseManagement.migration.editor.general.noConditions' | translate }}
+      </p>
+    }
+
+    <valtimo-value-condition-tree
+      [addConditionTestId]="testIds.addConditionButton"
+      [addGroupTestId]="testIds.addConditionGroupButton"
+      [caseDefinitionKey]="caseDefinitionKey"
+      [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+      [conditions]="conditionsArray"
+      [prefixes]="CONDITION_PATH_PREFIXES"
+    ></valtimo-value-condition-tree>
+  </div>
+</valtimo-migration-general-fields>
