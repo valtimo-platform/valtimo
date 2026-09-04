@@ -41,6 +41,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
+import com.ritense.valtimo.operaton.dto.TaskExtended;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,6 +50,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.operaton.bpm.engine.TaskService;
@@ -218,6 +221,41 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         );
 
         assertThat(pagedTasks.getTotalElements()).isEqualTo(10);
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = "IDENTITY_LINK_ROLE")
+    void shouldReturnDisjunctPagesWhenAllTasksShareTheSameName() {
+        AuthorizationContext.runWithoutAuthorization(() -> {
+            for (int i = 0; i < 25; i++) {
+                operatonProcessService.startProcess(
+                    "identity-link-mapper-test-process",
+                    businessKey,
+                    caseDefinitionId,
+                    Map.of()
+                );
+            }
+            return null;
+        });
+
+        var firstPageIds = findTaskIds(PageRequest.of(0, 10, Sort.Direction.DESC, "name"));
+        var secondPageIds = findTaskIds(PageRequest.of(1, 10, Sort.Direction.DESC, "name"));
+        var firstTwentyIds = findTaskIds(PageRequest.of(0, 20, Sort.Direction.DESC, "name"));
+
+        assertThat(firstPageIds).hasSize(10);
+        assertThat(secondPageIds).hasSize(10);
+        assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds);
+        var pagedIds = Stream.concat(firstPageIds.stream(), secondPageIds.stream()).collect(Collectors.toList());
+        assertThat(pagedIds).doesNotHaveDuplicates();
+        assertThat(pagedIds).isSorted();
+        assertThat(pagedIds).isEqualTo(firstTwentyIds);
+    }
+
+    private List<String> findTaskIds(PageRequest pageRequest) {
+        return operatonTaskService.findTasksFiltered(OperatonTaskService.TaskFilter.ALL, pageRequest)
+            .getContent().stream()
+            .map(TaskExtended::getId)
+            .collect(Collectors.toList());
     }
 
     @Test

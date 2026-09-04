@@ -24,6 +24,7 @@ New enhancement explanation.
 
 | Area             | Fix                                                                                                                           |
 |------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| Case and task lists | Paging through a list sorted on a column that repeats values, such as the assignee, no longer shows the same case or task on two pages while leaving others out |
 | Case definitions | The version picker lists every version of a case again, instead of only the active one, and its pagination works              |
 | Case migration   | The source and target version dropdowns offer every version of the selected case again, instead of only one                   |
 | Cases            | A case can be deleted when the zaak it is linked to has already been removed in the Zaken API                                 |
