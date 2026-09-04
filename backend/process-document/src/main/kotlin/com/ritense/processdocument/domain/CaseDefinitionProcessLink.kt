@@ -27,5 +27,14 @@ class CaseDefinitionProcessLink(
     val id: CaseDefinitionProcessLinkId,
 
     @Column(name = "link_type", nullable = false)
-    val type: String
+    val type: String,
+
+    /**
+     * Set only for an unowned (system) process, where a new version would otherwise silently change what a
+     * finalized case definition runs. An owned process needs no pin: its version tag already resolves it.
+     *
+     * `null` means "the latest version". The value is an engine-local version number, so it is not exported.
+     */
+    @Column(name = "process_definition_version")
+    val processDefinitionVersion: Int? = null
 )

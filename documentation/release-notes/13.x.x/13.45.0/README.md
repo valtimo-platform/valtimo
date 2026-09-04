@@ -14,9 +14,15 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### System processes can always be edited
 
-New enhancement explanation.
+A process marked as a system process can now be changed and saved like any other process, which creates a new version of it. Importing a process package also overwrites an existing system process instead of being refused. Finalised case definitions keep using the version of the system process they were configured with, so an existing case is not affected by the change.
+
+The setting that could block changes to system processes no longer has any effect and will be removed. Installations that still use it get a warning when the application starts.
+
+### Refreshed process migration screen
+
+Admin > Other > Process migration has the standard Valtimo look and feel, with clearer labels for the source and target process, the versions, and the activities to map.
 
 ---
 
@@ -30,6 +36,7 @@ New enhancement explanation.
 | Plugins          | The verzoek plugin offers every case version again when picking one, instead of only the active one                           |
 | Case definitions | Versions are ordered by version number rather than alphabetically, so 1.0.10 comes after 1.0.9                                |
 | Plugins          | Creating a zaakdossier via the verzoek plugin with an empty initiator type no longer fails when creating the initiator zaakrol |
+| Process migration | A system process can be migrated after it was changed |
 | Processes        | Completing or cancelling a process with a message no longer logs an error when the process ends while a user task is still open |
 
 ## Breaking Changes (minimum)

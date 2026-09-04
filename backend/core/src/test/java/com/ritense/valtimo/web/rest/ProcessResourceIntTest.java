@@ -32,6 +32,7 @@ import com.ritense.valtimo.web.rest.dto.ProcessInstanceSearchDTO;
 import java.util.Date;
 import java.util.List;
 import org.operaton.bpm.engine.RepositoryService;
+import org.operaton.bpm.engine.RuntimeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,9 @@ class ProcessResourceIntTest extends BaseIntegrationTest {
 
     @Autowired
     public RepositoryService repositoryService;
+
+    @Autowired
+    public RuntimeService runtimeService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -75,6 +79,30 @@ class ProcessResourceIntTest extends BaseIntegrationTest {
     }
 
     @Test
+    void shouldOnlyGetSuspendedProcessDefinitionsWhenAsked() throws Exception {
+        var processDefinition = repositoryService.createDeployment()
+            .addClasspathResource("bpmn/system-receive-task-process.bpmn")
+            .deployWithResult()
+            .getDeployedProcessDefinitions()
+            .get(0);
+        repositoryService.suspendProcessDefinitionById(processDefinition.getId());
+
+        mockMvc.perform(get("/api/v1/process/definition")
+                .accept(APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[?(@.key=='system-receive-task-process')]").isEmpty());
+
+        mockMvc.perform(get("/api/v1/process/definition")
+                .param("includeSuspended", "true")
+                .accept(APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[?(@.key=='system-receive-task-process')].key")
+                .value("system-receive-task-process"));
+    }
+
+    @Test
     void shouldGetProcessDefinitionXml() throws Exception {
         var processDefinition = repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey("test-process")
@@ -87,23 +115,41 @@ class ProcessResourceIntTest extends BaseIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(processDefinition.getId()))
             .andExpect(jsonPath("$.bpmn20Xml").isNotEmpty())
-            .andExpect(jsonPath("$.readOnly").value(true))
+            .andExpect(jsonPath("$.readOnly").value(false))
             .andExpect(jsonPath("$.systemProcess").value(true));
     }
 
     @Test
-    void shouldThrowForbiddenWhenMigratingAReadOnlyProcess() throws Exception {
-        var processDefinition = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionKey("test-process")
-            .latestVersion()
-            .singleResult();
+    void shouldMigrateASystemProcess() throws Exception {
+        var processDefinition = repositoryService.createDeployment()
+            .addClasspathResource("bpmn/system-receive-task-process.bpmn")
+            .deployWithResult()
+            .getDeployedProcessDefinitions()
+            .get(0);
+        runtimeService.startProcessInstanceById(processDefinition.getId());
 
         mockMvc.perform(
             post("/api/v1/process/definition/{sourceProcessDefinitionId}/{targetProcessDefinitionId}/migrate",
                 processDefinition.getId(), processDefinition.getId())
                 .accept(APPLICATION_JSON_VALUE))
             .andDo(print())
-            .andExpect(status().isForbidden());
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldNotFailMigrationWhenThereAreNoProcessInstances() throws Exception {
+        var processDefinition = repositoryService.createDeployment()
+            .addClasspathResource("bpmn/system-receive-task-process.bpmn")
+            .deployWithResult()
+            .getDeployedProcessDefinitions()
+            .get(0);
+
+        mockMvc.perform(
+            post("/api/v1/process/definition/{sourceProcessDefinitionId}/{targetProcessDefinitionId}/migrate",
+                processDefinition.getId(), processDefinition.getId())
+                .accept(APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isNoContent());
     }
 
     @Test

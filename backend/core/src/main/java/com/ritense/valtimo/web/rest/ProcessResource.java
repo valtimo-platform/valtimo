@@ -25,7 +25,6 @@ import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationH
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byProcessInstanceId;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 import static java.time.ZoneId.systemDefault;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 import com.ritense.logging.LoggableResource;
@@ -158,14 +157,16 @@ public class ProcessResource extends AbstractProcessResource {
     }
 
     @GetMapping("/v1/process/definition")
-    public ResponseEntity<List<ProcessDefinitionWithPropertiesDto>> getProcessDefinitions() {
+    public ResponseEntity<List<ProcessDefinitionWithPropertiesDto>> getProcessDefinitions(
+        @RequestParam(defaultValue = "false") boolean includeSuspended
+    ) {
         final List<ProcessDefinitionWithPropertiesDto> definitions = runWithoutAuthorization(() -> operatonProcessService
-                .getDeployedDefinitions()
+                .getDeployedDefinitions(includeSuspended)
                 .stream()
                 .map(ProcessDefinitionWithPropertiesDto::fromProcessDefinition)
                 .collect(Collectors.toList()));
         definitions.forEach(definition ->
-                definition.setReadOnly(processPropertyService.isReadOnly(definition.getKey()))
+                definition.setSystemProcess(processPropertyService.isKnownSystemProcess(definition.getKey()))
         );
         return ResponseEntity.ok(definitions);
     }
@@ -214,7 +215,7 @@ public class ProcessResource extends AbstractProcessResource {
                 .toList();
             final var definitionWithDiagramAndProperties = new ProcessDefinitionDiagramWithPropertyDto(
                     definitionDiagramDto,
-                    processPropertyService.isReadOnlyById(processDefinitionId),
+                    false,
                     processPropertyService.isSystemProcessById(processDefinitionId),
                     autofilledElements
             );
@@ -575,9 +576,6 @@ public class ProcessResource extends AbstractProcessResource {
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String sourceProcessDefinitionId,
         @PathVariable String targetProcessDefinitionId,
         @RequestBody(required = false) Map<String, String> instructions) {
-        if (processPropertyService.isReadOnlyById(targetProcessDefinitionId)) {
-            return ResponseEntity.status(FORBIDDEN).build();
-        }
         MigrationPlanBuilder migrationPlanBuilder = ProcessEngines.getDefaultProcessEngine()
                 .getRuntimeService()
                 .createMigrationPlan(sourceProcessDefinitionId, targetProcessDefinitionId);
@@ -591,6 +589,9 @@ public class ProcessResource extends AbstractProcessResource {
         MigrationPlan migrationPlan = migrationPlanBuilder.build();
         ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery().processDefinitionId(
                 sourceProcessDefinitionId);
+        if (processInstanceQuery.count() == 0) {
+            return ResponseEntity.noContent().build();
+        }
         Batch migrationBatch = runtimeService.newMigration(migrationPlan).processInstanceQuery(
                 processInstanceQuery).executeAsync();
         return new ResponseEntity<>(BatchDto.fromBatch(migrationBatch), HttpStatus.OK);
@@ -625,9 +626,6 @@ public class ProcessResource extends AbstractProcessResource {
     public ResponseEntity<Void> modifyProcessDefinitionIntoShortTimerVersionAndDeploy(
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String processDefinitionId
     ) throws ProcessNotFoundException, DocumentParserException {
-        if (processPropertyService.isReadOnlyById(processDefinitionId)) {
-            return ResponseEntity.status(FORBIDDEN).build();
-        }
         processShortTimerService.modifyAndDeployShortTimerVersion(processDefinitionId);
         return ResponseEntity.ok().build();
     }

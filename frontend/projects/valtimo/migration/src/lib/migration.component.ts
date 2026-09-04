@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, viewChild, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ViewChild} from '@angular/core';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {NGXLogger} from 'ngx-logger';
 import {AlertService} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
 import {ComboBox, ListItem} from 'carbon-components-angular';
+import {MIGRATION_TEST_IDS} from './constants';
 
 @Component({
   standalone: false,
@@ -27,7 +29,7 @@ import {ComboBox, ListItem} from 'carbon-components-angular';
   templateUrl: './migration.component.html',
   styleUrls: ['./migration.component.scss'],
 })
-export class MigrationComponent implements AfterViewInit, AfterViewInit {
+export class MigrationComponent implements AfterViewInit {
   public processDefinitions: ProcessDefinition[] = [];
   public selectedVersions = {
     source: [],
@@ -63,10 +65,13 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
   @ViewChild('targetVersionCombobox') targetVersionCombobox: ComboBox;
   public diagram: any = null;
 
+  protected readonly testIds = MIGRATION_TEST_IDS;
+
   constructor(
-    private processService: ProcessService,
-    private logger: NGXLogger,
-    private alertService: AlertService
+    private readonly processService: ProcessService,
+    private readonly logger: NGXLogger,
+    private readonly alertService: AlertService,
+    private readonly translateService: TranslateService
   ) {}
 
   ngAfterViewInit() {
@@ -90,12 +95,12 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
   private refreshDefinitionItems(): void {
     this.sourceDefinitionItems = this.processDefinitions.map(processDef => ({
       key: processDef.key,
-      content: processDef.name,
+      content: processDef.name || processDef.key,
       selected: this.fields.source.definition === processDef.key,
     }));
     this.targetDefinitionItems = this.processDefinitions.map(processDef => ({
       key: processDef.key,
-      content: processDef.name,
+      content: processDef.name || processDef.key,
       selected: this.fields.target.definition === processDef.key,
     }));
   }
@@ -115,7 +120,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
 
   loadProcessDefinitions() {
     this.processService
-      .getProcessDefinitions()
+      .getProcessDefinitions(true)
       .subscribe((processDefinitions: ProcessDefinition[]) => {
         this.processDefinitions = processDefinitions;
         this.refreshDefinitionItems();
@@ -128,7 +133,8 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
 
     this.loadProcessDefinitionVersions(key, type);
     if (type === 'source') {
-      this.loadProcessDefinitionVersions(key, 'target');
+      // Prefilled to the latest version, this screen's usual case; only the user knows the source.
+      this.loadProcessDefinitionVersions(key, 'target', true);
     }
   }
 
@@ -148,7 +154,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
     this.taskMapping[nodeId] = item?.id ?? null;
   }
 
-  loadProcessDefinitionVersions(key: string | null, type: string) {
+  loadProcessDefinitionVersions(key: string | null, type: string, selectLatestVersion = false) {
     this.fields[type].definition = key;
     this.selectedVersions[type] = [];
     this.clearProcess(type);
@@ -163,8 +169,19 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
           }
           this.selectedVersions[type] = processDefinitionVersions;
           this.refreshVersionItems(type);
+          if (selectLatestVersion) this.loadProcess(this.latestVersionIdOf(type), type);
         });
     }
+  }
+
+  private latestVersionIdOf(type: string): string | null {
+    return (
+      this.selectedVersions[type].reduce(
+        (latest, processVer) =>
+          !latest || processVer.version > latest.version ? processVer : latest,
+        null
+      )?.id ?? null
+    );
   }
 
   loadProcess(id: string | null, type: string) {
@@ -190,6 +207,9 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
 
   loadProcessDefinitionXML(id: string, type: string) {
     this.processService.getProcessDefinitionXml(id).subscribe(xml => {
+      // Guards against the in-flight latest-version load winning the race and leaving migrateProcess()
+      // on a version the user never picked.
+      if (this.fields[type].version !== id) return;
       if (!xml.bpmn20Xml) return;
       this.diagram[type].loadXml(xml['bpmn20Xml']);
       this.selectedId[type] = id;
@@ -254,7 +274,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
       .migrateProcess(this.selectedId.source, this.selectedId.target, this.taskMapping)
       .subscribe(
         res => {
-          this.alertService.success('Process successfully migrated!');
+          this.alertService.success(this.translateService.instant('processMigration.success'));
           this.clearProcess('source');
           this.clearProcess('target');
           this.fields = {
@@ -272,7 +292,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
           this.refreshVersionItems('target');
         },
         err => {
-          this.alertService.error('Process migration failed!');
+          this.alertService.error(this.translateService.instant('processMigration.failure'));
           this.logger.debug(err);
         }
       );
