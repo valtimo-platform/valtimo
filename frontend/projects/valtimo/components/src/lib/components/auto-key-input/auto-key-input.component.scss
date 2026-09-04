@@ -37,10 +37,5 @@
   cds-icon-button {
     flex-shrink: 0;
     margin-left: 4px;
-
-    ::ng-deep button {
-      block-size: 40px;
-      min-block-size: 40px;
-    }
   }
 }
