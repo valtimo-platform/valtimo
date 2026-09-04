@@ -401,9 +401,13 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
         val sort = Sort.by(Sort.Direction.DESC, "doc:street")
         val firstPageTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(0, 10, sort))
         val secondPageTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(1, 10, sort))
+        val firstTwentyTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(0, 20, sort))
 
+        assertThat(firstPageTaskIds).hasSize(10)
+        assertThat(secondPageTaskIds).hasSize(10)
         assertThat(firstPageTaskIds).doesNotContainAnyElementsOf(secondPageTaskIds)
         assertThat(firstPageTaskIds + secondPageTaskIds).isSorted()
+        assertThat(firstPageTaskIds + secondPageTaskIds).isEqualTo(firstTwentyTaskIds)
     }
 
     private fun searchTaskIds(caseDefinitionName: String, pageable: PageRequest): List<String> =

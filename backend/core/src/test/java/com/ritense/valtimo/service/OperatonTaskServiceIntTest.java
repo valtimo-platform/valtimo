@@ -241,8 +241,12 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         var firstPageIds = findTaskIds(PageRequest.of(0, 10, Sort.Direction.DESC, "name"));
         var secondPageIds = findTaskIds(PageRequest.of(1, 10, Sort.Direction.DESC, "name"));
 
+        assertThat(firstPageIds).hasSize(10);
+        assertThat(secondPageIds).hasSize(10);
         assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds);
-        assertThat(Stream.concat(firstPageIds.stream(), secondPageIds.stream())).isSorted();
+        var pagedIds = Stream.concat(firstPageIds.stream(), secondPageIds.stream()).collect(Collectors.toList());
+        assertThat(pagedIds).doesNotHaveDuplicates();
+        assertThat(pagedIds).isSorted();
     }
 
     private List<String> findTaskIds(PageRequest pageRequest) {
