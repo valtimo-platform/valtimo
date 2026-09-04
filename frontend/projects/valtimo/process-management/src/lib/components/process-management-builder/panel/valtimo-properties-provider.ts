@@ -15,11 +15,9 @@
  */
 
 import {useService} from 'bpmn-js-properties-panel';
-import {TextFieldEntry} from '@bpmn-io/properties-panel';
 import {html} from 'htm/preact';
-import {getBusinessObject, is} from 'bpmn-js/lib/util/ModelUtil';
+import {is} from 'bpmn-js/lib/util/ModelUtil';
 import {ProcessManagementEditorService} from '../../../services';
-import {MAX_ACTIVITY_ID_LENGTH} from '../../../constants';
 import {
   BpmnElement,
   OpenProcessLinkModalEvent,
@@ -31,25 +29,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {mapActivityTypeToActivityListenerType} from '../../../utils';
 import {VNode} from 'preact';
 import {PluginTranslationService} from '@valtimo/plugin';
-
-// Mirrors the QName rules of bpmn-js-properties-panel, which does not expose them
-const SPACE_REGEX = /\s/;
-const QNAME_REGEX = /^([a-z][\w-.]*:)?[a-z_][\w-.]*$/i;
-const ID_REGEX = /^[a-z_][\w-.]*$/i;
-
-const PROCESS_LINKABLE_TYPES = [
-  'bpmn:UserTask',
-  'bpmn:StartEvent',
-  'bpmn:ServiceTask',
-  'bpmn:SendTask',
-  'bpmn:ReceiveTask',
-  'bpmn:IntermediateThrowEvent',
-  'bpmn:IntermediateCatchEvent',
-  'bpmn:CallActivity',
-];
-
-const isProcessLinkable = (element: BpmnElement): boolean =>
-  PROCESS_LINKABLE_TYPES.some(type => is(element, type));
 
 class ValtimoPropertiesProvider {
   static $inject = ['propertiesPanel', 'translate'];
@@ -102,15 +81,6 @@ class ValtimoPropertiesProvider {
         generalGroup.entries = generalGroup.entries.filter(
           (entry: any) => entry.id !== 'isExecutable'
         );
-
-        // Same scope as the auto-filled id, so typing and generating share one limit
-        if (is(element, 'bpmn:FlowNode')) {
-          const idEntry = generalGroup.entries.find((entry: any) => entry.id === 'id');
-          if (idEntry) {
-            idEntry.component = LengthLimitedIdElement;
-            idEntry.translateService = this.translateService;
-          }
-        }
       }
 
       if (elementErrors.length > 0) {
@@ -148,7 +118,16 @@ class ValtimoPropertiesProvider {
         }
       }
 
-      if (isProcessLinkable(element)) {
+      if (
+        is(element, 'bpmn:UserTask') ||
+        is(element, 'bpmn:StartEvent') ||
+        is(element, 'bpmn:ServiceTask') ||
+        is(element, 'bpmn:SendTask') ||
+        is(element, 'bpmn:ReceiveTask') ||
+        is(element, 'bpmn:IntermediateThrowEvent') ||
+        is(element, 'bpmn:IntermediateCatchEvent') ||
+        is(element, 'bpmn:CallActivity')
+      ) {
         const editingAllowed = this.processManagementEditorService.editingAllowed;
 
         if (editingAllowed || processLink) {
@@ -421,67 +400,6 @@ const CustomRootElement = (props: {
   </div>`;
 
   return wrapEntry(processLink ? genericLinkedPanel : genericCreatePanel);
-};
-
-const LengthLimitedIdElement = (props: {
-  element: BpmnElement;
-  translateService: TranslateService;
-}): VNode => {
-  const {element, translateService} = props;
-  const modeling = useService('modeling');
-  const debounce = useService('debounceInput');
-  const translate = useService('translate');
-
-  const getValue = (): string => getBusinessObject(element).id;
-
-  const setValue = (value: string, error: string): void => {
-    if (error) return;
-
-    modeling.updateProperties(element, {id: value});
-  };
-
-  const validate = (value: string): string | undefined => {
-    const businessObject = getBusinessObject(element);
-    const assigned = businessObject.$model.ids.assigned(value);
-
-    if (!value) return translate('ID must not be empty.');
-
-    if (assigned && assigned !== businessObject) return translate('ID must be unique.');
-
-    if (SPACE_REGEX.test(value)) return translate('ID must not contain spaces.');
-
-    if (!ID_REGEX.test(value)) {
-      return QNAME_REGEX.test(value)
-        ? translate('ID must not contain prefix.')
-        : translate('ID must be a valid QName.');
-    }
-
-    if (value.length > MAX_ACTIVITY_ID_LENGTH) {
-      return translateService.instant('processManagement.idTooLong', {
-        max: MAX_ACTIVITY_ID_LENGTH,
-      });
-    }
-
-    return undefined;
-  };
-
-  // The panel's text field has no maxLength prop, so cap the rendered input directly
-  const capInputLength = (node: HTMLElement | null): void => {
-    const input = node?.querySelector('input');
-    if (input) input.maxLength = MAX_ACTIVITY_ID_LENGTH;
-  };
-
-  return html`<div ref=${capInputLength}>
-    ${TextFieldEntry({
-      element,
-      id: 'id',
-      label: translate('ID'),
-      getValue,
-      setValue,
-      debounce,
-      validate,
-    })}
-  </div>`;
 };
 
 const ValidationErrorsElement = (props: {
