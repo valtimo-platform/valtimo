@@ -559,10 +559,15 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
         val sort = Sort.by(Sort.Direction.DESC, "assigneeFullName")
         val firstPageIds = searchDocumentIds(PageRequest.of(0, 10, sort))
         val secondPageIds = searchDocumentIds(PageRequest.of(1, 10, sort))
+        val firstTwentyIds = searchDocumentIds(PageRequest.of(0, 20, sort))
 
         assertThat(firstPageIds).hasSize(10)
+        assertThat(secondPageIds).hasSize(10)
         assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds)
-        assertThat(firstPageIds + secondPageIds).isSorted()
+        val pagedIds = firstPageIds + secondPageIds
+        assertThat(pagedIds).doesNotHaveDuplicates()
+        assertThat(pagedIds).isSorted()
+        assertThat(pagedIds).isEqualTo(firstTwentyIds)
     }
 
     private fun searchDocumentIds(pageable: Pageable): List<String> =
