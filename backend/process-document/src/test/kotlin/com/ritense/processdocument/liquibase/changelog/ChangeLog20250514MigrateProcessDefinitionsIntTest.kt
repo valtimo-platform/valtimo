@@ -18,45 +18,62 @@ package com.ritense.processdocument.liquibase.changelog
 
 import com.ritense.processdocument.BaseIntegrationTest
 import java.sql.Connection
+import java.sql.DriverManager
 import java.sql.Timestamp
 import java.time.Instant
-import javax.sql.DataSource
 import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 
 /**
- * Runs against a throwaway schema holding the tables as they stand when this changeset runs, which is before
- * later changesets rename process_link.form_flow_definition_id and after nothing has been migrated yet.
+ * Runs against a throwaway schema holding the tables as they stand when this changeset runs, which is before a
+ * later changeset renames process_link.form_flow_definition_id and while nothing has been migrated yet.
  */
 @Tag("integration")
 internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrationTest() {
 
     @Autowired
-    lateinit var dataSource: DataSource
+    lateinit var environment: Environment
 
     private lateinit var connection: Connection
+    private var schemaCreated = false
 
+    // a connection of its own, not one from the shared pool, so the schema switch below cannot leak to other tests
     @BeforeEach
     fun beforeEach() {
-        connection = dataSource.connection
+        connection = DriverManager.getConnection(
+            environment.getRequiredProperty("spring.datasource.url"),
+            environment.getRequiredProperty("spring.datasource.username"),
+            environment.getRequiredProperty("spring.datasource.password"),
+        )
+        // creating a throwaway schema needs rights the MySQL test user does not have
+        assumeTrue(connection.metaData.databaseProductName.contains("postgresql", ignoreCase = true))
+
         connection.autoCommit = true
         connection.createStatement().use {
             it.execute("drop schema if exists $SCHEMA cascade")
             it.execute("create schema $SCHEMA")
-            it.execute("set search_path to $SCHEMA")
         }
+        connection.schema = SCHEMA
         createMigrationEraTables()
+        schemaCreated = true
     }
 
     @AfterEach
     fun cleanUp() {
-        connection.createStatement().use { it.execute("drop schema if exists $SCHEMA cascade") }
+        if (!::connection.isInitialized || connection.isClosed) {
+            return
+        }
+        if (schemaCreated) {
+            connection.createStatement().use { it.execute("drop schema if exists $SCHEMA cascade") }
+        }
         connection.close()
     }
 
@@ -70,11 +87,23 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
     }
 
     @Test
-    fun `should bind the second case's parent clone to its own nested clone`() {
+    fun `should clone the referenced decision for every case its shared parent is migrated for`() {
         givenSharedParentReachedByTwoCases()
 
         migrate()
 
+        assertThat(decisionVersionTagsFor(DECISION))
+            .contains("CD:$CASE_A:$VERSION_TAG", "CD:$CASE_B:$VERSION_TAG")
+    }
+
+    @Test
+    fun `should bind both cases' parent clones to their own nested clone`() {
+        givenSharedParentReachedByTwoCases()
+
+        migrate()
+
+        assertThat(bpmnOf(PARENT, "CD:$CASE_A:$VERSION_TAG"))
+            .contains("""calledElementVersionTag="CD:$CASE_A:$VERSION_TAG"""")
         assertThat(bpmnOf(PARENT, "CD:$CASE_B:$VERSION_TAG"))
             .contains("""calledElementVersionTag="CD:$CASE_B:$VERSION_TAG"""")
     }
@@ -85,14 +114,16 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
 
         migrate()
 
-        assertThat(duplicateKeyVersionPairs()).isEmpty()
+        assertThat(duplicateKeyVersionPairs("act_re_procdef")).isEmpty()
+        assertThat(duplicateKeyVersionPairs("act_re_decision_def")).isEmpty()
     }
 
     // case-a registers the shared parent directly; case-b reaches the same parent through its own entry process
     private fun givenSharedParentReachedByTwoCases() {
-        deployProcess(PARENT, callActivityTarget = NESTED)
+        deployProcess(PARENT, callActivityTarget = NESTED, decisionRef = DECISION)
         deployProcess(ENTRY, callActivityTarget = PARENT)
-        deployProcess(NESTED, callActivityTarget = null)
+        deployProcess(NESTED)
+        deployDecision(DECISION)
         linkCase(CASE_A, PARENT)
         linkCase(CASE_B, ENTRY)
     }
@@ -112,12 +143,15 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
             """.trimIndent()
         )
         statement.setString(1, processDefinitionKey)
-        val results = statement.executeQuery()
-        val caseDefinitionKeys = mutableListOf<String>()
-        while (results.next()) {
-            caseDefinitionKeys.add(results.getString("case_definition_key"))
-        }
-        return caseDefinitionKeys
+        return statement.executeQuery().collect { it.getString("case_definition_key") }
+    }
+
+    private fun decisionVersionTagsFor(decisionDefinitionKey: String): List<String> {
+        val statement = connection.prepareStatement(
+            "select version_tag_ from act_re_decision_def where key_ = ? and version_tag_ is not null"
+        )
+        statement.setString(1, decisionDefinitionKey)
+        return statement.executeQuery().collect { it.getString("version_tag_") }
     }
 
     private fun bpmnOf(processDefinitionKey: String, versionTag: String): String {
@@ -139,51 +173,27 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
         return String(results.getBytes("bytes_"))
     }
 
-    private fun duplicateKeyVersionPairs(): List<String> {
+    private fun duplicateKeyVersionPairs(table: String): List<String> {
         val results = connection.createStatement().executeQuery(
-            """
-            select key_, version_
-            from act_re_procdef
-            group by key_, version_
-            having count(*) > 1
-            """.trimIndent()
+            "select key_, version_ from $table group by key_, version_ having count(*) > 1"
         )
-        val duplicates = mutableListOf<String>()
-        while (results.next()) {
-            duplicates.add("${results.getString("key_")}:${results.getInt("version_")}")
-        }
-        return duplicates
+        return results.collect { "${it.getString("key_")}:${it.getInt("version_")}" }
     }
 
-    private fun deployProcess(processDefinitionKey: String, callActivityTarget: String?) {
+    private fun deployProcess(
+        processDefinitionKey: String,
+        callActivityTarget: String? = null,
+        decisionRef: String? = null,
+    ) {
         val deploymentId = "deployment-$processDefinitionKey"
         val resourceName = "$processDefinitionKey.bpmn"
-
-        connection.prepareStatement(
-            "insert into act_re_deployment (id_, name_, deploy_time_, source_, tenant_id_) values (?, ?, ?, ?, null)"
-        ).apply {
-            setString(1, deploymentId)
-            setString(2, "gzacApplication")
-            setTimestamp(3, Timestamp.from(Instant.now()))
-            setString(4, "test")
-            executeUpdate()
-        }
-
-        connection.prepareStatement(
-            """
-            insert into act_ge_bytearray
-                (id_, rev_, name_, deployment_id_, bytes_, generated_, tenant_id_, type_, create_time_,
-                 root_proc_inst_id_, removal_time_)
-            values (?, 1, ?, ?, ?, false, null, 0, ?, null, null)
-            """.trimIndent()
-        ).apply {
-            setString(1, "bytearray-$processDefinitionKey")
-            setString(2, resourceName)
-            setString(3, deploymentId)
-            setBytes(4, bpmn(processDefinitionKey, callActivityTarget).toByteArray())
-            setTimestamp(5, Timestamp.from(Instant.now()))
-            executeUpdate()
-        }
+        insertDeployment(deploymentId)
+        insertByteArray(
+            "bytearray-$processDefinitionKey",
+            resourceName,
+            deploymentId,
+            bpmn(processDefinitionKey, callActivityTarget, decisionRef).toByteArray()
+        )
 
         connection.prepareStatement(
             """
@@ -198,6 +208,77 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
             setString(3, processDefinitionKey)
             setString(4, deploymentId)
             setString(5, resourceName)
+            executeUpdate()
+        }
+    }
+
+    // the changeset copies the DMN bytes without parsing them, so their content does not matter here
+    private fun deployDecision(decisionDefinitionKey: String) {
+        val deploymentId = "deployment-$decisionDefinitionKey"
+        val resourceName = "$decisionDefinitionKey.dmn"
+        insertDeployment(deploymentId)
+        insertByteArray("bytearray-$decisionDefinitionKey", resourceName, deploymentId, "<dmn/>".toByteArray())
+
+        connection.prepareStatement(
+            """
+            insert into act_re_decision_req_def
+                (id_, rev_, category_, name_, key_, version_, deployment_id_, resource_name_, dgrm_resource_name_, tenant_id_)
+            values (?, 1, null, ?, ?, 1, ?, ?, null, null)
+            """.trimIndent()
+        ).apply {
+            setString(1, "reqdef-$decisionDefinitionKey")
+            setString(2, decisionDefinitionKey)
+            setString(3, "$decisionDefinitionKey-requirements")
+            setString(4, deploymentId)
+            setString(5, resourceName)
+            executeUpdate()
+        }
+
+        connection.prepareStatement(
+            """
+            insert into act_re_decision_def
+                (id_, rev_, category_, name_, key_, version_, deployment_id_, resource_name_, dgrm_resource_name_,
+                 dec_req_id_, dec_req_key_, tenant_id_, history_ttl_, version_tag_)
+            values (?, 1, null, ?, ?, 1, ?, ?, null, ?, ?, null, null, null)
+            """.trimIndent()
+        ).apply {
+            setString(1, "decisiondef-$decisionDefinitionKey")
+            setString(2, decisionDefinitionKey)
+            setString(3, decisionDefinitionKey)
+            setString(4, deploymentId)
+            setString(5, resourceName)
+            setString(6, "reqdef-$decisionDefinitionKey")
+            setString(7, "$decisionDefinitionKey-requirements")
+            executeUpdate()
+        }
+    }
+
+    private fun insertDeployment(deploymentId: String) {
+        connection.prepareStatement(
+            "insert into act_re_deployment (id_, name_, deploy_time_, source_, tenant_id_) values (?, ?, ?, ?, null)"
+        ).apply {
+            setString(1, deploymentId)
+            setString(2, "gzacApplication")
+            setTimestamp(3, Timestamp.from(Instant.now()))
+            setString(4, "test")
+            executeUpdate()
+        }
+    }
+
+    private fun insertByteArray(id: String, resourceName: String, deploymentId: String, bytes: ByteArray) {
+        connection.prepareStatement(
+            """
+            insert into act_ge_bytearray
+                (id_, rev_, name_, deployment_id_, bytes_, generated_, tenant_id_, type_, create_time_,
+                 root_proc_inst_id_, removal_time_)
+            values (?, 1, ?, ?, ?, false, null, 0, ?, null, null)
+            """.trimIndent()
+        ).apply {
+            setString(1, id)
+            setString(2, resourceName)
+            setString(3, deploymentId)
+            setBytes(4, bytes)
+            setTimestamp(5, Timestamp.from(Instant.now()))
             executeUpdate()
         }
     }
@@ -249,6 +330,26 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
             )
             it.execute(
                 """
+                create table act_re_decision_def (
+                    id_ varchar(64) primary key, rev_ integer, category_ varchar(255), name_ varchar(255),
+                    key_ varchar(255) not null, version_ integer not null, deployment_id_ varchar(64),
+                    resource_name_ varchar(4000), dgrm_resource_name_ varchar(4000), dec_req_id_ varchar(64),
+                    dec_req_key_ varchar(255), tenant_id_ varchar(64), history_ttl_ integer,
+                    version_tag_ varchar(64)
+                )
+                """.trimIndent()
+            )
+            it.execute(
+                """
+                create table act_re_decision_req_def (
+                    id_ varchar(64) primary key, rev_ integer, category_ varchar(255), name_ varchar(255),
+                    key_ varchar(255) not null, version_ integer not null, deployment_id_ varchar(64),
+                    resource_name_ varchar(4000), dgrm_resource_name_ varchar(4000), tenant_id_ varchar(64)
+                )
+                """.trimIndent()
+            )
+            it.execute(
+                """
                 create table process_link (
                     id uuid primary key, process_definition_id varchar(64), activity_id varchar(255),
                     activity_type varchar(255), process_link_type varchar(255), component_key varchar(255),
@@ -280,9 +381,12 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
         }
     }
 
-    private fun bpmn(processDefinitionKey: String, callActivityTarget: String?): String {
+    private fun bpmn(processDefinitionKey: String, callActivityTarget: String?, decisionRef: String?): String {
         val callActivity = callActivityTarget?.let {
             """<bpmn:callActivity id="call-$it" calledElement="$it" />"""
+        } ?: ""
+        val businessRuleTask = decisionRef?.let {
+            """<bpmn:businessRuleTask id="rule-$it" operaton:decisionRef="$it" />"""
         } ?: ""
         return """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -293,10 +397,19 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
               <bpmn:process id="$processDefinitionKey" name="$processDefinitionKey" isExecutable="true">
                 <bpmn:startEvent id="start" />
                 $callActivity
+                $businessRuleTask
                 <bpmn:endEvent id="end" />
               </bpmn:process>
             </bpmn:definitions>
         """.trimIndent()
+    }
+
+    private fun <T> java.sql.ResultSet.collect(read: (java.sql.ResultSet) -> T): List<T> {
+        val values = mutableListOf<T>()
+        while (next()) {
+            values.add(read(this))
+        }
+        return values
     }
 
     companion object {
@@ -304,6 +417,7 @@ internal class ChangeLog20250514MigrateProcessDefinitionsIntTest : BaseIntegrati
         private const val PARENT = "parent-process"
         private const val ENTRY = "entry-process"
         private const val NESTED = "nested-process"
+        private const val DECISION = "shared-decision"
         private const val CASE_A = "case-a"
         private const val CASE_B = "case-b"
         private const val VERSION_TAG = "0.1.0-migrated"
