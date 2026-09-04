@@ -14,9 +14,16 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Suggested keys for list columns and search fields
 
-New enhancement explanation.
+When adding a list column or a search field, the key is now suggested based on the title you enter,
+and remains yours to change with the pencil button.
+
+### Activity IDs based on the activity name
+
+In the process editor, an activity you draw now gets an ID based on the name, instead
+of a generic one. Activities that already existed keep their ID, and once you edit an ID by hand
+it stays exactly as you typed it. IDs are limited to 64 characters.
 
 ---
 

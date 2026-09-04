@@ -143,18 +143,22 @@
         >
         </v-input>
 
-        <v-input
+        <valtimo-auto-key-input
           name="key"
           dataTestId="case-management-search-key"
-          [title]="'searchFieldsOverview.key' | translate"
-          [margin]="true"
+          labelTranslationKey="searchFieldsOverview.key"
           [defaultValue]="searchObs.searchField?.key"
-          [disabled]="obs.disableInput || !searchFieldActionTypeIsAdd"
-          [required]="true"
-          [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
-          [carbonTheme]="CARBON_THEME"
+          [disabled]="obs.disableInput"
+          [margin]="true"
+          [mode]="searchFieldActionTypeIsAdd ? 'add' : 'edit'"
+          [sourceText]="(formData$ | async)?.title"
+          [usedKeys]="usedKeys$ | async"
         >
-        </v-input>
+          <v-tooltip-icon
+            [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
+            [disabled]="obs.disableInput"
+          ></v-tooltip-icon>
+        </valtimo-auto-key-input>
 
         <valtimo-value-path-selector
           name="path"

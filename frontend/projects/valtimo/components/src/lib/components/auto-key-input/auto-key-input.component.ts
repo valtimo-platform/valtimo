@@ -18,6 +18,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   forwardRef,
+  HostBinding,
   Input,
   OnChanges,
   OnDestroy,
@@ -34,7 +35,7 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {ModalMode} from '@valtimo/shared';
+import {ModalMode, toKebabCase} from '@valtimo/shared';
 import {Close16, Edit16} from '@carbon/icons';
 import {filter} from 'rxjs/operators';
 import {AUTO_KEY_INPUT_TEST_IDS} from '../../constants';
@@ -71,8 +72,22 @@ export class AutoKeyInputComponent
 {
   @Input() public labelTranslationKey: string = 'Key';
   @Input() public placeholderTranslationKey: string = '';
+  @Input() public dataTestId: string = AUTO_KEY_INPUT_TEST_IDS.input;
+  // Read by the legacy v-form, which keys its output by component name
+  @Input() public name = '';
+  @Input() public set disabled(value: boolean) {
+    this.$disabled.set(value);
+  }
+  // Seeds the value outside reactive forms, where writeValue is never called
+  @Input() public set defaultValue(value: string | undefined) {
+    if (value) this.setValue(value);
+  }
+  @HostBinding('class.auto-key-input--margin') @Input() public margin = false;
 
   protected readonly testIds = AUTO_KEY_INPUT_TEST_IDS;
+
+  // Value stream the legacy v-form collects; the reactive-forms path uses onChange
+  public readonly inputValue$ = new BehaviorSubject<string>('');
 
   private readonly _mode$ = new BehaviorSubject<ModalMode | null>(null);
   @Input() public set mode(value: ModalMode) {
@@ -153,7 +168,7 @@ export class AutoKeyInputComponent
       return;
     }
 
-    this.value = value ?? '';
+    this.setValue(value ?? '');
   }
 
   public registerOnChange(fn: any): void {
@@ -173,7 +188,8 @@ export class AutoKeyInputComponent
     this.idError$.next(
       usedKeys.includes(event.target.value) ? 'caseManagement.statuses.keyDuplicated' : null
     );
-    this.onChange((this.value = event.target.value));
+    this.setValue(event.target.value);
+    this.onChange(this.value);
   }
 
   public enableKeyEditing(): void {
@@ -185,11 +201,7 @@ export class AutoKeyInputComponent
   }
 
   private getUniqueKey(sourceText: string, usedKeys: string[]): string {
-    const baseKey = sourceText
-      .toLowerCase()
-      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
-      .replace(/_[-_]+/g, '_')
-      .replace(/^[^a-z]+/g, '');
+    const baseKey = toKebabCase(sourceText);
 
     if (!usedKeys.includes(baseKey) || this._mode$.getValue() === 'edit') {
       return baseKey;
@@ -198,8 +210,14 @@ export class AutoKeyInputComponent
     return this.getUniqueKeyWithNumber(baseKey, usedKeys);
   }
 
+  private setValue(value: string): void {
+    this.value = value;
+
+    if (this.inputValue$.getValue() !== value) this.inputValue$.next(value);
+  }
+
   private resetInternalState(): void {
-    this.value = '';
+    this.setValue('');
     this.idError$.next(null);
     this.disableKeyEditing();
     this.duplicateInitialized = false;
@@ -222,7 +240,7 @@ export class AutoKeyInputComponent
       this.duplicateInitialized = true;
     }
 
-    this.value = newKey;
+    this.setValue(newKey);
     this.onChange(newKey);
   }
 
