@@ -29,6 +29,7 @@ New enhancement explanation.
 | Plugins          | The verzoek plugin offers every case version again when picking one, instead of only the active one                           |
 | Case definitions | Versions are ordered by version number rather than alphabetically, so 1.0.10 comes after 1.0.9                                |
 | Plugins          | Creating a zaakdossier via the verzoek plugin with an empty initiator type no longer fails when creating the initiator zaakrol |
+| Documenten API   | A file uploaded with the Documenten API upload field in a form flow is added to the case when the form flow finishes          |
 
 ## Breaking Changes (minimum)
 A separate task create-initiator-zaak-rol-kvk has been added to the create-zaakdossier BPMN to handle the create-niet-natuurlijk-persoon-zaak-rol plugin action. The existing process link to create-niet-natuurlijk-persoon-zaak-rol should be rerouted to this new task.

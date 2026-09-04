@@ -16,6 +16,7 @@
 
 package com.ritense.zakenapi.uploadprocess
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.resource.domain.TemporaryResourceSubmittedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
@@ -27,7 +28,9 @@ class ResourceSubmittedToDocumentEventListener(
     @EventListener(TemporaryResourceSubmittedEvent::class)
     fun handle(event: TemporaryResourceSubmittedEvent) {
         logger.debug { "Submitted resource '${event.resourceId}' to document: ${event.documentId}" }
-        uploadProcessService.startUploadResourceProcess(event.documentId.toString(), event.resourceId)
+        runWithoutAuthorization {
+            uploadProcessService.startUploadResourceProcess(event.documentId, event.resourceId)
+        }
     }
 
     companion object {

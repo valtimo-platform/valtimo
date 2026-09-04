@@ -191,7 +191,7 @@ class BezwaarImageDemoDataService(
             mapOf(
                 MetadataType.FILE_NAME.key to image.fileName,
                 MetadataType.CONTENT_TYPE.key to image.contentType,
-                MetadataType.DOCUMENT_ID.key to documentId,
+                MetadataType.DOCUMENT_ID.key to caseDocumentId.toString(),
             )
         )
         temporaryResourceStorageService.saveMetadataValue(

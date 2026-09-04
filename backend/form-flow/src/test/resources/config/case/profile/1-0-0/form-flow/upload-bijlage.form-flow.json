@@ -1,0 +1,17 @@
+{
+    "startStep": "upload",
+    "steps": [
+        {
+            "key": "upload",
+            "onComplete": [
+                "${null}"
+            ],
+            "type": {
+                "name": "form",
+                "properties": {
+                    "definition": "user-task-lening-aanvragen"
+                }
+            }
+        }
+    ]
+}

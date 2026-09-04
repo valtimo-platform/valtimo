@@ -20,6 +20,7 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.exception.DocumentNotFoundException
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentIdOrNull
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import org.operaton.bpm.engine.RuntimeService
 
@@ -40,13 +41,18 @@ abstract class AbstractFormFlowLinkTaskProvider(
                 TASK_INSTANCE_ID to task.id
             )
 
-            try {
-                val document = AuthorizationContext.runWithoutAuthorization { documentService[processInstance.businessKey] }
-                if (document != null) {
-                    additionalProperties[DOCUMENT_ID] = processInstance.businessKey
+            val documentId = task.getJsonSchemaDocumentIdOrNull()
+            if (documentId != null) {
+                try {
+                    val document = AuthorizationContext.runWithoutAuthorization {
+                        documentService[documentId.toString()]
+                    }
+                    if (document != null) {
+                        additionalProperties[DOCUMENT_ID] = documentId.toString()
+                    }
+                } catch (_: DocumentNotFoundException) {
+                    // we do nothing here, intentional
                 }
-            } catch (e: DocumentNotFoundException) {
-                // we do nothing here, intentional
             }
 
             additionalProperties
