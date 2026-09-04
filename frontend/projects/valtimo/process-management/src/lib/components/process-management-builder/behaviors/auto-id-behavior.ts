@@ -21,13 +21,7 @@ import {MAX_ACTIVITY_ID_LENGTH} from '../../../constants';
 const MAX_UNIQUE_SUFFIX = 100;
 const TRAILING_SEPARATOR_REGEX = /[-_]+$/;
 
-/**
- * Keeps the id of a newly drawn flow node in sync with its name, in kebab-case.
- *
- * Only elements created in the current editing session are touched, so ids of
- * already deployed elements — which milestones reference by task definition key —
- * are never rewritten. Editing the id by hand permanently releases the element.
- */
+// Syncs a this-session flow node's id with its name in kebab-case; a hand-edited id releases it
 class AutoIdBehavior {
   static $inject = ['eventBus', 'modeling', 'elementRegistry'];
 

@@ -20,12 +20,7 @@ const UNDERSCORE_RUN_REGEX = /_[-_]+/g;
 const LEADING_NON_LETTER_REGEX = /^[^a-z]+/;
 const TRAILING_SEPARATOR_REGEX = /[-_]+$/;
 
-/**
- * Derives a key/identifier from human readable text.
- *
- * The result is safe to use as an XML/BPMN id: lowercase, no whitespace, and
- * always starting with a letter.
- */
+// Text to key: lowercase, no whitespace, starts with a letter — safe as an XML/BPMN id
 const toKebabCase = (source: string, maxLength?: number): string => {
   if (!source) return '';
 
