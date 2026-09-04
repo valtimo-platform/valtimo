@@ -50,6 +50,10 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
     @Autowired
     lateinit var documentRepository: JsonSchemaDocumentRepository
 
+    // Bypasses DelegatingDocumentSearchService, so the engine toggle cannot route these assertions to JPA
+    @Autowired
+    lateinit var openSearchDocumentSearchService: JsonSchemaDocumentOpenSearchService
+
     @Test
     fun `globalSearchFilter returns matching document`() {
         seedDocument("Funenpark")
@@ -547,6 +551,23 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
         assertThat(pageDesc.content[1].id()).isEqualTo(docC.id())
         assertThat(pageDesc.content[2].id()).isEqualTo(docA.id())
     }
+
+    @Test
+    fun `search should return disjunct pages when all documents share the same assigneeFullName`() {
+        repeat(25) { seedDocumentWithAssignee("Funenpark", "Beth Xander") }
+
+        val sort = Sort.by(Sort.Direction.DESC, "assigneeFullName")
+        val firstPageIds = searchDocumentIds(PageRequest.of(0, 10, sort))
+        val secondPageIds = searchDocumentIds(PageRequest.of(1, 10, sort))
+
+        assertThat(firstPageIds).hasSize(10)
+        assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds)
+        assertThat(firstPageIds + secondPageIds).isSorted()
+    }
+
+    private fun searchDocumentIds(pageable: Pageable): List<String> =
+        openSearchDocumentSearchService.search("house", BlueprintType.CASE, AdvancedSearchRequest(), pageable)
+            .content.map { it.id().toString() }
 
     private fun seedDocumentWithContent(contentMap: Map<String, String>): JsonSchemaDocument {
         val content = objectMapper.createObjectNode().apply {
