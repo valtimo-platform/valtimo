@@ -5,5 +5,5 @@
   "lib": {
     "entryFile": "src/public_api.ts"
   },
-  "allowedNonPeerDependencies": ["formiojs", "@formio/angular"]
+  "allowedNonPeerDependencies": ["@formio/js", "@formio/angular"]
 }

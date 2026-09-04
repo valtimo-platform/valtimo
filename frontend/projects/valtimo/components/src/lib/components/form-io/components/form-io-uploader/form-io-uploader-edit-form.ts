@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import {Components} from 'formiojs';
-
-const TextFieldEditForm = Components.components.textfield.editForm;
+import {buildCustomComponentEditForm} from '../../form-io-edit-form.utils';
 
 const uploaderDisplayComponents = [
   {
@@ -124,23 +122,4 @@ const uploaderDisplayComponents = [
   },
 ];
 
-export const formIoUploaderEditForm = () => {
-  const editForm = TextFieldEditForm();
-  editForm.components.unshift({key: 'type', type: 'hidden'});
-
-  const tabsComponent = editForm.components.find(component => component.key === 'tabs');
-  if (tabsComponent) {
-    const displayTab = tabsComponent.components.find(tab => tab.key === 'display');
-    if (displayTab) {
-      displayTab.components = uploaderDisplayComponents;
-    }
-
-    // Keep only the tabs relevant to the custom uploader: the curated Display tab
-    // plus the standard Conditional and Logic tabs for configuring visibility/logic.
-    tabsComponent.components = tabsComponent.components.filter(tab =>
-      ['display', 'conditional', 'logic'].includes(tab.key)
-    );
-  }
-
-  return editForm;
-};
+export const formIoUploaderEditForm = () => buildCustomComponentEditForm(uploaderDisplayComponents);

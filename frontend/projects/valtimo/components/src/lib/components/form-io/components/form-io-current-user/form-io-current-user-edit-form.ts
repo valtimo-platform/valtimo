@@ -14,53 +14,60 @@
  * limitations under the License.
  */
 
-export const formIoCurrentUserEditForm = () => ({
-  components: [
-    {
-      key: 'type',
-      type: 'hidden',
+import {buildCustomComponentEditForm} from '../../form-io-edit-form.utils';
+
+const currentUserDisplayComponents = [
+  {
+    key: 'label',
+    type: 'textfield',
+    input: true,
+    label: 'Label',
+    placeholder: 'Label',
+    defaultValue: 'Valtimo Current User',
+    weight: 0,
+    validate: {
+      required: true,
     },
-    {
-      key: 'label',
-      type: 'textfield',
-      input: true,
-      label: 'Label',
-      placeholder: 'Label',
-      defaultValue: 'Valtimo Current User',
-      validate: {
-        required: true,
-      },
+  },
+  {
+    key: 'key',
+    type: 'textfield',
+    input: true,
+    label: 'Property Name',
+    placeholder: 'Property Name',
+    tooltip: 'The name of this field in the API endpoint.',
+    weight: 10,
+    validate: {
+      required: true,
     },
-    {
-      key: 'key',
-      type: 'textfield',
-      input: true,
-      label: 'Property Name',
-      placeholder: 'Property Name',
-      tooltip: 'The name of this field in the API endpoint.',
-      validate: {
-        required: true,
-      },
-    },
-    {
-      key: 'tableView',
-      type: 'checkbox',
-      label: 'Table View',
-      tooltip: 'If checked, this value will show up in the table view of the submissions list.',
-    },
-    {
-      key: 'hideLabel',
-      type: 'checkbox',
-      label: 'Hide Label',
-      tooltip:
-        'Hide the label of this component. This setting will display the label in the form builder, but hide the label when the form is rendered.',
-    },
-    {
-      key: 'hidden',
-      type: 'checkbox',
-      label: 'Hidden',
-      tooltip:
-        'A hidden field is still a part of the form JSON, but is hidden when viewing the form is rendererd.',
-    },
-  ],
-});
+  },
+  {
+    key: 'tableView',
+    type: 'checkbox',
+    input: true,
+    label: 'Table View',
+    tooltip: 'If checked, this value will show up in the table view of the submissions list.',
+    weight: 20,
+  },
+  {
+    key: 'hideLabel',
+    type: 'checkbox',
+    input: true,
+    label: 'Hide Label',
+    tooltip:
+      'Hide the label of this component. This setting will display the label in the form builder, but hide the label when the form is rendered.',
+    weight: 30,
+  },
+  {
+    key: 'hidden',
+    type: 'checkbox',
+    input: true,
+    label: 'Hidden',
+    tooltip:
+      'A hidden field is still a part of the form JSON, but is hidden when viewing the form is rendererd.',
+    weight: 40,
+  },
+];
+
+export const formIoCurrentUserEditForm = () =>
+  buildCustomComponentEditForm(currentUserDisplayComponents);
