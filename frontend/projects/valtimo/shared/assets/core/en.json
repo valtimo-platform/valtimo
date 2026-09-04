@@ -2018,7 +2018,8 @@
     "rowLocked": "You don't have access to this task",
     "allCases": "All cases",
     "noSearchResultsTitle": "No tasks found",
-    "noSearchResultsDescription": "There are no tasks that match your search criteria."
+    "noSearchResultsDescription": "There are no tasks that match your search criteria.",
+    "refreshTasks": "Refresh tasks"
   },
   "Task": "Task",
   "Tasks": "Tasks",
@@ -3861,6 +3862,10 @@
         "enableGenericCaseList": {
           "title": "Enable generic case list",
           "description": "Show a single case list view with a dropdown to switch between case definitions."
+        },
+        "enableManualTaskListRefresh": {
+          "title": "Enable manual task list refresh",
+          "description": "Show a refresh button in the task list instead of refreshing it automatically when tasks change."
         }
       }
     },
