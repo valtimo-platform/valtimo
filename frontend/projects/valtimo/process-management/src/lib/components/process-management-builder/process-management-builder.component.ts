@@ -120,6 +120,7 @@ import {
   ExpressionAutocompleteModule,
   ExpressionAutocomplete,
 } from './panel';
+import {AutoIdBehaviorModule} from './behaviors';
 import {PluginTranslationService} from '@valtimo/plugin';
 import {ProcessBeanService} from '../../services';
 import {View16, ViewOff16} from '@carbon/icons';
@@ -1298,6 +1299,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         camundaPlatformBehaviors,
         ValtimoPropertiesProviderModule,
         ExpressionAutocompleteModule,
+        AutoIdBehaviorModule,
       ],
       moddleExtensions: {camunda: CamundaBpmnModdle},
       propertiesPanel: {parent: this.modelerPanelElementRef.nativeElement},

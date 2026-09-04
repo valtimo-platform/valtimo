@@ -1882,6 +1882,7 @@
     "validationErrors": "Validatiefouten",
     "validationErrorsCount": "Validatiefouten ({{count}})",
     "validationErrorNotification": "Procesdefinitie bevat validatiefouten. Controleer de gemarkeerde elementen.",
+    "idTooLong": "Het ID mag niet langer zijn dan {{max}} tekens.",
     "alreadyExistsNotification": "Procesdefinitie bestaat al",
     "deleteNotification": "Proces succesvol verwijderd",
     "upload": {

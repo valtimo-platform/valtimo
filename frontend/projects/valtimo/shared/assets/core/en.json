@@ -1852,6 +1852,7 @@
     "validationErrors": "Validation errors",
     "validationErrorsCount": "Validation errors ({{count}})",
     "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
+    "idTooLong": "The ID may not be longer than {{max}} characters.",
     "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
     "upload": {

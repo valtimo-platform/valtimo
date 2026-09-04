@@ -23,7 +23,11 @@
   [invalid]="!!obs.idError"
   [invalidText]="obs.idError | translate"
 >
-  {{ labelTranslationKey | translate }}
+  <span class="auto-key-label">
+    {{ labelTranslationKey | translate }}
+
+    <ng-content></ng-content>
+  </span>
 
   <div class="edit-key-input">
     <input
@@ -37,7 +41,7 @@
       "
       [readOnly]="!obs.editingKey || obs.mode === 'edit'"
       [invalid]="!!obs.idError"
-      [attr.data-test-id]="testIds.input"
+      [attr.data-test-id]="dataTestId"
       (input)="onInputChange($event)"
       (blur)="onTouched()"
     />
