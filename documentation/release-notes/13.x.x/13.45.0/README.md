@@ -6,17 +6,22 @@ Release date: 09-09-2026
 
 ## New Features
 
-### New feature title
+### Manual task list refresh
 
-New feature explanation.
+The task list updates itself as soon as tasks change. With the new **Enable manual task list
+refresh** toggle under **Admin** > **Settings** > **Feature toggles**, the list keeps its
+contents until a case worker presses the new **Refresh tasks** button in the list toolbar
+instead — useful for teams that work through a list top to bottom and do not want rows to move
+while they do.
 
 ---
 
 ## Enhancements
 
-### New enhancement title
+### Task list updates without interrupting
 
-New enhancement explanation.
+The task list no longer shows a loading state when it picks up changed tasks by itself. The rows
+are replaced in place, so searching, sorting and reading are not interrupted.
 
 ---
 
@@ -29,6 +34,7 @@ New enhancement explanation.
 | Plugins          | The verzoek plugin offers every case version again when picking one, instead of only the active one                           |
 | Case definitions | Versions are ordered by version number rather than alphabetically, so 1.0.10 comes after 1.0.9                                |
 | Plugins          | Creating a zaakdossier via the verzoek plugin with an empty initiator type no longer fails when creating the initiator zaakrol |
+| Task list        | The **All cases** task list picks up new and completed tasks by itself, like a list for a single case definition already did   |
 
 ## Breaking Changes (minimum)
 A separate task create-initiator-zaak-rol-kvk has been added to the create-zaakdossier BPMN to handle the create-niet-natuurlijk-persoon-zaak-rol plugin action. The existing process link to create-niet-natuurlijk-persoon-zaak-rol should be rerouted to this new task.
