@@ -83,9 +83,40 @@ class MigrationSuggestionService(
                         plan.set<ObjectNode>(suggester.componentKey(), objectMapper.valueToTree(suggestion))
                     }
             }
+            dropBlankRowsAnEntryHijacks(plan, target)
         }
 
         plan
+    }
+
+    /** Drops a targetless row an `addBuildingBlock` entry hijacks — both answered the same question and the blank one made the plan unsaveable (G73). A resolved row stays: `processMigration` (@200) may move the process before the entry (@300) takes it over. */
+    private fun dropBlankRowsAnEntryHijacks(plan: ObjectNode, target: BlueprintId) {
+        val hijacked = (plan.get(ADD_BUILDING_BLOCK) as? ArrayNode)
+            ?.flatMap { entry -> (entry.get(PROCESS_MIGRATION) as? ArrayNode)?.toList().orEmpty() }
+            ?.mapNotNull { row -> row.get(SOURCE_PROCESS_KEY)?.takeUnless { it.isNull }?.asText() }
+            ?.toSet()
+            .orEmpty()
+        val rows = plan.get(PROCESS_MIGRATION) as? ArrayNode
+        if (hijacked.isEmpty() || rows == null) {
+            return
+        }
+
+        val kept = objectMapper.createArrayNode()
+        rows.forEach { row ->
+            val source = row.get(SOURCE_PROCESS_KEY)?.takeUnless { it.isNull }?.asText()
+            val hasTarget = row.get(TARGET_PROCESS_KEY)?.takeUnless { it.isNull } != null
+            if (!hasTarget && source in hijacked) {
+                logger.info {
+                    "Process '$source' is suggested with no target because '$target' has no counterpart for it, " +
+                        "and an 'addBuildingBlock' entry is suggested that hijacks it into a building block. The " +
+                        "entry is the answer, so the blank instruction is left out rather than handed to the " +
+                        "author as a plan that cannot be saved."
+                }
+            } else {
+                kept.add(row)
+            }
+        }
+        if (kept.isEmpty()) plan.remove(PROCESS_MIGRATION) else plan.set<ObjectNode>(PROCESS_MIGRATION, kept)
     }
 
     /** Everything that would stop [plan] migrating onto [target], so the management API can reject it on save. The source is checked here rather than in the importer, where deploy order is not guaranteed. */
@@ -171,11 +202,7 @@ class MigrationSuggestionService(
             ?.entryOwnerOf(migratingOwner, block)
             ?: migratingOwner
 
-    /**
-     * [owner] as the instances this plan migrates still have it. An `add` entry reads its owner off [migrating], the
-     * version they have not reached yet: the blueprint itself is then simply [source], and a parent block is whichever
-     * version [source]'s own tree declares. [owner] when the plan declares no source to read.
-     */
+    /** [owner] as the instances still have it: [source] for [migrating] itself, whatever [source]'s tree declares for a parent block, [owner] when no source is declared. */
     fun runningOwnerOf(owner: BlueprintId, migrating: BlueprintId, source: BlueprintId?): BlueprintId = when {
         source == null -> owner
         owner == migrating -> source
@@ -213,6 +240,11 @@ class MigrationSuggestionService(
         // The plan component keys these suggestions fill (match the corresponding componentKey()s).
         const val DATA_MIGRATION = "dataMigration"
         const val PROCESS_MIGRATION = "processMigration"
+
+        // Read as JSON rather than through the building-block module, which the case module does not depend on.
+        const val ADD_BUILDING_BLOCK = "addBuildingBlock"
+        const val SOURCE_PROCESS_KEY = "sourceProcessDefinitionKey"
+        const val TARGET_PROCESS_KEY = "targetProcessDefinitionKey"
         val logger = KotlinLogging.logger {}
     }
 }

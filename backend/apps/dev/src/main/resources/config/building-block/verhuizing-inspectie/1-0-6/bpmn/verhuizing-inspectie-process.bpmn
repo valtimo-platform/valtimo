@@ -24,14 +24,23 @@
       <bpmn:incoming>Flow_Split_To_Herstel</bpmn:incoming>
       <bpmn:outgoing>Flow_Herstel_To_Join</bpmn:outgoing>
     </bpmn:callActivity>
+    <!-- Was the inspectie-dossier building block in 1.0.5; dissolved here, so its process runs on as a plain sub-process of the inspection. -->
+    <bpmn:callActivity id="CallInspectieFotosActivity" name="Dossier (eigen subproces)" camunda:asyncAfter="true" calledElement="inspectie-dossier-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:verhuizing-inspectie:1.0.6">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Split_To_Hoofdspoor</bpmn:incoming>
+      <bpmn:outgoing>Flow_Hoofdspoor_To_Join</bpmn:outgoing>
+    </bpmn:callActivity>
     <bpmn:parallelGateway id="Gateway_HerstelJoin" name="Voeg samen">
       <bpmn:incoming>Flow_Herstel_To_Join</bpmn:incoming>
       <bpmn:incoming>Flow_Hoofdspoor_To_Join</bpmn:incoming>
-      <bpmn:outgoing>Flow_Inspectie_To_ResolveAkkoord</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Fotos_To_Inspectie</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:userTask id="InspectieUitvoerenTask" name="Inspectie uitvoeren">
-      <bpmn:incoming>Flow_Split_To_Hoofdspoor</bpmn:incoming>
-      <bpmn:outgoing>Flow_Hoofdspoor_To_Join</bpmn:outgoing>
+      <bpmn:incoming>Flow_Fotos_To_Inspectie</bpmn:incoming>
+      <bpmn:outgoing>Flow_Inspectie_To_ResolveAkkoord</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:serviceTask id="ResolveAkkoordTask" name="Bepaal akkoord" camunda:expression="${execution.setVariable('akkoord', valueResolverDelegateService.resolveValue(execution, 'doc:/akkoord'))}">
       <bpmn:incoming>Flow_Inspectie_To_ResolveAkkoord</bpmn:incoming>
@@ -62,9 +71,10 @@
     <bpmn:sequenceFlow id="Flow_Voorbereiden_To_Inspectie" sourceRef="VoorbereidenInspectieTask" targetRef="Gateway_HerstelSplit" />
     <bpmn:sequenceFlow id="Flow_Split_To_Herstel" sourceRef="Gateway_HerstelSplit" targetRef="CallInspectieHerstelActivity" />
     <bpmn:sequenceFlow id="Flow_Herstel_To_Join" sourceRef="CallInspectieHerstelActivity" targetRef="Gateway_HerstelJoin" />
-    <bpmn:sequenceFlow id="Flow_Split_To_Hoofdspoor" sourceRef="Gateway_HerstelSplit" targetRef="InspectieUitvoerenTask" />
-    <bpmn:sequenceFlow id="Flow_Hoofdspoor_To_Join" sourceRef="InspectieUitvoerenTask" targetRef="Gateway_HerstelJoin" />
-    <bpmn:sequenceFlow id="Flow_Inspectie_To_ResolveAkkoord" sourceRef="Gateway_HerstelJoin" targetRef="ResolveAkkoordTask" />
+    <bpmn:sequenceFlow id="Flow_Split_To_Hoofdspoor" sourceRef="Gateway_HerstelSplit" targetRef="CallInspectieFotosActivity" />
+    <bpmn:sequenceFlow id="Flow_Hoofdspoor_To_Join" sourceRef="CallInspectieFotosActivity" targetRef="Gateway_HerstelJoin" />
+    <bpmn:sequenceFlow id="Flow_Fotos_To_Inspectie" sourceRef="Gateway_HerstelJoin" targetRef="InspectieUitvoerenTask" />
+    <bpmn:sequenceFlow id="Flow_Inspectie_To_ResolveAkkoord" sourceRef="InspectieUitvoerenTask" targetRef="ResolveAkkoordTask" />
     <bpmn:sequenceFlow id="Flow_ResolveAkkoord_To_Gateway" sourceRef="ResolveAkkoordTask" targetRef="Gateway_Akkoord" />
     <bpmn:sequenceFlow id="Flow_Gateway_To_Goedkeuring" name="Ja" sourceRef="Gateway_Akkoord" targetRef="RegistreerGoedkeuringTask">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${akkoord == true}</bpmn:conditionExpression>
@@ -159,6 +169,9 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="CallInspectieHerstelActivity_di" bpmnElement="CallInspectieHerstelActivity">
         <dc:Bounds x="430" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallInspectieFotosActivity_di" bpmnElement="CallInspectieFotosActivity">
+        <dc:Bounds x="430" y="330" width="100" height="80"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_HerstelJoin_di" bpmnElement="Gateway_HerstelJoin">
         <dc:Bounds x="600" y="345" width="50" height="50"/>

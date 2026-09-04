@@ -258,8 +258,42 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
 
         assertThatThrownBy { executor.execute(migrationId, target, caseDocumentId) }
             .isInstanceOf(IllegalStateException::class.java)
-            .hasMessageContaining("its process 'still-running' is still running and was not handed back")
+            .hasMessageContaining("'still-running' is still running and was not handed back")
             .hasMessageContaining("The entry's processMigration named none")
+
+        assertThat(deleted).isEmpty()
+        verify(documentService, never()).deleteDocument(any())
+    }
+
+    @Test
+    fun `should refuse to dissolve a block whose second process was not handed back`() {
+        // One hand-back used to satisfy the whole entry (G70). Real UUIDs: the hand-back builds an `OperatonProcessInstanceId`.
+        val handedBackId = UUID.randomUUID().toString()
+        val strandedId = UUID.randomUUID().toString()
+        val block = block("verhuizing-inspectie", "1.0.2", processInstanceId = handedBackId)
+        givenSubtree(owned(block, null, 0))
+        givenTwoProcessesOneHandedBack(
+            handedBackId = handedBackId,
+            handedBackKey = "verhuizing-inspectie-process",
+            strandedId = strandedId,
+            targetProcessKey = "verhuizing",
+        )
+        instructions += RemoveBuildingBlockInstruction(
+            buildingBlockKey = "verhuizing-inspectie",
+            buildingBlockVersionTag = "1.0.2",
+            processMigration = listOf(
+                ProcessMigrationInstruction(
+                    sourceProcessDefinitionKey = "verhuizing-inspectie-process",
+                    targetProcessDefinitionKey = "verhuizing",
+                )
+            ),
+        )
+
+        assertThatThrownBy { executor.execute(migrationId, target, caseDocumentId) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("'$strandedId' is still running")
+            // The one that did move is not reported as stranded.
+            .hasMessageNotContaining("'$handedBackId' is still running")
 
         assertThat(deleted).isEmpty()
         verify(documentService, never()).deleteDocument(any())
@@ -356,6 +390,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
         whenever(runtimeService.createProcessInstanceQuery()).thenReturn(query)
         whenever(query.processInstanceId(processInstanceId)).thenReturn(query)
         whenever(query.processDefinitionKey(sourceProcessKey)).thenReturn(query)
+        whenever(query.processInstanceBusinessKey(any())).thenReturn(query)
         val processInstance = mock<ProcessInstance>()
         whenever(processInstance.processInstanceId).thenReturn(processInstanceId)
         whenever(processInstance.processDefinitionId).thenReturn("$sourceProcessKey:1:src")
@@ -378,8 +413,53 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
         whenever(runtimeService.createProcessInstanceQuery()).thenReturn(query)
         whenever(query.processInstanceId(processInstanceId)).thenReturn(query)
         whenever(query.processDefinitionKey(any())).thenReturn(query)
+        whenever(query.processInstanceBusinessKey(any())).thenReturn(query)
+        // Nothing carries the block's document id as business key: the recorded instance is the only signal here.
         whenever(query.list()).thenReturn(emptyList())
-        whenever(query.singleResult()).thenReturn(if (running) mock<ProcessInstance>() else null)
+        val processInstance = if (running) {
+            mock<ProcessInstance>().also { whenever(it.processInstanceId).thenReturn(processInstanceId) }
+        } else {
+            null
+        }
+        whenever(query.singleResult()).thenReturn(processInstance)
+    }
+
+    /** Two processes on one block, of which the entry names one — the block records the one it hands back, so a query pinned to that id sees a complete hand-back (G70). */
+    private fun givenTwoProcessesOneHandedBack(
+        handedBackId: String,
+        handedBackKey: String,
+        strandedId: String,
+        targetProcessKey: String,
+    ) {
+        val handedBack = mock<ProcessInstance>()
+        whenever(handedBack.processInstanceId).thenReturn(handedBackId)
+        whenever(handedBack.processDefinitionId).thenReturn("$handedBackKey:1:src")
+        val stranded = mock<ProcessInstance>()
+        whenever(stranded.processInstanceId).thenReturn(strandedId)
+
+        val root = mock<ProcessInstanceQuery>()
+        whenever(runtimeService.createProcessInstanceQuery()).thenReturn(root)
+        // The hand-back's own lookup: the named key, business-keyed to the block.
+        val byKey = mock<ProcessInstanceQuery>()
+        whenever(root.processDefinitionKey(handedBackKey)).thenReturn(byKey)
+        whenever(byKey.processInstanceBusinessKey(any())).thenReturn(byKey)
+        whenever(byKey.list()).thenReturn(listOf(handedBack))
+        // The recorded instance, which is the one that gets handed back.
+        val byId = mock<ProcessInstanceQuery>()
+        whenever(root.processInstanceId(any())).thenReturn(byId)
+        whenever(byId.processDefinitionKey(any())).thenReturn(byId)
+        whenever(byId.singleResult()).thenReturn(handedBack)
+        // The sweep for anything left on the block: business key only, no key filter.
+        whenever(root.processInstanceBusinessKey(any())).thenReturn(root)
+        whenever(root.list()).thenReturn(listOf(handedBack, stranded))
+
+        whenever(processDefinitionCaseDefinitionRepository.findByIdCaseDefinitionId(target)).thenReturn(
+            listOf(
+                ProcessDefinitionCaseDefinition(
+                    ProcessDefinitionCaseDefinitionId(ProcessDefinitionId("$targetProcessKey:1:tgt"), target)
+                ).apply { processDefinitionKey = targetProcessKey }
+            )
+        )
     }
 
     private fun block(

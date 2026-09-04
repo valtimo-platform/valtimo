@@ -1271,14 +1271,18 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentSuggester::class)
     fun addBuildingBlockMigrationComponentSuggester(
         objectMapper: ObjectMapper,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
         linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
         buildingBlockEntryLevel: BuildingBlockEntryLevel,
         dataMigrationComponentSuggester: DataMigrationComponentSuggester,
+        processMigrationComponentSuggester: ProcessMigrationComponentSuggester,
     ) = AddBuildingBlockMigrationComponentSuggester(
         objectMapper,
+        caseDefinitionBuildingBlockLinkRepository,
         linkedBuildingBlockVersionResolver,
         buildingBlockEntryLevel,
         dataMigrationComponentSuggester,
+        processMigrationComponentSuggester,
     )
 
     @Bean

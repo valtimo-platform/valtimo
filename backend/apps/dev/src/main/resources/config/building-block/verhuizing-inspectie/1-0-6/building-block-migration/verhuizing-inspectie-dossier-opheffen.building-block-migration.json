@@ -45,7 +45,36 @@
     "removeBuildingBlock": [
         {
             "buildingBlockKey": "inspectie-dossier",
-            "buildingBlockVersionTag": "1.0.0"
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/dossierStatus",
+                    "source": "doc:/dossierStatus"
+                },
+                {
+                    "target": "doc:/aantalBijlagen",
+                    "source": "doc:/aantalBijlagen",
+                    "targetType": "integer"
+                },
+                {
+                    "target": "doc:/dossierToelichting",
+                    "source": "doc:/toelichting"
+                },
+                {
+                    "target": "doc:/dossierKwaliteit",
+                    "source": "doc:/dossierKwaliteit"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "inspectie-dossier-process",
+                    "targetProcessDefinitionKey": "inspectie-dossier-process",
+                    "mapActivities": {},
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
         }
     ]
 }

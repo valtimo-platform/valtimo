@@ -68,6 +68,110 @@ class MigrationSuggestionServiceTest {
     }
 
     @Test
+    fun `should drop a blank process row an addBuildingBlock entry hijacks`() {
+        // Two components answering the same question differently, and the blank row is what made the plan unsaveable (G73).
+        val service = suggestionService(
+            processMigration = listOf(
+                mapOf("sourceProcessDefinitionKey" to "inspectie-dossier-process"),
+                mapOf("sourceProcessDefinitionKey" to "verhuizing", "targetProcessDefinitionKey" to "verhuizing"),
+            ),
+            addBuildingBlock = listOf(
+                mapOf(
+                    "buildingBlockKey" to "inspectie-dossier",
+                    "buildingBlockVersionTag" to "1.0.0",
+                    "processMigration" to listOf(
+                        mapOf(
+                            "sourceProcessDefinitionKey" to "inspectie-dossier-process",
+                            "targetProcessDefinitionKey" to "inspectie-dossier-process",
+                        )
+                    ),
+                )
+            ),
+        )
+
+        val plan = service.suggestPlan(
+            target = CaseDefinitionId("verhuizing", "1.0.11"),
+            source = CaseDefinitionId("verhuizing", "1.0.10"),
+        )
+
+        assertThat(plan.get("processMigration").map { it.get("sourceProcessDefinitionKey").asText() })
+            .containsExactly("verhuizing")
+    }
+
+    @Test
+    fun `should keep a resolved process row an addBuildingBlock entry also hijacks`() {
+        // processMigration (@200) may move the owner's process before addBuildingBlock (@300) takes it over.
+        val service = suggestionService(
+            processMigration = listOf(
+                mapOf("sourceProcessDefinitionKey" to "verhuizing", "targetProcessDefinitionKey" to "verhuizing")
+            ),
+            addBuildingBlock = listOf(
+                mapOf(
+                    "buildingBlockKey" to "inspectie-fotos",
+                    "buildingBlockVersionTag" to "1.0.0",
+                    "processMigration" to listOf(
+                        mapOf(
+                            "sourceProcessDefinitionKey" to "verhuizing",
+                            "targetProcessDefinitionKey" to "inspectie-fotos-process",
+                        )
+                    ),
+                )
+            ),
+        )
+
+        val plan = service.suggestPlan(
+            target = CaseDefinitionId("verhuizing", "1.0.3"),
+            source = CaseDefinitionId("verhuizing", "1.0.0"),
+        )
+
+        assertThat(plan.get("processMigration")).hasSize(1)
+    }
+
+    @Test
+    fun `should keep a blank process row no entry hijacks`() {
+        // Nothing accounts for it, so the author still needs to see it — that is what G59 left it in for.
+        val service = suggestionService(
+            processMigration = listOf(mapOf("sourceProcessDefinitionKey" to "verhuizing-nazorg")),
+            addBuildingBlock = listOf(
+                mapOf("buildingBlockKey" to "inspectie-fotos", "buildingBlockVersionTag" to "1.0.0")
+            ),
+        )
+
+        val plan = service.suggestPlan(
+            target = CaseDefinitionId("verhuizing", "1.0.3"),
+            source = CaseDefinitionId("verhuizing", "1.0.0"),
+        )
+
+        assertThat(plan.get("processMigration")).hasSize(1)
+    }
+
+    @Test
+    fun `should leave out processMigration entirely when every row was hijacked`() {
+        val service = suggestionService(
+            processMigration = listOf(mapOf("sourceProcessDefinitionKey" to "inspectie-dossier-process")),
+            addBuildingBlock = listOf(
+                mapOf(
+                    "buildingBlockKey" to "inspectie-dossier",
+                    "buildingBlockVersionTag" to "1.0.0",
+                    "processMigration" to listOf(
+                        mapOf(
+                            "sourceProcessDefinitionKey" to "inspectie-dossier-process",
+                            "targetProcessDefinitionKey" to "inspectie-dossier-process",
+                        )
+                    ),
+                )
+            ),
+        )
+
+        val plan = service.suggestPlan(
+            target = CaseDefinitionId("verhuizing", "1.0.11"),
+            source = CaseDefinitionId("verhuizing", "1.0.10"),
+        )
+
+        assertThat(plan.has("processMigration")).isFalse()
+    }
+
+    @Test
     fun `a building block entry suggestion fills data and process migration for the pair`() {
         // A nested block's owner is itself a building block, so the entry suggestion must work for one.
         val owner = BuildingBlockDefinitionId("verhuizing-inspectie", "1.0.4")
@@ -412,6 +516,7 @@ class MigrationSuggestionServiceTest {
     private fun suggestionService(
         dataMigration: Any? = null,
         processMigration: Any? = null,
+        addBuildingBlock: Any? = null,
         lineage: BlueprintVersionLineage? = null,
         componentValidator: MigrationComponentValidator? = null,
         entryOwners: Map<BuildingBlockDefinitionId, BlueprintId>? = null,
@@ -423,6 +528,7 @@ class MigrationSuggestionServiceTest {
         componentSuggesters = listOfNotNull(
             dataMigration?.let { suggester("dataMigration", it, onEntrySuggestion) },
             processMigration?.let { suggester("processMigration", it, onEntrySuggestion) },
+            addBuildingBlock?.let { suggester("addBuildingBlock", it, onEntrySuggestion) },
         ),
         activityMappingSuggesters = emptyList(),
         activityMappingValidators = emptyList(),

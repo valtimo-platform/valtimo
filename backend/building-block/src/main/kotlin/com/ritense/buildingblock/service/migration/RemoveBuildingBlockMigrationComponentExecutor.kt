@@ -39,6 +39,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlan
+import org.operaton.bpm.engine.runtime.ProcessInstance
 import org.springframework.core.annotation.Order
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.annotation.Transactional
@@ -226,10 +227,10 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         ownerDocumentId: UUID,
         instance: BuildingBlockInstance,
     ) {
-        // 1. Hand the process(es) back. `map` not `forEach`: every instruction has to run, the answer is read by step 3.
+        // 1. Hand the process(es) back. `flatMap` not `forEach`: every instruction has to run, and the ids it moved are read by step 3.
         val handedBack = instruction.processMigration
-            .map { handBackProcesses(it, ownerBlueprint, ownerDocumentId, instance) }
-            .any { it }
+            .flatMap { handBackProcesses(it, ownerBlueprint, ownerDocumentId, instance) }
+            .toSet()
 
         // 2. Transfer data back: read from the building block, write into the owner.
         dataPatchApplier.apply(instruction.dataMigration, instance.documentId, ownerDocumentId)
@@ -243,46 +244,59 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         }
     }
 
-    /** Refuses to delete the document while its process still runs, naming the entry that should have handed it back — otherwise the author gets a raw engine stack trace. [handedBack] is what keeps a successful hand-back from tripping it. */
+    /** Refuses to delete the document while anything of the block still runs, naming what. Asked of the runtime, not of a "did any instruction do something" flag — one hand-back used to satisfy a two-process block (G70). */
     private fun assertNothingIsStillRunningOn(
         instruction: RemoveBuildingBlockInstruction,
         instance: BuildingBlockInstance,
-        handedBack: Boolean,
+        handedBack: Set<String>,
     ) {
-        if (handedBack) {
-            return
-        }
-        val processInstanceId = instance.processInstanceId ?: return
-        val stillRunning = runtimeService.createProcessInstanceQuery()
-            .processInstanceId(processInstanceId)
-            .singleResult() != null
-        check(!stillRunning) {
+        val stillRunning = stillOnTheBlock(instance).filterNot { it in handedBack }
+        check(stillRunning.isEmpty()) {
             val named = instruction.processMigration
                 .joinToString { "'${it.sourceProcessDefinitionKey}' -> '${it.targetProcessDefinitionKey}'" }
                 .ifEmpty { "none" }
-            "Cannot dissolve building block '${instance.definition.id}' of '${instance.documentId}': its " +
-                "process '$processInstanceId' is still running and was not handed back, so deleting the " +
-                "block's document would try to delete the history of a live process. The entry's " +
-                "processMigration named $named. Add a processMigration handing that process back to the " +
-                "owner's own process definition — an entry without one only works for a block whose " +
-                "process has already finished."
+            "Cannot dissolve building block '${instance.definition.id}' of '${instance.documentId}': " +
+                "${stillRunning.joinToString { "'$it'" }} ${if (stillRunning.size == 1) "is" else "are"} " +
+                "still running and ${if (stillRunning.size == 1) "was" else "were"} not handed back, so " +
+                "deleting the block's document would try to delete the history of a live process. The " +
+                "entry's processMigration named $named. Add a processMigration handing every process the " +
+                "block runs back to the owner's own process definition — a block may own more than one, and " +
+                "an entry without any only works for a block whose processes have all finished."
         }
     }
 
-    /** @return whether this instruction moved the block's process back to the owner — read by [assertNothingIsStillRunningOn]. */
+    /** Process instances still tied to the block: those carrying its document id as business key, plus the one it records. A hand-back repoints the business key, so this shrinks as the entry does its work. */
+    private fun stillOnTheBlock(instance: BuildingBlockInstance): List<String> {
+        val byBusinessKey = runtimeService.createProcessInstanceQuery()
+            .processInstanceBusinessKey(instance.documentId.toString())
+            .list()
+            .map { it.processInstanceId }
+        // Kept even when the business key does not name it, so this never asserts less than it used to.
+        val recorded = instance.processInstanceId?.let { processInstanceId ->
+            runtimeService.createProcessInstanceQuery()
+                .processInstanceId(processInstanceId)
+                .singleResult()
+                ?.processInstanceId
+        }
+        return (listOfNotNull(recorded) + byBusinessKey).distinct()
+    }
+
+    /** @return the process instance ids this instruction moved back to the owner — read by [assertNothingIsStillRunningOn]. */
     private fun handBackProcesses(
         instruction: ProcessMigrationInstruction,
         ownerBlueprint: BlueprintId,
         ownerDocumentId: UUID,
         instance: BuildingBlockInstance,
-    ): Boolean {
-        val processInstanceId = instance.processInstanceId ?: return false
-        val processInstances = runtimeService.createProcessInstanceQuery()
-            .processInstanceId(processInstanceId)
-            .processDefinitionKey(instruction.sourceProcessDefinitionKey)
-            .list()
+    ): List<String> {
+        val processInstances = runningProcessesOf(instance, instruction.sourceProcessDefinitionKey)
         if (processInstances.isEmpty()) {
-            return false
+            // Per-instruction silence is deliberate, as on the way in: the entry dissolving nothing is reported by [warnEntriesThatDissolvedNothing].
+            logger.info {
+                "No running process '${instruction.sourceProcessDefinitionKey}' was found for building " +
+                    "block '${instance.documentId}', so it was not handed back to " +
+                    "'${instruction.targetProcessDefinitionKey}' of '$ownerBlueprint'."
+            }
+            return emptyList()
         }
 
         val targetDefinitionId = findOwnerTargetProcessDefinitionId(
@@ -292,14 +306,32 @@ class RemoveBuildingBlockMigrationComponentExecutor(
                 "'$ownerBlueprint'"
         )
 
-        processInstances.forEach { processInstance ->
+        return processInstances.map { processInstance ->
             migrate(instruction, processInstance.processDefinitionId, targetDefinitionId, processInstance.processInstanceId)
             processMigrationVariableResolver.apply(processInstance.processInstanceId, instruction.setProcessVariables)
             // Business key and process-document association both repoint to the owner — the mirror of the way in.
             updateBusinessKey(processInstance.processInstanceId, ownerDocumentId.toString())
             associateWithOwnerDocument(processInstance.processInstanceId, ownerDocumentId)
+            processInstance.processInstanceId
         }
-        return true
+    }
+
+    /** Every running process of [instance] for [processDefinitionKey]: business-keyed to its document, plus the one it records. Pinning this to the recorded instance left the block's other processes unhanded — G65's mistake on the way out (G70). */
+    private fun runningProcessesOf(
+        instance: BuildingBlockInstance,
+        processDefinitionKey: String,
+    ): List<ProcessInstance> {
+        val byBusinessKey = runtimeService.createProcessInstanceQuery()
+            .processDefinitionKey(processDefinitionKey)
+            .processInstanceBusinessKey(instance.documentId.toString())
+            .list()
+        val recorded = instance.processInstanceId?.let { processInstanceId ->
+            runtimeService.createProcessInstanceQuery()
+                .processInstanceId(processInstanceId)
+                .processDefinitionKey(processDefinitionKey)
+                .singleResult()
+        }
+        return (listOfNotNull(recorded) + byBusinessKey).distinctBy { it.processInstanceId }
     }
 
     /** Repoints the association back to [ownerDocumentId]; leaving it would make deleting the block document try to delete a running process instance. The process name rides along (G43). */
