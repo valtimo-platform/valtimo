@@ -80,6 +80,7 @@ export class FormIoCurrencyComponent
 
   private readonly _subscriptions = new Subscription();
 
+  // A fresh object every call: Currency's constructor sets viaInput on the options it is handed.
   private get maskOpts(): any {
     return {
       empty: this.allowEmptyValue || false,
@@ -134,9 +135,7 @@ export class FormIoCurrencyComponent
 
       this.currencyForm.setValue({
         currencyValue:
-          typeof this._value === 'number'
-            ? Currency.masking(this._value, this._currencyInstance.opts.maskOpts)
-            : '',
+          typeof this._value === 'number' ? Currency.masking(this._value, this.maskOpts) : '',
       });
     }
   }
