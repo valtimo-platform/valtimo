@@ -67,7 +67,7 @@
     <button
       cdsButton="primary"
       type="submit"
-      [disabled]="obs.disabled || !documentenApiMetadataForm.valid || obs.editDisabled"
+      [disabled]="obs.disabled || uploading || !documentenApiMetadataForm.valid || obs.editDisabled"
       (click)="save()"
     >
       {{ 'document.save' | translate }}
