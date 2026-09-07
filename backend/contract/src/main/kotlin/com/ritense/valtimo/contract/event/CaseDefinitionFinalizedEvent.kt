@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,30 +14,10 @@
  * limitations under the License.
  */
 
-.process-migration {
-  display: flex;
-  flex-direction: column;
-  gap: var(--cds-spacing-06);
+package com.ritense.valtimo.contract.event
 
-  &__selection {
-    display: grid;
-    grid-template-columns: 2fr 1fr 2fr 1fr;
-    gap: var(--cds-spacing-05);
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
-    @media (max-width: 1056px) {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  &__diagrams {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--cds-spacing-05);
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--cds-spacing-03);
-  }
-}
+data class CaseDefinitionFinalizedEvent(
+    val caseDefinitionId: CaseDefinitionId,
+)

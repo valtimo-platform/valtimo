@@ -43,7 +43,8 @@ enum class MissingReferenceType(val blocksImport: Boolean) {
     FORM_FLOW(true),
 
     /**
-     * The process already exists on this environment as a system process that may not be updated.
+     * @deprecated System processes can be updated and are no longer reported as missing references.
      */
+    @Deprecated("A system process may always be updated, so this is never reported anymore.")
     READ_ONLY_SYSTEM_PROCESS(true),
 }
