@@ -23,7 +23,6 @@ import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.web.rest.dto.MissingReferenceType
 import com.ritense.processlink.web.rest.dto.ReplacedElementDto
 import com.ritense.processlink.web.rest.dto.ReplacedElementType
-import com.ritense.valtimo.contract.config.ValtimoProperties
 import com.ritense.valtimo.domain.processdefinition.ProcessDefinitionProperties
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.processdefinition.repository.ProcessDefinitionPropertiesRepository
@@ -42,7 +41,6 @@ class ProcessDefinitionImportPreviewServiceIntTest @Autowired constructor(
     private val processDefinitionImportPreviewService: ProcessDefinitionImportPreviewService,
     private val processDefinitionPropertiesRepository: ProcessDefinitionPropertiesRepository,
     private val operatonRepositoryService: OperatonRepositoryService,
-    private val valtimoProperties: ValtimoProperties,
 ) : BaseIntegrationTest() {
 
     @Test
@@ -82,37 +80,17 @@ class ProcessDefinitionImportPreviewServiceIntTest @Autowired constructor(
     }
 
     @Test
-    fun `should refuse a package for a process that is a read only system process here`(): Unit =
-        runWithoutAuthorization {
-            givenSystemProcess()
-
-            val preview = processDefinitionImportPreviewService.preview(exportedPackage())
-
-            assertThat(preview.missingReferences).hasSize(1)
-            assertThat(preview.missingReferences.single().type)
-                .isEqualTo(MissingReferenceType.READ_ONLY_SYSTEM_PROCESS)
-            assertThat(preview.missingReferences.single().reference).isEqualTo(PROCESS_DEFINITION_KEY)
-            assertThat(preview.canImport).isFalse()
-        }
-
-    @Test
-    fun `should allow a package for a system process that may be updated`(): Unit = runWithoutAuthorization {
+    fun `should allow a package for a process that is a system process here`(): Unit = runWithoutAuthorization {
         givenSystemProcess()
-        valtimoProperties.process.isSystemProcessUpdatable = true
 
-        try {
-            val preview = processDefinitionImportPreviewService.preview(exportedPackage())
+        val preview = processDefinitionImportPreviewService.preview(exportedPackage())
 
-            assertThat(preview.missingReferences).isEmpty()
-            assertThat(preview.canImport).isTrue()
-        } finally {
-            valtimoProperties.process.isSystemProcessUpdatable = false
-        }
+        assertThat(preview.missingReferences).isEmpty()
+        assertThat(preview.canImport).isTrue()
     }
 
     @Test
     fun `should allow a package for a process that does not exist here yet`(): Unit = runWithoutAuthorization {
-        // There are no process definition properties for an unknown process, which isReadOnly cannot handle
         val preview = processDefinitionImportPreviewService.preview(
             zipOf("config/global/bpmn/does-not-exist-here.bpmn" to bpmnWithCallActivity("does-not-exist-here", null))
         )

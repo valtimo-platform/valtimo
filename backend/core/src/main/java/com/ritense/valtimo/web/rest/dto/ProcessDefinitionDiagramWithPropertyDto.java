@@ -37,6 +37,10 @@ public class ProcessDefinitionDiagramWithPropertyDto {
         return bpmn20Xml;
     }
 
+    /**
+     * @deprecated no process definition is read-only anymore, so this is always {@code false}.
+     */
+    @Deprecated(since = "13.45.0", forRemoval = true)
     public boolean isReadOnly() {
         return readOnly;
     }
