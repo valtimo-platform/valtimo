@@ -74,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -420,9 +419,17 @@ public class OperatonProcessService {
     }
 
     public List<OperatonProcessDefinition> getDeployedDefinitions() {
+        return getDeployedDefinitions(false);
+    }
+
+    /**
+     * A suspended process still has running instances, so migration must offer it even though nothing else should.
+     */
+    public List<OperatonProcessDefinition> getDeployedDefinitions(boolean includeSuspended) {
         denyAuthorization();
+        var specification = includeSuspended ? byLatestVersion() : byActive().and(byLatestVersion());
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
-            byActive().and(byLatestVersion()),
+            specification,
             Sort.by(NAME)
         ));
     }
@@ -553,6 +560,10 @@ public class OperatonProcessService {
 
     }
 
+    /**
+     * @param skipIsDeployableCheck ignored - a system process may always be updated. Kept so external
+     *     callers keep compiling; due for removal in the next major version.
+     */
     @Transactional
     public DeploymentWithDefinitions deploy(
         BlueprintId blueprintId,
@@ -564,14 +575,40 @@ public class OperatonProcessService {
         @Nullable String originalVersionTag,
         @Nullable String originalProcessDefinitionId
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deployDefinition(
+            blueprintId,
+            fileName,
+            fileInput,
+            skipProcessLinksCopy,
+            setExecutable,
+            originalVersionTag,
+            originalProcessDefinitionId,
+            false
+        );
+    }
+
+    @Transactional
+    public DeploymentWithDefinitions deployFromConfiguration(
+        String fileName,
+        ByteArrayInputStream fileInput
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deployDefinition(null, fileName, fileInput, false, true, null, null, true);
+    }
+
+    private DeploymentWithDefinitions deployDefinition(
+        BlueprintId blueprintId,
+        String fileName,
+        ByteArrayInputStream fileInput,
+        boolean skipProcessLinksCopy,
+        boolean setExecutable,
+        @Nullable String originalVersionTag,
+        @Nullable String originalProcessDefinitionId,
+        boolean matchAnyDeployedVersion
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
         denyAuthorization();
 
         if (fileName.endsWith(".bpmn")) {
             BpmnModelInstance bpmnModel = Bpmn.readModelFromStream(fileInput);
-
-            if (!isDeployable(bpmnModel) && !skipIsDeployableCheck) {
-                throw new ProcessNotDeployableException(fileName);
-            }
 
             updateCaseDefinitionProcessesVersionTags(bpmnModel, blueprintId);
             updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, blueprintId);
@@ -598,8 +635,17 @@ public class OperatonProcessService {
             List<AutofillModification> autofillModifications = new ArrayList<>(unchangedAutofills);
             autofillModifications.addAll(newAutofillModifications);
 
-            if (isProcessDefinitionPreviouslyDeployed(blueprintId, bpmnModel)) {
+            if (isProcessDefinitionPreviouslyDeployed(blueprintId, bpmnModel, matchAnyDeployedVersion)) {
                 return null;
+            }
+            if (matchAnyDeployedVersion && latestProcessDefinition != null) {
+                logger.info(
+                    "Configuration file '{}' holds content that was not deployed before and supersedes version {} "
+                        + "of process definition '{}'.",
+                    fileName,
+                    latestProcessDefinition.getVersion(),
+                    latestProcessDefinition.getKey()
+                );
             }
             if (latestProcessDefinition != null && blueprintId != null) {
                 // clean up previous process definition, can only be triggered when we're deploying a draft version
@@ -736,43 +782,58 @@ public class OperatonProcessService {
 
     private boolean isProcessDefinitionPreviouslyDeployed(
         BlueprintId blueprintId,
-        BpmnModelInstance bpmnModel
+        BpmnModelInstance bpmnModel,
+        boolean matchAnyDeployedVersion
     ) throws ProcessNotDeployableException {
-        OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(blueprintId, bpmnModel);
+        List<OperatonProcessDefinition> deployedVersions = getExistingProcessVersionsForFile(blueprintId, bpmnModel);
 
-        if (latestProcessDefinition != null) {
-            try {
-                byte[] savedBytes = repositoryService.getResourceAsStream(
-                        latestProcessDefinition.getDeploymentId(),
-                        latestProcessDefinition.getResourceName()
-                    )
-                    .readAllBytes();
+        if (deployedVersions.isEmpty()) {
+            return false;
+        }
+        if (!matchAnyDeployedVersion) {
+            deployedVersions = deployedVersions.subList(0, 1);
+        }
 
-                // Normalize both through the same XML pipeline so comparisons are
-                // namespace-agnostic. Applying normalizeXmlToCamundaNamespace directly to
-                // the saved bytes handles both old deployments (operaton: namespace, stored
-                // via addModelInstance) and new deployments (camunda: namespace, already
-                // Transformer output) because the DOM+Transformer step is idempotent on
-                // already-normalized XML.
-                byte[] normalizedSavedBytes = normalizeXmlToCamundaNamespace(
-                    new String(savedBytes, StandardCharsets.UTF_8),
-                    "http://operaton.org/schema/1.0/bpmn",
-                    "http://camunda.org/schema/1.0/bpmn"
-                ).readAllBytes();
-                byte[] normalizedNewBytes = normalizeToCamundaNamespace(bpmnModel).readAllBytes();
+        try {
+            byte[] normalizedNewBytes = normalizeToCamundaNamespace(bpmnModel).readAllBytes();
 
-                if (Arrays.equals(normalizedNewBytes, normalizedSavedBytes)) {
+            for (OperatonProcessDefinition deployedVersion : deployedVersions) {
+                if (Arrays.equals(normalizedNewBytes, normalizedResourceOf(deployedVersion))) {
                     return true;
                 }
-
-            } catch (IOException e) {
-                throw new ProcessNotDeployableException(blueprintId + " and process: " + latestProcessDefinition.getKey());
             }
+        } catch (IOException e) {
+            throw new ProcessNotDeployableException(blueprintId + " and process: " + deployedVersions.get(0).getKey());
         }
         return false;
     }
 
+    /** Normalizes a deployed resource through the same idempotent XML pipeline, so comparisons are namespace-agnostic. */
+    private byte[] normalizedResourceOf(OperatonProcessDefinition processDefinition) throws IOException {
+        byte[] savedBytes = repositoryService.getResourceAsStream(
+                processDefinition.getDeploymentId(),
+                processDefinition.getResourceName()
+            )
+            .readAllBytes();
+
+        return normalizeXmlToCamundaNamespace(
+            new String(savedBytes, StandardCharsets.UTF_8),
+            "http://operaton.org/schema/1.0/bpmn",
+            "http://camunda.org/schema/1.0/bpmn"
+        ).readAllBytes();
+    }
+
     public OperatonProcessDefinition getExistingProcessForFile(
+        BlueprintId blueprintId,
+        BpmnModelInstance bpmnModel
+    ) {
+        List<OperatonProcessDefinition> processDefinitions = getExistingProcessVersionsForFile(blueprintId, bpmnModel);
+
+        return processDefinitions.isEmpty() ? null : processDefinitions.getFirst();
+    }
+
+    /** All deployed versions of the process in this file, latest version first. */
+    private List<OperatonProcessDefinition> getExistingProcessVersionsForFile(
         BlueprintId blueprintId,
         BpmnModelInstance bpmnModel
     ) {
@@ -780,24 +841,22 @@ public class OperatonProcessService {
             .map(Process::getId)
             .findFirst().orElseThrow();
 
-        List<OperatonProcessDefinition> processDefinition = operatonRepositoryService.findProcessDefinitions(
+        List<OperatonProcessDefinition> processDefinitions = operatonRepositoryService.findProcessDefinitions(
             byKey(processDefinitionKey)
-                .and(blueprintId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
-                    blueprintId.getTagPrefix() + blueprintId))
+                .and(blueprintId == null
+                    ? byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock())
+                    : byVersionTag(blueprintId.getTagPrefix() + blueprintId))
             ,
             Sort.by(Sort.Order.desc(VERSION))
         );
 
-        if (processDefinition.size() > 1 && blueprintId != null) {
+        if (processDefinitions.size() > 1 && blueprintId != null) {
             throw new IllegalStateException(
                 "Only one process definition should be found for key: " + processDefinitionKey
                     + " and case definition id: " + blueprintId
             );
-        } else if (processDefinition.size() > 0) {
-            return processDefinition.getFirst();
-        } else {
-            return null;
         }
+        return processDefinitions;
     }
 
      public void setBuildingBlockDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel, BuildingBlockDefinitionId buildingBlockDefinitionId) {
@@ -1212,41 +1271,6 @@ public class OperatonProcessService {
                 yield null;
             }
         };
-    }
-
-    private boolean isDeployable(BpmnModelInstance model) {
-        AtomicBoolean isDeployable = new AtomicBoolean(true);
-        if (valtimoProperties.getProcess().isSystemProcessUpdatable()) {
-            return isDeployable.get();
-        }
-        model.getDefinitions().getChildElementsByType(Process.class).forEach(
-            process -> {
-                String processDefinitionKey = process.getId();
-                String versionTag = process.getOperatonVersionTag();
-                if (processDefinitionKey == null || processDefinitionKey.isEmpty() || isSystemProcess(
-                    AuthorizationContext
-                        .runWithoutAuthorization(
-                            () -> operatonRepositoryService.findProcessDefinition(
-                                byKey(processDefinitionKey)
-                                    .and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(versionTag != null ? byVersionTag(versionTag) : byNotLinkedToCaseDefinition()))
-                            )
-                        )
-                )) {
-                    isDeployable.set(false);
-                }
-            });
-        return isDeployable.get();
-    }
-
-    private boolean isSystemProcess(OperatonProcessDefinition processDefinition) {
-        if (processDefinition == null) {
-            return false;
-        }
-        var processProperties = processPropertyService.findByProcessDefinitionKey(processDefinition.getKey());
-        if (processProperties != null) {
-            return processProperties.isSystemProcess();
-        }
-        return false;
     }
 
     ByteArrayInputStream normalizeToCamundaNamespace(BpmnModelInstance bpmnModel) {
