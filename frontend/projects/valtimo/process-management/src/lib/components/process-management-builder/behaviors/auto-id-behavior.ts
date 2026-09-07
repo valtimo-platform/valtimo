@@ -21,12 +21,12 @@ import {MAX_ACTIVITY_ID_LENGTH} from '../../../constants';
 const MAX_UNIQUE_SUFFIX = 100;
 const TRAILING_SEPARATOR_REGEX = /[-_]+$/;
 
-// Syncs a this-session flow node's id with its name in kebab-case; a hand-edited id releases it
 class AutoIdBehavior {
   static $inject = ['eventBus', 'modeling', 'elementRegistry'];
 
   private readonly _ownedElements = new WeakSet<object>();
   private _applyingId = false;
+  private _replacedElementWasOwned = false;
 
   constructor(
     eventBus: any,
@@ -36,6 +36,25 @@ class AutoIdBehavior {
     eventBus.on('commandStack.shape.create.postExecuted', ({context}: any) => {
       const element = context?.shape;
       if (this.isEligible(element)) this._ownedElements.add(element);
+    });
+
+    // Changing the type swaps in a new element, and carries the id over as a property update
+    eventBus.on('commandStack.shape.replace.preExecute', ({context}: any) => {
+      this._replacedElementWasOwned = this._ownedElements.has(context?.oldShape);
+    });
+
+    eventBus.on('commandStack.shape.replace.postExecuted', ({context}: any) => {
+      const {oldShape, newShape} = context ?? {};
+
+      this._ownedElements.delete(oldShape);
+
+      if (this._replacedElementWasOwned && this.isEligible(newShape)) {
+        this._ownedElements.add(newShape);
+      } else {
+        this._ownedElements.delete(newShape);
+      }
+
+      this._replacedElementWasOwned = false;
     });
 
     // Read the previous id before the update is applied
@@ -55,6 +74,13 @@ class AutoIdBehavior {
       if (context?.properties?.name === undefined) return;
 
       this.syncIdWithName(context);
+    });
+  }
+
+  // A new process starts from a template, so treat what it brings as drawn here
+  public adoptAll(): void {
+    this.elementRegistry.forEach((element: any) => {
+      if (this.isEligible(element)) this._ownedElements.add(element);
     });
   }
 
