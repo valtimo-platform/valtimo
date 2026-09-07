@@ -29,12 +29,18 @@ Field behavior in this dialog:
 
 | Field | Behavior |
 |-------|----------|
-| Secret | Shown empty — leave blank to keep the current secret; type a value to replace it. |
+| Secret | Shown empty — leave blank to keep the current secret; type a value to replace it. Re-entering the current secret counts as unchanged. |
 | Event broker URL | Shown with the credentials masked (`***`). Leaving the masked value untouched keeps the stored broker; clearing the field disables events for this integration. |
 | Other fields | An unchanged field is simply not sent; a changed field is validated exactly like during registration. |
 
 After saving, Valtimo immediately re-checks the integration and re-sends every configuration —
 this is also what reconnects event delivery after a broker change.
+
+Changing the address, the secret, or the event broker URL is also treated as a security event:
+every access token previously issued for this integration's configurations is revoked on the
+spot. The re-send delivers fresh tokens, so a healthy integration recovers immediately, while
+anything that still holds an old token is locked out. When the address changed, Valtimo also
+removes the configurations from the old address, so nothing usable stays behind there.
 
 {% hint style="warning" %}
 Rotating the secret is two-sided: the host must be restarted with the matching admin token. Until

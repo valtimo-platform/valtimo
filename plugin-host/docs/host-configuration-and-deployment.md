@@ -117,10 +117,16 @@ see [Auto-deployment](./auto-deployment.md).
 - **Secret rotation is two-sided.** The host reads `ADMIN_TOKEN` once at boot. Order that
   minimises the outage: restart the host with the new token first (GZAC's pushes fail as
   warnings, the host may show Unreachable), then update the secret on the GZAC side via **Edit
-  connection** — the next poll reconnects and re-pushes everything.
+  connection** — the next poll reconnects and re-pushes everything. The rotation also revokes
+  every token previously issued for the host's configurations; the re-push hands out fresh ones,
+  so a leaked or hoarded token dies while the host itself recovers without further action.
+  Re-entering the unchanged secret does not count as a rotation and revokes nothing.
 - **Moving a host** (new address, new broker) is done from GZAC via **Edit connection**; the host
-  itself needs no change. Repointing GZAC at a *different physical host* leaves the old host's
-  pushed configurations behind — clean those manually.
+  itself needs no change. Repointing GZAC at a *different physical host* revokes all outstanding
+  tokens and deletes the pushed configurations from the old address — best-effort, authenticated
+  with the *old* admin token, right after the edit is saved. An old host that is unreachable at
+  that moment keeps its rows (logged, not retried) — clean those manually if it ever comes back —
+  but every token they carry has already been revoked.
 - **Reverse proxies must not add a path prefix**: the HMAC signature covers the request path, so
   the host must see the same path GZAC signed. Root-mounted (the default) is fine; TLS
   termination in front of an actions-only host is fine too.

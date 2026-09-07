@@ -88,7 +88,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)). Rotation is two-sided: restart the host with the new value, then update the secret on the GZAC host via its Edit connection modal — GZAC shows the host unreachable in between and reconnects on the next poll |
+| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)). Rotation is two-sided: restart the host with the new value, then update the secret on the GZAC host via its Edit connection modal — GZAC shows the host unreachable in between, revokes every token issued for the host's configurations, and reconnects on the next poll with fresh ones |
 | `PORT` | no | `8090` | HTTP listen port |
 | `PLUGIN_STORAGE_DIR` | no | `./plugins` (local), `/data/plugins` (Docker) | Directory for persisted plugin binaries |
 | `PLUGIN_PREINSTALL_DIR` | no | `./preinstalled` (local), `/data/preinstalled` (Docker) | Directory scanned once at boot; every `*.zip` in it is installed (see [Pre-installed plugins](#pre-installed-plugins)). Empty in the published image. |
