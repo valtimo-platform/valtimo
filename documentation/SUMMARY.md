@@ -2,10 +2,9 @@
 
 ## Introduction
 
-* Welcome to Valtimo
-* Who is this documentation for?
-* What can you build with Valtimo?
-* How to use this documentation
+* [Welcome to Valtimo](introduction/welcome.md)
+* [What can you build with Valtimo?](introduction/use-cases.md)
+* [Valtimo's core features](introduction/core-features.md)
 
 ## Valtimo fundamentals
 
@@ -60,6 +59,7 @@
     * [Permissions](configuration-guides/access-control/permissions.md)
     * [Conditions](configuration-guides/access-control/conditions.md)
     * [Context conditions](configuration-guides/access-control/context-conditions.md)
+* [🌐 Translations](configuration-guides/translations/README.md)
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
