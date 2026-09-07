@@ -32,6 +32,7 @@ are replaced in place, so searching, sorting and reading are not interrupted.
 | Case definitions | The version picker lists every version of a case again, instead of only the active one, and its pagination works                |
 | Case definitions | Versions are ordered by version number rather than alphabetically, so 1.0.10 comes after 1.0.9                                  |
 | Case migration   | The source and target version dropdowns offer every version of the selected case again, instead of only one                     |
+| Case migration   | When upgrading from Valtimo 12, a sub-process that several cases reach through the same shared process is now linked to every one of those cases instead of only the first |
 | Cases            | A case can be deleted when the zaak it is linked to has already been removed in the Zaken API                                   |
 | Plugins          | Creating a zaakdossier via the verzoek plugin with an empty initiator type no longer fails when creating the initiator zaakrol   |
 | Plugins          | The verzoek plugin offers every case version again when picking one, instead of only the active one                              |
