@@ -87,6 +87,12 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
     {viewType: 'string', sortable: false, key: 'sortable', label: 'listColumn.sortable'},
     {viewType: 'string', sortable: false, key: 'defaultSort', label: 'listColumn.defaultSort'},
     {viewType: 'boolean', sortable: false, key: 'exportable', label: 'listColumn.exportField'},
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'defaultVisible',
+      label: 'listColumn.defaultVisibleField',
+    },
   ];
 
   public readonly disableInput$ = new BehaviorSubject<boolean>(false);
@@ -146,6 +152,10 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
         displayTypeParameters: getDisplayTypeParametersView(
           column.displayType.displayTypeParameters
         ),
+        defaultVisible:
+          column.defaultVisible === false
+            ? this.translateService.instant('listColumn.sortableNo')
+            : this.translateService.instant('listColumn.sortableYes'),
       }))
     )
   );
@@ -169,6 +179,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
     enum: new FormControl([]),
     tagAmount: new FormControl(1),
     exportable: new FormControl(false),
+    defaultVisible: new FormControl(true),
   });
 
   public readonly disableDefaultSort$ = new BehaviorSubject<boolean>(false);
@@ -454,6 +465,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
           ...(columnDateFormat && {dateFormat: columnDateFormat}),
           ...(tagAmount && {tagAmount: tagAmount}),
           exportable: column?.exportable,
+          defaultVisible: column?.defaultVisible ?? true,
         });
 
         this.openModal('edit');
@@ -582,6 +594,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
 
   private resetFormGroup(): void {
     this.formGroup.reset();
+    this.formGroup.patchValue({defaultVisible: true});
     combineLatest([this.sortItems$, this.viewTypeItems$])
       .pipe(take(1))
       .subscribe(([sortItems, viewTypeItems]) => {
@@ -617,6 +630,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
         },
       },
       exportable: this.displayExportButton ? formValue.exportable : false,
+      defaultVisible: formValue.defaultVisible ?? true,
     };
   }
 

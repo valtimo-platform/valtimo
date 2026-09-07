@@ -343,6 +343,20 @@
         [attr.data-test-id]="testIds.exportable"
       ></cds-toggle>
     </cds-label>
+
+    <div class="checkbox-with-tooltip">
+      <cds-checkbox
+        formControlName="defaultVisible"
+        [disabled]="modalObs.disableInput"
+        [attr.data-test-id]="testIds.defaultVisibleCheckbox"
+        >{{ 'listColumn.defaultVisibleField' | translate }}
+      </cds-checkbox>
+
+      <v-tooltip-icon
+        [tooltip]="'listColumn.defaultVisibleTooltip' | translate"
+        [disabled]="modalObs.disableInput"
+      ></v-tooltip-icon>
+    </div>
   </form>
 </ng-template>
 
