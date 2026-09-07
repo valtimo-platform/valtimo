@@ -644,14 +644,20 @@ class JsonSchemaDocumentSearchServiceIntTest extends BaseIntegrationTest {
         var sort = Sort.by(Direction.DESC, "assigneeFullName");
         var firstPageIds = searchDocumentIds(PageRequest.of(0, 10, sort));
         var secondPageIds = searchDocumentIds(PageRequest.of(1, 10, sort));
-        var firstTwentyIds = searchDocumentIds(PageRequest.of(0, 20, sort));
+        var thirdPageIds = searchDocumentIds(PageRequest.of(2, 10, sort));
+        var allTwentyFiveIds = searchDocumentIds(PageRequest.of(0, 25, sort));
 
         assertThat(firstPageIds).hasSize(10);
         assertThat(secondPageIds).hasSize(10);
+        assertThat(thirdPageIds).hasSize(5);
         assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds);
-        var pagedIds = Stream.concat(firstPageIds.stream(), secondPageIds.stream()).collect(Collectors.toList());
+        var pagedIds = Stream.of(firstPageIds, secondPageIds, thirdPageIds)
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+        assertThat(pagedIds).hasSize(25);
+        assertThat(pagedIds).doesNotHaveDuplicates();
         assertThat(pagedIds).isSorted();
-        assertThat(pagedIds).isEqualTo(firstTwentyIds);
+        assertThat(pagedIds).isEqualTo(allTwentyFiveIds);
     }
 
     @Test

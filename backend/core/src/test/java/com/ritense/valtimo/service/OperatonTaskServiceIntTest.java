@@ -240,15 +240,21 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
 
         var firstPageIds = findTaskIds(PageRequest.of(0, 10, Sort.Direction.DESC, "name"));
         var secondPageIds = findTaskIds(PageRequest.of(1, 10, Sort.Direction.DESC, "name"));
-        var firstTwentyIds = findTaskIds(PageRequest.of(0, 20, Sort.Direction.DESC, "name"));
+        var thirdPageIds = findTaskIds(PageRequest.of(2, 10, Sort.Direction.DESC, "name"));
+        // Sized past the 25 tasks started here, so the comparison holds whether or not other tests
+        // in this class left tasks behind — findTasksFiltered(ALL) is not scoped to this test
+        var allIds = findTaskIds(PageRequest.of(0, 30, Sort.Direction.DESC, "name"));
 
         assertThat(firstPageIds).hasSize(10);
         assertThat(secondPageIds).hasSize(10);
+        assertThat(thirdPageIds).hasSizeGreaterThanOrEqualTo(5);
         assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds);
-        var pagedIds = Stream.concat(firstPageIds.stream(), secondPageIds.stream()).collect(Collectors.toList());
+        var pagedIds = Stream.of(firstPageIds, secondPageIds, thirdPageIds)
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
         assertThat(pagedIds).doesNotHaveDuplicates();
         assertThat(pagedIds).isSorted();
-        assertThat(pagedIds).isEqualTo(firstTwentyIds);
+        assertThat(pagedIds).isEqualTo(allIds);
     }
 
     private List<String> findTaskIds(PageRequest pageRequest) {
