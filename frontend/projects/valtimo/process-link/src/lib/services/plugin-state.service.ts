@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap} from 'rxjs';
-import {map, take} from 'rxjs/operators';
+import {catchError, map, take} from 'rxjs/operators';
 import {
   PluginConfiguration,
   PluginDefinition,
@@ -97,6 +97,11 @@ export class PluginStateService {
   }
 
   selectProcessLink(processLink: ProcessLink): void {
+    // The previous link's plugin, configuration and action must not survive into this one. A link
+    // whose configuration has since been deleted resolves to nothing, and without clearing first
+    // the plugin that was on screen before would stay there as though it were this link's own
+    this.clearPluginSelection();
+
     this._selectedProcessLink$.next(processLink);
 
     // When editing a plugin process link, populate the plugin definition
@@ -105,8 +110,14 @@ export class PluginStateService {
     }
   }
 
+  private clearPluginSelection(): void {
+    this._selectedPluginDefinition$.next(undefined);
+    this._selectedPluginConfiguration$.next(undefined);
+    this._selectedPluginFunction$.next(undefined);
+  }
+
   private loadPluginDefinitionForProcessLink(processLink: ProcessLink): void {
-    // Get the plugin definition key - either directly or from plugin specifications
+    // Get the plugin definition key - either directly or from the configuration the link points at
     this.getPluginDefinitionKeyForProcessLink(processLink)
       .pipe(take(1))
       .subscribe(pluginDefinitionKey => {
@@ -135,12 +146,8 @@ export class PluginStateService {
 
     // Load and set the plugin configuration if available
     if (processLink.pluginConfigurationId) {
-      this.pluginManagementService
-        .getAllPluginConfigurations()
-        .pipe(
-          take(1),
-          map(configs => configs.find(c => c.id === processLink.pluginConfigurationId))
-        )
+      this.getPluginConfigurationForProcessLink(processLink)
+        .pipe(take(1))
         .subscribe(configuration => {
           if (configuration) {
             this._selectedPluginConfiguration$.next(configuration);
@@ -157,16 +164,9 @@ export class PluginStateService {
 
     // An action key can occur in several plugins, so the configuration the link points at decides which one
     if (processLink?.pluginConfigurationId) {
-      return this.pluginManagementService
-        .getAllPluginConfigurations()
-        .pipe(
-          map(
-            configurations =>
-              configurations.find(
-                configuration => configuration.id === processLink.pluginConfigurationId
-              )?.pluginDefinition?.key
-          )
-        );
+      return this.getPluginConfigurationForProcessLink(processLink).pipe(
+        map(configuration => configuration?.pluginDefinition?.key)
+      );
     }
 
     // Only a link recording neither is left to the action key, where a single match is all there is to go on
@@ -181,6 +181,16 @@ export class PluginStateService {
         return pluginSpecification?.pluginId;
       })
     );
+  }
+
+  // A configuration the link still records but that no longer exists answers 404, which is not an
+  // error worth surfacing here — the link simply has no plugin to show
+  private getPluginConfigurationForProcessLink(
+    processLink: ProcessLink
+  ): Observable<PluginConfiguration | undefined> {
+    return this.pluginManagementService
+      .getPluginConfiguration(processLink.pluginConfigurationId)
+      .pipe(catchError(() => of(undefined)));
   }
 
   deselectProcessLink(): void {

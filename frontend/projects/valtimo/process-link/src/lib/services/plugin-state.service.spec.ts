@@ -22,7 +22,7 @@ import {
   PluginService,
   PluginSpecification,
 } from '@valtimo/plugin';
-import {of} from 'rxjs';
+import {of, throwError} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ProcessLink} from '../models';
 import {PluginStateService} from './plugin-state.service';
@@ -52,15 +52,13 @@ describe('PluginStateService', () => {
     {key: 'xential', title: 'Xential'},
   ] as Array<PluginDefinition>;
 
-  // The second plugin is deliberately the configured one, so a first-match scan resolves the wrong plugin
-  const CONFIGURATIONS = [
-    {
-      id: 'configuration-id',
-      title: 'Xential configuration',
-      properties: {},
-      pluginDefinition: {key: 'xential'},
-    },
-  ] as Array<PluginConfiguration>;
+  // Xential is deliberately the configured plugin, so a scan by action key resolves the wrong one
+  const CONFIGURATION = {
+    id: 'configuration-id',
+    title: 'Xential configuration',
+    properties: {},
+    pluginDefinition: {key: 'xential'},
+  } as PluginConfiguration;
 
   const processLink = (overrides: Partial<ProcessLink>): ProcessLink =>
     ({
@@ -76,10 +74,13 @@ describe('PluginStateService', () => {
   beforeEach(() => {
     pluginManagementService = jasmine.createSpyObj('PluginManagementService', [
       'getPluginDefinitions',
-      'getAllPluginConfigurations',
+      'getPluginConfiguration',
     ]);
     pluginManagementService.getPluginDefinitions.and.returnValue(of(DEFINITIONS));
-    pluginManagementService.getAllPluginConfigurations.and.returnValue(of(CONFIGURATIONS));
+    // The endpoint answers 404 for a configuration that has since been deleted
+    pluginManagementService.getPluginConfiguration.and.callFake((configurationId: string) =>
+      configurationId === CONFIGURATION.id ? of(CONFIGURATION) : throwError(() => ({status: 404}))
+    );
 
     TestBed.configureTestingModule({
       providers: [
@@ -116,6 +117,18 @@ describe('PluginStateService', () => {
     });
   });
 
+  it('looks the configuration up by id rather than scanning every configuration', done => {
+    service.selectProcessLink(processLink({pluginConfigurationId: 'configuration-id'}));
+
+    service.selectedPluginConfiguration$.pipe(take(1)).subscribe(configuration => {
+      expect(configuration?.id).toBe('configuration-id');
+      expect(pluginManagementService.getPluginConfiguration).toHaveBeenCalledWith(
+        'configuration-id'
+      );
+      done();
+    });
+  });
+
   it('uses the definition key a building block process link records', done => {
     service.selectProcessLink(
       processLink({pluginDefinitionKey: 'smart-documents', referenceType: 'BUILDING_BLOCK'})
@@ -123,7 +136,7 @@ describe('PluginStateService', () => {
 
     service.pluginDefinitionKey$.pipe(take(1)).subscribe(pluginDefinitionKey => {
       expect(pluginDefinitionKey).toBe('smart-documents');
-      expect(pluginManagementService.getAllPluginConfigurations).not.toHaveBeenCalled();
+      expect(pluginManagementService.getPluginConfiguration).not.toHaveBeenCalled();
       done();
     });
   });
@@ -133,6 +146,37 @@ describe('PluginStateService', () => {
 
     service.pluginDefinitionKey$.pipe(take(1)).subscribe(pluginDefinitionKey => {
       expect(pluginDefinitionKey).toBe('smart-documents');
+      done();
+    });
+  });
+
+  it('clears the selection when the next link points at a configuration that no longer exists', () => {
+    service.selectProcessLink(processLink({pluginConfigurationId: 'configuration-id'}));
+
+    let definitionKey: string | undefined;
+    let configurationId: string | undefined;
+    let functionKey: string | undefined;
+    service.selectedPluginDefinition$.subscribe(definition => (definitionKey = definition?.key));
+    service.selectedPluginConfiguration$.subscribe(
+      configuration => (configurationId = configuration?.id)
+    );
+    service.selectedPluginFunction$.subscribe(
+      pluginFunction => (functionKey = pluginFunction?.key)
+    );
+    expect(definitionKey).toBe('xential');
+
+    service.selectProcessLink(processLink({pluginConfigurationId: 'deleted-configuration-id'}));
+
+    expect(definitionKey).toBeUndefined();
+    expect(configurationId).toBeUndefined();
+    expect(functionKey).toBeUndefined();
+  });
+
+  it('reports no plugin definition key for a link whose configuration no longer exists', done => {
+    service.selectProcessLink(processLink({pluginConfigurationId: 'deleted-configuration-id'}));
+
+    service.pluginDefinitionKey$.pipe(take(1)).subscribe(pluginDefinitionKey => {
+      expect(pluginDefinitionKey).toBeUndefined();
       done();
     });
   });
