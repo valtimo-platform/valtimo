@@ -79,24 +79,7 @@ export class PluginStateService {
                   configuration?.pluginDefinition.key || definition?.key
               )
             )
-          : combineLatest([
-              this._selectedProcessLink$,
-              this.pluginService.pluginSpecifications$,
-            ]).pipe(
-              map(([processLink, pluginSpecifications]) => {
-                if (processLink?.pluginDefinitionKey) {
-                  return processLink.pluginDefinitionKey;
-                }
-                const pluginSpecification = pluginSpecifications.find(specification => {
-                  const functionKeys =
-                    specification?.functionConfigurationComponents &&
-                    Object.keys(specification.functionConfigurationComponents);
-                  return functionKeys?.includes(processLink?.pluginActionDefinitionKey);
-                });
-
-                return pluginSpecification?.pluginId;
-              })
-            )
+          : this.getPluginDefinitionKeyForProcessLink(selectedProcesLink)
       )
     );
   }
@@ -168,18 +151,32 @@ export class PluginStateService {
 
   private getPluginDefinitionKeyForProcessLink(processLink: ProcessLink): Observable<string> {
     // If the key is directly available, use it
-    if (processLink.pluginDefinitionKey) {
+    if (processLink?.pluginDefinitionKey) {
       return of(processLink.pluginDefinitionKey);
     }
 
-    // Otherwise, derive it from plugin specifications using the action key
+    // An action key can occur in several plugins, so the configuration the link points at decides which one
+    if (processLink?.pluginConfigurationId) {
+      return this.pluginManagementService
+        .getAllPluginConfigurations()
+        .pipe(
+          map(
+            configurations =>
+              configurations.find(
+                configuration => configuration.id === processLink.pluginConfigurationId
+              )?.pluginDefinition?.key
+          )
+        );
+    }
+
+    // Only a link recording neither is left to the action key, where a single match is all there is to go on
     return this.pluginService.pluginSpecifications$.pipe(
       map(pluginSpecifications => {
         const pluginSpecification = pluginSpecifications.find(specification => {
           const functionKeys =
             specification?.functionConfigurationComponents &&
             Object.keys(specification.functionConfigurationComponents);
-          return functionKeys?.includes(processLink.pluginActionDefinitionKey);
+          return functionKeys?.includes(processLink?.pluginActionDefinitionKey);
         });
         return pluginSpecification?.pluginId;
       })
