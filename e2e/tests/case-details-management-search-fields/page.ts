@@ -122,7 +122,14 @@ export class CaseDetailsManagementSearchFieldsPage {
 
   // Dropdown selection helper
   async selectDropdownItem(dropdownLocator: ReturnType<Page['locator']>, itemText: string) {
-    const listbox = this.page.getByRole('listbox');
+    // The v-select uses appendInline, so each cds-combo-box renders its own
+    // listbox as a descendant of the dropdown element. Scope the lookup to
+    // THIS dropdown: a page-global getByRole('listbox') races against the
+    // other combo boxes in the modal — isVisible() would reflect a sibling
+    // dropdown's state, so the open/click retry could oscillate (clicking the
+    // target closed) until the toPass timeout. Scoping also keeps `option`
+    // from matching the field's displayed value instead of a menu entry.
+    const listbox = dropdownLocator.getByRole('listbox');
     const option = listbox.getByText(itemText, {exact: true});
     // The cds-combo-box can re-render (detach) right as it is opened, which
     // detaches the click target mid-action and hangs the click until the test

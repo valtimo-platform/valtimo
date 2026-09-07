@@ -106,7 +106,9 @@ export class CaseManagementService extends BaseApiService {
   public getAllCaseVersions(params: any): Observable<Page<CaseVersionListItem>> {
     return this.httpClient.get<Page<CaseVersionListItem>>(
       this.getApiUrl(`management/v1/case-definition`),
-      {params}
+      // Without an explicit sort the endpoint orders on name first, which scatters the versions
+      // of a key whenever one of them was renamed.
+      {params: {sort: 'id.versionTag,desc', ...params, allVersions: true}}
     );
   }
 

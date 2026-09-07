@@ -15,7 +15,7 @@
   -->
 
 @if (activeTabKey$ | async; as activeTabKey) {
-  <cds-tabs type="line">
+  <cds-tabs [attr.data-test-id]="testIds.tabs" type="line">
     @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL}; as obs) {
       <cds-tab
         [active]="obs.active"

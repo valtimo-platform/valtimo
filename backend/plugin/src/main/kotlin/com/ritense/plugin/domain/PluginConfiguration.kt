@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,14 @@ class PluginConfiguration(
     }
 
     fun updateProperties(propertiesForUpdate: ObjectNode) {
+        val definedFieldNames = pluginDefinition.properties.map { it.fieldName }.toSet()
+
+        properties?.fieldNames()?.asSequence()?.toList()?.forEach { existingKey ->
+            if (existingKey !in definedFieldNames) {
+                properties?.remove(existingKey)
+            }
+        }
+
         pluginDefinition.properties.forEach {
             val updateValue = propertiesForUpdate.get(it.fieldName)
             if (!it.secret || !nodeIsEmpty(updateValue)) {

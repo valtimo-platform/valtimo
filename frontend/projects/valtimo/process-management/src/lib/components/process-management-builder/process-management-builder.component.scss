@@ -90,6 +90,17 @@
     box-sizing: border-box;
   }
 
+  &__modeler-panel--read-only {
+    ::ng-deep .bio-properties-panel-entry {
+      input,
+      select,
+      textarea,
+      .bio-properties-panel-feel-editor-container {
+        opacity: 0.65;
+      }
+    }
+  }
+
   &__loading {
     width: 100%;
     height: 100%;

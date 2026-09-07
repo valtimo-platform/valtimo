@@ -15,11 +15,24 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CASE_IDENTIFIER, createWidgetTestData, createDividerTestData, createJsonEditorDividerData, createReorderTestData} from './case-details-management-widgets';
+import {
+  CASE_IDENTIFIER,
+  createWidgetTestData,
+  createConditionWidgetTestData,
+  createDividerTestData,
+  createJsonEditorDividerData,
+  createReorderTestData,
+} from './case-details-management-widgets';
 import {CaseDetailsManagementWidgetsPage} from './page';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 
 test.use({storageState: undefined});
+
+// Tests share a single context/page created in beforeAll and depend on each other
+// (create → assert properties → reorder → delete). Serial mode keeps them in one
+// group (so beforeAll/afterAll run exactly once despite fullyParallel) and skips the
+// remaining tests when one fails, instead of cascading "context closed" errors.
+test.describe.configure({mode: 'serial'});
 
 test.describe('Case details management — Widgets', () => {
   let context;
@@ -32,6 +45,7 @@ test.describe('Case details management — Widgets', () => {
   const dividerData = createDividerTestData();
   const jsonDividerData = createJsonEditorDividerData();
   const reorderData = createReorderTestData();
+  const conditionData = createConditionWidgetTestData();
 
   test.beforeAll(async ({browser, baseURL}) => {
     test.setTimeout(120_000);
@@ -53,6 +67,7 @@ test.describe('Case details management — Widgets', () => {
     await widgetsPage.removeTestWidgetsViaApi(CASE_IDENTIFIER, draftVersion, widgetTabKey, 'E2e Test Divider');
     await widgetsPage.removeTestWidgetsViaApi(CASE_IDENTIFIER, draftVersion, widgetTabKey, 'E2e JSON Divider');
     await widgetsPage.removeTestWidgetsViaApi(CASE_IDENTIFIER, draftVersion, widgetTabKey, 'E2e Reorder Widget');
+    await widgetsPage.removeTestWidgetsViaApi(CASE_IDENTIFIER, draftVersion, widgetTabKey, 'E2e Condition Widget');
   });
 
   test.afterAll(async () => {
@@ -81,8 +96,14 @@ test.describe('Case details management — Widgets', () => {
       widgetTabKey,
       'E2e Reorder Widget'
     );
+    await widgetsPage.removeTestWidgetsViaApi(
+      CASE_IDENTIFIER,
+      draftVersion,
+      widgetTabKey,
+      'E2e Condition Widget'
+    );
 
-    await context.close();
+    if (context) await context.close();
   });
 
   // ─── 6.88 Add widget ─────────────────────────────────────────────
@@ -233,6 +254,101 @@ test.describe('Case details management — Widgets', () => {
   });
 
   // ─── 6.96 Rearrange widgets ───────────────────────────────────────
+
+  // ─── 6.94 Set widget conditions ───────────────────────────────────
+
+  test.describe('6.94 — Set widget conditions', () => {
+    test('Add a widget with a display condition', async () => {
+      // Act — the wizard's last step configures when the widget is shown
+      await widgetsPage.addFieldsWidget({
+        title: conditionData.widgetTitle,
+        fieldTitle: conditionData.fieldTitle,
+        valuePath: conditionData.valuePath,
+        condition: {
+          path: conditionData.conditionPath,
+          operatorLabel: conditionData.operatorLabel,
+          value: conditionData.conditionValue,
+        },
+      });
+
+      // Assert — the widget exists and the condition is persisted with the operator symbol
+      await widgetsPage.assertWidgetVisible(conditionData.widgetTitle);
+      await widgetsPage.assertWidgetDisplayConditions(
+        CASE_IDENTIFIER,
+        draftVersion,
+        widgetTabKey,
+        conditionData.widgetTitle,
+        [
+          {
+            path: conditionData.conditionPath,
+            operator: conditionData.operator,
+            value: conditionData.conditionValue,
+          },
+        ]
+      );
+    });
+
+    test('Condition is prefilled when the widget is reopened', async () => {
+      test.setTimeout(60_000);
+      // Act — reopen the edit wizard and jump to the conditions step
+      await widgetsPage.openWidgetEditWizard(conditionData.widgetTitle);
+      await widgetsPage.goToDisplayConditionsStep();
+
+      // Assert — the saved condition round-trips into the form
+      await expect(widgetsPage.conditionRow(0)).toBeVisible();
+      await expect(widgetsPage.conditionValueInput).toHaveValue(conditionData.conditionValue);
+      await expect(widgetsPage.conditionOperatorDropdown).toContainText(
+        conditionData.operatorLabel
+      );
+
+      await widgetsPage.wizardCancelButton.click();
+      await widgetsPage.waitForWizardClosed();
+    });
+
+    test('Delete the condition widget', async () => {
+      await widgetsPage.deleteWidgetViaOverflowMenu(conditionData.widgetTitle);
+      await widgetsPage.assertWidgetNotVisible(conditionData.widgetTitle);
+    });
+  });
+
+  test.describe('6.94 — Failure scenarios', () => {
+    test('Save is disabled while a condition row is incomplete', async () => {
+      // Get to the conditions step of a fresh widget
+      await widgetsPage.addWidgetButton.click();
+      await widgetsPage.selectWidgetType('tileFields');
+      await widgetsPage.wizardNextButton.click();
+      await widgetsPage.selectWidgetWidth('tileMedium');
+      await widgetsPage.wizardNextButton.click();
+      await widgetsPage.selectWidgetDensity('tileDefault');
+      await widgetsPage.wizardNextButton.click();
+      await widgetsPage.selectWidgetColor('tileWhite');
+      await widgetsPage.wizardNextButton.click();
+      await widgetsPage.fillWidgetTitle(`${conditionData.widgetTitle} Invalid`);
+      await widgetsPage.fillFieldTitle(conditionData.fieldTitle);
+      await widgetsPage.selectDisplayType('Text');
+      await widgetsPage.selectValuePath(conditionData.valuePath);
+      await widgetsPage.wizardNextButton.click();
+
+      // Sanity check — with no conditions at all the widget is always shown, so save is allowed
+      await expect(widgetsPage.wizardSaveButton).toBeEnabled();
+
+      // Act — add an empty condition row
+      await widgetsPage.conditionsAddButton.click();
+      await expect(widgetsPage.conditionRow(0)).toBeVisible();
+
+      // Assert — an incomplete condition blocks the save
+      await expect(widgetsPage.wizardSaveButton).toBeDisabled();
+
+      // Removing the row makes it valid again
+      await widgetsPage.conditionDeleteButton(0).click();
+      await expect(widgetsPage.wizardSaveButton).toBeEnabled();
+
+      // Discard — nothing should be persisted
+      await widgetsPage.wizardCancelButton.click();
+      await widgetsPage.waitForWizardClosed();
+      await widgetsPage.assertWidgetNotVisible(`${conditionData.widgetTitle} Invalid`);
+    });
+  });
 
   test.describe('6.96 — Rearrange widgets', () => {
     test('Add two dividers for reordering', async () => {

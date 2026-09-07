@@ -35,15 +35,15 @@ abstract class AbstractFormFlowLinkTaskProvider(
                 .singleResult()
 
             val additionalProperties = mutableMapOf(
-                "processInstanceId" to task.getProcessInstanceId(),
-                "processInstanceBusinessKey" to processInstance.businessKey,
-                "taskInstanceId" to task.id
+                PROCESS_INSTANCE_ID to task.getProcessInstanceId(),
+                PROCESS_INSTANCE_BUSINESS_KEY to processInstance.businessKey,
+                TASK_INSTANCE_ID to task.id
             )
 
             try {
                 val document = AuthorizationContext.runWithoutAuthorization { documentService[processInstance.businessKey] }
                 if (document != null) {
-                    additionalProperties["documentId"] = processInstance.businessKey
+                    additionalProperties[DOCUMENT_ID] = processInstance.businessKey
                 }
             } catch (e: DocumentNotFoundException) {
                 // we do nothing here, intentional
@@ -55,6 +55,17 @@ abstract class AbstractFormFlowLinkTaskProvider(
 
     companion object {
         const val FORM_FLOW_TASK_TYPE_KEY = "form-flow"
+
+        // The keys of the additional properties that are available to SpEL expressions in a form
+        // flow. These are also published through the form flow registry, so the editor can show
+        // which context data a definition can rely on.
+        const val PROCESS_INSTANCE_ID = "processInstanceId"
+        const val PROCESS_INSTANCE_BUSINESS_KEY = "processInstanceBusinessKey"
+        const val TASK_INSTANCE_ID = "taskInstanceId"
+        const val DOCUMENT_ID = "documentId"
+        const val PROCESS_DEFINITION_KEY = "processDefinitionKey"
+        const val PROCESS_DEFINITION_ID = "processDefinitionId"
+        const val DOCUMENT_DEFINITION_NAME = "documentDefinitionName"
     }
 
 }

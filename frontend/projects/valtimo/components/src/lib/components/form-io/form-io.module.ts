@@ -37,6 +37,7 @@ import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
 import {applyDataGridPatch} from './patches/patched-datagrid';
 import {registerFormioFlatpickr, setFormioFlatpickrLocale} from './formio-flatpickr';
+import { FormIoMailPreviewComponent } from './components/form-io-mail-preview/mail-preview.component';
 
 // Apply FormIO patches before any form renders
 applyDataGridPatch();
@@ -62,6 +63,7 @@ applyDataGridPatch();
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
     FormIoCurrencyComponent,
+    FormIoMailPreviewComponent,
     FormioDummyComponent,
   ],
   exports: [
@@ -71,6 +73,7 @@ applyDataGridPatch();
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
     FormIoCurrencyComponent,
+    FormIoMailPreviewComponent,
     FormioDummyComponent,
   ],
   providers: [

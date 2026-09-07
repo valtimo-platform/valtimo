@@ -53,7 +53,7 @@ import {
   PluginProcessLinkUpdateDto,
   ProcessLink,
 } from '../../models';
-import {USER_TASK_ACTIVITY} from '../../constants';
+import {PLUGIN_ACTION_CONFIGURATION_TEST_IDS, USER_TASK_ACTIVITY} from '../../constants';
 import {ActivatedRoute} from '@angular/router';
 import {getBuildingBlockManagementRouteParams, getCaseManagementRouteParams} from '@valtimo/shared';
 
@@ -64,6 +64,8 @@ import {getBuildingBlockManagementRouteParams, getCaseManagementRouteParams} fro
   styleUrls: ['./plugin-action-configuration.component.scss'],
 })
 export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
+  protected readonly testIds = PLUGIN_ACTION_CONFIGURATION_TEST_IDS;
+
   @Input() public selectedPluginConfiguration$: Observable<PluginConfiguration>;
   @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() public configuration: EventEmitter<PluginConfigurationData> =

@@ -68,6 +68,7 @@
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="showModal()"
         [disabled]="!obs.allChangedValuesValid || obs.disabled || !obs.valuesChanged"
+        [attr.data-test-id]="testIds.saveButton"
       >
         {{ 'interface.save' | translate }}
 

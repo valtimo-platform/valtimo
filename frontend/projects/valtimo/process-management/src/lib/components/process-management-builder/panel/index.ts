@@ -15,4 +15,5 @@
  */
 
 export * from './valtimo-properties-provider';
+export * from './read-only-properties-panel';
 export * from './expression-autocomplete';

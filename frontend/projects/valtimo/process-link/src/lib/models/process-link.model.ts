@@ -15,6 +15,7 @@
  */
 import {PluginConfiguration} from '@valtimo/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
+import {BuildingBlockSyncTiming, FormDisplayType} from '@valtimo/shared';
 import {ListItem} from 'carbon-components-angular/dropdown';
 import {PluginRequirementSource} from './plugin.model';
 
@@ -130,9 +131,10 @@ interface PluginProcessLinkUpdateDto {
 interface FormFlowProcessLinkUpdateRequestDto {
   id: string;
   activityId: string;
-  formFlowDefinitionId: string;
+  formFlowDefinitionKey: string;
   formDisplayType?: string;
   formSize?: string;
+  subtitles?: string[];
 }
 
 interface FormProcessLinkUpdateRequestDto {
@@ -144,8 +146,6 @@ interface FormProcessLinkUpdateRequestDto {
   formSize?: string;
   subtitles?: string[];
 }
-
-type FormDisplayType = 'modal' | 'panel';
 
 type FormSize = 'extraSmall' | 'small' | 'medium' | 'large';
 
@@ -265,8 +265,6 @@ interface ExternalPluginTaskFormProcessLinkUpdateDto {
   pluginVersion: string;
   bundleKey: string | null;
 }
-
-type BuildingBlockSyncTiming = 'CONTINUOUS' | 'END';
 
 interface BuildingBlockInputMapping {
   source: string;

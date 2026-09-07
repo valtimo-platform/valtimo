@@ -169,33 +169,15 @@ jobs:
             echo "Not on Maven Central yet (HTTP ${code}) — proceeding with publish."
           fi
 
-      # Sonatype sunset guard: Sonatype enforces new publishing limits from 1 Oct 2026,
-      # so we stop dual-publishing to it a day early (30 Sep 2026) to be safe.
-      # After the cutoff only the S3 publish runs — no manual edit
-      # needed, the guard flips on the date. Adjust CUTOFF to move the boundary.
-      - name: Determine whether Sonatype publishing is still open
-        id: sonatype_window
-        run: |
-          set -euo pipefail
-          CUTOFF="2026-09-30"
-          TODAY="$(date -u +%F)"
-          if [[ "$TODAY" < "$CUTOFF" ]]; then
-            echo "open=true" >> "$GITHUB_OUTPUT"
-            echo "Before Sonatype cutoff ($CUTOFF) — dual-publishing to Sonatype + S3."
-          else
-            echo "open=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Past Sonatype cutoff ($CUTOFF) — publishing to S3 only."
-          fi
-
       - name: Publish to Sonatype staging
-        if: ${{ steps.maven_central.outputs.already_published != 'true' && steps.sonatype_window.outputs.open == 'true' }}
+        if: ${{ steps.maven_central.outputs.already_published != 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
         run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${PROJECT_VERSION}.RELEASE"
 
       - name: Deploy with JReleaser to Maven Central
-        if: ${{ steps.maven_central.outputs.already_published != 'true' && steps.sonatype_window.outputs.open == 'true' }}
+        if: ${{ steps.maven_central.outputs.already_published != 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
@@ -209,8 +191,7 @@ jobs:
           path: backend/build/reports
 
   # Second leg of the dual publish: push the same release artifacts to the AWS S3
-  # bucket. Runs unconditionally (no Sonatype sunset guard) so it becomes the sole publish
-  # target once Sonatype is switched off.
+  # bucket.
   publish_s3:
     name: Publish to S3
     needs:

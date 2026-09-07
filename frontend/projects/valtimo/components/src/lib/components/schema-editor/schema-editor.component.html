@@ -13,17 +13,22 @@
   ~ limitations under the License.
   -->
 
-<div class="schema-editor">
+<div [attr.data-test-id]="testIds.editor" class="schema-editor">
   <div class="cds--toolbar-content">
     <ng-content></ng-content>
 
-    <button cdsButton="ghost" (click)="onRequiredPanelToggle()">
+    <button
+      [attr.data-test-id]="testIds.manageRequiredFieldsButton"
+      cdsButton="ghost"
+      (click)="onRequiredPanelToggle()"
+    >
       {{ 'schemaEditor.manageRequiredFields' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="document--requirements" size="16"></svg>
     </button>
 
     <button
+      [attr.data-test-id]="testIds.saveButton"
       cdsButton="primary"
       [disabled]="disabled || (valid$ | async) === false"
       (click)="onSaveClick()"
@@ -58,7 +63,11 @@
 </valtimo-confirmation-modal>
 
 <ng-template #requiredPropertiesPanel>
-  <div class="schema-editor__required-properties" (click)="$event.stopPropagation()">
+  <div
+    [attr.data-test-id]="testIds.requiredFieldsPanel"
+    class="schema-editor__required-properties"
+    (click)="$event.stopPropagation()"
+  >
     <header class="cds--modal-header default schema-editor__required-properties-header">
       <h5>
         {{ 'schemaEditor.requiredFields' | translate }}
@@ -66,6 +75,7 @@
 
       <div class="cds--modal-close-button">
         <button
+          [attr.data-test-id]="testIds.requiredFieldsPanelCloseButton"
           cdsButton="primary"
           class="cds--modal-close cds--btn--icon-only cds--btn--lg"
           type="button"
@@ -94,6 +104,7 @@
           @for (property of objectLevel.properties; track property) {
             <div class="schema-editor__property">
               <cds-checkbox
+                [attr.data-test-id]="requiredPropertyTestId(objectLevel.path, property)"
                 [disabled]="disabled"
                 [checked]="isRequired$(objectLevel.path, property) | async"
                 (checkedChange)="onRequiredPropertyChange(objectLevel.path, property, $event)"
