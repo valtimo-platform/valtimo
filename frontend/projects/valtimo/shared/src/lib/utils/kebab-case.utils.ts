@@ -16,6 +16,8 @@
 
 const DIACRITIC_MARKS_REGEX = /[\u0300-\u036f]/g;
 const DISALLOWED_REGEX = /[^a-z0-9-_]+|-[^a-z0-9]+/g;
+const DISALLOWED_CHAR_REGEX = /[^a-z0-9-_]/g;
+const WHITESPACE_REGEX = /\s+/g;
 const UNDERSCORE_RUN_REGEX = /_[-_]+/g;
 const LEADING_NON_LETTER_REGEX = /^[^a-z]+/;
 const TRAILING_SEPARATOR_REGEX = /[-_]+$/;
@@ -50,4 +52,17 @@ const truncateOnWordBoundary = (kebab: string, maxLength: number): string => {
   );
 };
 
-export {toKebabCase};
+// Same character rules as toKebabCase, but keeps a separator the user just typed
+const sanitizeKey = (source: string): string => {
+  if (!source) return '';
+
+  return source
+    .normalize('NFD')
+    .replace(DIACRITIC_MARKS_REGEX, '')
+    .toLowerCase()
+    .replace(WHITESPACE_REGEX, '-')
+    .replace(DISALLOWED_CHAR_REGEX, '')
+    .replace(LEADING_NON_LETTER_REGEX, '');
+};
+
+export {sanitizeKey, toKebabCase};

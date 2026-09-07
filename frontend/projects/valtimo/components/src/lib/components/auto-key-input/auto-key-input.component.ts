@@ -35,7 +35,7 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {ModalMode, toKebabCase} from '@valtimo/shared';
+import {ModalMode, sanitizeKey, toKebabCase} from '@valtimo/shared';
 import {Close16, Edit16} from '@carbon/icons';
 import {filter} from 'rxjs/operators';
 import {AUTO_KEY_INPUT_TEST_IDS} from '../../constants';
@@ -184,11 +184,14 @@ export class AutoKeyInputComponent
   }
 
   public onInputChange(event: InputEvent & {target: HTMLInputElement}): void {
+    const input = event.target;
+    const key = sanitizeKey(input.value);
+
+    if (input.value !== key) this.reflectSanitizedKey(input, key);
+
     const usedKeys = this._usedKeys$.getValue();
-    this.idError$.next(
-      usedKeys.includes(event.target.value) ? 'caseManagement.statuses.keyDuplicated' : null
-    );
-    this.setValue(event.target.value);
+    this.idError$.next(usedKeys.includes(key) ? 'caseManagement.statuses.keyDuplicated' : null);
+    this.setValue(key);
     this.onChange(this.value);
   }
 
@@ -208,6 +211,15 @@ export class AutoKeyInputComponent
     }
 
     return this.getUniqueKeyWithNumber(baseKey, usedKeys);
+  }
+
+  // Stripping a character leaves the model unchanged, so Angular skips the [value] binding
+  private reflectSanitizedKey(input: HTMLInputElement, key: string): void {
+    const removed = input.value.length - key.length;
+    const caret = Math.max((input.selectionStart ?? input.value.length) - removed, 0);
+
+    input.value = key;
+    input.setSelectionRange(caret, caret);
   }
 
   private setValue(value: string): void {
