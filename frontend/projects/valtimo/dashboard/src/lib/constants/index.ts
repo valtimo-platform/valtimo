@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './dashboard.test-ids';
 export * from './data-features.constants';
 export * from './injection-tokens';
 export * from './layout.constants';

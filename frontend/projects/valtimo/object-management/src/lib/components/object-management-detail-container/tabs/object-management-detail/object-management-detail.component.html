@@ -33,6 +33,7 @@
 <ng-template #buttons let-object="object" let-loading="loading">
   <div class="btn-group mt-m3px mb-3 pr-2 float-right">
     <button
+      [attr.data-test-id]="testIds.downloadButton"
       (click)="downloadDefinition(object)"
       cdsButton="secondary"
       size="md"
@@ -44,6 +45,7 @@
     </button>
     <a id="downloadAnchorElement" class="d-none"></a>
     <button
+      [attr.data-test-id]="testIds.editButton"
       (click)="showEditModal()"
       cdsButton="primary"
       size="md"

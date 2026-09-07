@@ -45,11 +45,13 @@ import com.ritense.formflow.repository.FormFlowStepRepository
 import com.ritense.formflow.repository.MySqlFormFlowAdditionalPropertiesSearchRepository
 import com.ritense.formflow.repository.PostgresFormFlowAdditionalPropertiesSearchRepository
 import com.ritense.formflow.security.ValtimoFormFlowHttpSecurityConfigurer
+import com.ritense.formflow.service.FormFlowRegistryService
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.formflow.service.FormFlowSupportedProcessLinksHandler
 import com.ritense.formflow.service.FormFlowValtimoService
 import com.ritense.formflow.service.ObjectMapperConfigurer
 import com.ritense.formflow.web.rest.FormFlowManagementResource
+import com.ritense.formflow.web.rest.FormFlowRegistryResource
 import com.ritense.formflow.web.rest.FormFlowResource
 import com.ritense.formflow.web.rest.ProcessLinkFormFlowDefinitionResource
 import com.ritense.outbox.OutboxService
@@ -211,6 +213,28 @@ class FormFlowAutoConfiguration {
             formFlowService,
             caseDefinitionChecker,
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(FormFlowRegistryService::class)
+    fun formFlowRegistryService(
+        formFlowStepTypeHandlers: List<FormFlowStepTypeHandler>,
+        stepPropertiesTypes: Collection<NamedType>,
+        applicationContext: ApplicationContext,
+    ): FormFlowRegistryService {
+        return FormFlowRegistryService(
+            formFlowStepTypeHandlers,
+            stepPropertiesTypes,
+            applicationContext,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(FormFlowRegistryResource::class)
+    fun formFlowRegistryResource(
+        formFlowRegistryService: FormFlowRegistryService,
+    ): FormFlowRegistryResource {
+        return FormFlowRegistryResource(formFlowRegistryService)
     }
 
     @Bean

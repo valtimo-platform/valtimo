@@ -418,7 +418,7 @@ internal class PluginServiceTest {
 
     @Test
     fun `should get plugin action definitions from repository by key`(){
-        whenever(pluginActionDefinitionRepository.findByIdPluginDefinitionKey("test"))
+        whenever(pluginActionDefinitionRepository.findByIdPluginDefinitionKeyOrderByTitleAsc("test"))
             .thenReturn(
                 listOf(
                     PluginActionDefinition(
@@ -436,7 +436,7 @@ internal class PluginServiceTest {
 
         val actions = pluginService.getPluginDefinitionActions("test", null)
 
-        verify(pluginActionDefinitionRepository).findByIdPluginDefinitionKey("test")
+        verify(pluginActionDefinitionRepository).findByIdPluginDefinitionKeyOrderByTitleAsc("test")
 
         assertEquals(1, actions.size)
         assertEquals("some-key", actions[0].key)
@@ -446,7 +446,7 @@ internal class PluginServiceTest {
 
     @Test
     fun `should get plugin action definitions from repository by key and activityType`(){
-        whenever(pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypes(
+        whenever(pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypesOrderByTitleAsc(
             "test",
             ActivityTypeWithEventName.SERVICE_TASK_START
         ))
@@ -467,7 +467,7 @@ internal class PluginServiceTest {
 
         val actions = pluginService.getPluginDefinitionActions("test", ActivityTypeWithEventName.SERVICE_TASK_START)
 
-        verify(pluginActionDefinitionRepository).findByIdPluginDefinitionKeyAndActivityTypes(
+        verify(pluginActionDefinitionRepository).findByIdPluginDefinitionKeyAndActivityTypesOrderByTitleAsc(
             "test",
             ActivityTypeWithEventName.SERVICE_TASK_START
         )

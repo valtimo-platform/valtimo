@@ -40,6 +40,7 @@ const FEATURE_TOGGLE_DEFINITIONS: FeatureToggleDefinition[] = [
   {key: 'enableIkoType'},
   {key: 'menuCollapsedByDefault'},
   {key: 'enableGenericCaseList'},
+  {key: 'enableManualTaskListRefresh'},
   {key: 'disableFormioTokenInLocalStorage'},
 ];
 

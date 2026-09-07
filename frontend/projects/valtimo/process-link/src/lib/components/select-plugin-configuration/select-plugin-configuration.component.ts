@@ -39,6 +39,10 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {PluginListItem} from '../../models';
+import {
+  SELECT_PLUGIN_CONFIGURATION_ROW_TEST_ID_PREFIX,
+  SELECT_PLUGIN_CONFIGURATION_TEST_IDS,
+} from '../../constants';
 
 @Component({
   standalone: false,
@@ -47,6 +51,9 @@ import {PluginListItem} from '../../models';
   styleUrls: ['./select-plugin-configuration.component.scss'],
 })
 export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
+  protected readonly testIds = SELECT_PLUGIN_CONFIGURATION_TEST_IDS;
+  protected readonly rowTestIdPrefix = SELECT_PLUGIN_CONFIGURATION_ROW_TEST_ID_PREFIX;
+
   public readonly isBuildingBlockContext$ = this._stateService.context$.pipe(
     map(context => context === 'buildingBlock')
   );

@@ -50,11 +50,11 @@ class CaseDefinitionProcessManagementResource(
     fun getDocumentDefinitionProcess(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable("type") type: String,
+        @PathVariable type: String,
     ): ResponseEntity<CaseDefinitionProcess> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val result = caseDefinitionProcessLinkService.getDocumentDefinitionProcess(caseDefinitionId, type)
-        return ResponseEntity.ok<CaseDefinitionProcess>(result)
+        return ResponseEntity.ok(result)
     }
 
     @EndpointDescription(
@@ -70,7 +70,7 @@ class CaseDefinitionProcessManagementResource(
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val response: DocumentDefinitionProcessLinkResponse =
             caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(caseDefinitionId, request)
-        return ResponseEntity.ok<DocumentDefinitionProcessLinkResponse>(response)
+        return ResponseEntity.ok(response)
     }
 
     @EndpointDescription(
@@ -81,7 +81,7 @@ class CaseDefinitionProcessManagementResource(
     fun deleteDocumentDefinitionProcess(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable("type") type: String,
+        @PathVariable type: String,
     ): ResponseEntity<Void> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         caseDefinitionProcessLinkService.deleteDocumentDefinitionProcess(caseDefinitionId, type)

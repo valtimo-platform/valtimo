@@ -58,6 +58,7 @@ import {
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
+  registerFormioMailPreviewComponent,
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   registerObjectManagementSelectFormioComponent,
@@ -275,5 +276,6 @@ export class AppModule {
     registerDocumentenApiFormioUploadComponent(injector);
     registerIkoSearchFormioComponent(injector);
     registerObjectManagementSelectFormioComponent(injector);
+    registerFormioMailPreviewComponent(injector);
   }
 }

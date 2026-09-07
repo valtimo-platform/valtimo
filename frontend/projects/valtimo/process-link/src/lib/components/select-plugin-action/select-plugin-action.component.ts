@@ -23,10 +23,11 @@ import {
   PluginFunction,
   PluginManagementService,
   PluginService,
+  PluginTranslationService,
 } from '@valtimo/plugin';
 import {TranslateService} from '@ngx-translate/core';
 import {combineLatest, forkJoin, Observable, of, Subscription} from 'rxjs';
-import {catchError, filter, map, switchMap, take, withLatestFrom} from 'rxjs/operators';
+import {catchError, filter, map, switchMap, withLatestFrom} from 'rxjs/operators';
 
 import {USER_TASK_ACTIVITY} from '../../constants';
 import {
@@ -35,6 +36,10 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
+import {
+  SELECT_PLUGIN_ACTION_TEST_IDS,
+  SELECT_PLUGIN_ACTION_TILE_TEST_ID_PREFIX,
+} from '../../constants';
 
 /**
  * Maps the manifest action `activityTypes` (backend `ActivityTypeWithEventName` names) to the
@@ -58,6 +63,9 @@ const ACTIVITY_TYPE_NAME_TO_VALUE: Record<string, string> = {
   styleUrls: ['./select-plugin-action.component.scss'],
 })
 export class SelectPluginActionComponent implements OnInit, OnDestroy {
+  protected readonly testIds = SELECT_PLUGIN_ACTION_TEST_IDS;
+  protected readonly tileTestIdPrefix = SELECT_PLUGIN_ACTION_TILE_TEST_ID_PREFIX;
+
   public readonly pluginFunctions$: Observable<Array<PluginFunction> | undefined> = combineLatest([
     this._stateService.selectedPluginDefinition$,
     this._processLinkStateService.modalParams$,
@@ -125,7 +133,8 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
                 filterFn(props, fn.key, this._injector).pipe(map(visible => ({fn, visible})))
               )
             ).pipe(map(results => results.filter(r => r.visible).map(r => r.fn)));
-          })
+          }),
+          switchMap(functions => this.sortByTranslatedTitle(functions, selectedDefinition.key))
         );
     })
   );
@@ -145,6 +154,7 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
     private readonly _injector: Injector,
     private readonly _pluginManagementService: PluginManagementService,
     private readonly _pluginService: PluginService,
+    private readonly _pluginTranslationService: PluginTranslationService,
     private readonly _stateService: PluginStateService,
     private readonly _stepService: ProcessLinkStepService,
     private readonly _processLinkStateService: ProcessLinkStateService,
@@ -189,6 +199,27 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
 
   public stringify(object: object): string {
     return JSON.stringify(object);
+  }
+
+  private sortByTranslatedTitle(
+    pluginFunctions: Array<PluginFunction>,
+    pluginDefinitionKey: string
+  ): Observable<Array<PluginFunction>> {
+    if (!pluginFunctions?.length) return of(pluginFunctions);
+
+    return combineLatest(
+      pluginFunctions.map(pluginFunction =>
+        this._pluginTranslationService
+          .translate(pluginFunction.key, pluginDefinitionKey)
+          .pipe(map(title => ({pluginFunction, title})))
+      )
+    ).pipe(
+      map(translatedFunctions =>
+        [...translatedFunctions]
+          .sort((a, b) => a.title.localeCompare(b.title))
+          .map(translatedFunction => translatedFunction.pluginFunction)
+      )
+    );
   }
 
   private _openBackButtonSubscription(): void {

@@ -248,6 +248,7 @@ export const environment: ValtimoConfig = {
     enablePbacDocumentenApiDocuments: true,
     enableSuppressDocumentError: false,
     enableGenericCaseList: false,
+    enableManualTaskListRefresh: false,
     enableZgwFeatures: true,
   },
   csp: cspHeaderParamsDev,

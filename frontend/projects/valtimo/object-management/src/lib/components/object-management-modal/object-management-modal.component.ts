@@ -23,6 +23,7 @@ import {ObjectManagementService} from '../../services/object-management.service'
 import {Objecttype} from '../../models/object-management.model';
 import {FormService} from '@valtimo/form';
 import {VModalComponent, ModalService} from '@valtimo/components';
+import {OBJECT_MANAGEMENT_MODAL_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -31,6 +32,8 @@ import {VModalComponent, ModalService} from '@valtimo/components';
   styleUrls: ['./object-management-modal.component.scss'],
 })
 export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy {
+  protected readonly testIds = OBJECT_MANAGEMENT_MODAL_TEST_IDS;
+
   @ViewChild('objectManagementModal') objectManagementModal: VModalComponent;
   @Input() prefillObject$!: Observable<Objecttype>;
 

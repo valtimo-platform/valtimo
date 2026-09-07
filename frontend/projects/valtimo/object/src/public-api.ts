@@ -18,5 +18,6 @@
  * Public API Surface of object
  */
 
+export * from './lib/constants';
 export * from './lib/services/object.service';
 export * from './lib/object.module';
