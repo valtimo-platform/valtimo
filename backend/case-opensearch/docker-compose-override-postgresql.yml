@@ -1,7 +1,7 @@
 services:
     db:
         ports:
-            - "3365:5432"
+            - "3368:5432"
         environment:
             - POSTGRES_DB=case-opensearch-test
     opensearch:
@@ -10,6 +10,7 @@ services:
             - discovery.type=single-node
             - DISABLE_SECURITY_PLUGIN=true
             - DISABLE_INSTALL_DEMO_CONFIG=true
+            - cluster.routing.allocation.disk.threshold_enabled=false
         ports:
             - "39200:9200"
         healthcheck:

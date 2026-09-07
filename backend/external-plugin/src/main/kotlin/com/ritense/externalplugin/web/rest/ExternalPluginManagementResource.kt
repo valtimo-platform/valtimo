@@ -215,7 +215,9 @@ class ExternalPluginManagementResource(
      * callback URL, re-pushes every configuration with the new broker fields and a fresh service
      * token — which is what makes the host's event consumers rebind — and records truthful
      * CONNECTED/UNREACHABLE status against the new address. The periodic poll reconciles anyway
-     * if this attempt fails.
+     * if this attempt fails. An address or credential change revokes every outstanding token
+     * before that re-push, and a repoint purges the configurations from the old address, so
+     * nothing usable stays behind.
      */
     @RunWithoutAuthorization
     @EndpointDescription(

@@ -20,6 +20,7 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.exception.ExternalPluginHostValidationException
 import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
+import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
@@ -35,7 +36,9 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -52,6 +55,8 @@ class ExternalPluginHostServiceTest {
 
     private lateinit var hostRepository: ExternalPluginHostRepository
     private lateinit var definitionRepository: ExternalPluginDefinitionRepository
+    private lateinit var configurationRepository: ExternalPluginConfigurationRepository
+    private lateinit var hostClient: ExternalPluginHostClient
     private lateinit var encryptionService: EncryptionService
     private lateinit var service: ExternalPluginHostService
 
@@ -59,19 +64,24 @@ class ExternalPluginHostServiceTest {
     fun setUp() {
         hostRepository = mock()
         definitionRepository = mock()
+        configurationRepository = mock()
+        hostClient = mock()
         encryptionService = mock()
         whenever(encryptionService.encrypt(any())).thenReturn("encrypted-secret")
+        whenever(encryptionService.decrypt("encrypted-secret")).thenReturn("admin-token")
         whenever(hostRepository.save(any<ExternalPluginHost>())).thenAnswer { it.getArgument(0) }
+        whenever(configurationRepository.save(any<ExternalPluginConfiguration>()))
+            .thenAnswer { it.getArgument(0) }
         service = ExternalPluginHostService(
             hostRepository,
             definitionRepository,
-            mock<ExternalPluginConfigurationRepository>(),
+            configurationRepository,
             mock<ExternalPluginGrantedEndpointRepository>(),
             mock<ExternalPluginGrantedEventRepository>(),
             mock(),
             mock(),
             encryptionService,
-            mock<ExternalPluginHostClient>(),
+            hostClient,
             mock<ExternalPluginHostUsageResolver>(),
         )
     }
@@ -662,6 +672,117 @@ class ExternalPluginHostServiceTest {
         }.isInstanceOf(ExternalPluginNotFoundException::class.java)
     }
 
+    // ------------------------------------------- repoint side effects: token revocation and purge
+
+    @Test
+    fun `updateConnection revokes every token under the host when the base url changes`() {
+        val existing = stubExisting()
+        val first = configurationUnder(existing)
+        val second = configurationUnder(existing, generation = 4)
+
+        service.updateConnection(existing.id, baseUrl = "https://moved.example.com")
+
+        assertThat(first.tokenGeneration).isEqualTo(1)
+        assertThat(second.tokenGeneration).isEqualTo(5)
+    }
+
+    @Test
+    fun `updateConnection revokes every token under the host when only the secret rotates`() {
+        val existing = stubExisting()
+        val configuration = configurationUnder(existing)
+        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated")
+
+        service.updateConnection(existing.id, secret = "rotated-token")
+
+        assertThat(configuration.tokenGeneration).isEqualTo(1)
+    }
+
+    @Test
+    fun `updateConnection revokes every token under the host when only the broker url changes`() {
+        val existing = stubExisting()
+        val configuration = configurationUnder(existing)
+
+        service.updateConnection(existing.id, eventBrokerAmqpUrl = "amqp://guest:guest@new-broker:5672")
+
+        assertThat(configuration.tokenGeneration).isEqualTo(1)
+    }
+
+    @Test
+    fun `updateConnection leaves tokens alone for a cosmetic edit`() {
+        val existing = stubExisting()
+        val configuration = configurationUnder(existing)
+
+        service.updateConnection(
+            existing.id,
+            name = "renamed",
+            gzacCallbackBaseUrl = "https://gzac-new.example.com",
+        )
+
+        assertThat(configuration.tokenGeneration).isZero()
+        verify(configurationRepository, never()).save(any<ExternalPluginConfiguration>())
+    }
+
+    @Test
+    fun `updateConnection treats re-entering the stored secret as unchanged`() {
+        val existing = stubExisting()
+        val configuration = configurationUnder(existing)
+        existing.consecutiveFailures = 2
+
+        // decrypt(stored) equals the submitted value: not a rotation — nothing re-encrypts,
+        // revokes or resets.
+        val result = service.updateConnection(existing.id, secret = "admin-token")
+
+        assertThat(result.secret).isEqualTo("encrypted-secret")
+        assertThat(configuration.tokenGeneration).isZero()
+        assertThat(existing.consecutiveFailures).isEqualTo(2)
+    }
+
+    @Test
+    fun `updateConnection purges the configurations from the old address with the old secret`() {
+        val existing = stubExisting()
+        val first = configurationUnder(existing)
+        val second = configurationUnder(existing)
+        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated")
+
+        service.updateConnection(
+            existing.id,
+            baseUrl = "https://moved.example.com",
+            secret = "rotated-token",
+        )
+
+        // Old address, old admin token — the new pair has no authority there.
+        verify(hostClient).deleteConfiguration(
+            eq("https://plugin-host.example.com"), eq("admin-token"), eq(first.id.toString()),
+        )
+        verify(hostClient).deleteConfiguration(
+            eq("https://plugin-host.example.com"), eq("admin-token"), eq(second.id.toString()),
+        )
+    }
+
+    @Test
+    fun `updateConnection does not purge anything when the base url is unchanged`() {
+        val existing = stubExisting()
+        configurationUnder(existing)
+        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated")
+
+        service.updateConnection(existing.id, secret = "rotated-token")
+
+        verify(hostClient, never()).deleteConfiguration(any(), any(), any())
+    }
+
+    @Test
+    fun `updateConnection survives an old address that cannot be reached for the purge`() {
+        val existing = stubExisting()
+        val configuration = configurationUnder(existing)
+        whenever(hostClient.deleteConfiguration(any(), any(), any()))
+            .thenThrow(RuntimeException("connection refused"))
+
+        val updated = service.updateConnection(existing.id, baseUrl = "https://moved.example.com")
+
+        assertThat(updated.baseUrl).isEqualTo("https://moved.example.com")
+        assertThat(configuration.tokenGeneration).isEqualTo(1)
+    }
+
     private fun stubExisting(
         baseUrl: String = "https://plugin-host.example.com",
         brokerAmqpUrl: String? = "amqp://guest:guest@broker:5672",
@@ -682,6 +803,33 @@ class ExternalPluginHostServiceTest {
         host.name, host.baseUrl, host.secret, host.gzacCallbackBaseUrl,
         host.eventBrokerAmqpUrl, host.eventBrokerExchange, host.consecutiveFailures,
     )
+
+    private val definitionsUnderHost = mutableListOf<ExternalPluginDefinition>()
+
+    /** Stubs one definition-plus-configuration pair under [host]. */
+    private fun configurationUnder(
+        host: ExternalPluginHost,
+        generation: Long = 0,
+    ): ExternalPluginConfiguration {
+        val definition = ExternalPluginDefinition(
+            id = UUID.randomUUID(),
+            pluginId = "plugin-${definitionsUnderHost.size}",
+            version = "1.0.0",
+            hostId = host.id,
+            baseUrl = "${host.baseUrl}/plugins/plugin-${definitionsUnderHost.size}",
+            status = ExternalPluginDefinitionStatus.AVAILABLE,
+        )
+        val configuration = ExternalPluginConfiguration(
+            id = UUID.randomUUID(),
+            definitionId = definition.id,
+            title = "configuration",
+            tokenGeneration = generation,
+        )
+        definitionsUnderHost += definition
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(definitionsUnderHost.toList())
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+        return configuration
+    }
 
     private fun registerMinimal(
         mode: EventQueueMode = EventQueueMode.LIVE,

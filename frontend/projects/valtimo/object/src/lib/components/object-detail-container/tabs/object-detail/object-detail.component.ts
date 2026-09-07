@@ -23,6 +23,7 @@ import {BehaviorSubject, combineLatest, map, Observable, of, Subject, throwError
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
 import {FormType} from '../../../../models/object.model';
 import {ObjectService} from '../../../../services/object.service';
+import {OBJECT_DETAIL_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -31,6 +32,8 @@ import {ObjectService} from '../../../../services/object.service';
   styleUrls: ['./object-detail.component.scss'],
 })
 export class ObjectDetailComponent implements OnDestroy {
+  protected readonly testIds = OBJECT_DETAIL_TEST_IDS;
+
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly submission$ = new BehaviorSubject<any>({});
   readonly formValid$ = new BehaviorSubject<boolean>(false);

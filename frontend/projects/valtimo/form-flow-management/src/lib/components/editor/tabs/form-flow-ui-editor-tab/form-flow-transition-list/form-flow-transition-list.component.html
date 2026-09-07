@@ -1,0 +1,122 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="transition-list">
+  @for (transitionGroup of transitionGroups; track transitionGroup; let index = $index) {
+    <div
+      class="transition-list__row"
+      [formGroup]="transitionGroup"
+      [attr.data-test-id]="testIds.transitionRow"
+    >
+      <div class="transition-list__target">
+        <cds-dropdown
+          formControlName="step"
+          itemValueKey="id"
+          [invalid]="transitionGroup.get('step')?.invalid && revealErrors"
+          [label]="targetStepLabelTemplate"
+          [placeholder]="'formFlow.uiEditor.selectStep' | translate"
+        >
+          <cds-dropdown-list [items]="getRowItems(transitionGroup)"></cds-dropdown-list>
+        </cds-dropdown>
+
+        <ng-template #targetStepLabelTemplate>
+          <span class="transition-list__label">
+            {{ 'formFlow.uiEditor.targetStep' | translate }}
+
+            <v-tooltip-icon
+              [tooltip]="'formFlow.uiEditor.fieldTooltips.targetStep' | translate"
+            ></v-tooltip-icon>
+          </span>
+        </ng-template>
+      </div>
+
+      <cds-label class="transition-list__condition">
+        <span class="transition-list__label">
+          {{ 'formFlow.uiEditor.condition' | translate }}
+
+          <v-tooltip-icon
+            [tooltip]="'formFlow.uiEditor.fieldTooltips.condition' | translate"
+          ></v-tooltip-icon>
+        </span>
+
+        <input
+          cdsText
+          formControlName="condition"
+          placeholder="{{ 'formFlow.uiEditor.conditionPlaceholder' | translate }}"
+        />
+      </cds-label>
+
+      @if (!readOnly) {
+        <div class="transition-list__actions">
+          <button
+            cdsButton="ghost"
+            size="md"
+            [iconOnly]="true"
+            [disabled]="index === 0"
+            [attr.aria-label]="'formFlow.uiEditor.moveUp' | translate"
+            (click)="moveTransition(index, -1)"
+          >
+            <svg cdsIcon="arrow--up" size="16"></svg>
+          </button>
+
+          <button
+            cdsButton="ghost"
+            size="md"
+            [iconOnly]="true"
+            [disabled]="index === transitionGroups.length - 1"
+            [attr.aria-label]="'formFlow.uiEditor.moveDown' | translate"
+            (click)="moveTransition(index, 1)"
+          >
+            <svg cdsIcon="arrow--down" size="16"></svg>
+          </button>
+
+          <button
+            cdsButton="ghost"
+            size="md"
+            [iconOnly]="true"
+            [attr.aria-label]="'interface.delete' | translate"
+            (click)="removeTransition(index)"
+          >
+            <svg cdsIcon="trash-can" size="16"></svg>
+          </button>
+        </div>
+      }
+    </div>
+  } @empty {
+    <p class="transition-list__empty">{{ 'formFlow.uiEditor.noTransitions' | translate }}</p>
+  }
+
+  @if (revealErrors && transitions.hasError('multipleDefaultTransitions')) {
+    <p class="transition-list__error">
+      {{ 'formFlow.uiEditor.multipleDefaultTransitions' | translate }}
+    </p>
+  }
+
+  @if (!readOnly) {
+    <div>
+      <button
+        cdsButton="tertiary"
+        size="sm"
+        [attr.data-test-id]="testIds.addTransitionButton"
+        (click)="addTransition()"
+      >
+        {{ 'formFlow.uiEditor.addTransition' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
+  }
+</div>

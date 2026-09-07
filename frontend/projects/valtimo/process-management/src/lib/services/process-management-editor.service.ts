@@ -145,6 +145,16 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._autofilledElements$.getValue().find(e => e.activityId === activityId);
   }
 
+  private readonly _editingAllowed$ = new BehaviorSubject<boolean>(true);
+
+  public get editingAllowed(): boolean {
+    return this._editingAllowed$.getValue();
+  }
+
+  public setEditingAllowed(editingAllowed: boolean): void {
+    this._editingAllowed$.next(editingAllowed);
+  }
+
   private _updateBpmnViewFunction!: () => void;
 
   private _updatingBpmnView = false;

@@ -4,11 +4,13 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 21        | 12         | 9              |
-| Admin Features (ROLE_ADMIN) | 15       | 335       | 239        | 96             |
-| **Total**                   | **20**   | **356**   | **251**    | **105**        |
+| User Features (ROLE_USER)   | 5        | 25        | 20         | 4              |
+| Admin Features (ROLE_ADMIN) | 15       | 365       | 352        | 7              |
+| **Total**                   | **20**   | **390**   | **372**    | **11**         |
 
-**Coverage:** `251 / 356` — `70.5%`
+**Coverage:** `372 / 390` — `95.4%`
+
+> Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (1).
 
 ---
 
@@ -29,11 +31,14 @@
 
 ### Feature 1 — Dashboard
 
-| #   | Function                        | Test Scenarios                                                 | Coverage | Notes                                           |
-|:----|:--------------------------------|:---------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 1.1 | Display widget-based dashboard  | Load dashboard with multiple widgets · Display empty dashboard |    ❌    |                                                 |
-| 1.2 | Configure widgets per user/role | Add widget to dashboard · Remove widget from dashboard         |    ❌    |                                                 |
-| 1.3 | Real-time data updates (SSE)    | Receive SSE update and refresh widget                          |    ❌    |                                                 |
+| #   | Function                             | Test Scenarios                                                                                       | Coverage | Notes                                                                                                                                                                    |
+|:----|:-------------------------------------|:-----------------------------------------------------------------------------------------------------|:--------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1 | Display widget-based dashboard       | Load dashboard with multiple widgets · Render each widget's display title · Display empty dashboard   |    ✅    | user-dashboard.spec.ts                                                                                                                                                   |
+| 1.2 | Configure widgets per user/role      | Add widget to dashboard · Remove widget from dashboard · Dashboard without a view permission is hidden |    ✅    | user-dashboard.spec.ts (dashboard visibility is role-scoped by an access-control permission on the dashboard key)                                                          |
+| 1.3 | Real-time data updates (SSE)         | Receive SSE update and refresh widget                                                                |   `N/A`  | The widget dashboard does not subscribe to SSE — `@valtimo/dashboard` has no SSE usage, and `/api/v1/dashboard/{key}/data` is verified not to be re-requested after a case is created. Refresh is covered by 1.4 |
+| 1.4 | Refresh widget data on open          | Widget data is re-fetched on open and reflects newly created cases                                   |    ✅    | user-dashboard.spec.ts                                                                                                                                                   |
+| 1.5 | Navigate from widget to linked route | Clicking a widget with a configured URL navigates to that route                                      |    ✅    | user-dashboard.spec.ts                                                                                                                                                   |
+| 1.6 | Skip unsupported widget display type | Widget with an unregistered display type is skipped and the dashboard still renders                  |    ✅    | user-dashboard.spec.ts (failure scenario)                                                                                                                                |
 
 ---
 
@@ -65,11 +70,12 @@
 
 ### Feature 4 — Objects
 
-| #   | Function              | Test Scenarios                                            | Coverage | Notes                                           |
-|:----|:----------------------|:----------------------------------------------------------|:--------:|:------------------------------------------------|
-| 4.1 | View objects per type | Display objects filtered by type                          |    ❌    |                                                 |
-| 4.2 | View object details   | Open and view object details                              |    ❌    |                                                 |
-| 4.3 | Search/filter objects | Search objects by criteria · Filter objects using filters |    ❌    |                                                 |
+| #    | Function              | Test Scenarios                                                                          | Coverage | Notes                                                                                                                                                                                                                          |
+|:-----|:----------------------|:-----------------------------------------------------------------------------------------|:--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1  | View objects per type | Lists the objects of one type · Columns match the API · List is scoped to the type        |    ✅    | user-objects.spec.ts — read-only against the seeded type. With no list columns configured the component falls back to `Record index` / `Object URL`; while loading it renders a **second** `valtimo-carbon-list`, so waits must be for that placeholder to go |
+| 4.2  | View object details   | Row click opens the object · Direct URL works · Summary form with edit/delete actions     |    ✅    | user-objects.spec.ts — the row navigates on the plain object id, not the full Objecten API URL                                                                                                                                  |
+| 4.2a | Handle unknown object | An unknown object id renders no summary form                                              |    ✅    | user-objects.spec.ts (failure scenario)                                                                                                                                                                                        |
+| 4.3  | Search/filter objects | Search objects by criteria · Filter objects using filters                                 |    ❌    | **Blocked.** The search panel is only wired when the type has *list columns* configured (`columnType === CUSTOM`); otherwise the component issues a GET that ignores the filters. With a list column configured, `POST /api/v1/object-management/configuration/{id}/object` returns **400 with an empty body** — even for an empty `{}` filter body — and `catchError` turns it into an empty list, so the UI silently shows "no results". Needs a backend look before it can be tested |
 
 ---
 
@@ -199,7 +205,7 @@
 | 6.64 | Rearrange task list columns | Rearrange task list columns          |    ✅    | case-details-management-tasks.spec.ts           |
 | 6.65 | View task search fields     | View task list search fields         |    ✅    | case-details-management-tasks.spec.ts           |
 | 6.66 | Add task search field       | Add task list search field           |    ✅    | case-details-management-tasks.spec.ts           |
-| 6.67 | Toggle JSON/table view      | Toggle task list JSON/table view     |    ❌    |                                                 |
+| 6.67 | Toggle JSON/table view      | Toggle task list JSON/table view     |   `N/A`  | The Tasks tab has no JSON view — neither `valtimo-task-management-columns` nor `-search-fields` renders a switch-view control or JSON editor. Only the Case list and Search fields tabs offer one |
 
 #### 6J · Case List
 
@@ -256,7 +262,8 @@
 | 6.91 | Set widget density       | Set widget density                                                        |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.92 | Set widget style         | Set widget style                                                          |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.93 | Configure widget content | Configure widget content                                                  |    ✅    | case-details-management-widgets.spec.ts         |
-| 6.94 | Set widget conditions    | Set widget display conditions                                             |    ❌    |                                                 |
+| 6.94 | Set widget conditions    | Add a display condition in the wizard's last step · Condition round-trips when reopened |    ✅    | case-details-management-widgets.spec.ts (path entered in manual mode; the "Equal to" label is stored as `==`) |
+| 6.94a | Reject incomplete condition | Save disabled while a condition row is empty; removing the row re-enables it |    ✅    | case-details-management-widgets.spec.ts (failure scenario) |
 | 6.95 | Add widget separator     | Add widget separator                                                      |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.96 | Rearrange widgets        | Rearrange widgets order                                                   |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.97 | Use widget JSON editor   | Use widget JSON editor                                                    |    ✅    | case-details-management-widgets.spec.ts         |
@@ -299,13 +306,19 @@
 
 ### Feature 7 — Process Management
 
-| #   | Function                | Test Scenarios                | Coverage | Notes                                           |
-|:----|:------------------------|:------------------------------|:--------:|:------------------------------------------------|
-| 7.1 | View process overview   | Display process overview list |    ❌    |                                                 |
-| 7.2 | Create new process      | Create new BPMN process       |    ❌    |                                                 |
-| 7.3 | Edit BPMN process       | Edit existing BPMN process    |    ❌    |                                                 |
-| 7.4 | Deploy process          | Deploy process definition     |    ❌    |                                                 |
-| 7.5 | Manage process versions | Manage process versions       |    ❌    |                                                 |
+Covers the standalone `/processes` admin page (the *independent* process context — process definitions not linked to a case). The case-scoped equivalent is Feature 6B.
+
+| #    | Function                     | Test Scenarios                                                                     | Coverage | Notes                                                                        |
+|:-----|:-----------------------------|:-----------------------------------------------------------------------------------|:--------:|:-----------------------------------------------------------------------------|
+| 7.1  | View process overview        | Display process overview list · Name/Key/Status columns · List matches the API     |    ✅    | process-management.spec.ts                                                   |
+| 7.2  | Create new process           | Create new BPMN process from the empty diagram and deploy it                       |    ✅    | process-management.spec.ts                                                   |
+| 7.3  | Edit BPMN process            | Edit existing BPMN process in the modeler (append element)                         |    ✅    | process-management.spec.ts                                                   |
+| 7.4  | Deploy process               | Deploy via BPMN upload · Save an edit as a new version · Deploy a new definition   |    ✅    | process-management.spec.ts                                                   |
+| 7.5  | Manage process versions      | View all versions · Switch version · Disabled while only one version exists        |    ✅    | process-management.spec.ts                                                   |
+| 7.6  | Delete process               | Delete process definition after confirming                                         |    ✅    | process-management.spec.ts                                                   |
+| 7.6a | Reject upload without file   | Upload stays disabled until a BPMN file is selected                                |    ✅    | process-management.spec.ts (failure scenario)                                |
+| 7.6b | Handle duplicate process key | Re-upload of the same key returns 409 and offers replace · cancel deploys nothing  |    ✅    | process-management.spec.ts (failure scenario)                                |
+| 7.6c | Block invalid process deploy | Non-draft deploy is validated first; errors are highlighted and nothing deploys    |    ✅    | process-management.spec.ts (failure scenario)                                |
 
 ---
 
@@ -313,10 +326,13 @@
 
 | #   | Function                      | Test Scenarios                        | Coverage | Notes                                           |
 |:----|:------------------------------|:--------------------------------------|:--------:|:------------------------------------------------|
-| 8.1 | View decision tables overview | Display decision tables overview list |    ❌    |                                                 |
-| 8.2 | Create decision table         | Create new decision table             |    ❌    |                                                 |
-| 8.3 | Edit decision table           | Edit decision table in DMN modeler    |    ❌    |                                                 |
-| 8.4 | Test decision table           | Test decision table execution         |    ❌    |                                                 |
+| 8.1 | View decision tables overview | Overview list visible · Key/Name/Version columns · List matches the API (latest version per key) |    ✅    | decision-table-management.spec.ts               |
+| 8.2 | Create decision table         | Name + input variables, then land in the DMN modeler |    ✅    | decision-table-management.spec.ts — deliberately stops short of Deploy: a deployed standalone table cannot be removed again (see 8.4c), so deploying would leak state on every run. Deployment is covered case-scoped in 6.40 |
+| 8.3 | Edit decision table           | Open an existing table in the DMN modeler (editable, content loaded) |    ✅    | decision-table-management.spec.ts               |
+| 8.4 | Test decision table           | Test decision table execution         |   `N/A`  | No evaluate/test UI exists — the DMN modeler route has no such control or copy |
+| 8.4a | Reject unnamed decision table | Create submit stays disabled while the name is empty |    ✅    | decision-table-management.spec.ts (failure scenario) |
+| 8.4b | Reject upload without file    | Upload submit stays disabled until a DMN file is chosen |    ✅    | decision-table-management.spec.ts (failure scenario) |
+| 8.4c | Delete unavailable standalone | Delete row action is present but **disabled** outside a case context |    ✅    | decision-table-management.spec.ts (failure scenario) — delete is only implemented for case-scoped tables |
 
 ---
 
@@ -342,27 +358,29 @@
 | 9.9  | Configure plugin (2-step wizard) | Complete 2-step wizard flow                                                                                       |    ✅    | plugin.spec.ts                                  |
 | 9.10 | Choose plugin type from catalog  | Select plugin type in step 1                                                                                      |    ✅    | plugin.spec.ts                                  |
 | 9.11 | Enter plugin data (step 2)       | Fill in all required fields in step 2                                                                             |    ✅    | plugin.spec.ts                                  |
-| 9.12 | Auto-generate configuration ID   | Verify UUID is auto-generated                                                                                     |    ❌    |                                                 |
+| 9.12 | Auto-generate configuration ID   | Configuration ID is optional with a UUID placeholder · Saving it blank generates a UUID                            |    ✅    | plugin.spec.ts (the field is not prefilled; the backend assigns the UUID on save) |
 | 9.13 | Enter configuration name         | Enter and validate required configuration name · Cannot save without configuration name                           |    ✅    | plugin.spec.ts                                  |
 | 9.14 | Enter RSIN                       | Enter RSIN for plugins that require it                                                                            |    ✅    | plugin.spec.ts                                  |
 | 9.15 | Enter plugin API URL             | Enter and validate required API URL · Cannot save without API URL · Show validation error for invalid URL format  |    ✅    | plugin.spec.ts                                  |
 | 9.16 | Select authentication plugin     | Select required authentication plugin configuration · Cannot save without authentication plugin                   |    ✅    | plugin.spec.ts                                  |
-| 9.17 | View authentication options      | View available authentication options in dropdown                                                                 |    ❌    |                                                 |
+| 9.17 | View authentication options      | Dropdown lists every compatible authentication configuration, labelled `<title> - <plugin>`                       |    ✅    | plugin.spec.ts (creates a second OpenZaak auth config so the dropdown has more than one option) |
 | 9.18 | Save plugin configuration        | Successfully save new plugin configuration · Show success message after save · Redirect to plugin list after save |    ✅    | plugin.spec.ts                                  |
-| 9.19 | Cancel plugin configuration      | Cancel wizard without saving · Show confirmation dialog before canceling                                          |    ❌    |                                                 |
+| 9.19 | Cancel plugin configuration      | Cancel wizard without saving (closes immediately, nothing persisted)                                              |    ✅    | plugin.spec.ts — there is no "discard changes?" confirmation dialog, so that sub-scenario is `N/A` |
 
 #### 9C · Edit Plugin Config
 
 | #    | Function                           | Test Scenarios                                                                                                             | Coverage | Notes                                           |
 |:-----|:-----------------------------------|:---------------------------------------------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
 | 9.20 | Open existing plugin configuration | Open plugin configuration for editing                                                                                      |    ✅    | plugin.spec.ts                                  |
-| 9.21 | View configuration ID              | Verify read-only UUID is displayed                                                                                         |    ❌    |                                                 |
+| 9.21 | View configuration ID              | Edit modal shows the assigned UUID                                                                                         |    ✅    | plugin.spec.ts — the field is **editable**, not read-only, so the test asserts the value only |
 | 9.22 | Edit configuration name            | Update configuration name                                                                                                  |    ✅    | plugin.spec.ts                                  |
-| 9.23 | Edit RSIN                          | Update RSIN value                                                                                                          |    ❌    |                                                 |
-| 9.24 | Edit API URL                       | Update plugin API URL                                                                                                      |    ❌    |                                                 |
-| 9.25 | Change authentication plugin       | Change selected authentication plugin                                                                                      |    ❌    |                                                 |
+| 9.23 | Edit RSIN                          | Update RSIN value (persisted value verified via the API)                                                                   |    ✅    | plugin.spec.ts                                  |
+| 9.24 | Edit API URL                       | Update plugin API URL (persisted value verified via the API)                                                               |    ✅    | plugin.spec.ts                                  |
+| 9.25 | Change authentication plugin       | Switch to a different authentication configuration (stored UUID verified via the API)                                      |    ✅    | plugin.spec.ts                                  |
 | 9.26 | Save configuration changes         | Successfully save changes to existing configuration                                                                        |    ✅    | plugin.spec.ts                                  |
 | 9.27 | Delete plugin configuration        | Delete plugin configuration with confirmation · Show confirmation dialog before delete · Show success message after delete |    ✅    | plugin.spec.ts                                  |
+| 9.27a | Reject invalid RSIN on edit       | Update with an invalid RSIN returns 500 and the modal stays open                                                            |    ✅    | plugin.spec.ts (failure scenario) — no error toast is shown and the invalid value is still persisted; neither is asserted so a fix won't break the test |
+| 9.27b | Reject edit without a name        | Save stays disabled while the configuration name is empty                                                                  |    ✅    | plugin.spec.ts (failure scenario)               |
 
 ---
 
@@ -436,28 +454,30 @@
 | 11.3 | Enter role name           | Enter role name              |    ✅    | access-control.spec.ts                          |
 | 11.4 | Create role               | Create role                  |    ✅    | access-control.spec.ts                          |
 | 11.5 | View role details         | Select and view role details |    ✅    | access-control.spec.ts                          |
-| 11.6 | Edit role metadata        | Edit role metadata           |    ❌    |                                                 |
-| 11.7 | Export role configuration | Export role configuration    |    ❌    |                                                 |
+| 11.6 | Edit role metadata        | Rename the role via the detail page's "Edit metadata" modal, then rename it back |    ✅    | access-control.spec.ts (a role's only metadata is its name; the detail route is keyed on it) |
+| 11.7 | Export role configuration | Export selected role as one JSON file (`combined.permission.json`) · Confirm disabled until an export type is chosen |    ✅    | access-control.spec.ts                          |
 | 11.8 | Delete role               | Delete role                  |    ✅    | access-control.spec.ts                          |
 
 #### 11B · Permissions
 
 | #     | Function                       | Test Scenarios                               | Coverage | Notes                                           |
 |:------|:-------------------------------|:---------------------------------------------|:--------:|:------------------------------------------------|
-| 11.9  | View role permissions          | View role permissions (JSON / visual toggle) |    ❌    |                                                 |
-| 11.10 | Edit permissions JSON          | Edit permissions in JSON format              |    ❌    |                                                 |
-| 11.11 | Configure resource permissions | Configure resource-level permissions         |    ❌    |                                                 |
-| 11.12 | Set permission conditions      | Set permission conditions                    |    ❌    |                                                 |
-| 11.13 | Save role permissions          | Save role permissions                        |    ❌    |                                                 |
+| 11.9  | View role permissions          | Editor / Summary / JSON editor tabs · toggle to Monaco and back |    ✅    | access-control.spec.ts                          |
+| 11.10 | Edit permissions JSON          | Write a permission array in the JSON editor and save it |    ✅    | access-control.spec.ts                          |
+| 11.11 | Configure resource permissions | Pick a resource type and tick an allowed action |    ✅    | access-control.spec.ts (actions are a checkbox grid, not a dropdown) |
+| 11.12 | Set permission conditions      | Add a field/operator/value condition to a permission |    ✅    | access-control.spec.ts (the "equals" label is stored as `==`) |
+| 11.13 | Save role permissions          | Save from both the JSON editor and the form editor; verified via the API |    ✅    | access-control.spec.ts                          |
 
 ---
 
 ### Feature 12 — Object Management
 
-| #    | Function                       | Test Scenarios                 | Coverage | Notes                                           |
-|:-----|:-------------------------------|:-------------------------------|:--------:|:------------------------------------------------|
-| 12.1 | Manage object types            | Manage object types            |    ❌    |                                                 |
-| 12.2 | Edit object type configuration | Edit object type configuration |    ❌    |                                                 |
+| #     | Function                       | Test Scenarios                                                                              | Coverage | Notes                                                                                                                                                                                                              |
+|:------|:-------------------------------|:----------------------------------------------------------------------------------------------|:--------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 12.1  | Manage object types            | Overview lists every configuration · Create one through the modal · It is persisted             |    ✅    | object-management.spec.ts — `objecttype_id` is **unique** across configurations, so each run generates its own id rather than reusing a seeded one                                                                   |
+| 12.2  | Edit object type configuration | Detail page with its tabs and actions · Edit the configuration · The change survives a reload   |    ✅    | object-management.spec.ts — the List tab renders even without list columns (its `*ngIf` gets an empty array, which is truthy). "Show in menu" is a Carbon checkbox: the real input is hidden, so its label is clicked |
+| 12.1a | Reject incomplete object type  | Save stays disabled until every required field is filled, and again when one is cleared         |    ✅    | object-management.spec.ts (failure scenario)                                                                                                                                                                       |
+| 12.1b | Reject duplicate objecttype ID | A taken objecttype ID returns 500, the modal stays open, nothing is created                     |    ✅    | object-management.spec.ts (failure scenario) — no error is surfaced to the user today; that is deliberately not asserted, so a fix adding one will not break the test                                                |
 
 ---
 
@@ -465,73 +485,88 @@
 
 #### 13A · BB Overview
 
-| #    | Function                      | Test Scenarios                                     | Coverage | Notes                                           |
-|:-----|:------------------------------|:---------------------------------------------------|:--------:|:------------------------------------------------|
-| 13.1 | View building blocks list     | Display list of building blocks                    |    ❌    |                                                 |
-| 13.2 | View BB metadata              | View building block name, key, and version         |    ❌    |                                                 |
-| 13.3 | Upload BB definition          | Upload building block definition (ZIP, max 500 kb) |    ❌    |                                                 |
-| 13.4 | Acknowledge overwrite warning | Acknowledge overwrite warning for existing blocks  |    ❌    |                                                 |
-| 13.5 | Create new building block     | Create new building block                          |    ❌    |                                                 |
-| 13.6 | Enter BB name                 | Enter building block name                          |    ❌    |                                                 |
-| 13.7 | Auto-generate BB key          | Auto-generate building block key                   |    ❌    |                                                 |
-| 13.8 | Enter BB version              | Enter building block version                       |    ❌    |                                                 |
-| 13.9 | Enter BB description          | Enter building block description                   |    ❌    |                                                 |
+| #     | Function                      | Test Scenarios                                                     | Coverage | Notes                                           |
+|:------|:------------------------------|:-------------------------------------------------------------------|:--------:|:------------------------------------------------|
+| 13.1  | View building blocks list     | Display list of building blocks                                    |    ✅    | building-block-management.spec.ts               |
+| 13.2  | View BB metadata              | View building block name, key, and version                         |    ✅    | building-block-management.spec.ts               |
+| 13.3  | Upload BB definition          | Upload building block definition (ZIP, max 500 kb)                 |    ✅    | building-block-management.spec.ts               |
+| 13.4  | Acknowledge overwrite warning | Acknowledge overwrite warning for existing blocks                  |    ✅    | building-block-management.spec.ts               |
+| 13.5  | Create new building block     | Create new building block                                          |    ✅    | building-block-management.spec.ts               |
+| 13.6  | Enter BB name                 | Enter building block name                                          |    ✅    | building-block-management.spec.ts               |
+| 13.7  | Auto-generate BB key          | Auto-generate building block key                                   |    ✅    | building-block-management.spec.ts               |
+| 13.8  | Enter BB version              | Enter building block version                                       |    ✅    | building-block-management.spec.ts               |
+| 13.9  | Enter BB description          | Enter building block description                                   |    ✅    | building-block-management.spec.ts               |
+| 13.9a | Reject invalid BB key         | Duplicate key blocked · Key with invalid characters blocked        |    ✅    | building-block-management.spec.ts               |
+| 13.9b | Reject incomplete BB form     | Save disabled while name or version is missing                     |    ✅    | building-block-management.spec.ts               |
+| 13.9c | Block unacknowledged upload   | Upload disabled until overwrite warning is acknowledged            |    ✅    | building-block-management.spec.ts               |
+| 13.9d | Reject invalid BB archive     | Archive without a BB definition shows the import error             |    ✅    | building-block-management.spec.ts               |
 
 #### 13B · BB Details
 
-| #     | Function                  | Test Scenarios                                       | Coverage | Notes                                           |
-|:------|:--------------------------|:-----------------------------------------------------|:--------:|:------------------------------------------------|
-| 13.10 | View BB general info      | View building block general information              |    ❌    |                                                 |
-| 13.11 | View BB document tab      | View building block document tab                     |    ❌    |                                                 |
-| 13.12 | View BB processes tab     | View building block processes tab                    |    ❌    |                                                 |
-| 13.13 | View plugin configuration | View plugin configuration used (e.g. Zaak API)       |    ❌    |                                                 |
-| 13.14 | Upload/update BB artwork  | Upload or update building block artwork              |    ❌    |                                                 |
-| 13.15 | Delete BB artwork         | Delete building block artwork                        |    ❌    |                                                 |
-| 13.16 | Save BB metadata          | Save building block metadata                         |    ❌    |                                                 |
-| 13.17 | Export BB as ZIP          | Export building block as ZIP                         |    ❌    |                                                 |
-| 13.18 | Create draft version      | Create draft version                                 |    ❌    |                                                 |
-| 13.19 | Enter version tag         | Enter new version tag for draft                      |    ❌    |                                                 |
-| 13.20 | View version status badge | View version status badge (`DRAFT` / `RELEASE`)      |    ❌    |                                                 |
-| 13.21 | Switch versions           | Switch between versions via dropdown                 |    ❌    |                                                 |
-| 13.22 | Finalize draft version    | Finalize draft version (convert `DRAFT` → `RELEASE`) |    ❌    |                                                 |
+| #      | Function                          | Test Scenarios                                                          | Coverage | Notes                                             |
+|:-------|:----------------------------------|:------------------------------------------------------------------------|:--------:|:--------------------------------------------------|
+| 13.10  | View BB general info              | View building block general information                                 |    ✅    | building-block-details-management.spec.ts         |
+| 13.11  | View BB document tab              | View building block document tab                                        |    ✅    | building-block-details-management.spec.ts         |
+| 13.12  | View BB processes tab             | View building block processes tab                                       |    ✅    | building-block-details-management.spec.ts         |
+| 13.13  | View plugin configuration         | Plugins used listed · Empty message when none are used                  |    ✅    | building-block-details-management.spec.ts         |
+| 13.14  | Upload/update BB artwork          | Upload building block artwork                                           |    ✅    | building-block-details-management.spec.ts         |
+| 13.15  | Delete BB artwork                 | Delete artwork after confirming                                         |    ✅    | building-block-details-management.spec.ts         |
+| 13.16  | Save BB metadata                  | Save building block name and description                                |    ✅    | building-block-details-management.spec.ts         |
+| 13.17  | Export BB as ZIP                  | Export building block as ZIP                                            |    ✅    | building-block-details-management.spec.ts         |
+| 13.18  | Create draft version              | Create draft version from a finalized version                           |    ✅    | building-block-details-management.spec.ts         |
+| 13.19  | Enter version tag                 | Enter new version tag for draft                                         |    ✅    | building-block-details-management.spec.ts         |
+| 13.20  | View version status badge         | Draft badged `DRAFT: <tag>` · final badged `<tag>` (no `RELEASE` label) |    ✅    | building-block-details-management.spec.ts         |
+| 13.21  | Switch versions                   | Switch between versions via dropdown                                    |    ✅    | building-block-details-management.spec.ts         |
+| 13.22  | Finalize draft version            | Finalize draft version, which becomes read-only                         |    ✅    | building-block-details-management.spec.ts         |
+| 13.22a | Reject incomplete BB metadata     | Save disabled while pristine or with an empty name                      |    ✅    | building-block-details-management.spec.ts         |
+| 13.22b | Reject artwork upload without file | Upload disabled until a file is selected                               |    ✅    | building-block-details-management.spec.ts         |
+| 13.22c | Reject draft without version tag  | Create draft disabled while the version tag is empty                    |    ✅    | building-block-details-management.spec.ts         |
 
 #### 13C · BB Document
 
-| #     | Function                   | Test Scenarios                                               | Coverage | Notes                                           |
-|:------|:---------------------------|:-------------------------------------------------------------|:--------:|:------------------------------------------------|
-| 13.23 | View BB document structure | View building block document structure (JSON)                |    ❌    |                                                 |
-| 13.24 | Edit document structure    | Edit document structure in JSON editor                       |    ❌    |                                                 |
-| 13.25 | Manage required fields     | Manage required fields with checkboxes                       |    ❌    |                                                 |
-| 13.26 | View field types           | View field types (`string`, `object`, `array`, `boolean`, …) |    ❌    |                                                 |
-| 13.27 | View field descriptions    | View field descriptions                                      |    ❌    |                                                 |
-| 13.28 | Search/filter fields       | Search and filter document fields                            |    ❌    |                                                 |
-| 13.29 | Save document config       | Save document configuration                                  |    ❌    |                                                 |
+| #      | Function                          | Test Scenarios                                                              | Coverage | Notes                                             |
+|:-------|:----------------------------------|:----------------------------------------------------------------------------|:--------:|:--------------------------------------------------|
+| 13.23  | View BB document structure        | View building block document structure (JSON)                               |    ✅    | building-block-document.spec.ts                   |
+| 13.24  | Edit document structure           | Edit document structure in the JSON editor                                  |    ✅    | building-block-document.spec.ts                   |
+| 13.25  | Manage required fields            | Panel grouped per object level · Mark and unmark required                   |    ✅    | building-block-document.spec.ts                   |
+| 13.26  | View field types                  | View field types (`string`, `integer`, `boolean`, `object`, `array`)        |    ✅    | building-block-document.spec.ts                   |
+| 13.27  | View field descriptions           | View field descriptions                                                     |    ✅    | building-block-document.spec.ts                   |
+| 13.28  | Search/filter fields              | Search highlights matches and reports the match count                       |    ✅    | building-block-document.spec.ts                   |
+| 13.29  | Save document config              | Save document configuration (edit and required-field changes)               |    ✅    | building-block-document.spec.ts                   |
+| 13.29a | Reject unchanged document save    | Save disabled until the document is changed                                 |    ✅    | building-block-document.spec.ts                   |
+| 13.29b | Reject invalid document JSON      | Parse error shown · Save disabled · document untouched                      |    ✅    | building-block-document.spec.ts                   |
+| 13.29c | Block edits on finalized version  | Document readable but Save and required checkboxes disabled                 |    ✅    | building-block-document.spec.ts                   |
 
 #### 13D · BB Processes
 
-| #     | Function                   | Test Scenarios                               | Coverage | Notes                                           |
-|:------|:---------------------------|:---------------------------------------------|:--------:|:------------------------------------------------|
-| 13.30 | View processes list        | View processes list in building block        |    ❌    |                                                 |
-| 13.31 | View process metadata      | View process name and key                    |    ❌    |                                                 |
-| 13.32 | Manage process definitions | Manage process definitions                   |    ❌    |                                                 |
-| 13.33 | View process diagram       | View process diagram/modeler                 |    ❌    |                                                 |
-| 13.34 | Select process step        | Select process step in diagram               |    ❌    |                                                 |
-| 13.35 | View step properties       | View step properties panel                   |    ❌    |                                                 |
-| 13.36 | Configure step settings    | Configure step-specific settings             |    ❌    |                                                 |
-| 13.37 | Link steps to actions      | Link process steps to building block actions |    ❌    |                                                 |
-| 13.38 | Save process config        | Save process configuration                   |    ❌    |                                                 |
+| #      | Function                     | Test Scenarios                                                                                | Coverage | Notes                                                                                                                                                                                                            |
+|:-------|:-----------------------------|:----------------------------------------------------------------------------------------------|:--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 13.30  | View processes list          | Name/Key/Status columns · List matches the API                                                 |    ✅    | building-block-processes.spec.ts                                                                                                                                                                                 |
+| 13.31  | View process metadata        | View process name and key · Main-process and Draft status tags                                 |    ✅    | building-block-processes.spec.ts — creating a building block generates a main process definition whose key *and* name are those of the building block itself                                                        |
+| 13.32  | Manage process definitions   | Upload a BPMN · Mark a process as main · Delete a process after confirming · Create from the empty diagram |    ✅    | building-block-processes.spec.ts — a process created from the empty diagram always lands under the fixed key `Process_1` with an empty Name cell, so rows are located by key                                        |
+| 13.33  | View process diagram         | Row click opens the process in the BPMN modeler                                                |    ✅    | building-block-processes.spec.ts — the row navigates to `.../process-definition/{processDefinitionId}`; the building-block context omits the version dropdown and the Back button the case context shows            |
+| 13.34  | Select process step          | Clicking a shape switches the properties panel to that element                                 |    ✅    | building-block-processes.spec.ts — selection is confirmed through the panel's ID entry; the panel *header* renders the element name and falls back to the id only while it is unnamed                              |
+| 13.35  | View step properties         | Panel offers General / Process link / Documentation · ID and Name entries                      |    ✅    | building-block-processes.spec.ts — panel groups start collapsed and keep their entries in the DOM but hidden, so they must be expanded before they can be read                                                     |
+| 13.36  | Configure step settings      | Rename a step through the properties panel                                                     |    ✅    | building-block-processes.spec.ts                                                                                                                                                                                 |
+| 13.37  | Link steps to actions        | Panel's "Create process link" opens the wizard, which offers the available link types           |    ✅    | building-block-processes.spec.ts — inside a building block a start event may be linked to **Form / FormFlow / UI Component**; there is deliberately no "Building block" link type. Panel buttons carry `PROCESS_LINK_PANEL_TEST_IDS` |
+| 13.38  | Save process config          | Saving deploys a new version of the definition, and the change survives a reload                |    ✅    | building-block-processes.spec.ts — saved as a *draft*: a non-draft save is validated first and, because the seeded diagram has an unlinked start event, waits on a "Process has warnings" confirmation instead of deploying |
+| 13.38a | Reject upload without file   | Upload stays disabled until a BPMN file is selected; cancelling persists nothing                |    ✅    | building-block-processes.spec.ts (failure scenario)                                                                                                                                                              |
+| 13.38b | Protect the only process     | Delete and "Make main process" are both disabled while one definition exists                    |    ✅    | building-block-processes.spec.ts (failure scenario) — a building block must keep exactly one main process                                                                                                          |
+| 13.38c | Block edits on final version | Upload and Create are disabled on a finalized version                                          |    ✅    | building-block-processes.spec.ts (failure scenario) — uses a second, finalized building block so the shared one stays a draft and its processes can still be cleaned up                                             |
 
 #### 13E · BB Plugin Integration
 
-| #     | Function                       | Test Scenarios                             | Coverage | Notes                                           |
-|:------|:-------------------------------|:-------------------------------------------|:--------:|:------------------------------------------------|
-| 13.39 | View available plugins         | View available process plugins             |    ❌    |                                                 |
-| 13.40 | Select plugin for step         | Select plugin for process step             |    ❌    |                                                 |
-| 13.41 | Configure plugin properties    | Configure plugin-specific properties       |    ❌    |                                                 |
-| 13.42 | View plugin requirements       | View plugin requirements and descriptions  |    ❌    |                                                 |
-| 13.43 | Link action to plugin          | Link action to plugin definition           |    ❌    |                                                 |
-| 13.44 | Configure execution properties | Configure execution properties for plugins |    ❌    |                                                 |
-| 13.45 | View plugin warnings           | View plugin configuration warnings         |    ❌    |                                                 |
+| #      | Function                       | Test Scenarios                                                                                     | Coverage | Notes                                                                                                                                                                                                                    |
+|:-------|:-------------------------------|:----------------------------------------------------------------------------------------------------|:--------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 13.39  | View available plugins         | Service task lists the plugin definitions it can be linked to · List is a subset of the API          |    ✅    | building-block-plugins.spec.ts — a service task can only carry a plugin link, so the wizard skips the link type chooser. The UI drops definitions without a frontend plugin specification, so it lists 8 of the API's 12    |
+| 13.40  | Select plugin for step         | Picking a plugin enables Next and reveals its actions · A call activity reaches it via the chooser   |    ✅    | building-block-plugins.spec.ts — the definitions offered are filtered by activity type: a service task gets 8, a user task only `portaaltaak`                                                                              |
+| 13.41  | Configure plugin properties    | Action without properties is completable at once · Action with properties renders its form           |    ✅    | building-block-plugins.spec.ts                                                                                                                                                                                            |
+| 13.42  | View plugin requirements       | Logo / name / description columns · Wizard step titles · Action description and required labels      |    ✅    | building-block-plugins.spec.ts — the step names plugin **definitions**, so the column reads "Plugin name" rather than "Configuration name"                                                                                 |
+| 13.43  | Link action to plugin          | Complete swaps the panel to Edit/Unlink · Save persists the link · Reopening shows the stored action |    ✅    | building-block-plugins.spec.ts — the link lives in the modeler until the diagram is saved, and saving deploys a **new** definition, so the persisted link must be read with the id the save produced                        |
+| 13.44  | Configure execution properties | Properties are filled, stored on the link, and prefilled when reopened                              |    ✅    | building-block-plugins.spec.ts — stored as `actionProperties`; the link carries `pluginConfigurationId: null` and `referenceType: BUILDING_BLOCK`, because the configuration is only bound when a case links the block      |
+| 13.45  | View plugin warnings           | View plugin configuration warnings                                                                  |   `N/A`  | No warning UI exists inside a building block — the plugin dependency warning is raised on the **case** side, in the wizard's building block plugins step, and is covered by 6.33                                             |
+| 13.45a | Reject incomplete action config | Complete stays disabled until *every* required property is filled, and again when one is cleared     |    ✅    | building-block-plugins.spec.ts (failure scenario)                                                                                                                                                                         |
+| 13.45b | Block unsupported link type    | A user task offers `ui-component` but renders it disabled                                           |    ✅    | building-block-plugins.spec.ts (failure scenario) — see `UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK`                                                                                                                 |
 
 ---
 
@@ -541,23 +576,25 @@
 
 | #    | Function                  | Test Scenarios                              | Coverage | Notes                                           |
 |:-----|:--------------------------|:--------------------------------------------|:--------:|:------------------------------------------------|
-| 14.1 | View translations table   | View translations table                     |    ❌    |                                                 |
-| 14.2 | View translation keys     | View translation keys column                |    ❌    |                                                 |
-| 14.3 | View language columns     | View language columns (English, Nederlands) |    ❌    |                                                 |
-| 14.4 | Add translation row       | Add translation row                         |    ❌    |                                                 |
-| 14.5 | Enter translation key     | Enter translation key                       |    ❌    |                                                 |
-| 14.6 | Enter English translation | Enter English translation                   |    ❌    |                                                 |
-| 14.7 | Enter Dutch translation   | Enter Dutch (Nederlands) translation        |    ❌    |                                                 |
-| 14.8 | Delete translation row    | Delete translation row                      |    ❌    |                                                 |
+| 14.1 | View translations table   | Table lists the configured translations     |    ✅    | translation-management.spec.ts — the dev app seeds **no** localizations, so `beforeAll` merges its own keys in via the API and `afterAll` writes the captured content back |
+| 14.2 | View translation keys     | View translation keys column                |    ✅    | translation-management.spec.ts — row order follows the stored JSON object's key order, so rows are resolved by key, never by index |
+| 14.3 | View language columns     | View language columns (English, Nederlands) |    ✅    | translation-management.spec.ts — titles render as `cds-label`s on the first row only |
+| 14.4 | Add translation row       | Add translation row                         |    ✅    | translation-management.spec.ts                  |
+| 14.5 | Enter translation key     | Enter translation key                       |    ✅    | translation-management.spec.ts                  |
+| 14.6 | Enter English translation | Enter English translation                   |    ✅    | translation-management.spec.ts                  |
+| 14.7 | Enter Dutch translation   | Enter Dutch (Nederlands) translation        |    ✅    | translation-management.spec.ts                  |
+| 14.8 | Delete translation row    | Delete a row, then save to remove the translation |    ✅    | translation-management.spec.ts — deleting only removes the row from the form; the removal is persisted by the following save |
 
 #### 14B · Save
 
-| #     | Function               | Test Scenarios                | Coverage | Notes                                           |
-|:------|:-----------------------|:------------------------------|:--------:|:------------------------------------------------|
-| 14.9  | Save translations      | Save translations             |    ❌    |                                                 |
-| 14.10 | Save and reload app    | Save and reload application   |    ❌    |                                                 |
-| 14.11 | View save confirmation | View save confirmation dialog |    ❌    |                                                 |
-| 14.12 | Cancel save operation  | Cancel save operation         |    ❌    |                                                 |
+| #      | Function                    | Test Scenarios                                                          | Coverage | Notes                                           |
+|:-------|:----------------------------|:--------------------------------------------------------------------------|:--------:|:------------------------------------------------|
+| 14.9   | Save translations           | Save without reloading; persisted value verified via the API               |    ✅    | translation-management.spec.ts — the modal's *optional* button is "Save" |
+| 14.10  | Save and reload app         | Save and reload; the value survives the reload and is re-rendered          |    ✅    | translation-management.spec.ts — the modal's *confirm* button is "Save and reload"; the component calls `location.reload()` once the request resolves |
+| 14.11  | View save confirmation      | Dialog shows its heading, body, and all three actions                      |    ✅    | translation-management.spec.ts                  |
+| 14.12  | Cancel save operation       | Cancel dismisses the dialog, keeps the edit in the form, persists nothing   |    ✅    | translation-management.spec.ts                  |
+| 14.12a | Reject unchanged save       | Save stays disabled while the table is pristine                            |    ✅    | translation-management.spec.ts (failure scenario) |
+| 14.12b | Reject incomplete row       | Save stays disabled until *every* column of a row is filled                |    ✅    | translation-management.spec.ts (failure scenario) — the multi-input only counts a row as valid when no cell is empty |
 
 ---
 
@@ -696,10 +733,11 @@
 
 ### Feature 18 — Logs
 
-| #    | Function              | Test Scenarios         | Coverage | Notes                                           |
-|:-----|:----------------------|:-----------------------|:--------:|:------------------------------------------------|
-| 18.1 | View application logs | View application logs  |    ❌    |                                                 |
-| 18.2 | Filter/search logs    | Filter and search logs |    ❌    |                                                 |
+| #     | Function              | Test Scenarios                                                                                   | Coverage | Notes                                           |
+|:------|:----------------------|:--------------------------------------------------------------------------------------------------|:--------:|:------------------------------------------------|
+| 18.1  | View application logs | List visible with entries · Timestamp/Log level/Message columns · Paginated · Row count matches the API · Open a row to see the details modal |    ✅    | logging.spec.ts — the page is read-only, so there is nothing to clean up. `/api/management/v1/logging` is a **POST** (only POST is granted to ADMIN); a GET on the same path returns 403 |
+| 18.2  | Filter/search logs    | Filter by message text · Filter by log level · Clear restores the unfiltered list                  |    ✅    | logging.spec.ts — the panel has no submit button; it re-queries on change (debounced 500ms), so the page object waits on the response and the assertions poll. The level dropdown is a **minimum** level, not an exact match (`LoggingEventService` uses `byMinimumLevel`), so selecting WARN legitimately still lists ERROR rows |
+| 18.2a | Handle no matches     | A filter matching nothing empties the list and shows the no-results state, which clears back       |    ✅    | logging.spec.ts (failure scenario) — the empty state is a `<tr data-test-id="carbonListNoResults">` inside the same `tbody`, so use `CarbonList.rows`, which excludes it |
 
 ---
 
@@ -726,9 +764,9 @@
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   356   |
-| ✅ Covered by Playwright |   251   |
-| ❌ Not covered           |   105   |
+| Total Functions          |   390   |
+| ✅ Covered by Playwright |   372   |
+| ❌ Not covered           |   11    |
 | ⏳ In progress           |    1    |
-| `N/A` Not applicable     |    2    |
-| **Coverage %**           | **70.5%** |
+| `N/A` Not applicable     |    6    |
+| **Coverage %**           | **95.4%** |

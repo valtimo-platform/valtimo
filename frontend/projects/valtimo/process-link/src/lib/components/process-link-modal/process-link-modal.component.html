@@ -33,6 +33,7 @@
     typeOfSelectedProgressLink: typeOfSelectedProcessLink$ | async,
     isEditing: isEditing$ | async,
     isAdHocBuildingBlock: isAdHocBuildingBlock$ | async,
+    readOnly: readOnly$ | async,
   } as obs"
 >
   <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg" (close)="closeModal()">
@@ -40,7 +41,7 @@
       <h2 *ngIf="!obs.isAdHocBuildingBlock" cdsModalHeaderLabel>
         {{ 'processLinkConfiguration.configureStep' | translate }}
       </h2>
-      <h3 cdsModalHeaderHeading>
+      <h3 cdsModalHeaderHeading [attr.data-test-id]="testIds.heading">
         <ng-container *ngIf="obs.isAdHocBuildingBlock; else defaultModalTitle">
           {{
             'processLinkConfiguration.buildingBlockActionTitle'
@@ -54,7 +55,11 @@
           }}
         </ng-template>
       </h3>
-      <h4 cdsModalHeaderLabel *ngIf="obs.typeOfSelectedProgressLink === 'plugin'">
+      <h4
+        cdsModalHeaderLabel
+        *ngIf="obs.typeOfSelectedProgressLink === 'plugin'"
+        [attr.data-test-id]="testIds.pluginConfigurationLabel"
+      >
         {{
           'processLinkConfiguration.pluginConfiguration'
             | translate: {pluginConfigTitle: obs.selectedPluginConfiguration?.title || '-'}
@@ -64,7 +69,7 @@
         <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
       </div>
     </cds-modal-header>
-    <section cdsModalContent [cdsLayer]="1">
+    <section cdsModalContent [cdsLayer]="1" [valtimoReadOnlyContent]="obs.readOnly">
       <ng-container *ngTemplateOutlet="stepContent; context: {obs: obs}"></ng-container>
     </section>
     <ng-template *ngTemplateOutlet="footer; context: {obs: obs}"></ng-template>
@@ -74,6 +79,7 @@
 <ng-template #progressIndicator let-obs="obs">
   <cds-progress-indicator
     *ngIf="obs.steps && !obs.hideProgressIndicator"
+    [attr.data-test-id]="testIds.progressIndicator"
     [steps]="obs.steps"
     [current]="obs.currentStepIndex"
     spacing="equal"
@@ -150,23 +156,35 @@
 
 <ng-template #footer let-obs="obs">
   <cds-modal-footer *ngIf="!obs.saving">
-    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
-      {{ 'processLinkConfiguration.cancel' | translate }}
+    <button
+      cdsButton="ghost"
+      [attr.data-test-id]="testIds.cancelButton"
+      (click)="closeModal()"
+      [disabled]="obs.disabled"
+    >
+      {{ (obs.readOnly ? 'interface.close' : 'processLinkConfiguration.cancel') | translate }}
     </button>
     <div class="footer-spacer"></div>
-    <button cdsButton="danger--primary" *ngIf="obs.isEditing" (click)="unlinkButtonClick()">
+    <button
+      cdsButton="danger--primary"
+      *ngIf="obs.isEditing && !obs.readOnly"
+      [attr.data-test-id]="testIds.unlinkButton"
+      (click)="unlinkButtonClick()"
+    >
       {{ 'processLinkConfiguration.unlink' | translate }}
     </button>
     <button
-      *ngIf="obs.showBackButton && !obs.saving"
+      *ngIf="obs.showBackButton && !obs.saving && !obs.readOnly"
       cdsButton="secondary"
+      [attr.data-test-id]="testIds.backButton"
       (click)="backButtonClick()"
     >
       {{ 'processLinkConfiguration.back' | translate }}
     </button>
     <button
       cdsButton="primary"
-      *ngIf="obs.showNextButton && !obs.saving"
+      *ngIf="obs.showNextButton && !obs.saving && !obs.readOnly"
+      [attr.data-test-id]="testIds.nextButton"
       [disabled]="!obs.enableNextButton"
       (click)="nextButtonClick()"
     >
@@ -174,7 +192,8 @@
     </button>
     <button
       cdsButton="primary"
-      *ngIf="obs.showSaveButton && !obs.saving"
+      *ngIf="obs.showSaveButton && !obs.saving && !obs.readOnly"
+      [attr.data-test-id]="testIds.completeButton"
       [disabled]="!obs.enableSaveButton"
       (click)="saveButtonClick()"
     >

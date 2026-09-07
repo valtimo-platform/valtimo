@@ -26,6 +26,7 @@ import {
 } from '@valtimo/components';
 import {isEqual} from 'lodash';
 import {DOCUMENT} from '@angular/common';
+import {TRANSLATION_MANAGEMENT_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-translation-management',
@@ -93,6 +94,8 @@ export class TranslationManagementComponent implements OnInit {
   );
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  public readonly testIds = TRANSLATION_MANAGEMENT_TEST_IDS;
 
   constructor(
     private readonly translateService: TranslateService,

@@ -20,6 +20,12 @@ import {CaseDetailsManagementTabsPage} from './page';
 
 test.use({storageState: undefined});
 
+// Tests share a single context/page created in beforeAll and depend on each other
+// (add → delete, add two → reorder → clean up). Serial mode keeps them in one group
+// (so beforeAll/afterAll run exactly once despite fullyParallel) and skips the
+// remaining tests when one fails, instead of cascading "context closed" errors.
+test.describe.configure({mode: 'serial'});
+
 test.describe('Case details management — Tabs', () => {
   let context;
   let page;
@@ -61,7 +67,7 @@ test.describe('Case details management — Tabs', () => {
     await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, reorderKeyA);
     await tabsPage.deleteTabViaApi(CASE_IDENTIFIER, draftVersion, reorderKeyB);
 
-    await context.close();
+    if (context) await context.close();
   });
 
   // ─── 6.74 View tabs configuration ─────────────────────────────────
