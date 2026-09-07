@@ -471,21 +471,30 @@ The same service exposes **narrowly-scoped update paths**, one payload per conce
   re-runs against the effective result (§3.9); a broker URL echoing the response's `***@`
   redaction marker is refused outright, and blank means unchanged for the secret but *clear* for
   the broker fields. On a base-url change the denormalized `definition.baseUrl` rows are rewritten
-  in the same transaction, so bundle and logo URLs never serve the dead old address. The PATCH
-  finishes with `discoverHost(hostId)`, which announces the (possibly new) callback URL and
-  re-pushes every configuration with a fresh service token — that re-push is what makes the host's
-  event consumers rebind to a moved broker. `kind` stays immutable, and descriptors never change
-  connection fields on an existing host (§22.3.2): the warn-and-leave drift report points at this
-  endpoint.
+  in the same transaction, so bundle and logo URLs never serve the dead old address. A change of
+  base URL, secret or broker URL is also a **revocation event**: every configuration under the host
+  gets its `token_generation` counter (§3) bumped, because anything still holding a token minted
+  before the change — the old address above all — must be assumed hostile once GZAC stops talking
+  to it. The PATCH finishes with `discoverHost(hostId)`, which announces the (possibly new)
+  callback URL and re-pushes every configuration with a fresh token of the new generation — that
+  re-push is what makes the host's event consumers rebind to a moved broker, and its fresh tokens
+  are the only live ones left. Re-entering the stored secret does not count as a rotation (it is
+  compared against the decrypted stored value), so a no-op edit revokes nothing. `kind` stays
+  immutable, and descriptors never change connection fields on an existing host (§22.3.2): the
+  warn-and-leave drift report points at this endpoint.
 
 **Secret rotation is two-sided** — the host reads `ADMIN_TOKEN` from its environment once at boot
 and has no rotation API. The order that minimizes the outage: restart the host with the new token
 (GZAC keeps failing pushes as warnings, flips the host `UNREACHABLE` after the failure threshold),
-then PATCH the new secret — the next poll reconnects and re-pushes everything. In the mismatch
-window every HMAC route 401s (pushes, actions, discovery listings) while the public bundle and
-data routes keep serving. Repointing `baseUrl` at a *different physical host* leaves the old
-host's pushed configurations behind, exactly like deleting the host would — GZAC no longer polls
-it, so its reconciliation never prunes them.
+then PATCH the new secret — the rotation revokes every outstanding service/user token, and the
+next poll reconnects and re-pushes everything with fresh ones. In the mismatch window every HMAC
+route 401s (pushes, actions, discovery listings) while the public bundle and data routes keep
+serving. Repointing `baseUrl` away from a live host purges the pushed configurations from the old
+address — best-effort, after the row update commits, authenticated with the *old* admin token —
+the same cleanup `delete()` performs, and for the same reason: GZAC no longer polls the old
+address, so its reconciliation could never prune them. An old host that is unreachable at that
+moment keeps its rows (logged, not retried), exactly like deletion — but the revocation above has
+already killed every token those rows carry.
 
 **Edit connection modal.** Both the hosts page and the apps page carry an *Edit connection* row
 action opening the shared connection form in edit mode: prefilled from the row (the broker URL

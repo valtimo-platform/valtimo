@@ -194,6 +194,12 @@ class ExternalPluginHostService(
      *
      * The caller is expected to follow up with a single-host re-discovery, which announces the
      * (possibly new) callback URL and re-pushes every configuration with the new values.
+     *
+     * A change of base URL, secret or broker URL is also a revocation event: every outstanding
+     * service/user token under the host dies by generation bump, and the re-discovery's push mints
+     * fresh ones ([revokeTokensUnderHost]). A base-url change additionally deletes the
+     * configurations, best-effort, from the address just left — GZAC stops polling it, so nothing
+     * else would ever clean them up there ([purgeConfigurationsFromOldAddress]).
      */
     fun updateConnection(
         hostId: UUID,
@@ -260,7 +266,16 @@ class ExternalPluginHostService(
         }
 
         val baseUrlChanged = normalizedBaseUrl != null && normalizedBaseUrl != host.baseUrl
-        val secretChanged = !secret.isNullOrBlank()
+        val oldBaseUrl = host.baseUrl
+        // Decrypted before the mutations below: the purge authenticates against the old address
+        // with the old token, and re-entering the stored secret must not count as a rotation.
+        val oldAdminToken = if (baseUrlChanged || !secret.isNullOrBlank()) {
+            runCatching { encryptionService.decrypt(host.secret) }.getOrNull()
+        } else {
+            null
+        }
+        val secretChanged = !secret.isNullOrBlank() && secret != oldAdminToken
+        val brokerChanged = effectiveBrokerUrl != host.eventBrokerAmqpUrl
 
         name?.let { host.name = it }
         normalizedBaseUrl?.let { host.baseUrl = it }
@@ -280,7 +295,64 @@ class ExternalPluginHostService(
             definitions.forEach { it.baseUrl = "${host.baseUrl}/plugins/${it.pluginId}" }
             definitionRepository.saveAll(definitions)
         }
+
+        val configurationIds = if (baseUrlChanged || secretChanged || brokerChanged) {
+            revokeTokensUnderHost(hostId)
+        } else {
+            emptyList()
+        }
+        if (baseUrlChanged) {
+            purgeConfigurationsFromOldAddress(hostId, oldBaseUrl, oldAdminToken, configurationIds)
+        }
         return hostRepository.save(host)
+    }
+
+    /**
+     * Kills every outstanding token (service *and* user) of this host's configurations by bumping
+     * their generation counters — [ExternalPluginConfigurationService.revokeTokens]'s mechanism,
+     * minus its per-configuration re-push: the caller's follow-up re-discovery re-pushes the whole
+     * host with fresh tokens in one pass. Whatever still holds a token minted before a repoint or
+     * credential rotation must be assumed hostile once GZAC stops talking to it.
+     *
+     * Returns the configuration ids — exactly the set a repoint then purges from the old address.
+     */
+    private fun revokeTokensUnderHost(hostId: UUID): List<UUID> =
+        definitionRepository.findAllByHostId(hostId)
+            .flatMap { configurationRepository.findAllByDefinitionId(it.id) }
+            .map { configuration ->
+                configuration.tokenGeneration += 1
+                configurationRepository.save(configuration).id
+            }
+
+    /**
+     * Best-effort cleanup of the address a repoint just left, authenticated with its *old* admin
+     * token. Without it the configurations are orphaned there forever: GZAC no longer polls the
+     * old address, so the discovery reconciliation pass can never prune them — the same trap
+     * [delete] works around, with the same scope choice: a dead old address only logs, nothing
+     * retries.
+     *
+     * Runs after commit — host I/O stays out of the transaction, and it lands before the caller's
+     * re-discovery populates the new address.
+     */
+    private fun purgeConfigurationsFromOldAddress(
+        hostId: UUID,
+        oldBaseUrl: String,
+        oldAdminToken: String?,
+        configurationIds: List<UUID>,
+    ) {
+        if (oldAdminToken == null || configurationIds.isEmpty()) return
+        runAfterCommit {
+            configurationIds.forEach { configurationId ->
+                try {
+                    val deleted = hostClient.deleteConfiguration(oldBaseUrl, oldAdminToken, configurationId.toString())
+                    if (!deleted) {
+                        logger.warn { "Failed to delete configuration $configurationId from the previous plugin host address $oldBaseUrl after repointing host $hostId" }
+                    }
+                } catch (e: Exception) {
+                    logger.warn(e) { "Failed to delete configuration $configurationId from the previous plugin host address $oldBaseUrl after repointing host $hostId" }
+                }
+            }
+        }
     }
 
     private fun requireConfidentialTransportForBroker(
