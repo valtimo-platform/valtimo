@@ -60,7 +60,7 @@
   </div>
 
   <div role="footer" class="metadata-modal-footer">
-    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled || uploading">
       {{ 'document.cancel' | translate }}
     </button>
 
