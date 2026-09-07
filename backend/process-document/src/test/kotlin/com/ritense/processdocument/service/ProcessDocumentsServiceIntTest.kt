@@ -39,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @Transactional
 class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
@@ -99,6 +100,44 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
         }
 
         assertEquals(0, result.errors().size)
+    }
+
+    @Test
+    @Throws(JsonProcessingException::class)
+    fun `should delete other processes for a document and continue the calling process`() {
+        val request = NewDocumentAndStartProcessRequest(
+            "delete-other-processes",
+            NewDocumentRequest(
+                "house",
+                "house",
+                "1.0.0",
+                objectMapper.readTree(documentJson)
+            )
+        )
+
+        val result = runWithoutAuthorization {
+            processDocumentService.newDocumentAndStartProcess(request)
+        }
+
+        assertEquals(0, result.errors().size)
+        val callingProcessInstanceId = result.resultingProcessInstanceId().orElseThrow().toString()
+        val otherProcessInstanceIds = processDocumentInstanceRepository
+            .findAllByProcessDocumentInstanceIdDocumentId(
+                JsonSchemaDocumentId.existingId(result.resultingDocument().orElseThrow().id().id)
+            )
+            .map { it.processDocumentInstanceId().processInstanceId().toString() }
+            .filter { it != callingProcessInstanceId }
+        assertEquals(1, otherProcessInstanceIds.size)
+
+        runWithoutAuthorization {
+            taskService.complete(taskService.findTask(byName("trigger delete other processes")).id)
+        }
+
+        runWithoutAuthorization {
+            assertTrue(operatonProcessService.findProcessInstanceById(callingProcessInstanceId).isPresent)
+            assertTrue(operatonProcessService.findProcessInstanceById(otherProcessInstanceIds.first()).isEmpty)
+        }
+        assertNotNull(runWithoutAuthorization { taskService.findTask(byName("delete other processes user task")) })
     }
 
     @Test
