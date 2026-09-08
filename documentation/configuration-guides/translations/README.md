@@ -197,23 +197,6 @@ Tab names can be translated using the pattern `case.tabs.{tabKey}`:
 
 ---
 
-## API reference
-
-For developers integrating with the localization API:
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/localization` | GET | Get all localizations |
-| `/api/v1/localization/{languageKey}` | GET | Get translations for a language |
-| `/api/management/v1/localization/{languageKey}` | PUT | Update translations for a language |
-| `/api/management/v1/localization` | PUT | Batch update all translations |
-
-{% hint style="info" %}
-The management endpoints require `ROLE_ADMIN`. Read endpoints are available to all authenticated users.
-{% endhint %}
-
----
-
 ## Troubleshooting
 
 <details>
