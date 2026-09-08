@@ -53,6 +53,7 @@ Admin > Other > Process migration has the standard Valtimo look and feel, with c
 | Process migration | A system process can be migrated after it was changed                                                                          |
 | Processes        | Completing or cancelling a process with a message no longer logs an error when the process ends while a user task is still open  |
 | Task list        | The **All cases** task list picks up new and completed tasks by itself, like a list for a single case definition already did     |
+| Plugins          | Notificaties API abonnementen configured through the admin UI now receive notifications without restarting GZAC, and their subscription is removed when the plugin configuration is deleted |
 
 ## Breaking Changes (minimum)
 A separate task create-initiator-zaak-rol-kvk has been added to the create-zaakdossier BPMN to handle the create-niet-natuurlijk-persoon-zaak-rol plugin action. The existing process link to create-niet-natuurlijk-persoon-zaak-rol should be rerouted to this new task.
