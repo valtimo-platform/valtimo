@@ -23,6 +23,16 @@ while they do.
 The task list no longer shows a loading state when it picks up changed tasks by itself. The rows
 are replaced in place, so searching, sorting and reading are not interrupted.
 
+### System processes can always be edited
+
+A process marked as a system process can now be changed and saved like any other process, which creates a new version of it. Importing a process package also overwrites an existing system process instead of being refused. Finalised case definitions keep using the version of the system process they were configured with, so an existing case is not affected by the change.
+
+The setting that could block changes to system processes no longer has any effect and will be removed. Installations that still use it get a warning when the application starts.
+
+### Refreshed process migration screen
+
+Admin > Other > Process migration has the standard Valtimo look and feel, with clearer labels for the source and target process, the versions, and the activities to map.
+
 ---
 
 ## Bugfixes
@@ -35,8 +45,10 @@ are replaced in place, so searching, sorting and reading are not interrupted.
 | Case migration   | When upgrading from Valtimo 12, a sub-process that several cases reach through the same shared process is now linked to every one of those cases instead of only the first |
 | Cases            | A case can be deleted when the zaak it is linked to has already been removed in the Zaken API                                   |
 | Documenten API   | A file uploaded with the Documenten API upload field in a form flow is added to the case when the form flow finishes            |
+| Documents        | A document is added to a case once, however many times Save is clicked in the metadata window                                   |
 | Plugins          | Creating a zaakdossier via the verzoek plugin with an empty initiator type no longer fails when creating the initiator zaakrol   |
 | Plugins          | The verzoek plugin offers every case version again when picking one, instead of only the active one                              |
+| Process migration | A system process can be migrated after it was changed                                                                          |
 | Processes        | Completing or cancelling a process with a message no longer logs an error when the process ends while a user task is still open  |
 | Task list        | The **All cases** task list picks up new and completed tasks by itself, like a list for a single case definition already did     |
 
