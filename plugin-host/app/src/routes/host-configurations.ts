@@ -21,6 +21,7 @@ import {AppConfig} from "../config.js";
 import {EventConsumerManager} from "../rabbitmq/event-consumer.js";
 import type {Endpoint, EventBrokerConfig} from "../models/index.js";
 import {createHmacAuthHook} from "../security/hmac-auth.js";
+import {registerRouteRateLimit} from "../security/route-rate-limit.js";
 import {checkContentPin} from "../security/content-pin.js";
 
 const EXCHANGE_TYPES = ["fanout", "topic", "direct"] as const;
@@ -122,6 +123,7 @@ export async function hostConfigurationRoutes(
 
   // Authenticate every configuration route by HMAC signature. Write routes opt in to raw-body
   // capture (config.rawBody) so the signature binds the pushed body; GET/DELETE bind an empty body.
+  await registerRouteRateLimit(fastify, config.ADMIN_RATE_LIMIT_PER_MINUTE);
   fastify.addHook("preHandler", createHmacAuthHook(config.ADMIN_TOKEN));
 
   /**
