@@ -344,4 +344,8 @@
     <include file="config/liquibase/initial-setup/case/changelog/20260311-add-team-key-to-json-schema-document.xml"/>
     <include file="config/liquibase/initial-setup/task/changelog/20260317-create-table-task-team.xml"/>
 
+    <!-- assistant/src/main/resources/config/liquibase/assistant-master.xml -->
+
+    <include file="config/liquibase/initial-setup/assistant/changelog/20260907-create-assistant-tables.xml"/>
+
 </databaseChangeLog>

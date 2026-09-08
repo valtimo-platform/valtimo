@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <property name="uuidType" value="BINARY(16)" dbms="mysql"/>
+    <property name="uuidType" value="uuid" dbms="h2,postgresql"/>
+    <property name="textType" value="LONGTEXT" dbms="mysql"/>
+    <property name="textType" value="TEXT" dbms="h2,postgresql"/>
+
+    <changeSet id="20260907-create-assistant-session-table" author="ritense">
+        <createTable tableName="assistant_session">
+            <column name="id" type="${uuidType}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(500)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_activity_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="assistant_session" indexName="idx_assistant_session_user_id">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="assistant_session" indexName="idx_assistant_session_last_activity">
+            <column name="last_activity_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20260907-create-assistant-message-table" author="ritense">
+        <createTable tableName="assistant_message">
+            <column name="id" type="${uuidType}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="session_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="${textType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tool_calls" type="${textType}"/>
+            <column name="tool_execution_id" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="assistant_message" indexName="idx_assistant_message_session_id">
+            <column name="session_id"/>
+        </createIndex>
+
+        <addForeignKeyConstraint
+            baseTableName="assistant_message"
+            baseColumnNames="session_id"
+            constraintName="fk_assistant_message_session"
+            referencedTableName="assistant_session"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="20260907-create-pending-assistant-action-table" author="ritense">
+        <createTable tableName="pending_assistant_action">
+            <column name="id" type="${uuidType}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="session_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tool" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="params" type="${textType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_type" type="VARCHAR(255)"/>
+            <column name="resource_id" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="pending_assistant_action" indexName="idx_pending_action_user_id">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="pending_assistant_action" indexName="idx_pending_action_expires_at">
+            <column name="expires_at"/>
+        </createIndex>
+
+        <addForeignKeyConstraint
+            baseTableName="pending_assistant_action"
+            baseColumnNames="session_id"
+            constraintName="fk_pending_action_session"
+            referencedTableName="assistant_session"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

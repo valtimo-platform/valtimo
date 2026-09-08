@@ -1,0 +1,6 @@
+services:
+  db:
+    ports:
+      - "54322:5432"
+    environment:
+      POSTGRES_DB: assistant-test
