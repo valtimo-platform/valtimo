@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.assistant.executor.CaseDefinitionActionExecutor
 import com.ritense.assistant.executor.ProcessDefinitionActionExecutor
 import com.ritense.assistant.memory.JpaChatMemoryStore
+import com.ritense.assistant.security.config.AssistantHttpSecurityConfigurer
 import com.ritense.assistant.repository.AssistantMessageRepository
 import com.ritense.assistant.repository.AssistantSessionRepository
 import com.ritense.assistant.repository.PendingAssistantActionRepository
@@ -49,6 +50,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.core.annotation.Order
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @AutoConfiguration
@@ -213,5 +215,12 @@ class AssistantAutoConfiguration {
             pendingActionService,
             userManagementService
         )
+    }
+
+    @Order(300)
+    @Bean
+    @ConditionalOnMissingBean(AssistantHttpSecurityConfigurer::class)
+    fun assistantHttpSecurityConfigurer(): AssistantHttpSecurityConfigurer {
+        return AssistantHttpSecurityConfigurer()
     }
 }

@@ -327,5 +327,5 @@ langchain4j:
     anthropic:
         chat-model:
             api-key: ${ANTHROPIC_API_KEY:}
-            model-name: claude-sonnet-4-20250514
+            model-name: claude-sonnet-5
             max-tokens: 4096
