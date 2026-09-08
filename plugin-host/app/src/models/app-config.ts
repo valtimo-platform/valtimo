@@ -86,6 +86,17 @@ export const envSchema = z.object({
   // minute per configurationId). 0 disables the limit.
   DATA_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(0).default(120),
 
+  // Per-IP rate limit for the HMAC-authenticated admin routes (plugin management, configuration
+  // pushes, gzac-instance announcements). Legitimate traffic is one GZAC discovery poll per minute
+  // plus admin actions, so the default sits far above real use while still throttling online
+  // brute-force of the ADMIN_TOKEN. 0 disables the limit.
+  ADMIN_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(0).default(120),
+
+  // Per-IP rate limit for the public plugin-content routes (bundles, logos, manifests,
+  // frame-policy probes), bounding disk-read abuse. Generous: one case-tab load fetches several
+  // assets and NATed users share an address. 0 disables the limit.
+  BUNDLE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(0).default(600),
+
   // How long the ConfigRegistry serves configurations from its in-memory cache before re-reading
   // Postgres. Writes through this host invalidate immediately; pushes handled by ANOTHER replica
   // are picked up after at most this TTL. 0 disables caching.
@@ -117,6 +128,14 @@ export const envSchema = z.object({
   DB_MIGRATE_ON_BOOT: z
     .enum(["true", "false"])
     .default("true")
+    .transform((v) => v === "true"),
+
+  // Honour X-Forwarded-For when deriving the client address (Fastify's trustProxy). Enable when
+  // the host runs behind a reverse proxy so the per-IP rate limits key on the real client instead
+  // of the proxy. Same explicit two-value enum as DB_MIGRATE_ON_BOOT: a typo fails the boot.
+  TRUST_PROXY: z
+    .enum(["true", "false"])
+    .default("false")
     .transform((v) => v === "true"),
 
   // Optional TLS termination. Set TLS_CERT_PATH and TLS_KEY_PATH (PEM files) together to make the

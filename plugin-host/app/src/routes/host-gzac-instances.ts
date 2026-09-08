@@ -19,6 +19,7 @@ import { z } from "zod";
 import type { AppConfig } from "../config.js";
 import { FrameAncestorRegistry, normalizeOrigins } from "../frame-ancestor-registry.js";
 import { createHmacAuthHook } from "../security/hmac-auth.js";
+import { registerRouteRateLimit } from "../security/route-rate-limit.js";
 
 const gzacInstanceSchema = z.object({
   gzacBaseUrl: z.string().min(1),
@@ -43,6 +44,7 @@ export async function hostGzacInstanceRoutes(
 ): Promise<void> {
   const { frameAncestorRegistry, config } = opts;
 
+  await registerRouteRateLimit(fastify, config.ADMIN_RATE_LIMIT_PER_MINUTE);
   fastify.addHook("preHandler", createHmacAuthHook(config.ADMIN_TOKEN));
 
   fastify.put(

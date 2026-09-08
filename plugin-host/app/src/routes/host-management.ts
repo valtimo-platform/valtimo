@@ -20,6 +20,7 @@ import { ConfigRegistry } from "../config-registry.js";
 import { AppConfig } from "../config.js";
 import { installPluginZip, pluginInstallTmpBase } from "../plugin-package-install.js";
 import { createHmacAuthHook, verifyDeferredHmac } from "../security/hmac-auth.js";
+import { registerRouteRateLimit } from "../security/route-rate-limit.js";
 import { InvalidPluginPackageError } from "../errors.js";
 
 // Re-exported so the existing import sites keep working now that the plugin manager raises it too.
@@ -41,6 +42,7 @@ export async function hostManagementRoutes(
 
   // Authenticate every management route by HMAC signature. The upload route opts out (deferHmac)
   // and verifies itself once the uploaded file has been read, since it binds the file bytes.
+  await registerRouteRateLimit(fastify, config.ADMIN_RATE_LIMIT_PER_MINUTE);
   fastify.addHook("preHandler", createHmacAuthHook(config.ADMIN_TOKEN));
 
   /**

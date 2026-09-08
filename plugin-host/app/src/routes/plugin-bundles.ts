@@ -20,6 +20,7 @@ import type { FrameAncestorSource } from "../frame-ancestor-registry.js";
 import { join, resolve, extname } from "node:path";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { registerRouteRateLimit } from "../security/route-rate-limit.js";
 
 const MIME_TYPES: Record<string, string> = {
   ".js": "application/javascript",
@@ -174,9 +175,16 @@ async function sendPluginContent(
  */
 export async function pluginBundleRoutes(
   fastify: FastifyInstance,
-  opts: { pluginManager: PluginManager; frameAncestorRegistry: FrameAncestorSource }
+  opts: {
+    pluginManager: PluginManager;
+    frameAncestorRegistry: FrameAncestorSource;
+    rateLimitPerMinute?: number;
+  }
 ): Promise<void> {
   const { pluginManager, frameAncestorRegistry } = opts;
+  // Public and disk-backed: a per-IP budget bounds read amplification without touching the
+  // browser's normal asset loading (one case tab fetches a handful of files).
+  await registerRouteRateLimit(fastify, opts.rateLimitPerMinute);
   // One warning per process, not per request: an empty allowlist means every plugin screen in every
   // GZAC is blank, so the operator needs the reason once — loudly — not on repeat.
   let warnedAboutEmptyAllowlist = false;
