@@ -46,6 +46,7 @@ Common:
 | `PLUGIN_STORAGE_DIR` | `./plugins` | Where installed packages live (persist this) |
 | `HOST_ID` | OS hostname | Event-queue identity — see **Scaling** below |
 | `TLS_CERT_PATH` / `TLS_KEY_PATH` (+ `TLS_CA_PATH`) | unset | Set both to serve HTTPS. Required in practice for event-consuming hosts: GZAC refuses to push broker credentials to a non-confidential (non-HTTPS, non-loopback) base URL |
+| `TRUST_PROXY` | `false` | Honour `X-Forwarded-For` for client addresses. Enable behind a reverse proxy so the per-IP rate limits key on the real client instead of the proxy |
 | `PLUGIN_PREINSTALL_DIR` | `./preinstalled` | Boot-time package directory (`/data/preinstalled` in the image) |
 | `PLUGIN_PREINSTALL_OVERWRITE` | `false` | Replace an installed version whose content differs — throwaway environments only |
 | `LOG_LEVEL` / `LOG_RETENTION_DAYS` | `info` / `30` | Logging and `plugin_logs` retention (cleanup runs 6-hourly) |
@@ -62,6 +63,8 @@ Execution and abuse bounds (defaults are sane; tune deliberately):
 | `GZAC_API_TIMEOUT_MS` | 60 s | Bound on plugin→GZAC callbacks |
 | `UPLOAD_MAX_BYTES` | 100 MiB | Package size cap |
 | `DATA_RATE_LIMIT_PER_MINUTE` | 120 | Per-configuration rate limit on the public `/data` route |
+| `ADMIN_RATE_LIMIT_PER_MINUTE` | 120 | Per-IP budget for the HMAC-authenticated admin routes; throttles online brute-force of `ADMIN_TOKEN` (legitimate traffic is one poll per minute). 0 disables |
+| `BUNDLE_RATE_LIMIT_PER_MINUTE` | 600 | Per-IP budget for the public bundle/logo/manifest routes, bounding disk-read abuse. 0 disables |
 | `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | 10 s | Bound on the `/data` token check against GZAC |
 | `CONFIG_CACHE_TTL_MS` | 10 s | Config read-cache; also bounds cross-replica visibility of pushes |
 
