@@ -79,6 +79,8 @@ The security model rests on a few principles:
   behalf of a logged-in user are additionally limited to what that user is allowed to see and do.
 - **Signed traffic** — every request Valtimo sends to an integration is cryptographically signed,
   so an integration only accepts instructions from the Valtimo environment that holds its secret.
+  Configuration data — tokens, settings, broker credentials — additionally only travels to an
+  integration over an encrypted (or local) connection.
 - **Tamper detection** — Valtimo records a fingerprint of every plugin package it accepted. If
   the package on the host changes without an approved upload, the plugin is suspended on every
   surface until an administrator reviews the change.

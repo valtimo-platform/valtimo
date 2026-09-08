@@ -266,4 +266,4 @@ at-least-once. Reference: [`demo-app/src/events.ts`](../sample-apps/demo-app/src
 - [ ] Granted sets honored: events dispatched from `eventSubscriptions`, callbacks within `grantedEndpoints`, egress within `allowedEgress`
 - [ ] Bundles served with strict CSP + announced `frame-ancestors`, fail closed
 - [ ] `/data` gated: `frontend_data` grant, rate limit, user-token introspection, fail closed on GZAC outage
-- [ ] Served over HTTPS (or loopback in development) — GZAC refuses to push broker credentials to a plain-HTTP remote app
+- [ ] Served over HTTPS (or loopback in development) — GZAC refuses to connect a plain-HTTP remote app: the configuration push carries a service token, decrypted secret properties and any broker credentials

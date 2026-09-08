@@ -45,7 +45,7 @@ Common:
 | `PORT` | `8090` | HTTP(S) listen port |
 | `PLUGIN_STORAGE_DIR` | `./plugins` | Where installed packages live (persist this) |
 | `HOST_ID` | OS hostname | Event-queue identity — see **Scaling** below |
-| `TLS_CERT_PATH` / `TLS_KEY_PATH` (+ `TLS_CA_PATH`) | unset | Set both to serve HTTPS. Required in practice for event-consuming hosts: GZAC refuses to push broker credentials to a non-confidential (non-HTTPS, non-loopback) base URL |
+| `TLS_CERT_PATH` / `TLS_KEY_PATH` (+ `TLS_CA_PATH`) | unset | Set both to serve HTTPS. Required for any non-loopback host: GZAC refuses to register or repoint to a plain-HTTP remote address — the configuration push carries a service token, decrypted secret properties and any broker credentials — unless the GZAC deployment explicitly opts out (see the GZAC-side switches under Operational notes) |
 | `TRUST_PROXY` | `false` | Honour `X-Forwarded-For` for client addresses. Enable behind a reverse proxy so the per-IP rate limits key on the real client instead of the proxy |
 | `PLUGIN_PREINSTALL_DIR` | `./preinstalled` | Boot-time package directory (`/data/preinstalled` in the image) |
 | `PLUGIN_PREINSTALL_OVERWRITE` | `false` | Replace an installed version whose content differs — throwaway environments only |
@@ -117,6 +117,12 @@ see [Auto-deployment](./auto-deployment.md).
 
 ## Operational notes
 
+- **GZAC-side switches.** Two Spring properties on the GZAC deployment govern which hosts may be
+  connected at all: `valtimo.external-plugin.allowed-host-origins` (comma-separated
+  `scheme://host[:port]` entries; `*.example.com` matches subdomains but not the bare apex; empty =
+  unrestricted) confines registration and repointing to known addresses, and
+  `valtimo.external-plugin.allow-plaintext-host-transport=true` re-allows plain-HTTP remote hosts
+  on a fully trusted network. Both default to the strict side.
 - **Secret rotation is two-sided.** The host reads `ADMIN_TOKEN` once at boot. Order that
   minimises the outage: restart the host with the new token first (GZAC's pushes fail as
   warnings, the host may show Unreachable), then update the secret on the GZAC side via **Edit
