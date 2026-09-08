@@ -50,6 +50,7 @@ async function main(): Promise<void> {
     logger: {
       level: config.LOG_LEVEL,
     },
+    ...(config.TRUST_PROXY ? { trustProxy: true } : {}),
     ...(httpsOptions ? { https: httpsOptions } : {}),
   } as FastifyServerOptions);
 
@@ -210,6 +211,7 @@ async function main(): Promise<void> {
   await fastify.register(pluginBundleRoutes, {
     pluginManager,
     frameAncestorRegistry,
+    rateLimitPerMinute: config.BUNDLE_RATE_LIMIT_PER_MINUTE,
   });
   await fastify.register(pluginDataRoutes, {
     pluginManager,

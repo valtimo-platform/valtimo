@@ -85,6 +85,10 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     USER_TOKEN_INTROSPECTION_TIMEOUT_MS: 10_000,
     UPLOAD_MAX_BYTES: 100 * 1024 * 1024,
     DATA_RATE_LIMIT_PER_MINUTE: 120,
+    // Disabled so request-heavy specs never trip them; route-rate-limit.test.ts covers the limiter.
+    ADMIN_RATE_LIMIT_PER_MINUTE: 0,
+    BUNDLE_RATE_LIMIT_PER_MINUTE: 0,
+    TRUST_PROXY: false,
     CONFIG_CACHE_TTL_MS: 10_000,
     ...overrides,
   } as AppConfig;
