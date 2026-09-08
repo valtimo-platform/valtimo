@@ -44,6 +44,7 @@ Admin > Other > Process migration has the standard Valtimo look and feel, with c
 | Case migration   | The source and target version dropdowns offer every version of the selected case again, instead of only one                     |
 | Case migration   | When upgrading from Valtimo 12, a sub-process that several cases reach through the same shared process is now linked to every one of those cases instead of only the first |
 | Cases            | A case can be deleted when the zaak it is linked to has already been removed in the Zaken API                                   |
+| Documenten API   | A file uploaded with the Documenten API upload field in a form flow is added to the case when the form flow finishes            |
 | Documents        | A document is added to a case once, however many times Save is clicked in the metadata window                                   |
 | Plugins          | Creating a zaakdossier via the verzoek plugin with an empty initiator type no longer fails when creating the initiator zaakrol   |
 | Plugins          | The verzoek plugin offers every case version again when picking one, instead of only the active one                              |
