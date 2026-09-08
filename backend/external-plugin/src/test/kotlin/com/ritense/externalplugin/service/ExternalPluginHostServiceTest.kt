@@ -23,6 +23,8 @@ import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
+import com.ritense.externalplugin.domain.ExternalPluginHostStatus
+import com.ritense.externalplugin.service.ExternalPluginHostService.Companion.matchesAllowedOrigin
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
@@ -72,19 +74,27 @@ class ExternalPluginHostServiceTest {
         whenever(hostRepository.save(any<ExternalPluginHost>())).thenAnswer { it.getArgument(0) }
         whenever(configurationRepository.save(any<ExternalPluginConfiguration>()))
             .thenAnswer { it.getArgument(0) }
-        service = ExternalPluginHostService(
-            hostRepository,
-            definitionRepository,
-            configurationRepository,
-            mock<ExternalPluginGrantedEndpointRepository>(),
-            mock<ExternalPluginGrantedEventRepository>(),
-            mock(),
-            mock(),
-            encryptionService,
-            hostClient,
-            mock<ExternalPluginHostUsageResolver>(),
-        )
+        service = serviceWith()
     }
+
+    /** Same collaborators, different policy knobs. */
+    private fun serviceWith(
+        allowedHostOrigins: List<String> = emptyList(),
+        allowPlaintextHostTransport: Boolean = false,
+    ) = ExternalPluginHostService(
+        hostRepository,
+        definitionRepository,
+        configurationRepository,
+        mock<ExternalPluginGrantedEndpointRepository>(),
+        mock<ExternalPluginGrantedEventRepository>(),
+        mock(),
+        mock(),
+        encryptionService,
+        hostClient,
+        mock<ExternalPluginHostUsageResolver>(),
+        allowedHostOrigins,
+        allowPlaintextHostTransport,
+    )
 
     @Test
     fun `allows broker credentials over https`() {
@@ -132,7 +142,7 @@ class ExternalPluginHostServiceTest {
             // Not IllegalArgumentException: the mapper turns this type into a 400 whose detail is
             // this message, which is what the add-host modal renders.
             .isInstanceOf(ExternalPluginHostValidationException::class.java)
-            .hasMessageContaining("unencrypted transport")
+            .hasMessageContaining("reachable over HTTPS")
     }
 
     @Test
@@ -159,14 +169,175 @@ class ExternalPluginHostServiceTest {
         // bind addresses are refused here.
         val host = service.register(
             name = "docker",
-            baseUrl = "http://plugin_host:8090",
+            baseUrl = "https://plugin_host:8090",
             secret = "admin-token",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
         )
 
-        assertThat(host.baseUrl).isEqualTo("http://plugin_host:8090")
+        assertThat(host.baseUrl).isEqualTo("https://plugin_host:8090")
+    }
+
+    @Test
+    fun `rejects a base url that is not a parseable http url`() {
+        // Fails closed: every consumer concatenates this value raw into a URI or an iframe src.
+        listOf(
+            "moved.example.com",
+            "javascript:alert(1)",
+            "file:///etc/passwd",
+            "ftp://host",
+            "https://user:pw@host",
+            "https://host?a=b",
+            "https://ho st",
+            "https://*.example.com",
+        ).forEach { baseUrl ->
+            assertThatThrownBy {
+                service.register(
+                    name = "bad",
+                    baseUrl = baseUrl,
+                    secret = "admin-token",
+                    gzacCallbackBaseUrl = "http://localhost:8080",
+                    eventBrokerAmqpUrl = null,
+                    eventBrokerExchange = null,
+                )
+            }
+                .describedAs(baseUrl)
+                .isInstanceOf(ExternalPluginHostValidationException::class.java)
+                .hasMessageContaining("base URL")
+        }
+    }
+
+    @Test
+    fun `trims surrounding whitespace from the base url instead of storing it`() {
+        val host = service.register(
+            name = "padded",
+            baseUrl = "  https://plugin-host.example.com/  ",
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "http://localhost:8080",
+            eventBrokerAmqpUrl = null,
+            eventBrokerExchange = null,
+        )
+
+        assertThat(host.baseUrl).isEqualTo("https://plugin-host.example.com")
+    }
+
+    @Test
+    fun `keeps a reverse-proxy path prefix on the base url`() {
+        val host = service.register(
+            name = "proxied",
+            baseUrl = "https://gateway.example.com/plugin-host",
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "http://localhost:8080",
+            eventBrokerAmqpUrl = null,
+            eventBrokerExchange = null,
+        )
+
+        assertThat(host.baseUrl).isEqualTo("https://gateway.example.com/plugin-host")
+    }
+
+    @Test
+    fun `rejects a callback url that is not a parseable http url`() {
+        assertThatThrownBy {
+            service.register(
+                name = "bad-callback",
+                baseUrl = "https://plugin-host.example.com",
+                secret = "admin-token",
+                gzacCallbackBaseUrl = "gzac.example.com",
+                eventBrokerAmqpUrl = null,
+                eventBrokerExchange = null,
+            )
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("GZAC callback base URL")
+    }
+
+    @Test
+    fun `rejects a broker url whose scheme is not amqp`() {
+        assertThatThrownBy {
+            service.register(
+                name = "bad-broker",
+                baseUrl = "https://plugin-host.example.com",
+                secret = "admin-token",
+                gzacCallbackBaseUrl = "http://localhost:8080",
+                eventBrokerAmqpUrl = "rabbitmq://user:pw@broker:5672",
+                eventBrokerExchange = null,
+            )
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("amqp or amqps")
+            // The refusal itself must not echo the credential it is refusing.
+            .hasMessageNotContaining("pw")
+    }
+
+    @Test
+    fun `enforces the host origin allowlist when one is configured`() {
+        val restricted = serviceWith(allowedHostOrigins = listOf("https://*.example.com"))
+
+        assertThatThrownBy {
+            restricted.register(
+                name = "elsewhere",
+                baseUrl = "https://collector.attacker.tld",
+                secret = "admin-token",
+                gzacCallbackBaseUrl = "http://localhost:8080",
+                eventBrokerAmqpUrl = null,
+                eventBrokerExchange = null,
+            )
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("not an allowed plugin host address")
+
+        val allowed = restricted.register(
+            name = "in-allowlist",
+            baseUrl = "https://plugin-host.example.com",
+            secret = "admin-token",
+            gzacCallbackBaseUrl = "http://localhost:8080",
+            eventBrokerAmqpUrl = null,
+            eventBrokerExchange = null,
+        )
+        assertThat(allowed.baseUrl).isEqualTo("https://plugin-host.example.com")
+    }
+
+    @Test
+    fun `updateConnection enforces the host origin allowlist on a repoint`() {
+        val restricted = serviceWith(allowedHostOrigins = listOf("https://plugin-host.example.com"))
+        val existing = stubExisting(brokerAmqpUrl = null, using = restricted)
+
+        assertThatThrownBy {
+            restricted.updateConnection(existing.id, baseUrl = "https://collector.attacker.tld")
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("not an allowed plugin host address")
+        assertThat(existing.baseUrl).isEqualTo("https://plugin-host.example.com")
+    }
+
+    @Test
+    fun `matchesAllowedOrigin compares scheme, host and port and honours a subdomain wildcard`() {
+        assertThat(matchesAllowedOrigin("https://a.example.com", "https://*.example.com")).isTrue()
+        assertThat(matchesAllowedOrigin("https://a.b.example.com", "https://*.example.com")).isTrue()
+        // The apex is not a subdomain of itself, and a suffix match must not span a label boundary.
+        assertThat(matchesAllowedOrigin("https://example.com", "https://*.example.com")).isFalse()
+        assertThat(matchesAllowedOrigin("https://notexample.com", "https://*.example.com")).isFalse()
+        assertThat(matchesAllowedOrigin("http://a.example.com", "https://*.example.com")).isFalse()
+        assertThat(matchesAllowedOrigin("https://HOST:8090", "https://host:8090")).isTrue()
+        assertThat(matchesAllowedOrigin("https://host:8091", "https://host:8090")).isFalse()
+        assertThat(matchesAllowedOrigin("https://host/prefix", "https://host")).isTrue()
+    }
+
+    @Test
+    fun `updateConnection drops the stale CONNECTED status on a repoint`() {
+        val existing = stubExisting(brokerAmqpUrl = null)
+        existing.status = ExternalPluginHostStatus.CONNECTED
+
+        val updated = service.updateConnection(existing.id, baseUrl = "https://moved.example.com")
+
+        assertThat(updated.status).isEqualTo(ExternalPluginHostStatus.UNREACHABLE)
+    }
+
+    @Test
+    fun `updateConnection keeps the status for a cosmetic edit`() {
+        val existing = stubExisting(brokerAmqpUrl = null)
+        existing.status = ExternalPluginHostStatus.CONNECTED
+
+        val updated = service.updateConnection(existing.id, name = "renamed")
+
+        assertThat(updated.status).isEqualTo(ExternalPluginHostStatus.CONNECTED)
     }
 
     @Test
@@ -259,8 +430,27 @@ class ExternalPluginHostServiceTest {
     }
 
     @Test
-    fun `allows a plaintext remote host when no broker is configured`() {
-        val host = service.register(
+    fun `rejects a plaintext remote host even when no broker is configured`() {
+        // Push body carries a service token and decrypted secret properties, not just broker
+        // credentials — so the transport requirement cannot depend on a broker being set.
+        assertThatThrownBy {
+            service.register(
+                name = "actions-only",
+                baseUrl = "http://plugin-host:8090",
+                secret = "admin-token",
+                gzacCallbackBaseUrl = "http://localhost:8080",
+                eventBrokerAmqpUrl = null,
+                eventBrokerExchange = null,
+            )
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("reachable over HTTPS")
+    }
+
+    @Test
+    fun `allows a plaintext remote host when the operator opts in`() {
+        val permissive = serviceWith(allowPlaintextHostTransport = true)
+
+        val host = permissive.register(
             name = "actions-only",
             baseUrl = "http://plugin-host:8090",
             secret = "admin-token",
@@ -270,14 +460,13 @@ class ExternalPluginHostServiceTest {
         )
 
         assertThat(host.baseUrl).isEqualTo("http://plugin-host:8090")
-        assertThat(host.eventBrokerAmqpUrl).isNull()
     }
 
     @Test
     fun `treats a blank broker url as no broker`() {
         val host = service.register(
             name = "actions-only",
-            baseUrl = "http://plugin-host:8090",
+            baseUrl = "https://plugin-host:8090",
             secret = "admin-token",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = "   ",
@@ -511,23 +700,31 @@ class ExternalPluginHostServiceTest {
         assertThatThrownBy {
             service.updateConnection(existing.id, baseUrl = "http://moved-host:8090")
         }.isInstanceOf(ExternalPluginHostValidationException::class.java)
-            .hasMessageContaining("unencrypted transport")
+            .hasMessageContaining("reachable over HTTPS")
         assertThat(existing.baseUrl).isEqualTo("https://plugin-host.example.com")
     }
 
     @Test
     fun `updateConnection refuses adding a broker to a plaintext remote host`() {
-        val existing = stubExisting(brokerAmqpUrl = null, baseUrl = "http://plugin-host:8090")
+        val existing = stubExisting(
+            brokerAmqpUrl = null,
+            baseUrl = "http://plugin-host:8090",
+            using = serviceWith(allowPlaintextHostTransport = true),
+        )
 
         assertThatThrownBy {
             service.updateConnection(existing.id, eventBrokerAmqpUrl = "amqp://guest:guest@broker:5672")
         }.isInstanceOf(ExternalPluginHostValidationException::class.java)
-            .hasMessageContaining("unencrypted transport")
+            .hasMessageContaining("reachable over HTTPS")
     }
 
     @Test
     fun `updateConnection allows broker plus base url changed together to a confidential pair`() {
-        val existing = stubExisting(brokerAmqpUrl = null, baseUrl = "http://plugin-host:8090")
+        val existing = stubExisting(
+            brokerAmqpUrl = null,
+            baseUrl = "http://plugin-host:8090",
+            using = serviceWith(allowPlaintextHostTransport = true),
+        )
 
         val updated = service.updateConnection(
             existing.id,
@@ -786,8 +983,10 @@ class ExternalPluginHostServiceTest {
     private fun stubExisting(
         baseUrl: String = "https://plugin-host.example.com",
         brokerAmqpUrl: String? = "amqp://guest:guest@broker:5672",
+        /** Registering a plaintext address needs the permissive service; updates still use [service]. */
+        using: ExternalPluginHostService = service,
     ): ExternalPluginHost {
-        val host = service.register(
+        val host = using.register(
             name = "local",
             baseUrl = baseUrl,
             secret = "admin-token",
