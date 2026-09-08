@@ -20,10 +20,20 @@ public class DocumentDefinitionProcessLinkResponse {
 
     private final String processDefinitionKey;
     private final String processName;
+    private final Integer processDefinitionVersion;
 
     public DocumentDefinitionProcessLinkResponse(String processDefinitionKey, String processName) {
+        this(processDefinitionKey, processName, null);
+    }
+
+    public DocumentDefinitionProcessLinkResponse(
+        String processDefinitionKey,
+        String processName,
+        Integer processDefinitionVersion
+    ) {
         this.processDefinitionKey = processDefinitionKey;
         this.processName = processName;
+        this.processDefinitionVersion = processDefinitionVersion;
     }
 
     public String getProcessDefinitionKey() {
@@ -32,5 +42,9 @@ public class DocumentDefinitionProcessLinkResponse {
 
     public String getProcessName() {
         return processName;
+    }
+
+    public Integer getProcessDefinitionVersion() {
+        return processDefinitionVersion;
     }
 }
