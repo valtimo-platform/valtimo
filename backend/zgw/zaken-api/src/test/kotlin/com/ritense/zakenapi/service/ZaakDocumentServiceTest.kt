@@ -719,6 +719,38 @@ class ZaakDocumentServiceTest {
         verify(documentenApiService).getInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
     }
 
+    @Test
+    fun `should skip the informatieobjecten cleanup when the zaak no longer exists in the Zaken API`() {
+        val caseDocumentId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUrl))
+            .doAnswer { throw HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found") }
+
+        service.deleteRelatedInformatieObjecten(caseDocumentId, zaakUrl)
+
+        verify(zakenApiPlugin, times(0)).deleteZaakInformatieobject(any(), any())
+    }
+
+    @Test
+    fun `should throw when the Zaken API fails with an error other than not found during cleanup`() {
+        val caseDocumentId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakUrl))
+            .doAnswer { throw HttpClientErrorException(HttpStatus.FORBIDDEN, "Forbidden") }
+
+        assertThrows<HttpClientErrorException> {
+            service.deleteRelatedInformatieObjecten(caseDocumentId, zaakUrl)
+        }
+    }
+
     private fun createZaakInformatieObject(zaakUrl: URI, informatieobjectUrl: URI) = ZaakInformatieObject(
         url = URI("$zaakUrl/zaakinformatieobjecten/${UUID.randomUUID()}"),
         uuid = UUID.randomUUID(),

@@ -157,10 +157,8 @@ test.describe('Feature 2 — Cases (User)', () => {
 
     test('shows the process dropdown and BPMN visualisation', async () => {
       await expect(userCasesPage.progressTabContent).toBeVisible();
-      await expect(userCasesPage.progressProcessDropdown).toBeVisible();
-      await expect(userCasesPage.progressTabContent.locator('svg').first()).toBeVisible({
-        timeout: 15_000,
-      });
+      await expect(userCasesPage.progressProcessComboBox).toBeVisible();
+      await expect(userCasesPage.progressBpmnSvg.first()).toBeVisible({timeout: 15_000});
     });
   });
 

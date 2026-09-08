@@ -30,7 +30,7 @@
   (close)="closeModal()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="testIds.heading">
       {{
         (titleTranslationKey !== obs.titleTranslation ? obs.titleTranslation : '') ||
           title ||
@@ -39,7 +39,7 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent [attr.data-test-id]="testIds.content">
     {{
       (contentTranslationKey !== obs.contentTranslation ? obs.contentTranslation : '') ||
         content ||

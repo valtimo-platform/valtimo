@@ -306,9 +306,9 @@ class PluginService(
         activityType: ActivityTypeWithEventName?
     ): List<PluginActionDefinitionDto> {
         val actions = if (activityType == null)
-            pluginActionDefinitionRepository.findByIdPluginDefinitionKey(pluginDefinitionKey)
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyOrderByTitleAsc(pluginDefinitionKey)
         else
-            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypes(
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypesOrderByTitleAsc(
                 pluginDefinitionKey,
                 activityType
             )

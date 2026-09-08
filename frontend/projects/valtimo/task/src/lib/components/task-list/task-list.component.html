@@ -31,6 +31,7 @@
     loadingSearchFields: loadingSearchFields$ | async,
     caseDefinitionKey: caseDefinitionKey$ | async,
     noResultsMessage: noResultsMessage$ | async,
+    manualRefresh: manualRefresh$ | async,
   } as obs"
   class="main-content"
 >
@@ -147,7 +148,18 @@
       </ng-container>
     </div>
 
-    <div carbonToolbarContent>
+    <div carbonToolbarContent class="valtimo-task-list__toolbar-content">
+      <button
+        *ngIf="obs.manualRefresh"
+        cdsButton="ghost"
+        (click)="onRefreshTasksClick()"
+        [attr.data-test-id]="testIds.refreshTasksButton"
+      >
+        {{ 'task-list.refreshTasks' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="renew" size="16"></svg>
+      </button>
+
       <valtimo-list-column-view
         *ngIf="obs.caseDefinitionKey && obs.caseDefinitionKey !== ALL_CASES_ID"
         [availableFields]="obs.availableFields"

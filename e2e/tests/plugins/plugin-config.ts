@@ -63,6 +63,34 @@ export const pluginTypes = [
   // 'Zaken API',
 ];
 
+/**
+ * Data for the configuration-detail tests (9.12–9.25). These need two plugin
+ * configurations: a Besluiten API configuration to edit, and a *second* OpenZaak
+ * authentication configuration so that the authentication dropdown has more than one
+ * option to choose from (the seeded environment ships only one).
+ *
+ * RSIN values must pass the backend's 11-proof validation — see the `expectInvalidRSINError`
+ * test for what happens when they don't.
+ */
+export const pluginDetailTestData = {
+  altAuthTitle: 'E2e Alt OpenZaak Auth',
+  altAuthOptionLabel: 'E2e Alt OpenZaak Auth - OpenZaak',
+  seededAuthOptionLabel: 'OpenZaak Authentication - OpenZaak',
+  besluitenTitle: 'E2e Besluiten Detail Plugin',
+  rsin: '328674989',
+  updatedRsin: '051845623',
+  url: 'http://localhost:8001/besluiten/api/v1/',
+  updatedUrl: 'http://localhost:8001/besluiten/api/v2/',
+  clientId: 'valtimo_client',
+  clientSecret: '129870443512908776534',
+} as const;
+
+/** Titles created by the detail tests, cleaned up via the API in afterAll. */
+export const pluginDetailTitles = [
+  pluginDetailTestData.besluitenTitle,
+  pluginDetailTestData.altAuthTitle,
+];
+
 export const pluginTestConfiguration = {
   'Besluiten API': {
     fieldMap: [

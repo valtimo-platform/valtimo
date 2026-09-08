@@ -189,6 +189,11 @@ class FormFlowRegistryService(
                 alwaysPresent = true,
             ),
             FormFlowAdditionalPropertyDto(
+                name = AbstractFormFlowLinkTaskProvider.PROCESS_DEFINITION_ID,
+                context = CONTEXT_START_EVENT,
+                alwaysPresent = true,
+            ),
+            FormFlowAdditionalPropertyDto(
                 name = AbstractFormFlowLinkTaskProvider.DOCUMENT_ID,
                 context = CONTEXT_START_EVENT,
                 alwaysPresent = false,

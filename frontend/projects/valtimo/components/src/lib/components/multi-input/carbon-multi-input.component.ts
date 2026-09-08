@@ -40,6 +40,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
+import {MULTI_INPUT_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-carbon-multi-input',
@@ -109,6 +110,8 @@ export class CarbonMultiInputComponent implements ControlValueAccessor, OnInit, 
   @Input() public readonly valueColumnFlex = 1;
 
   @Output() public valueChange: EventEmitter<MultiInputOutput> = new EventEmitter();
+
+  public readonly testIds = MULTI_INPUT_TEST_IDS;
   @Output() public allValuesValidEvent: EventEmitter<boolean> = new EventEmitter();
 
   private _amountOfArbitraryValues!: number;

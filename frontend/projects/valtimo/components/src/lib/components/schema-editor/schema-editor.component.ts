@@ -47,6 +47,10 @@ import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.
 import {ObjectLevel} from '../../models';
 import {collectObjectLevels, setRequiredOnSchema} from '../../utils';
 import {DocumentRequirements16} from '@carbon/icons';
+import {
+  SCHEMA_EDITOR_REQUIRED_PROPERTY_TEST_ID_PREFIX,
+  SCHEMA_EDITOR_TEST_IDS,
+} from '../../constants';
 
 @Component({
   selector: 'valtimo-schema-editor',
@@ -68,6 +72,8 @@ import {DocumentRequirements16} from '@carbon/icons';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
+  protected readonly testIds = SCHEMA_EDITOR_TEST_IDS;
+
   @ViewChild('host', {static: true}) public readonly hostEl!: ElementRef<HTMLDivElement>;
 
   @Input() public schemaJson = '{ "type": "object", "properties": {} }';
@@ -228,6 +234,14 @@ export class SchemaEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   public onRequiredPanelToggle(): void {
     this.showRequiredPanel$.next(!this.showRequiredPanel$.getValue());
+  }
+
+  /**
+   * Test id for a required-field checkbox, keyed on the property's full path so
+   * that a property name repeated at another object level stays unique.
+   */
+  protected requiredPropertyTestId(path: string[], property: string): string {
+    return `${SCHEMA_EDITOR_REQUIRED_PROPERTY_TEST_ID_PREFIX}${[...(path ?? []), property].join('.')}`;
   }
 
   private setObjectLevels(schema: string): void {

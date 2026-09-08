@@ -82,32 +82,13 @@ jobs:
             fi
           fi
 
-      # Sonatype sunset guard: stop dual-publishing to Sonatype a day before the
-      # 1 Oct 2026 limit (30 Sep 2026) to be safe. After the cutoff only the S3
-      # publish runs. Adjust CUTOFF to move the boundary.
-      - name: Determine whether Sonatype publishing is still open
-        id: sonatype_window
-        run: |
-          set -euo pipefail
-          CUTOFF="2026-09-30"
-          TODAY="$(date -u +%F)"
-          if [[ "$TODAY" < "$CUTOFF" ]]; then
-            echo "open=true" >> "$GITHUB_OUTPUT"
-            echo "Before Sonatype cutoff ($CUTOFF) — dual-publishing to Sonatype + S3."
-          else
-            echo "open=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Past Sonatype cutoff ($CUTOFF) — publishing to S3 only."
-          fi
-
       - name: Publish to Sonatype staging
-        if: ${{ steps.sonatype_window.outputs.open == 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
         run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_rc }}"
 
       - name: Deploy with JReleaser to Maven Central
-        if: ${{ steps.sonatype_window.outputs.open == 'true' }}
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}

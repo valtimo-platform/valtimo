@@ -41,7 +41,7 @@ import {BuildingBlockManagementCreateModalComponent} from '../building-block-man
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
-import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS, BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
 import {BuildingBlockDefinitionQuery} from '../../models';
 
@@ -62,6 +62,8 @@ import {BuildingBlockDefinitionQuery} from '../../models';
   providers: [BuildingBlockManagementService],
 })
 export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS;
+
   public readonly $loading = signal<boolean>(true);
 
   private readonly _collectionSize$ = new BehaviorSubject<number>(0);

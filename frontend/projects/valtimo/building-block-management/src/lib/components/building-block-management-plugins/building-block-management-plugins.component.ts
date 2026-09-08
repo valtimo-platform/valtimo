@@ -23,6 +23,7 @@ import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {PluginManagementService} from '@valtimo/plugin';
 import {LoadingModule, TagModule} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
+import {BUILDING_BLOCK_MANAGEMENT_PLUGINS_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: true,
@@ -32,6 +33,8 @@ import {TranslatePipe} from '@ngx-translate/core';
   imports: [CommonModule, LoadingModule, TranslatePipe, TagModule],
 })
 export class BuildingBlockManagementPluginsComponent {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_PLUGINS_TEST_IDS;
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   public readonly usedPluginTitles$: Observable<string[]> = combineLatest([
