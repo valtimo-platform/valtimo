@@ -4,6 +4,13 @@ Release date: 09-09-2026
 
 ---
 
+## Migration
+
+* [Front-end migration](front-end-migration.md) — optional steps to get the full first-page-load
+  improvement in your own implementation
+
+---
+
 ## New Features
 
 ### Manual task list refresh
@@ -17,6 +24,14 @@ while they do.
 ---
 
 ## Enhancements
+
+### Faster first page load
+
+Opening Valtimo for the first time, or the first time after an update, now downloads roughly half
+as much data: 2.0 MB instead of 4.1 MB. The Swagger viewer, the DMN editor, the JSON schema editor
+and the map widget are fetched only when the screen that uses them is opened, and several scripts
+that were loaded on every page but never used have been removed. The deployed image is also
+considerably smaller, because only the part of the code editor that is actually used is shipped.
 
 ### Task list updates without interrupting
 
