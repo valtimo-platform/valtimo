@@ -20,6 +20,7 @@ import com.ritense.formflow.service.FormFlowRegistryService
 import com.ritense.formflow.web.rest.dto.FormFlowRegistryDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -31,6 +32,10 @@ import org.springframework.web.bind.annotation.RestController
 class FormFlowRegistryResource(
     private val formFlowRegistryService: FormFlowRegistryService,
 ) {
+    @EndpointDescription(
+        en = "Get form flow expression registry",
+        nl = "Expressieregister voor form flow ophalen",
+    )
     @GetMapping("/v1/form-flow/registry")
     fun getRegistry(): ResponseEntity<FormFlowRegistryDto> {
         return ResponseEntity.ok(formFlowRegistryService.getRegistry())
