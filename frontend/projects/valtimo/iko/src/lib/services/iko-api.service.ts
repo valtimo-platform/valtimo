@@ -16,16 +16,9 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {
-  BaseApiService,
-  ConfigService,
-  GlobalNotificationService,
-  InterceptorSkip,
-} from '@valtimo/shared';
+import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {IkoView, IkoSearchActionUser, IkoListResponse, IkoTab} from '../models';
-import {WidgetAction} from '@valtimo/layout';
-import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -43,9 +36,7 @@ export class IkoApiService extends BaseApiService {
 
   constructor(
     protected readonly httpClient: HttpClient,
-    protected readonly configService: ConfigService,
-    protected readonly globalNotificationService: GlobalNotificationService,
-    protected readonly router: Router
+    protected readonly configService: ConfigService
   ) {
     super(httpClient, configService);
   }
@@ -119,57 +110,5 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get<object>(
       this.getApiUrl(`/v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
     );
-  }
-
-  public handleAction(action: WidgetAction, resolved: {[key: string]: string} = null) {
-    if (!action) return;
-
-    const navigateTo = this.resolveProperty(action?.navigateTo, resolved);
-    if (navigateTo) {
-      this.navigateTo(navigateTo);
-      return;
-    }
-
-    const caseDefinitionKey = this.resolveProperty(action?.caseDefinitionKey, resolved);
-
-    if (caseDefinitionKey) this.startCase(caseDefinitionKey);
-
-    const processDefinitionKey = this.resolveProperty(action?.processDefinitionKey, resolved);
-
-    if (processDefinitionKey) {
-      this.globalNotificationService.showToast({
-        title: 'An unexpected error occurred',
-        caption: `Unsupported action: Start process ${processDefinitionKey}`,
-        type: 'error',
-      });
-    }
-  }
-
-  private navigateTo(navigateTo: string) {
-    if (navigateTo.startsWith(window.location.origin)) {
-      this.router.navigateByUrl(navigateTo.substring(window.location.origin.length));
-    } else if (navigateTo.startsWith('/')) {
-      this.router.navigateByUrl(navigateTo);
-    } else if (navigateTo.startsWith('http')) {
-      window.open(navigateTo, '_blank');
-    } else {
-      this.globalNotificationService.showToast({
-        title: 'An unexpected error occurred',
-        caption: `Unable to navigate to ${navigateTo}`,
-        type: 'error',
-      });
-    }
-  }
-
-  private startCase(caseDefinitionKey: string) {
-    this.globalNotificationService.showToast({
-      title: 'Test',
-      caption: `Start case ${caseDefinitionKey}`,
-      type: 'info',
-    });
-  }
-
-  private resolveProperty(property: string, resolved: {[key: string]: any}): string {
-    return property ? (resolved ? String(resolved[property]) : property) : null;
   }
 }
