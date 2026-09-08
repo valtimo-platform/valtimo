@@ -22,7 +22,7 @@ import {
   PluginService,
   PluginSpecification,
 } from '@valtimo/plugin';
-import {of, throwError} from 'rxjs';
+import {of, Subject, throwError} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ProcessLink} from '../models';
 import {PluginStateService} from './plugin-state.service';
@@ -178,6 +178,46 @@ describe('PluginStateService', () => {
     service.pluginDefinitionKey$.pipe(take(1)).subscribe(pluginDefinitionKey => {
       expect(pluginDefinitionKey).toBeUndefined();
       done();
+    });
+  });
+
+  it('ignores a lookup that only finishes after another link was selected', () => {
+    const slowConfiguration$ = new Subject<PluginConfiguration>();
+    pluginManagementService.getPluginConfiguration.and.callFake((configurationId: string) =>
+      configurationId === 'slow-configuration-id'
+        ? slowConfiguration$.asObservable()
+        : of(CONFIGURATION)
+    );
+
+    let definitionKey: string | undefined;
+    let configurationId: string | undefined;
+    service.selectedPluginDefinition$.subscribe(definition => (definitionKey = definition?.key));
+    service.selectedPluginConfiguration$.subscribe(
+      configuration => (configurationId = configuration?.id)
+    );
+
+    service.selectProcessLink(processLink({pluginConfigurationId: 'slow-configuration-id'}));
+    service.selectProcessLink(processLink({pluginDefinitionKey: 'smart-documents'}));
+
+    slowConfiguration$.next({...CONFIGURATION, id: 'slow-configuration-id'} as PluginConfiguration);
+
+    expect(definitionKey).toBe('smart-documents');
+    expect(configurationId).toBeUndefined();
+  });
+
+  it('surfaces an error that is not a missing configuration', done => {
+    pluginManagementService.getPluginConfiguration.and.returnValue(
+      throwError(() => ({status: 500}))
+    );
+
+    service.selectProcessLink(processLink({pluginConfigurationId: 'configuration-id'}));
+
+    service.pluginDefinitionKey$.pipe(take(1)).subscribe({
+      next: () => done.fail('expected the error to propagate'),
+      error: error => {
+        expect(error.status).toBe(500);
+        done();
+      },
     });
   });
 });

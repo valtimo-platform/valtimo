@@ -15,8 +15,8 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap} from 'rxjs';
-import {catchError, map, take} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap, throwError} from 'rxjs';
+import {catchError, map, take, takeUntil} from 'rxjs/operators';
 import {
   PluginConfiguration,
   PluginDefinition,
@@ -37,6 +37,7 @@ export class PluginStateService {
   private readonly _selectedPluginFunction$ = new BehaviorSubject<PluginFunction>(undefined);
   private readonly _save$ = new Subject<null>();
   private readonly _selectedProcessLink$ = new BehaviorSubject<ProcessLink>(undefined);
+  private readonly _cancelPluginLoad$ = new Subject<void>();
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
@@ -97,6 +98,7 @@ export class PluginStateService {
   }
 
   selectProcessLink(processLink: ProcessLink): void {
+    this._cancelPluginLoad$.next();
     this.clearPluginSelection();
 
     this._selectedProcessLink$.next(processLink);
@@ -116,39 +118,46 @@ export class PluginStateService {
   private loadPluginDefinitionForProcessLink(processLink: ProcessLink): void {
     // Get the plugin definition key - either directly or from the configuration the link points at
     this.getPluginDefinitionKeyForProcessLink(processLink)
-      .pipe(take(1))
-      .subscribe(pluginDefinitionKey => {
-        if (pluginDefinitionKey) {
-          // Fetch all plugin definitions and find the one matching the key
-          this.pluginManagementService
-            .getPluginDefinitions()
-            .pipe(
-              take(1),
-              map(definitions => definitions.find(d => d.key === pluginDefinitionKey))
-            )
-            .subscribe(definition => {
-              if (definition) {
-                this._selectedPluginDefinition$.next(definition);
+      .pipe(take(1), takeUntil(this._cancelPluginLoad$))
+      .subscribe({
+        next: pluginDefinitionKey => {
+          if (pluginDefinitionKey) {
+            // Fetch all plugin definitions and find the one matching the key
+            this.pluginManagementService
+              .getPluginDefinitions()
+              .pipe(
+                take(1),
+                map(definitions => definitions.find(d => d.key === pluginDefinitionKey)),
+                takeUntil(this._cancelPluginLoad$)
+              )
+              .subscribe(definition => {
+                if (definition) {
+                  this._selectedPluginDefinition$.next(definition);
 
-                // Also set the selected function if available
-                if (processLink.pluginActionDefinitionKey) {
-                  this._selectedPluginFunction$.next({
-                    key: processLink.pluginActionDefinitionKey,
-                  } as PluginFunction);
+                  // Also set the selected function if available
+                  if (processLink.pluginActionDefinitionKey) {
+                    this._selectedPluginFunction$.next({
+                      key: processLink.pluginActionDefinitionKey,
+                    } as PluginFunction);
+                  }
                 }
-              }
-            });
-        }
+              });
+          }
+        },
+        error: () => this.clearPluginSelection(),
       });
 
     // Load and set the plugin configuration if available
     if (processLink.pluginConfigurationId) {
       this.getPluginConfigurationForProcessLink(processLink)
-        .pipe(take(1))
-        .subscribe(configuration => {
-          if (configuration) {
-            this._selectedPluginConfiguration$.next(configuration);
-          }
+        .pipe(take(1), takeUntil(this._cancelPluginLoad$))
+        .subscribe({
+          next: configuration => {
+            if (configuration) {
+              this._selectedPluginConfiguration$.next(configuration);
+            }
+          },
+          error: () => this.clearPluginSelection(),
         });
     }
   }
@@ -180,14 +189,12 @@ export class PluginStateService {
     );
   }
 
-  // A configuration the link still records but that no longer exists answers 404, which is not an
-  // error worth surfacing here — the link simply has no plugin to show
   private getPluginConfigurationForProcessLink(
     processLink: ProcessLink
   ): Observable<PluginConfiguration | undefined> {
     return this.pluginManagementService
       .getPluginConfiguration(processLink.pluginConfigurationId)
-      .pipe(catchError(() => of(undefined)));
+      .pipe(catchError(error => (error?.status === 404 ? of(undefined) : throwError(() => error))));
   }
 
   deselectProcessLink(): void {
