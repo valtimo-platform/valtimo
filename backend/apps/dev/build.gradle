@@ -41,6 +41,10 @@ dependencies {
     implementation(project(":backend:zgw:portaaltaak"))
     implementation(project(":backend:outbox:outbox-rabbitmq"))
     implementation(project(":backend:process-link-url"))
+    implementation(project(":backend:assistant"))
+
+    // LangChain4j Anthropic provider for assistant
+    implementation("dev.langchain4j:langchain4j-anthropic-spring-boot-starter:${langchain4jSpringVersion}")
 
     // Plugins
     implementation("com.ritense.valtimo:smartdocuments")

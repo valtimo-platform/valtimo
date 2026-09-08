@@ -271,6 +271,10 @@ valtimo:
     import:
         whitelistedPaths: "VALTIMO_.*"
     includeDocumentContentInResponse: true
+    assistant:
+        enabled: true
+        session-ttl: P7D
+        max-messages-per-session: 50
 
 
     virusscan:
@@ -317,3 +321,11 @@ operaton:
         alert-log:
             enabled: true
             message-template: "OPERATON_INCIDENT_FAILED_JOB: processInstanceId={processInstanceId} incidentId={incidentId}"
+
+# LangChain4j LLM configuration
+langchain4j:
+    anthropic:
+        chat-model:
+            api-key: ${ANTHROPIC_API_KEY:}
+            model-name: claude-sonnet-4-20250514
+            max-tokens: 4096
