@@ -97,9 +97,6 @@ export class PluginStateService {
   }
 
   selectProcessLink(processLink: ProcessLink): void {
-    // The previous link's plugin, configuration and action must not survive into this one. A link
-    // whose configuration has since been deleted resolves to nothing, and without clearing first
-    // the plugin that was on screen before would stay there as though it were this link's own
     this.clearPluginSelection();
 
     this._selectedProcessLink$.next(processLink);
