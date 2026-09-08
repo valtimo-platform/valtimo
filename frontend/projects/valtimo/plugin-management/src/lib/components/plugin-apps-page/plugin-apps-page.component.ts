@@ -558,6 +558,9 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   public submitConnectionUpdate(patch: ExternalPluginHostConnectionUpdateRequest): void {
     const host = this.hostToEditConnection$.value;
     if (!host) return;
+    // Cleared first — the modal drops its copy on every keystroke, so an identical message twice
+    // would not change the binding and would never re-render.
+    this.editConnectionErrorMessage$.next(null);
     this.editConnectionSubmitting$.next(true);
     this._externalPluginService.updateHostConnection(host.id, patch).subscribe({
       next: () => {

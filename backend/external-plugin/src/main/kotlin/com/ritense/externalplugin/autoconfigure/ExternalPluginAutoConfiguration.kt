@@ -180,6 +180,9 @@ class ExternalPluginAutoConfiguration {
         encryptionService: EncryptionService,
         hostClient: ExternalPluginHostClient,
         hostUsageResolver: ExternalPluginHostUsageResolver,
+        @Value("\${valtimo.external-plugin.allowed-host-origins:}") allowedHostOrigins: List<String>,
+        @Value("\${valtimo.external-plugin.allow-plaintext-host-transport:false}")
+        allowPlaintextHostTransport: Boolean,
     ) = ExternalPluginHostService(
         hostRepository,
         definitionRepository,
@@ -191,6 +194,8 @@ class ExternalPluginAutoConfiguration {
         encryptionService,
         hostClient,
         hostUsageResolver,
+        allowedHostOrigins.filter { it.isNotBlank() },
+        allowPlaintextHostTransport,
     )
 
     @Bean

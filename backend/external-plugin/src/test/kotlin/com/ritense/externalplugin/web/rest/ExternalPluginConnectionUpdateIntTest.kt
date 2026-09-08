@@ -202,14 +202,23 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
     fun `validation failures answer 400 with the operator-facing detail and leave the row alone`() {
         val before = hostRepository.findById(hostId).orElseThrow().baseUrl
 
-        // Plaintext remote base URL while a broker is configured.
+        // Plaintext remote base URL — refused whether or not a broker is configured.
         mockMvc.perform(
             patch("$BASE/host/$hostId/connection")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"baseUrl": "http://remote-host:8090"}""")
         )
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("unencrypted transport")))
+            .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("reachable over HTTPS")))
+
+        // Base URL that java.net.URI cannot parse as an http(s) address.
+        mockMvc.perform(
+            patch("$BASE/host/$hostId/connection")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"baseUrl": "moved.example.com"}""")
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("base URL")))
 
         // A broker URL echoing the response's redaction marker.
         mockMvc.perform(

@@ -62,22 +62,32 @@ class HostResponseRedactionTest {
     }
 
     @Test
-    fun `only rewrites the amqp schemes it knows`() {
-        // A non-AMQP URL is not a broker URL; leaving it alone keeps the rewrite narrowly scoped.
+    fun `redacts regardless of scheme and case`() {
+        // Scheme-agnostic on purpose: a scheme-anchored pattern is exactly what would let an
+        // AMQP:// or amqp+ssl:// value carry a password into a response.
+        assertThat(HostResponse.redactAmqpUserInfo("AMQP://user:pw@broker:5672"))
+            .isEqualTo("AMQP://***@broker:5672")
+        assertThat(HostResponse.redactAmqpUserInfo("amqp+ssl://user:pw@broker:5672"))
+            .isEqualTo("amqp+ssl://***@broker:5672")
         assertThat(HostResponse.redactAmqpUserInfo("https://user:pw@example.com"))
-            .isEqualTo("https://user:pw@example.com")
+            .isEqualTo("https://***@example.com")
     }
 
-    /**
-     * KNOWN LIMITATION, pinned deliberately: the userinfo pattern stops at the first `@`, so a
-     * password containing `@` leaves its tail visible. RabbitMQ requires such a password to be
-     * percent-encoded in a URL (`%40`), which redacts cleanly — see the case below. If the pattern is
-     * ever widened to be greedy, this expectation should flip rather than silently change behaviour.
-     */
     @Test
-    fun `an unencoded at-sign in the password leaves a fragment visible`() {
+    fun `redacts an unencoded at-sign in the password completely`() {
         assertThat(HostResponse.redactAmqpUserInfo("amqp://user:pw@word@broker:5672"))
-            .isEqualTo("amqp://***@word@broker:5672")
+            .isEqualTo("amqp://***@broker:5672")
+    }
+
+    @Test
+    fun `does not mistake an at-sign in the vhost for a credential separator`() {
+        assertThat(HostResponse.redactAmqpUserInfo("amqp://broker:5672/vhost@x"))
+            .isEqualTo("amqp://broker:5672/vhost@x")
+    }
+
+    @Test
+    fun `redacts wholesale when there is no parseable authority`() {
+        assertThat(HostResponse.redactAmqpUserInfo("user:pw@broker:5672")).isEqualTo("***")
     }
 
     @Test

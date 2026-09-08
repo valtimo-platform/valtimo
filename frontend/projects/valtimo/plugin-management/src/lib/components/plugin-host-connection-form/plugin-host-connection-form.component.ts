@@ -246,14 +246,15 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
     if (this.form.invalid) return null;
     const controls = this.form.controls;
     const patch: ExternalPluginHostConnectionUpdateRequest = {};
-    if (this.isEdited('name')) patch.name = controls.name.value ?? '';
-    if (this.isEdited('baseUrl')) patch.baseUrl = controls.baseUrl.value ?? '';
+    if (this.isEdited('name')) patch.name = controls.name.value?.trim() ?? '';
+    // Trimmed to match isEdited. A stray space passes the pattern validator and would be stored.
+    if (this.isEdited('baseUrl')) patch.baseUrl = controls.baseUrl.value?.trim() ?? '';
     // A blank secret is "unchanged" server-side too, but not sending it at all is clearer.
     if (controls.secret.value?.trim()) {
       patch.secret = controls.secret.value;
     }
     if (this.isEdited('gzacCallbackBaseUrl')) {
-      patch.gzacCallbackBaseUrl = controls.gzacCallbackBaseUrl.value ?? '';
+      patch.gzacCallbackBaseUrl = controls.gzacCallbackBaseUrl.value?.trim() ?? '';
     }
     // Blank means clear for the broker fields; the trim keeps a whitespace-only edit a clear too.
     if (this.isEdited('eventBrokerAmqpUrl')) {
