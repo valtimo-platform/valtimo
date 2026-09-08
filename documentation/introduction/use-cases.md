@@ -64,7 +64,7 @@ You set up and maintain Valtimo for your organisation. You configure cases, mana
 The world of process automation can be overwhelming at first, but there's a community ready to help.
 
 {% hint style="info" %}
-Join the conversation at [valtimo.slack.com](http://valtimo.slack.com/) to ask questions and connect with other users.
+Join the conversation at [valtimo.slack.com](https://valtimo.slack.com/) to ask questions and connect with other users.
 {% endhint %}
 
 ### Video learning
