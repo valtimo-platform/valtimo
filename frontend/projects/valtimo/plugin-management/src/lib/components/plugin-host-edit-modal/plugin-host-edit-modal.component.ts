@@ -80,7 +80,23 @@ export class PluginHostEditModalComponent implements OnDestroy {
       }) ?? null;
   }
 
-  @Input() public open = false;
+  /**
+   * A successful save closes via the parent, bypassing [onClose] — so the changed-flags are reset
+   * here too. Else the secret warning carries over to the next host opened.
+   */
+  @Input()
+  public set open(value: boolean) {
+    if (this._open && !value) {
+      this.$secretChanged.set(false);
+      this.$brokerChanged.set(false);
+    }
+    this._open = value;
+  }
+
+  public get open(): boolean {
+    return this._open;
+  }
+
   @Input() public host: ExternalPluginHost | null = null;
   /** Wording only: 'host' on the hosts page, 'app' on the apps page. */
   @Input() public variant: 'host' | 'app' = 'host';
@@ -104,6 +120,7 @@ export class PluginHostEditModalComponent implements OnDestroy {
   public readonly $brokerChanged = signal<boolean>(false);
 
   private readonly _errorMessage$ = new BehaviorSubject<string | null>(null);
+  private _open = false;
   private _connectionForm: PluginHostConnectionFormComponent | undefined;
   private _formEditSubscription: Subscription | null = null;
 

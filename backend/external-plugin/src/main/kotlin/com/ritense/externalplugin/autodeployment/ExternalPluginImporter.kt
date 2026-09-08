@@ -147,8 +147,11 @@ class ExternalPluginImporter(
 
     private fun immutableDrift(integration: IntegrationDeploymentDto, host: ExternalPluginHost): List<String> {
         val drift = mutableListOf<String>()
-        if (integration.baseUrl.trimEnd('/') != host.baseUrl) drift += "baseUrl"
-        if (integration.gzacCallbackBaseUrl.trimEnd('/') != host.gzacCallbackBaseUrl) drift += "gzacCallbackBaseUrl"
+        // Trimmed the same way register() normalises, else a padded descriptor drifts forever.
+        if (integration.baseUrl.trim().trimEnd('/') != host.baseUrl) drift += "baseUrl"
+        if (integration.gzacCallbackBaseUrl.trim().trimEnd('/') != host.gzacCallbackBaseUrl) {
+            drift += "gzacCallbackBaseUrl"
+        }
         if (integration.kind != host.kind) drift += "kind"
         if (integration.eventBrokerAmqpUrl?.takeIf { it.isNotBlank() } != host.eventBrokerAmqpUrl) {
             drift += "eventBrokerAmqpUrl"

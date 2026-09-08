@@ -78,14 +78,13 @@ data class HostResponse(
         )
 
         /**
-         * Replaces the userinfo (`user:password@`) of an AMQP(S) URL with `***@` so credentials are
+         * Replaces the userinfo (`user:password@`) of a broker URL with `***@` so credentials are
          * never echoed to the browser. URLs without userinfo pass through unchanged; the full URL
-         * stays server-side on the host row.
+         * stays server-side on the host row. Delegates so the redaction lives next to the
+         * write-side scheme validation that is what makes it sufficient.
          */
-        fun redactAmqpUserInfo(url: String?): String? {
-            if (url.isNullOrBlank()) return url
-            return url.replace(Regex("^(amqps?://)[^@/]+@"), "$1$AMQP_USERINFO_REDACTION@")
-        }
+        fun redactAmqpUserInfo(url: String?): String? =
+            ExternalPluginHostService.redactAmqpUserInfo(url)
     }
 }
 
