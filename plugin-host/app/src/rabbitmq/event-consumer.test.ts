@@ -348,6 +348,28 @@ describe("EventConsumerManager", () => {
       expect(liveChannel.close).toHaveBeenCalled();
     });
 
+    it("closes the old broker's consumer and connects to the new one when the URL is repointed", async () => {
+      // The repoint case: same exchange, same mode — only the AMQP URL moved (GZAC re-pushes the
+      // configuration after a host connection edit). The brokerKey includes the URL, so the old
+      // consumer is undesired and torn down while a fresh connection opens against the new broker.
+      const amqplib = await import("amqplib");
+      const configs = [config({ eventBroker: BROKER_1 })];
+      build(configs);
+      await manager.sync();
+      const oldChannel = h.channels[0];
+      expect(h.consumers).toHaveLength(1);
+
+      configs[0] = config({ eventBroker: { ...BROKER_1, amqpUrl: "amqp://broker-moved" } });
+      await manager.sync();
+
+      expect(amqplib.connect).toHaveBeenCalledWith("amqp://broker-moved");
+      expect(oldChannel.close).toHaveBeenCalled();
+      // Same exchange/host/mode → the queue name is unchanged; only the broker it lives on moved.
+      expect(h.consumers).toHaveLength(2);
+      expect(h.consumers[1].queue).toBe("valtimo-external-plugins.valtimo-events.host-1.live");
+      expect(h.consumers[1].channel).not.toBe(oldChannel);
+    });
+
     it("declares a differently named queue when only the TTL changes", async () => {
       const durable = (queueTtlMs: number) => ({
         ...BROKER_1,

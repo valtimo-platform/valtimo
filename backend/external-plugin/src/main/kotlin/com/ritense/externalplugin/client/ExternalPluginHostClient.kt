@@ -36,6 +36,7 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestTemplate
 import java.net.URI
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 
 @Component
 @SkipComponentScan
@@ -243,7 +244,26 @@ class ExternalPluginHostClient(
             contentType = MediaType.APPLICATION_JSON
         }
         val request = RequestEntity(bodyBytes, headers, HttpMethod.PUT, uri)
-        restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
+        val announced = restTemplate.exchange(request, JsonNode::class.java).statusCode.is2xxSuccessful
+        if (announced) announcementUnsupportedWarnedFor.remove(baseUrl)
+        announced
+    } catch (e: HttpClientErrorException.NotFound) {
+        // Optional for minimal apps, so not an error. But it is the only path delivering the
+        // frame-ancestors allowlist: silent 404s leave every plugin screen blank. Warn once per
+        // address — every poll re-announces, so warning each time would repeat forever.
+        if (announcementUnsupportedWarnedFor.add(baseUrl)) {
+            logger.warn {
+                "Host at $baseUrl does not implement GZAC instance announcements (404); " +
+                    "frame-ancestors for its plugin screens must be configured on the host " +
+                    "itself. If the host does implement the route, check for a proxy or path " +
+                    "prefix swallowing PUT /api/host/gzac-instances. Logged once per address."
+            }
+        } else {
+            logger.debug {
+                "Host at $baseUrl still does not implement GZAC instance announcements (404)"
+            }
+        }
+        false
     } catch (e: Exception) {
         logger.warn(e) { "Failed to register GZAC instance '$gzacBaseUrl' with plugin host at $baseUrl" }
         false
@@ -435,5 +455,8 @@ class ExternalPluginHostClient(
 
         private val EMPTY_BODY = ByteArray(0)
         private val logger = KotlinLogging.logger {}
+
+        /** Addresses already warned about for a missing announcement route. Cleared on success. */
+        private val announcementUnsupportedWarnedFor = ConcurrentHashMap.newKeySet<String>()
     }
 }

@@ -129,9 +129,9 @@ class ExternalPluginImporter(
         immutableDrift(integration, host).forEach { field ->
             logger.warn {
                 "External plugin integration '${integration.name}' (${integration.id}) declares a " +
-                    "different $field than the registered host. This field is immutable after " +
-                    "registration and was left unchanged; delete and re-register the integration to " +
-                    "change it."
+                    "different $field than the registered host. Descriptors never change connection " +
+                    "fields on an existing host; it was left unchanged. Edit the integration's " +
+                    "connection in the admin UI to change it."
             }
         }
 
@@ -147,8 +147,11 @@ class ExternalPluginImporter(
 
     private fun immutableDrift(integration: IntegrationDeploymentDto, host: ExternalPluginHost): List<String> {
         val drift = mutableListOf<String>()
-        if (integration.baseUrl.trimEnd('/') != host.baseUrl) drift += "baseUrl"
-        if (integration.gzacCallbackBaseUrl.trimEnd('/') != host.gzacCallbackBaseUrl) drift += "gzacCallbackBaseUrl"
+        // Trimmed the same way register() normalises, else a padded descriptor drifts forever.
+        if (integration.baseUrl.trim().trimEnd('/') != host.baseUrl) drift += "baseUrl"
+        if (integration.gzacCallbackBaseUrl.trim().trimEnd('/') != host.gzacCallbackBaseUrl) {
+            drift += "gzacCallbackBaseUrl"
+        }
         if (integration.kind != host.kind) drift += "kind"
         if (integration.eventBrokerAmqpUrl?.takeIf { it.isNotBlank() } != host.eventBrokerAmqpUrl) {
             drift += "eventBrokerAmqpUrl"

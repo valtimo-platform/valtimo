@@ -35,8 +35,8 @@ const ORIGIN_PATTERN = /^https?:\/\/[^/\s]+$/;
 
 /**
  * Runtime edit path for the browser origins allowed to embed a host's plugin screens — the same
- * narrowly-scoped shape as the event-queue modal, because everything else about a registered host
- * (base URL, secret, broker) stays immutable.
+ * narrowly-scoped shape as the event-queue modal. The connection fields (base URL, secret, broker)
+ * have their own edit modal (#618).
  *
  * Saving an empty list is meaningful, not a mistake: it means no page may frame this host's plugins.
  */

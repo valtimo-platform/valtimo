@@ -1,4 +1,4 @@
-.plugin-host-modal__content {
+.plugin-host-edit-modal__content {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -10,7 +10,7 @@
   }
 }
 
-.plugin-host-modal__spinner {
+.plugin-host-edit-modal__spinner {
   margin-right: auto;
   padding-left: 16px;
   align-self: center;

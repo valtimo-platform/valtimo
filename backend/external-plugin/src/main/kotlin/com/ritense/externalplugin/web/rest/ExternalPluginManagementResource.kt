@@ -45,6 +45,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
+import com.ritense.externalplugin.web.rest.dto.HostConnectionUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
@@ -160,7 +161,16 @@ class ExternalPluginManagementResource(
         @RequestBody request: HostFrontendOriginsUpdateRequest,
     ): ResponseEntity<HostResponse> {
         val host = hostService.updateFrontendOrigins(hostId, request.frontendOrigins)
-        runCatching { pushFrontendOrigins(host) }
+        // Stored either way; the poll re-pushes. But until it lands the host still serves the old
+        // allowlist — for a revoked origin, "revoked in GZAC only". The 200 cannot say that.
+        val pushed = runCatching { pushFrontendOrigins(host) }.getOrDefault(false)
+        if (!pushed) {
+            logger.warn {
+                "Stored frontend origins for host ${host.id} (${host.baseUrl}) but could not " +
+                    "announce them; the host keeps its previous frame-ancestors allowlist until a " +
+                    "later discovery poll succeeds"
+            }
+        }
         return ResponseEntity.ok(HostResponse.from(host))
     }
 
@@ -169,9 +179,9 @@ class ExternalPluginManagementResource(
      * as `frame-ancestors`. Uses the same instance key as the configuration push
      * (`gzacCallbackBaseUrl`, falling back to GZAC's own port for legacy rows).
      */
-    private fun pushFrontendOrigins(host: ExternalPluginHost) {
+    private fun pushFrontendOrigins(host: ExternalPluginHost): Boolean {
         val serverPort = environment.getProperty("server.port", Int::class.java, 8080)
-        hostClient.registerGzacInstance(
+        return hostClient.registerGzacInstance(
             host.baseUrl,
             hostService.decryptedSecret(host),
             host.gzacCallbackBaseUrl ?: "http://localhost:$serverPort",
@@ -180,8 +190,8 @@ class ExternalPluginManagementResource(
     }
 
     /**
-     * Narrowly-scoped update for the per-host event-queue declaration. baseUrl/secret/broker stay
-     * immutable; only mode and TTL are mutable. Triggers an immediate re-discovery so the host's
+     * Narrowly-scoped update for the per-host event-queue declaration; connection fields are
+     * edited through [updateHostConnection]. Triggers an immediate re-discovery so the host's
      * `EventConsumerManager` swaps its queue without waiting for the next polling tick — best-effort
      * because the periodic discovery cycle will reconcile anyway.
      */
@@ -200,7 +210,44 @@ class ExternalPluginManagementResource(
             request.eventQueueMode,
             request.eventQueueTtlMs,
         )
-        runCatching { discoveryService.discoverAll() }
+        runCatching { discoveryService.discoverHost(hostId) }
+        return ResponseEntity.ok(HostResponse.from(host))
+    }
+
+    /**
+     * Updates a host's connection fields — repoint a moved host or broker, or rotate the admin
+     * secret, without recreating the host and orphaning its configurations (#618). Absent fields
+     * stay unchanged; the service re-runs every registration-time check against the effective
+     * result, so the confidential-transport invariant survives any combination of edits.
+     *
+     * Finishes with a best-effort single-host re-discovery: it announces the (possibly new)
+     * callback URL, re-pushes every configuration with the new broker fields and a fresh service
+     * token — which is what makes the host's event consumers rebind — and records truthful
+     * CONNECTED/UNREACHABLE status against the new address. The periodic poll reconciles anyway
+     * if this attempt fails. An address or credential change revokes every outstanding token
+     * before that re-push, and a repoint purges the configurations from the old address, so
+     * nothing usable stays behind.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update a host's connection settings",
+        nl = "Verbindingsinstellingen van host bijwerken",
+    )
+    @PatchMapping("/host/{hostId}/connection")
+    fun updateHostConnection(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostConnectionUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val host = hostService.updateConnection(
+            hostId,
+            name = request.name,
+            baseUrl = request.baseUrl,
+            secret = request.secret,
+            gzacCallbackBaseUrl = request.gzacCallbackBaseUrl,
+            eventBrokerAmqpUrl = request.eventBrokerAmqpUrl,
+            eventBrokerExchange = request.eventBrokerExchange,
+        )
+        runCatching { discoveryService.discoverHost(hostId) }
         return ResponseEntity.ok(HostResponse.from(host))
     }
 

@@ -81,6 +81,33 @@
   (submitEvent)="submitEventQueueUpdate($event)"
 ></valtimo-plugin-host-event-queue-modal>
 
+<valtimo-plugin-host-edit-modal
+  [errorMessage]="editConnectionErrorMessage$ | async"
+  [host]="hostToEditConnection$ | async"
+  [open]="editConnectionModalOpen$ | async"
+  [submitting]="editConnectionSubmitting$ | async"
+  [variant]="'app'"
+  (closeEvent)="closeEditConnectionModal()"
+  (submitEvent)="submitConnectionUpdate($event)"
+></valtimo-plugin-host-edit-modal>
+
+<valtimo-plugin-host-frontend-origins-modal
+  [host]="hostToEditFrontendOrigins$ | async"
+  [open]="frontendOriginsModalOpen$ | async"
+  (closeEvent)="closeFrontendOriginsModal()"
+  (submitEvent)="submitFrontendOriginsUpdate($event)"
+></valtimo-plugin-host-frontend-origins-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="reloadModalOpen$"
+  [titleTranslationKey]="'pluginManagement.reloadModal.title'"
+  [contentTranslationKey]="'pluginManagement.reloadModal.description'"
+  [confirmButtonTextTranslationKey]="'pluginManagement.reloadModal.reload'"
+  [cancelButtonTextTranslationKey]="'pluginManagement.reloadModal.later'"
+  (confirmEvent)="confirmReload()"
+  (cancelEvent)="cancelReload()"
+></valtimo-confirmation-modal>
+
 <valtimo-plugin-log-modal
   [open]="$logModalOpen()"
   [configurationId]="$logConfigurationId()"

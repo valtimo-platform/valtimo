@@ -92,6 +92,10 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
     @WithMockUser(authorities = [ADMIN])
     fun `an admin reaches the per-resource management endpoints`() {
         assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/host/$someId/usages")
+        // The two host PATCHes answer 404 for a random id, which is exactly the point: reachable,
+        // not silently 403'd by a missing matcher (frontend-origins had that bug).
+        assertReachable(HttpMethod.PATCH, "/api/management/v1/external-plugin/host/$someId/connection")
+        assertReachable(HttpMethod.PATCH, "/api/management/v1/external-plugin/host/$someId/frontend-origins")
         assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/definition/$someId")
         assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/configuration/$someId")
         assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/configuration/$someId/usages")
@@ -122,6 +126,8 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
         assertForbidden(HttpMethod.GET, "/api/management/v1/external-plugin/host/$someId/usages")
         assertForbidden(HttpMethod.DELETE, "/api/management/v1/external-plugin/host/$someId")
         assertForbidden(HttpMethod.PATCH, "/api/management/v1/external-plugin/host/$someId/event-queue")
+        assertForbidden(HttpMethod.PATCH, "/api/management/v1/external-plugin/host/$someId/frontend-origins")
+        assertForbidden(HttpMethod.PATCH, "/api/management/v1/external-plugin/host/$someId/connection")
         assertForbidden(HttpMethod.GET, "/api/management/v1/external-plugin/definition/$someId")
         assertForbidden(HttpMethod.POST, "/api/management/v1/external-plugin/definition/$someId/accept-content")
         assertForbidden(HttpMethod.GET, "/api/management/v1/external-plugin/configuration/$someId")
