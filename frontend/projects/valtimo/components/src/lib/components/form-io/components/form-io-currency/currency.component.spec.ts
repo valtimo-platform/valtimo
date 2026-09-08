@@ -79,12 +79,12 @@ describe('FormIoCurrencyComponent', () => {
       expect(renderedValue()).toBe('€ 1.234,56');
     });
 
-    it('should not write the amount back to the model as a smaller number', () => {
+    it('should not write the rendered amount back to the model', () => {
       const values = emittedValues();
 
       applyInputs(100);
 
-      expect(values.pop()).toBe(100);
+      expect(values).toEqual([]);
     });
 
     it('should render an empty input when there is no value', () => {
@@ -99,6 +99,41 @@ describe('FormIoCurrencyComponent', () => {
       fixture.componentRef.setInput('value', 100);
 
       expect(renderedValue()).toBe('€ 100,00');
+    });
+  });
+
+  // Angular elements applies the inputs it cached while the element was unconnected and only then
+  // runs the first change detection, so ngOnChanges lands before ngAfterViewInit created the mask.
+  describe('a default value that arrives before the view exists', () => {
+    let earlyFixture: ComponentFixture<FormIoCurrencyComponent>;
+
+    beforeEach(() => {
+      earlyFixture = TestBed.createComponent(FormIoCurrencyComponent);
+      earlyFixture.componentRef.setInput('currencyLocale', 'nl-NL');
+      earlyFixture.componentRef.setInput('currencyCurrency', 'EUR');
+      earlyFixture.componentRef.setInput('allowEmptyValue', false);
+      earlyFixture.componentRef.setInput('value', 100);
+    });
+
+    afterEach(() => {
+      earlyFixture.componentInstance.ngOnDestroy();
+    });
+
+    it('should render the amount in full', () => {
+      earlyFixture.detectChanges();
+
+      expect(
+        (earlyFixture.componentInstance.currencyForm.value.currencyValue ?? '').replace(/\s/g, ' ')
+      ).toBe('€ 100,00');
+    });
+
+    it('should not write anything back to the model', () => {
+      const values: Array<number> = [];
+      earlyFixture.componentInstance.valueChange.subscribe(value => values.push(value));
+
+      earlyFixture.detectChanges();
+
+      expect(values).toEqual([]);
     });
   });
 });

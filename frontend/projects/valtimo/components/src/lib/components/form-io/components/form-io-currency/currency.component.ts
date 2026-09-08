@@ -57,18 +57,23 @@ export class FormIoCurrencyComponent
 
   @Input() public set value(value: number) {
     this._value = value;
-    this.currencyForm.setValue({
-      currencyValue: Currency.masking(value, this.maskOpts),
-    });
+    // Rendering only — emitting here would write the rendered value back over the one form.io
+    // is about to hand a freshly redrawn component.
+    this.currencyForm.setValue(
+      {
+        currencyValue: Currency.masking(value, this.maskOpts),
+      },
+      {emitEvent: false}
+    );
   }
 
   @Output() public readonly valueChange = new EventEmitter<number>();
 
   @Input() public set disabled(value: boolean) {
     if (value) {
-      this.currencyForm.disable();
+      this.currencyForm.disable({emitEvent: false});
     } else {
-      this.currencyForm.enable();
+      this.currencyForm.enable({emitEvent: false});
     }
   }
 
@@ -96,6 +101,11 @@ export class FormIoCurrencyComponent
   public ngOnInit(): void {
     this._subscriptions.add(
       this.currencyForm.valueChanges.subscribe(() => {
+        // No mask yet: the value is being rendered, not typed, so there is nothing to write back.
+        if (!this._currencyInstance) {
+          return;
+        }
+
         const unmasked = this._currencyInstance.getUnmasked(this.currencyForm.value.currencyValue);
 
         if (unmasked === 0 && this.allowEmptyValue) {
@@ -117,26 +127,43 @@ export class FormIoCurrencyComponent
     this._currencyInstance = new Currency(this.currencyElement.nativeElement, {
       maskOpts: this.maskOpts,
     });
+
+    // A value can arrive before the view exists, so its render is redone here with the mask in
+    // place.
+    if (typeof this._value === 'number') {
+      this.renderValue();
+    }
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes.currencyLocale || changes.currencyCurrency || changes.allowEmptyValue) {
-      if (typeof this.currencyLocale === 'string') {
-        this._currencyInstance.opts.maskOpts.locales = this.currencyLocale;
+      // ngOnChanges runs before ngAfterViewInit, which is where the mask is created from the
+      // current inputs, so there is nothing to update yet on the first run.
+      if (this._currencyInstance) {
+        if (typeof this.currencyLocale === 'string') {
+          this._currencyInstance.opts.maskOpts.locales = this.currencyLocale;
+        }
+
+        if (typeof this.currencyCurrency === 'string') {
+          this._currencyInstance.opts.maskOpts.options.currency = this.currencyCurrency;
+        }
+
+        if (typeof this.allowEmptyValue === 'boolean') {
+          this._currencyInstance.opts.maskOpts.empty = this.allowEmptyValue;
+        }
       }
 
-      if (typeof this.currencyCurrency === 'string') {
-        this._currencyInstance.opts.maskOpts.options.currency = this.currencyCurrency;
-      }
+      this.renderValue();
+    }
+  }
 
-      if (typeof this.allowEmptyValue === 'boolean') {
-        this._currencyInstance.opts.maskOpts.empty = this.allowEmptyValue;
-      }
-
-      this.currencyForm.setValue({
+  private renderValue(): void {
+    this.currencyForm.setValue(
+      {
         currencyValue:
           typeof this._value === 'number' ? Currency.masking(this._value, this.maskOpts) : '',
-      });
-    }
+      },
+      {emitEvent: false}
+    );
   }
 }
