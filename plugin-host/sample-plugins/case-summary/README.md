@@ -21,7 +21,7 @@ Registers a single `case-summary` action that:
   may be `null` — which the mapping writes through to the target. This demonstrates the
   action-result write-back feature end-to-end; see "Manual Test Path" below.
 
-This is the second sample plugin alongside `say-hello`. Where `say-hello` only uses static configuration and BPMN action properties, `case-summary` exercises the end-to-end host-function callback path.
+Where a minimal plugin only uses static configuration and BPMN action properties, `case-summary` exercises the end-to-end host-function callback path.
 
 ## Project Structure
 

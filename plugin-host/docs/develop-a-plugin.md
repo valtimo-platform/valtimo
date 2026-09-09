@@ -15,7 +15,8 @@ tabs, task forms, widgets, pages) that render inside GZAC as sandboxed iframes.
 
 Everything a plugin may do is declared in its `manifest.json` and granted per configuration by an
 administrator. Design for that: declare the minimum you need — every entry appears on the
-acceptance screen, and an over-broad request is a reason not to install your plugin.
+**Permissions** step the administrator reviews, and an over-broad request is a reason not to
+install your plugin.
 
 ## Prerequisites
 
@@ -46,7 +47,8 @@ npx --package @valtimo/plugin-sdk valtimo-plugin-init my-plugin --yes \
 (Contributing to Valtimo itself? The [plugin-host README](../README.md) covers scaffolding
 against the in-repo SDK.)
 
-The wizard asks for the plugin identity (id, version, per-locale name/description, provider),
+The wizard asks for the plugin identity (id, version, provider), the locales, a name and
+description for the primary locale (other locale buckets start as translate-me placeholders),
 whether to add an event handler, and which of the six frontend bundle types to generate
 (`--bundles all` / `none` / a comma list; default is `config` alone):
 
@@ -94,7 +96,7 @@ broken down section by section below:
   },
   "compatibility": { "minGzacVersion": "13.0.0" },
   "permissions": {
-    "capabilities": ["gzac_api", "log"],
+    "capabilities": ["gzac_api", "http_request", "log"],
     "endpoints": [{ "method": "GET", "pattern": "/api/v1/document/*" }],
     "egress": ["api.example.com"]
   },
@@ -122,7 +124,7 @@ broken down section by section below:
 |---|---|
 | `key` | Identifies the action; the URL segment GZAC invokes (`…/actions/{key}`) and the value handed to your `action(key, …)` registration. |
 | `title` / `description` | Shown in the process-link "choose action" step. |
-| `activityTypes` | Where the action may be linked (e.g. `SERVICE_TASK_START`). GZAC only offers the action on matching activities — an action can never be bound where it cannot run. |
+| `activityTypes` | Where the action may be linked (e.g. `SERVICE_TASK_START`). GZAC's modeler only offers the action on matching activities. |
 | `properties` | The action's input fields: `{key, type, required?}`. The admin fills them in the process link (a `process-link-action` bundle can render a richer form); values arrive resolved in `ActionInput.properties`. |
 | `outputs` | Keys your `result` object exposes. Declaring them gives the admin a guided output-mapping step (dropdown of these keys → `doc:`/`pv:`/`case:` targets). **Contract:** a completed action must return a `result` containing *every* declared key — missing keys fail the invocation; `null` values are fine (the runtime serialises `undefined` as `null`). |
 
@@ -131,12 +133,12 @@ broken down section by section below:
 | Field | Meaning |
 |---|---|
 | `type` | One of the six types above. |
-| `path` | Bundle entry point under the package (e.g. `/bundles/case-tab.html`); the host serves it at `GET /plugins/{id}/{version}` + path. |
+| `path` | Bundle entry point; must start with `/bundles/`, which maps onto the package's `frontend/` directory (`/bundles/case-tab.html` → `frontend/case-tab.html`). The host serves it at `GET /plugins/{id}/{version}/bundles/…`. |
 | `key` | Distinguishes multiple bundles of one type (e.g. three task forms). Optional for a plugin's sole bundle of a type. |
 | `title` | Label in admin pickers. **For `page` bundles it is a translation key**, resolved against your locale buckets to build the menu label; every other type renders it literally. |
 | `icon` | `page` bundles only — the menu icon class (e.g. `icon mdi mdi-view-dashboard`). |
 | `submitHandler` | `task-form` bundles only — `true` invokes your `submit(key, …)` hook during submission (Level 1); the hook key equals the bundle's `key`. |
-| `activityTypes` | `task-form` bundles: where the form may be linked (typically `USER_TASK_CREATE`). |
+| `activityTypes` | `task-form` bundles: declared intent (typically `USER_TASK_CREATE`) — **not yet enforced**; the modeler currently offers every task-form bundle on user tasks. |
 
 ### Manifest rules
 
@@ -161,8 +163,8 @@ your machine, not the administrator's. Write it to these rules:
 `configurationSchema` is a JSON Schema; the admin's values are validated against it and arrive in
 every handler as `input.configuration`. Two `x-` keywords change how GZAC treats a property:
 
-- `"x-secret": true` — stored encrypted, masked in every API response, never round-tripped to
-  the browser on edit.
+- `"x-secret": true` — stored encrypted, omitted from every API response, never round-tripped
+  to the browser on edit.
 - `"x-egress-target": true` (on a `"format": "uri"` string) — the value's origin joins the
   plugin's outbound allowlist. Use it for per-environment endpoints only the admin knows; fixed
   endpoints belong in `permissions.egress`.
@@ -178,7 +180,7 @@ you only write handlers. Two execution rules first:
   you never need it.
 - **Handlers must be idempotent** — event delivery is at-least-once, and calls for one
   configuration can run concurrently. A thrown exception becomes a structured error envelope
-  (for actions: a BPMN error in the process), never a host crash.
+  (for actions: a failed invocation surfaced as a process incident), never a host crash.
 
 ### `action(key, handler)` — process service tasks
 
@@ -186,7 +188,8 @@ An action is the plugin's unit of process work: an administrator links it to a B
 (within the manifest entry's `activityTypes`), and GZAC invokes it when the process reaches that
 activity. Your handler receives an `ActionInput` and returns an `ActionOutput` — `variables` land
 in the process, `result` feeds the link's output mappings, and a thrown error or `status:
-"error"` raises a BPMN error the process can catch:
+"error"` fails the invocation: GZAC raises a process **incident** carrying your
+`errorCode`/`errorMessage` (deliberately not a BPMN error — boundary events cannot catch it):
 
 ```ts
 action("my-action", (input: ActionInput) => {
@@ -201,7 +204,7 @@ interface ActionInput {
   configurationId: string;
   configuration: Record<string, unknown>;   // this configuration's properties
   processInstanceId: string;
-  documentId: string;                        // the case document (business key)
+  documentId: string;                        // the case document (business key); "" without one
   activityId: string;
   properties: Record<string, unknown>;       // the process link's action inputs, resolved
 }
@@ -209,7 +212,7 @@ interface ActionOutput {
   status: "completed" | "error";
   variables?: Record<string, unknown>;       // applied as process variables
   result?: unknown;                          // fed to the link's output mappings (see outputs)
-  errorCode?: string;                        // BPMN error code on status: "error"
+  errorCode?: string;                        // surfaced on the process incident
   errorMessage?: string;
 }
 ```
@@ -232,11 +235,11 @@ interface EventOutput { status: "completed" | "ignored" | "error"; errorCode?: s
 
 Multiple `onEvent` registrations all run per event; the last handler that returns a status
 determines what is reported. Return `"ignored"` when a handler decides the event is not for it,
-and nothing at all counts as `"completed"`. The status is purely diagnostic — it ends up in the
-host's logs, and no status triggers a redelivery — so use `"error"` to make a failure visible to
-the administrator, not to ask for a retry. Event types are the platform's CloudEvent `type`
-values (e.g. `com.ritense.valtimo.document.created`, `…task.completed`); anything GZAC's outbox
-publishes can be subscribed to.
+and nothing at all counts as `"completed"`. The status is purely diagnostic — no status triggers
+a redelivery, and it only reaches the host's own process logs; for a failure the administrator
+should see in the Logs modal, call `log.error(…)` (needs the `log` capability). Event types are
+the platform's CloudEvent `type` values (e.g. `com.ritense.valtimo.document.created`,
+`…task.completed`); anything GZAC's outbox publishes can be subscribed to.
 
 ### `request(path, handler)` — serving your own frontend
 
@@ -296,12 +299,12 @@ interface SubmitOutput {
 
 | API | Capability | Returns | Notes |
 |---|---|---|---|
-| `gzacApi.{get,post,put,delete}(path, body?, headers?)` | `gzac_api` | `GzacApiResponse = { status, headers, body }` | Calls GZAC as the **service token** — reach is exactly the granted endpoint list (an ungranted path yields a 403-shaped response). Your own `Authorization` header is stripped. |
-| `gzacApi.asUser.*` | `gzac_api` | same | As the **logged-in user** (available in `request()`/`submit()` flows where a user token exists) — bounded by that user's permissions ∩ the endpoint list. |
-| `httpRequest.{get,post,put,delete}(url, …)` | `http_request` | `HttpRequestResponse = { status, headers, body }` | Only declared egress origins; HTTPS by default; redirects re-validated; every call logged (redacted) for the admin. Timeout 30 s, max 60 s. |
+| `gzacApi.get/delete(path, headers?)`, `gzacApi.post/put(path, body?, headers?)` | `gzac_api` | `GzacApiResponse = { status, headers, body }` | Calls GZAC as the **service token** — reach is exactly the granted endpoint list (an ungranted path yields a 403-shaped response). Your own `Authorization` header is stripped. |
+| `gzacApi.asUser.*` | `gzac_api` | same | As the **logged-in user** — only in `request()` invocations, the one flow that carries a user token; anywhere else it returns a 401-shaped response. Bounded by that user's permissions ∩ the endpoint list. |
+| `httpRequest.{get,post,put,delete}(url, …)` | `http_request` | `HttpRequestResponse = { status, headers, body }` | Only declared egress origins; HTTPS by default; redirects re-validated; every call logged (redacted) for the admin. Timeout 30 s. |
 | `kv.get(key)` | `kv` | `KvGetResult = { found, value }` | Per-configuration store; `found: false` ≠ stored `null`. Keys ≤ 256 chars. Also `kv.set(key, value)`, `kv.delete(key): boolean`, `kv.list(prefix?): string[]`. Entries persist until you delete them. |
 | `log.{debug,info,warn,error}(message, data?)` | `log` | `void` | Structured entries in the admin Logs modal; messages truncated at 4 KB; retained 30 days by default. Fire-and-forget. |
-| `config.get()` | – | the configuration's properties | Same object as `input.configuration`. |
+| `config.getAll()` / `config.get(key)` | – | all properties / one value | Same data as `input.configuration` (`getAll()` returns a copy of the full object). |
 
 A host function invoked without its capability granted returns a structured
 `Capability 'X' not granted for this configuration` error — deterministic, never silent access.
@@ -336,27 +339,26 @@ policy.
 
 | Member | Purpose |
 |---|---|
-| `ready(): Promise<void>` | Resolves when the manifest (translations) is fetched **and** the parent's `init` arrived — mount your UI inside it so the first render uses the right locale. |
+| `ready(): Promise<void>` | Resolves when the manifest (translations) is fetched **and** the parent's `init` arrived (or a 2 s init timeout elapses, so a bundle still renders without a parent) — mount your UI inside it so the first render uses the right locale. |
 | `getContext()` / `onContext(h)` | The surface context (table below). |
 | `getLocale()` / `t(key, fallback?)` | Active UI language and translation lookup from `manifest.translations` (falls back to `en`, then the key). |
 | `getTheme()` / `onThemeChanged(h)` | The hosting UI's Carbon theme, for matching light/dark styling. |
-| `callValtimo(method, path, body?)` | GZAC API call as the logged-in user → `Promise<{status, body}>`. Paths must be GZAC API paths (`/api/…`); the parent rejects anything else. |
+| `callValtimo(method, path, body?, headers?)` | GZAC API call as the logged-in user → `Promise<{status, body}>`. Paths must be GZAC API paths (`/api/…`); the parent rejects anything else. |
 | `getPluginData(path, query?)` / `postPluginData(path, body?)` | Calls your `request()` handlers through the host's `/data` route → `Promise<{status, body}>`. |
 | `submitTask(data)` | Task forms (Levels 0/1): hand the form data to GZAC → `Promise<{ok, errors?, fieldErrors?}>`; on `ok: false` render the errors, the form stays up. |
 | `emit("taskCompleted", {})` | Level 2 only: tell the parent *you* completed the task (via `gzacApi.asUser`), so it closes and refreshes. |
-| `emit("notification", {type, message})` | Toast in the hosting UI (`success`/`warning`/`error`/`info`). |
-| `emit("navigate", {route})` | Ask the hosting UI to navigate. |
-| `setConfiguration(valid, title, data)` / `onPrefillConfiguration(h)` / `onSave(h)` | The `config` bundle contract — next section. |
+| `emit("notification", …)` / `emit("navigate", …)` | **Reserved** — defined in the message schema, but current GZAC frontends do not act on them. |
+| `setConfiguration(valid, title, data)` / `onPrefillConfiguration(h)` | The `config` bundle contract — next section. |
 | `destroy()` | Detach listeners (hot-reload/dev). |
 
-Context fields per surface (plus the base `pluginConfigurationId`/`pluginId` identifiers):
+Context fields per surface:
 
 | Surface | Context |
 |---|---|
-| `case-tab`, `case-widget` | `documentId`, `caseDefinitionKey`, `caseDefinitionVersionTag` |
-| `task-form` | `taskId`, `processInstanceId`, `documentId` |
-| `page` | base identifiers only — a page is not case-bound |
-| `config`, `process-link-action` | base identifiers; drive these via the contract below |
+| `case-tab`, `case-widget` | `pluginConfigurationId`, `documentId`, `caseDefinitionKey`, `caseDefinitionVersionTag` |
+| `task-form` | `pluginConfigurationId`, `taskId`, `processInstanceId`, `documentId` |
+| `page` | `configurationId` (note the different key) — a page is not case-bound |
+| `config`, `process-link-action` | empty — drive these via the contract below |
 
 ### The `config` bundle contract
 
@@ -365,12 +367,14 @@ A `config` bundle **is** the **Enter data** step of the admin's **Configure plug
 including the configuration-name field, so your form controls the whole step:
 
 1. On load, register `sdk.onPrefillConfiguration(({title, configuration}) => …)` — it fires in
-   edit mode (and when a wizard step is revisited) with the current values. Secret properties
-   arrive masked; treat an untouched masked value as "unchanged".
+   edit mode (and when a wizard step is revisited) with the current values. Secret properties are
+   omitted from the prefill; leave a secret absent (or blank) in your `data` to keep the stored
+   value.
 2. On **every change**, call `sdk.setConfiguration(valid, title, data)` — `valid` gates the
    modal's next/save button, `title` is the configuration name, `data` must satisfy your
-   `configurationSchema` (GZAC validates it server-side on save).
-3. Optionally register `sdk.onSave(…)` to flush pending state when the admin confirms.
+   `configurationSchema` (GZAC validates it server-side on save). GZAC saves the payload of your
+   **last** call — there is no save-time callback (`onSave` is reserved; the `save` event is never
+   sent), so keep the reported data current instead of deferring work to save time.
 
 A `process-link-action` bundle works the same way for an action's input form in the process-link
 modeler: prefill in, `setConfiguration(valid, "", properties)` out. A process link has nothing to
@@ -423,7 +427,8 @@ and egress all follow the *granted* set, not the manifest.
 - [`sample-plugins/case-summary/`](../sample-plugins/case-summary/) is the reference plugin:
   every capability, all bundle types, all three task-form levels, declared action outputs, i18n,
   logo.
-- [`TESTING.md`](../TESTING.md) explains the test layers and which test to write when.
-- [SDK README](../plugin-sdk/README.md) — full API and CLI reference
+- [SDK README](../plugin-sdk/README.md) — full CLI and toolchain reference
   ([`valtimo-plugin-init`](../plugin-sdk/README.md#valtimo-plugin-init)).
 - [Host README](../app/README.md) — the routes and checks your plugin runs under.
+- Contributing to the plugin system itself? [`TESTING.md`](../TESTING.md) explains its test
+  layers.

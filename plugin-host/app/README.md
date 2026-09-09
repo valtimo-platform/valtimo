@@ -104,11 +104,14 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `WASM_TIMEOUT_MS` | no | `30000` | Hard wall-clock limit per Wasm plugin call; Extism cancels the call when exceeded and the route reports a `HOST_ERROR`. |
 | `WASM_MAX_MEMORY_PAGES` | no | `4096` | Cap on a plugin's linear memory in 64 KiB pages (default 256 MiB). `0` removes the cap. |
 | `WASM_INSTANCE_IDLE_TTL_MS` | no | `600000` | Idle Extism instances are closed after this long without a call (freed worker + memory; next call re-instantiates). `0` disables eviction. |
+| `WASM_POOL_MIN_INSTANCES` | no | `1` | Instances retained per plugin version while in use (creation is lazy; idle eviction may go below it). |
+| `WASM_POOL_MAX_INSTANCES` | no | `10` | Concurrent instances per plugin version; worst-case memory ≈ max × page cap. `1` serialises all calls to a version. |
+| `WASM_POOL_ACQUIRE_TIMEOUT_MS` | no | `30000` | Longest a call waits for a free pooled instance under load before failing. |
 | `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` callback fetch into GZAC. |
 | `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | no | `10000` | Timeout on the user-token introspection call the `/plugins/:id/:version/data` route makes against GZAC before executing Wasm. GZAC not answering within it fails the request with a 503 (fail closed). |
 | `UPLOAD_MAX_BYTES` | no | `104857600` | Maximum plugin package (.zip) upload size (100 MiB), enforced before the file is buffered for the HMAC check. GZAC applies its own 100 MB gate and its servlet multipart limit before forwarding, so raising this alone does not widen the end-to-end limit. |
 | `DATA_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-configuration request budget for the public `/plugins/:id/:version/data` route. `0` disables the limit. |
-| `ADMIN_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-IP request budget for the HMAC-authenticated admin routes (plugin management, configuration pushes, gzac-instance announcements). Far above the one-poll-per-minute legitimate traffic; throttles online brute-force of `ADMIN_TOKEN`. `0` disables the limit. |
+| `ADMIN_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-IP request budget for the HMAC-authenticated admin routes (plugin management, configuration pushes, gzac-instance announcements, configuration logs). Far above the one-poll-per-minute legitimate traffic; throttles online brute-force of `ADMIN_TOKEN`. `0` disables the limit. |
 | `BUNDLE_RATE_LIMIT_PER_MINUTE` | no | `600` | Per-IP request budget for the public plugin-content routes (bundles, logos, manifests, frame-policy probes), bounding disk-read abuse. Generous — one case-tab load fetches several assets. `0` disables the limit. |
 | `TRUST_PROXY` | no | `false` | Honour `X-Forwarded-For` for client addresses (Fastify `trustProxy`). Enable behind a reverse proxy so the per-IP rate limits key on the real client instead of the proxy. Only the literal strings `true`/`false` are accepted. |
 | `CONFIG_CACHE_TTL_MS` | no | `10000` | How long configurations are served from the in-memory cache before re-reading Postgres. Writes through this host invalidate immediately. `0` disables caching. Also caps how long the frame-ancestor allowlist is cached. |
@@ -117,6 +120,10 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `TLS_CERT_PATH` | no | — | PEM certificate. Set **together with** `TLS_KEY_PATH` to make the host serve HTTPS (see [Transport security](#transport-security)). |
 | `TLS_KEY_PATH` | no | — | PEM private key. Set together with `TLS_CERT_PATH`. |
 | `TLS_CA_PATH` | no | — | PEM CA / intermediate chain, when the certificate file is not self-contained. |
+| `LOG_RETENTION_DAYS` | no | `30` | Retention for `plugin_logs` entries; a cleanup job runs every 6 hours (and once at boot). |
+| `HOST_ALLOWED_INTERNAL_CIDRS` | no | — | Comma-separated CIDRs plugins may reach despite being private address space — the production way to allow an internal service. `169.254.0.0/16` (cloud metadata) is never allowlistable. |
+| `HOST_ALLOW_HTTP` | no | `false` | Allow plain-http egress targets. Local development only; only the literal string `true` enables it. |
+| `HOST_ALLOW_PRIVATE_NETWORK` | no | `false` | Disables the SSRF classifier wholesale — local development only; logs a loud warning at boot. |
 
 The host does **not** configure an event broker. Each GZAC instance pushes its own broker connection
 alongside every configuration (see [Events](#events)), so one host can serve many GZAC instances,
@@ -431,36 +438,6 @@ differ, and this repo supports Windows development (the CI bootstrap job runs on
 A custom checksum table would reintroduce the bespoke migration machinery that adopting a library
 removed. Revisit only if a real desync actually occurs.
 
-## Reconciliation & ownership
-
-One host serves many GZAC instances, so every configuration row records **which** GZAC↔host
-relationship pushed it: GZAC sends its host-row UUID as `ownerId` with every push, and the host
-persists it (`owner_id` column) and echoes it in the configuration listing. The host treats the
-value as an opaque token — it never interprets or enforces it.
-
-Each GZAC's discovery cycle uses this to **reconcile**: it fetches
-`GET /api/host/configurations` and deletes host configurations that carry *its own* `ownerId` but
-no longer exist on its side — healing the case where a configuration was deleted while the host was
-down or unreachable (the direct delete call is best-effort and does not retry). The never-delete
-rules:
-
-- a configuration owned by **another** GZAC is never touched, whatever its state;
-- an **unowned** configuration (`ownerId` null — pushed by a GZAC that predates ownership) is never
-  auto-deleted by anyone; it is claimed on the owner's next push, or must be removed manually;
-- when the listing request fails, or a host does not implement it, reconciliation is skipped
-  entirely for that cycle.
-
-Ownership scoping is a *safety* mechanism against accidental cross-instance deletion, not an
-authorization boundary: every GZAC connecting to a host shares the same `ADMIN_TOKEN` and is fully
-trusted (any of them could overwrite or delete any configuration directly).
-
-**Owner-change warning.** When a push changes an existing configuration's owner, the host logs a
-warning — this is the fingerprint of two GZAC environments pushing the same configuration id.
-The usual cause is a **database-cloned GZAC environment pointed at the same host as its source**:
-clones share host-row UUIDs and configuration ids, so their pushes and reconciliation passes fight
-over the same rows. Never point a cloned environment at the same host — register a fresh host entry
-(new UUID) instead.
-
 ## Events
 
 A GZAC instance publishes domain events through its transactional outbox as CloudEvents v1.0 JSON to
@@ -480,11 +457,12 @@ pushes its broker connection (`eventBroker`) alongside every configuration on
     "amqpUrl": "amqp://guest:guest@localhost:5672",
     "exchange": "valtimo-events",
     "exchangeType": "fanout",
-    "queueMode": "live",
-    "queueTtlMs": null
+    "queueMode": "live"
   }
 }
 ```
+
+(`queueTtlMs` is only sent in `durable` mode; GZAC omits the key entirely for `live`.)
 
 The host opens **one consumer per distinct broker** and tears it down when no configuration
 references it any more. `exchange` defaults to `valtimo-events` and `exchangeType` to `fanout`; omit
@@ -600,8 +578,8 @@ curl -sS http://localhost:8090/api/host/plugins \
 ### `GET /api/host/plugins/:pluginId` — list all versions of a plugin
 
 ```bash
-host_sign GET /api/host/plugins/say-hello
-curl -sS http://localhost:8090/api/host/plugins/say-hello \
+host_sign GET /api/host/plugins/case-summary
+curl -sS http://localhost:8090/api/host/plugins/case-summary \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" | jq .
 ```
 
@@ -610,17 +588,17 @@ curl -sS http://localhost:8090/api/host/plugins/say-hello \
 The signature binds the **file bytes**, so sign the `.zip` itself:
 
 ```bash
-host_sign POST /api/host/plugins ../sample-plugins/say-hello/dist/say-hello-0.1.0.zip
+host_sign POST /api/host/plugins ../sample-plugins/case-summary/dist/case-summary-0.1.0.zip
 curl -sS -X POST http://localhost:8090/api/host/plugins \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
-  -F "file=@../sample-plugins/say-hello/dist/say-hello-0.1.0.zip" | jq .
+  -F "file=@../sample-plugins/case-summary/dist/case-summary-0.1.0.zip" | jq .
 ```
 
 ### `DELETE /api/host/plugins/:pluginId/:version` — remove a plugin
 
 ```bash
-host_sign DELETE /api/host/plugins/say-hello/0.1.0
-curl -sS -X DELETE http://localhost:8090/api/host/plugins/say-hello/0.1.0 \
+host_sign DELETE /api/host/plugins/case-summary/0.1.0
+curl -sS -X DELETE http://localhost:8090/api/host/plugins/case-summary/0.1.0 \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" -w "\nHTTP %{http_code}\n"
 ```
 
@@ -661,7 +639,7 @@ Write the body to a file so the signed bytes and the sent bytes match exactly
 
 ```bash
 cat > /tmp/config.json <<'JSON'
-{"pluginId":"say-hello","pluginVersion":"0.1.0","properties":{"greeting":"Hello"},"serviceToken":"local-test-token","gzacBaseUrl":"http://localhost:8080"}
+{"pluginId":"case-summary","pluginVersion":"0.1.0","properties":{"currency":"EUR"},"serviceToken":"local-test-token","gzacBaseUrl":"http://localhost:8080"}
 JSON
 host_sign POST /api/host/configurations/my-config /tmp/config.json
 curl -sS -X POST http://localhost:8090/api/host/configurations/my-config \
@@ -673,7 +651,7 @@ curl -sS -X POST http://localhost:8090/api/host/configurations/my-config \
 ### `PUT /api/host/configurations/:configId` — update configuration
 
 ```bash
-printf '%s' '{"properties":{"greeting":"Hola"}}' > /tmp/config.json
+printf '%s' '{"properties":{"currency":"USD"}}' > /tmp/config.json
 host_sign PUT /api/host/configurations/my-config /tmp/config.json
 curl -sS -X PUT http://localhost:8090/api/host/configurations/my-config \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
@@ -692,9 +670,9 @@ curl -sS -X DELETE http://localhost:8090/api/host/configurations/my-config \
 ### `POST /plugins/:pluginId/:version/actions/:actionKey` — execute an action
 
 ```bash
-printf '%s' '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"recipient":"World"}}' > /tmp/action.json
-host_sign POST /plugins/say-hello/0.1.0/actions/say-hello /tmp/action.json
-curl -sS -X POST http://localhost:8090/plugins/say-hello/0.1.0/actions/say-hello \
+printf '%s' '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"titleField":"/name"}}' > /tmp/action.json
+host_sign POST /plugins/case-summary/0.1.0/actions/case-summary /tmp/action.json
+curl -sS -X POST http://localhost:8090/plugins/case-summary/0.1.0/actions/case-summary \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
   -H "Content-Type: application/json" \
   --data-binary @/tmp/action.json | jq .
@@ -703,7 +681,7 @@ curl -sS -X POST http://localhost:8090/plugins/say-hello/0.1.0/actions/say-hello
 ### `GET /plugins/:pluginId/:version/plugin-manifest` — get plugin manifest
 
 ```bash
-curl -sS http://localhost:8090/plugins/say-hello/0.1.0/plugin-manifest | jq .
+curl -sS http://localhost:8090/plugins/case-summary/0.1.0/plugin-manifest | jq .
 ```
 
 ### `PUT /api/host/gzac-instances` — announce a GZAC instance and its frontend origins
@@ -730,6 +708,6 @@ probe rather than a listing: the caller must already know the origin it is askin
 route never enumerates which GZAC frontends use this host.
 
 ```bash
-curl -sS "http://localhost:8090/plugins/say-hello/0.1.0/frame-policy?origin=http%3A%2F%2Flocalhost%3A4200" | jq .
+curl -sS "http://localhost:8090/plugins/case-summary/0.1.0/frame-policy?origin=http%3A%2F%2Flocalhost%3A4200" | jq .
 # → {"allowed": true}
 ```

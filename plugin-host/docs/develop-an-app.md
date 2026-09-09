@@ -28,15 +28,16 @@ you can build against it without reverse-engineering.
 1. An administrator registers your app (base URL + secret). GZAC **discovers it immediately** —
    `GET /api/host/plugins` must work before first registration, because the add-app wizard flows
    straight into configuring your plugin.
-2. From then on GZAC polls every ~60 s: `GET /health`, `GET /api/host/plugins`,
-   `GET /api/host/configurations`, `PUT /api/host/gzac-instances`, and a **re-push of every
-   active configuration** with a freshly minted service token.
+2. From then on GZAC polls every ~60 s: `GET /health`, `PUT /api/host/gzac-instances`,
+   `GET /api/host/plugins`, `GET /api/host/configurations` (reconciliation), and a **re-push of
+   every configuration** with a freshly minted service token.
 3. When the admin activates/edits/deletes a configuration, GZAC pushes/deletes it immediately as
    well. Actions and task-form hooks arrive whenever a process or task needs them.
 
 ## Authentication — verifying the HMAC
 
-Every GZAC→app request (all routes except the public plugin surfaces) carries two headers:
+Every GZAC→app request — except `GET /health`, which is sent **unsigned**, and the public plugin
+surfaces — carries two headers:
 
 ```
 X-Valtimo-Timestamp: 2026-09-01T12:00:00Z          # ISO-8601 UTC, Instant.now() on the GZAC side
@@ -61,15 +62,18 @@ Verify with: both headers present → timestamp within ±5 minutes → recompute
 (single-use within the window; this closes replays). Respond `401` on any failure.
 
 Reference: [`demo-app/src/hmac.ts`](../sample-apps/demo-app/src/hmac.ts) (a Fastify `preHandler`
-with raw-body capture), and
+with raw-body capture and the single-use replay check), and
 [`test-fixtures/hmac-vectors.json`](../test-fixtures/hmac-vectors.json) — openssl-generated
-golden vectors to pin your implementation against, the same file the GZAC side is tested with.
+golden vectors to pin your implementation against, the same vectors the plugin host's verifier is
+pinned against (GZAC's client tests recompute them with an independent oracle).
 
-## Routes GZAC calls (HMAC)
+## Routes GZAC calls
 
 ### `GET /health`
 
-Liveness probe; any 2xx counts. `{"status": "UP"}` by convention.
+Liveness probe; any 2xx counts. `{"status": "UP"}` by convention. **No HMAC** — the probe is
+sent unsigned, so do not auth-guard this route: a 401 counts as a failed poll and flips the
+integration to Unreachable. Every other route in this section is HMAC-verified.
 
 ### `GET /api/host/plugins` — discovery
 
@@ -94,7 +98,9 @@ What you declare here is what the administrator is asked to accept.
 
 `contentHash` is optional. Serve a stable value that changes when your plugin's behavior/manifest
 changes and GZAC pins it, flagging unexpected changes for admin re-acceptance — recommended, and
-cheap if you derive it from your build.
+cheap if you derive it from your build. While a changed hash awaits re-acceptance, GZAC also
+withholds every configuration push, so your latest service token expires within its ~10-minute
+TTL and callbacks stop until an administrator accepts.
 
 ### `PUT /api/host/gzac-instances` — frame-ancestor announcement (optional)
 
@@ -130,8 +136,7 @@ runtime — so the table below notes per field what actually binds an app:
     "amqpUrl": "amqp://user:pass@rabbitmq:5672",
     "exchange": "valtimo-events",
     "exchangeType": "fanout",
-    "queueMode": "live",
-    "queueTtlMs": null
+    "queueMode": "live"
   }
 }
 ```
@@ -145,13 +150,15 @@ runtime — so the table below notes per field what actually binds an app:
 | `eventSubscriptions` | The event types the admin granted (which can lag your manifest). Act on these and drop the rest — your obligation, not an enforced bound: the broker feed is a fanout carrying every platform event (see [Events](#events)). |
 | `grantedEndpoints` | The GZAC endpoints your service token may call. GZAC enforces this server-side on every callback — treat the list as your API surface. |
 | `grantedCapabilities` | For an app, only `frontend_data` has a job: gate your `/data` route on it. The others (`gzac_api`, `http_request`, `kv`, `log`) switch host functions inside the Wasm sandbox — an app has no such runtime, so they arrive for contract parity and record what the admin accepted. |
-| `allowedEgress` | The outbound connections the admin accepted — informational for an app: a plugin host enforces this on sandboxed plugins, but nothing can enforce it on a native service. Declare your real targets in the manifest so the acceptance screen tells the truth; actually bounding an app's traffic is a deployment concern (network policy). |
+| `allowedEgress` | The outbound connections the admin accepted — informational for an app: a plugin host enforces this on sandboxed plugins, but nothing can enforce it on a native service. Declare your real targets in the manifest so the **Permissions** step tells the truth; actually bounding an app's traffic is a deployment concern (network policy). |
 | `expectedContentHash` | Present when GZAC pinned your `contentHash`. If it doesn't match what you currently serve, refuse with `409` — the admin accepted different content. |
-| `eventBroker` | Broker connection for events; absent = events disabled for this configuration. Normalize defensively: unknown `queueMode` → `live`; clamp `queueTtlMs` to 1 h–30 d (default 72 h) in `durable` mode. |
+| `eventBroker` | Broker connection for events; absent = events disabled for this configuration. `queueTtlMs` is only sent in `durable` mode. Normalize defensively: unknown `queueMode` → `live`; clamp `queueTtlMs` to 1 h–30 d (default 72 h). |
 
-Reply `201` (or `200`). `PUT` on the same path is an update — merge into the stored record.
-`DELETE` removes it (`204`; a repeated delete may 404 — GZAC treats that as success). After any
-mutation, re-sync your event consumers.
+Reply any 2xx. **POST is an upsert** — GZAC re-POSTs the same `configId` on every edit and every
+poll, so treat an existing id as an update, never a conflict. (A `PUT` route exists on the
+reference host, but current GZAC never sends it.) `DELETE` removes the configuration (`204`; a
+repeated delete may 404 — GZAC treats that as success). After any mutation, re-sync your event
+consumers.
 
 ### `GET /api/host/configurations` — redacted listing
 
@@ -181,15 +188,16 @@ Request:
 `documentId` is absent for processes without a case document. `properties` are the process-link
 action inputs, value-resolver expressions already resolved.
 
-Responses GZAC understands:
+Responses GZAC understands — it keys on the **HTTP status**, the body's `status` field is
+informational:
 
 | Status | Body | Effect in GZAC |
 |---|---|---|
-| 200 | `{ "status": "completed", "variables": { … }, "result": { … } }` | `variables` become process variables; the optional `result` feeds the link's output mappings. |
-| 4xx/5xx | `{ "status": "error", "errorCode": "…", "errorMessage": "…" }` | Surfaced to the process as a BPMN error (`errorCode` is the BPMN error code). The demo app uses 422 for plugin-level errors, 500 for crashes. |
+| 2xx | `{ "status": "completed", "variables": { … }, "result": { … } }` | `variables` become process variables; the optional `result` feeds the link's output mappings. |
+| 4xx/5xx | `{ "status": "error", "errorCode": "…", "errorMessage": "…" }` | Fails the invocation: GZAC raises a process **incident** whose message carries `errorCode`/`errorMessage` (deliberately not a BPMN error — boundary events cannot catch it). The demo app uses 422 for plugin-level errors, 500 for crashes. |
 
 If your app is unreachable, GZAC synthesizes a 503 `EXTERNAL_PLUGIN_HOST_UNREACHABLE` failure —
-the process error path always engages.
+an incident as well, so the failure is always visible in the process.
 
 ### `POST /plugins/{pluginId}/{version}/submit/{submitKey}` — task-form hook
 
@@ -212,7 +220,10 @@ GZAC does **not** complete — the errors render inline on the form.
   'self'; …`) plus the announced `frame-ancestors`. Bundles are ordinary web apps built against
   `@valtimo/plugin-sdk/frontend` — see [demo-app/frontend](../sample-apps/demo-app/frontend/).
 - **`GET …/frame-policy?origin=`** — optional; answer `{ "allowed": true|false }` for the one
-  origin named. The frontend SDK probes it as defence in depth; an unanswered probe only warns.
+  origin named. The frontend SDK probes it before trusting an unpinned parent: an explicit
+  `{"allowed": false}` makes the SDK refuse that parent's `init` (with a console warning), while
+  an unanswered or failing probe is treated as allowed — the `frame-ancestors` CSP stays the real
+  gate.
 - **`POST …/data`** (+ `OPTIONS` preflight) — how your screens fetch data. The GZAC frontend's
   parent-proxy posts:
 
@@ -240,15 +251,17 @@ GZAC does **not** complete — the errors render inline on the form.
   Reject when GZAC rejects (401), when the token's `configurationId` differs from the request's
   (403), and **fail closed when GZAC is unreachable** (503). Cache positive verdicts briefly
   (≤60 s, never past `expiresAt`). The `userToken` also lets you call GZAC *as the user* —
-  attach it instead of the service token, and the call is bounded by that user's permissions.
+  attach it instead of the service token, and the call is bounded by that user's permissions ∩
+  the granted endpoint list.
 
 ## Calling GZAC back
 
 `Authorization: Bearer {serviceToken}` against `{gzacBaseUrl}` — see
 [`demo-app/src/gzac.ts`](../sample-apps/demo-app/src/gzac.ts). The token bypasses user
-permission checks; its reach is exactly the granted endpoint list, so treat that list as your
-API surface. For per-user calls (from `/data` handlers), use the introspected `userToken`
-instead.
+permission checks; its reach is the granted endpoint list — additionally capped by a fixed
+GZAC-side denylist (management, external-plugin token, and role/permission surfaces are never
+reachable, whatever the grants) — so treat the granted list as your API surface. For per-user
+calls (from `/data` handlers), use the introspected `userToken` instead.
 
 ## Events
 
@@ -266,9 +279,9 @@ delivery is at-least-once. Reference:
 
 ## Checklist
 
-- [ ] `GET /health`, `GET /api/host/plugins` (with `manifest`, ideally `contentHash`) work before first registration
-- [ ] HMAC verified on every GZAC-facing route: ±5 min window, timing-safe, replay-rejecting; pinned against `hmac-vectors.json`
-- [ ] Config push persisted; `serviceToken`/`gzacBaseUrl` required; `ownerId` echoed; listing returns summaries only
+- [ ] `GET /health` (unauthenticated), `GET /api/host/plugins` (with `manifest`, ideally `contentHash`) work before first registration
+- [ ] HMAC verified on every GZAC-facing route except `GET /health`: ±5 min window, timing-safe, replay-rejecting; pinned against `hmac-vectors.json`
+- [ ] Config push persisted (POST = upsert); `serviceToken`/`gzacBaseUrl` required; `ownerId` echoed; listing returns summaries only
 - [ ] Action route speaks `{status, variables, result?}` / `{status:"error", errorCode, errorMessage}`
 - [ ] Granted sets respected: only granted `eventSubscriptions` acted on (the feed itself is unfiltered), callbacks within `grantedEndpoints` (GZAC enforces this server-side)
 - [ ] Bundles served with strict CSP + announced `frame-ancestors`, fail closed

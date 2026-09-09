@@ -4,30 +4,38 @@ NPM package (`@valtimo/plugin-sdk`) for building Valtimo external plugins that c
 
 ## What It Provides
 
-1. **TypeScript types** — `ActionInput`, `ActionOutput`, `PluginManifest`, etc.
-2. **Runtime helpers** — `action()`, `config`, `log` for use inside plugin code
-3. **`valtimo-plugin-init` CLI** — Scaffolds a complete, buildable plugin project in one command
-4. **`valtimo-plugin-build` CLI** — Compiles TypeScript plugin source to `.wasm` (via esbuild + extism-js)
-5. **`valtimo-plugin-pack` CLI** — Assembles a `.zip` package (`manifest.json` + `plugin.wasm`) ready for upload
+1. **TypeScript types** — `ActionInput`/`ActionOutput`, `EventInput`/`EventOutput`,
+   `RequestInput`/`RequestOutput`, `SubmitInput`/`SubmitOutput`, `PluginManifest`, etc.
+2. **Handler registries** — `action()`, `onEvent()`, `request()`, `submit()`
+3. **Host-function facades** — `gzacApi` (incl. `gzacApi.asUser`), `httpRequest`, `kv`, `log`,
+   `config`
+4. **Frontend (iframe) SDK** — `ValtimoPluginSDK` via `@valtimo/plugin-sdk/frontend`
+5. **`valtimo-plugin-init` CLI** — Scaffolds a complete, buildable plugin project in one command
+6. **`valtimo-plugin-build` CLI** — Compiles TypeScript plugin source to `.wasm` (via esbuild + extism-js)
+7. **`valtimo-plugin-pack` CLI** — Assembles a `.zip` package (manifest, wasm, frontend bundles, logo) ready for upload
 
 ## Project Structure
 
 ```
 src/
   models/
-    types.ts        # Core type definitions
+    types.ts        # Core type definitions (manifest, handler input/output shapes)
     index.ts        # Barrel export
-  actions.ts        # action() handler registry
-  config.ts         # config.getAll() / config.get(key) — call-scoped configuration
-  host-functions.ts # log.info/warn/error — logging facade
-  runtime.ts        # Wasm dispatcher: handleAction(), handleGetManifest()
+  actions.ts        # action() registry          events.ts    # onEvent() registry
+  requests.ts       # request() registry         submit.ts    # submit() registry
+  gzac-api.ts       # gzacApi (+ asUser)         http-request.ts # httpRequest
+  kv.ts             # kv store facade            config.ts    # config.getAll()/get(key)
+  host-functions.ts # log facade                 egress.ts    # egress-origin grammar
+  manifest-validation.ts  # shared validator (pack time + host upload)
+  runtime.ts        # Wasm dispatcher for all four exports (action/event/request/submit)
+  frontend/         # ValtimoPluginSDK (@valtimo/plugin-sdk/frontend)
   scaffold/         # The plugin generator behind valtimo-plugin-init (@valtimo/plugin-sdk/scaffold)
   index.ts          # Public API barrel export
 templates/          # Files valtimo-plugin-init copies into a new project (see templates/README.md)
 bin/
   valtimo-plugin-init.mjs   # templates/ + src/scaffold/ → a new plugin project
   valtimo-plugin-build.mjs  # TS → JS (esbuild) → .wasm (extism-js)
-  valtimo-plugin-pack.mjs   # manifest.json + plugin.wasm → .zip
+  valtimo-plugin-pack.mjs   # manifest + wasm + frontend/ + logo → .zip
 ```
 
 ## Prerequisites
@@ -171,8 +179,8 @@ plugin with no `en` bucket shows translation keys to anyone on a third locale. `
 any other tag (`--locales en,nl,de`); locales the scaffold has no strings for reuse the English ones
 for each bundle's fixed keys.
 
-**Working inside this repository**, `@valtimo/plugin-sdk` is not resolvable from the registry yet,
-so point the generated dependency at the local package:
+**Working inside this repository**, point the generated dependency at the local package instead
+of the registry:
 
 ```bash
 node bin/valtimo-plugin-init.mjs ~/tmp/my-plugin --sdk "file:$PWD"
@@ -217,21 +225,26 @@ Reads `pluginId` and `version` from `manifest.json` and produces `{pluginId}-{ve
 
 ## SDK API (for plugin authors)
 
-```typescript
-import { action, config, log } from "@valtimo/plugin-sdk";
+The canonical handler and host-function reference is
+[Developing an external plugin](https://github.com/valtimo-platform/valtimo/blob/master/plugin-host/docs/develop-a-plugin.md) —
+this section only sketches the surface:
 
-// Register an action handler
-action("my-action", (input) => {
+```typescript
+import { action, onEvent, request, submit, config, gzacApi, httpRequest, kv, log } from "@valtimo/plugin-sdk";
+
+// Handler registries — the build tool wires each into its Wasm export:
+action("my-action", (input) => {              // handle_action: process work from a process link
   const myConfigValue = config.get("someKey");
   log.info("Executing my-action");
   return { status: "completed", variables: { result: "done" } };
 });
+onEvent((event) => ({ status: "ignored" }));  // handle_event: granted platform events
+request("/summary", (req) => ({ status: 200, body: {} })); // handle_request: data for own iframes
+submit("review", (input) => ({ status: "completed" }));    // handle_submit: task-form hook
 
-// config.getAll()  — returns the full configuration object
-// config.get(key)  — returns a single configuration value
-// log.info(msg)    — log at info level
-// log.warn(msg)    — log at warn level
-// log.error(msg)   — log at error level
+// Host functions (capability-gated): gzacApi.get/post/put/delete (+ gzacApi.asUser in request()
+// flows), httpRequest.* (declared egress only), kv.get/set/delete/list, log.debug/info/warn/error,
+// config.getAll() / config.get(key).
 ```
 
 ### Capabilities
@@ -266,7 +279,7 @@ declared, from one of two places depending on who knows its value.
 ```
 
 - **`permissions.egress`** — origins that are the same in every environment. The admin accepts them
-  on the activation screen, and they cannot change without re-accepting the plugin version.
+  on the **Permissions** step, and they cannot change without re-accepting the plugin version.
 - **`x-egress-target`** — put it on the configuration property that holds a URL which differs per
   customer or environment. The admin typing the value *is* the grant, so there is nothing extra to
   accept and the destination follows the configuration when it is edited. The property must be a
@@ -281,7 +294,7 @@ Entries are **origins**, matched on scheme + host + port:
 - A leading `*.` wildcard is allowed with at least two labels after it (`*.vendor.com`, never
   `*.com`) and matches exactly one label — `api.vendor.com` but not `vendor.com` or
   `a.b.vendor.com`. Prefer explicit hosts: a wildcard under your own DNS is a much wider grant, and
-  it is flagged as such on the admin's acceptance screen.
+  it is flagged as such on the admin's **Permissions** step.
 
 Declaring `egress` without `http_request` in `capabilities` fails validation, as does an unparseable
 entry — the pack tool catches both before the package is built.

@@ -22,5 +22,7 @@ the concept introduction is
 
 Reference material next to this folder: the [plugin-host README](../README.md) (quick start,
 bootstrap commands), the [host app README](../app/README.md) (API reference, HMAC scheme,
-transport security), the [SDK README](../plugin-sdk/README.md) (full SDK and CLI reference), and
-[TESTING.md](../TESTING.md) (test layers and when to use which).
+transport security), the [SDK README](../plugin-sdk/README.md) (full SDK and CLI reference),
+[TESTING.md](../TESTING.md) (test layers and when to use which), and the reference
+implementations [`sample-plugins/case-summary/`](../sample-plugins/case-summary/) (plugin) and
+[`sample-apps/demo-app/`](../sample-apps/demo-app/) (app).
