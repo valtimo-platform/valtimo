@@ -48,10 +48,6 @@ The setting that could block changes to system processes no longer has any effec
 
 Admin > Other > Process migration has the standard Valtimo look and feel, with clearer labels for the source and target process, the versions, and the activities to map.
 
-### Stop the other processes of a case and carry on
-
-A process can now stop all other running processes of its case and then continue its own flow, so a rejection can clear the remaining work and still set a status or send a letter. It sits in the expression dropdown in the BPMN modeler next to the existing option, which stops every process of the case including the one that asks.
-
 ---
 
 ## Bugfixes
