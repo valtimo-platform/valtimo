@@ -1,0 +1,66 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.assistant {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  // Below Carbon's header/side-nav (8000) and modals (9000)
+  z-index: 7900;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.assistant-launcher {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: var(--cds-button-primary);
+  color: var(--cds-text-on-color);
+  box-shadow: 0 2px 6px var(--cds-shadow);
+  cursor: pointer;
+  transition: background-color 110ms ease-in-out;
+
+  &:hover {
+    background-color: var(--cds-button-primary-hover);
+  }
+
+  &:active {
+    background-color: var(--cds-button-primary-active);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cds-focus, var(--vcds-color-60));
+    outline-offset: 2px;
+  }
+
+  svg {
+    fill: currentColor;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-launcher {
+    transition: none;
+  }
+}

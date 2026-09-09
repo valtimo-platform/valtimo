@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div *ngIf="assistantAvailable$ | async" class="assistant">
+  <valtimo-assistant-teaser
+    *ngIf="$teaserMessageKey() && !$teaserDismissed() && !$open()"
+    [messageKey]="$teaserMessageKey()!"
+    (closeEvent)="onTeaserClose()"
+    (openEvent)="onLauncherClick()"
+  ></valtimo-assistant-teaser>
+
+  <valtimo-assistant-panel
+    *ngIf="$open()"
+    (minimizeEvent)="onPanelMinimize()"
+  ></valtimo-assistant-panel>
+
+  <button
+    *ngIf="!$open()"
+    [attr.aria-label]="'assistant.launcher.open' | translate"
+    [attr.data-test-id]="testIds.launcher"
+    (click)="onLauncherClick()"
+    class="assistant-launcher"
+    type="button"
+  >
+    <svg cdsIcon="ai-launch" size="24"></svg>
+  </button>
+</div>

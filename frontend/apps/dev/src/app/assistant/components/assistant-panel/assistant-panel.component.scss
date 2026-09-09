@@ -1,0 +1,132 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.assistant-panel {
+  display: flex;
+  flex-direction: column;
+  width: 24rem;
+  height: min(40rem, calc(100vh - 6rem));
+  overflow: hidden;
+  border: 1px solid var(--cds-border-subtle-01);
+  border-radius: 0.5rem;
+  background-color: var(--cds-layer-01);
+  background-image: linear-gradient(180deg, transparent 40%, var(--vcds-color-10) 100%);
+  box-shadow: 0 2px 12px var(--cds-shadow);
+  :host-context([data-carbon-theme='g90']) &,
+  :host-context([data-carbon-theme='g100']) & {
+    background-image: linear-gradient(180deg, transparent 40%, var(--vcds-color-90) 100%);
+  }
+
+  &__header {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    height: 3rem;
+    padding: 0 0.5rem;
+    border-bottom: 1px solid var(--cds-border-subtle-01);
+  }
+
+  &__mark {
+    fill: var(--cds-icon-primary);
+  }
+
+  &__icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    background-color: transparent;
+    color: var(--cds-icon-primary);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background-color: var(--cds-layer-hover-01);
+    }
+
+    &:disabled {
+      color: var(--cds-icon-disabled);
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--cds-focus, var(--vcds-color-60));
+      outline-offset: -2px;
+    }
+
+    svg {
+      fill: currentColor;
+    }
+  }
+
+  &__messages {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  &__thinking,
+  &__error {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--cds-text-secondary);
+  }
+
+  &__error {
+    color: var(--cds-text-error);
+  }
+
+  &__composer {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 0.5rem 0.75rem 1rem;
+    border-top: 1px solid var(--cds-border-subtle-01);
+    background-color: var(--cds-layer-01);
+    border-bottom: 2px solid transparent;
+    &:has(input:focus) {
+      border-bottom-color: var(--cds-focus, var(--vcds-color-60));
+    }
+
+    input {
+      flex: 1 1 auto;
+      height: auto;
+      border: 0;
+      background-color: transparent;
+
+      &:focus {
+        outline: none;
+      }
+
+      &::placeholder {
+        color: var(--cds-text-placeholder);
+      }
+    }
+  }
+}
+
+@media (max-width: 671px) {
+  .assistant-panel {
+    width: calc(100vw - 3rem);
+  }
+}

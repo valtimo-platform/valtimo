@@ -1,4 +1,44 @@
 {
+  "assistant": {
+    "name": "RitA",
+    "confirmation": {
+      "applied": "Klaar — de wijzigingen zijn doorgevoerd.",
+      "cancel": "Annuleren",
+      "cancelled": "Geannuleerd. Er is niets gewijzigd.",
+      "confirm": "Bevestigen",
+      "failed": "Dat is niet gelukt. De actie is misschien verlopen — vraag het opnieuw.",
+      "hint": "Er wijzigt niets totdat je bevestigt.",
+      "title": "Deze wijzigingen doorvoeren?"
+    },
+    "greeting": {
+      "accessControl": "Je zit nu op een pagina met regels voor de beheerdersrol. Wil je regels toevoegen, verwijderen of bewerken?",
+      "generic": "Hoi! Waar kan ik je vandaag mee helpen?"
+    },
+    "launcher": {
+      "open": "Open de AI chat"
+    },
+    "panel": {
+      "error": "Er ging iets mis. Probeer het opnieuw.",
+      "minimize": "Minimaliseer de AI chat",
+      "notConfigured": "Voor de assistent is geen taalmodel geconfigureerd. Vraag je beheerder.",
+      "placeholder": "Typ iets...",
+      "send": "Verstuur bericht",
+      "thinking": "RitA denkt na...",
+      "title": "AI chat"
+    },
+    "suggestions": {
+      "add": "Toevoegen",
+      "edit": "Bewerken",
+      "explainProcess": "Proces uitleggen",
+      "findCase": "Zaak zoeken",
+      "remove": "Verwijderen",
+      "viewCaseDefinition": "Zaakdefinitie bekijken"
+    },
+    "teaser": {
+      "accessControl": "Je kunt nu PBAC regels toevoegen met behulp van onze AI Chat",
+      "close": "Sluiten"
+    }
+  },
   "bezwaarStartForm": {
     "htmlLabel": "HTML",
     "startInstruction": "Klik op Start om uw bezwaar in te dienen.",
