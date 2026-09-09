@@ -37,6 +37,7 @@ import com.ritense.catalogiapi.exception.BesluittypeNotFoundException
 import com.ritense.catalogiapi.exception.EigenschapNotFoundException
 import com.ritense.catalogiapi.exception.InformatieobjecttypeNotFoundException
 import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
+import com.ritense.catalogiapi.exception.RoltypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.document.service.DocumentService
@@ -299,6 +300,64 @@ class CatalogiApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "get-roltypen",
+        title = "Get Roltypen",
+        description = "Retrieve the roltypen and save them in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getRoltypen(
+        execution: DelegateExecution,
+        @PluginActionProperty processVariable: String,
+        @PluginActionProperty zaaktypeUrl: String? = null
+    ) {
+        logger.debug { "Retrieving roltypen and storing these in process variable: $processVariable" }
+        zaaktypeUriFrom(zaaktypeUrl, execution).let { zaaktypeUri ->
+            withLoggingContext(
+                CATALOGI_API.ZAAKTYPE to zaaktypeUri.toString()
+            ) {
+                getRoltypes(zaaktypeUri).map { roltype ->
+                    mapOf(
+                        URL_KEY to roltype.url.toASCIIString(),
+                        NAME_KEY to roltype.omschrijving
+                    )
+                }.let { roltypen ->
+                    execution.setVariable(processVariable, roltypen)
+                }
+                logger.info { "Setting process variable $processVariable with (retrieved) roltypen" }
+            }
+        }
+    }
+
+    @PluginAction(
+        key = "get-roltype",
+        title = "Get Roltype",
+        description = "Retrieve the roltype and save it in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getRoltype(
+        execution: DelegateExecution,
+        @PluginActionProperty roltype: String,
+        @PluginActionProperty processVariable: String,
+    ) {
+        withLoggingContext(
+            CATALOGI_API.ROLTYPE to roltype
+        ) {
+            logger.debug { "Retrieving roltype: $roltype and storing it in process variable: $processVariable" }
+
+            val roltypeUrl = if (roltype.matches(HTTPS_REGEX)) {
+                roltype
+            } else {
+                val zaaktypeUrl = getZaaktypeUrl(execution)
+                getRoltypeByOmschrijving(zaaktypeUrl, roltype).url.toASCIIString()
+            }
+
+            logger.info { "Setting process variable $processVariable with (retrieved) roltype URL: $roltypeUrl" }
+
+            execution.setVariable(processVariable, roltypeUrl)
+        }
+    }
+
     fun getInformatieobjecttypes(
         zaakTypeUrl: URI,
     ): List<Informatieobjecttype> {
@@ -396,6 +455,25 @@ class CatalogiApiPlugin(
             } while (currentResults.next != null)
 
             return results
+        }
+    }
+
+    fun getRoltypeByOmschrijving(zaakTypeUrl: URI, omschrijving: String): Roltype {
+        withLoggingContext(
+            CATALOGI_API.ROLTYPE to zaakTypeUrl.toString(),
+        ) {
+            logger.debug { "Getting Roltype by omschrijving: $omschrijving for zaaktype $zaakTypeUrl" }
+            val matches = getRoltypes(zaakTypeUrl)
+                .filter { it.omschrijving.equals(omschrijving, ignoreCase = true) }
+
+            return when (matches.size) {
+                1 -> matches.single()
+                0 -> throw RoltypeNotFoundException("with 'omschrijving': '$omschrijving'")
+                else -> throw RoltypeNotFoundException(
+                    "uniquely with 'omschrijving': '$omschrijving'; ${matches.size} roltypen " +
+                        "for zaaktype '$zaakTypeUrl' share this omschrijving"
+                )
+            }
         }
     }
 
