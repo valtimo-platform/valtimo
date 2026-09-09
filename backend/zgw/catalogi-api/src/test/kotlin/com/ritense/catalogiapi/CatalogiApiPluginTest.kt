@@ -36,8 +36,6 @@ import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
 import com.ritense.catalogiapi.exception.RoltypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.catalogiapi.web.rest.result.ResultaattypeDto
-import com.ritense.catalogiapi.web.rest.result.StatustypeDto
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
@@ -308,8 +306,15 @@ internal class CatalogiApiPluginTest : BaseTest() {
         )
 
         // then
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<Map<String, String>>>())
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to statustypeUrl("1"), "name" to "first status"),
+                    mapOf("url" to statustypeUrl("2"), "name" to "second status")
+                )
+            )
+        )
     }
 
     @Test
@@ -329,12 +334,20 @@ internal class CatalogiApiPluginTest : BaseTest() {
         plugin.getStatustypen(
             execution = execution,
             processVariable = processVariable,
-            zaaktypeUrl = zaaktypeUrl
+            zaaktypeUrl = null
         )
 
         // then
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<StatustypeDto>>())
+        verify(zaaktypeUrlProvider, times(1)).getZaaktypeUrl(eq(documentId.toUUID()))
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to statustypeUrl("1"), "name" to "first status"),
+                    mapOf("url" to statustypeUrl("2"), "name" to "second status")
+                )
+            )
+        )
     }
 
     @Test
@@ -714,8 +727,15 @@ internal class CatalogiApiPluginTest : BaseTest() {
         )
 
         // then
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<Map<String, String>>>())
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to resultaatTypeUrl("1"), "name" to "first resultaat"),
+                    mapOf("url" to resultaatTypeUrl("2"), "name" to "second resultaat")
+                )
+            )
+        )
     }
 
     @Test
@@ -735,12 +755,20 @@ internal class CatalogiApiPluginTest : BaseTest() {
         plugin.getResultaattypen(
             execution = execution,
             processVariable = processVariable,
-            zaaktypeUrl = zaaktypeUrl
+            zaaktypeUrl = null
         )
 
         // then
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<ResultaattypeDto>>())
+        verify(zaaktypeUrlProvider, times(1)).getZaaktypeUrl(eq(documentId.toUUID()))
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to resultaatTypeUrl("1"), "name" to "first resultaat"),
+                    mapOf("url" to resultaatTypeUrl("2"), "name" to "second resultaat")
+                )
+            )
+        )
     }
 
     @Test
