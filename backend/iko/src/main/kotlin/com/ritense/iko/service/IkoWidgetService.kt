@@ -26,9 +26,10 @@ import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.service.WidgetService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 
-@Transactional
 @SkipComponentScan
 @Service
 class IkoWidgetService(
@@ -36,20 +37,25 @@ class IkoWidgetService(
     private val ikoTabWidgetRepository: IkoTabWidgetRepository,
     private val widgetService: WidgetService,
     private val ikoViewService: IkoViewService,
+    transactionManager: PlatformTransactionManager,
 ) {
 
+    private val readOnlyTransactionTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+
+    @Transactional(readOnly = true)
     fun findByKey(ikoViewKey: String, tabKey: String, widgetKey: String): Widget? {
         ikoViewService.requirePermission(ikoViewKey, VIEW)
         val tab = ikoTabService.findByKey(ikoViewKey, tabKey) ?: return null
         return ikoTabWidgetRepository.findByIdTabIdAndWidgetKey(tab.id, widgetKey)?.widget
     }
 
+    @Transactional(readOnly = true)
     fun getByKey(ikoViewKey: String, tabKey: String, widgetKey: String): Widget {
-        ikoViewService.requirePermission(ikoViewKey, VIEW)
         return findByKey(ikoViewKey, tabKey, widgetKey)
             ?: error("Widget $widgetKey not found")
     }
 
+    @Transactional(readOnly = true)
     fun findAllByTabKey(ikoViewKey: String, tabKey: String): List<Widget> {
         ikoViewService.requirePermission(ikoViewKey, VIEW)
         val tab = ikoTabService.getByKey(ikoViewKey, tabKey)
@@ -57,8 +63,9 @@ class IkoWidgetService(
     }
 
     fun findAllByTabKeyFilteredByDisplayConditions(ikoViewKey: String, tabKey: String): List<Widget> {
+        val widgets = readOnlyTransactionTemplate.execute { findAllByTabKey(ikoViewKey, tabKey) }!!
         return widgetService.filterWidgetsOnDisplayConditions(
-            widgets = findAllByTabKey(ikoViewKey, tabKey),
+            widgets = widgets,
             properties = mapOf(
                 IKO_VIEW_KEY to ikoViewKey,
                 TAB_KEY to tabKey,
@@ -66,12 +73,14 @@ class IkoWidgetService(
         )
     }
 
+    @Transactional
     fun deleteByKey(ikoViewKey: String, tabKey: String, widgetKey: String) {
         ikoViewService.denyAuthorization()
         val tab = ikoTabService.getByKey(ikoViewKey, tabKey)
         ikoTabWidgetRepository.deleteByIdTabIdAndWidgetKey(tab.id, widgetKey)
     }
 
+    @Transactional
     fun create(ikoViewKey: String, tabKey: String, widget: Widget): Widget {
         ikoViewService.denyAuthorization()
         val tab = ikoTabService.getByKey(ikoViewKey, tabKey)
@@ -86,6 +95,7 @@ class IkoWidgetService(
         return createdWidget
     }
 
+    @Transactional
     fun update(ikoViewKey: String, tabKey: String, widget: Widget): Widget {
         ikoViewService.denyAuthorization()
         val tab = ikoTabService.getByKey(ikoViewKey, tabKey)
@@ -106,8 +116,7 @@ class IkoWidgetService(
         widgetKey: String,
         properties: Map<String, Any>,
     ): Any? {
-        ikoViewService.requirePermission(ikoViewKey, VIEW)
-        val widget = getByKey(ikoViewKey, tabKey, widgetKey)
+        val widget = readOnlyTransactionTemplate.execute { getByKey(ikoViewKey, tabKey, widgetKey) }!!
         return widgetService.getWidgetData(widget, properties)
     }
 
