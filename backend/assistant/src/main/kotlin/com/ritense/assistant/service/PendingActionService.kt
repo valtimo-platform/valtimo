@@ -39,6 +39,10 @@ open class PendingActionService(
         params: String,
         resourceType: String? = null,
         resourceId: String? = null,
+        previewDescription: String? = null,
+        diffBefore: String? = null,
+        diffAfter: String? = null,
+        affectedResources: List<String>? = null,
         ttl: Duration = DEFAULT_TTL
     ): PendingAssistantAction {
         val now = Instant.now()
@@ -50,10 +54,21 @@ open class PendingActionService(
             params = params,
             resourceType = resourceType,
             resourceId = resourceId,
+            previewDescription = previewDescription,
+            diffBefore = diffBefore,
+            diffAfter = diffAfter,
+            affectedResources = affectedResources?.let {
+                com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(it)
+            },
             createdAt = now,
             expiresAt = now.plus(ttl)
         )
         return repository.save(action)
+    }
+
+    @Transactional(readOnly = true)
+    open fun findLatestBySessionIdAndUserId(sessionId: UUID, userId: String): PendingAssistantAction? {
+        return repository.findFirstBySessionIdAndUserIdOrderByCreatedAtDesc(sessionId, userId)
     }
 
     @Transactional(readOnly = true)

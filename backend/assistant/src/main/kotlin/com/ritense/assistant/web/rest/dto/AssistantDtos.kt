@@ -16,6 +16,8 @@
 
 package com.ritense.assistant.web.rest.dto
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.ritense.assistant.domain.AssistantSessionEntity
 import java.time.Instant
 import java.util.UUID
@@ -39,6 +41,13 @@ data class AssistantResponse(
     val action: AssistantAction? = null
 )
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+    JsonSubTypes.Type(AssistantAction.Highlight::class, name = "highlight"),
+    JsonSubTypes.Type(AssistantAction.Navigate::class, name = "navigate"),
+    JsonSubTypes.Type(AssistantAction.ConfirmationRequired::class, name = "confirmation_required"),
+    JsonSubTypes.Type(AssistantAction.ShowDiff::class, name = "show_diff")
+)
 sealed class AssistantAction {
     data class Highlight(val elements: List<ElementHighlight>) : AssistantAction()
     data class Navigate(val route: String, val params: Map<String, String>? = null) : AssistantAction()

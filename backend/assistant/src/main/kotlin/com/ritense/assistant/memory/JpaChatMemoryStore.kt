@@ -89,7 +89,7 @@ open class JpaChatMemoryStore(
             }
             MessageRole.SYSTEM -> SystemMessage.from(content)
             MessageRole.TOOL_EXECUTION_RESULT -> {
-                toolExecutionId?.let { ToolExecutionResultMessage.from(it, toolExecutionId, content) }
+                toolExecutionId?.let { ToolExecutionResultMessage.from(it, toolCalls ?: "", content) }
             }
         }
     }

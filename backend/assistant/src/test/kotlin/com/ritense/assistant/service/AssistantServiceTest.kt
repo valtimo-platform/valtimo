@@ -16,6 +16,7 @@
 
 package com.ritense.assistant.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.assistant.domain.AssistantSessionEntity
 import com.ritense.assistant.web.rest.dto.ChatRequest
 import dev.langchain4j.agent.tool.Tool
@@ -46,6 +47,8 @@ class AssistantServiceTest {
     private lateinit var chatMemoryProvider: ChatMemoryProvider
     private lateinit var contextBuilder: AssistantContextBuilder
     private lateinit var sessionService: AssistantSessionService
+    private lateinit var pendingActionService: PendingActionService
+    private lateinit var objectMapper: ObjectMapper
     private lateinit var assistantService: AssistantService
 
     @BeforeEach
@@ -54,12 +57,16 @@ class AssistantServiceTest {
         chatMemoryProvider = mock()
         contextBuilder = AssistantContextBuilder()
         sessionService = mock()
+        pendingActionService = mock()
+        objectMapper = ObjectMapper()
 
         assistantService = AssistantService(
             chatModel,
             chatMemoryProvider,
             contextBuilder,
             sessionService,
+            pendingActionService,
+            objectMapper,
             emptyList()
         )
     }
@@ -71,6 +78,8 @@ class AssistantServiceTest {
             chatMemoryProvider,
             contextBuilder,
             sessionService,
+            pendingActionService,
+            objectMapper,
             emptyList()
         )
 
@@ -129,6 +138,8 @@ class AssistantServiceTest {
             chatMemoryProvider,
             contextBuilder,
             sessionService,
+            pendingActionService,
+            objectMapper,
             emptyList()
         )
         assertEquals(false, serviceWithoutModel.isConfigured())
@@ -176,6 +187,8 @@ class AssistantServiceTest {
             chatMemoryProvider,
             contextBuilder,
             sessionService,
+            pendingActionService,
+            objectMapper,
             listOf(toolProvider)
         )
 
@@ -295,6 +308,8 @@ class AssistantServiceTest {
             chatMemoryProvider,
             contextBuilder,
             sessionService,
+            pendingActionService,
+            objectMapper,
             listOf(toolProvider)
         )
 

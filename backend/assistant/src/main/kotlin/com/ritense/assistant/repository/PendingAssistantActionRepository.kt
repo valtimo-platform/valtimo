@@ -27,6 +27,8 @@ interface PendingAssistantActionRepository : JpaRepository<PendingAssistantActio
 
     fun findByIdAndUserId(id: UUID, userId: String): PendingAssistantAction?
 
+    fun findFirstBySessionIdAndUserIdOrderByCreatedAtDesc(sessionId: UUID, userId: String): PendingAssistantAction?
+
     @Modifying
     @Query("DELETE FROM PendingAssistantAction p WHERE p.expiresAt < :before")
     fun deleteExpiredBefore(before: Instant): Int

@@ -139,6 +139,10 @@ class ProcessDefinitionToolsTest {
             params = any(),
             resourceType = eq("ProcessDefinition"),
             resourceId = eq("loan-process"),
+            previewDescription = any(),
+            diffBefore = any(),
+            diffAfter = any(),
+            affectedResources = any(),
             ttl = any()
         )).thenReturn(pendingAction)
 
@@ -147,7 +151,7 @@ class ProcessDefinitionToolsTest {
 
         assertContains(result, "Preview")
         assertContains(result, "loan-process")
-        assertContains(result, "confirm action")
+        assertContains(result, "confirmation dialog")
     }
 
     @Test
@@ -174,6 +178,10 @@ class ProcessDefinitionToolsTest {
             params = any(),
             resourceType = any(),
             resourceId = any(),
+            previewDescription = any(),
+            diffBefore = any(),
+            diffAfter = any(),
+            affectedResources = any(),
             ttl = any()
         )).thenReturn(pendingAction)
 

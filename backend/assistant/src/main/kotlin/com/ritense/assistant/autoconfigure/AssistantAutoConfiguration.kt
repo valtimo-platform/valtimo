@@ -174,6 +174,8 @@ class AssistantAutoConfiguration {
         chatMemoryProvider: ChatMemoryProvider,
         contextBuilder: AssistantContextBuilder,
         sessionService: AssistantSessionService,
+        pendingActionService: PendingActionService,
+        objectMapper: ObjectMapper,
         caseDefinitionTools: ObjectProvider<CaseDefinitionTools>,
         caseInformationTools: ObjectProvider<CaseInformationTools>,
         processDefinitionTools: ObjectProvider<ProcessDefinitionTools>
@@ -188,6 +190,8 @@ class AssistantAutoConfiguration {
             chatMemoryProvider,
             contextBuilder,
             sessionService,
+            pendingActionService,
+            objectMapper,
             assistantTools
         )
     }

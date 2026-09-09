@@ -74,7 +74,7 @@ class AssistantContextBuilderTest {
     fun `should include case detail context`() {
         val context = PageContext(
             page = "case-detail",
-            resourceType = "case",
+            resourceType = "document",
             resourceId = "case-123"
         )
 
@@ -85,15 +85,15 @@ class AssistantContextBuilderTest {
             toolSpecifications = emptyList()
         )
 
-        assertContains(prompt, "viewing case")
+        assertContains(prompt, "case detail page")
         assertContains(prompt, "case-123")
     }
 
     @Test
     fun `should include process definition editor context`() {
         val context = PageContext(
-            page = "process-definition-editor",
-            resourceType = "process",
+            page = "process-definition-detail",
+            resourceType = "processDefinition",
             resourceId = "loan-process"
         )
 
@@ -104,7 +104,7 @@ class AssistantContextBuilderTest {
             toolSpecifications = emptyList()
         )
 
-        assertContains(prompt, "editing process")
+        assertContains(prompt, "process definition")
         assertContains(prompt, "loan-process")
     }
 
@@ -130,7 +130,7 @@ class AssistantContextBuilderTest {
     @Test
     fun `should include form editor context`() {
         val context = PageContext(
-            page = "form-editor",
+            page = "form-builder",
             resourceType = "form",
             resourceId = "application-form"
         )

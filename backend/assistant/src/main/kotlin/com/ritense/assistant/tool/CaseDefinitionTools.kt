@@ -142,6 +142,15 @@ open class CaseDefinitionTools(
                 return@runWithoutAuthorization diff
             }
 
+            val currentState = buildString {
+                appendLine("Name: ${current.name}")
+                appendLine("Description: ${current.description ?: "(empty)"}")
+            }
+            val newState = buildString {
+                appendLine("Name: $newName")
+                appendLine("Description: ${newDescription ?: "(empty)"}")
+            }
+
             val pendingAction = pendingActionService.createPendingAction(
                 sessionId = context.sessionId,
                 userId = context.userId,
@@ -153,10 +162,14 @@ open class CaseDefinitionTools(
                     "description" to newDescription
                 )),
                 resourceType = "CaseDefinition",
-                resourceId = "$caseDefinitionKey:$versionTag"
+                resourceId = "$caseDefinitionKey:$versionTag",
+                previewDescription = "Update case definition '$caseDefinitionKey:$versionTag'",
+                diffBefore = currentState.trim(),
+                diffAfter = newState.trim(),
+                affectedResources = listOf("$caseDefinitionKey:$versionTag")
             )
 
-            "$diff\n\nTo apply these changes, confirm action: ${pendingAction.id}"
+            "$diff\n\nA confirmation dialog will appear for you to apply or cancel these changes."
         }
     }
 

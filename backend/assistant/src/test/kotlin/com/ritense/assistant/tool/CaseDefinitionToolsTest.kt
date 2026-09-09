@@ -208,6 +208,10 @@ class CaseDefinitionToolsTest {
             params = any(),
             resourceType = eq("CaseDefinition"),
             resourceId = eq("loan-application:1.0.0"),
+            previewDescription = any(),
+            diffBefore = any(),
+            diffAfter = any(),
+            affectedResources = any(),
             ttl = any()
         )).thenReturn(pendingAction)
 
@@ -217,7 +221,7 @@ class CaseDefinitionToolsTest {
         assertContains(result, "Preview")
         assertContains(result, "Loan Application")
         assertContains(result, "New Name")
-        assertContains(result, "confirm action")
+        assertContains(result, "confirmation dialog")
     }
 
     @Test
@@ -238,7 +242,9 @@ class CaseDefinitionToolsTest {
         val result = tools.previewCaseDefinitionChange("loan-application", "1.0.0", changesJson)
 
         assertContains(result, "No changes detected")
-        verify(pendingActionService, never()).createPendingAction(any(), any(), any(), any(), any(), any(), any())
+        verify(pendingActionService, never()).createPendingAction(
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+        )
     }
 
     @Test

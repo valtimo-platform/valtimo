@@ -16,10 +16,16 @@
 
 package com.ritense.assistant.service
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.assistant.domain.PendingAssistantAction
 import com.ritense.assistant.tool.ToolContext
 import com.ritense.assistant.tool.ToolContextHolder
+import com.ritense.assistant.web.rest.dto.AssistantAction
 import com.ritense.assistant.web.rest.dto.AssistantResponse
+import com.ritense.assistant.web.rest.dto.ChangePreview
 import com.ritense.assistant.web.rest.dto.ChatRequest
+import com.ritense.assistant.web.rest.dto.DiffContent
 import dev.langchain4j.agent.tool.ToolExecutionRequest
 import dev.langchain4j.agent.tool.ToolSpecification
 import dev.langchain4j.agent.tool.ToolSpecifications
@@ -40,6 +46,8 @@ open class AssistantService(
     private val chatMemoryProvider: ChatMemoryProvider,
     private val contextBuilder: AssistantContextBuilder,
     private val sessionService: AssistantSessionService,
+    private val pendingActionService: PendingActionService,
+    private val objectMapper: ObjectMapper,
     private val toolProviders: List<Any>
 ) {
     private val logger = KotlinLogging.logger {}
@@ -110,13 +118,14 @@ open class AssistantService(
         )
 
         return ToolContextHolder.withContext(toolContext) {
-            executeWithToolLoop(memory, sessionId)
+            executeWithToolLoop(memory, sessionId, userId)
         }
     }
 
     private fun executeWithToolLoop(
         memory: dev.langchain4j.memory.ChatMemory,
-        sessionId: UUID
+        sessionId: UUID,
+        userId: String
     ): AssistantResponse {
         val maxIterations = 10
         var iteration = 0
@@ -151,9 +160,13 @@ open class AssistantService(
             memory.add(aiMessage)
 
             if (!aiMessage.hasToolExecutionRequests()) {
+                val pendingAction = pendingActionService.findLatestBySessionIdAndUserId(sessionId, userId)
+                val action = pendingAction?.let { buildConfirmationAction(it) }
+
                 return AssistantResponse(
                     message = aiMessage.text() ?: "",
-                    sessionId = sessionId.toString()
+                    sessionId = sessionId.toString(),
+                    action = action
                 )
             }
 
@@ -168,6 +181,23 @@ open class AssistantService(
         return AssistantResponse(
             message = "I'm having trouble completing your request. Please try simplifying your question.",
             sessionId = sessionId.toString()
+        )
+    }
+
+    private fun buildConfirmationAction(pending: PendingAssistantAction): AssistantAction.ConfirmationRequired? {
+        if (pending.previewDescription == null) return null
+
+        return AssistantAction.ConfirmationRequired(
+            preview = ChangePreview(
+                description = pending.previewDescription,
+                diff = if (pending.diffBefore != null && pending.diffAfter != null) {
+                    DiffContent(pending.diffBefore, pending.diffAfter)
+                } else null,
+                affectedResources = pending.affectedResources?.let {
+                    objectMapper.readValue(it, object : TypeReference<List<String>>() {})
+                }
+            ),
+            pendingActionId = pending.id.toString()
         )
     }
 

@@ -16,6 +16,7 @@
 
 package com.ritense.assistant.memory
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.assistant.domain.AssistantMessageEntity
 import com.ritense.assistant.domain.MessageRole
 import com.ritense.assistant.repository.AssistantMessageRepository
@@ -40,6 +41,7 @@ import kotlin.test.assertTrue
 class JpaChatMemoryStoreTest {
 
     private lateinit var repository: AssistantMessageRepository
+    private lateinit var objectMapper: ObjectMapper
     private lateinit var store: JpaChatMemoryStore
 
     private val sessionId = UUID.randomUUID()
@@ -47,7 +49,8 @@ class JpaChatMemoryStoreTest {
     @BeforeEach
     fun setUp() {
         repository = mock()
-        store = JpaChatMemoryStore(repository)
+        objectMapper = ObjectMapper()
+        store = JpaChatMemoryStore(repository, objectMapper)
     }
 
     @Test

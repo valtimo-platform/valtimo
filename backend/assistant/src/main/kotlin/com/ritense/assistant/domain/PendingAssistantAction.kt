@@ -48,6 +48,18 @@ class PendingAssistantAction(
     @Column(name = "resource_id")
     val resourceId: String? = null,
 
+    @Column(name = "preview_description", columnDefinition = "TEXT")
+    val previewDescription: String? = null,
+
+    @Column(name = "diff_before", columnDefinition = "TEXT")
+    val diffBefore: String? = null,
+
+    @Column(name = "diff_after", columnDefinition = "TEXT")
+    val diffAfter: String? = null,
+
+    @Column(name = "affected_resources", columnDefinition = "TEXT")
+    val affectedResources: String? = null,
+
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: Instant,
 

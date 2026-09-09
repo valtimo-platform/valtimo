@@ -210,6 +210,19 @@ open class ProcessDefinitionTools(
                 }
             }
 
+            val currentBpmn = if (currentProcDef != null) {
+                try {
+                    val bpmnModel = repositoryService.getBpmnModelInstance(currentProcDef.id)
+                    val outputStream = ByteArrayOutputStream()
+                    Bpmn.writeModelToStream(outputStream, bpmnModel)
+                    outputStream.toString(Charsets.UTF_8).take(1000) + if (outputStream.size() > 1000) "\n... (truncated)" else ""
+                } catch (e: Exception) {
+                    "(current version exists but content unavailable)"
+                }
+            } else {
+                "(new process)"
+            }
+
             val pendingAction = pendingActionService.createPendingAction(
                 sessionId = context.sessionId,
                 userId = context.userId,
@@ -220,10 +233,14 @@ open class ProcessDefinitionTools(
                     "caseDefinitionKey" to caseDefinitionKey
                 )),
                 resourceType = "ProcessDefinition",
-                resourceId = processDefinitionKey
+                resourceId = processDefinitionKey,
+                previewDescription = "Deploy process definition '$processDefinitionKey' (v${currentVersion + 1})",
+                diffBefore = currentBpmn,
+                diffAfter = newBpmnXml.take(1000) + if (newBpmnXml.length > 1000) "\n... (truncated)" else "",
+                affectedResources = listOfNotNull(processDefinitionKey, caseDefinitionKey?.let { "case:$it" })
             )
 
-            "$diff\n\nTo deploy this process definition, confirm action: ${pendingAction.id}"
+            "$diff\n\nA confirmation dialog will appear for you to deploy or cancel."
         }
     }
 
