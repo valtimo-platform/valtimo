@@ -390,20 +390,30 @@ class BuildingBlockDefinitionProcessDefinitionService(
             )
     }
 
+    // Resolves keys through the engine rather than the entity's @Formula, which is null for a link saved in this transaction.
     private fun findLinksBySameProcessDefinitionKey(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         deployedProcessDefinitionId: ProcessDefinitionId
     ): List<ProcessDefinitionBuildingBlockDefinition> {
-        val deployedProcessDefinitionKey = runWithoutAuthorization {
-            operatonProcessService.getProcessDefinitionById(deployedProcessDefinitionId.id)
-        }.key
-
-        return processDefinitionBuildingBlockDefinitionRepository
+        val otherLinks = processDefinitionBuildingBlockDefinitionRepository
             .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
-            .filter { link ->
-                link.processDefinitionKey == deployedProcessDefinitionKey &&
-                    link.id.processDefinitionId != deployedProcessDefinitionId
-            }
+            .filter { it.id.processDefinitionId != deployedProcessDefinitionId }
+        if (otherLinks.isEmpty()) return emptyList()
+
+        val keysById = processDefinitionKeysById(
+            otherLinks.map { it.id.processDefinitionId.id } + deployedProcessDefinitionId.id
+        )
+        val deployedProcessDefinitionKey = keysById[deployedProcessDefinitionId.id] ?: return emptyList()
+
+        return otherLinks.filter { keysById[it.id.processDefinitionId.id] == deployedProcessDefinitionKey }
+    }
+
+    private fun processDefinitionKeysById(processDefinitionIds: List<String>): Map<String, String> {
+        return repositoryService
+            .createProcessDefinitionQuery()
+            .processDefinitionIdIn(*processDefinitionIds.toTypedArray())
+            .list()
+            .associate { it.id to it.key }
     }
 
     private fun createOrReplaceLink(
