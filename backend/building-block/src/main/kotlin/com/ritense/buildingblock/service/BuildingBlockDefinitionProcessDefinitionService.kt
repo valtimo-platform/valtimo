@@ -224,7 +224,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
         val newLink = createOrReplaceLink(
             buildingBlockDefinitionId,
             deployedProcessDefinitionId,
-            existingLink,
+            listOfNotNull(existingLink),
             mainFlag
         )
 
@@ -248,17 +248,16 @@ class BuildingBlockDefinitionProcessDefinitionService(
         main: Boolean
     ) {
         buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
-        val existingLink = if (currentProcessDefinitionId != null) {
-            findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
-        } else {
-            null
-        }
-        val mainFlag = existingLink?.main ?: main
+        val supersededLinks = (
+            listOfNotNull(findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)) +
+                findLinksBySameProcessDefinitionKey(buildingBlockDefinitionId, deployedProcessDefinitionId)
+            ).distinctBy { it.id }
+        val mainFlag = main || supersededLinks.any { it.main }
 
         val newLink = createOrReplaceLink(
             buildingBlockDefinitionId,
             deployedProcessDefinitionId,
-            existingLink,
+            supersededLinks,
             mainFlag
         )
 
@@ -391,13 +390,29 @@ class BuildingBlockDefinitionProcessDefinitionService(
             )
     }
 
+    private fun findLinksBySameProcessDefinitionKey(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        deployedProcessDefinitionId: ProcessDefinitionId
+    ): List<ProcessDefinitionBuildingBlockDefinition> {
+        val deployedProcessDefinitionKey = runWithoutAuthorization {
+            operatonProcessService.getProcessDefinitionById(deployedProcessDefinitionId.id)
+        }.key
+
+        return processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+            .filter { link ->
+                link.processDefinitionKey == deployedProcessDefinitionKey &&
+                    link.id.processDefinitionId != deployedProcessDefinitionId
+            }
+    }
+
     private fun createOrReplaceLink(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         newProcessDefinitionId: ProcessDefinitionId,
-        existingLink: ProcessDefinitionBuildingBlockDefinition?,
+        existingLinks: List<ProcessDefinitionBuildingBlockDefinition>,
         main: Boolean
     ): ProcessDefinitionBuildingBlockDefinition {
-        existingLink?.let {
+        existingLinks.forEach {
             processDefinitionBuildingBlockDefinitionRepository.delete(it)
         }
 
