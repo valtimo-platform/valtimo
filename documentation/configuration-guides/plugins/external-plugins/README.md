@@ -31,9 +31,10 @@ Under **Integrations**, choose a page: **Plugins**, **Plugin hosts**, or **Apps*
 {% endstep %}
 {% endstepper %}
 
-**Plugins** lists every plugin configuration. The **Source** column distinguishes **Embedded**
-(runs inside Valtimo) from **External** (runs on an integration); external rows also show which
-host serves them.
+**Plugins** lists the plugin configurations of embedded plugins and of plugins served by plugin
+hosts. The **Source** column distinguishes **Embedded** (runs inside Valtimo) from **External**
+(runs on an integration); external rows also show which host serves them. An app's configuration
+is not listed here — it is managed on the **Apps** page, together with the app itself.
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/06-plugins-external-rows.png" alt=""><figcaption>Plugins page with an external configuration</figcaption></figure>
 
@@ -41,7 +42,7 @@ host serves them.
 
 | Status | Meaning |
 |--------|---------|
-| **Connected** | The last check-in fully succeeded — the integration is reachable and accepts Valtimo's credentials. |
+| **Connected** | Check-ins are succeeding — the integration is reachable and accepts Valtimo's credentials. |
 | **Unreachable** | Repeated check-ins failed. Configurations stay in place and recover automatically once the integration is reachable again. |
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/01-plugin-hosts-page.png" alt=""><figcaption>Plugin hosts page</figcaption></figure>

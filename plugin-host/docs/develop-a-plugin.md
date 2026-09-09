@@ -311,7 +311,8 @@ A host function invoked without its capability granted returns a structured
 
 ## 4. Frontend bundles
 
-A bundle is a `frontend/*.html` file whose `<script src="./x.tsx">` the pack tool compiles with
+A bundle is a `frontend/*.html` file that references `<script src="x.bundle.js">`; the pack tool
+compiles the matching source file (`x.tsx`, `.ts`, `.jsx`, or `.js`) into that bundle with
 esbuild. Bundles render at an **opaque origin** inside a sandboxed iframe and **never hold a
 token** — all data access goes through the SDK's parent-proxy, and the parent enforces the
 configuration's endpoint allowlist plus the user's own permissions.
@@ -341,7 +342,7 @@ policy.
 |---|---|
 | `ready(): Promise<void>` | Resolves when the manifest (translations) is fetched **and** the parent's `init` arrived (or a 2 s init timeout elapses, so a bundle still renders without a parent) — mount your UI inside it so the first render uses the right locale. |
 | `getContext()` / `onContext(h)` | The surface context (table below). |
-| `getLocale()` / `t(key, fallback?)` | Active UI language and translation lookup from `manifest.translations` (falls back to `en`, then the key). |
+| `getLocale()` / `t(key, fallback?)` | Active UI language and translation lookup from `manifest.translations`. A locale without a bucket falls back to the whole `en` bucket; a key missing from the active bucket renders the fallback, then the key. |
 | `getTheme()` / `onThemeChanged(h)` | The hosting UI's Carbon theme, for matching light/dark styling. |
 | `callValtimo(method, path, body?, headers?)` | GZAC API call as the logged-in user → `Promise<{status, body}>`. Paths must be GZAC API paths (`/api/…`); the parent rejects anything else. |
 | `getPluginData(path, query?)` / `postPluginData(path, body?)` | Calls your `request()` handlers through the host's `/data` route → `Promise<{status, body}>`. |

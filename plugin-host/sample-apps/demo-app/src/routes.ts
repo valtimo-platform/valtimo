@@ -301,7 +301,7 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
           },
           request.log,
         );
-        // A plugin-level error maps to 422 so the process can catch it as a BPMN error; success is 200.
+        // Plugin-level error → 422; GZAC raises a process incident from it (deliberately not a BPMN error).
         reply.code(output.status === "error" ? 422 : 200).send(output);
       } catch (err) {
         request.log.error({ err }, "[demo-app] action failed");

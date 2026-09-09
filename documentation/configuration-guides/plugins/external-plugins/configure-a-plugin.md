@@ -28,8 +28,9 @@ External plugins appear alongside embedded ones, with their logo, version, and d
 {% step %}
 In **Enter data**, name the configuration and fill in the plugin's settings
 
-The settings form is provided by the plugin itself, so it can explain and validate its own
-fields.
+When the plugin ships its own settings screen, this step shows it, so the plugin can explain and
+validate its own fields. A plugin without one gets a generic form instead: a configuration name
+plus the settings as JSON.
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/08-configure-plugin-enter-data.png" alt=""><figcaption>Enter data</figcaption></figure>
 {% endstep %}

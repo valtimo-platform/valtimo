@@ -220,13 +220,16 @@ Reads `pluginId` and `version` from `manifest.json` and produces `{pluginId}-{ve
   (self-reported by the SDK, resolved from the plugin's `cwd` exactly as esbuild is) — i.e. the SDK
   the wasm was compiled against, not the one that happens to be running the pack tool. Those differ
   under `npx`, a global install, or two hoisted copies; the pack tool warns and stamps the plugin's
+  copy. A logo found at the project root is recorded as `logo` in the stamped manifest.
 - `plugin.wasm`
-- `frontend/` (if the directory exists)
+- `frontend/` (if the directory exists) — `*.bundle.js` scripts referenced by its HTML are
+  compiled from their `.tsx`/`.ts`/`.jsx`/`.js` sources first and included
+- `logo.svg` / `logo.png` / `logo.jpg` (if present at the project root)
 
 ## SDK API (for plugin authors)
 
 The canonical handler and host-function reference is
-[Developing an external plugin](https://github.com/valtimo-platform/valtimo/blob/master/plugin-host/docs/develop-a-plugin.md) —
+[Developing an external plugin](../docs/develop-a-plugin.md) —
 this section only sketches the surface:
 
 ```typescript
@@ -296,8 +299,8 @@ Entries are **origins**, matched on scheme + host + port:
   `a.b.vendor.com`. Prefer explicit hosts: a wildcard under your own DNS is a much wider grant, and
   it is flagged as such on the admin's **Permissions** step.
 
-Declaring `egress` without `http_request` in `capabilities` fails validation, as does an unparseable
-entry — the pack tool catches both before the package is built.
+Declaring `egress` alongside a `capabilities` list that lacks `http_request` fails validation, as
+does an unparseable entry — the pack tool catches both before the package is built.
 
 ## Frontend SDK (`@valtimo/plugin-sdk/frontend`)
 

@@ -41,14 +41,15 @@ The permissions step is identical to activating any external plugin — see
 {% endstep %}
 {% endstepper %}
 
-After saving, the app appears on the Apps page with its linked configuration, and the
-configuration appears on the Plugins page like any other.
+After saving, the app appears on the Apps page with its linked configuration. The configuration
+is also managed from this page — editing, logs, and deletion live in the app's row menu, not on
+the Plugins page.
 
 {% hint style="info" %}
-If the app cannot be connected, check the base URL and secret and use **Retry**. If the app was
-added but its plugin is not ready yet, the app is saved anyway — Valtimo finishes the job
-automatically once the app becomes reachable, and the configuration can be completed later from
-the Apps page.
+If the connection fails, the reason appears in the dialog — check the base URL and secret and
+click **Connect** again. If the app was added but its plugin is not ready yet, the app is saved
+anyway and the dialog offers **Retry** — Valtimo finishes the job automatically once the app
+becomes reachable, and the configuration can be completed later from the Apps page.
 {% endhint %}
 
 {% hint style="info" %}

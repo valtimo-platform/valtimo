@@ -19,9 +19,9 @@ capability gating, and content pinning from the host. An app trades that for ful
 language, any runtime, its own persistence) and takes on the contract obligations below itself.
 
 The reference implementation is [`sample-apps/demo-app/`](../sample-apps/demo-app/) — a small
-Node + Fastify service implementing the whole contract; each section below names the file that
-demonstrates it. This page documents every request GZAC sends and every response it expects, so
-you can build against it without reverse-engineering.
+Node + Fastify service implementing the contract (a few deliberate POC gaps are flagged inline);
+each section below names the file that demonstrates it. This page documents every request GZAC
+sends and every response it expects, so you can build against it without reverse-engineering.
 
 ## Lifecycle
 
@@ -65,15 +65,17 @@ Reference: [`demo-app/src/hmac.ts`](../sample-apps/demo-app/src/hmac.ts) (a Fast
 with raw-body capture and the single-use replay check), and
 [`test-fixtures/hmac-vectors.json`](../test-fixtures/hmac-vectors.json) — openssl-generated
 golden vectors to pin your implementation against, the same vectors the plugin host's verifier is
-pinned against (GZAC's client tests recompute them with an independent oracle).
+pinned against (GZAC's client tests cross-check the same construction with an independent
+oracle).
 
 ## Routes GZAC calls
 
 ### `GET /health`
 
 Liveness probe; any 2xx counts. `{"status": "UP"}` by convention. **No HMAC** — the probe is
-sent unsigned, so do not auth-guard this route: a 401 counts as a failed poll and flips the
-integration to Unreachable. Every other route in this section is HMAC-verified.
+sent unsigned, so do not auth-guard this route: a 401 counts as a failed poll, and enough
+consecutive failures flip the integration to Unreachable. Every other route in this section is
+HMAC-verified.
 
 ### `GET /api/host/plugins` — discovery
 
@@ -95,6 +97,10 @@ The `manifest` follows the same rules as a packaged plugin's `manifest.json` —
 `translations`, `permissions`, `eventSubscriptions`, `actions`, `frontendBundles`,
 `configurationSchema` (see [Developing an external plugin](./develop-a-plugin.md#the-manifest)).
 What you declare here is what the administrator is asked to accept.
+
+Pick a `pluginId` unique to your app: `pluginId@version` is unique across a whole GZAC
+environment, so registering an app whose plugin is already served by another integration there is
+refused with a conflict error.
 
 `contentHash` is optional. Serve a stable value that changes when your plugin's behavior/manifest
 changes and GZAC pins it, flagging unexpected changes for admin re-acceptance — recommended, and
@@ -149,7 +155,7 @@ runtime — so the table below notes per field what actually binds an app:
 | `ownerId` | Opaque identity of the GZAC↔app relationship. Persist and echo it in the listing; it is what lets a GZAC clean up only its own configurations. |
 | `eventSubscriptions` | The event types the admin granted (which can lag your manifest). Act on these and drop the rest — your obligation, not an enforced bound: the broker feed is a fanout carrying every platform event (see [Events](#events)). |
 | `grantedEndpoints` | The GZAC endpoints your service token may call. GZAC enforces this server-side on every callback — treat the list as your API surface. |
-| `grantedCapabilities` | For an app, only `frontend_data` has a job: gate your `/data` route on it. The others (`gzac_api`, `http_request`, `kv`, `log`) switch host functions inside the Wasm sandbox — an app has no such runtime, so they arrive for contract parity and record what the admin accepted. |
+| `grantedCapabilities` | For an app, two matter: `frontend_data` gates your `/data` route, and declaring `log` in the manifest enables the admin's **Logs** dialog — which calls the logs route below, so serve it when you declare `log`. The others (`gzac_api`, `http_request`, `kv`) switch host functions inside the Wasm sandbox — an app has no such runtime, so they arrive for contract parity and record what the admin accepted. |
 | `allowedEgress` | The outbound connections the admin accepted — informational for an app: a plugin host enforces this on sandboxed plugins, but nothing can enforce it on a native service. Declare your real targets in the manifest so the **Permissions** step tells the truth; actually bounding an app's traffic is a deployment concern (network policy). |
 | `expectedContentHash` | Present when GZAC pinned your `contentHash`. If it doesn't match what you currently serve, refuse with `409` — the admin accepted different content. |
 | `eventBroker` | Broker connection for events; absent = events disabled for this configuration. `queueTtlMs` is only sent in `durable` mode. Normalize defensively: unknown `queueMode` → `live`; clamp `queueTtlMs` to 1 h–30 d (default 72 h). |
@@ -169,7 +175,39 @@ consumers.
 **Summaries only.** An app can serve many GZAC instances, all authenticating with the same
 secret — a full listing would hand each of them the others' service tokens, properties, and
 broker credentials. GZAC uses this for its reconciliation pass: entries carrying *its* `ownerId`
-that no longer exist on its side get a `DELETE`.
+that no longer exist on its side get a `DELETE`. Like the announcement route, this one is
+tolerated missing — on a 404 GZAC skips reconciliation for the cycle, at the cost of orphaned
+configurations lingering when a delete happened while your app was down.
+
+### `GET /api/host/configurations/{configId}/logs` — log queries (only with the `log` capability)
+
+Sent when an administrator opens the **Logs** dialog for one of your configurations. The admin UI
+only offers that dialog when your manifest declares the `log` capability — without it the action
+is disabled, so declare `log` exactly when you serve this route. Query parameters: `page`
+(0-based), `size`, and optional `level` (`debug|info|warn|error`) and `source` filters; the query
+string is not part of the HMAC signature (the path is signed bare). Respond with a page, newest
+first:
+
+```json
+{
+  "content": [
+    {
+      "id": "42",
+      "configurationId": "…",
+      "pluginId": "demo-app",
+      "pluginVersion": "1.0.0",
+      "level": "info",
+      "source": "plugin",
+      "message": "…",
+      "data": { …structured details… },
+      "createdAt": "2026-09-01T12:00:00.000Z"
+    }
+  ],
+  "page": 0,
+  "size": 25,
+  "totalElements": 123
+}
+```
 
 ### `POST /plugins/{pluginId}/{version}/actions/{actionKey}` — run an action
 
@@ -259,8 +297,9 @@ GZAC does **not** complete — the errors render inline on the form.
 `Authorization: Bearer {serviceToken}` against `{gzacBaseUrl}` — see
 [`demo-app/src/gzac.ts`](../sample-apps/demo-app/src/gzac.ts). The token bypasses user
 permission checks; its reach is the granted endpoint list — additionally capped by a fixed
-GZAC-side denylist (management, external-plugin token, and role/permission surfaces are never
-reachable, whatever the grants) — so treat the granted list as your API surface. For per-user
+GZAC-side denylist (management, external-plugin token, role/permission surfaces, and user-account
+mutations are never reachable, whatever the grants) — so treat the granted list as your API
+surface. For per-user
 calls (from `/data` handlers), use the introspected `userToken` instead.
 
 ## Events
@@ -275,7 +314,8 @@ host filters against the granted subscriptions before invoking it; as an app *yo
 filter, so act only on the granted `eventSubscriptions` and drop the rest. Ack on success, drop
 (don't requeue) malformed messages, reconnect with backoff, and make handlers idempotent —
 delivery is at-least-once. Reference:
-[`demo-app/src/events.ts`](../sample-apps/demo-app/src/events.ts).
+[`demo-app/src/events.ts`](../sample-apps/demo-app/src/events.ts) (which deliberately simplifies
+the reconnect to a flat delay).
 
 ## Checklist
 
@@ -284,6 +324,7 @@ delivery is at-least-once. Reference:
 - [ ] Config push persisted (POST = upsert); `serviceToken`/`gzacBaseUrl` required; `ownerId` echoed; listing returns summaries only
 - [ ] Action route speaks `{status, variables, result?}` / `{status:"error", errorCode, errorMessage}`
 - [ ] Granted sets respected: only granted `eventSubscriptions` acted on (the feed itself is unfiltered), callbacks within `grantedEndpoints` (GZAC enforces this server-side)
+- [ ] `log` capability declared only if the logs route is served (declaring it enables the admin's Logs dialog)
 - [ ] Bundles served with strict CSP + announced `frame-ancestors`, fail closed
 - [ ] `/data` gated: `frontend_data` grant, rate limit, user-token introspection, fail closed on GZAC outage
 - [ ] Served over HTTPS (or loopback in development) — GZAC refuses to connect a plain-HTTP remote app: the configuration push carries a service token, decrypted secret properties and any broker credentials

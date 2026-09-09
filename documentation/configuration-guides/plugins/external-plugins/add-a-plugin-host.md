@@ -30,6 +30,13 @@ Fill in the connection details
 {% step %}
 Click **Save**
 {% endstep %}
+{% step %}
+In the **Reload required** dialog, click **Reload now**
+
+Configuring plugins from the new host shows screens the host serves, which the page's security
+policy only allows after a reload. **Later** postpones the reload — the host itself is already
+saved.
+{% endstep %}
 {% endstepper %}
 
 | Property | Description |

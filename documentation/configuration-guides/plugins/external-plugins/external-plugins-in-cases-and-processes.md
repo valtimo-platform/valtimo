@@ -54,18 +54,19 @@ submission before the task completes, with validation errors shown on the form.
 ## Case tabs
 
 A plugin screen can be a tab on the case detail page. Configure it under **Admin** > **Cases** >
-case definition > **Case details** > **Tabs** by creating a tab of type **External plugin** and
+case definition > **Case details** > **Tabs** by creating a tab of type **Plugins & Apps** and
 selecting the plugin configuration (and, when the plugin offers more than one tab screen, which
 one). See [Tabs](../../cases/case-details/tabs.md) for the general tab configuration flow.
 
-The type only appears when at least one activated external plugin offers a case tab screen.
+The type is disabled — with a tooltip explaining why — when no activated external plugin offers a
+case tab screen, or when every offered tab has already been added.
 
 ---
 
 ## Case widgets
 
 A plugin screen can also be a card on a widgets tab, next to the built-in widgets. In the widget
-tab editor, add a widget of type **External plugin** and select the configuration (and which
+tab editor, add a widget of type **Plugins & Apps** and select the configuration (and which
 widget screen, when the plugin offers several). The standard width, density, appearance, and
 display-condition options apply.
 

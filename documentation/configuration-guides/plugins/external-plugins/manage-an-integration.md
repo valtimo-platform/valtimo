@@ -84,7 +84,7 @@ integration's plugin screens (case tabs, task forms, widgets, pages).
 
 Add every URL users open the Valtimo frontend from — including reverse-proxy aliases — as a bare
 origin (`scheme://host[:port]`, no path, no wildcards). With no origins listed, no page can embed
-this integration's plugin screens: they render an unavailable state instead.
+this integration's plugin screens: the browser blocks them, so the screens never finish loading.
 
 ---
 
@@ -93,13 +93,15 @@ this integration's plugin screens: they render an unavailable state instead.
 Deletion is strict by design: anything still in use cannot be deleted, and there is no force
 override.
 
-- A **plugin configuration** cannot be deleted while any process link, case tab, case widget, or
-  building block references it. The dialog lists every usage so it can be unbound first.
+- A **plugin configuration** cannot be deleted while any process link, case tab, case widget,
+  menu page, or building block references it. The dialog lists every usage so it can be unbound
+  first.
 
   <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/17-delete-modal.png" alt=""><figcaption>Configuration in use</figcaption></figure>
 
-- An **integration** cannot be deleted while any of its configurations is still referenced. Its
-  unreferenced configurations are removed along with it.
+- An **integration** cannot be deleted while any of its configurations is still referenced, or
+  while a building block still links one of its plugin versions. Its unreferenced configurations
+  are removed along with it.
 
 {% hint style="danger" %}
 Deleting a configuration that is not in use is permanent: its accepted permissions and settings

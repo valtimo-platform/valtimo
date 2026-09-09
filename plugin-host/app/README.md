@@ -5,8 +5,8 @@ Node.js + Fastify sidecar that manages and executes external Wasm plugins via [E
 ## What It Does
 
 - Accepts plugin `.zip` uploads (containing `manifest.json` + `plugin.wasm`)
-- Persists plugins to disk and plugin metadata to PostgreSQL
-- Stores plugin configurations in PostgreSQL (survives restarts)
+- Persists plugin packages to disk, and configurations, key–value data, and logs to PostgreSQL
+  (survives restarts)
 - Executes plugin actions by calling into the Wasm module and returning process variables
 - Consumes platform events from RabbitMQ and delivers each to plugins that subscribe to it
   (`handle_event`) — see [Events](#events)
@@ -18,7 +18,9 @@ src/
   db/
     index.ts              # Database pool, migration runner
     config-repository.ts  # CRUD for plugin_configurations table
-    plugin-repository.ts  # CRUD for plugins table
+    gzac-instance-repository.ts  # CRUD for gzac_instances table (frame-ancestor announcements)
+    kv-repository.ts      # CRUD for plugin_kv table
+    log-repository.ts     # CRUD + paginated queries for plugin_logs table
   models/
     app-config.ts         # AppConfig type + Zod schema
     host-logger.ts        # HostLogger interface
@@ -29,15 +31,31 @@ src/
     health.ts             # GET /health
     host-management.ts    # Plugin CRUD (upload, list, delete)
     host-configurations.ts  # Configuration push/update/delete
+    host-gzac-instances.ts  # GZAC instance + frontend-origin announcements
     plugin-actions.ts     # Action execution + manifest retrieval
-    plugin-bundles.ts     # Static frontend asset serving
+    plugin-submit.ts      # Task-form submit hook (handle_submit)
+    plugin-data.ts        # Public data route for plugin iframes (handle_request)
+    plugin-logs.ts        # Paginated plugin_logs queries for GZAC's log modal
+    plugin-bundles.ts     # Static frontend asset serving, logo, frame-policy probe
   rabbitmq/
     event-consumer.ts     # Consumes platform events and routes them to subscribed plugins
   host-functions/
-    gzac-api.ts           # Extism host function for GZAC API callbacks
+    guard.ts              # Shared capability gate for every host function
+    gzac-api.ts           # GZAC API callbacks (service/user token attach)
+    http-request.ts       # Outbound HTTP with egress allowlist + SSRF guard
+    kv.ts                 # Per-configuration key-value store
+    log.ts                # Plugin log writes (pino + plugin_logs)
+  security/               # HMAC verification, replay cache, egress/endpoint allowlists,
+                          # URL/SSRF guard, content pin, rate limits, user-token introspection
   config.ts               # Environment config loader
-  plugin-manager.ts       # Wasm lifecycle: load, store, call actions/events via Extism
-  config-registry.ts      # Database-backed configuration store
+  plugin-manager.ts       # Wasm lifecycle: load, store, call exports via Extism
+  plugin-package-install.ts  # Zip-slip-guarded extraction + atomic staged install
+  preinstall.ts           # Boot-time install of PLUGIN_PREINSTALL_DIR packages
+  wasm-instance-pool.ts   # Per-plugin-version instance pool (lease, evict, drain)
+  wasm-memory-limit.ts    # Guest memory cap via in-memory module rewrite
+  config-registry.ts      # Database-backed configuration store (TTL read cache)
+  frame-ancestor-registry.ts  # frame-ancestors allowlist from announcements + env
+  body-parsing.ts / errors.ts / https-options.ts  # Fastify plumbing
   index.ts                # Fastify entry point
   migrate.ts              # Standalone migration entry point (dist/migrate.js)
 migrations/               # .sql schema migrations (node-pg-migrate)
@@ -170,9 +188,10 @@ truststore).
 
 Plain HTTP is fine when TLS is terminated by a reverse proxy in front of the host, or for local
 development on `localhost`. To keep secrets off an eavesdroppable link, **GZAC refuses to register
-or update a host that carries event-broker credentials unless that host is reachable over HTTPS**
-(or a loopback address such as `localhost`/`127.0.0.1` for local development). Hosts without a
-broker (actions only) may still be registered over plain HTTP.
+or update a host over plain HTTP** unless the address is loopback (`localhost`/`127.0.0.1` for
+local development) — every configuration push carries a service token and decrypted secret
+settings, broker or no broker. Deployments on a fully trusted network can lift this with
+`valtimo.external-plugin.allow-plaintext-host-transport=true` on the GZAC side.
 
 ## NPM Scripts
 
@@ -190,7 +209,7 @@ broker (actions only) may still be registered over plain HTTP.
 | Script | Description |
 |--------|-------------|
 | `npm run db:up` | Start PostgreSQL container |
-| `npm run db:down` | Stop PostgreSQL container |
+| `npm run db:down` | Stop the compose containers (also the host, when started via `docker:up`) |
 | `npm run db:reset` | Stop, remove volume, and restart (fresh database) |
 | `npm run db:logs` | Follow PostgreSQL logs |
 | `npm run db:shell` | Connect to psql shell |
@@ -215,8 +234,9 @@ build it directly: `docker build -f app/Dockerfile -t valtimo/plugin-host .` fro
 | Data | Storage | Location |
 |------|---------|----------|
 | Plugin configurations | PostgreSQL | `plugin_configurations` table |
-| Plugin metadata | PostgreSQL | `plugins` table |
-| Plugin binaries (.wasm, manifest, frontend assets) | Filesystem | `PLUGIN_STORAGE_DIR` (Docker: `/data/plugins` volume) |
+| Plugin key–value data / logs | PostgreSQL | `plugin_kv` / `plugin_logs` tables |
+| Announced GZAC instances | PostgreSQL | `gzac_instances` table |
+| Plugin packages (.wasm, manifest, logo, frontend assets) | Filesystem | `PLUGIN_STORAGE_DIR` (Docker: `/data/plugins` volume) |
 
 Configurations persist across host restarts. Event consumers automatically reconnect to brokers
 referenced by persisted configurations on startup.
@@ -470,7 +490,8 @@ references it any more. `exchange` defaults to `valtimo-events` and `exchangeTyp
 routed only to configurations carrying that same broker.
 
 **Multiple hosts per instance.** The exchange is a fanout, so the host binds its **own** queue —
-`valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>`. This means:
+`valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>` (durable queues append `.t<queueTtlMs>`).
+This means:
 
 - *Different* hosts on the same GZAC instance each have a distinct queue, so **every host receives a
   copy** of every event.
@@ -505,13 +526,15 @@ Round trip:
 1. A GZAC instance emits an event (e.g. `com.ritense.valtimo.task.completed`,
    `com.ritense.valtimo.document.viewed`) → outbox → its `valtimo-events` exchange.
 2. The host's consumer for that broker reads the CloudEvent and, for every configuration on that
-   broker whose manifest lists the event's `type` under `eventSubscriptions`, invokes the plugin's
-   `handle_event` export.
+   broker whose **granted** subscriptions (the `eventSubscriptions` pushed with the configuration)
+   include the event's `type`, invokes the plugin's `handle_event` export — the manifest is never
+   consulted at dispatch.
 3. The handler runs in the Extism sandbox with the configuration's properties injected and the
    per-configuration service token available, so it can call back into that GZAC instance via
    `gzac_api`.
 
-A plugin declares its subscriptions in `manifest.json`:
+A plugin declares its subscriptions in `manifest.json` (the admin accepts them at activation, and
+that accepted set is what GZAC pushes):
 
 ```json
 "eventSubscriptions": [
@@ -559,7 +582,9 @@ host_sign() {
 }
 ```
 
-`GET /health` is the only unauthenticated route.
+`GET /health` is the only unauthenticated route GZAC calls; the browser-facing plugin surfaces
+(`plugin-manifest`, `bundles/**`, `logo`, `frame-policy`, and the user-token-gated `data` route)
+are public by design.
 
 ### `GET /health`
 

@@ -70,8 +70,8 @@ instead (see Redeployment).
 Optional fields not shown above: integration `kind` defaults to `"PLUGIN_HOST"` — an app is
 `"kind": "APP"`, serves its own plugin, and a descriptor that declares `packages` on one fails
 the import; `eventQueueMode` (`"LIVE"`, the default, or `"DURABLE"`) and `eventQueueTtlMs`
-(durable-mode queue TTL in milliseconds, clamped 1 h–30 d, default 72 h — leave it out for
-`LIVE`); on a package, `"overwrite": true` lets the upload replace a version already installed
+(durable-mode queue TTL in milliseconds, default 72 h; a value outside 1 h–30 d fails the
+import — leave it out for `LIVE`); on a package, `"overwrite": true` lets the upload replace a version already installed
 with **different** content (default `false`: the installed version is kept and a warning names
 the conflict).
 
@@ -88,10 +88,12 @@ For each integration:
 1. **Register the host or app** if it does not exist yet.
 2. **Activate** each declared configuration.
 
-That is all, and none of it waits on the host — so a plugin host that is down, slow, or not started
-yet never delays startup. On a first boot nothing contacts the host at all; on a redeploy of a
-configuration whose plugin was already discovered, the new title and properties are pushed to the
-host after the import commits, and a failed push is a warning, never a startup failure.
+That is all, and none of it depends on the host being up — a plugin host that is down or not
+started yet never delays startup, and a reachable-but-hanging host can hold a redeploy only
+briefly (each configuration push is bounded by the client's read timeout). On a first boot
+nothing contacts the host at all; on a redeploy of a configuration whose plugin was already
+discovered, the new title and properties are pushed to the host after the import commits, and a
+failed push is a warning, never a startup failure.
 Configurations exist from the first boot, which is what process links, case tabs and menu pages
 that reference them need.
 
