@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div [attr.data-test-id]="testIds.confirmation" class="assistant-confirmation">
+  <p class="assistant-confirmation__title">{{ 'assistant.confirmation.title' | translate }}</p>
+
+  <p *ngIf="description" class="assistant-confirmation__description">{{ description }}</p>
+
+  <p class="assistant-confirmation__hint">{{ 'assistant.confirmation.hint' | translate }}</p>
+
+  <div class="assistant-confirmation__actions">
+    <button
+      [attr.data-test-id]="testIds.confirmationConfirm"
+      (click)="confirmEvent.emit()"
+      cdsButton="primary"
+      size="sm"
+      type="button"
+    >
+      {{ 'assistant.confirmation.confirm' | translate }}
+    </button>
+
+    <button
+      [attr.data-test-id]="testIds.confirmationCancel"
+      (click)="cancelEvent.emit()"
+      cdsButton="ghost"
+      size="sm"
+      type="button"
+    >
+      {{ 'assistant.confirmation.cancel' | translate }}
+    </button>
+  </div>
+</div>

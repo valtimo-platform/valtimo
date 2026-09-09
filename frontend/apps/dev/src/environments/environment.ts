@@ -228,6 +228,7 @@ export const environment: ValtimoConfig = {
     leningen: ['Boom', 'Straatverlichting'],
   },
   featureToggles: {
+    enableAssistant: true,
     showUserNameInTopBar: true,
     showPlantATreeButton: true,
     largeLogoMargin: false,

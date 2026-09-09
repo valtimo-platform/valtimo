@@ -70,6 +70,7 @@ interface OverrideFormioOptions extends FormioOptions {
 
 interface ValtimoConfigFeatureToggles {
   applicationTitleAsSuffix?: boolean;
+  enableAssistant?: boolean;
   showUserNameInTopBar?: boolean;
   showPlantATreeButton?: boolean;
   disableCaseCount?: boolean;

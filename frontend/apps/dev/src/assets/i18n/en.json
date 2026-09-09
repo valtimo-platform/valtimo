@@ -1,4 +1,44 @@
 {
+  "assistant": {
+    "name": "RitA",
+    "confirmation": {
+      "applied": "Done — the changes have been applied.",
+      "cancel": "Cancel",
+      "cancelled": "Cancelled. Nothing was changed.",
+      "confirm": "Confirm",
+      "failed": "That did not work. The action may have expired — ask me again.",
+      "hint": "Nothing changes until you confirm.",
+      "title": "Apply these changes?"
+    },
+    "greeting": {
+      "accessControl": "You're on a page with rules for the administrator role. Do you want to add, remove or edit rules?",
+      "generic": "Hello! How can I help you today?"
+    },
+    "launcher": {
+      "open": "Open the AI chat"
+    },
+    "panel": {
+      "error": "Something went wrong. Try again.",
+      "minimize": "Minimize the AI chat",
+      "notConfigured": "The assistant has no language model configured. Ask your administrator.",
+      "placeholder": "Type something...",
+      "send": "Send message",
+      "thinking": "RitA is thinking...",
+      "title": "AI chat"
+    },
+    "suggestions": {
+      "add": "Add",
+      "edit": "Edit",
+      "explainProcess": "Explain a process",
+      "findCase": "Find a case",
+      "remove": "Remove",
+      "viewCaseDefinition": "View a case definition"
+    },
+    "teaser": {
+      "accessControl": "You can now add PBAC rules with the help of our AI Chat",
+      "close": "Close"
+    }
+  },
   "bezwaarStartForm": {
     "htmlLabel": "HTML",
     "startInstruction": "Click Start to submit your notice of objection.",

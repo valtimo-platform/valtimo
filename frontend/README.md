@@ -86,7 +86,8 @@ To run TSLint on a specific library, run `npm run libs:lint:libraryName`.
 Valtimo uses Prettier to format its code. Run the `prettier:check` command to check for formatting
 errors, and `prettier:write` to automatically fix any errors.
 
-We advise to configure your IDE to automatically format files on save.
+We
+advise to configure your IDE to automatically format files on save.
 
 - For IntelliJ IDEA please refer to
   [this page](https://www.jetbrains.com/help/idea/prettier.html#ws_prettier_install).

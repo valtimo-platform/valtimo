@@ -1,0 +1,90 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.assistant-teaser {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+
+  &__close {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border: 0;
+    border-radius: 1rem;
+    background-color: var(--cds-layer-02);
+    color: var(--cds-text-primary);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--cds-layer-hover-02);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--cds-focus, var(--vcds-color-60));
+      outline-offset: 2px;
+    }
+
+    svg {
+      fill: currentColor;
+    }
+  }
+
+  &__bubble {
+    position: relative;
+    max-width: 17rem;
+    padding: 1rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background-color: var(--cds-button-primary);
+    color: var(--cds-text-on-color);
+    font-size: 0.875rem;
+    line-height: 1.375rem;
+    text-align: left;
+    box-shadow: 0 2px 6px var(--cds-shadow);
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--cds-button-primary-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--cds-focus, var(--vcds-color-60));
+      outline-offset: 2px;
+    }
+
+    // Tail pointing at the launcher
+    &::after {
+      content: '';
+      position: absolute;
+      right: -0.5rem;
+      bottom: 0.75rem;
+      width: 0;
+      height: 0;
+      border-top: 0.5rem solid transparent;
+      border-bottom: 0.5rem solid transparent;
+      border-left: 0.5rem solid var(--cds-button-primary);
+    }
+
+    &:hover::after {
+      border-left-color: var(--cds-button-primary-hover);
+    }
+  }
+}

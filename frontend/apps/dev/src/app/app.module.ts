@@ -29,6 +29,8 @@ import {LoggerModule} from 'ngx-logger';
 
 import {AppComponent} from './app.component';
 import {AppRoutingModule} from './app-routing.module';
+import {AssistantLauncherComponent} from './assistant/components/assistant-launcher/assistant-launcher.component';
+import {ASSISTANT_TRANSPORT, AssistantApiService} from './assistant/services';
 import {environment} from '../environments/environment';
 
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
@@ -167,6 +169,7 @@ export function tabsFactory() {
       },
     }),
     // layout / shell
+    AssistantLauncherComponent,
     LayoutModule,
     BootstrapModule,
     SecurityModule,
@@ -237,6 +240,8 @@ export function tabsFactory() {
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
+    // Swap for AssistantMockService to work on the assistant UI without a running backend.
+    {provide: ASSISTANT_TRANSPORT, useExisting: AssistantApiService},
     {
       provide: PLUGINS_TOKEN,
       useValue: [

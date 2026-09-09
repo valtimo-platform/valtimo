@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  [attr.aria-label]="'assistant.panel.title' | translate"
+  [attr.data-test-id]="testIds.panel"
+  class="assistant-panel"
+  role="dialog"
+>
+  <header class="assistant-panel__header">
+    <svg cdsIcon="ai-label" class="assistant-panel__mark" size="20"></svg>
+
+    <button
+      [attr.aria-label]="'assistant.panel.minimize' | translate"
+      [attr.data-test-id]="testIds.panelMinimize"
+      (click)="minimizeEvent.emit()"
+      class="assistant-panel__icon-button"
+      type="button"
+    >
+      <svg cdsIcon="subtract" size="16"></svg>
+    </button>
+  </header>
+
+  <div
+    #messageList
+    [attr.data-test-id]="testIds.panelMessages"
+    aria-live="polite"
+    class="assistant-panel__messages"
+    role="log"
+  >
+    <ng-container *ngFor="let message of chatService.$messages()">
+      <valtimo-assistant-message [message]="message"></valtimo-assistant-message>
+
+      <valtimo-assistant-suggestions
+        *ngIf="message.suggestionKeys?.length"
+        [suggestionKeys]="message.suggestionKeys!"
+        (suggestionSelectEvent)="onSuggestionSelect($event)"
+      ></valtimo-assistant-suggestions>
+    </ng-container>
+
+    <valtimo-assistant-confirmation
+      *ngIf="chatService.$pendingActionId()"
+      [description]="chatService.$pendingPreview()"
+      (cancelEvent)="chatService.cancelPendingAction()"
+      (confirmEvent)="chatService.confirmPendingAction()"
+    ></valtimo-assistant-confirmation>
+
+    <p
+      *ngIf="chatService.$awaitingReply()"
+      [attr.data-test-id]="testIds.panelThinking"
+      class="assistant-panel__thinking"
+    >
+      {{ 'assistant.panel.thinking' | translate }}
+    </p>
+
+    <p *ngIf="chatService.$degraded() === 'error'" class="assistant-panel__error">
+      {{ 'assistant.panel.error' | translate }}
+    </p>
+
+    <p *ngIf="chatService.$degraded() === 'notConfigured'" class="assistant-panel__error">
+      {{ 'assistant.panel.notConfigured' | translate }}
+    </p>
+  </div>
+
+  <form [formGroup]="formGroup" (ngSubmit)="onSubmit()" class="assistant-panel__composer">
+    <input
+      #messageInput
+      [attr.data-test-id]="testIds.panelInput"
+      [placeholder]="'assistant.panel.placeholder' | translate"
+      cdsText
+      formControlName="message"
+      type="text"
+    />
+
+    <button
+      [attr.aria-label]="'assistant.panel.send' | translate"
+      [attr.data-test-id]="testIds.panelSend"
+      [disabled]="!formGroup.get('message')?.value?.trim() || chatService.$awaitingReply()"
+      class="assistant-panel__icon-button"
+      type="submit"
+    >
+      <svg cdsIcon="send-alt" size="16"></svg>
+    </button>
+  </form>
+</div>

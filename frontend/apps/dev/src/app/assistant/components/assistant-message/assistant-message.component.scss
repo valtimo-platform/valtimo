@@ -1,0 +1,159 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.assistant-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 12px;
+  line-height: 1.125rem;
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.25rem;
+    background-color: var(--cds-button-primary);
+    color: var(--cds-text-on-color);
+
+    svg {
+      fill: currentColor;
+    }
+  }
+
+  &__name {
+    font-weight: 600;
+    color: var(--cds-text-primary);
+  }
+
+  &__time {
+    color: var(--cds-text-secondary);
+    font-size: 0.75rem;
+  }
+
+  &__text {
+    margin: 0;
+    white-space: pre-wrap;
+    color: var(--cds-text-primary);
+  }
+
+  // marked emits block elements and turns newlines into <br>, so pre-wrap here would
+  // double every line break.
+  &__text--markdown {
+    white-space: normal;
+  }
+
+  // ::ng-deep is required: elements injected through [innerHTML] never get Angular's
+  // encapsulation attributes, so scoped selectors would not reach them. It stays contained
+  // because the ancestor class is still scoped.
+  &__text--markdown ::ng-deep {
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      margin: 0.75rem 0 0.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      line-height: 1.25rem;
+    }
+
+    h1 {
+      font-size: 1rem;
+    }
+
+    p {
+      margin: 0 0 0.5rem;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 0.5rem;
+      padding-left: 1.25rem;
+    }
+
+    code {
+      padding: 0 0.25rem;
+      border-radius: 0.125rem;
+      background-color: var(--cds-layer-02);
+      font-family: monospace;
+      font-size: 0.75rem;
+    }
+
+    // A 24rem panel cannot fit a wide code block or table — scroll them instead of
+    // stretching the message.
+    pre {
+      margin: 0 0 0.5rem;
+      overflow-x: auto;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      background-color: var(--cds-layer-02);
+
+      code {
+        padding: 0;
+        background-color: transparent;
+      }
+    }
+
+    a {
+      color: var(--cds-link-primary);
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+
+    th,
+    td {
+      padding: 0.25rem 0.5rem 0.25rem 0;
+      border-bottom: 1px solid var(--cds-border-subtle-01);
+      text-align: left;
+    }
+  }
+
+  &--assistant &__text {
+    padding-left: 2rem;
+  }
+
+  &--user {
+    align-items: flex-end;
+
+    .assistant-message__text {
+      max-width: 85%;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      background-color: var(--cds-layer-02);
+    }
+  }
+}
