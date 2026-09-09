@@ -124,7 +124,7 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         pluginConfigurationId = configuration.id
 
         processDefinitionId = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionKey("catalogi-api-plugin")
+            .processDefinitionKey(PROCESS_DEFINITION_KEY)
             .latestVersion()
             .singleResult()
             .id
