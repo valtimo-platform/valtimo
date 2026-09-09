@@ -5,14 +5,20 @@
       <bpmn:outgoing>Flow_0c1yo1y</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:endEvent id="EndEvent_0v6qdzq">
-      <bpmn:incoming>SequenceFlow_17rgisa</bpmn:incoming>
+      <bpmn:incoming>Flow_1r0ltyp</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_17rgisa" sourceRef="GetInformatieobjecttype" targetRef="EndEvent_0v6qdzq" />
+    <bpmn:sequenceFlow id="SequenceFlow_17rgisa" sourceRef="GetInformatieobjecttype" targetRef="GetRoltype" />
     <bpmn:serviceTask id="GetInformatieobjecttype" name="Get Informatieobjecttype" camunda:expression="${null}">
       <bpmn:extensionElements />
       <bpmn:incoming>Flow_0c1yo1y</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_17rgisa</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:serviceTask id="GetRoltype" name="Get Roltype" camunda:expression="${null}">
+      <bpmn:extensionElements />
+      <bpmn:incoming>SequenceFlow_17rgisa</bpmn:incoming>
+      <bpmn:outgoing>Flow_1r0ltyp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1r0ltyp" sourceRef="GetRoltype" targetRef="EndEvent_0v6qdzq" />
     <bpmn:sequenceFlow id="Flow_0c1yo1y" sourceRef="StartEvent_1" targetRef="GetInformatieobjecttype" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
@@ -20,6 +26,10 @@
       <bpmndi:BPMNEdge id="SequenceFlow_17rgisa_di" bpmnElement="SequenceFlow_17rgisa">
         <di:waypoint x="341" y="159" />
         <di:waypoint x="392" y="159" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1r0ltyp_di" bpmnElement="Flow_1r0ltyp">
+        <di:waypoint x="492" y="159" />
+        <di:waypoint x="543" y="159" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0c1yo1y_di" bpmnElement="Flow_0c1yo1y">
         <di:waypoint x="191" y="159" />
@@ -32,8 +42,12 @@
         <dc:Bounds x="241" y="119" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0roltype_di" bpmnElement="GetRoltype">
+        <dc:Bounds x="392" y="119" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_0v6qdzq_di" bpmnElement="EndEvent_0v6qdzq">
-        <dc:Bounds x="392" y="141" width="36" height="36" />
+        <dc:Bounds x="543" y="141" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
