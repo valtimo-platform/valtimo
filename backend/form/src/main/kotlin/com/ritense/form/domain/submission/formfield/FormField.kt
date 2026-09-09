@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.domain.Document
+import com.ritense.form.domain.FormIoFormDefinition
 import org.springframework.context.ApplicationEventPublisher
 
 abstract class FormField(
@@ -33,6 +34,16 @@ abstract class FormField(
     abstract fun postProcess(document: Document?)
 
     companion object {
+        fun getFormFields(
+            formDefinition: FormIoFormDefinition,
+            formData: JsonNode,
+            applicationEventPublisher: ApplicationEventPublisher
+        ): List<FormField> {
+            return formDefinition.inputFields
+                .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
+                .mapNotNull { field -> getFormField(formData, field, applicationEventPublisher) }
+        }
+
         fun getFormField(
             formData: JsonNode,
             objectNode: ObjectNode,
