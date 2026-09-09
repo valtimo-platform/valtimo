@@ -182,6 +182,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
   @Input() isEditMode: boolean;
   @Input() uploadError: string | null = null;
+  @Input() uploading = false;
 
   public readonly open$ = new BehaviorSubject<boolean>(false);
 
@@ -540,6 +541,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   public save(): void {
+    if (this.uploading) return;
+
     this.formatDate('creatiedatum');
     this.formatDate('verzenddatum');
     this.formatDate('ontvangstdatum');
