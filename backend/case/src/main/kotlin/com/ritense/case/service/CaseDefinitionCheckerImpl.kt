@@ -58,6 +58,12 @@ class CaseDefinitionCheckerImpl(
         return !caseDefinition.final
     }
 
+    override fun isCaseDefinitionFinal(caseDefinitionId: CaseDefinitionId): Boolean {
+        val caseDefinition = caseDefinitionRepository.findById(caseDefinitionId).orElse(null)
+            ?: return false
+        return caseDefinition.final
+    }
+
     override fun canUpdateGlobalConfiguration(): Boolean {
         if (ImportContext.isImporting()) {
             return true

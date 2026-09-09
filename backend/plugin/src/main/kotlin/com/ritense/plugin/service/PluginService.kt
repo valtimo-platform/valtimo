@@ -306,9 +306,9 @@ class PluginService(
         activityType: ActivityTypeWithEventName?
     ): List<PluginActionDefinitionDto> {
         val actions = if (activityType == null)
-            pluginActionDefinitionRepository.findByIdPluginDefinitionKey(pluginDefinitionKey)
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyOrderByTitleAsc(pluginDefinitionKey)
         else
-            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypes(
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypesOrderByTitleAsc(
                 pluginDefinitionKey,
                 activityType
             )
@@ -828,6 +828,12 @@ class PluginService(
     ): PluginConfiguration {
         return pluginConfigurationRepository.findById(id)
             .orElseThrow { IllegalStateException("Plugin configuration with id '$id' does not exist!") }
+    }
+
+    fun findPluginConfiguration(
+        @LoggableResource(resourceType = PluginConfiguration::class) id: PluginConfigurationId
+    ): PluginConfiguration? {
+        return pluginConfigurationRepository.findByIdOrNull(id)
     }
 
     @Throws(ConstraintViolationException::class)

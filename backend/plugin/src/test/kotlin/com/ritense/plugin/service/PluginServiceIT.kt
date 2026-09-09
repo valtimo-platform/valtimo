@@ -564,6 +564,27 @@ internal class PluginServiceIT : BaseIntegrationTest() {
 
     @Test
     @Transactional
+    fun `should return plugin action definitions sorted by title`() {
+        val allActions = pluginService.getPluginDefinitionActions("test-plugin", null)
+        assertTrue(allActions.size > 1)
+        assertEquals(
+            allActions.map { it.title }.sortedBy { it.lowercase() },
+            allActions.map { it.title }
+        )
+
+        val serviceTaskActions = pluginService.getPluginDefinitionActions(
+            "test-plugin",
+            ActivityTypeWithEventName.SERVICE_TASK_START
+        )
+        assertTrue(serviceTaskActions.size > 1)
+        assertEquals(
+            serviceTaskActions.map { it.title }.sortedBy { it.lowercase() },
+            serviceTaskActions.map { it.title }
+        )
+    }
+
+    @Test
+    @Transactional
     fun `should return plugin dependencies for plugin definitions`() {
         val pluginKeys = listOf(
             "test-plugin",
