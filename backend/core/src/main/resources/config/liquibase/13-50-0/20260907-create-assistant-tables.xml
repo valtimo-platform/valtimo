@@ -104,6 +104,10 @@
             </column>
             <column name="resource_type" type="VARCHAR(255)"/>
             <column name="resource_id" type="VARCHAR(255)"/>
+            <column name="preview_description" type="${textType}"/>
+            <column name="diff_before" type="${textType}"/>
+            <column name="diff_after" type="${textType}"/>
+            <column name="affected_resources" type="${textType}"/>
             <column name="created_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
