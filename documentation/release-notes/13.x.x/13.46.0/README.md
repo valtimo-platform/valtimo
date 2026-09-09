@@ -22,6 +22,6 @@ New enhancement explanation.
 
 ## Bugfixes
 
-| Area | Fix |
-|------|-----|
-| Area name | New bugfix. |
+| Area            | Fix                                                                           |
+|-----------------|-------------------------------------------------------------------------------|
+| Building blocks | A file uploaded from a task form inside a building block is added to the case |
