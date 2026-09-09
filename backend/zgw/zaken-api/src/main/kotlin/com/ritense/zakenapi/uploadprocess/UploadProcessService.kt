@@ -36,6 +36,7 @@ class UploadProcessService(
     private val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
+    // documentId can be a building block document. Upload process is case-level — run it on the case document.
     fun startUploadResourceProcess(documentId: String, resourceId: String) {
         val caseDocumentId = runWithoutAuthorization { caseDocumentResolver.resolveCaseDocumentId(UUID.fromString(documentId)) }
         val caseDefinitionId = runWithoutAuthorization { documentService.get(caseDocumentId.toString()) }.definitionId().caseDefinitionId()
@@ -45,7 +46,7 @@ class UploadProcessService(
         val result = runWithoutAuthorization {
             processDocumentService.startProcessForDocument(
                 StartProcessForDocumentRequest(
-                    JsonSchemaDocumentId.existingId(UUID.fromString(documentId)),
+                    JsonSchemaDocumentId.existingId(caseDocumentId),
                     link.id.processDefinitionKey,
                     mapOf(RESOURCE_ID_PROCESS_VAR to resourceId)
                 )

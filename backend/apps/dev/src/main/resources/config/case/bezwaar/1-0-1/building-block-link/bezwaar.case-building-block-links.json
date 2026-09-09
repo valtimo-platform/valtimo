@@ -1,0 +1,13 @@
+[
+    {
+        "buildingBlockDefinitionKey": "document-upload-in-building-block",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:/voornaam",
+                "target": "doc:/subject"
+            }
+        ],
+        "outputMappings": []
+    }
+]
