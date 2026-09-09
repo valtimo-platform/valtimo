@@ -30,10 +30,15 @@ import com.ritense.assistant.service.AssistantService
 import com.ritense.assistant.service.AssistantSessionService
 import com.ritense.assistant.service.PendingActionService
 import com.ritense.assistant.tool.CaseDefinitionTools
+import com.ritense.assistant.tool.CaseInformationTools
 import com.ritense.assistant.tool.ProcessDefinitionTools
 import com.ritense.assistant.web.rest.AssistantResource
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.case.service.CaseTabService
+import com.ritense.case_.service.CaseHeaderWidgetService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.service.DocumentDefinitionService
+import com.ritense.document.service.DocumentService
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -43,7 +48,9 @@ import dev.langchain4j.model.chat.ChatModel
 import dev.langchain4j.store.memory.chat.ChatMemoryStore
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -54,6 +61,13 @@ import org.springframework.core.annotation.Order
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @AutoConfiguration
+@AutoConfigureAfter(name = [
+    "com.ritense.case.configuration.CaseAutoConfiguration",
+    "com.ritense.case_.configuration.CaseWidgetAutoConfiguration",
+    "com.ritense.document.autoconfigure.DocumentAutoConfiguration",
+    "com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration",
+    "com.ritense.processlink.autoconfigure.ProcessLinkAutoConfiguration"
+])
 @EnableJpaRepositories(basePackages = ["com.ritense.assistant.repository"])
 @EntityScan(basePackages = ["com.ritense.assistant.domain"])
 @ConditionalOnProperty(name = ["valtimo.assistant.enabled"], havingValue = "true", matchIfMissing = false)
@@ -63,9 +77,10 @@ class AssistantAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ChatMemoryStore::class)
     fun jpaChatMemoryStore(
-        messageRepository: AssistantMessageRepository
+        messageRepository: AssistantMessageRepository,
+        objectMapper: ObjectMapper
     ): ChatMemoryStore {
-        return JpaChatMemoryStore(messageRepository)
+        return JpaChatMemoryStore(messageRepository, objectMapper)
     }
 
     @Bean
@@ -117,6 +132,25 @@ class AssistantAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CaseInformationTools::class)
+    @ConditionalOnBean(DocumentService::class, CaseWidgetService::class, CaseTabService::class, CaseHeaderWidgetService::class)
+    fun caseInformationTools(
+        documentService: DocumentService,
+        caseTabService: CaseTabService,
+        caseWidgetService: CaseWidgetService,
+        caseHeaderWidgetService: CaseHeaderWidgetService,
+        objectMapper: ObjectMapper
+    ): CaseInformationTools {
+        return CaseInformationTools(
+            documentService,
+            caseTabService,
+            caseWidgetService,
+            caseHeaderWidgetService,
+            objectMapper
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessDefinitionTools::class)
     @ConditionalOnBean(OperatonRepositoryService::class, RepositoryService::class)
     fun processDefinitionTools(
@@ -140,13 +174,15 @@ class AssistantAutoConfiguration {
         chatMemoryProvider: ChatMemoryProvider,
         contextBuilder: AssistantContextBuilder,
         sessionService: AssistantSessionService,
-        toolProviders: List<Any>
+        caseDefinitionTools: ObjectProvider<CaseDefinitionTools>,
+        caseInformationTools: ObjectProvider<CaseInformationTools>,
+        processDefinitionTools: ObjectProvider<ProcessDefinitionTools>
     ): AssistantService {
-        val assistantTools = toolProviders.filter { provider ->
-            provider.javaClass.methods.any {
-                it.isAnnotationPresent(dev.langchain4j.agent.tool.Tool::class.java)
-            }
-        }
+        val assistantTools = listOfNotNull(
+            caseDefinitionTools.ifAvailable,
+            caseInformationTools.ifAvailable,
+            processDefinitionTools.ifAvailable
+        )
         return AssistantService(
             chatModel,
             chatMemoryProvider,

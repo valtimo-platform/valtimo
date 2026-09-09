@@ -17,33 +17,88 @@
 package com.ritense.assistant.service
 
 import com.ritense.assistant.web.rest.dto.PageContext
+import dev.langchain4j.agent.tool.ToolSpecification
 
 open class AssistantContextBuilder {
 
     open fun buildSystemPrompt(
         userEmail: String,
         userRoles: Set<String>,
-        pageContext: PageContext?
+        pageContext: PageContext?,
+        toolSpecifications: List<ToolSpecification>
     ): String {
+        val toolsSection = if (toolSpecifications.isNotEmpty()) {
+            val toolList = toolSpecifications.joinToString("\n") { tool ->
+                "- ${tool.name()}: ${tool.description()}"
+            }
+            """
+
+            ## Your Capabilities
+
+            You have access to the following tools:
+
+            $toolList
+
+            You can ONLY perform actions using the tools listed above. If asked to do something outside these capabilities (like creating cases, assigning tasks, sending emails, managing users, etc.), clearly explain that you cannot do that and suggest what you CAN help with instead.
+
+            For any modifications, you will generate a preview that the user must confirm before applying.
+            """.trimIndent()
+        } else {
+            "\n\nNo tools are currently available."
+        }
+
         val base = """
-            You are a Valtimo assistant helping with case management and BPM.
+            You are a Valtimo assistant helping with case management and BPM configuration.
             Current user: $userEmail
             User roles: ${userRoles.joinToString(", ")}
-
-            You have access to tools for reading and previewing changes to cases and processes.
-            For any modifications, you will generate a preview that the user must confirm before applying.
         """.trimIndent()
 
         val contextSection = pageContext?.let { ctx ->
+            val additionalInfo = ctx.additionalContext?.entries?.joinToString(", ") { "${it.key}=${it.value}" } ?: ""
             when (ctx.page) {
-                "case-detail" -> "\n\nUser is viewing case: ${ctx.resourceId}"
-                "process-definition-editor" -> "\n\nUser is editing process: ${ctx.resourceId}"
-                "case-definition-editor" -> "\n\nUser is editing case definition: ${ctx.resourceId}"
-                "form-editor" -> "\n\nUser is editing form: ${ctx.resourceId}"
-                else -> ctx.resourceId?.let { "\n\nCurrent resource: $it (${ctx.resourceType})" } ?: ""
+                "case-detail" -> """
+
+                    ## Current Context
+                    User is viewing a case detail page.
+                    - Document ID: ${ctx.resourceId}
+                    ${if (additionalInfo.isNotEmpty()) "- Additional: $additionalInfo" else ""}
+                    When answering questions about "this case" or "the current case", use document ID ${ctx.resourceId}.
+                """.trimIndent()
+                "case-list" -> """
+
+                    ## Current Context
+                    User is viewing the case list for case definition: ${ctx.resourceId}
+                """.trimIndent()
+                "process-definition-detail" -> """
+
+                    ## Current Context
+                    User is viewing process definition: ${ctx.resourceId}
+                """.trimIndent()
+                "case-definition-editor" -> """
+
+                    ## Current Context
+                    User is editing case definition: ${ctx.resourceId}
+                    ${if (additionalInfo.isNotEmpty()) "Version: ${ctx.additionalContext?.get("versionTag")}" else ""}
+                """.trimIndent()
+                "form-flow-editor" -> """
+
+                    ## Current Context
+                    User is editing form flow: ${ctx.resourceId}
+                """.trimIndent()
+                "form-builder" -> """
+
+                    ## Current Context
+                    User is editing form: ${ctx.resourceId}
+                """.trimIndent()
+                else -> ctx.resourceId?.let { """
+
+                    ## Current Context
+                    Page: ${ctx.page}
+                    Resource: $it (${ctx.resourceType ?: "unknown"})
+                """.trimIndent() } ?: ""
             }
         } ?: ""
 
-        return base + contextSection
+        return base + toolsSection + contextSection
     }
 }

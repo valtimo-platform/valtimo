@@ -17,6 +17,7 @@
 package com.ritense.assistant.service
 
 import com.ritense.assistant.web.rest.dto.PageContext
+import dev.langchain4j.agent.tool.ToolSpecification
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertContains
@@ -36,7 +37,8 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = null
+            pageContext = null,
+            toolSpecifications = emptyList()
         )
 
         assertContains(prompt, "user@test.com")
@@ -47,7 +49,8 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_ADMIN", "ROLE_USER"),
-            pageContext = null
+            pageContext = null,
+            toolSpecifications = emptyList()
         )
 
         assertContains(prompt, "ROLE_ADMIN")
@@ -59,7 +62,8 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = null
+            pageContext = null,
+            toolSpecifications = emptyList()
         )
 
         assertContains(prompt, "Valtimo assistant")
@@ -77,7 +81,8 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = context
+            pageContext = context,
+            toolSpecifications = emptyList()
         )
 
         assertContains(prompt, "viewing case")
@@ -95,7 +100,8 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = context
+            pageContext = context,
+            toolSpecifications = emptyList()
         )
 
         assertContains(prompt, "editing process")
@@ -113,7 +119,8 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = context
+            pageContext = context,
+            toolSpecifications = emptyList()
         )
 
         assertContains(prompt, "editing case definition")
@@ -131,7 +138,8 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = context
+            pageContext = context,
+            toolSpecifications = emptyList()
         )
 
         assertContains(prompt, "editing form")
@@ -149,7 +157,8 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = context
+            pageContext = context,
+            toolSpecifications = emptyList()
         )
 
         assertContains(prompt, "doc-456")
@@ -167,20 +176,28 @@ class AssistantContextBuilderTest {
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = context
+            pageContext = context,
+            toolSpecifications = emptyList()
         )
 
         assertFalse(prompt.contains("Current resource"))
     }
 
     @Test
-    fun `should mention confirmation requirement`() {
+    fun `should mention confirmation requirement when tools available`() {
+        val toolSpec = ToolSpecification.builder()
+            .name("testTool")
+            .description("A test tool")
+            .build()
+
         val prompt = builder.buildSystemPrompt(
             userEmail = "user@test.com",
             userRoles = setOf("ROLE_USER"),
-            pageContext = null
+            pageContext = null,
+            toolSpecifications = listOf(toolSpec)
         )
 
         assertContains(prompt, "confirm")
     }
+
 }

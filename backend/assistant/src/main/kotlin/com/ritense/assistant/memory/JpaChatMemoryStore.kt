@@ -16,9 +16,12 @@
 
 package com.ritense.assistant.memory
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.assistant.domain.AssistantMessageEntity
 import com.ritense.assistant.domain.MessageRole
 import com.ritense.assistant.repository.AssistantMessageRepository
+import dev.langchain4j.agent.tool.ToolExecutionRequest
 import dev.langchain4j.data.message.AiMessage
 import dev.langchain4j.data.message.ChatMessage
 import dev.langchain4j.data.message.SystemMessage
@@ -30,7 +33,8 @@ import java.time.Instant
 import java.util.UUID
 
 open class JpaChatMemoryStore(
-    private val repository: AssistantMessageRepository
+    private val repository: AssistantMessageRepository,
+    private val objectMapper: ObjectMapper
 ) : ChatMemoryStore {
 
     @Transactional(readOnly = true)
@@ -68,10 +72,24 @@ open class JpaChatMemoryStore(
     private fun AssistantMessageEntity.toChatMessage(): ChatMessage? {
         return when (role) {
             MessageRole.USER -> UserMessage.from(content)
-            MessageRole.AI -> AiMessage.from(content)
+            MessageRole.AI -> {
+                if (toolCalls.isNullOrBlank()) {
+                    AiMessage.from(content)
+                } else {
+                    val requestMaps: List<Map<String, String?>> = objectMapper.readValue(toolCalls)
+                    val requests = requestMaps.map { map ->
+                        ToolExecutionRequest.builder()
+                            .id(map["id"])
+                            .name(map["name"])
+                            .arguments(map["arguments"])
+                            .build()
+                    }
+                    AiMessage(content, requests)
+                }
+            }
             MessageRole.SYSTEM -> SystemMessage.from(content)
             MessageRole.TOOL_EXECUTION_RESULT -> {
-                toolExecutionId?.let { ToolExecutionResultMessage.from(it, toolCalls ?: "", content) }
+                toolExecutionId?.let { ToolExecutionResultMessage.from(it, toolExecutionId, content) }
             }
         }
     }
@@ -79,7 +97,15 @@ open class JpaChatMemoryStore(
     private fun ChatMessage.toEntity(sessionId: UUID, index: Int): AssistantMessageEntity {
         val (role, content, toolCalls, toolExecutionId) = when (this) {
             is UserMessage -> MessageRole.USER to singleText() to null to null
-            is AiMessage -> MessageRole.AI to text() to null to null
+            is AiMessage -> {
+                val serializedTools = if (hasToolExecutionRequests()) {
+                    val toolMaps = toolExecutionRequests().map { req ->
+                        mapOf("id" to req.id(), "name" to req.name(), "arguments" to req.arguments())
+                    }
+                    objectMapper.writeValueAsString(toolMaps)
+                } else null
+                MessageRole.AI to text() to serializedTools to null
+            }
             is SystemMessage -> MessageRole.SYSTEM to text() to null to null
             is ToolExecutionResultMessage -> MessageRole.TOOL_EXECUTION_RESULT to text() to toolName() to id()
             else -> throw IllegalArgumentException("Unsupported message type: ${this::class}")

@@ -16,6 +16,7 @@
 
 package com.ritense.assistant.tool
 
+import com.ritense.assistant.web.rest.dto.PageContext
 import java.util.UUID
 
 data class ToolContext(
@@ -23,7 +24,8 @@ data class ToolContext(
     val userEmail: String,
     val userRoles: Set<String>,
     val authToken: String,
-    val sessionId: UUID
+    val sessionId: UUID,
+    val pageContext: PageContext? = null
 )
 
 object ToolContextHolder {

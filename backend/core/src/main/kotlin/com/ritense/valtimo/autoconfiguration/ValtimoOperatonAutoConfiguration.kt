@@ -59,6 +59,7 @@ import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
 import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -68,6 +69,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
+@AutoConfigureAfter(name = ["com.ritense.authorization.autoconfigure.AuthorizationAutoConfiguration"])
 @EnableJpaRepositories(
     basePackageClasses = [
         OperatonBytearrayRepository::class,

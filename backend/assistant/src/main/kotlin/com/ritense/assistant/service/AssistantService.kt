@@ -92,9 +92,12 @@ open class AssistantService(
         sessionService.updateSessionActivity(sessionId)
 
         val memory = chatMemoryProvider.get(sessionId)
-        val systemPrompt = contextBuilder.buildSystemPrompt(userEmail, userRoles, request.context)
 
-        memory.add(SystemMessage.from(systemPrompt))
+        if (memory.messages().isEmpty()) {
+            val systemPrompt = contextBuilder.buildSystemPrompt(userEmail, userRoles, request.context, toolSpecifications)
+            memory.add(SystemMessage.from(systemPrompt))
+        }
+
         memory.add(UserMessage.from(request.message))
 
         val toolContext = ToolContext(
@@ -102,7 +105,8 @@ open class AssistantService(
             userEmail = userEmail,
             userRoles = userRoles,
             authToken = authToken,
-            sessionId = sessionId
+            sessionId = sessionId,
+            pageContext = request.context
         )
 
         return ToolContextHolder.withContext(toolContext) {
