@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
