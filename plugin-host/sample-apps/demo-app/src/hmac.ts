@@ -19,18 +19,38 @@ import type { FastifyReply, FastifyRequest, preHandlerHookHandler } from "fastif
 
 /**
  * GZAC→app request authentication, byte-for-byte compatible with the plugin host and GZAC's
- * `ExternalPluginHmacSigner`. Every GZAC→app call carries:
+ * `ExternalPluginHmacSigner`. Every signed GZAC→app call carries:
  *   - `X-Valtimo-Signature`: hex HMAC-SHA256, keyed by ADMIN_TOKEN, over the canonical string
  *   - `X-Valtimo-Timestamp`: an ISO-8601 instant, used for a ±5-minute replay window
  *
  * Canonical string: `{METHOD}\n{path}\n{timestamp}\n{sha256hex(body)}`, where `path` is the request
  * URL minus the query string, and `body` is the raw request bytes (an empty buffer for GET/DELETE).
+ *
+ * On side-effecting methods an accepted signature is additionally single-use within the timestamp
+ * window, like the plugin host — resending a captured request verbatim is refused.
  */
 export const SIGNATURE_HEADER = "x-valtimo-signature";
 export const TIMESTAMP_HEADER = "x-valtimo-timestamp";
 
 const ALGORITHM = "sha256";
 const MAX_TIMESTAMP_DRIFT_MS = 5 * 60 * 1000; // 5 minutes
+
+const SIDE_EFFECTING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+// Accepted signatures on side-effecting methods → when they were first seen. A signature is only
+// valid within the drift window, so older entries can be pruned; process-wide, like the host.
+const seenSignatures = new Map<string, number>();
+
+function isReplay(method: string, signature: string): boolean {
+  const now = Date.now();
+  for (const [sig, seenAt] of seenSignatures) {
+    if (now - seenAt > MAX_TIMESTAMP_DRIFT_MS) seenSignatures.delete(sig);
+  }
+  if (!SIDE_EFFECTING_METHODS.has(method.toUpperCase())) return false;
+  if (seenSignatures.has(signature)) return true;
+  seenSignatures.set(signature, now);
+  return false;
+}
 
 function computeSignature(secret: string, method: string, path: string, timestamp: string, bodyHash: string): string {
   const payload = `${method.toUpperCase()}\n${path}\n${timestamp}\n${bodyHash}`;
@@ -63,6 +83,9 @@ export function verifyHmac(
   const exp = Buffer.from(expected, "utf8");
   if (sig.length !== exp.length || !timingSafeEqual(sig, exp)) {
     return { valid: false, error: "Invalid signature" };
+  }
+  if (isReplay(method, signatureHeader)) {
+    return { valid: false, error: "Replayed signature" };
   }
   return { valid: true };
 }

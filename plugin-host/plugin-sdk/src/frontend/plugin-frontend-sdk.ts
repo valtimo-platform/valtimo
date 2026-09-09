@@ -59,7 +59,9 @@ interface IframeToParentEvents {
   ready: Record<string, never>;
   resize: { height: number };
   configurationChanged: { valid: boolean; title: string; data: Record<string, unknown> };
+  /** Reserved: current GZAC frontends do not act on this event. */
   navigate: { route: string };
+  /** Reserved: current GZAC frontends do not act on this event. */
   notification: { type: "success" | "warning" | "error" | "info"; message: string };
   /**
    * Hand the collected task-form data to the Angular parent, which submits it to GZAC's task-form
@@ -238,7 +240,11 @@ class ValtimoPluginSDK {
     });
   }
 
-  /** Register handler for when the parent triggers save. */
+  /**
+   * Reserved: registers for the parent's `save` event, which current GZAC frontends never send —
+   * GZAC saves the payload of the last {@link setConfiguration} call. Keep the reported
+   * configuration current on every change instead of deferring work to save time.
+   */
   public onSave(handler: EventHandler<void>): void {
     this._on("save", () => handler());
   }
