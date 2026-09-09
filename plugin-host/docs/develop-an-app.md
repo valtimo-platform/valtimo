@@ -11,8 +11,8 @@
 
 An **app** is a remote HTTP service that GZAC treats as a plugin-host-plus-single-plugin: it
 speaks the same GZAC↔host contract, but serves one natively-implemented plugin and accepts no
-uploads. Everything downstream of registration — service tokens, the endpoint allowlist, user
-tokens, iframe surfaces, event delivery — works identically to a hosted plugin, for free.
+plugin uploads. Everything downstream of registration — service tokens, the endpoint allowlist,
+user tokens, iframe surfaces, event delivery — works identically to a hosted plugin.
 
 **Build a plugin when you can; build an app when you must.** A Wasm plugin gets the sandbox,
 capability gating, and content pinning from the host. An app trades that for full freedom (any
@@ -109,7 +109,9 @@ framable screens may simply not implement the route — GZAC treats a 404 as uns
 
 ### `POST /api/host/configurations/{configId}` — configuration push
 
-The heart of the contract. Everything your app is allowed to do arrives in this body:
+The heart of the contract. The push body is identical for plugin hosts and apps: for a hosted
+plugin every field is an enforcement input to the sandboxing host, while your app is its own
+runtime — so the table below notes per field what actually binds an app:
 
 ```json
 {
@@ -140,8 +142,10 @@ The heart of the contract. Everything your app is allowed to do arrives in this 
 | `gzacBaseUrl` | **Required.** The base URL for callbacks, and the identity of the pushing GZAC instance. |
 | `properties` | The configuration values the admin entered (secrets decrypted — server-side only). |
 | `ownerId` | Opaque identity of the GZAC↔app relationship. Persist and echo it in the listing; it is what lets a GZAC clean up only its own configurations. |
-| `eventSubscriptions` | The **granted** event types — deliver these and nothing else, regardless of your manifest. |
-| `grantedCapabilities` / `grantedEndpoints` / `allowedEgress` | The accepted permission sets. Honor them: don't call GZAC endpoints outside the granted list (GZAC enforces it server-side anyway), gate your `/data` route on `frontend_data`, restrict outbound calls to `allowedEgress`. |
+| `eventSubscriptions` | The event types the admin granted (which can lag your manifest). Act on these and drop the rest — your obligation, not an enforced bound: the broker feed is a fanout carrying every platform event (see [Events](#events)). |
+| `grantedEndpoints` | The GZAC endpoints your service token may call. GZAC enforces this server-side on every callback — treat the list as your API surface. |
+| `grantedCapabilities` | For an app, only `frontend_data` has a job: gate your `/data` route on it. The others (`gzac_api`, `http_request`, `kv`, `log`) switch host functions inside the Wasm sandbox — an app has no such runtime, so they arrive for contract parity and record what the admin accepted. |
+| `allowedEgress` | The outbound connections the admin accepted — informational for an app: a plugin host enforces this on sandboxed plugins, but nothing can enforce it on a native service. Declare your real targets in the manifest so the acceptance screen tells the truth; actually bounding an app's traffic is a deployment concern (network policy). |
 | `expectedContentHash` | Present when GZAC pinned your `contentHash`. If it doesn't match what you currently serve, refuse with `409` — the admin accepted different content. |
 | `eventBroker` | Broker connection for events; absent = events disabled for this configuration. Normalize defensively: unknown `queueMode` → `live`; clamp `queueTtlMs` to 1 h–30 d (default 72 h) in `durable` mode. |
 
@@ -253,9 +257,12 @@ When a push carries `eventBroker`, consume the fanout exchange with the semantic
 `durable` → `{durable: true, autoDelete: false, arguments: {"x-expires": queueTtlMs}}`. Use a
 queue name unique to your app instance; include mode/TTL in the name so a settings change
 declares a fresh queue instead of colliding with the old declaration. Messages are CloudEvents
-(JSON); dispatch only the **granted** `eventSubscriptions`, ack on success, drop (don't requeue)
-malformed messages, reconnect with backoff, and make handlers idempotent — delivery is
-at-least-once. Reference: [`demo-app/src/events.ts`](../sample-apps/demo-app/src/events.ts).
+(JSON). The fanout delivers **every** platform event to your queue — for a hosted plugin the
+host filters against the granted subscriptions before invoking it; as an app *you* are that
+filter, so act only on the granted `eventSubscriptions` and drop the rest. Ack on success, drop
+(don't requeue) malformed messages, reconnect with backoff, and make handlers idempotent —
+delivery is at-least-once. Reference:
+[`demo-app/src/events.ts`](../sample-apps/demo-app/src/events.ts).
 
 ## Checklist
 
@@ -263,7 +270,7 @@ at-least-once. Reference: [`demo-app/src/events.ts`](../sample-apps/demo-app/src
 - [ ] HMAC verified on every GZAC-facing route: ±5 min window, timing-safe, replay-rejecting; pinned against `hmac-vectors.json`
 - [ ] Config push persisted; `serviceToken`/`gzacBaseUrl` required; `ownerId` echoed; listing returns summaries only
 - [ ] Action route speaks `{status, variables, result?}` / `{status:"error", errorCode, errorMessage}`
-- [ ] Granted sets honored: events dispatched from `eventSubscriptions`, callbacks within `grantedEndpoints`, egress within `allowedEgress`
+- [ ] Granted sets respected: only granted `eventSubscriptions` acted on (the feed itself is unfiltered), callbacks within `grantedEndpoints` (GZAC enforces this server-side)
 - [ ] Bundles served with strict CSP + announced `frame-ancestors`, fail closed
 - [ ] `/data` gated: `frontend_data` grant, rate limit, user-token introspection, fail closed on GZAC outage
 - [ ] Served over HTTPS (or loopback in development) — GZAC refuses to connect a plain-HTTP remote app: the configuration push carries a service token, decrypted secret properties and any broker credentials

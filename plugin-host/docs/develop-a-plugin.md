@@ -19,26 +19,32 @@ acceptance screen, and an over-broad request is a reason not to install your plu
 
 ## Prerequisites
 
-- **Node.js 22+** (`.nvmrc` in `plugin-host/` has the pinned version)
-- The Wasm toolchain (`extism-js` + `binaryen`) installs itself on first build
-- For in-repo development: `cd plugin-host && npm run dev` gives you a running host on
-  `http://localhost:8090` (see the [plugin-host README](../README.md))
+Plugin development is standalone: you build against the published
+[`@valtimo/plugin-sdk`](https://www.npmjs.com/package/@valtimo/plugin-sdk) npm package and test
+against a plugin host running as a Docker container — the Valtimo repository is not involved.
+
+- **Node.js 18+** — enough for the SDK CLIs and the build; only the host itself needs Node 22,
+  and you run that as a container
+- The Wasm toolchain (`extism-js` + `binaryen`) installs itself on first build, cached per user
+- **To run your plugin:** a plugin host connected to a GZAC instance — run the
+  `valtimo/plugin-host` image with its PostgreSQL
+  ([host configuration & deployment](./host-configuration-and-deployment.md)) and connect it from
+  the admin UI ([Add a plugin host](../../documentation/configuration-guides/plugins/external-plugins/add-a-plugin-host.md))
 
 ## 1. Scaffold a project
 
 `valtimo-plugin-init` writes a complete, buildable project:
 
 ```bash
-# from plugin-host/, with the SDK built (npm run setup does that)
-node plugin-sdk/bin/valtimo-plugin-init.mjs ~/work/my-plugin --sdk "file:$PWD/plugin-sdk"
+npx --package @valtimo/plugin-sdk valtimo-plugin-init my-plugin
 
 # non-interactive, with chosen frontend bundles
-node plugin-sdk/bin/valtimo-plugin-init.mjs ~/work/my-plugin --yes \
-  --bundles config,case-tab,page --sdk "file:$PWD/plugin-sdk"
+npx --package @valtimo/plugin-sdk valtimo-plugin-init my-plugin --yes \
+  --bundles config,case-tab,page
 ```
 
-From a published SDK the same command is
-`npx --package @valtimo/plugin-sdk valtimo-plugin-init my-plugin`.
+(Contributing to Valtimo itself? The [plugin-host README](../README.md) covers scaffolding
+against the in-repo SDK.)
 
 The wizard asks for the plugin identity (id, version, per-locale name/description, provider),
 whether to add an event handler, and which of the six frontend bundle types to generate
@@ -46,7 +52,7 @@ whether to add an event handler, and which of the six frontend bundle types to g
 
 | Bundle type | Renders | Backend counterpart generated |
 |---|---|---|
-| `config` | The configuration form in the admin activation modal | `configurationSchema` in the manifest |
+| `config` | The settings form in the admin's **Configure plugin** modal | `configurationSchema` in the manifest |
 | `process-link-action` | The action-input form in the process-link modeler | – |
 | `case-tab` | A tab on the case detail page | shared `request()` handler + `frontend_data` |
 | `case-widget` | A card on a widgets tab | shared `request()` handler + `frontend_data` |
@@ -56,7 +62,7 @@ whether to add an event handler, and which of the six frontend bundle types to g
 The generated project builds and packs without edits:
 
 ```bash
-cd ~/work/my-plugin
+cd my-plugin
 npm run build:pack        # -> dist/my-plugin-0.1.0.zip
 ```
 
@@ -69,6 +75,13 @@ my-plugin/
 ├── src/plugin.ts          # ALL backend logic — actions, events, requests, submit hooks
 └── frontend/              # one .html + .tsx pair per frontend bundle
 ```
+
+### The manifest
+
+`manifest.json` is the plugin's complete self-description: identity, translations, permissions,
+actions, frontend bundles, event subscriptions, and the configuration schema. GZAC reads it at
+discovery, and everything the administrator sees and grants comes from here. A filled-in example,
+broken down section by section below:
 
 ```json
 {
@@ -125,22 +138,23 @@ my-plugin/
 | `submitHandler` | `task-form` bundles only — `true` invokes your `submit(key, …)` hook during submission (Level 1); the hook key equals the bundle's `key`. |
 | `activityTypes` | `task-form` bundles: where the form may be linked (typically `USER_TASK_CREATE`). |
 
-### Validation rules
+### Manifest rules
 
-All enforced by the shared validator at pack time *and* at upload:
+The pack tool validates the manifest (and the host re-checks at upload), so mistakes surface on
+your machine, not the administrator's. Write it to these rules:
 
-- **No top-level name/description** — they live per locale under `translations`; every declared
-  locale must carry both. Additional keys in a bucket are free-form strings for the frontend
-  SDK's `t(key)`.
-- **Identity charset**: `pluginId` is lowercase, 1–64 chars, letters/digits at both ends,
-  `.`/`-`/`_` inside; `version` additionally allows uppercase and `+` (semver metadata). These
-  become directory names and URL segments, so nothing path-like is accepted.
-- **`compatibility` bounds must be strict semver** (`13.0.0`, not `13` or `v13.0.0`).
-- **`permissions.endpoints` requires the `gzac_api` capability**, and `permissions.egress`
-  requires `http_request`.
-- **A logo** is a `logo.svg`/`.png`/`.jpg`/`.jpeg` next to `manifest.json` — the pack tool picks
-  it up automatically; GZAC shows it in the plugin pickers.
-- The pack tool stamps `sdkVersion` into the packed manifest; you never set it by hand.
+- **Put name and description per locale under `translations`** — there are no top-level fields,
+  and every declared locale must carry both. Additional keys in a bucket are free-form strings
+  for the frontend SDK's `t(key)`.
+- **Keep the identity path-safe**: `pluginId` is lowercase, 1–64 chars, letters/digits at both
+  ends, `.`/`-`/`_` inside; `version` additionally allows uppercase and `+` (semver metadata).
+  These become directory names and URL segments, so nothing path-like is accepted.
+- **Write `compatibility` bounds as strict semver** (`13.0.0`, not `13` or `v13.0.0`).
+- **Declare capabilities consistently**: `permissions.endpoints` requires the `gzac_api`
+  capability, and `permissions.egress` requires `http_request`.
+- **Ship a logo** as `logo.svg`/`.png`/`.jpg`/`.jpeg` next to `manifest.json` — the pack tool
+  picks it up automatically; GZAC shows it in the plugin pickers.
+- **Leave `sdkVersion` out** — the pack tool stamps it from your project's resolved SDK.
 
 ### Configuration properties
 
@@ -168,6 +182,19 @@ you only write handlers. Two execution rules first:
 
 ### `action(key, handler)` — process service tasks
 
+An action is the plugin's unit of process work: an administrator links it to a BPMN activity
+(within the manifest entry's `activityTypes`), and GZAC invokes it when the process reaches that
+activity. Your handler receives an `ActionInput` and returns an `ActionOutput` — `variables` land
+in the process, `result` feeds the link's output mappings, and a thrown error or `status:
+"error"` raises a BPMN error the process can catch:
+
+```ts
+action("my-action", (input: ActionInput) => {
+  const summary = `${input.properties.greeting} for case ${input.documentId}`;
+  return { status: "completed" as const, result: { summary, total: 1 } };
+});
+```
+
 ```ts
 interface ActionInput {
   actionKey: string;
@@ -189,7 +216,9 @@ interface ActionOutput {
 
 ### `onEvent(handler)` — platform events
 
-Delivered for the configuration's **granted** subscriptions only (a flattened CloudEvent):
+React to things happening in the platform — a document created, a task completed — without any
+process link: the host invokes your handler for every event whose type is among the
+configuration's **granted** subscriptions. The handler receives the flattened CloudEvent:
 
 ```ts
 interface EventInput {
@@ -201,14 +230,21 @@ interface EventInput {
 interface EventOutput { status: "completed" | "ignored" | "error"; errorCode?: string; errorMessage?: string; }
 ```
 
-Multiple `onEvent` registrations all run per event; returning nothing counts as completed. Event
-types are the platform's CloudEvent `type` values (e.g. `com.ritense.valtimo.document.created`,
-`…task.completed`); anything GZAC's outbox publishes can be subscribed to.
+Multiple `onEvent` registrations all run per event; the last handler that returns a status
+determines what is reported. Return `"ignored"` when a handler decides the event is not for it,
+and nothing at all counts as `"completed"`. The status is purely diagnostic — it ends up in the
+host's logs, and no status triggers a redelivery — so use `"error"` to make a failure visible to
+the administrator, not to ask for a retry. Event types are the platform's CloudEvent `type`
+values (e.g. `com.ritense.valtimo.document.created`, `…task.completed`); anything GZAC's outbox
+publishes can be subscribed to.
 
 ### `request(path, handler)` — serving your own frontend
 
-Called through the host's public `/data` route (requires the `frontend_data` grant; the host has
-already introspected the caller's user token before your handler runs):
+`request()` is how your own frontend bundles get data — an iframe's CSP allows no outside calls.
+When a bundle calls `sdk.getPluginData("/summary")` or `postPluginData(…)` (see
+[SDK surface](#sdk-surface)), the GZAC frontend forwards the call to the host's public `/data`
+endpoint, which runs the handler registered for that path. Reaching your handler requires the
+`frontend_data` grant, and the host has already introspected the caller's GZAC user token:
 
 ```ts
 interface RequestInput {
@@ -223,10 +259,19 @@ interface RequestOutput { status: number; headers?: Record<string, string>; body
 ```
 
 Treat `RequestInput` as untrusted (any authenticated user of the GZAC instance can reach it) and
-never return data you would not show every user of the configuration; use `gzacApi.asUser` when
-the response must respect the caller's permissions.
+never return data you would not show every user of the configuration. When the handler itself
+calls GZAC to build its response, prefer `gzacApi.asUser` over `gzacApi`: the call then runs
+under the calling user's own permissions instead of the service token, so nobody can read more
+through your plugin than they could directly.
 
 ### `submit(key, handler)` — task-form hook (Level 1)
+
+Only relevant when a `task-form` bundle declares `submitHandler: true`
+([task-form levels](#task-forms-three-levels)); the `key` equals that bundle's `key`. When the
+user submits the form, GZAC calls this hook with the raw submission *before* completing the
+task — the place to validate it (reject with `fieldErrors` and the form renders them inline) or
+to transform loose form input into process variables and document content. Without the hook, the
+form's data is applied as submitted (Level 0):
 
 ```ts
 interface SubmitInput {
@@ -271,7 +316,7 @@ configuration's endpoint allowlist plus the user's own permissions.
 ```tsx
 import { ValtimoPluginSDK } from "@valtimo/plugin-sdk/frontend";
 
-const sdk = new ValtimoPluginSDK();          // production tip: { parentOrigin: "https://valtimo.example.com" }
+const sdk = new ValtimoPluginSDK();          // or: new ValtimoPluginSDK({ parentOrigin: "https://valtimo.example.com" })
 sdk.ready().then(() => {                     // resolves once translations + parent init arrived
   const ctx = sdk.getContext();
   sdk.callValtimo("GET", `/api/v1/document/${ctx.documentId}`)     // as the logged-in user
@@ -280,6 +325,12 @@ sdk.ready().then(() => {                     // resolves once translations + par
     .then(({ status, body }) => renderSummary(body));
 });
 ```
+
+`parentOrigin` pins the browser origin of the Valtimo UI allowed to embed the bundle: messages
+from any other origin are ignored, and nothing is ever posted elsewhere. Set it when you build
+for one known installation; leave it unset for a bundle shipped to many installations — the SDK
+then pins the origin of the first `init` message, after checking it against the host's frame
+policy.
 
 ### SDK surface
 
@@ -309,8 +360,9 @@ Context fields per surface (plus the base `pluginConfigurationId`/`pluginId` ide
 
 ### The `config` bundle contract
 
-A `config` bundle **is** the "Enter data" step of the activation modal — including the
-configuration-name field, so your form controls the whole step:
+A `config` bundle **is** the **Enter data** step of the admin's **Configure plugin** modal
+([admin guide](../../documentation/configuration-guides/plugins/external-plugins/configure-a-plugin.md)) —
+including the configuration-name field, so your form controls the whole step:
 
 1. On load, register `sdk.onPrefillConfiguration(({title, configuration}) => …)` — it fires in
    edit mode (and when a wizard step is revisited) with the current values. Secret properties
@@ -321,7 +373,8 @@ configuration-name field, so your form controls the whole step:
 3. Optionally register `sdk.onSave(…)` to flush pending state when the admin confirms.
 
 A `process-link-action` bundle works the same way for an action's input form in the process-link
-modeler: prefill in, `setConfiguration(valid, /* title unused */ "", properties)` out.
+modeler: prefill in, `setConfiguration(valid, "", properties)` out. A process link has nothing to
+name, so the modeler reads only `valid` and `data` — pass an empty string for the title.
 
 ### Containment constraints
 
@@ -334,7 +387,7 @@ regardless.
 
 - **Level 0** — collect input, `sdk.submitTask({"pv:approved": true, "doc:/comment": text})`;
   value-resolver-prefixed keys become process variables (`pv:`, or unprefixed) and document
-  values (`doc:`); GZAC completes the task. No backend code.
+  values (`doc:`); GZAC completes the task. No plugin backend code needed.
 - **Level 1** — add `submitHandler: true` + a `submit()` hook to validate/transform; reject with
   `fieldErrors` and the form renders them inline.
 - **Level 2** — drive completion yourself: `postPluginData` → `request()` handler →
@@ -345,12 +398,14 @@ regardless.
 
 ```bash
 npm run build:pack                     # esbuild → extism-js → plugin.wasm → dist/<id>-<version>.zip
-cd plugin-host && npm run plugin:upload -- ~/work/my-plugin/dist/my-plugin-0.1.0.zip
 ```
 
 The zip contains `manifest.json`, `plugin.wasm`, the optional logo, and `frontend/**` — nothing
-else is accepted by the host. Uploads also happen through the admin UI, a boot-time pre-install
-directory, or a deployment descriptor (see [Auto-deployment](./auto-deployment.md)).
+else is accepted by the host. Get it onto a host through the admin UI (**Admin → Plugins →
+Upload plugin**, [admin guide](../../documentation/configuration-guides/plugins/external-plugins/upload-a-plugin.md)),
+the host's boot-time
+[pre-install directory](./host-configuration-and-deployment.md#shipping-plugins-with-the-host),
+or a deployment descriptor ([Auto-deployment](./auto-deployment.md)).
 
 **Versioning is immutable.** A published `pluginId@version` means exactly those bytes: uploading
 different content under an existing version is refused, and replacing it takes an explicit
@@ -365,8 +420,9 @@ and egress all follow the *granted* set, not the manifest.
 
 ## 6. Testing and reference
 
-- `sample-plugins/case-summary/` is the reference plugin: every capability, all bundle types,
-  all three task-form levels, declared action outputs, i18n, logo.
+- [`sample-plugins/case-summary/`](../sample-plugins/case-summary/) is the reference plugin:
+  every capability, all bundle types, all three task-form levels, declared action outputs, i18n,
+  logo.
 - [`TESTING.md`](../TESTING.md) explains the test layers and which test to write when.
 - [SDK README](../plugin-sdk/README.md) — full API and CLI reference
   ([`valtimo-plugin-init`](../plugin-sdk/README.md#valtimo-plugin-init)).
