@@ -40,8 +40,6 @@ class IkoWidgetService(
     transactionManager: PlatformTransactionManager,
 ) {
 
-    // Config reads only. Kept short so the connection is back in the pool
-    // before any external data call.
     private val readOnlyTransactionTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
 
     @Transactional(readOnly = true)

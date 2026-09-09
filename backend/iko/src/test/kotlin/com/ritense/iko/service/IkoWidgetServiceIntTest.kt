@@ -49,7 +49,6 @@ class IkoWidgetServiceIntTest @Autowired constructor(
             objectMapper.createObjectNode()
         }
 
-        // Same properties the REST layer builds up
         val properties = mapOf(
             ID to "999990123",
             IKO_VIEW_KEY to "klant",
