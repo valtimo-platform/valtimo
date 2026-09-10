@@ -20,9 +20,12 @@
   class="assistant-message"
 >
   <div class="assistant-message__meta">
-    <span *ngIf="message.author === 'assistant'" class="assistant-message__avatar">
-      <svg cdsIcon="ai-label" size="16"></svg>
-    </span>
+    <img
+      *ngIf="message.author === 'assistant'"
+      alt=""
+      class="assistant-message__avatar"
+      src="assets/rita-avatar.png"
+    />
 
     <span class="assistant-message__name">
       {{ (message.author === 'assistant' ? 'assistant.name' : 'assistant.you') | translate }}
