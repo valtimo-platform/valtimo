@@ -1,5 +1,5 @@
-/*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-:host ::ng-deep.widgets-container {
-  overflow: hidden;
-}
+package com.ritense.iko.exception
 
-.iko-widget-container {
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 
-  &--hidden {
-    display: none;
-  }
-}
+class IkoServerException(
+    cause: Throwable,
+) : ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to retrieve data from the IKO server", cause)

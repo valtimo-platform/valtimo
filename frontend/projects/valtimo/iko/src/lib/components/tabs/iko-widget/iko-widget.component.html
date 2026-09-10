@@ -13,10 +13,27 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+@let hasWidgetsError = widgetsError$ | async;
+
+@if (hasWidgetsError) {
+  <valtimo-no-results
+    [action]="retryWidgets"
+    [title]="'widgets.dataError.title' | translate"
+    illustration="valtimo-layout/img/emptystate-error.svg"
+  ></valtimo-no-results>
+
+  <ng-template #retryWidgets>
+    <button cdsButton="tertiary" size="sm" (click)="onRetryWidgets()">
+      {{ 'widgets.dataError.retry' | translate }}
+    </button>
+  </ng-template>
+}
+
 <valtimo-widget-container
   fitPage
   [disableOverflow]="true"
   class="iko-widget-container"
+  [class.iko-widget-container--hidden]="hasWidgetsError"
   [widgets]="widgets$ | async"
   [widgetComponentMap]="widgetComponentMap"
   [widgetParams]="widgetParams$ | async"

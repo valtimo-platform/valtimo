@@ -14,11 +14,21 @@
   ~ limitations under the License.
   -->
 
+@let hasSearchError = searchError$ | async;
+
+@if (hasSearchError) {
+  <valtimo-no-results
+    title="{{ 'widgets.dataError.title' | translate }}"
+    illustration="valtimo-layout/img/emptystate-error.svg"
+  ></valtimo-no-results>
+}
+
 <valtimo-carbon-list
   *ngIf="{
     listConfig: listConfig$ | async,
     loading: loading$ | async,
   } as obs"
+  [class.iko-list--hidden]="hasSearchError"
   [fields]="obs.listConfig?.fields"
   [items]="obs.listConfig?.items"
   [loading]="obs.loading"
