@@ -19,6 +19,7 @@ package com.ritense.valtimo.dashboard
 import com.ritense.valtimo.contract.dashboard.WidgetDataSource
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.TaskCaseDefinitionSpecificationFactory
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Path
@@ -27,12 +28,22 @@ import jakarta.persistence.criteria.Root
 class TaskWidgetDataSource(
     private val taskRepository: OperatonTaskRepository,
     private val operatonTaskService: OperatonTaskService,
+    private val taskCaseDefinitionSpecificationFactory: TaskCaseDefinitionSpecificationFactory? = null,
 ) {
     @WidgetDataSource("task-count", "Task count")
     fun getTaskCount(taskCountDataSourceProperties: TaskCountDataSourceProperties): TaskCountDataResult {
-        val taskSpec = getAuthorizationSpecification()
+        var baseSpec = getAuthorizationSpecification()
 
-        val spec = taskSpec.and { root, _, criteriaBuilder ->
+        taskCountDataSourceProperties.caseDefinitionName?.let { caseDefinitionName ->
+            val factory = taskCaseDefinitionSpecificationFactory ?: throw IllegalStateException(
+                "Failed to count tasks for case definition '$caseDefinitionName'. " +
+                    "No TaskCaseDefinitionSpecificationFactory bean found. " +
+                    "In order to use this feature, the process-document module must be included."
+            )
+            baseSpec = baseSpec.and(factory.byCaseDefinitionName(caseDefinitionName))
+        }
+
+        val spec = baseSpec.and { root, _, criteriaBuilder ->
             criteriaBuilder.and(
                 *taskCountDataSourceProperties.conditions?.map {
                     it.toPredicate(root, criteriaBuilder, this::getPathExpression)
@@ -41,7 +52,7 @@ class TaskWidgetDataSource(
         }
 
         val count = taskRepository.count(spec)
-        val total = taskRepository.count(taskSpec)
+        val total = taskRepository.count(baseSpec)
         return TaskCountDataResult(count, total)
     }
 

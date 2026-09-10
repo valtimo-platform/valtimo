@@ -24,8 +24,22 @@ import java.time.ZonedDateTime
 
 class ComparableDeserializer : StdDeserializer<Comparable<*>>(Comparable::class.java) {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Comparable<*> {
-        return ctxt.readValue(p, Any::class.java) as Comparable<*>
+        return when (val value = ctxt.readValue(p, Any::class.java)) {
+            is List<*> -> ComparableList(value)
+            else -> value as Comparable<*>
+        }
     }
+}
+
+/**
+ * Wrapper that lets a JSON array be used as a Condition value (for the 'in' and 'list_contains'
+ * operators). Ordering comparisons against a list are not meaningful.
+ */
+data class ComparableList(
+    private val values: List<Any?>
+) : List<Any?> by values, Comparable<ComparableList> {
+    override fun compareTo(other: ComparableList): Int =
+        throw UnsupportedOperationException("A list value can only be used with the 'in' or 'list_contains' operators")
 }
 
 class ZonedToLocalDateTime : StdDeserializer<LocalDateTime>(LocalDateTime::class.java) {

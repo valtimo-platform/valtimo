@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-::ng-deep .task-count-configuration-form {
-  // Space between the "Add" button at the end of the conditions and the following "Display type".
-  margin-bottom: 24px;
+package com.ritense.valtimo.service
 
-  .form__element {
-    margin-bottom: 16px;
-  }
+import com.ritense.valtimo.operaton.domain.OperatonTask
+import org.springframework.data.jpa.domain.Specification
 
-  .conditions-label {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 16px;
-
-    .cds--form__helper-text {
-      font-style: italic;
-    }
-  }
+/**
+ * Creates a specification that filters [OperatonTask]s to those belonging to a case (document)
+ * of the given case definition. Implemented outside the core module (process-document), because
+ * core has no knowledge of case documents.
+ */
+interface TaskCaseDefinitionSpecificationFactory {
+    fun byCaseDefinitionName(caseDefinitionName: String): Specification<OperatonTask>
 }
