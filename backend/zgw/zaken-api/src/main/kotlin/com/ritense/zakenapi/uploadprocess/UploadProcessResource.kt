@@ -57,6 +57,10 @@ class UploadProcessResource(
         return ResponseEntity.ok(CheckLinkResponse(link != null))
     }
 
+    @EndpointDescription(
+        en = "Start upload process for a resource on a document",
+        nl = "Uploadproces starten voor een bestand bij een dossier",
+    )
     @PostMapping("/v1/uploadprocess/document/{documentId}/resource/{resourceId}")
     fun startUploadResourceProcess(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable documentId: UUID,

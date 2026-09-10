@@ -26,7 +26,11 @@ import type { GzacInstanceRepository } from "./db/gzac-instance-repository.js";
  */
 export function normalizeOrigin(value: unknown): string | null {
   if (typeof value !== "string") return null;
-  const trimmed = value.trim().replace(/\/+$/, "");
+  // Indexed scan, not a `/\/+$/` replace — that regex backtracks polynomially on attacker-sized input.
+  const stripped = value.trim();
+  let end = stripped.length;
+  while (end > 0 && stripped[end - 1] === "/") end--;
+  const trimmed = stripped.slice(0, end);
   if (trimmed.length === 0 || trimmed.includes("*")) return null;
   let url: URL;
   try {
