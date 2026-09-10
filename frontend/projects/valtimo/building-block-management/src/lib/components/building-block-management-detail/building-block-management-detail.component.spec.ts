@@ -23,7 +23,10 @@ import {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN} from '@valtimo/shared';
 import {TabsModule} from 'carbon-components-angular';
 import {of, Subject} from 'rxjs';
 import {BuildingBlockManagementDetailService} from '../../services';
-import {BuildingBlockManagementDetailComponent} from './building-block-management-detail.component';
+import {
+  BuildingBlockManagementDetailComponent,
+  CUSTOM_TAB_ENABLED_TIMEOUT_MS,
+} from './building-block-management-detail.component';
 
 @Component({standalone: true, template: ''})
 class MailTemplateListStubComponent {}
@@ -79,6 +82,20 @@ describe('BuildingBlockManagementDetailComponent', () => {
     tick();
 
     expect(fixture.nativeElement.querySelector('cds-tabs')).toBeNull();
+    expect(detailService.navigateToTab).not.toHaveBeenCalled();
+
+    tick(CUSTOM_TAB_ENABLED_TIMEOUT_MS);
+    fixture.detectChanges();
+  }));
+
+  it('renders the tab bar anyway when a custom tab never reports whether it is enabled', fakeAsync(() => {
+    configureTestBed('mail-template');
+    fixture.detectChanges();
+
+    tick(CUSTOM_TAB_ENABLED_TIMEOUT_MS);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
     expect(detailService.navigateToTab).not.toHaveBeenCalled();
   }));
 

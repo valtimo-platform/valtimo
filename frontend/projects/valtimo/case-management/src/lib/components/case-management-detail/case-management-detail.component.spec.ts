@@ -24,7 +24,10 @@ import {SseService} from '@valtimo/sse';
 import {IconService, TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, of, Subject} from 'rxjs';
 import {CaseDetailService, CaseManagementService, TabService} from '../../services';
-import {CaseManagementDetailComponent} from './case-management-detail.component';
+import {
+  CaseManagementDetailComponent,
+  INJECTED_TAB_ENABLED_TIMEOUT_MS,
+} from './case-management-detail.component';
 
 describe('CaseManagementDetailComponent', () => {
   let fixture: ComponentFixture<CaseManagementDetailComponent>;
@@ -128,6 +131,20 @@ describe('CaseManagementDetailComponent', () => {
 
     expect(fixture.nativeElement.querySelector('cds-tabs')).toBeNull();
     expect(navigatedTo()).toEqual([]);
+
+    tick(INJECTED_TAB_ENABLED_TIMEOUT_MS);
+    fixture.detectChanges();
+  }));
+
+  it('renders the tab bar anyway when an injected tab never reports whether it is enabled', fakeAsync(() => {
+    configureTestBed('mail-template');
+    fixture.detectChanges();
+
+    tick(INJECTED_TAB_ENABLED_TIMEOUT_MS);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(navigatedTo().filter((url: string) => url === `${CASE_ROUTE}/general`)).toEqual([]);
   }));
 
   it('stays on an injected tab route once that tab has resolved', fakeAsync(() => {
