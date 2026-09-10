@@ -17,6 +17,7 @@
 package com.ritense.iko.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.iko.exception.IkoServerException
 import com.ritense.iko.service.IkoWidgetService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator
@@ -142,6 +143,44 @@ internal class IkoWidgetResourceTest {
             .andDo(print())
             .andExpect(status().isBadRequest())
     }
+
+    @Test
+    fun `should return bad gateway when the iko server fails while getting widget data`() {
+        whenever(service.getWidgetData(eq("klant"), eq("general"), eq("general"), any()))
+            .thenThrow(ikoServerException())
+
+        mockMvc.perform(
+            get(
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}/data",
+                "klant",
+                "general",
+                "general"
+            )
+        )
+            .andDo(print())
+            .andExpect(status().isBadGateway())
+            .andExpect(jsonPath("$.status").value(502))
+    }
+
+    @Test
+    fun `should return bad gateway when the iko server fails while getting widgets`() {
+        whenever(service.findAllByTabKeyFilteredByDisplayConditions("klant", "general"))
+            .thenThrow(ikoServerException())
+
+        mockMvc.perform(
+            get(
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget",
+                "klant",
+                "general"
+            )
+        )
+            .andDo(print())
+            .andExpect(status().isBadGateway())
+            .andExpect(jsonPath("$.status").value(502))
+    }
+
+    // Exactly what IkoClient throws, so this also pins that the advice maps the subclass.
+    private fun ikoServerException() = IkoServerException(RuntimeException("iko server is down"))
 
     private fun widget() = FieldsWidget(
         key = "partner",

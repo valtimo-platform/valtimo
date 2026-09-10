@@ -3268,6 +3268,10 @@
   "processStartSuccessful": "{{processName}} is succesvol gestart",
   "widgets": {
     "noData": "Geen data gevonden",
+    "dataError": {
+      "title": "Gegevens niet geladen",
+      "retry": "Opnieuw proberen"
+    },
     "emptyFields": "Niets hier",
     "noWidgets": "Geen widgets",
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",

@@ -17,10 +17,20 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {BehaviorSubject, combineLatest, filter, Observable, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {FormIoModule} from '@valtimo/components';
 import {ButtonModule} from 'carbon-components-angular';
 import {
+  catchWidgetDataError,
   FormioWidgetWidgetWithUuid,
   WidgetFormioComponent,
   WidgetLayoutService,
@@ -55,19 +65,27 @@ export class IkoWidgetFormioComponent {
     return this._widgetConfigurationSubject$.pipe(filter(config => !!config));
   }
 
+  private readonly _reloadWidgetData$ = this.widgetLayoutService.widgetDataReload$.pipe(
+    filter(uuid => uuid === this.widgetUuid),
+    startWith(null)
+  );
+
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
+    this._reloadWidgetData$,
   ]).pipe(
     switchMap(([widgetConfiguration, widgetParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
-        : this.ikoApiService.getIkoWidgetData(
-            widgetParams.ikoViewKey,
-            widgetParams.tabKey,
-            widgetConfiguration.key,
-            widgetParams.entryId
-          )
+        : this.ikoApiService
+            .getIkoWidgetData(
+              widgetParams.ikoViewKey,
+              widgetParams.tabKey,
+              widgetConfiguration.key,
+              widgetParams.entryId
+            )
+            .pipe(catchWidgetDataError(this.widgetLayoutService, () => this.widgetUuid))
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );

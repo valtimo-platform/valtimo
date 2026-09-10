@@ -16,6 +16,7 @@
 
 package com.ritense.iko.client
 
+import com.ritense.iko.exception.IkoServerException
 import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -24,8 +25,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
+import org.springframework.http.HttpStatus
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.RestClient
 import java.net.URI
+import java.time.Duration
+import java.util.concurrent.TimeUnit.SECONDS
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class IkoClientTest {
@@ -161,6 +167,46 @@ class IkoClientTest {
         assertEquals("ZoekMetGeslachtsnaamEnGeboortedatum", response["type"].asText())
         assertEquals("999993653", response["personen"][0]["burgerservicenummer"].asText())
         assertEquals("Suzanne Moulin", response["personen"][0]["naam"]["volledigeNaam"].asText())
+    }
+
+    @Test
+    fun `should throw when the iko server returns an error`() {
+        val client = IkoClient(RestClient.builder(), MapperSingleton.get())
+
+        mockApi.enqueue(MockResponse().setResponseCode(500))
+
+        val exception = assertThrows<IkoServerException> {
+            client.getByEndpointId(
+                baseUrl = URI(mockApi.url("/").toString()),
+                connectorTag = "brp",
+                connectorInstanceTag = "brp",
+                endpointOperation = "personen",
+                id = "999993653",
+            )
+        }
+
+        assertEquals(HttpStatus.BAD_GATEWAY, exception.statusCode)
+    }
+
+    @Test
+    fun `should throw when the iko server does not respond in time`() {
+        val restClientBuilder = RestClient.builder().requestFactory(
+            SimpleClientHttpRequestFactory().apply { setReadTimeout(Duration.ofMillis(100)) }
+        )
+        val client = IkoClient(restClientBuilder, MapperSingleton.get())
+
+        mockApi.enqueue(mockResponse("{}").setBodyDelay(1, SECONDS))
+
+        val exception = assertThrows<IkoServerException> {
+            client.search(
+                baseUrl = URI(mockApi.url("/").toString()),
+                connectorTag = "brp",
+                connectorInstanceTag = "brp",
+                endpointOperation = "personen",
+            )
+        }
+
+        assertEquals(HttpStatus.BAD_GATEWAY, exception.statusCode)
     }
 
     private fun mockResponse(body: String): MockResponse {

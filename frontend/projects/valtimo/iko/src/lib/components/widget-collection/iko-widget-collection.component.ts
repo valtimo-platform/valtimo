@@ -17,7 +17,12 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
-import {CollectionWidget, WidgetCollectionComponent, WidgetLayoutService} from '@valtimo/layout';
+import {
+  catchWidgetDataError,
+  CollectionWidget,
+  WidgetCollectionComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {
   ButtonModule,
   InputModule,
@@ -25,7 +30,16 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 import {HttpParams} from '@angular/common/http';
@@ -64,6 +78,11 @@ export class IkoWidgetCollectionComponent {
 
   private readonly _queryParams$ = new BehaviorSubject<HttpParams>(new HttpParams());
 
+  private readonly _reloadWidgetData$ = this.widgetLayoutService.widgetDataReload$.pipe(
+    filter(uuid => uuid === this.widgetUuid),
+    startWith(null)
+  );
+
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
@@ -72,17 +91,20 @@ export class IkoWidgetCollectionComponent {
         (prevParams, currParams) => prevParams.toString() === currParams.toString()
       )
     ),
+    this._reloadWidgetData$,
   ]).pipe(
     switchMap(([widgetConfiguration, widgetParams, queryParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
-        : this.ikoApiService.getIkoWidgetData(
-            widgetParams.ikoViewKey,
-            widgetParams.tabKey,
-            widgetConfiguration.key,
-            widgetParams.entryId,
-            queryParams
-          )
+        : this.ikoApiService
+            .getIkoWidgetData(
+              widgetParams.ikoViewKey,
+              widgetParams.tabKey,
+              widgetConfiguration.key,
+              widgetParams.entryId,
+              queryParams
+            )
+            .pipe(catchWidgetDataError(this.widgetLayoutService, () => this.widgetUuid))
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );

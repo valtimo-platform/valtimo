@@ -3233,6 +3233,10 @@
   "processStartSuccessful": "{{processName}} has successfully been started",
   "widgets": {
     "noData": "No data found",
+    "dataError": {
+      "title": "Data could not be loaded",
+      "retry": "Try again"
+    },
     "emptyFields": "Nothing here",
     "noWidgets": "No widgets",
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",

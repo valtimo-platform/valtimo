@@ -25,3 +25,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
+| IKO | Widgets and search results now show when data could not be retrieved, instead of looking the same as when there is no data |
