@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.jpa.repository.Query
 
 interface BuildingBlockDefinitionRepository :
     JpaRepository<BuildingBlockDefinition, BuildingBlockDefinitionId>,
@@ -29,4 +30,10 @@ interface BuildingBlockDefinitionRepository :
 
     fun findAllByIdKeyOrderByIdVersionTag(key: String): List<BuildingBlockDefinition>
     fun findAllByIdKey(key: String, pageable: Pageable): Page<BuildingBlockDefinition>
+
+    /**
+     * Identifiers only: SemVer ranking happens in Kotlin, so this reads just two varchar columns.
+     */
+    @Query("select definition.id from BuildingBlockDefinition definition")
+    fun findAllIds(): List<BuildingBlockDefinitionId>
 }

@@ -15,8 +15,8 @@ External plugins exist so that:
 
 ## How external plugins work
 
-External plugins do not run inside the Valtimo backend. They run on a separate service, and
-Valtimo communicates with that service over HTTP:
+External plugins do not run inside the Valtimo backend. They run on a separate service. Valtimo
+communicates with that service over HTTP; platform events reach it through a message broker:
 
 - A **plugin host** is a lightweight service that stores uploaded plugin packages and runs them in
   a secure sandbox. One plugin host can run many plugins, and many versions of the same plugin
@@ -32,7 +32,7 @@ Together, plugin hosts and apps are called **integrations**.
 │              │ ◀─────────────────────────────────────────── │   or app     │
 │              │      calls back with a scoped token          │  (runs the   │
 │              │                                              │   plugins)   │
-└──────────────┘   invokes actions, delivers events           └──────────────┘
+└──────────────┘   invokes actions; events via a broker       └──────────────┘
 ```
 
 Valtimo checks in with every integration regularly (every minute by default). It discovers which
@@ -79,6 +79,9 @@ The security model rests on a few principles:
   behalf of a logged-in user are additionally limited to what that user is allowed to see and do.
 - **Signed traffic** — every request Valtimo sends to an integration is cryptographically signed,
   so an integration only accepts instructions from the Valtimo environment that holds its secret.
+  Configuration data — tokens, settings, broker credentials — additionally only travels to an
+  integration over an encrypted (or local) connection, unless an operator deliberately lifts that
+  requirement for a fully trusted network.
 - **Tamper detection** — Valtimo records a fingerprint of every plugin package it accepted. If
   the package on the host changes without an approved upload, the plugin is suspended on every
   surface until an administrator reviews the change.

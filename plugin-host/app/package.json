@@ -30,6 +30,7 @@
   "dependencies": {
     "@extism/extism": "^2.0.0-rc13",
     "@fastify/multipart": "^10.0.0",
+    "@fastify/rate-limit": "^10.3.0",
     "@valtimo/plugin-sdk": "file:../plugin-sdk",
     "adm-zip": "^0.5.17",
     "amqplib": "^0.10.9",

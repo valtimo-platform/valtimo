@@ -5,8 +5,8 @@ Node.js + Fastify sidecar that manages and executes external Wasm plugins via [E
 ## What It Does
 
 - Accepts plugin `.zip` uploads (containing `manifest.json` + `plugin.wasm`)
-- Persists plugins to disk and plugin metadata to PostgreSQL
-- Stores plugin configurations in PostgreSQL (survives restarts)
+- Persists plugin packages to disk, and configurations, key–value data, and logs to PostgreSQL
+  (survives restarts)
 - Executes plugin actions by calling into the Wasm module and returning process variables
 - Consumes platform events from RabbitMQ and delivers each to plugins that subscribe to it
   (`handle_event`) — see [Events](#events)
@@ -18,7 +18,9 @@ src/
   db/
     index.ts              # Database pool, migration runner
     config-repository.ts  # CRUD for plugin_configurations table
-    plugin-repository.ts  # CRUD for plugins table
+    gzac-instance-repository.ts  # CRUD for gzac_instances table (frame-ancestor announcements)
+    kv-repository.ts      # CRUD for plugin_kv table
+    log-repository.ts     # CRUD + paginated queries for plugin_logs table
   models/
     app-config.ts         # AppConfig type + Zod schema
     host-logger.ts        # HostLogger interface
@@ -29,15 +31,31 @@ src/
     health.ts             # GET /health
     host-management.ts    # Plugin CRUD (upload, list, delete)
     host-configurations.ts  # Configuration push/update/delete
+    host-gzac-instances.ts  # GZAC instance + frontend-origin announcements
     plugin-actions.ts     # Action execution + manifest retrieval
-    plugin-bundles.ts     # Static frontend asset serving
+    plugin-submit.ts      # Task-form submit hook (handle_submit)
+    plugin-data.ts        # Public data route for plugin iframes (handle_request)
+    plugin-logs.ts        # Paginated plugin_logs queries for GZAC's log modal
+    plugin-bundles.ts     # Static frontend asset serving, logo, frame-policy probe
   rabbitmq/
     event-consumer.ts     # Consumes platform events and routes them to subscribed plugins
   host-functions/
-    gzac-api.ts           # Extism host function for GZAC API callbacks
+    guard.ts              # Shared capability gate for every host function
+    gzac-api.ts           # GZAC API callbacks (service/user token attach)
+    http-request.ts       # Outbound HTTP with egress allowlist + SSRF guard
+    kv.ts                 # Per-configuration key-value store
+    log.ts                # Plugin log writes (pino + plugin_logs)
+  security/               # HMAC verification, replay cache, egress/endpoint allowlists,
+                          # URL/SSRF guard, content pin, rate limits, user-token introspection
   config.ts               # Environment config loader
-  plugin-manager.ts       # Wasm lifecycle: load, store, call actions/events via Extism
-  config-registry.ts      # Database-backed configuration store
+  plugin-manager.ts       # Wasm lifecycle: load, store, call exports via Extism
+  plugin-package-install.ts  # Zip-slip-guarded extraction + atomic staged install
+  preinstall.ts           # Boot-time install of PLUGIN_PREINSTALL_DIR packages
+  wasm-instance-pool.ts   # Per-plugin-version instance pool (lease, evict, drain)
+  wasm-memory-limit.ts    # Guest memory cap via in-memory module rewrite
+  config-registry.ts      # Database-backed configuration store (TTL read cache)
+  frame-ancestor-registry.ts  # frame-ancestors allowlist from announcements + env
+  body-parsing.ts / errors.ts / https-options.ts  # Fastify plumbing
   index.ts                # Fastify entry point
   migrate.ts              # Standalone migration entry point (dist/migrate.js)
 migrations/               # .sql schema migrations (node-pg-migrate)
@@ -88,7 +106,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)). Rotation is two-sided: restart the host with the new value, then update the secret on the GZAC host via its Edit connection modal — GZAC shows the host unreachable in between and reconnects on the next poll |
+| `ADMIN_TOKEN` | yes | `changeme` (Docker) | Shared secret used as the HMAC key authenticating every GZAC→host request (see [API Reference](#api-reference)). Rotation is two-sided: restart the host with the new value, then update the secret on the GZAC host via its Edit connection modal — GZAC shows the host unreachable in between, revokes every token issued for the host's configurations, and reconnects on the next poll with fresh ones |
 | `PORT` | no | `8090` | HTTP listen port |
 | `PLUGIN_STORAGE_DIR` | no | `./plugins` (local), `/data/plugins` (Docker) | Directory for persisted plugin binaries |
 | `PLUGIN_PREINSTALL_DIR` | no | `./preinstalled` (local), `/data/preinstalled` (Docker) | Directory scanned once at boot; every `*.zip` in it is installed (see [Pre-installed plugins](#pre-installed-plugins)). Empty in the published image. |
@@ -104,16 +122,26 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `WASM_TIMEOUT_MS` | no | `30000` | Hard wall-clock limit per Wasm plugin call; Extism cancels the call when exceeded and the route reports a `HOST_ERROR`. |
 | `WASM_MAX_MEMORY_PAGES` | no | `4096` | Cap on a plugin's linear memory in 64 KiB pages (default 256 MiB). `0` removes the cap. |
 | `WASM_INSTANCE_IDLE_TTL_MS` | no | `600000` | Idle Extism instances are closed after this long without a call (freed worker + memory; next call re-instantiates). `0` disables eviction. |
+| `WASM_POOL_MIN_INSTANCES` | no | `1` | Instances retained per plugin version while in use (creation is lazy; idle eviction may go below it). |
+| `WASM_POOL_MAX_INSTANCES` | no | `10` | Concurrent instances per plugin version; worst-case memory ≈ max × page cap. `1` serialises all calls to a version. |
+| `WASM_POOL_ACQUIRE_TIMEOUT_MS` | no | `30000` | Longest a call waits for a free pooled instance under load before failing. |
 | `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` callback fetch into GZAC. |
 | `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | no | `10000` | Timeout on the user-token introspection call the `/plugins/:id/:version/data` route makes against GZAC before executing Wasm. GZAC not answering within it fails the request with a 503 (fail closed). |
 | `UPLOAD_MAX_BYTES` | no | `104857600` | Maximum plugin package (.zip) upload size (100 MiB), enforced before the file is buffered for the HMAC check. GZAC applies its own 100 MB gate and its servlet multipart limit before forwarding, so raising this alone does not widen the end-to-end limit. |
 | `DATA_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-configuration request budget for the public `/plugins/:id/:version/data` route. `0` disables the limit. |
+| `ADMIN_RATE_LIMIT_PER_MINUTE` | no | `120` | Per-IP request budget for the HMAC-authenticated admin routes (plugin management, configuration pushes, gzac-instance announcements, configuration logs). Far above the one-poll-per-minute legitimate traffic; throttles online brute-force of `ADMIN_TOKEN`. `0` disables the limit. |
+| `BUNDLE_RATE_LIMIT_PER_MINUTE` | no | `600` | Per-IP request budget for the public plugin-content routes (bundles, logos, manifests, frame-policy probes), bounding disk-read abuse. Generous — one case-tab load fetches several assets. `0` disables the limit. |
+| `TRUST_PROXY` | no | `false` | Honour `X-Forwarded-For` for client addresses (Fastify `trustProxy`). Enable behind a reverse proxy so the per-IP rate limits key on the real client instead of the proxy. Only the literal strings `true`/`false` are accepted. |
 | `CONFIG_CACHE_TTL_MS` | no | `10000` | How long configurations are served from the in-memory cache before re-reading Postgres. Writes through this host invalidate immediately. `0` disables caching. Also caps how long the frame-ancestor allowlist is cached. |
 | `ALLOWED_FRAME_ANCESTORS` | no | — | Extra browser origins allowed to embed plugin screens, on top of those GZAC instances register. Comma-separated `scheme://host[:port]`. Escape hatch for local development, and for frontends no GZAC announces (see [Embedding](#embedding-frame-ancestors)). |
 | `FRAME_ANCESTOR_STALE_MS` | no | `604800000` | A GZAC instance that has not re-announced itself within this window (7 days) drops out of the frame-ancestor allowlist. There is no deregistration call, so this is what removes a decommissioned GZAC. |
 | `TLS_CERT_PATH` | no | — | PEM certificate. Set **together with** `TLS_KEY_PATH` to make the host serve HTTPS (see [Transport security](#transport-security)). |
 | `TLS_KEY_PATH` | no | — | PEM private key. Set together with `TLS_CERT_PATH`. |
 | `TLS_CA_PATH` | no | — | PEM CA / intermediate chain, when the certificate file is not self-contained. |
+| `LOG_RETENTION_DAYS` | no | `30` | Retention for `plugin_logs` entries; a cleanup job runs every 6 hours (and once at boot). |
+| `HOST_ALLOWED_INTERNAL_CIDRS` | no | — | Comma-separated CIDRs plugins may reach despite being private address space — the production way to allow an internal service. `169.254.0.0/16` (cloud metadata) is never allowlistable. |
+| `HOST_ALLOW_HTTP` | no | `false` | Allow plain-http egress targets. Local development only; only the literal string `true` enables it. |
+| `HOST_ALLOW_PRIVATE_NETWORK` | no | `false` | Disables the SSRF classifier wholesale — local development only; logs a loud warning at boot. |
 
 The host does **not** configure an event broker. Each GZAC instance pushes its own broker connection
 alongside every configuration (see [Events](#events)), so one host can serve many GZAC instances,
@@ -160,9 +188,10 @@ truststore).
 
 Plain HTTP is fine when TLS is terminated by a reverse proxy in front of the host, or for local
 development on `localhost`. To keep secrets off an eavesdroppable link, **GZAC refuses to register
-or update a host that carries event-broker credentials unless that host is reachable over HTTPS**
-(or a loopback address such as `localhost`/`127.0.0.1` for local development). Hosts without a
-broker (actions only) may still be registered over plain HTTP.
+or update a host over plain HTTP** unless the address is loopback (`localhost`/`127.0.0.1` for
+local development) — every configuration push carries a service token and decrypted secret
+settings, broker or no broker. Deployments on a fully trusted network can lift this with
+`valtimo.external-plugin.allow-plaintext-host-transport=true` on the GZAC side.
 
 ## NPM Scripts
 
@@ -180,7 +209,7 @@ broker (actions only) may still be registered over plain HTTP.
 | Script | Description |
 |--------|-------------|
 | `npm run db:up` | Start PostgreSQL container |
-| `npm run db:down` | Stop PostgreSQL container |
+| `npm run db:down` | Stop the compose containers (also the host, when started via `docker:up`) |
 | `npm run db:reset` | Stop, remove volume, and restart (fresh database) |
 | `npm run db:logs` | Follow PostgreSQL logs |
 | `npm run db:shell` | Connect to psql shell |
@@ -205,8 +234,9 @@ build it directly: `docker build -f app/Dockerfile -t valtimo/plugin-host .` fro
 | Data | Storage | Location |
 |------|---------|----------|
 | Plugin configurations | PostgreSQL | `plugin_configurations` table |
-| Plugin metadata | PostgreSQL | `plugins` table |
-| Plugin binaries (.wasm, manifest, frontend assets) | Filesystem | `PLUGIN_STORAGE_DIR` (Docker: `/data/plugins` volume) |
+| Plugin key–value data / logs | PostgreSQL | `plugin_kv` / `plugin_logs` tables |
+| Announced GZAC instances | PostgreSQL | `gzac_instances` table |
+| Plugin packages (.wasm, manifest, logo, frontend assets) | Filesystem | `PLUGIN_STORAGE_DIR` (Docker: `/data/plugins` volume) |
 
 Configurations persist across host restarts. Event consumers automatically reconnect to brokers
 referenced by persisted configurations on startup.
@@ -447,11 +477,12 @@ pushes its broker connection (`eventBroker`) alongside every configuration on
     "amqpUrl": "amqp://guest:guest@localhost:5672",
     "exchange": "valtimo-events",
     "exchangeType": "fanout",
-    "queueMode": "live",
-    "queueTtlMs": null
+    "queueMode": "live"
   }
 }
 ```
+
+(`queueTtlMs` is only sent in `durable` mode; GZAC omits the key entirely for `live`.)
 
 The host opens **one consumer per distinct broker** and tears it down when no configuration
 references it any more. `exchange` defaults to `valtimo-events` and `exchangeType` to `fanout`; omit
@@ -459,7 +490,8 @@ references it any more. `exchange` defaults to `valtimo-events` and `exchangeTyp
 routed only to configurations carrying that same broker.
 
 **Multiple hosts per instance.** The exchange is a fanout, so the host binds its **own** queue —
-`valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>`. This means:
+`valtimo-external-plugins.<exchange>.<HOST_ID>.<queueMode>` (durable queues append `.t<queueTtlMs>`).
+This means:
 
 - *Different* hosts on the same GZAC instance each have a distinct queue, so **every host receives a
   copy** of every event.
@@ -494,13 +526,15 @@ Round trip:
 1. A GZAC instance emits an event (e.g. `com.ritense.valtimo.task.completed`,
    `com.ritense.valtimo.document.viewed`) → outbox → its `valtimo-events` exchange.
 2. The host's consumer for that broker reads the CloudEvent and, for every configuration on that
-   broker whose manifest lists the event's `type` under `eventSubscriptions`, invokes the plugin's
-   `handle_event` export.
+   broker whose **granted** subscriptions (the `eventSubscriptions` pushed with the configuration)
+   include the event's `type`, invokes the plugin's `handle_event` export — the manifest is never
+   consulted at dispatch.
 3. The handler runs in the Extism sandbox with the configuration's properties injected and the
    per-configuration service token available, so it can call back into that GZAC instance via
    `gzac_api`.
 
-A plugin declares its subscriptions in `manifest.json`:
+A plugin declares its subscriptions in `manifest.json` (the admin accepts them at activation, and
+that accepted set is what GZAC pushes):
 
 ```json
 "eventSubscriptions": [
@@ -548,7 +582,9 @@ host_sign() {
 }
 ```
 
-`GET /health` is the only unauthenticated route.
+`GET /health` is the only unauthenticated route GZAC calls; the browser-facing plugin surfaces
+(`plugin-manifest`, `bundles/**`, `logo`, `frame-policy`, and the user-token-gated `data` route)
+are public by design.
 
 ### `GET /health`
 
@@ -659,7 +695,7 @@ curl -sS -X DELETE http://localhost:8090/api/host/configurations/my-config \
 ### `POST /plugins/:pluginId/:version/actions/:actionKey` — execute an action
 
 ```bash
-printf '%s' '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"titleField":"/applicantName"}}' > /tmp/action.json
+printf '%s' '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"titleField":"/name"}}' > /tmp/action.json
 host_sign POST /plugins/case-summary/0.1.0/actions/case-summary /tmp/action.json
 curl -sS -X POST http://localhost:8090/plugins/case-summary/0.1.0/actions/case-summary \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \

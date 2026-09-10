@@ -55,7 +55,8 @@ import java.util.UUID
 /**
  * The connection PATCH (#618) end to end: HTTP → security matcher → validation mapper → service →
  * PostgreSQL, finishing with the single-host re-discovery that re-pushes every configuration to
- * the (stub) host — the mechanism that makes a repointed broker take effect.
+ * the (stub) host — the mechanism that makes a repointed broker take effect. Also pins the repoint
+ * side effects: token revocation on address/credential changes and the old-address purge.
  */
 @AutoConfigureMockMvc
 class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
@@ -81,6 +82,7 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
     fun setUp() {
         removeRows()
         configurationPushes.clear()
+        configurationDeletes.clear()
         // Register against the stub and let discovery pin the plugin, so the configuration under
         // test is a real activated one — the thing #618 must never orphan.
         val host = hostService.register(
@@ -158,6 +160,13 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
         assertThat(hostRepository.findById(hostId).orElseThrow().baseUrl).isEqualTo(newBaseUrl)
         assertThat(definitionRepository.findByPluginIdAndVersion(PLUGIN_ID, PLUGIN_VERSION)!!.baseUrl)
             .isEqualTo("$newBaseUrl/plugins/$PLUGIN_ID")
+        // The repoint revoked every outstanding token and purged the configuration from the old
+        // address with the old admin token (the stub serves both addresses); the finishing
+        // re-discovery then re-pushed it with a token of the new generation.
+        assertThat(configurationRepository.findById(configurationId).orElseThrow().tokenGeneration)
+            .isEqualTo(1)
+        assertThat(configurationDeletes).contains(configurationId.toString())
+        assertThat(configurationPushes).contains(configurationId.toString())
     }
 
     @Test
@@ -171,6 +180,8 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
                 .content("""{"secret": "  "}""")
         ).andExpect(status().isOk)
         assertThat(hostRepository.findById(hostId).orElseThrow().secret).isEqualTo(originalCiphertext)
+        assertThat(configurationRepository.findById(configurationId).orElseThrow().tokenGeneration)
+            .isZero()
 
         mockMvc.perform(
             patch("$BASE/host/$hostId/connection")
@@ -180,6 +191,10 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
         val host = hostRepository.findById(hostId).orElseThrow()
         assertThat(host.secret).isNotEqualTo(originalCiphertext)
         assertThat(hostService.decryptedSecret(host)).isEqualTo("rotated-token")
+        // Rotation revokes the outstanding tokens but never purges — the address did not move.
+        assertThat(configurationRepository.findById(configurationId).orElseThrow().tokenGeneration)
+            .isEqualTo(1)
+        assertThat(configurationDeletes).isEmpty()
     }
 
     @Test
@@ -187,14 +202,23 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
     fun `validation failures answer 400 with the operator-facing detail and leave the row alone`() {
         val before = hostRepository.findById(hostId).orElseThrow().baseUrl
 
-        // Plaintext remote base URL while a broker is configured.
+        // Plaintext remote base URL — refused whether or not a broker is configured.
         mockMvc.perform(
             patch("$BASE/host/$hostId/connection")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"baseUrl": "http://remote-host:8090"}""")
         )
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("unencrypted transport")))
+            .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("reachable over HTTPS")))
+
+        // Base URL that java.net.URI cannot parse as an http(s) address.
+        mockMvc.perform(
+            patch("$BASE/host/$hostId/connection")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"baseUrl": "moved.example.com"}""")
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("base URL")))
 
         // A broker URL echoing the response's redaction marker.
         mockMvc.perform(
@@ -280,6 +304,9 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
         /** Configuration ids the stub host received a push for. */
         private val configurationPushes = mutableListOf<String>()
 
+        /** Configuration ids the stub host received a DELETE for — the repoint purge. */
+        private val configurationDeletes = mutableListOf<String>()
+
         private val server: HttpServer = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
             createContext("/") { exchange -> handle(exchange) }
             executor = null
@@ -299,6 +326,12 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
                     """[{"pluginId":"$PLUGIN_ID","version":"$PLUGIN_VERSION","contentHash":"$CONTENT_HASH","manifest":$MANIFEST}]"""
                 )
                 path == "/api/host/configurations" && method == "GET" -> respond(exchange, 200, "[]")
+                path.startsWith("/api/host/configurations/") && method == "DELETE" -> {
+                    synchronized(configurationDeletes) {
+                        configurationDeletes.add(path.substringAfterLast('/'))
+                    }
+                    respond(exchange, 200, "{}")
+                }
                 path.startsWith("/api/host/configurations/") -> {
                     synchronized(configurationPushes) {
                         configurationPushes.add(path.substringAfterLast('/'))

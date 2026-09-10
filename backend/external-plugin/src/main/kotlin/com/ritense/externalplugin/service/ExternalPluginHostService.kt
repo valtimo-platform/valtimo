@@ -35,6 +35,7 @@ import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.utils.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -58,6 +59,10 @@ class ExternalPluginHostService(
     private val encryptionService: EncryptionService,
     private val hostClient: ExternalPluginHostClient,
     private val hostUsageResolver: ExternalPluginHostUsageResolver,
+    /** Allowed host origins, `scheme://host[:port]`, optional leading `*.`. Empty = no restriction. */
+    private val allowedHostOrigins: List<String> = emptyList(),
+    /** Opt-in: plain HTTP to a non-loopback host. Off by default — pushes carry secrets. */
+    private val allowPlaintextHostTransport: Boolean = false,
 ) {
 
     fun list(): List<ExternalPluginHost> = hostRepository.findAll()
@@ -70,7 +75,7 @@ class ExternalPluginHostService(
 
     @Transactional(readOnly = true)
     fun findByBaseUrl(baseUrl: String): ExternalPluginHost? =
-        hostRepository.findByBaseUrl(baseUrl.trimEnd('/'))
+        hostRepository.findByBaseUrl(baseUrl.trim().trimEnd('/'))
 
     fun decryptedSecret(host: ExternalPluginHost): String = encryptionService.decrypt(host.secret)
 
@@ -88,11 +93,12 @@ class ExternalPluginHostService(
         frontendOrigins: List<String> = emptyList(),
         id: UUID = UUID.randomUUID(),
     ): ExternalPluginHost {
-        val normalizedBaseUrl = baseUrl.trimEnd('/')
-        val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }
         // Every rejection below throws ExternalPluginHostValidationException rather than
         // IllegalArgumentException so it surfaces as a 400 carrying this text, which the add-host
         // modal renders next to the fields the admin already filled in.
+        val normalizedBaseUrl = normalizeHostBaseUrl(baseUrl, "base URL")
+        val normalizedCallbackUrl = normalizeHostBaseUrl(gzacCallbackBaseUrl, "GZAC callback base URL")
+        val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }?.let { normalizeBrokerUrl(it) }
         if (!isConnectableBaseUrl(normalizedBaseUrl)) {
             throw ExternalPluginHostValidationException(
                 "'$normalizedBaseUrl' is not a reachable address for the base URL. 0.0.0.0 (and " +
@@ -101,12 +107,10 @@ class ExternalPluginHostService(
                     "http://localhost:8090."
             )
         }
-        // The config push delivers the broker AMQP URL and credentials in its body. HMAC binds and
-        // authenticates that body but does not encrypt it, so a broker may only be configured on a
-        // host the push can reach over a confidential transport. The same check re-runs on every
-        // later mutation of the (baseUrl, broker) pair ([updateConnection]), so no push can ever
-        // reach an insecure host with broker credentials.
-        requireConfidentialTransportForBroker(normalizedBaseUrl, brokerAmqpUrl)
+        // Push body carries service token + decrypted secret properties + broker credentials.
+        // HMAC signs it, does not encrypt it. Re-runs on every baseUrl change in updateConnection.
+        requireAllowedHostOrigin(normalizedBaseUrl)
+        requireConfidentialTransport(normalizedBaseUrl, "Refusing to register host")
         val resolvedTtlMs = resolveEventQueueTtlMs(eventQueueMode, eventQueueTtlMs)
         val host = ExternalPluginHost(
             id = id,
@@ -115,7 +119,7 @@ class ExternalPluginHostService(
             secret = encryptionService.encrypt(secret),
             status = ExternalPluginHostStatus.UNREACHABLE,
             kind = kind,
-            gzacCallbackBaseUrl = gzacCallbackBaseUrl.trimEnd('/'),
+            gzacCallbackBaseUrl = normalizedCallbackUrl,
             eventBrokerAmqpUrl = brokerAmqpUrl,
             eventBrokerExchange = eventBrokerExchange?.takeIf { it.isNotBlank() },
             eventQueueMode = eventQueueMode,
@@ -194,6 +198,12 @@ class ExternalPluginHostService(
      *
      * The caller is expected to follow up with a single-host re-discovery, which announces the
      * (possibly new) callback URL and re-pushes every configuration with the new values.
+     *
+     * A change of base URL, secret or broker URL is also a revocation event: every outstanding
+     * service/user token under the host dies by generation bump, and the re-discovery's push mints
+     * fresh ones ([revokeTokensUnderHost]). A base-url change additionally deletes the
+     * configurations, best-effort, from the address just left — GZAC stops polling it, so nothing
+     * else would ever clean them up there ([purgeConfigurationsFromOldAddress]).
      */
     fun updateConnection(
         hostId: UUID,
@@ -209,17 +219,19 @@ class ExternalPluginHostService(
         name?.let {
             if (it.isBlank()) throw ExternalPluginHostValidationException("The host name must not be blank.")
         }
-        gzacCallbackBaseUrl?.let {
+        val normalizedCallbackUrl = gzacCallbackBaseUrl?.let {
             if (it.isBlank()) {
                 throw ExternalPluginHostValidationException(
                     "The GZAC callback base URL must not be blank — the host needs it to reach " +
                         "this GZAC for plugin callbacks."
                 )
             }
+            // Host calls back here with a service token — and a live user token for as:"user".
+            normalizeHostBaseUrl(it, "GZAC callback base URL")
         }
         val normalizedBaseUrl = baseUrl?.let {
             if (it.isBlank()) throw ExternalPluginHostValidationException("The base URL must not be blank.")
-            it.trimEnd('/')
+            normalizeHostBaseUrl(it, "base URL")
         }
         if (eventBrokerAmqpUrl != null && eventBrokerAmqpUrl.contains("$AMQP_USERINFO_REDACTION@")) {
             throw ExternalPluginHostValidationException(
@@ -234,8 +246,9 @@ class ExternalPluginHostService(
         val effectiveBrokerUrl = when {
             eventBrokerAmqpUrl == null -> host.eventBrokerAmqpUrl
             eventBrokerAmqpUrl.isBlank() -> null
-            else -> eventBrokerAmqpUrl
+            else -> normalizeBrokerUrl(eventBrokerAmqpUrl)
         }
+        // Bind address first — precise diagnostic beats the generic transport refusal.
         if (!isConnectableBaseUrl(effectiveBaseUrl)) {
             throw ExternalPluginHostValidationException(
                 "'$effectiveBaseUrl' is not a reachable address for the base URL. 0.0.0.0 (and " +
@@ -244,12 +257,11 @@ class ExternalPluginHostService(
                     "http://localhost:8090."
             )
         }
-        requireConfidentialTransportForBroker(
-            effectiveBaseUrl,
-            effectiveBrokerUrl,
-            "Refusing to update host '$effectiveBaseUrl': the resulting combination carries event " +
-                "broker credentials over an unencrypted transport."
-        )
+        if (normalizedBaseUrl != null) requireAllowedHostOrigin(normalizedBaseUrl)
+        // Skipped for a pure rename of an existing plaintext row — else it could never be renamed.
+        if (normalizedBaseUrl != null || effectiveBrokerUrl != null) {
+            requireConfidentialTransport(effectiveBaseUrl, "Refusing to update host")
+        }
         if (normalizedBaseUrl != null && normalizedBaseUrl != host.baseUrl) {
             hostRepository.findByBaseUrl(normalizedBaseUrl)?.takeIf { it.id != hostId }?.let { other ->
                 throw ExternalPluginHostValidationException(
@@ -260,18 +272,48 @@ class ExternalPluginHostService(
         }
 
         val baseUrlChanged = normalizedBaseUrl != null && normalizedBaseUrl != host.baseUrl
-        val secretChanged = !secret.isNullOrBlank()
+        val oldBaseUrl = host.baseUrl
+        // Decrypted before the mutations below: the purge authenticates against the old address
+        // with the old token, and re-entering the stored secret must not count as a rotation.
+        val oldAdminToken = if (baseUrlChanged || !secret.isNullOrBlank()) {
+            runCatching { encryptionService.decrypt(host.secret) }.getOrNull()
+        } else {
+            null
+        }
+        val secretChanged = !secret.isNullOrBlank() && secret != oldAdminToken
+        val brokerChanged = effectiveBrokerUrl != host.eventBrokerAmqpUrl
+
+        val changes = describeConnectionChanges(
+            host = host,
+            name = name,
+            baseUrl = normalizedBaseUrl,
+            gzacCallbackBaseUrl = normalizedCallbackUrl,
+            brokerUrl = effectiveBrokerUrl,
+            brokerUrlSupplied = eventBrokerAmqpUrl != null,
+            eventBrokerExchange = eventBrokerExchange,
+            secretChanged = secretChanged,
+        )
 
         name?.let { host.name = it }
         normalizedBaseUrl?.let { host.baseUrl = it }
         if (secretChanged) host.secret = encryptionService.encrypt(secret!!)
-        gzacCallbackBaseUrl?.let { host.gzacCallbackBaseUrl = it.trimEnd('/') }
-        eventBrokerAmqpUrl?.let { host.eventBrokerAmqpUrl = it.takeIf { url -> url.isNotBlank() } }
+        normalizedCallbackUrl?.let { host.gzacCallbackBaseUrl = it }
+        eventBrokerAmqpUrl?.let { host.eventBrokerAmqpUrl = effectiveBrokerUrl }
         eventBrokerExchange?.let { host.eventBrokerExchange = it.takeIf { ex -> ex.isNotBlank() } }
 
+        if (changes.isNotEmpty()) {
+            // Can redirect every configuration secret to a new address — must leave a trace.
+            logger.info {
+                "External plugin host ${host.id} ('${host.name}') connection updated by " +
+                    "'${SecurityUtils.getCurrentUserLogin() ?: "system"}': ${changes.joinToString("; ")}"
+            }
+        }
         if (baseUrlChanged || secretChanged) {
             // Fresh start against the new reality; the follow-up discovery records truthful status.
             host.consecutiveFailures = 0
+            // Old status attested the old address. Else the row shows CONNECTED for
+            // failureThreshold more polls after a repoint to a dead address.
+            host.status = ExternalPluginHostStatus.UNREACHABLE
         }
         if (baseUrlChanged) {
             // definition.baseUrl is denormalized from the host row and feeds bundle/logo URLs —
@@ -280,24 +322,126 @@ class ExternalPluginHostService(
             definitions.forEach { it.baseUrl = "${host.baseUrl}/plugins/${it.pluginId}" }
             definitionRepository.saveAll(definitions)
         }
+
+        val configurationIds = if (baseUrlChanged || secretChanged || brokerChanged) {
+            revokeTokensUnderHost(hostId)
+        } else {
+            emptyList()
+        }
+        if (baseUrlChanged) {
+            purgeConfigurationsFromOldAddress(hostId, oldBaseUrl, oldAdminToken, configurationIds)
+        }
         return hostRepository.save(host)
     }
 
-    private fun requireConfidentialTransportForBroker(
-        baseUrl: String,
-        brokerAmqpUrl: String?,
-        refusalPrefix: String =
-            "Refusing to register host '$baseUrl' with event broker credentials over an " +
-                "unencrypted transport.",
+    /**
+     * Kills every outstanding token (service *and* user) of this host's configurations by bumping
+     * their generation counters — [ExternalPluginConfigurationService.revokeTokens]'s mechanism,
+     * minus its per-configuration re-push: the caller's follow-up re-discovery re-pushes the whole
+     * host with fresh tokens in one pass. Whatever still holds a token minted before a repoint or
+     * credential rotation must be assumed hostile once GZAC stops talking to it.
+     *
+     * Returns the configuration ids — exactly the set a repoint then purges from the old address.
+     */
+    private fun revokeTokensUnderHost(hostId: UUID): List<UUID> =
+        definitionRepository.findAllByHostId(hostId)
+            .flatMap { configurationRepository.findAllByDefinitionId(it.id) }
+            .map { configuration ->
+                configuration.tokenGeneration += 1
+                configurationRepository.save(configuration).id
+            }
+
+    /**
+     * Best-effort cleanup of the address a repoint just left, authenticated with its *old* admin
+     * token. Without it the configurations are orphaned there forever: GZAC no longer polls the
+     * old address, so the discovery reconciliation pass can never prune them — the same trap
+     * [delete] works around, with the same scope choice: a dead old address only logs, nothing
+     * retries.
+     *
+     * Runs after commit — host I/O stays out of the transaction, and it lands before the caller's
+     * re-discovery populates the new address.
+     */
+    private fun purgeConfigurationsFromOldAddress(
+        hostId: UUID,
+        oldBaseUrl: String,
+        oldAdminToken: String?,
+        configurationIds: List<UUID>,
     ) {
-        if (brokerAmqpUrl != null && !isSecureTransport(baseUrl)) {
-            throw ExternalPluginHostValidationException(
-                "$refusalPrefix The configuration push carries the broker AMQP URL and " +
-                    "credentials, so the host must be reachable over HTTPS (or a loopback address " +
-                    "for local development). Enable TLS on the host, or leave the event broker " +
-                    "blank to disable events for configurations on this host."
+        if (oldAdminToken == null || configurationIds.isEmpty()) return
+        runAfterCommit {
+            configurationIds.forEach { configurationId ->
+                try {
+                    val deleted = hostClient.deleteConfiguration(oldBaseUrl, oldAdminToken, configurationId.toString())
+                    if (!deleted) {
+                        logger.warn { "Failed to delete configuration $configurationId from the previous plugin host address $oldBaseUrl after repointing host $hostId" }
+                    }
+                } catch (e: Exception) {
+                    logger.warn(e) { "Failed to delete configuration $configurationId from the previous plugin host address $oldBaseUrl after repointing host $hostId" }
+                }
+            }
+        }
+    }
+
+    /**
+     * Refuses a base URL that cannot carry a push confidentially. Unconditional — the body carries
+     * the service token and decrypted secret properties, not just broker credentials.
+     */
+    private fun requireConfidentialTransport(baseUrl: String, refusalPrefix: String) {
+        if (allowPlaintextHostTransport || isSecureTransport(baseUrl)) return
+        throw ExternalPluginHostValidationException(
+            "$refusalPrefix '$baseUrl': the configuration push carries a GZAC service token, the " +
+                "plugin's decrypted secret properties and any event broker credentials, so the " +
+                "host must be reachable over HTTPS (or a loopback address for local " +
+                "development). Enable TLS on the host, or set '$ALLOW_PLAINTEXT_PROPERTY=true' to " +
+                "accept the risk on a trusted network."
+        )
+    }
+
+    /**
+     * Refuses a base URL outside the operator allowlist. No-op when unset (the default). Stops a
+     * repoint — or a stolen admin session — from collecting every configuration's secrets.
+     */
+    private fun requireAllowedHostOrigin(baseUrl: String) {
+        if (allowedHostOrigins.isEmpty()) return
+        if (allowedHostOrigins.any { matchesAllowedOrigin(baseUrl, it) }) return
+        throw ExternalPluginHostValidationException(
+            "'$baseUrl' is not an allowed plugin host address. This deployment restricts plugin " +
+                "hosts to ${allowedHostOrigins.joinToString(", ")} ('$ALLOWED_ORIGINS_PROPERTY'). " +
+                "Point the host at one of those origins, or have an operator add this one to the " +
+                "allowlist."
+        )
+    }
+
+    /**
+     * Changed connection fields, for the audit log. Broker userinfo redacted, secret reported as a
+     * fact only. Call before mutating the entity.
+     */
+    private fun describeConnectionChanges(
+        host: ExternalPluginHost,
+        name: String?,
+        baseUrl: String?,
+        gzacCallbackBaseUrl: String?,
+        brokerUrl: String?,
+        brokerUrlSupplied: Boolean,
+        eventBrokerExchange: String?,
+        secretChanged: Boolean,
+    ): List<String> = buildList {
+        if (name != null && name != host.name) add("name '${host.name}' -> '$name'")
+        if (baseUrl != null && baseUrl != host.baseUrl) add("baseUrl '${host.baseUrl}' -> '$baseUrl'")
+        if (gzacCallbackBaseUrl != null && gzacCallbackBaseUrl != host.gzacCallbackBaseUrl) {
+            add("gzacCallbackBaseUrl '${host.gzacCallbackBaseUrl}' -> '$gzacCallbackBaseUrl'")
+        }
+        if (brokerUrlSupplied && brokerUrl != host.eventBrokerAmqpUrl) {
+            add(
+                "eventBrokerAmqpUrl '${redactAmqpUserInfo(host.eventBrokerAmqpUrl)}' -> " +
+                    "'${redactAmqpUserInfo(brokerUrl)}'"
             )
         }
+        val newExchange = eventBrokerExchange?.takeIf { it.isNotBlank() }
+        if (eventBrokerExchange != null && newExchange != host.eventBrokerExchange) {
+            add("eventBrokerExchange '${host.eventBrokerExchange}' -> '$newExchange'")
+        }
+        if (secretChanged) add("secret rotated")
     }
 
     /**
@@ -396,6 +540,10 @@ class ExternalPluginHostService(
         /** Replaces AMQP userinfo in responses; [updateConnection] refuses URLs echoing it back. */
         const val AMQP_USERINFO_REDACTION = "***"
 
+        const val ALLOWED_ORIGINS_PROPERTY = "valtimo.external-plugin.allowed-host-origins"
+
+        const val ALLOW_PLAINTEXT_PROPERTY = "valtimo.external-plugin.allow-plaintext-host-transport"
+
         private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "::1")
 
         /**
@@ -468,6 +616,96 @@ class ExternalPluginHostService(
                 "'$value' is not a valid frontend origin: $reason. Enter the browser origin only, " +
                     "for example https://valtimo.example.com or http://localhost:4200."
             )
+
+        /**
+         * Validates and canonicalises a host-facing base URL (the host's address, or the GZAC
+         * callback address). Fails closed, unlike [isConnectableBaseUrl]: consumers concatenate
+         * this value raw into a request URI and an iframe `src`. Paths are allowed — reverse
+         * proxies put hosts under a prefix.
+         */
+        fun normalizeHostBaseUrl(value: String, field: String): String {
+            val trimmed = value.trim().trimEnd('/')
+            if (trimmed.isEmpty()) invalidHostBaseUrl(value, field, "it is blank")
+            if (trimmed.any { it.isWhitespace() }) invalidHostBaseUrl(value, field, "it contains whitespace")
+            if (trimmed.contains('*')) invalidHostBaseUrl(value, field, "wildcards are not allowed")
+            val uri = runCatching { URI(trimmed) }.getOrNull()
+                ?: invalidHostBaseUrl(value, field, "it is not a valid URL")
+            val scheme = uri.scheme?.lowercase() ?: invalidHostBaseUrl(value, field, "it has no scheme")
+            if (scheme != "http" && scheme != "https") {
+                invalidHostBaseUrl(value, field, "only http and https are supported, not '$scheme'")
+            }
+            // Raw authority, not `host`: URI reports no host for an underscored Docker name.
+            val authority = uri.authority?.takeIf { it.isNotBlank() }
+                ?: invalidHostBaseUrl(value, field, "it has no host name")
+            if (authority.contains('@')) invalidHostBaseUrl(value, field, "it must not contain credentials")
+            if (uri.query != null || uri.fragment != null) {
+                invalidHostBaseUrl(value, field, "it must not contain a query string or fragment")
+            }
+            return trimmed
+        }
+
+        private fun invalidHostBaseUrl(value: String, field: String, reason: String): Nothing =
+            throw ExternalPluginHostValidationException(
+                "'$value' is not a valid $field: $reason. Enter the address GZAC can reach, for " +
+                    "example https://plugin-host.example.com or http://localhost:8090."
+            )
+
+        /**
+         * Validates an event broker URL. Scheme is enforced on write so an unexpected one cannot
+         * carry a password past [redactAmqpUserInfo] into an API response.
+         */
+        fun normalizeBrokerUrl(value: String): String {
+            val trimmed = value.trim()
+            val scheme = runCatching { URI(trimmed) }.getOrNull()?.scheme?.lowercase()
+            if (scheme != "amqp" && scheme != "amqps") {
+                throw ExternalPluginHostValidationException(
+                    "'${redactAmqpUserInfo(trimmed)}' is not a valid event broker AMQP URL: it " +
+                        "must be a parseable URL with scheme amqp or amqps, for example " +
+                        "amqp://user:password@rabbitmq:5672. Percent-encode any reserved " +
+                        "character in the credentials."
+                )
+            }
+            return trimmed
+        }
+
+        /**
+         * Replaces broker-URL userinfo with `***@`. Scheme- and case-agnostic, and scoped to the
+         * authority so an `@` in a vhost path is not mistaken for a credential separator.
+         */
+        fun redactAmqpUserInfo(url: String?): String? {
+            if (url.isNullOrBlank()) return url
+            val separator = url.indexOf("://")
+            // No authority — redact wholesale rather than risk echoing a credential.
+            if (separator < 0) return if (url.contains('@')) AMQP_USERINFO_REDACTION else url
+            val authorityStart = separator + 3
+            val authorityEnd = url.indexOf('/', authorityStart).takeIf { it >= 0 } ?: url.length
+            val at = url.lastIndexOf('@', authorityEnd - 1)
+            if (at < authorityStart) return url
+            return url.substring(0, authorityStart) + AMQP_USERINFO_REDACTION + url.substring(at)
+        }
+
+        /**
+         * Whether [baseUrl]'s origin matches one allowlist entry. A leading `*.` matches one or
+         * more labels but never the bare apex — `*.example.com` excludes `example.com`.
+         */
+        fun matchesAllowedOrigin(baseUrl: String, pattern: String): Boolean {
+            val uri = runCatching { URI(baseUrl) }.getOrNull() ?: return false
+            val scheme = uri.scheme?.lowercase() ?: return false
+            val authority = uri.authority?.lowercase() ?: return false
+            // Split by hand — '*' is illegal in a URI authority, so URI() would drop these entries.
+            val normalized = pattern.trim().trimEnd('/').lowercase()
+            val separator = normalized.indexOf("://")
+            if (separator < 0) return false
+            if (scheme != normalized.substring(0, separator)) return false
+            val patternAuthority = normalized.substring(separator + 3)
+            if (patternAuthority.isEmpty()) return false
+            if (patternAuthority.startsWith("*.")) {
+                // Keep the dot: ".example.com" cannot match "notexample.com".
+                val suffix = patternAuthority.substring(1)
+                return authority.endsWith(suffix) && authority.length > suffix.length
+            }
+            return authority == patternAuthority
+        }
 
         /**
          * Whether GZAC can actually open a connection to this base URL. Catches the mistake of

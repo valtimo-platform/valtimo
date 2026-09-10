@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  QueryList,
+  signal,
+  ViewChildren,
+} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ArrowLeft16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
@@ -22,6 +29,7 @@ import {
   EditorModel,
   PageHeaderService,
   PageTitleService,
+  PendingChangesComponent,
 } from '@valtimo/components';
 import {
   getBuildingBlockManagementRouteParams,
@@ -30,8 +38,7 @@ import {
   GlobalNotificationService,
   ManagementContext,
 } from '@valtimo/shared';
-import {IconService} from 'carbon-components-angular';
-import {editor} from 'monaco-editor';
+import {IconService, Tab} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -43,7 +50,13 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {FormFlowDefinition, FormFlowEditorParams, FormFlowRouteParams} from '../../models';
+import {FORM_FLOW_EDITOR_TEST_IDS} from '../../constants';
+import {
+  FormFlowDefinition,
+  FormFlowEditorParams,
+  FormFlowEditorTab,
+  FormFlowRouteParams,
+} from '../../models';
 import {FormFlowService} from '../../services';
 import {FormFlowDownloadService} from '../../services/form-flow-download.service';
 
@@ -53,12 +66,24 @@ import {FormFlowDownloadService} from '../../services/form-flow-download.service
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./form-flow-editor.component.scss'],
 })
-export class FormFlowEditorComponent implements OnDestroy {
+export class FormFlowEditorComponent extends PendingChangesComponent implements OnDestroy {
+  // The Carbon tab headers, used to restore the highlighted header when a leave-page prompt is
+  // cancelled (Carbon highlights the clicked header immediately, before the guard resolves).
+  @ViewChildren(Tab) private _tabs!: QueryList<Tab>;
+
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly valid$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
-  public readonly CARBON_THEME = 'g10';
+
+  public readonly $activeTab = signal<FormFlowEditorTab>(FormFlowEditorTab.JSON_EDITOR);
+  // Validate-on-save: while the admin is modelling nothing is flagged. Clicking Save on an invalid
+  // definition flips this instead of calling the backend, which reveals the errors in the active
+  // tab and — from then on — gates the Save button on validity until the definition is fixed.
+  public readonly $saveAttempted = signal<boolean>(false);
+
+  protected readonly FormFlowEditorTab = FormFlowEditorTab;
+  protected readonly testIds = FORM_FLOW_EDITOR_TEST_IDS;
 
   private readonly _context$: Observable<ManagementContext | null> = getContextObservable(
     this.route
@@ -95,10 +120,6 @@ export class FormFlowEditorComponent implements OnDestroy {
     .getFormFlowDefinitionSchema()
     .pipe(shareReplay(1));
 
-  public readonly editorOptions: editor.IEditorOptions = {
-    quickSuggestions: {other: true, comments: false, strings: true},
-  };
-
   private readonly _formFlowDefinition2$ = combineLatest([this._params$, this._context$]).pipe(
     tap(() => this.loading$.next(true)),
     switchMap(([params, context]) => {
@@ -122,6 +143,15 @@ export class FormFlowEditorComponent implements OnDestroy {
       this.pageTitleService.setCustomPageTitle(formFlowDefinition.key);
       this.readOnly$.next(formFlowDefinition.readOnly === true);
       this.loading$.next(false);
+
+      // A freshly loaded definition is the clean baseline: the next editor emission recaptures it,
+      // saving without edits is possible from either tab, and the unsaved-changes flag is cleared.
+      this._updatedModelValue$.next(this.serializeDefinition(formFlowDefinition));
+      this._pendingBaseline = null;
+      this.pendingChanges = false;
+      this.valid$.next(true);
+      // A reloaded definition starts a fresh modelling session; drop any prior save-attempt state.
+      this.$saveAttempted.set(false);
     })
   );
   public readonly model$: Observable<EditorModel> = this._formFlowDefinition2$.pipe(
@@ -129,6 +159,9 @@ export class FormFlowEditorComponent implements OnDestroy {
   );
 
   private readonly _updatedModelValue$ = new BehaviorSubject<string>('');
+  // The editor's serialized value captured on (re)load. Edits that differ from it mark the editor
+  // dirty so the leave-page guard can warn about unsaved changes.
+  private _pendingBaseline: string | null = null;
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
@@ -144,11 +177,14 @@ export class FormFlowEditorComponent implements OnDestroy {
     private readonly router: Router,
     private readonly translateService: TranslateService
   ) {
+    super();
     this.iconService.registerAll([ArrowLeft16]);
     this.pageTitleService.disableReset();
+    this.restoreActiveTabFromUrl();
   }
 
   public ngOnDestroy(): void {
+    this.pendingChanges = false;
     this.pageTitleService.enableReset();
     this.breadcrumbService.clearThirdBreadcrumb();
     this.breadcrumbService.clearFourthBreadcrumb();
@@ -159,10 +195,43 @@ export class FormFlowEditorComponent implements OnDestroy {
   }
 
   public onValueChange(value: string): void {
+    // The first emission after a (re)load is the editor's baseline. Comparison is done on the
+    // normalized (whitespace-insensitive) JSON so the JSON editor's format-on-load reflow is not
+    // mistaken for an edit; only a genuine content change marks the editor dirty.
+    const normalized = this.normalizeJson(value);
+    if (this._pendingBaseline === null) {
+      this._pendingBaseline = normalized;
+      this.pendingChanges = false;
+    } else {
+      this.pendingChanges = normalized !== this._pendingBaseline;
+    }
+
     this._updatedModelValue$.next(value);
   }
 
+  public setActiveTab(tab: FormFlowEditorTab): void {
+    if (this.$activeTab() === tab) return;
+
+    combineLatest([this._params$, this._context$])
+      .pipe(take(1))
+      .subscribe(([params, context]) => {
+        this.router.navigate(this.editorRouteSegments(params, context, tab));
+      });
+  }
+
+  protected override onCancelRedirect(): void {
+    this.syncTabHeaders();
+  }
+
   public updateFormFlowDefinition(): void {
+    // Validate on the click: while modelling nothing is flagged, so clicking Save on an invalid
+    // definition reveals its errors (via $saveAttempted → the tabs' revealErrors) instead of
+    // sending it to the backend. From here on the Save button gates on validity until it is fixed.
+    if (!this.valid$.value) {
+      this.$saveAttempted.set(true);
+      return;
+    }
+
     this.loading$.next(true);
 
     combineLatest([this._params$, this._updatedModelValue$, this._context$])
@@ -193,33 +262,43 @@ export class FormFlowEditorComponent implements OnDestroy {
         finalize(() => this.loading$.next(false))
       )
       .subscribe(result => {
+        // The saved value is the new clean baseline for the leave-page guard.
+        this._pendingBaseline = this.normalizeJson(this._updatedModelValue$.getValue());
+        this.pendingChanges = false;
+        this.$saveAttempted.set(false);
         this.showSuccessMessage(result.key);
       });
   }
 
   public onDelete(): void {
     this.loading$.next(true);
+    this.pendingChanges = false;
+
     combineLatest([this._params$, this._context$])
       .pipe(
         take(1),
         switchMap(([params, context]) => {
           if (context === 'buildingBlock') {
-            return this.formFlowService.deleteBuildingBlockFormFlowDefinition(
+            return this.formFlowService
+              .deleteBuildingBlockFormFlowDefinition(
+                params.caseDefinitionKey,
+                params.caseDefinitionVersionTag,
+                params.formFlowDefinitionKey
+              )
+              .pipe(map(() => ({params, context})));
+          }
+
+          return this.formFlowService
+            .deleteFormFlowDefinition(
               params.caseDefinitionKey,
               params.caseDefinitionVersionTag,
               params.formFlowDefinitionKey
-            );
-          }
-
-          return this.formFlowService.deleteFormFlowDefinition(
-            params.caseDefinitionKey,
-            params.caseDefinitionVersionTag,
-            params.formFlowDefinitionKey
-          );
+            )
+            .pipe(map(() => ({params, context})));
         })
       )
-      .subscribe(() => {
-        this.router.navigate(['../'], {relativeTo: this.route});
+      .subscribe(({params, context}) => {
+        this.router.navigate(this.overviewRouteSegments(params, context));
       });
   }
 
@@ -236,17 +315,87 @@ export class FormFlowEditorComponent implements OnDestroy {
   }
 
   public navigateBack(): void {
-    this.router.navigate(['../'], {relativeTo: this.route});
+    combineLatest([this._params$, this._context$])
+      .pipe(take(1))
+      .subscribe(([params, context]) => {
+        this.router.navigate(this.overviewRouteSegments(params, context));
+      });
+  }
+
+  private restoreActiveTabFromUrl(): void {
+    const url = this.route.snapshot.url;
+    const lastSegment = url[url.length - 1]?.path;
+    if (lastSegment === 'editor') {
+      this.$activeTab.set(FormFlowEditorTab.EDITOR);
+    }
+  }
+
+  // The Carbon tab header highlights the clicked tab immediately; if the leave-page prompt is
+  // cancelled, restore the highlight to the tab that is actually still active.
+  private syncTabHeaders(): void {
+    const order = [FormFlowEditorTab.JSON_EDITOR, FormFlowEditorTab.EDITOR];
+    this._tabs?.forEach((tab, index) => {
+      tab.active = order[index] === this.$activeTab();
+    });
+  }
+
+  private editorRouteSegments(
+    params: FormFlowEditorParams,
+    context: ManagementContext | null,
+    tab: FormFlowEditorTab
+  ): string[] {
+    const segments = [...this.overviewRouteSegments(params, context), params.formFlowDefinitionKey];
+
+    return tab === FormFlowEditorTab.EDITOR ? [...segments, 'editor'] : segments;
+  }
+
+  private overviewRouteSegments(
+    params: FormFlowEditorParams,
+    context: ManagementContext | null
+  ): string[] {
+    if (context === 'buildingBlock') {
+      return [
+        '/building-block-management',
+        'building-block',
+        params.caseDefinitionKey,
+        'version',
+        params.caseDefinitionVersionTag,
+        'form-flows',
+      ];
+    }
+
+    return [
+      '/case-management',
+      'case',
+      params.caseDefinitionKey,
+      'version',
+      params.caseDefinitionVersionTag,
+      'form-flows',
+    ];
+  }
+
+  private serializeDefinition(formFlowDefinition: FormFlowDefinition): string {
+    const clone = {...formFlowDefinition};
+    delete clone.readOnly;
+    return JSON.stringify(clone);
   }
 
   private getEditorModel(formFlowDefinition: FormFlowDefinition): EditorModel {
-    const clone = {...formFlowDefinition};
-    delete clone.readOnly;
     return {
-      value: JSON.stringify(clone),
+      value: this.serializeDefinition(formFlowDefinition),
       language: 'json',
       uri: `inmemory://form-flow/${formFlowDefinition.key}.formflow.json`,
     };
+  }
+
+  // Canonicalizes a JSON string by dropping insignificant whitespace, so reformatting (such as the
+  // JSON editor's format-on-load) does not register as a change. Invalid JSON is compared as-is.
+  private normalizeJson(value: string): string {
+    try {
+      return JSON.stringify(JSON.parse(value));
+    } catch {
+      return value;
+    }
   }
 
   private showSuccessMessage(formFlowDefinitionKey: string): void {
@@ -272,9 +421,11 @@ export class FormFlowEditorComponent implements OnDestroy {
 
       const routeWithFormFlows = `${route}/form-flows`;
 
+      // The breadcrumb service translates this key on render (and re-translates on load / language
+      // switch), so a direct page load shows the label, not the raw key.
       this.breadcrumbService.setFourthBreadcrumb({
         route: [routeWithFormFlows],
-        content: this.translateService.instant('buildingBlockManagement.tabs.formFlows'),
+        content: 'buildingBlockManagement.tabs.formFlows',
         href: routeWithFormFlows,
       });
     } else {
@@ -290,7 +441,7 @@ export class FormFlowEditorComponent implements OnDestroy {
 
       this.breadcrumbService.setFourthBreadcrumb({
         route: [routeWithFormFlows],
-        content: this.translateService.instant('caseManagement.tabs.formFlows'),
+        content: 'caseManagement.tabs.formFlows',
         href: routeWithFormFlows,
       });
     }

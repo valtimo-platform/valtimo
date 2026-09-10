@@ -35,9 +35,9 @@ External plugins appear alongside embedded ones, with their logo, version, and d
 {% step %}
 In **Enter data**, name the configuration and fill in the plugin's settings
 
-Most plugins provide this form themselves, so it can explain and validate its own fields. A plugin
-that does not asks for its settings as JSON instead — see
-[Plugins without a settings form](#plugins-without-a-settings-form).
+When the plugin ships its own settings screen, this step shows it, so the plugin can explain and
+validate its own fields. A plugin without one gets a generic form instead: a configuration name
+plus the settings as JSON — see [Plugins without a settings form](#plugins-without-a-settings-form).
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/08-configure-plugin-enter-data.png" alt=""><figcaption>Enter data</figcaption></figure>
 {% endstep %}
@@ -55,9 +55,8 @@ the requested permissions**, and click **Save configuration**
 
 ## Plugins without a settings form
 
-A plugin decides whether to ship its own configuration form. When it does not, Valtimo does not
-generate one: the **Enter data** step shows a single **Properties (JSON)** text area, and the
-settings must be entered as a JSON object.
+When a plugin provides no settings screen of its own, the **Enter data** step shows a
+**Properties (JSON)** text area, and the settings must be entered as a JSON object.
 
 Valtimo validates what you type against the plugin's own schema when you save, so an incorrect
 property name or type is reported rather than silently accepted. It cannot tell you what the

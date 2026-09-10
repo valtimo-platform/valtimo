@@ -29,6 +29,7 @@
         cdsLayer
         size="lg"
         [appendInline]="true"
+        [dropUp]="false"
         [items]="versionItems"
         [label]="'processLinkConfiguration.buildingBlock.versionLabel' | translate"
         [placeholder]="versionPlaceholder || ''"
@@ -83,6 +84,7 @@
                       cdsLayer
                       size="lg"
                       [appendInline]="true"
+                      [dropUp]="false"
                       [items]="plugin.dropdownItems"
                       [placeholder]="configurationPlaceholder || ''"
                       (selected)="onMappingChange(plugin.key, $event?.id || '')"

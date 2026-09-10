@@ -130,7 +130,7 @@
             "rsin": "051845623",
             "verzoekProperties": [
                 {
-                    "type": "bezwaar",
+                    "type": "Bezwaar",
                     "caseDefinitionKey": "bezwaar",
                     "processDefinitionKey": "bezwaar",
                     "objectManagementId": "29400564-d25f-491c-abb2-afc42894ac9d",
@@ -139,8 +139,16 @@
                     "copyStrategy": "specified",
                     "mapping": [
                         {
-                            "source": "/zaakobjecten/0/objecttype",
-                            "target": "doc:/zaakobjecten/0/objecttype"
+                            "source": "/voornaam",
+                            "target": "doc:/voornaam"
+                        },
+                        {
+                            "source": "/achternaam",
+                            "target": "doc:/achternaam"
+                        },
+                        {
+                            "source": "/straatnaam",
+                            "target": "doc:/straatnaam"
                         }
                     ]
                 }

@@ -1,0 +1,65 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.transition-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-04);
+
+  &__row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--cds-spacing-04);
+    padding: var(--cds-spacing-04);
+    border: 1px solid var(--cds-border-subtle);
+  }
+
+  &__target {
+    flex: 0 0 220px;
+  }
+
+  &__condition {
+    flex: 1;
+    margin-bottom: 0;
+
+    input {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+  }
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__empty {
+    color: var(--cds-text-helper);
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    margin: 0;
+  }
+
+  &__error {
+    color: var(--cds-text-error);
+    font-size: var(--cds-label-01-font-size, 0.75rem);
+    margin: 0;
+  }
+}

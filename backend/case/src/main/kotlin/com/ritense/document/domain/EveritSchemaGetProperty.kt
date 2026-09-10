@@ -181,24 +181,23 @@ private fun ArraySchema.tryGetPropertyDefinitionByNumericIndex(
     if (maxItems != null && maxItems <= index) {
         return null
     }
-    return if (allItemSchema != null && hasRemaining) {
-        allItemSchema.getProperty(remaining!!, depth + 1)
-    } else {
-        if (hasRemaining) {
-            if (index < itemSchemas.size) {
-                return itemSchemas[index].getProperty(remaining!!, depth + 1)
-            }
-            if (schemaOfAdditionalItems != null) {
-                return schemaOfAdditionalItems.getProperty(remaining!!, depth + 1)
-            }
-        }
-        null
-    }
+    val itemSchema = allItemSchema
+        ?: itemSchemas.getOrNull(index)
+        ?: schemaOfAdditionalItems
+        ?: return null
+    return if (hasRemaining) itemSchema.getProperty(remaining!!, depth + 1) else itemSchema
 }
 
 private fun CombinedSchema.getProperty(field: String, depth: Int): Schema? {
     // the depth-guarded getProperty(.) is used instead of everit's definesProperty(.), which recurses unbounded
-    return subschemas.firstNotNullOfOrNull { it.getProperty(field, depth + 1) }
+    val matches = subschemas.mapNotNull { it.getProperty(field, depth + 1) }.distinct()
+    return when (matches.size) {
+        0 -> null
+        1 -> matches.single()
+        else -> CombinedSchema.builder(matches.sortedBy { it.toString() })
+            .criterion(criterion)
+            .build()
+    }
 }
 
 private fun ReferenceSchema.getProperty(field: String, depth: Int): Schema? {

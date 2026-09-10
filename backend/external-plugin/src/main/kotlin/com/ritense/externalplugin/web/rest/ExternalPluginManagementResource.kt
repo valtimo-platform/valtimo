@@ -161,7 +161,16 @@ class ExternalPluginManagementResource(
         @RequestBody request: HostFrontendOriginsUpdateRequest,
     ): ResponseEntity<HostResponse> {
         val host = hostService.updateFrontendOrigins(hostId, request.frontendOrigins)
-        runCatching { pushFrontendOrigins(host) }
+        // Stored either way; the poll re-pushes. But until it lands the host still serves the old
+        // allowlist — for a revoked origin, "revoked in GZAC only". The 200 cannot say that.
+        val pushed = runCatching { pushFrontendOrigins(host) }.getOrDefault(false)
+        if (!pushed) {
+            logger.warn {
+                "Stored frontend origins for host ${host.id} (${host.baseUrl}) but could not " +
+                    "announce them; the host keeps its previous frame-ancestors allowlist until a " +
+                    "later discovery poll succeeds"
+            }
+        }
         return ResponseEntity.ok(HostResponse.from(host))
     }
 
@@ -170,9 +179,9 @@ class ExternalPluginManagementResource(
      * as `frame-ancestors`. Uses the same instance key as the configuration push
      * (`gzacCallbackBaseUrl`, falling back to GZAC's own port for legacy rows).
      */
-    private fun pushFrontendOrigins(host: ExternalPluginHost) {
+    private fun pushFrontendOrigins(host: ExternalPluginHost): Boolean {
         val serverPort = environment.getProperty("server.port", Int::class.java, 8080)
-        hostClient.registerGzacInstance(
+        return hostClient.registerGzacInstance(
             host.baseUrl,
             hostService.decryptedSecret(host),
             host.gzacCallbackBaseUrl ?: "http://localhost:$serverPort",
@@ -215,7 +224,9 @@ class ExternalPluginManagementResource(
      * callback URL, re-pushes every configuration with the new broker fields and a fresh service
      * token — which is what makes the host's event consumers rebind — and records truthful
      * CONNECTED/UNREACHABLE status against the new address. The periodic poll reconciles anyway
-     * if this attempt fails.
+     * if this attempt fails. An address or credential change revokes every outstanding token
+     * before that re-push, and a repoint purges the configurations from the old address, so
+     * nothing usable stays behind.
      */
     @RunWithoutAuthorization
     @EndpointDescription(

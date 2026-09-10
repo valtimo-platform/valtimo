@@ -31,6 +31,13 @@ Fill in the connection details
 {% step %}
 Click **Save**
 {% endstep %}
+{% step %}
+In the **Reload required** dialog, click **Reload now**
+
+Configuring plugins from the new host shows screens the host serves, which the page's security
+policy only allows after a reload. **Later** postpones the reload — the host itself is already
+saved.
+{% endstep %}
 {% endstepper %}
 
 ### What you fill in
@@ -55,14 +62,16 @@ instruction from the team operating the host or the platform.
 | Event queue mode | **Live** — events published while the host is down are lost. **Durable** — events are retained for a configurable time while the host is down, and delivered when it returns. Durable mode asks for an inactivity time-to-live, entered in milliseconds (default 72 hours, between 1 hour and 30 days). Also changeable later — see [Manage an integration](manage-an-integration.md#event-queue-settings). |
 
 {% hint style="warning" %}
-An event broker URL is only accepted when the host's base URL uses HTTPS (or points at localhost
-during development). This protects the broker credentials, which travel to the host with every
-configuration.
+The base URL must use HTTPS (or point at localhost during development). Everything Valtimo sends
+the host with a configuration — an access token, the plugin's secret settings, any event broker
+credentials — travels over that connection, so a plain-HTTP remote address is refused. Deployments
+on a fully trusted network can lift this with an operator setting.
 {% endhint %}
 
 {% hint style="info" %}
-If a value is rejected — for example a broker on a plain-HTTP host, or a base URL Valtimo cannot
-dial — the reason appears inside the form and nothing you typed is lost.
+If a value is rejected — a plain-HTTP remote base URL, an address Valtimo cannot dial, or an
+address outside the allowed list when the deployment restricts plugin host addresses — the reason
+appears inside the form and nothing you typed is lost.
 {% endhint %}
 
 After saving, the host appears in the list. Within one polling cycle its status becomes

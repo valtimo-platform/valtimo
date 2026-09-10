@@ -85,6 +85,7 @@
 
   <ng-template #embeddedConfig>
     <valtimo-import-plugin-configuration
+      [attr.data-test-id]="testIds.container"
       [pluginActionKey]="functionKey$ | async"
       (configurationEvent)="onImportConfiguration($event)"
     ></valtimo-import-plugin-configuration>

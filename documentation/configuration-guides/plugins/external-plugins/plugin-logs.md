@@ -1,7 +1,7 @@
 # Plugin logs
 
 Every external plugin configuration keeps a log administrators can inspect: entries the plugin
-wrote itself, and a record of every outbound HTTP call it made. This is the first place to look
+wrote itself, and a record of every outbound HTTP call it made to an external address. This is the first place to look
 when a plugin misbehaves — and a quick way to verify that its outbound traffic matches what was
 accepted.
 
@@ -26,7 +26,7 @@ to see the entry's structured details. Two filters narrow the list:
 | Filter | Values |
 |--------|--------|
 | **Level** | Debug, Info, Warn, Error |
-| **Source** | **Plugin** — entries the plugin wrote itself. **HTTP request** — the automatic record of every outbound call the plugin made: method, address (with credentials and query parameters stripped), response status, and duration. |
+| **Source** | **Plugin** — entries the plugin wrote itself. **HTTP request** — the automatic record of every outbound call the plugin made to an external address: method, address (with credentials and query parameters stripped), response status, and duration. **GZAC API** — reserved for the plugin's calls back into Valtimo; integrations currently record those in their own service logs, so this filter matches no entries yet. |
 
 {% hint style="info" %}
 Because a plugin can only reach the external addresses that were accepted for it, the HTTP

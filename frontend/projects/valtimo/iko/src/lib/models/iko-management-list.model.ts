@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-type ColumnDefaultSort = 'ASC' | 'DESC';
+import {ColumnDefaultSort} from '@valtimo/shared';
 
 interface DisplayType {
   type: string;

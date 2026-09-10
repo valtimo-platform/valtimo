@@ -76,6 +76,7 @@ import {SelectBuildingBlockComponent} from './components/select-building-block';
 import {ConfigureBuildingBlockPluginsComponent} from './components/configure-building-block-plugins';
 import {ConfigureBuildingBlockMappingsComponent} from './components/configure-building-block-mappings/configure-building-block-mappings.component';
 import {PluginActionResultMappingsComponent} from './components/plugin-action-result-mappings/plugin-action-result-mappings.component';
+import {ReadOnlyContentDirective} from './directives';
 
 @NgModule({
   declarations: [
@@ -97,6 +98,7 @@ import {PluginActionResultMappingsComponent} from './components/plugin-action-re
     ConfigureBuildingBlockPluginsComponent,
   ],
   imports: [
+    ReadOnlyContentDirective,
     CommonModule,
     ProcessLinkRoutingModule,
     ReactiveFormsModule,

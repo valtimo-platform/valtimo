@@ -29,12 +29,23 @@ Field behavior in this dialog:
 
 | Field | Behavior |
 |-------|----------|
-| Secret | Shown empty — leave blank to keep the current secret; type a value to replace it. |
+| Secret | Shown empty — leave blank to keep the current secret; type a value to replace it. Re-entering the current secret counts as unchanged. |
 | Event broker URL | Shown with the credentials masked (`***`). Leaving the masked value untouched keeps the stored broker; clearing the field disables events for this integration. |
-| Other fields | An unchanged field is simply not sent; a changed field is validated exactly like during registration. |
+| Other fields | An unchanged field is simply not sent; a changed field is validated exactly like during registration — including the deployment's allowed-address list, when one is configured. |
 
 After saving, Valtimo immediately re-checks the integration and re-sends every configuration —
 this is also what reconnects event delivery after a broker change.
+
+Changing the address, the secret, or the event broker URL is also treated as a security event:
+every access token previously issued for this integration's configurations is revoked on the
+spot. The re-send delivers fresh tokens, so a healthy integration recovers immediately, while
+anything that still holds an old token is locked out. When the address changed, Valtimo also
+removes the configurations from the old address, so nothing usable stays behind there.
+
+Right after an address or secret change the integration briefly shows **Unreachable** — the old
+status vouched for the old connection — and turns **Connected** again on the first successful
+check-in. Every connection change is recorded in the application log with who made it; secrets and
+broker credentials are never written out.
 
 {% hint style="warning" %}
 Rotating the secret is two-sided: the host must be restarted with the matching admin token. Until
@@ -73,7 +84,7 @@ integration's plugin screens (case tabs, task forms, widgets, pages).
 
 Add every URL users open the Valtimo frontend from — including reverse-proxy aliases — as a bare
 origin (`scheme://host[:port]`, no path, no wildcards). With no origins listed, no page can embed
-this integration's plugin screens: they render an unavailable state instead.
+this integration's plugin screens: the browser blocks them, so the screens never finish loading.
 
 ---
 
@@ -82,13 +93,15 @@ this integration's plugin screens: they render an unavailable state instead.
 Deletion is strict by design: anything still in use cannot be deleted, and there is no force
 override.
 
-- A **plugin configuration** cannot be deleted while any process link, case tab, case widget, or
-  building block references it. The dialog lists every usage so it can be unbound first.
+- A **plugin configuration** cannot be deleted while any process link, case tab, case widget,
+  menu page, or building block references it. The dialog lists every usage so it can be unbound
+  first.
 
   <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/17-delete-modal.png" alt=""><figcaption>Configuration in use</figcaption></figure>
 
-- An **integration** cannot be deleted while any of its configurations is still referenced. Its
-  unreferenced configurations are removed along with it.
+- An **integration** cannot be deleted while any of its configurations is still referenced, or
+  while a building block still links one of its plugin versions. Its unreferenced configurations
+  are removed along with it.
 
 {% hint style="danger" %}
 Deleting a configuration that is not in use is permanent: its accepted permissions and settings

@@ -41,8 +41,14 @@ export class ProcessService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  getProcessDefinitions(): Observable<ProcessDefinition[]> {
-    return this.http.get<ProcessDefinition[]>(`${this.valtimoEndpointUri}v1/process/definition`);
+  /**
+   * A suspended process still has running instances, so migration needs them offered even though nothing else should.
+   */
+  getProcessDefinitions(includeSuspended = false): Observable<ProcessDefinition[]> {
+    return this.http.get<ProcessDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process/definition`,
+      includeSuspended ? {params: {includeSuspended: true}} : {}
+    );
   }
 
   getProcessDefinitionVersions(key: string): Observable<ProcessDefinition[]> {

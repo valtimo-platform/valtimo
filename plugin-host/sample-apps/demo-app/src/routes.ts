@@ -68,16 +68,71 @@ function normalizeSubscriptions(raw: unknown): string[] {
   return raw.filter((t): t is string => typeof t === "string" && t.length > 0);
 }
 
+/**
+ * Canonicalises one browser origin to `scheme://host[:port]`, else null. Duplicated from the
+ * plugin host's `frame-ancestor-registry.ts` — separate package, and apps copy this file as a
+ * skeleton, so it must reject what the reference host rejects. Wildcards included: an entry
+ * matching any page is what `frame-ancestors` exists to prevent.
+ */
+function normalizeOrigin(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim().replace(/\/+$/, "");
+  if (trimmed.length === 0 || trimmed.includes("*")) return null;
+  let url: URL;
+  try {
+    url = new URL(trimmed);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  if (url.username || url.password) return null;
+  // `new URL("https://example.com")` normalises the path to "/", so only a longer path is a real one.
+  if (url.pathname !== "/" && url.pathname !== "") return null;
+  if (url.search || url.hash) return null;
+  return url.port
+    ? `${url.protocol}//${url.hostname}:${url.port}`
+    : `${url.protocol}//${url.hostname}`;
+}
+
+/**
+ * Anti-exfiltration directives for plugin content, mirroring the plugin host's
+ * `BUNDLE_CSP_DIRECTIVES`. `sandbox` matches the embedding iframe, so a bundle opened directly in
+ * a tab stays on an opaque origin instead of running same-origin with this app.
+ */
+const BUNDLE_CSP_DIRECTIVES = [
+  "default-src 'none'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "media-src 'self'",
+  "form-action 'self'",
+  "base-uri 'none'",
+  "object-src 'none'",
+  "sandbox allow-scripts allow-forms",
+];
+
 async function serveFile(reply: FastifyReply, fullPath: string, csp?: string): Promise<void> {
   if (!existsSync(fullPath)) {
     reply.code(404).header("Access-Control-Allow-Origin", "*").send({ error: "Not found" });
     return;
   }
-  if (csp) reply.header("Content-Security-Policy", csp);
+  if (csp) {
+    reply.header("Content-Security-Policy", csp);
+    // Per-request allowlist — a shared cache must not serve it to another requester or outlive a
+    // revoked origin. Revalidate instead.
+    reply.header("Cache-Control", "public, no-cache");
+    // X-Frame-Options has no allowlist form, so only send it when nothing may frame this.
+    if (csp.includes("frame-ancestors 'none'")) reply.header("X-Frame-Options", "DENY");
+  } else {
+    reply.header("Cache-Control", "public, max-age=3600");
+  }
   const content = await readFile(fullPath);
   reply
     .header("Content-Type", MIME_TYPES[extname(fullPath)] ?? "application/octet-stream")
-    .header("Cache-Control", "public, max-age=3600")
+    .header("X-Content-Type-Options", "nosniff")
+    .header("Referrer-Policy", "no-referrer")
     .header("Access-Control-Allow-Origin", "*")
     .send(content);
 }
@@ -111,7 +166,8 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
   const frameAncestors = new Map<string, string[]>();
   const frameAncestorsCsp = (): string => {
     const origins = [...new Set([...frameAncestors.values()].flat())];
-    return `frame-ancestors ${origins.length ? origins.join(" ") : "'none'"}`;
+    const ancestors = origins.length ? origins.join(" ") : "'none'";
+    return [...BUNDLE_CSP_DIRECTIVES, `frame-ancestors ${ancestors}`].join("; ");
   };
 
   fastify.put(
@@ -125,9 +181,9 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
         reply.code(400).send({ error: "Invalid body: expected {gzacBaseUrl, frontendOrigins[]}" });
         return;
       }
-      const frontendOrigins = origins.filter(
-        (o): o is string => typeof o === "string" && /^https?:\/\/[^/\s]+$/.test(o),
-      );
+      const frontendOrigins = [
+        ...new Set(origins.map(normalizeOrigin).filter((o): o is string => o !== null)),
+      ];
       frameAncestors.set(gzacBaseUrl, frontendOrigins);
       request.log.info(
         `[demo-app] GZAC instance ${gzacBaseUrl} registered as frame ancestor (${frontendOrigins.join(", ") || "no origins"})`,
@@ -245,7 +301,7 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
           },
           request.log,
         );
-        // A plugin-level error maps to 422 so the process can catch it as a BPMN error; success is 200.
+        // Plugin-level error → 422; GZAC raises a process incident from it (deliberately not a BPMN error).
         reply.code(output.status === "error" ? 422 : 200).send(output);
       } catch (err) {
         request.log.error({ err }, "[demo-app] action failed");
@@ -273,7 +329,8 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
   );
 
   fastify.get(`${pluginBase}/logo`, async (_request, reply) => {
-    await serveFile(reply, LOGO_PATH);
+    // Plugin content on this app's origin — same containment the reference host gives its logo.
+    await serveFile(reply, LOGO_PATH, frameAncestorsCsp());
   });
 
   // handle_request data route — public, mirroring the plugin host. CORS + OPTIONS preflight for

@@ -49,9 +49,9 @@ The three pages divide the work as follows:
 
 | Page | Purpose |
 |------|---------|
-| **Plugins** | All plugin configurations — embedded and external — with their source and host. Configure new plugins and upload plugin packages here. |
+| **Plugins** | The plugin configurations of embedded plugins and of plugins served by plugin hosts, with their source and host. Configure new plugins and upload plugin packages here. |
 | **Plugin hosts** | The connected plugin hosts and their connection status. |
-| **Apps** | The connected apps and their connection status. |
+| **Apps** | The connected apps, their connection status, and their configurations — an app's configuration is created and managed here, not on the Plugins page. |
 
 {% hint style="info" %}
 For an introduction to what external plugins are and how they stay secure, read

@@ -61,12 +61,25 @@ definition, so the file works both as startup autodeployment and inside an admin
 ```
 
 Both `id` fields are UUIDs you generate once. They become the row ids, which is what makes
-redeployment safe: on every later start Valtimo recognises what it already created and leaves it
-alone. Never change an id after the first deployment — that orphans the previous row.
+redeployment safe: on every later start Valtimo recognises what it already created and reconciles
+only what a descriptor may change (see [Redeployment](#redeployment)). Never change a
+configuration id after the first deployment — that orphans the previous row, which discovery
+keeps pushing; a changed *integration* id over an unchanged `baseUrl` skips the whole entry
+instead (see Redeployment).
+
+Optional fields not shown above: integration `kind` defaults to `"PLUGIN_HOST"` — an app is
+`"kind": "APP"`, serves its own plugin, and a descriptor that declares `packages` on one fails
+the import; `eventQueueMode` (`"LIVE"`, the default, or `"DURABLE"`) and `eventQueueTtlMs`
+(durable-mode queue TTL in milliseconds, default 72 h; a value outside 1 h–30 d fails the
+import — leave it out for `LIVE`); on a package, `"overwrite": true` lets the upload replace a version already installed
+with **different** content (default `false`: the installed version is kept and a warning names
+the conflict).
 
 `${PROPERTY}` and `${PROPERTY:default}` placeholders are resolved against the application
 environment before the file is parsed, so secrets and per-environment URLs stay out of the
-repository.
+repository. A placeholder with no environment value and no default is left in the file
+literally — the `${…}` text becomes the stored value — so treat an unresolved placeholder in
+the logs or UI as a missing environment variable.
 
 ## What happens at startup
 
@@ -75,10 +88,12 @@ For each integration:
 1. **Register the host or app** if it does not exist yet.
 2. **Activate** each declared configuration.
 
-That is all, and none of it waits on the host — so a plugin host that is down, slow, or not started
-yet never delays startup. On a first boot nothing contacts the host at all; on a redeploy of a
-configuration whose plugin was already discovered, the new title and properties are pushed to the
-host after the import commits, and a failed push is a warning, never a startup failure.
+That is all, and none of it depends on the host being up — a plugin host that is down or not
+started yet never delays startup, and a reachable-but-hanging host can hold a redeploy only
+briefly (each configuration push is bounded by the client's read timeout). On a first boot
+nothing contacts the host at all; on a redeploy of a configuration whose plugin was already
+discovered, the new title and properties are pushed to the host after the import commits, and a
+failed push is a warning, never a startup failure.
 Configurations exist from the first boot, which is what process links, case tabs and menu pages
 that reference them need.
 
@@ -92,10 +107,13 @@ plugin fails until it is up — which is the accurate state of the world.
 
 The discovery cycle (every 60 seconds by default) finishes the job on its own, with no restart:
 
-1. **Uploads** each declared package. Apps serve their own plugin and accept no packages.
+1. **Uploads** each declared package — once per GZAC run: a package that uploaded (or whose
+   conflict or missing file was logged) is settled until the next GZAC restart, which re-offers
+   it (an identical version already installed is a no-op).
 2. **Fills in** the placeholder definition with the real manifest and marks the plugin available.
 3. **Pushes** the configuration and a fresh service token to the host — and keeps re-pushing them
-   every cycle, which is what heals a host that lost its state.
+   every cycle, which is what heals a host that lost its configurations. A host that lost its
+   *packages* is only healed by a GZAC restart or a UI upload.
 
 So a descriptor-declared package lands within one discovery cycle of the host becoming reachable,
 rather than instantly at startup.
@@ -103,7 +121,7 @@ rather than instantly at startup.
 ## Grants
 
 `grantedCapabilities`, `grantedEndpoints`, `grantedEvents` and `grantedEgress` must match the
-plugin's manifest **exactly** — the same rule the activation screen enforces. Writing them out is
+plugin's manifest **exactly** — the same rule the **Permissions** step enforces. Writing them out is
 deliberate: it is the point where you accept what the plugin may do, and it means a later manifest
 change can never silently widen what an existing environment granted.
 
@@ -126,7 +144,7 @@ the manifest at runtime — so changing it never prompts.
 | First deployment from a descriptor | **No.** The `granted*` arrays are the approval, and a plugin asking for anything not listed will not activate. |
 | First activation through the admin UI | **Yes** — the permissions step. |
 | You change `title` or `properties` in the descriptor | **No.** Applied on the next start. |
-| You change an `x-egress-target` property value | **No**, though it does change what the plugin may call. The resulting origins are shown as "derived egress" on the permissions step, and the change is logged. |
+| You change an `x-egress-target` property value | **No**, though it does change what the plugin may call. The resulting origins are shown on the **Permissions** step under **External connections** as "From a URL you entered in this configuration", and the change is logged. |
 | An administrator edits a configuration in the UI | **No.** Grants are untouched. |
 | The plugin package on the host changes, same permissions | **Yes.** The code is no longer the code that was accepted. |
 | The plugin package changes and asks for different permissions | **Yes**, and this is the one to read carefully. |
@@ -158,6 +176,10 @@ accepted is altered. In detail:
 A descriptor that cannot be read, or an integration Valtimo refuses to register, fails the import —
 the same as any other import, so a broken descriptor surfaces immediately instead of leaving an
 environment silently unprovisioned.
+
+One case does *not* fail the import: a package `resource` that cannot be found is only detected
+when the host first becomes reachable — it is logged as an error and not retried, while the rest
+of the descriptor deploys normally.
 
 An unreachable host is not a failure at all: nothing was waiting on it, and the discovery cycle picks
 up where the descriptor left off whenever it appears.
