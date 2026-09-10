@@ -42,6 +42,8 @@ Hover the tag to see which of the two situations applies:
 | The package changed and requests **different permissions** | Read this one carefully. The new code wants access that nobody approved. |
 | The package changed but requests **the same permissions** | The code is not the code that was accepted, even though its requested access is unchanged. |
 
+<figure><img src="../../../assets/configuration-guides/plugins/external-plugins/18-review-required-tag.png" alt=""><figcaption>Review required tag</figcaption></figure>
+
 {% hint style="danger" %}
 A plugin that changes without an approved upload is exactly what this check exists to catch. Before
 accepting anything, confirm with the team that operates the integration that the change was
@@ -66,6 +68,8 @@ See [Upload a plugin](upload-a-plugin.md) for the full flow.
 Confirm the overwrite when prompted, after reviewing the permissions the package requests
 
 The review dialog lists the complete set — the same review as during activation.
+
+<figure><img src="../../../assets/configuration-guides/plugins/external-plugins/19-upload-overwrite-review.png" alt=""><figcaption>Overwrite review dialog</figcaption></figure>
 {% endstep %}
 {% endstepper %}
 
@@ -94,6 +98,8 @@ Until the integration serves the plugin:
 - it can still be deleted;
 - anything that actually invokes the plugin fails, which is the accurate state of the world.
 
+<figure><img src="../../../assets/configuration-guides/plugins/external-plugins/20-awaiting-host-tag.png" alt=""><figcaption>Awaiting host tag</figcaption></figure>
+
 No action is needed beyond making the integration reachable. Discovery completes the setup on its
 own within one polling cycle — see [Manage an integration](manage-an-integration.md) if the
 integration is unreachable.
@@ -105,6 +111,8 @@ integration is unreachable.
 A plugin package can declare the range of Valtimo versions it supports. When the running
 environment falls outside that range, the plugin keeps working but is tagged **Incompatible**, and
 the tooltip names the current version alongside the range the plugin expects.
+
+<figure><img src="../../../assets/configuration-guides/plugins/external-plugins/21-incompatible-tag.png" alt=""><figcaption>Incompatible tag and tooltip</figcaption></figure>
 
 Compatibility is advice from the plugin's supplier, not a technical limit — Valtimo does not block
 an incompatible plugin, at upload or afterwards. Treat the tag as a prompt to check with the

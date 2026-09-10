@@ -37,6 +37,8 @@ entered as a JSON object. Ask the plugin's supplier for the property names and a
 same situation as [a plugin without a settings form](configure-a-plugin.md#plugins-without-a-settings-form).
 {% endhint %}
 
+<figure><img src="../../../assets/configuration-guides/plugins/external-plugins/23-process-link-action-properties-json.png" alt=""><figcaption>Action properties as JSON</figcaption></figure>
+
 An action failure (including an unreachable integration) surfaces as a process error on the
 service task, like any other failing action.
 

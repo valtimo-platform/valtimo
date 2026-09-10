@@ -58,6 +58,8 @@ the requested permissions**, and click **Save configuration**
 When a plugin provides no settings screen of its own, the **Enter data** step shows a
 **Properties (JSON)** text area, and the settings must be entered as a JSON object.
 
+<figure><img src="../../../assets/configuration-guides/plugins/external-plugins/22-configure-plugin-properties-json.png" alt=""><figcaption>Properties as JSON</figcaption></figure>
+
 Valtimo validates what you type against the plugin's own schema when you save, so an incorrect
 property name or type is reported rather than silently accepted. It cannot tell you what the
 properties *are*, however — that comes from the plugin's supplier.
