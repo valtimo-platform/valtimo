@@ -4,6 +4,13 @@ Release date: 09-09-2026
 
 ---
 
+## Migration
+
+* [Front-end migration](front-end-migration.md) — optional steps to get the full first-page-load
+  improvement in your own implementation
+
+---
+
 ## New Features
 
 ### Manual task list refresh
@@ -17,6 +24,14 @@ while they do.
 ---
 
 ## Enhancements
+
+### Faster first page load
+
+Opening Valtimo for the first time, or the first time after an update, now downloads roughly half
+as much data: 2.0 MB instead of 4.1 MB. The Swagger viewer, the DMN editor, the JSON schema editor
+and the map widget are fetched only when the screen that uses them is opened, and several scripts
+that were loaded on every page but never used have been removed. The deployed image is also
+considerably smaller, because only the part of the code editor that is actually used is shipped.
 
 ### Task list updates without interrupting
 
@@ -50,6 +65,7 @@ Admin > Other > Process migration has the standard Valtimo look and feel, with c
 | Forms            | The default value of a currency field is kept and shown in the form builder, instead of being reset to zero once the component is saved |
 | Plugins          | Creating a zaakdossier via the verzoek plugin with an empty initiator type no longer fails when creating the initiator zaakrol   |
 | Plugins          | The verzoek plugin offers every case version again when picking one, instead of only the active one                              |
+| Process links    | Reopening a configured plugin action shows the plugin it was set up with, instead of another plugin using the same action name  |
 | Process migration | A system process can be migrated after it was changed                                                                          |
 | Processes        | Completing or cancelling a process with a message no longer logs an error when the process ends while a user task is still open  |
 | Task list        | The **All cases** task list picks up new and completed tasks by itself, like a list for a single case definition already did     |

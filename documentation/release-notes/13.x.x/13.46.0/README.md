@@ -19,3 +19,19 @@ plugin.
 Both actions use the zaaktype of the zaak linked to the case, unless the action is configured with
 a zaaktype URL. When a description matches no roltype, or more than one, the action reports which
 of the two occurred.
+
+---
+
+## Enhancements
+
+### New enhancement title
+
+New enhancement explanation.
+
+---
+
+## Bugfixes
+
+| Area | Fix |
+|------|-----|
+| IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
