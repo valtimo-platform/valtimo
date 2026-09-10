@@ -19,6 +19,7 @@ package com.ritense.valtimo.milestones.web.rest;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.milestones.domain.MilestoneSet;
 import com.ritense.valtimo.milestones.repository.MilestoneSetRepository;
 import com.ritense.valtimo.milestones.service.MilestoneSetService;
@@ -55,6 +56,10 @@ public class MilestoneSetResource {
         this.milestoneSetRepository = milestoneSetRepository;
     }
 
+    @EndpointDescription(
+        en = "Get a milestone set by id",
+        nl = "Mijlpalenset op id ophalen"
+    )
     @GetMapping("/v1/milestone-sets/{id}")
     public ResponseEntity<MilestoneSet> getMilestoneSet(@PathVariable Long id) {
         logger.debug("REST request to get Milestone set : {}", id);
@@ -64,6 +69,10 @@ public class MilestoneSetResource {
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @EndpointDescription(
+        en = "List all milestone sets",
+        nl = "Alle mijlpalensets ophalen"
+    )
     @GetMapping("/v1/milestone-sets")
     public ResponseEntity<List<MilestoneSet>> listMilestoneSets() {
         logger.debug("REST request to get all milestone sets");
@@ -71,6 +80,10 @@ public class MilestoneSetResource {
         return ResponseEntity.ok(milestoneSetList);
     }
 
+    @EndpointDescription(
+        en = "Save a milestone set",
+        nl = "Mijlpalenset opslaan"
+    )
     @PostMapping("/v1/milestone-sets")
     public ResponseEntity<MilestoneSet> saveMilestoneSet(@Valid @RequestBody MilestoneSetSaveDTO dto) {
         logger.debug("REST request to save Milestone set : {}", dto);
@@ -91,6 +104,10 @@ public class MilestoneSetResource {
 
     }
 
+    @EndpointDescription(
+        en = "Delete a milestone set",
+        nl = "Mijlpalenset verwijderen"
+    )
     @DeleteMapping("/v1/milestone-sets/{id}")
     public ResponseEntity<Void> deleteMilestoneSet(@PathVariable Long id) {
         logger.debug("REST request to delete Milestone set : {}", id);

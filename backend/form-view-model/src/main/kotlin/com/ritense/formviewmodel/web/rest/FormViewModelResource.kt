@@ -23,6 +23,7 @@ import com.ritense.formviewmodel.viewmodel.ViewModel
 import com.ritense.formviewmodel.web.rest.dto.StartFormSubmissionResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
@@ -42,6 +43,10 @@ class FormViewModelResource(
     private val formViewModelSubmissionService: FormViewModelSubmissionService
 ) {
 
+    @EndpointDescription(
+        en = "Get the start form view model",
+        nl = "Formulier-viewmodel voor het startformulier ophalen",
+    )
     @GetMapping("/start-form")
     fun getStartFormViewModel(
         @RequestParam processDefinitionKey: String,
@@ -58,6 +63,10 @@ class FormViewModelResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Get the user task form view model",
+        nl = "Formulier-viewmodel voor de gebruikerstaak ophalen",
+    )
     @GetMapping("/user-task")
     fun getUserTaskFormViewModel(
         @RequestParam taskInstanceId: String
@@ -69,6 +78,10 @@ class FormViewModelResource(
         } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Update the start form view model",
+        nl = "Formulier-viewmodel voor het startformulier bijwerken",
+    )
     @PostMapping("/start-form")
     fun updateStartFormViewModel(
         @RequestParam processDefinitionKey: String,
@@ -86,6 +99,10 @@ class FormViewModelResource(
         } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Update the user task form view model",
+        nl = "Formulier-viewmodel voor de gebruikerstaak bijwerken",
+    )
     @PostMapping("/user-task")
     fun updateUserTaskFormViewModel(
         @RequestParam taskInstanceId: String,
@@ -101,6 +118,10 @@ class FormViewModelResource(
         } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Submit a user task form",
+        nl = "Inzending voor een gebruikerstaakformulier verwerken",
+    )
     @PostMapping("/submit/user-task")
     fun submitTask(
         @RequestParam taskInstanceId: String,
@@ -113,6 +134,10 @@ class FormViewModelResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Submit a start form",
+        nl = "Inzending voor een startformulier verwerken",
+    )
     @PostMapping("/submit/start-form")
     fun submitStartForm(
         @RequestParam processDefinitionKey: String,

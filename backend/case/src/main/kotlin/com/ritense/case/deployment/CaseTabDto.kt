@@ -16,6 +16,7 @@
 
 package com.ritense.case.deployment
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabType
 
@@ -25,6 +26,19 @@ data class CaseTabDto(
     val type: CaseTabType,
     val contentKey: String,
     val showTasks: Boolean = false,
+
+    /**
+     * Design-time plugin identity for `EXTERNAL_PLUGIN` tabs only, populated by the exporter so the
+     * export is self-describing (the `contentKey` alone carries just the configuration id). Left
+     * `null`/absent for every other tab type and for exports produced before this field existed;
+     * the import preview falls back to resolving the configuration when these are absent. Serialized
+     * only when set so unaffected tab types export byte-for-byte as before.
+     */
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    val pluginDefinitionKey: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    val pluginVersion: String? = null,
 ) {
     companion object {
         fun of(caseTab: CaseTab) = CaseTabDto(

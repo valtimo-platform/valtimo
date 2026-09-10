@@ -28,6 +28,7 @@ import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -46,6 +47,10 @@ class BuildingBlockInstanceResource(
     private val authorizationService: AuthorizationService,
 ) {
 
+    @EndpointDescription(
+        en = "List building block instances for case",
+        nl = "Bouwblokinstanties voor dossier ophalen",
+    )
     @GetMapping("/v1/case/{caseId}/building-blocks")
     fun getInstancesForCase(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID

@@ -20,6 +20,7 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.iko.service.IkoWidgetService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.widget.web.rest.dto.WidgetDto
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -41,6 +42,10 @@ class IkoWidgetManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List IKO widgets for management",
+        nl = "IKO-widgets ophalen voor beheer",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget")
     fun getIkoWidgetsForManagement(
         @PathVariable ikoViewKey: String,
@@ -54,6 +59,10 @@ class IkoWidgetManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO widget by key",
+        nl = "IKO-widget ophalen op sleutel",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}")
     fun getIkoWidget(
         @PathVariable ikoViewKey: String,
@@ -65,6 +74,10 @@ class IkoWidgetManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create IKO widget",
+        nl = "IKO-widget aanmaken",
+    )
     @PostMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}")
     fun createIkoWidget(
         @PathVariable ikoViewKey: String,
@@ -82,6 +95,10 @@ class IkoWidgetManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO widget",
+        nl = "IKO-widget bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}")
     fun updateIkoWidget(
         @PathVariable ikoViewKey: String,
@@ -101,6 +118,10 @@ class IkoWidgetManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO widgets order",
+        nl = "Volgorde van IKO-widgets bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget")
     fun updateIkoWidget(
         @PathVariable ikoViewKey: String,
@@ -131,6 +152,10 @@ class IkoWidgetManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete IKO widget",
+        nl = "IKO-widget verwijderen",
+    )
     @DeleteMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}")
     fun deleteIkoWidget(
         @PathVariable ikoViewKey: String,

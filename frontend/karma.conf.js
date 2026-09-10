@@ -46,6 +46,21 @@ module.exports = function karmaBaseConfig(config) {
     },
     reporters: ['progress', 'kjhtml'],
     browsers: ['Chrome'],
+    customLaunchers: {
+      // `libs-test-all-cicd` runs several of these side by side on one runner. The default
+      // /dev/shm there is 64MB, which Chrome outgrows and then dies mid-run.
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+      },
+    },
+    // Karma's defaults assume a browser has the machine to itself. Under the parallel run a
+    // capture can take 40s and a busy tab can go quiet for well over 30s without being dead.
+    captureTimeout: 180000,
+    browserNoActivityTimeout: 120000,
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 2,
+    pingTimeout: 60000,
     restartOnFileChange: true,
     failOnEmptyTestSuite: false,
     files: [{pattern: CONFIG_JS, included: true, served: true, watched: false}],

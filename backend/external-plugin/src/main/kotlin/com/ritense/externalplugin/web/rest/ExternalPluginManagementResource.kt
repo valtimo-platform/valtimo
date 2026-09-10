@@ -1,0 +1,771 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.externalplugin.web.rest
+
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.externalplugin.client.ExternalPluginHostClient
+import com.ritense.externalplugin.compatibility.CompatibilityResult
+import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
+import com.ritense.externalplugin.compatibility.PluginPackageInspector
+import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginHost
+import com.ritense.externalplugin.domain.ExternalPluginHostKind
+import com.ritense.externalplugin.service.EndpointDescriptionService
+import com.ritense.externalplugin.service.EndpointQuery
+import com.ritense.externalplugin.service.ExternalPluginConfigurationService
+import com.ritense.externalplugin.service.ExternalPluginDefinitionService
+import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
+import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.externalplugin.service.PluginRegistrationConflict
+import com.ritense.externalplugin.web.rest.dto.AcceptContentRequest
+import com.ritense.externalplugin.web.rest.dto.ConfigurationCreateRequest
+import com.ritense.externalplugin.web.rest.dto.ConfigurationDetailResponse
+import com.ritense.externalplugin.web.rest.dto.ConfigurationResponse
+import com.ritense.externalplugin.web.rest.dto.ConfigurationUpdateRequest
+import com.ritense.externalplugin.web.rest.dto.DefinitionResponse
+import com.ritense.externalplugin.web.rest.dto.GrantedCapabilityResponse
+import com.ritense.externalplugin.web.rest.dto.GrantedEgressResponse
+import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
+import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
+import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
+import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
+import com.ritense.externalplugin.web.rest.dto.HostConnectionUpdateRequest
+import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
+import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
+import com.ritense.externalplugin.web.rest.dto.HostResponse
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.boot.context.properties.bind.Bindable
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.core.env.Environment
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.client.HttpStatusCodeException
+import org.springframework.web.client.ResourceAccessException
+import org.springframework.web.multipart.MultipartFile
+import java.util.UUID
+
+@Controller
+@SkipComponentScan
+@RequestMapping("/api/management/v1/external-plugin", produces = [APPLICATION_JSON_UTF8_VALUE])
+class ExternalPluginManagementResource(
+    private val hostService: ExternalPluginHostService,
+    private val definitionService: ExternalPluginDefinitionService,
+    private val configurationService: ExternalPluginConfigurationService,
+    private val hostClient: ExternalPluginHostClient,
+    private val endpointDescriptionService: EndpointDescriptionService,
+    private val discoveryService: ExternalPluginDiscoveryService,
+    private val environment: Environment,
+    private val compatibilityChecker: GzacCompatibilityChecker,
+    private val pluginPackageInspector: PluginPackageInspector,
+    private val objectMapper: ObjectMapper,
+) {
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List external plugin hosts",
+        nl = "Externe-pluginhosts ophalen",
+    )
+    @GetMapping("/host")
+    fun listHosts(): ResponseEntity<List<HostResponse>> =
+        ResponseEntity.ok(hostService.list().map(HostResponse::from))
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Register an external plugin host",
+        nl = "Externe-pluginhost registreren",
+    )
+    @PostMapping("/host")
+    fun createHost(@RequestBody request: HostCreateRequest): ResponseEntity<Any> {
+        val host = hostService.register(
+            request.name,
+            request.baseUrl,
+            request.secret,
+            request.gzacCallbackBaseUrl,
+            resolveBrokerAmqpUrl(request.eventBrokerAmqpUrl),
+            request.eventBrokerExchange,
+            request.eventQueueMode,
+            request.eventQueueTtlMs,
+            request.kind,
+            request.frontendOrigins,
+        )
+
+        // Both are best-effort — the periodic discovery cycle reconciles either way — and only
+        // shorten the wait, so the first plugin is configurable and framable right away. The
+        // announcement is not redundant with the discovery below: discovery only announces once its
+        // health probe has succeeded, so a host that is serving but momentarily failing `/health`
+        // still gets its allowlist.
+        runCatching { pushFrontendOrigins(host) }
+        val discovery = runCatching { discoveryService.discoverHost(host.id) }.getOrNull()
+
+        // An app *is* its single plugin. When the app was reachable but every plugin it serves is
+        // already registered under another host (e.g. the same app connected twice, or a plugin
+        // with the same id uploaded to a plugin host), this registration can never become
+        // functional — no definition will ever appear for it. Roll the host back and report the
+        // conflict instead of leaving a permanently unconfigurable app behind. An unreachable app
+        // still registers (discovery keeps retrying), and plugin hosts keep the lenient behaviour.
+        if (host.kind == ExternalPluginHostKind.APP &&
+            discovery != null && discovery.reachable &&
+            discovery.registeredDefinitionIds.isEmpty() && discovery.conflicts.isNotEmpty()
+        ) {
+            runCatching { hostService.delete(host.id) }
+                .onFailure { e -> logger.warn(e) { "Failed to roll back conflicting app host ${host.id}" } }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(appAlreadyRegisteredBody(discovery.conflicts))
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(HostResponse.from(host))
+    }
+
+    /**
+     * Narrowly-scoped update for the browser origins allowed to embed this host's plugin screens,
+     * mirroring the event-queue PATCH. The new list is pushed to the host immediately so an operator
+     * fixing a wrong origin does not have to wait out a discovery cycle; the poll re-pushes anyway.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update a host's allowed frontend origins",
+        nl = "Toegestane frontend-origins van host bijwerken",
+    )
+    @PatchMapping("/host/{hostId}/frontend-origins")
+    fun updateHostFrontendOrigins(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostFrontendOriginsUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val host = hostService.updateFrontendOrigins(hostId, request.frontendOrigins)
+        // Stored either way; the poll re-pushes. But until it lands the host still serves the old
+        // allowlist — for a revoked origin, "revoked in GZAC only". The 200 cannot say that.
+        val pushed = runCatching { pushFrontendOrigins(host) }.getOrDefault(false)
+        if (!pushed) {
+            logger.warn {
+                "Stored frontend origins for host ${host.id} (${host.baseUrl}) but could not " +
+                    "announce them; the host keeps its previous frame-ancestors allowlist until a " +
+                    "later discovery poll succeeds"
+            }
+        }
+        return ResponseEntity.ok(HostResponse.from(host))
+    }
+
+    /**
+     * Announces this GZAC instance and its frontend origins to the host, so the host can serve them
+     * as `frame-ancestors`. Uses the same instance key as the configuration push
+     * (`gzacCallbackBaseUrl`, falling back to GZAC's own port for legacy rows).
+     */
+    private fun pushFrontendOrigins(host: ExternalPluginHost): Boolean {
+        val serverPort = environment.getProperty("server.port", Int::class.java, 8080)
+        return hostClient.registerGzacInstance(
+            host.baseUrl,
+            hostService.decryptedSecret(host),
+            host.gzacCallbackBaseUrl ?: "http://localhost:$serverPort",
+            host.frontendOriginList,
+        )
+    }
+
+    /**
+     * Narrowly-scoped update for the per-host event-queue declaration; connection fields are
+     * edited through [updateHostConnection]. Triggers an immediate re-discovery so the host's
+     * `EventConsumerManager` swaps its queue without waiting for the next polling tick — best-effort
+     * because the periodic discovery cycle will reconcile anyway.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update a host's event-queue mode and TTL",
+        nl = "Event-queue-modus en TTL van host bijwerken",
+    )
+    @PatchMapping("/host/{hostId}/event-queue")
+    fun updateHostEventQueue(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostEventQueueUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val host = hostService.updateEventQueue(
+            hostId,
+            request.eventQueueMode,
+            request.eventQueueTtlMs,
+        )
+        runCatching { discoveryService.discoverHost(hostId) }
+        return ResponseEntity.ok(HostResponse.from(host))
+    }
+
+    /**
+     * Updates a host's connection fields — repoint a moved host or broker, or rotate the admin
+     * secret, without recreating the host and orphaning its configurations (#618). Absent fields
+     * stay unchanged; the service re-runs every registration-time check against the effective
+     * result, so the confidential-transport invariant survives any combination of edits.
+     *
+     * Finishes with a best-effort single-host re-discovery: it announces the (possibly new)
+     * callback URL, re-pushes every configuration with the new broker fields and a fresh service
+     * token — which is what makes the host's event consumers rebind — and records truthful
+     * CONNECTED/UNREACHABLE status against the new address. The periodic poll reconciles anyway
+     * if this attempt fails. An address or credential change revokes every outstanding token
+     * before that re-push, and a repoint purges the configurations from the old address, so
+     * nothing usable stays behind.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update a host's connection settings",
+        nl = "Verbindingsinstellingen van host bijwerken",
+    )
+    @PatchMapping("/host/{hostId}/connection")
+    fun updateHostConnection(
+        @PathVariable hostId: UUID,
+        @RequestBody request: HostConnectionUpdateRequest,
+    ): ResponseEntity<HostResponse> {
+        val host = hostService.updateConnection(
+            hostId,
+            name = request.name,
+            baseUrl = request.baseUrl,
+            secret = request.secret,
+            gzacCallbackBaseUrl = request.gzacCallbackBaseUrl,
+            eventBrokerAmqpUrl = request.eventBrokerAmqpUrl,
+            eventBrokerExchange = request.eventBrokerExchange,
+        )
+        runCatching { discoveryService.discoverHost(hostId) }
+        return ResponseEntity.ok(HostResponse.from(host))
+    }
+
+    /**
+     * Suggested defaults for the add-host form, derived from existing system state so no env vars
+     * are required:
+     * - GZAC callback URL: `http://localhost:{server.port}` — the backend's own port. We deliberately
+     *   do **not** use the incoming request URL: the admin reaches GZAC through the Angular dev
+     *   proxy on port 4200 (or a reverse proxy in production), neither of which is the URL the
+     *   plugin host should call back on. The host typically lives on the same Docker network as the
+     *   backend and reaches it on its native port. Operators override per-host in the UI for
+     *   non-local topologies.
+     * - Broker AMQP URL: built from `spring.rabbitmq.*` (GZAC's own broker view).
+     * - Broker exchange: GZAC's outbox publisher exchange.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get add-host form defaults",
+        nl = "Standaardwaarden voor host ophalen",
+    )
+    @GetMapping("/host-defaults")
+    fun hostDefaults(): ResponseEntity<HostDefaultsResponse> {
+        val serverPort = environment.getProperty("server.port", Int::class.java, 8080)
+        val gzacCallbackBaseUrl = "http://localhost:$serverPort"
+
+        val eventBrokerExchange = environment.getProperty(
+            "valtimo.outbox.publisher.rabbitmq.exchange",
+            "valtimo-events",
+        )
+
+        return ResponseEntity.ok(
+            HostDefaultsResponse(
+                gzacCallbackBaseUrl = gzacCallbackBaseUrl,
+                // Credentials are never sent to the browser: the userinfo is redacted here and
+                // resolveBrokerAmqpUrl substitutes the real credentials server-side when the
+                // redacted default comes back on host registration.
+                eventBrokerAmqpUrl = HostResponse.redactAmqpUserInfo(defaultBrokerAmqpUrl())!!,
+                eventBrokerExchange = eventBrokerExchange,
+                defaultEventQueueTtlMs = ExternalPluginHostService.DEFAULT_EVENT_QUEUE_TTL_MS,
+                minEventQueueTtlMs = ExternalPluginHostService.MIN_EVENT_QUEUE_TTL_MS,
+                maxEventQueueTtlMs = ExternalPluginHostService.MAX_EVENT_QUEUE_TTL_MS,
+                frontendOrigins = configuredFrontendOrigins(),
+            )
+        )
+    }
+
+    /**
+     * The browser origins the API already trusts, from `valtimo.web.cors.corsConfiguration.
+     * allowedOrigins`. In a split frontend/backend deployment that property *is* the Angular origin
+     * set, which makes it the right server-side pre-fill for the add-host form's frontend origins.
+     *
+     * Wildcard entries — a bare `*`, or a subdomain pattern — are dropped rather than passed
+     * through: a `frame-ancestors` allowlist containing a wildcard would let any matching page embed
+     * the plugin, which is exactly what this field exists to prevent. Anything else that is not a
+     * plain origin is dropped for the same reason — this is a pre-fill, not a validation error the
+     * admin has to clear before saving.
+     */
+    private fun configuredFrontendOrigins(): List<String> {
+        val bound = Binder.get(environment)
+            .bind("valtimo.web.cors.cors-configuration.allowed-origins", Bindable.listOf(String::class.java))
+            .orElse(emptyList())
+        return bound
+            .mapNotNull { runCatching { ExternalPluginHostService.normalizeFrontendOrigin(it) }.getOrNull() }
+            .distinct()
+    }
+
+    /** The broker AMQP URL GZAC itself uses, built from `spring.rabbitmq.*` — full credentials. */
+    private fun defaultBrokerAmqpUrl(): String {
+        val rabbitHost = environment.getProperty("spring.rabbitmq.host", "localhost")
+        val rabbitPort = environment.getProperty("spring.rabbitmq.port", Int::class.java, 5672)
+        val rabbitUsername = environment.getProperty("spring.rabbitmq.username", "guest")
+        val rabbitPassword = environment.getProperty("spring.rabbitmq.password", "guest")
+        val rabbitVirtualHost = environment.getProperty("spring.rabbitmq.virtual-host", "/")
+        val vhostPath = if (rabbitVirtualHost == "/") "" else "/$rabbitVirtualHost"
+        return "amqp://$rabbitUsername:$rabbitPassword@$rabbitHost:$rabbitPort$vhostPath"
+    }
+
+    /**
+     * Accepts full AMQP URLs as-is. When the redacted default from [hostDefaults] is echoed back
+     * (userinfo `***`), the real credentials from `spring.rabbitmq.*` are substituted server-side
+     * so a round-tripped redacted URL never ends up stored.
+     */
+    private fun resolveBrokerAmqpUrl(requested: String?): String? {
+        if (requested.isNullOrBlank()) return requested
+        val redactedDefault = HostResponse.redactAmqpUserInfo(defaultBrokerAmqpUrl())
+        return if (requested == redactedDefault) defaultBrokerAmqpUrl() else requested
+    }
+
+    /**
+     * Lets the UI render the host list with an accurate "delete blocked because…" state without
+     * having to attempt the delete and parse a 409. The server-side guard in
+     * [ExternalPluginHostService.delete] remains authoritative — this endpoint is advisory only.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List usages of an external plugin host",
+        nl = "Gebruik van externe-pluginhost ophalen",
+    )
+    @GetMapping("/host/{hostId}/usages")
+    fun listHostUsages(@PathVariable hostId: UUID): ResponseEntity<List<PluginUsageDto>> =
+        ResponseEntity.ok(hostService.findUsages(hostId))
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete an external plugin host",
+        nl = "Externe-pluginhost verwijderen",
+    )
+    @DeleteMapping("/host/{hostId}")
+    fun deleteHost(@PathVariable hostId: UUID): ResponseEntity<Void> {
+        hostService.delete(hostId)
+        return ResponseEntity.noContent().build()
+    }
+
+    /**
+     * Uploads a plugin package to the host. Before forwarding the package, GZAC peeks at the
+     * manifest's `compatibility` range and refuses an incompatible plugin with `409 Conflict` plus
+     * the version details, unless `force=true`. The operator confirms the warning in the UI, which
+     * re-issues the request with `force=true` to proceed regardless. A compatible (or
+     * undeterminable) plugin uploads straight through.
+     *
+     * A package whose `pluginId@version` already exists on the host is refused with `409 Conflict`
+     * carrying `code=PLUGIN_VERSION_EXISTS`, both content hashes and the uploaded manifest's
+     * requested permissions — the UI shows those for re-review and re-issues the request with
+     * `overwrite=true` once the admin confirms. After a confirmed overwrite the new content hash
+     * is pinned and every configuration of the definition is re-granted to exactly the new
+     * declared permission sets ([ExternalPluginConfigurationService.applyApprovedOverwrite]).
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Upload a plugin package to a host",
+        nl = "Pluginpakket naar host uploaden",
+    )
+    @PostMapping("/host/{hostId}/upload", consumes = ["multipart/form-data"])
+    fun uploadPlugin(
+        @PathVariable hostId: UUID,
+        @RequestParam("file") file: MultipartFile,
+        @RequestParam(name = "force", required = false, defaultValue = "false") force: Boolean,
+        @RequestParam(name = "overwrite", required = false, defaultValue = "false") overwrite: Boolean = false,
+    ): ResponseEntity<JsonNode> {
+        // Gate on the reported size before touching `file.bytes`, so an oversized package never
+        // reaches the heap.
+        if (file.size > MAX_PLUGIN_UPLOAD_BYTES) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
+                objectMapper.createObjectNode()
+                    .put("error", "Plugin package is too large")
+                    .put("maxBytes", MAX_PLUGIN_UPLOAD_BYTES)
+            )
+        }
+        val fileBytes = file.bytes
+        if (!force) {
+            val range = pluginPackageInspector.readCompatibilityRange(fileBytes)
+            if (range != null) {
+                val compatibility = compatibilityChecker.check(range.minGzacVersion, range.maxGzacVersion)
+                if (!compatibility.compatible) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(incompatibilityBody(compatibility))
+                }
+            }
+        }
+        val result = try {
+            hostService.uploadPlugin(hostId, file.originalFilename ?: "plugin.zip", fileBytes, overwrite)
+        } catch (e: HttpStatusCodeException) {
+            val hostBody = parseJsonOrNull(e.responseBodyAsString)
+            if (e.statusCode == HttpStatus.CONFLICT && hostBody?.get("code")?.asText() == PLUGIN_VERSION_EXISTS_CODE) {
+                // Enrich with the uploaded manifest's requested permissions so the UI can render
+                // the re-review screen without parsing the zip client-side.
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(versionExistsBody(hostBody, fileBytes))
+            }
+            // Any other rejection (bad package, …) or failure — relay the host's status and error
+            // body instead of surfacing a raw 500.
+            return ResponseEntity.status(e.statusCode)
+                .body(uploadErrorBody("Plugin host rejected the upload", e.responseBodyAsString))
+        } catch (e: ResourceAccessException) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(uploadErrorBody("Plugin host is unreachable", e.message))
+        }
+        if (overwrite) {
+            val pluginId = result.get("pluginId")?.asText()
+            val version = result.get("version")?.asText()
+            if (pluginId != null && version != null) {
+                configurationService.applyApprovedOverwrite(
+                    pluginId,
+                    version,
+                    result.get("contentHash")?.asText()?.takeIf { it.isNotBlank() },
+                    pluginPackageInspector.readManifest(fileBytes),
+                )
+            }
+        }
+        discoveryService.discoverAll()
+        return ResponseEntity.status(HttpStatus.CREATED).body(result)
+    }
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List external plugin definitions",
+        nl = "Externe-plugindefinities ophalen",
+    )
+    @GetMapping("/definition")
+    fun listDefinitions(): ResponseEntity<List<DefinitionResponse>> =
+        ResponseEntity.ok(definitionService.list().map(::toDefinitionResponse))
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get an external plugin definition",
+        nl = "Externe-plugindefinitie ophalen",
+    )
+    @GetMapping("/definition/{definitionId}")
+    fun getDefinition(@PathVariable definitionId: UUID): ResponseEntity<DefinitionResponse> =
+        ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
+
+    /**
+     * Re-accepts a definition whose package content changed on its host after the original
+     * acceptance (see `requiresReacceptance` on the definition response). The request echoes the
+     * pending hash the admin reviewed; on success the new hash is pinned and an immediate
+     * re-discovery refreshes the frozen manifest data and resumes configuration pushes.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Accept changed plugin package content",
+        nl = "Gewijzigde plugininhoud accepteren",
+    )
+    @PostMapping("/definition/{definitionId}/accept-content")
+    fun acceptDefinitionContent(
+        @PathVariable definitionId: UUID,
+        @RequestBody request: AcceptContentRequest,
+    ): ResponseEntity<DefinitionResponse> {
+        val definition = definitionService.acceptContent(definitionId, request.contentHash)
+        runCatching { discoveryService.discoverHost(definition.hostId) }
+        return ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
+    }
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List external plugin configurations",
+        nl = "Externe-pluginconfiguraties ophalen",
+    )
+    @GetMapping("/configuration")
+    fun listConfigurations(
+        @RequestParam(required = false) definitionId: UUID?,
+    ): ResponseEntity<List<ConfigurationResponse>> =
+        ResponseEntity.ok(configurationService.list(definitionId).map(ConfigurationResponse::from))
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get an external plugin configuration",
+        nl = "Externe-pluginconfiguratie ophalen",
+    )
+    @GetMapping("/configuration/{configurationId}")
+    fun getConfiguration(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<ConfigurationDetailResponse> {
+        val configuration = configurationService.get(configurationId)
+        // Secrets never travel to the browser: x-secret fields are omitted (see maskedProperties);
+        // on update an absent/blank secret means "unchanged".
+        val maskedProperties = configurationService.maskedProperties(configuration)
+        val grantedEndpoints = configurationService.getGrantedEndpoints(configurationId)
+        val grantedEvents = configurationService.getGrantedEvents(configurationId)
+        val grantedCapabilities = configurationService.getGrantedCapabilities(configurationId)
+        val grantedEgress = configurationService.getGrantedEgress(configurationId)
+        return ResponseEntity.ok(
+            ConfigurationDetailResponse(
+                id = configuration.id,
+                definitionId = configuration.definitionId,
+                title = configuration.title,
+                properties = maskedProperties,
+                grantedEndpoints = grantedEndpoints.map(GrantedEndpointResponse::from),
+                grantedEvents = grantedEvents.map(GrantedEventResponse::from),
+                grantedCapabilities = grantedCapabilities.map(GrantedCapabilityResponse::from),
+                grantedEgress = grantedEgress.map(GrantedEgressResponse::from),
+                derivedEgress = configurationService.getDerivedEgress(configuration),
+                createdAt = configuration.createdAt,
+            )
+        )
+    }
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create an external plugin configuration",
+        nl = "Externe-pluginconfiguratie aanmaken",
+    )
+    @PostMapping("/configuration")
+    fun createConfiguration(
+        @RequestBody request: ConfigurationCreateRequest,
+    ): ResponseEntity<ConfigurationResponse> {
+        val configuration = configurationService.create(
+            request.definitionId,
+            request.title,
+            request.properties,
+            request.grantedEndpoints,
+            request.grantedEvents,
+            request.grantedCapabilities,
+            request.grantedEgress,
+        )
+        return ResponseEntity.status(HttpStatus.CREATED).body(ConfigurationResponse.from(configuration))
+    }
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update an external plugin configuration",
+        nl = "Externe-pluginconfiguratie bijwerken",
+    )
+    @PutMapping("/configuration/{configurationId}")
+    fun updateConfiguration(
+        @PathVariable configurationId: UUID,
+        @RequestBody request: ConfigurationUpdateRequest,
+    ): ResponseEntity<ConfigurationResponse> {
+        val configuration = configurationService.update(
+            configurationId,
+            request.title,
+            request.properties,
+            request.grantedEndpoints,
+        )
+        return ResponseEntity.ok(ConfigurationResponse.from(configuration))
+    }
+
+    /**
+     * Mirrors `listHostUsages` but scoped to a single configuration. Lets the management UI
+     * pre-emptively disable the delete control on a configuration whose process links would
+     * otherwise cause a 409.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List usages of an external plugin configuration",
+        nl = "Gebruik van externe-pluginconfiguratie ophalen",
+    )
+    @GetMapping("/configuration/{configurationId}/usages")
+    fun listConfigurationUsages(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<List<PluginUsageDto>> =
+        ResponseEntity.ok(configurationService.findUsages(configurationId))
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get logs for an external plugin configuration",
+        nl = "Logs van externe-pluginconfiguratie ophalen",
+    )
+    @GetMapping("/configuration/{configurationId}/logs")
+    fun getConfigurationLogs(
+        @PathVariable configurationId: UUID,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "25") size: Int,
+        @RequestParam(required = false) level: String?,
+        @RequestParam(required = false) source: String?,
+    ): ResponseEntity<JsonNode> {
+        val configuration = configurationService.get(configurationId)
+        val definition = definitionService.get(configuration.definitionId)
+        val host = hostService.get(definition.hostId)
+        val adminToken = hostService.decryptedSecret(host)
+        val result = hostClient.getConfigurationLogs(
+            host.baseUrl, adminToken, configurationId.toString(), page, size, level, source
+        )
+        return ResponseEntity.ok(result)
+    }
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete an external plugin configuration",
+        nl = "Externe-pluginconfiguratie verwijderen",
+    )
+    @DeleteMapping("/configuration/{configurationId}")
+    fun deleteConfiguration(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<Void> {
+        configurationService.delete(configurationId)
+        return ResponseEntity.noContent().build()
+    }
+
+    /**
+     * Incident off-switch: instantly invalidates every service and user token minted for this
+     * configuration (they carry a generation counter that must match the configuration's current
+     * one). The configuration itself keeps existing — unlike deletion, which the in-use guards
+     * rightly resist — and a fresh token of the new generation is pushed to the host right after,
+     * so a legitimate host recovers without waiting for the next discovery cycle.
+     */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Revoke all tokens of an external plugin configuration",
+        nl = "Alle tokens van een externe-pluginconfiguratie intrekken",
+    )
+    @PostMapping("/configuration/{configurationId}/revoke-tokens")
+    fun revokeConfigurationTokens(
+        @PathVariable configurationId: UUID,
+    ): ResponseEntity<ConfigurationResponse> =
+        ResponseEntity.ok(ConfigurationResponse.from(configurationService.revokeTokens(configurationId)))
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Resolve endpoint descriptions",
+        nl = "Endpoint-beschrijvingen ophalen",
+    )
+    @PostMapping("/endpoint-descriptions")
+    fun resolveEndpointDescriptions(
+        @RequestBody endpoints: List<EndpointQuery>,
+        @RequestParam(defaultValue = "en") locale: String,
+    ): ResponseEntity<List<com.ritense.externalplugin.service.EndpointDescription>> =
+        ResponseEntity.ok(endpointDescriptionService.resolveDescriptions(endpoints, locale))
+
+    private fun toDefinitionResponse(definition: ExternalPluginDefinition): DefinitionResponse {
+        val compatibility = compatibilityChecker.check(definition.minGzacVersion, definition.maxGzacVersion)
+        return DefinitionResponse.from(definition, compatibility)
+    }
+
+    private fun incompatibilityBody(compatibility: CompatibilityResult): JsonNode =
+        objectMapper.createObjectNode().apply {
+            put("incompatible", true)
+            put("compatible", false)
+            put("currentGzacVersion", compatibility.currentGzacVersion)
+            put("minGzacVersion", compatibility.minGzacVersion)
+            put("maxGzacVersion", compatibility.maxGzacVersion)
+        }
+
+    /**
+     * The 409 body for an upload targeting an existing pluginId@version: the host's hashes (so the
+     * UI can tell an identical re-upload apart from different content) plus the uploaded
+     * manifest's requested endpoint/event/capability/egress sets for the permission re-review screen.
+     */
+    private fun versionExistsBody(hostBody: JsonNode, fileBytes: ByteArray): JsonNode {
+        val manifest = pluginPackageInspector.readManifest(fileBytes)
+        return objectMapper.createObjectNode().apply {
+            put("code", PLUGIN_VERSION_EXISTS_CODE)
+            put("error", hostBody.get("error")?.asText() ?: "Plugin version already exists")
+            hostBody.get("message")?.asText()?.let { put("message", it) }
+            hostBody.get("currentContentHash")?.takeIf { it.isTextual }
+                ?.let { put("currentContentHash", it.asText()) }
+            hostBody.get("uploadedContentHash")?.takeIf { it.isTextual }
+                ?.let { put("uploadedContentHash", it.asText()) }
+            manifest?.get("pluginId")?.asText()?.let { put("pluginId", it) }
+            manifest?.get("version")?.asText()?.let { put("version", it) }
+            set<JsonNode>(
+                "requestedEndpoints",
+                objectMapper.createArrayNode().apply {
+                    manifest?.get("permissions")?.get("endpoints")?.takeIf { it.isArray }?.forEach { endpoint ->
+                        val method = endpoint.get("method")?.asText()?.takeIf { it.isNotBlank() }
+                        val pattern = endpoint.get("pattern")?.asText()?.takeIf { it.isNotBlank() }
+                        if (method != null && pattern != null) {
+                            addObject().put("method", method).put("pattern", pattern)
+                        }
+                    }
+                },
+            )
+            set<JsonNode>(
+                "requestedEventSubscriptions",
+                objectMapper.createArrayNode().apply {
+                    manifest?.get("eventSubscriptions")?.takeIf { it.isArray }?.forEach { event ->
+                        event.asText().takeIf { it.isNotBlank() }?.let { add(it) }
+                    }
+                },
+            )
+            set<JsonNode>(
+                "requestedCapabilities",
+                objectMapper.createArrayNode().apply {
+                    manifest?.get("permissions")?.get("capabilities")?.takeIf { it.isArray }?.forEach { capability ->
+                        capability.asText().takeIf { it.isNotBlank() }?.let { add(it) }
+                    }
+                },
+            )
+            set<JsonNode>(
+                "requestedEgress",
+                objectMapper.createArrayNode().apply {
+                    manifest?.get("permissions")?.get("egress")?.takeIf { it.isArray }?.forEach { target ->
+                        target.asText().takeIf { it.isNotBlank() }?.let { add(it) }
+                    }
+                },
+            )
+        }
+    }
+
+    private fun parseJsonOrNull(body: String?): JsonNode? = if (body.isNullOrBlank()) null else try {
+        objectMapper.readTree(body)
+    } catch (_: Exception) {
+        null
+    }
+
+    private fun uploadErrorBody(message: String, detail: String?): JsonNode =
+        objectMapper.createObjectNode().apply {
+            put("error", message)
+            if (!detail.isNullOrBlank()) put("detail", detail)
+        }
+
+    /**
+     * The 409 body for connecting an app whose plugin(s) are already registered under another
+     * host: the conflicting plugin coordinates plus the holding host's name/kind so the UI can
+     * tell the admin *where* the plugin already lives.
+     */
+    private fun appAlreadyRegisteredBody(conflicts: List<PluginRegistrationConflict>): JsonNode =
+        objectMapper.createObjectNode().apply {
+            put("code", APP_ALREADY_REGISTERED_CODE)
+            set<JsonNode>(
+                "conflicts",
+                objectMapper.createArrayNode().apply {
+                    conflicts.forEach { conflict ->
+                        val existingHost = runCatching { hostService.get(conflict.existingHostId) }.getOrNull()
+                        addObject().apply {
+                            put("pluginId", conflict.pluginId)
+                            put("version", conflict.version)
+                            put("existingHostId", conflict.existingHostId.toString())
+                            put("existingHostName", existingHost?.name)
+                            put("existingHostKind", existingHost?.kind?.name)
+                        }
+                    }
+                },
+            )
+        }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+
+        /** Host 409 code for an upload naming an already-existing pluginId@version. */
+        const val PLUGIN_VERSION_EXISTS_CODE = "PLUGIN_VERSION_EXISTS"
+
+        /** 409 code for connecting an app whose plugin is already registered under another host. */
+        const val APP_ALREADY_REGISTERED_CODE = "APP_PLUGIN_ALREADY_REGISTERED"
+
+        /**
+         * Largest plugin package this endpoint accepts. `spring.servlet.multipart.max-file-size`
+         * must stay strictly ABOVE this: Spring rejects during multipart parsing, before the
+         * handler runs, so an equal servlet cap makes the 413 below unreachable and the caller gets
+         * a generic "Maximum upload size exceeded" instead.
+         */
+        const val MAX_PLUGIN_UPLOAD_BYTES = 100L * 1024 * 1024
+    }
+}

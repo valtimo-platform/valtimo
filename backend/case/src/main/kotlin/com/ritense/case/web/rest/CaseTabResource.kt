@@ -24,6 +24,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -39,6 +40,10 @@ class CaseTabResource(
 ) {
 
     @Deprecated("Since 12.2.0")
+    @EndpointDescription(
+        en = "List case tabs",
+        nl = "Dossiertabbladen ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab")
     fun getCaseTabs(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -49,6 +54,10 @@ class CaseTabResource(
         return ResponseEntity.ok(tabs)
     }
 
+    @EndpointDescription(
+        en = "List case tabs for document",
+        nl = "Dossiertabbladen voor document ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/tab")
     fun getCaseTabsForDocument(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable documentId: UUID

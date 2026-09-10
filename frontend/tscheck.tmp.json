@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "skipLibCheck": true },
+  "include": [
+    "projects/valtimo/plugin-management/src/public-api.ts",
+    "projects/valtimo/plugin-management/src/lib/**/*.ts",
+    "projects/valtimo/plugin/src/public-api.ts"
+  ]
+}

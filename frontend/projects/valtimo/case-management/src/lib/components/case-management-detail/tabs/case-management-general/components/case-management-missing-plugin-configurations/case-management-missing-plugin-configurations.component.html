@@ -44,12 +44,27 @@
             </div>
             <svg cdsIcon="arrow--right" size="16" class="missing-plugin-configurations__arrow"></svg>
             @if (row.status === 'available') {
-              <div class="missing-plugin-configurations__dropdown" [cdsLayer]="2">
-                <v-select
-                  [items]="row.selectItems"
-                  [placeholder]="'caseManagement.missingPluginConfigurations.selectPlaceholder' | translate"
-                  (selectedChange)="onMappingChange(i, $event)"
-                ></v-select>
+              <div class="missing-plugin-configurations__target">
+                <div class="missing-plugin-configurations__dropdown" [cdsLayer]="2">
+                  <v-select
+                    [items]="row.selectItems"
+                    [placeholder]="'caseManagement.missingPluginConfigurations.selectPlaceholder' | translate"
+                    (selectedChange)="onMappingChange(i, $event)"
+                  ></v-select>
+                </div>
+
+                @if (selectedConfigurationVersion(row, i); as mismatchedVersion) {
+                  <div class="missing-plugin-configurations__version-warning">
+                    {{
+                      'caseManagement.missingPluginConfigurations.externalVersionMismatchWarning'
+                        | translate
+                          : {
+                              selectedVersion: mismatchedVersion,
+                              requiredVersion: row.pluginDefinitionVersion
+                            }
+                    }}
+                  </div>
+                }
               </div>
             } @else if (row.status === 'not-installed') {
               <div class="missing-plugin-configurations__unavailable missing-plugin-configurations__unavailable--error">

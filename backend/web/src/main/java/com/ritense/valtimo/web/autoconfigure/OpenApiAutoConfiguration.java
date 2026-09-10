@@ -16,17 +16,21 @@
 
 package com.ritense.valtimo.web.autoconfigure;
 
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.web.config.OpenApiProperties;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.method.HandlerMethod;
 
 /**
  * OpenAPI configuration.
@@ -68,6 +72,27 @@ public class OpenApiAutoConfiguration {
 
         logger.debug("Created OpenAPI configuration");
         return openAPI;
+    }
+
+    /**
+     * Surfaces the {@link EndpointDescription} declared on each controller handler method in the
+     * generated OpenAPI document. springdoc invokes this customizer for every operation while it
+     * builds the document at runtime, so the annotation stays the single source of truth: its
+     * English text becomes the operation summary (the short label Swagger shows for each endpoint).
+     * An explicit {@code @Operation} summary always takes precedence.
+     *
+     * @return the operation customizer that copies endpoint descriptions into the OpenAPI document
+     */
+    @Bean
+    @ConditionalOnMissingBean(name = "endpointDescriptionOperationCustomizer")
+    public OperationCustomizer endpointDescriptionOperationCustomizer() {
+        return (Operation operation, HandlerMethod handlerMethod) -> {
+            EndpointDescription description = handlerMethod.getMethodAnnotation(EndpointDescription.class);
+            if (description != null && (operation.getSummary() == null || operation.getSummary().isBlank())) {
+                operation.setSummary(description.en());
+            }
+            return operation;
+        };
     }
 
 }

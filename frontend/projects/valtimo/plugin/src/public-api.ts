@@ -22,9 +22,15 @@ export * from './lib/services';
 export * from './lib/models';
 export * from './lib/pipes';
 export * from './lib/constants';
+export * from './lib/utils';
 /* plugin configuration container */
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.component';
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.module';
+/* external plugin iframe */
+export * from './lib/components/external-plugin-iframe/external-plugin-iframe.component';
+/* external plugin routed page */
+export * from './lib/components/external-plugin-page/external-plugin-page.component';
+export * from './lib/external-plugin-page-routing.module';
 /* plugin configuration mapping */
 export * from './lib/components/plugin-configuration-mapping/plugin-configuration-mapping.component';
 /* open-zaak plugin */

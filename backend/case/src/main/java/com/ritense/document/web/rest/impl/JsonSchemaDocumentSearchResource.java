@@ -28,6 +28,7 @@ import com.ritense.document.service.impl.SearchRequest;
 import com.ritense.document.web.rest.DocumentSearchResource;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -50,6 +51,10 @@ public class JsonSchemaDocumentSearchResource implements DocumentSearchResource 
     }
 
     @Override
+    @EndpointDescription(
+        en = "Search documents",
+        nl = "Documenten zoeken"
+    )
     @PostMapping("/v1/document-search")
     public ResponseEntity<Page<? extends Document>> search(
         @RequestBody SearchRequest searchRequest,
@@ -61,6 +66,10 @@ public class JsonSchemaDocumentSearchResource implements DocumentSearchResource 
     }
 
     @Override
+    @EndpointDescription(
+        en = "Search documents by definition",
+        nl = "Documenten per definitie zoeken"
+    )
     @PostMapping("/v1/document-definition/{name}/search")
     public ResponseEntity<Page<? extends Document>> search(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "name") String documentDefinitionName,

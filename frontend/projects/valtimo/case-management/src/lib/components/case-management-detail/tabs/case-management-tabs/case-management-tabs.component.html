@@ -52,11 +52,7 @@
   </ng-template>
 
   <ng-template #tabContentColumn let-data="data">
-    {{
-      isTranslated('case.tabs.' + data.item.contentKey)
-        ? ('case.tabs.' + data.item.contentKey | translate)
-        : data.item.contentKey
-    }}
+    {{ getTabContentLabel(data.item) }}
   </ng-template>
 
   <ng-template #addTabButton>

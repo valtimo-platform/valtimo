@@ -28,6 +28,7 @@ import com.ritense.processdocument.web.rest.dto.JobType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.operaton.authorization.OperatonTimerActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonTimer
@@ -56,6 +57,10 @@ class ProcessTimerResource(
 ) {
 
     @Transactional(readOnly = true)
+    @EndpointDescription(
+        en = "List skippable timers of a process instance",
+        nl = "Overslaanbare timers van procesinstantie ophalen",
+    )
     @GetMapping("/case/{caseId}/process-instance/{processInstanceId}/timers")
     fun getSkippableTimers(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
@@ -71,6 +76,10 @@ class ProcessTimerResource(
     }
 
     @Transactional
+    @EndpointDescription(
+        en = "Skip a timer of a process instance",
+        nl = "Timer van procesinstantie overslaan",
+    )
     @PostMapping("/case/{caseId}/process-instance/{processInstanceId}/timer/{jobId}/skip")
     fun skipTimer(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,

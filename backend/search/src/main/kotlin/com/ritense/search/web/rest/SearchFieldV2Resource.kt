@@ -20,6 +20,7 @@ import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.web.rest.dto.SearchFieldV2Dto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -38,6 +39,10 @@ class SearchFieldV2Resource(
     private val searchFieldV2Service: SearchFieldV2Service
 ) {
 
+    @EndpointDescription(
+        en = "Create search field",
+        nl = "Zoekveld aanmaken",
+    )
     @PostMapping("/{ownerId}")
     fun create(
         @PathVariable ownerId: String,
@@ -45,6 +50,10 @@ class SearchFieldV2Resource(
     ) =
         ResponseEntity.ok(searchFieldV2Service.create(searchFieldV2Dto))
 
+    @EndpointDescription(
+        en = "Update search field by key",
+        nl = "Zoekveld bijwerken op sleutel",
+    )
     @PutMapping("/{ownerId}/{key}")
     fun update(
         @PathVariable ownerId: String,
@@ -53,6 +62,10 @@ class SearchFieldV2Resource(
     ) =
         ResponseEntity.ok(searchFieldV2Service.update(searchFieldV2Dto))
 
+    @EndpointDescription(
+        en = "Update search field list",
+        nl = "Lijst met zoekvelden bijwerken",
+    )
     @PutMapping("/{ownerId}/fields")
     fun updateList(
         @PathVariable ownerId: String,
@@ -60,15 +73,27 @@ class SearchFieldV2Resource(
     ) =
         ResponseEntity.ok(searchFieldV2Service.updateList(ownerId, searchFieldV2Dtos))
 
+    @EndpointDescription(
+        en = "List search fields by owner",
+        nl = "Zoekvelden ophalen per eigenaar",
+    )
     @Deprecated("Since 12.1.0")
     @GetMapping("/{ownerId}")
     fun getAllByOwnerId(@PathVariable ownerId: String) =
         ResponseEntity.ok(searchFieldV2Service.findAllByOwnerId(ownerId))
 
+    @EndpointDescription(
+        en = "List search fields by owner type and id",
+        nl = "Zoekvelden ophalen per eigenaartype en id",
+    )
     @GetMapping("/{ownerType}/{ownerId}")
     fun getAllByOwnerTypeAndOwnerId(@PathVariable ownerType: String, @PathVariable ownerId: String) =
         ResponseEntity.ok(searchFieldV2Service.findAllByOwnerTypeAndOwnerId(ownerType, ownerId))
 
+    @EndpointDescription(
+        en = "Delete search field by key",
+        nl = "Zoekveld verwijderen op sleutel",
+    )
     @Deprecated("Since 12.1.0")
     @DeleteMapping("/{ownerId}/{key}")
     fun delete(
@@ -79,6 +104,10 @@ class SearchFieldV2Resource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Delete search field by owner type and key",
+        nl = "Zoekveld verwijderen op eigenaartype en sleutel",
+    )
     @DeleteMapping("/{ownerType}/{ownerId}/{key}")
     fun delete(
         @PathVariable ownerType: String,

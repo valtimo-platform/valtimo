@@ -33,6 +33,8 @@ import {
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {
+  EXTERNAL_PLUGIN_WIDGET_CONFIG_TOKEN,
+  ExternalPluginWidgetConfigProvider,
   IWidgetManagementService,
   ManagementWidgetDetailsComponent,
   WIDGET_MANAGEMENT_SERVICE,
@@ -43,9 +45,24 @@ import {
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import moment from 'moment/moment';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 
-import {TabManagementService, CaseWidgetManagementApiService} from '../../../../../../services';
+import {
+  CaseWidgetManagementApiService,
+  TabManagementService,
+  TabService,
+} from '../../../../../../services';
 import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
 
 @Component({
@@ -66,6 +83,13 @@ import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widg
     {
       provide: WIDGET_MANAGEMENT_SERVICE,
       useClass: CaseWidgetManagementApiService,
+    },
+    {
+      provide: EXTERNAL_PLUGIN_WIDGET_CONFIG_TOKEN,
+      useFactory: (tabService: TabService): ExternalPluginWidgetConfigProvider => ({
+        getConfigOptions: () => tabService.getExternalPluginWidgetConfigs(),
+      }),
+      deps: [TabService],
     },
   ],
 })
@@ -133,7 +157,8 @@ export class CaseManagementWidgetTabComponent
   );
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
-  public readonly AVAILABLE_WIDGET_TYPES = [
+
+  private readonly _baseWidgetTypes = [
     WidgetType.FIELDS,
     WidgetType.COLLECTION,
     WidgetType.CUSTOM,
@@ -147,6 +172,23 @@ export class CaseManagementWidgetTabComponent
     WidgetType.TEXT,
   ];
 
+  /**
+   * The selectable widget types. `external-plugin` is only offered when at least one activated
+   * plugin configuration exposes a `case-widget` bundle. Emits the base list synchronously (never
+   * `null`) so the wizard never shows the type before the availability check resolves.
+   */
+  public readonly availableWidgetTypes$: Observable<WidgetType[]> = this.tabService
+    .getExternalPluginWidgetConfigs()
+    .pipe(
+      map(configs =>
+        configs.length > 0
+          ? [...this._baseWidgetTypes, WidgetType.EXTERNAL_PLUGIN]
+          : this._baseWidgetTypes
+      ),
+      catchError(() => of(this._baseWidgetTypes)),
+      startWith(this._baseWidgetTypes)
+    );
+
   constructor(
     protected readonly widgetWizardService: WidgetWizardService,
     private readonly breadcrumbService: BreadcrumbService,
@@ -154,6 +196,7 @@ export class CaseManagementWidgetTabComponent
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
     private readonly tabManagementService: TabManagementService,
+    private readonly tabService: TabService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
     private readonly caseWidgetManagementApiService: IWidgetManagementService<
       CaseManagementParams & {key: string}
@@ -193,7 +236,10 @@ export class CaseManagementWidgetTabComponent
   }
 
   private initBreadcrumbs(): void {
-    this.caseManagementRouteParams$.subscribe(params => {
+    combineLatest([
+      this.caseManagementRouteParams$,
+      this.translateService.stream('caseManagement.tabs.caseDetailsTab.title'),
+    ]).subscribe(([params, caseDetailsTitle]) => {
       const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
 
       this.breadcrumbService.setThirdBreadcrumb({
@@ -204,7 +250,7 @@ export class CaseManagementWidgetTabComponent
 
       this.breadcrumbService.setFourthBreadcrumb({
         route: [`${route}/case-details`],
-        content: this.translateService.instant('caseManagement.tabs.caseDetailsTab.title'),
+        content: caseDetailsTitle,
         href: `${route}/case-details`,
       });
     });

@@ -36,4 +36,5 @@ export * from './case-list-hidden-columns.service';
 export * from './case-list-quick-search.service';
 export * from './case-list-orchestration.service';
 export * from './case-inspection.service';
+export * from './case-external-plugin-tab-api.service';
 export * from './case-process-timer.service';

@@ -546,6 +546,24 @@ export const MY_COMPONENT_TEST_IDS = {
   requirements out of the box, it is acceptable to create an improved wrapper in
   `@valtimo/components` (e.g. `SelectModule` wraps and improves on `cds-combobox`).
 
+### Styling: use Carbon design tokens, not hardcoded values
+
+- **Always style with existing Carbon design tokens (CSS custom properties) and Carbon components.
+  Do not hardcode colours, spacing, type, or other design values.** Carbon exposes everything you
+  need as `var(--cds-*)` custom properties — use them so the UI stays theme- and dark-mode aware
+  and consistent with the rest of the admin UI.
+- Spacing: `var(--cds-spacing-01 … --cds-spacing-13)` instead of raw pixel values
+  (e.g. `padding: var(--cds-spacing-05)`, not `padding: 16px`).
+- Colour / surfaces: `var(--cds-layer)`, `var(--cds-layer-01/02)`, `var(--cds-background)`,
+  `var(--cds-border-subtle)`, `var(--cds-text-primary)`, `var(--cds-text-secondary)`,
+  `var(--cds-support-error/warning)`, `var(--cds-focus)`, etc. Never hardcode hex colours.
+- Type: the Carbon type tokens (`var(--cds-body-compact-01-font-size)`, …) and the `cds-*`
+  typographic classes.
+- Prefer a Carbon layout component or utility over bespoke CSS where one exists.
+- A raw value is only acceptable when no Carbon token fits (e.g. a one-off `border-radius` or a
+  fixed icon box). In that rare case prefer `px` over `rem`, and add a short comment explaining why
+  no token applies.
+
 ## Generated backend types
 
 TypeScript types for backend REST DTOs can be generated from the Java/Kotlin source code. Before

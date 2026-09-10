@@ -19,6 +19,7 @@ package com.ritense.valtimo.web.rest;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api", produces = APPLICATION_JSON_UTF8_VALUE)
 public class VersionResource {
 
+    @EndpointDescription(
+        en = "Get the Valtimo version",
+        nl = "Valtimo-versie ophalen"
+    )
     @GetMapping("/v1/valtimo/version")
     public ResponseEntity<Map<String, String>> getValtimoVersion() {
         String title = "";

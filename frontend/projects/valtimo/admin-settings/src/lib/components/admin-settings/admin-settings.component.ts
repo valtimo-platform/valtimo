@@ -23,6 +23,7 @@ import {map} from 'rxjs';
 import {ADMIN_SETTINGS_TABS} from '../../constants';
 import {AdminSettingsAppearanceComponent} from '../admin-settings-appearance/admin-settings-appearance.component';
 import {AdminSettingsFeatureTogglesComponent} from '../admin-settings-feature-toggles/admin-settings-feature-toggles.component';
+import {AdminSettingsMenuConfigurationComponent} from '../admin-settings-menu-configuration/admin-settings-menu-configuration.component';
 
 @Component({
   standalone: true,
@@ -35,6 +36,7 @@ import {AdminSettingsFeatureTogglesComponent} from '../admin-settings-feature-to
     TabsModule,
     AdminSettingsAppearanceComponent,
     AdminSettingsFeatureTogglesComponent,
+    AdminSettingsMenuConfigurationComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

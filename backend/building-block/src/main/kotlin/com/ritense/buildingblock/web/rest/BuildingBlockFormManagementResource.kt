@@ -25,6 +25,7 @@ import com.ritense.form.web.rest.dto.FormOption
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -47,6 +48,10 @@ class BuildingBlockFormManagementResource(
     private val buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
 ) {
 
+    @EndpointDescription(
+        en = "List building block form options",
+        nl = "Formulieropties van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/form-option")
     fun getFormOptions(
         @PathVariable key: String,
@@ -58,6 +63,10 @@ class BuildingBlockFormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "List building block form definitions",
+        nl = "Formulierdefinities van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/form")
     fun getFormDefinitions(
         @PathVariable key: String,
@@ -71,6 +80,10 @@ class BuildingBlockFormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Get building block form definition",
+        nl = "Formulierdefinitie van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/form/{formDefinitionId}")
     fun getFormDefinition(
         @PathVariable key: String,
@@ -84,6 +97,10 @@ class BuildingBlockFormManagementResource(
         return ResponseEntity.ok(BuildingBlockFormDefinitionDto.from(form))
     }
 
+    @EndpointDescription(
+        en = "Get building block form definition by name",
+        nl = "Formulierdefinitie van bouwblok ophalen op naam",
+    )
     @GetMapping("/{key}/version/{versionTag}/form/name/{name}")
     fun getFormDefinitionByName(
         @PathVariable key: String,
@@ -97,6 +114,10 @@ class BuildingBlockFormManagementResource(
         return ResponseEntity.ok(BuildingBlockFormDefinitionDto.from(form))
     }
 
+    @EndpointDescription(
+        en = "Check if building block form definition exists",
+        nl = "Controleren of formulierdefinitie van bouwblok bestaat",
+    )
     @GetMapping("/{key}/version/{versionTag}/form/{name}/exists")
     fun formDefinitionExists(
         @PathVariable key: String,
@@ -109,6 +130,10 @@ class BuildingBlockFormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Create building block form definition",
+        nl = "Formulierdefinitie van bouwblok aanmaken",
+    )
     @PostMapping("/{key}/version/{versionTag}/form")
     fun createFormDefinition(
         @PathVariable key: String,
@@ -125,6 +150,10 @@ class BuildingBlockFormManagementResource(
         return ResponseEntity.ok(BuildingBlockFormDefinitionDto.from(form))
     }
 
+    @EndpointDescription(
+        en = "Update building block form definition",
+        nl = "Formulierdefinitie van bouwblok bijwerken",
+    )
     @PutMapping("/{key}/version/{versionTag}/form/{formDefinitionId}")
     fun updateFormDefinition(
         @PathVariable key: String,
@@ -142,6 +171,10 @@ class BuildingBlockFormManagementResource(
         return ResponseEntity.ok(BuildingBlockFormDefinitionDto.from(form))
     }
 
+    @EndpointDescription(
+        en = "Delete building block form definition",
+        nl = "Formulierdefinitie van bouwblok verwijderen",
+    )
     @DeleteMapping("/{key}/version/{versionTag}/form/{formDefinitionId}")
     fun deleteFormDefinition(
         @PathVariable key: String,

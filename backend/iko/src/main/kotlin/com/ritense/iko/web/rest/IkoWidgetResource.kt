@@ -19,6 +19,7 @@ package com.ritense.iko.web.rest
 import com.ritense.iko.service.IkoWidgetService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.NO_PAGE_SIZE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
@@ -46,6 +47,10 @@ class IkoWidgetResource(
     private val ikoWidgetService: IkoWidgetService
 ) {
 
+    @EndpointDescription(
+        en = "List IKO widgets",
+        nl = "IKO-widgets ophalen",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget")
     fun getIkoWidgets(
         @PathVariable @Size(max = 256) ikoViewKey: String,
@@ -55,6 +60,10 @@ class IkoWidgetResource(
             ikoWidgetService.findAllByTabKeyFilteredByDisplayConditions(ikoViewKey, tabKey).map { it.toDto() })
     }
 
+    @EndpointDescription(
+        en = "Get IKO widget data",
+        nl = "IKO-widgetgegevens ophalen",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}/data")
     fun getIkoWidgetData(
         @PathVariable @Size(max = 256) ikoViewKey: String,

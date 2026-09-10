@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,29 +13,73 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <ng-container
   *ngIf="{
     pluginConfigurations: pluginConfigurations$ | async,
     loading: loading$ | async,
+    hasConnectedHosts: hasConnectedHosts$ | async,
+    externalDefsRefreshing: externalDefsRefreshing$ | async,
   } as obs"
 >
   <valtimo-carbon-list
     [actionItems]="actionItems"
     [loading]="obs.loading"
     [items]="obs.pluginConfigurations"
-    [fields]="fields"
+    [fields]="fields$ | async"
     [header]="false"
     (rowClicked)="editConfiguration($event)"
   >
-    <ng-container carbonToolbarContent [ngTemplateOutlet]="configurePluginButton"></ng-container>
+    <ng-container carbonToolbarContent>
+      <cds-loading
+        *ngIf="obs.externalDefsRefreshing"
+        size="sm"
+        [isActive]="true"
+        class="plugin-management__hosts-spinner"
+      ></cds-loading>
+
+      <button
+        cdsButton="ghost"
+        [disabled]="obs.loading || !obs.hasConnectedHosts"
+        [vTooltip]="
+          !obs.hasConnectedHosts ? ('pluginManagement.uploadDisabledTooltip' | translate) : ''
+        "
+        [tooltipDisabled]="obs.hasConnectedHosts"
+        (click)="openUploadModal()"
+      >
+        {{ 'pluginManagement.uploadPlugin' | translate }}
+
+        <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+      </button>
+
+      <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
+        {{ 'pluginManagement.add' | translate }}
+
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </ng-container>
 
     <valtimo-no-results
-      [action]="configurePluginButton"
+      [action]="toolbarButtons"
       [title]="'pages.plugins.noResults' | translate"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 
-  <ng-template #configurePluginButton>
+  <ng-template #toolbarButtons>
+    <button
+      cdsButton="ghost"
+      [disabled]="obs.loading || !obs.hasConnectedHosts"
+      [vTooltip]="
+        !obs.hasConnectedHosts ? ('pluginManagement.uploadDisabledTooltip' | translate) : ''
+      "
+      [tooltipDisabled]="obs.hasConnectedHosts"
+      (click)="openUploadModal()"
+    >
+      {{ 'pluginManagement.uploadPlugin' | translate }}
+
+      <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+    </button>
+
     <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
       {{ 'pluginManagement.add' | translate }}
 
@@ -46,6 +90,7 @@
 
 <valtimo-plugin-add-modal
   [open]="showAddModal$ | async"
+  [externalDefinitions]="externalDefinitions$ | async"
   (closeModal)="closeAddModal()"
 ></valtimo-plugin-add-modal>
 
@@ -53,4 +98,96 @@
   [open]="showEditModal$ | async"
   [saveNewConfiguration]="saveNewConfiguration$ | async"
   (closeModal)="closeEditModal()"
+  (deleteEvent)="onEmbeddedConfigDeleted($event)"
 ></valtimo-plugin-edit-modal>
+
+<valtimo-plugin-external-edit-modal
+  [open]="showExternalEditModal$ | async"
+  [configuration]="selectedExternalConfiguration$ | async"
+  (closeEvent)="closeExternalEditModal()"
+  (savedEvent)="onExternalConfigSaved()"
+  (deleteEvent)="onExternalConfigDeleted($event)"
+></valtimo-plugin-external-edit-modal>
+
+<valtimo-plugin-upload-modal
+  [hosts]="connectedHosts$ | async"
+  [open]="uploadModalOpen$ | async"
+  (closeEvent)="closeUploadModal()"
+  (uploadedEvent)="onPluginUploaded($event)"
+></valtimo-plugin-upload-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="deleteConfigurationModalOpen$"
+  [titleTranslationKey]="'pluginManagement.deleteConfigurationModal.title'"
+  [contentTranslationKey]="'pluginManagement.deleteConfigurationModal.description'"
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [confirmButtonType]="'danger'"
+  [cancelButtonTextTranslationKey]="'interface.cancel'"
+  (confirmEvent)="confirmDeleteConfiguration()"
+  (cancelEvent)="cancelDeleteConfiguration()"
+></valtimo-confirmation-modal>
+
+<valtimo-plugin-log-modal
+  [open]="showLogModal"
+  [configurationId]="logConfigurationId"
+  [configurationTitle]="logConfigurationTitle"
+  (closeModal)="closeLogModal()"
+></valtimo-plugin-log-modal>
+
+<valtimo-plugin-usage-modal
+  [descriptionTranslationKey]="usageModalDescriptionKey"
+  [entityName]="usageModalEntityName"
+  [open]="usageModalOpen$ | async"
+  [titleTranslationKey]="usageModalTitleKey"
+  [usages]="usageModalUsages$ | async"
+  (closeEvent)="closeUsageModal()"
+></valtimo-plugin-usage-modal>
+
+<ng-template #pluginNameColumnTemplate let-data="data">
+  <div class="plugin-management__plugin-name">
+    <span>{{ data?.item?.pluginName }}</span>
+
+    @if (data?.item?.awaitingHost) {
+      <cds-tag
+        type="cool-gray"
+        size="sm"
+        [title]="'pluginManagement.awaitingHost.tooltip' | translate"
+        (click)="$event.stopPropagation()"
+      >
+        {{ 'pluginManagement.awaitingHost.tag' | translate }}
+      </cds-tag>
+    }
+
+    @if (data?.item?.reviewRequired) {
+      <cds-tag
+        type="magenta"
+        size="sm"
+        [title]="data.item.reviewMessage"
+        (click)="$event.stopPropagation()"
+      >
+        {{ 'pluginManagement.reviewRequired.tag' | translate }}
+      </cds-tag>
+    }
+
+    @if (data?.item?.incompatible) {
+      <cds-tag type="red" size="sm" (click)="$event.stopPropagation()">
+        {{ 'pluginManagement.compatibility.incompatibleTag' | translate }}
+      </cds-tag>
+
+      <!--
+        vTooltip, not cds-tooltip: Carbon's popover is absolutely positioned inside the trigger, so
+        `valtimo-carbon-list`'s `overflow-y: hidden` on cds-table clips it — on the first row there is
+        only the 48px header above the icon. vTooltip renders through a body-level CDK overlay, which
+        no ancestor can clip, and is already the tooltip this toolbar uses for its upload button.
+      -->
+      <span
+        class="plugin-management__incompatible-tooltip"
+        [vTooltip]="data.item.compatibilityMessage"
+        [attr.aria-label]="data.item.compatibilityMessage"
+        (click)="$event.stopPropagation()"
+      >
+        <svg cdsIcon="information" size="16"></svg>
+      </span>
+    }
+  </div>
+</ng-template>

@@ -29,6 +29,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
@@ -61,6 +62,10 @@ class CaseZgwInspectionResource(
     private val objectMapper: ObjectMapper,
 ) {
 
+    @EndpointDescription(
+        en = "Get ZGW inspection for case",
+        nl = "ZGW-inspectie voor dossier ophalen",
+    )
     @GetMapping("/v1/case/{caseId}/zgw")
     @Transactional
     fun getZgwInspection(

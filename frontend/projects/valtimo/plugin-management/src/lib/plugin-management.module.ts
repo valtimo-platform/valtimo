@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 import {NgModule} from '@angular/core';
 import {PluginManagementRoutingModule} from './plugin-management-routing';
 import {CommonModule} from '@angular/common';
+import {ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {PluginManagementComponent} from './components/plugin-management/plugin-management.component';
 import {PluginAddModalComponent} from './components/plugin-add-modal/plugin-add-modal.component';
@@ -26,11 +27,18 @@ import {PluginConfigureComponent} from './components/plugin-configure/plugin-con
 import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
 import {PluginEditModalComponent} from './components/plugin-edit-modal/plugin-edit-modal.component';
 import {PluginEditComponent} from './components/plugin-edit/plugin-edit.component';
+import {PluginExternalEditModalComponent} from './components/plugin-external-edit-modal/plugin-external-edit-modal.component';
+import {PluginExternalConfigureComponent} from './components/plugin-external-configure/plugin-external-configure.component';
+import {PluginExternalPermissionsComponent} from './components/plugin-external-permissions/plugin-external-permissions.component';
+import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugin-upload-modal.component';
+import {PluginUsageModalComponent} from './components/plugin-usage-modal/plugin-usage-modal.component';
+import {PluginLogModalComponent} from './components/plugin-log-modal/plugin-log-modal.component';
 import {
   CarbonListModule,
+  ConfirmationModalModule,
   ParagraphModule,
-  StepperModule,
   TableModule,
+  TooltipModule as VTooltipModule,
   ValtimoCdsModalDirective,
   VModalModule,
 } from '@valtimo/components';
@@ -40,6 +48,9 @@ import {
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
+  NotificationModule,
+  ProgressIndicatorModule,
+  TagModule,
   TilesModule,
 } from 'carbon-components-angular';
 
@@ -55,11 +66,12 @@ import {
   ],
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     PluginManagementRoutingModule,
     TranslateModule,
     ParagraphModule,
     TableModule,
-    StepperModule,
+    ProgressIndicatorModule,
     VModalModule,
     PluginTranslatePipeModule,
     PluginConfigurationContainerModule,
@@ -67,10 +79,20 @@ import {
     CarbonListModule,
     CarbonModalModule,
     IconModule,
+    NotificationModule,
+    TagModule,
     ValtimoCdsModalDirective,
     LayerModule,
     TilesModule,
     LoadingModule,
+    PluginExternalEditModalComponent,
+    PluginExternalConfigureComponent,
+    PluginExternalPermissionsComponent,
+    PluginUploadModalComponent,
+    PluginUsageModalComponent,
+    PluginLogModalComponent,
+    ConfirmationModalModule,
+    VTooltipModule,
   ],
   exports: [
     PluginManagementComponent,

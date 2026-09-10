@@ -17,6 +17,7 @@
 package com.valtimo.keycloak.web.rest
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.valtimo.keycloak.service.ExternalRoleService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.ws.rs.NotFoundException
@@ -33,6 +34,10 @@ class ExternalRoleResource(
     private val externalRoleService: ExternalRoleService
 ) {
 
+    @EndpointDescription(
+        en = "List external roles",
+        nl = "Externe rollen ophalen",
+    )
     @GetMapping
     fun getExternalRoles(
         @RequestParam externalRoleNamePrefix: String?

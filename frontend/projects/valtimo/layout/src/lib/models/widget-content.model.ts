@@ -86,6 +86,11 @@ interface WidgetCustomContent {
   componentValue: {[key: string]: string};
 }
 
+interface WidgetExternalPluginContent {
+  configurationId: string;
+  bundleKey?: string;
+}
+
 interface WidgetFormioContent {
   formDefinitionName: string;
 }
@@ -218,6 +223,7 @@ type WidgetContentProperties =
   | WidgetTableContent
   | WidgetInteractiveTableContent
   | WidgetCustomContent
+  | WidgetExternalPluginContent
   | WidgetFormioContent
   | WidgetCollectionContent
   | WidgetMapContent
@@ -231,6 +237,7 @@ type WidgetContentProperties =
 export {
   WidgetContentProperties,
   WidgetCustomContent,
+  WidgetExternalPluginContent,
   WidgetFieldsContent,
   WidgetFormioContent,
   WidgetTableContent,

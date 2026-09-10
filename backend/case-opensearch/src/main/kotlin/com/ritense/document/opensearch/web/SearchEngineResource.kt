@@ -21,6 +21,7 @@ import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.autoconfigure.DocumentOpenSearchAutoConfiguration.Companion.SEARCH_ENGINE_TOGGLE_KEY
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.SearchEngineToggle
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -39,6 +40,10 @@ class SearchEngineResource(
     private val indexInitializer: DocumentOpenSearchIndexInitializer,
 ) {
 
+    @EndpointDescription(
+        en = "Get active search engine",
+        nl = "Actieve zoekmachine ophalen",
+    )
     @GetMapping
     fun getActive(): ResponseEntity<SearchEngineDto> =
         ResponseEntity.ok(
@@ -48,6 +53,10 @@ class SearchEngineResource(
             )
         )
 
+    @EndpointDescription(
+        en = "Set active search engine",
+        nl = "Actieve zoekmachine instellen",
+    )
     @PutMapping
     fun setActive(@RequestBody body: UpdateSearchEngineDto): ResponseEntity<SearchEngineDto> {
         if (!openSearchProperties.enabled) {

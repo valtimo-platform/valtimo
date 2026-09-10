@@ -27,6 +27,7 @@ import com.ritense.authorization.AuthorizationContext;
 import com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.repository.OperatonReportingRepository;
 import com.ritense.valtimo.repository.operaton.dto.ChartInstance;
 import com.ritense.valtimo.repository.operaton.dto.ChartInstanceSeries;
@@ -79,6 +80,10 @@ public class ReportingResource {
         this.operatonReportingRepository = operatonReportingRepository;
     }
 
+    @EndpointDescription(
+        en = "Get process instance counts report",
+        nl = "Rapportage van procesinstantie-aantallen ophalen"
+    )
     @GetMapping("/v1/reporting/instancecount")
     public ResponseEntity<InstanceCountChart> instanceCount(
         @RequestParam(value = "processFilter", required = false) String processId
@@ -87,6 +92,10 @@ public class ReportingResource {
         return new ResponseEntity<>(instanceCounts, HttpStatus.OK);
     }
 
+    @EndpointDescription(
+        en = "Get process instance statistics report",
+        nl = "Rapportage van procesinstantie-statistieken ophalen"
+    )
     @GetMapping("/v1/reporting/instancesstatistics")
     public ResponseEntity<List<ProcessInstanceStatisticsDTO>> instanceStatistics(
         @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
@@ -116,6 +125,10 @@ public class ReportingResource {
         return new ResponseEntity<>(processInstanceStatisticsList, HttpStatus.OK);
     }
 
+    @EndpointDescription(
+        en = "Get average task duration report",
+        nl = "Rapportage van gemiddelde taakduur ophalen"
+    )
     @GetMapping("/v1/reporting/tasksAverage")
     public ResponseEntity<ChartInstance> tasksHistory(
         @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
@@ -157,6 +170,10 @@ public class ReportingResource {
         return new ResponseEntity<>(new ChartInstance(categories, series), HttpStatus.OK);
     }
 
+    @EndpointDescription(
+        en = "Get tasks per person report",
+        nl = "Rapportage van taken per persoon ophalen"
+    )
     @GetMapping("/v1/reporting/tasksPerPerson")
     public ResponseEntity<ChartInstance> tasksPerPerson(
         @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
@@ -198,6 +215,10 @@ public class ReportingResource {
         return new ResponseEntity<>(new ChartInstance(categories, series), HttpStatus.OK);
     }
 
+    @EndpointDescription(
+        en = "Get pending tasks by role report",
+        nl = "Rapportage van openstaande taken per rol ophalen"
+    )
     @GetMapping("/v1/reporting/pendingTasksByRole")
     public ResponseEntity<ChartInstance> pendingTasksByRole(
         @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
@@ -207,6 +228,10 @@ public class ReportingResource {
         return new ResponseEntity<>(operatonReportingRepository.getTasksPerRole(processId, fromDate, toDate), HttpStatus.OK);
     }
 
+    @EndpointDescription(
+        en = "Get unfinished tasks per type report",
+        nl = "Rapportage van onafgeronde taken per type ophalen"
+    )
     @GetMapping("/v1/reporting/unfinishedTasksPerType")
     public ResponseEntity<ChartInstance> unfinishedTasksPerType(
         @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
@@ -242,6 +267,10 @@ public class ReportingResource {
         return new ResponseEntity<>(new ChartInstance(categories, series), HttpStatus.OK);
     }
 
+    @EndpointDescription(
+        en = "Get finished and unfinished instances report",
+        nl = "Rapportage van afgeronde en onafgeronde instanties ophalen"
+    )
     @GetMapping("/v1/reporting/finishedAndUnfinishedInstances")
     public ResponseEntity<ChartInstance> finishedAndUnfinishedInstances(
         @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,

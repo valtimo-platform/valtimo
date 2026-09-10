@@ -27,7 +27,10 @@ import {
 import {PluginStateService} from './plugin-state.service';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
-import {FORM_CUSTOM_COMPONENT_TOKEN, UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../constants';
+import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK,
+} from '../constants';
 import {ManagementContext} from '@valtimo/shared';
 import {BuildingBlockStateService} from './building-block-state.service';
 
@@ -70,22 +73,61 @@ export class ProcessLinkStateService implements OnDestroy {
 
   public get availableProcessLinkTypes$(): Observable<ProcessLinkType[]> {
     return combineLatest([this._availableProcessLinkTypes$, this._context$]).pipe(
-      map(([types, context]) =>
-        (!this.formCustomComponentConfig
-          ? types.map(type => ({
-              ...type,
-              enabled: type.processLinkType === 'ui-component' ? false : type.enabled,
-            }))
-          : types
+      map(([types, context]) => {
+        // The external plugin types get no tile of their own (see the filter below) — they are
+        // reached through the "Plugins & Apps" (plugin) tile, whose backend enablement only counts
+        // embedded plugin configurations. An enabled external type must therefore enable that tile
+        // itself, or add it when the activity type has no embedded plugin actions at all.
+        const externalPluginEnabled = types.some(
+          type =>
+            (type.processLinkType === 'external_plugin' ||
+              type.processLinkType === 'external_plugin_task_form') &&
+            type.enabled
+        );
+        let mergedTypes = types;
+        if (externalPluginEnabled && !types.some(type => type.processLinkType === 'plugin')) {
+          mergedTypes = [...types];
+          // The external types sit where the plugin tile belongs in the backend's order, so the
+          // added tile takes the first one's place (the filter below removes them anyway).
+          mergedTypes.splice(
+            types.findIndex(
+              type =>
+                type.processLinkType === 'external_plugin' ||
+                type.processLinkType === 'external_plugin_task_form'
+            ),
+            0,
+            {processLinkType: 'plugin', enabled: true}
+          );
+        }
+
+        return (
+          !this.formCustomComponentConfig
+            ? mergedTypes.map(type => ({
+                ...type,
+                enabled: type.processLinkType === 'ui-component' ? false : type.enabled,
+              }))
+            : mergedTypes
         )
-          .filter(type => type.processLinkType !== 'url')
+          .filter(
+            type =>
+              type.processLinkType !== 'url' &&
+              type.processLinkType !== 'external_plugin' &&
+              // No separate tile: an external plugin's task-form is offered inside the "Plugin" flow
+              // (pick the plugin on a user task → its task-form appears as the selectable option).
+              type.processLinkType !== 'external_plugin_task_form'
+          )
+          .map(type =>
+            type.processLinkType === 'plugin' && externalPluginEnabled
+              ? {...type, enabled: true}
+              : type
+          )
           .map(type =>
             context === 'buildingBlock' &&
             UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK.includes(type.processLinkType)
               ? {...type, enabled: false}
               : type
-          )
-      )
+          );
+      })
     );
   }
 

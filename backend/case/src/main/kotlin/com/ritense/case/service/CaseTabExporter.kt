@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case.deployment.CaseTabDto
 import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabType
+import com.ritense.case_.service.ExternalPluginCaseTabResolver
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
@@ -29,11 +30,14 @@ import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.FormDefinitionExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.transaction.annotation.Transactional
+import java.util.Optional
+import java.util.UUID
 
 @Transactional(readOnly = true)
 class CaseTabExporter(
     private val objectMapper: ObjectMapper,
-    private val caseTabService: CaseTabService
+    private val caseTabService: CaseTabService,
+    private val externalPluginCaseTabResolver: Optional<ExternalPluginCaseTabResolver> = Optional.empty(),
 ) : Exporter<DocumentDefinitionExportRequest> {
 
     override fun supports() = DocumentDefinitionExportRequest::class.java
@@ -52,13 +56,41 @@ class CaseTabExporter(
 
         val caseTabExport = ExportFile(
             PATH.format(caseDefinitionKey, formattedCaseDefinitionVersion, caseDefinitionKey),
-            objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(caseTabs.map(CaseTabDto::of))
+            objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(caseTabs.map(::toExportDto))
         )
 
         return ExportResult(
             caseTabExport,
             createFormDefininitionExportRequests(caseTabs, request.caseDefinitionId)
         )
+    }
+
+    /**
+     * Maps a tab to its export DTO, enriching `EXTERNAL_PLUGIN` tabs with their plugin definition
+     * (`pluginId`/version) so the export is self-describing — the import preview can then identify
+     * the plugin even when the referenced configuration was deleted in the target, matching how a
+     * process link's export already carries its plugin key/version. A tab whose configuration can no
+     * longer be resolved here (or when external-plugin isn't on the classpath) exports as before,
+     * without the plugin key.
+     */
+    private fun toExportDto(caseTab: CaseTab): CaseTabDto {
+        val dto = CaseTabDto.of(caseTab)
+        if (caseTab.type != CaseTabType.EXTERNAL_PLUGIN) {
+            return dto
+        }
+        val resolver = externalPluginCaseTabResolver.orElse(null) ?: return dto
+        val configurationId = caseTab.contentKey.substringBefore(':').toUuidOrNull() ?: return dto
+        val definition = resolver.resolvePluginDefinition(configurationId) ?: return dto
+        return dto.copy(
+            pluginDefinitionKey = definition.pluginDefinitionKey,
+            pluginVersion = definition.pluginDefinitionVersion,
+        )
+    }
+
+    private fun String.toUuidOrNull(): UUID? = try {
+        UUID.fromString(this)
+    } catch (_: IllegalArgumentException) {
+        null
     }
 
     private fun createFormDefininitionExportRequests(caseTabs: List<CaseTab>, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> {

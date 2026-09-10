@@ -57,6 +57,8 @@ class ValtimoImportTypes {
 
         const val OBJECT_MANAGEMENT = "objectmanagement"
 
+        const val EXTERNAL_PLUGIN = "externalplugin"
+
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"
         const val ZGW_DOCUMENT_TREFWOORD = "zgwdocumenttrefwoord"

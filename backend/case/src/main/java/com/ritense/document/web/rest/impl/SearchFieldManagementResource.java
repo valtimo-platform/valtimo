@@ -24,6 +24,7 @@ import com.ritense.document.service.SearchFieldService;
 import com.ritense.document.web.rest.DocumentSearchFieldsManagement;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -43,6 +44,10 @@ public class SearchFieldManagementResource implements DocumentSearchFieldsManage
     }
 
     @Override
+    @EndpointDescription(
+        en = "List search fields for management",
+        nl = "Zoekvelden voor beheer ophalen"
+    )
     @GetMapping("/v1/document-search/{documentDefinitionName}/fields")
     public ResponseEntity<List<SearchFieldDto>> getAdminSearchFields(
         @LoggableResource("documentDefinitionName") @PathVariable String documentDefinitionName) {

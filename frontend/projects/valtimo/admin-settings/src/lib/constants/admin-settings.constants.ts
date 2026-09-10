@@ -16,6 +16,7 @@
 
 const ADMIN_SETTINGS_TABS = {
   APPEARANCE: 'appearance',
+  MENU_CONFIGURATION: 'menu-configuration',
   FEATURE_TOGGLES: 'feature-toggles',
 } as const;
 

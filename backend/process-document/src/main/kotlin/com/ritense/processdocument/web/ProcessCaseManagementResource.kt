@@ -19,6 +19,7 @@ import com.ritense.processdocument.domain.UpdateProcessDefinitionCaseDefinitionR
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -32,6 +33,10 @@ import org.springframework.web.bind.annotation.RestController
 class ProcessCaseManagementResource(
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
 ) {
+    @EndpointDescription(
+        en = "Update process definition case definition properties",
+        nl = "Eigenschappen van procesdefinitie bij dossierdefinitie bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process/{processDefinitionId}/properties")
     fun updateProcessDefinitionCaseDefinition(
         @PathVariable caseDefinitionKey: String,

@@ -17,6 +17,7 @@
 package com.ritense.processlink.importer
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
@@ -24,6 +25,7 @@ import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.mapper.remapConfigurationIdField
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
@@ -246,6 +248,10 @@ class ProcessLinkImporterTest {
             blueprintId: BlueprintId?,
         ): ProcessLink {
             throw UnsupportedOperationException()
+        }
+
+        override fun applyPluginConfigurationMappings(node: ObjectNode, mappings: Map<UUID, UUID?>) {
+            remapConfigurationIdField(node, "pluginConfigurationId", mappings)
         }
     }
 

@@ -28,6 +28,7 @@ import com.ritense.dashboard.web.rest.dto.WidgetConfigurationCreateRequestDto
 import com.ritense.dashboard.web.rest.dto.WidgetConfigurationUpdateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -47,6 +48,10 @@ class AdminDashboardResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List dashboards",
+        nl = "Dashboards ophalen",
+    )
     @GetMapping("/v1/dashboard")
     fun getDashboards(): ResponseEntity<List<DashboardResponseDto>> {
         val dashboardResponseDtos = dashboardService.getDashboards()
@@ -55,6 +60,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get dashboard by key",
+        nl = "Dashboard ophalen op sleutel",
+    )
     @GetMapping("/v1/dashboard/{dashboardKey}")
     fun getDashboard(
         @PathVariable(name = "dashboardKey") dashboardKey: String
@@ -64,6 +73,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create dashboard",
+        nl = "Dashboard aanmaken",
+    )
     @PostMapping("/v1/dashboard")
     fun createDashboard(
         @Valid @RequestBody dashboardDto: DashboardCreateRequestDto
@@ -77,6 +90,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update dashboards order",
+        nl = "Volgorde van dashboards bijwerken",
+    )
     @PutMapping("/v1/dashboard")
     fun editDashboards(
         @Valid @RequestBody dashboardUpdateRequestDtos: List<DashboardUpdateRequestDto>
@@ -87,6 +104,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete dashboard",
+        nl = "Dashboard verwijderen",
+    )
     @DeleteMapping("/v1/dashboard/{dashboardKey}")
     fun deleteDashboard(
         @PathVariable(name = "dashboardKey") dashboardKey: String
@@ -96,6 +117,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update dashboard",
+        nl = "Dashboard bijwerken",
+    )
     @PutMapping("/v1/dashboard/{dashboardKey}")
     fun editDashboard(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -110,6 +135,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List widget configurations for dashboard",
+        nl = "Widgetconfiguraties van dashboard ophalen",
+    )
     @GetMapping("/v1/dashboard/{dashboardKey}/widget-configuration")
     fun getWidgetConfigurations(
         @PathVariable(name = "dashboardKey") dashboardKey: String
@@ -120,6 +149,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create dashboard widget configuration",
+        nl = "Dashboardwidgetconfiguratie aanmaken",
+    )
     @PostMapping("/v1/dashboard/{dashboardKey}/widget-configuration")
     fun createWidgetConfiguration(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -138,6 +171,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update dashboard widget configurations order",
+        nl = "Volgorde van dashboardwidgetconfiguraties bijwerken",
+    )
     @PutMapping("/v1/dashboard/{dashboardKey}/widget-configuration")
     fun editWidgetConfigurations(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -149,6 +186,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update dashboard widget configuration",
+        nl = "Dashboardwidgetconfiguratie bijwerken",
+    )
     @PutMapping("/v1/dashboard/{dashboardKey}/widget-configuration/{widgetKey}")
     fun editWidgetConfiguration(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -161,6 +202,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get dashboard widget configuration by key",
+        nl = "Dashboardwidgetconfiguratie ophalen op sleutel",
+    )
     @GetMapping("/v1/dashboard/{dashboardKey}/widget-configuration/{widgetKey}")
     fun getWidgetConfigurations(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -171,6 +216,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete dashboard widget configuration",
+        nl = "Dashboardwidgetconfiguratie verwijderen",
+    )
     @DeleteMapping("/v1/dashboard/{dashboardKey}/widget-configuration/{widgetKey}")
     fun deleteWidgetConfiguration(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -181,6 +230,10 @@ class AdminDashboardResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List dashboard widget data sources",
+        nl = "Dashboardwidget-gegevensbronnen ophalen",
+    )
     @GetMapping("/v1/dashboard/widget-data-sources")
     fun getWidgetDataSources(): ResponseEntity<List<WidgetDataSourceDto>> {
         return ResponseEntity.ok(dashboardService.getWidgetDataSources())

@@ -19,6 +19,7 @@ package com.ritense.valtimo.web.rest;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.TEXT_PLAIN_UTF8_VALUE;
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,10 @@ public class PingResource {
 
     private static final String PING_RESPONSE = "pong";
 
+    @EndpointDescription(
+        en = "Health check ping endpoint",
+        nl = "Statuscontrole ping-endpoint"
+    )
     @GetMapping(produces = TEXT_PLAIN_UTF8_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public String pingPong() {

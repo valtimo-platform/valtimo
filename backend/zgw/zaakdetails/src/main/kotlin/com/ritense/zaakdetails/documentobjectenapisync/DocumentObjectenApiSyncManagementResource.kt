@@ -21,6 +21,7 @@ import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -38,6 +39,10 @@ class DocumentObjectenApiSyncManagementResource(
     private val documentObjectenApiSyncManagementService: DocumentObjectenApiSyncManagementService,
     private val objectManagementInfoProvider: ObjectManagementInfoProvider,
 ) {
+    @EndpointDescription(
+        en = "Get Objecten API synchronisation configuration",
+        nl = "Objecten API-synchronisatieconfiguratie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync")
     fun getSyncConfiguration(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -56,6 +61,10 @@ class DocumentObjectenApiSyncManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Create or update Objecten API synchronisation configuration",
+        nl = "Objecten API-synchronisatieconfiguratie aanmaken of bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync")
     fun createOrUpdateSyncConfiguration(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -68,6 +77,10 @@ class DocumentObjectenApiSyncManagementResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete Objecten API synchronisation configuration",
+        nl = "Objecten API-synchronisatieconfiguratie verwijderen",
+    )
     @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync")
     fun deleteSyncConfiguration(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,

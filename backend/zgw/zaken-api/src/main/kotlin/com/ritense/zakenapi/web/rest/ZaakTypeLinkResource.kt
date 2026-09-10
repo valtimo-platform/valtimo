@@ -18,6 +18,7 @@ package com.ritense.zakenapi.web.rest
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.web.rest.request.CreateZaakTypeLinkRequest
 import jakarta.validation.Valid
@@ -35,15 +36,27 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 interface ZaakTypeLinkResource {
 
+    @EndpointDescription(
+        en = "Get zaaktype link for case definition version",
+        nl = "Zaaktypekoppeling voor dossierdefinitieversie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link")
     fun get(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable(name = "versionTag") versionTag: String
     ): ResponseEntity<ZaakTypeLink?>
 
+    @EndpointDescription(
+        en = "Get zaaktype link by process",
+        nl = "Zaaktypekoppeling op proces ophalen",
+    )
     @GetMapping("/v1/zaak-type-link/process/{processDefinitionId}")
     fun getByProcess(@PathVariable(name = "processDefinitionId") processDefinitionId: String): ResponseEntity<ZaakTypeLink?>
 
+    @EndpointDescription(
+        en = "Create zaaktype link",
+        nl = "Zaaktypekoppeling aanmaken",
+    )
     @PostMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link")
     fun create(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -51,6 +64,10 @@ interface ZaakTypeLinkResource {
         @Valid @RequestBody request: CreateZaakTypeLinkRequest
     ): ResponseEntity<ZaakTypeLink>
 
+    @EndpointDescription(
+        en = "Delete zaaktype link",
+        nl = "Zaaktypekoppeling verwijderen",
+    )
     @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaak-type-link")
     fun remove(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,

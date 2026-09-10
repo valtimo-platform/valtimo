@@ -30,6 +30,7 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -44,7 +45,7 @@ class ProcessLinkChangedEventListenerTest {
 
     @BeforeEach
     fun before() {
-        listener = ProcessLinkChangedEventListener(pluginConfigurationMappingResolver)
+        listener = ProcessLinkChangedEventListener(listOf(pluginConfigurationMappingResolver))
     }
 
     @Test
@@ -92,5 +93,21 @@ class ProcessLinkChangedEventListenerTest {
 
         assertThatCode { listener.onProcessLinkCreated(ProcessLinkCreatedEvent("plugin", "pd-1")) }
             .doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `delegates to every registered resolver, one throwing does not block the others`() {
+        val secondResolver: PluginConfigurationMappingResolver = mock()
+        doThrow(RuntimeException("boom"))
+            .whenever(pluginConfigurationMappingResolver)
+            .recheckIssuesForProcessDefinition("pd-1")
+        val multiResolverListener =
+            ProcessLinkChangedEventListener(listOf(pluginConfigurationMappingResolver, secondResolver))
+
+        assertThatCode { multiResolverListener.onProcessLinkCreated(ProcessLinkCreatedEvent("plugin", "pd-1")) }
+            .doesNotThrowAnyException()
+
+        verify(pluginConfigurationMappingResolver).recheckIssuesForProcessDefinition("pd-1")
+        verify(secondResolver).recheckIssuesForProcessDefinition("pd-1")
     }
 }
