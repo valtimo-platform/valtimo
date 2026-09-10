@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {ComponentFixture, fakeAsync, TestBed, tick, waitForAsync} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {ActivatedRoute} from '@angular/router';
+import {FormioComponent as FormIoSourceComponent, FormioModule} from '@formio/angular';
 import {TranslateService} from '@ngx-translate/core';
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService} from '@valtimo/shared';
@@ -24,6 +26,7 @@ import {NGXLogger} from 'ngx-logger';
 import {of} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ValtimoModalService} from '../../../../services';
+import {FormIoLocalStorageService} from '../../services';
 import {FormioComponent} from './form-io.component';
 
 describe('FormioComponent', () => {
@@ -50,6 +53,7 @@ describe('FormioComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [FormioComponent],
+      imports: [FormioModule],
       providers: [
         {provide: TranslateService, useValue: translateServiceStub},
         {provide: ConfigService, useValue: configServiceStub},
@@ -67,43 +71,74 @@ describe('FormioComponent', () => {
     component = fixture.componentInstance;
   });
 
-  const emittedOptions = (): any => {
-    let options: any;
-    component.formioOptions$.pipe(take(1)).subscribe(emitted => (options = emitted));
-    return options;
+  const emitted = (observable: any): any => {
+    let value: any;
+    observable.pipe(take(1)).subscribe((emittedValue: any) => (value = emittedValue));
+    return value;
   };
 
-  describe('the form.io options handed to the renderer', () => {
+  // form.io only ever sees what <formio> chooses to forward, so the assertions below go through
+  // the real wrapper instead of reading the component's own observables.
+  const rendererOptions = (): any => {
+    const wrapper = TestBed.createComponent(FormIoSourceComponent).componentInstance;
+    wrapper.options = emitted(component.formioOptions$);
+    wrapper.renderOptions = emitted(component.renderOptions$);
+    return wrapper.getRendererOptions();
+  };
+
+  describe('the options form.io actually receives', () => {
     it("should carry the user's language", () => {
-      expect(emittedOptions().language).toBe('nl');
+      expect(rendererOptions().language).toBe('nl');
     });
 
     it('should carry the language the user switched to', () => {
       translateServiceStub.currentLang = 'en';
 
-      expect(emittedOptions().language).toBe('en');
+      expect(rendererOptions().language).toBe('en');
     });
 
     it("should carry the Valtimo translations under the user's language", () => {
-      expect(emittedOptions().i18n).toEqual({
+      expect(rendererOptions().i18n).toEqual({
         nl: {
           Submit: 'Versturen',
           'formioIbanComponent.errorMessage': 'Geen geldige IBAN.',
         },
       });
     });
+
+    // A language without a bundle leaves i18next on a locale it has no strings for, and every
+    // form.io label falls back to its raw key.
+    it('should never set a language without a bundle for it', () => {
+      const options = rendererOptions();
+
+      expect(Object.keys(options.i18n)).toContain(options.language);
+    });
+  });
+
+  describe('the language reaching the rendered <formio> element', () => {
+    it('should be bound in the template, not only exposed by the component', fakeAsync(() => {
+      fixture.debugElement.injector.get(FormIoLocalStorageService).setTokenInLocalStorage('token');
+      component.form = {components: []};
+      tick(1);
+      fixture.detectChanges();
+
+      const formio = fixture.debugElement.query(By.directive(FormIoSourceComponent));
+
+      expect(formio).withContext('<formio> did not render').toBeTruthy();
+      expect(formio.componentInstance.renderOptions).toEqual({language: 'nl'});
+    }));
   });
 
   describe('a number field built from those options', () => {
-    const buildNumberComponent = (options: any): any =>
+    const buildNumberComponent = (): any =>
       new (Components.components as any).number(
         {type: 'number', key: 'amount', delimiter: true},
-        options,
+        rendererOptions(),
         {}
       );
 
     it('should use Dutch separators for a Dutch user', () => {
-      const numberComponent = buildNumberComponent(emittedOptions());
+      const numberComponent = buildNumberComponent();
 
       expect(numberComponent.decimalSeparator).toBe(',');
       expect(numberComponent.delimiter).toBe('.');
@@ -112,7 +147,7 @@ describe('FormioComponent', () => {
     it('should use English separators for an English user', () => {
       translateServiceStub.currentLang = 'en';
 
-      const numberComponent = buildNumberComponent(emittedOptions());
+      const numberComponent = buildNumberComponent();
 
       expect(numberComponent.decimalSeparator).toBe('.');
       expect(numberComponent.delimiter).toBe(',');

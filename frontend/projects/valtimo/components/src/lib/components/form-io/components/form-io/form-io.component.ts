@@ -125,7 +125,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
       const defaultOptions = {
         ...options,
-        language,
         ...(typeof formioTranslations === 'object' && {
           i18n: {
             [language]: this.stateService.flattenTranslationsObject(formioTranslations),
@@ -137,6 +136,11 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     }),
     distinctUntilChanged((prev, curr) => isEqual(prev, curr)),
     tap(options => this.logger.debug('Form.IO options used', options))
+  );
+
+  // Only renderOptions reaches form.io itself; getRendererOptions() drops everything else.
+  public readonly renderOptions$: Observable<{language: string}> = this.currentLanguage$.pipe(
+    map(language => ({language}))
   );
 
   private readonly _storeTokenInLocalStorage = !this.configService.getFeatureToggle(
