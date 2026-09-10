@@ -89,6 +89,30 @@ class AllActivityTypesMigrationEngineIntTest : BaseIntegrationTest() {
         )
     }
 
+    /** The editor offers the same id on both sides of a mapping row, so writing `id -> id` is the natural thing to do — and the engine refuses two instructions for one source activity. */
+    @Test
+    fun `accepts an identity mapping the equal-activity mapping already makes`() {
+        val source = deploy("migration/all-activity-types-v1.bpmn")
+        val target = deploy("migration/all-activity-types-v2.bpmn")
+        // A user task inside the sub-process, unrenamed between the two fixtures, so `mapEqualActivities()` maps it onto itself.
+        val unchanged = "sub_user_task"
+
+        val builder = runtimeService.createMigrationPlan(source.id, target.id).mapEqualActivities()
+        val mappings = runtimeService.changedActivityMappings(
+            source.id, target.id, mapOf(unchanged to unchanged, "afronden" to "afronden_v3")
+        )
+        mappings.forEach { (from, to) -> builder.mapActivities(from, to) }
+
+        assertEquals(mapOf("afronden" to "afronden_v3"), mappings)
+        // Builds rather than throwing "There are multiple mappings for source activity id".
+        val plan = builder.build()
+        assertEquals(
+            1,
+            plan.instructions.count { it.sourceActivityId == unchanged },
+            "'$unchanged' should be mapped exactly once, by the engine's own equal mapping",
+        )
+    }
+
     private fun createDocumentId() = runWithoutAuthorization {
         documentService.createDocument(
             NewDocumentRequest("house", "house", "1.0.0", objectMapper.readTree("""{"street": "aStreet"}"""))

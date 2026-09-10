@@ -214,6 +214,24 @@ class CaseMigrationServiceTest(
         migrationTriggers = migrationTriggers,
     )
 
+    /** Plans are keyed by the version they migrate to, so that version being deleted has to take them with it. */
+    @Test
+    fun `should delete every plan targeting a blueprint version, with everything derived from it`() {
+        whenever(
+            migrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
+                BlueprintType.CASE, "bezwaar", Semver("1.0.1")
+            )
+        ).thenReturn(listOf(plan()))
+
+        service.deletePlansTargeting(caseDefinitionId)
+
+        verify(caseRepository).deleteByIdMigrationId(migrationId)
+        verify(dryRunCaseRepository).deleteByIdMigrationId(migrationId)
+        verify(dryRunRepository).delete(dryRun)
+        verify(executionRepository).delete(execution)
+        verify(migrationRepository).delete(plan())
+    }
+
     @Test
     fun `should report whether a plan has the button trigger, so the manual entry point can refuse`() {
         whenever(migrationRepository.findById(migrationId))

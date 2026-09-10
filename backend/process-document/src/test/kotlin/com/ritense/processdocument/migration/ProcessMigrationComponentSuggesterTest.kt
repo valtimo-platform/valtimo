@@ -351,13 +351,67 @@ class ProcessMigrationComponentSuggesterTest {
     }
 
     @Test
-    fun `should still leave a declared block to adoption, though the process is only on the source version`() {
-        // Two different questions of two different versions: which blueprint declares the block, and what its instances are running. Answered together, every adopted block would be suggested a hijack.
+    fun `should suggest a row for the process the owner relocated into the block adoption takes over`() {
+        // Adoption knows which process; the row exists to carry the mapping onto the block's deployment.
         val block = buildingBlock("uitvoeren-business-services", "1.0.0")
         reachableFromTarget("uitvoeren-business-services")
         processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
         processes(target, "ab-afhandelen-aanvraag-dcm")
         processes(block, "uitvoeren-business-services")
+        renames("task1" to "task_1")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(target, block, source))
+            .isEqualTo(listOf(instruction("uitvoeren-business-services", "uitvoeren-business-services", mapOf("task1" to "task_1"))))
+    }
+
+    @Test
+    fun `should leave a relocated process alone when the block kept every activity id`() {
+        // Measured on `verhuizing-bouwstenen-adoptie`: two rows with an empty mapping, saying what
+        // `mapEqualActivities()` already does. The row is the mapping; without one there is nothing to state.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        reachableFromTarget("uitvoeren-business-services")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(target, "ab-afhandelen-aanvraag-dcm")
+        processes(block, "uitvoeren-business-services")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(target, block, source)).isNull()
+    }
+
+
+    @Test
+    fun `should leave the owner's own processes out of a relocation row, however forced the choice looks`() {
+        // Pairing the kept process onto the block would hijack the case's main process.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        reachableFromTarget("uitvoeren-business-services")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(target, "ab-afhandelen-aanvraag-dcm")
+        processes(block, "uitvoeren-business-services")
+        renames("task1" to "task_1")
+
+        assertThat(entryPairs(target, block, running = source))
+            .containsExactly("uitvoeren-business-services" to "uitvoeren-business-services")
+    }
+
+    @Test
+    fun `should leave a declared block to adoption when the target version still deploys the process`() {
+        // Both versions own the key: a namesake, not a relocation, and the top-level row can name it.
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        reachableFromTarget("uitvoeren-business-services")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(target, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(block, "uitvoeren-business-services")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(target, block, source)).isNull()
+    }
+
+    @Test
+    fun `should leave a declared block to adoption when no key survives the move into it`() {
+        // A renamed process is where relocation stops being a fact: same evidence a wrong pairing offers (G46).
+        val block = buildingBlock("uitvoeren-business-services", "1.0.0")
+        reachableFromTarget("ubs-uitvoeren-business-services")
+        processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
+        processes(target, "ab-afhandelen-aanvraag-dcm")
+        processes(block, "ubs-uitvoeren-business-services")
 
         assertThat(suggester.suggestForBuildingBlockEntry(target, block, source)).isNull()
     }
@@ -384,11 +438,20 @@ class ProcessMigrationComponentSuggesterTest {
     @Suppress("UNCHECKED_CAST")
     private fun suggest() = suggester.suggest(source, target) as List<ProcessMigrationInstruction>?
 
-    private fun instruction(sourceKey: String, targetKey: String) = ProcessMigrationInstruction(
+    private fun instruction(
+        sourceKey: String,
+        targetKey: String,
+        mapActivities: Map<String, String> = emptyMap(),
+    ) = ProcessMigrationInstruction(
         sourceProcessDefinitionKey = sourceKey,
         targetProcessDefinitionKey = targetKey,
-        mapActivities = emptyMap(),
+        mapActivities = mapActivities,
     )
+
+    /** What the activity mapper finds between any two definitions — a relocated process needs one to be worth a row. */
+    private fun renames(vararg pairs: Pair<String, String>) {
+        whenever(processActivityMapper.suggestActivityMapping(any(), any())).thenReturn(pairs.toMap())
+    }
 
     private fun resolvers() = listOf(object : ProcessDefinitionBlueprintResolver {
         override fun supports(blueprintType: BlueprintType) = true

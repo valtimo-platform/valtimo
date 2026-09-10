@@ -19,6 +19,7 @@ package com.ritense.buildingblock.service.migration
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
+import com.ritense.processdocument.migration.changedActivityMappings
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
@@ -169,7 +170,8 @@ class BuildingBlockProcessMigrationComponentExecutor(
     ): MigrationPlan {
         val builder = runtimeService.createMigrationPlan(sourceDefinitionId, targetDefinitionId)
             .mapEqualActivities()
-        instruction.mapActivities.forEach { (source, target) -> builder.mapActivities(source, target) }
+        runtimeService.changedActivityMappings(sourceDefinitionId, targetDefinitionId, instruction.mapActivities)
+            .forEach { (source, target) -> builder.mapActivities(source, target) }
         return builder.build()
     }
 }

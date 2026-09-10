@@ -86,6 +86,13 @@ class CaseMigrationService(
         }
     }
 
+    /** Delete every plan targeting [blueprintId]. A plan is keyed by the version it migrates to, so that version going away leaves it unreachable. */
+    fun deletePlansTargeting(blueprintId: BlueprintId) {
+        caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
+            blueprintId.blueprintType(), blueprintId.getIdKey(), blueprintId.blueprintVersionTag()
+        ).forEach { deletePlan(it.id) }
+    }
+
     /** All migration plans for a blueprint version, with their configuration and run status. */
     fun getPlans(blueprintId: BlueprintId): List<MigrationPlanManagementDto> {
         return caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(

@@ -30,6 +30,7 @@ import com.ritense.case_.service.migration.MigrationDataPatchApplier
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
+import com.ritense.processdocument.migration.changedActivityMappings
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.BlueprintId
@@ -45,6 +46,8 @@ import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.RuntimeService
+import org.operaton.bpm.engine.migration.MigrationPlan
+import org.operaton.bpm.engine.runtime.ActivityInstance
 import org.operaton.bpm.engine.runtime.ProcessInstance
 import org.springframework.core.annotation.Order
 import org.springframework.jdbc.core.JdbcTemplate
@@ -600,11 +603,15 @@ class AddBuildingBlockMigrationComponentExecutor(
         val plan = runtimeService.createMigrationPlan(sourceDefinitionId, targetDefinitionId)
             .mapEqualActivities()
             .also { builder ->
-                processMigration?.mapActivities?.forEach { (source, target) ->
-                    builder.mapActivities(source, target)
-                }
+                runtimeService.changedActivityMappings(
+                    sourceDefinitionId, targetDefinitionId, processMigration?.mapActivities.orEmpty()
+                ).forEach { (source, target) -> builder.mapActivities(source, target) }
             }
             .build()
+
+        if (processMigration == null) {
+            warnAboutActivitiesNoRowCovers(plan, processInstanceId, sourceDefinitionId, targetDefinitionId)
+        }
 
         var builder = runtimeService.newMigration(plan).processInstanceIds(listOf(processInstanceId))
         if (processMigration?.skipCustomListeners == true) {
@@ -614,6 +621,44 @@ class AddBuildingBlockMigrationComponentExecutor(
             builder = builder.skipIoMappings()
         }
         builder.execute() // synchronous — joins the current transaction
+    }
+
+    /** Warns where a token of this instance sits in an activity no instruction covers — the engine refuses next, in its own words. Asked of the running instance, not the model: most activities can never hold a token. */
+    private fun warnAboutActivitiesNoRowCovers(
+        plan: MigrationPlan,
+        processInstanceId: String,
+        sourceDefinitionId: String,
+        targetDefinitionId: String,
+    ) {
+        val covered = plan.instructions.mapNotNull { it.sourceActivityId }.toSet()
+        val uncovered = (activeActivityIdsOf(processInstanceId) - covered).sorted()
+        if (uncovered.isEmpty()) {
+            return
+        }
+        val one = uncovered.size == 1
+        val message = "Migrating '$sourceDefinitionId' onto '$targetDefinitionId' leaves " +
+            uncovered.joinToString { "'$it'" } + ", where this case has a token, with no counterpart on the " +
+            "building block's deployment, and the 'addBuildingBlock' entry carries no 'processMigration' " +
+            "row to map " + (if (one) "it" else "them") + ". The migration below cannot succeed. Add a row " +
+            "for this process to the entry, mapping " + (if (one) "the activity" else "the activities") +
+            " onto the building block's own."
+        logger.warn { message }
+        MigrationWarnings.warn(message)
+    }
+
+    /** Where [processInstanceId]'s own tokens rest, including those parked on an async boundary. Descendants have their own instances and are visited separately. */
+    private fun activeActivityIdsOf(processInstanceId: String): Set<String> {
+        val tree = runtimeService.getActivityInstance(processInstanceId) ?: return emptySet()
+        val activityIds = mutableSetOf<String>()
+        fun walk(node: ActivityInstance) {
+            node.childTransitionInstances?.mapNotNullTo(activityIds) { it?.activityId }
+            node.childActivityInstances?.filterNotNull()?.forEach { child ->
+                child.activityId?.let(activityIds::add)
+                walk(child)
+            }
+        }
+        walk(tree)
+        return activityIds
     }
 
     private fun updateBusinessKey(processInstanceId: String, businessKey: String) {

@@ -65,7 +65,7 @@ class AddBuildingBlockProcessChecker(
         }
     }
 
-    /** Problems with the process definitions each entry names. The owner's process is looked for on both versions: the plan's own `processMigration` (@200) may already have moved it. */
+    /** Problems with the process definitions each entry names. The owner's process is looked for on both versions, since either end may be the only one deploying it. */
     fun findUnresolvableProcesses(
         source: BlueprintId,
         target: BlueprintId,
@@ -74,8 +74,8 @@ class AddBuildingBlockProcessChecker(
         if (instructions.isEmpty()) {
             return emptyList()
         }
-        // Target last, so a key both versions carry resolves to the target's deployment.
-        val ownerProcesses = processDefinitionsOf(source).orEmpty() + processDefinitionsOf(target).orEmpty()
+        // Source last: a key on both versions resolves to the one the instances still have, as the editor does.
+        val ownerProcesses = processDefinitionsOf(target).orEmpty() + processDefinitionsOf(source).orEmpty()
         if (ownerProcesses.isEmpty()) {
             return emptyList() // neither end resolvable (an undeployed or unsupported blueprint type)
         }

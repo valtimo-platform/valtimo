@@ -18,6 +18,10 @@ package com.ritense.case_.service.migration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.domain.migration.DataMigrationPatch
+import com.ritense.document.domain.impl.JsonSchema
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -32,10 +36,12 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.util.Optional
 
 class DataMigrationComponentSuggesterTest {
 
     private lateinit var valueResolverService: ValueResolverService
+    private lateinit var documentDefinitionService: DocumentDefinitionService
     private lateinit var suggester: DataMigrationComponentSuggester
 
     private val source = CaseDefinitionId("verhuizing", "1.0.0")
@@ -44,7 +50,10 @@ class DataMigrationComponentSuggesterTest {
     @BeforeEach
     fun setUp() {
         valueResolverService = mock()
-        suggester = DataMigrationComponentSuggester(valueResolverService)
+        documentDefinitionService = mock()
+        // No schema unless a test deploys one: an undeclared type is what leaves `targetType` off.
+        whenever(documentDefinitionService.findByBlueprintId(any())).thenReturn(Optional.empty())
+        suggester = DataMigrationComponentSuggester(valueResolverService, documentDefinitionService)
     }
 
     @Test
@@ -243,11 +252,150 @@ class DataMigrationComponentSuggesterTest {
         )
     }
 
+    // targetType — suggested only where the two schemas disagree about the type (G77)
+
+    @Test
+    fun `should type a copy the target version declares differently from the source`() {
+        paths(source, "doc:/aantalPersonen")
+        paths(target, "doc:/aantal_personen")
+        schema(source, """"aantalPersonen": { "type": "string" }""")
+        schema(target, """"aantal_personen": { "type": "integer" }""")
+
+        assertThat(suggest()).containsExactly(
+            DataMigrationPatch(
+                source = "doc:/aantalPersonen",
+                target = "doc:/aantal_personen",
+                targetType = "integer",
+            )
+        )
+    }
+
+    @Test
+    fun `should leave a copy untyped when both versions declare the same type`() {
+        // Naming the type a value already has coerces nothing, and would put a field on nearly every patch.
+        paths(source, "doc:/aantalPersonen")
+        paths(target, "doc:/aantal_personen")
+        schema(source, """"aantalPersonen": { "type": "integer" }""")
+        schema(target, """"aantal_personen": { "type": "integer" }""")
+
+        assertThat(suggest()).containsExactly(
+            DataMigrationPatch(source = "doc:/aantalPersonen", target = "doc:/aantal_personen")
+        )
+    }
+
+    @Test
+    fun `should tell integer from number, which coerce differently`() {
+        paths(source, "doc:/oppervlakte")
+        paths(target, "doc:/opper_vlakte")
+        schema(source, """"oppervlakte": { "type": "integer" }""")
+        schema(target, """"opper_vlakte": { "type": "number" }""")
+
+        assertThat(suggest().single().targetType).isEqualTo("number")
+    }
+
+    @Test
+    fun `should leave a copy untyped when either side leaves the type open`() {
+        // Nothing to coerce to. Guessing would convert a value the author never asked to convert.
+        paths(source, "doc:/gegevens", "doc:/naam")
+        paths(target, "doc:/gegevens_v2", "doc:/naam_v2")
+        schema(source, """"gegevens": { "type": "object" }, "naam": { "type": "string" }""")
+        schema(target, """"gegevens_v2": { "type": "string" }, "naam_v2": {}""")
+
+        assertThat(suggest().map { it.targetType }).containsOnlyNulls()
+    }
+
+    @Test
+    fun `should type a shared path the two documents of an entry declare differently`() {
+        // The block's schema is a second document, so a shared path can be a different type on each side.
+        val block = BuildingBlockDefinitionId("verhuizing-inspectie", "1.0.0")
+        paths(source, "doc:/inspectieStatus")
+        paths(block, "doc:/inspectieStatus")
+        schema(source, """"inspectieStatus": { "type": "integer" }""")
+        schema(block, """"inspectieStatus": { "type": "string" }""")
+
+        assertThat(suggester.suggestForBuildingBlockEntry(source, block)).isEqualTo(
+            listOf(
+                DataMigrationPatch(
+                    source = "doc:/inspectieStatus",
+                    target = "doc:/inspectieStatus",
+                    targetType = "string",
+                )
+            )
+        )
+    }
+
+    /** `"type": ["integer", "null"]` is how nearly every optional field in these schemas is written; read as "type unknown" the rule would fire on almost nothing. */
+    @Test
+    fun `should see through a nullable union to the type it coerces to`() {
+        paths(source, "doc:/aantalPersonen", "doc:/verhuisstatus")
+        paths(target, "doc:/aantal_personen", "doc:/verhuis_status")
+        schema(source, """"aantalPersonen": { "type": ["string", "null"] }, "verhuisstatus": { "type": "string" }""")
+        schema(target, """"aantal_personen": { "type": ["integer", "null"] }, "verhuis_status": { "type": ["string", "null"] }""")
+
+        assertThat(suggest()).containsExactly(
+            // string -> integer across two unions.
+            DataMigrationPatch(
+                source = "doc:/aantalPersonen",
+                target = "doc:/aantal_personen",
+                targetType = "integer",
+            ),
+            // string -> nullable string is the same type; nullability is not a coercion.
+            DataMigrationPatch(source = "doc:/verhuisstatus", target = "doc:/verhuis_status"),
+        )
+    }
+
+    @Test
+    fun `should leave a copy untyped when a union's alternatives disagree`() {
+        paths(source, "doc:/waarde")
+        paths(target, "doc:/waarde_v2")
+        schema(source, """"waarde": { "type": ["string", "integer"] }""")
+        schema(target, """"waarde_v2": { "type": "integer" }""")
+
+        assertThat(suggest().single().targetType).isNull()
+    }
+
+    @Test
+    fun `should never type a clear, which writes null whatever the schema says`() {
+        paths(source, "doc:/aantalPersonen")
+        paths(target, "doc:/onvergelijkbaar")
+        schema(source, """"aantalPersonen": { "type": "integer" }""")
+        schema(target, """"onvergelijkbaar": { "type": "string" }""")
+
+        assertThat(suggest()).containsExactly(DataMigrationPatch(target = "doc:/aantalPersonen"))
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun suggest() = suggester.suggest(source, target) as List<DataMigrationPatch>
 
     private fun paths(blueprintId: BlueprintId, vararg paths: String) {
         whenever(valueResolverService.getResolvableKeys(any<ValueResolverOptionRequest>(), eq(blueprintId)))
             .thenReturn(paths.map { ValueResolverOption(it, FIELD) })
+    }
+
+    /** Deploy a document definition for [blueprintId] whose schema declares [properties]. */
+    private fun schema(blueprintId: BlueprintId, properties: String) {
+        val name = blueprintId.getIdKey()
+        val id = when (blueprintId) {
+            is CaseDefinitionId -> JsonSchemaDocumentDefinitionId.forCase(name, blueprintId)
+            else -> JsonSchemaDocumentDefinitionId.forBuildingBlock(
+                name, blueprintId as BuildingBlockDefinitionId
+            )
+        }
+        // The constructor asserts the schema's `$id` is `<name>.schema`.
+        val definition = JsonSchemaDocumentDefinition(
+            id,
+            JsonSchema.fromString(
+                """
+                {
+                  "${'$'}id": "$name.schema",
+                  "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "properties": { $properties }
+                }
+                """.trimIndent()
+            )
+        )
+        whenever(documentDefinitionService.findByBlueprintId(eq(blueprintId)))
+            .thenReturn(Optional.of(definition))
     }
 }

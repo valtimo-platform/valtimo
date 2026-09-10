@@ -121,6 +121,40 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  // The source pickers and the target readout on one row, so the direction of the migration is read off the screen rather than inferred. `2fr` splits into two columns the same width as the target's one.
+  &__source-target {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) auto minmax(0, 1fr);
+    align-items: end;
+    gap: 16px;
+  }
+
+  // Bottom border only, no fill: it lines up with the selects beside it while staying visibly not a field.
+  &__target {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__target-label {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.32px;
+    color: var(--cds-text-secondary);
+  }
+
+  // Carbon's field text, so the readout is as loud as the values in the selects beside it and no louder. `display: block` rather than a flex row, so a long key ellipsizes.
+  &__target-value {
+    display: block;
+    overflow: hidden;
+    border-bottom: 1px solid var(--cds-border-subtle);
+    font-size: 0.875rem;
+    line-height: 2.5rem;
+    letter-spacing: 0.16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   &__mapping {
     display: flex;
     flex-direction: column;

@@ -96,6 +96,7 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   addInstructionButton: 'caseMigrationAddInstructionButton',
   sourceKeySelect: 'caseMigrationSourceKeySelect',
   sourceVersionSelect: 'caseMigrationSourceVersionSelect',
+  targetReadout: 'caseMigrationTargetReadout',
   addConditionButton: 'caseMigrationAddConditionButton',
   addConditionGroupButton: 'caseMigrationAddConditionGroupButton',
   addBuildingBlockButton: 'caseMigrationAddBuildingBlockButton',

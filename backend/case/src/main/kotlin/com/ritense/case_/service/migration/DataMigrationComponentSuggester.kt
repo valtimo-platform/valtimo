@@ -16,7 +16,11 @@
 
 package com.ritense.case_.service.migration
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.domain.migration.DataMigrationPatch
+import com.ritense.document.domain.getProperty
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationRunCache
@@ -26,10 +30,20 @@ import com.ritense.valueresolver.ValueResolverOptionRequest
 import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.everit.json.schema.BooleanSchema
+import org.everit.json.schema.CombinedSchema
+import org.everit.json.schema.NullSchema
+import org.everit.json.schema.NumberSchema
+import org.everit.json.schema.ReferenceSchema
+import org.everit.json.schema.Schema
+import org.everit.json.schema.StringSchema
+import java.util.Optional
 
 /** Best-effort `dataMigration` suggestion: name-matched copies above [SIMILARITY_THRESHOLD], clears for what found no target. Collapsed to the shallowest path and sorted by target. */
 class DataMigrationComponentSuggester(
     private val valueResolverService: ValueResolverService,
+    /** Read for the declared types the two schemas give one path — the only thing that decides a [DataMigrationPatch.targetType]. */
+    private val documentDefinitionService: DocumentDefinitionService,
 ) : MigrationComponentSuggester {
 
     override fun componentKey() = DataMigrationComponentDeployer.DATA_MIGRATION_COMPONENT_KEY
@@ -74,13 +88,23 @@ class DataMigrationComponentSuggester(
             emptyList()
         } else {
             collapseToRoots(targetPaths.filter { targetPath -> targetPath in sourcePathSet })
-                .map { sharedPath -> DataMigrationPatch(source = sharedPath, target = sharedPath) }
+                .map { sharedPath ->
+                    DataMigrationPatch(
+                        source = sharedPath,
+                        target = sharedPath,
+                        targetType = coercionFor(sharedPath, sharedPath, source, target),
+                    )
+                }
         }
 
         val newTargets = targetPaths.filter { targetPath -> targetPath !in sourcePathSet }
         val copies = newTargets.mapNotNull { targetPath ->
             matchedSourceByTarget[targetPath]?.let { matchedSource ->
-                DataMigrationPatch(source = matchedSource, target = targetPath)
+                DataMigrationPatch(
+                    source = matchedSource,
+                    target = targetPath,
+                    targetType = coercionFor(matchedSource, targetPath, source, target),
+                )
             }
         }
         logUnmatchedTargets(newTargets.filterNot { it in matchedSourceByTarget }, target)
@@ -108,7 +132,59 @@ class DataMigrationComponentSuggester(
                 if (unmatched.size > MAX_LOGGED_UNMATCHED) ", and ${unmatched.size - MAX_LOGGED_UNMATCHED} more" else ""
         }
     }
+    /** The `targetType` a copy from [sourcePath] to [targetPath] needs: only where the two schemas disagree, since it exists to coerce. Null where either side leaves the type open — nothing to coerce to, and guessing corrupts a value nobody asked to convert. */
+    private fun coercionFor(
+        sourcePath: String,
+        targetPath: String,
+        source: BlueprintId,
+        target: BlueprintId,
+    ): String? {
+        val targetType = declaredTypeOf(targetPath, target) ?: return null
+        val sourceType = declaredTypeOf(sourcePath, source) ?: return null
+        return targetType.takeIf { it != sourceType }
+    }
 
+    /** The scalar type [blueprintId]'s schema declares for a `doc:` path, as a [DataMigrationPatch.targetType]; null when it declares none. */
+    private fun declaredTypeOf(path: String, blueprintId: BlueprintId): String? {
+        val pointer = path.substringAfter(DOCUMENT_PATH_PREFIX, missingDelimiterValue = "")
+            .takeUnless { it.isEmpty() }
+            ?: return null
+        return scalarTypeOf(schemaOf(blueprintId)?.getProperty(pointer))
+    }
+
+    /** The one scalar type a schema pins down, or null for an object, an array, an open schema or alternatives that disagree. */
+    private fun scalarTypeOf(schema: Schema?, depth: Int = 0): String? {
+        if (depth > MAX_SCHEMA_DEPTH) return null
+        return when (schema) {
+            is StringSchema -> STRING
+            // `"type": "integer"` is a NumberSchema that requires one — the two coerce differently.
+            is NumberSchema -> if (schema.requiresInteger()) INTEGER else NUMBER
+            is BooleanSchema -> BOOLEAN
+            // `["integer", "null"]` is an anyOf: still an integer, but only where the alternatives agree.
+            is CombinedSchema -> schema.subschemas
+                .filterNot { it is NullSchema }
+                .map { scalarTypeOf(it, depth + 1) }
+                .distinct()
+                .singleOrNull()
+
+            is ReferenceSchema -> scalarTypeOf(schema.referredSchema, depth + 1)
+            else -> null
+        }
+    }
+
+    /** [blueprintId]'s document schema, memoized for the run: a whole-plan suggestion asks for the same two blueprints once per path. Read without authorization — a schema's declared types are deployment-time configuration, and the answer must not depend on who is composing the plan. */
+    private fun schemaOf(blueprintId: BlueprintId): Schema? =
+        MigrationRunCache.computeIfAbsent(SchemaKey(blueprintId)) {
+            Optional.ofNullable(
+                runWithoutAuthorization { documentDefinitionService.findByBlueprintId(blueprintId) }
+                    .orElse(null)
+                    .let { it as? JsonSchemaDocumentDefinition }
+                    ?.schema?.schema
+            )
+        }.orElse(null)
+
+    /** Private, so nothing else sharing [MigrationRunCache]'s keyspace can collide. */
+    private data class SchemaKey(val blueprintId: BlueprintId)
 
     /** Keeps only paths no ancestor in the same list already covers, so a subtree is patched once instead of once per node beneath it. */
     private fun collapseToRoots(paths: List<String>): List<String> {
@@ -168,6 +244,15 @@ class DataMigrationComponentSuggester(
 
         const val DOCUMENT_PREFIX = "doc"
 
+        /** What a `doc:` path carries before its JSON pointer, which is what the schema is walked by. */
+        const val DOCUMENT_PATH_PREFIX = "$DOCUMENT_PREFIX:"
+
+        /** The subset of [MigrationDataPatchApplier]'s coercions a JSON schema can pin down. */
+        const val STRING = "string"
+        const val INTEGER = "integer"
+        const val NUMBER = "number"
+        const val BOOLEAN = "boolean"
+
         /** The one request this suggester ever makes: every `doc:` field of a blueprint version. */
         val FIELD_OPTIONS = ValueResolverOptionRequest(
             prefixes = listOf(DOCUMENT_PREFIX),
@@ -182,5 +267,8 @@ class DataMigrationComponentSuggester(
 
         /** A version can add hundreds of paths; the count is the point, the names are a sample. */
         const val MAX_LOGGED_UNMATCHED = 20
+
+        /** Guards the walk into nested alternatives, so a recursive schema cannot spin. */
+        const val MAX_SCHEMA_DEPTH = 10
     }
 }

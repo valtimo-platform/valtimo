@@ -149,8 +149,36 @@ class AddBuildingBlockProcessCheckerTest {
             .contains("Available: 'income-check-process'")
     }
 
+    /** A hijack takes over a process the owner is still running, so its activities are the source version's — the end the suggester and the plan editor both offer. */
     @Test
-    fun `should report an activity mapping the engine refuses, resolved against the target deployment`() {
+    fun `should report an activity mapping the engine refuses, resolved against the source deployment`() {
+        whenever(activityValidator.findInvalidActivityMappings("verhuizing:1", "income-check:1", mapOf("a" to "b")))
+            .thenReturn(mapOf("a" to listOf("not migratable")))
+        val instructions = listOf(
+            instruction(hijack("verhuizing-process", "income-check-process", mapOf("a" to "b")))
+        )
+
+        assertThat(checker.findUnresolvableProcesses(source, target, instructions))
+            .singleElement().asString()
+            .contains("activity 'a': not migratable")
+    }
+
+    /** The editor offers exactly this, so accepting it is what keeps the two ends from disagreeing on save. */
+    @Test
+    fun `should judge a key both versions deploy against the source, not the target`() {
+        whenever(activityValidator.findInvalidActivityMappings("verhuizing:2", "income-check:1", mapOf("a" to "b")))
+            .thenReturn(mapOf("a" to listOf("Source activity 'a' does not exist")))
+        val instructions = listOf(
+            instruction(hijack("verhuizing-process", "income-check-process", mapOf("a" to "b")))
+        )
+
+        // Stubbed only for the target deployment, so anything resolved against it would report a problem.
+        assertThat(checker.findUnresolvableProcesses(source, target, instructions)).isEmpty()
+    }
+
+    @Test
+    fun `should still resolve a source process key only the target deploys`() {
+        deployedProcesses[source] = emptyMap()
         whenever(activityValidator.findInvalidActivityMappings("verhuizing:2", "income-check:1", mapOf("a" to "b")))
             .thenReturn(mapOf("a" to listOf("not migratable")))
         val instructions = listOf(

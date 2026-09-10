@@ -159,6 +159,7 @@ interface MigrationEditorTestIds {
   removeBuildingBlockButton: string;
   sourceKeySelect: string;
   sourceVersionSelect: string;
+  targetReadout: string;
 }
 
 /** The migration API with the plan's blueprint already bound — the two hosts address different endpoints and identify a blueprint with differently-named params. */

@@ -120,10 +120,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   private readonly _bbInFlight = new Set<string>();
   private readonly _contextCache = new Map<string, ValuePathContext>();
 
-  // The owner's source and target process maps merged, and the two inputs it was merged from.
-  private _mergedProcessDefs: Record<string, string> = {};
-  private _mergedFrom: [Record<string, string>, Record<string, string>] | null = null;
-
   // The blueprint each entry exchanges state with. Not always [owner]: a block nested deeper is filled from the block that declares it.
   private readonly _entryOwners = new Map<string, BuildingBlockEntryOwner>();
   private readonly _entryOwnersInFlight = new Set<string>();
@@ -450,24 +446,13 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return this._bbProcessDefs.get(`${owner.key}:${owner.versionTag}`) ?? {};
   }
 
-  /** What the owner still runs by the time an `add` entry executes: the target version's processes (the plan's own `processMigration` moved them there) plus the source-only ones it could not move — which is what a hijack takes over. A nested block owner has one version, so its own map answers both. */
+  /** What the owner still runs when an `add` entry executes, at the version its instances still have — the same end AddBuildingBlockProcessChecker resolves, so what is offered here the save path accepts. */
   private runningOwnerProcessDefs(group: FormGroup): Record<string, string> {
     const owner = this.entryOwnerOf(group);
     if (this.isNestedOwner(owner)) {
       return this._bbProcessDefs.get(`${owner.key}:${owner.versionTag}`) ?? {};
     }
-    return this.mergedOwnerProcessDefs();
-  }
-
-  /** [ownerSourceProcessDefinitions] under [ownerProcessDefinitions], so a key both versions link resolves to the definition the plan migrated it onto. Memoized: the template asks on every change detection, and a fresh object each time would re-trigger the nested tab's input change. */
-  private mergedOwnerProcessDefs(): Record<string, string> {
-    const source = this.ownerSourceProcessDefinitions;
-    const target = this.ownerProcessDefinitions;
-    if (this._mergedFrom?.[0] !== source || this._mergedFrom[1] !== target) {
-      this._mergedFrom = [source, target];
-      this._mergedProcessDefs = {...source, ...target};
-    }
-    return this._mergedProcessDefs;
+    return this.ownerSourceProcessDefinitions;
   }
 
   /** Value-path context for the dataMigration selectors — add: source = owner, target = block; remove: the reverse. Memoized for a stable object reference per render. */

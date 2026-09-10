@@ -20,7 +20,7 @@ import com.ritense.valtimo.contract.blueprint.migration.ActivityMappingValidator
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.migration.MigrationPlanValidationException
 
-/** The single authority for whether an activity mapping is a valid Operaton migration, mirroring the executor's plan build exactly. Callers pass only the changed mappings — an explicit `id -> id` would double-map its source. */
+/** The single authority for whether an activity mapping is a valid Operaton migration, mirroring the executor's plan build exactly — including [changedActivityMappings], so an `id -> id` the engine already makes is judged the no-op it is rather than a double-mapped source. */
 class ProcessMigrationActivityValidator(
     private val runtimeService: RuntimeService,
 ) : ActivityMappingValidator {
@@ -42,11 +42,15 @@ class ProcessMigrationActivityValidator(
                 .mapNotNull { report ->
                     report.migrationInstruction.sourceActivityId
                         ?.takeIf { it in activityMapping }
-                        ?.let { source -> source to report.failures }
+                        ?.let { source -> source to report.failures.map(::readable) }
                 }
                 .toMap()
         }
     }
+
+    /** The engine's failure with its internal instruction dump written as the mapping the author sees. Everything else is left as the engine worded it. */
+    private fun readable(failure: String): String =
+        INSTRUCTION_DUMP.replace(failure) { match -> "'${match.groupValues[1]}' -> '${match.groupValues[2]}'" }
 
     /** The subset of [activityMapping] Operaton accepts. Re-validates after every drop: removing one instruction can be enough for the engine to accept the rest. */
     fun retainValidActivityMappings(
@@ -70,7 +74,15 @@ class ProcessMigrationActivityValidator(
 
     private fun buildPlan(sourceDefinitionId: String, targetDefinitionId: String, mapping: Map<String, String>) {
         val builder = runtimeService.createMigrationPlan(sourceDefinitionId, targetDefinitionId).mapEqualActivities()
-        mapping.forEach { (source, target) -> builder.mapActivities(source, target) }
+        runtimeService.changedActivityMappings(sourceDefinitionId, targetDefinitionId, mapping)
+            .forEach { (source, target) -> builder.mapActivities(source, target) }
         builder.build()
+    }
+
+    private companion object {
+        /** `ValidatingMigrationInstructionImpl{sourceActivity=Activity(a), targetActivity=Activity(b)}` — the engine names its own class at the author. */
+        val INSTRUCTION_DUMP =
+            """\w*MigrationInstruction\w*\{sourceActivity=Activity\(([^)]*)\), targetActivity=Activity\(([^)]*)\)}"""
+                .toRegex()
     }
 }

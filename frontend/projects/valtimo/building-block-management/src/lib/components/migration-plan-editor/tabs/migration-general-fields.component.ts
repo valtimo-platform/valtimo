@@ -74,11 +74,12 @@ export class MigrationGeneralFieldsComponent implements OnInit, OnDestroy {
   @Input() public usedKeys: string[] = [];
   /** Whether the backend is still composing the pre-filled plan — long enough on a large blueprint that an author would conclude nothing is coming. */
   @Input() public suggesting = false;
-  /** The four labels that name the blueprint type, and so cannot be shared. */
+  /** The five labels that name the blueprint type, and so cannot be shared. */
   @Input() public titlePlaceholderKey = '';
   @Input() public sourceHintKey = '';
   @Input() public sourceKeyLabelKey = '';
   @Input() public sourceKeyPlaceholderKey = '';
+  @Input() public targetKeyLabelKey = '';
   @Input() public testIds!: MigrationEditorTestIds;
 
   @Input() public set isEdit(value: boolean) {
@@ -113,6 +114,13 @@ export class MigrationGeneralFieldsComponent implements OnInit, OnDestroy {
   // True while [writeFields] is loading a plan into the form, so its intermediate states stay private.
   private _writing = false;
   private readonly _subscriptions = new Subscription();
+
+  /** The target as the breadcrumb writes it — `key (version)` — so the readout reads like the rest of the page. */
+  public get targetText(): string {
+    const key = this.blueprintKey ?? '';
+
+    return this.blueprintVersionTag ? `${key} (${this.blueprintVersionTag})` : key;
+  }
 
   constructor(
     private readonly fb: FormBuilder,

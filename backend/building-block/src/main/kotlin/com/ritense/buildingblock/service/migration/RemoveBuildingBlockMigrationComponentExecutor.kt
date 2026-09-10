@@ -27,6 +27,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
+import com.ritense.processdocument.migration.changedActivityMappings
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.valtimo.contract.BlueprintId
@@ -391,7 +392,8 @@ class RemoveBuildingBlockMigrationComponentExecutor(
     ): MigrationPlan {
         val builder = runtimeService.createMigrationPlan(sourceDefinitionId, targetDefinitionId)
             .mapEqualActivities()
-        instruction.mapActivities.forEach { (source, target) -> builder.mapActivities(source, target) }
+        runtimeService.changedActivityMappings(sourceDefinitionId, targetDefinitionId, instruction.mapActivities)
+            .forEach { (source, target) -> builder.mapActivities(source, target) }
         return builder.build()
     }
 

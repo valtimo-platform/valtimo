@@ -143,7 +143,8 @@ class ProcessMigrationComponentExecutor(
     ): MigrationPlan {
         val builder = runtimeService.createMigrationPlan(sourceDefinitionId, targetDefinitionId)
             .mapEqualActivities()
-        instruction.mapActivities.forEach { (source, target) -> builder.mapActivities(source, target) }
+        runtimeService.changedActivityMappings(sourceDefinitionId, targetDefinitionId, instruction.mapActivities)
+            .forEach { (source, target) -> builder.mapActivities(source, target) }
         return builder.build()
     }
 

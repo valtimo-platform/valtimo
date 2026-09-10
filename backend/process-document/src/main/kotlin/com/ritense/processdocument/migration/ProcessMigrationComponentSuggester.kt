@@ -70,24 +70,26 @@ class ProcessMigrationComponentSuggester(
         }
 
         val sameBlueprint = isSameBlueprint(source, target)
-        if (buildingBlockEntry && adoptionAccountsFor(source, target, targetProcessDefinitions)) {
-            logger.info {
-                "'$target' is a building block '$source' declares on a call activity, so `addBuildingBlock` " +
-                    "adopts the running sub-process the link already names and no 'processMigration' is " +
-                    "suggested for the entry. An author who means a *hijack* — a process the owner runs " +
-                    "outside that link — adds the instruction by hand; that case cannot be told apart from " +
-                    "the outside."
-            }
-            return null
-        }
+        val adopted = buildingBlockEntry && adoptionAccountsFor(source, target, targetProcessDefinitions)
 
         val targetsByKey = targetProcessDefinitions.associateBy { it.key }
         // Resolved once per suggestion rather than per source process: it walks the whole link graph.
         val relocated = if (sameBlueprint) processesReachableFrom(target) else emptySet()
-        val entryPairs = if (buildingBlockEntry) {
-            pairForEntry(sourceProcessDefinitions, targetProcessDefinitions, targetsByKey, running, target)
-        } else {
-            emptyMap()
+        val entryPairs = when {
+            !buildingBlockEntry -> emptyMap()
+            // Adoption answers *which* process; a relocated one still needs its activities mapped somewhere.
+            adopted -> relocatedPairs(sourceProcessDefinitions, targetsByKey, source, target)
+            else -> pairForEntry(sourceProcessDefinitions, targetProcessDefinitions, targetsByKey, running, target)
+        }
+        if (adopted && entryPairs.isEmpty()) {
+            logger.info {
+                "'$target' is a building block '$source' declares on a call activity and none of its " +
+                    "processes is one '$source' relocated into it, so `addBuildingBlock` adopts the running " +
+                    "sub-process the link already names and no 'processMigration' is suggested for the " +
+                    "entry. An author who means a *hijack* — a process the owner runs outside that link — " +
+                    "adds the instruction by hand; that case cannot be told apart from the outside."
+            }
+            return null
         }
 
         // Sorted, so the same two versions always suggest the same plan whatever order the resolver answered in.
@@ -97,7 +99,10 @@ class ProcessMigrationComponentSuggester(
                 val sourceName = processActivityMapper.processDefinitionName(sourceDefinitionId) ?: sourceKey
 
                 val counterpart = if (buildingBlockEntry) {
-                    entryPairs[sourceKey] ?: return@mapNotNull unpairedEntryProcess(sourceKey, running, target)
+                    // Adoption's pairs are the relocated ones; nothing else on that route is owed a row.
+                    entryPairs[sourceKey]
+                        ?: return@mapNotNull if (adopted) null
+                        else unpairedEntryProcess(sourceKey, running, target)
                 } else if (sameBlueprint) {
                     targetsByKey[sourceKey] ?: return@mapNotNull unmapped(
                         sourceKey, sourceName, target, targetProcessDefinitions, relocated,
@@ -168,6 +173,33 @@ class ProcessMigrationComponentSuggester(
         return UnmappedProcess(sourceProcessDefinitionKey = sourceKey)
     }
 
+    /** The block processes [owner] **relocated** into it — running on the owner's side, deployed by the block, gone from the version declaring it — and whose activities moved with them. The row exists only to carry `mapActivities`, which adoption cannot work out and the owner's own `processMigration` has no counterpart left to state; where the ids came over unchanged, `mapEqualActivities()` covers it and the row would say nothing. */
+    private fun relocatedPairs(
+        sources: Map<String, String>,
+        targetsByKey: Map<String, ProcessDefinitionRef>,
+        owner: BlueprintId,
+        target: BlueprintId,
+    ): Map<String, ProcessDefinitionRef> {
+        val keptByOwner = resolveProcessDefinitions(owner)?.keys.orEmpty()
+        return sources
+            .filterKeys { sourceKey -> sourceKey !in keptByOwner }
+            .mapNotNull { (sourceKey, sourceDefinitionId) ->
+                val counterpart = targetsByKey[sourceKey] ?: return@mapNotNull null
+                val mapping = processActivityMapper
+                    .suggestActivityMapping(sourceDefinitionId, counterpart.definitionId)
+                if (mapping.isEmpty()) {
+                    return@mapNotNull null
+                }
+                logger.info {
+                    "Process '$sourceKey' left '$owner' for '$target', which adoption takes over from the " +
+                        "call activity — but ${mapping.size} of its activities are named differently there, " +
+                        "and only a 'processMigration' row on the entry can say so."
+                }
+                sourceKey to counterpart
+            }
+            .toMap()
+    }
+
     /** Pairs an entry's processes only on an exact key match or a forced 1-to-1 choice; a hijack takes over one process, so nearest match is not a rough edge here but the whole error. */
     private fun pairForEntry(
         sources: Map<String, String>,
@@ -200,7 +232,7 @@ class ProcessMigrationComponentSuggester(
         return emptyMap()
     }
 
-    /** Whether [target] is a block [owner] already reaches by call activity, so adoption gives it its process and the honest suggestion is none. Only asked where the target is the block. */
+    /** Whether [target] is a block [owner] already reaches by call activity, so adoption gives it its process and nothing has to be paired by guesswork — see [relocatedPairs] for the one row still worth suggesting. Only asked where the target is the block. */
     private fun adoptionAccountsFor(
         owner: BlueprintId,
         target: BlueprintId,

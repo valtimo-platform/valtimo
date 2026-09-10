@@ -26,6 +26,7 @@ export const BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS = {
   jsonEditorTab: 'buildingBlockMigrationJsonEditorTab',
   sourceKeySelect: 'buildingBlockMigrationSourceKeySelect',
   sourceVersionSelect: 'buildingBlockMigrationSourceVersionSelect',
+  targetReadout: 'buildingBlockMigrationTargetReadout',
   addPatchButton: 'buildingBlockMigrationAddPatchButton',
   addInstructionButton: 'buildingBlockMigrationAddInstructionButton',
   addBuildingBlockButton: 'buildingBlockMigrationAddBuildingBlockButton',

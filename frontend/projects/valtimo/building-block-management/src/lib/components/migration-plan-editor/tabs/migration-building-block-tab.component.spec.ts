@@ -25,7 +25,10 @@ describe('MigrationBuildingBlockTabComponent', () => {
     'aanvraag-start': 'aanvraag-start:1:aaa',
     'aanvraag-behandelen': 'aanvraag-behandelen:1:bbb',
   };
-  const TARGET_DEFS = {'aanvraag-start': 'aanvraag-start:2:ccc'};
+  const TARGET_DEFS = {
+    'aanvraag-start': 'aanvraag-start:2:ccc',
+    'aanvraag-afronden': 'aanvraag-afronden:1:ddd',
+  };
 
   const firstInstruction = (): FormGroup => {
     component.addInstruction();
@@ -43,7 +46,7 @@ describe('MigrationBuildingBlockTabComponent', () => {
     component.ownerSourceProcessDefinitions = SOURCE_DEFS;
   });
 
-  it('offers an add entry the processes the owner still runs, not just the ones the target version keeps', () => {
+  it('offers an add entry the source version processes only — the target version adds none it can hijack', () => {
     component.mode = 'add';
 
     expect(Object.keys(component.sourceProcessDefinitionsOf(firstInstruction()))).toEqual(
@@ -51,23 +54,26 @@ describe('MigrationBuildingBlockTabComponent', () => {
     );
   });
 
-  // The plan's own processMigration already moved it there; the source id would point at a definition nothing runs on.
-  it('resolves a process both versions link against the target version', () => {
+  // The version the instances still have — the same end AddBuildingBlockProcessChecker resolves.
+  it('resolves a process both versions link against the source version', () => {
     component.mode = 'add';
 
     expect(component.sourceProcessDefinitionsOf(firstInstruction())['aanvraag-start']).toBe(
-      TARGET_DEFS['aanvraag-start']
+      SOURCE_DEFS['aanvraag-start']
     );
   });
 
   it('hands a removed block its process back at the target version only', () => {
     component.mode = 'remove';
+    const group = firstInstruction();
 
-    expect(component.targetProcessDefinitionsOf(firstInstruction())).toEqual(TARGET_DEFS);
+    // Source is the block's own map — empty until an entry names a block — never the owner's.
+    expect(component.sourceProcessDefinitionsOf(group)).toEqual({});
+    expect(component.targetProcessDefinitionsOf(group)).toEqual(TARGET_DEFS);
   });
 
   // A new object per call would re-trigger the nested tab's ngOnChanges on every change detection.
-  it('keeps one reference for the merged map', () => {
+  it('keeps one reference for the running-process map', () => {
     component.mode = 'add';
     const group = firstInstruction();
 

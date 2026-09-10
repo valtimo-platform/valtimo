@@ -64,6 +64,7 @@ import com.ritense.case.web.rest.StartableItemManagementResource
 import com.ritense.case.web.rest.StartableItemResource
 import com.ritense.case.web.rest.TaskListResource
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
+import com.ritense.case_.listener.CaseMigrationCaseEventListener
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.case_.repository.CaseDefinitionRepository
@@ -616,7 +617,8 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(DataMigrationComponentSuggester::class)
     fun dataMigrationComponentSuggester(
         valueResolverService: ValueResolverService,
-    ) = DataMigrationComponentSuggester(valueResolverService)
+        documentDefinitionService: DocumentDefinitionService,
+    ) = DataMigrationComponentSuggester(valueResolverService, documentDefinitionService)
 
     @Bean
     @ConditionalOnMissingBean(MigrationSuggestionService::class)
@@ -690,6 +692,12 @@ class CaseAutoConfiguration {
         applicationEventPublisher,
         leaseDuration,
     )
+
+    @Bean
+    @ConditionalOnMissingBean(CaseMigrationCaseEventListener::class)
+    fun caseMigrationCaseEventListener(
+        caseMigrationService: CaseMigrationService,
+    ) = CaseMigrationCaseEventListener(caseMigrationService)
 
     /** The runner, with the pool its runs execute on. The executor is deliberately not a bean: Spring Boot's `applicationTaskExecutor` is conditional on no `Executor` bean existing, so publishing one would withdraw it platform-wide. Pool size is how many different plans may run at once. */
     @Bean

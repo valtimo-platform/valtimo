@@ -202,6 +202,11 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     return stored ? Array.from(new Set([...base, stored])) : Array.from(new Set(base));
   }
 
+  /** Whether the target side offers [key]. A null scope is every deployed process, so anything the source offers is a target too. */
+  private isTargetProcessKey(key: string): boolean {
+    return !this.targetProcessDefinitions || key in this.targetProcessDefinitions;
+  }
+
   public mapActivitiesArray(group: FormGroup): FormArray {
     return group.get('mapActivities') as FormArray;
   }
@@ -287,9 +292,10 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     // A new source/target process reloads the selectable activities and re-suggests the mapping.
     this._subscriptions.add(
       sourceControl.valueChanges.subscribe(value => {
-        // Migrating a process to a new version of itself is the common case, so mirror the source onto an empty target.
-        if (value && !targetControl.value) targetControl.setValue(value);
-        else this.onProcessChanged(group);
+        // Migrating a process to a new version of itself is the common case, so mirror the source onto an empty target — but only where the target side offers that key. In a building-block entry the two sides are different blueprints, and mirroring would leave the owner's process in the target picker.
+        if (value && !targetControl.value && this.isTargetProcessKey(value)) {
+          targetControl.setValue(value);
+        } else this.onProcessChanged(group);
       })
     );
     this._subscriptions.add(

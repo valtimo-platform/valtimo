@@ -881,6 +881,7 @@
           "sourceHint": "The case definition version whose cases this plan migrates. It need not be the immediately preceding version: naming an older one migrates those cases here in a single step, and naming a different key moves cases of that case definition onto this one.",
           "sourceKey": "Source case definition",
           "sourceKeyPlaceholder": "Select a case definition",
+          "targetKey": "Target case definition",
           "triggers": "Triggers",
           "triggersHint": "Decide when this plan runs: manually from the UI button, at a scheduled moment, or after another plan finishes.",
           "triggeredByButton": "Run manually from the UI button",
@@ -3999,6 +4000,7 @@
           "sourceHint": "The building block version whose instances this plan migrates. It need not be the immediately preceding version: naming an older one migrates those instances here in a single step. Naming a different building block makes this plan the bridge that carries its running instances over to this one — which is the only thing that can, since nothing else connects two different building blocks.",
           "sourceKey": "Source building block",
           "sourceKeyPlaceholder": "Select a building block",
+          "targetKey": "Target building block",
           "whenItRuns": "When this plan runs",
           "whenItRunsHint": "This plan has no trigger and no conditions of its own. It runs automatically when a case migrates to a case definition version that links {{key}} at version {{versionTag}}, and it is applied to every building block instance that case migration brings onto this version. It is simulated as part of that case migration’s dry run.",
           "chainOfPlansHint": "A chain of migration plans has to connect the version a building block instance is on to the version a case links it at. One plan may declare the whole jump — its source is the version the instance is actually on — or there may be one plan per step, including a step that changes nothing: each version of {{key}} publishes its own process model, so a running building block has to be moved onto it explicitly. If nothing connects the two, or if more than one chain does, the case migration fails rather than guess. Run the case migration as a dry run to check the whole chain before starting it."
@@ -4130,9 +4132,10 @@
       "titleSuggestion": "Migration plan {{source}} to {{target}}",
       "key": "Key",
       "keyPlaceholder": "migration-plan-aanvraag-indienen",
-      "source": "Source",
+      "sourceAndTarget": "Source and target",
       "sourceVersion": "Source version",
       "sourceVersionPlaceholder": "Select a version",
+      "targetHint": "The target is fixed — it is the version this plan belongs to, shown on the right. Everything the plan migrates ends up there.",
       "suggesting": "Preparing a suggested plan from this version and the one it migrates from…"
     },
     "dataMigration": {

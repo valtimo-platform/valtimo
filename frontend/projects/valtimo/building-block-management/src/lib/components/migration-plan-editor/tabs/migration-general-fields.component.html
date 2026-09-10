@@ -42,33 +42,46 @@
     ></valtimo-auto-key-input>
   </div>
 
-  <!-- Source -->
+  <!-- Source and target -->
   <h5 class="migration-tab__subheading">
-    {{ 'migrationEditor.general.source' | translate }}
+    {{ 'migrationEditor.general.sourceAndTarget' | translate }}
   </h5>
   <p class="migration-tab__hint">{{ sourceHintKey | translate }}</p>
+  <!-- whitespace -->
+  <p class="migration-tab__hint">{{ 'migrationEditor.general.targetHint' | translate }}</p>
 
-  <div class="migration-tab__grid">
-    <!-- Non-clearable: a plan always migrates FROM somewhere, and clearing a Carbon combobox hands back an empty array that would travel into the plan as a version tag. -->
-    <v-select
-      formControlName="sourceKey"
-      [clearable]="false"
-      [items]="sourceKeyOptions"
-      [placeholder]="sourceKeyPlaceholderKey | translate"
-      [required]="true"
-      [titleTranslationKey]="sourceKeyLabelKey"
-      [attr.data-test-id]="testIds.sourceKeySelect"
-    ></v-select>
+  <div class="migration-tab__source-target">
+    <div class="migration-tab__grid">
+      <!-- Non-clearable: a plan always migrates FROM somewhere, and clearing a Carbon combobox hands back an empty array that would travel into the plan as a version tag. -->
+      <v-select
+        formControlName="sourceKey"
+        [clearable]="false"
+        [items]="sourceKeyOptions"
+        [placeholder]="sourceKeyPlaceholderKey | translate"
+        [required]="true"
+        [titleTranslationKey]="sourceKeyLabelKey"
+        [attr.data-test-id]="testIds.sourceKeySelect"
+      ></v-select>
 
-    <v-select
-      formControlName="sourceVersionTag"
-      [clearable]="false"
-      [items]="sourceVersionOptions"
-      [placeholder]="'migrationEditor.general.sourceVersionPlaceholder' | translate"
-      [required]="true"
-      [titleTranslationKey]="'migrationEditor.general.sourceVersion'"
-      [attr.data-test-id]="testIds.sourceVersionSelect"
-    ></v-select>
+      <v-select
+        formControlName="sourceVersionTag"
+        [clearable]="false"
+        [items]="sourceVersionOptions"
+        [placeholder]="'migrationEditor.general.sourceVersionPlaceholder' | translate"
+        [required]="true"
+        [titleTranslationKey]="'migrationEditor.general.sourceVersion'"
+        [attr.data-test-id]="testIds.sourceVersionSelect"
+      ></v-select>
+    </div>
+
+    <span class="migration-tab__mapping-arrow" aria-hidden="true">→</span>
+
+    <!-- A readout, not a field: the target is the blueprint version this plan is stored in, which a plan may not choose. Shown because it was otherwise only readable from the URL. -->
+    <div class="migration-tab__target" [attr.data-test-id]="testIds.targetReadout">
+      <span class="migration-tab__target-label">{{ targetKeyLabelKey | translate }}</span>
+
+      <span class="migration-tab__target-value" [title]="targetText">{{ targetText }}</span>
+    </div>
   </div>
 
   <!-- Whatever this blueprint type adds: triggers and conditions, or an explanation of when it runs -->

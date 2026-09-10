@@ -37,7 +37,7 @@ internal data class SuggestedAddBuildingBlockEntry(
     val processMigration: List<JsonNode>,
 )
 
-/** Suggests an entry per building block [target] models and [source] did not — over both link kinds, each aimed at the owner that fills it. A call-activity block gets no `processMigration`: adoption finds the process from the link and the running tree. */
+/** Suggests an entry per building block [target] models and [source] did not — over both link kinds, each aimed at the owner that fills it. A call-activity block gets a `processMigration` only for a process the owner relocated into it: adoption finds the process from the link and the running tree, but not the activity mapping onto the block's deployment. */
 class AddBuildingBlockMigrationComponentSuggester(
     private val objectMapper: ObjectMapper,
     private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
@@ -73,7 +73,7 @@ class AddBuildingBlockMigrationComponentSuggester(
                     dataMigration = toDataPatches(
                         dataMigrationComponentSuggester.suggestForBuildingBlockEntry(owner, block)
                     ),
-                    // Empty for a call-activity block, which adoption serves; a hijack is only paired where the keys say so.
+                    // A hijack is only paired where the keys say so; a call-activity block gets a row only for what it was handed.
                     processMigration = toProcessRows(
                         processMigrationComponentSuggester.suggestForBuildingBlockEntry(
                             owner, block, runningSideOf(owner, source, target)
