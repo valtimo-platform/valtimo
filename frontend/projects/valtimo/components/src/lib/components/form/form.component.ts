@@ -34,6 +34,7 @@ import {DatePickerComponent} from '../date-picker/date-picker.component';
 import {MultiInputFormComponent} from '../multi-input-form/multi-input-form.component';
 import {RadioComponent} from '../radio/radio.component';
 import {ValuePathSelectorComponent} from '../value-path-selector/value-path-selector.component';
+import {AutoKeyInputComponent} from '../auto-key-input/auto-key-input.component';
 
 @Component({
   selector: 'v-form',
@@ -53,6 +54,8 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   radioComponents!: QueryList<RadioComponent>;
   @ContentChildren(ValuePathSelectorComponent)
   valuePathSelectorComponents!: QueryList<ValuePathSelectorComponent>;
+  @ContentChildren(AutoKeyInputComponent)
+  autoKeyInputComponents!: QueryList<AutoKeyInputComponent>;
   @Input() className = '';
 
   @Output() valueChange: EventEmitter<FormOutput> = new EventEmitter();
@@ -83,6 +86,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       ...this.multiInputFormComponents?.toArray(),
       ...this.radioComponents?.toArray(),
       ...this.valuePathSelectorComponents?.toArray(),
+      ...this.autoKeyInputComponents?.toArray(),
     ];
 
     this.componentValuesSubscription = combineLatest(
@@ -144,6 +148,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       this.multiInputFormComponents.changes.pipe(startWith(null)),
       this.radioComponents.changes.pipe(startWith(null)),
       this.valuePathSelectorComponents.changes.pipe(startWith(null)),
+      this.autoKeyInputComponents.changes.pipe(startWith(null)),
     ]).subscribe(() => {
       this.closeComponentValuesSubscription();
       this.openComponentValuesSubscription();

@@ -20,3 +20,4 @@ export * from './global-notification.utils';
 export * from './route-params.utils';
 export * from './display-type.utils';
 export * from './validate-bsn.utils';
+export * from './kebab-case.utils';
