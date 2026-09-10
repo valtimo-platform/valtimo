@@ -29,9 +29,18 @@ import com.ritense.assistant.service.AssistantContextBuilder
 import com.ritense.assistant.service.AssistantService
 import com.ritense.assistant.service.AssistantSessionService
 import com.ritense.assistant.service.PendingActionService
+import com.ritense.assistant.service.AttachmentTextExtractor
+import com.ritense.assistant.service.TikaAttachmentTextExtractor
+import com.ritense.assistant.tool.CaseAttachmentTools
 import com.ritense.assistant.tool.CaseDefinitionTools
 import com.ritense.assistant.tool.CaseInformationTools
 import com.ritense.assistant.tool.ProcessDefinitionTools
+import com.ritense.assistant.tool.ResourceContentProvider
+import com.ritense.assistant.tool.ResourceContentProviderImpl
+import com.ritense.assistant.tool.ZgwDocumentContentProvider
+import com.ritense.assistant.tool.ZgwDocumentContentProviderImpl
+import com.ritense.resource.service.ResourceService
+import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.assistant.web.rest.AssistantResource
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseTabService
@@ -151,6 +160,54 @@ class AssistantAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(AttachmentTextExtractor::class)
+    fun attachmentTextExtractor(
+        @Value("\${valtimo.assistant.attachments.max-text-size:51200}") maxTextSize: Int
+    ): AttachmentTextExtractor {
+        return TikaAttachmentTextExtractor(maxTextSize)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ResourceContentProvider::class)
+    @ConditionalOnBean(ResourceService::class)
+    fun resourceContentProvider(
+        resourceService: ResourceService
+    ): ResourceContentProvider {
+        return ResourceContentProviderImpl(resourceService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZgwDocumentContentProvider::class)
+    @ConditionalOnBean(ZaakDocumentService::class)
+    fun zgwDocumentContentProvider(
+        zaakDocumentService: ZaakDocumentService
+    ): ZgwDocumentContentProvider {
+        return ZgwDocumentContentProviderImpl(zaakDocumentService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseAttachmentTools::class)
+    @ConditionalOnBean(DocumentService::class)
+    @ConditionalOnProperty(name = ["valtimo.assistant.attachments.enabled"], havingValue = "true", matchIfMissing = true)
+    fun caseAttachmentTools(
+        documentService: DocumentService,
+        textExtractor: AttachmentTextExtractor,
+        objectMapper: ObjectMapper,
+        resourceContentProvider: ObjectProvider<ResourceContentProvider>,
+        zgwDocumentContentProvider: ObjectProvider<ZgwDocumentContentProvider>,
+        @Value("\${valtimo.assistant.attachments.max-file-size:10485760}") maxFileSize: Long
+    ): CaseAttachmentTools {
+        return CaseAttachmentTools(
+            documentService,
+            textExtractor,
+            objectMapper,
+            resourceContentProvider.ifAvailable,
+            zgwDocumentContentProvider.ifAvailable,
+            maxFileSize
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessDefinitionTools::class)
     @ConditionalOnBean(OperatonRepositoryService::class, RepositoryService::class)
     fun processDefinitionTools(
@@ -178,11 +235,13 @@ class AssistantAutoConfiguration {
         objectMapper: ObjectMapper,
         caseDefinitionTools: ObjectProvider<CaseDefinitionTools>,
         caseInformationTools: ObjectProvider<CaseInformationTools>,
+        caseAttachmentTools: ObjectProvider<CaseAttachmentTools>,
         processDefinitionTools: ObjectProvider<ProcessDefinitionTools>
     ): AssistantService {
         val assistantTools = listOfNotNull(
             caseDefinitionTools.ifAvailable,
             caseInformationTools.ifAvailable,
+            caseAttachmentTools.ifAvailable,
             processDefinitionTools.ifAvailable
         )
         return AssistantService(

@@ -40,10 +40,17 @@ class AssistantSessionEntity(
     val createdAt: Instant,
 
     @Column(name = "last_activity_at", nullable = false)
-    var lastActivityAt: Instant
+    var lastActivityAt: Instant,
+
+    @Column(name = "last_page_context")
+    var lastPageContext: String? = null
 ) {
     fun updateActivity() {
         this.lastActivityAt = Instant.now()
+    }
+
+    fun updatePageContext(context: String?) {
+        this.lastPageContext = context
     }
 
     override fun equals(other: Any?): Boolean {

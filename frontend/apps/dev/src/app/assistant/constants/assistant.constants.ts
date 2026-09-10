@@ -27,6 +27,26 @@ interface AssistantPageContext {
 }
 
 const ASSISTANT_PAGE_CONTEXTS: ReadonlyArray<AssistantPageContext> = [
+  // === USER-FACING PAGES ===
+
+  // Dashboard
+  {urlPattern: /^\/$/, page: 'dashboard'},
+
+  // Tasks (task-detail MUST come before case-detail - both match /cases/.../document/...)
+  {urlPattern: /^\/tasks(?:[?#]|$)/, page: 'task-list'},
+  {
+    urlPattern:
+      /^\/cases\/(?<caseDefinitionKey>[^/?#]+)\/document\/(?<documentId>[^/?#]+)\/[^/?#]+\/tasks\/(?<taskId>[^/?#]+)/,
+    page: 'task-detail',
+    resourceType: 'task',
+  },
+
+  // Cases (case-inspection before case-detail)
+  {
+    urlPattern: /^\/cases\/[^/?#]+\/document\/(?<resourceId>[^/?#]+)\/case-inspection/,
+    page: 'case-inspection',
+    resourceType: 'document',
+  },
   {
     urlPattern: /^\/cases\/[^/?#]+\/document\/(?<resourceId>[^/?#]+)/,
     page: 'case-detail',
@@ -37,21 +57,48 @@ const ASSISTANT_PAGE_CONTEXTS: ReadonlyArray<AssistantPageContext> = [
     page: 'case-list',
     resourceType: 'caseDefinition',
   },
+
+  // Profile & Analysis
+  {urlPattern: /^\/profile(?:[?#]|$)/, page: 'profile'},
+  {urlPattern: /^\/analysis(?:[?#]|$)/, page: 'analysis'},
+
+  // Objects (detail before list)
   {
-    urlPattern: /^\/case-management\/case\/(?<resourceId>[^/?#]+)\/version\/(?<versionTag>[^/?#]+)/,
-    page: 'case-definition-editor',
-    resourceType: 'caseDefinition',
+    urlPattern: /^\/objects\/(?<objectManagementId>[^/?#]+)\/(?<resourceId>[^/?#]+)/,
+    page: 'object-detail',
+    resourceType: 'object',
   },
   {
-    urlPattern: /^\/processes\/(?!create(?:[?#/]|$))(?<resourceId>[^/?#]+)/,
-    page: 'process-definition-detail',
-    resourceType: 'processDefinition',
+    urlPattern: /^\/objects\/(?<resourceId>[^/?#]+)(?:[?#]|$)/,
+    page: 'object-list',
+    resourceType: 'objectType',
+  },
+
+  // Teams
+  {
+    urlPattern: /^\/teams\/(?<resourceId>[^/?#]+)/,
+    page: 'team-detail',
+    resourceType: 'team',
+  },
+  {urlPattern: /^\/teams(?:[?#]|$)/, page: 'team-list'},
+
+  // IKO (detail before search)
+  {
+    urlPattern:
+      /^\/iko\/(?<key>[^/?#]+)\/(?<searchKey>[^/?#]+)\/details\/(?<resourceId>[^/?#]+)/,
+    page: 'iko-detail',
+    resourceType: 'ikoResult',
   },
   {
-    urlPattern: /^\/form-management\/(?<resourceId>[^/?#]+)/,
-    page: 'form-builder',
-    resourceType: 'form',
+    urlPattern: /^\/iko\/(?<resourceId>[^/?#]+)(?:[?#]|$)/,
+    page: 'iko-search',
+    resourceType: 'ikoConfiguration',
   },
+
+  // === ADMIN PAGES ===
+
+  // Access Control
+  {urlPattern: /^\/access-control(?:[?#]|$)/, page: 'access-control-list'},
   {
     urlPattern: /^\/access-control\/(?<resourceId>[^/?#]+)/,
     page: 'access-control-detail',
@@ -64,6 +111,83 @@ const ASSISTANT_PAGE_CONTEXTS: ReadonlyArray<AssistantPageContext> = [
       'assistant.suggestions.edit',
     ],
   },
+
+  // Processes
+  {urlPattern: /^\/processes(?:[?#]|$)/, page: 'process-list'},
+  {
+    urlPattern: /^\/processes\/(?!create(?:[?#/]|$))(?<resourceId>[^/?#]+)/,
+    page: 'process-definition-detail',
+    resourceType: 'processDefinition',
+  },
+
+  // Decision Tables (editor before detail, both before list)
+  {urlPattern: /^\/decision-tables(?:[?#]|$)/, page: 'decision-table-list'},
+  {
+    urlPattern: /^\/decision-tables\/edit\/(?<resourceId>[^/?#]+)/,
+    page: 'decision-table-editor',
+    resourceType: 'decisionTable',
+  },
+  {
+    urlPattern: /^\/decision-tables\/(?<resourceId>[^/?#]+)/,
+    page: 'decision-table-detail',
+    resourceType: 'decisionTable',
+  },
+
+  // Forms
+  {urlPattern: /^\/form-management(?:[?#]|$)/, page: 'form-list'},
+  {
+    urlPattern: /^\/form-management\/(?<resourceId>[^/?#]+)/,
+    page: 'form-builder',
+    resourceType: 'form',
+  },
+
+  // Case Management
+  {urlPattern: /^\/case-management(?:[?#]|$)/, page: 'case-management-list'},
+  {
+    urlPattern:
+      /^\/case-management\/case\/(?<resourceId>[^/?#]+)\/version\/(?<versionTag>[^/?#]+)/,
+    page: 'case-definition-editor',
+    resourceType: 'caseDefinition',
+  },
+
+  // Dashboard Management
+  {urlPattern: /^\/dashboard-management(?:[?#]|$)/, page: 'dashboard-management-list'},
+  {
+    urlPattern: /^\/dashboard-management\/(?<resourceId>[^/?#]+)/,
+    page: 'dashboard-management-detail',
+    resourceType: 'dashboard',
+  },
+
+  // Building Blocks
+  {urlPattern: /^\/building-block-management(?:[?#]|$)/, page: 'building-block-list'},
+  {
+    urlPattern:
+      /^\/building-block-management\/building-block\/(?<resourceId>[^/?#]+)\/version\/(?<versionTag>[^/?#]+)/,
+    page: 'building-block-detail',
+    resourceType: 'buildingBlock',
+  },
+
+  // Plugins
+  {urlPattern: /^\/plugins(?:[?#]|$)/, page: 'plugin-list'},
+
+  // Object Management
+  {urlPattern: /^\/object-management(?:[?#]|$)/, page: 'object-management-list'},
+  {
+    urlPattern: /^\/object-management\/object\/(?<resourceId>[^/?#]+)/,
+    page: 'object-management-detail',
+    resourceType: 'objectType',
+  },
+
+  // Other Admin Pages
+  {urlPattern: /^\/translation-management(?:[?#]|$)/, page: 'translation-management'},
+  {urlPattern: /^\/admin-settings(?:[?#]|$)/, page: 'admin-settings'},
+  {urlPattern: /^\/process-links(?:[?#]|$)/, page: 'process-links'},
+  {urlPattern: /^\/logging(?:[?#]|$)/, page: 'logging'},
+  {urlPattern: /^\/case-migration(?:[?#]|$)/, page: 'case-migration'},
+  {urlPattern: /^\/process-migration(?:[?#]|$)/, page: 'process-migration'},
+  {urlPattern: /^\/milestones(?:[?#]|$)/, page: 'milestones'},
+  {urlPattern: /^\/choice-fields(?:[?#]|$)/, page: 'choice-fields'},
+  {urlPattern: /^\/iko-management(?:[?#]|$)/, page: 'iko-management'},
 ];
 
 const ASSISTANT_GENERIC_GREETING_KEY = 'assistant.greeting.generic';

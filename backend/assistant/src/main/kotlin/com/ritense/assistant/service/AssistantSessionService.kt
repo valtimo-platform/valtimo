@@ -70,6 +70,21 @@ open class AssistantSessionService(
         }
     }
 
+    @Transactional(readOnly = true)
+    open fun getLastPageContext(sessionId: UUID): String? {
+        return sessionRepository.findById(sessionId)
+            .map { it.lastPageContext }
+            .orElse(null)
+    }
+
+    @Transactional
+    open fun updatePageContext(sessionId: UUID, contextJson: String?) {
+        sessionRepository.findById(sessionId).ifPresent { session ->
+            session.updatePageContext(contextJson)
+            sessionRepository.save(session)
+        }
+    }
+
     @Transactional
     open fun deleteSession(sessionId: UUID, userId: String): Boolean {
         val session = sessionRepository.findByIdAndUserId(sessionId, userId) ?: return false

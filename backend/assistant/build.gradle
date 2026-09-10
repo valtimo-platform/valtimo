@@ -38,6 +38,9 @@ dependencies {
     compileOnly project(":backend:core")
     compileOnly project(":backend:process-document")
     compileOnly project(":backend:process-link")
+    compileOnly project(":backend:resource")
+    compileOnly project(":backend:zgw:zaken-api")
+    compileOnly project(":backend:zgw:documenten-api")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -45,6 +48,10 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging:${kotlinLoggingVersion}")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework:spring-test") // For MockMultipartFile
+
+    // Apache Tika for text extraction from attachments
+    implementation "org.apache.tika:tika-core:${apacheTikaVersion}"
+    implementation "org.apache.tika:tika-parsers-standard-package:${apacheTikaVersion}"
 
     // LangChain4j
     implementation("dev.langchain4j:langchain4j:${langchain4jVersion}")

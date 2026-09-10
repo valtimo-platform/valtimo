@@ -128,6 +128,27 @@ class AssistantContextBuilderTest {
     }
 
     @Test
+    fun `should include case definition editor context with version`() {
+        val context = PageContext(
+            page = "case-definition-editor",
+            resourceType = "caseDefinition",
+            resourceId = "bezwaar",
+            additionalContext = mapOf("versionTag" to "1.0.1")
+        )
+
+        val prompt = builder.buildSystemPrompt(
+            userEmail = "user@test.com",
+            userRoles = setOf("ROLE_ADMIN"),
+            pageContext = context,
+            toolSpecifications = emptyList()
+        )
+
+        assertContains(prompt, "editing case definition")
+        assertContains(prompt, "bezwaar")
+        assertContains(prompt, "Version: 1.0.1")
+    }
+
+    @Test
     fun `should include form editor context`() {
         val context = PageContext(
             page = "form-builder",

@@ -101,9 +101,14 @@ open class AssistantService(
 
         val memory = chatMemoryProvider.get(sessionId)
 
-        if (memory.messages().isEmpty()) {
+        val currentContextJson = request.context?.let { objectMapper.writeValueAsString(it) }
+        val storedContextJson = sessionService.getLastPageContext(sessionId)
+        val contextChanged = currentContextJson != storedContextJson
+
+        if (memory.messages().isEmpty() || contextChanged) {
             val systemPrompt = contextBuilder.buildSystemPrompt(userEmail, userRoles, request.context, toolSpecifications)
-            memory.add(SystemMessage.from(systemPrompt))
+            updateSystemMessage(memory, systemPrompt)
+            sessionService.updatePageContext(sessionId, currentContextJson)
         }
 
         memory.add(UserMessage.from(request.message))
@@ -199,6 +204,20 @@ open class AssistantService(
             ),
             pendingActionId = pending.id.toString()
         )
+    }
+
+    private fun updateSystemMessage(memory: dev.langchain4j.memory.ChatMemory, systemPrompt: String) {
+        val messages = memory.messages().toMutableList()
+        val systemMessage = SystemMessage.from(systemPrompt)
+
+        if (messages.isNotEmpty() && messages[0] is SystemMessage) {
+            messages[0] = systemMessage
+        } else {
+            messages.add(0, systemMessage)
+        }
+
+        memory.clear()
+        messages.forEach { memory.add(it) }
     }
 
     private fun executeTool(request: ToolExecutionRequest): String {

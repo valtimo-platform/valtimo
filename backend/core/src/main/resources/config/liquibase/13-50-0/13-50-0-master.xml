@@ -21,5 +21,6 @@ xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <include file="20260907-create-assistant-tables.xml" relativeToChangelogFile="true"/>
+    <include file="20260910-add-assistant-session-last-page-context.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

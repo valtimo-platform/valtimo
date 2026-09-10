@@ -338,6 +338,63 @@ class AssistantServiceTest {
         verify(chatModel, times(10)).chat(any<LangChainChatRequest>())
     }
 
+    @Test
+    fun `should update system message when page context changes`() {
+        val sessionId = UUID.randomUUID()
+        val memory = MessageWindowChatMemory.withMaxMessages(10)
+
+        whenever(chatMemoryProvider.get(sessionId)).thenReturn(memory)
+        whenever(sessionService.getLastPageContext(sessionId)).thenReturn(null)
+
+        val aiMessage = AiMessage.from("Response")
+        val chatResponse = ChatResponse.builder().aiMessage(aiMessage).build()
+        whenever(chatModel.chat(any<LangChainChatRequest>())).thenReturn(chatResponse)
+
+        val firstContext = com.ritense.assistant.web.rest.dto.PageContext(
+            page = "case-detail",
+            resourceId = "case-123"
+        )
+
+        assistantService.chat(
+            request = ChatRequest(message = "Hello", sessionId = sessionId, context = firstContext),
+            userId = "user123",
+            userEmail = "user@test.com",
+            userRoles = setOf("ROLE_USER"),
+            authToken = "token"
+        )
+
+        verify(sessionService).updatePageContext(eq(sessionId), any())
+    }
+
+    @Test
+    fun `should not update system message when page context unchanged`() {
+        val sessionId = UUID.randomUUID()
+        val memory = MessageWindowChatMemory.withMaxMessages(10)
+        memory.add(dev.langchain4j.data.message.SystemMessage.from("Previous system message"))
+        val context = com.ritense.assistant.web.rest.dto.PageContext(
+            page = "case-detail",
+            resourceId = "case-123"
+        )
+        val contextJson = objectMapper.writeValueAsString(context)
+
+        whenever(chatMemoryProvider.get(sessionId)).thenReturn(memory)
+        whenever(sessionService.getLastPageContext(sessionId)).thenReturn(contextJson)
+
+        val aiMessage = AiMessage.from("Response")
+        val chatResponse = ChatResponse.builder().aiMessage(aiMessage).build()
+        whenever(chatModel.chat(any<LangChainChatRequest>())).thenReturn(chatResponse)
+
+        assistantService.chat(
+            request = ChatRequest(message = "Hello", sessionId = sessionId, context = context),
+            userId = "user123",
+            userEmail = "user@test.com",
+            userRoles = setOf("ROLE_USER"),
+            authToken = "token"
+        )
+
+        verify(sessionService, never()).updatePageContext(any(), any())
+    }
+
     class TestToolProvider {
         @Tool("Get the current time")
         fun getCurrentTime(): String = "10:00 AM"
