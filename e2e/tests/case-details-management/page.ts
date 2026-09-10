@@ -37,6 +37,10 @@ const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
 
 const CASE_DEFINITION_URL = /\/case-management\/case\/([^/]+)\/version\/([^/]+)\//;
 
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export interface CaseHandlerSettings {
   canHaveAssignee: boolean;
   autoAssignTasks: boolean;
@@ -283,7 +287,7 @@ export class CaseDetailsManagementPage {
 
     await this.page.goto(`/case-management/case/${key}/version/${versionTag}/general`);
     await this.page.waitForURL(
-      new RegExp(`/case/${key}/version/${versionTag.replace(/\./g, '\\.')}/`),
+      new RegExp(`/case/${escapeForRegExp(key)}/version/${escapeForRegExp(versionTag)}/`),
       {timeout: 30_000}
     );
     await this.waitForCaseSettingsApplied();
