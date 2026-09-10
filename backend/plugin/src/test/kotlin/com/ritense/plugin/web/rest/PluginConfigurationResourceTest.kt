@@ -189,6 +189,47 @@ internal class PluginConfigurationResourceTest {
     }
 
     @Test
+    fun `should get plugin configuration by id`() {
+        val properties: ObjectNode = MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode
+        val plugin = PluginDefinition("key", "title", "description", "className")
+        val pluginConfigurationId = UUID.randomUUID()
+        val pluginConfiguration = PluginConfiguration(
+            PluginConfigurationId.existingId(pluginConfigurationId), "title", properties, plugin
+        )
+        whenever(pluginService.findPluginConfiguration(any<PluginConfigurationId>())).thenReturn(pluginConfiguration)
+
+        mockMvc.perform(
+            get("/api/v1/plugin/configuration/$pluginConfigurationId")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(pluginConfigurationId.toString()))
+            .andExpect(jsonPath("$.title").value("title"))
+            .andExpect(jsonPath("$.properties.name").value("whatever"))
+            .andExpect(jsonPath("$.pluginDefinition.key").value("key"))
+            .andExpect(jsonPath("$.pluginDefinition.fullyQualifiedClassName").doesNotExist())
+
+        verify(pluginService).findPluginConfiguration(PluginConfigurationId.existingId(pluginConfigurationId))
+    }
+
+    @Test
+    fun `should respond with 404 not found when the plugin configuration does not exist`() {
+        whenever(pluginService.findPluginConfiguration(any<PluginConfigurationId>())).thenReturn(null)
+
+        mockMvc.perform(
+            get("/api/v1/plugin/configuration/${UUID.randomUUID()}")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
     fun `should save plugin configuration`() {
         val properties: ObjectNode = MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode
         val plugin = PluginDefinition("key", "title", "description", "className")

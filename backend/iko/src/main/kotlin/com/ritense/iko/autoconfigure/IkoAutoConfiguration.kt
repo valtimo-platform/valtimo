@@ -81,6 +81,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.web.client.RestClient
 
 @AutoConfiguration
@@ -478,12 +479,14 @@ class IkoAutoConfiguration {
         ikoTabWidgetRepository: IkoTabWidgetRepository,
         widgetService: WidgetService,
         ikoViewService: IkoViewService,
+        transactionManager: PlatformTransactionManager,
     ): IkoWidgetService {
         return IkoWidgetService(
             ikoTabService,
             ikoTabWidgetRepository,
             widgetService,
             ikoViewService,
+            transactionManager,
         )
     }
 
