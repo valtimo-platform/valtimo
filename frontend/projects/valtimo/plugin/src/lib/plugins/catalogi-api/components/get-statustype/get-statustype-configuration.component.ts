@@ -23,7 +23,6 @@ import {GetStatustypeConfig} from '../../models';
   standalone: false,
   selector: 'valtimo-set-statustype-configuration',
   templateUrl: './get-statustype-configuration.component.html',
-  styleUrls: ['./get-statustype-configuration.component.scss'],
 })
 export class GetStatustypeConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
