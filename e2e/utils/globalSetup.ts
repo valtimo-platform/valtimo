@@ -1,8 +1,8 @@
 import { chromium } from '@playwright/test';
 import { writeFileSync, mkdirSync, unlinkSync, existsSync } from 'fs';
-import * as OTPAuth from 'otpauth';
 import { Keycloak } from '../components/keycloak';
-import { setLanguage } from '../utils/settings';
+import { pinLanguage } from '../utils/settings';
+import { generateOtp, millisUntilNextOtp } from './otp.utils';
 
 export default async () => {
   console.log('[GLOBAL SETUP] Launching browser');
@@ -44,15 +44,9 @@ export default async () => {
   };
 
   // ----- Handle OTP (generate from otpauth URL only) -----
-  let otpCode: string | undefined;
   if (process.env.qa_admin_otp_url) {
-    const totp = OTPAuth.URI.parse(process.env.qa_admin_otp_url);
-    otpCode = totp.generate();
-    console.log('[GLOBAL SETUP] Generated TOTP via otpauth URL:', otpCode);
-  }
-
-  if (otpCode) {
-    form.otp = otpCode;
+    form.otp = generateOtp(process.env.qa_admin_otp_url);
+    console.log('[GLOBAL SETUP] Generated TOTP via otpauth URL:', form.otp);
   }
 
   const tokenResp = await page.request.post(
@@ -93,8 +87,12 @@ export default async () => {
 
   const keycloak = new Keycloak(page);
   await page.goto('/login'); // Ensure KC login page
-  // console.log('[GLOBAL SETUP] Waiting 30 s before Keycloak.login to avoid OTP race…');
-  await page.waitForTimeout(30_000);
+
+  if (process.env.qa_admin_otp_url) {
+    const waitMs = millisUntilNextOtp(process.env.qa_admin_otp_url);
+    console.log(`[GLOBAL SETUP] Waiting ${Math.round(waitMs / 1000)}s for the next TOTP...`);
+    await page.waitForTimeout(waitMs);
+  }
 
   await keycloak.login(
     process.env.qa_admin_username ?? 'admin',
@@ -102,9 +100,14 @@ export default async () => {
     process.env.qa_admin_otp_url,
   );
 
-  // Wait for app landing page after successful login
-  // await page.waitForLoadState('networkidle');
-  await setLanguage(page, 'en');
+  const appOrigin = new URL(process.env.qa_url ?? 'http://localhost:4200').origin;
+  await page.waitForURL(
+    url => url.origin === appOrigin && !url.pathname.startsWith('/keycloak'),
+    { timeout: 60_000 }
+  );
+  await page.waitForLoadState('domcontentloaded');
+
+  await pinLanguage(page, 'en');
   const uiStatePath = 'playwright/.auth/uiState.json';
   writeFileSync(uiStatePath, JSON.stringify(await context.storageState(), null, 2));
   console.log('[GLOBAL SETUP] storageState saved →', uiStatePath);

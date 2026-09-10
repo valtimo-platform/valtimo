@@ -1,6 +1,6 @@
 // e2e/utils/api.utils.ts
 import { request, APIRequestContext, APIResponse } from '@playwright/test';
-import * as OTPAuth from 'otpauth';
+import {generateOtp, waitForNextOtp} from './otp.utils';
 
 let _context: APIRequestContext | undefined;
 
@@ -48,11 +48,17 @@ async function fetchFreshToken(): Promise<string> {
     password: process.env.qa_admin_password ?? 'admin',
     scope: 'openid',
   };
-  if (process.env.qa_admin_otp_url) {
-    const totp = OTPAuth.URI.parse(process.env.qa_admin_otp_url);
-    form.otp = totp.generate();
+  const otpUrl = process.env.qa_admin_otp_url;
+  if (otpUrl) form.otp = generateOtp(otpUrl);
+
+  let r = await postToken(form);
+
+  if (!r.ok && otpUrl) {
+    await waitForNextOtp(otpUrl);
+    form.otp = generateOtp(otpUrl);
+    r = await postToken(form);
   }
-  const r = await postToken(form);
+
   if (!r.ok) {
     throw new Error(`[api] Token refresh failed (${r.status}): ${String(r.body).slice(0, 120)}`);
   }
@@ -73,6 +79,7 @@ async function getContext(): Promise<APIRequestContext> {
   }
   _context = await request.newContext({
     baseURL: process.env.qa_url ?? 'http://localhost:8080',
+    timeout: 90_000,
     extraHTTPHeaders: {
       Authorization: `Bearer ${bearer}`,
       Accept: 'application/json, text/plain, */*',
@@ -91,6 +98,7 @@ async function refreshContext(): Promise<APIRequestContext> {
 
   _context = await request.newContext({
     baseURL: process.env.qa_url ?? 'http://localhost:8080',
+    timeout: 90_000,
     extraHTTPHeaders: {
       Authorization: `Bearer ${freshToken}`,
       Accept: 'application/json, text/plain, */*',
@@ -106,10 +114,10 @@ async function refreshContext(): Promise<APIRequestContext> {
 
 export async function apiGet<T = unknown>(url: string): Promise<T> {
   let ctx = await getContext();
-  let res = await ctx.get(url);
+  let res = await send('GET', () => ctx.get(url));
   if (res.status() === 401) {
     ctx = await refreshContext();
-    res = await ctx.get(url);
+    res = await send('GET', () => ctx.get(url));
   }
   await assertOk('GET', url, res);
   return (await res.json()) as T;
@@ -120,10 +128,10 @@ export async function apiPost<T = unknown>(
   body: unknown,
 ): Promise<T> {
   let ctx = await getContext();
-  let res = await ctx.post(url, { data: body });
+  let res = await send('POST', () => ctx.post(url, { data: body }));
   if (res.status() === 401) {
     ctx = await refreshContext();
-    res = await ctx.post(url, { data: body });
+    res = await send('POST', () => ctx.post(url, { data: body }));
   }
   await assertOk('POST', url, res);
   return (await res.json()) as T;
@@ -134,10 +142,10 @@ export async function apiPut<T = unknown>(
   body: unknown,
 ): Promise<T> {
   let ctx = await getContext();
-  let res = await ctx.put(url, { data: body });
+  let res = await send('PUT', () => ctx.put(url, { data: body }));
   if (res.status() === 401) {
     ctx = await refreshContext();
-    res = await ctx.put(url, { data: body });
+    res = await send('PUT', () => ctx.put(url, { data: body }));
   }
   await assertOk('PUT', url, res);
   const text = await res.text();
@@ -147,12 +155,30 @@ export async function apiPut<T = unknown>(
   return JSON.parse(text) as T;
 }
 
-export async function apiDelete(url: string): Promise<void> {
+export async function apiPatch<T = unknown>(
+  url: string,
+  body: unknown,
+): Promise<T> {
   let ctx = await getContext();
-  let res = await ctx.delete(url);
+  let res = await send('PATCH', () => ctx.patch(url, { data: body }));
   if (res.status() === 401) {
     ctx = await refreshContext();
-    res = await ctx.delete(url);
+    res = await send('PATCH', () => ctx.patch(url, { data: body }));
+  }
+  await assertOk('PATCH', url, res);
+  const text = await res.text();
+  if (!text) {
+    return undefined as unknown as T;
+  }
+  return JSON.parse(text) as T;
+}
+
+export async function apiDelete(url: string): Promise<void> {
+  let ctx = await getContext();
+  let res = await send('DELETE', () => ctx.delete(url));
+  if (res.status() === 401) {
+    ctx = await refreshContext();
+    res = await send('DELETE', () => ctx.delete(url));
   }
   await assertOk('DELETE', url, res);
 }
@@ -170,8 +196,47 @@ export async function disposeApi(): Promise<void> {
 /*  Internal helpers                                                  */
 /* ------------------------------------------------------------------ */
 
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+export function isApiStatus(error: unknown, status: number): boolean {
+  return error instanceof ApiError && error.status === status;
+}
+
+const UNSENT_REQUEST_ERROR = /ECONNREFUSED|ENOTFOUND|EAI_AGAIN|EHOSTUNREACH/i;
+
+const DROPPED_CONNECTION_ERROR = /ECONNRESET|ETIMEDOUT|socket hang up|network error/i;
+
+const IDEMPOTENT_METHODS = new Set(['GET', 'PUT', 'DELETE']);
+
+async function send(
+  method: string,
+  request: () => Promise<APIResponse>
+): Promise<APIResponse> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await request();
+    } catch (error) {
+      const message = String(error);
+      const retryable =
+        UNSENT_REQUEST_ERROR.test(message) ||
+        (IDEMPOTENT_METHODS.has(method) && DROPPED_CONNECTION_ERROR.test(message));
+
+      if (attempt === 3 || !retryable) throw error;
+      await new Promise(resolve => setTimeout(resolve, attempt * 1_000));
+    }
+  }
+}
+
 async function assertOk(method: string, url: string, res: APIResponse) {
   if (res.ok()) return;
   const snippet = (await res.text()).slice(0, 120);
-  throw new Error(`[api] ${method} ${url} → ${res.status()} | ${snippet}`);
+  throw new ApiError(res.status(), `[api] ${method} ${url} → ${res.status()} | ${snippet}`);
 }

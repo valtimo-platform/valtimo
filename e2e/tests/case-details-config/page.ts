@@ -35,7 +35,7 @@ export class CaseDetailsConfigPage {
   // ─── Status UI Elements ────────────────────────────────────────────
 
   get statusAddButton() {
-    return this.page.getByTestId(CASE_MANAGEMENT_STATUSES_TEST_IDS.addButton);
+    return this.page.getByTestId(CASE_MANAGEMENT_STATUSES_TEST_IDS.addButton).first();
   }
 
   get statusTitleInput() {
@@ -73,7 +73,7 @@ export class CaseDetailsConfigPage {
   // ─── Tag UI Elements ──────────────────────────────────────────────
 
   get tagAddButton() {
-    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_TEST_IDS.addButton);
+    return this.page.getByTestId(CASE_MANAGEMENT_TAGS_TEST_IDS.addButton).first();
   }
 
   get tagTitleInput() {

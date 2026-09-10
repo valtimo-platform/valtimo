@@ -89,6 +89,12 @@ export class ChoiceFieldManagementPage {
     await this.carbonList.waitForLoaded();
   }
 
+  async goToChoiceFieldDetail(id: string) {
+    await this.page.goto(`/choice-fields/field/${id}`);
+    await this.page.waitForURL(new RegExp(`/choice-fields/field/${id}$`), {timeout: 10_000});
+    await expect(this.titleInput).toBeVisible();
+  }
+
   // ─── Choice Field Actions ─────────────────────────────────────────
 
   async createChoiceField(keyName: string, title: string) {
@@ -107,10 +113,15 @@ export class ChoiceFieldManagementPage {
     await expect(this.titleInput).toBeVisible();
     await this.titleInput.clear();
     await this.titleInput.fill(newTitle);
-    await this.submitButton.click();
 
-    // Wait for the success alert/response
-    await this.page.waitForTimeout(500);
+    await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          new URL(res.url()).pathname === endpoints.choiceField.update &&
+          res.request().method() === 'PUT'
+      ),
+      this.submitButton.click(),
+    ]);
   }
 
   async deleteChoiceField() {
@@ -147,10 +158,25 @@ export class ChoiceFieldManagementPage {
     await expect(this.valueInput).toBeVisible();
     await this.valueInput.clear();
     await this.valueInput.fill(newValue);
-    await this.submitButton.click();
 
-    // Wait for the success response
-    await this.page.waitForTimeout(500);
+    await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          new URL(res.url()).pathname === '/api/v1/choice-field-values' &&
+          res.request().method() === 'PUT'
+      ),
+      this.submitButton.click(),
+    ]);
+  }
+
+  async goBackToChoiceFieldDetail() {
+    const backLink = this.page.getByRole('link', {name: 'Back', exact: true});
+    const valueList = this.page.locator('valtimo-choice-field-value-list');
+
+    await expect(async () => {
+      await backLink.click({timeout: 5_000});
+      await expect(valueList).toBeVisible({timeout: 5_000});
+    }).toPass({timeout: 30_000});
   }
 
   // ─── API Helpers ──────────────────────────────────────────────────

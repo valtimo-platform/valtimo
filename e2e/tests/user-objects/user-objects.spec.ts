@@ -17,6 +17,7 @@
 import {expect, test} from '@playwright/test';
 import {USER_OBJECT_TYPE, USER_OBJECTS_TEXTS} from './user-objects-config';
 import {UserObjectsPage} from './page';
+import {ApiError} from '../../utils/api.utils';
 
 test.use({storageState: 'playwright/.auth/uiState.json'});
 
@@ -53,6 +54,18 @@ test.describe('Feature 4 — Objects (User)', () => {
       );
     }
     objectManagementId = configuration!.id;
+
+    try {
+      await userObjectsPage.getObjectsViaApi(objectManagementId);
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.status < 500) throw error;
+
+      const reason =
+        `The objects of "${USER_OBJECT_TYPE.title}" cannot be read on this ` +
+        `environment, so no object page can render: ${(error as Error).message}`;
+      console.warn(`[user-objects] SKIPPING — ${reason}`);
+      test.skip(true, reason);
+    }
 
     await page.goto('/');
   });

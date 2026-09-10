@@ -41,7 +41,7 @@ export class DashboardManagementPage {
   // ─── Locators ─────────────────────────────────────────────────────
 
   get addDashboardButton() {
-    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.addButton);
+    return this.page.getByTestId(DASHBOARD_MANAGEMENT_TEST_IDS.addButton).first();
   }
 
   get createTitleInput() {

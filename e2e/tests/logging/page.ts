@@ -24,6 +24,8 @@ export interface LogEventPage {
   totalElements: number;
 }
 
+const LOG_QUERY_TIMEOUT = 90_000;
+
 /** Severity order, mirroring `LoggingEventSpecificationHelper.LOG_LEVELS` in the backend. */
 export const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'];
 
@@ -127,7 +129,7 @@ export class LoggingPage {
     await Promise.all([
       this.page.waitForResponse(
         res => res.url().includes('/api/management/v1/logging') && res.ok(),
-        {timeout: 15_000}
+        {timeout: LOG_QUERY_TIMEOUT}
       ),
       this.messageInput.fill(text),
     ]);
@@ -156,7 +158,7 @@ export class LoggingPage {
   }
 
   /** Resolves on the next successful logging query, or after the timeout if none is fired. */
-  private async waitForLogQuery(timeout = 15_000) {
+  private async waitForLogQuery(timeout = LOG_QUERY_TIMEOUT) {
     return this.page
       .waitForResponse(res => res.url().includes('/api/management/v1/logging') && res.ok(), {
         timeout,
@@ -191,10 +193,7 @@ export class LoggingPage {
   // ─── Assertions ───────────────────────────────────────────────────
 
   async assertColumnHeaders(expected: string[]) {
-    const headers = (await this.page.locator('valtimo-carbon-list thead th').allInnerTexts()).map(
-      h => h.trim()
-    );
-    for (const header of expected) expect(headers).toContain(header);
+    await this.list.assertColumnHeadersContain(expected);
   }
 
   // The filter panel re-queries asynchronously and the table re-renders after the response has

@@ -16,7 +16,7 @@
 
 import {expect, test} from '@playwright/test';
 
-import {JsonEditor} from '../../shared/json-editor/json-editor.utils';
+import {JSON_EDITOR_SAVE_URLS, JsonEditor} from '../../shared/json-editor/json-editor.utils';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import {
@@ -68,7 +68,7 @@ test.describe('Case management - Search Fields', () => {
       test.describe('JSON Editor', () => {
         let jsonEditor;
         test.beforeAll(async () => {
-          jsonEditor = new JsonEditor(page);
+          jsonEditor = new JsonEditor(page, JSON_EDITOR_SAVE_URLS.caseSearchField);
         });
 
         test.beforeEach(async () => {

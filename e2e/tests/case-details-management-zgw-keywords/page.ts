@@ -51,7 +51,7 @@ export class CaseDetailsManagementZgwKeywordsPage {
   }
 
   get deleteMultipleButton(): Locator {
-    return this.page.getByTestId(ZGW_KEYWORDS_TEST_IDS.deleteMultipleButton);
+    return this.page.getByTestId(ZGW_KEYWORDS_TEST_IDS.deleteMultipleButton).first();
   }
 
   // ─── Modal locators ──────────────────────────────────────────────

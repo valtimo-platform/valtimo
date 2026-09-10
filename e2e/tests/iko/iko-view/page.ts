@@ -30,6 +30,8 @@ interface IkoViewListResponse {
   content: Array<{key: string; title: string}>;
 }
 
+const MODAL_FORM_RESET_MS = 750;
+
 export class IkoViewPage {
   constructor(
     private readonly page: Page,
@@ -132,9 +134,55 @@ export class IkoViewPage {
 
   // ─── Actions ────────────────────────────────────────────────────────
 
+  get openModal(): Locator {
+    return this.page.locator('.cds--modal.is-visible');
+  }
+
+  async dismissOpenModal(): Promise<void> {
+    if (!(await this.openModal.count())) return;
+
+    await expect(async () => {
+      if (!(await this.openModal.count())) return;
+      await this.page.keyboard.press('Escape');
+      if (await this.openModal.count()) {
+        await this.cancelButton.click({timeout: 3_000});
+      }
+      await expect(this.openModal).toHaveCount(0, {timeout: 3_000});
+    }).toPass({timeout: 20_000});
+  }
+
   async openAddModal(): Promise<void> {
+    await expect(this.openModal).toHaveCount(0);
+    await this.page.waitForTimeout(MODAL_FORM_RESET_MS);
+
     await this.addViewButton.click();
     await expect(this.addModalHeading).toBeVisible();
+    await expect(this.titleInput).toBeEnabled();
+  }
+
+  async addKeyValueRow(key: string): Promise<void> {
+    const rows = this.propertyKvKeyAll(key);
+    const before = await rows.count();
+
+    await expect(async () => {
+      if ((await rows.count()) <= before) {
+        await this.propertyKvAddRowButton(key).click({timeout: 5_000});
+      }
+      expect(await rows.count()).toBeGreaterThan(before);
+    }).toPass({timeout: 20_000});
+  }
+
+  async removeKeyValueRow(key: string, index: number): Promise<void> {
+    const rows = this.propertyKvKeyAll(key);
+    const before = await rows.count();
+    const removeButton = this.propertyKvRemoveAll(key).nth(index);
+
+    await expect(async () => {
+      if ((await rows.count()) >= before) {
+        await removeButton.click({timeout: 3_000});
+      }
+      expect(await rows.count()).toBeLessThan(before);
+    }).toPass({timeout: 20_000});
   }
 
   async openEditModal(title: string): Promise<void> {
@@ -230,6 +278,13 @@ export class IkoViewPage {
 
   // ─── API helpers (setup / cleanup) ──────────────────────────────────
 
+  viewKeyFor(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
+      .replace(/^[^a-z]+/g, '');
+  }
+
   /**
    * Create a view directly via the management API. Use this for parent setup
    * in suites that test things nested under a view (columns, tabs, …). The
@@ -237,10 +292,7 @@ export class IkoViewPage {
    * Returns the slugified key.
    */
   async createViewViaApi(repositoryConfigKey: string, title: string): Promise<string> {
-    const key = title
-      .toLowerCase()
-      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
-      .replace(/^[^a-z]+/g, '');
+    const key = this.viewKeyFor(title);
     await apiPost(`/api/management/v1/iko-view/${key}`, {
       ikoRepositoryConfigKey: repositoryConfigKey,
       title,

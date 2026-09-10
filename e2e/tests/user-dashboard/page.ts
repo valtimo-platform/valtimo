@@ -234,19 +234,40 @@ export class UserDashboardPage {
 
   /** Creates a bezwaar case, which increases the counts the seeded widgets report. */
   async createCaseViaApi(): Promise<string> {
-    const response = await apiPost<{document: {id: string}}>(
-      USER_DASHBOARD_CONFIG.processDocumentEndpoint,
-      {
-        processDefinitionKey: USER_DASHBOARD_CONFIG.processDefinitionKey,
-        request: {
-          definition: USER_DASHBOARD_CONFIG.caseDefinitionKey,
-          caseDefinitionKey: USER_DASHBOARD_CONFIG.caseDefinitionKey,
-          caseDefinitionVersionTag: USER_DASHBOARD_CONFIG.caseDefinitionVersionTag,
-          content: {},
-        },
+    const key = USER_DASHBOARD_CONFIG.caseDefinitionKey;
+    let versionTags: string[] = [];
+    try {
+      const versions = await apiGet<Array<{versionTag: string}>>(
+        `/api/management/v1/case-definition/${key}/version?size=100`
+      );
+      versionTags = versions.map(version => version.versionTag);
+    } catch {
+    }
+
+    const candidates = [...new Set([USER_DASHBOARD_CONFIG.caseDefinitionVersionTag, ...versionTags])];
+    const failures: string[] = [];
+
+    for (const caseDefinitionVersionTag of candidates) {
+      try {
+        const response = await apiPost<{document: {id: string}}>(
+          USER_DASHBOARD_CONFIG.processDocumentEndpoint,
+          {
+            processDefinitionKey: USER_DASHBOARD_CONFIG.processDefinitionKey,
+            request: {
+              definition: key,
+              caseDefinitionKey: key,
+              caseDefinitionVersionTag,
+              content: {},
+            },
+          }
+        );
+        return response.document.id;
+      } catch (error) {
+        failures.push(`${caseDefinitionVersionTag}: ${(error as Error).message}`);
       }
-    );
-    return response.document.id;
+    }
+
+    throw new Error(`No version of "${key}" could start a case — ${failures.join(' | ')}`);
   }
 
   async deleteCaseViaApi(documentId: string) {

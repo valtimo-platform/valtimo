@@ -16,7 +16,8 @@
 
 import {expect, test} from '@playwright/test';
 
-import {JsonEditor} from '../../shared/json-editor/json-editor.utils';
+import {JSON_EDITOR_SAVE_URLS, JsonEditor} from '../../shared/json-editor/json-editor.utils';
+import {apiGet, apiPut} from '../../utils/api.utils';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import {
@@ -34,11 +35,14 @@ import {CaseDetailsManagementCaseListPage} from './page';
 
 test.use({storageState: undefined});
 
+const LIST_COLUMN_URL = '/api/management/v1/case/bezwaar/list-column';
+
 test.describe('Case management', () => {
   let context;
   let page;
   let testPage;
   let request;
+  let originalListColumns: unknown[] | null = null;
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -49,8 +53,28 @@ test.describe('Case management', () => {
 
     testPage = new CaseDetailsManagementCaseListPage(page, request);
 
+    try {
+      originalListColumns = await apiGet<unknown[]>(LIST_COLUMN_URL);
+    } catch {
+      originalListColumns = null;
+    }
+
     await testPage.goToCaseDetailsManagementCaseList('bezwaar');
     await ensureDraftVersionSelected(page);
+  });
+
+  test.afterAll(async () => {
+    if (originalListColumns) {
+      try {
+        await apiPut(LIST_COLUMN_URL, originalListColumns);
+      } catch (error) {
+        console.warn(
+          `[case-list] Could not restore bezwaar's list columns; \`user-cases\` may ` +
+            `fail as a result: ${(error as Error).message}`
+        );
+      }
+    }
+    if (context) await context.close();
   });
 
   test.describe('Success test', () => {
@@ -67,7 +91,7 @@ test.describe('Case management', () => {
       test.describe('JSON Editor', () => {
         let jsonEditor;
         test.beforeAll(async () => {
-          jsonEditor = new JsonEditor(page);
+          jsonEditor = new JsonEditor(page, JSON_EDITOR_SAVE_URLS.caseListColumn);
         });
 
         test.beforeEach(async () => {
