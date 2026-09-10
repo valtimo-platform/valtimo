@@ -24,4 +24,5 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
+| Case widgets | A process button on a widget respects access rules based on the case's status, instead of staying hidden while the same process could be started under **Start** |
 | IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |

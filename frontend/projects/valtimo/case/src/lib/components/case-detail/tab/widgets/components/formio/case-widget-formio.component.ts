@@ -37,7 +37,6 @@ import {
 } from 'rxjs';
 import {FormIoModule} from '@valtimo/components';
 import {WidgetProcess} from '../widget-process/widget-process';
-import {PermissionService} from '@valtimo/access-control';
 import {DocumentService} from '@valtimo/document';
 import {ButtonModule} from 'carbon-components-angular';
 import {WidgetsService} from '../../widgets.service';
@@ -107,14 +106,13 @@ export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
 
   constructor(
     protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
     private readonly widgetsService: WidgetsService,
     private readonly destroyRef: DestroyRef,
     private readonly caseTabService: CaseTabService,
     private readonly caseWidgetApiService: CaseWidgetsApiService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {
-    super(documentService, permissionService);
+    super(documentService);
   }
 
   public ngOnInit(): void {

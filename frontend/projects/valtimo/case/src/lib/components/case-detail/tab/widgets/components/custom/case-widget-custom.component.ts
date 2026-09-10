@@ -20,7 +20,6 @@ import {BehaviorSubject, filter, Observable} from 'rxjs';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
-import {PermissionService} from '@valtimo/access-control';
 import {ButtonModule} from 'carbon-components-angular';
 import {WidgetProcess} from '../widget-process/widget-process';
 import {WidgetsService} from '../../widgets.service';
@@ -52,10 +51,9 @@ export class CaseWidgetCustomComponent extends WidgetProcess {
 
   constructor(
     private readonly widgetsService: WidgetsService,
-    protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService
+    protected readonly documentService: DocumentService
   ) {
-    super(documentService, permissionService);
+    super(documentService);
   }
 
   public onProcessStartClick(process: WidgetAction): void {

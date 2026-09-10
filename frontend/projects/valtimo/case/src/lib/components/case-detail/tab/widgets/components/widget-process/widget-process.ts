@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
-import {PermissionService} from '@valtimo/access-control';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
 import {DocumentService, StartableItem} from '@valtimo/document';
-import {
-  CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION,
-  WIDGET_PERMISSION_RESOURCE,
-} from '../../widgets.permissions';
 import {BasicWidget} from '@valtimo/layout';
 
 export class WidgetProcess {
@@ -52,35 +47,19 @@ export class WidgetProcess {
     })
   );
 
+  /** The startable items are the same PBAC-aware source the case's "start" menu uses. */
   public readonly canCreateCamundaExecution$: Observable<boolean> = combineLatest([
     this._startableItems$,
     this._baseWidgetConfiguration$,
   ]).pipe(
-    switchMap(
-      ([startableItems, widgetConfiguration]: [
-        StartableItem[] | null,
-        BasicWidget | null,
-      ]) => {
-        const processDefinitionKey = widgetConfiguration?.actions?.[0]?.processDefinitionKey;
-        const requiredProcess = startableItems?.find(
-          (item: StartableItem) =>
-            item.key === processDefinitionKey && !!item.processDefinitionId
-        );
+    map(([startableItems, widgetConfiguration]: [StartableItem[] | null, BasicWidget | null]) => {
+      const processDefinitionKey = widgetConfiguration?.actions?.[0]?.processDefinitionKey;
 
-        if (!requiredProcess) {
-          return of(false);
-        }
-
-        return this.permissionService.requestPermission(CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION, {
-          resource: WIDGET_PERMISSION_RESOURCE.camundaProcessDefinition,
-          identifier: requiredProcess.processDefinitionId,
-        });
-      }
-    )
+      return !!startableItems?.some(
+        (item: StartableItem) => item.key === processDefinitionKey && !!item.processDefinitionId
+      );
+    })
   );
 
-  constructor(
-    protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService
-  ) {}
+  constructor(protected readonly documentService: DocumentService) {}
 }
