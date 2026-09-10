@@ -184,6 +184,10 @@ export class PluginStateService {
           next: configuration => {
             if (configuration) {
               this._selectedPluginConfiguration$.next(configuration);
+            } else {
+              // The configuration was deleted out from under the link. Drop the function key
+              // seeded above too — a half-populated wizard step is worse than an empty one.
+              this.clearPluginSelection();
             }
           },
           error: () => this.clearPluginSelection(),

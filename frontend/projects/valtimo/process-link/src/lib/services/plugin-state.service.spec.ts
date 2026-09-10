@@ -15,13 +15,16 @@
  */
 
 import {TestBed} from '@angular/core/testing';
+import {TranslateService} from '@ngx-translate/core';
 import {
+  ExternalPluginService,
   PluginConfiguration,
   PluginDefinition,
   PluginManagementService,
   PluginService,
   PluginSpecification,
 } from '@valtimo/plugin';
+import {MockTranslateService} from '@valtimo/shared';
 import {of, Subject, throwError} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ProcessLink} from '../models';
@@ -93,6 +96,16 @@ describe('PluginStateService', () => {
             pluginSpecifications: PLUGIN_SPECIFICATIONS,
           },
         },
+        // Every link here is a 'plugin' link, so the external-plugin path is never walked — these
+        // two only have to be injectable. The real service pulls in HttpClient and ConfigService.
+        {
+          provide: ExternalPluginService,
+          useValue: {
+            getDefinitions: () => of([]),
+            getConfigurations: () => of([]),
+          },
+        },
+        {provide: TranslateService, useClass: MockTranslateService},
       ],
     });
 
