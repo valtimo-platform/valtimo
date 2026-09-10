@@ -58,9 +58,15 @@ open class CaseAttachmentTools(
             ))
         }
 
+        if (zgwDocumentProvider == null) {
+            logger.debug { "ZGW document provider not available" }
+        }
+
         zgwDocumentProvider?.let { provider ->
             try {
-                provider.listDocuments(docId).forEach { doc ->
+                val zgwDocs = provider.listDocuments(docId)
+                logger.info { "Found ${zgwDocs.size} ZGW documents for case $docId" }
+                zgwDocs.forEach { doc ->
                     attachments.add(mapOf(
                         "id" to doc.id,
                         "name" to doc.fileName,

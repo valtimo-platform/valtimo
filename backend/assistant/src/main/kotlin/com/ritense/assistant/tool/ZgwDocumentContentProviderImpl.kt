@@ -18,20 +18,24 @@ package com.ritense.assistant.tool
 
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.zakenapi.service.ZaakDocumentService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 
 class ZgwDocumentContentProviderImpl(
     private val zaakDocumentService: ZaakDocumentService
 ) : ZgwDocumentContentProvider {
 
+    private val logger = KotlinLogging.logger {}
+
     override fun listDocuments(caseDocumentId: UUID): List<ZgwDocumentInfo> {
+        logger.debug { "Listing ZGW documents for case $caseDocumentId" }
         return zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)
             .filterIsInstance<RelatedFileDto>()
             .filter { it.canView }
             .map { dto ->
                 ZgwDocumentInfo(
                     id = dto.fileId.toString(),
-                    fileName = dto.fileName,
+                    fileName = dto.fileName ?: dto.title,
                     sizeInBytes = dto.sizeInBytes,
                     createdOn = dto.createdOn?.toString(),
                     pluginConfigurationId = dto.pluginConfigurationId.toString(),
@@ -45,6 +49,7 @@ class ZgwDocumentContentProviderImpl(
         caseDocumentId: UUID,
         documentId: String
     ): AttachmentContent? {
+        logger.debug { "Downloading ZGW document $documentId for case $caseDocumentId" }
         return try {
             val inputStream = zaakDocumentService.downloadInformatieObject(
                 pluginConfigurationId,
@@ -59,6 +64,7 @@ class ZgwDocumentContentProviderImpl(
                 sizeInBytes = null
             )
         } catch (e: Exception) {
+            logger.warn(e) { "Failed to download ZGW document $documentId: ${e.message}" }
             null
         }
     }

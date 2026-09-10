@@ -75,7 +75,9 @@ import org.springframework.scheduling.annotation.EnableScheduling
     "com.ritense.case_.configuration.CaseWidgetAutoConfiguration",
     "com.ritense.document.autoconfigure.DocumentAutoConfiguration",
     "com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration",
-    "com.ritense.processlink.autoconfigure.ProcessLinkAutoConfiguration"
+    "com.ritense.processlink.autoconfigure.ProcessLinkAutoConfiguration",
+    "com.ritense.zakenapi.config.ZakenApiAutoConfiguration",
+    "com.ritense.resource.autoconfigure.ResourceAutoConfiguration"
 ])
 @EnableJpaRepositories(basePackages = ["com.ritense.assistant.repository"])
 @EntityScan(basePackages = ["com.ritense.assistant.domain"])
