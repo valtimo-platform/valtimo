@@ -15,24 +15,46 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {ButtonModule} from 'carbon-components-angular';
+import {ValtimoCdsModalDirective} from '@valtimo/components';
+import {ButtonModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {ASSISTANT_TEST_IDS} from '../../constants';
+import {AssistantPendingAction} from '../../models';
 
 @Component({
   standalone: true,
-  selector: 'valtimo-assistant-confirmation',
-  templateUrl: './assistant-confirmation.component.html',
-  styleUrls: ['./assistant-confirmation.component.scss'],
+  selector: 'valtimo-assistant-confirmation-modal',
+  templateUrl: './assistant-confirmation-modal.component.html',
+  styleUrls: ['./assistant-confirmation-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule, CommonModule, TranslateModule],
+  imports: [
+    ButtonModule,
+    CommonModule,
+    LayerModule,
+    ModalModule,
+    TranslateModule,
+    ValtimoCdsModalDirective,
+  ],
 })
-export class AssistantConfirmationComponent {
-  @Input() public description: string | null = null;
+export class AssistantConfirmationModalComponent {
+  @Input() public pendingAction: AssistantPendingAction | null = null;
+  @Input() public applying = false;
 
   @Output() public cancelEvent = new EventEmitter<void>();
   @Output() public confirmEvent = new EventEmitter<void>();
 
   protected readonly testIds = ASSISTANT_TEST_IDS;
+
+  @HostListener('document:keydown.escape')
+  public onClose(): void {
+    if (this.pendingAction && !this.applying) this.cancelEvent.emit();
+  }
 }

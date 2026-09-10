@@ -16,9 +16,7 @@
 
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {AiLabel16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {IconModule, IconService} from 'carbon-components-angular';
 import {ASSISTANT_TEST_IDS} from '../../constants';
 import {AssistantMessage} from '../../models';
 import {AssistantMarkdownPipe} from '../../pipes';
@@ -29,14 +27,10 @@ import {AssistantMarkdownPipe} from '../../pipes';
   templateUrl: './assistant-message.component.html',
   styleUrls: ['./assistant-message.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AssistantMarkdownPipe, CommonModule, IconModule, TranslateModule],
+  imports: [AssistantMarkdownPipe, CommonModule, TranslateModule],
 })
 export class AssistantMessageComponent {
   @Input() public message!: AssistantMessage;
 
   protected readonly testIds = ASSISTANT_TEST_IDS;
-
-  constructor(private readonly iconService: IconService) {
-    this.iconService.registerAll([AiLabel16]);
-  }
 }

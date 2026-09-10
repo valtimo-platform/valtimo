@@ -2,7 +2,11 @@
   "assistant": {
     "name": "RitA",
     "confirmation": {
+      "affectedResources": "What this affects",
+      "after": "After",
       "applied": "Done — the changes have been applied.",
+      "applying": "Applying...",
+      "before": "Before",
       "cancel": "Cancel",
       "cancelled": "Cancelled. Nothing was changed.",
       "confirm": "Confirm",
@@ -37,7 +41,8 @@
     "teaser": {
       "accessControl": "You can now add PBAC rules with the help of our AI Chat",
       "close": "Close"
-    }
+    },
+    "you": "You"
   },
   "bezwaarStartForm": {
     "htmlLabel": "HTML",

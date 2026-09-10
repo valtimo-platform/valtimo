@@ -23,8 +23,9 @@ import {IconModule, IconService} from 'carbon-components-angular';
 import {Observable, Subscription} from 'rxjs';
 import {filter} from 'rxjs/operators';
 import {ASSISTANT_TEST_IDS} from '../../constants';
-import {AssistantAvailabilityService} from '../../services';
+import {AssistantAvailabilityService, AssistantChatService} from '../../services';
 import {resolveAssistantPageContext} from '../../utils';
+import {AssistantConfirmationModalComponent} from '../assistant-confirmation-modal/assistant-confirmation-modal.component';
 import {AssistantPanelComponent} from '../assistant-panel/assistant-panel.component';
 import {AssistantTeaserComponent} from '../assistant-teaser/assistant-teaser.component';
 
@@ -35,6 +36,7 @@ import {AssistantTeaserComponent} from '../assistant-teaser/assistant-teaser.com
   styleUrls: ['./assistant-launcher.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AssistantConfirmationModalComponent,
     AssistantPanelComponent,
     AssistantTeaserComponent,
     CommonModule,
@@ -51,9 +53,13 @@ export class AssistantLauncherComponent implements OnInit, OnDestroy {
 
   protected readonly testIds = ASSISTANT_TEST_IDS;
 
+  // Confirming a change reloads the page, so the panel has to come back open or the
+  // result notice would be hidden behind the launcher.
+  private readonly _OPEN_STORAGE_KEY = 'valtimoAssistantPanelOpen';
   private readonly _subscriptions = new Subscription();
 
   constructor(
+    public readonly chatService: AssistantChatService,
     private readonly availabilityService: AssistantAvailabilityService,
     private readonly iconService: IconService,
     private readonly router: Router
@@ -64,6 +70,7 @@ export class AssistantLauncherComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.setTeaserMessageKey(this.router.url);
     this.openRouterSubscription();
+    this.restoreOpenState();
   }
 
   public ngOnDestroy(): void {
@@ -71,16 +78,34 @@ export class AssistantLauncherComponent implements OnInit, OnDestroy {
   }
 
   public onLauncherClick(): void {
-    this.$open.set(true);
+    this.setOpen(true);
     this.$teaserDismissed.set(true);
   }
 
   public onPanelMinimize(): void {
-    this.$open.set(false);
+    this.setOpen(false);
   }
 
   public onTeaserClose(): void {
     this.$teaserDismissed.set(true);
+  }
+
+  private setOpen(open: boolean): void {
+    this.$open.set(open);
+
+    try {
+      sessionStorage.setItem(this._OPEN_STORAGE_KEY, String(open));
+    } catch {
+      // Blocked storage only costs the panel its open state across a reload.
+    }
+  }
+
+  private restoreOpenState(): void {
+    try {
+      if (sessionStorage.getItem(this._OPEN_STORAGE_KEY) === 'true') this.$open.set(true);
+    } catch {
+      // Nothing to restore.
+    }
   }
 
   private openRouterSubscription(): void {

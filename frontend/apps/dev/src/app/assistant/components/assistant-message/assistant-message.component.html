@@ -19,12 +19,17 @@
   [attr.data-test-id]="testIds.message"
   class="assistant-message"
 >
-  <div *ngIf="message.author === 'assistant'" class="assistant-message__meta">
-    <span class="assistant-message__avatar">
-      <svg cdsIcon="ai-label" size="16"></svg>
-    </span>
+  <div class="assistant-message__meta">
+    <img
+      *ngIf="message.author === 'assistant'"
+      alt=""
+      class="assistant-message__avatar"
+      src="assets/rita-avatar.png"
+    />
 
-    <span class="assistant-message__name">{{ 'assistant.name' | translate }}</span>
+    <span class="assistant-message__name">
+      {{ (message.author === 'assistant' ? 'assistant.name' : 'assistant.you') | translate }}
+    </span>
 
     <span class="assistant-message__time">{{ message.timestamp | date: 'HH:mm' }}</span>
   </div>

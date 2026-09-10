@@ -28,22 +28,18 @@
   }
 
   &__avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-shrink: 0;
     width: 1.5rem;
     height: 1.5rem;
-    border-radius: 0.25rem;
-    background-color: var(--cds-button-primary);
-    color: var(--cds-text-on-color);
-
-    svg {
-      fill: currentColor;
-    }
   }
 
   &__name {
     font-weight: 600;
+    color: var(--vcds-color-80);
+  }
+
+  :host-context([data-carbon-theme='g90']) &__name,
+  :host-context([data-carbon-theme='g100']) &__name {
     color: var(--cds-text-primary);
   }
 
@@ -149,11 +145,17 @@
   &--user {
     align-items: flex-end;
 
+    .assistant-message__name {
+      font-weight: 400;
+      color: var(--cds-text-secondary);
+    }
+
     .assistant-message__text {
       max-width: 85%;
       padding: 0.5rem 0.75rem;
-      border-radius: 0.5rem;
-      background-color: var(--cds-layer-02);
+      border-radius: 0.25rem;
+      background-color: var(--cds-button-primary);
+      color: var(--cds-text-on-color);
     }
   }
 }

@@ -2,7 +2,11 @@
   "assistant": {
     "name": "RitA",
     "confirmation": {
+      "affectedResources": "Wat dit raakt",
+      "after": "Na",
       "applied": "Klaar — de wijzigingen zijn doorgevoerd.",
+      "applying": "Bezig met doorvoeren...",
+      "before": "Voor",
       "cancel": "Annuleren",
       "cancelled": "Geannuleerd. Er is niets gewijzigd.",
       "confirm": "Bevestigen",
@@ -37,7 +41,8 @@
     "teaser": {
       "accessControl": "Je kunt nu PBAC regels toevoegen met behulp van onze AI Chat",
       "close": "Sluiten"
-    }
+    },
+    "you": "Jij"
   },
   "bezwaarStartForm": {
     "htmlLabel": "HTML",
