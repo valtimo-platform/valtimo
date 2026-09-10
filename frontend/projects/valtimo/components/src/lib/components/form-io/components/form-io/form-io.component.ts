@@ -125,7 +125,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
       const defaultOptions = {
         ...options,
-        ...(formioTranslations === 'object' && {
+        language,
+        ...(typeof formioTranslations === 'object' && {
           i18n: {
             [language]: this.stateService.flattenTranslationsObject(formioTranslations),
           },
