@@ -1,0 +1,7 @@
+{
+    "key": "document-upload-in-building-block",
+    "name": "Document upload in building block",
+    "description": "Demonstrates a Documenten API upload component on a task form inside a building block. The task form submits the building block document, while the upload itself runs the DOCUMENT_UPLOAD process of the case the building block runs in.",
+    "versionTag": "1.0.0",
+    "final": false
+}
