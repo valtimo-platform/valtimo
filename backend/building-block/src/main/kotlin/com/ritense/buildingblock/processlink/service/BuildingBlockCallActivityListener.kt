@@ -153,8 +153,17 @@ class BuildingBlockCallActivityListener(
                 "referencing the building block document, but was '$buildingBlockVariableString'")
         }
 
+        // A dangling `#{buildingBlockDocumentId}` is not a broken process: the link its output mappings live on is simply gone (G24). Logged and skipped — the migration is where it gets reported.
         val buildingBlockInstance = buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)
-            ?: throw IllegalStateException("No building block instance found for documentId '$buildingBlockDocumentId'")
+        if (buildingBlockInstance == null) {
+            logger.warn {
+                "Call activity '${execution.currentActivityId}' of '${execution.processDefinitionId}' still carries " +
+                    "building block document '$buildingBlockDocumentId', but no building block instance exists for " +
+                    "it — it was most likely dissolved by a migration while this call activity was open. " +
+                    "Skipping its output mappings."
+            }
+            return
+        }
 
         val activityId = buildingBlockInstance.activityId
             ?: throw IllegalStateException("No buildingBlockInstance.activityId found for documentId '$buildingBlockDocumentId'")
@@ -164,6 +173,18 @@ class BuildingBlockCallActivityListener(
             activityId
         ).filterIsInstance<BuildingBlockProcessLink>()
 
+        if (processLinks.isEmpty()) {
+            logger.warn {
+                "Building block '${buildingBlockInstance.definition.id}' ('$buildingBlockDocumentId') ended, but " +
+                    "'${execution.processDefinitionId}' no longer declares a building block on activity " +
+                    "'$activityId', so it has no output mappings to run. The owner was migrated onto a version " +
+                    "that dropped the link (G24); dissolve the block with a 'removeBuildingBlock' entry, or " +
+                    "restore the link."
+            }
+            return
+        }
+
+        // Several links on one activity is a genuine ambiguity: there is no defensible answer to which owns the sync.
         val processLink = processLinks.singleOrNull()
             ?: throw IllegalStateException(
                 "Expected a single building block process link for processDefinitionId '${execution.processDefinitionId}' " +
@@ -275,7 +296,7 @@ class BuildingBlockCallActivityListener(
     }
 
     private companion object {
-        private val logger = KotlinLogging.logger {}
         private const val DOC_PREFIX = "doc"
+        private val logger = KotlinLogging.logger {}
     }
 }

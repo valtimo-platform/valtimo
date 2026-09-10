@@ -1,0 +1,24 @@
+{
+    "$id": "inspectie-fotos.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Inspectiefoto's",
+    "type": "object",
+    "properties": {
+        "aanvragerNaam": {
+            "type": "string",
+            "description": "Naam van de aanvrager, overgenomen uit de inspectiebouwsteen"
+        },
+        "fotoStatus": {
+            "type": "string",
+            "description": "Status van het fotodossier"
+        },
+        "aantalFotos": {
+            "type": "integer",
+            "description": "Aantal geüploade foto's"
+        },
+        "toelichting": {
+            "type": ["string", "null"],
+            "description": "Toelichting bij de foto's"
+        }
+    }
+}

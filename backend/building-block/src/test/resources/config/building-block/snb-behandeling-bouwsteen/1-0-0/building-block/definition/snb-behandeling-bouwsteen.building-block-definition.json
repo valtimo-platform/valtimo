@@ -1,0 +1,7 @@
+{
+    "key": "snb-behandeling-bouwsteen",
+    "name": "Behandeling (uit subproces)",
+    "description": "Het subproces `snb-behandeling` van `subproces-naar-bouwsteen` 1.0.0, verhuisd naar een bouwsteen en met `task1` hernoemd naar `task_1`. De fixture voor de vraag of een adoptie zijn activity mapping meekrijgt.",
+    "versionTag": "1.0.0",
+    "final": false
+}

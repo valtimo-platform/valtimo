@@ -15,3 +15,4 @@
  */
 
 export * from './building-block-management.model';
+export * from './migration.model';

@@ -1,0 +1,14 @@
+[
+    {
+        "buildingBlockDefinitionKey": "inspectie-dossier",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "pluginConfigurationMappings": {},
+        "inputMappings": [
+            {
+                "source": "doc:/aanvrager/naam",
+                "target": "doc:/aanvragerNaam"
+            }
+        ],
+        "outputMappings": []
+    }
+]

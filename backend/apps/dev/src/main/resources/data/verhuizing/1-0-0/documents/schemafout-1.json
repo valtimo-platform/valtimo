@@ -1,0 +1,15 @@
+{
+    "scenario": "schemafout",
+    "aanvrager": {
+        "naam": "Schema Fout 1",
+        "emailadres": "schemafout1@example.com"
+    },
+    "nieuwAdres": "Teststraat 1, 6666 FF Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 3,
+    "oppervlakte": 75,
+    "documenten": [
+        "paspoort"
+    ]
+}

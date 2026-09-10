@@ -1,0 +1,150 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-tab" [formGroup]="form">
+  @if (descriptionKey) {
+    <p class="migration-tab__description">{{ descriptionKey | translate }}</p>
+  }
+
+  <div class="migration-tab__items" formArrayName="instructions">
+    @for (instruction of instructionsArray.controls; track instruction) {
+      <div class="migration-tab__card" [formGroupName]="$index">
+        <div class="migration-tab__card-header">
+          <!-- The whole header is the toggle: a suggested plan authorises every reachable block, and hunting a 16px target on each is the opposite of what collapsing is for. -->
+          <button
+            type="button"
+            class="migration-tab__card-toggle"
+            [attr.aria-expanded]="isExpanded(instruction)"
+            [title]="
+              (isExpanded(instruction) ? 'interface.collapse' : 'interface.expand') | translate
+            "
+            (click)="toggleExpanded(instruction)"
+          >
+            <svg
+              [cdsIcon]="isExpanded(instruction) ? 'chevron--up' : 'chevron--down'"
+              size="16"
+            ></svg>
+
+            <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
+
+            <span class="migration-tab__card-summary">
+              {{ summaryOf(instruction) || ('migrationEditor.card.unnamed' | translate) }}
+            </span>
+          </button>
+
+          <button
+            cdsButton="danger--ghost"
+            size="sm"
+            [iconOnly]="true"
+            [title]="'interface.delete' | translate"
+            (click)="removeInstruction($index)"
+          >
+            <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </div>
+
+        @if (isExpanded(instruction)) {
+          <div class="migration-tab__grid">
+            <v-select
+              formControlName="buildingBlockKey"
+              [clearable]="false"
+              [items]="keyItems"
+              [required]="true"
+              [titleTranslationKey]="'migrationEditor.buildingBlock.buildingBlockKey'"
+              [placeholder]="
+                'migrationEditor.buildingBlock.buildingBlockKeyPlaceholder' | translate
+              "
+            ></v-select>
+
+            <!-- Required in both modes: an entry acts on one version, whichever direction it runs in -->
+            <v-select
+              formControlName="buildingBlockVersionTag"
+              [clearable]="false"
+              [items]="versionItemsFor(instruction)"
+              [required]="true"
+              [titleTranslationKey]="'migrationEditor.buildingBlock.buildingBlockVersionTag'"
+              [placeholder]="
+                'migrationEditor.buildingBlock.buildingBlockVersionTagPlaceholder' | translate
+              "
+            ></v-select>
+          </div>
+
+          @if (isSuggesting(instruction)) {
+            <p class="migration-tab__hint">{{ 'interface.loading' | translate }}</p>
+          } @else {
+            <!-- Data migration (fills the new / drains the removed building block document) -->
+            <h5 class="migration-tab__subheading">
+              {{ 'migrationEditor.tabs.dataMigration' | translate }}
+            </h5>
+            @if (dataMigrationHintKey) {
+              <p class="migration-tab__hint">{{ dataMigrationHintKey | translate }}</p>
+            }
+
+            <valtimo-migration-data-migration-tab
+              [descriptionKey]="null"
+              [sourceContext]="sourceContextOf(instruction)"
+              [sourcePrefixes]="sourcePrefixes"
+              [targetContext]="targetContextOf(instruction)"
+              [testIds]="testIds"
+              [patches]="dataMigrationOf($index)"
+              (patchesChange)="onDataMigrationChange($index, $event)"
+            ></valtimo-migration-data-migration-tab>
+
+            <!-- Process migration (hijacks / hands back the process) -->
+            <h5 class="migration-tab__subheading">
+              {{ 'migrationEditor.tabs.processMigration' | translate }}
+            </h5>
+            @if (processMigrationHintKey) {
+              <p class="migration-tab__hint">{{ processMigrationHintKey | translate }}</p>
+            }
+
+            <valtimo-migration-process-migration-tab
+              [api]="api"
+              [descriptionKey]="null"
+              [sourceContext]="sourceContextOf(instruction)"
+              [sourcePrefixes]="sourcePrefixes"
+              [sourceProcessDefinitions]="sourceProcessDefinitionsOf(instruction)"
+              [targetProcessDefinitions]="targetProcessDefinitionsOf(instruction)"
+              [testIds]="testIds"
+              [instructions]="processMigrationOf($index)"
+              (instructionsChange)="onProcessMigrationChange($index, $event)"
+            ></valtimo-migration-process-migration-tab>
+          }
+        }
+      </div>
+    } @empty {
+      <p class="migration-tab__empty">
+        {{
+          'migrationEditor.' + (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') + '.empty'
+            | translate
+        }}
+      </p>
+    }
+  </div>
+
+  <button
+    cdsButton="tertiary"
+    size="sm"
+    [attr.data-test-id]="isAdd ? testIds.addBuildingBlockButton : testIds.removeBuildingBlockButton"
+    (click)="addInstruction()"
+  >
+    {{
+      'migrationEditor.' + (isAdd ? 'addBuildingBlock' : 'removeBuildingBlock') + '.addEntry'
+        | translate
+    }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>

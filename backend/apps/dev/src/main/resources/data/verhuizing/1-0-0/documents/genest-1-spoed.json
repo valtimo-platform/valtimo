@@ -1,0 +1,12 @@
+{
+    "scenario": "genest",
+    "aanvrager": {
+        "naam": "Bram Willems"
+    },
+    "nieuwAdres": "Spoedstraat 1, 1111 AA Testdorp",
+    "status": "ingediend",
+    "spoed": true,
+    "aantalPersonen": 2,
+    "oppervlakte": 10,
+    "documenten": []
+}

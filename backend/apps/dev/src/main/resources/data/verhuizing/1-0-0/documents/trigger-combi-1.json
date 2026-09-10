@@ -1,0 +1,15 @@
+{
+    "scenario": "trigger-combi",
+    "aanvrager": {
+        "naam": "Trigger Combinatie",
+        "emailadres": "trigger-combi@example.com"
+    },
+    "nieuwAdres": "Sprongstraat 1, 4444 DD Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 2,
+    "oppervlakte": 65,
+    "documenten": [
+        "paspoort"
+    ]
+}

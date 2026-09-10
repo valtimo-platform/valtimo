@@ -1,0 +1,14 @@
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-inspectie-fotos"
+    },
+    {
+        "activityId": "FotosUploadenTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "fotos-uploaden"
+    }
+]

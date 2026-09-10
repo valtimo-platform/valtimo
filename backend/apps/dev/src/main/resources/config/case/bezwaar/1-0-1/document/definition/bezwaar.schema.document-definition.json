@@ -5,75 +5,75 @@
     "type": "object",
     "properties": {
         "aanhef": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Aanhef"
         },
         "voornaam": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Voornaam"
         },
         "achternaam": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Achternaam"
         },
         "bsn": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Burgerservicenummer"
         },
         "straatnaam": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Straatnaam"
         },
         "huisnummer": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Huisnummer"
         },
         "toevoeging": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Toevoeging"
         },
         "postcode": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Postcode"
         },
         "plaats": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Plaats"
         },
         "telefoonnummer": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Telefoonnummer"
         },
         "e-mailadres": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "E-mailadres"
         },
         "zaaknummer": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Zaaknummer waar een bezwaar voor wordt ingediend"
         },
         "datumBesluit": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Datum waarop de gemeente het besluit kenbaar heeft gemaakt"
         },
         "naamBeslisser": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "De persoon die het besluit heeft genomen"
         },
         "besluit": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Inhoud van het besluit"
         },
         "bezwaar": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "De reden waarom u het niet eens bent met het besluit"
         },
         "communicatie": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Voorkeur over hoe communicatie over het bezwaar moet plaatsvinden"
         },
         "beslissingBezwaar": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "De beslissing over het bezwaar"
         },
         "besluitGenomen": {
@@ -85,23 +85,23 @@
             "description": "Het bezwaar is gegrond"
         },
         "naamBehandelaar": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Naam behandelaar"
         },
         "e-mailBehandelaar": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "E-mailadres behandelaar"
         },
         "aanvraagAanvulInfo": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Aanvraag aanvullende informatie over het bezwaar"
         },
         "aanvullendeInfo": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "De aanvullende informatie over het bezwaar"
         },
         "portalTaakInformatie": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Portal taak informatie"
         }
     }

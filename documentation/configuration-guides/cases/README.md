@@ -11,6 +11,7 @@ From here you can configure:
 - **[Actions](actions.md)** — Startable items (processes and building blocks) users can trigger from a case
 - **[Decision tables](decision-tables.md)** — DMN decision tables for automated decisions
 - **[Document](document.md)** — JSON schema defining the case's data structure
+- **[Migration](migration/README.md)** — Moving running cases from an older version to a newer one
 - **[Forms](forms.md)** — Form definitions available for the case
 - **[Form flows](form-flows.md)** — Multi-step form sequences
 - **[Tasks](tasks/README.md)** — Task list column and search field configuration
@@ -104,7 +105,8 @@ Click **Start upload** to import the case definition
 Case definitions support versioning. The version selector in the header shows the current version
 and allows switching between versions.
 
-Click the **Version management** button to access version management options.The deployment page shows version information and provides actions depending on the version status:
+Click the **Version management** button to access version management options.The deployment page shows version
+information and provides actions depending on the version status:
 
 <figure><img src="../../assets/configuration-guides/cases/06-version-selector-dropdown.png" alt=""><figcaption>Version selector dropdown</figcaption></figure>
 
@@ -154,11 +156,11 @@ Fill in the new version details:
 - **Key** — Unique identifier (cannot be changed)
 - **Version** — New version number (e.g., `1.1.0`)
 - **Description** — Optional description of what this version changes
-{% endstep %}
-{% step %}
-Click **Save** to create the draft
-{% endstep %}
-{% endstepper %}
+  {% endstep %}
+  {% step %}
+  Click **Save** to create the draft
+  {% endstep %}
+  {% endstepper %}
 
 The new draft version opens in edit mode, ready for configuration changes.
 
@@ -237,7 +239,8 @@ lacks features or fields present in newer versions.
 
 ## Access control
 
-Case access is controlled through the access control system. See [Access control](../access-control/README.md) for details on configuring permissions.
+Case access is controlled through the access control system. See [Access control](../access-control/README.md) for
+details on configuring permissions.
 
 | Resource type                                        | Action      | Description                    |
 |------------------------------------------------------|-------------|--------------------------------|

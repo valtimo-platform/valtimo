@@ -18,6 +18,7 @@ package com.ritense.valtimo.contract.case_
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.domain.AbstractId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.repository.SemverConverter
@@ -51,6 +52,10 @@ data class CaseDefinitionId(
     }
 
     override fun getIdKey() = key
+
+    override fun blueprintType() = BlueprintType.CASE
+
+    override fun blueprintVersionTag() = versionTag
 
     init {
         require(key.isNotBlank()) { "[caseDefinitionId.key] was blank!" }

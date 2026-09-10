@@ -44,6 +44,8 @@ import {CaseManagementDocumentDefinitionComponent} from './components/case-manag
 import {CaseManagementGeneralComponent} from './components/case-management-detail/tabs/case-management-general/case-management-general.component';
 import {CaseManagementWidgetTabComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
 import {CaseManagementActionsComponent} from './components/case-management-detail/tabs/case-management-actions/case-management-actions.component';
+import {CaseManagementMigrationComponent} from './components/case-management-detail/tabs/case-management-migration/case-management-migration.component';
+import {CaseManagementMigrationPlanEditorComponent} from './components/case-management-migration-plan-editor/case-management-migration-plan-editor.component';
 import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
 import {TabEnum} from './models';
 
@@ -87,6 +89,7 @@ const routes: Routes = [
       },
       {path: TabEnum.FORM_FLOWS, component: FormFlowOverviewComponent},
       {path: TabEnum.TASKS, component: TaskManagementDetailComponent},
+      {path: TabEnum.MIGRATION, component: CaseManagementMigrationComponent},
     ],
   },
   {
@@ -171,6 +174,18 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     canDeactivate: [pendingChangesGuard],
     data: {title: 'Form flow details', roles: [ROLE_ADMIN], customPageTitle: true},
+  },
+  {
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.MIGRATION}/create`,
+    component: CaseManagementMigrationPlanEditorComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Create migration plan', roles: [ROLE_ADMIN], customPageTitle: true},
+  },
+  {
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.MIGRATION}/:migrationKey`,
+    component: CaseManagementMigrationPlanEditorComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Migration plan', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];
 

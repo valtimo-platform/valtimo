@@ -1,0 +1,31 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Foto's vastleggen",
+            "content": "Leg de foto's van de inspectie vast.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvragerNaam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Foto's starten",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

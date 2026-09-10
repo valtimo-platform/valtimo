@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.ritense.document.autoconfiguration
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -29,6 +31,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 
 @AutoConfiguration
+@Deprecated(
+    "Wires the 'Case migration (beta)' admin screen, which has been removed from the admin menu " +
+        "and replaced by the case definition migration feature. Will be removed in a future release."
+)
 class DocumentMigrationAutoConfiguration {
     @Order(294)
     @Bean

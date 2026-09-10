@@ -49,19 +49,20 @@ class BuildingBlockInstance(
     val caseDocumentId: UUID? = null,
 
     @Column(name = "activity_id", nullable = true)
-    val activityId: String? = null,
+    var activityId: String? = null,
 
     @Column(name = "caller_process_definition_id", nullable = true)
-    val callerProcessDefinitionId: String? = null,
+    var callerProcessDefinitionId: String? = null,
 
     @Column(name = "process_instance_id", nullable = true)
     var processInstanceId: String? = null,
 
+    // Mutable because the adoption walk re-homes a block the runtime listener created parentless.
     @Column(name = "parent_building_block_instance_id", nullable = true)
-    val parentBuildingBlockInstanceId: UUID? = null,
+    var parentBuildingBlockInstanceId: UUID? = null,
 
     @Column(name = "root_building_block_instance_id", nullable = true)
-    val rootBuildingBlockInstanceId: UUID? = null,
+    var rootBuildingBlockInstanceId: UUID? = null,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(

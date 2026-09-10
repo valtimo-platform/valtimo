@@ -1,0 +1,15 @@
+{
+    "scenario": "bouwstenen",
+    "aanvrager": {
+        "naam": "Bouwsteen Geval 2",
+        "emailadres": "bouwstenen2@example.com"
+    },
+    "nieuwAdres": "Teststraat 2, 6666 FF Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 3,
+    "oppervlakte": 75,
+    "documenten": [
+        "paspoort"
+    ]
+}

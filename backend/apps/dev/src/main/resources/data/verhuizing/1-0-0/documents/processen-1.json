@@ -1,0 +1,15 @@
+{
+    "scenario": "processen",
+    "aanvrager": {
+        "naam": "Sanne Bakker",
+        "emailadres": "sanne@example.com"
+    },
+    "nieuwAdres": "Kerkstraat 12, 5678 CD Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 2,
+    "oppervlakte": 70,
+    "documenten": [
+        "paspoort"
+    ]
+}

@@ -1,0 +1,54 @@
+{
+    "title": "Verhuizing wordt verhuizingdossier (andere zaaksleutel)",
+    "key": "verhuizing-dossier-uit-verhuizing",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "dossier"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/dossierhouder",
+            "source": "doc:/aanvrager/naam"
+        },
+        {
+            "target": "doc:/dossierStatus",
+            "source": "doc:/status"
+        },
+        {
+            "target": "doc:/dossierAdres",
+            "source": "doc:/nieuwAdres"
+        },
+        {
+            "target": "doc:/aantalBewoners",
+            "source": "doc:/aantalPersonen",
+            "targetType": "integer"
+        },
+        {
+            "target": "doc:/gemigreerdVan",
+            "value": "verhuizing:1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing-dossier",
+            "mapActivities": {
+                "beoordelen_verhuizing": "dossier_vaststellen"
+            },
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

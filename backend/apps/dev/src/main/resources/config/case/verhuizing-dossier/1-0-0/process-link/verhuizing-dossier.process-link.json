@@ -1,0 +1,8 @@
+[
+    {
+        "activityId": "dossier_vaststellen",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "dossier-vaststellen"
+    }
+]

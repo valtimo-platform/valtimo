@@ -18,6 +18,8 @@ package com.ritense
 
 import com.ritense.case.TestFormExporter
 import com.ritense.case_.TestResolverFactory
+import com.ritense.case_.service.migration.CaseMigrationRunner
+import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.widget.TestCaseWidgetDataProvider
 import com.ritense.case_.widget.TestCaseWidgetMapper
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
@@ -27,6 +29,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.core.task.SyncTaskExecutor
 
 @SpringBootApplication
 class TestApplication {
@@ -55,5 +58,10 @@ class TestApplication {
 
         @Bean
         fun testCaseWidgetDataProvider() = TestCaseWidgetDataProvider()
+
+        /** Run migrations on the calling thread instead of the background pool (D17), so the first integration test to start a run cannot quietly become a race. */
+        @Bean
+        fun caseMigrationRunner(caseMigrationService: CaseMigrationService) =
+            CaseMigrationRunner(caseMigrationService, SyncTaskExecutor())
     }
 }

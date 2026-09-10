@@ -34,4 +34,5 @@ const routes: Routes = [
   imports: [CommonModule, RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
+/** @deprecated 'Case migration (beta)' is replaced by the migration feature in `@valtimo/case-management`. Will be removed in a future release. */
 export class CaseMigrationRoutingModule {}

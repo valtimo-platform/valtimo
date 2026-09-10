@@ -55,4 +55,5 @@ import {
     NotificationModule,
   ],
 })
+/** @deprecated 'Case migration (beta)' is replaced by the migration feature in `@valtimo/case-management`. Will be removed in a future release. */
 export class CaseMigrationModule {}

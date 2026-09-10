@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_VerhuizingNazorg" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0">
+  <bpmn:process id="verhuizing-nazorg" name="Verhuizing nazorg" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="nazorg_start" name="Nazorg gestart">
+      <bpmn:outgoing>Flow_nazorg_start_uitvoeren</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="nazorg_uitvoeren" name="Nazorg uitvoeren">
+      <bpmn:incoming>Flow_nazorg_start_uitvoeren</bpmn:incoming>
+      <bpmn:outgoing>Flow_nazorg_uitvoeren_end</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="nazorg_end" name="Nazorg afgerond">
+      <bpmn:incoming>Flow_nazorg_uitvoeren_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_nazorg_start_uitvoeren" sourceRef="nazorg_start" targetRef="nazorg_uitvoeren" />
+    <bpmn:sequenceFlow id="Flow_nazorg_uitvoeren_end" sourceRef="nazorg_uitvoeren" targetRef="nazorg_end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Nazorg">
+    <bpmndi:BPMNPlane id="BPMNPlane_Nazorg" bpmnElement="verhuizing-nazorg">
+      <bpmndi:BPMNShape id="nazorg_start_di" bpmnElement="nazorg_start">
+        <dc:Bounds x="172" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="156" y="175" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="nazorg_uitvoeren_di" bpmnElement="nazorg_uitvoeren">
+        <dc:Bounds x="260" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="nazorg_end_di" bpmnElement="nazorg_end">
+        <dc:Bounds x="412" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="392" y="175" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_nazorg_start_uitvoeren_di" bpmnElement="Flow_nazorg_start_uitvoeren">
+        <di:waypoint x="208" y="150" />
+        <di:waypoint x="260" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_nazorg_uitvoeren_end_di" bpmnElement="Flow_nazorg_uitvoeren_end">
+        <di:waypoint x="360" y="150" />
+        <di:waypoint x="412" y="150" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

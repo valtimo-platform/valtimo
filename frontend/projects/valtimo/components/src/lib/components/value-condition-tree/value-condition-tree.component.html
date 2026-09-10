@@ -1,0 +1,124 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="value-condition-tree" [class.value-condition-tree--nested]="depth > 0">
+  @for (control of conditions.controls; track control; let i = $index) {
+    <div
+      class="value-condition-tree__row"
+      [cdsLayer]="rowLayerLevel"
+      [formGroup]="asFormGroup(control)"
+    >
+      <div class="value-condition-tree__content">
+        @if (kindOf(i) === 'group') {
+          <cds-select
+            class="value-condition-tree__mode"
+            formControlName="mode"
+            [attr.data-test-id]="testIds.groupModeSelect"
+            [label]="'valueConditionTree.groupMode' | translate"
+          >
+            @for (mode of GROUP_MODES; track mode) {
+              <option [value]="mode">{{ 'valueConditionTree.' + mode | translate }}</option>
+            }
+          </cds-select>
+
+          <div class="value-condition-tree__nested">
+            <valtimo-value-condition-tree
+              [buildingBlockDefinitionKey]="buildingBlockDefinitionKey"
+              [buildingBlockDefinitionVersionTag]="buildingBlockDefinitionVersionTag"
+              [caseDefinitionKey]="caseDefinitionKey"
+              [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+              [conditions]="nestedConditions(i)"
+              [depth]="depth + 1"
+              [maxDepth]="maxDepth"
+              [operators]="operators"
+              [prefixes]="prefixes"
+            ></valtimo-value-condition-tree>
+          </div>
+        } @else {
+          <div class="value-condition-tree__fields">
+            <valtimo-value-path-selector
+              formControlName="path"
+              [buildingBlockDefinitionKey]="buildingBlockDefinitionKey"
+              [buildingBlockDefinitionVersionTag]="buildingBlockDefinitionVersionTag"
+              [caseDefinitionKey]="caseDefinitionKey"
+              [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+              [label]="'valueConditionTree.path' | translate"
+              [notation]="'slashes'"
+              [prefixes]="prefixes"
+            ></valtimo-value-path-selector>
+
+            <cds-select
+              formControlName="operator"
+              [attr.data-test-id]="testIds.operatorSelect"
+              [label]="'valueConditionTree.operator' | translate"
+            >
+              @for (operator of operators; track operator) {
+                <option [value]="operator">{{ operator }}</option>
+              }
+            </cds-select>
+
+            <cds-text-label>
+              {{ 'valueConditionTree.value' | translate }}
+              <input cdsText formControlName="value" [attr.data-test-id]="testIds.valueInput" />
+            </cds-text-label>
+          </div>
+        }
+      </div>
+
+      <button
+        class="value-condition-tree__remove"
+        cdsButton="danger--ghost"
+        size="sm"
+        [attr.data-test-id]="testIds.removeButton"
+        [iconOnly]="true"
+        [title]="'interface.delete' | translate"
+        (click)="removeNode(i)"
+      >
+        <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </div>
+  } @empty {
+    @if (depth > 0) {
+      <p class="value-condition-tree__empty">
+        {{ 'valueConditionTree.emptyGroup' | translate }}
+      </p>
+    }
+  }
+
+  <div class="value-condition-tree__actions">
+    <button
+      cdsButton="tertiary"
+      size="sm"
+      [attr.data-test-id]="depth === 0 ? (addConditionTestId ?? testIds.addConditionButton) : null"
+      (click)="addCondition()"
+    >
+      {{ 'valueConditionTree.addCondition' | translate }}
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    @if (canNest) {
+      <button
+        cdsButton="ghost"
+        size="sm"
+        [attr.data-test-id]="depth === 0 ? (addGroupTestId ?? testIds.addGroupButton) : null"
+        (click)="addGroup()"
+      >
+        {{ 'valueConditionTree.addGroup' | translate }}
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      </button>
+    }
+  </div>
+</div>

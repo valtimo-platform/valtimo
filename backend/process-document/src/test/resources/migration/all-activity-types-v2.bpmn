@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_all_activity_types" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:message id="Message_all" name="all-activity-types-message"/>
+  <bpmn:signal id="Signal_all" name="all-activity-types-signal"/>
+  <bpmn:process id="verhuizing" name="Verhuizing" isExecutable="true" camunda:historyTimeToLive="180">
+
+    <!-- ===== Happy path (activity ids preserved across versions) ===== -->
+    <bpmn:startEvent id="StartEvent_1" name="Aanvraag ontvangen">
+      <bpmn:outgoing>Flow_start_registreer</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="registreer_ontvangst_v3" name="Registreer ontvangst" camunda:expression="${true}">
+      <bpmn:incoming>Flow_start_registreer</bpmn:incoming>
+      <bpmn:outgoing>Flow_registreer_route</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="gw_route" name="Uitgebreid?" default="Flow_route_spoed">
+      <bpmn:incoming>Flow_registreer_route</bpmn:incoming>
+      <bpmn:outgoing>Flow_route_spoed</bpmn:outgoing>
+      <bpmn:outgoing>Flow_route_exotic</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="gw_spoed" name="Spoed?" default="Flow_gwspoed_join">
+      <bpmn:incoming>Flow_route_spoed</bpmn:incoming>
+      <bpmn:outgoing>Flow_gwspoed_markeer</bpmn:outgoing>
+      <bpmn:outgoing>Flow_gwspoed_join</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="markeer_spoed_v3" name="Markeer als spoed" camunda:expression="${true}">
+      <bpmn:incoming>Flow_gwspoed_markeer</bpmn:incoming>
+      <bpmn:outgoing>Flow_markeer_join</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="gw_spoed_join">
+      <bpmn:incoming>Flow_gwspoed_join</bpmn:incoming>
+      <bpmn:incoming>Flow_markeer_join</bpmn:incoming>
+      <bpmn:outgoing>Flow_join_beoordelen</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="beoordelen_verhuizing_v3" name="Beoordelen verhuizing">
+      <bpmn:incoming>Flow_join_beoordelen</bpmn:incoming>
+      <bpmn:outgoing>Flow_beoordelen_afronden</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="afronden_v3" name="Verhuizing afronden" camunda:expression="${true}">
+      <bpmn:incoming>Flow_beoordelen_afronden</bpmn:incoming>
+      <bpmn:outgoing>Flow_afronden_end</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_end" name="Verhuizing afgehandeld">
+      <bpmn:incoming>Flow_afronden_end</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- ===== Extended branch: one of every remaining activity type (never taken) ===== -->
+    <bpmn:scriptTask id="script_task_v3" name="Script" scriptFormat="groovy">
+      <bpmn:incoming>Flow_route_exotic</bpmn:incoming>
+      <bpmn:outgoing>Flow_script_rule</bpmn:outgoing>
+      <bpmn:script>true</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:businessRuleTask id="business_rule_task_v3" name="Business rule" camunda:decisionRef="dummy-decision" camunda:mapDecisionResult="singleResult" camunda:resultVariable="dummyResult">
+      <bpmn:incoming>Flow_script_rule</bpmn:incoming>
+      <bpmn:outgoing>Flow_rule_sub</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:subProcess id="sub_proces" name="Subproces">
+      <bpmn:incoming>Flow_rule_sub</bpmn:incoming>
+      <bpmn:outgoing>Flow_sub_call</bpmn:outgoing>
+      <bpmn:startEvent id="sub_start">
+        <bpmn:outgoing>Flow_substart_subuser</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:userTask id="sub_user_task" name="Subtaak">
+        <bpmn:incoming>Flow_substart_subuser</bpmn:incoming>
+        <bpmn:outgoing>Flow_subuser_subend</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:endEvent id="sub_end">
+        <bpmn:incoming>Flow_subuser_subend</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_substart_subuser" sourceRef="sub_start" targetRef="sub_user_task"/>
+      <bpmn:sequenceFlow id="Flow_subuser_subend" sourceRef="sub_user_task" targetRef="sub_end"/>
+    </bpmn:subProcess>
+    <bpmn:boundaryEvent id="boundary_timer" name="Timeout" attachedToRef="sub_proces">
+      <bpmn:outgoing>Flow_boundary_exoticend</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerBoundaryDef">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT10M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="call_activity_v3" name="Call activity" calledElement="dummy-subproces">
+      <bpmn:incoming>Flow_sub_call</bpmn:incoming>
+      <bpmn:outgoing>Flow_call_incsplit</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:inclusiveGateway id="inc_split" name="Inclusive split" default="Flow_incsplit_join">
+      <bpmn:incoming>Flow_call_incsplit</bpmn:incoming>
+      <bpmn:outgoing>Flow_incsplit_send</bpmn:outgoing>
+      <bpmn:outgoing>Flow_incsplit_manual</bpmn:outgoing>
+      <bpmn:outgoing>Flow_incsplit_join</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+    <bpmn:sendTask id="send_task_v3" name="Send" camunda:expression="${true}">
+      <bpmn:incoming>Flow_incsplit_send</bpmn:incoming>
+      <bpmn:outgoing>Flow_send_incjoin</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:manualTask id="manual_task_v3" name="Manual">
+      <bpmn:incoming>Flow_incsplit_manual</bpmn:incoming>
+      <bpmn:outgoing>Flow_manual_incjoin</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:inclusiveGateway id="inc_join" name="Inclusive join">
+      <bpmn:incoming>Flow_send_incjoin</bpmn:incoming>
+      <bpmn:incoming>Flow_manual_incjoin</bpmn:incoming>
+      <bpmn:incoming>Flow_incsplit_join</bpmn:incoming>
+      <bpmn:outgoing>Flow_incjoin_parsplit</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+    <bpmn:parallelGateway id="par_split" name="Parallel split">
+      <bpmn:incoming>Flow_incjoin_parsplit</bpmn:incoming>
+      <bpmn:outgoing>Flow_parsplit_receive</bpmn:outgoing>
+      <bpmn:outgoing>Flow_parsplit_eventgw</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:receiveTask id="receive_task_v3" name="Receive">
+      <bpmn:incoming>Flow_parsplit_receive</bpmn:incoming>
+      <bpmn:outgoing>Flow_receive_parjoin</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:eventBasedGateway id="event_gateway" name="Event gateway">
+      <bpmn:incoming>Flow_parsplit_eventgw</bpmn:incoming>
+      <bpmn:outgoing>Flow_eventgw_timer</bpmn:outgoing>
+      <bpmn:outgoing>Flow_eventgw_message</bpmn:outgoing>
+      <bpmn:outgoing>Flow_eventgw_signal</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="timer_catch" name="Timer">
+      <bpmn:incoming>Flow_eventgw_timer</bpmn:incoming>
+      <bpmn:outgoing>Flow_timer_merge</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerCatchDef">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT5M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="message_catch" name="Message">
+      <bpmn:incoming>Flow_eventgw_message</bpmn:incoming>
+      <bpmn:outgoing>Flow_message_merge</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageCatchDef" messageRef="Message_all"/>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="signal_catch" name="Signal">
+      <bpmn:incoming>Flow_eventgw_signal</bpmn:incoming>
+      <bpmn:outgoing>Flow_signal_merge</bpmn:outgoing>
+      <bpmn:signalEventDefinition id="SignalCatchDef" signalRef="Signal_all"/>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="ev_merge" name="Event merge">
+      <bpmn:incoming>Flow_timer_merge</bpmn:incoming>
+      <bpmn:incoming>Flow_message_merge</bpmn:incoming>
+      <bpmn:incoming>Flow_signal_merge</bpmn:incoming>
+      <bpmn:outgoing>Flow_merge_parjoin</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:parallelGateway id="par_join" name="Parallel join">
+      <bpmn:incoming>Flow_receive_parjoin</bpmn:incoming>
+      <bpmn:incoming>Flow_merge_parjoin</bpmn:incoming>
+      <bpmn:outgoing>Flow_parjoin_exoticend</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:endEvent id="exotic_end" name="Uitgebreid afgehandeld">
+      <bpmn:incoming>Flow_parjoin_exoticend</bpmn:incoming>
+      <bpmn:incoming>Flow_boundary_exoticend</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- ===== Sequence flows ===== -->
+    <bpmn:sequenceFlow id="Flow_start_registreer" sourceRef="StartEvent_1" targetRef="registreer_ontvangst_v3"/>
+    <bpmn:sequenceFlow id="Flow_registreer_route" sourceRef="registreer_ontvangst_v3" targetRef="gw_route"/>
+    <bpmn:sequenceFlow id="Flow_route_spoed" sourceRef="gw_route" targetRef="gw_spoed"/>
+    <bpmn:sequenceFlow id="Flow_route_exotic" name="Uitgebreid" sourceRef="gw_route" targetRef="script_task_v3">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_gwspoed_markeer" name="Ja" sourceRef="gw_spoed" targetRef="markeer_spoed_v3">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_gwspoed_join" name="Nee" sourceRef="gw_spoed" targetRef="gw_spoed_join"/>
+    <bpmn:sequenceFlow id="Flow_markeer_join" sourceRef="markeer_spoed_v3" targetRef="gw_spoed_join"/>
+    <bpmn:sequenceFlow id="Flow_join_beoordelen" sourceRef="gw_spoed_join" targetRef="beoordelen_verhuizing_v3"/>
+    <bpmn:sequenceFlow id="Flow_beoordelen_afronden" sourceRef="beoordelen_verhuizing_v3" targetRef="afronden_v3"/>
+    <bpmn:sequenceFlow id="Flow_afronden_end" sourceRef="afronden_v3" targetRef="Event_end"/>
+    <bpmn:sequenceFlow id="Flow_script_rule" sourceRef="script_task_v3" targetRef="business_rule_task_v3"/>
+    <bpmn:sequenceFlow id="Flow_rule_sub" sourceRef="business_rule_task_v3" targetRef="sub_proces"/>
+    <bpmn:sequenceFlow id="Flow_sub_call" sourceRef="sub_proces" targetRef="call_activity_v3"/>
+    <bpmn:sequenceFlow id="Flow_boundary_exoticend" sourceRef="boundary_timer" targetRef="exotic_end"/>
+    <bpmn:sequenceFlow id="Flow_call_incsplit" sourceRef="call_activity_v3" targetRef="inc_split"/>
+    <bpmn:sequenceFlow id="Flow_incsplit_send" sourceRef="inc_split" targetRef="send_task_v3">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_incsplit_manual" sourceRef="inc_split" targetRef="manual_task_v3">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_incsplit_join" sourceRef="inc_split" targetRef="inc_join"/>
+    <bpmn:sequenceFlow id="Flow_send_incjoin" sourceRef="send_task_v3" targetRef="inc_join"/>
+    <bpmn:sequenceFlow id="Flow_manual_incjoin" sourceRef="manual_task_v3" targetRef="inc_join"/>
+    <bpmn:sequenceFlow id="Flow_incjoin_parsplit" sourceRef="inc_join" targetRef="par_split"/>
+    <bpmn:sequenceFlow id="Flow_parsplit_receive" sourceRef="par_split" targetRef="receive_task_v3"/>
+    <bpmn:sequenceFlow id="Flow_parsplit_eventgw" sourceRef="par_split" targetRef="event_gateway"/>
+    <bpmn:sequenceFlow id="Flow_receive_parjoin" sourceRef="receive_task_v3" targetRef="par_join"/>
+    <bpmn:sequenceFlow id="Flow_eventgw_timer" sourceRef="event_gateway" targetRef="timer_catch"/>
+    <bpmn:sequenceFlow id="Flow_eventgw_message" sourceRef="event_gateway" targetRef="message_catch"/>
+    <bpmn:sequenceFlow id="Flow_eventgw_signal" sourceRef="event_gateway" targetRef="signal_catch"/>
+    <bpmn:sequenceFlow id="Flow_timer_merge" sourceRef="timer_catch" targetRef="ev_merge"/>
+    <bpmn:sequenceFlow id="Flow_message_merge" sourceRef="message_catch" targetRef="ev_merge"/>
+    <bpmn:sequenceFlow id="Flow_signal_merge" sourceRef="signal_catch" targetRef="ev_merge"/>
+    <bpmn:sequenceFlow id="Flow_merge_parjoin" sourceRef="ev_merge" targetRef="par_join"/>
+    <bpmn:sequenceFlow id="Flow_parjoin_exoticend" sourceRef="par_join" targetRef="exotic_end"/>
+  </bpmn:process>
+</bpmn:definitions>

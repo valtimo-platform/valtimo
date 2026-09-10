@@ -121,6 +121,8 @@ class FormFlowDefinitionBlueprintIdTest {
         val unsupported = object : BlueprintId {
             override fun getTagPrefix() = "XX:"
             override fun getIdKey() = "x"
+            override fun blueprintType() = BlueprintType.CASE
+            override fun blueprintVersionTag(): Semver = Semver.parse("1.0.0")!!
             override fun toString() = "unsupported"
         }
 

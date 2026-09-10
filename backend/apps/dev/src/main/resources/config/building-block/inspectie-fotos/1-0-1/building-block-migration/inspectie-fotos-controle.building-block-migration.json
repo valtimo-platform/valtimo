@@ -1,0 +1,42 @@
+{
+    "title": "Foto's controleren in plaats van uploaden",
+    "key": "inspectie-fotos-controle",
+    "source": {
+        "key": "inspectie-fotos",
+        "versionTag": "1.0.0"
+    },
+    "dataMigration": [
+        {
+            "target": "doc:/fotoKwaliteit",
+            "value": "nog-te-beoordelen",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/gemigreerdVan",
+            "value": "1.0.0",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/fotoStatus",
+            "source": "doc:/fotoStatus"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "inspectie-fotos-process",
+            "targetProcessDefinitionKey": "inspectie-fotos-process",
+            "mapActivities": {
+                "FotosUploadenTask": "FotosControlerenTask"
+            },
+            "setProcessVariables": [
+                {
+                    "target": "pv:fotosGemigreerdVan",
+                    "value": "1.0.0",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

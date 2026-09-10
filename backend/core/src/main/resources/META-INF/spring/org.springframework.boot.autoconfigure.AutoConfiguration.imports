@@ -23,3 +23,4 @@ com.ritense.valtimo.config.JacksonConfiguration
 com.ritense.valtimo.config.ValtimoDatabaseConfiguration
 com.ritense.valtimo.logging.OperatonLoggingAutoConfiguration
 com.ritense.valtimo.autoconfiguration.TaskWidgetAutoConfiguration
+com.ritense.valtimo.migration.MigrationAutoConfiguration
