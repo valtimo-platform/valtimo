@@ -26,6 +26,7 @@ import com.ritense.assistant.web.rest.dto.AssistantResponse
 import com.ritense.assistant.web.rest.dto.ChangePreview
 import com.ritense.assistant.web.rest.dto.ChatRequest
 import com.ritense.assistant.web.rest.dto.DiffContent
+import com.ritense.assistant.web.rest.dto.PageContext
 import dev.langchain4j.agent.tool.ToolExecutionRequest
 import dev.langchain4j.agent.tool.ToolSpecification
 import dev.langchain4j.agent.tool.ToolSpecifications
@@ -105,10 +106,19 @@ open class AssistantService(
         val storedContextJson = sessionService.getLastPageContext(sessionId)
         val contextChanged = currentContextJson != storedContextJson
 
+        logger.info { "Context debug - current: $currentContextJson, stored: $storedContextJson, changed: $contextChanged" }
+
         if (memory.messages().isEmpty() || contextChanged) {
             val systemPrompt = contextBuilder.buildSystemPrompt(userEmail, userRoles, request.context, toolSpecifications)
             updateSystemMessage(memory, systemPrompt)
             sessionService.updatePageContext(sessionId, currentContextJson)
+
+            if (contextChanged && memory.messages().size > 1) {
+                val notice = buildContextChangeNotice(storedContextJson, currentContextJson)
+                if (notice != null) {
+                    memory.add(SystemMessage.from(notice))
+                }
+            }
         }
 
         memory.add(UserMessage.from(request.message))
@@ -204,6 +214,56 @@ open class AssistantService(
             ),
             pendingActionId = pending.id.toString()
         )
+    }
+
+    private fun buildContextChangeNotice(oldContextJson: String?, newContextJson: String?): String? {
+        val oldContext = oldContextJson?.let {
+            objectMapper.readValue(it, PageContext::class.java)
+        }
+        val newContext = newContextJson?.let {
+            objectMapper.readValue(it, PageContext::class.java)
+        }
+
+        if (oldContext?.page == "case-detail" && newContext?.page == "case-detail" &&
+            oldContext.resourceId != newContext.resourceId
+        ) {
+            return """[CONTEXT CHANGE: The user has navigated to a DIFFERENT case (${newContext.resourceId}).
+ALL previous case information in this conversation is now INVALID and refers to the old case.
+DO NOT use any cached case data from earlier tool calls - it belongs to a different case.
+You MUST call getCaseInformation again to get details about the current case before answering any questions about it.]"""
+        }
+
+        if (oldContext?.page != newContext?.page) {
+            return buildPageChangeNotice(oldContext, newContext)
+        }
+
+        return null
+    }
+
+    private fun buildPageChangeNotice(oldContext: PageContext?, newContext: PageContext?): String {
+        val newPage = newContext?.page ?: "unknown"
+
+        return when (newPage) {
+            "case-detail" -> {
+                val docId = newContext?.resourceId
+                """[CONTEXT CHANGE: The user has navigated to a case detail page.
+The current case document ID is: $docId
+ALL previous context about case definitions, lists, or other pages is now irrelevant.
+When the user asks about "this case" or "the current case", they mean document ID $docId.
+You MUST call getCaseInformation with this document ID to get the current case details.]"""
+            }
+            "case-list" -> {
+                val caseDefName = newContext?.resourceId
+                """[CONTEXT CHANGE: The user has navigated to the case list for case definition: $caseDefName
+Previous context is now irrelevant. The user is now browsing cases, not viewing a specific case.]"""
+            }
+            "case-definition-editor" -> {
+                val caseDefName = newContext?.resourceId
+                """[CONTEXT CHANGE: The user has navigated to case definition editor for: $caseDefName
+Previous context is now irrelevant. The user is now editing a case definition configuration.]"""
+            }
+            else -> "[CONTEXT CHANGE: The user has navigated to page '$newPage'. Previous context may no longer apply. Update your understanding accordingly.]"
+        }
     }
 
     private fun updateSystemMessage(memory: dev.langchain4j.memory.ChatMemory, systemPrompt: String) {

@@ -100,7 +100,9 @@ open class AssistantContextBuilder {
 
             ## How to talk to the user
 
-            - Reply in the same language the user writes in.
+            - ALWAYS reply in the same language the user writes in. Do not switch to
+              Dutch (or any other language) just because case names, form data, or tool
+              results are in that language.
             - You are talking to someone doing their day-to-day work, not to a developer.
               Keep sentences short and use everyday words.
             - Never show technical identifiers such as UUIDs, database ids or class names.

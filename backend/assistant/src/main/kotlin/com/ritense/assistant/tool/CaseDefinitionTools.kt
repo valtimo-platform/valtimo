@@ -39,15 +39,13 @@ open class CaseDefinitionTools(
         @P("The case definition key (e.g., 'loan-application')") caseDefinitionKey: String,
         @P("Optional version tag (e.g., '1.0.0'). If not provided, returns the active version.") versionTag: String?
     ): String {
-        requireAdminRole()
-
-        return runWithoutAuthorization {
+        return runWithAuthorizationUnlessAdmin {
             val caseDefinition = if (versionTag != null) {
                 val caseDefId = CaseDefinitionId(caseDefinitionKey, versionTag)
                 caseDefinitionService.getCaseDefinition(caseDefId)
             } else {
                 caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
-                    ?: return@runWithoutAuthorization "Case definition '$caseDefinitionKey' not found or has no active version."
+                    ?: return@runWithAuthorizationUnlessAdmin "Case definition '$caseDefinitionKey' not found or has no active version."
             }
 
             val documentDefinition = documentDefinitionService.findByNameAndCaseDefinitionId(
@@ -182,6 +180,19 @@ open class CaseDefinitionTools(
         }
         if (!hasAdminRole) {
             throw AccessDeniedException("Admin role required for case definition operations")
+        }
+    }
+
+    private fun <T> runWithAuthorizationUnlessAdmin(block: () -> T): T {
+        val auth = SecurityContextHolder.getContext().authentication
+        val isAdmin = auth?.authorities?.any {
+            it.authority == "ROLE_ADMIN" || it.authority == "ADMIN"
+        } ?: false
+
+        return if (isAdmin) {
+            runWithoutAuthorization(block)
+        } else {
+            block()
         }
     }
 }

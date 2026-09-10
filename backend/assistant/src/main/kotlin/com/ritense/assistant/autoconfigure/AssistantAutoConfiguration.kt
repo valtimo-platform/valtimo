@@ -18,6 +18,7 @@ package com.ritense.assistant.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.assistant.executor.CaseDefinitionActionExecutor
+import com.ritense.assistant.executor.FormDefinitionActionExecutor
 import com.ritense.assistant.executor.ProcessDefinitionActionExecutor
 import com.ritense.assistant.memory.JpaChatMemoryStore
 import com.ritense.assistant.security.config.AssistantHttpSecurityConfigurer
@@ -34,6 +35,7 @@ import com.ritense.assistant.service.TikaAttachmentTextExtractor
 import com.ritense.assistant.tool.CaseAttachmentTools
 import com.ritense.assistant.tool.CaseDefinitionTools
 import com.ritense.assistant.tool.CaseInformationTools
+import com.ritense.assistant.tool.FormDefinitionTools
 import com.ritense.assistant.tool.ProcessDefinitionTools
 import com.ritense.assistant.tool.ResourceContentProvider
 import com.ritense.assistant.tool.ResourceContentProviderImpl
@@ -48,6 +50,7 @@ import com.ritense.case_.service.CaseHeaderWidgetService
 import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
+import com.ritense.form.service.FormDefinitionService
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -74,6 +77,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
     "com.ritense.case.configuration.CaseAutoConfiguration",
     "com.ritense.case_.configuration.CaseWidgetAutoConfiguration",
     "com.ritense.document.autoconfigure.DocumentAutoConfiguration",
+    "com.ritense.form.autoconfigure.FormAutoConfiguration",
     "com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration",
     "com.ritense.processlink.autoconfigure.ProcessLinkAutoConfiguration",
     "com.ritense.zakenapi.config.ZakenApiAutoConfiguration",
@@ -227,6 +231,21 @@ class AssistantAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(FormDefinitionTools::class)
+    @ConditionalOnBean(FormDefinitionService::class)
+    fun formDefinitionTools(
+        formDefinitionService: FormDefinitionService,
+        pendingActionService: PendingActionService,
+        objectMapper: ObjectMapper
+    ): FormDefinitionTools {
+        return FormDefinitionTools(
+            formDefinitionService,
+            pendingActionService,
+            objectMapper
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(AssistantService::class)
     fun assistantService(
         chatModel: ChatModel?,
@@ -238,13 +257,15 @@ class AssistantAutoConfiguration {
         caseDefinitionTools: ObjectProvider<CaseDefinitionTools>,
         caseInformationTools: ObjectProvider<CaseInformationTools>,
         caseAttachmentTools: ObjectProvider<CaseAttachmentTools>,
-        processDefinitionTools: ObjectProvider<ProcessDefinitionTools>
+        processDefinitionTools: ObjectProvider<ProcessDefinitionTools>,
+        formDefinitionTools: ObjectProvider<FormDefinitionTools>
     ): AssistantService {
         val assistantTools = listOfNotNull(
             caseDefinitionTools.ifAvailable,
             caseInformationTools.ifAvailable,
             caseAttachmentTools.ifAvailable,
-            processDefinitionTools.ifAvailable
+            processDefinitionTools.ifAvailable,
+            formDefinitionTools.ifAvailable
         )
         return AssistantService(
             chatModel,
@@ -261,7 +282,8 @@ class AssistantAutoConfiguration {
     @ConditionalOnMissingBean(name = ["assistantActionExecutors"])
     fun assistantActionExecutors(
         caseDefinitionActionExecutor: CaseDefinitionActionExecutor?,
-        processDefinitionActionExecutor: ProcessDefinitionActionExecutor?
+        processDefinitionActionExecutor: ProcessDefinitionActionExecutor?,
+        formDefinitionActionExecutor: FormDefinitionActionExecutor?
     ): Map<String, ActionExecutor> {
         val executors = mutableMapOf<String, ActionExecutor>()
         caseDefinitionActionExecutor?.let {
@@ -269,6 +291,9 @@ class AssistantAutoConfiguration {
         }
         processDefinitionActionExecutor?.let {
             executors["apply_process_definition_change"] = it
+        }
+        formDefinitionActionExecutor?.let {
+            executors["apply_form_definition_change"] = it
         }
         return executors
     }
@@ -291,6 +316,16 @@ class AssistantAutoConfiguration {
         objectMapper: ObjectMapper
     ): ProcessDefinitionActionExecutor {
         return ProcessDefinitionActionExecutor(processDeploymentService, objectMapper)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(FormDefinitionActionExecutor::class)
+    @ConditionalOnBean(FormDefinitionService::class)
+    fun formDefinitionActionExecutor(
+        formDefinitionService: FormDefinitionService,
+        objectMapper: ObjectMapper
+    ): FormDefinitionActionExecutor {
+        return FormDefinitionActionExecutor(formDefinitionService, objectMapper)
     }
 
     @Bean

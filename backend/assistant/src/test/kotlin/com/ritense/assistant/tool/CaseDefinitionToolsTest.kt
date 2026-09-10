@@ -277,12 +277,21 @@ class CaseDefinitionToolsTest {
     }
 
     @Test
-    fun `should reject non-admin user for getCaseDefinition`() {
+    fun `should allow non-admin user for getCaseDefinition with authorization`() {
         setUserAuthentication()
+        val caseDefinition = createCaseDefinition(
+            key = "loan-application",
+            version = "1.0.0",
+            name = "Loan Application",
+            active = true,
+            final = false
+        )
+        whenever(caseDefinitionService.getActiveCaseDefinition("loan-application")).thenReturn(caseDefinition)
+        whenever(documentDefinitionService.findByNameAndCaseDefinitionId(any(), any())).thenReturn(Optional.empty())
 
-        assertThrows<AccessDeniedException> {
-            tools.getCaseDefinition("loan-application", null)
-        }
+        val result = tools.getCaseDefinition("loan-application", null)
+
+        assertContains(result, "Loan Application")
     }
 
     @Test
