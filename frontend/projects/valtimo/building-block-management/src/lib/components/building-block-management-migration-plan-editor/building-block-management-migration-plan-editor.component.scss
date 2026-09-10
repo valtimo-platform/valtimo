@@ -40,7 +40,6 @@
   }
 }
 
-// Contained tabs render their panel on the grey layer by default, which makes the (also grey) config cards blend in. Force white, matching other routed editors.
 :host ::ng-deep .cds--tab-content {
   background-color: #fff;
 }
