@@ -17,12 +17,14 @@
 package com.ritense.catalogiapi
 
 import com.ritense.catalogiapi.client.CatalogiApiClient
+import com.ritense.catalogiapi.client.RoltypeRequest
 import com.ritense.catalogiapi.client.ZaaktypeInformatieobjecttypeRequest
 import com.ritense.catalogiapi.domain.Besluittype
 import com.ritense.catalogiapi.domain.Eigenschap
 import com.ritense.catalogiapi.domain.InformatieobjecttypeVertrouwelijkheid
 import com.ritense.catalogiapi.domain.Informatieobjecttype
 import com.ritense.catalogiapi.domain.Resultaattype
+import com.ritense.catalogiapi.domain.Roltype
 import com.ritense.catalogiapi.domain.Specificatie
 import com.ritense.catalogiapi.domain.Statustype
 import com.ritense.catalogiapi.domain.Zaaktype
@@ -31,10 +33,9 @@ import com.ritense.catalogiapi.exception.BesluittypeNotFoundException
 import com.ritense.catalogiapi.exception.EigenschapNotFoundException
 import com.ritense.catalogiapi.exception.InformatieobjecttypeNotFoundException
 import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
+import com.ritense.catalogiapi.exception.RoltypeNotFoundException
 import com.ritense.catalogiapi.exception.StatustypeNotFoundException
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.catalogiapi.web.rest.result.ResultaattypeDto
-import com.ritense.catalogiapi.web.rest.result.StatustypeDto
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
@@ -49,6 +50,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -304,8 +306,15 @@ internal class CatalogiApiPluginTest : BaseTest() {
         )
 
         // then
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<Map<String, String>>>())
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to statustypeUrl("1"), "name" to "first status"),
+                    mapOf("url" to statustypeUrl("2"), "name" to "second status")
+                )
+            )
+        )
     }
 
     @Test
@@ -325,12 +334,20 @@ internal class CatalogiApiPluginTest : BaseTest() {
         plugin.getStatustypen(
             execution = execution,
             processVariable = processVariable,
-            zaaktypeUrl = zaaktypeUrl
+            zaaktypeUrl = null
         )
 
         // then
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<StatustypeDto>>())
+        verify(zaaktypeUrlProvider, times(1)).getZaaktypeUrl(eq(documentId.toUUID()))
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to statustypeUrl("1"), "name" to "first status"),
+                    mapOf("url" to statustypeUrl("2"), "name" to "second status")
+                )
+            )
+        )
     }
 
     @Test
@@ -418,6 +435,282 @@ internal class CatalogiApiPluginTest : BaseTest() {
     }
 
     @Test
+    fun `should get roltypen for zaaktype specified via property`() {
+        // given
+        val processVariable = "rolTypenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val execution = mockExecution()
+
+        mockRoltypen(zaaktypeUrl.toURI())
+
+        // when
+        plugin.getRoltypen(
+            execution = execution,
+            processVariable = processVariable,
+            zaaktypeUrl = zaaktypeUrl
+        )
+
+        // then
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to roltypeUrl("1"), "name" to "first roltype"),
+                    mapOf("url" to roltypeUrl("2"), "name" to "second roltype")
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `should get roltypen for zaaktype via linked zaak`() {
+        // given
+        val processVariable = "rolTypenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
+        mockRoltypen(zaaktypeUrl.toURI())
+
+        // when
+        plugin.getRoltypen(
+            execution = execution,
+            processVariable = processVariable,
+            zaaktypeUrl = null
+        )
+
+        // then
+        verify(zaaktypeUrlProvider, times(1)).getZaaktypeUrl(eq(documentId.toUUID()))
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to roltypeUrl("1"), "name" to "first roltype"),
+                    mapOf("url" to roltypeUrl("2"), "name" to "second roltype")
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `should get roltypen with multiple pages`() {
+        // given
+        val processVariable = "rolTypenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val zaaktypeUri = zaaktypeUrl.toURI()
+        val execution = mockExecution()
+
+        mockGetRoltypen(
+            request = roltypeRequest(zaaktypeUri, 1),
+            result = mockRoltypePage(
+                result = listOf(
+                    roltype(
+                        url = roltypeUrl("1").toURI(),
+                        zaaktypeUrl = zaaktypeUri,
+                        omschrijving = "first roltype"
+                    )
+                ),
+                next = URI("https://example.com/roltypen?page=2")
+            )
+        )
+        mockGetRoltypen(
+            request = roltypeRequest(zaaktypeUri, 2),
+            result = mockRoltypePage(
+                result = listOf(
+                    roltype(
+                        url = roltypeUrl("2").toURI(),
+                        zaaktypeUrl = zaaktypeUri,
+                        omschrijving = "second roltype"
+                    )
+                )
+            )
+        )
+
+        // when
+        plugin.getRoltypen(
+            execution = execution,
+            processVariable = processVariable,
+            zaaktypeUrl = zaaktypeUrl
+        )
+
+        // then
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to roltypeUrl("1"), "name" to "first roltype"),
+                    mapOf("url" to roltypeUrl("2"), "name" to "second roltype")
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `should get roltype by omschrijving`() {
+        val roltype = "Behandelaar"
+        val processVariable = "myProcessVar"
+        val roltypeUrl = roltypeUrl("3")
+        val zaaktypeUrl = zaaktypeUrl().toURI()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl)
+        mockRoltypen(
+            zaaktypeUrl = zaaktypeUrl,
+            additionalRoltypen = listOf(
+                roltype(
+                    url = roltypeUrl.toURI(),
+                    zaaktypeUrl = zaaktypeUrl,
+                    omschrijving = roltype
+                )
+            )
+        )
+
+        plugin.getRoltype(
+            execution = execution,
+            roltype = roltype,
+            processVariable = processVariable
+        )
+
+        verify(execution, times(1))
+            .setVariable(eq(processVariable), eq(roltypeUrl))
+    }
+
+    @Test
+    fun `should get roltype by url`() {
+        val roltype = roltypeUrl()
+        val processVariable = "myProcessVar"
+        val documentId = documentId()
+        val execution = mockExecution(documentId)
+
+        plugin.getRoltype(execution, roltype, processVariable)
+
+        verify(execution, times(1)).setVariable(processVariable, roltype)
+        verify(client, never()).getRoltypen(any(), any(), any())
+    }
+
+    @Test
+    fun `should throw RoltypeNotFoundException when roltype doesn't exist`() {
+        val roltype = "Behandelaar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
+        mockRoltypen(
+            zaaktypeUrl = zaaktypeUrl.toURI(),
+            defaultRoltypen = listOf()
+        )
+
+        val exception = assertThrows<RoltypeNotFoundException> {
+            plugin.getRoltype(
+                execution = execution,
+                roltype = roltype,
+                processVariable = "myProcessVar"
+            )
+        }
+
+        assertEquals("No roltype was found with 'omschrijving': 'Behandelaar'", exception.message)
+    }
+
+    @Test
+    fun `should throw RoltypeNotFoundException when two roltypen share an omschrijving`() {
+        val roltype = "Behandelaar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val zaaktypeUri = zaaktypeUrl.toURI()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUri)
+        mockRoltypen(
+            zaaktypeUrl = zaaktypeUri,
+            defaultRoltypen = listOf(
+                roltype(
+                    url = roltypeUrl("1").toURI(),
+                    zaaktypeUrl = zaaktypeUri,
+                    omschrijving = roltype
+                ),
+                roltype(
+                    url = roltypeUrl("2").toURI(),
+                    zaaktypeUrl = zaaktypeUri,
+                    omschrijving = roltype.lowercase()
+                )
+            )
+        )
+
+        val exception = assertThrows<RoltypeNotFoundException> {
+            plugin.getRoltype(
+                execution = execution,
+                roltype = roltype,
+                processVariable = "myProcessVar"
+            )
+        }
+
+        assertEquals(
+            "No roltype was found uniquely with 'omschrijving': 'Behandelaar'; " +
+                "2 roltypen for zaaktype '$zaaktypeUrl' share this omschrijving",
+            exception.message
+        )
+    }
+
+    private fun mockRoltypen(
+        zaaktypeUrl: URI,
+        defaultRoltypen: List<Roltype> = listOf(
+            roltype(
+                url = roltypeUrl("1").toURI(),
+                zaaktypeUrl = zaaktypeUrl,
+                omschrijving = "first roltype"
+            ),
+            roltype(
+                url = roltypeUrl("2").toURI(),
+                zaaktypeUrl = zaaktypeUrl,
+                omschrijving = "second roltype"
+            )
+        ),
+        additionalRoltypen: List<Roltype> = listOf()
+    ) {
+        whenever(client.getRoltypen(any(), any(), any()))
+            .thenReturn(
+                Page(
+                    count = defaultRoltypen.size.plus(additionalRoltypen.size),
+                    results = defaultRoltypen.plus(additionalRoltypen)
+                )
+            )
+    }
+
+    private fun mockRoltypePage(
+        result: List<Roltype> = emptyList(),
+        next: URI? = null
+    ): Page<Roltype> = mock {
+        on { this.results } doReturn result
+        on { this.next } doReturn next
+    }
+
+    private fun mockGetRoltypen(request: RoltypeRequest, result: Page<Roltype>) {
+        whenever(
+            client.getRoltypen(
+                authentication = eq(plugin.authenticationPluginConfiguration),
+                baseUrl = eq(plugin.url),
+                request = eq(request)
+            )
+        ).thenReturn(result)
+    }
+
+    private fun roltypeRequest(zaakTypeUrl: URI, page: Int) = RoltypeRequest(
+        zaaktype = zaakTypeUrl,
+        page = page
+    )
+
+    @Test
     fun `should get resultaat typen for zaaktype specified via property`() {
         // given
         val processVariable = "resultaatTypenProcessVar"
@@ -434,8 +727,15 @@ internal class CatalogiApiPluginTest : BaseTest() {
         )
 
         // then
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<Map<String, String>>>())
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to resultaatTypeUrl("1"), "name" to "first resultaat"),
+                    mapOf("url" to resultaatTypeUrl("2"), "name" to "second resultaat")
+                )
+            )
+        )
     }
 
     @Test
@@ -455,12 +755,20 @@ internal class CatalogiApiPluginTest : BaseTest() {
         plugin.getResultaattypen(
             execution = execution,
             processVariable = processVariable,
-            zaaktypeUrl = zaaktypeUrl
+            zaaktypeUrl = null
         )
 
         // then
-        verify(execution, times(1))
-            .setVariable(eq(processVariable), any<List<ResultaattypeDto>>())
+        verify(zaaktypeUrlProvider, times(1)).getZaaktypeUrl(eq(documentId.toUUID()))
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf("url" to resultaatTypeUrl("1"), "name" to "first resultaat"),
+                    mapOf("url" to resultaatTypeUrl("2"), "name" to "second resultaat")
+                )
+            )
+        )
     }
 
     @Test
@@ -1002,6 +1310,18 @@ internal class CatalogiApiPluginTest : BaseTest() {
         toelichting = null
     )
 
+    private fun roltype(
+        url: URI,
+        zaaktypeUrl: URI,
+        omschrijving: String,
+        omschrijvingGeneriek: String = "behandelaar"
+    ) = Roltype(
+        url = url,
+        zaaktype = zaaktypeUrl,
+        omschrijving = omschrijving,
+        omschrijvingGeneriek = omschrijvingGeneriek
+    )
+
     private fun statusType(
         url: URI,
         zaaktypeUrl: URI,
@@ -1024,6 +1344,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
     private fun informatieObjectTypeUrl(id: String) = "https://example.com/informatieobjecttype/$id"
     private fun resultaatTypeUrl(id: String = "1") = "https://example.com/resultaattype/$id"
     private fun resultaatTypeOmschrijvingUrl(id: String = "1") = "https://example.com/resultaattypeomschrijving/$id"
+    private fun roltypeUrl(id: String = "1") = "https://example.com/roltype/$id"
     private fun selectielijstKlasseUrl(id: String = "1") = "https://example.com/selectielijstklasse/$id"
     private fun statustypeUrl(id: String = "1") = "https://example.com/statustype/$id"
     private fun zaaktypeUrl(id: String = "1") = "https://example.com/zaaktype/$id"
