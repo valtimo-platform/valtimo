@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './assistant-diff.util';
 export * from './assistant-markdown.util';
 export * from './assistant-page-context.util';
 export * from './assistant-response.adapter';

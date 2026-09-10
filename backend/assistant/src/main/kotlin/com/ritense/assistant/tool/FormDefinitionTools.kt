@@ -145,12 +145,14 @@ open class FormDefinitionTools(
                 resourceType = "FormDefinition",
                 resourceId = formName,
                 previewDescription = "Create form '$formName' in case definition '$caseDefinitionKey:$versionTag'",
+                // The frontend renders these as the form itself, so they carry the FormIO
+                // schema. The human summary stays in previewDescription and in the reply.
                 diffBefore = "(new form)",
-                diffAfter = summary,
+                diffAfter = formDefinitionJson,
                 affectedResources = listOf("$caseDefinitionKey:$versionTag:$formName")
             )
 
-            "$preview\n\nA confirmation dialog will appear for you to apply or cancel this creation."
+            "Prepared the new form '$formName'. A confirmation dialog is showing it for review."
         }
     }
 
@@ -191,16 +193,7 @@ open class FormDefinitionTools(
                 }
             }
 
-            val beforeSummary = buildString {
-                appendLine("Name: ${form.name}")
-                appendLine(summarizeFormDefinition(form.formDefinition))
-            }
-
             val afterNode = objectMapper.readTree(finalDefinitionJson)
-            val afterSummary = buildString {
-                appendLine("Name: $finalName")
-                appendLine(summarizeFormDefinition(afterNode))
-            }
 
             val diff = buildString {
                 appendLine("Preview of changes to form '${form.name}':")
@@ -234,12 +227,16 @@ open class FormDefinitionTools(
                 resourceType = "FormDefinition",
                 resourceId = "${form.id}",
                 previewDescription = "Modify form '${form.name}' in case definition '$caseDefinitionKey:$versionTag'",
-                diffBefore = beforeSummary.trim(),
-                diffAfter = afterSummary.trim(),
+                diffBefore = objectMapper.writeValueAsString(form.formDefinition),
+                diffAfter = finalDefinitionJson,
                 affectedResources = listOf("$caseDefinitionKey:$versionTag:${form.name}")
             )
 
-            "$diff\n\nA confirmation dialog will appear for you to apply or cancel these changes."
+            // A rename is not visible in the rendered diff, since the name is not part of
+            // the FormIO schema, so it has to be said here.
+            val renamed = if (finalName != form.name) " It will be renamed to '$finalName'." else ""
+
+            "Prepared the changes to form '${form.name}'.$renamed A confirmation dialog is showing them for review."
         }
     }
 
@@ -288,12 +285,12 @@ open class FormDefinitionTools(
                 resourceType = "FormDefinition",
                 resourceId = "${form.id}",
                 previewDescription = "Delete form '${form.name}' from case definition '$caseDefinitionKey:$versionTag'",
-                diffBefore = "Form: ${form.name}\n$summary",
+                diffBefore = objectMapper.writeValueAsString(form.formDefinition),
                 diffAfter = "(deleted)",
                 affectedResources = listOf("$caseDefinitionKey:$versionTag:${form.name}")
             )
 
-            "$preview\n\nA confirmation dialog will appear for you to apply or cancel this deletion."
+            "Prepared the deletion of form '${form.name}'. A confirmation dialog is showing it for review."
         }
     }
 

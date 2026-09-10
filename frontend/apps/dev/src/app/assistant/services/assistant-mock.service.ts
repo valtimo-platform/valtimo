@@ -52,13 +52,24 @@ export class AssistantMockService implements AssistantTransport {
             type: 'confirmation_required',
             pendingActionId: crypto.randomUUID(),
             preview: {
-              description: 'Add a view permission on CaseDefinition to ROLE_ADMIN.',
-              affectedResources: ['ROLE_ADMIN'],
+              description: "Add a 'Huisnummer' field to the address form.",
+              affectedResources: ['bezwaar:1.0.0:address-form'],
               diff: {
-                before: 'permissions:\n  - resourceType: CaseDefinition\n    action: view_list',
-                after:
-                  'permissions:\n  - resourceType: CaseDefinition\n    action: view_list\n' +
-                  '  - resourceType: CaseDefinition\n    action: view',
+                before: JSON.stringify({
+                  display: 'form',
+                  components: [
+                    {key: 'aanhef', label: 'Aanhef', type: 'textfield', input: true},
+                    {key: 'postcode', label: 'Postcode', type: 'textfield', input: true},
+                  ],
+                }),
+                after: JSON.stringify({
+                  display: 'form',
+                  components: [
+                    {key: 'aanhef', label: 'Aanhef', type: 'textfield', input: true},
+                    {key: 'postcode', label: 'Postcode', type: 'textfield', input: true},
+                    {key: 'huisnummer', label: 'Huisnummer', type: 'number', input: true},
+                  ],
+                }),
               },
             },
           }

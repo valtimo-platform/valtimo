@@ -180,7 +180,7 @@ class FormDefinitionToolsTest {
         val formJson = """{"components":[{"type":"textfield","key":"email"}]}"""
         val result = tools.previewCreateForm("loan-application", "1.0.0", "new-form", formJson, false)
 
-        assertContains(result, "Preview")
+        assertContains(result, "Prepared")
         assertContains(result, "new-form")
         assertContains(result, "confirmation dialog")
     }
@@ -233,7 +233,7 @@ class FormDefinitionToolsTest {
         val newFormJson = """{"components":[{"type":"textfield","key":"field2"}]}"""
         val result = tools.previewModifyForm("loan-application", "1.0.0", "old-name", "new-name", newFormJson)
 
-        assertContains(result, "Preview")
+        assertContains(result, "Prepared")
         assertContains(result, "old-name")
         assertContains(result, "new-name")
         assertContains(result, "confirmation dialog")
@@ -286,7 +286,7 @@ class FormDefinitionToolsTest {
 
         val result = tools.previewDeleteForm("loan-application", "1.0.0", "to-delete")
 
-        assertContains(result, "Preview")
+        assertContains(result, "Prepared")
         assertContains(result, "to-delete")
         assertContains(result, "confirmation dialog")
     }

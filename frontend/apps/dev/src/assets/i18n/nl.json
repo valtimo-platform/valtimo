@@ -10,9 +10,11 @@
       "cancel": "Annuleren",
       "cancelled": "Geannuleerd. Er is niets gewijzigd.",
       "confirm": "Bevestigen",
+      "doesNotExistYet": "Bestaat nog niet",
       "failed": "Dat is niet gelukt. De actie is misschien verlopen — vraag het opnieuw.",
       "hint": "Er wijzigt niets totdat je bevestigt.",
-      "title": "Deze wijzigingen doorvoeren?"
+      "title": "Deze wijzigingen doorvoeren?",
+      "willBeDeleted": "Wordt verwijderd"
     },
     "greeting": {
       "accessControl": "Je zit nu op een pagina met regels voor de beheerdersrol. Wil je regels toevoegen, verwijderen of bewerken?",

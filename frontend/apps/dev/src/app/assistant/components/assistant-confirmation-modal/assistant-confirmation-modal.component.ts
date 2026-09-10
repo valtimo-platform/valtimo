@@ -28,6 +28,7 @@ import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {ButtonModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {ASSISTANT_TEST_IDS} from '../../constants';
 import {AssistantPendingAction} from '../../models';
+import {AssistantDiffComponent} from '../assistant-diff/assistant-diff.component';
 
 @Component({
   standalone: true,
@@ -36,6 +37,7 @@ import {AssistantPendingAction} from '../../models';
   styleUrls: ['./assistant-confirmation-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AssistantDiffComponent,
     ButtonModule,
     CommonModule,
     LayerModule,

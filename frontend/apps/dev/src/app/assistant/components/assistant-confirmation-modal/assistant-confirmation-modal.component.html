@@ -19,6 +19,7 @@
   valtimoCdsModal
   [attr.data-test-id]="testIds.confirmationModal"
   [open]="true"
+  size="lg"
   (close)="onClose()"
 >
   <cds-modal-header [showCloseButton]="!applying" (closeSelect)="onClose()">
@@ -38,27 +39,11 @@
       </ul>
     </ng-container>
 
-    <ng-container *ngIf="action.diff as diff">
-      <h4 class="assistant-confirmation-modal__label">
-        {{ 'assistant.confirmation.before' | translate }}
-      </h4>
-
-      <pre
-        [attr.data-test-id]="testIds.confirmationBefore"
-        class="assistant-confirmation-modal__diff"
-        >{{ diff.before }}</pre
-      >
-
-      <h4 class="assistant-confirmation-modal__label">
-        {{ 'assistant.confirmation.after' | translate }}
-      </h4>
-
-      <pre
-        [attr.data-test-id]="testIds.confirmationAfter"
-        class="assistant-confirmation-modal__diff assistant-confirmation-modal__diff--after"
-        >{{ diff.after }}</pre
-      >
-    </ng-container>
+    <valtimo-assistant-diff
+      *ngIf="action.diff as diff"
+      [after]="diff.after"
+      [before]="diff.before"
+    ></valtimo-assistant-diff>
 
     <p class="assistant-confirmation-modal__hint">
       {{ 'assistant.confirmation.hint' | translate }}

@@ -10,9 +10,11 @@
       "cancel": "Cancel",
       "cancelled": "Cancelled. Nothing was changed.",
       "confirm": "Confirm",
+      "doesNotExistYet": "Does not exist yet",
       "failed": "That did not work. The action may have expired — ask me again.",
       "hint": "Nothing changes until you confirm.",
-      "title": "Apply these changes?"
+      "title": "Apply these changes?",
+      "willBeDeleted": "Will be deleted"
     },
     "greeting": {
       "accessControl": "You're on a page with rules for the administrator role. Do you want to add, remove or edit rules?",
