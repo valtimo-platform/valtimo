@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { chromium } from '@playwright/test';
 import { writeFileSync, mkdirSync, unlinkSync, existsSync } from 'fs';
 import { Keycloak } from '../components/keycloak';
@@ -46,7 +62,7 @@ export default async () => {
   // ----- Handle OTP (generate from otpauth URL only) -----
   if (process.env.qa_admin_otp_url) {
     form.otp = generateOtp(process.env.qa_admin_otp_url);
-    console.log('[GLOBAL SETUP] Generated TOTP via otpauth URL:', form.otp);
+    console.log('[GLOBAL SETUP] Generated TOTP from the otpauth URL');
   }
 
   const tokenResp = await page.request.post(
