@@ -31,7 +31,7 @@ import {
   BuildingBlockManagementTabConfig,
 } from '@valtimo/shared';
 import {BuildingBlockManagementTabKey} from '../../models';
-import {of, take} from 'rxjs';
+import {catchError, combineLatest, map, Observable, of, take} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
 import {BuildingBlockManagementFormsComponent} from '../building-block-management-forms/building-block-management-forms.component';
@@ -68,6 +68,29 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
   protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS;
   public readonly activeTabKey$ = this.buildingBlockManagementDetailService.activeTabKey$;
 
+  private readonly _customTabs: BuildingBlockManagementTabConfig[] = this.toArray(
+    this.buildingBlockManagementTabConfig
+  );
+
+  // Emits only once every custom tab has reported whether it is enabled, so the tab bar is never rendered incomplete.
+  private readonly _enabledCustomTabs$: Observable<BuildingBlockManagementTabConfig[]> =
+    this._customTabs.length === 0
+      ? of<BuildingBlockManagementTabConfig[]>([])
+      : combineLatest(
+          this._customTabs.map((tab: BuildingBlockManagementTabConfig) =>
+            (tab.enabled$ ?? of(true)).pipe(catchError(() => of(false)))
+          )
+        ).pipe(
+          map((enabled: boolean[]) => this._customTabs.filter((_, index) => !!enabled[index]))
+        );
+
+  public readonly tabState$: Observable<{
+    activeTabKey: BuildingBlockManagementTabKey;
+    customTabs: BuildingBlockManagementTabConfig[];
+  }> = combineLatest([this.activeTabKey$, this._enabledCustomTabs$]).pipe(
+    map(([activeTabKey, customTabs]) => ({activeTabKey, customTabs}))
+  );
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
@@ -77,13 +100,6 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
     public readonly buildingBlockManagementTabConfig: BuildingBlockManagementTabConfig[]
   ) {
     this.buildingBlockManagementDetailService.setRoute(this.route);
-  }
-
-  public get customTabs(): BuildingBlockManagementTabConfig[] {
-    return this.toArray(this.buildingBlockManagementTabConfig).map(tab => ({
-      ...tab,
-      enabled$: tab.enabled$ ?? of(true),
-    }));
   }
 
   public ngOnInit() {

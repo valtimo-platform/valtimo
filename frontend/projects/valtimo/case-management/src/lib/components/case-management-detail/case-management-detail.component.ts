@@ -35,10 +35,12 @@ import {SseService} from '@valtimo/sse';
 import {IconService, Tab} from 'carbon-components-angular';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   map,
   Observable,
+  of,
   shareReplay,
   startWith,
   Subscription,
@@ -93,6 +95,21 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
 
   public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
     this.tabService.injectedCaseManagementTabs$;
+
+  // Emits only once every injected tab has reported whether it is enabled, so the tab bar is never rendered incomplete.
+  public readonly enabledInjectedTabs$: Observable<CaseManagementTabConfig[]> =
+    this.injectedCaseManagementTabs$.pipe(
+      switchMap((tabs: CaseManagementTabConfig[]) =>
+        tabs.length === 0
+          ? of<CaseManagementTabConfig[]>([])
+          : combineLatest(
+              tabs.map((tab: CaseManagementTabConfig) =>
+                (tab.enabled$ ?? of(true)).pipe(catchError(() => of(false)))
+              )
+            ).pipe(map((enabled: boolean[]) => tabs.filter((_, index) => !!enabled[index])))
+      ),
+      shareReplay(1)
+    );
 
   public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
 
