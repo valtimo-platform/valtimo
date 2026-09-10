@@ -25,3 +25,4 @@ New enhancement explanation.
 | Area            | Fix                                                                           |
 |-----------------|-------------------------------------------------------------------------------|
 | Building blocks | A file uploaded from a task form inside a building block is added to the case |
+| IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
